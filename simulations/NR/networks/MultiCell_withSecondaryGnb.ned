@@ -45,7 +45,6 @@ network MultiCell_withSecondaryGnb
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50.993748,172.88126");
-            config = xmldoc("demo.xml");
         }
         binder: Binder {
             @display("p=49.75,247.50624;is=s");

@@ -37,16 +37,6 @@ LtePdcpRrcBase::LtePdcpRrcBase()
 LtePdcpRrcBase::~LtePdcpRrcBase()
 {
     delete ht_;
-
-    PdcpTxEntities::iterator t_it = txEntities_.begin();
-    for (; t_it != txEntities_.end(); ++t_it)
-        (t_it->second)->deleteModule();
-    txEntities_.clear();
-
-    PdcpRxEntities::iterator r_it = rxEntities_.begin();
-    for (; r_it != rxEntities_.end(); ++r_it)
-        (r_it->second)->deleteModule();
-    rxEntities_.clear();
 }
 
 bool LtePdcpRrcBase::isCompressionEnabled()
@@ -123,8 +113,7 @@ void LtePdcpRrcBase::headerDecompress(Packet* pkt)
     }
 }
 
-void LtePdcpRrcBase::setTrafficInformation(cPacket* pkt,
-    FlowControlInfo* lteInfo)
+void LtePdcpRrcBase::setTrafficInformation(cPacket* pkt, inet::Ptr<FlowControlInfo> lteInfo)
 {
     if ((strcmp(pkt->getName(), "VoIP")) == 0)
     {
@@ -165,7 +154,7 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
 
     // Control Information
     auto pkt = check_and_cast<inet::Packet *> (pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     setTrafficInformation(pkt, lteInfo);
 

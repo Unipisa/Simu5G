@@ -50,7 +50,9 @@ void TrafficFlowFilter::initialize(int stage)
     //end mec
 
     // register service processing IP-packets on the LTE Uu Link
-    registerService(LteProtocol::ipv4uu, gate("internetFilterGateIn"), gate("internetFilterGateIn"));
+    auto gateIn = gate("internetFilterGateIn");
+    registerProtocol(LteProtocol::ipv4uu, gateIn, SP_INDICATION);
+    registerProtocol(LteProtocol::ipv4uu, gateIn, SP_CONFIRM);
 }
 
 CoreNodeType TrafficFlowFilter::selectOwnerType(const char * type)

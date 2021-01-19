@@ -27,7 +27,7 @@ void LteTxPdcpEntity::initialize()
 
 void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet* pkt)
 {
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - LCID[" << lteInfo->getLcid() << "] - processing packet from IP layer" << endl;
 
     // perform PDCP operations
@@ -75,7 +75,7 @@ void LteTxPdcpEntity::deliverPdcpPdu(Packet* pdcpPkt)
     pdcp_->sendToLowerLayer(pdcpPkt);
 }
 
-void LteTxPdcpEntity::setIds(FlowControlInfo* lteInfo)
+void LteTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 {
     lteInfo->setSourceId(pdcp_->getNodeId());   // TODO CHANGE HERE!!! Must be the NR node ID if this is a NR connection
 

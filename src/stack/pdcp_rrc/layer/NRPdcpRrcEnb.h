@@ -56,7 +56,7 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
      */
     virtual void fromLowerLayer(cPacket *pkt);
 
-    virtual MacNodeId getDestId(FlowControlInfo* lteInfo);
+    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * getEntity() is used to gather the NR PDCP entity

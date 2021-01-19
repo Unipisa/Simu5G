@@ -16,7 +16,7 @@
 #include "stack/mac/packet/LteRac_m.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/amc/UserTxParams.h"
-#include "inet/networklayer/common/InterfaceEntry.h"
+#include "inet/networklayer/common/NetworkInterface.h"
 #include "inet/common/ModuleAccess.h"
 #include "inet/networklayer/ipv4/Ipv4InterfaceData.h"
 #include "common/binder/Binder.h"
@@ -162,12 +162,12 @@ void LteMacUe::initialize(int stage)
         // find interface entry and use its address
         IInterfaceTable *interfaceTable = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
         // TODO: how do we find the LTE interface?
-        InterfaceEntry * interfaceEntry = interfaceTable->findInterfaceByName("wlan");
-        if(interfaceEntry == nullptr)
+        NetworkInterface* iface = interfaceTable->findInterfaceByName("wlan");
+        if(iface == nullptr)
             throw new cRuntimeError("no interface entry for lte interface - cannot bind node %i", nodeId_);
 
 
-        Ipv4InterfaceData* ipv4if = interfaceEntry->getProtocolData<Ipv4InterfaceData>();
+        auto ipv4if = iface->getProtocolData<Ipv4InterfaceData>();
         if(ipv4if == nullptr)
             throw new cRuntimeError("no Ipv4 interface data - cannot bind node %i", nodeId_);
         binder_->setMacNodeId(ipv4if->getIPAddress(), nodeId_);
@@ -310,7 +310,7 @@ bool LteMacUe::bufferizePacket(cPacket* pktAux)
 
     pkt->setTimestamp();           // add time-stamp with current time to packet
 
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     // obtain the cid from the packet informations
     MacCid cid = ctrlInfoToMacCid(lteInfo);
@@ -415,7 +415,7 @@ bool LteMacUe::bufferizePacket(cPacket* pktAux)
 
 void LteMacUe::macPduMake(MacCid cid)
 {
-    int64 size = 0;
+    int64_t size = 0;
 
     macPduList_.clear();
 
@@ -1112,12 +1112,11 @@ LteMacUe::checkRAC()
     }
 }
 
-void
-LteMacUe::updateUserTxParam(cPacket* pktAux)
+void LteMacUe::updateUserTxParam(cPacket* pktAux)
 {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
 
-    auto lteInfo = pkt->getTag<UserControlInfo> ();
+    auto lteInfo = pkt->getTagForUpdate<UserControlInfo> ();
 
     if (lteInfo->getFrameType() != DATAPKT)
         return;

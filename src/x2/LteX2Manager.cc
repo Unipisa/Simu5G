@@ -12,7 +12,7 @@
 #define DATAPORT_OUT "dataPort$o"
 #define DATAPORT_IN "dataPort$i"
 
-#include <inet/networklayer/common/InterfaceEntry.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/networklayer/configurator/ipv4/Ipv4NetworkConfigurator.h>
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
 #include "x2/LteX2Manager.h"
@@ -39,13 +39,13 @@ void LteX2Manager::initialize(int stage)
         for (int i=0; i<interfaceTable->getNumInterfaces(); i++)
         {
             // look for x2ppp interfaces in the interface table
-            InterfaceEntry * interfaceEntry = interfaceTable->getInterface(i);
+            NetworkInterface * NetworkInterface = interfaceTable->getInterface(i);
 
-            const char* ifName = interfaceEntry->getInterfaceName();
+            const char* ifName = NetworkInterface->getInterfaceName();
 
             if (strstr(ifName,"x2ppp") != nullptr)
             {
-                const Ipv4Address addr = interfaceEntry->getProtocolData<Ipv4InterfaceData>()->getIPAddress();
+                const Ipv4Address addr = NetworkInterface->getProtocolData<Ipv4InterfaceData>()->getIPAddress();
                 getBinder()->setX2NodeId(addr, nodeId_);
             }
         }

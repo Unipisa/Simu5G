@@ -18,7 +18,7 @@ Define_Module(LtePdcpRrcUeD2D);
 using namespace inet;
 using namespace omnetpp;
 
-MacNodeId LtePdcpRrcUeD2D::getDestId(FlowControlInfo* lteInfo)
+MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 {
     Ipv4Address destAddr = Ipv4Address(lteInfo->getDstAddr());
     MacNodeId destId = binder_->getMacNodeId(destAddr);
@@ -42,7 +42,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
 
     // Control Information
     auto pkt = check_and_cast<Packet *>(pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     setTrafficInformation(pkt, lteInfo);
 
@@ -62,10 +62,10 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         // multicast IP addresses are 224.0.0.0/4.
         // We consider the host part of the IP address (the remaining 28 bits) as identifier of the group,
         // so as it is univocally determined for the whole network
-        uint32 address = Ipv4Address(lteInfo->getDstAddr()).getInt();
-        uint32 mask = ~((uint32)255 << 28);      // 0000 1111 1111 1111
-        uint32 groupId = address & mask;
-        lteInfo->setMulticastGroupId((int32)groupId);
+        uint32_t address = Ipv4Address(lteInfo->getDstAddr()).getInt();
+        uint32_t mask = ~((uint32_t)255 << 28);      // 0000 1111 1111 1111
+        uint32_t groupId = address & mask;
+        lteInfo->setMulticastGroupId((int32_t)groupId);
     }
     else
     {

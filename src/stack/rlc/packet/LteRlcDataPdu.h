@@ -58,8 +58,7 @@ protected:
     unsigned int pduSequenceNumber_;
 
     // Length of the PDU
-    inet::int64 rlcPduLength_;
-
+    int64_t rlcPduLength_;
 
 public:
 

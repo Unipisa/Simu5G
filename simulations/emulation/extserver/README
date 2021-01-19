@@ -16,10 +16,20 @@ IP addresses and routing tables are set up by using mrt files (see "routing" fol
  
 === HOW TO BUILD AND RUN ===
 
-Compile the simulator from the command line by running (in the root Simu5G folder):
+1) Make sure that the emulation feature is enabled in the INET project:
+
+- via the IDE: right-click on the 'inet' folder in the Project Explorer -> Properties;
+               select OMNeT++ -> Project Features; tick the box "Network emulation support"
+- via the command line: in the root INET folder, type 'opp_featuretool enable ExternalInterface'
+
+  If the feature was disabled, recompile INET with the command 'make' (in the root INET folder).  
+
+
+2) Compile Simu5G from the command line by running (in the root Simu5G folder):
 	$ make makefiles
 	$ make 
 	 	
-Run the simulation by launching the script ./run.sh 
+	 	
+3) Run the simulation by launching the script ./run.sh 
 
 ============================

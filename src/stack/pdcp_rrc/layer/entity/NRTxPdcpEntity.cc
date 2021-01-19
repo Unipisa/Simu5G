@@ -65,7 +65,7 @@ void NRTxPdcpEntity::deliverPdcpPdu(Packet* pkt)
     }
 }
 
-void NRTxPdcpEntity::setIds(FlowControlInfo* lteInfo)
+void NRTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 {
     if (lteInfo->getUseNR() && getNodeTypeById(pdcp_->getNodeId()) != ENODEB && getNodeTypeById(pdcp_->getNodeId()) != GNODEB)
         lteInfo->setSourceId(pdcp_->getNrNodeId());

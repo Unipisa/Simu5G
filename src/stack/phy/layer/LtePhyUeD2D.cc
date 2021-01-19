@@ -365,7 +365,7 @@ void LtePhyUeD2D::handleUpperMessage(cMessage* msg)
 
     lteInfo->setTxPower(txPower_);
     lteInfo->setD2dTxPower(d2dTxPower_);
-    frame->setControlInfo(lteInfo);
+    frame->setControlInfo(lteInfo.get()->dup());
 
     EV << "LtePhyUeD2D::handleUpperMessage - " << nodeTypeToA(nodeType_) << " with id " << nodeId_
        << " sending message to the air channel. Dest=" << lteInfo->getDestId() << endl;

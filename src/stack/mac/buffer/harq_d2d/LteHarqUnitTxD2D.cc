@@ -178,7 +178,7 @@ Packet *LteHarqUnitTxD2D::extractPdu()
     txTime_ = NOW;
     transmissions_++;
     status_ = TXHARQ_PDU_WAITING; // waiting for feedback
-    auto lteInfo = pdu_->getTag<UserControlInfo>();
+    auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
     lteInfo->setTxNumber(transmissions_);
     lteInfo->setNdi((transmissions_ == 1) ? true : false);
     EV << "LteHarqUnitTxD2D::extractPdu - ndi set to " << ((transmissions_ == 1) ? "true" : "false") << endl;

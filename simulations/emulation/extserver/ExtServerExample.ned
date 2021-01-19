@@ -42,7 +42,6 @@ network ExtServerExample
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=73.38125,72.1375");
-            config = xmldoc("demo.xml");
         }
         channelControl: LteChannelControl {
             @display("p=70.89375,189.05;is=s");
@@ -51,7 +50,7 @@ network ExtServerExample
             @display("p=73.38125,261.1875;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=72.54,335.916;is=s");
         }
         router: Router {
             @display("p=223.875,175.36874;i=device/smallrouter");
@@ -63,10 +62,10 @@ network ExtServerExample
             @display("p=671.625,174.125;is=vl");
         }
         ue1: Ue {
-            @display("p=671.625,309.69376");
+            @display("p=699.732,309.132");
         }
         ue2: Ue {
-            @display("p=671.625,309.69376");
+            @display("p=636.12,309.132");
         }
         extCell[numExtCells]: ExtCell {
             @display("p=671.625,432.82498;is=vl");

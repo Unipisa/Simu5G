@@ -14,6 +14,8 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/common/packet/printer/PacketPrinter.h>
+#include <inet/common/socket/SocketTag_m.h>
+#include <inet/linklayer/common/InterfaceTag_m.h>
 
 Define_Module(GtpUser);
 
@@ -77,11 +79,11 @@ void GtpUser::initialize(int stage)
     ie_ = detectInterface();
 }
 
-InterfaceEntry *GtpUser::detectInterface()
+NetworkInterface* GtpUser::detectInterface()
 {
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
     const char *interfaceName = par("ipOutInterface");
-    InterfaceEntry *ie = nullptr;
+    NetworkInterface *ie = nullptr;
 
     if (strlen(interfaceName) > 0) {
         ie = ift->findInterfaceByName(interfaceName);
@@ -139,7 +141,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
 {
     TftControlInfo * tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
-    delete (tftInfo);
+    delete tftInfo;
 
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "]" << endl;
 
@@ -163,14 +165,6 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
 
         delete datagram;
 
-//        auto gtpHeader = makeShared<GtpUserMsg>();
-//        gtpHeader->setTeid(0);
-//        gtpHeader->setChunkLength(B(8));
-//        datagram->insertAtFront(gtpHeader);
-//        datagram->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::gtp);
-
-
-
         L3Address tunnelPeerAddress;
         if (flowId == -1) // send to the PGW or UPF
         {
@@ -192,8 +186,6 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
             tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
         }
         socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
-//        socket_.sendTo(datagram, tunnelPeerAddress, tunnelPeerPort_);
-
     }
 }
 
@@ -207,6 +199,8 @@ void GtpUser::handleFromUdp(Packet * pkt)
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
     originalPacket->insertAtBack(pkt->peekData());
     originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
+    // remove any pending socket indications
+    auto sockInd = pkt->removeTagIfPresent<SocketInd>();
 
     delete pkt;
 

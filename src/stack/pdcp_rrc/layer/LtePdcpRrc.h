@@ -144,7 +144,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param lteInfo Control Info
      */
-    virtual MacNodeId getDestId(FlowControlInfo* lteInfo) = 0;
+    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) = 0;
 
     /**
      * getDirection() is used only on UEs and ENODEBs:
@@ -154,7 +154,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * @return Direction of traffic
      */
     virtual Direction getDirection() = 0;
-    void setTrafficInformation(omnetpp::cPacket* pkt, FlowControlInfo* lteInfo);
+    void setTrafficInformation(omnetpp::cPacket* pkt, inet::Ptr<FlowControlInfo> lteInfo);
 
     bool isCompressionEnabled();
 
@@ -306,7 +306,7 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
 {
   protected:
 
-    MacNodeId getDestId(FlowControlInfo* lteInfo)
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     {
         // UE is subject to handovers: master may change
         return binder_->getNextHop(nodeId_);
@@ -331,7 +331,7 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
         delete lteInfo;
     }
 
-    virtual MacNodeId getDestId(FlowControlInfo* lteInfo)
+    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     {
         // dest id
         MacNodeId destId = binder_->getMacNodeId(inet::Ipv4Address(lteInfo->getDstAddr()));

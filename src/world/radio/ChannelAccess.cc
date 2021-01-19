@@ -31,7 +31,7 @@ ChannelAccess::~ChannelAccess()
     if (cc && myRadioRef)
     {
         // check if channel control exist
-        IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->getModuleByPath("channelControl"));
+        IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
         if (cc)
              cc->unregisterRadio(myRadioRef);
         myRadioRef = nullptr;
@@ -88,7 +88,7 @@ void ChannelAccess::initialize(int stage)
 
 IChannelControl *ChannelAccess::getChannelControl()
 {
-    IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->getModuleByPath("channelControl"));
+    IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
     if (!cc)
         throw cRuntimeError("Could not find ChannelControl module with name 'channelControl' in the toplevel network.");
     return cc;

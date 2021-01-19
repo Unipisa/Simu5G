@@ -46,7 +46,7 @@ class LteRlcUmD2D : public LteRlcUm
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity* getTxBuffer(FlowControlInfo* lteInfo) override;
+    virtual UmTxEntity* getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * UM Mode

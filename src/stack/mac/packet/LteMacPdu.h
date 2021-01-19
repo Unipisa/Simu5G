@@ -70,10 +70,10 @@ class LteMacPdu : public LteMacPdu_Base
     MacControlElementsList ceList_;
 
     /// Length of the PDU
-    inet::int64 macPduLength_;
+    int64_t macPduLength_;
 
     /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
-    inet::int64 macPduId_;
+    inet::int64_t macPduId_;
     static inet::int64 numMacPdus_;
 
   public:
@@ -147,12 +147,12 @@ class LteMacPdu : public LteMacPdu_Base
         }
     }
 
-    inet::int64 getByteLength() const
+    int64_t getByteLength() const
     {
         return macPduLength_ + getHeaderLength();
     }
 
-    inet::int64 getBitLength() const
+    int64_t getBitLength() const
     {
         return (getByteLength() * 8);
     }

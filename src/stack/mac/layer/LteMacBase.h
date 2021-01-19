@@ -152,10 +152,10 @@ class LteMacBase : public omnetpp::cSimpleModule
 
     // statistics in visualization
     bool statDisplay_;
-    inet::uint64 nrFromUpper_;
-    inet::uint64 nrFromLower_;
-    inet::uint64 nrToUpper_;
-    inet::uint64 nrToLower_;
+    uint64_t nrFromUpper_;
+    uint64_t nrFromLower_;
+    uint64_t nrToUpper_;
+    uint64_t nrToLower_;
 
   public:
 
@@ -355,7 +355,7 @@ class LteMacBase : public omnetpp::cSimpleModule
      * bufferizePacket() is called every time a packet is
      * received from the upper layer
      */
-    virtual bool bufferizePacket(omnetpp::cPacket* pkt);
+    virtual bool bufferizePacket(omnetpp::cPacket* pktAux);
 
     /**
      * handleUpperMessage() is called every time a packet is

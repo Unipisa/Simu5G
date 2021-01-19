@@ -42,7 +42,6 @@ network Highway
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50,125");
-            config = xmldoc("demo.xml");
         }
 
         //# Veins manager module

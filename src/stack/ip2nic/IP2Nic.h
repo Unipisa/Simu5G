@@ -13,7 +13,7 @@
 #define __IP2NIC_H_
 
 #include <omnetpp.h>
-#include <inet/networklayer/common/InterfaceEntry.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "stack/handoverManager/LteHandoverManager.h"
@@ -50,7 +50,7 @@ class IP2Nic : public omnetpp::cSimpleModule
     MacNodeId nrMasterId_;
 
     // corresponding entry for our interface
-    inet::InterfaceEntry* interfaceEntry;
+    inet::NetworkInterface* networkIf;
 
     /*
      * Handover support
@@ -124,7 +124,7 @@ class IP2Nic : public omnetpp::cSimpleModule
     // To change the policy, change the implementation of the Ip2Nic::markPacket() function
     //
     // TODO use a better policy
-    bool markPacket(FlowControlInfo* ci);
+    bool markPacket(inet::Ptr<FlowControlInfo> ci);
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }

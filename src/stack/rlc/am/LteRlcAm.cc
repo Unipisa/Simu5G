@@ -101,7 +101,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 
 void LteRlcAm::bufferControlPdu(omnetpp::cPacket *pktAux){
     auto pkt = check_and_cast<inet::Packet *> (pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
     txbuf->bufferControlPdu(pkt);
 }
@@ -122,7 +122,7 @@ void LteRlcAm::sendFragmented(cPacket *pktAux)
 void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     
     AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
 
@@ -142,16 +142,16 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
     Enter_Method("routeControlMessage");
 
     auto pkt = check_and_cast<Packet *>(pktAux);
-    auto lteInfo = pkt->removeTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
     txbuf->handleControlPacket(pkt);
-    delete lteInfo;
+    lteInfo = pkt->removeTag<FlowControlInfo>();
 }
 
 void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     auto chunk = pkt->peekAtFront<inet::Chunk>();
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr)

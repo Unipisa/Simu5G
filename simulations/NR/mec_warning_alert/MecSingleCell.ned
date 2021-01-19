@@ -40,7 +40,6 @@ network MecSingleCell
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=690,184.92");
-            config = xmldoc("demo.xml");
         }
         channelControl: LteChannelControl {
             @display("p=690,24.84;is=s");

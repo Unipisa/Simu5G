@@ -469,9 +469,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket* pktAux)
                 EV << NOW << " LteMacEnbD2D::sendModeSwitchNotification - send signal for TX entity to upper layers in the eNB (cid=" << cid << ")" << endl;
 
                 auto pktTx =  pkt->dup();
-                auto tag = pktTx->removeTagIfPresent<UserControlInfo>();
-                if (tag)
-                    delete tag;
+                pktTx->removeTagIfPresent<UserControlInfo>();
                 auto switchPktTx = pktTx->removeAtFront<D2DModeSwitchNotification>();
                 switchPktTx->setTxSide(true);
 
@@ -525,9 +523,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket* pktAux)
                 }
 
                 auto pktRx =  pkt->dup();
-                auto tag = pktRx->removeTagIfPresent<UserControlInfo>();
-                if (tag)
-                    delete tag;
+                pktRx->removeTagIfPresent<UserControlInfo>();
                 auto switchPktRx = pktRx->removeAtFront<D2DModeSwitchNotification>();
 
                 EV << NOW << " LteMacEnbD2D::sendModeSwitchNotification - send signal for RX entity to upper layers in the eNB (cid=" << cid << ")" << endl;

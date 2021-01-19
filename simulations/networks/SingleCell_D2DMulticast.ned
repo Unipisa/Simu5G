@@ -40,7 +40,6 @@ network SingleCell_D2DMulticast
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50,125");
-            config = xmldoc("demo.xml");
         }
         binder: Binder {
             @display("p=50,175;is=s");

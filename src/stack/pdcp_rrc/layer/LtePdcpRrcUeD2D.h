@@ -32,7 +32,7 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
 
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 
-    virtual MacNodeId getDestId(FlowControlInfo* lteInfo) override;
+    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     using LtePdcpRrcUe::getDirection;  // base class variant: return direction for comm. with eNB
     // additional getDirection method determining if D2D comm. is available to a specific destination

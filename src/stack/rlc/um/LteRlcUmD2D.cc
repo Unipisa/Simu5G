@@ -15,7 +15,7 @@
 Define_Module(LteRlcUmD2D);
 using namespace omnetpp;
 
-UmTxEntity* LteRlcUmD2D::getTxBuffer(FlowControlInfo* lteInfo)
+UmTxEntity* LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId = 0;
     LogicalCid lcid = 0;
@@ -82,7 +82,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
         EV << NOW << " LteRlcUmD2D::handleLowerMessage - Received packet " << pkt->getName() << " from lower layer\n";
 
         auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
-        auto lteInfo = pkt->getTag<FlowControlInfo>();
+        auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
         // add here specific behavior for handling mode switch at the RLC layer
 

@@ -200,11 +200,14 @@ void LteMacBase::fromPhy(cPacket *pktAux)
     }
 }
 
-bool LteMacBase::bufferizePacket(cPacket* pkt)
+bool LteMacBase::bufferizePacket(cPacket* pktAux)
 {
+    auto pkt = check_and_cast<Packet *>(pktAux);
+
     pkt->setTimestamp();        // Add timestamp with current time to packet
 
-    FlowControlInfo* lteInfo = check_and_cast<FlowControlInfo*>(pkt->getControlInfo());
+//    FlowControlInfo* lteInfo = check_and_cast<FlowControlInfo*>(pkt->getControlInfo());
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     // obtain the cid from the packet informations
     MacCid cid = ctrlInfoToMacCid(lteInfo);

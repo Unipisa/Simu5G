@@ -55,7 +55,7 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
     }
 
     // this function was redefined so as to use the getDirection() function implemented above
-    virtual MacNodeId getDestId(FlowControlInfo* lteInfo);
+    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * handler for data port

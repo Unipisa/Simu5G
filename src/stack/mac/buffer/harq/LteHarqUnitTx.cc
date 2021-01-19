@@ -124,7 +124,7 @@ void LteHarqUnitTx::insertPdu(Packet *pkt)
     transmissions_ = 0;
     status_ = TXHARQ_PDU_SELECTED;
     pduLength_ = pdu_->getByteLength();
-    auto lteInfo = pdu_->getTag<UserControlInfo>();
+    auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
 
     lteInfo->setAcid(acid_);
     Codeword cw_old = lteInfo->getCw();
@@ -154,7 +154,7 @@ Packet *LteHarqUnitTx::extractPdu()
     transmissions_++;
     status_ = TXHARQ_PDU_WAITING; // waiting for feedback
 
-    auto lteInfo = pdu_->getTag<UserControlInfo>();
+    auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
     lteInfo->setTxNumber(transmissions_);
     lteInfo->setNdi((transmissions_ == 1) ? true : false);
     EV << "LteHarqUnitTx::extractPdu - ndi set to " << ((transmissions_ == 1) ? "true" : "false") << endl;

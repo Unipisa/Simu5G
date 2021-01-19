@@ -584,7 +584,7 @@ void LteMacEnb::macHandleRac(cPacket* pktAux)
     auto pkt = check_and_cast<Packet *>(pktAux);
 
     auto racPkt = pkt->removeAtFront<LteRac>();
-    auto uinfo = pkt->getTag<UserControlInfo>();
+    auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
     
     enbSchedulerUl_->signalRac(uinfo->getSourceId());
 
@@ -798,7 +798,7 @@ bool LteMacEnb::bufferizePacket(cPacket* pktAux)
 
     pkt->setTimestamp();        // Add timestamp with current time to packet
 
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     // obtain the cid from the packet informations
     MacCid cid = ctrlInfoToMacCid(lteInfo);
@@ -1073,7 +1073,7 @@ void LteMacEnb::updateUserTxParam(cPacket* pktAux)
 {
 
     auto pkt = check_and_cast<Packet *>(pktAux);
-    auto lteInfo = pkt->getTag<UserControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<UserControlInfo>();
 
     if (lteInfo->getFrameType() != DATAPKT)
         return; // TODO check if this should be removed.

@@ -480,7 +480,7 @@ MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid)
 /*
  * Obtain the CID from the Control Info
  */
-MacCid ctrlInfoToMacCid(LteControlInfo * info)
+MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info)
 {
     /*
      * Given the fact that  CID = <UE_MAC_ID,LCID>
@@ -515,7 +515,7 @@ MacCid ctrlInfoToMacCid(LteControlInfo * info)
 /*
  * Obtain the MacNodeId of an UE from packet control info
  */
-MacNodeId ctrlInfoToUeId(LteControlInfo * info)
+MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
 {
     /*
      * direction | src       dest
@@ -727,21 +727,12 @@ void initializeAllChannels(cModule *mod)
     }
 }
 
-void removeAllSimu5GTags(inet::Packet *pkt) {
-    auto c2 = pkt->removeTagIfPresent<TftControlInfo>();
-    if (c2)
-        delete c2;
-    auto c3 = pkt->removeTagIfPresent<X2ControlInfoTag>();
-    if (c3)
-        delete c3;
-    auto c4 = pkt->removeTagIfPresent<FlowControlInfo>();
-    if (c4)
-        delete c4;
-    auto c5 = pkt->removeTagIfPresent<UserControlInfo>();
-    if (c5)
-        delete c5;
-    auto c1 = pkt->removeTagIfPresent<LteControlInfo>();
-    if (c1)
-        delete c1;
+void removeAllSimu5GTags(inet::Packet *pkt)
+{
+    pkt->removeTagIfPresent<TftControlInfo>();
+    pkt->removeTagIfPresent<X2ControlInfoTag>();
+    pkt->removeTagIfPresent<FlowControlInfo>();
+    pkt->removeTagIfPresent<UserControlInfo>();
+    pkt->removeTagIfPresent<LteControlInfo>();
 }
 

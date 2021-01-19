@@ -11,15 +11,14 @@
 #include <iostream>
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/IInterfaceRegistrationListener.h>
-
-#include <inet/applications/common/SocketTag_m.h>
+#include <inet/common/socket/SocketTag_m.h>
 
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/Udp.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 #include <inet/transportlayer/common/L4Tools.h>
 
-#include <inet/networklayer/common/InterfaceEntry.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
 #include <inet/networklayer/ipv4/Ipv4Route.h>
 #include <inet/networklayer/ipv4/IIpv4RoutingTable.h>
@@ -107,7 +106,7 @@ void IP2Nic::initialize(int stage)
                 defaultRoute->setNetmask(
                         Ipv4Address(inet::Ipv4Address::UNSPECIFIED_ADDRESS));
 
-                defaultRoute->setInterface(interfaceEntry);
+                defaultRoute->setInterface(networkIf);
 
                 irt->addRoute(defaultRoute);
 
@@ -139,9 +138,7 @@ void IP2Nic::handleMessage(cMessage *msg)
         else if(msg->getArrivalGate()->isName("stackNic$i"))
         {
             auto pkt = check_and_cast<Packet *>(msg);
-            auto sockInd = pkt->removeTagIfPresent<SocketInd>();
-    		if (sockInd)
-        		delete sockInd;
+            pkt->removeTagIfPresent<SocketInd>();
     		removeAllSimu5GTags(pkt);
             
             toIpBs(pkt);
@@ -169,11 +166,8 @@ void IP2Nic::handleMessage(cMessage *msg)
             // message from stack: send to transport
             EV << "LteIp: message from stack: send to transport" << endl;
             auto pkt = check_and_cast<Packet *>(msg);
-            auto sockInd = pkt->removeTagIfPresent<SocketInd>();
-    		if (sockInd)
-        		delete sockInd;
+            pkt->removeTagIfPresent<SocketInd>();
     		removeAllSimu5GTags(pkt);
-
     		toIpUe(pkt);
         }
         else
@@ -197,10 +191,7 @@ void IP2Nic::fromIpUe(Packet * datagram)
 {
     EV << "IP2Nic::fromIpUe - message from IP layer: send to stack: "  << datagram->str() << std::endl;
     // Remove control info from IP datagram
-    auto sockInd = datagram->removeTagIfPresent<SocketInd>();
-    if (sockInd)
-        delete sockInd;
-    
+    datagram->removeTagIfPresent<SocketInd>();
     removeAllSimu5GTags(datagram);
 
     // Remove InterfaceReq Tag (we already are on an interface now)
@@ -254,7 +245,7 @@ void IP2Nic::toStackUe(Packet * pkt)
     printControlInfo(pkt);
 
     // mark packet for using NR
-    if (!markPacket(pkt->getTag<FlowControlInfo>()))
+    if (!markPacket(pkt->getTagForUpdate<FlowControlInfo>()))
     {
         EV << "IP2Nic::toStackUe - UE is not attached to any serving node. Delete packet." << endl;
         delete pkt;
@@ -269,7 +260,7 @@ void IP2Nic::prepareForIpv4(Packet *datagram, const Protocol *protocol){
     datagram->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(protocol);
     datagram->addTagIfAbsent<PacketProtocolTag>()->setProtocol(protocol);
     // add Interface-Indication to indicate which interface this packet was received from
-    datagram->addTagIfAbsent<InterfaceInd>()->setInterfaceId(interfaceEntry->getInterfaceId());
+    datagram->addTagIfAbsent<InterfaceInd>()->setInterfaceId(networkIf->getInterfaceId());
 }
 
 void IP2Nic::toIpUe(Packet *pkt)
@@ -278,12 +269,8 @@ void IP2Nic::toIpUe(Packet *pkt)
     auto networkProtocolInd = pkt->addTagIfAbsent<NetworkProtocolInd>();
     networkProtocolInd->setProtocol(&Protocol::ipv4);
     networkProtocolInd->setNetworkProtocolHeader(ipHeader);
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
-    pkt->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(&Protocol::ipv4);
-
-
-    EV << "IP2Nic::toIpUe - message from stack: send to IP layer" << endl;
     prepareForIpv4(pkt);
+    EV << "IP2Nic::toIpUe - message from stack: send to IP layer" << endl;
     send(pkt,ipGateOut_);
 }
 
@@ -291,9 +278,7 @@ void IP2Nic::fromIpBs(Packet * pkt)
 {
     EV << "IP2Nic::fromIpBs - message from IP layer: send to stack" << endl;
     // Remove control info from IP datagram
-    auto sockInd = pkt->removeTagIfPresent<SocketInd>();
-    if (sockInd)
-        delete sockInd;
+    pkt->removeTagIfPresent<SocketInd>();
     removeAllSimu5GTags(pkt);
 
     // Remove InterfaceReq Tag (we already are on an interface now)
@@ -336,12 +321,8 @@ void IP2Nic::toIpBs(Packet* pkt)
     auto networkProtocolInd = pkt->addTagIfAbsent<NetworkProtocolInd>();
     networkProtocolInd->setProtocol(&Protocol::ipv4);
     networkProtocolInd->setNetworkProtocolHeader(ipHeader);
-    pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
-    pkt->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(&Protocol::ipv4);
-
-
-    EV << "IP2Nic::toIpBs - message from stack: send to IP layer" << endl;
     prepareForIpv4(pkt, &LteProtocol::ipv4uu);
+    EV << "IP2Nic::toIpBs - message from stack: send to IP layer" << endl;
     send(pkt,ipGateOut_);
 }
 
@@ -378,7 +359,7 @@ void IP2Nic::toStackBs(Packet* pkt)
     pkt->addTagIfAbsent<FlowControlInfo>()->setHeaderSize(headerSize);
 
     // mark packet for using NR
-    if (!markPacket(pkt->getTag<FlowControlInfo>()))
+    if (!markPacket(pkt->getTagForUpdate<FlowControlInfo>()))
     {
         EV << "IP2Nic::toStackBs - UE is not attached to any serving node. Delete packet." << endl;
         delete pkt;
@@ -405,42 +386,43 @@ void IP2Nic::registerInterface()
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
     if (!ift)
         return;
-    interfaceEntry = getContainingNicModule(this);
-    interfaceEntry->setInterfaceName("wlan");           // FIXME: user different name for cellular interfaces
-                                                        // (IPv4NetworkConfigurator only supports "wlan" as wireless interface name)
+
+    networkIf = getContainingNicModule(this);
+    networkIf->setInterfaceName("wlan");           // FIXME: user different name for cellular interfaces
+                                                   // (IPv4NetworkConfigurator only supports "wlan" as wireless interface name)
     // TODO configure MTE size from NED
-    interfaceEntry->setMtu(1500);
-    //disable broadcast (not supported in CellularNic), enable multicast
-    interfaceEntry->setBroadcast(false);
-    interfaceEntry->setMulticast(true);
-    interfaceEntry->setLoopback(false);
+    networkIf->setMtu(1500);
+    //disable broadcast (not supported in LteNic), enable multicast
+    networkIf->setBroadcast(false);
+    networkIf->setMulticast(true);
+    networkIf->setLoopback(false);
     
     // generate a link-layer address to be used as interface token for IPv6
     InterfaceToken token(0, getSimulation()->getUniqueNumber(), 64);
-    interfaceEntry->setInterfaceToken(token);
+    networkIf->setInterfaceToken(token);
 
     // capabilities
-    interfaceEntry->setMulticast(true);
-    interfaceEntry->setPointToPoint(true);
+    networkIf->setMulticast(true);
+    networkIf->setPointToPoint(true);
 }
 
 void IP2Nic::registerMulticastGroups()
 {
     // get all the multicast addresses where the node is enrolled
-    InterfaceEntry * interfaceEntry;
+    NetworkInterface* iface;
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
     if (!ift)
         return;
-    interfaceEntry = ift->findInterfaceByName("wlan");
-    unsigned int numOfAddresses = interfaceEntry->getProtocolData<Ipv4InterfaceData>()->getNumOfJoinedMulticastGroups();
+    iface = ift->findInterfaceByName("wlan");
+    unsigned int numOfAddresses = iface->getProtocolData<Ipv4InterfaceData>()->getNumOfJoinedMulticastGroups();
 
     for (unsigned int i=0; i<numOfAddresses; ++i)
     {
-        Ipv4Address addr = interfaceEntry->getProtocolData<Ipv4InterfaceData>()->getJoinedMulticastGroup(i);
+        Ipv4Address addr = iface->getProtocolData<Ipv4InterfaceData>()->getJoinedMulticastGroup(i);
         // get the group id and add it to the binder
-        uint32 address = addr.getInt();
-        uint32 mask = ~((uint32)255 << 24);      // 00000000 11111111 11111111 11111111
-        uint32 groupId = address & mask;
+        uint32_t address = addr.getInt();
+        uint32_t mask = ~((uint32)255 << 24);      // 00000000 11111111 11111111 11111111
+        uint32_t groupId = address & mask;
         binder_->registerMulticastGroup(nodeId_, groupId);
         // register also the NR stack, if any
         if (nrNodeId_ > 0)
@@ -448,7 +430,7 @@ void IP2Nic::registerMulticastGroups()
     }
 }
 
-bool IP2Nic::markPacket(FlowControlInfo* ci)
+bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
 {
     // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
     // to follow based on the Type of Service (TOS) field:

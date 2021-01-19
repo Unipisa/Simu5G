@@ -140,7 +140,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity* getTxBuffer(FlowControlInfo* lteInfo);
+    virtual UmTxEntity* getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -152,7 +152,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * @return pointer to the RXBuffer for that CID
      *
      */
-    virtual UmRxEntity* getRxBuffer(FlowControlInfo* lteInfo);
+    virtual UmRxEntity* getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * handler for traffic coming

@@ -18,7 +18,7 @@ Define_Module(LteRlcUm);
 
 using namespace omnetpp;
 
-UmTxEntity* LteRlcUm::getTxBuffer(FlowControlInfo* lteInfo)
+UmTxEntity* LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId = 0;
     LogicalCid lcid = 0;
@@ -76,7 +76,7 @@ UmTxEntity* LteRlcUm::getTxBuffer(FlowControlInfo* lteInfo)
 }
 
 
-UmRxEntity* LteRlcUm::getRxBuffer(FlowControlInfo* lteInfo)
+UmRxEntity* LteRlcUm::getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId;
     if (lteInfo->getDirection() == DL)
@@ -170,7 +170,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     emit(receivedPacketFromUpperLayer, pktAux);
 
     auto pkt = check_and_cast<inet::Packet *> (pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
@@ -216,7 +216,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     EV << "LteRlcUm::handleLowerMessage - Received packet " << pkt->getName() << " from lower layer\n";
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     auto chunk = pkt->peekAtFront<inet::Chunk>();
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr)

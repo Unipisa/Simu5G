@@ -13,7 +13,7 @@
 package simu5g.stack;
 
 import inet.linklayer.contract.IWirelessInterface;
-import inet.networklayer.common.InterfaceEntry;
+import inet.networklayer.common.NetworkInterface;
 import simu5g.stack.phy.LtePhy;
 import simu5g.stack.mac.LteMac;
 import simu5g.stack.pdcp_rrc.LtePdcpRrc;
@@ -27,6 +27,7 @@ import simu5g.stack.d2dModeSelection.D2DModeSelection;
 import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
+
 
 // 
 // Interface for the 3GPP Stack.
@@ -44,11 +45,11 @@ moduleinterface ICellularNic extends IWirelessInterface
 // 
 // Base module for the LTE Stack.
 //
-module LteNicBase extends InterfaceEntry like ICellularNic
+module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:
 
-        @class(::inet::InterfaceEntry);
+        @class(::inet::NetworkInterface);
         @display("i=block/ifcard;bgb=391.552,443.52;bgl=3");
         string interfaceTableModule;
         string routingTableModule;

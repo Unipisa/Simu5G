@@ -267,7 +267,7 @@ void NRMacUe::handleSelfMessage()
 
 void NRMacUe::macPduMake(MacCid cid)
 {
-    int64 size = 0;
+    int64_t size = 0;
 
     macPduList_.clear();
 
@@ -316,8 +316,11 @@ void NRMacUe::macPduMake(MacCid cid)
                 {
                     // Call the appropriate function for make a BSR for a D2D communication
                     Packet* macPktBsr = makeBsr(sizeBsr);
-                    auto info = macPktBsr->getTag<UserControlInfo>();
+                    UserControlInfo* info = NULL;
+                    if (macPktBsr != NULL)
+                        info = macPktBsr->getTagForUpdate<UserControlInfo>();
 
+                    double carrierFreq = git->second->getTag<UserControlInfo>()->getCarrierFrequency();
                     if (info != NULL)
                     {
                         info->setCarrierFrequency(carrierFreq);
@@ -431,7 +434,6 @@ void NRMacUe::macPduMake(MacCid cid)
                         throw cRuntimeError("Empty buffer for cid %d, while expected SDUs were %d", destCid, sduPerCid);
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
-
                     if (pkt != NULL)
                     {
                         // multicast support
@@ -442,7 +444,7 @@ void NRMacUe::macPduMake(MacCid cid)
 
                         int32 groupId =  infoVec.front().getMulticastGroupId();
                         if (groupId >= 0) // for unicast, group id is -1
-                            macPkt->getTag<UserControlInfo>()->setMulticastGroupId(groupId);
+                            macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
 
                         drop(pkt);
 

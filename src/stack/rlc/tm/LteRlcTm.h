@@ -97,7 +97,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
      * The maximum available queue size (in bytes)
      * (amount of data in sduQueue_ must not exceed this value)
      */
-    unsigned int queueSize_;
+    int queueSize_;
 
     // statistics
     inet::simsignal_t receivedPacketFromUpperLayer;

@@ -35,7 +35,7 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
 
     // Control Informations
     auto pkt = check_and_cast<inet::Packet *> (pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     setTrafficInformation(pkt, lteInfo);
 
     // get source info
@@ -131,7 +131,7 @@ void NRPdcpRrcEnb::fromLowerLayer(cPacket *pktAux)
     entity->handlePacketFromLowerLayer(pkt);
 }
 
-MacNodeId NRPdcpRrcEnb::getDestId(FlowControlInfo* lteInfo)
+MacNodeId NRPdcpRrcEnb::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId destId;
     if (!dualConnectivityEnabled_ || lteInfo->getUseNR())
@@ -223,7 +223,7 @@ void NRPdcpRrcEnb::receiveDataFromSourceNode(Packet* pkt, MacNodeId sourceNode)
    Enter_Method("receiveDataFromSourceNode");
    take(pkt);
 
-   auto ctrlInfo = pkt->getTag<FlowControlInfo>();
+   auto ctrlInfo = pkt->getTagForUpdate<FlowControlInfo>();
    if (ctrlInfo->getDirection() == DL)
    {
        // if DL, forward the PDCP PDU to the RLC layer

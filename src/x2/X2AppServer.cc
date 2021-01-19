@@ -12,7 +12,7 @@
 #include "x2/X2AppServer.h"
 
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>
-#include "inet/applications/common/SocketTag_m.h"
+#include "inet/common/socket/SocketTag_m.h"
 #include "inet/common/ProtocolTag_m.h"
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/Message.h"
@@ -50,7 +50,7 @@ void X2AppServer::generateAndSend(Packet* pkt)
     lastStream = (lastStream+1)%outboundStreams;
     cmd->setSid(lastStream);
     cmd->setPrValue(par("prValue"));
-    cmd->setPrMethod((int32)par("prMethod"));
+    cmd->setPrMethod((int32_t)par("prMethod"));
 
     if (queueSize>0 && numRequestsToSend > 0 && count < queueSize*2)
         cmd->setLast(false);

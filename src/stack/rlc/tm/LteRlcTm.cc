@@ -38,7 +38,6 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 
         drop(pkt);
         delete pkt;
-        delete lteInfo;
 
         return;
     }
