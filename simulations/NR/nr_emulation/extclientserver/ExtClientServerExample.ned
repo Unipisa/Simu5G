@@ -1,12 +1,15 @@
 // 
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 // 
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself, 
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
-package simu5g.simulations.emulation.extclientserver;
+
+package simu5g.simulations.NR.nr_emulation.extclientserver;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -15,11 +18,11 @@ import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.eNodeB;
-import simu5g.nodes.Ue;
-import simu5g.nodes.PgwStandard;
-import simu5g.nodes.ExtCell;
+import simu5g.nodes.Upf;
+import simu5g.nodes.NR.gNodeB;
+import simu5g.nodes.NR.NRUe;
 import simu5g.world.radio.LteChannelControl;
+import simu5g.nodes.ExtCell;
 
 
 // ExtClientServerExample
@@ -50,19 +53,19 @@ network ExtClientServerExample
         router: Router {
             @display("p=223.875,175.36874;i=device/smallrouter");
         }
-        pgw: PgwStandard {
+        upf: Upf {
             @display("p=460.1875,174.125;is=l");
         }
-        enb: eNodeB {
+        gnb: gNodeB {
             @display("p=671.625,174.125;is=vl");
         }
-        ue: Ue {
+        ue: NRUe {
             @display("p=671.625,309.69376");
         }
         extCell[numExtCells]: ExtCell {
             @display("p=671.625,432.82498;is=vl");
         }
     connections allowunconnected:
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
-        pgw.pppg++ <--> Eth10G <--> enb.ppp;
+        router.pppg++ <--> Eth10G <--> upf.filterGate;
+        upf.pppg++ <--> Eth10G <--> gnb.ppp;
 }
