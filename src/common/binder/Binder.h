@@ -307,8 +307,8 @@ class Binder : public omnetpp::cSimpleModule
     {
         if (macNodeIdToIPAddress_.find(address) == macNodeIdToIPAddress_.end())
             return 0;
-
         MacNodeId nodeId = macNodeIdToIPAddress_[address];
+
         // if the UE is disconnected (its master node is 0), check the NR node Id
         if (getNextHop(nodeId) == 0)
             return getNrMacNodeId(address);

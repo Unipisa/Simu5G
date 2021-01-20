@@ -172,12 +172,12 @@ void LteMacUe::initialize(int stage)
             throw new cRuntimeError("no Ipv4 interface data - cannot bind node %i", nodeId_);
         binder_->setMacNodeId(ipv4if->getIPAddress(), nodeId_);
 
-        // Register the "ext" interface, if present
-        if (hasPar("enableExtInterface") && getAncestorPar("enableExtInterface").boolValue())
+        // for emulation mode
+        const char* extHostAddress = getAncestorPar("extHostAddress").stringValue();
+        if (strcmp(extHostAddress, "") != 0)
         {
-            // get address of the localhost to enable forwarding
-            Ipv4Address extHostAddress = Ipv4Address(getAncestorPar("extHostAddress").stringValue());
-            binder_->setMacNodeId(extHostAddress, nodeId_);
+            // register the address of the external host to enable forwarding
+            binder_->setMacNodeId(Ipv4Address(extHostAddress), nodeId_);
         }
     }
     else if (stage == inet::INITSTAGE_TRANSPORT_LAYER)
