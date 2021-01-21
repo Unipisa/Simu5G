@@ -13,13 +13,7 @@
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 #include "stack/mac/scheduler/LteSchedulerEnbUl.h"
 
-/**
- * TODO:
- * - rimuovere i commenti dalle funzioni quando saranno implementate nel enb scheduler
- */
-
 using namespace omnetpp;
-
 
 void LteScheduler::setEnbScheduler(LteSchedulerEnb* eNbScheduler)
 {
@@ -32,22 +26,39 @@ void LteScheduler::setEnbScheduler(LteSchedulerEnb* eNbScheduler)
 void LteScheduler::setCarrierFrequency(double carrierFrequency)
 {
     carrierFrequency_ = carrierFrequency;
+}
+
+void LteScheduler::initializeBandLimit()
+{
     bandLimit_ = mac_->getCellInfo()->getCarrierBandLimit(carrierFrequency_);
 
-    // === DEBUG === //
-    EV << "LteScheduler::setCarrierFrequency - Set Band Limit for this carrier: " << endl;
+    // initialize band limits to be used on each slot for retransmissions
+    // and grant requests
     BandLimitVector::iterator it = bandLimit_->begin();
     for (; it != bandLimit_->end(); ++it)
     {
-        EV << " - Band[" << it->band_ << "] limit[";
-        for (int cw=0; cw < it->limit_.size(); cw++)
-        {
-            EV << it->limit_[cw] << ", ";
-        }
-        EV << "]" << endl;
+        BandLimit elem; // TODO to be moved outside the for ?
+        elem.band_ = it->band_;
+        elem.limit_ = it->limit_;
+
+        slotRtxBandLimit_.push_back(elem);
+        slotReqGrantBandLimit_.push_back(elem);
     }
-    // === END DEBUG === //
+
+//    // === DEBUG === //
+//    EV << "LteScheduler::initializeBandLimit - Set Band Limit for this carrier: " << endl;
+//    for (it = bandLimit_->begin(); it != bandLimit_->end(); ++it)
+//    {
+//        EV << " - Band[" << it->band_ << "] limit[";
+//        for (unsigned int cw=0; cw < it->limit_.size(); cw++)
+//        {
+//            EV << it->limit_[cw] << ", ";
+//        }
+//        EV << "]" << endl;
+//    }
+//    // === END DEBUG === //
 }
+
 
 void LteScheduler::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
 {
@@ -69,22 +80,16 @@ unsigned int LteScheduler::decreaseSchedulerPeriodCounter()
 
 unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector* bandLim)
 {
-    BandLimitVector tempBandLimit;
-    tempBandLimit.clear();
     if (bandLim == NULL)
     {
-        // for each band of the band vector provided
-        BandLimitVector::iterator it = bandLimit_->begin();
-        for (; it != bandLimit_->end(); ++it)
+        // reset the band limit vector used for requesting grants
+        for (unsigned int i = 0; i < bandLimit_->size(); i++)
         {
-            BandLimit elem;
-            // copy the band
-            elem.band_ = it->band_;
-            elem.limit_ = it->limit_;
-
-            tempBandLimit.push_back(elem);
+            // copy the element
+            slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
+            slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
         }
-        bandLim = &tempBandLimit;
+        bandLim = &slotReqGrantBandLimit_;
     }
 
 //    // === DEBUG === //
@@ -106,21 +111,14 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 
 bool LteScheduler::scheduleRetransmissions()
 {
-    BandLimitVector tempBandLimit;
-
-    // for each band of the band vector provided
-    BandLimitVector::iterator it = bandLimit_->begin();
-    for (; it != bandLimit_->end(); ++it)
+    // reset the band limit vector used for retransmissions
+    for (unsigned int i = 0; i < bandLimit_->size(); i++)
     {
-        BandLimit elem;
-        // copy the band
-        elem.band_ = it->band_;
-        elem.limit_ = it->limit_;
-
-        tempBandLimit.push_back(elem);
+        // copy the element
+        slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
+        slotRtxBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
     }
-
-    return eNbScheduler_->rtxschedule(carrierFrequency_, &tempBandLimit);
+    return eNbScheduler_->rtxschedule(carrierFrequency_, &slotRtxBandLimit_);
 }
 
 void LteScheduler::scheduleRacRequests()

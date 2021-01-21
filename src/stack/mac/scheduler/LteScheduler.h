@@ -85,6 +85,12 @@ class LteScheduler
     //! Set of bands available for this carrier
     BandLimitVector* bandLimit_;
 
+    //! Set of bands available for this carrier for retransmissions (reset on every slot)
+    BandLimitVector slotRtxBandLimit_;
+
+    //! Set of bands available for this carrier for requesting grant (reset on every slot)
+    BandLimitVector slotReqGrantBandLimit_;
+
     /// Cid List
     typedef std::list<MacCid> CidList;
 
@@ -135,6 +141,11 @@ class LteScheduler
      * @param carrierFrequency carrier frequency
      */
     void setCarrierFrequency(double carrierFrequency);
+
+    /*
+     * Initializes band limit for this scheduler
+     */
+    void initializeBandLimit();
 
     /*
      * Set the period counter

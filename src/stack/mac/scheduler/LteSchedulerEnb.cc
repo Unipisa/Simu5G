@@ -72,6 +72,7 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
         newSched->setEnbScheduler(this);
         newSched->setCarrierFrequency(it->second.carrierFrequency);
         newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
+        newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
     }
 
