@@ -85,6 +85,8 @@ void LteAllocationModuleFrequencyReuse::storeAllocation( std::vector<std::vector
         }
         it_rbsB++;
     }
+
+    usedInLastSlot_ = true;
 }
 
 std::set<Band>  LteAllocationModuleFrequencyReuse::getAllocatorOccupiedBands()

@@ -34,6 +34,9 @@ class LteAllocationModule
     /// Operational Direction. Set via initialize().
     Direction dir_;
 
+    /// Flag that indicates when the data structures need to be reset in the next slot
+    bool usedInLastSlot_;
+
     /*
      * We will consider in the following two Planes
      *

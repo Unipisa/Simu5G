@@ -31,6 +31,7 @@ void NRMacGnb::initialize(int stage)
         if (enbSchedulerUl_ == NULL)
         {
             enbSchedulerUl_ = new NRSchedulerGnbUl();
+            (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this);
         }
     }

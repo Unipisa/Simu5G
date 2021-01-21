@@ -296,6 +296,7 @@ void LteMacEnb::initialize(int stage)
         if (enbSchedulerDl_ == nullptr)
         {
             enbSchedulerDl_ = new LteSchedulerEnbDl();
+            (enbSchedulerDl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerDl_->initialize(DL, this);
         }
 
@@ -303,6 +304,7 @@ void LteMacEnb::initialize(int stage)
         if (enbSchedulerUl_ == nullptr)
         {
             enbSchedulerUl_ = new LteSchedulerEnbUl();
+            (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this);
         }
     }
@@ -957,9 +959,6 @@ void LteMacEnb::handleSelfMessage()
     if (binder_->getLastUpdateUlTransmissionInfo() < NOW)  // once per TTI, even in case of multicell scenarios
         binder_->initAndResetUlTransmissionInfo();
 
-    //TODO enable sleep mode also for UPLINK???
-    (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
-
     enbSchedulerUl_->updateHarqDescs();
 
     std::map<double, LteMacScheduleList>* scheduleListUl = enbSchedulerUl_->schedule();
@@ -969,8 +968,6 @@ void LteMacEnb::handleSelfMessage()
 
     EV << "============================================ DOWNLINK ==============================================" << endl;
     /*DOWNLINK*/
-    // Set current available OFDM space
-    (enbSchedulerDl_->resourceBlocks()) = cellInfo_->getNumBands();
 
     // use this flag to enable/disable scheduling...don't look at me, this is very useful!!!
     bool activation = true;
