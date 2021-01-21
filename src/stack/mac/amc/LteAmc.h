@@ -120,8 +120,8 @@ class LteAmc
 
     void pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double carrierFrequency);
     void pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, double carrierFrequency);
-    LteSummaryFeedback getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency);
-    LteSummaryFeedback getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency);
+    const LteSummaryFeedback& getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency);
+    const LteSummaryFeedback& getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency);
 
     //used when is necessary to know if the requested feedback exists or not
     // LteSummaryFeedback getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir,bool& valid);

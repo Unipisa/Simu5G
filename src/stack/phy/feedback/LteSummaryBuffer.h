@@ -52,7 +52,7 @@ class LteSummaryBuffer
     }
 
     //! Get the current summary feedback
-    LteSummaryFeedback get() const
+    const LteSummaryFeedback& get() const
     {
         return cumulativeSummary_;
     }

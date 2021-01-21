@@ -33,7 +33,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
      *  Note: this pilot is not DAS aware, so only MACRO antenna
      *  is used.
      */
-    LteSummaryFeedback sfb = amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency);
+    const LteSummaryFeedback& sfb = amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency);
 
     if (TxMode(txMode)==MULTI_USER) // Initialize MuMiMoMatrix
     amc_->muMimoMatrixInit(dir,id);
@@ -239,7 +239,7 @@ std::vector<Cqi> AmcPilotAuto::getMultiBandCqi(MacNodeId id , const Direction di
      *  Note: this pilot is not DAS aware, so only MACRO antenna
      *  is used.
      */
-    LteSummaryFeedback sfb = amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency);
+    const LteSummaryFeedback& sfb = amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency);
 
     // get a vector of  CQI over first CW
     return sfb.getCqi(0);

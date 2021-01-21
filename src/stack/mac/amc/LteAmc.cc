@@ -509,7 +509,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
 }
 
 
-LteSummaryFeedback LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency)
+const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency)
 {
     MacNodeId nh = getNextHop(id);
     if (id != nh)
@@ -525,7 +525,7 @@ LteSummaryFeedback LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMo
     return (*history).at(antenna).at((*nodeIndex).at(id)).at(txMode).get();
 }
 
-LteSummaryFeedback LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency)
+const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency)
 {
     MacNodeId nh = getNextHop(id);
 
