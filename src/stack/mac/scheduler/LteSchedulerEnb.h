@@ -287,9 +287,14 @@ class LteSchedulerEnb
     void resourceBlockStatistics(bool sleep = false);
 
     /**
-     * Reset And Init the blocks-related structures allocation
+     * Initializes the blocks-related structures allocation
      */
-    void initAndResetAllocator();
+    void initializeAllocator();
+
+    /**
+     * Reset the blocks-related structures allocation
+     */
+    void resetAllocator();
 
     /**
      * Returns the available space for a given user, antenna, logical band and codeword, in bytes.

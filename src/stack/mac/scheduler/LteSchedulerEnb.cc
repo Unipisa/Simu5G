@@ -127,6 +127,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
     else
         allocator_ = new LteAllocationModule(mac_, direction_);
 
+    initializeAllocator();
+
     // Initialize statistics
     cellBlocksUtilizationDl_ = mac_->registerSignal("cellBlocksUtilizationDl");
     cellBlocksUtilizationUl_ = mac_->registerSignal("cellBlocksUtilizationUl");
@@ -153,7 +155,7 @@ std::map<double, LteMacScheduleList>* LteSchedulerEnb::schedule()
     allocatedCws_.clear();
 
     // clean the allocator
-    initAndResetAllocator();
+    resetAllocator();
     //reset AMC structures
     mac_->getAmc()->cleanAmcStructures(direction_,activeConnectionSet_);
 
@@ -664,11 +666,16 @@ unsigned int LteSchedulerEnb::readRbOccupation(const MacNodeId id, double carrie
  * OFDMA frame management
  */
 
-void LteSchedulerEnb::initAndResetAllocator()
+void LteSchedulerEnb::initializeAllocator()
 {
-    // initialize and reset the allocator
-    allocator_->initAndReset(resourceBlocks_,
-        mac_->getCellInfo()->getNumBands());
+    // initialize the allocator
+    allocator_->init(resourceBlocks_, mac_->getCellInfo()->getNumBands());
+}
+
+void LteSchedulerEnb::resetAllocator()
+{
+    // reset the allocator
+    allocator_->reset(resourceBlocks_, mac_->getCellInfo()->getNumBands());
 }
 
 unsigned int LteSchedulerEnb::availableBytes(const MacNodeId id,

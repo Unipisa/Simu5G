@@ -22,7 +22,7 @@ LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction)
     bands_ = 0;
 }
 
-void LteAllocationModule::initAndReset(const unsigned int resourceBlocks, const unsigned int bands)
+void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned int bands)
 {
     // clear the OFDMA available blocks and set available planes to 1 (just the main OFDMA space)
     totalRbsMatrix_.clear();
@@ -58,6 +58,71 @@ void LteAllocationModule::initAndReset(const unsigned int resourceBlocks, const 
     freeRbsMatrix_.at(MAIN_PLANE).resize(MACRO + 1);
     // initializes all free blocks for each band in the main plane, MACRO antenna.
     freeRbsMatrix_.at(MAIN_PLANE).at(MACRO).resize(bands_, 0);
+
+    // clear UE,LB Map
+    allocatedRbsUe_.clear();
+}
+
+void LteAllocationModule::reset(const unsigned int resourceBlocks, const unsigned int bands)
+{
+    std::vector<std::vector<unsigned int> >::iterator plane_it;
+    std::vector<unsigned int>::iterator antenna_it;
+
+    // initialize main OFDMA space
+    for (plane_it = totalRbsMatrix_.begin(); plane_it != totalRbsMatrix_.end(); ++plane_it)
+    {
+        for (antenna_it = plane_it->begin(); antenna_it != plane_it->end(); ++antenna_it)
+        {
+            (*antenna_it) = resourceBlocks;
+        }
+    }
+
+    // set the available antennas of MAIN plane to 1 (just MACRO antenna)
+    for (plane_it = allocatedRbsMatrix_.begin(); plane_it != allocatedRbsMatrix_.end(); ++plane_it)
+    {
+        for (antenna_it = plane_it->begin(); antenna_it != plane_it->end(); ++antenna_it)
+        {
+            (*antenna_it) = 0;
+        }
+    }
+
+    // clean and copy stored block-allocation info
+    prevAllocatedRbsPerBand_.clear();
+    prevAllocatedRbsPerBand_ = allocatedRbsPerBand_;
+
+    // clear and reinitialize the allocatedBlocks structures and set available planes to 1 (just the main OFDMA space)
+    std::vector<std::vector<AllocatedRbsPerBandMap> >::iterator plane_jt;
+    std::vector<AllocatedRbsPerBandMap>::iterator antenna_jt;
+    for (plane_jt = allocatedRbsPerBand_.begin(); plane_jt != allocatedRbsPerBand_.end(); ++plane_jt)
+    {
+        for (antenna_jt = plane_jt->begin(); antenna_jt != plane_jt->end(); ++antenna_jt)
+        {
+            AllocatedRbsPerBandMap &rbsPerBandMap = *antenna_jt;
+
+            AllocatedRbsPerBandMap::iterator map_it = rbsPerBandMap.begin(), map_et = rbsPerBandMap.end();
+            for (; map_it != map_et; ++map_it)
+            {
+                map_it->second.ueAllocatedBytesMap_.clear();
+                map_it->second.ueAllocatedRbsMap_.clear();
+                map_it->second.allocated_ = 0;
+            }
+        }
+    }
+
+    // clear and reinitialize the freeResourceBlocks vector and set available planes to 1 (just the main OFDMA space)
+    std::vector<std::vector<std::vector<unsigned int> > >::iterator plane_zt;
+    std::vector<std::vector<unsigned int> >::iterator antenna_zt;
+    std::vector<unsigned int>::iterator band_zt;
+    for (plane_zt = freeRbsMatrix_.begin(); plane_zt != freeRbsMatrix_.end(); ++plane_zt)
+    {
+        for (antenna_zt = plane_zt->begin(); antenna_zt != plane_zt->end(); ++antenna_zt)
+        {
+            for (band_zt = antenna_zt->begin(); band_zt != antenna_zt->end(); ++band_zt)
+            {
+                (*band_zt) = 0;
+            }
+        }
+    }
 
     // clear UE,LB Map
     allocatedRbsUe_.clear();

@@ -181,8 +181,11 @@ class LteAllocationModule
     /// Destructor.
     virtual ~LteAllocationModule() { };
 
+    // init Allocation Module strucutre
+    void init(const unsigned int resourceBlocks, const unsigned int bands);
+
     // reset Allocation Module strucutre
-    void initAndReset(const unsigned int resourceBlocks, const unsigned int bands);
+    void reset(const unsigned int resourceBlocks, const unsigned int bands);
 
     // ********* MUMimo Support *********
     // Configure MuMimo between "nodeId" and "peer"
