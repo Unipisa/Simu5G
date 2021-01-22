@@ -130,10 +130,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
     initializeAllocator();
 
     // Initialize statistics
-    cellBlocksUtilizationDl_ = mac_->registerSignal("cellBlocksUtilizationDl");
-    cellBlocksUtilizationUl_ = mac_->registerSignal("cellBlocksUtilizationUl");
-    lteAvgServedBlocksDl_ = mac_->registerSignal("avgServedBlocksDl");
-    lteAvgServedBlocksUl_ = mac_->registerSignal("avgServedBlocksUl");
+    avgServedBlocksDl_ = mac_->registerSignal("avgServedBlocksDl");
+    avgServedBlocksUl_ = mac_->registerSignal("avgServedBlocksUl");
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
@@ -745,10 +743,7 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     if (sleep)
     {
         if (direction_ == DL)
-        {
-            mac_->emit(cellBlocksUtilizationDl_, 0.0);
-            mac_->emit(lteAvgServedBlocksDl_, (long)0);
-        }
+            mac_->emit(avgServedBlocksDl_, (long)0);
         return;
     }
     // Get a reference to the begin and the end of the map which stores the blocks allocated
@@ -768,32 +763,17 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     // For each antenna (MACRO/RUs)
     for (; antennaIt != antennaItEnd; ++antennaIt)
     {
-        // collect the antenna utilization for current Layer
-        utilization += (double) (*antennaIt);
-
         allocatedBlocks += (double) (*antennaIt);
-
         antenna++;
     }
     plane++;
 
-    // antenna here is the number of antennas used; the same applies for plane;
-    // Compute average OFDMA utilization between layers and antennas
-    utilization /= (((double) (antenna)) * ((double) resourceBlocks_));
     if (direction_ == DL)
-    {
-        mac_->emit(cellBlocksUtilizationDl_, utilization);
-        mac_->emit(lteAvgServedBlocksDl_, allocatedBlocks);
-    }
+        mac_->emit(avgServedBlocksDl_, allocatedBlocks);
     else if (direction_ == UL)
-    {
-        mac_->emit(cellBlocksUtilizationUl_, utilization);
-        mac_->emit(lteAvgServedBlocksUl_, allocatedBlocks);
-    }
+        mac_->emit(avgServedBlocksUl_, allocatedBlocks);
     else
-    {
         throw cRuntimeError("LteSchedulerEnb::resourceBlockStatistics(): Unrecognized direction %d", direction_);
-    }
 }
 ActiveSet* LteSchedulerEnb::readActiveConnections()
 {
