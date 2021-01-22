@@ -48,8 +48,6 @@ class LteMacEnb : public LteMacBase
     LteSubFrameType currentSubFrameType_;
     //frame index in the mbsfn pattern
     int frameIndex_;
-    //number of resource block allcated in last tti
-    unsigned int lastTtiAllocatedRb_;
 
     /*******************************************************************************************/
     // Resource Elements per Rb

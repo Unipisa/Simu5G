@@ -52,7 +52,6 @@ LteMacEnb::LteMacEnb() :
     currentSubFrameType_ = NORMAL_FRAME_TYPE;
     nodeType_ = ENODEB;
     frameIndex_ = 0;
-    lastTtiAllocatedRb_ = 0;
     scheduleListDl_ = nullptr;
 }
 
@@ -1096,10 +1095,6 @@ ActiveSet* LteMacEnb::getActiveSet(Direction dir)
         return enbSchedulerDl_->readActiveConnections();
     else
         return enbSchedulerUl_->readActiveConnections();
-}
-void LteMacEnb::allocatedRB(unsigned int rb)
-{
-    lastTtiAllocatedRb_ = rb;
 }
 
 unsigned int LteMacEnb::getDlBandStatus(Band b)

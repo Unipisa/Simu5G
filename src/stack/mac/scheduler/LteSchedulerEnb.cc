@@ -762,16 +762,12 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     unsigned int plane = 0;
     unsigned int antenna = 0;
 
-
     std::vector<unsigned int>::const_iterator antennaIt = planeIt->begin();
     std::vector<unsigned int>::const_iterator antennaItEnd = planeIt->end();
 
     // For each antenna (MACRO/RUs)
     for (; antennaIt != antennaItEnd; ++antennaIt)
     {
-        if (plane == MAIN_PLANE && antenna == MACRO)
-            if (direction_ == DL)
-                mac_->allocatedRB(*antennaIt);
         // collect the antenna utilization for current Layer
         utilization += (double) (*antennaIt);
 

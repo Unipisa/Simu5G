@@ -52,8 +52,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
     try
     {
         EV << NOW << " NRSchedulerGnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
-        EV << NOW << " NRSchedulerGnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << endl;
-        EV << NOW << " NRSchedulerGnbUl::rtxschedule Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
+        EV << NOW << " NRSchedulerGnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << " - Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
         // retrieving reference to HARQ entities
         HarqRxBuffers* harqQueues = mac_->getHarqRxBuffers(carrierFrequency);
@@ -87,7 +86,6 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                 unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
 
                 EV << NOW << " NRSchedulerGnbUl::rtxschedule UE: " << nodeId << endl;
-                EV << NOW << " NRSchedulerGnbUl::rtxschedule Number of codewords: " << codewords << endl;
 
                 // get the number of HARQ processes
                 unsigned int process=0;
@@ -110,11 +108,9 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                         // skip processes which are not in rtx status
                         if (currProc->getUnitStatus(cw) != RXHARQ_PDU_CORRUPTED)
                         {
-                            EV << NOW << " NRSchedulerGnbUl::rtxschedule detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
+                            EV << NOW << " NRSchedulerGnbUl::rtxschedule UE " << nodeId << " - detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
                             continue;
                         }
-
-                        EV << NOW << " NRSchedulerGnbUl::rtxschedule detected RTX Acid: " << process << " codeword " << cw << endl;
 
                         unsigned int rtxBytes=0;
                         // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
@@ -127,7 +123,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                             allocatedBytes+=rtxBytes;
                         }
                     }
-                    EV << NOW << "NRSchedulerGnbUl::rtxschedule user " << nodeId << " allocated bytes : " << allocatedBytes << endl;
+                    EV << NOW << "NRSchedulerGnbUl::rtxschedule UE " << nodeId << " - allocated bytes : " << allocatedBytes << endl;
                 }
             }
         }
@@ -168,7 +164,6 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                     // TODO handle the codewords join case (size of(cw0+cw1) < currentTbs && currentLayers ==1)
 
                     EV << NOW << " NRSchedulerGnbUl::rtxschedule D2D TX UE: " << senderId << " - RX UE: " << destId <<endl;
-                    EV << NOW << " NRSchedulerGnbUl::rtxschedule Number of codewords: " << codewords << endl;
 
                     // get the number of HARQ processes
                     unsigned int process=0;
@@ -190,12 +185,9 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                             // skip processes which are not in rtx status
                             if (currProc->getUnitStatus(cw) != TXHARQ_PDU_BUFFERED)
                             {
-                                EV << NOW << " NRSchedulerGnbUl::rtxschedule detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
+                                EV << NOW << " NRSchedulerGnbUl::rtxschedule D2D UE: " << senderId << " detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
                                 continue;
                             }
-
-                            EV << NOW << " NRSchedulerGnbUl::rtxschedule detected RTX Acid: " << process << endl;
-
 
                             unsigned int rtxBytes=0;
                             // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
@@ -219,7 +211,6 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
         int availableBlocks = allocator_->computeTotalRbs();
 
         EV << NOW << " NRSchedulerGnbUl::rtxschedule residual OFDM Space: " << availableBlocks << endl;
-
         EV << NOW << " NRSchedulerGnbUl::rtxschedule --------------------::[  END RTX-SCHEDULE  ]::--------------------" << endl;
 
         return (availableBlocks == 0);

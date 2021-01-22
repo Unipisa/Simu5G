@@ -112,6 +112,7 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 bool LteScheduler::scheduleRetransmissions()
 {
     // reset the band limit vector used for retransmissions
+    // TODO do this only when it was actually used in previous slot
     for (unsigned int i = 0; i < bandLimit_->size(); i++)
     {
         // copy the element

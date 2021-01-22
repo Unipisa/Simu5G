@@ -147,8 +147,7 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
     try
     {
         EV << NOW << " LteSchedulerEnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
-        EV << NOW << " LteSchedulerEnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << endl;
-        EV << NOW << " LteSchedulerEnbUl::rtxschedule Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
+        EV << NOW << " LteSchedulerEnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
         if (harqRxBuffers_->find(carrierFrequency) != harqRxBuffers_->end())
         {
@@ -189,8 +188,6 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                 if (skip)
                     continue;
 
-                EV << NOW << "LteSchedulerEnbUl::rtxschedule UE: " << nodeId << "Acid: " << (unsigned int)currentAcid << endl;
-
                 // Get user transmission parameters
                 const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_,carrierFrequency);// get the user info
 
@@ -212,7 +209,7 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                         allocatedBytes+=rtxBytes;
                     }
                 }
-                EV << NOW << "LteSchedulerEnbUl::rtxschedule user " << nodeId << " allocated bytes : " << allocatedBytes << endl;
+                EV << NOW << "LteSchedulerEnbUl::rtxschedule UE " << nodeId << " allocated bytes : " << allocatedBytes << endl;
             }
         }
         if (mac_->isD2DCapable())
