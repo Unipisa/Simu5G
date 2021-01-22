@@ -44,11 +44,6 @@ class AmcPilotD2D : public AmcPilot
      * @return The user transmission parameters computed.
      */
     const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    //Used with TMS pilot
-    void updateActiveUsers(ActiveSet aUser, Direction dir)
-    {
-        return;
-    }
 
     void setPreconfiguredTxParams(Cqi cqi);
 

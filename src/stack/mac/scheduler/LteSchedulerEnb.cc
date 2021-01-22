@@ -156,8 +156,6 @@ std::map<double, LteMacScheduleList>* LteSchedulerEnb::schedule()
 
     // clean the allocator
     resetAllocator();
-    //reset AMC structures
-    mac_->getAmc()->cleanAmcStructures(direction_,activeConnectionSet_);
 
     // schedule one carrier at a time
     LteScheduler* scheduler = NULL;

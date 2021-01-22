@@ -48,11 +48,6 @@ class AmcPilotAuto : public AmcPilot
      * @return The user transmission parameters computed.
      */
     const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    //Used with TMS pilot
-    void updateActiveUsers(ActiveSet aUser, Direction dir)
-    {
-        return;
-    }
 
     /*
      * defines a subset of bands that will be used in AMC operation.

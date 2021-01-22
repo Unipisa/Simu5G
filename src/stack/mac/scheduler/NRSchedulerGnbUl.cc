@@ -83,6 +83,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                 // Get user transmission parameters
                 const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);// get the user info
                 // TODO SK Get the number of codewords - FIX with correct mapping
+                // TODO is there a way to get codewords without calling computeTxParams??
                 unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
 
                 EV << NOW << " NRSchedulerGnbUl::rtxschedule UE: " << nodeId << endl;

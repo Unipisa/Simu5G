@@ -462,13 +462,15 @@ void LteAmc::pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double ca
     EV << "index: " << index << endl;
     (*history)[antenna].at(index).at(txMode).put(fb);
 
+    // delete the old UserTxParam for this <UE_dir_carrierFreq>, so that it will be recomputed next time it's needed
+    std::map<double,std::vector<UserTxParams> > *txParams = (dir == DL) ? &dlTxParams_ : (dir == UL) ? &ulTxParams_ : throw cRuntimeError("LteAmc::pushFeedback(): Unrecognized direction");
+    if (txParams->find(carrierFrequency) != txParams->end() && txParams->at(carrierFrequency).at(index).isSet())
+        (*txParams)[carrierFrequency].at(index).restoreDefaultValues();
+
     // DEBUG
-//    printFbhb(dir);
     EV << "Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
     fb.print(0,id,dir,"LteAmc::pushFeedback");
-//    EV << "SUMMARY" << endl;
-//    (*history)[antenna].at(index).at(txMode).get().print(0,id,dir,txMode,"LteAmc::pushFeedback");
 }
 
 void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, double carrierFrequency)
@@ -501,6 +503,11 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
         (*history)[peerId] = newHist;
     }
     (*history)[peerId][antenna].at(index).at(txMode).put(fb);
+
+    // delete the old UserTxParam for this <UE_dir_carrierFreq>, so that it will be recomputed next time it's needed
+    if (d2dTxParams_.find(carrierFrequency) != d2dTxParams_.end() && d2dTxParams_.at(carrierFrequency).at(index).isSet())
+        d2dTxParams_[carrierFrequency].at(index).restoreDefaultValues();
+
 
     // DEBUG
     EV << "PeerId: " << peerId << ", Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
@@ -631,7 +638,6 @@ const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserT
         tmp.resize(connectedUe.size(), UserTxParams());
         (*txParams)[carrierFrequency] = tmp;
     }
-
     return (*txParams)[carrierFrequency].at(nodeIndex.at(id)) = info;
 }
 
@@ -657,60 +663,6 @@ const UserTxParams& LteAmc::computeTxParams(MacNodeId id, const Direction dir, d
     return info;
 }
 
-void LteAmc::cleanAmcStructures(Direction dir, ActiveSet aUser)
-{
-    EV << NOW << " LteAmc::cleanAmcStructures. Direction " << dirToA(dir) << endl;
-
-    //Convert from active cid to active users
-    //Update active user for TMS algorithms
-    pilot_->updateActiveUsers(aUser,dir);
-
-    std::map< double, std::vector<UserTxParams> >::iterator cit;
-    std::map< double, std::vector<UserTxParams> >::iterator cet;
-    std::vector<UserTxParams>::iterator it;
-    std::vector<UserTxParams>::iterator et;
-    if (dir == DL)
-    {
-        // clearing assignments
-        cit = dlTxParams_.begin();
-        cet = dlTxParams_.end();
-        for (; cit != cet; ++cit)
-        {
-            it = cit->second.begin();
-            et = cit->second.end();
-            for(; it != et; ++it)
-                it->restoreDefaultValues();
-        }
-    }
-    else if (dir == UL)
-    {
-        // clearing assignments
-        cit = ulTxParams_.begin();
-        cet = ulTxParams_.end();
-        for (; cit != cet; ++cit)
-        {
-            it = cit->second.begin();
-            et = cit->second.end();
-            for(; it != et; ++it)
-                it->restoreDefaultValues();
-        }
-
-        // clearing D2D assignments
-        cit = d2dTxParams_.begin();
-        cet = d2dTxParams_.end();
-        for (; cit != cet; ++cit)
-        {
-            it = cit->second.begin();
-            et = cit->second.end();
-            for(; it != et; ++it)
-                it->restoreDefaultValues();
-        }
-    }
-    else
-    {
-        throw cRuntimeError("LteAmc::cleanAmcStructures(): Unrecognized direction");
-    }
-}
 
 /*******************************************
  *      Scheduler interface functions      *

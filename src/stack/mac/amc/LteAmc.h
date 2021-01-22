@@ -143,7 +143,6 @@ class LteAmc
     const UserTxParams & getTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
     const UserTxParams & setTxParams(MacNodeId id, const Direction dir, UserTxParams & info, double carrierFrequency);
     const UserTxParams & computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    void cleanAmcStructures(Direction dir, ActiveSet aUser);
     virtual unsigned int computeReqRbs(MacNodeId id, Band b, Codeword cw, unsigned int bytes, const Direction dir, double carrierFrequency);
     virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
     virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
