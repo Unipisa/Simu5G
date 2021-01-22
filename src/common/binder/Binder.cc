@@ -353,8 +353,11 @@ void Binder::initAndResetUlTransmissionInfo()
     {
         double carrierFrequency = it->first;
         int numCarrierBands = componentCarriers_[carrierFrequency].numBands;
-        it->second[PREV_TTI] = it->second[CURR_TTI];
-        it->second[CURR_TTI].clear();
+
+        // the second element (i.e. referring to the old time slot) becomes the first element
+        it->second.erase(it->second.begin());
+        // push a new element (i.e. referring to the current time slot)
+        it->second.push_back(std::vector<std::vector<UeAllocationInfo> >());
         it->second[CURR_TTI].resize(numCarrierBands);
     }
     lastUpdateUplinkTransmissionInfo_ = NOW;
