@@ -67,7 +67,6 @@ void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned
 void LteAllocationModule::reset(const unsigned int resourceBlocks, const unsigned int bands)
 {
     // clean and copy stored block-allocation info
-    prevAllocatedRbsPerBand_.clear();
     prevAllocatedRbsPerBand_ = allocatedRbsPerBand_;
 
     // reset structures only if they were used in the previous time slot
