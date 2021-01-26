@@ -102,15 +102,7 @@ void LteAllocationModule::reset(const unsigned int resourceBlocks, const unsigne
         {
             for (antenna_jt = plane_jt->begin(); antenna_jt != plane_jt->end(); ++antenna_jt)
             {
-                AllocatedRbsPerBandMap &rbsPerBandMap = *antenna_jt;
-
-                AllocatedRbsPerBandMap::iterator map_it = rbsPerBandMap.begin(), map_et = rbsPerBandMap.end();
-                for (; map_it != map_et; ++map_it)
-                {
-                    map_it->second.ueAllocatedBytesMap_.clear();
-                    map_it->second.ueAllocatedRbsMap_.clear();
-                    map_it->second.allocated_ = 0;
-                }
+                antenna_jt->clear();
             }
         }
 
