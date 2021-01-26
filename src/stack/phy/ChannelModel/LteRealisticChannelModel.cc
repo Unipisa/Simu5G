@@ -1245,11 +1245,10 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
     *
     * thus the actual map should be choosen carefully (i.e. just check the cqiDL flag)
     */
-   JakesFadingMap * actualJakesMap;
+   JakesFadingMap* actualJakesMap;
 
    if (cqiDl) // if we are computing a DL CQI we need the Jakes Map stored on the UE side
        actualJakesMap = obtainUeJakesMap(nodeId);
-
    else
        actualJakesMap = &jakesFadingMap_;
 
@@ -1290,16 +1289,18 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
    double re_h = 0;
    double im_h = 0;
 
+   const JakesFadingData& actualJakesData = actualJakesMap->at(nodeId).at(band);
+
    // Compute Doppler shift.
    double doppler_shift = (speed * f) / SPEED_OF_LIGHT;
 
    for (int i = 0; i < fadingPaths_; i++)
    {
        // Phase shift due to Doppler => t-selectivity.
-       double phi_d = actualJakesMap->at(nodeId).at(band).angleOfArrival[i] * doppler_shift;
+       double phi_d = actualJakesData.angleOfArrival[i] * doppler_shift;
 
        // Phase shift due to delay spread => f-selectivity.
-       double phi_i = actualJakesMap->at(nodeId).at(band).delaySpread[i].dbl() * f;
+       double phi_i = actualJakesData.delaySpread[i].dbl() * f;
 
        // Calculate resulting phase due to t-selective and f-selective fading.
        double phi = 2.00 * M_PI * (phi_d * t.dbl() - phi_i);
