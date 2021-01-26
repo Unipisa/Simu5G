@@ -444,7 +444,7 @@ class Binder : public omnetpp::cSimpleModule
     omnetpp::simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
     void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase* phy, Direction dir);
-    const std::vector<UeAllocationInfo>* getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t, Band b);
+    const std::vector<std::vector<UeAllocationInfo> >* getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support
      */

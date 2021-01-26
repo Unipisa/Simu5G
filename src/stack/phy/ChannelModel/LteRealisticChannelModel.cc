@@ -2248,84 +2248,89 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
 {
    EV << "**** Uplink Interference for cellId[" << eNbId << "] node["<<senderId<<"] ****" << endl;
 
-
+   const std::vector<std::vector<UeAllocationInfo> >* ulTransmissionMap;
    const std::vector<UeAllocationInfo>* allocatedUes;
    std::vector<UeAllocationInfo>::const_iterator ue_it, ue_et;
 
    if(isCqi)// check slot occupation for this TTI
    {
-       for(unsigned int i=0;i<numBands_;i++)
+       ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
+       if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty())
        {
-           // get the set of UEs transmitting on the same carrier
-           allocatedUes = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI, i);
-           if (allocatedUes == NULL || allocatedUes->empty()) // no UEs allocated on this band
-               continue;
-
-           ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-           for (; ue_it != ue_et; ++ue_it)
+           for(unsigned int i=0;i<numBands_;i++)
            {
-               MacNodeId ueId = ue_it->nodeId;
-               MacCellId cellId = ue_it->cellId;
-               LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
-               Direction dir = ue_it->dir;
+               // get the set of UEs transmitting on the same band
+               allocatedUes = &(ulTransmissionMap->at(i));
 
-               // no self interference
-               if (ueId == senderId)
-                   continue;
+               ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
+               for (; ue_it != ue_et; ++ue_it)
+               {
+                   MacNodeId ueId = ue_it->nodeId;
+                   MacCellId cellId = ue_it->cellId;
+                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                   Direction dir = ue_it->dir;
 
-               // no interference from UL/D2D connections of the same cell  (no D2D-UL reuse allowed)
-               if (cellId == eNbId)
-                   continue;
+                   // no self interference
+                   if (ueId == senderId)
+                       continue;
 
-               EV<<NOW<<" LteRealisticChannelModel::computeUplinkInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
+                   // no interference from UL/D2D connections of the same cell  (no D2D-UL reuse allowed)
+                   if (cellId == eNbId)
+                       continue;
 
-               // get tx power and attenuation from this UE
-               double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-               double att = getAttenuation(ueId, UL, uePhy->getCoord());
-               (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   EV<<NOW<<" LteRealisticChannelModel::computeUplinkInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
-               EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   // get tx power and attenuation from this UE
+                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
+                   double att = getAttenuation(ueId, UL, uePhy->getCoord());
+                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+
+                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+               }
            }
        }
    }
    else // Error computation. We need to check the slot occupation of the previous TTI
    {
-       // For each band we have to check if the Band in the previous TTI was occupied by the interferringId
-       for(unsigned int i=0;i<numBands_;i++)
+       ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI);
+       if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty())
        {
-           // if we are decoding a data transmission and this RB has not been used, skip it
-           // TODO fix for multi-antenna case
-           if (rbmap.at(MACRO).at(i) == 0)
-               continue;
-
-           allocatedUes = binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI, i);
-           if (allocatedUes == NULL || allocatedUes->empty()) // no UEs allocated on this band
-               continue;
-
-           ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-           for (; ue_it != ue_et; ++ue_it)
+           // For each band we have to check if the Band in the previous TTI was occupied by the interferringId
+           for(unsigned int i=0;i<numBands_;i++)
            {
-               MacNodeId ueId = ue_it->nodeId;
-               MacCellId cellId = ue_it->cellId;
-               LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
-               Direction dir = ue_it->dir;
-
-               // no self interference
-               if (ueId == senderId)
+               // if we are decoding a data transmission and this RB has not been used, skip it
+               // TODO fix for multi-antenna case
+               if (rbmap.at(MACRO).at(i) == 0)
                    continue;
 
-               // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
-               if (cellId == eNbId)
-                   continue;
+               // get the set of UEs transmitting on the same band
+               allocatedUes = &(ulTransmissionMap->at(i));
 
-               EV<<NOW<<" LteRealisticChannelModel::computeUplinkInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
+               ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
+               for (; ue_it != ue_et; ++ue_it)
+               {
+                   MacNodeId ueId = ue_it->nodeId;
+                   MacCellId cellId = ue_it->cellId;
+                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                   Direction dir = ue_it->dir;
 
-               // get tx power and attenuation from this UE
-               double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-               double att = getAttenuation(ueId, UL, uePhy->getCoord());
-               (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   // no self interference
+                   if (ueId == senderId)
+                       continue;
 
-               EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
+                   if (cellId == eNbId)
+                       continue;
+
+                   EV<<NOW<<" LteRealisticChannelModel::computeUplinkInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
+
+                   // get tx power and attenuation from this UE
+                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
+                   double att = getAttenuation(ueId, UL, uePhy->getCoord());
+                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+
+                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+               }
            }
        }
    }
@@ -2346,91 +2351,92 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
    // get the reference to the MAC of the eNodeB
    LteMacEnbD2D* macEnb = check_and_cast<LteMacEnbD2D*>(binder_->getMacFromMacNodeId(eNbId));
 
+   const std::vector<std::vector<UeAllocationInfo> >* ulTransmissionMap;
    const std::vector<UeAllocationInfo>* allocatedUes;
    std::vector<UeAllocationInfo>::const_iterator ue_it, ue_et;
 
    if(isCqi)// check slot occupation for this TTI
    {
-       for(unsigned int i=0;i<numBands_;i++)
+       ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
+       if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty())
        {
-           // get the UEs transmitting on the same carrier
-           allocatedUes = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI, i);
-           if (allocatedUes == NULL || allocatedUes->empty()) // no UEs allocated on this band
-               continue;
-
-           ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-           for (; ue_it != ue_et; ++ue_it)
+           for(unsigned int i=0;i<numBands_;i++)
            {
-               MacNodeId ueId = ue_it->nodeId;
-               MacCellId cellId = ue_it->cellId;
-               LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
-               Direction dir = ue_it->dir;
+               // get the UEs transmitting on the same band
+               allocatedUes = &(ulTransmissionMap->at(i));
 
-               // no self interference
-               if (ueId == senderId || ueId == destId)
-                   continue;
+               ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
+               for (; ue_it != ue_et; ++ue_it)
+               {
+                   MacNodeId ueId = ue_it->nodeId;
+                   MacCellId cellId = ue_it->cellId;
+                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                   Direction dir = ue_it->dir;
 
-               // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
-               if (dir == UL && cellId == eNbId)
-                   continue;
+                   // no self interference
+                   if (ueId == senderId || ueId == destId)
+                       continue;
 
-               // no interference from D2D connections of the same cell when reuse is disabled (otherwise, computation of CQI is misleading)
-               if (cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()))
-                   continue;
+                   // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
+                   if (dir == UL && cellId == eNbId)
+                       continue;
 
-               EV<<NOW<<" LteRealisticChannelModel::computeD2DInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
+                   // no interference from D2D connections of the same cell when reuse is disabled (otherwise, computation of CQI is misleading)
+                   if (cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()))
+                       continue;
 
-               // get tx power and attenuation from this UE
-               double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + 2 * antennaGainUe_;
-               double att = getAttenuation_D2D(ueId, D2D, uePhy->getCoord(), destId, destCoord);
-               (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   EV<<NOW<<" LteRealisticChannelModel::computeD2DInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
-               EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   // get tx power and attenuation from this UE
+                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + 2 * antennaGainUe_;
+                   double att = getAttenuation_D2D(ueId, D2D, uePhy->getCoord(), destId, destCoord);
+                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+
+                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+               }
            }
        }
    }
    else // Error computation. We need to check the slot occupation of the previous TTI
    {
-       // For each band we have to check if the Band in the previous TTI was occupied by the interferringId
-       for(unsigned int i=0;i<numBands_;i++)
+       ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI);
+       if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty())
        {
-//           // if we are decoding a data transmission and this RB has not been used, skip it
-//           // TODO fix for multi-antenna case
-//           if (rbmap.at(MACRO).at(i) == 0)
-//               continue;
-
-           allocatedUes = binder_->getUlTransmissionMap(carrierFrequency, PREV_TTI, i);
-           if (allocatedUes == NULL || allocatedUes->empty()) // no UEs allocated on this band
-               continue;
-
-           ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-           for (; ue_it != ue_et; ++ue_it)
+           // For each band we have to check if the Band in the previous TTI was occupied by the interferringId
+           for(unsigned int i=0;i<numBands_;i++)
            {
-               MacNodeId ueId = ue_it->nodeId;
-               MacCellId cellId = ue_it->cellId;
-               LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
-               Direction dir = ue_it->dir;
+               // get the UEs transmitting on the same band
+               allocatedUes = &(ulTransmissionMap->at(i));
 
-               // no self interference
-               if (ueId == senderId || ueId == destId)
-                   continue;
+               ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
+               for (; ue_it != ue_et; ++ue_it)
+               {
+                   MacNodeId ueId = ue_it->nodeId;
+                   MacCellId cellId = ue_it->cellId;
+                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                   Direction dir = ue_it->dir;
 
-               // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
-               if (dir == UL && cellId == eNbId)
-                   continue;
+                   // no self interference
+                   if (ueId == senderId || ueId == destId)
+                       continue;
 
-               // no interference from D2D connections of the same cell when reuse is disabled
-               if (cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()))
-                   continue;
+                   // no interference from UL connections of the same cell (no D2D-UL reuse allowed)
+                   if (dir == UL && cellId == eNbId)
+                       continue;
 
-               EV<<NOW<<" LteRealisticChannelModel::computeD2DInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
+                   // no interference from D2D connections of the same cell when reuse is disabled
+                   if (cellId == eNbId && (!macEnb->isReuseD2DEnabled() && !macEnb->isReuseD2DMultiEnabled()))
+                       continue;
 
-               // get tx power and attenuation from this UE
-               double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + 2 * antennaGainUe_;
-               double att = getAttenuation_D2D(ueId, D2D, uePhy->getCoord(), destId, destCoord);
-               (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   EV<<NOW<<" LteRealisticChannelModel::computeD2DInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
-               EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   // get tx power and attenuation from this UE
+                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + 2 * antennaGainUe_;
+                   double att = getAttenuation_D2D(ueId, D2D, uePhy->getCoord(), destId, destCoord);
+                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+
+                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+               }
            }
        }
    }
