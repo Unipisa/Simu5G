@@ -45,10 +45,6 @@ bool NRSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carri
 
 bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim)
 {
-    // try to handle RAC requests first and abort rtx scheduling if no OFDMA space is left after
-    if (racschedule(carrierFrequency))
-        return true;
-
     try
     {
         EV << NOW << " NRSchedulerGnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
@@ -112,6 +108,8 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                             continue;
                         }
 
+                        // if the process is in CORRUPTED state, then schedule a retransmission for this process
+
                         unsigned int rtxBytes=0;
                         // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
 
@@ -121,11 +119,13 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                         {
                             --codewords;
                             allocatedBytes+=rtxBytes;
+
+                            check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(carrierFrequency, nodeId, UL, false);
                         }
                     }
                     EV << NOW << "NRSchedulerGnbUl::rtxschedule UE " << nodeId << " - allocated bytes : " << allocatedBytes << endl;
-                }
-            }
+                 }
+             }
         }
         if (mac_->isD2DCapable())
         {
@@ -198,6 +198,8 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                             {
                                 --codewords;
                                 allocatedBytes+=rtxBytes;
+
+                                check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(carrierFrequency, senderId, D2D, false);
                             }
                         }
                         EV << NOW << " NRSchedulerGnbUl::rtxschedule - D2D UE: " << senderId << " allocated bytes : " << allocatedBytes << endl;

@@ -78,11 +78,9 @@ LteSchedulerEnbUl::updateHarqDescs()
 bool LteSchedulerEnbUl::racschedule(double carrierFrequency)
 {
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[ START RAC-SCHEDULE ]::--------------------" << endl;
-    EV << NOW << " LteSchedulerEnbUl::racschedule eNodeB: " << mac_->getMacCellId() << endl;
-    EV << NOW << " LteSchedulerEnbUl::racschedule Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
+    EV << NOW << " LteSchedulerEnbUl::racschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
     RacStatus::iterator it=racStatus_.begin() , et=racStatus_.end();
-
     for (;it!=et;++it)
     {
         // get current nodeId
@@ -140,14 +138,11 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency)
 bool
 LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim)
 {
-    // try to handle RAC requests first and abort rtx scheduling if no OFDMA space is left after
-    if (racschedule(carrierFrequency))
-        return true;
-
     try
     {
         EV << NOW << " LteSchedulerEnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
         EV << NOW << " LteSchedulerEnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
+
 
         if (harqRxBuffers_->find(carrierFrequency) != harqRxBuffers_->end())
         {
@@ -207,6 +202,8 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     {
                         --codewords;
                         allocatedBytes+=rtxBytes;
+
+                        check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(nodeId, carrierFrequency, UL, false);
                     }
                 }
                 EV << NOW << "LteSchedulerEnbUl::rtxschedule UE " << nodeId << " allocated bytes : " << allocatedBytes << endl;
@@ -282,6 +279,8 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                         {
                             --codewords;
                             allocatedBytes+=rtxBytes;
+
+                            check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(senderId, carrierFrequency, D2D, false);
                         }
                     }
                     EV << NOW << " LteSchedulerEnbUl::rtxschedule - D2D UE: " << senderId << " allocated bytes : " << allocatedBytes << endl;
@@ -334,12 +333,12 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
                 {
                     if( allowedBands.find(elem.band_)!= allowedBands.end() )
                     {
-                        EV << "\t" << i << " " << "yes" << endl;
+//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j]=-1;
                     }
                     else
                     {
-                        EV << "\t" << i << " " << "no" << endl;
+//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j]=-2;
                     }
                 }
@@ -361,12 +360,12 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
                     if (allowedBands.find(elem.band_)!= allowedBands.end() )
                     {
-                        EV << "\t" << i << " " << "yes" << endl;
+//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j]=-1;
                     }
                     else
                     {
-                        EV << "\t" << i << " " << "no" << endl;
+//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j]=-2;
                     }
                 }

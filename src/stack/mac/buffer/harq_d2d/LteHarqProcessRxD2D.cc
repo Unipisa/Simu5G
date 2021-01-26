@@ -11,6 +11,7 @@
 
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessRxD2D.h"
 #include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/layer/LteMacEnb.h"
 #include "common/LteControlInfo.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/packet/LteMacPdu.h"
@@ -30,8 +31,6 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
 {
     if (!isEvaluated(cw))
         throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
-
-
 
     Packet *pkt = nullptr;
     
@@ -82,6 +81,13 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
                 // purge PDU
                 purgeCorruptedPdu(cw);
                 resetCodeword(cw);
+            }
+            else {
+                if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
+                {
+                    // signal the MAC the need for retransmission
+                    check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
+                }
             }
         }
     }

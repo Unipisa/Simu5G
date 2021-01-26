@@ -78,12 +78,12 @@ LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
             {
                 if( allowedBands.find(elem.band_)!= allowedBands.end() )
                 {
-                    EV << "\t" << i << " " << "yes" << endl;
+//                    EV << "\t" << i << " " << "yes" << endl;
                     elem.limit_[j]=-1;
                 }
                 else
                 {
-                    EV << "\t" << i << " " << "no" << endl;
+//                    EV << "\t" << i << " " << "no" << endl;
                     elem.limit_[j]=-2;
                 }
             }
@@ -104,12 +104,12 @@ LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
                 if (allowedBands.find(elem.band_)!= allowedBands.end() )
                 {
-                    EV << "\t" << i << " " << "yes" << endl;
+//                    EV << "\t" << i << " " << "yes" << endl;
                     elem.limit_[j]=-1;
                 }
                 else
                 {
-                    EV << "\t" << i << " " << "no" << endl;
+//                    EV << "\t" << i << " " << "no" << endl;
                     elem.limit_[j]=-2;
                 }
             }
@@ -306,8 +306,7 @@ bool
 LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim)
 {
     EV << NOW << " LteSchedulerEnbDl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
-    EV << NOW << " LteSchedulerEnbDl::rtxschedule Cell:  " << mac_->getMacCellId() << endl;
-    EV << NOW << " LteSchedulerEnbDl::rtxschedule Direction: " << (direction_ == DL ? "DL" : "UL") << endl;
+    EV << NOW << " LteSchedulerEnbDl::rtxschedule Cell:  " << mac_->getMacCellId() << " Direction: " << (direction_ == DL ? "DL" : "UL") << endl;
 
     // retrieving reference to HARQ entities
     HarqTxBuffers* harqQueues = mac_->getHarqTxBuffers(carrierFrequency);
@@ -342,8 +341,6 @@ LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
             unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
 
             EV << NOW << " LteSchedulerEnbDl::rtxschedule  UE: " << nodeId << endl;
-            EV << NOW << " LteSchedulerEnbDl::rtxschedule Number of codewords: " << codewords << endl;
-
             // get the number of HARQ processes
             unsigned int process=0;
             unsigned int maxProcesses = currHarq->getNumProcesses();
@@ -360,7 +357,6 @@ LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     if (allocatedCws_[nodeId]==codewords)
                         break;
                     EV << NOW << " LteSchedulerEnbDl::rtxschedule process " << process << endl;
-                    EV << NOW << " LteSchedulerEnbDl::rtxschedule ------- CODEWORD " << cw << endl;
 
                     // skip processes which are not in rtx status
                     if (currProc->getUnitStatus(cw) != TXHARQ_PDU_BUFFERED)
@@ -369,7 +365,6 @@ LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                         continue;
                     }
 
-                    EV << NOW << " LteSchedulerEnbDl::rtxschedule " << endl;
                     EV << NOW << " LteSchedulerEnbDl::rtxschedule detected RTX Acid: " << process << endl;
 
                     // Get the bandLimit for the current user
@@ -386,6 +381,9 @@ LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     if(bytes > 0)
                     {
                         EV << NOW << " LteSchedulerEnbDl::rtxschedule CODEWORD IS NOW BUSY!!!" << endl;
+
+                        check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(nodeId, carrierFrequency, DL, false);
+
                         // do not process this HARQ process anymore
                         // go to next codeword
                         break;

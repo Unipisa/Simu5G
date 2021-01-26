@@ -111,6 +111,12 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 
 bool LteScheduler::scheduleRetransmissions()
 {
+    // optimization: do not call rtxschedule if no process is ready for rtx for this carrier
+    if (eNbScheduler_->direction_ == DL && mac_->getProcessForRtx(carrierFrequency_, DL) == 0)
+        return false;
+    if (eNbScheduler_->direction_ == UL && mac_->getProcessForRtx(carrierFrequency_, UL) == 0 && mac_->getProcessForRtx(carrierFrequency_, D2D) == 0)
+        return false;
+
     // reset the band limit vector used for retransmissions
     // TODO do this only when it was actually used in previous slot
     for (unsigned int i = 0; i < bandLimit_->size(); i++)
@@ -122,14 +128,9 @@ bool LteScheduler::scheduleRetransmissions()
     return eNbScheduler_->rtxschedule(carrierFrequency_, &slotRtxBandLimit_);
 }
 
-void LteScheduler::scheduleRacRequests()
+bool LteScheduler::scheduleRacRequests()
 {
-    //return (dynamic_cast<LteSchedulerEnbUl*>(eNbScheduler_))->serveRacs();
-}
-
-void LteScheduler::requestRacGrant(MacNodeId nodeId)
-{
-    //return (dynamic_cast<LteSchedulerEnbUl*>(eNbScheduler_))->racGrantEnb(nodeId);
+    return eNbScheduler_->racschedule(carrierFrequency_);
 }
 
 void LteScheduler::schedule()

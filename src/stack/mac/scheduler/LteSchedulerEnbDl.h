@@ -41,6 +41,8 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      */
     bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency);
 
+    virtual bool racschedule(double carrierFrequency) { return false; }
+
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.

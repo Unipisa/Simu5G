@@ -14,6 +14,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 /*
  * LteHarqProcessMirrorD2D stores the status of one H-ARQ "mirror" process
@@ -36,10 +37,13 @@ class LteHarqProcessMirrorD2D
     // max number of transmissions
     unsigned char maxTransmissions_;
 
+    // reference to the MAC module
+    LteMacEnb* macOwner_;
+
   public:
 
-    LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char numTransmissions);
-    void storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, Codeword cw);
+    LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char numTransmissions, LteMacEnb* macOwner);
+    void storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, MacNodeId d2dSenderId, double carrierFrequency, Codeword cw);
     std::vector<TxHarqPduStatus>& getProcessStatus() { return status_; }
     TxHarqPduStatus getUnitStatus(Codeword cw) { return status_[cw]; }
     void markSelected(Codeword cw) { status_[cw] = TXHARQ_PDU_SELECTED; }

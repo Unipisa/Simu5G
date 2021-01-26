@@ -11,20 +11,21 @@
 
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
 
-LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions)
+LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb* macOwner)
 {
     numUnits_ = numUnits;
     maxTransmissions_ = maxTransmissions;
     status_.resize(numUnits, TXHARQ_PDU_EMPTY);
     pduLength_.resize(numUnits, 0);
     transmissions_.resize(numUnits, 0);
+    macOwner_ = macOwner;
 }
 
 LteHarqProcessMirrorD2D::~LteHarqProcessMirrorD2D()
 {
 }
 
-void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, Codeword cw)
+void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, MacNodeId d2dSenderId, double carrierFrequency, Codeword cw)
 {
     pduLength_[cw] = pduLength;
     transmissions_[cw]++;
@@ -46,6 +47,9 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
         {
             // pdu_ ready for next transmission
             status_[cw] = TXHARQ_PDU_BUFFERED;
+
+            // signal the MAC the need for retransmission
+            omnetpp::check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
         }
     }
 }

@@ -16,6 +16,7 @@
 #include "common/LteCommon.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 /*
  * LteHarqBufferMirrorD2D represents a "copy" of the H-ARQ TX buffers of
@@ -34,6 +35,9 @@ class LteHarqBufferMirrorD2D
     /// processes vector
     std::vector<LteHarqProcessMirrorD2D*> processes_;
 
+    // reference to the MAC module
+    LteMacEnb* macOwner_;
+
   public:
 
     /**
@@ -43,7 +47,7 @@ class LteHarqBufferMirrorD2D
      * @param owner simple module instantiating an H-ARQ TX buffer
      * @param nodeId UE nodeId for which this buffer has been created
      */
-    LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx);
+    LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb* macOwner);
 
     /**
      * Manages H-ARQ feedback sent to a certain H-ARQ unit and checks if

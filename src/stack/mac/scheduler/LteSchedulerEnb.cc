@@ -170,11 +170,11 @@ std::map<double, LteMacScheduleList>* LteSchedulerEnb::schedule()
             continue;
         }
 
-        // scheduling of retransmission and transmission
-        EV << "___________________________start RTX __________________________________" << endl;
-        if(!(scheduler->scheduleRetransmissions()))
+        // scheduling of rac requests, retransmissions and transmissions
+        EV << "________________________start RAC+RTX _______________________________" << endl;
+        if ( !(scheduler->scheduleRacRequests()) && !(scheduler->scheduleRetransmissions()) )
         {
-            EV << "____________________________ end RTX __________________________________" << endl;
+            EV << "___________________________end RAC+RTX ________________________________" << endl;
             EV << "___________________________start SCHED ________________________________" << endl;
             scheduler->updateSchedulingInfo();
             scheduler->schedule();

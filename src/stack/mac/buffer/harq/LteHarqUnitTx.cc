@@ -173,7 +173,7 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
     short unsigned int dir = lteInfo->getDirection();
     unsigned int ntx = transmissions_;
     if (!(status_ == TXHARQ_PDU_WAITING))
-    throw cRuntimeError("Feedback sent to an H-ARQ unit not waiting for it");
+        throw cRuntimeError("Feedback sent to an H-ARQ unit not waiting for it");
 
     if (a == HARQACK)
     {
@@ -190,8 +190,7 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
         {
             // discard
             EV << NOW << " LteHarqUnitTx::pduFeedback H-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
-               << pdu_->getId() << " discarded "
-            "(max retransmissions reached) : " << maxHarqRtx_ << endl;
+               << pdu_->getId() << " discarded (max retransmissions reached) : " << maxHarqRtx_ << endl;
             resetUnit();
             reset = true;
         }
@@ -202,6 +201,12 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
             status_ = TXHARQ_PDU_BUFFERED;
             EV << NOW << " LteHarqUnitTx::pduFeedbackH-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
                << pdu_->getId() << " set for RTX " << endl;
+
+            if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
+            {
+                // signal the MAC the need for retransmission
+                check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(lteInfo->getDestId(), lteInfo->getCarrierFrequency(), (Direction)lteInfo->getDirection());
+            }
         }
     }
     else

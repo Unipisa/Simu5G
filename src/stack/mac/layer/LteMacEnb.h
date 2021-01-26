@@ -21,6 +21,7 @@ class MacBsr;
 class LteSchedulerEnbDl;
 class LteSchedulerEnbUl;
 class ConflictGraph;
+class LteHarqProcessRx;
 
 class LteMacEnb : public LteMacBase
 {
@@ -64,6 +65,11 @@ class LteMacEnb : public LteMacBase
 
     /// Lte Mac Scheduler - Uplink
     LteSchedulerEnbUl* enbSchedulerUl_;
+
+    /// Maps to keep track of nodes that need a retransmission to be scheduled
+    std::map<double, int> needRtxDl_;
+    std::map<double, int> needRtxUl_;
+    std::map<double, int> needRtxD2D_;
 
     /**
      * Reads MAC parameters for eNb and performs initialization.
@@ -296,6 +302,16 @@ class LteMacEnb : public LteMacBase
      * @par direction
      */
     ActiveSet* getActiveSet(Direction dir);
+
+    /*
+     * Inform the base station that the given node will need a retransmission
+     */
+    virtual void signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, Direction dir, bool rtx = true);
+
+    /*
+     * Get the number of nodes requesting retransmissions for the given carrier
+     */
+    virtual int getProcessForRtx(double carrierFrequency, Direction dir);
 
     void cqiStatistics(MacNodeId id, Direction dir, LteFeedback fb);
 

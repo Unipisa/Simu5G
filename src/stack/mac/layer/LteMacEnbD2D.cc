@@ -603,7 +603,7 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
                 return;
 
             // create buffer
-            LteHarqBufferMirrorD2D* hb = new LteHarqBufferMirrorD2D((unsigned int) UE_TX_HARQ_PROCESSES, (unsigned char)par("maxHarqRtx"));
+            LteHarqBufferMirrorD2D* hb = new LteHarqBufferMirrorD2D((unsigned int) UE_TX_HARQ_PROCESSES, (unsigned char)par("maxHarqRtx"), this);
             harqBuffersMirrorD2D_[carrierFrequency][pair] = hb;
             hb->receiveHarqFeedback(pkt);
         }

@@ -1013,6 +1013,39 @@ void LteMacEnb::handleSelfMessage()
     EV << "--- END ENB MAIN LOOP ---" << endl;
 }
 
+void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, Direction dir, bool rtx)
+{
+    std::map<double, int>* needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
+            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("NRMacGnb::signalProcessForRtx - direction %d not valid\n", dir);
+
+    if (needRtx->find(carrierFrequency) == needRtx->end())
+    {
+        if (!rtx)
+            return;
+
+        std::pair<double,int> p(carrierFrequency, 0);
+        needRtx->insert(p);
+    }
+
+    if (!rtx)
+        (*needRtx)[carrierFrequency]--;
+    else
+        (*needRtx)[carrierFrequency]++;
+}
+
+int LteMacEnb::getProcessForRtx(double carrierFrequency, Direction dir)
+{
+    std::map<double, int>* needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
+            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("NRMacGnb::getProcessForRtx - direction %d not valid\n", dir);
+
+    if (needRtx->find(carrierFrequency) == needRtx->end())
+        return 0;
+
+    return needRtx->at(carrierFrequency);
+}
+
+
+
 void LteMacEnb::flushHarqBuffers()
 {
     std::map<double, HarqTxBuffers>::iterator mit = harqTxBuffers_.begin();

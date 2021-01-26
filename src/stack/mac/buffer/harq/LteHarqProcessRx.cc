@@ -11,6 +11,7 @@
 
 #include "stack/mac/buffer/harq/LteHarqProcessRx.h"
 #include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/layer/LteMacEnb.h"
 #include "common/LteControlInfo.h"
 #include "common/binder/Binder.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
@@ -121,6 +122,13 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
             // purge PDU
             purgeCorruptedPdu(cw);
             resetCodeword(cw);
+        }
+        else {
+            if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
+            {
+                // signal the MAC the need for retransmission
+                check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
+            }
         }
     }
     else
