@@ -79,6 +79,8 @@ class Binder : public omnetpp::cSimpleModule
     UplinkTransmissionMap ulTransmissionMap_;
     // TTI of the last update of the UL band status
     omnetpp::simtime_t lastUpdateUplinkTransmissionInfo_;
+    // TTI of the last UL transmission (used for optimization purposes, see initAndResetUlTransmissionInfo() )
+    omnetpp::simtime_t lastUplinkTransmission_;
 
     /*
      * X2 Support
@@ -125,6 +127,8 @@ class Binder : public omnetpp::cSimpleModule
         macNodeIdCounter_[2] = NR_UE_MIN_ID;
 
         totalBands_ = 0;
+        lastUpdateUplinkTransmissionInfo_ = 0.0;
+        lastUplinkTransmission_ = 0.0;
     }
 
     unsigned int getTotalBands()

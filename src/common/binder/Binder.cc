@@ -348,6 +348,13 @@ simtime_t Binder::getLastUpdateUlTransmissionInfo()
 
 void Binder::initAndResetUlTransmissionInfo()
 {
+    if (lastUplinkTransmission_ < NOW - 2*TTI)
+    {
+        // data structures have not been used in the last 2 time slots,
+        // so they do not need to be updated.
+        return;
+    }
+
     UplinkTransmissionMap::iterator it = ulTransmissionMap_.begin();
     for (; it != ulTransmissionMap_.end(); ++it)
     {
@@ -387,6 +394,8 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
         if (it->second > 0)
             ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
     }
+
+    lastUplinkTransmission_ = NOW;
 }
 
 const std::vector<UeAllocationInfo>* Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t, Band b)
