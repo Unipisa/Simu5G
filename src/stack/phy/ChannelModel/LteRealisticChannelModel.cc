@@ -2095,16 +2095,24 @@ double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId n
 
 LteRealisticChannelModel::JakesFadingMap * LteRealisticChannelModel::obtainUeJakesMap(MacNodeId id)
 {
-   // obtain a reference to UE phy
-   LtePhyBase * ltePhy;
-   if (isNrUe(id))
-       ltePhy = check_and_cast<LtePhyBase*>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("nrPhy"));
-   else
-       ltePhy = check_and_cast<LtePhyBase*>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
+    // obtain a reference to UE phy
+    LtePhyBase * phy;
+
+    std::vector<UeInfo*>* ueList = binder_->getUeList();
+    std::vector<UeInfo*>::iterator it;
+    for (it = ueList->begin(); it != ueList->end(); ++it)
+    {
+       UeInfo* ueInfo = *it;
+       if (ueInfo->id == id)
+       {
+           phy = ueInfo->phy;
+           break;
+       }
+    }
 
    // get the associated channel and get a reference to its Jakes Map
    JakesFadingMap *j;
-   LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(ltePhy->getChannelModel(carrierFrequency_));
+   LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
    if (re == NULL)
        throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer. Abort.");
    else
