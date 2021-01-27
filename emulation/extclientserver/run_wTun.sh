@@ -1,6 +1,7 @@
 #!/bin/bash
 # make sure you run '. setenv' in the Simu5G root directory before running this script
 
+
 # create tun devices
 sudo ip tuntap add mode tun dev tun0
 sudo ip tuntap add mode tun dev tun1
@@ -22,7 +23,7 @@ echo "Setting up TUN interfaces and IP routes..."
 sleep 5
 
 # run simulation
-simu5g -u Cmdenv -c ExtClientServer
+simu5g -u Cmdenv -c ExtClientServer_Tun
 
 # destroy tun devices
 sudo ip link del tun0

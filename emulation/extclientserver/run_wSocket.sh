@@ -25,7 +25,7 @@ sudo route add -net 10.0.3.0 netmask 255.255.255.0 dev veth1     # enables backw
 sudo ethtool --offload veth1 rx off tx off # disable TCP checksum offloading to make sure that TCP checksum is actually calculated
 
 # run simulation
-simu5g -u Cmdenv -c ExtClientServer
+simu5g -u Cmdenv -c ExtClientServer_Socket
 
 # destroy virtual ethernet link
 sudo ip link del veth0

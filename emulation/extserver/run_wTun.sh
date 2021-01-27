@@ -14,7 +14,7 @@ sudo ip addr add 10.0.2.1/24 dev tun0
 sudo route add -net 10.0.0.0 netmask 255.255.255.0 dev tun0 
 
 # run simulation
-simu5g -u Cmdenv -c Downlink_and_Uplink
+simu5g -u Cmdenv -c ExtServer_Tun
 
 # destroy tun
 sudo ip link del tun0
