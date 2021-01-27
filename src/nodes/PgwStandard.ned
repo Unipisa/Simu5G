@@ -31,6 +31,7 @@ module PgwStandard extends NetworkLayerNodeBase
         @figure[submodules];
             
         string nodeType = "PGW"; 
+
         forwarding = default(true);
         multicastForwarding = default(false);
         // numPppInterfaces = 1;

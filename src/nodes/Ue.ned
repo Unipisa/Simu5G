@@ -16,6 +16,7 @@ import inet.applications.contract.IApp;
 import inet.common.packet.recorder.PcapRecorder;
 import inet.mobility.contract.IMobility;
 import inet.linklayer.contract.IEthernetInterface;
+import inet.linklayer.contract.ILoopbackInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
 import inet.networklayer.contract.IRoutingTable;
@@ -73,10 +74,14 @@ module Ue
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default("^.ipv4.routingTable");
 
-        //# Ext Interface
+        //# External Ethernet interfaces
         int numEthInterfaces = default(0);
         string extHostAddress = default("");
 
+        //# Loopback interfaces
+        int numLoInterfaces = default(1);
+        
+        //# Num of PcapRecorders
         int numPcapRecorders = default(0); // no of PcapRecorders
 
     gates:
@@ -89,9 +94,13 @@ module Ue
         mobility: <mobilityType> like IMobility {
             @display("p=127.368004,172.26001;is=s");
         }
+        
+        //# app layer 
         app[numApps]: <> like IApp {
             @display("p=374.47998,72.479996,row,140");
         }
+        
+        //# transport layer 
         udp: <default(firstAvailableOrEmpty("Udp"))> like IUdp if hasUdp {
             parameters:
                 @display("p=375,226");
@@ -104,7 +113,8 @@ module Ue
             parameters:
                 @display("p=675,226");
         }
-        // network layer
+        
+        //# network layer
         ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
             parameters:
                 @display("p=375,376;q=queue");
@@ -113,43 +123,43 @@ module Ue
             parameters:
                 @display("p=525,376;q=queue");
         }
+       
+        //# link layer 
+        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
+            parameters:
+                @display("p=524.272,521.856,row,150");
+        }
         cellularNic: <nicType> like ICellularNic {
             nodeType = nodeType;
-            //d2dCapable = d2dCapable;
             @display("p=374.47998,523.06396");
         }
-        // message dispatcher for SAP between application and transport layer
+        // ethernet interface used for communicating with external applications in emulation mode
+        eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=693.39197,521.856,row,150;q=txQueue");
+        }
+        
+        //# message dispatcher for SAP between application and transport layer
         at: MessageDispatcher {
             parameters:
                 @display("p=550,146;b=600,5,,,,1");
         }
-        // message dispatcher for SAP between transport and network layer
+        //# message dispatcher for SAP between transport and network layer
         tn: MessageDispatcher {
             parameters:
                 @display("p=550,296;b=600,5,,,,1");
         }
-        // message dispatcher for SAP to link layer
+        //# message dispatcher for SAP to link layer
         nl: MessageDispatcher {
             parameters:
                 @display("p=550,446;b=600,5,,,,1");
         }
-
-        // ethernet interface used for communicating with external applications
-        // in emulation mode
-        eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
-            parameters:
-                @display("p=674.06396,521.856,row,150;q=txQueue");
-        }
-
+        //# PcapRecorders
         pcapRecorder[numPcapRecorders]: PcapRecorder {
             @display("p=126.84,346.69598,r,10");
         }
+        
     connections allowunconnected:
-        //# LTE Nic 
-        cellularNic.radioIn <-- radioIn;
-
-        cellularNic.upperLayerOut --> nl.in++;
-        cellularNic.upperLayerIn <-- nl.out++;
 
         //# 
         //# Internal Tcp/Udp applications connections with transport layer
@@ -198,10 +208,24 @@ module Ue
         tn.in++ <-- nl.out++;
 
         //#
-        //# Connections between eth interfaces and IP layer (for emulation mode support) 
+        //# Internal link layer connections to network layer  
         //#
+
+        cellularNic.upperLayerOut --> nl.in++;
+        cellularNic.upperLayerIn <-- nl.out++;
+        
         for i=0..numEthInterfaces-1 {
             eth[i].upperLayerOut --> nl.in++;
             eth[i].upperLayerIn <-- nl.out++;
         }
+
+        for i=0..numLoInterfaces-1 {
+            nl.out++ --> lo[i].upperLayerIn;
+            lo[i].upperLayerOut --> nl.in++;
+        }
+        
+        //#
+        //# Connections between LTE/NR NIC and the radio medium
+        //#
+        cellularNic.radioIn <-- radioIn;        
 }

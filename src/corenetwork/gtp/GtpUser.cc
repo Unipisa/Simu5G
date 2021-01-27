@@ -293,6 +293,6 @@ void GtpUser::handleFromUdp(Packet * pkt)
     }
     //end mec
 
-    // destination is outside the LTE network
+    // destination is outside the radio network
     send(originalPacket,"pppGate");
 }
