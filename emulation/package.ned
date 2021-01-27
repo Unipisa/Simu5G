@@ -1,3 +1,2 @@
-package lte.emulation;
+package simu5g.emulation;
 
-@license(APL);

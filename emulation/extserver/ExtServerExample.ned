@@ -6,20 +6,20 @@
 // The above file and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
-package lte.emulation.extserver;
+package simu5g.emulation.extserver;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import lte.nodes.binder.LteBinder;
-import lte.common.carrierAggregation.CarrierAggregation;
-import lte.nodes.Upf;
-import lte.nodes.NR.gNodeB;
-import lte.nodes.NR.NRUe;
-import lte.world.radio.LteChannelControl;
-import lte.nodes.ExtCell;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.Upf;
+import simu5g.nodes.NR.gNodeB;
+import simu5g.nodes.NR.NRUe;
+import simu5g.world.radio.LteChannelControl;
+import simu5g.nodes.ExtCell;
 
 
 // ExtServerExample
@@ -43,7 +43,7 @@ network ExtServerExample
         channelControl: LteChannelControl {
             @display("p=70.89375,189.05;is=s");
         }
-        binder: LteBinder {
+        binder: Binder {
             @display("p=73.38125,261.1875;is=s");
         }
         carrierAggregation: CarrierAggregation {
