@@ -1,10 +1,7 @@
-In this example the network consists of two UEs connected to one gNB, one UPF, 
-one NAT router, one router and one external (real) server.
+This example consists of one real UE and one real server, connected via a simulated
+network including one gNB, one UPF, one natRouter and one router.
 
-For downlink traffic the external server sends 2MB to ue1 using TCP.
-For uplink traffic, ue2 sends 10MB to the external server using TCP.
-
-To run this example, you have to run the external server(s):
+To run this example, you have to run the external applications:
 
 - For the client application use, e.g., "Iperf" with following command line:
   	iperf -c 10.0.2.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 2.0M -f m -t 0
@@ -15,21 +12,21 @@ IP addresses and routing tables are set up by using mrt files (see "routing" fol
  
 *** NOTE ***
 In order to run an emulation where both the endpoints of a connection are real applications,
-the client application (e.g. on the UE) needs to use the IP address of the nat router within the
-simulation as destination address. Such nat router element will perform Network Address 
+the client application (e.g. on the UE) needs to use the IP address of the natRouter within the
+simulation as destination address. Such natRouter element will perform Network Address 
 Translation (NAT), according to the rules specified with the corresponding parameter in the 
 INI file. 
-In the example included in this folder. the client IP address is 192.168.3.2, while the server
-IP address is 192.168.2.2. The NAT rules on the simulated router are set as:
+In the example included in this folder. the client IP address is 10.0.0.1, while the server
+IP address is 10.0.3.1. The NAT rules on the simulated router are set as:
    
-    *.router.ipv4.natTable.config = xml("<config> \
+    *.natRouter.ipv4.natTable.config = xml("<config> \
                                             <entry type='prerouting' \
                                             packetDataFilter='*Ipv4Header and destAddress=~10.0.2.1' \
-                                            srcAddress='192.168.2.1' destAddress='192.168.2.2'/> \
+                                            srcAddress='10.0.3.2' destAddress='10.0.3.1'/> \
                                             <entry type='prerouting' \
-                                            packetDataFilter='*Ipv4Header and destAddress=~192.168.2.1' \
-                                            srcAddress='10.0.2.1' destAddress='192.168.3.2'/> \
-                                         </config>")
+                                            packetDataFilter='*Ipv4Header and destAddress=~10.0.3.2' \
+                                            srcAddress='10.0.2.1' destAddress='10.0.0.1'/> \
+                                        </config>")
  
  
  
