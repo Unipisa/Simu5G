@@ -1,0 +1,65 @@
+In this example the network consists of two UEs connected to one gNB, one UPF, 
+one NAT router, one router and one external (real) server.
+
+For downlink traffic the external server sends 10MB to ue1 using TCP.
+For uplink traffic, ue2 sends 10MB to the external server using TCP.
+
+To run this example, you have to run the external server(s):
+
+- For the client application use, e.g., "Iperf" with following command line:
+  	iperf -c 10.0.2.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
+- For the server application use, e.g., "Iperf" with the following command line:
+  	iperf -s -P 1 -i 1 -p 10021
+
+Packets sent needs to be smaller than the MTU of the veth interface (1500 byte by default)
+
+IP addresses and routing tables are set up by using mrt files (see "routing" folder).
+ 
+*** NOTE ***
+In order to run an emulation where both the endpoints of a connection are real applications,
+the client application (e.g. on the UE) needs to use the IP address of the NAT router within the
+simulation as destination address. Such NAT router element will perform Network Address 
+Translation (NAT), according to the rules specified with the corresponding parameter in the 
+INI file. 
+For example, if the client IP address is 192.168.3.2, while the server
+IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
+   
+    *.router.ipv4.natTable.config = xml("<config> \
+                                            <entry type='prerouting' \
+                                            packetDataFilter='*Ipv4Header and destAddress=~10.0.2.1' \
+                                            srcAddress='192.168.2.1' destAddress='192.168.2.2'/> \
+                                            <entry type='prerouting' \
+                                            packetDataFilter='*Ipv4Header and destAddress=~192.168.2.1' \
+                                            srcAddress='10.0.2.1' destAddress='192.168.3.2'/> \
+                                         </config>")
+ 
+ 
+ 
+=== HOW TO BUILD AND RUN ===
+
+1) Make sure that the emulation feature is enabled in the INET project:
+
+- via the IDE: right-click on the 'inet' folder in the Project Explorer -> Properties;
+               select OMNeT++ -> Project Features; 
+               tick the box "Network emulation support".
+- via the command line: in the root INET folder, type 'opp_featuretool enable NetworkEmulationSupport'.
+
+  If the feature was disabled, recompile INET with the command 'make' (in the root INET folder).  
+
+
+2) In order to be able to send/receive packets through sockets, set the application permissions: 
+
+    sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run
+    sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run_dbg
+    sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run_release
+
+
+3) Compile Simu5G from the command line by running (in the root Simu5G folder):
+    $ . setenv
+	$ make makefiles
+	$ make 
+	 	
+	 	
+4) Run the simulation by launching either ./run_wSocket.sh or ./run_wTun.sh 
+
+============================

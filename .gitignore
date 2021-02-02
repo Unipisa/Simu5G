@@ -63,6 +63,9 @@ ui/com.simulte.configeditor/bin/
 /simulations/*/*/outLogs*/
 /simulations/*/*/scripts/plots*/
 
+/emulation/*/results*/
+/emulation/*/stats*/
+
 vim files
 *.swp
 *.swo
