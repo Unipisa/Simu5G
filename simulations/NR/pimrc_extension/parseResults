@@ -1,0 +1,56 @@
+#!/bin/bash
+
+if [[ $1 != "noexport" ]] 
+then
+
+    # ===== EXPORT SCALARS ===== #
+    echo "--> Exporting scalars..."
+
+    for MU in 0 1 2 3 4; do
+        for RBS in 25 50 100; do
+            for SNDINT in 40 20 10; do
+                scavetool export -f 'module(*.ue.app[0]) AND name(rcvdPkLifetime:stats)' -F 'CSV-S' -T s -o stats/sca_rtt_u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms.csv results/*/*u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms*.sca
+            done
+        done
+    done
+    echo "--> done"
+fi
+# ==================== #
+
+# ==== PARSE FILES ==== #
+
+echo "--> Parsing extracted scalars..."
+OUTPUTFOLDER="stats"
+for MU in 0 1 2 3 4; do
+    for METRIC in rtt; do
+    
+        # define output file
+        OUTPUTFILE=${OUTPUTFOLDER}/avg_${METRIC}-u=${MU}.csv
+    
+        # print header
+        HEADER="v bkUes|transactions >\t250\t250-conf\t500\t500-conf\t750\t750-conf\t1000\t1000-conf\n"
+        printf "$HEADER" > $OUTPUTFILE
+
+        for SNDINT in 40 20 10; do
+            printf "${SNDINT}" >> $OUTPUTFILE
+            for RBS in 25 50 100; do
+
+                # get avg and conf int
+                INPUTFILE="${OUTPUTFOLDER}/sca_${METRIC}_u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms.csv"
+                printf "\t" >> $OUTPUTFILE;
+                ./scalar_avg.pl -file $INPUTFILE >> $OUTPUTFILE
+            done
+            printf "\n" >> $OUTPUTFILE
+        done
+    done
+done
+
+echo "--> done"
+# ==================== #
+
+# ===== PLOT ALL ======= #
+echo "--> Plotting charts..."
+./plot.gpl 
+# ====================== #
+
+echo "--> End"

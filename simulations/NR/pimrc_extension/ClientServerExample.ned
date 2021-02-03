@@ -28,6 +28,7 @@ import lte.nodes.ExtCell;
 network ClientServerExample
 {
     parameters:
+        int numBkUEs = default(0);
         int numExtCells = default(0);
         @display("i=block/network2;bgb=796,554.7125;bgi=background/pisa");
     submodules:
@@ -62,6 +63,9 @@ network ClientServerExample
             @display("p=671.625,174.125;is=vl");
         }
         ue: NRUe {
+            @display("p=671.625,309.69376");
+        }
+        bkUe[numBkUEs]: NRUe {
             @display("p=671.625,309.69376");
         }
         extCell[numExtCells]: ExtCell {
