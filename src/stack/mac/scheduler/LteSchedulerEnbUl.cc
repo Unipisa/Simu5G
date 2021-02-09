@@ -75,7 +75,7 @@ LteSchedulerEnbUl::updateHarqDescs()
     }
 }
 
-bool LteSchedulerEnbUl::racschedule(double carrierFrequency)
+bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* bandLim)
 {
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[ START RAC-SCHEDULE ]::--------------------" << endl;
     EV << NOW << " LteSchedulerEnbUl::racschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
@@ -90,6 +90,65 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency)
         // Get number of logical bands
         unsigned int numBands = mac_->getCellInfo()->getNumBands();
 
+        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, UL, carrierFrequency);    // get the user info
+        const std::set<Band>& allowedBands = txParams.readBands();
+        BandLimitVector tempBandLim;
+        tempBandLim.clear();
+        std::string bands_msg = "BAND_LIMIT_SPECIFIED";
+        if (bandLim == nullptr)
+        {
+            // Create a vector of band limit using all bands
+            // FIXME: bandlim is never deleted
+
+            // for each band of the band vector provided
+            for (unsigned int i = 0; i < numBands; i++)
+            {
+                BandLimit elem;
+                // copy the band
+                elem.band_ = Band(i);
+                EV << "Putting band " << i << endl;
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
+                {
+                    if( allowedBands.find(elem.band_)!= allowedBands.end() )
+                    {
+                        EV << "\t" << i << " " << "yes" << endl;
+                        elem.limit_[j]=-1;
+                    }
+                    else
+                    {
+                        EV << "\t" << i << " " << "no" << endl;
+                        elem.limit_[j]=-2;
+                    }
+                }
+                tempBandLim.push_back(elem);
+            }
+            bandLim = &tempBandLim;
+        }
+        else
+        {
+            // for each band of the band vector provided
+            for (unsigned int i = 0; i < numBands; i++)
+            {
+                BandLimit& elem = bandLim->at(i);
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
+                {
+                    if (elem.limit_[j] == -2)
+                        continue;
+
+                    if (allowedBands.find(elem.band_)!= allowedBands.end() )
+                    {
+                        EV << "\t" << i << " " << "yes" << endl;
+                        elem.limit_[j]=-1;
+                    }
+                    else
+                    {
+                        EV << "\t" << i << " " << "no" << endl;
+                        elem.limit_[j]=-2;
+                    }
+                }
+            }
+        }
+
         // FIXME default behavior
         //try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
 
@@ -98,13 +157,23 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency)
 
         bool allocation=false;
 
-        for (Band b=0;b<numBands;++b)
+        unsigned int size = bandLim->size();
+        for (Band b=0;b<size;++b)
         {
+            // if the limit flag is set to skip, jump off
+            int limit = bandLim->at(b).limit_.at(cw);
+            if (limit == -2)
+            {
+                EV << "LteSchedulerEnbUl::racschedule - skipping logical band according to limit value" << endl;
+                continue;
+            }
+
             if ( allocator_->availableBlocks(nodeId,MACRO,b) >0)
             {
                 unsigned int bytes = mac_->getAmc()->computeBytesOnNRbs(nodeId,b,cw,blocks,UL,carrierFrequency);
                 if (bytes > 0)
                 {
+
                     allocator_->addBlocks(MACRO,b,nodeId,1,bytes);
 
                     EV << NOW << "LteSchedulerEnbUl::racschedule UE: " << nodeId << "Handled RAC on band: " << b << endl;

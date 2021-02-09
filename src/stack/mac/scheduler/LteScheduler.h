@@ -86,6 +86,9 @@ class LteScheduler
     BandLimitVector* bandLimit_;
 
     //! Set of bands available for this carrier for retransmissions (reset on every slot)
+    BandLimitVector slotRacBandLimit_;
+
+    //! Set of bands available for this carrier for retransmissions (reset on every slot)
     BandLimitVector slotRtxBandLimit_;
 
     //! Set of bands available for this carrier for requesting grant (reset on every slot)

@@ -41,6 +41,7 @@ void LteScheduler::initializeBandLimit()
         elem.band_ = it->band_;
         elem.limit_ = it->limit_;
 
+        slotRacBandLimit_.push_back(elem);
         slotRtxBandLimit_.push_back(elem);
         slotReqGrantBandLimit_.push_back(elem);
     }
@@ -130,7 +131,16 @@ bool LteScheduler::scheduleRetransmissions()
 
 bool LteScheduler::scheduleRacRequests()
 {
-    return eNbScheduler_->racschedule(carrierFrequency_);
+    // reset the band limit vector used for rac
+    // TODO do this only when it was actually used in previous slot
+    for (unsigned int i = 0; i < bandLimit_->size(); i++)
+    {
+        // copy the element
+        slotRacBandLimit_[i].band_ = bandLimit_->at(i).band_;
+        slotRacBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+    }
+
+    return eNbScheduler_->racschedule(carrierFrequency_, &slotRacBandLimit_);
 }
 
 void LteScheduler::schedule()

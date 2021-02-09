@@ -54,7 +54,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * Updates current schedule list with RAC grant responses.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool racschedule(double carrierFrequency);
+    virtual bool racschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
 
     /**
      * Updates current schedule list with HARQ retransmissions.
