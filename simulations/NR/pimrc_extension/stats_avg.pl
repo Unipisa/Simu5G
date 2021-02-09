@@ -71,12 +71,12 @@ chomp($data_line);
 # split by commas
 my(@data_values)=split(",",$data_line);
 
-# field 10 is the count
-# field 12 is the mean
-# field 13 is the stddev
-my($count) = $data_values[10] * 1000;  # convert to ms
-my($mean) = $data_values[12] * 1000;   # convert to ms
-my($stddev) = $data_values[13];
+# field 11 is the count
+# field 13 is the mean
+# field 14 is the stddev
+my($count) = $data_values[11];  # convert to ms
+my($mean) = $data_values[13] * 1000;   # convert to ms
+my($stddev) = $data_values[14] * 1000;
 my($confidence) = 1.96*($stddev/sqrt($count));
 
 
