@@ -67,3 +67,28 @@ plot "stats/avg_rtt-ca=1-rbs=100.csv" using 1:2 ls 1 with linespoint t col,\
  						"" using 1:10 ls 5 with linespoint t col,\
      						"" using 1:10:11 ls 5 with yerrorbars notitle
 
+
+set output 'plots/rtt-ca=2-rbs=25.ps'
+plot "stats/avg_rtt-ca=2-rbs=25.csv" using 1:2 ls 1 with linespoint t col,\
+     						"" using 1:2:3 ls 1 with yerrorbars notitle,\
+ 						"" using 1:4 ls 2 with linespoint t col,\
+     						"" using 1:4:5 ls 2 with yerrorbars notitle,\
+ 						"" using 1:6 ls 3 with linespoint t col,\
+     						"" using 1:6:7 ls 3 with yerrorbars notitle,\
+ 						"" using 1:8 ls 4 with linespoint t col,\
+     						"" using 1:8:9 ls 4 with yerrorbars notitle,\
+ 						"" using 1:10 ls 5 with linespoint t col,\
+     						"" using 1:10:11 ls 5 with yerrorbars notitle
+
+set output 'plots/rtt-ca=3-rbs=25.ps'
+plot "stats/avg_rtt-ca=3-rbs=25.csv" using 1:2 ls 1 with linespoint t col,\
+     						"" using 1:2:3 ls 1 with yerrorbars notitle,\
+ 						"" using 1:4 ls 2 with linespoint t col,\
+     						"" using 1:4:5 ls 2 with yerrorbars notitle,\
+ 						"" using 1:6 ls 3 with linespoint t col,\
+     						"" using 1:6:7 ls 3 with yerrorbars notitle,\
+ 						"" using 1:8 ls 4 with linespoint t col,\
+     						"" using 1:8:9 ls 4 with yerrorbars notitle,\
+ 						"" using 1:10 ls 5 with linespoint t col,\
+     						"" using 1:10:11 ls 5 with yerrorbars notitle
+
