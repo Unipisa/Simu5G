@@ -43,7 +43,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     std::map<double, HarqStatus> harqStatus_;
 
     //! RAC requests flags: signals wheter an UE shall be granted the RAC allocation
-    RacStatus racStatus_;
+    std::map<double, RacStatus> racStatus_;
 
   public:
 
@@ -63,11 +63,16 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
 
     /**
-     * signals RAC request to the scheduler (called by eNb)
+     * signals RAC request to the scheduler (called by e/gNb)
      */
-    virtual void signalRac(const MacNodeId nodeId)
+    virtual void signalRac(MacNodeId nodeId, double carrierFrequency)
     {
-        racStatus_[nodeId] = true;
+        if (racStatus_.find(carrierFrequency) == racStatus_.end())
+        {
+            RacStatus newMap;
+            racStatus_[carrierFrequency] = newMap;
+        }
+        racStatus_.at(carrierFrequency)[nodeId] = true;
     }
 
     /**

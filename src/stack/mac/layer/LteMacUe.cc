@@ -1063,6 +1063,8 @@ LteMacUe::checkRAC()
         auto racReq = makeShared<LteRac>();
         pkt->insertAtFront(racReq);
 
+        double carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
+        pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFrequency);
         pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);

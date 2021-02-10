@@ -56,17 +56,17 @@ class LteChannelModel : public omnetpp::cSimpleModule
     /*
      * Returns the carrier frequency
      */
-    virtual double getCarrierFrequency() { return carrierFrequency_; }
+    virtual double getCarrierFrequency() const { return carrierFrequency_; }
 
     /*
      * Returns the number of logical bands
      */
-    virtual unsigned int getNumBands() { return numBands_; }
+    virtual unsigned int getNumBands() const { return numBands_; }
 
     /*
      * Returns the numerology index
      */
-    virtual unsigned int getNumerologyIndex() { return componentCarrier_->getNumerologyIndex(); }
+    virtual unsigned int getNumerologyIndex() const { return componentCarrier_->getNumerologyIndex(); }
 
     virtual void setPhy( LtePhyBase * phy ) { phy_ = phy ; }
 

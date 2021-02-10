@@ -587,6 +587,8 @@ void LteMacUeD2D::checkRAC()
     if ((racRequested_=trigger) || (racD2DMulticastRequested_=triggerD2DMulticast))
     {
         auto pkt = new Packet("RacRequest");
+        double carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
+        pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFrequency);
         pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);

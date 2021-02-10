@@ -80,7 +80,12 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[ START RAC-SCHEDULE ]::--------------------" << endl;
     EV << NOW << " LteSchedulerEnbUl::racschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
-    RacStatus::iterator it=racStatus_.begin() , et=racStatus_.end();
+    std::map<double, RacStatus>::iterator map_it = racStatus_.find(carrierFrequency);
+    if (map_it == racStatus_.end())
+        return false;
+
+    RacStatus& racStatus = map_it->second;
+    RacStatus::iterator it=racStatus.begin() , et=racStatus.end();
     for (;it!=et;++it)
     {
         // get current nodeId
@@ -111,12 +116,12 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
                 {
                     if( allowedBands.find(elem.band_)!= allowedBands.end() )
                     {
-                        EV << "\t" << i << " " << "yes" << endl;
+//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j]=-1;
                     }
                     else
                     {
-                        EV << "\t" << i << " " << "no" << endl;
+//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j]=-2;
                     }
                 }
@@ -137,12 +142,12 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
 
                     if (allowedBands.find(elem.band_)!= allowedBands.end() )
                     {
-                        EV << "\t" << i << " " << "yes" << endl;
+//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j]=-1;
                     }
                     else
                     {
-                        EV << "\t" << i << " " << "no" << endl;
+//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j]=-2;
                     }
                 }
@@ -195,7 +200,7 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
     }
 
     // clean up all requests
-    racStatus_.clear();
+    racStatus.clear();
 
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[  END RAC-SCHEDULE  ]::--------------------" << endl;
 
@@ -787,5 +792,11 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
 
 void LteSchedulerEnbUl::removePendingRac(MacNodeId nodeId)
 {
-    racStatus_.erase(nodeId);
+    std::map<double, RacStatus>::iterator it=racStatus_.begin();
+    for (; it != racStatus_.end(); ++it)
+    {
+        RacStatus::iterator elem_it = it->second.find(nodeId);
+        if (elem_it != it->second.end())
+            it->second.erase(nodeId);
+    }
 }
