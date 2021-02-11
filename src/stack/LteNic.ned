@@ -207,6 +207,9 @@ module LteNicEnb extends LteNicBase
         dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
             @display("p=172.928,141.568,row");
         }
+        bgTrafficGenerator: BackgroundTrafficGenerator {
+            @display("p=172,67,row");
+        }
 
     connections:
         //# connections between X2 Manager and its users
