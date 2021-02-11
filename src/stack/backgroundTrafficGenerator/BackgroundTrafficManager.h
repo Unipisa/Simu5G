@@ -37,7 +37,7 @@ class BackgroundTrafficManager : public cSimpleModule
     // reference to the MAC layer of the e/gNodeB
     LteMacEnb* mac_;
 
-    virtual void initialize();
+    virtual void initialize(int stage);
 
     // define functions for interactions with the NIC
 

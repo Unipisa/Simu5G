@@ -12,16 +12,21 @@
 
 Define_Module(BackgroundTrafficManager);
 
-void BackgroundTrafficManager::initialize()
+void BackgroundTrafficManager::initialize(int stage)
 {
-    numBgUEs_ = getAncestorPar("numBgUes");
+    if (stage == inet::INITSTAGE_LOCAL)
+    {
+        numBgUEs_ = getAncestorPar("numBgUes");
+    }
+    if (stage == inet::INITSTAGE_LOCAL + 1)
+    {
+        // get the reference to the MAC layer
+        mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
 
-    // get the reference to the MAC layer
-    mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
-
-    // create vector of BackgroundUEs
-    for (int i=0; i < numBgUEs_; i++)
-        bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUe", i)->getSubmodule("generator")));
+        // create vector of BackgroundUEs
+        for (int i=0; i < numBgUEs_; i++)
+            bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUe", i)->getSubmodule("generator")));
+    }
 }
 
 void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
