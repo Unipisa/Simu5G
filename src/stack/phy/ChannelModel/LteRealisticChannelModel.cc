@@ -719,6 +719,195 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    return snrVector;
 }
 
+std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo)
+{
+   //get tx power
+   double recvPower = lteInfo->getTxPower(); // dBm
+
+   // get MacId and Direction
+   MacNodeId eNbId = lteInfo->getDestId();
+   Direction dir = (Direction) lteInfo->getDirection();
+
+//   //Get the Resource Blocks used to transmit this packet
+//   RbMap rbmap = lteInfo->getGrantedBlocks();
+
+   // position of e/gNb and UE
+   Coord ueCoord = lteInfo->getCoord();
+   Coord enbCoord = phy_->getCoord();
+
+   double antennaGainTx = 0.0;
+   double antennaGainRx = 0.0;
+   double noiseFigure = 0.0;
+//   double speed = 0.0;
+
+//   // true if we are computing a CQI for the DL direction
+//   bool cqiDl = false;
+
+
+
+   EV << "------------ GET SINR for background UE ----------------" << endl;
+   //===================== PARAMETERS SETUP ============================
+   /*
+    * This function is called on the e/gNodeB side and is similar
+    * to what is called when computing feedback
+    */
+   if (dir == DL)
+   {
+       //set noise Figure
+       noiseFigure = ueNoiseFigure_; //dB
+       //set antenna gain Figure
+       antennaGainTx = antennaGainEnB_; //dB
+       antennaGainRx = antennaGainUe_;  //dB
+//       // use the jakes map in the UE side
+//       cqiDl = true;
+   }
+   else // if( dir == UL )
+   {
+       // TODO check if antennaGainEnB should be added in UL direction too
+       antennaGainTx = antennaGainUe_;
+       antennaGainRx = antennaGainEnB_;
+       noiseFigure = bsNoiseFigure_;
+//       // use the jakes map in the eNb side
+//       cqiDl = false;
+   }
+//   speed = computeSpeed(ueId, coord);
+
+
+   LteCellInfo* eNbCell = getCellInfo(eNbId);
+   const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
+
+   EV << "LteRealisticChannelModel::getSINR_bgUe - DIR=" << (( dir==DL )?"DL" : "UL")
+                      << " " << eNbTypeString << " - txPwr " << lteInfo->getTxPower()
+                      << " - ueCoord[" << ueCoord << "] - enbCoord[" << enbCoord << "] - enbId[" << eNbId << "]" <<
+                      endl;
+   //=================== END PARAMETERS SETUP =======================
+
+
+   //=============== PATH LOSS =================
+   // Note that shadowing and fading effects are not applied here and left FFW
+
+   //COMPUTE DISTANCE between ue and eNodeB
+   double sqrDistance = enbCoord.distance(ueCoord);
+   bool los = false; // TODO make it configurable? or random?
+   double dbp = 0;
+
+   // path loss for the desired signal
+   double pathLoss = computePathLoss(sqrDistance, dbp, los);
+
+   //compute recvPower
+   recvPower -= pathLoss; // (dBm-dB)=dBm
+   //============ END PATH LOSS ===============
+
+   //=============== ANGOLAR ATTENUATION =================
+   if (dir == DL)
+   {
+       //get tx angle
+       omnetpp::cModule* eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+       LtePhyBase* ltePhy = eNbModule ?
+          check_and_cast<LtePhyBase*>(eNbModule->getSubmodule("lteNic")->getSubmodule("phy")) :
+          nullptr;
+
+       if (ltePhy && ltePhy->getTxDirection() == ANISOTROPIC)
+       {
+           // get tx angle
+           double txAngle = ltePhy->getTxAngle();
+
+           // compute the angle between uePosition and reference axis, considering the eNb as center
+           double ueAngle = computeAngle(enbCoord, ueCoord);
+
+           // compute the reception angle between ue and eNb
+           double recvAngle = fabs(txAngle - ueAngle);
+
+           if (recvAngle > 180)
+               recvAngle = 360 - recvAngle;
+
+           double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
+
+           // compute attenuation due to sectorial tx
+           double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+
+           recvPower -= angolarAtt;
+       }
+       // else, antenna is omni-directional
+   }
+   //=============== END ANGOLAR ATTENUATION =================
+
+   //add antenna gain
+   recvPower += antennaGainTx; // (dBm+dB)=dBm
+   recvPower += antennaGainRx; // (dBm+dB)=dBm
+   //sub cable loss
+   recvPower -= cableLoss_; // (dBm-dB)=dBm
+
+   std::vector<double> snrVector;
+   snrVector.resize(numBands_, recvPower);
+
+   // compute and add interference due to fading
+   // TODO Apply fading
+
+
+   /*
+    * The SINR will be calculated as follows
+    *
+    *           Pwr
+    * SINR = ---------
+    *         N  +  I
+    *
+    * Ndb = thermalNoise_ + noiseFigure (measured in decibel)
+    * I = extCellInterference + multiCellInterference
+    */
+
+   // TODO Interference computation still needs to be implemented
+
+//   //============ MULTI CELL INTERFERENCE COMPUTATION =================
+//   //vector containing the sum of multicell interference for each band
+//   std::vector<double> multiCellInterference; // Linear value (mW)
+//   // prepare data structure
+//   multiCellInterference.resize(numBands_, 0);
+//   if (enableDownlinkInterference_ && dir == DL && lteInfo->getFrameType() != HANDOVERPKT)
+//   {
+//       computeDownlinkInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
+//   }
+//   else if (enableUplinkInterference_ && dir == UL)
+//   {
+//       computeUplinkInterference(eNbId, ueId, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
+//   }
+//
+//   //============ EXTCELL INTERFERENCE COMPUTATION =================
+//   //vector containing the sum of ext-cell interference for each band
+//   std::vector<double> extCellInterference; // Linear value (mW)
+//   // prepare data structure
+//   extCellInterference.resize(numBands_, 0);
+//   if (enableExtCellInterference_ && dir == DL)
+//   {
+//       computeExtCellInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), &extCellInterference); // dBm
+//   }
+
+   //===================== SINR COMPUTATION ========================
+   // compute and linearize total noise
+   double totN = dBmToLinear(thermalNoise_ + noiseFigure);
+
+   // denominator expressed in dBm as (N+extCell+multiCell)
+   double den;
+   double sumSnr = 0.0;
+   int usedRBs = 0;
+   // add interference for each band
+   for (unsigned int i = 0; i < numBands_; i++)
+   {
+       //               (      mW            +  mW  +        mW            )
+//       den = linearToDBm(extCellInterference[i] + totN + multiCellInterference[i]);
+       den = linearToDBm(totN);
+       EV << "\t recvPwr["<< dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
+
+       // compute final SINR
+       snrVector[i] -= den;
+
+       sumSnr += snrVector[i];
+       ++usedRBs;
+   }
+
+   return snrVector;
+}
+
 std::vector<double> LteRealisticChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, Coord destCoord)
 {
    // AttenuationVector::iterator it;

@@ -1,9 +1,11 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -25,11 +27,11 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 {
   protected:
 
-    // the physical position of the UE (derived from display string or from mobility models)
-    inet::Coord pos_;
+    // reference to the traffic manager
+    BackgroundTrafficManager* bgTrafficManager_;
 
-    // current DL and UL backlog
-    unsigned int bufferedBytes_[2];
+    // index of the bg UE within the vector of bg UEs
+    int bgUeIndex_;
 
     // self messages for DL and UL
     cMessage* selfSource_[2];
@@ -37,17 +39,36 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // starting time for DL and UL traffic
     simtime_t startTime_[2];
 
+    bool trafficEnabled_[2];
+
     // total length of above-the-MAC-layer headers
     int headerLen_;
 
-    // index of the bg UE within the vector of bg UEs
-    int bgUeIndex_;
+    // tx power of the bg UE
+    double txPower_;
 
-    // reference to the traffic manager
-    BackgroundTrafficManager* bgTrafficManager_;
+    /*
+     * STATUS
+     */
+
+    // current DL and UL backlog
+    unsigned int bufferedBytes_[2];
+
+    // the physical position of the UE (derived from display string or from mobility models)
+    inet::Coord pos_;
+
+    // flag that signals when new SNR and CQI must be computed
+    bool positionUpdated_;
+
+    // current CQI based on the last position update
+    Cqi cqi_[2];
 
     virtual void initialize(int stage) override;
+    virtual int numInitStages() const  {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
     virtual void handleMessage(cMessage* msg) override;
+
+    // get new values for sinr and cqi
+    void updateMeasurements();
 
     // virtual functions that implement the generation of
     // traffic according to some distribution

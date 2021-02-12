@@ -21,13 +21,13 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
 import simu5g.stack.ip2nic.IP2Nic;
-import simu5g.x2.LteX2Manager;
+import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.LteCompManager;
 import simu5g.stack.d2dModeSelection.D2DModeSelection;
 import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
-
+import simu5g.x2.LteX2Manager;
 
 // 
 // Interface for the 3GPP Stack.

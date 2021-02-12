@@ -75,6 +75,7 @@ public:
 /// Node Id bounds
 #define ENB_MIN_ID 1
 #define ENB_MAX_ID 1023
+#define BGUE_ID 1024
 #define UE_MIN_ID 1025
 #define NR_UE_MIN_ID 2049
 #define UE_MAX_ID 65535

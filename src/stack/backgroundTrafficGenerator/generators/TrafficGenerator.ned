@@ -1,13 +1,15 @@
-// 
-//                           Simu5G
-// 
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself, 
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
-package lte.stack.backgroundTrafficGenerator.generators;
+package simu5g.stack.backgroundTrafficGenerator.generators;
 
 import inet.mobility.contract.IMobility;
 
@@ -23,11 +25,13 @@ simple TrafficGeneratorBase like ITrafficGenerator
         @display("i=block/source");
         @class("TrafficGeneratorBase");
         
-        double startTimeDl @unit("s") = default(0s);
-        double startTimeUl @unit("s") = default(0s);
+        double startTimeDl @unit("s") = default(-1s);
+        double startTimeUl @unit("s") = default(-1s);
         
-        int headerLen @unit(B) = default(33B); // TODO check here
-         
+        //# TODO check parameters
+        int headerLen @unit(B) = default(33B); 
+        double txPower @unit(dB) = default(26dB); 
+        
         volatile double period @unit("s") = default(uniform(10ms,50ms));
         volatile int size @unit(B) = default(intuniform(20B,100B));
 }

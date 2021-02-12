@@ -1,31 +1,40 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 #include "stack/mac/layer/LteMacEnb.h"
+#include "stack/phy/layer/LtePhyEnb.h"
+#include "stack/phy/ChannelModel/LteChannelModel.h"
 
 Define_Module(BackgroundTrafficManager);
 
 void BackgroundTrafficManager::initialize(int stage)
 {
+    cSimpleModule::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL)
     {
         numBgUEs_ = getAncestorPar("numBgUes");
     }
-    if (stage == inet::INITSTAGE_LOCAL + 1)
+    if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
-        // get the reference to the MAC layer
-        mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
-
         // create vector of BackgroundUEs
         for (int i=0; i < numBgUEs_; i++)
-            bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUe", i)->getSubmodule("generator")));
+            bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
+    }
+    if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
+    {
+        carrierFrequency_ = 2.0; // TODO dove la prendo?
+
+        // get the reference to the MAC layer
+        mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
     }
 }
 
@@ -35,4 +44,57 @@ void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
         throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
 
     backloggedBgUes_[dir].push_back(index);
+}
+
+Cqi BackgroundTrafficManager::getCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+{
+    if (channelModel_ == nullptr)
+    {
+        // get the reference to the channel model for the given carrier
+        LtePhyEnb* phy = check_and_cast<LtePhyEnb*>(getParentModule()->getParentModule()->getSubmodule("phy"));
+        enbTxPower_ = phy->getTxPwr();
+        channelModel_ = phy->getChannelModel(carrierFrequency_);
+        if (channelModel_ == nullptr)
+            throw cRuntimeError("BackgroundTrafficManager::getCqi - cannot find channel model for carrier frequency %f", carrierFrequency_);
+    }
+
+    // this is a fictitious frame that needs to compute the SINR
+    LteAirFrame *frame = new LteAirFrame("bgUeSinrComputationFrame");
+    UserControlInfo *cInfo = new UserControlInfo();
+
+    // build a control info
+    cInfo->setSourceId(BGUE_ID);  // unique ID for bgUes
+    cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
+    cInfo->setFrameType(FEEDBACKPKT);
+    cInfo->setCoord(bgUePos);
+    cInfo->setDirection(dir);
+    if (dir == UL)
+        cInfo->setTxPower(bgUeTxPower);
+    else
+        cInfo->setTxPower(enbTxPower_);
+
+    std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo);
+
+    // free memory
+    delete frame;
+    delete cInfo;
+
+
+    // convert the SNR to CQI and compute the mean
+    Cqi bandCqi, meanCqi = 0;
+    std::vector<double>::iterator it = snr.begin();
+    for (; it != snr.end(); ++it)
+    {
+        // TODO implement a lookup table that associates the SINR to a
+        //      range of CQI values. Then extract a random number within
+        //      that range
+        bandCqi = intuniform(2,15);
+
+        meanCqi += bandCqi;
+    }
+    meanCqi /= snr.size();
+    if(meanCqi < 2)
+        meanCqi = 2;
+
+    return meanCqi;
 }

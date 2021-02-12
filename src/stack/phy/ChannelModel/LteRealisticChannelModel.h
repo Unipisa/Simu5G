@@ -223,6 +223,13 @@ public:
    */
   virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo);
   /*
+   * Compute sinr for each band for a background UE according to pathloss
+   *
+   * @param frame pointer to the packet
+   * @param lteinfo pointer to the user control info
+   */
+  virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo);
+  /*
    * Compute Received useful signal for D2D transmissions
    */
   virtual std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord);

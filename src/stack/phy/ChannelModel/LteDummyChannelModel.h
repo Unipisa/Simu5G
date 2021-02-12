@@ -59,6 +59,13 @@ class LteDummyChannelModel : public LteChannelModel
     */
    virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo);
    /*
+    * Compute sinr for each band for a background UE according to pathloss
+    *
+    * @param frame pointer to the packet
+    * @param lteinfo pointer to the user control info
+    */
+   virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo);
+   /*
     * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
     * after that it throws a random number in order to check if this packet will be corrupted or not
     *

@@ -1,9 +1,11 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -17,6 +19,7 @@ using namespace omnetpp;
 
 class TrafficGeneratorBase;
 class LteMacEnb;
+class LteChannelModel;
 
 //
 // BackgroundTrafficManager
@@ -34,10 +37,21 @@ class BackgroundTrafficManager : public cSimpleModule
     // indexes of the backlogged bg UEs
     std::vector<int> backloggedBgUes_[2];
 
-    // reference to the MAC layer of the e/gNodeB
+    // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
 
+    // carrier frequency for these bg UEs
+    double carrierFrequency_;
+
+    // tx power of the e/gNodeB
+    double enbTxPower_;
+
+    // reference to the channel model for the given carrier
+    LteChannelModel* channelModel_;
+
     virtual void initialize(int stage);
+    virtual int numInitStages() const  {return inet::INITSTAGE_LINK_LAYER+1; }
+
 
     // define functions for interactions with the NIC
 
@@ -47,6 +61,9 @@ class BackgroundTrafficManager : public cSimpleModule
 
     // invoked by the UE's traffic generator when new data is backlogged
     void notifyBacklog(int index, Direction dir);
+
+    // returns the CQI based on the given position and power
+    Cqi getCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 };
 
 #endif

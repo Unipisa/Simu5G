@@ -1,9 +1,11 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -14,8 +16,9 @@ Define_Module(TrafficGeneratorBase);
 
 TrafficGeneratorBase::TrafficGeneratorBase()
 {
-    selfSource_[DL] = selfSource_[UL] = NULL;
+    selfSource_[DL] = selfSource_[UL] = nullptr;
     bufferedBytes_[DL] = bufferedBytes_[UL] = 0;
+    trafficEnabled_[DL] = trafficEnabled_[UL] = false;
 }
 
 TrafficGeneratorBase::~TrafficGeneratorBase()
@@ -31,29 +34,36 @@ void TrafficGeneratorBase::initialize(int stage)
     {
         bgUeIndex_ = getParentModule()->getIndex();
 
-        // register to get a notification when position changes
-        getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
-
         // calculating traffic starting time
         startTime_[DL] = par("startTimeDl");
         startTime_[UL] = par("startTimeUl");
 
         headerLen_ = par("headerLen");
 
+        txPower_ = par("txPower");
+
         bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getParentModule()->getSubmodule("manager"));
 
         if (startTime_[DL] >= 0.0)
         {
+            trafficEnabled_[DL] = true;
             selfSource_[DL] = new cMessage("selfSourceDl");
             scheduleAt(simTime()+startTime_[DL], selfSource_[DL]);
         }
 
         if (startTime_[UL] >= 0.0)
         {
+            trafficEnabled_[UL] = true;
             selfSource_[UL] = new cMessage("selfSourceUl");
             scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
         }
 
+    }
+    if (stage == inet::INITSTAGE_SINGLE_MOBILITY)
+    {
+        // register to get a notification when position changes
+        getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
+        positionUpdated_ = true;
     }
 }
 
@@ -61,6 +71,10 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
     {
+        // if needed, update SINR and CQI
+        if (positionUpdated_)
+            updateMeasurements();
+
         if (!strcmp(msg->getName(), "selfSourceDl"))
         {
             int genBytes = generateTraffic(DL);
@@ -90,6 +104,17 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
     }
 }
 
+void TrafficGeneratorBase::updateMeasurements()
+{
+    if (trafficEnabled_[DL])
+        cqi_[DL] = bgTrafficManager_->getCqi(DL, pos_);
+
+    if (trafficEnabled_[UL])
+        cqi_[UL] = bgTrafficManager_->getCqi(UL, pos_, txPower_);
+
+    positionUpdated_ = false;
+}
+
 int TrafficGeneratorBase::generateTraffic(Direction dir)
 {
     int dataLen = par("size");
@@ -100,6 +125,7 @@ int TrafficGeneratorBase::generateTraffic(Direction dir)
 simtime_t TrafficGeneratorBase::getNextGenerationTime(Direction dir)
 {
     // TODO differentiate RNG based on direction
+
     simtime_t offset = par("period");
     return offset;
 }
@@ -122,5 +148,6 @@ void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalI
     {
         inet::IMobility *mobility = check_and_cast<inet::IMobility*>(obj);
         pos_ = mobility->getCurrentPosition();
+        positionUpdated_ = true;
     }
 }
