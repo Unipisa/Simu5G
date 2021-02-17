@@ -82,8 +82,14 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // This module is subscribed to position changes.
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
-    // consume bytes from the queue
-    void consumeBytes(int bytes, Direction dir);
+    // returns the number of buffered bytes for the given direction
+    unsigned int getBufferLength(Direction dir);
+
+    // returns the CQI for the given direction
+    Cqi getCqi(Direction dir);
+
+    // consume bytes from the queue and returns the updated buffer length
+    unsigned int consumeBytes(int bytes, Direction dir);
 
 };
 

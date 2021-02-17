@@ -16,6 +16,7 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/amc/LteAmc.h"
 #include "common/LteCommon.h"
+#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
 class MacBsr;
 class LteSchedulerEnbDl;
@@ -39,6 +40,9 @@ class LteMacEnb : public LteMacBase
     std::map<double, LteMacScheduleList>* scheduleListDl_;
 
     int eNodeBCount;
+
+    /// reference to the background traffic manager
+    BackgroundTrafficManager* bgTrafficManager_;
 
     /**
      * Variable used for Downlink energy consumption computation
@@ -196,6 +200,11 @@ class LteMacEnb : public LteMacBase
      * Getter for cellInfo.
      */
     virtual CellInfo* getCellInfo();
+
+    virtual BackgroundTrafficManager* getBackgroundTrafficManager()
+    {
+        return bgTrafficManager_;
+    }
 
     /**
      * Returns the number of system antennas (MACRO included)

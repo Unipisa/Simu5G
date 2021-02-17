@@ -35,7 +35,7 @@ class BackgroundTrafficManager : public cSimpleModule
     std::vector<TrafficGeneratorBase*> bgUe_;
 
     // indexes of the backlogged bg UEs
-    std::vector<int> backloggedBgUes_[2];
+    std::list<int> backloggedBgUes_[2];
 
     // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
@@ -56,14 +56,27 @@ class BackgroundTrafficManager : public cSimpleModule
     // define functions for interactions with the NIC
 
   public:
-    BackgroundTrafficManager() {}
+    BackgroundTrafficManager();
     virtual ~BackgroundTrafficManager() {}
 
     // invoked by the UE's traffic generator when new data is backlogged
     void notifyBacklog(int index, Direction dir);
 
     // returns the CQI based on the given position and power
-    Cqi getCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+    Cqi computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+
+    // returns the begin (end) iterator of the vector of backlogged UEs
+    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir);
+    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir);
+
+    // returns the buffer of the given UE for in the given direction
+    unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir);
+
+    // returns the bytes per block of the given UE for in the given direction
+    unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
+
+    // update background UE's backlog and returns true if the buffer is empty
+    unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir);
 };
 
 #endif

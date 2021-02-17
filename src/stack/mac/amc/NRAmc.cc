@@ -225,6 +225,35 @@ unsigned int NRAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigne
     return tbs;
 }
 
+unsigned int NRAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+{
+    // DEBUG
+    EV << NOW << " NRAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << " carrierFrequency: " << carrierFrequency << endl;
+
+    // if CQI == 0 the UE is out of range, thus return 0
+    if (cqi == 0)
+    {
+        EV << NOW << " NRAmc::computeBitsPerRbBackground - CQI equal to zero, return no bytes available" << endl;
+        return 0;
+    }
+
+    unsigned int blocks = 1;
+    unsigned char layers = 1;
+
+    // compute TBS
+
+    NRMCSelem mcsElem = getMcsElemPerCqi(cqi, dir);
+    unsigned int numRe = getResourceElements(blocks, getSymbolsPerSlot(carrierFrequency, dir));
+    unsigned int modFactor = 2 << mcsElem.mod_;
+    double coderate = mcsElem.coderate_ / 1024;
+    double nInfo = numRe * coderate * modFactor * layers;
+
+    unsigned int tbs = computeTbsFromNinfo(floor(nInfo),coderate);
+
+    EV << NOW << " NRAmc::computeBitsPerRbBackground Available space: " << tbs << "\n";
+    return tbs;
+}
+
 NRMCSelem NRAmc::getMcsElemPerCqi(Cqi cqi, const Direction dir)
 {
     // CQI threshold table selection

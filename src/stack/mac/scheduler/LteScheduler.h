@@ -199,6 +199,9 @@ class LteScheduler
     /// performs request of grant to the eNbScheduler
     virtual unsigned int requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible , std::vector<BandLimit>* bandLim = nullptr);
 
+    /// performs request of background grant to the eNbScheduler
+    virtual unsigned int requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible , std::vector<BandLimit>* bandLim = nullptr);
+
     /// calls eNbScheduler::rtxschedule()
     virtual bool scheduleRetransmissions();
 

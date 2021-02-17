@@ -110,6 +110,23 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
     return eNbScheduler_->scheduleGrant(cid, bytes, terminate, active, eligible, carrierFrequency_, bandLim);
 }
 
+unsigned int LteScheduler::requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector* bandLim)
+{
+    if (bandLim == NULL)
+    {
+        // reset the band limit vector used for requesting grants
+        for (unsigned int i = 0; i < bandLimit_->size(); i++)
+        {
+            // copy the element
+            slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
+            slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+        }
+        bandLim = &slotReqGrantBandLimit_;
+    }
+
+    return eNbScheduler_->scheduleGrantBackground(bgCid, bytes, terminate, active, eligible, carrierFrequency_, bandLim);
+}
+
 bool LteScheduler::scheduleRetransmissions()
 {
     // optimization: do not call rtxschedule if no process is ready for rtx for this carrier

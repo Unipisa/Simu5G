@@ -107,10 +107,10 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 void TrafficGeneratorBase::updateMeasurements()
 {
     if (trafficEnabled_[DL])
-        cqi_[DL] = bgTrafficManager_->getCqi(DL, pos_);
+        cqi_[DL] = bgTrafficManager_->computeCqi(DL, pos_);
 
     if (trafficEnabled_[UL])
-        cqi_[UL] = bgTrafficManager_->getCqi(UL, pos_, txPower_);
+        cqi_[UL] = bgTrafficManager_->computeCqi(UL, pos_, txPower_);
 
     positionUpdated_ = false;
 }
@@ -130,7 +130,17 @@ simtime_t TrafficGeneratorBase::getNextGenerationTime(Direction dir)
     return offset;
 }
 
-void TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
+unsigned int TrafficGeneratorBase::getBufferLength(Direction dir)
+{
+    return bufferedBytes_[dir];
+}
+
+Cqi TrafficGeneratorBase::getCqi(Direction dir)
+{
+    return cqi_[dir];
+}
+
+unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
 {
     if (dir != DL && dir != UL)
        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
@@ -139,6 +149,8 @@ void TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
         throw cRuntimeError("TrafficGeneratorBase::consumeBytes - consume %d bytes, but buffer is %d", bytes, bufferedBytes_[dir]);
 
     bufferedBytes_[dir] -= bytes;
+
+    return bufferedBytes_[dir];
 }
 
 

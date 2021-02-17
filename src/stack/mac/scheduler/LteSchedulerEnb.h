@@ -243,6 +243,8 @@ class LteSchedulerEnb
     virtual unsigned int scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
             BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
+    virtual unsigned int scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
+            BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
     /*
      * Getter for active connection set
      */
@@ -310,6 +312,16 @@ class LteSchedulerEnb
      * @return available space in bytes
      */
     unsigned int availableBytes(const MacNodeId id, const Remote antenna, Band b, Codeword cw, Direction dir, double carrierFrequency, int limit = -1);
+    /**
+     * Returns the available space for a given (background) user, antenna, logical band and codeword, in bytes.
+     *
+     * @param id MAC node Id
+     * @param antenna antenna
+     * @param b band
+     * @param cw codeword
+     * @return available space in bytes
+     */
+    unsigned int availableBytesBackgroundUe(const MacNodeId id, const Remote antenna, Band b, Direction dir, int limit = -1);
 
     unsigned int allocatedCws(MacNodeId nodeId)
     {

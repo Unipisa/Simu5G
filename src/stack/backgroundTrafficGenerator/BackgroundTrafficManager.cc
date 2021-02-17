@@ -16,6 +16,11 @@
 
 Define_Module(BackgroundTrafficManager);
 
+BackgroundTrafficManager::BackgroundTrafficManager()
+{
+    channelModel_ = nullptr;
+}
+
 void BackgroundTrafficManager::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
@@ -46,7 +51,7 @@ void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
     backloggedBgUes_[dir].push_back(index);
 }
 
-Cqi BackgroundTrafficManager::getCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
     if (channelModel_ == nullptr)
     {
@@ -63,7 +68,7 @@ Cqi BackgroundTrafficManager::getCqi(Direction dir, inet::Coord bgUePos, double 
     UserControlInfo *cInfo = new UserControlInfo();
 
     // build a control info
-    cInfo->setSourceId(BGUE_ID);  // unique ID for bgUes
+    cInfo->setSourceId(BGUE_MIN_ID);  // unique ID for bgUes
     cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
     cInfo->setFrameType(FEEDBACKPKT);
     cInfo->setCoord(bgUePos);
@@ -98,3 +103,39 @@ Cqi BackgroundTrafficManager::getCqi(Direction dir, inet::Coord bgUePos, double 
 
     return meanCqi;
 }
+
+std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir)
+{
+    return backloggedBgUes_[dir].begin();
+}
+
+std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesEnd(Direction dir)
+{
+    return backloggedBgUes_[dir].end();
+}
+
+unsigned int BackgroundTrafficManager::getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    return bgUe_.at(index)->getBufferLength(dir);
+}
+
+unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    Cqi cqi = bgUe_.at(index)->getCqi(dir);
+
+    // get bytes per block based on CQI
+    return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
+}
+unsigned int BackgroundTrafficManager::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    int newBuffLen = bgUe_.at(index)->consumeBytes(bytes, dir);
+
+    if (newBuffLen == 0)  // bg UE is no longer active
+        backloggedBgUes_[dir].remove(index);
+
+    return newBuffLen;
+}
+

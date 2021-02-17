@@ -308,6 +308,8 @@ void LteMacEnb::initialize(int stage)
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this);
         }
+
+        bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
     }
     else if (stage == inet::INITSTAGE_LAST)
     {
