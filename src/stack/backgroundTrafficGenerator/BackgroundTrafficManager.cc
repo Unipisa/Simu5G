@@ -38,6 +38,10 @@ void BackgroundTrafficManager::initialize(int stage)
     {
         // get the reference to the MAC layer
         mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
+
+        LteBinder* binder = getBinder();
+        minSinr_ = binder->phyPisaData.minSnr();
+        maxSinr_ = binder->phyPisaData.maxSnr();
     }
 }
 
@@ -82,16 +86,28 @@ Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, dou
     delete frame;
     delete cInfo;
 
-
     // convert the SNR to CQI and compute the mean
     Cqi bandCqi, meanCqi = 0;
     std::vector<double>::iterator it = snr.begin();
     for (; it != snr.end(); ++it)
     {
+        // select the CQI in the range [0,15] according to the "position" of
+        // the SINR within the range [SINR_MIN, SINR_MAX]
+
         // TODO implement a lookup table that associates the SINR to a
         //      range of CQI values. Then extract a random number within
         //      that range
-        bandCqi = intuniform(2,15);
+
+        if (*it <= minSinr_)
+            bandCqi = 0;
+        else if (*it >= maxSinr_)
+            bandCqi = 15;
+        else
+        {
+            double range = maxSinr_ - minSinr_;
+            double normalizedSinr = *it - minSinr_;
+            bandCqi = 15 * ceil(normalizedSinr / range);
+        }
 
         meanCqi += bandCqi;
     }

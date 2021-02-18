@@ -40,6 +40,10 @@ class BackgroundTrafficManager : public cSimpleModule
     // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
 
+    // range for SINR values
+    double minSinr_;
+    double maxSinr_;
+
     // carrier frequency for these bg UEs
     double carrierFrequency_;
 

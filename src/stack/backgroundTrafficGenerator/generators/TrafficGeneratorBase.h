@@ -42,7 +42,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     bool trafficEnabled_[2];
 
     // total length of above-the-MAC-layer headers
-    int headerLen_;
+    unsigned int headerLen_;
 
     // tx power of the bg UE
     double txPower_;
@@ -72,7 +72,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
     // virtual functions that implement the generation of
     // traffic according to some distribution
-    virtual int generateTraffic(Direction dir);
+    virtual unsigned int generateTraffic(Direction dir);
     virtual simtime_t getNextGenerationTime(Direction dir);
 
   public:

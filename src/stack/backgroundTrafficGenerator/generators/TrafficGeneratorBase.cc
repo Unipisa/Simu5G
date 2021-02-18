@@ -77,7 +77,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 
         if (!strcmp(msg->getName(), "selfSourceDl"))
         {
-            int genBytes = generateTraffic(DL);
+            unsigned int genBytes = generateTraffic(DL);
             if (genBytes == bufferedBytes_[DL])
             {
                 // the UE has become active, signal to the manager
@@ -90,7 +90,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
         }
         else if (!strcmp(msg->getName(), "selfSourceUl"))
         {
-            int genBytes = generateTraffic(UL);
+            unsigned int genBytes = generateTraffic(UL);
             if (genBytes == bufferedBytes_[UL])
             {
                 // the UE has become active, signal to the manager
@@ -115,9 +115,9 @@ void TrafficGeneratorBase::updateMeasurements()
     positionUpdated_ = false;
 }
 
-int TrafficGeneratorBase::generateTraffic(Direction dir)
+unsigned int TrafficGeneratorBase::generateTraffic(Direction dir)
 {
-    int dataLen = par("size");
+    unsigned int dataLen = par("size");
     bufferedBytes_[dir] += (dataLen + headerLen_);
     return (dataLen + headerLen_);
 }
