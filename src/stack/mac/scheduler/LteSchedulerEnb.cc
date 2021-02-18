@@ -22,6 +22,7 @@
 #include "stack/mac/scheduling_modules/LteAllocatorBestFit.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/buffer/LteMacQueue.h"
+#include "stack/phy/layer/LtePhyBase.h"
 
 using namespace omnetpp;
 
@@ -633,6 +634,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 
     unsigned int totalAllocatedBytes = 0;  // total allocated data (in bytes)
     unsigned int totalAllocatedBlocks = 0; // total allocated data (in blocks)
+    RbMap allocatedRbMap;
 
     // === Perform normal operation for grant === //
 
@@ -696,11 +698,13 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 
         unsigned int cwAllocatedBytes = 0;  // per codeword allocated bytes
         unsigned int cwAllocatedBlocks = 0; // used by uplink only, for signaling cw blocks usage to schedule list
+        std::map<Band, unsigned int> allocatedRbMapEntry;
 
         unsigned int allocatedCws = 0;
         unsigned int size = (*bandLim).size();
         for (unsigned int i = 0; i < size; ++i) // for each band
         {
+
             // save the band and the relative limit
             Band b = (*bandLim).at(i).band_;
             int limit = (*bandLim).at(i).limit_.at(cw);
@@ -719,6 +723,8 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 
             unsigned int bandAvailableBytes = 0;
             unsigned int bandAvailableBlocks = 0;
+            allocatedRbMapEntry[i] = 0;
+
             // if there is a previous blocks allocation on the first codeword, blocks allocation is already available
             if (allocatedCws != 0)
             {
@@ -777,6 +783,8 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
                 cwAllocatedBlocks += uBlocks;
                 totalAllocatedBlocks += uBlocks;
                 cwAllocatedBytes+=uBytes;
+
+                allocatedRbMapEntry[i] += uBlocks;
             }
 
             // update limit
@@ -800,6 +808,9 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
             // continue allocating (if there are available bands)
         }// Closes loop on bands
 
+        // update rb map
+        allocatedRbMap[antenna] = allocatedRbMapEntry;
+
         // === update buffer === //
 
         unsigned int consumedBytes = (cwAllocatedBytes == 0) ? 0 : cwAllocatedBytes - (MAC_HEADER + RLC_HEADER_UM);  // TODO RLC may be either UM or AM
@@ -809,7 +820,15 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
             toConsume = consumedBytes;
         else
             toConsume = queueLength - (MAC_HEADER + RLC_HEADER_UM);
-        unsigned int newBuffLen = bgTrafficManager->consumeBackloggedUeBytes(bgUeId, toConsume, direction_); // in bytes
+        bgTrafficManager->consumeBackloggedUeBytes(bgUeId, toConsume, direction_); // in bytes
+
+        if (direction_ == UL)
+        {
+            // if uplink interference is enabled, mark the occupation in the ul transmission map (for ul interference computation purposes)
+            LteChannelModel* channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
+            if (channelModel->isUplinkInterferenceEnabled())
+                binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
+        }
 
         EV << "LteSchedulerEnb::grant Codeword allocation: " << cwAllocatedBytes << "bytes" << endl;
         if (cwAllocatedBytes > 0)

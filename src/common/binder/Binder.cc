@@ -377,6 +377,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.cellId = cellId;
     info.phy = phy;
     info.dir = dir;
+    info.trafficGen = nullptr;
 
     if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
     {
@@ -397,6 +398,36 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
 
     lastUplinkTransmission_ = NOW;
 }
+
+void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir)
+{
+    UeAllocationInfo info;
+    info.nodeId = nodeId;
+    info.cellId = cellId;
+    info.phy = nullptr;
+    info.dir = dir;
+    info.trafficGen = trafficGen;
+
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].resize(2);
+        ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+
+    // for each allocated band, store the UE info
+    std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
+    for ( ; it != et; ++it)
+    {
+        Band b = it->first;
+        if (it->second > 0)
+            ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
+    }
+
+    lastUplinkTransmission_ = NOW;
+}
+
 
 const std::vector<std::vector<UeAllocationInfo> >* Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
 {

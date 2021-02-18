@@ -79,6 +79,12 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     TrafficGeneratorBase();
     virtual ~TrafficGeneratorBase();
 
+    // returns the tx power of this bg UE
+    virtual double getTxPwr() { return txPower_; }
+
+    // returns the position of this bg UE
+    virtual inet::Coord getCoord() { return pos_; }
+
     // This module is subscribed to position changes.
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 

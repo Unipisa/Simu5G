@@ -102,6 +102,13 @@ Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, dou
     return meanCqi;
 }
 
+TrafficGeneratorBase* BackgroundTrafficManager::getTrafficGenerator(MacNodeId bgUeId)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    return bgUe_.at(index);
+}
+
+
 std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir)
 {
     return backloggedBgUes_[dir].begin();

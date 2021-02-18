@@ -21,6 +21,7 @@
 #include "common/blerCurves/PhyPisaData.h"
 #include "nodes/ExtCell.h"
 #include "stack/mac/layer/LteMacBase.h"
+#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 /**
  * The Binder module has one instance in the whole network.
@@ -444,6 +445,7 @@ class Binder : public omnetpp::cSimpleModule
     omnetpp::simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
     void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase* phy, Direction dir);
+    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir);  // overloaded function for bgUes
     const std::vector<std::vector<UeAllocationInfo> >* getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support

@@ -68,6 +68,9 @@ class BackgroundTrafficManager : public cSimpleModule
     // returns the CQI based on the given position and power
     Cqi computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
+    // returns the pointer to the traffic generator of the given background UE
+    TrafficGeneratorBase* getTrafficGenerator(MacNodeId bgUeId);
+
     // returns the begin (end) iterator of the vector of backlogged UEs
     std::list<int>::const_iterator getBackloggedUesBegin(Direction dir);
     std::list<int>::const_iterator getBackloggedUesEnd(Direction dir);

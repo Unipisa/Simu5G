@@ -46,6 +46,7 @@ class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
 class ExtCell;
+class TrafficGeneratorBase;
 
 
 /**
@@ -589,6 +590,7 @@ struct UeAllocationInfo{
     MacNodeId nodeId;
     MacCellId cellId;
     LtePhyBase* phy;
+    TrafficGeneratorBase* trafficGen;
     Direction dir;
 };
 

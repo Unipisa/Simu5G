@@ -193,6 +193,11 @@ class LteMacBase : public omnetpp::cSimpleModule
      * Getters
      */
 
+    LtePhyBase* getPhy()
+    {
+        return phy_;
+    }
+
     MacNodeId getMacNodeId()
     {
         return nodeId_;
