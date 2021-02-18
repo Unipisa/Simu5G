@@ -36,8 +36,6 @@ void BackgroundTrafficManager::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
     {
-        carrierFrequency_ = 2.0; // TODO dove la prendo?
-
         // get the reference to the MAC layer
         mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
     }

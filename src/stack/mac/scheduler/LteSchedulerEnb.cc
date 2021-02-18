@@ -672,8 +672,10 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
     }
     // ===== END DEBUG OUTPUT ===== //
 
+    BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+
     // get the buffer size
-    unsigned int queueLength = mac_->getBackgroundTrafficManager()->getBackloggedUeBuffer(bgUeId, direction_); // in bytes
+    unsigned int queueLength = bgTrafficManager->getBackloggedUeBuffer(bgUeId, direction_); // in bytes
     if (queueLength == 0)
     {
         active = false;
@@ -724,11 +726,11 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
                 int b1 = allocator_->getBlocks(MACRO, b, bgUeId);
                 // limit eventually allocated blocks on other codeword to limit for current cw
                 bandAvailableBlocks = (limitBl ? (b1 > limit ? limit : b1) : b1);
-                bandAvailableBytes = mac_->getBackgroundTrafficManager()->getBackloggedUeBytesPerBlock(bgUeId, direction_);
+                bandAvailableBytes = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
             }
             else // if limit is expressed in blocks, limit value must be passed to availableBytes function
             {
-                bandAvailableBytes = availableBytesBackgroundUe(bgUeId, antenna, b, direction_, (limitBl) ? limit : -1); // available space (in bytes)
+                bandAvailableBytes = availableBytesBackgroundUe(bgUeId, antenna, b, direction_, carrierFrequency, (limitBl) ? limit : -1); // available space (in bytes)
                 bandAvailableBlocks = allocator_->availableBlocks(bgUeId, antenna, b);
             }
 
@@ -763,7 +765,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
             EV << "LteSchedulerEnb::grant Available Bytes: " << bandAvailableBytes << " available blocks " << bandAvailableBlocks << endl;
 
             unsigned int uBytes = (bandAvailableBytes > queueLength) ? queueLength : bandAvailableBytes;
-            unsigned int uBytesPerBlock = mac_->getBackgroundTrafficManager()->getBackloggedUeBytesPerBlock(bgUeId, direction_); // in bytes
+            unsigned int uBytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_); // in bytes
             unsigned int uBlocks = ceil((double)uBytes/uBytesPerBlock);
 
             // allocate resources on this band
@@ -807,7 +809,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
             toConsume = consumedBytes;
         else
             toConsume = queueLength - (MAC_HEADER + RLC_HEADER_UM);
-        unsigned int newBuffLen = mac_->getBackgroundTrafficManager()->consumeBackloggedUeBytes(bgUeId, toConsume, direction_); // in bytes
+        unsigned int newBuffLen = bgTrafficManager->consumeBackloggedUeBytes(bgUeId, toConsume, direction_); // in bytes
 
         EV << "LteSchedulerEnb::grant Codeword allocation: " << cwAllocatedBytes << "bytes" << endl;
         if (cwAllocatedBytes > 0)
@@ -943,7 +945,7 @@ unsigned int LteSchedulerEnb::availableBytes(const MacNodeId id,
     return bytes;
 }
 
-unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Remote antenna, Band b, Direction dir, int limit)
+unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Remote antenna, Band b, Direction dir, double carrierFrequency, int limit)
 {
     EV << "LteSchedulerEnb::availableBytes MacNodeId " << id << " Antenna " << dasToA(antenna) << " band " << b << endl;
     // Retrieving this user available resource blocks
@@ -955,7 +957,7 @@ unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Rem
     if (limit!=-1)
         blocks=(blocks>limit)?limit:blocks;
 
-    unsigned int bytesPerBlock = mac_->getBackgroundTrafficManager()->getBackloggedUeBytesPerBlock(id, dir);
+    unsigned int bytesPerBlock = mac_->getBackgroundTrafficManager(carrierFrequency)->getBackloggedUeBytesPerBlock(id, dir);
     unsigned int bytes = bytesPerBlock * blocks;
     EV << "LteSchedulerEnb::availableBytes MacNodeId " << id << " blocks [" << blocks << "], bytes [" << bytes << "]" << endl;
 

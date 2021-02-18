@@ -321,7 +321,7 @@ class LteSchedulerEnb
      * @param cw codeword
      * @return available space in bytes
      */
-    unsigned int availableBytesBackgroundUe(const MacNodeId id, const Remote antenna, Band b, Direction dir, int limit = -1);
+    unsigned int availableBytesBackgroundUe(const MacNodeId id, const Remote antenna, Band b, Direction dir, double carrierFrequency, int limit = -1);
 
     unsigned int allocatedCws(MacNodeId nodeId)
     {

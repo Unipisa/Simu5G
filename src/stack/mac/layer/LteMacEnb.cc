@@ -309,7 +309,15 @@ void LteMacEnb::initialize(int stage)
             enbSchedulerUl_->initialize(UL, this);
         }
 
-        bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
+        const CarrierInfoMap* carriers = cellInfo_->getCarrierInfoMap();
+        CarrierInfoMap::const_iterator it = carriers->begin();
+        int i = 0;
+        for ( ; it != carriers->end(); ++it, ++i)
+        {
+            double carrierFrequency = it->second.carrierFrequency;
+            bgTrafficManager_[carrierFrequency] = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator",i)->getSubmodule("manager"));
+            bgTrafficManager_[carrierFrequency]->setCarrierFrequency(carrierFrequency);
+        }
     }
     else if (stage == inet::INITSTAGE_LAST)
     {

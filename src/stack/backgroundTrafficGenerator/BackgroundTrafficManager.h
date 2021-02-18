@@ -59,6 +59,9 @@ class BackgroundTrafficManager : public cSimpleModule
     BackgroundTrafficManager();
     virtual ~BackgroundTrafficManager() {}
 
+    // set carrier frequency
+    void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }
+
     // invoked by the UE's traffic generator when new data is backlogged
     void notifyBacklog(int index, Direction dir);
 

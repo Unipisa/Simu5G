@@ -50,7 +50,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
     parameters:
 
         @class(::inet::NetworkInterface);
-        @display("i=block/ifcard;bgb=391.552,443.52;bgl=3");
+        @display("i=block/ifcard;bgb=704,443;bgl=3");
         string interfaceTableModule;
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
@@ -87,30 +87,30 @@ module LteNicBase extends NetworkInterface like ICellularNic
             nodeType = nodeType;
             interfaceTableModule = interfaceTableModule;
             routingTableModule = routingTableModule;
-            @display("p=295.68,67.2");
+            @display("p=362,67");
         }
         // PDCP-RRC Layer
         pdcpRrc: <LtePdcpRrcType> like LtePdcpRrc {
-            @display("p=295.68,141.568");
+            @display("p=362,141");
         }
         // RLC Layer
         rlc: LteRlc {
-            @display("p=295.68,226.68799");
+            @display("p=362,226");
             d2dCapable = d2dCapable;
         }
         // MAC Layer
         mac: <LteMacType> like LteMac {
             interfaceTableModule = interfaceTableModule;
-            @display("p=296.576,314.496");
+            @display("p=363,314");
         }
         // LtePhy submodule
         phy: <LtePhyType> like LtePhy {
-            @display("p=296.576,389.75998");
+            @display("p=363,389");
             @class(LtePhyType);
         }
 
         channelModel[numCarriers]: <LteChannelModelType> like LteChannelModelInterface {
-            @display("p=44.8,389.75998");
+            @display("p=100,389");
         }
 
     connections allowunconnected:
@@ -172,6 +172,7 @@ module LteNicUeD2D extends LteNicUe
         LtePhyType = default("LtePhyUeD2D");
         d2dCapable = default(true);             // DO NOT CHANGE
         bool d2dInitialMode = default(false);
+        @display("bgb=704,443");
 }
 
 //
@@ -192,23 +193,23 @@ module LteNicEnb extends LteNicBase
         //# X2 manager
         //#       
         x2Manager: LteX2Manager {
-            @display("p=79.743996,226.68799,row");
+            @display("p=623,226,row");
         }
 
         //#
         //# Modules exploiting X2 interface
         //#
         compManager: <LteCompManagerType> like LteCompManager if compEnabled {
-            @display("p=172.928,314.496,row");
+            @display("p=493,314,row");
         }
         handoverManager: LteHandoverManager {
-            @display("p=172.928,226.68799,row");
+            @display("p=493,226,row");
         }
         dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
-            @display("p=172.928,141.568,row");
+            @display("p=493,141,row");
         }
-        bgTrafficGenerator: BackgroundTrafficGenerator {
-            @display("p=172,67,row");
+        bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
+            @display("p=100,307,row");
         }
 
     connections:
@@ -246,6 +247,6 @@ module LteNicEnbD2D extends LteNicEnb
 
     submodules:
         d2dModeSelection: <d2dModeSelectionType> like D2DModeSelection {
-            @display("p=60,68,row");
+            @display("p=623,314,row");
         }
 }

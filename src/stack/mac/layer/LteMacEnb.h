@@ -42,7 +42,7 @@ class LteMacEnb : public LteMacBase
     int eNodeBCount;
 
     /// reference to the background traffic manager
-    BackgroundTrafficManager* bgTrafficManager_;
+    std::map<double, BackgroundTrafficManager*> bgTrafficManager_;
 
     /**
      * Variable used for Downlink energy consumption computation
@@ -201,9 +201,14 @@ class LteMacEnb : public LteMacBase
      */
     virtual CellInfo* getCellInfo();
 
-    virtual BackgroundTrafficManager* getBackgroundTrafficManager()
+    /**
+     * Getter for the backgroundTrafficManager
+     */
+    virtual BackgroundTrafficManager* getBackgroundTrafficManager(double carrierFrequency)
     {
-        return bgTrafficManager_;
+        if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
+            throw cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
+        return bgTrafficManager_[carrierFrequency];
     }
 
     /**

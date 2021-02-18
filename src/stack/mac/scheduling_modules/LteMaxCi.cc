@@ -104,7 +104,7 @@ void LteMaxCi::prepareSchedule()
         // query the BgTrafficManager to get the list of backlogged bg UEs to be added to the scorelist. This work
         // is done by this module itself, so that backgroundTrafficManager is transparent to the scheduling policy in use
 
-        BackgroundTrafficManager* bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager();
+        BackgroundTrafficManager* bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_),
                                          et = bgTrafficManager->getBackloggedUesEnd(direction_);
 
