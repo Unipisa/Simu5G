@@ -19,12 +19,12 @@ module BackgroundUe
     parameters:
         @display("i=device/pocketpc");
         string mobilityType = default("StationaryMobility");
-        string trafficGenerator = default("TrafficGeneratorBase");
+        string trafficGeneratorType = default("TrafficGeneratorBase");
     submodules:
         mobility: <mobilityType> like IMobility {
             @display("p=57,61;is=s");
         }
-        generator: <trafficGenerator> like ITrafficGenerator {
+        generator: <trafficGeneratorType> like ITrafficGenerator {
             @display("p=142,61;is=s");
         }
 }

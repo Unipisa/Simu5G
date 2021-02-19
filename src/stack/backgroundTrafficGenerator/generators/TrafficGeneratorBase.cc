@@ -117,7 +117,7 @@ void TrafficGeneratorBase::updateMeasurements()
 
 unsigned int TrafficGeneratorBase::generateTraffic(Direction dir)
 {
-    unsigned int dataLen = par("size");
+    unsigned int dataLen = (dir == DL) ? par("packetSizeDl") : par("packetSizeUl");
     bufferedBytes_[dir] += (dataLen + headerLen_);
     return (dataLen + headerLen_);
 }
@@ -126,7 +126,7 @@ simtime_t TrafficGeneratorBase::getNextGenerationTime(Direction dir)
 {
     // TODO differentiate RNG based on direction
 
-    simtime_t offset = par("period");
+    simtime_t offset = (dir == DL) ? par("periodDl") : par("periodUl");
     return offset;
 }
 

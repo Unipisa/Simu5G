@@ -30,11 +30,13 @@ simple TrafficGeneratorBase like ITrafficGenerator
         
         //# TODO check parameters
         int headerLen @unit(B) = default(33B); 
-        double txPower @unit(dB) = default(26dB); 
+        double txPower @unit(dBm) = default(26dBm); 
         
-        volatile double period @unit("s") = default(uniform(10ms,50ms));
-        volatile int size @unit(B) = default(intuniform(20B,100B));
+        volatile double periodDl @unit("s") = default(uniform(10ms,50ms));
+        volatile double periodUl @unit("s") = default(uniform(10ms,50ms));
+        
+        volatile int packetSizeDl @unit(B) = default(intuniform(20B,100B));
+        volatile int packetSizeUl @unit(B) = default(intuniform(20B,100B));
 }
 
 //# add here your custom generators, by extending the base module
-
