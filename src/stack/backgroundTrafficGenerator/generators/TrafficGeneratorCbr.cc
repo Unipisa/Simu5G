@@ -1,0 +1,39 @@
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
+#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorCbr.h"
+
+Define_Module(TrafficGeneratorCbr);
+
+void TrafficGeneratorCbr::initialize(int stage)
+{
+    TrafficGeneratorBase::initialize(stage);
+    if (stage == inet::INITSTAGE_LOCAL)
+    {
+        // read parameters
+        size_[DL] = par("packetSizeDl");
+        size_[UL] = par("packetSizeUl");
+
+        period_[DL] = par("periodDl");
+        period_[UL] = par("periodUl");
+    }
+}
+
+unsigned int TrafficGeneratorCbr::generateTraffic(Direction dir)
+{
+    bufferedBytes_[dir] += (size_[dir] + headerLen_);
+    return (size_[dir] + headerLen_);
+}
+
+simtime_t TrafficGeneratorCbr::getNextGenerationTime(Direction dir)
+{
+    return (simtime_t)period_[dir];
+}
+
+

@@ -40,3 +40,12 @@ simple TrafficGeneratorBase like ITrafficGenerator
 }
 
 //# add here your custom generators, by extending the base module
+
+simple TrafficGeneratorCbr extends TrafficGeneratorBase
+{
+    parameters:
+        @display("i=block/source");
+        @class("TrafficGeneratorCbr");
+        
+        
+}
