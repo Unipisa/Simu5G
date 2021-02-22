@@ -2,6 +2,8 @@
 
 SNDINT=40
 
+OUTPUTFOLDER="stats-scalability"
+
 if [[ $1 != "noexport" ]] 
 then
 
@@ -12,7 +14,7 @@ then
 			for MU in 0 1 2 3 4; do
 					for BKUES in `seq 0 19`; do
 						# option -T must be set to s if scalar, v if vector, t if statistics 
-						opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o stats/sca_rtt_ca=${CA}-u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms-bkUEs=${BKUES}.csv results/*/*ca=${CA}-u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms-bkUEs=${BKUES}-*.sca
+						opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_ca=${CA}-u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms-bkUEs=${BKUES}.csv results/*/*ca=${CA}-u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms-bkUEs=${BKUES}-*.sca
 					done
 			done
 	    done
@@ -24,8 +26,6 @@ fi
 # ==== PARSE FILES ==== #
 
 echo "--> Parsing extracted scalars..."
-OUTPUTFOLDER="stats"
-
 for CA in 1 2 3; do
     for RBS in 25 50 100; do
 		for METRIC in rtt; do
@@ -44,7 +44,7 @@ for CA in 1 2 3; do
 		            INPUTFILE="${OUTPUTFOLDER}/sca_${METRIC}_ca=${CA}-u=${MU}-rbs=${RBS}-msgLen=1000B-sndInt=${SNDINT}ms-bkUEs=${BKUES}.csv"
 
 		            printf "\t" >> $OUTPUTFILE
-		            ./stats_avg.pl -file $INPUTFILE >> $OUTPUTFILE
+		            ./processStats_scalability.pl -file $INPUTFILE >> $OUTPUTFILE
 		        done
 		        printf "\n" >> $OUTPUTFILE
 		    done

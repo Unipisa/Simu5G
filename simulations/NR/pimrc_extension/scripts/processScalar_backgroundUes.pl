@@ -59,27 +59,18 @@ while(@ARGV)
 
 my(@raw_data);
 my(@data);
-my(@data_abs);
 my($data_line);
-my(@names);
 my($fl);
-my($field);
-
-my(@validFields);
+my(@samples);
 
 
 $fl = $fileIn;
-
-
 open(DAT, $fl) || die("Could not open file!");
 @raw_data=<DAT>;
 close(DAT);
 
 
 my($lineCounter) = 0;
-my($fieldCounter) = 0;
-my($totFields) = 0;
-
 foreach $data_line (@raw_data)
 {
     chomp($data_line);
@@ -91,20 +82,10 @@ foreach $data_line (@raw_data)
         next;
     }
 
-    my(@data_values)=split("mean,",$data_line);
-  
-    $fieldCounter = 0;
-    foreach $field (@data_values)
-    {
-        
-        # read every second value to skip time tags
-        if($fieldCounter % 2 != 0 && looks_like_number($field) && $field==$field ) # the last statement checks for NaN
-        {
-            $validFields[$totFields] = $field;
-            $totFields++;
-        }
-        $fieldCounter++;
-    }
+    my(@data_values)=split(",",$data_line);
+    my $val = $data_values[11];
+   
+    push @samples, $val;
 
     $lineCounter++;
 }
@@ -112,9 +93,9 @@ foreach $data_line (@raw_data)
 # --- compute mean --- #
 my($count) = 0;
 my($sum)=0;
-foreach $field (@validFields)
+foreach my $sample (@samples)
 {
-    $sum = $sum + $field; 
+    $sum = $sum + $sample; 
     $count++;
 }
 my($mean)=$sum/$count;
@@ -122,9 +103,9 @@ my($mean)=$sum/$count;
 # --- compute confidence interval --- #
 $sum = 0;
 $count = 0;
-foreach $field (@validFields)
+foreach my $sample (@samples)
 {
-    $sum = $sum + ($field - $mean)**2;
+    $sum = $sum + ($sample - $mean)**2;
     $count++;
 }
 my($stddev) = sqrt($sum/$count);
