@@ -170,11 +170,14 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         bsrAlreadyMade = true;
                         EV << "LteMacUeD2D::macPduMake - BSR D2D created with size " << sizeBsr << "created" << endl;
                     }
+
+                    bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevent the UE to send an unnecessary RAC request
                 }
                 else
                 {
                     bsrD2DMulticastTriggered_ = false;
                     bsrTriggered_ = false;
+                    bsrRtxTimer_ = 0;
                 }
             }
             break;
@@ -434,8 +437,15 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 header->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
+
                 EV << "LteMacUeD2D::macPduMake - BSR created with size " << size << endl;
             }
+
+            if (size > 0)  // this prevent the UE to send an unnecessary RAC request
+                bsrRtxTimer_ = bsrRtxTimerStart_;
+            else
+                bsrRtxTimer_ = 0;
+
             macPkt->insertAtFront(header);
 
             EV << "LteMacUeD2D: pduMaker created PDU: " << macPkt->str() << endl;
@@ -546,6 +556,14 @@ void LteMacUeD2D::checkRAC()
         // decrease RAC response timer
         raRespTimer_--;
         EV << NOW << " LteMacUeD2D::checkRAC - waiting for previous RAC requests to complete (timer=" << raRespTimer_ << ")" << endl;
+        return;
+    }
+
+    if (bsrRtxTimer_>0)
+    {
+        // decrease BSR timer
+        bsrRtxTimer_--;
+        EV << NOW << " LteMacUe::checkRAC - waiting for a grant, BSR rtx timer has not expired yet (timer=" << bsrRtxTimer_ << ")" << endl;
         return;
     }
 

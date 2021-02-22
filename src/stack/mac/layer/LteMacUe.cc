@@ -54,6 +54,8 @@ LteMacUe::LteMacUe() :
     maxRacBackoff_ = 1;
     raRespTimer_ = 0;
     raRespWinStart_ = 3;
+    bsrRtxTimer_ = 0;
+    bsrRtxTimerStart_ = 40; // TODO check value and make it configurable (see standard 38.331, RetxBSR-Timer)
     nodeType_ = UE;
 
     // KLUDGE: this was unitialized, this is just a guess
@@ -624,8 +626,14 @@ void LteMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
 
                 bsrTriggered_ = false;
+
                 EV << "LteMacUe::macPduMake - BSR with size " << size << "created" << endl;
             }
+
+            if (size > 0)  // this prevent the UE to send an unnecessary RAC request
+                bsrRtxTimer_ = bsrRtxTimerStart_;
+            else
+                bsrRtxTimer_ = 0;
 
             // insert updated MacPdu
             macPkt->insertAtFront(header);
@@ -1029,6 +1037,14 @@ LteMacUe::checkRAC()
         // decrease RAC response timer
         raRespTimer_--;
         EV << NOW << " LteMacUe::checkRAC - waiting for previous RAC requests to complete (timer=" << raRespTimer_ << ")" << endl;
+        return;
+    }
+
+    if (bsrRtxTimer_>0)
+    {
+        // decrease BSR timer
+        bsrRtxTimer_--;
+        EV << NOW << " LteMacUe::checkRAC - waiting for a grant, BSR rtx timer has not expired yet (timer=" << bsrRtxTimer_ << ")" << endl;
         return;
     }
 

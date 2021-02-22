@@ -341,11 +341,14 @@ void NRMacUe::macPduMake(MacCid cid)
                         bsrAlreadyMade = true;
                         EV << "NRMacUe::macPduMake - BSR D2D created with size " << sizeBsr << "created" << endl;
                     }
+
+                    bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevent the UE to send an unnecessary RAC request
                 }
                 else
                 {
                     bsrD2DMulticastTriggered_ = false;
                     bsrTriggered_ = false;
+                    bsrRtxTimer_ = 0;
                 }
             }
             break;
@@ -597,8 +600,14 @@ void NRMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
+
                 EV << "NRMacUe::macPduMake - BSR created with size " << size << endl;
             }
+
+            if (size > 0) // this prevent the UE to send an unnecessary RAC request
+                bsrRtxTimer_ = bsrRtxTimerStart_;
+            else
+                bsrRtxTimer_ = 0;
 
             macPkt->insertAtFront(header);
 

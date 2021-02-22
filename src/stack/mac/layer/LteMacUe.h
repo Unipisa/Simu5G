@@ -61,6 +61,10 @@ class LteMacUe : public LteMacBase
     unsigned int raRespTimer_;
     unsigned int raRespWinStart_;
 
+    unsigned int bsrRtxTimer_;
+    unsigned int bsrRtxTimerStart_;
+
+
     // BSR handling
     bool bsrTriggered_;
 
