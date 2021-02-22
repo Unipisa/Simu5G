@@ -193,6 +193,11 @@ class LteMacBase : public omnetpp::cSimpleModule
      * Getters
      */
 
+    double getTtiPeriod()
+    {
+        return ttiPeriod_;
+    }
+
     LtePhyBase* getPhy()
     {
         return phy_;

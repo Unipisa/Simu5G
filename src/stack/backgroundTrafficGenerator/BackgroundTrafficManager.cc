@@ -10,6 +10,7 @@
 //
 
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
 #include "stack/mac/layer/LteMacEnb.h"
 #include "stack/phy/layer/LtePhyEnb.h"
 #include "stack/phy/ChannelModel/LteChannelModel.h"
@@ -45,12 +46,28 @@ void BackgroundTrafficManager::initialize(int stage)
     }
 }
 
+void BackgroundTrafficManager::handleMessage(cMessage *msg)
+{
+    if (msg->isSelfMessage()) // this is a activeUeNotification message
+    {
+        ActiveUeNotification* notification = check_and_cast<ActiveUeNotification*>(msg);
+
+        // add the bg UE to the list of active UEs in x slots
+        backloggedBgUes_[UL].push_back(notification->getIndex());
+
+        delete notification;
+    }
+}
+
 void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
 {
     if (dir != DL && dir != UL)
         throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
 
-    backloggedBgUes_[dir].push_back(index);
+    if (dir == UL)
+        waitingForRac_.push_back(index);
+    else
+        backloggedBgUes_[DL].push_back(index);
 }
 
 Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower)
@@ -124,7 +141,6 @@ TrafficGeneratorBase* BackgroundTrafficManager::getTrafficGenerator(MacNodeId bg
     return bgUe_.at(index);
 }
 
-
 std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir)
 {
     return backloggedBgUes_[dir].begin();
@@ -133,6 +149,16 @@ std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(D
 std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesEnd(Direction dir)
 {
     return backloggedBgUes_[dir].end();
+}
+
+std::list<int>::const_iterator BackgroundTrafficManager::getWaitingForRacUesBegin()
+{
+    return waitingForRac_.begin();
+}
+
+std::list<int>::const_iterator BackgroundTrafficManager::getWaitingForRacUesEnd()
+{
+    return waitingForRac_.end();
 }
 
 unsigned int BackgroundTrafficManager::getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir)
@@ -149,6 +175,7 @@ unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bg
     // get bytes per block based on CQI
     return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
 }
+
 unsigned int BackgroundTrafficManager::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir)
 {
     int index = bgUeId - BGUE_MIN_ID;
@@ -160,3 +187,27 @@ unsigned int BackgroundTrafficManager::consumeBackloggedUeBytes(MacNodeId bgUeId
     return newBuffLen;
 }
 
+void BackgroundTrafficManager::racHandled(MacNodeId bgUeId)
+{
+    Enter_Method("BackgroundTrafficManager::racHandled");
+
+    int index = bgUeId - BGUE_MIN_ID;
+
+    waitingForRac_.remove(index);
+
+    // some bytes have been added in the RB assigned for the first BSR, consume them from the buffer
+    unsigned int servedWithFirstBsr = getBackloggedUeBytesPerBlock(bgUeId, UL);
+    unsigned int newBuffLen = consumeBackloggedUeBytes(bgUeId, servedWithFirstBsr, UL);
+
+    // if there are still data in the buffer
+    if (newBuffLen > 0)
+    {
+        ActiveUeNotification* notification = new ActiveUeNotification("activeUeNotification");
+        notification->setIndex(index);
+
+        double offset = mac_->getTtiPeriod() * 6;  // TODO make it configurable
+                                                   //      there are 6 slots between the first BSR and actual data
+
+        scheduleAt(NOW + offset, notification);
+    }
+}

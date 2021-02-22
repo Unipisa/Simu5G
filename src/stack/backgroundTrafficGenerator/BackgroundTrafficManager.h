@@ -37,6 +37,9 @@ class BackgroundTrafficManager : public cSimpleModule
     // indexes of the backlogged bg UEs
     std::list<int> backloggedBgUes_[2];
 
+    // indexes of the backlogged bg UEs waiting for RAC+BSR handshake
+    std::list<int> waitingForRac_;
+
     // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
 
@@ -55,7 +58,7 @@ class BackgroundTrafficManager : public cSimpleModule
 
     virtual void initialize(int stage);
     virtual int numInitStages() const  {return inet::INITSTAGE_LINK_LAYER+1; }
-
+    virtual void handleMessage(cMessage* msg);
 
     // define functions for interactions with the NIC
 
@@ -79,11 +82,18 @@ class BackgroundTrafficManager : public cSimpleModule
     std::list<int>::const_iterator getBackloggedUesBegin(Direction dir);
     std::list<int>::const_iterator getBackloggedUesEnd(Direction dir);
 
+    // returns the begin (end) iterator of the vector of backlogged UEs hat are waiting for RAC handshake to finish
+    std::list<int>::const_iterator getWaitingForRacUesBegin();
+    std::list<int>::const_iterator getWaitingForRacUesEnd();
+
     // returns the buffer of the given UE for in the given direction
     unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir);
 
     // returns the bytes per block of the given UE for in the given direction
     unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
+
+    // signal that the RAC for the given UE has been handled
+    void racHandled(MacNodeId bgUeId);
 
     // update background UE's backlog and returns true if the buffer is empty
     unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir);
