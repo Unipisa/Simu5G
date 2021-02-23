@@ -8,18 +8,18 @@ then
 
     # ===== EXPORT SCALARS ===== #
     echo "--> Exporting scalars..."
-    for BKUES in `seq 0 20 100`; do
+    for BKUES in `seq 0 25 200`; do
 	# option -T must be set to s if scalar, v if vector, t if statistics 
-	    opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*bkUEs=${BKUES}-*.sca
-        opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*bkUEs=${BKUES}-*.sca
+	    opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
 
     done
     echo "--> done"
@@ -41,7 +41,7 @@ for METRIC in rtt blocksUl blocksDl; do
 	HEADER="v Background UEs | Scenario >\tBackgroundUEs\tBackgroundUEs-conf\tSimulatedUEs\tSimulatedUEs-conf\n"
 	printf "$HEADER" > $OUTPUTFILE
 
-	for BKUES in `seq 0 20 100`; do
+	for BKUES in `seq 0 25 200`; do
             printf "${BKUES}" >> $OUTPUTFILE
             for SCENARIO in generated simulated; do                           
 	        # get avg and conf int

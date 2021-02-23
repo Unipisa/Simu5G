@@ -8,7 +8,7 @@
 inputfile=$1                                     # the file to be replicated
 repetitions=$2                                   # the number of replications
 
-n=125
+n=2
 
 # Replication of the script, assigning new seed and run numbers
 for (( i=0; i<$repetitions; i++ ))

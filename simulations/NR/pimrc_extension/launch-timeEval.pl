@@ -59,7 +59,7 @@ my($countProc) = 0;
 my($iniFile) = "omnetpp.ini";
 my($maxProc) = 16;
 my($runs) = 10;
-my($parameters) = 6;
+my($parameters) = 9;
 my($total);
 my($decreasing);
 my($timeCmd) = "/usr/bin/time -f %e";
@@ -73,7 +73,7 @@ foreach $config (@configs)
     mkdir($timeResultsDir);
     for( $j = 0 ; $j<$parameters; $j++ )
     {
-        my($numUes) = $j * 20;
+        my($numUes) = $j * 25;
 	# bound i to the number of per-configuration repetitions
 	for( $i = 0 ; $i<$runs ; $i++ )
 	{
