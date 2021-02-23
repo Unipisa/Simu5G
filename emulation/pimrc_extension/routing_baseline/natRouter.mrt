@@ -1,0 +1,29 @@
+ifconfig:
+
+# interface to the external sender
+name: eth0  
+    inet_addr: 10.0.2.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    Metric: 1
+    POINTTOPOINT MULTICAST
+    
+# interface to the external receiver
+name: eth1  
+    inet_addr: 10.0.3.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    Metric: 1
+    POINTTOPOINT MULTICAST
+
+ifconfigend.
+
+route:
+
+#Destination     Gateway          Genmask          Flags  Metric  Iface
+10.0.2.0         *                255.255.255.0    H      0       eth0
+10.0.3.0         *                255.255.255.0    H      0       eth1
+0.0.0.0          *                0.0.0.0          G      0       eth0
+
+routeend.
+
