@@ -58,9 +58,6 @@ void TrafficGeneratorBase::initialize(int stage)
             scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
         }
 
-    }
-    if (stage == inet::INITSTAGE_SINGLE_MOBILITY)
-    {
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;

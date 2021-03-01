@@ -64,7 +64,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     Cqi cqi_[2];
 
     virtual void initialize(int stage) override;
-    virtual int numInitStages() const  {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
+    virtual int numInitStages() const override {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
     virtual void handleMessage(cMessage* msg) override;
 
     // get new values for sinr and cqi

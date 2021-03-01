@@ -17,6 +17,36 @@
 
 Define_Module(BackgroundTrafficManager);
 
+
+const double nrCqiTable[16] = {
+        -9999.0,
+        -9999.0,
+        -9999.0,
+        -5.5,
+        -3.5,
+        -1.5,
+        0.5,
+        4.5,
+        5.5,
+        7.5,
+        10.5,
+        12.5,
+        15.5,
+        17.5,
+        21.5,
+        25.5
+};
+
+double getCqiFromTable(double snr)
+{
+    for (unsigned int i=0; i<16; i++)
+    {
+        if (snr < nrCqiTable[i])
+            return i-1;
+    }
+    return 15;
+}
+
 BackgroundTrafficManager::BackgroundTrafficManager()
 {
     channelModel_ = nullptr;
@@ -111,20 +141,26 @@ Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, dou
         // select the CQI in the range [0,15] according to the "position" of
         // the SINR within the range [SINR_MIN, SINR_MAX]
 
+
         // TODO implement a lookup table that associates the SINR to a
         //      range of CQI values. Then extract a random number within
         //      that range
 
-        if (*it <= minSinr_)
-            bandCqi = 0;
-        else if (*it >= maxSinr_)
-            bandCqi = 15;
-        else
-        {
-            double range = maxSinr_ - minSinr_;
-            double normalizedSinr = *it - minSinr_;
-            bandCqi = 15 * ceil(normalizedSinr / range);
-        }
+        bandCqi = getCqiFromTable(*it);
+
+//        if (dir == UL)
+//            std::cout << "\t snr = " << *it << " cqi = " << bandCqi << endl;
+//
+//        if (*it <= minSinr_)
+//            bandCqi = 0;
+//        else if (*it >= maxSinr_)
+//            bandCqi = 15;
+//        else
+//        {
+//            double range = maxSinr_ - minSinr_;
+//            double normalizedSinr = *it - minSinr_;
+//            bandCqi = 15 * ceil(normalizedSinr / range);
+//        }
 
         meanCqi += bandCqi;
     }
