@@ -1,0 +1,50 @@
+#!/usr/bin/gnuplot -persist
+
+set terminal postscript enhanced color 
+
+set view map
+set size ratio 0.5
+set size 0.7,0.7
+unset surface
+
+set datafile missing "NaN"
+set datafile separator ","
+
+set grid back lc rgb "gray" lw 1 lt 1
+
+# --- Key --- #
+set key top left box opaque font ",16" 
+
+# --- Styles definition --- #
+set style line 1 dt 1 lw 3 pt 7 ps 1.3 lc rgb "#00BB00"
+set style line 2 dt 1 lw 3 pt 2 ps 1.3 lc rgb "red"
+set style line 3 dt 1 lw 3 pt 5 ps 1.3 lc rgb "blue"
+set style line 4 dt 1 lw 3 pt 6 ps 1.3 lc rgb "brown"
+set style line 5 dt 1 lw 3 pt 4 ps 1.3 lc rgb "orange"
+
+set style line 11 dt 1 lw 2 pt 7 ps 0 lc rgb "#00BB00"
+set style line 12 dt 1 lw 2 pt 2 ps 0 lc rgb "red"
+set style line 13 dt 1 lw 2 pt 5 ps 0 lc rgb "blue"
+set style line 14 dt 1 lw 2 pt 6 ps 0 lc rgb "brown"
+set style line 15 dt 1 lw 2 pt 4 ps 0 lc rgb "orange"
+
+set style line 21 dt 2 lw 2 pt 7 lc rgb "#00BB00"
+set style line 22 dt 2 lw 2 pt 2 lc rgb "red"
+set style line 23 dt 2 lw 2 pt 5 lc rgb "blue"
+set style line 24 dt 2 lw 2 pt 6 lc rgb "brown"
+set style line 25 dt 2 lw 2 pt 4 lc rgb "orange"
+
+
+set datafile separator ","
+set xrange [0:175]
+set xtics 0,25,175
+set logscale y
+set yrange [1:*]
+set xlabel "Number of UEs"
+set ylabel "Execution time [s]" font ",16" offset 2
+
+set output 'stats-backgroundUes/backgroundUes-avgTime.ps'
+plot "stats-backgroundUes/avg_time.csv" using 1:2 ls 1 with linespoints t "Background UEs",\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 with linespoint t "Simualated UEs",\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle
