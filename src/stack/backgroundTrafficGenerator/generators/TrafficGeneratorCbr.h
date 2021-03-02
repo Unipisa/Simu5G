@@ -30,10 +30,10 @@ class TrafficGeneratorCbr : public TrafficGeneratorBase
     // -- re-implemented functions from the base class -- //
 
     // generate a new message with length size_
-    virtual unsigned int generateTraffic(Direction dir);
+    virtual unsigned int generateTraffic(Direction dir) override;
 
     // returns the period_
-    virtual simtime_t getNextGenerationTime(Direction dir);
+    virtual simtime_t getNextGenerationTime(Direction dir) override;
 
   public:
     TrafficGeneratorCbr() {}

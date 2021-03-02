@@ -128,6 +128,8 @@ protected:
 
   // for each node and for each band we store information about jakes fading
   std::map<MacNodeId, std::vector<JakesFadingData> > jakesFadingMap_;
+  // for each node and for each band we store information about jakes fading
+  std::map<MacNodeId, std::vector<JakesFadingData> > jakesFadingMapBgUe_;
 
   typedef std::vector<JakesFadingData> JakesFadingVector;
   typedef std::map<MacNodeId, JakesFadingVector> JakesFadingMap;
@@ -332,8 +334,9 @@ public:
    * @param nodeid mac node id of UE
    * @param band logical bend id
    * @param cqiDl if true, the jakesMap in the UE side should be used
+   * @param isBgUe if true, this is called for a background UE
    */
-  double jakesFading(MacNodeId noedId, double speed, unsigned int band, bool cqiDl);
+  double jakesFading(MacNodeId noedId, double speed, unsigned int band, bool cqiDl, bool isBgUe = false);
   /*
    * Compute LOS probability
    *
@@ -414,7 +417,7 @@ protected:
    * @param id mac id of the user
    */
   JakesFadingMap * obtainUeJakesMap(MacNodeId id);
-
+  JakesFadingMap * obtainUeJakesMap_bgUe(MacNodeId id);
 };
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */

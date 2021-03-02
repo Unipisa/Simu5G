@@ -73,7 +73,7 @@ class BackgroundTrafficManager : public cSimpleModule
     void notifyBacklog(int index, Direction dir);
 
     // returns the CQI based on the given position and power
-    Cqi computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
     // returns the pointer to the traffic generator of the given background UE
     TrafficGeneratorBase* getTrafficGenerator(MacNodeId bgUeId);

@@ -96,7 +96,6 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
     // consume bytes from the queue and returns the updated buffer length
     unsigned int consumeBytes(int bytes, Direction dir);
-
 };
 
 #endif

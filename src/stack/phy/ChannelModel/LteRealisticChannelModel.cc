@@ -725,6 +725,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    double recvPower = lteInfo->getTxPower(); // dBm
 
    // get MacId and Direction
+   MacNodeId bgUeId = lteInfo->getSourceId();
    MacNodeId eNbId = lteInfo->getDestId();
    Direction dir = (Direction) lteInfo->getDirection();
 
@@ -738,10 +739,10 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    double antennaGainTx = 0.0;
    double antennaGainRx = 0.0;
    double noiseFigure = 0.0;
-//   double speed = 0.0;
+   double speed = 0.0;
 
-//   // true if we are computing a CQI for the DL direction
-//   bool cqiDl = false;
+   // true if we are computing a CQI for the DL direction
+   bool cqiDl = false;
 
 
 
@@ -758,8 +759,8 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
        //set antenna gain Figure
        antennaGainTx = antennaGainEnB_; //dB
        antennaGainRx = antennaGainUe_;  //dB
-//       // use the jakes map in the UE side
-//       cqiDl = true;
+       // use the jakes map in the UE side
+       cqiDl = true;
    }
    else // if( dir == UL )
    {
@@ -767,11 +768,10 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
        antennaGainTx = antennaGainUe_;
        antennaGainRx = antennaGainEnB_;
        noiseFigure = bsNoiseFigure_;
-//       // use the jakes map in the eNb side
-//       cqiDl = false;
+       // use the jakes map in the eNb side
+       cqiDl = false;
    }
-//   speed = computeSpeed(ueId, coord);
-
+   speed = computeSpeed(bgUeId, ueCoord);
 
    LteCellInfo* eNbCell = getCellInfo(eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
@@ -780,25 +780,26 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
                       << " " << eNbTypeString << " - txPwr " << lteInfo->getTxPower()
                       << " - ueCoord[" << ueCoord << "] - enbCoord[" << enbCoord << "] - enbId[" << eNbId << "]" <<
                       endl;
+
    //=================== END PARAMETERS SETUP =======================
 
 
    //=============== PATH LOSS =================
    // Note that shadowing and fading effects are not applied here and left FFW
 
-   //COMPUTE DISTANCE between ue and eNodeB
-   double sqrDistance = enbCoord.distance(ueCoord);
-   bool los = false; // TODO make it configurable? or random?
-   double dbp = 0;
-
-   // path loss for the desired signal
-   double pathLoss = computePathLoss(sqrDistance, dbp, los);
+   // UL because we are computing a feedback
+   double attenuation = getAttenuation(bgUeId, UL, ueCoord);
 
    //compute recvPower
-   recvPower -= pathLoss; // (dBm-dB)=dBm
-   //============ END PATH LOSS ===============
+   recvPower -= attenuation; // (dBm-dB)=dBm
 
-   //=============== ANGOLAR ATTENUATION =================
+   //add antenna gain
+   recvPower += antennaGainTx; // (dBm+dB)=dBm
+   recvPower += antennaGainRx; // (dBm+dB)=dBm
+   //sub cable loss
+   recvPower -= cableLoss_; // (dBm-dB)=dBm
+
+   // ANGOLAR ATTENUATION
    if (dir == DL)
    {
        //get tx angle
@@ -830,19 +831,38 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
        }
        // else, antenna is omni-directional
    }
-   //=============== END ANGOLAR ATTENUATION =================
-
-   //add antenna gain
-   recvPower += antennaGainTx; // (dBm+dB)=dBm
-   recvPower += antennaGainRx; // (dBm+dB)=dBm
-   //sub cable loss
-   recvPower -= cableLoss_; // (dBm-dB)=dBm
 
    std::vector<double> snrVector;
    snrVector.resize(numBands_, recvPower);
 
-   // compute and add interference due to fading
-   // TODO Apply fading
+   // for each logical band
+   double fadingAttenuation = 0;
+   for (unsigned int i = 0; i < numBands_; i++)
+   {
+       //if fading is enabled
+       if (fading_)
+       {
+           //Appling fading
+           if (fadingType_ == RAYLEIGH)
+               fadingAttenuation = rayleighFading(bgUeId, i);
+
+           else if (fadingType_ == JAKES)
+               fadingAttenuation = jakesFading(bgUeId, speed, i, cqiDl, true);
+       }
+       // add fading contribution to the received pwr
+       double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
+
+       //if txmode is multi user the tx power is dived by the number of paired user
+       // in db divede by 2 means -3db
+       if (lteInfo->getTxMode() == MULTI_USER)
+       {
+           finalRecvPower -= 3;
+       }
+
+       snrVector[i] = finalRecvPower;
+   }
+
+   //============ END PATH LOSS + SHADOWING + FADING ===============
 
 
    /*
@@ -858,30 +878,6 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
 
    // TODO Interference computation still needs to be implemented
 
-//   //============ MULTI CELL INTERFERENCE COMPUTATION =================
-//   //vector containing the sum of multicell interference for each band
-//   std::vector<double> multiCellInterference; // Linear value (mW)
-//   // prepare data structure
-//   multiCellInterference.resize(numBands_, 0);
-//   if (enableDownlinkInterference_ && dir == DL && lteInfo->getFrameType() != HANDOVERPKT)
-//   {
-//       computeDownlinkInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
-//   }
-//   else if (enableUplinkInterference_ && dir == UL)
-//   {
-//       computeUplinkInterference(eNbId, ueId, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
-//   }
-//
-//   //============ EXTCELL INTERFERENCE COMPUTATION =================
-//   //vector containing the sum of ext-cell interference for each band
-//   std::vector<double> extCellInterference; // Linear value (mW)
-//   // prepare data structure
-//   extCellInterference.resize(numBands_, 0);
-//   if (enableExtCellInterference_ && dir == DL)
-//   {
-//       computeExtCellInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), &extCellInterference); // dBm
-//   }
-
    //===================== SINR COMPUTATION ========================
    // compute and linearize total noise
    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
@@ -894,7 +890,6 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    for (unsigned int i = 0; i < numBands_; i++)
    {
        //               (      mW            +  mW  +        mW            )
-//       den = linearToDBm(extCellInterference[i] + totN + multiCellInterference[i]);
        den = linearToDBm(totN);
        EV << "\t recvPwr["<< dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
 
@@ -1421,7 +1416,7 @@ double LteRealisticChannelModel::rayleighFading(MacNodeId id,
 }
 
 double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
-       unsigned int band, bool cqiDl)
+       unsigned int band, bool cqiDl, bool isBgUe)
 {
    /**
     * NOTE: there are two different jakes map. One on the Ue side and one on the eNb side, with different values.
@@ -1437,7 +1432,7 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
    JakesFadingMap* actualJakesMap;
 
    if (cqiDl) // if we are computing a DL CQI we need the Jakes Map stored on the UE side
-       actualJakesMap = obtainUeJakesMap(nodeId);
+       actualJakesMap = (!isBgUe) ? obtainUeJakesMap(nodeId) : &jakesFadingMapBgUe_;
    else
        actualJakesMap = &jakesFadingMap_;
 
@@ -1513,7 +1508,6 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
    // Note that this may be >1 due to constructive interference.
    return linearToDb(re_h * re_h + im_h * im_h);
 }
-
 
 bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteInfo)
 {

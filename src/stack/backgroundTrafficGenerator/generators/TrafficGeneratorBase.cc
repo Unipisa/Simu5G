@@ -104,10 +104,11 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 void TrafficGeneratorBase::updateMeasurements()
 {
     if (trafficEnabled_[DL])
-        cqi_[DL] = bgTrafficManager_->computeCqi(DL, pos_);
+        cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, pos_);
 
     if (trafficEnabled_[UL])
-        cqi_[UL] = bgTrafficManager_->computeCqi(UL, pos_, txPower_);
+        cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, pos_, txPower_);
+
 
     positionUpdated_ = false;
 }

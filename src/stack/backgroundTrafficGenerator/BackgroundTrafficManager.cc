@@ -100,7 +100,7 @@ void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
         backloggedBgUes_[DL].push_back(index);
 }
 
-Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
     if (channelModel_ == nullptr)
     {
@@ -117,7 +117,7 @@ Cqi BackgroundTrafficManager::computeCqi(Direction dir, inet::Coord bgUePos, dou
     UserControlInfo *cInfo = new UserControlInfo();
 
     // build a control info
-    cInfo->setSourceId(BGUE_MIN_ID);  // unique ID for bgUes
+    cInfo->setSourceId(BGUE_MIN_ID + bgUeIndex);  // MacNodeId for the bgUe
     cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
     cInfo->setFrameType(FEEDBACKPKT);
     cInfo->setCoord(bgUePos);
