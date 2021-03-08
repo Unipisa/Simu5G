@@ -2511,8 +2511,23 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
                {
                    MacNodeId ueId = ue_it->nodeId;
                    MacCellId cellId = ue_it->cellId;
-                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
                    Direction dir = ue_it->dir;
+                   double txPwr;
+                   inet::Coord ueCoord;
+                   LtePhyUe* uePhy = nullptr;
+                   TrafficGeneratorBase* trafficGen = nullptr;
+                   if (ue_it->phy != nullptr)
+                   {
+                       uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                       txPwr = uePhy->getTxPwr(dir);
+                       ueCoord = uePhy->getCoord();
+                   }
+                   else  // this is a backgroundUe
+                   {
+                       trafficGen = check_and_cast<TrafficGeneratorBase*>(ue_it->trafficGen);
+                       txPwr = trafficGen->getTxPwr();
+                       ueCoord = trafficGen->getCoord();
+                   }
 
                    // no self interference
                    if (ueId == senderId)
@@ -2525,11 +2540,11 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
                    EV<<NOW<<" LteRealisticChannelModel::computeUplinkInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
                    // get tx power and attenuation from this UE
-                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-                   double att = getAttenuation(ueId, UL, uePhy->getCoord());
-                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   double rxPwr = txPwr - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
+                   double att = getAttenuation(ueId, UL, ueCoord);
+                   (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
-                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
                }
            }
        }
@@ -2628,8 +2643,23 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
                {
                    MacNodeId ueId = ue_it->nodeId;
                    MacCellId cellId = ue_it->cellId;
-                   LtePhyUe* uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
                    Direction dir = ue_it->dir;
+                   double txPwr;
+                   inet::Coord ueCoord;
+                   LtePhyUe* uePhy = nullptr;
+                   TrafficGeneratorBase* trafficGen = nullptr;
+                   if (ue_it->phy != nullptr)
+                   {
+                       uePhy = check_and_cast<LtePhyUe*>(ue_it->phy);
+                       txPwr = uePhy->getTxPwr(dir);
+                       ueCoord = uePhy->getCoord();
+                   }
+                   else  // this is a backgroundUe
+                   {
+                       trafficGen = check_and_cast<TrafficGeneratorBase*>(ue_it->trafficGen);
+                       txPwr = trafficGen->getTxPwr();
+                       ueCoord = trafficGen->getCoord();
+                   }
 
                    // no self interference
                    if (ueId == senderId || ueId == destId)
@@ -2646,11 +2676,11 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
                    EV<<NOW<<" LteRealisticChannelModel::computeD2DInterference - Interference from UE: "<< ueId << "(dir " << dirToA(dir) << ") on band[" << i << "]" << endl;
 
                    // get tx power and attenuation from this UE
-                   double txPwr = uePhy->getTxPwr(dir) - cableLoss_ + 2 * antennaGainUe_;
-                   double att = getAttenuation_D2D(ueId, D2D, uePhy->getCoord(), destId, destCoord);
-                   (*interference)[i] += dBmToLinear(txPwr-att);//(dBm-dB)=dBm
+                   double rxPwr = txPwr - cableLoss_ + 2 * antennaGainUe_;
+                   double att = getAttenuation_D2D(ueId, D2D, ueCoord, destId, destCoord);
+                   (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
-                   EV << "\t band " << i << "/pwr[" << txPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
+                   EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
                }
            }
        }
