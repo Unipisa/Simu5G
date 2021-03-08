@@ -64,6 +64,7 @@ foreach my $numerology (@numerology)
                         
                         open ($out,">","scenario.ini") or die "ERROR: Unable to open output file"; 
                         print $out "*.numBkUEs = \${numBkUEs=$ues}\n";
+                        print $out "*.carrierAggregation.numComponentCarriers = \${ca=1}\n";
                         print $out "*.carrierAggregation.componentCarrier[0].numBands = \${rbs=$rbs}\n";
                         print $out "*.carrierAggregation.componentCarrier[0].numerologyIndex = \${u=$numerology}\n";
                         print $out "*.numExtCells = \${numExtCells=$extCells}\n";

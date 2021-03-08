@@ -31,12 +31,14 @@ set style line 23 dt 2 lw 2 pt 5 lc rgb "blue"
 set style line 24 dt 2 lw 2 pt 6 lc rgb "brown"
 set style line 25 dt 2 lw 2 pt 4 lc rgb "orange"
 
+
+
+# --- PLOT ROUND TRIP TIME SCALABILITY WITH DIFFERENT NUMBER OF RBs (CCs=1) ---#                    
+
 set output 'plots/rtt-ca=1.ps'
 set multiplot layout 3,1
 set tmargin 0
 set bmargin 0.5
-
-# --- PLOT ROUND TRIP TIME ---#
 
 # --- Key --- #
 set key at 9.5,34 center box opaque width 1 horizontal font ",14" title "Numerology"
@@ -114,17 +116,103 @@ plot "stats/rtt-ca=1-rbs=100.csv" using 1:2 ls 1 with linespoints t col,\
 
 unset multiplot
                             
-                            
-                            
+# ------------------------------------------------------------#
 
+
+
+# --- PLOT ROUND TRIP TIME SCALABILITY WITH DIFFERENT NUMBER OF CARRIERS (RBs=25) ---#                    
+                            
+set output 'plots/rtt-rbs=25.ps'
+set multiplot layout 3,1
+set tmargin 0
+set bmargin 0.5
+
+# --- Key --- #
+set key at 9.5,34 center box opaque width 1 horizontal font ",14" title "Numerology"
+
+set xrange[0:19]
+set yrange[0:30]
+set ylabel "RTT [ms]" font ",16" offset 1
+unset xlabel
+set xtics format ""
+
+set origin 0.2,0.63
+set size 0.6,0.28
+set title "CCs=1" offset -15,-3 font ",18"
+plot "stats/rtt-ca=1-rbs=25.csv" using 1:2 ls 1 pi 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 pi 1 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 pi 1 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle,\
+                            "" using 1:8 ls 4 pi 1 with linespoint t col,\
+                            "" using 1:8:9 ls 14 with yerrorbars notitle,\
+                            "" using 1:10 ls 5 pi 1 with linespoint t col,\
+                            "" using 1:10:11 ls 15 with yerrorbars notitle,\
+     "stats/sim_rtt-ca=1-rbs=25.csv" using 1:2 ls 21 with lines notitle,\
+                            "" using 1:4 ls 22 with lines notitle,\
+                            "" using 1:6 ls 23 with lines notitle,\
+                            "" using 1:8 ls 24 with lines notitle,\
+                            "" using 1:10 ls 25 with lines notitle
+                            
+                            
+unset key
+set origin 0.2,0.35
+set size 0.6,0.28
+set title "CCs=2" offset -15,-3 font ",18"
+
+plot "stats/rtt-ca=2-rbs=25.csv" using 1:2 ls 1 pi 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 pi 1 pi 1 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 pi 1 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle,\
+                            "" using 1:8 ls 4 pi 1 with linespoint t col,\
+                            "" using 1:8:9 ls 14 with yerrorbars notitle,\
+                            "" using 1:10 ls 5 pi 1 with linespoint t col,\
+                            "" using 1:10:11 ls 15 with yerrorbars notitle,\
+     "stats/sim_rtt-ca=1-rbs=25.csv" using 1:2 ls 21 with lines notitle,\
+                            "" using 1:4 ls 22 with lines notitle,\
+                            "" using 1:6 ls 23 with lines notitle,\
+                            "" using 1:8 ls 24 with lines notitle,\
+                            "" using 1:10 ls 25 with lines notitle
+                         
+set xlabel "Simulated UEs" font ",16"
+set xtics format "%.0f"
+set origin 0.2,0.07
+set size 0.6,0.28
+set title "CCs=4" offset -15,-3 font ",18"
+
+plot "stats/rtt-ca=4-rbs=25.csv" using 1:2 ls 1 pi 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 pi 1 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 pi 1 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle,\
+                            "" using 1:8 ls 4 pi 1 with linespoint t col,\
+                            "" using 1:8:9 ls 14 with yerrorbars notitle,\
+                            "" using 1:10 ls 5 pi 1 with linespoint t col,\
+                            "" using 1:10:11 ls 15 with yerrorbars notitle,\
+     "stats/sim_rtt-ca=1-rbs=25.csv" using 1:2 ls 21 with lines notitle,\
+                            "" using 1:4 ls 22 with lines notitle,\
+                            "" using 1:6 ls 23 with lines notitle,\
+                            "" using 1:8 ls 24 with lines notitle,\
+                            "" using 1:10 ls 25 with lines notitle
+
+
+unset multiplot
+
+# ------------------------------------------------------------#
+
+
+
+# --- PLOT ROUND TRIP TIME SCALABILITY WITH BACKGROUND UEs AND DIFFERENT NUMBERS OF RBs (CCs=1) --- #
                             
                             
 set output 'plots/rtt-backgroundUes-ca=1.ps'
 set multiplot layout 3,1
 set tmargin 0
 set bmargin 0.5
-
-# --- PLOT ROUND TRIP TIME ---#
 
 # --- Key --- #
 set key at 9.5,34 center box opaque width 1 horizontal font ",14" title "Numerology"
@@ -187,3 +275,7 @@ plot "stats/rtt-backgroundUes-ca=1-rbs=100.csv" using 1:2 ls 1 pi 1 with linespo
 
 
 unset multiplot
+
+
+
+
