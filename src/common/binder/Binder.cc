@@ -358,14 +358,9 @@ void Binder::initAndResetUlTransmissionInfo()
     UplinkTransmissionMap::iterator it = ulTransmissionMap_.begin();
     for (; it != ulTransmissionMap_.end(); ++it)
     {
-        double carrierFrequency = it->first;
-        int numCarrierBands = componentCarriers_[carrierFrequency].numBands;
-
         // the second element (i.e. referring to the old time slot) becomes the first element
-        it->second.erase(it->second.begin());
-        // push a new element (i.e. referring to the current time slot)
-        it->second.push_back(std::vector<std::vector<UeAllocationInfo> >());
-        it->second[CURR_TTI].resize(numCarrierBands);
+        if (!(it->second.empty()))
+            it->second.erase(it->second.begin());
     }
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
@@ -379,11 +374,17 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.dir = dir;
     info.trafficGen = nullptr;
 
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
     {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
         ulTransmissionMap_[carrierFreq].resize(2);
         ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+    else if (ulTransmissionMap_[carrierFreq].size() == 1)
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
 
@@ -408,11 +409,17 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.dir = dir;
     info.trafficGen = trafficGen;
 
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
     {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
         ulTransmissionMap_[carrierFreq].resize(2);
         ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+    else if (ulTransmissionMap_[carrierFreq].size() == 1)
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
 
