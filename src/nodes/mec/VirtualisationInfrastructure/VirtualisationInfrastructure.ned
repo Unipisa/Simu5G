@@ -18,8 +18,12 @@ import inet.networklayer.contract.IRoutingTable;
 import inet.networklayer.contract.INetworkLayer;
 import inet.applications.contract.IApp;
 import inet.transportlayer.udp.Udp;
+import inet.transportlayer.tcp.Tcp;
+
 import inet.common.MessageDispatcher;
 import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationManager;
+
+import inet.linklayer.contract.IEthernetInterface;
 
 
 // 
@@ -51,6 +55,7 @@ module VirtualisationInfrastructure
         inout ppp[];				// connection with GtpEndpoint and local/externa networks
         output meAppOut[];			// connection to the ME App input gate
         input meAppIn[];			// connection to the ME App output gate
+        inout mePlatform;			// connection to the ME Platform
 
     submodules:
 
@@ -72,6 +77,14 @@ module VirtualisationInfrastructure
             @display("p=550,508");
         }
 
+
+   	  	//# ethernet interface used for communicating with the MEC service in the MEC platform
+        eth: <default("EthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=739.23,521.52,row,150;q=txQueue");
+        }
+
+
         //#
         //# Network layer module
         //#
@@ -89,21 +102,25 @@ module VirtualisationInfrastructure
         //#
 		// =============== UDP ============== //
         virtualisationManager: VirtualisationManager {
-            @display("p=550,74,row");
+            @display("p=657,74,row");
         }
 
         udp: Udp {
-            @display("p=550,217");
+            @display("p=459,217");
+        }
+
+        tcp: Tcp {
+            @display("p=627,217");
         }
 
         //#
         //# Resource Manager module
         //#
         resourceManager: ResourceManager {
-            @display("p=722,74,row");
+            @display("p=785,74,row");
         }
 
-                // message dispatcher for SAP between application and transport layer
+        // message dispatcher for SAP between application and transport layer
         at: MessageDispatcher {
             parameters:
                 @display("p=550,146;b=600,5,,,,1");
@@ -138,11 +155,19 @@ module VirtualisationInfrastructure
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;
 
+        at.out++ --> tcp.appIn;
+        at.in++ <-- tcp.appOut;
+
+
         //# 
         //# Transport layer to network layer connections
         //#
         udp.ipOut --> tn.in++;
         udp.ipIn <-- tn.out++;
+
+        tcp.ipOut --> tn.in++;
+        tcp.ipIn <-- tn.out++;
+
 
         ipv4.ifIn <-- nl.out++ if hasIpv4;
         ipv4.ifOut --> nl.in++ if hasIpv4;
@@ -161,5 +186,9 @@ module VirtualisationInfrastructure
             pppIf[i].upperLayerIn <-- nl.out++;
             pppIf[i].phys <--> ppp++;
         }
+
+        eth.upperLayerOut --> nl.in++;
+        eth.upperLayerIn <-- nl.out++;
+        eth.phys <--> mePlatform;
 
 }

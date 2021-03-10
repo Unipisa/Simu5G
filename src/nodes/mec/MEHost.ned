@@ -14,6 +14,7 @@ package simu5g.nodes.mec;
 import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
 import simu5g.nodes.mec.MEPlatform.MEPlatform;
 
+
 //lte tunneling endpoint to connect externally with an eNodeB
 import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
 import inet.node.ethernet.Eth10G;
@@ -29,7 +30,7 @@ module MEHost
         //# Node specs
         string nodeType = "MEHost";						// DO NOT CHANGE
         string gateway = default("upf");
-        
+
         //#	ME Host Resources
         int maxMEApps = default(0);
         double maxRam @unit("B") = default(32GB);
@@ -56,7 +57,7 @@ module MEHost
 
         mePlatform: MEPlatform {
             parameters:
-                @display("p=500,50;is=m");
+                @display("p=699.035,244.72499;is=m");
         }
 
         //gtp endpoint to connect directly with a e/gNodeB
@@ -74,16 +75,15 @@ module MEHost
         //#
         virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
 
-        for i=0..sizeof(pppENB)-1 
-        {
+        for i=0..sizeof(pppENB)-1 {
             pppENB++ <--> gtpEndpoint.pppg++;
         }
 
-        for i=0..sizeof(ppp)-1 
-        {
+        for i=0..sizeof(ppp)-1 {
             //#
             //# external connection to external networks
             //#
             virtualisationInfrastructure.ppp++ <--> ppp++;
         }
+        //virtualisationInfrastructure.mePlatform <--> mePlatform.virtInfr;
 }
