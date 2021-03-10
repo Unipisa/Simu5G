@@ -53,11 +53,11 @@ void VirtualisationManager::initialize(int stage)
         virtualisationInfr->setGateSize("meAppOut", maxMEApps);
         virtualisationInfr->setGateSize("meAppIn", maxMEApps);
         //VirtualisationInfrastructure internal gate connections with VirtualisationManager
-        for(int index = 0; index < maxMEApps; index++)
-        {
-            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
-            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
-        }
+//        for(int index = 0; index < maxMEApps; index++)
+//        {
+//            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
+//            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
+//        }
         mePlatform = meHost->getSubmodule("mePlatform");
         //setting  gate sizes for MEPlatform
         if(mePlatform->gateSize("meAppOut") == 0 || mePlatform->gateSize("meAppIn") == 0)
@@ -372,8 +372,19 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         EV << "VirtualisationManager::instantiateMEApp - UEAppSimbolicAddress: " << sourceAddress << endl;
 
         //connecting VirtualisationInfrastructure gates to the MEApp gates
-        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
-        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
+
+        // add gates to the 'at' layer and connect them to the virtualisationInfr gates
+        cModule *at = virtualisationInfr->getSubmodule("at");
+        if(at == nullptr)
+            throw cRuntimeError("at module, i.e. message dispatcher for SAP between application and transport layer non found");
+        cGate* newAtInGate = at->getOrCreateFirstUnconnectedGate("in", 0, false, true);
+        cGate* newAtOutGate = at->getOrCreateFirstUnconnectedGate("out", 0, false, true);
+        newAtOutGate->connectTo(virtualisationInfr->gate("meAppOut", index));
+        virtualisationInfr->gate("meAppIn", index)->connectTo(newAtInGate);
+
+        // connect virtualisationInfr gates to the me App
+//        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
+//        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
 
         // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
         if(serviceIndex != NO_SERVICE)
