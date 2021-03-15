@@ -44,6 +44,9 @@ class Binder : public omnetpp::cSimpleModule
     // list of static external cells. Used for intercell interference evaluation
     std::map<double, ExtCellList> extCellList_;
 
+    // list of static external cells. Used for intercell interference evaluation
+    std::map<double, BackgroundBaseStationList> bgBaseStationList_;
+
     // list of all eNBs. Used for inter-cell interference evaluation
     std::vector<EnbInfo*> enbList_;
 
@@ -413,6 +416,20 @@ class Binder : public omnetpp::cSimpleModule
     ExtCellList getExtCellList(double carrierFrequency)
     {
         return extCellList_[carrierFrequency];
+    }
+
+    int addBackgroundBaseStation(BackgroundBaseStation* bgBaseStation, double carrierFrequency)
+    {
+        if (bgBaseStationList_.find(carrierFrequency) == bgBaseStationList_.end())
+            bgBaseStationList_[carrierFrequency] = BackgroundBaseStationList();
+
+        bgBaseStationList_[carrierFrequency].push_back(bgBaseStation);
+        return bgBaseStationList_[carrierFrequency].size() - 1;
+    }
+
+    BackgroundBaseStationList getBackgroundBaseStationList(double carrierFrequency)
+    {
+        return bgBaseStationList_[carrierFrequency];
     }
 
     void addEnbInfo(EnbInfo* info)

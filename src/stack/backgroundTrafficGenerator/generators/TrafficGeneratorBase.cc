@@ -144,7 +144,7 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
 
     if (bytes > bufferedBytes_[dir])
-        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - consume %d bytes, but buffer is %d", bytes, bufferedBytes_[dir]);
+        bytes = bufferedBytes_[dir];
 
     bufferedBytes_[dir] -= bytes;
 

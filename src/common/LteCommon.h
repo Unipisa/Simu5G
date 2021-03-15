@@ -46,6 +46,7 @@ class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
 class ExtCell;
+class BackgroundBaseStation;
 class TrafficGeneratorBase;
 
 
@@ -595,6 +596,7 @@ struct UeAllocationInfo{
 };
 
 typedef std::vector<ExtCell*> ExtCellList;
+typedef std::vector<BackgroundBaseStation*> BackgroundBaseStationList;
 
 /*****************
  *  PHY Support  *

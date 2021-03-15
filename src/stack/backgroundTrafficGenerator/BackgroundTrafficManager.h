@@ -21,6 +21,7 @@ class TrafficGeneratorBase;
 class LteMacEnb;
 class LteChannelModel;
 
+
 //
 // BackgroundTrafficManager
 //
@@ -43,9 +44,8 @@ class BackgroundTrafficManager : public cSimpleModule
     // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
 
-    // range for SINR values
-    double minSinr_;
-    double maxSinr_;
+    /// TTI for this node
+    double ttiPeriod_;
 
     // carrier frequency for these bg UEs
     double carrierFrequency_;
@@ -70,10 +70,10 @@ class BackgroundTrafficManager : public cSimpleModule
     void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }
 
     // invoked by the UE's traffic generator when new data is backlogged
-    void notifyBacklog(int index, Direction dir);
+    virtual void notifyBacklog(int index, Direction dir);
 
     // returns the CQI based on the given position and power
-    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
     // returns the pointer to the traffic generator of the given background UE
     TrafficGeneratorBase* getTrafficGenerator(MacNodeId bgUeId);
@@ -87,16 +87,16 @@ class BackgroundTrafficManager : public cSimpleModule
     std::list<int>::const_iterator getWaitingForRacUesEnd();
 
     // returns the buffer of the given UE for in the given direction
-    unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir);
+    virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir);
 
     // returns the bytes per block of the given UE for in the given direction
-    unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
+    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
 
     // signal that the RAC for the given UE has been handled
-    void racHandled(MacNodeId bgUeId);
+    virtual void racHandled(MacNodeId bgUeId);
 
     // update background UE's backlog and returns true if the buffer is empty
-    unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir);
+    virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir);
 };
 
 #endif

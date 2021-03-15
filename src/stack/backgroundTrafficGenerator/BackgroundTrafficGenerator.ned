@@ -11,25 +11,21 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
+import lte.stack.backgroundTrafficGenerator.BackgroundTrafficManager;
+
 module BackgroundTrafficGenerator
 {
     parameters:
         @display("i=block/source");
         int numBgUes = default(0);
-
+        string bgTrafficManagerType = default("BackgroundTrafficManager");
+        
     submodules:
         bgUE[numBgUes]: BackgroundUe {
             @display("p=77,118");
         }
-        manager: BackgroundTrafficManager {
+        manager: <bgTrafficManagerType> like IBackgroundTrafficManager {
             @display("p=77,41");
         }
 }
 
-simple BackgroundTrafficManager 
-{
-    parameters:
-        @display("i=block/control");
-        @class("BackgroundTrafficManager");
-}    
-    

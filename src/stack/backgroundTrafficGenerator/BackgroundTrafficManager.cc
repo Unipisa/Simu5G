@@ -69,10 +69,6 @@ void BackgroundTrafficManager::initialize(int stage)
     {
         // get the reference to the MAC layer
         mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
-
-        LteBinder* binder = getBinder();
-        minSinr_ = binder->phyPisaData.minSnr();
-        maxSinr_ = binder->phyPisaData.maxSnr();
     }
 }
 
@@ -243,7 +239,6 @@ void BackgroundTrafficManager::racHandled(MacNodeId bgUeId)
 
         double offset = mac_->getTtiPeriod() * 6;  // TODO make it configurable
                                                    //      there are 6 slots between the first BSR and actual data
-
         scheduleAt(NOW + offset, notification);
     }
 }
