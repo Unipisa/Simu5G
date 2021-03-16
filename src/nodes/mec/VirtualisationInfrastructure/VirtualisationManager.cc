@@ -382,9 +382,9 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         newAtOutGate->connectTo(virtualisationInfr->gate("meAppOut", index));
         virtualisationInfr->gate("meAppIn", index)->connectTo(newAtInGate);
 
-        // connect virtualisationInfr gates to the me App
-//        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
-//        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
+        // connect virtualisationInfr gates to the meApp
+        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
+        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
 
         // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
         if(serviceIndex != NO_SERVICE)
