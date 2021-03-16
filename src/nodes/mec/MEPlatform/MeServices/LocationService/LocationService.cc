@@ -136,7 +136,7 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
                 * - accessPointId
                 */
 
-                std::vector<MacNodeId> cellIds;
+                std::vector<MacCellId> cellIds;
                 std::vector<inet::Ipv4Address> ues;
 
                 std::vector<std::string>::iterator it  = queryParameters.begin();
@@ -146,6 +146,7 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
                 for(; it != end; ++it){
                     if(it->rfind("accessPointId", 0) == 0) // cell_id=par1,par2
                     {
+                        EV <<"LocationService::handleGETReques - parameters: " << endl;
                         params = lte::utils::splitString(*it, "=");
                         if(params.size()!= 2) //must be param=values
                         {
@@ -156,7 +157,8 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
                         std::vector<std::string>::iterator pit  = splittedParams.begin();
                         std::vector<std::string>::iterator pend = splittedParams.end();
                         for(; pit != pend; ++pit){
-                            cellIds.push_back((MacNodeId)std::stoi(*pit));
+                            EV << "cellId: " <<*pit << endl;
+                            cellIds.push_back((MacCellId)std::stoi(*pit));
                         }
                     }
                     else if(it->rfind("address", 0) == 0)
@@ -188,14 +190,17 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
                 //send response
                 if(!ues.empty() && !cellIds.empty())
                 {
+                    EV <<"LocationService::handleGETReques - toJson(cellIds, ues) " << endl;
                     Http::send200Response(socket, LocationResource_.toJson(cellIds, ues).dump(0).c_str());
                 }
                 else if(ues.empty() && !cellIds.empty())
                 {
+                    EV <<"LocationService::handleGETReques - toJson(cellIds) " << endl;
                     Http::send200Response(socket, LocationResource_.toJsonCell(cellIds).dump(0).c_str());
                 }
                 else if(!ues.empty() && cellIds.empty())
                {
+                   EV <<"LocationService::handleGETReques - toJson(ues) " << endl;
                    Http::send200Response(socket, LocationResource_.toJsonUe(ues).dump(0).c_str());
                }
                else
@@ -205,6 +210,7 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
 
             }
             else if (splittedUri.size() == 1 ){ //no query params
+                EV <<"LocationService::handleGETReques - toJson() " << endl;
                 Http::send200Response(socket,LocationResource_.toJson().dump(0).c_str());
                 return;
             }

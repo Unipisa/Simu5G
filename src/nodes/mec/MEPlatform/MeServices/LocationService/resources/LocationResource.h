@@ -8,6 +8,7 @@
 #include "nodes/mec/MEPlatform/MeServices/Resources/TimeStamp.h"
 #include "nodes/binder/LteBinder.h"
 #include "inet/networklayer/contract/ipv4/Ipv4Address.h"
+#include "nodes/mec/MEPlatform/MeServices/LocationService/resources/UserInfo.h"
 //#include "inet/common/geometry/common/Coord.h"
 
 using namespace omnetpp;
@@ -41,6 +42,11 @@ class LocationResource : public AttributeBase
 		TimeStamp timestamp_;
 		std::map<MacCellId, LteCellInfo*> eNodeBs_;
 		std::string baseUri_;
+
+		UserInfo getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellId) const;
+		User getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const;
+
+		nlohmann::ordered_json getUserListPerCell(std::map<MacCellId, LteCellInfo *>::const_iterator it) const;
 
 
 };

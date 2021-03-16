@@ -10,7 +10,7 @@ namespace LocationUtils
         LteBinder* binder = getBinder();
         OmnetId omnetId = binder->getOmnetId(id);
         if(omnetId == 0)
-            return inet::Coord::ZERO; // or throw exception?
+            return inet::Coord::NIL; // or throw exception?
         cModule* module = getSimulation()->getModule(omnetId);
         inet::IMobility *mobility_ = check_and_cast<inet::IMobility *>(module->getSubmodule("mobility"));
         return mobility_->getCurrentPosition();
@@ -21,7 +21,7 @@ namespace LocationUtils
         LteBinder* binder = getBinder();
         OmnetId omnetId = binder->getOmnetId(id);
         if(omnetId == 0)
-            return inet::Coord::ZERO; // or throw exception?
+            return inet::Coord::NIL; // or throw exception?
         cModule* module = getSimulation()->getModule(omnetId);
         inet::IMobility *mobility_ = check_and_cast<inet::IMobility *>(module->getSubmodule("mobility"));
         return mobility_->getCurrentVelocity();
