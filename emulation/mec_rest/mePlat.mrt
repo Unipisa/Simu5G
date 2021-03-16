@@ -1,0 +1,25 @@
+ifconfig:
+
+# interface to the external server
+name: extEth0  
+    inet_addr: 192.168.8.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    Metric: 1
+    POINTTOPOINT MULTICAST
+    
+name: lo0
+    inet_addr: 127.0.0.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    POINTTOPOINT MULTICAST
+ifconfigend.
+
+route:
+
+#Destination     Gateway          Genmask          Flags  Metric  Iface
+#127.0.0.1         *                255.255.255.0    H      0       lo0
+0.0.0.0          *                0.0.0.0          G      0       extEth0
+
+routeend.
+
