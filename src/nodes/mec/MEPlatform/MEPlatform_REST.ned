@@ -41,20 +41,26 @@ module MEPlatform_REST
 
         //# Network Layer specs
         string networkLayerType = default("IPv4NetworkLayer");
-        string routingTableType = default("IPv4RoutingTable");
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default(routingTableType != "" ? absPath(".routingTable") : "");
         //# Num Services
         int numServices = default(0);
+        int numRESTServices = default(0);
+        
 
         @display("bgb=1122.99,610.08");
-
-         //# Network Layer specs
+    
+	    //# Transport Layer specs
+		bool hasTcp = default(true);
+		bool hasUdp = default(true);
+		    
+    	//# Network Layer specs
         bool hasIpv4 = default(true);
         bool hasIpv6 = default(false);
 
         //# External Ethernet interfaces
-        int numExtEthInterfaces = default(1); //
+       
+        int numExtEthInterfaces = default(0); //
 //        string extHostAddress = default("");
 
         //# Loopback interfaces
@@ -62,7 +68,8 @@ module MEPlatform_REST
 
     gates:
         inout virtInfr; // connection to the virtualization infrastructure to communicate with the MEapps
-
+		input meAppIn[];
+        output meAppOut[];
     submodules:
 
         interfaceTable: InterfaceTable {
@@ -71,13 +78,15 @@ module MEPlatform_REST
 
         // TODO: should not include a routing table
         // routing table
-        routingTable: <routingTableType> like IRoutingTable if routingTableType != "" {
-            parameters:
-                @display("p=61.344,124.96;is=s");
+
+		//# old mec services NO REST
+        udpService[numServices]: <> like IMEService {
+            @display("p=237.25,81.9,row");
         }
 
+
 		//# app layer 
-        app[numServices]: <> like IApp {
+        app[numRESTServices]: <> like IApp {
             @display("p=551.04,73.8,row,140");
         }
 
@@ -142,7 +151,7 @@ module MEPlatform_REST
         //# Internal Tcp/Udp applications connections with transport layer
         //#
 
-        for i=0..numApps-1 {
+        for i=0..numRESTServices-1 {
             app[i].socketOut --> at.in++;
             app[i].socketIn <-- at.out++;
         }

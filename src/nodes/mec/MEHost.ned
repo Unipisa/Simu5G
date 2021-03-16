@@ -55,7 +55,7 @@ module MEHost
                 @display("p=500,400");
         }
 
-        mePlatform: MEPlatform {
+        mePlatform: MEPlatform_REST {
             parameters:
                 @display("p=699.035,244.72499;is=m");
         }
@@ -85,5 +85,5 @@ module MEHost
             //#
             virtualisationInfrastructure.ppp++ <--> ppp++;
         }
-        //virtualisationInfrastructure.mePlatform <--> mePlatform.virtInfr;
+        virtualisationInfrastructure.mePlatform <--> Eth10G <--> mePlatform.virtInfr;
 }
