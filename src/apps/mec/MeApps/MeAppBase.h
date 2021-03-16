@@ -9,7 +9,9 @@
 #define APPS_MEC_MEAPPS_MEAPPBASE_H_
 
 #include "inet/applications/tcpapp/TcpAppBase.h"
-
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 /**
  * Base class for clients app for TCP-based request-reply protocols or apps.
  * Handles a single session (and TCP connection) at a time.
@@ -21,6 +23,7 @@ class  MeAppBase : public inet::TcpAppBase
   protected:
 
     std::map<std::string, std::string> receivedMessage;
+    HttpBaseMessage* currentHttpMessage;
     std::string bufferedData;
     omnetpp::cMessage *sendTimer;
 

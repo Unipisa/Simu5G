@@ -69,12 +69,6 @@ moduleinterface MeAppBase
         int connectPort ; // port number to connect to
         double startTime ; // time first session begins
         double stopTime ;  // time of finishing sending, negative values mean forever
-        volatile int numRequestsPerSession;  // number of requests sent per session
-        volatile int requestLength @unit(B); // length of a request
-        volatile int replyLength @unit(B) ; // length of a reply
-        volatile double thinkTime @unit(s); // time gap between requests
-        volatile double idleInterval @unit(s); // time gap between sessions
-        volatile double reconnectInterval @unit(s) ;  // if connection breaks, waits this much before trying to reconnect
         int timeToLive ; // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp ; // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos ; // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
