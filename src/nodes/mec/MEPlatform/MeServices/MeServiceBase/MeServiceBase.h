@@ -49,6 +49,7 @@ enum RequestState {CORRECT, BAD_REQ_LINE, BAD_HEADER, BAD_HTTP, BAD_REQUEST, DIF
 
 class SocketManager;
 class SubscriptionBase;
+class HttpRequestMessage;
 
 class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
@@ -85,8 +86,10 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         omnetpp::cMessage *currentRequestServed_;
         reqMap currentRequestServedmap_;
         int requestQueueSize_;
-        std::string currentRequestServedPayload_;
         RequestState currentRequestState_;
+
+        HttpRequestMessage *currentRequestMessage_;
+
 
         omnetpp::cMessage *requestService_;
         double requestServiceTime_;
@@ -166,6 +169,8 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * the request queue is full. It responds with a HTTP 503
          */
         virtual void handleRequestQueueFull(omnetpp::cMessage *msg);
+        virtual void handleRequestQueueFull(HttpBaseMessage* msg);
+
 
         /*
         * This method calculate the service time of the request based on:
@@ -252,6 +257,9 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * @param msg request
          */
         virtual void newRequest(omnetpp::cMessage *msg);
+        virtual void newRequest(HttpBaseMessage *msg);
+
+
 
         // This method adds the subscription event in the subscriptions_ queue
 
@@ -260,11 +268,9 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         /*
          * This method handles a request. It parses the payload and in case
          * calls the correct method (e.g GET, POST)
-         *
-         * @param request HTTP request
          * @param socket used to send back the response
          */
-        virtual void handleRequest(omnetpp::cMessage* request, inet::TcpSocket *socket);
+        virtual void handleRequest( inet::TcpSocket *socket);
 
         /* This method is used by the SocketManager object in order to remove itself from the
          * map
@@ -276,7 +282,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         virtual void closeConnection(SocketManager *connection);
 
 
-        virtual Http::DataType getDataType(std::string& packet_);
+//        virtual Http::DataType getDataType(std::string& packet_);
 
         /* This method can be used by the socketManager class to emit
          * the length of the request queue upon a request arrival

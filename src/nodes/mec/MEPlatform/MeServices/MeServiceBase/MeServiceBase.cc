@@ -17,6 +17,7 @@
 #include "../MeServiceBase/MeServiceBase.h"
 
 #include "nodes/mec/MEPlatform/MeServices/Resources/SubscriptionBase.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
 #include "nodes/mec/MEPlatform/MeServices/MeServiceBase/SocketManager.h"
@@ -165,17 +166,21 @@ void MeServiceBase::socketClosed(inet::TcpSocket *socket)
 
 bool MeServiceBase::manageRequest()
 {
+    EV_INFO <<" MeServiceBase::manageRequest" << endl;
   //  EV << "MeServiceBase::manageRequest - start manageRequest" << endl;
-    inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.findSocketFor(currentRequestServed_));
+    inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(currentRequestMessage_->getSockId()));
     if(socket)
     {
         EV_INFO <<" MeServiceBase::manageRequest" << endl;
-        handleCurrentRequest(socket);
-        if(currentRequestServed_!= nullptr)
-            delete currentRequestServed_;
-        currentRequestServed_ = nullptr;
-        currentRequestServedmap_.clear();
-        currentRequestState_= UNDEFINED;
+//        handleCurrentRequest(socket);
+        handleRequest(socket);
+        if(currentRequestMessage_ != nullptr)
+            delete currentRequestMessage_;
+//        if(currentRequestServed_!= nullptr)
+//            delete currentRequestServed_;
+//        currentRequestServed_ = nullptr;
+//        currentRequestServedmap_.clear();
+//        currentRequestState_= UNDEFINED;
         return true;
     }
     else // socket has been closed or some error occured, discard request
@@ -204,8 +209,8 @@ void MeServiceBase::scheduleNextEvent(bool now)
     }
     else if (requests_.getLength() != 0 && !requestService_->isScheduled() )
     {
-        currentRequestServed_ = check_and_cast<cMessage *>(requests_.pop());
-
+//        currentRequestServed_ = check_and_cast<cMessage *>(requests_.pop());
+        currentRequestMessage_ = check_and_cast<HttpRequestMessage*>(requests_.pop());
         //calculate the serviceTime base on the type | parameters
         double serviceTime = calculateRequestServiceTime(); //must be >0
         scheduleAt(simTime() + serviceTime , requestService_);
@@ -223,10 +228,25 @@ void MeServiceBase::handleRequestQueueFull(cMessage *msg)
     {
         throw cRuntimeError ("MeServiceBase::handleRequestQueueFull - socket not found, this should not happen.");
     }
-    Http::send400Response(socket);
     delete msg;
-//    Http::send503Response(socket, "{Request server queue full}");
+    std::string reason("{Request server queue full}");
+    Http::send503Response(socket, reason.c_str());
 }
+
+void MeServiceBase::handleRequestQueueFull(HttpBaseMessage *msg)
+{
+    EV << " MeServiceBase::handleQueueFull" << endl;
+    inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(msg->getSockId()));
+    if(!socket)
+    {
+        throw cRuntimeError ("MeServiceBase::handleRequestQueueFull - socket not found, this should not happen.");
+    }
+    delete msg;
+    std::string reason("{Request server queue full}");
+    Http::send503Response(socket, reason.c_str());
+}
+
+
 
 void MeServiceBase::newRequest(cMessage *msg)
 {
@@ -240,6 +260,21 @@ void MeServiceBase::newRequest(cMessage *msg)
     requests_.insert(msg);
     scheduleNextEvent();
 }
+
+void MeServiceBase::newRequest(HttpBaseMessage *msg)
+{
+    EV << "Queue length: " << requests_.getLength() << endl;
+    // If queue is full respond 503 queue full
+    if(requestQueueSize_ != 0 && requests_.getLength() == requestQueueSize_){
+       handleRequestQueueFull(msg);
+       return;
+    }
+
+    requests_.insert(msg);
+    scheduleNextEvent();
+}
+
+
 
 void MeServiceBase::newSubscriptionEvent(cMessage *msg)
 {
@@ -268,6 +303,9 @@ void MeServiceBase::triggeredEvent(short int event)
 
 double MeServiceBase::calculateRequestServiceTime()
 {
+    double time = poisson(requestServiceTime_, REQUEST_RNG);
+                return (time*1e-6);
+
     EV << "MeServiceBase::calculateRequestServiceTime()" << endl;
     parseCurrentRequest();
     if(currentRequestState_ == CORRECT)
@@ -359,7 +397,7 @@ void MeServiceBase::parseCurrentRequest(){
         currentRequestState_ =  BAD_REQ_LINE;
     return;
     }
-    if(!Http::ceckHttpVersion(line[2])){
+    if(!Http::checkHttpVersion(line[2])){
         currentRequestState_ =  BAD_HTTP;//send 505Response
         return;
     }
@@ -391,43 +429,42 @@ void MeServiceBase::parseCurrentRequest(){
 //
 
 // old version, before request parsing. Not used anymore
-void MeServiceBase::handleRequest(cMessage* msg, inet::TcpSocket *socket){
+void MeServiceBase::handleRequest(inet::TcpSocket *socket){
     EV << "MeServiceBase::handleRequest" << endl;
-     reqMap *request = new reqMap;
-     std::string packet("cuai") ;//lte::utils::getPacketPayload(msg);
-     bool res = parseRequest(packet, socket, request); // e.g. [0] GET [1] URI
 
-     if(res){ // request-line is well formatted
-         if(request->at("method").compare("GET") == 0)
-             handleGETRequest(request->at("uri"), socket); // pass URI
-         else if(request->at("method").compare("POST") == 0) //subscription
-             handlePOSTRequest(request->at("uri"), request->at("body"),  socket); // pass URI
-         else if(request->at("method").compare("PUT") == 0)
-             handlePUTRequest(request->at("uri"), request->at("body"),  socket); // pass URI
-         else if(request->at("method").compare("DELETE") == 0)
-             handleDELETERequest(request->at("uri"),  socket); // pass URI
-         else if(request->at("method").compare("HEAD") == 0)
-             Http::send405Response(socket);
+     if(currentRequestMessage_->getState() == eCORRECT){ // request-line is well formatted
+         if(std::strcmp(currentRequestMessage_->getMethod(),"GET") == 0)
+         {
+             std::string uri(currentRequestMessage_->getUri());
+             handleGETRequest(uri, socket); // pass URI
+         }
+         else if(std::strcmp(currentRequestMessage_->getMethod(),"POST") == 0) //subscription
+         {
+             std::string uri(currentRequestMessage_->getUri());
+             std::string body(currentRequestMessage_->getBody());
+             handlePOSTRequest(uri, body,  socket); // pass URI
+         }
 
-         else if(request->at("method").compare("CONNECT") == 0)
-             Http::send405Response(socket);
-
-         else if(request->at("method").compare("TRACE") == 0)
-             Http::send405Response(socket);
-
-         else if(request->at("method").compare("PATCH") == 0)
-             Http::send405Response(socket);
-
-         else if(request->at("method").compare("OPTIONS") == 0)
-             Http::send405Response(socket);
+         else if(std::strcmp(currentRequestMessage_->getMethod(),"PUT") == 0)
+         {
+            std::string uri(currentRequestMessage_->getUri());
+            std::string body(currentRequestMessage_->getBody());
+            handlePUTRequest(uri, body,  socket); // pass URI
+         }
+         else if(std::strcmp(currentRequestMessage_->getMethod(),"DELETE") == 0)
+        {
+         std::string uri(currentRequestMessage_->getUri());
+         handleDELETERequest(uri,  socket); // pass URI
+        }
          else
-             throw cRuntimeError ("MeServiceBase::HTTP verb %s non recognised", request->at("method").c_str());
+         {
+             Http::send405Response(socket);
+         }
      }
      else
      {
-         EV << "NO" << endl;
+         Http::send400Response(socket);
      }
-     delete request;
  }
 
 // old version, before current request parsing. Not used anymore
@@ -464,7 +501,7 @@ bool MeServiceBase::parseRequest(std::string& packet_, inet::TcpSocket *socket, 
         Http::send400Response(socket);
         return false;
     }
-    if(!Http::ceckHttpVersion(line[2])){
+    if(!Http::checkHttpVersion(line[2])){
         Http::send505Response(socket);
         return false;
     }
@@ -576,24 +613,24 @@ void MeServiceBase::emitRequestQueueLength()
 }
 
 
-Http::DataType MeServiceBase::getDataType(std::string& packet_){
-    // HTTP request or HTTP response
-    if (packet_.rfind("HTTP", 0) == 0) { // is a response
-        // parse it
-        return Http::RESPONSE;
-    }
-    else if(packet_.rfind("GET", 0) == 0 || packet_.rfind("POST", 0) == 0 ||
-            packet_.rfind("DELETE", 0) == 0 || packet_.rfind("PUT", 0) == 0)
-    {
-        return Http::REQUEST;
-        // is a request
-    }
-    else
-    {
-        return Http::UNKNOWN;
-    }
-
-}
+//Http::DataType MeServiceBase::getDataType(std::string& packet_){
+//    // HTTP request or HTTP response
+//    if (packet_.rfind("HTTP", 0) == 0) { // is a response
+//        // parse it
+//        return Http::A;
+//    }
+//    else if(packet_.rfind("GET", 0) == 0 || packet_.rfind("POST", 0) == 0 ||
+//            packet_.rfind("DELETE", 0) == 0 || packet_.rfind("PUT", 0) == 0)
+//    {
+//        return Http::B;
+//        // is a request
+//    }
+//    else
+//    {
+//        return Http::C;
+//    }
+//
+//}
 
 void MeServiceBase::removeSubscritions(int connId)
 {

@@ -12,6 +12,7 @@
 #include "inet/common/INETDefs.h"
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 
 /*
  * For each new connection, the MeServiceBase creates a new SocketManager
@@ -27,6 +28,8 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
   protected:
     MeServiceBase *service;
     inet::TcpSocket *sock;    // ptr into socketMap managed by TCPSrvHostApp
+    HttpBaseMessage* currentHttpMessage;
+    std::string bufferedData;
 
     // internal: inet::TcpSocket::CallbackInterface methods
     virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { dataArrived(packet, urgent); }
@@ -42,7 +45,7 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
 
   public:
 
-    SocketManager() { sock = nullptr; service = nullptr; }
+    SocketManager() { sock = nullptr; service = nullptr; currentHttpMessage = nullptr;}
     virtual ~SocketManager() {delete sock;}
 
     // internal: called by TCPSrvHostApp after creating this module
