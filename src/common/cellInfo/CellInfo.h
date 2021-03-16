@@ -156,6 +156,16 @@ class CellInfo : public omnetpp::cSimpleModule
 
     CellInfo();
 
+    MacCellId getMacCellId()
+    {
+        return cellId_;
+    }
+
+    const std::map<MacNodeId, inet::Coord>* getUePositionList()
+    {
+        return &uePosition;
+    }
+
     int getRbyDl()
     {
         return rbyDl_;

@@ -326,7 +326,7 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the MacNodeId for the given IP address
      *
      * @param address IP address
-     * @return MacNodeId corresponding to the IP addres
+     * @return MacNodeId corresponding to the IP address
      */
     MacNodeId getMacNodeId(inet::Ipv4Address address)
     {
@@ -343,7 +343,7 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the MacNodeId for the given IP address
      *
      * @param address IP address
-     * @return MacNodeId corresponding to the IP addres
+     * @return MacNodeId corresponding to the IP address
      */
     MacNodeId getNrMacNodeId(inet::Ipv4Address address)
     {
@@ -351,6 +351,30 @@ class Binder : public omnetpp::cSimpleModule
             return 0;
         return nrMacNodeIdToIPAddress_[address];
     }
+
+    /**
+     * author Alessandro Noferi
+     *
+     * Returns the IP address for the given MacNodeId
+     *
+     * @param MacNodeId of the node
+     * @return IP address corresponding to the MacNodeId
+     *
+     */
+    inet::Ipv4Address getIPv4Address(MacNodeId nodeId)
+    {
+        for (const auto& kv : macNodeIdToIPAddress_) {
+            if(kv.second == nodeId)
+                return kv.first;
+        }
+        for (const auto& kv : nrMacNodeIdToIPAddress_) {
+            if(kv.second == nodeId)
+                return kv.first;
+        }
+        return inet::Ipv4Address::UNSPECIFIED_ADDRESS;
+    }
+
+
     /**
      * Returns the X2NodeId for the given IP address
      *
