@@ -44,6 +44,7 @@ void LocationService::initialize(int stage)
         LocationResource_.addEnodeB(eNodeB_);
         LocationResource_.addBinder(binder_);
         LocationResource_.setBaseUri(host_+baseUriQueries_);
+        EV << "AAAA: " << host_+baseUriQueries_ << endl;
         LocationSubscriptionEvent_ = new cMessage("LocationSubscriptionEvent");
         LocationSubscriptionPeriod_ = par("LocationSubscriptionPeriod");
     }

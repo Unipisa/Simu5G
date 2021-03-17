@@ -67,7 +67,7 @@ namespace Http {
         bytesChunk->setBytes(vec);
         chunkPayload = bytesChunk;
         chunkPayload->addTag<CreationTimeTag>()->setCreationTime(simTime());
-        Packet *packet = new Packet("HTTP packet");
+        Packet *packet = new Packet("HTTPPacket");
         packet->insertAtBack(chunkPayload);
         socket->send(packet);
         EV <<"Http Utils - sendPacket" << endl;
@@ -84,7 +84,6 @@ namespace Http {
     bool checkHttpRequestMethod(const std::string& method){
         return (method.compare("GET") == 0 || method.compare("POST") == 0 || method.compare("PUT") == 0 || method.compare("DELETE") == 0);
     }
-
 
     HttpBaseMessage* parseHeader(const std::string& data)
     {
@@ -242,7 +241,6 @@ namespace Http {
         }
     }
 
-
     HttpMsgState parseTcpData(std::string* data, HttpBaseMessage* httpMessage)
     {
         if(httpMessage == nullptr)
@@ -290,31 +288,145 @@ namespace Http {
 
     }
 
+    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, const char* body)
+    {
+        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpResponsePacket");
+        auto resPkt = inet::makeShared<HttpResponseMessage>();
+        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        resPkt->setCode(code);
+        resPkt->setStatus(reason);
+        if(body != nullptr)
+        {
+            resPkt->setBody(body);
+            resPkt->setContentLength(strlen(body));
+        }
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        packet->insertAtBack(resPkt);
+        socket->send(packet);
+    }
+
+    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
+    {
+        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpResponsePacket");
+        auto resPkt = inet::makeShared<HttpResponseMessage>();
+        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        resPkt->setCode(code);
+        resPkt->setStatus(reason);
+        if(body != nullptr)
+        {
+            resPkt->setBody(body);
+            resPkt->setContentLength(strlen(body));
+        }
+        resPkt->setHeaderField(header.first, header.second);
+
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        packet->insertAtBack(resPkt);
+        socket->send(packet);
+    }
+
+    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
+    {
+        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpResponsePacket");
+        auto resPkt = inet::makeShared<HttpResponseMessage>();
+        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        resPkt->setCode(code);
+        resPkt->setStatus(reason);
+        if(body != nullptr)
+        {
+            resPkt->setBody(body);
+            resPkt->setContentLength(strlen(body));
+        }
+        std::map<std::string, std::string>::iterator it = headers.begin();
+        std::map<std::string, std::string>::iterator end = headers.end();
+        for(; it != end ; ++it)
+        {
+            resPkt->setHeaderField(it->first, it->second);
+        }
+
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        packet->insertAtBack(resPkt);
+        socket->send(packet);
+
+    }
+
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, const char* body)
+    {
+        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpRequestPacket");
+        auto reqPkt = inet::makeShared<HttpRequestMessage>();
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        reqPkt->setMethod(method);
+        reqPkt->setUri(uri);
+        reqPkt->setHost(host);
+        if(body != nullptr)
+        {
+            reqPkt->setBody(body);
+            reqPkt->setContentLength(strlen(body));
+        }
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        packet->insertAtBack(reqPkt);
+        socket->send(packet);
+    }
+
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::pair<std::string, std::string>& header, const char* body)
+    {
+        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpRequestPacket");
+        auto reqPkt = inet::makeShared<HttpRequestMessage>();
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        reqPkt->setMethod(method);
+        reqPkt->setUri(uri);
+        reqPkt->setHost(host);
+        if(body != nullptr)
+        {
+            reqPkt->setBody(body);
+            reqPkt->setContentLength(strlen(body));
+        }
+        reqPkt->setHeaderField(header.first,header.second);
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        packet->insertAtBack(reqPkt);
+        socket->send(packet);
+
+    }
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::map<std::string, std::string>& headers, const char* body)
+    {
+        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        inet::Packet* packet = new inet::Packet("HttpRequestPacket");
+        auto reqPkt = inet::makeShared<HttpRequestMessage>();
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        reqPkt->setMethod(method);
+        reqPkt->setUri(uri);
+        reqPkt->setHost(host);
+        if(body != nullptr)
+        {
+            reqPkt->setBody(body);
+            reqPkt->setContentLength(strlen(body));
+        }
+        std::map<std::string, std::string>::iterator it = headers.begin();
+        std::map<std::string, std::string>::iterator end = headers.end();
+        for(; it != end ; ++it)
+        {
+           reqPkt->setHeaderField(it->first, it->second);
+        }
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        packet->insertAtBack(reqPkt);
+        socket->send(packet);
+    }
+
+
+
+
     void send200Response(inet::TcpSocket *socket, const char* body){
-        EV << "httpUtils - send200Response" << endl;
-      inet::Packet* packet = new inet::Packet("MecResponsePacket");
-      auto reqPkt = inet::makeShared<HttpResponseMessage>();
-      reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-      reqPkt->setCode("200");
-      reqPkt->setStatus("OK");
-      reqPkt->setBody(body);
-      reqPkt->setContentLength(strlen(body));
-      reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
-      packet->insertAtBack(reqPkt);
-      socket->send(packet);
-
-
-//        HTTPResponsePacket resp = HTTPResponsePacket(OK);
-//        resp.setBody(body);
-////        std::cout << body << std::endl;
-//        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "200", "OK" , body);
+        return;
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body){
-            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
-            resp.setConnection("keep-alive");
-            resp.setBody(body);
-            sendPacket(resp.getPayload(), socket);
+            sendHttpResponse(socket, "201", "Created" , body);
+            return;
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body, std::pair<std::string, std::string>& header){
@@ -339,8 +451,8 @@ namespace Http {
     }
 
     void send204Response(inet::TcpSocket *socket){
-        HTTPResponsePacket resp = HTTPResponsePacket(NO_CONTENT);
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "204", "No Content");
+        return;
     }
 
     void send405Response(inet::TcpSocket *socket, const char* methods){
@@ -354,80 +466,55 @@ namespace Http {
     }
 
     void send400Response(inet::TcpSocket *socket){
-        HTTPResponsePacket resp = HTTPResponsePacket(BAD_REQ);
-        resp.setBody("{ \"send400Response\" : \"TODO implement ProblemDetails\"}");
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "400", "Bad Request" , "{ \"send400Response\" : \"TODO implement ProblemDetails\"}");
     }
 
     void send400Response(inet::TcpSocket *socket, const char *reason)
     {
-        HTTPResponsePacket resp = HTTPResponsePacket(BAD_REQ);
-        resp.setBody(reason);
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "400", "Bad Request" , reason);
+        return;
     }
 
     void send404Response(inet::TcpSocket *socket){
-        HTTPResponsePacket resp = HTTPResponsePacket(NOT_FOUND);
-        resp.setBody("{ \"send404Response\" : \"TODO implement ProblemDetails\"}");
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "404", "Not Found" , "{ \"send404Response\" : \"TODO implement ProblemDetails\"}");
+        return;
     }
 
     void send505Response(inet::TcpSocket *socket){
-        HTTPResponsePacket resp = HTTPResponsePacket(HTTP_NOT_SUPPORTED);
-        resp.setBody("{TODO implement ProblemDetails}");
-
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "505", "HTTP Version Not Supported");
+        return;
     }
 
 void send503Response(inet::TcpSocket *socket, const char *reason)
     {
-        HTTPResponsePacket resp = HTTPResponsePacket(HTTP_NOT_SUPPORTED);
-        resp.setBody(reason);
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "503", "HTTP Version Not Supported" , reason);
+        return;
 
     }
 
     void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri)
     {
-        HTTPRequestPacket req = HTTPRequestPacket(POST);
-        req.setHost(host);
-        req.setUri(uri);
-        req.setLength(strlen(body));
-        req.setBody(body);
-        sendPacket(req.getPayload(), socket);
+        sendHttpRequest(socket, "POST", uri, host, body);
+        return;
     }
 
     void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri)
     {
-        HTTPRequestPacket req = HTTPRequestPacket(PUT);
-        req.setHost(host);
-        req.setUri(uri);
-        req.setLength(strlen(body));
-        req.setBody(body);
-        sendPacket(req.getPayload(), socket);
-
+        sendHttpRequest(socket, "PUT", uri, host, body);
+        return;
     }
 
 
-    void sendGetRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri)
+    void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body)
     {
-
-        HTTPRequestPacket req = HTTPRequestPacket(GET);
-        req.setHost(host);
-        req.setUri(uri);
-        req.setLength(strlen(body));
-        //req.setBody(body);
-        sendPacket(req.getPayload(), socket);
+        sendHttpRequest(socket, "GET", uri, host, body);
+        return;
     }
 
     void sendDeleteRequest(inet::TcpSocket *socket, const char* host, const char* uri)
     {
-        HTTPRequestPacket req = HTTPRequestPacket(DELETE);
-        req.setHost(host);
-        req.setUri(uri);
-        req.setLength(strlen(req.getPayload()));
-        //req.setBody(body);
-        sendPacket(req.getPayload(), socket);
+        sendHttpRequest(socket, "DELETE", uri, host);
+        return;
     }
 
 

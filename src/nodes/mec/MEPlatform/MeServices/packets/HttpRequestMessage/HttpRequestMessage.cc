@@ -24,6 +24,7 @@ HttpRequestMessage::HttpRequestMessage(const char* method, const char *name, sho
 
 
 void HttpRequestMessage::setHeaderField(const std::string& key , const std::string& value){
+    handleChange();
     headerFields_[key] = value;
 }
 
@@ -51,10 +52,16 @@ std::string HttpRequestMessage::getPayload() const{
 
 void HttpRequestMessage::addBodyChunk(const std::string& bodyChunk)
 {
+    handleChange();
     if(this->body.empty())
         this->body = bodyChunk;
     else
         this->body += bodyChunk;
+}
+
+void HttpRequestMessage::copy(const HttpRequestMessage& other)
+{
+    this->headerFields_ = other.headerFields_;
 }
 
 

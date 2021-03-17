@@ -30,7 +30,8 @@ void HttpResponseMessageSerializer::serialize(MemoryOutputStream& stream, const 
     EV << "HttpResponseMessageSerializer::serialize" << endl;
     auto startPosition = stream.getLength();
     const auto& applicationPacket = staticPtrCast<const HttpResponseMessage>(chunk);
-    stream.writeBytes((const uint8_t*)applicationPacket->getPayload().c_str(), B(applicationPacket->getPayload().size()));
+    std::string payload = applicationPacket->getPayload();
+    stream.writeBytes((const uint8_t*)payload.c_str(), B(payload.size()));
 
 //    stream.writeUint32Be(B(applicationPacket->getChunkLength()).get());
 //    stream.writeUint32Be(applicationPacket->getSequenceNumber());
@@ -46,11 +47,8 @@ const Ptr<Chunk> HttpResponseMessageSerializer::deserialize(MemoryInputStream& s
     auto startPosition = stream.getPosition();
     auto applicationPacket = makeShared<HttpResponseMessage>();
     B dataLength = B(stream.getLength());
-    EV << "data length " << dataLength << endl;
-    std::string data = stream.readString();
-    //applicationPacket = check_and_cast<HttpResponseMessage*>(Http::parseHeader(data));
-    applicationPacket->setBody(data.c_str());
-    EV << "data in the packet: " << data << endl;
+    //
+//    parse HTTP packet
     B remainders = stream.getLength() - (stream.getPosition() - startPosition);
     ASSERT(remainders >= B(0));
     EV << "data remainders " << remainders<<endl;

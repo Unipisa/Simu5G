@@ -31,36 +31,13 @@ void MeAppGet::handleTcpMsg()
 }
 
 void MeAppGet::sendMsg(){
-    std::string body = "";
-    std::string uri = "/example/location/v2/queries/users?accessPointId=2";
+    const char * body = "";
+    const char *uri = "/example/location/v2/queries/useqrs";
     std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
-//    Http::sendPostRequest(&socket, body.c_str(), host.c_str(), uri.c_str());
 
-    inet::Packet* packet = new inet::Packet("MecRequestPacket");
-    auto reqPkt = inet::makeShared<HttpRequestMessage>();
+    Http::sendGetRequest(&socket, "GET", uri, host.c_str());
+    return;
 
-    reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    reqPkt->setMethod("GET");
-    reqPkt->setBody(body.c_str());
-    reqPkt->setUri(uri.c_str());
-    reqPkt->setHost(host.c_str());
-    reqPkt->setContentLength(body.length());
-    reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
-    packet->insertAtBack(reqPkt);
-
-//    Ptr<Chunk> chunkPayload;
-//    const auto& bytesChunk = inet::makeShared<BytesChunk>();
-//    std::string payload = reqPkt->getPayload();
-//    std::vector<uint8_t> vec(payload.c_str(), payload.c_str() + payload.length());
-//    bytesChunk->setBytes(vec);
-//    chunkPayload = bytesChunk;
-//    packet->insertAtBack(chunkPayload);
-
-
-    socket.send(packet);
-    EV << "SENT" << endl;
-
-    sendTimestamp = simTime();
 }
 void MeAppGet::established(int connId)
 {

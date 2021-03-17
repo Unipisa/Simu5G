@@ -9,21 +9,22 @@ using namespace omnetpp;
 HttpResponseMessage::HttpResponseMessage(const char *name, short kind)
 {
     setContentType("application/json");
-    setConnection("close");
+    setConnection("keep-alive");
     setBody("");
 }
 HttpResponseMessage::HttpResponseMessage(const responseCode res, const char *name, short kind)
 {
     setStatus(res);
     setContentType("application/json");
-    setConnection("close");
+    setConnection("keep-alive");
     setBody("");
 
 }
 
 void HttpResponseMessage::addBodyChunk(const std::string& bodyChunk)
 {
-    if(this->body.empty() )
+    handleChange();
+    if(this->body.empty())
         this->body = bodyChunk;
     else
         this->body += bodyChunk;
@@ -31,10 +32,12 @@ void HttpResponseMessage::addBodyChunk(const std::string& bodyChunk)
 
 
 void HttpResponseMessage::setStatus(const char* status){
+    handleChange();
     this->status = status;
 }
 
 void HttpResponseMessage::setStatus(responseCode res){
+    handleChange();
     switch(res) {
         case(OK):
             this->code = "200";
@@ -105,6 +108,7 @@ void HttpResponseMessage::setStatus(responseCode res){
 //}
 
 void HttpResponseMessage::setHeaderField(const std::string& key, const std::string& value){
+    handleChange();
     headerFields_[key] = value;
 }
 

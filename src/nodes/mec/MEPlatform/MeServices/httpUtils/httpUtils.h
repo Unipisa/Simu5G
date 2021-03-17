@@ -62,9 +62,21 @@ void send505Response(inet::TcpSocket *socket);
 void send503Response(inet::TcpSocket *socket, const char *reason);
 
 
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, const char* body = nullptr);
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::pair<std::string, std::string>& header, const char* body = nullptr);
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::map<std::string, std::string>& headers, const char* body = nullptr);
+
+
+
+void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, const char* body = nullptr);
+void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body = nullptr);
+void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body = nullptr);
+
+
+
 void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri);
 void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri);
-void sendGetRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri);
+void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body = nullptr);
 void sendDeleteRequest(inet::TcpSocket *socket, const char* host, const char* uri);
 
 
