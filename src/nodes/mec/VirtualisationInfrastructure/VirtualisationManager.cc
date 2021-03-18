@@ -84,6 +84,9 @@ void VirtualisationManager::initialize(int stage)
         freeGates.push_back(i);
     //------------------------------------
     interfaceTableModule = par("interfaceTableModule").stringValue();
+
+
+    meAppPortCounter = 4001;
 }
 
 void VirtualisationManager::handleMessage(cMessage *msg)
@@ -160,11 +163,16 @@ void VirtualisationManager::handleMEAppPacket(inet::Packet* packet){
 
     /* Handling INFO_UEAPP */
     else if(!strcmp(pkt->getType(), INFO_UEAPP))
-        upstreamToMEApp(packet);
-
+    {
+        throw cRuntimeError("VirtualisationManager::handleMEAppPacket - Virtualization Infrastructure only manages START and STOP meApp messages!");
+        delete packet;
+    }
     /* Handling INFO_MEAPP */
     else if(!strcmp(pkt->getType(), INFO_MEAPP))
-        downstreamToUEApp(packet);
+    {
+        throw cRuntimeError("VirtualisationManager::handleMEAppPacket - Virtualization Infrastructure only manages START and STOP meApp messages!");
+        delete packet;
+    }
 
     /* Handling STOP_MEAPP */
     else if(!strcmp(pkt->getType(), STOP_MEAPP))
@@ -178,12 +186,12 @@ void VirtualisationManager::startMEApp(inet::Packet* packet){
     auto pkt = packet->peekAtFront<MEAppPacket>();
 
     //checking if the service required is available
-    if(findService(pkt->getRequiredService()) == SERVICE_NOT_AVAILABLE)
-    {
-        EV << "VirtualisationManager::startMEApp - Service required is not available: " << pkt->getRequiredService() << endl;
-        throw cRuntimeError("VirtualisationManager::startMEApp - \tFATAL! Service required is not available!" );
-        return;
-    }
+//    if(findService(pkt->getRequiredService()) == SERVICE_NOT_AVAILABLE)
+//    {
+//        EV << "VirtualisationManager::startMEApp - Service required is not available: " << pkt->getRequiredService() << endl;
+//        throw cRuntimeError("VirtualisationManager::startMEApp - \tFATAL! Service required is not available!" );
+//        return;
+//    }
 
     //retrieve UE App ID
     int ueAppID = pkt->getUeAppID();
@@ -356,6 +364,7 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         meAppMap[key].meAppModule = module;
         meAppMap[key].ueAddress = ueAppAddress;
         meAppMap[key].ueAppID = ueAppID;
+        meAppMap[key].meAppPort = meAppPortCounter;
 
         //displaying ME App dynamically created (after 70 they will overlap..)
         std::stringstream display;
@@ -366,7 +375,7 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         module->par("ueSimbolicAddress") = sourceAddress;
         module->par("meHostSimbolicAddress") = pkt->getDestinationAddress();
         module->par("interfaceTableModule") = interfaceTableModule;
-
+        // add meAppPortCpounter
         module->finalizeParameters();
 
         EV << "VirtualisationManager::instantiateMEApp - UEAppSimbolicAddress: " << sourceAddress << endl;
@@ -385,20 +394,28 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         // connect virtualisationInfr gates to the meApp
         virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
         module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
+        /*
+         * @author Alessandro Noferi
+         *
+         * with the new MeApp management (i.e. they are directly connected to the transport layer)
+         * it is the MeApp itself that looks for the MeService through the ServiceRegistry module present in the
+         * MePlatform
+         *
+         */
 
-        // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
-        if(serviceIndex != NO_SERVICE)
-        {
-            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
-            //connecting MEPlatform gates to the MEApp gates
-            mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
-            module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
-
-            //connecting internal MEPlatform gates to the required MEService gates
-            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
-            mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
-        }
-        else EV << "VirtualisationManager::instantiateMEApp - NO MEService required!"<< endl;
+//        // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
+//        if(serviceIndex != NO_SERVICE)
+//        {
+//            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
+//            //connecting MEPlatform gates to the MEApp gates
+//            mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
+//            module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
+//
+//            //connecting internal MEPlatform gates to the required MEService gates
+//            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
+//            mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
+//        }
+//        else EV << "VirtualisationManager::instantiateMEApp - NO MEService required!"<< endl;
 
         module->buildInside();
         module->scheduleStart(simTime());
@@ -449,12 +466,18 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
         ackMEAppPacket(packet, ACK_STOP_MEAPP);
 
         int index = meAppMap[key].meAppGateIndex;
+
+        // TODO manage gates me app to at
+
+        virtualisationInfr->gate("meAppOut", index)->getPreviousGate()->disconnect();
+        virtualisationInfr->gate("meAppIn", index)->disconnect();
+
         //disconnecting internal MEPlatform gates to the MEService gates
-        (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
-        (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
-        //disconnecting MEPlatform gates to the MEApp gates
-        mePlatform->gate("meAppOut", index)->disconnect();
-        mePlatform->gate("meAppIn", index)->disconnect();
+//        (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
+//        (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
+//        //disconnecting MEPlatform gates to the MEApp gates
+//        mePlatform->gate("meAppOut", index)->disconnect();
+//        mePlatform->gate("meAppIn", index)->disconnect();
 
         //update maps
         ueAppIdToMeAppMapKey.erase(ueAppIdToMeAppMapKey.find(ueAppID));

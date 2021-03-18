@@ -38,7 +38,8 @@ struct meAppMapEntry
     int meAppGateIndex;         //map key
     cModule* meAppModule;       //for ME App termination
     inet::L3Address ueAddress;  //for downstream using UDP Socket
-    int ueAppID;               //for identifying the UEApp
+    int ueAppID;                //for identifying the UEApp
+    int meAppPort;              //spcket port of the meApp
 };
 //###########################################################################
 
@@ -76,6 +77,8 @@ class VirtualisationManager : public cSimpleModule
     //parameters to control the number of ME APPs instantiated and to set gate sizes
     int maxMEApps;
     int currentMEApps;
+
+    int meAppPortCounter; // counter to assign socket ports to MeApps
     //------------------------------------
     //set of ME Services loaded into the ME Host & Platform
     int numServices;
