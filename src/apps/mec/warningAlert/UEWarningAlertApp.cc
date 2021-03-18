@@ -100,7 +100,6 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
     }
     // Receiver Side
     else{
-
         inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
         auto mePkt = packet->peekAtFront<MEAppPacket>();
 
