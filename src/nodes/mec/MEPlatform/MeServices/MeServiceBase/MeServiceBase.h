@@ -50,7 +50,7 @@ enum RequestState {CORRECT, BAD_REQ_LINE, BAD_HEADER, BAD_HTTP, BAD_REQUEST, DIF
 class SocketManager;
 class SubscriptionBase;
 class HttpRequestMessage;
-
+class ServiceRegistry;
 class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
     public:
@@ -64,6 +64,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         std::string host_;
         LteBinder* binder_;
         omnetpp::cModule* meHost_;
+        ServiceRegistry* servRegistry_;
 
         std::string baseUriQueries_;
         std::string baseUriSubscriptions_;

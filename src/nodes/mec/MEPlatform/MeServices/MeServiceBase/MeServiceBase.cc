@@ -15,6 +15,7 @@
 #include "common/utils/utils.h"
 
 #include "../MeServiceBase/MeServiceBase.h"
+#include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 
 #include "nodes/mec/MEPlatform/MeServices/Resources/SubscriptionBase.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
@@ -24,16 +25,20 @@
 
 using namespace omnetpp;
 
-MeServiceBase::MeServiceBase(){}
+MeServiceBase::MeServiceBase()
+{
+    binder_ = nullptr;
+    meHost_ = nullptr;
+    servRegistry_ = nullptr;
+}
 
 void MeServiceBase::initialize(int stage)
 {
     inet::ApplicationBase::initialize(stage);
-
-    if (stage == inet::INITSTAGE_LOCAL) {
-        return;
-    }
-    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
+    EV << "MeServiceBase::initialize stage " << stage << endl;
+    if (stage == inet::INITSTAGE_LOCAL)
+    {
+        EV << "MeServiceBase::initialize" << endl;
 
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
@@ -50,25 +55,39 @@ void MeServiceBase::initialize(int stage)
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         binder_ = getBinder();
-        meHost_ = getParentModule() // virtualizationInfrastructure
+        meHost_ = getParentModule() // MePlatform
                 ->getParentModule(); // MeHost
+
+
+        int found = getParentModule()->findSubmodule("serviceRegistry");
+        if(found == -1)
+            throw cRuntimeError("MeServiceBase::initialize - ServiceRegistry not present!");
+        servRegistry_ = check_and_cast<ServiceRegistry*>(getParentModule()->getSubmodule("serviceRegistry"));
 
         // get the gnb connected to the mehost
         getConnectedEnodeB();
     }
 }
 
-
+// called at inet::INITSTAGE_APPLICATION_LAYER (before initialize, why?)
 void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
 {
+    EV << "MeServiceBase::handleStartOperation" << endl;
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
 
+
+    std::string name (par("serviceName").stringValue()); //or this->getClassName()
+    EV << name << endl;
+    SockAddr sockAddr = {inet::L3Address(localAddress), localPort};
+    servRegistry_->registerMeService(name, sockAddr);
+
+
     // e.g. 1.2.3.4:5050
-   std::stringstream hostStream;
-   hostStream << localAddress<< ":" << localPort;
-   host_ = hostStream.str();
+    std::stringstream hostStream;
+    hostStream << localAddress<< ":" << localPort;
+    host_ = hostStream.str();
 
     serverSocket.setOutputGate(gate("socketOut"));
     serverSocket.setCallback(this);

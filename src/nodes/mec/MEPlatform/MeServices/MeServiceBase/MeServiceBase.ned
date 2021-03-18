@@ -25,6 +25,7 @@ moduleinterface MeServiceBase
 {
     parameters:
         @display("i=block/app");
+        string serviceName;
         int requestQueueSize;
        	int subscriptionQueueSize;
 	

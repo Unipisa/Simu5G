@@ -20,6 +20,7 @@ import inet.applications.contract.IApp;
 simple LocationService like MeServiceBase, IApp
 {
     parameters:
+		string serviceName = default("LocationService");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")

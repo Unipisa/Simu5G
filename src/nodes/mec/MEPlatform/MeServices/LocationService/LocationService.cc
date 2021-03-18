@@ -34,17 +34,13 @@ LocationService::LocationService(){
 
 void LocationService::initialize(int stage)
 {
-    cSimpleModule::initialize(stage);
+    MeServiceBase::initialize(stage);
 
-    if (stage == inet::INITSTAGE_LOCAL) {
-        return;
-    }
-    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
-        MeServiceBase::initialize(stage);
+    if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         LocationResource_.addEnodeB(eNodeB_);
         LocationResource_.addBinder(binder_);
         LocationResource_.setBaseUri(host_+baseUriQueries_);
-        EV << "AAAA: " << host_+baseUriQueries_ << endl;
+        EV << "Host: " << host_+baseUriQueries_ << endl;
         LocationSubscriptionEvent_ = new cMessage("LocationSubscriptionEvent");
         LocationSubscriptionPeriod_ = par("LocationSubscriptionPeriod");
     }

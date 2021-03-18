@@ -29,6 +29,7 @@ import inet.applications.contract.IApp;
 import inet.transportlayer.udp.Udp;
 import inet.transportlayer.tcp.Tcp;
 import lte.nodes.mec.MEPlatform.IMEService;
+import lte.nodes.mec.MEPlatform.ServiceRegistry.ServiceRegistry;
 
 // 
 //# VirtualisationInfrastructure
@@ -42,24 +43,23 @@ module MEPlatform_REST
         //# Network Layer specs
         string networkLayerType = default("IPv4NetworkLayer");
         *.interfaceTableModule = default(absPath(".interfaceTable"));
-        *.routingTableModule = default(routingTableType != "" ? absPath(".routingTable") : "");
         //# Num Services
         int numServices = default(0);
         int numRESTServices = default(0);
-        
+
 
         @display("bgb=1122.99,610.08");
-    
-	    //# Transport Layer specs
-		bool hasTcp = default(true);
-		bool hasUdp = default(true);
-		    
-    	//# Network Layer specs
+
+        //# Transport Layer specs
+        bool hasTcp = default(true);
+        bool hasUdp = default(true);
+
+        //# Network Layer specs
         bool hasIpv4 = default(true);
         bool hasIpv6 = default(false);
 
         //# External Ethernet interfaces
-       
+
         int numExtEthInterfaces = default(0); //
 //        string extHostAddress = default("");
 
@@ -68,9 +68,13 @@ module MEPlatform_REST
 
     gates:
         inout virtInfr; // connection to the virtualization infrastructure to communicate with the MEapps
-		input meAppIn[];
+        input meAppIn[];
         output meAppOut[];
     submodules:
+
+        serviceRegistry: ServiceRegistry {
+            @display("p=60.522503,146.38;is=s");
+        }
 
         interfaceTable: InterfaceTable {
             @display("p=61.344,74.976;is=s");
@@ -204,5 +208,5 @@ module MEPlatform_REST
         eth.upperLayerOut --> nl.in++;
         eth.upperLayerIn <-- nl.out++;
         eth.phys <--> virtInfr;
-       
+
 }
