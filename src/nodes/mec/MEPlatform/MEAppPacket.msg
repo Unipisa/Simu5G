@@ -22,6 +22,7 @@ class MEAppPacket extends inet::FieldsChunk {
     
     //communication informations
     string sourceAddress;
+    int	   sourcePort;   // added by Alessandro Noferi
     string destinationAddress;
     
     //instantiation informations

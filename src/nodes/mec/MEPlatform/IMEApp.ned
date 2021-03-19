@@ -21,15 +21,9 @@ moduleinterface IMEApp
         @display("i=block/app");
         
         string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
+        int uePort;
         string meHostSimbolicAddress;	// i.e meHost.virtualisationInfrastructure
-        
-    gates:
-        
-        input virtualisationInfrastructureIn;
-        output virtualisationInfrastructureOut;
-        
-        input mePlatformIn;
-        output mePlatformOut;
+		int meAppPort;					// i.e port where the MeApp is binded
 }
 
 

@@ -24,7 +24,9 @@ simple MEWarningAlertApp like IMEApp
         @display("i=block/app;is=s");
         
         string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
+        int uePort;
         string meHostSimbolicAddress;	// i.e meHost.virtualisationInfrastructure
+		int meAppPort;
         
         int packetSize = default(10);
         

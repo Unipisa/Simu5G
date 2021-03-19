@@ -38,8 +38,9 @@ struct meAppMapEntry
     int meAppGateIndex;         //map key
     cModule* meAppModule;       //for ME App termination
     inet::L3Address ueAddress;  //for downstream using UDP Socket
+    int uePort;
     int ueAppID;                //for identifying the UEApp
-    int meAppPort;              //spcket port of the meApp
+    int meAppPort;              //socket port of the meApp
 };
 //###########################################################################
 

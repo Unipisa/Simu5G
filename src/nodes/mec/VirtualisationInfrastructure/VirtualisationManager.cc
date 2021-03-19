@@ -332,6 +332,8 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
     char* sourceAddress = (char*)pkt->getSourceAddress();
     char* meModuleName = (char*)pkt->getMEModuleName();
 
+    int ueAppPort  = pkt->getSourcePort();
+
     //retrieve UE App ID
     int ueAppID = pkt->getUeAppID();
 
@@ -358,11 +360,12 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         std::stringstream appName;
         appName << meModuleName << "[" <<  sourceAddress << "]";
         module->setName(appName.str().c_str());
-
+        EV << "VirtualisationManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
         //creating the meAppMap map entry
         meAppMap[key].meAppGateIndex = index;
         meAppMap[key].meAppModule = module;
         meAppMap[key].ueAddress = ueAppAddress;
+        meAppMap[key].uePort = ueAppPort;
         meAppMap[key].ueAppID = ueAppID;
         meAppMap[key].meAppPort = meAppPortCounter;
 
@@ -374,6 +377,11 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         //initialize IMEApp Parameters
         module->par("ueSimbolicAddress") = sourceAddress;
         module->par("meHostSimbolicAddress") = pkt->getDestinationAddress();
+        module->par("meAppPort") = meAppPortCounter;
+        module->par("uePort") = ueAppPort;
+        meAppPortCounter++;
+
+
         module->par("interfaceTableModule") = interfaceTableModule;
         // add meAppPortCpounter
         module->finalizeParameters();
@@ -392,8 +400,8 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         virtualisationInfr->gate("meAppIn", index)->connectTo(newAtInGate);
 
         // connect virtualisationInfr gates to the meApp
-        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
-        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
+        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("socketIn"));
+        module->gate("socketOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
         /*
          * @author Alessandro Noferi
          *
@@ -519,6 +527,7 @@ void VirtualisationManager::ackMEAppPacket(inet::Packet* packet, const char* typ
         }
 
         destAddress_ = meAppMap[key].ueAddress;
+        int destUePort = meAppMap[key].uePort;
 
         //checking if the UE is in the network & sending by socket
         MacNodeId destId = binder_->getMacNodeId(destAddress_.toIpv4());
