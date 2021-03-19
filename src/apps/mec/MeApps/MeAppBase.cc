@@ -20,8 +20,6 @@ using namespace inet;
 
 MeAppBase::MeAppBase()
 {
-    responseMessageLength = 0;
-    receivedMessage.clear();
     sendTimer = nullptr;
     currentHttpMessage = nullptr;
     }
@@ -85,6 +83,10 @@ void MeAppBase::socketEstablished(TcpSocket * socket)
 void MeAppBase::socketDataArrived(inet::TcpSocket *, inet::Packet *msg, bool)
 {
 
+//
+//    EV << "MeAppBase::socketDataArrived - payload: " << endl;
+//    EV << "back " << msg->hasAtBack();
+//    EV << "fro msg->hasAtFront();
     EV << "MeAppBase::socketDataArrived - payload: " << endl;
 
     std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
@@ -199,13 +201,14 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
 
 void MeAppBase::socketPeerClosed(TcpSocket *socket_)
 {
+    EV << "MeAppBase::socketPeerClosed" << endl;
     TcpAppBase::socketPeerClosed(socket_);
 }
 
-void MeAppBase::socketClosed(TcpSocket *)
+void MeAppBase::socketClosed(TcpSocket *socket)
 {
-    // *redefine* to start another session etc.
-    EV_INFO << "connection closed\n";
+    TcpAppBase::socketClosed(socket);
+    EV_INFO << "MeAppBase::socketClosed" << endl;
 }
 
 void MeAppBase::socketFailure(TcpSocket *sock, int code)

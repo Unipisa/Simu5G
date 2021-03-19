@@ -32,7 +32,7 @@ void MeAppGet::handleTcpMsg()
 
 void MeAppGet::sendMsg(){
     const char * body = "";
-    const char *uri = "/example/location/v2/queries/useqrs";
+    const char *uri = "/example/location/v2/queries/users";
     std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
 
     Http::sendGetRequest(&socket, "GET", uri, host.c_str());

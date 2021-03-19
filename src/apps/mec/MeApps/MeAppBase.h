@@ -22,15 +22,10 @@ class  MeAppBase : public inet::TcpAppBase
 {
   protected:
 
-    std::map<std::string, std::string> receivedMessage;
     HttpBaseMessage* currentHttpMessage;
     std::string bufferedData;
     omnetpp::cMessage *sendTimer;
-
-    int responseMessageLength;
-    bool receivingMessage;
-
-  protected:
+protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
