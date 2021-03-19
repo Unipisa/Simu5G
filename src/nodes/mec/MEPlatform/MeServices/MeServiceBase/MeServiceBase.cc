@@ -76,11 +76,13 @@ void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
+    inet::L3Address localAdd(inet::L3AddressResolver().resolve(localAddress));
+    EV << "Local Address resolved: "<< localAdd << endl;
 
 
     std::string name (par("serviceName").stringValue()); //or this->getClassName()
     EV << name << endl;
-    SockAddr sockAddr = {inet::L3Address(localAddress), localPort};
+    SockAddr sockAddr = {localAdd, localPort};
     servRegistry_->registerMeService(name, sockAddr);
 
 
@@ -194,19 +196,20 @@ bool MeServiceBase::manageRequest()
 //        handleCurrentRequest(socket);
         handleRequest(socket);
         if(currentRequestMessage_ != nullptr)
+        {
             delete currentRequestMessage_;
-//        if(currentRequestServed_!= nullptr)
-//            delete currentRequestServed_;
-//        currentRequestServed_ = nullptr;
-//        currentRequestServedmap_.clear();
-//        currentRequestState_= UNDEFINED;
+            currentRequestMessage_ = nullptr;
+        }
         return true;
     }
     else // socket has been closed or some error occured, discard request
     {
         // I should schedule immediately a new request execution
-        if(currentRequestServed_!= nullptr)
-            delete currentRequestServed_;
+        if(currentRequestMessage_ != nullptr)
+        {
+            delete currentRequestMessage_;
+            currentRequestMessage_ = nullptr;
+        }
         return false;
     }
 }
@@ -564,6 +567,7 @@ void MeServiceBase::getConnectedEnodeB(){
 
 void MeServiceBase::closeConnection(SocketManager * connection)
 {
+        EV << "MeServiceBase::closeConnection"<<endl;
     // remove socket
        socketMap.removeSocket(connection->getSocket());
        threadSet.erase(connection);
@@ -588,6 +592,8 @@ void MeServiceBase::removeConnection(SocketManager *connection)
 
 void MeServiceBase::finish()
 {
+    EV << "MeServiceBase::finish()" << endl;
+    serverSocket.close();
     while (!threadSet.empty())
         {
             removeConnection(*threadSet.begin());
@@ -631,25 +637,6 @@ void MeServiceBase::emitRequestQueueLength()
     emit(requestQueueSizeSignal_, requests_.getLength());
 }
 
-
-//Http::DataType MeServiceBase::getDataType(std::string& packet_){
-//    // HTTP request or HTTP response
-//    if (packet_.rfind("HTTP", 0) == 0) { // is a response
-//        // parse it
-//        return Http::A;
-//    }
-//    else if(packet_.rfind("GET", 0) == 0 || packet_.rfind("POST", 0) == 0 ||
-//            packet_.rfind("DELETE", 0) == 0 || packet_.rfind("PUT", 0) == 0)
-//    {
-//        return Http::B;
-//        // is a request
-//    }
-//    else
-//    {
-//        return Http::C;
-//    }
-//
-//}
 
 void MeServiceBase::removeSubscritions(int connId)
 {

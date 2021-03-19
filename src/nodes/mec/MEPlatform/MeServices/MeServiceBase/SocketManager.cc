@@ -47,8 +47,15 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
           case (Http::COMPLETE_NO_DATA):
               EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
               currentHttpMessage->setSockId(sock->getSocketId());
-              service->emitRequestQueueLength();
-              service->newRequest(currentHttpMessage);
+              if(currentHttpMessage->getType() == REQUEST)
+            {
+                service->emitRequestQueueLength();
+                service->newRequest(currentHttpMessage);
+            }
+            else
+            {
+                delete currentHttpMessage;
+            }
               if(currentHttpMessage != nullptr)
               {
                   currentHttpMessage = nullptr;
@@ -58,8 +65,15 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
           case (Http::COMPLETE_DATA):
               EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
               currentHttpMessage->setSockId(sock->getSocketId());
-              service->emitRequestQueueLength();
-              service->newRequest(currentHttpMessage);
+              if(currentHttpMessage->getType() == REQUEST)
+            {
+                service->emitRequestQueueLength();
+                service->newRequest(currentHttpMessage);
+            }
+            else
+            {
+                delete currentHttpMessage;
+            }
               if(currentHttpMessage != nullptr)
               {
                   currentHttpMessage = nullptr;
@@ -99,8 +113,15 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
           case (Http::COMPLETE_NO_DATA):
               EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
               currentHttpMessage->setSockId(sock->getSocketId());
-              service->emitRequestQueueLength();
-              service->newRequest(currentHttpMessage);
+              if(currentHttpMessage->getType() == REQUEST)
+              {
+                  service->emitRequestQueueLength();
+                  service->newRequest(currentHttpMessage);
+              }
+              else
+              {
+                  delete currentHttpMessage;
+              }
               if(currentHttpMessage != nullptr)
               {
                   currentHttpMessage = nullptr;
@@ -109,12 +130,19 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
               break;
           case (Http::COMPLETE_DATA):
                 currentHttpMessage->setSockId(sock->getSocketId());
+          if(currentHttpMessage->getType() == REQUEST)
+            {
                 service->emitRequestQueueLength();
                 service->newRequest(currentHttpMessage);
-              if(currentHttpMessage != nullptr)
-              {
-                  currentHttpMessage = nullptr;
-              }
+            }
+            else
+            {
+                delete currentHttpMessage;
+            }
+            if(currentHttpMessage != nullptr)
+            {
+              currentHttpMessage = nullptr;
+            }
               break;
           case (Http::INCOMPLETE_DATA):
                   break;
