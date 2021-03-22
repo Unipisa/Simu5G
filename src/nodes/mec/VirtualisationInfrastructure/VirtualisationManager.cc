@@ -374,10 +374,11 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         display << "p=" << (80 + ((index%5)*200)%1000) << "," << (100 + (50*(index/5)%350)) << ";is=vs";
         module->setDisplayString(display.str().c_str());
 
+
         //initialize IMEApp Parameters
         module->par("ueSimbolicAddress") = sourceAddress;
-        module->par("meHostSimbolicAddress") = pkt->getDestinationAddress();
-        module->par("meAppPort") = meAppPortCounter;
+        module->par("localAddress") = pkt->getDestinationAddress();
+        module->par("localPort") = meAppPortCounter;
         module->par("uePort") = ueAppPort;
         meAppPortCounter++;
 
