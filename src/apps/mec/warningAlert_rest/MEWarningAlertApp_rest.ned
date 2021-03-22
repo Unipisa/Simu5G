@@ -23,8 +23,8 @@ simple MEWarningAlertApp_rest like IMEApp
         
         string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
         int uePort;
-        string meHostSimbolicAddress;	// i.e meHost.virtualisationInfrastructure
-		int meAppPort;
+        string localAddress;	// i.e meHost.virtualisationInfrastructure
+		int localPort;					// i.e port where the MeApp is binded
         int packetSize = default(10);
         
         string interfaceTableModule = default("");

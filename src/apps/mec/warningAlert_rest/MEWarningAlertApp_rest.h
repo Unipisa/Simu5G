@@ -57,7 +57,8 @@ class MEWarningAlertApp_rest : public MeAppBase
 
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
-        virtual void handleMessage(cMessage *msg) override;
+//        virtual void handleMessage(cMessage *msg) override;
+        virtual void handleMessageWhenUp(cMessage *msg) override;
         virtual void finish() override;
 
 //        void handleInfoUEWarningAlertApp(WarningAlertPacket* pkt);
@@ -77,7 +78,6 @@ class MEWarningAlertApp_rest : public MeAppBase
        virtual void established(int connId) override;
        virtual void handleTcpMsg() override;
 
-       virtual void handleStartOperation(inet::LifecycleOperation *operation) override;
 
 
 };

@@ -25,9 +25,8 @@ using namespace omnetpp;
 
 void MEWarningAlertApp_rest::initialize(int stage)
 {
+    MeAppBase::initialize(stage);
     EV << "MEWarningAlertApp_rest::initialize - stage " << stage << endl;
-
-    cSimpleModule::initialize(stage);
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
@@ -35,10 +34,10 @@ void MEWarningAlertApp_rest::initialize(int stage)
     //retrieving parameters
     size_ = par("packetSize");
     ueSimbolicAddress = (char*)par("ueSimbolicAddress").stringValue();
-    meHostSimbolicAddress = (char*)par("meHostSimbolicAddress").stringValue();
+    meHostSimbolicAddress = (char*)par("localAddress").stringValue();
     destAddress_ = inet::L3AddressResolver().resolve(ueSimbolicAddress);
     destPort_ = par("uePort");
-    localPort_ = par("meAppPort");
+    localPort_ = par("localPort");
     meHost = getParentModule();
     mePlatform = meHost->getSubmodule("mePlatform");
 
@@ -48,11 +47,11 @@ void MEWarningAlertApp_rest::initialize(int stage)
     ueSocket.setOutputGate(gate("socketOut"));
     ueSocket.bind(localPort_);
 
-    // set Tcp Socket
-    socket.bind(L3AddressResolver().resolve(meHostSimbolicAddress), localPort_);
-
-    socket.setCallback(this);
-    socket.setOutputGate(gate("socketOut"));
+//    // set Tcp Socket
+//    socket.bind(L3AddressResolver().resolve(meHostSimbolicAddress), localPort_);
+//
+//    socket.setCallback(this);
+//    socket.setOutputGate(gate("socketOut"));
 
 
     cMessage *m = new cMessage("connect");
@@ -63,35 +62,57 @@ void MEWarningAlertApp_rest::initialize(int stage)
     EV << "MEWarningAlertApp_rest::initialize - UEWarningAlertApp Symbolic Address: " << ueSimbolicAddress <<  " [" << destAddress_.str() << "]" << endl;
 
 }
-void MEWarningAlertApp_rest::handleStartOperation(LifecycleOperation *operation)
+
+void MEWarningAlertApp_rest::handleMessageWhenUp(cMessage *msg)
 {
-    EV << "MEWarningAlertApp_rest::handleStartOperation"<< endl;
-    connect();
-}
-
-void MEWarningAlertApp_rest::handleMessage(cMessage *msg)
-{
-//   / EV << "MEWarningAlertApp_rest::handleMessage - \n";
-
-
-    if(msg->isSelfMessage())
-    {
-        if(strcmp(msg->getName(), "connect") == 0)
-         {
-             connect();
-             delete msg;
-         }
-    }
-    else if(socket.belongsToSocket(msg))
-     {
+    EV << "MeAppBase::handleMessageWhenUp" << endl;
+    if (msg->isSelfMessage())
+        handleSelfMessage(msg);
+    else if (socket.belongsToSocket(msg))
         socket.processMessage(msg);
-     }
-     else
-     {
-         delete msg;
-     }
+    else if (ueSocket.belongsToSocket(msg))
+    {
+        EV << "UDP MESSAGE" << endl;
+        delete msg;
+    }
+    else
+        delete msg;
 
 }
+
+
+//void MEWarningAlertApp_rest::handleMessage(cMessage *msg)
+//{
+//    EV << "MEWarningAlertApp_rest::handleMessage - \n";
+//    MeAppBase::handleMessage(msg);
+//
+////
+////    if(msg->isSelfMessage())
+////    {
+////        if(strcmp(msg->getName(), "connect") == 0)
+////         {
+////             connect();
+////             delete msg;
+////         }
+////    }
+////    else{
+////
+////        if(ueSocket.belongsToSocket(msg))
+////        {
+////            EV << "UDP message" << endl;
+////            return msg;
+////        }
+////        else if(socket.belongsToSocket(msg))
+////        {
+////            socket.processMessage(msg);
+////        }
+////    }
+////        else
+////        {
+////            delete msg;
+////        }
+//
+//}
 
 void MEWarningAlertApp_rest::finish(){
 
@@ -220,6 +241,7 @@ void MEWarningAlertApp_rest::handleTcpMsg()
 
 void MEWarningAlertApp_rest::connect()
 {
+    socket.renewSocket();
     EV << "MEWarningAlertApp_rest::connect" << endl;
     // we need a new connId if this is not the first connection
     //socket.renewSocket();
@@ -230,7 +252,6 @@ void MEWarningAlertApp_rest::connect()
         throw cRuntimeError("MEWarningAlertApp_rest::connect - MeService LocationService not found!");
     EV << "MEWarningAlertApp_rest::connect to:  " << serviceSockAddress.str() << endl;
     socket.connect(serviceSockAddress.addr, serviceSockAddress.port);
-
 }
 
 void MEWarningAlertApp_rest::modifySubscription()
@@ -282,5 +303,13 @@ void MEWarningAlertApp_rest::established(int connId)
             Http::sendPostRequest(&socket, body.c_str(), host.c_str(), uri.c_str());
 }
 
-void MEWarningAlertApp_rest::handleSelfMessage(cMessage *msg){}
+void MEWarningAlertApp_rest::handleSelfMessage(cMessage *msg)
+{
 
+    if(strcmp(msg->getName(), "connect") == 0)
+    {
+        connect();
+    }
+    delete msg;
+
+}

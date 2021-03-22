@@ -22,8 +22,8 @@ moduleinterface IMEApp
         
         string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
         int uePort;
-        string meHostSimbolicAddress;	// i.e meHost.virtualisationInfrastructure
-		int meAppPort;					// i.e port where the MeApp is binded
+        string localAddress;	// i.e meHost.virtualisationInfrastructure
+		int localPort;					// i.e port where the MeApp is binded
 }
 
 

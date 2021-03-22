@@ -23,10 +23,10 @@ simple MEWarningAlertApp like IMEApp
     parameters:
         @display("i=block/app;is=s");
         
-        string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
+         string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
         int uePort;
-        string meHostSimbolicAddress;	// i.e meHost.virtualisationInfrastructure
-		int meAppPort;
+        string localAddress;	// i.e meHost.virtualisationInfrastructure
+		int localPort;					// i.e port where the MeApp is binded
         
         int packetSize = default(10);
         
