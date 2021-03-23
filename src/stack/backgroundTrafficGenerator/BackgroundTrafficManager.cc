@@ -118,6 +118,7 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     cInfo->setFrameType(FEEDBACKPKT);
     cInfo->setCoord(bgUePos);
     cInfo->setDirection(dir);
+    cInfo->setCarrierFrequency(carrierFrequency_);
     if (dir == UL)
         cInfo->setTxPower(bgUeTxPower);
     else
@@ -134,30 +135,8 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     std::vector<double>::iterator it = snr.begin();
     for (; it != snr.end(); ++it)
     {
-        // select the CQI in the range [0,15] according to the "position" of
-        // the SINR within the range [SINR_MIN, SINR_MAX]
-
-
-        // TODO implement a lookup table that associates the SINR to a
-        //      range of CQI values. Then extract a random number within
-        //      that range
-
+        // lookup table that associates the SINR to a range of CQI values.
         bandCqi = getCqiFromTable(*it);
-
-//        if (dir == UL)
-//            std::cout << "\t snr = " << *it << " cqi = " << bandCqi << endl;
-//
-//        if (*it <= minSinr_)
-//            bandCqi = 0;
-//        else if (*it >= maxSinr_)
-//            bandCqi = 15;
-//        else
-//        {
-//            double range = maxSinr_ - minSinr_;
-//            double normalizedSinr = *it - minSinr_;
-//            bandCqi = 15 * ceil(normalizedSinr / range);
-//        }
-
         meanCqi += bandCqi;
     }
     meanCqi /= snr.size();

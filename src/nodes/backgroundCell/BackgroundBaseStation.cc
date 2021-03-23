@@ -64,6 +64,9 @@ void BackgroundBaseStation::initialize(int stage)
 
          bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
          bgTrafficManager_->setCarrierFrequency(carrierFrequency_);
+
+         bgChannelModel_ = check_and_cast<BackgroundCellChannelModel*>(getParentModule()->getSubmodule("bgChannelModel"));
+         bgChannelModel_->setCarrierFrequency(carrierFrequency_);
     }
 }
 
@@ -112,8 +115,11 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             bgUeIndex = *rit;
             bgUeId = BGUE_MIN_ID + bgUeIndex;
 
+            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
+
             // allocate one block
             bandStatus_[dir][b] = 1;
+            ulBandAllocation_[b] = bgUeId;
             b++;
 
             servedRac.push_back(bgUeId);
@@ -173,6 +179,8 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             if (dir == UL)
                 ulBandAllocation_[b] = bgUeId;
 
+            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
+
             blocks--;
             b++;
             allocatedBlocks++;
@@ -197,12 +205,27 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
 
 void BackgroundBaseStation::resetAllocation(Direction dir)
 {
-    prevBandStatus_[dir] = bandStatus_[dir];
-    bandStatus_[dir].resize(numBands_, 0);
-
-    if (dir == UL)
+    for (unsigned int i=0; i < numBands_; i++)
     {
-        ulPrevBandAllocation_ = ulBandAllocation_;
-        ulBandAllocation_.resize(numBands_, 0);
+        prevBandStatus_[dir][i] = bandStatus_[dir][i];
+        bandStatus_[dir][i] = 0;
+        if (dir == UL)
+        {
+            ulPrevBandAllocation_[i] = ulBandAllocation_[i];
+            ulBandAllocation_[i] = 0;
+        }
     }
+
+}
+
+TrafficGeneratorBase* BackgroundBaseStation::getBandInterferingUe(int band)
+{
+    MacNodeId bgUeId = ulBandAllocation_[band];
+    return bgTrafficManager_->getTrafficGenerator(bgUeId);
+}
+
+TrafficGeneratorBase* BackgroundBaseStation::getPrevBandInterferingUe(int band)
+{
+    MacNodeId bgUeId = ulPrevBandAllocation_[band];
+    return bgTrafficManager_->getTrafficGenerator(bgUeId);
 }

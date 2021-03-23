@@ -13,6 +13,7 @@
 #include <omnetpp.h>
 #include "common/LteCommon.h"
 #include "nodes/binder/LteBinder.h"
+#include "nodes/backgroundCell/BackgroundCellChannelModel.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 #include "stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 
@@ -52,8 +53,11 @@ class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
     // reference to the binder
     LteBinder* binder_;
 
-    /// reference to the background traffic manager - one per carrier
+    // reference to the background traffic manager - one per carrier
     BackgroundTrafficManager* bgTrafficManager_;
+
+    // reference to the channel model for this background base station
+    BackgroundCellChannelModel* bgChannelModel_;
 
     // TTI self message
     omnetpp::cMessage* ttiTick_;
@@ -87,6 +91,8 @@ class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
     // This module is subscribed to position changes.
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
+    BackgroundCellChannelModel* getChannelModel() { return bgChannelModel_; }
+
     const inet::Coord getPosition() { return pos_; }
 
     int getId() { return id_; }
@@ -105,6 +111,9 @@ class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
 
     int getBandStatus(int band, Direction dir) { return bandStatus_[dir].at(band); }
     int getPrevBandStatus(int band, Direction dir) { return prevBandStatus_[dir].at(band); }
+
+    TrafficGeneratorBase* getBandInterferingUe(int band);
+    TrafficGeneratorBase* getPrevBandInterferingUe(int band);
 };
 
 #endif

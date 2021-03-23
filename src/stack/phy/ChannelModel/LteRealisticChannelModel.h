@@ -46,6 +46,7 @@ protected:
   bool shadowing_;
 
   // enable/disable intercell interference computation
+  bool enableBackgroundCellInterference_;
   bool enableExtCellInterference_;
   bool enableDownlinkInterference_;
   bool enableUplinkInterference_;
@@ -405,6 +406,12 @@ protected:
    * @return total interference expressed in dBm
    */
   virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double>* interference);
+
+  /*
+   * evaluates total interference from external cells seen from the spot given by coord
+   * @return total interference expressed in dBm
+   */
+  virtual bool computeBackgroundCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double>* interference);
 
   /*
    * compute attenuation due to path loss and shadowing

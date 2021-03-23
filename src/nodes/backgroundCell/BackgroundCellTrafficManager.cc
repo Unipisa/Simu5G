@@ -18,6 +18,35 @@
 
 Define_Module(BackgroundCellTrafficManager);
 
+double BackgroundCellTrafficManager::nrCqiTable[16] = {
+        -9999.0,
+        -9999.0,
+        -9999.0,
+        -5.5,
+        -3.5,
+        -1.5,
+        0.5,
+        4.5,
+        5.5,
+        7.5,
+        10.5,
+        12.5,
+        15.5,
+        17.5,
+        21.5,
+        25.5
+};
+
+double BackgroundCellTrafficManager::getCqiFromTable(double snr)
+{
+    for (unsigned int i=0; i<16; i++)
+    {
+        if (snr < nrCqiTable[i])
+            return i-1;
+    }
+    return 15;
+}
+
 BackgroundCellTrafficManager::BackgroundCellTrafficManager()
 {
 }
@@ -54,11 +83,27 @@ void BackgroundCellTrafficManager::initialize(int stage)
 
 Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    // TODO compute CQI based on distance between UE and BS
-//    inet::Coord bgBsCoord = bgBaseStation_->getPosition();
+    BackgroundCellChannelModel* bgChannelModel = bgBaseStation_->getChannelModel();
+    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
 
-    Cqi cqi = intuniform(2,15);
-    return cqi;
+    MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
+    std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgBaseStation_, dir);
+
+    // convert the SNR to CQI and compute the mean
+    Cqi bandCqi, meanCqi = 0;
+    std::vector<double>::iterator it = snr.begin();
+
+    for (; it != snr.end(); ++it)
+    {
+        // lookup table that associates the SINR to a range of CQI values
+        bandCqi = getCqiFromTable(*it);
+        meanCqi += bandCqi;
+    }
+    meanCqi /= snr.size();
+    if(meanCqi < 2)
+        meanCqi = 2;
+
+    return meanCqi;
 }
 
 unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)

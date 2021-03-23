@@ -427,9 +427,9 @@ class Binder : public omnetpp::cSimpleModule
         return bgBaseStationList_[carrierFrequency].size() - 1;
     }
 
-    BackgroundBaseStationList getBackgroundBaseStationList(double carrierFrequency)
+    BackgroundBaseStationList* getBackgroundBaseStationList(double carrierFrequency)
     {
-        return bgBaseStationList_[carrierFrequency];
+        return &bgBaseStationList_[carrierFrequency];
     }
 
     void addEnbInfo(EnbInfo* info)

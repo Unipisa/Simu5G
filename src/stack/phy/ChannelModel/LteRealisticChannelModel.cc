@@ -18,6 +18,7 @@
 #include "stack/mac/amc/UserTxParams.h"
 #include "common/LteCommon.h"
 #include "nodes/ExtCell.h"
+#include "nodes/backgroundCell/BackgroundBaseStation.h"
 #include "stack/phy/layer/LtePhyUe.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
@@ -79,6 +80,7 @@ void LteRealisticChannelModel::initialize(int stage)
             fadingType_ = JAKES;
 
         fadingPaths_ = par("fading_paths");
+        enableBackgroundCellInterference_ = par("bgCell_interference");
         enableExtCellInterference_ = par("extCell_interference");
         enableDownlinkInterference_ = par("downlink_interference");
         enableUplinkInterference_ = par("uplink_interference");
@@ -664,7 +666,18 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        computeUplinkInterference(eNbId, ueId, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
    }
 
+   //============ BACKGROUND CELLS INTERFERENCE COMPUTATION =================
+   //vector containing the sum of bg-cell interference for each band
+   std::vector<double> bgCellInterference; // Linear value (mW)
+   // prepare data structure
+   bgCellInterference.resize(numBands_, 0);
+   if (enableBackgroundCellInterference_)
+   {
+       computeBackgroundCellInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
+   }
+
    //============ EXTCELL INTERFERENCE COMPUTATION =================
+   // TODO this might be obsolete as it is replaced by background cell interference
    //vector containing the sum of ext-cell interference for each band
    std::vector<double> extCellInterference; // Linear value (mW)
    // prepare data structure
@@ -678,7 +691,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    // compute and linearize total noise
    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
 
-   // denominator expressed in dBm as (N+extCell+multiCell)
+   // denominator expressed in dBm as (N+extCell+bgCell+multiCell)
    double den;
    EV << "LteRealisticChannelModel::getSINR - distance from my eNb=" << enbCoord.distance(ueCoord) << " - DIR=" << (( dir==DL )?"DL" : "UL") << endl;
 
@@ -693,10 +706,10 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        if (lteInfo->getFrameType() == DATAPKT && rbmap[MACRO][i] == 0)
            continue;
 
-       //               (      mW            +  mW  +        mW            )
-       den = linearToDBm(extCellInterference[i] + totN + multiCellInterference[i]);
+       //               (      mW              +          mW            +  mW  +        mW            )
+       den = linearToDBm(bgCellInterference[i] + extCellInterference[i] + totN + multiCellInterference[i]);
 
-       EV << "\t ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
+       EV << "\t bgCell[" << bgCellInterference[i] << "] - ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
           << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
 
        // compute final SINR
@@ -728,9 +741,6 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    MacNodeId bgUeId = lteInfo->getSourceId();
    MacNodeId eNbId = lteInfo->getDestId();
    Direction dir = (Direction) lteInfo->getDirection();
-
-//   //Get the Resource Blocks used to transmit this packet
-//   RbMap rbmap = lteInfo->getGrantedBlocks();
 
    // position of e/gNb and UE
    Coord ueCoord = lteInfo->getCoord();
@@ -877,6 +887,34 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
     */
 
    // TODO Interference computation still needs to be implemented
+
+
+   //============ MULTI CELL INTERFERENCE COMPUTATION =================
+   // for background UEs, we only compute CQI
+   bool isCqi = true;
+   RbMap rbmap;
+   //vector containing the sum of multicell interference for each band
+   std::vector<double> multiCellInterference; // Linear value (mW)
+   // prepare data structure
+   multiCellInterference.resize(numBands_, 0);
+   if (enableDownlinkInterference_ && dir == DL)
+   {
+       computeDownlinkInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
+   }
+   else if (enableUplinkInterference_ && dir == UL)
+   {
+       computeUplinkInterference(eNbId, bgUeId, isCqi, lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
+   }
+
+   //============ EXTCELL INTERFERENCE COMPUTATION =================
+   //vector containing the sum of ext-cell interference for each band
+   std::vector<double> extCellInterference; // Linear value (mW)
+   // prepare data structure
+   extCellInterference.resize(numBands_, 0);
+   if (enableExtCellInterference_) // && dir == DL)
+   {
+       computeBackgroundCellInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, dir, &extCellInterference); // dBm
+   }
 
    //===================== SINR COMPUTATION ========================
    // compute and linearize total noise
@@ -2219,6 +2257,156 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
    return true;
 }
 
+bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir,
+       std::vector<double>* interference)
+{
+   EV << "**** Background Cell Interference **** " << endl;
+
+   // get external cell list
+   BackgroundBaseStationList* list = binder_->getBackgroundBaseStationList(carrierFrequency);
+   BackgroundBaseStationList::iterator it = list->begin();
+
+   Coord c;
+   double dist, // meters
+   txPwr, // dBm
+   recvPwr, // watt
+   recvPwrDBm, // dBm
+   att, // dBm
+   angolarAtt; // dBm
+
+   //compute distance for each cell
+   while (it != list->end())
+   {
+       if (dir == DL)
+       {
+           // compute interference with respect to the background base station
+
+           // get external cell position
+           c = (*it)->getPosition();
+           // computer distance between UE and the ext cell
+           dist = coord.distance(c);
+
+           EV << "\t distance between UE[" << coord.x << "," << coord.y <<
+                   "] and backgroundCell[" << c.x << "," << c.y << "] is -> "
+                   << dist << "\t";
+
+           // compute attenuation according to some path loss model
+           att = computeExtCellPathLoss(dist, nodeId);
+
+           txPwr = (*it)->getTxPower();
+
+           //=============== ANGOLAR ATTENUATION =================
+           if ((*it)->getTxDirection() == OMNI)
+           {
+               angolarAtt = 0;
+           }
+           else
+           {
+               // compute the angle between uePosition and reference axis, considering the eNb as center
+               double ueAngle = computeAngle(c, coord);
+
+               // compute the reception angle between ue and eNb
+               double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
+
+               if (recvAngle > 180)
+                   recvAngle = 360 - recvAngle;
+
+               double verticalAngle = computeVerticalAngle(c, coord);
+
+               // compute attenuation due to sectorial tx
+               angolarAtt = computeAngolarAttenuation(recvAngle, verticalAngle);
+           }
+           //=============== END ANGOLAR ATTENUATION =================
+
+           // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
+           // compute and linearize received power
+           recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+           recvPwr = dBmToLinear(recvPwrDBm);
+
+           unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
+           EV << " - shared bands [" << numBands << "]" << endl;
+
+           // add interference in those bands where the ext cell is active
+           for (unsigned int i = 0; i < numBands; i++)
+           {
+               int occ = 0;
+               if (isCqi )  // check slot occupation for this TTI
+               {
+                   occ = (*it)->getBandStatus(i, DL);
+               }
+               else if (!rbmap.empty() && rbmap.at(MACRO).at(i) != 0)       // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
+               {
+                   occ = (*it)->getPrevBandStatus(i, DL);
+               }
+
+               // if the ext cell is active, add interference
+               if (occ > 0)
+               {
+                   (*interference)[i] += recvPwr;
+               }
+           }
+       }
+       else // dir == UL
+       {
+           // for each RB occupied in the background cell, compute interference with respect to the
+           // background UE that is using that RB
+           TrafficGeneratorBase* bgUe;
+
+           double antennaGainBgUe = antennaGainUe_;  // TODO get this from the bgUe
+
+           angolarAtt = 0;  // we assume OMNI directional UEs
+
+           unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
+           EV << " - shared bands [" << numBands << "]" << endl;
+
+           // add interference in those bands where a UE in the background cell is active
+           for (unsigned int i = 0; i < numBands; i++)
+           {
+               int occ = 0;
+
+               if (isCqi)  // check slot occupation for this TTI
+               {
+                   occ = (*it)->getBandStatus(i, UL);
+                   if ( occ )
+                       bgUe = (*it)->getBandInterferingUe(i);
+               }
+               else if (rbmap.at(MACRO).at(i) != 0)       // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
+               {
+                   occ = (*it)->getPrevBandStatus(i, UL);
+                   if (occ)
+                       bgUe = (*it)->getPrevBandInterferingUe(i);
+               }
+
+               // if the ext cell is active, add interference
+               if (occ)
+               {
+                   txPwr = bgUe->getTxPwr();
+
+                   c = bgUe->getCoord();
+                   dist = coord.distance(c);
+
+                   EV << "\t distance between UE[" << coord.x << "," << coord.y <<
+                           "] and backgroundUE[" << c.x << "," << c.y << "] is -> "
+                           << dist << "\t";
+
+                   // compute attenuation according to some path loss model
+                   att = computeExtCellPathLoss(dist, nodeId);
+
+                   recvPwrDBm = (*it)->getTxPower() - att - angolarAtt - cableLoss_ + antennaGainUe_ + antennaGainBgUe;
+                   recvPwr = dBmToLinear(recvPwrDBm);
+
+                   (*interference)[i] += recvPwr;
+               }
+           }
+
+       }
+       it++;
+   }
+
+   return true;
+}
+
+
 double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId nodeId)
 {
    //    EV << "LteRealisticChannelModel::computeExtCellPathLoss:" << scenario_ << "-" << shadowing_ << "\n";
@@ -2412,7 +2600,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
            {
                // if we are decoding a data transmission and this RB has not been used, skip it
                // TODO fix for multi-antenna case
-               if (rbmap.at(MACRO).at(i) == 0)
+               if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
                    continue;
 
                // compute the number of occupied slot (unnecessary)
@@ -2500,7 +2688,7 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
            {
                // if we are decoding a data transmission and this RB has not been used, skip it
                // TODO fix for multi-antenna case
-               if (rbmap.at(MACRO).at(i) == 0)
+               if (!rbmap.empty() && rbmap.at(MACRO).at(i) == 0)
                    continue;
 
                // get the set of UEs transmitting on the same band
