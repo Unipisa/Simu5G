@@ -16,6 +16,7 @@ Define_Module(TrafficGeneratorBase);
 
 TrafficGeneratorBase::TrafficGeneratorBase()
 {
+    fbSource_ = nullptr;
     selfSource_[DL] = selfSource_[UL] = nullptr;
     bufferedBytes_[DL] = bufferedBytes_[UL] = 0;
     trafficEnabled_[DL] = trafficEnabled_[UL] = false;
@@ -25,6 +26,7 @@ TrafficGeneratorBase::~TrafficGeneratorBase()
 {
     cancelAndDelete(selfSource_[DL]);
     cancelAndDelete(selfSource_[UL]);
+    cancelAndDelete(fbSource_);
 }
 
 void TrafficGeneratorBase::initialize(int stage)
@@ -58,6 +60,14 @@ void TrafficGeneratorBase::initialize(int stage)
             scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
         }
 
+        enableInterference_ = par("enableInterference");
+        if (enableInterference_)
+        {
+            fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI); // TTI -> seconds
+            fbSource_ = new cMessage("fbSource");
+            scheduleAt(simTime(), fbSource_);
+        }
+
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;
@@ -68,8 +78,16 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
     {
-        // if needed, update SINR and CQI
-        if (positionUpdated_)
+        // update measurements every feedback period
+        if (!strcmp(msg->getName(), "fbSource"))
+        {
+            updateMeasurements();
+            scheduleAt(simTime()+fbPeriod_, fbSource_);
+            return;
+        }
+
+        // if interference computation is disabled, update SINR when the UE changed its position
+        if (!enableInterference_ && positionUpdated_)
             updateMeasurements();
 
         if (!strcmp(msg->getName(), "selfSourceDl"))

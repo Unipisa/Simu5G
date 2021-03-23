@@ -47,6 +47,15 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // tx power of the bg UE
     double txPower_;
 
+    // if true, the CQI of the bg UE is affected by external interference
+    bool enableInterference_;
+
+    // CQI reporting period
+    simtime_t fbPeriod_;
+
+    // message for scheduling CQI reporting
+    cMessage* fbSource_;
+
     /*
      * STATUS
      */
