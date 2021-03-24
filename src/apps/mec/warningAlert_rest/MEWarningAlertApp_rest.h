@@ -40,6 +40,8 @@ class MEWarningAlertApp_rest : public MeAppBase
     SockAddr serviceSockAddress;
 
 
+
+
     int size_;
     std::string subId;
 
@@ -47,6 +49,8 @@ class MEWarningAlertApp_rest : public MeAppBase
     cModule* meHost;
     cModule* mePlatform;
     ServiceRegistry * serviceRegistry;
+
+    cOvalFigure * circle; // circle danger zone
 
     //UDP socket to communicate with the UeApp
     inet::UdpSocket ueSocket;
@@ -78,7 +82,9 @@ class MEWarningAlertApp_rest : public MeAppBase
        virtual void established(int connId) override;
        virtual void handleTcpMsg() override;
 
-
+    public:
+       MEWarningAlertApp_rest();
+       virtual ~MEWarningAlertApp_rest();
 
 };
 

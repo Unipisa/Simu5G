@@ -22,6 +22,23 @@ Define_Module(MEWarningAlertApp_rest);
 using namespace inet;
 using namespace omnetpp;
 
+MEWarningAlertApp_rest::MEWarningAlertApp_rest()
+{
+    meHost = nullptr;
+    mePlatform = nullptr;;
+    serviceRegistry = nullptr;;
+    circle = nullptr; // circle danger zone
+
+}
+MEWarningAlertApp_rest::~MEWarningAlertApp_rest()
+{
+    if(circle != nullptr)
+       // dropAndDelete(circle);
+//        circle->dropAndDelete(circle)
+        delete circle;
+//        dropAndDelete(circle);
+    }
+
 
 void MEWarningAlertApp_rest::initialize(int stage)
 {
@@ -56,6 +73,14 @@ void MEWarningAlertApp_rest::initialize(int stage)
 
     cMessage *m = new cMessage("connect");
             scheduleAt(simTime()+0.5, m);
+
+
+    circle = new cOvalFigure("circle");
+    circle->setBounds(cFigure::Rectangle(150,200,120,120));
+    circle->setLineWidth(2);
+    circle->setLineColor(cFigure::RED);
+    getSimulation()->getSystemModule()->getCanvas()->addFigure(circle);
+
 
     //testing
     EV << "MEWarningAlertApp_rest::initialize - MEWarningAlertApp_rest Symbolic Address: " << meHostSimbolicAddress << endl;
@@ -202,6 +227,7 @@ void MEWarningAlertApp_rest::handleTcpMsg()
         {
             EV << "MEClusterizeService::handleTcpMsg - response 204 " << rspMsg->getBody()<< endl;
              socket.close();
+             getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
 
         }
         else if(std::strcmp(rspMsg->getCode(), "201") == 0)
