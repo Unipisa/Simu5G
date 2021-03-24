@@ -3,6 +3,7 @@
 
 #include <omnetpp.h>
 #include "inet/common/INETDefs.h"
+#include "nodes/mec/MecCommon.h"
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/common/lifecycle/LifecycleOperation.h"
 #include "inet/common/socket/SocketMap.h"
@@ -51,6 +52,7 @@ class SocketManager;
 class SubscriptionBase;
 class HttpRequestMessage;
 class ServiceRegistry;
+class EventNotification;
 class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
     public:
@@ -99,8 +101,8 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         omnetpp::cMessage *subscriptionService_;
         double subscriptionServiceTime_;
         int subscriptionQueueSize_;
-        omnetpp::cQueue subscriptionEvents_;          // queue that holds events relative to subscriptions
-        omnetpp::cMessage *currentSubscriptionServed_;
+        std::queue<EventNotification*> subscriptionEvents_;          // queue that holds events relative to subscriptions
+        EventNotification *currentSubscriptionServed_;
 
         // signals for statistics
         omnetpp::simsignal_t requestQueueSizeSignal_;
@@ -208,15 +210,6 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         virtual void handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket)    = 0;
         virtual void handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) = 0;
 
-        /*
-         * This method handles a subscription event. The kind variable of the msg
-         * specifies the type (e.g PERIODICAL, UTILIZATION_THRSHOLD_80, DISTANCE
-         *
-         * @param msg thta describes the request type
-         *
-         */
-        virtual bool handleSubscriptionType(omnetpp::cMessage *msg) = 0;
-
 
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }
         virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
@@ -244,13 +237,9 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * something happened, like a value greater than a  threshold
          * in order to send a subscription
          *
-         * The param is wrong, it must be a structure that also reports the value like
-         * structures{
-         *  type
-         *  value
-         *  }
+         * @param event structure to be added in the queue
          */
-        virtual void triggeredEvent(short int event);
+        virtual void triggeredEvent(EventNotification *event);
 
         /*
          * This method adds the request in the requests_ queue
@@ -264,7 +253,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
 
         // This method adds the subscription event in the subscriptions_ queue
 
-        virtual void newSubscriptionEvent(omnetpp::cMessage *msg);
+        virtual void newSubscriptionEvent(EventNotification *event);
 
         /*
          * This method handles a request. It parses the payload and in case

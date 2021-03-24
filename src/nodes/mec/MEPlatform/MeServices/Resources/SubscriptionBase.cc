@@ -14,7 +14,7 @@ SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, 
 	subscriptionId_ = subId;
 	socket_ = socket;
 	baseResLocation_ = baseResLocation;
-	notificationTrigger = nullptr;
+//	notificationTrigger = nullptr;
 }
 
 void SubscriptionBase::addEnodeB(std::vector<cModule*>& eNodeBs) {

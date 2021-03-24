@@ -12,7 +12,9 @@
 #include "nodes/mec/MEPlatform/MeServices/Resources/TimeStamp.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/subscriptionTimer_m.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/AperiodicSubscriptionTimer_m.h"
+#include "nodes/mec/MEPlatform/EventNotification/EventNotification.h"
+
 
 class LteCellInfo;
 
@@ -36,20 +38,20 @@ class SubscriptionBase
 
         virtual bool fromJson(const nlohmann::ordered_json& json);
         virtual void sendSubscriptionResponse() = 0;
-        virtual void sendNotification() = 0;
-        virtual void handleSubscription() = 0;
+        virtual void sendNotification(EventNotification *event) = 0;
+        virtual EventNotification* handleSubscription() = 0;
 
 
         virtual std::string getSubscriptionType() const;
         virtual int getSubscriptionId() const;
         virtual int getSocketConnId() const;
-        virtual void setNotificationTrigger(subscriptionTimer *nt) { notificationTrigger = nt;}
-        virtual subscriptionTimer*  getNotificationTrigger() { return notificationTrigger;}
+//        virtual void setNotificationTrigger(subscriptionTimer *nt) { notificationTrigger = nt;}
+//        virtual subscriptionTimer*  getNotificationTrigger() { return notificationTrigger;}
 
 
     protected:
 
-        subscriptionTimer *notificationTrigger;
+//        subscriptionTimer *notificationTrigger;
         inet::TcpSocket *socket_;
         TimeStamp timestamp_;
 

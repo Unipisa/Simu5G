@@ -23,6 +23,9 @@
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
 #include "nodes/mec/MEPlatform/MeServices/MeServiceBase/SocketManager.h"
 
+#include "nodes/mec/MEPlatform/EventNotification/EventNotification.h"
+
+
 using namespace omnetpp;
 
 MeServiceBase::MeServiceBase()
@@ -69,7 +72,7 @@ void MeServiceBase::initialize(int stage)
     }
 }
 
-// called at inet::INITSTAGE_APPLICATION_LAYER (before initialize, why?)
+// called at inet::INITSTAGE_APPLICATION_LAYER (before initialize)
 void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
 {
     EV << "MeServiceBase::handleStartOperation" << endl;
@@ -217,9 +220,10 @@ bool MeServiceBase::manageRequest()
 void MeServiceBase::scheduleNextEvent(bool now)
 {
     // schedule next event
-    if(subscriptionEvents_.getLength() != 0 && !subscriptionService_->isScheduled())
+    if(subscriptionEvents_.size() != 0 && !subscriptionService_->isScheduled() && !requestService_->isScheduled())
     {
-        currentSubscriptionServed_ = check_and_cast<cMessage *>(subscriptionEvents_.pop());
+        currentSubscriptionServed_ = subscriptionEvents_.front();
+        subscriptionEvents_.pop();
         if(now)
             scheduleAt(simTime() + 0 , subscriptionService_);
         else
@@ -229,7 +233,7 @@ void MeServiceBase::scheduleNextEvent(bool now)
             scheduleAt(simTime() + time*1e-6 , subscriptionService_);
         }
     }
-    else if (requests_.getLength() != 0 && !requestService_->isScheduled() )
+    else if (requests_.getLength() != 0 && !requestService_->isScheduled() && !subscriptionService_->isScheduled())
     {
 //        currentRequestServed_ = check_and_cast<cMessage *>(requests_.pop());
         currentRequestMessage_ = check_and_cast<HttpRequestMessage*>(requests_.pop());
@@ -269,7 +273,6 @@ void MeServiceBase::handleRequestQueueFull(HttpBaseMessage *msg)
 }
 
 
-
 void MeServiceBase::newRequest(cMessage *msg)
 {
     EV << "Queue length: " << requests_.getLength() << endl;
@@ -298,29 +301,29 @@ void MeServiceBase::newRequest(HttpBaseMessage *msg)
 
 
 
-void MeServiceBase::newSubscriptionEvent(cMessage *msg)
+void MeServiceBase::newSubscriptionEvent(EventNotification* event)
 {
-    EV << "Queue length: " << subscriptionEvents_.getLength() << endl;
+    EV << "Queue length: " << subscriptionEvents_.size() << endl;
     // If queue is full delete event
-    if(requestQueueSize_ != 0 && subscriptionEvents_.getLength() == subscriptionQueueSize_){
-        delete msg;
+    if(subscriptionQueueSize_ != 0 && subscriptionEvents_.size() == subscriptionQueueSize_){
+        delete event;
         return;
     }
 
-    subscriptionEvents_.insert(msg);
+    subscriptionEvents_.push(event);
     scheduleNextEvent();
 }
 
 bool MeServiceBase::manageSubscription()
 {
-    return handleSubscriptionType(currentSubscriptionServed_);
+    // TODO redefine for managing the subscription
+    return false;
 }
 
 // TODO method not used
-void MeServiceBase::triggeredEvent(short int event)
+void MeServiceBase::triggeredEvent(EventNotification* event)
 {
-    cMessage *msg = new cMessage("subscriptionEvent", event);
-    newSubscriptionEvent(msg);
+    newSubscriptionEvent(event);
 }
 
 double MeServiceBase::calculateRequestServiceTime()
@@ -614,24 +617,26 @@ MeServiceBase::~MeServiceBase(){
         delete requests_.pop();;
     }
 
-    while(!subscriptionEvents_.isEmpty())
+    while(!subscriptionEvents_.empty())
     {
-        delete subscriptionEvents_.pop();;
-
+        EventNotification *notEv = subscriptionEvents_.front();
+        subscriptionEvents_.pop();
+        delete notEv;
     }
     std::cout << "Subscriptions list length: " << subscriptions_.size() << std::endl;
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
         std::cout << "Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
         // stop periodic notification timer
-        cMessage *msg =it->second->getNotificationTrigger();
-        if(msg!= nullptr && msg->isScheduled())
-            cancelAndDelete(it->second->getNotificationTrigger());
+//        cMessage *msg =it->second->getNotificationTrigger();
+//        if(msg!= nullptr && msg->isScheduled())
+//            cancelAndDelete(it->second->getNotificationTrigger());
         delete it->second;
         subscriptions_.erase(it++);
     }
     std::cout << "Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
+
 void MeServiceBase::emitRequestQueueLength()
 {
     emit(requestQueueSizeSignal_, requests_.getLength());
@@ -644,12 +649,6 @@ void MeServiceBase::removeSubscritions(int connId)
     while (it != subscriptions_.end()) {
         if (it->second->getSocketConnId() == connId) {
             std::cout << "Remnove subscription with id = " << it->second->getSubscriptionId();
-            // stop periodic notification timer
-            cMessage *msg =it->second->getNotificationTrigger();
-            if(msg!= nullptr && msg->isScheduled())
-                cancelAndDelete(it->second->getNotificationTrigger());
-            else if(msg!= nullptr && !msg->isScheduled())
-                delete msg;                
             delete it->second;
             subscriptions_.erase(it++);
             std::cout << " list length: " << subscriptions_.size() << std::endl;
