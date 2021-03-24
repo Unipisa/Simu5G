@@ -11,6 +11,7 @@
 #include "corenetwork/lteCellInfo/LteCellInfo.h"
 #include "nodes/binder/LteBinder.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
+#include "nodes/mec/MEPlatform/EventNotification/CircleNotificationEvent.h"
 using namespace omnetpp;
 
 CircleNotificationSubscription::CircleNotificationSubscription()
@@ -33,10 +34,14 @@ CircleNotificationSubscription::~CircleNotificationSubscription(){
 void CircleNotificationSubscription::sendSubscriptionResponse(){}
 
 
-void CircleNotificationSubscription::sendNotification()
+void CircleNotificationSubscription::sendNotification(EventNotification *event)
 {
+    EV << "CircleNotificationSubscription::sendNotification" << endl;
     if(firstNotificationSent && (simTime() - lastNotification) <= frequency)
         return;
+
+    CircleNotificationEvent *circleEvent = check_and_cast<CircleNotificationEvent*>(event);
+
     nlohmann::ordered_json val;
     nlohmann::ordered_json terminalLocationArray;
 
@@ -47,9 +52,11 @@ void CircleNotificationSubscription::sendNotification()
     val["link"]["rel"] = subscriptionType_;
 
     std::vector<TerminalLocation>::const_iterator it = terminalLocations.begin();
-    for(; it != terminalLocations.end() ; ++it)
+    std::vector<TerminalLocation> terminalLoc = circleEvent->getTerminalLocations();
+
+    for(auto it : terminalLoc)
     {
-        terminalLocationArray.push_back(it->toJson());
+        terminalLocationArray.push_back(it.toJson());
     }
     if(terminalLocationArray.size() > 1)
         val["terminalLocationList"] = terminalLocationArray;
@@ -297,14 +304,11 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     std::pair<std::string, std::string> p("Location: ", resourceURL);
     Http::send201Response(socket_, response.dump(2).c_str(), p );
     firstNotificationSent = false;
-    //if checkImmediate is true, check it
-    if(checkImmediate)
-        handleSubscription();
 
 return true;
 }
 
-void CircleNotificationSubscription::handleSubscription()
+EventNotification* CircleNotificationSubscription::handleSubscription()
 {
 
     EV << "CircleNotificationSubscription::handleSubscription()" << endl;
@@ -319,9 +323,9 @@ void CircleNotificationSubscription::handleSubscription()
             continue; // TODO manage what to do
         inet::Coord coord = LocationUtils::getCoordinates(it->first);
         inet::Coord center = inet::Coord(latitude,longitude,0.);
-        EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
-        EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
-        EV << "distance: " << coord.distance(center) <<endl;
+//        EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
+//        EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
+//        EV << "distance: " << coord.distance(center) <<endl;
 
         if(actionCriteria == LocationUtils::Entering)
         {
@@ -349,7 +353,13 @@ void CircleNotificationSubscription::handleSubscription()
         }
     }
     if(!terminalLocations.empty())
-        sendNotification();
+    {
+        CircleNotificationEvent *notificationEvent = new CircleNotificationEvent(subscriptionType_,subscriptionId_, terminalLocations);
+        return notificationEvent;
+    }
+    else
+        return nullptr;
+
 }
 
 bool CircleNotificationSubscription::findUe(MacNodeId nodeId)

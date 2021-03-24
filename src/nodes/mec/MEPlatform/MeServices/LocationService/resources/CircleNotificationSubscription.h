@@ -31,9 +31,10 @@ class CircleNotificationSubscription : public SubscriptionBase
 
         virtual bool fromJson(const nlohmann::ordered_json& json) override;
         virtual void sendSubscriptionResponse() override;
-        virtual void sendNotification() override;
-        virtual void handleSubscription() override;
+        virtual void sendNotification(EventNotification *event) override;
+        virtual EventNotification* handleSubscription() override;
 
+        virtual bool getCheckImmediate() const { return checkImmediate;}
 
         bool findUe(MacNodeId nodeId);
 

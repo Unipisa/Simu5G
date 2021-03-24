@@ -18,8 +18,6 @@
 #ifndef _LOCATIONSERVICE_H
 #define _LOCATIONSERVICE_H
 
-#include "inet/common/INETDefs.h"
-#include "nodes/mec/MecCommon.h"
 #include "nodes/mec/MEPlatform/MeServices/LocationService/resources/LocationResource.h"
 #include "nodes/mec/MEPlatform/MeServices/MeServiceBase/MeServiceBase.h"
 
@@ -31,6 +29,7 @@
 
 
 //class Location;
+class AperiodicSubscriptionTimer;
 
 class LocationService: public MeServiceBase
 {
@@ -41,6 +40,8 @@ class LocationService: public MeServiceBase
     double LocationSubscriptionPeriod_;
     omnetpp::cMessage *LocationSubscriptionEvent_;
     
+    AperiodicSubscriptionTimer *subscriptionTimer_;
+
     bool scheduledSubscription;
   public:
     LocationService();
@@ -55,12 +56,12 @@ class LocationService: public MeServiceBase
     virtual void handlePOSTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
     virtual void handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
     virtual void handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) override;
-    virtual bool handleSubscriptionType(cMessage *msg) override;
 
     /*
      * This method is called for every element in the subscriptions_ queue.
      */
     virtual bool manageSubscription() override;
+
     virtual ~LocationService();
 
 
