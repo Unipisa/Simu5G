@@ -107,7 +107,7 @@ void LteRealisticChannelModel::initialize(int stage)
 }
 
 double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
-       Coord coord)
+       Coord coord, bool cqiDl)
 {
    double speed = .0;
    double correlationDist = .0;
@@ -143,7 +143,7 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
    //    Applying shadowing only if it is enabled by configuration
    //    log-normal shadowing
    if (shadowing_)
-       attenuation += computeShadowing(sqrDistance, nodeId, speed);
+       attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
 
    // update current user position
 
@@ -163,7 +163,7 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
    return attenuation;
 }
 
-double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction dir, Coord coord,MacNodeId node2_Id, Coord coord_2)
+double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction dir, Coord coord,MacNodeId node2_Id, Coord coord_2, bool cqiDl)
 {
    double speed = .0;
    double correlationDist = .0;
@@ -191,7 +191,7 @@ double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction 
    //    Applying shadowing only if it is enabled by configuration
    //    log-normal shadowing
    if (shadowing_)
-       attenuation += computeShadowing(sqrDistance, nodeId, speed);
+       attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
 
    // update current user position
    updatePositionHistory(nodeId, coord);
@@ -201,8 +201,15 @@ double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction 
    return attenuation;
 }
 
-double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId nodeId, double speed)
+double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl)
 {
+    ShadowFadingMap* actualShadowingMap;
+
+    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
+        actualShadowingMap = obtainShadowingMap(nodeId);
+    else
+        actualShadowingMap = &lastComputedSF_;
+
     double mean = 0;
     double dbp = 0.0;
     //Get std deviation according to los/nlos and selected scenario
@@ -218,24 +225,24 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
     // the Move object associated to the UE is move varible
 
     // if shadowing for current user has never been computed
-    if (lastComputedSF_.find(nodeId) == lastComputedSF_.end())
+    if (actualShadowingMap->find(nodeId) == actualShadowingMap->end())
     {
         //Get the log normal shadowing with std deviation stdDev
         att = normal(mean, stdDev);
 
         //store the shadowing attenuation for this user and the temporal mark
         std::pair<simtime_t, double> tmp(NOW, att);
-        lastComputedSF_[nodeId] = tmp;
+        (*actualShadowingMap)[nodeId] = tmp;
 
         //If the shadowing attenuation has been computed at least one time for this user
         // and the distance traveled by the UE is greated than correlation distance
     }
-    else if ((NOW - lastComputedSF_.at(nodeId).first).dbl() * speed
+    else if ((NOW - actualShadowingMap->at(nodeId).first).dbl() * speed
             > correlationDistance_)
     {
 
         //get the temporal mark of the last computed shadowing attenuation
-        time = (NOW - lastComputedSF_.at(nodeId).first).dbl();
+        time = (NOW - actualShadowingMap->at(nodeId).first).dbl();
 
         //compute the traveled distance
         space = time * speed;
@@ -244,21 +251,22 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
         double a = exp(-0.5 * (space / correlationDistance_));
 
         //Get last shadowing attenuation computed
-        double old = lastComputedSF_.at(nodeId).second;
+        double old = actualShadowingMap->at(nodeId).second;
 
         //Compute shadowing with a EAW (Exponential Average Window) (step2)
         att = a * old + sqrt(1 - pow(a, 2)) * normal(mean, stdDev);
 
         // Store the new computed shadowing
         std::pair<simtime_t, double> tmp(NOW, att);
-        lastComputedSF_[nodeId] = tmp;
+        (*actualShadowingMap)[nodeId] = tmp;
 
         // if the distance traveled by the UE is smaller than correlation distance shadowing attenuation remain the same
     }
     else
     {
-        att = lastComputedSF_.at(nodeId).second;
+        att = actualShadowingMap->at(nodeId).second;
     }
+
     return att;
 }
 void LteRealisticChannelModel::updatePositionHistory(const MacNodeId nodeId,
@@ -545,9 +553,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    // attenuation for the desired signal
    double attenuation;
    if ((lteInfo->getFrameType() == FEEDBACKPKT))
-       attenuation = getAttenuation(ueId, UL, coord); // dB
+       attenuation = getAttenuation(ueId, UL, coord, cqiDl); // dB
    else
-       attenuation = getAttenuation(ueId, dir, coord); // dB
+       attenuation = getAttenuation(ueId, dir, coord, cqiDl); // dB
 
    //compute attenuation (PATHLOSS + SHADOWING)
    recvPower -= attenuation; // (dBm-dB)=dBm
@@ -1350,7 +1358,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP_D2D(LteAirFrame *frame, Us
    " - txPwr=" << recvPower << " - for ueId=" << sourceId << endl;
 
    // attenuation for the desired signal
-   double attenuation = getAttenuation_D2D(sourceId, dir, sourceCoord, destId, destCoord); // dB
+   double attenuation = getAttenuation_D2D(sourceId, dir, sourceCoord, destId, destCoord, cqiDl); // dB
 
    //compute attenuation (PATHLOSS + SHADOWING)
    recvPower -= attenuation; // (dBm-dB)=dBm
@@ -1468,7 +1476,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_D2D(LteAirFrame *frame, Us
    " - txPwr=" << recvPower << " - for ueId=" << sourceId << endl;
 
    // attenuation for the desired signal
-   double attenuation = getAttenuation_D2D(sourceId, dir, sourceCoord, destId, destCoord); // dB
+   double attenuation = getAttenuation_D2D(sourceId, dir, sourceCoord, destId, destCoord, cqiDl); // dB
 
    //compute attenuation (PATHLOSS + SHADOWING)
    recvPower -= attenuation; // (dBm-dB)=dBm
@@ -2830,7 +2838,7 @@ double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId n
 LteRealisticChannelModel::JakesFadingMap * LteRealisticChannelModel::obtainUeJakesMap(MacNodeId id)
 {
     // obtain a reference to UE phy
-    LtePhyBase * phy;
+    LtePhyBase * phy = nullptr;
 
     std::vector<UeInfo*>* ueList = binder_->getUeList();
     std::vector<UeInfo*>::iterator it;
@@ -2844,16 +2852,47 @@ LteRealisticChannelModel::JakesFadingMap * LteRealisticChannelModel::obtainUeJak
        }
     }
 
-   // get the associated channel and get a reference to its Jakes Map
-   JakesFadingMap *j;
-   LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
-   if (re == NULL)
-       throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer. Abort.");
-   else
-       j = re->getJakesMap();
+    if (phy == nullptr)
+        return nullptr;
 
-   return j;
+    // get the associated channel and get a reference to its Jakes Map
+    JakesFadingMap *j;
+    LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
+    if (re == NULL)
+        throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer. Abort.");
+    else
+        j = re->getJakesMap();
+
+    return j;
 }
+
+LteRealisticChannelModel::ShadowFadingMap* LteRealisticChannelModel::obtainShadowingMap(MacNodeId id)
+{
+    // obtain a reference to UE phy
+    LtePhyBase * phy = nullptr;
+
+    std::vector<UeInfo*>* ueList = binder_->getUeList();
+    std::vector<UeInfo*>::iterator it;
+    for (it = ueList->begin(); it != ueList->end(); ++it)
+    {
+       UeInfo* ueInfo = *it;
+       if (ueInfo->id == id)
+       {
+           phy = ueInfo->phy;
+           break;
+       }
+    }
+
+    if (phy == nullptr)
+        return nullptr;
+
+    // get the associated channel and get a reference to its shadowing Map
+    LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
+    ShadowFadingMap* j = re->getShadowingMap();
+
+    return j;
+}
+
 
 bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap,
        std::vector<double> * interference)
@@ -2910,7 +2949,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
        }
 
        // compute attenuation using data structures within the cell
-       att = interfChanModel->getAttenuation(ueId,UL,coord);
+       att = interfChanModel->getAttenuation(ueId,UL,coord,isCqi);
        EV << "EnbId [" << id << "] - attenuation [" << att << "]";
 
        //=============== ANGOLAR ATTENUATION =================

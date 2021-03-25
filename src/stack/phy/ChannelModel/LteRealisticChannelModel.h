@@ -70,7 +70,8 @@ protected:
   std::map<MacNodeId, bool> losMap_;
 
   // Store the last computed shadowing for each user
-  std::map<MacNodeId, std::pair<inet::simtime_t, double> > lastComputedSF_;
+  typedef std::map<MacNodeId, std::pair<inet::simtime_t, double> > ShadowFadingMap;
+  ShadowFadingMap lastComputedSF_;
 
   //correlation distance used in shadowing computation and
   //also used to recompute the probability of LOS
@@ -176,7 +177,7 @@ public:
    * @param dir traffic direction
    * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
    */
-  virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord);
+  virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
   /*
    * Compute Attenuation for D2D caused by pathloss and shadowing (optional)
    *
@@ -184,7 +185,7 @@ public:
    * @param dir traffic direction
    * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
    */
-  virtual double getAttenuation_D2D(MacNodeId nodeId, Direction dir, inet::Coord coord,MacNodeId node2_Id, inet::Coord coord_2);
+  virtual double getAttenuation_D2D(MacNodeId nodeId, Direction dir, inet::Coord coord,MacNodeId node2_Id, inet::Coord coord_2, bool cqiDl);
   /*
    *  Compute angle between two coordinates
    *
@@ -215,7 +216,7 @@ public:
    * @param nodeid mac node id of UE
    * @param speed speed of UE
    */
-  virtual double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed);
+  virtual double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl);
   /*
    * Compute sir for each band for user nodeId according to multipath fading
    *
@@ -370,6 +371,11 @@ public:
       return &jakesFadingMap_;
   }
 
+  ShadowFadingMap * getShadowingMap()
+  {
+      return &lastComputedSF_;
+  }
+
   virtual bool isUplinkInterferenceEnabled() { return enableUplinkInterference_; }
   virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
 protected:
@@ -444,6 +450,12 @@ protected:
    */
   JakesFadingMap * obtainUeJakesMap(MacNodeId id);
   JakesFadingMap * obtainUeJakesMap_bgUe(MacNodeId id);
+
+  /*
+   * Obtain the shadowing map for the specified UE
+   * @param id mac id of the user
+   */
+  ShadowFadingMap* obtainShadowingMap(MacNodeId id);
 };
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */

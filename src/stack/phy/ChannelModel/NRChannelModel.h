@@ -27,7 +27,7 @@ public:
      * @param dir traffic direction
      * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord);
+    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
 
     /*
     *  Compute Attenuation caused by transmission direction

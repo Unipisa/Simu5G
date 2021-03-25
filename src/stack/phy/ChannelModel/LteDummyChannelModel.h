@@ -40,7 +40,7 @@ class LteDummyChannelModel : public LteChannelModel
    /*
     * Compute Attenuation caused by pathloss and shadowing (optional)
     */
-   virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord)
+   virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
    {
        return 0;
    }

@@ -87,7 +87,7 @@ class LteChannelModel : public omnetpp::cSimpleModule
      * @param dir traffic direction
      * @param move position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord) = 0;
+    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) = 0;
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
