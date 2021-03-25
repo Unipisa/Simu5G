@@ -143,3 +143,9 @@ simple NRChannelModel extends LteRealisticChannelModel
     parameters:
     @class("NRChannelModel");
 }
+
+simple NRChannelModel_3GPP38_901 extends NRChannelModel
+{
+    parameters:
+    @class("NRChannelModel_3GPP38_901");
+}
