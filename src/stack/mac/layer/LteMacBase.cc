@@ -22,6 +22,7 @@
 #include "stack/mac/packet/LteMacPdu.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "assert.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 using namespace omnetpp;
 
@@ -33,6 +34,7 @@ LteMacBase::LteMacBase()
 
     totalHarqErrorRateDlSum_ = totalHarqErrorRateDlCount_ = 0;
     totalHarqErrorRateUlSum_ = totalHarqErrorRateUlCount_ = 0;
+    packetFlowManager_ = nullptr;
 }
 
 LteMacBase::~LteMacBase()
@@ -413,6 +415,24 @@ void LteMacBase::initialize(int stage)
         nrToUpper_ = 0;
         nrToLower_ = 0;
 
+        if(strcmp(this->getName(), "nrMac") == 0 && getNodeType() == UE)
+        {
+            if(getParentModule()->findSubmodule("NRpacketFlowManager") != -1)
+            {
+                EV << "LteMacBase::initialize - MAC layer is NRMac, cast the packetFlowManager to NR" << endl;
+                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("NRpacketFlowManager"));
+            }
+        }
+        else{
+            if(getParentModule()->findSubmodule("packetFlowManager") != -1)
+            {
+                LteNodeType nt = getNodeType();
+                const char *cnt = (nt == UE)? "UE": (nt == ENODEB)? "ENODEB": "GNODEB";
+                EV << "LteMacBase::initialize - MAC layer, nodeType: "<< cnt  << endl;
+                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("packetFlowManager"));
+            }
+        }
+
         /* register signals */
         macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");
         macBufferOverflowUl_ = registerSignal("macBufferOverFlowUl");
@@ -463,6 +483,29 @@ void LteMacBase::handleMessage(cMessage* msg)
     return;
 }
 
+void LteMacBase::insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu> macPdu)
+{
+    if(packetFlowManager_ != nullptr)
+        packetFlowManager_->insertMacPdu(lcid, macPdu);
+}
+
+void LteMacBase::harqAckToFlowManager(LogicalCid lcid, unsigned int macPduId)
+{
+    if(packetFlowManager_!= nullptr)
+        packetFlowManager_->macPduArrived(lcid, macPduId);
+}
+
+void LteMacBase::discardMacPdu(LogicalCid lcid, unsigned int macPduId)
+{
+    if(packetFlowManager_!= nullptr)
+        packetFlowManager_->discardMacPdu(lcid, macPduId);
+}
+
+void LteMacBase::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno)
+{
+    if(packetFlowManager_!= nullptr)
+        packetFlowManager_->discardRlcPdu(lcid,rlcSno);
+}
 void LteMacBase::finish()
 {
 }

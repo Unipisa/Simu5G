@@ -169,6 +169,16 @@ class LteHarqProcessRx
      */
     CwList emptyUnitsIds();
 
+    /**
+     * @author Alessandro noferi
+     *
+     * Check if the process is active
+     *
+     * @return true if at least on unit status is not RXHARQ_PDU_EMPTY
+     */
+
+    bool isHarqProcessActive();
+
     virtual ~LteHarqProcessRx();
 
   protected:

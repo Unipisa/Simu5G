@@ -414,6 +414,8 @@ void NRMacUe::macPduMake(MacCid cid)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());
                     else
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
+                    // @author Alessandro Noferi
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(MacCidToLcid(destCid));
 
                     macPduList_[carrierFreq][pktId] = macPkt;
                 }

@@ -108,6 +108,8 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
     pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(HARQPKT);
     pkt->addTagIfAbsent<UserControlInfo>()->setDirection(pduInfo->getDirection());
     pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(pduInfo->getCarrierFrequency());
+    pkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(pduInfo->getPacketFlowManagerId()); // @author Alessandro Noferi
+
 
     if (!result_.at(cw))
     {
@@ -247,3 +249,19 @@ CwList LteHarqProcessRx::emptyUnitsIds()
     }
     return ul;
 }
+
+// @author Alessandro noferi
+bool LteHarqProcessRx::isHarqProcessActive()
+{
+    std::vector<RxUnitStatus> ues= getProcessStatus();
+    std::vector<RxUnitStatus>::const_iterator it = ues.begin();
+    std::vector<RxUnitStatus>::const_iterator end = ues.end();
+
+    // when a process is active? (ask professor)
+    for(; it != end; ++it){
+        if ((*it).second != RXHARQ_PDU_EMPTY)
+            return true;
+    }
+    return false;
+}
+

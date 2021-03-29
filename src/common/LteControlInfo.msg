@@ -69,6 +69,7 @@ class LteControlInfo extends inet::TagBase {
     //# Connection Information
 
     uint16 lcid;                                        // Logical Connection Identifier
+    uint16 packetFlowManagerId;							// is a copy of the LCID used by the packetFlowManager
     int32 multicastGroupId = -1;                        // Identifier for a multicast group (it is in range [0:[2^28)-1] ) 
                                                         // For unicast communications, this field is -1    
 }

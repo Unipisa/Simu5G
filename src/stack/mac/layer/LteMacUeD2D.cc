@@ -244,7 +244,9 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     else
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
 
-                    macPkt->addTagIfAbsent<CreationTimeTag>()->setCreationTime(NOW);
+                    // @author Alessandro Noferi
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(MacCidToLcid(destCid));
+
                     macPduList_[carrierFreq][pktId] = macPkt;
                 }
                 else

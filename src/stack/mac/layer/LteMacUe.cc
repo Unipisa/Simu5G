@@ -27,6 +27,8 @@
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
 Define_Module(LteMacUe);
 
 using namespace inet;
@@ -403,6 +405,15 @@ bool LteMacUe::bufferizePacket(cPacket* pktAux)
             }
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
+
+            // @author Alessandro Noferi
+            // discard the RLC
+            if(packetFlowManager_ != nullptr)
+            {
+                unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+                packetFlowManager_->discardRlcPdu(lteInfo->getLcid(),rlcSno);
+            }
+
             delete pkt;
             return false;
         }
@@ -464,6 +475,18 @@ void LteMacUe::macPduMake(MacCid cid)
                 macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
                 macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
                 macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
+
+                /*
+                 * @author Alessandro Noferi
+                 *
+                 * Set the LCID, used by the packetFlowManager.
+                 * Don't know if such LCID could be obtained in other way, though.
+                 */
+
+                // @author Alessandro Noferi
+                macPkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(MacCidToLcid(destCid));
+
+
 
                 //macPkt->setControlInfo(uinfo);
                 macPkt->setTimestamp(NOW);
