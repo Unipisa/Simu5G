@@ -53,6 +53,9 @@ class UmRxEntity : public omnetpp::cSimpleModule
     // called when a D2D mode switch is triggered
     void rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer=true);
 
+    // returns if the entity contains RLC pdus
+    bool isEmpty() const { return (buffered_.pkt == nullptr && pduBuffer_.size() == 0);}
+
   protected:
 
     /**

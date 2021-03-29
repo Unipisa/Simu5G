@@ -12,6 +12,9 @@
 #include "stack/rlc/um/entity/UmTxEntity.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerUe.h"
+#include "stack/packetFlowManager/PacketFlowManagerEnb.h"
+
 Define_Module(UmTxEntity);
 
 using namespace inet;
@@ -41,6 +44,39 @@ void UmTxEntity::initialize()
     lteRlc_ = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
     queueSize_ = lteRlc_->par("queueSize");
     queueLength_ = 0;
+
+
+    // @author Alessandro Noferi
+    if(mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
+    {
+        if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
+        {
+            EV << "UmTxEntity::initialize - RLC layer if of a base station" << endl;
+            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getParentModule()->getSubmodule("packetFlowManager"));
+        }
+    }
+    else if(mac->getNodeType() == UE)
+    {
+        if(strcmp(lteRlc_->getParentModule()->getName(), "nrRlc") == 0)
+        {
+            if(getParentModule()->getParentModule()->findSubmodule("NRpacketFlowManager") != -1)
+            {
+                EV << "UmTxEntity::initialize - RLC layer is NRRlc, cast the packetFlowManager to NR" << endl;
+                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getParentModule()->getSubmodule("NRpacketFlowManager"));
+            }
+
+        }
+        else
+        {
+            if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
+            {
+                EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
+                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getParentModule()->getSubmodule("packetFlowManager"));
+            }
+        }
+    }
+    burstStatus_ = INACTIVE;
+
 }
 
 bool UmTxEntity::enque(cPacket* pkt)
@@ -186,6 +222,20 @@ void UmTxEntity::rlcPduMake(int pduLength)
     }
 
     *pkt->addTagIfAbsent<FlowControlInfo>() = *flowControlInfo_;
+
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * Notify the packetFlowManager about the new RLC pdu
+     */
+
+    if(len != 0 && packetFlowManager_ != nullptr)
+    {
+        EV << "UmTxEntity::rlcPduMake - notify PacketFlowManager" << endl;
+        LogicalCid lcid = flowControlInfo_->getLcid();
+        packetFlowManager_->insertRlcPdu(lcid, rlcPdu, INACTIVE);
+    }
 
     // send to MAC layer
     pkt->insertAtFront(rlcPdu);

@@ -99,6 +99,13 @@ class LteRlcUm : public omnetpp::cSimpleModule
 
     virtual bool isEmptyingTxBuffer(MacNodeId peerId) { return false; }
 
+    /**
+     * It fills the ueSet argument with the MacNodeIds that have
+     * RLC data in the entities
+     *
+     */
+    void activeUeUL(std::set<MacNodeId>* ueSet);
+
   protected:
 
     omnetpp::cGate* up_[2];
@@ -200,6 +207,8 @@ class LteRlcUm : public omnetpp::cSimpleModule
     typedef std::map<MacCid, UmRxEntity*> UmRxEntities;
     UmTxEntities txEntities_;
     UmRxEntities rxEntities_;
+
+
 };
 
 #endif
