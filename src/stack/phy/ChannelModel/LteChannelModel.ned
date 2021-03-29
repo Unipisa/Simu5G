@@ -90,7 +90,9 @@ simple LteRealisticChannelModel extends LteChannelModel
 
     double delay_rms = default(363e-9);
 
-    // if true, enables the inter-cell interference computation for DL connections from external cells -->  
+    // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->  
+    bool bgCell_interference = default(true);
+    // if true, enables the inter-cell interference computation for DL connections from external cells (maybe this is obsolete and should be removed) -->  
     bool extCell_interference = default(true);
     // if true, enables the inter-cell interference computation for DL connections -->  
     bool downlink_interference = default(false);

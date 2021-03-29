@@ -906,14 +906,25 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
        computeUplinkInterference(eNbId, bgUeId, isCqi, lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
    }
 
+   //============ BACKGROUND CELLS INTERFERENCE COMPUTATION =================
+   //vector containing the sum of bg-cell interference for each band
+   std::vector<double> bgCellInterference; // Linear value (mW)
+   // prepare data structure
+   bgCellInterference.resize(numBands_, 0);
+   if (enableBackgroundCellInterference_)
+   {
+       computeBackgroundCellInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
+   }
+
    //============ EXTCELL INTERFERENCE COMPUTATION =================
+   // TODO this might be obsolete as it is replaced by background cell interference
    //vector containing the sum of ext-cell interference for each band
    std::vector<double> extCellInterference; // Linear value (mW)
    // prepare data structure
    extCellInterference.resize(numBands_, 0);
-   if (enableExtCellInterference_) // && dir == DL)
+   if (enableExtCellInterference_ && dir == DL)
    {
-       computeBackgroundCellInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, dir, &extCellInterference); // dBm
+       computeExtCellInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), &extCellInterference); // dBm
    }
 
    //===================== SINR COMPUTATION ========================
@@ -927,9 +938,11 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    // add interference for each band
    for (unsigned int i = 0; i < numBands_; i++)
    {
-       //               (      mW            +  mW  +        mW            )
-       den = linearToDBm(totN);
-       EV << "\t recvPwr["<< dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
+       //               (      mW              +          mW            +  mW  +        mW            )
+       den = linearToDBm(bgCellInterference[i] + extCellInterference[i] + totN + multiCellInterference[i]);
+
+       EV << "\t bgCell[" << bgCellInterference[i] << "] - ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
+          << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
 
        // compute final SINR
        snrVector[i] -= den;
@@ -2397,8 +2410,8 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId
 
                    (*interference)[i] += recvPwr;
                }
-           }
 
+           }
        }
        it++;
    }
