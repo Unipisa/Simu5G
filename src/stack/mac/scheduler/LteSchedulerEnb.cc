@@ -35,6 +35,7 @@ LteSchedulerEnb::LteSchedulerEnb()
     harqTxBuffers_ = 0;
     harqRxBuffers_ = 0;
     resourceBlocks_ = 0;
+    utilization_ = 0;
 }
 
 LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
@@ -1072,8 +1073,16 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     for (; antennaIt != antennaItEnd; ++antennaIt)
     {
         allocatedBlocks += (double) (*antennaIt);
+
+        // @author Alessandro Noferi
+        // collect the antenna utilization for current Layer
+        utilization_ += (double) (*antennaIt);
+
         antenna++;
     }
+
+    utilization_ /= (((double) (antenna)) * ((double) resourceBlocks_));
+
     plane++;
 
     if (direction_ == DL)
@@ -1105,3 +1114,5 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
             ++it;
     }
 }
+
+

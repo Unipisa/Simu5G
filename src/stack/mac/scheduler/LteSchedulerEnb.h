@@ -114,6 +114,9 @@ class LteSchedulerEnb
     // pre-made BandLimit structure used when the no band limit is given to the scheduler
     std::vector<BandLimit> emptyBandLim_;
 
+    // @author Alessandro Noferi
+    double utilization_; // it records the utilization in the last TTI
+
   public:
 
     /**
@@ -174,6 +177,14 @@ class LteSchedulerEnb
     unsigned int getResourceBlocks()
     {
         return resourceBlocks_;
+    }
+
+    /**
+     * Gets the utilization in the last TTI
+     */
+    double getUtilization()
+    {
+        return utilization_;
     }
 
     /**
