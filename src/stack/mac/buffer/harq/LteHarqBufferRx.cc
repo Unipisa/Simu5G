@@ -238,3 +238,17 @@ LteHarqBufferRx::~LteHarqBufferRx()
     processes_.clear();
     macOwner_ = nullptr;
 }
+
+
+// @author Alessandro noferi
+
+bool LteHarqBufferRx::isHarqBufferActive() const {
+    std::vector<LteHarqProcessRx *>::const_iterator it =  processes_.begin();
+    std::vector<LteHarqProcessRx *>::const_iterator end = processes_.end();
+    for(; it != end; ++it){
+        if((*it)->isHarqProcessActive()){
+            return true;
+        }
+    }
+    return false;
+}

@@ -130,6 +130,17 @@ class LteHarqBufferRx
         macUe_ = nullptr;
     }
 
+
+    /**
+     * @author Alessandro noferi
+     *
+     * Check if the buffer is active
+     *
+     * @return true if the RxHarqPduStatus of all units of all processes is not RXHARQ_PDU_EMPTY
+     */
+
+    bool isHarqBufferActive() const;
+
     virtual ~LteHarqBufferRx();
 
   protected:
@@ -154,6 +165,9 @@ class LteHarqBufferRx
     void initMacUe(){
         macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(nodeId_));
     }
+
+
+
 };
 
 #endif
