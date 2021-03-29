@@ -120,7 +120,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                             --codewords;
                             allocatedBytes+=rtxBytes;
 
-                            check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(carrierFrequency, nodeId, UL, false);
+                            check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(nodeId, carrierFrequency, UL, false);
                         }
                     }
                     EV << NOW << "NRSchedulerGnbUl::rtxschedule UE " << nodeId << " - allocated bytes : " << allocatedBytes << endl;
@@ -199,7 +199,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
                                 --codewords;
                                 allocatedBytes+=rtxBytes;
 
-                                check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(carrierFrequency, senderId, D2D, false);
+                                check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(senderId, carrierFrequency, D2D, false);
                             }
                         }
                         EV << NOW << " NRSchedulerGnbUl::rtxschedule - D2D UE: " << senderId << " allocated bytes : " << allocatedBytes << endl;

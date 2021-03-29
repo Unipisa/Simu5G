@@ -1016,7 +1016,7 @@ void LteMacEnb::handleSelfMessage()
 void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, Direction dir, bool rtx)
 {
     std::map<double, int>* needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
-            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("NRMacGnb::signalProcessForRtx - direction %d not valid\n", dir);
+            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("LteMacEnb::signalProcessForRtx - direction %d not valid\n", dir);
 
     if (needRtx->find(carrierFrequency) == needRtx->end())
     {
@@ -1036,7 +1036,7 @@ void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, D
 int LteMacEnb::getProcessForRtx(double carrierFrequency, Direction dir)
 {
     std::map<double, int>* needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
-            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("NRMacGnb::getProcessForRtx - direction %d not valid\n", dir);
+            (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("LteMacEnb::getProcessForRtx - direction %d not valid\n", dir);
 
     if (needRtx->find(carrierFrequency) == needRtx->end())
         return 0;
