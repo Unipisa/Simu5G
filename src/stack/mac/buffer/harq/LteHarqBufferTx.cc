@@ -163,6 +163,12 @@ void LteHarqBufferTx::insertPdu(unsigned char acid, Codeword cw, Packet *pkt)
     EV << "H-ARQ TX: new pdu (id " << pdu->getId() << " ) inserted into process " << (int)acid << " "
     "codeword id: " << (int)cw << " "
     "for node with id " << tag->getDestId() << endl;
+
+    EV << "LCID " << tag->getLcid() << endl;;
+
+    // notify PacketFlowManager
+    macOwner_->insertMacPdu(tag->getPacketFlowManagerId(), pdu);
+
 }
 
 UnitList
@@ -243,6 +249,12 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
     bool reset = (*processes_)[acid]->pduFeedback(harqResult, cw);
     if (reset)
         numEmptyProc_++;
+
+    if(result  == true)
+    {
+        auto userInfo = pkt->getTag<UserControlInfo>();
+        macOwner_->harqAckToFlowManager(userInfo->getLcid(), fbPduId);
+    }
 
     // debug output
     const char *ack = result ? "ACK" : "NACK";
@@ -357,6 +369,23 @@ LteHarqBufferTx::getSelectedProcess()
 {
     return getProcess(selectedAcid_);
 }
+
+
+// @author Alessandro noferi
+
+bool LteHarqBufferTx::isHarqBufferActive() const {
+    std::vector<LteHarqProcessTx *>::const_iterator it =  processes_->begin();
+    std::vector<LteHarqProcessTx *>::const_iterator end = processes_->end();
+    for(; it != end; ++it){
+        if((*it)->isHarqProcessActive()){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 
 LteHarqBufferTx::~LteHarqBufferTx()
 {
