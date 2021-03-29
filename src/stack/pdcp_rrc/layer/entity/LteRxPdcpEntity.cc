@@ -10,6 +10,7 @@
 //
 
 #include "stack/pdcp_rrc/layer/entity/LteRxPdcpEntity.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 Define_Module(LteRxPdcpEntity);
 
@@ -33,6 +34,9 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet* pkt)
     // perform PDCP operations
     pdcp_->headerDecompress(pkt); // Decompress packet header
 
+    PacketFlowManagerBase *flowManager = pdcp_->getPacketFlowManager();
+       if(flowManager != nullptr)
+           flowManager->receivedPdcpSdu(pkt);
     // handle PDCP SDU
     handlePdcpSdu(pkt);
 }

@@ -111,6 +111,12 @@ public:
 
     unsigned int getNumSdu() const { return numSdu_; }
 
+    // @author Alessandro noferi
+    virtual RlcSduList* getRlcSudList()
+    {
+       return &sduList_;
+    }
+
     /**
      * pushSdu() gets ownership of the packet
      * and stores it inside the rlc sdu list

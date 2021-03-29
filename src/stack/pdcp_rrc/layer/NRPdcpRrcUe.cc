@@ -12,6 +12,8 @@
 #include "stack/pdcp_rrc/layer/NRPdcpRrcUe.h"
 #include "stack/pdcp_rrc/layer/entity/NRTxPdcpEntity.h"
 #include "stack/pdcp_rrc/layer/entity/NRRxPdcpEntity.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
 
 Define_Module(NRPdcpRrcUe);
 
@@ -34,6 +36,7 @@ void NRPdcpRrcUe::initialize(int stage)
         nrNodeId_ = getAncestorPar("nrMacNodeId");
 
     LtePdcpRrcUeD2D::initialize(stage);
+
 }
 
 MacNodeId NRPdcpRrcUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
@@ -141,6 +144,41 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
         EV << "NRPdcpRrcUe : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+
+        if (!dualConnectivityEnabled_ || lteInfo->getUseNR())
+        {
+            if(NRpacketFlowManager_ != nullptr)
+            {
+                if(destId == 0)
+                    NRpacketFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
+                else
+                {
+                    destId = binder_->getMacNodeId(destAddr);
+                    Ipv4Address srcAddr = Ipv4Address(lteInfo->getSrcAddr());
+                    MacNodeId srcId = binder_->getMacNodeId(srcAddr);
+                    Direction dir = getDirection(srcId, destId);
+                    if (dir == UL)
+                        NRpacketFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
+                }
+            }
+        }
+        else
+        {
+            if(packetFlowManager_ != nullptr)
+            {
+                if(destId == 0)
+                    packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
+                else
+                {
+                    destId = binder_->getMacNodeId(destAddr);
+                    Ipv4Address srcAddr = Ipv4Address(lteInfo->getSrcAddr());
+                    MacNodeId srcId = binder_->getMacNodeId(srcAddr);
+                    Direction dir = getDirection(srcId, destId);
+                    if (dir == UL)
+                        packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
+                }
+            }
+        }
     }
 
     // assign LCID
@@ -259,6 +297,11 @@ void NRPdcpRrcUe::sendToLowerLayer(Packet *pkt)
 
         // use NR id as source
         lteInfo->setSourceId(nrNodeId_);
+        if(NRpacketFlowManager_!= nullptr)
+        {
+            EV << "LteTxPdcpEntity::handlePacketFromUpperLayer - notify NRpacketFlowManager_" << endl;
+            NRpacketFlowManager_->insertPdcpSdu(pkt);
+        }
 
         // Send message
         send(pkt, (lteInfo->getRlcType() == UM ? nrUmSap_[OUT_GATE] : nrAmSap_[OUT_GATE]));

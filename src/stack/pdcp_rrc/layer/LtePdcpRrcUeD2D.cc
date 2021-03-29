@@ -12,6 +12,8 @@
 #include "stack/pdcp_rrc/layer/LtePdcpRrcUeD2D.h"
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
 
 Define_Module(LtePdcpRrcUeD2D);
 
@@ -118,6 +120,16 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         EV << "LtePdcpRrcUeD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+
+
+        if(packetFlowManager_ != nullptr)
+        {
+//           packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
+            if(getDirection() == DL)
+                packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
+            else if (getDirection() == UL)
+                packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
+        }
     }
 
     // assign LCID

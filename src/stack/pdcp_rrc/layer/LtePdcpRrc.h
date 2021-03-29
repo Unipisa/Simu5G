@@ -25,6 +25,8 @@ class LteTxPdcpEntity;
 class LteRxPdcpEntity;
 
 
+class PacketFlowManagerBase;
+
 #define LTE_PDCP_HEADER_COMPRESSION_DISABLED B(-1)
 
 /**
@@ -238,6 +240,19 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * sendToUpperLayer() forwards a PDCP SDU to the IP layer
      */
     void sendToUpperLayer(omnetpp::cPacket *pkt);
+
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * reference to the packetFlowManager to do notifications
+     * about PDCP packets
+     */
+    PacketFlowManagerBase *packetFlowManager_;
+    PacketFlowManagerBase *NRpacketFlowManager_;
+
+
+    virtual PacketFlowManagerBase* getPacketFlowManager() {return packetFlowManager_;}
 
     /*
      * Data structures
