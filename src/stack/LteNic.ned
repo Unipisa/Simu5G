@@ -29,6 +29,7 @@ import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.x2.LteX2Manager;
 
+import lte.stack.packetFlowManager.PacketFlowManager;
 // 
 // Interface for the 3GPP Stack.
 //
@@ -113,6 +114,13 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=100,389");
         }
 
+         		//#
+        //# Modules used to take trace of PDCP pkt flow
+        //#
+        packetFlowManager: <PacketFlowManagerType> like PacketFlowManager if hasPacketFlowManager {
+            @display("p=69,299");
+        }
+
     connections allowunconnected:
         ip2nic.stackNic <--> pdcpRrc.DataPort;
 
@@ -152,6 +160,8 @@ module LteNicUe extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcUe");
         LteMacType = default("LteMacUe");
         LtePhyType = default("LtePhyUe");
+        PacketFlowManagerType = default("PacketFlowManagerUe");
+        hasPacketFlowManager = default(true);
         d2dCapable = default(false);          // DO NOT CHANGE
 
     submodules:
@@ -170,6 +180,9 @@ module LteNicUeD2D extends LteNicUe
         LtePdcpRrcType = default("LtePdcpRrcUeD2D");
         LteMacType = default("LteMacUeD2D");
         LtePhyType = default("LtePhyUeD2D");
+        PacketFlowManagerType = default("PacketFlowManagerUe");
+        hasPacketFlowManager = default(true);
+
         d2dCapable = default(true);             // DO NOT CHANGE
         bool d2dInitialMode = default(false);
         @display("bgb=704,443");
@@ -184,6 +197,8 @@ module LteNicEnb extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcEnb");
         LteMacType = default("LteMacEnb");
         LtePhyType = default("LtePhyEnb");
+        PacketFlowManagerType = default("PacketFlowManagerEnb");
+        hasPacketFlowManager = default(true);
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
         string LteCompManagerType = default("LteCompManagerProportional");
@@ -242,6 +257,8 @@ module LteNicEnbD2D extends LteNicEnb
         LtePdcpRrcType = default("LtePdcpRrcEnbD2D");
         LteMacType = default("LteMacEnbD2D");
         LtePhyType = default("LtePhyEnbD2D");
+        PacketFlowManagerType = default("PacketFlowManagerEnb");
+        hasPacketFlowManager = default(true);
         d2dCapable = default(true);   // DO NOT CHANGE
         string d2dModeSelectionType = default("D2DModeSelectionBase");
 

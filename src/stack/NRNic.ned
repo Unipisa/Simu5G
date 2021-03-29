@@ -74,6 +74,12 @@ module NRNicUe extends LteNicUeD2D
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=144,50;is=s");
         }
+                 		//#
+        //# Modules used to take trace of PDCP pkt flow
+        //#
+        NRpacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasNRPacketFlowManager {
+            @display("p=197,299");
+        }
 
     connections:
 

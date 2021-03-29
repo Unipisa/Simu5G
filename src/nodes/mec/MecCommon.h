@@ -39,6 +39,11 @@ typedef struct {
     unsigned int total;
 } DiscardedPkts;
 
+typedef struct {
+    uint64_t ulBits;
+    uint64_t dlBits;
+} DataVolume;
+
 
 namespace mec {
 
