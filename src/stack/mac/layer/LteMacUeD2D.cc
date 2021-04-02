@@ -144,10 +144,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 {
                     // Call the appropriate function for make a BSR for a D2D communication
                     auto macPktBsr = makeBsr(sizeBsr);
-                    UserControlInfo* info = NULL;
-                    if (macPktBsr != NULL)
-                        info = macPktBsr->getTagForUpdate<UserControlInfo>();
-
+                    auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
                     double carrierFreq = git->first;
                     if (info != NULL)
                     {

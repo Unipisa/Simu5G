@@ -54,10 +54,8 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     harqRxBuffers_ = other.harqRxBuffers_;
     resourceBlocks_ = other.resourceBlocks_;
 
-    cellBlocksUtilizationDl_ = other.cellBlocksUtilizationDl_;
-    cellBlocksUtilizationUl_ = other.cellBlocksUtilizationUl_;
-    lteAvgServedBlocksDl_ = other.lteAvgServedBlocksDl_;
-    lteAvgServedBlocksUl_ = other.lteAvgServedBlocksUl_;
+    avgServedBlocksDl_ = other.avgServedBlocksDl_;
+    avgServedBlocksUl_ = other.avgServedBlocksUl_;
     emptyBandLim_ = other.emptyBandLim_;
 
     // Copy schedulers
@@ -118,6 +116,7 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
         newSched->setEnbScheduler(this);
         newSched->setCarrierFrequency(it->second.carrierFrequency);
         newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
+        newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
     }
 

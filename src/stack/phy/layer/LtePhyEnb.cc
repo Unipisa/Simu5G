@@ -61,6 +61,7 @@ void LtePhyEnb::initialize(int stage)
         isNr_ = (strcmp(getAncestorPar("nicType").stdstringValue().c_str(),"NRNicEnb") == 0) ? true : false;
 
         nodeType_ = (isNr_) ? GNODEB : ENODEB;
+        WATCH(nodeType_);
     }
     else if (stage == 1)
     {

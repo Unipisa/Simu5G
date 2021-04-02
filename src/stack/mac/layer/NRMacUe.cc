@@ -316,10 +316,7 @@ void NRMacUe::macPduMake(MacCid cid)
                 {
                     // Call the appropriate function for make a BSR for a D2D communication
                     Packet* macPktBsr = makeBsr(sizeBsr);
-                    UserControlInfo* info = NULL;
-                    if (macPktBsr != NULL)
-                        info = macPktBsr->getTagForUpdate<UserControlInfo>();
-
+                    auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
                     double carrierFreq = git->second->getTag<UserControlInfo>()->getCarrierFrequency();
                     if (info != NULL)
                     {
@@ -442,7 +439,7 @@ void NRMacUe::macPduMake(MacCid cid)
                         if (infoVec.empty())
                             throw cRuntimeError("No tag of type LteControlInfo found");
 
-                        int32 groupId =  infoVec.front().getMulticastGroupId();
+                        int32_t groupId =  infoVec.front().getMulticastGroupId();
                         if (groupId >= 0) // for unicast, group id is -1
                             macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
 
