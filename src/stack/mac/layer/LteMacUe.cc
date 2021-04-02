@@ -442,9 +442,6 @@ void LteMacUe::macPduMake(MacCid cid)
             std::pair<MacNodeId, Codeword> pktId = std::pair<MacNodeId, Codeword>(destId, cw);
             unsigned int sduPerCid = it->second;
 
-//            if (sduPerCid == 0 && !bsrTriggered_)
-//                continue;
-
             if (macPduList_.find(carrierFreq) == macPduList_.end())
             {
                 MacPduList newList;
@@ -542,11 +539,6 @@ void LteMacUe::macPduMake(MacCid cid)
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
             }
-
-            //
-     //        UnitList txList = (txBuf->firstAvailable());
-     //        LteHarqProcessTx * currProc = txBuf->getProcess(currentHarq_);
-
 
             // search for an empty unit within current harq process
             UnitList txList = txBuf->getEmptyUnits(currentHarq_);
@@ -764,11 +756,9 @@ void LteMacUe::handleSelfMessage()
     {
         EV << NOW << " LteMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
 
-//        if (!bsrTriggered_)
-//        {
         // if necessary, a RAC request will be sent to obtain a grant
         checkRAC();
-//        }
+
         // TODO ensure all operations done  before return ( i.e. move H-ARQ rx purge before this point)
     }
     else
@@ -787,17 +777,12 @@ void LteMacUe::handleSelfMessage()
                 if(--expirationCounter_[carrierFreq] < 0)
                 {
                     // Periodic grant is expired
-//                    delete git->second;
                     git->second = nullptr;
-                    // if necessary, a RAC request will be sent to obtain a grant
-//                    checkRAC();
                     checkRac = true;
-                    //return;
                 }
                 else if (--periodCounter_[carrierFreq]>0)
                 {
                     skip = true;
-//                    return;
                 }
                 else
                 {
@@ -833,26 +818,6 @@ void LteMacUe::handleSelfMessage()
             // the eNb will receive the first pdu in 2 TTI, thus initializing acid to 0
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
-//        EV << "\t " << schedulingGrant_ << endl;
-
-//        //! \TEST  Grant Synchronization check
-//        if (!(schedulingGrant_->getPeriodic()))
-//        {
-//            if ( false /* TODO currentHarq!=grant_->getAcid()*/)
-//            {
-//                EV << NOW << "FATAL! Ue " << nodeId_ << " Current Process is " << (int)currentHarq << " while Stored grant refers to acid " << /*(int)grant_->getAcid() << */  ". Aborting.   " << endl;
-//                abort();
-//            }
-//        }
-
-        // TODO check if current grant is "NEW TRANSMISSION" or "RETRANSMIT" (periodic grants shall always be "newtx"
-//        if ( false/*!grant_->isNewTx() && harqQueue_->rtx(currentHarq) */)
-//        {
-        //        if ( LteDebug:r:trace("LteMacUe::newSubFrame") )
-        //            fprintf (stderr,"%.9f UE: [%d] Triggering retransmission for acid %d\n",NOW,nodeId_,currentHarq);
-        //        // triggering retransmission --- nothing to do here, really!
-//        } else {
-        // buffer drop should occour here.
 
         EV << NOW << " LteMacUe::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
 
