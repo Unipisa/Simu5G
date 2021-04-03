@@ -13,6 +13,7 @@
 #define _LTE_LTEMACBASE_H_
 
 #include "common/LteCommon.h"
+#include "common/LteControlInfo.h"
 
 class LteHarqBufferTx;
 class LteHarqBufferRx;
@@ -321,10 +322,10 @@ class LteMacBase : public omnetpp::cSimpleModule
      * methods called by mac layer and the HarqBuffers to notify
      * MAC pdus events to packetFlowManager
      */
-    virtual void insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu> macPdu);
-    virtual void harqAckToFlowManager(LogicalCid lcid, unsigned int macPduId);
-    virtual void discardMacPdu(LogicalCid lcid, unsigned int macPduId);
-    virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno);
+    virtual void insertMacPdu(const inet::Packet *macPdu);
+    virtual void harqAckToFlowManager(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu);
+    virtual void discardMacPdu(const inet::Packet *macPdu);
+    virtual void discardRlcPdu(inet::IntrusivePtr<const UserControlInfo> lteInfo, unsigned int rlcSno);
 
   protected:
 

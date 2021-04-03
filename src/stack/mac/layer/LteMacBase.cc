@@ -417,10 +417,10 @@ void LteMacBase::initialize(int stage)
 
         if(strcmp(this->getName(), "nrMac") == 0 && getNodeType() == UE)
         {
-            if(getParentModule()->findSubmodule("NRpacketFlowManager") != -1)
+            if(getParentModule()->findSubmodule("nrPacketFlowManager") != -1)
             {
                 EV << "LteMacBase::initialize - MAC layer is NRMac, cast the packetFlowManager to NR" << endl;
-                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("NRpacketFlowManager"));
+                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("nrPacketFlowManager"));
             }
         }
         else{
@@ -483,27 +483,42 @@ void LteMacBase::handleMessage(cMessage* msg)
     return;
 }
 
-void LteMacBase::insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu> macPdu)
+void LteMacBase::insertMacPdu(const inet::Packet *macPdu)
 {
-    if(packetFlowManager_ != nullptr)
-        packetFlowManager_->insertMacPdu(lcid, macPdu);
+    auto lteInfo = macPdu->getTag<UserControlInfo>();
+    Direction dir = (Direction)lteInfo->getDirection();
+    if(packetFlowManager_!= nullptr && (dir == DL || dir == UL))
+    {
+        EV << "LteMacBase::insertMacPdu" << endl;
+        auto pdu = macPdu->peekAtFront<LteMacPdu>();
+        packetFlowManager_->insertMacPdu(pdu);
+    }
+
 }
 
-void LteMacBase::harqAckToFlowManager(LogicalCid lcid, unsigned int macPduId)
+void LteMacBase::harqAckToFlowManager(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu)
 {
-    if(packetFlowManager_!= nullptr)
-        packetFlowManager_->macPduArrived(lcid, macPduId);
+    Direction dir = (Direction)lteInfo->getDirection();
+    if(packetFlowManager_!= nullptr && (dir == DL || dir == UL))
+        packetFlowManager_->macPduArrived(macPdu);
 }
 
-void LteMacBase::discardMacPdu(LogicalCid lcid, unsigned int macPduId)
+void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
 {
-    if(packetFlowManager_!= nullptr)
-        packetFlowManager_->discardMacPdu(lcid, macPduId);
+    auto lteInfo = macPdu->getTag<UserControlInfo>();
+    Direction dir = (Direction)lteInfo->getDirection();
+    if(packetFlowManager_!= nullptr && (dir == DL || dir == UL))
+    {
+        auto pdu = macPdu->peekAtFront<LteMacPdu>();
+        packetFlowManager_->discardMacPdu(pdu);
+    }
 }
 
-void LteMacBase::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno)
+void LteMacBase::discardRlcPdu(inet::Ptr<const UserControlInfo> lteInfo, unsigned int rlcSno)
 {
-    if(packetFlowManager_!= nullptr)
+    Direction dir = (Direction)lteInfo->getDirection();
+    LogicalCid lcid = lteInfo->getLcid();
+    if(packetFlowManager_!= nullptr && (dir == DL || dir == UL))
         packetFlowManager_->discardRlcPdu(lcid,rlcSno);
 }
 void LteMacBase::finish()

@@ -108,7 +108,6 @@ Packet *LteHarqProcessRx::createFeedback(Codeword cw)
     pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(HARQPKT);
     pkt->addTagIfAbsent<UserControlInfo>()->setDirection(pduInfo->getDirection());
     pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(pduInfo->getCarrierFrequency());
-    pkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(pduInfo->getPacketFlowManagerId()); // @author Alessandro Noferi
 
 
     if (!result_.at(cw))

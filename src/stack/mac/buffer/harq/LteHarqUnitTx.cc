@@ -194,7 +194,8 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
 
             // @author Alessandro Noferi
             // notify discard macPduId to packetFlowManager
-            macOwner_->discardMacPdu(lteInfo->getLcid(), pdu_->getId());
+
+            macOwner_->discardMacPdu(pdu_);
 
             resetUnit();
             reset = true;
