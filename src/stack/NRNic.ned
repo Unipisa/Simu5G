@@ -28,6 +28,7 @@ module NRNicEnb extends LteNicEnbD2D
         LtePdcpRrcType = default("NRPdcpRrcEnb");
         LteMacType = default("NRMacGnb");
         @display("bgb=694,443");
+        PacketFlowManagerType = default("NRPacketFlowManagerGnb");
 }
 
 //
@@ -39,6 +40,11 @@ module NRNicUe extends LteNicUeD2D
         string NRMacType = default("NRMacUe");
         string NRPhyType = default("NRPhyUe");
         string NRChannelModelType = default("NRChannelModel");
+
+        PacketFlowManagerType = default("PacketFlowManagerUe");
+        
+        string NRPacketFlowManagerType = default("NRPacketFlowManagerUe");
+      
         int numNRCarriers = default(1);
 
         LtePdcpRrcType = default("NRPdcpRrcUe");
@@ -77,7 +83,7 @@ module NRNicUe extends LteNicUeD2D
                  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        NRpacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasNRPacketFlowManager {
+        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
             @display("p=197,299");
         }
 

@@ -56,6 +56,10 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
+        
+        string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
+        bool hasPacketFlowManager;
+
         string LtePhyType;
         string nodeType;
         double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
