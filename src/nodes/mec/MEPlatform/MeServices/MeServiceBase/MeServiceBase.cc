@@ -37,7 +37,7 @@ MeServiceBase::MeServiceBase()
 
 void MeServiceBase::initialize(int stage)
 {
-    inet::ApplicationBase::initialize(stage);
+
     EV << "MeServiceBase::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
     {
@@ -70,9 +70,9 @@ void MeServiceBase::initialize(int stage)
         // get the gnb connected to the mehost
         getConnectedEnodeB();
     }
+    inet::ApplicationBase::initialize(stage);
 }
 
-// called at inet::INITSTAGE_APPLICATION_LAYER (before initialize)
 void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
 {
     EV << "MeServiceBase::handleStartOperation" << endl;

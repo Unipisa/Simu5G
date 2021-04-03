@@ -9,7 +9,7 @@
 #include "nodes/mec/MEPlatform/MeServices/Resources/TimeStamp.h"
 
 class EnodeBStatsCollector;
-
+class LteBinder;
 class L2Meas : public AttributeBase
 {
 	public:
@@ -27,8 +27,8 @@ class L2Meas : public AttributeBase
 		void addEnodeB(cModule* eNodeB);
 
 		nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
-		nlohmann::ordered_json toJsonUe(std::vector<MacNodeId>& uesID) const;
-		nlohmann::ordered_json toJson(std::vector<MacNodeId>& cellsID, std::vector<MacNodeId>& uesID) const;
+		nlohmann::ordered_json toJsonUe(std::vector<inet::Ipv4Address>& uesID) const;
+		nlohmann::ordered_json toJson(std::vector<MacNodeId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const;
 		
 
 	protected:
@@ -36,6 +36,7 @@ class L2Meas : public AttributeBase
 
 		TimeStamp timestamp_;
 		std::map<MacCellId, EnodeBStatsCollector*> eNodeBs_;
+		LteBinder *binder_;
 
 		
 

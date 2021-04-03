@@ -1,10 +1,12 @@
 #include "nodes/mec/MEPlatform/MeServices/RNIService/resources/L2Meas.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 #include "corenetwork/statsCollector/EnodeBStatsCollector.h"
-
+#include "nodes/binder/LteBinder.h"
 #include "CellUEInfo.h"
 
-L2Meas::L2Meas() {}
+L2Meas::L2Meas() {
+    binder_ = getBinder();
+}
 
 L2Meas::L2Meas(std::vector<cModule*>& eNodeBs) {
 	std::vector<cModule*>::iterator it = eNodeBs.begin();
@@ -76,7 +78,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
 }
 
 //
-nlohmann::ordered_json L2Meas::toJsonUe(std::vector<MacNodeId>& uesID) const {
+nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) const {
 	nlohmann::ordered_json val ;
 	nlohmann::ordered_json l2Meas;
 	nlohmann::ordered_json ueArray;
@@ -87,27 +89,104 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<MacNodeId>& uesID) const {
 		val["timestamp"] = timestamp_.toJson();
 	}
 
-
-	std::vector<MacNodeId>::const_iterator uit = uesID.begin();
 	std::map<MacCellId, EnodeBStatsCollector*>::const_iterator eit;
 	bool found = false;
-	for(; uit != uesID.end() ; ++uit){
-	    found = false;
-	    eit = eNodeBs_.begin();
-	    for(; eit != eNodeBs_.end() ; ++eit){
-            if(eit->second->hasUeCollector(*uit))
+	for(auto ipAddress: uesID){
+
+	    /*
+	     * an UE can be connected to both eNB and gNB (at the same time)
+	     * I decided to report both the structures.
+	     *
+	     *
+	     */
+        MacNodeId lteNodeId = binder_->getMacNodeId(ipAddress);
+        MacNodeId nrNodeId = binder_->getNrMacNodeId(ipAddress);
+        std::vector<MacNodeId> nodeIds;
+
+        // TODO REORGANIZE CODE!!
+
+        if(lteNodeId == 0 && nrNodeId == 0)
+        {
+            std::string notFound = "Address: " + ipAddress.str() + " Not found.";
+            ueArray.push_back(notFound);
+            break;
+        }
+        else if(lteNodeId != 0 && lteNodeId == nrNodeId) //only nr
+        {
+            found = false;
+            eit = eNodeBs_.begin();
+            for(; eit != eNodeBs_.end() ; ++eit){
+               if(eit->second->hasUeCollector(nrNodeId))
+               {
+                   UeStatsCollector *ueColl = eit->second->getUeCollector(nrNodeId);
+                   CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
+                   ueArray.push_back(cellUeInfo.toJson());
+                   found = true;
+                   break; // next ue id
+               }
+            }
+            if(!found)
             {
-                UeStatsCollector *ueColl = eit->second->getUeCollector(*uit);
-                CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
-                ueArray.push_back(cellUeInfo.toJson());
-                found = true;
-                break; // next ue id
+               std::string notFound = "Address: " + ipAddress.str() + " Not found.";
+               ueArray.push_back(notFound);
             }
         }
-        if(!found)
+        else if(lteNodeId != 0 && nrNodeId == 0) //only lte
         {
+            found = false;
+            eit = eNodeBs_.begin();
+            for(; eit != eNodeBs_.end() ; ++eit){
+               if(eit->second->hasUeCollector(lteNodeId))
+               {
+                   UeStatsCollector *ueColl = eit->second->getUeCollector(lteNodeId);
+                   CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
+                   ueArray.push_back(cellUeInfo.toJson());
+                   found = true;
+                   break; // next ue id
+               }
+            }
+            if(!found)
+            {
+               std::string notFound = "Address: " + ipAddress.str() + " Not found.";
+               ueArray.push_back(notFound);
+            }
+        }
+        else if(lteNodeId != nrNodeId && nrNodeId != 0 && lteNodeId != 0) // both lte and nr
+        {
+            found = false;
+            eit = eNodeBs_.begin();
+            for(; eit != eNodeBs_.end() ; ++eit){
+              if(eit->second->hasUeCollector(lteNodeId))
+              {
+                  UeStatsCollector *ueColl = eit->second->getUeCollector(lteNodeId);
+                  CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
+                  ueArray.push_back(cellUeInfo.toJson());
+                  found = true;
+                  break; // next ue id
+              }
+            }
+
+            found = false;
+            eit = eNodeBs_.begin();
+            for(; eit != eNodeBs_.end() ; ++eit){
+              if(eit->second->hasUeCollector(nrNodeId))
+              {
+                  UeStatsCollector *ueColl = eit->second->getUeCollector(nrNodeId);
+                  CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
+                  ueArray.push_back(cellUeInfo.toJson());
+                  found = true;
+                  break; // next ue id
+              }
+            }
+            if(!found)
+            {
+              std::string notFound = "Address: " + ipAddress.str() + " Not found.";
+              ueArray.push_back(notFound);
+            }
 
         }
+
+
 	}
 
 	if(ueArray.size() > 1){
@@ -120,6 +199,8 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<MacNodeId>& uesID) const {
 	l2Meas["L2Meas"] = val;
 	return l2Meas;
 }
+
+
 
 
 //
@@ -157,7 +238,7 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
 
 }
 ////
-nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vector<MacNodeId>& uesID) const
+nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const
 {
 	nlohmann::ordered_json val ;
     nlohmann::ordered_json l2Meas;

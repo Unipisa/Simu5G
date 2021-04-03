@@ -138,7 +138,7 @@ void RNIService::handleGETRequest(const std::string& uri, inet::TcpSocket* socke
                 //send response
                 if(!ues.empty() && !cellIds.empty())
                 {
-                    //Http::send200Response(socket, L2MeasResource_.toJson(cellIds, ues).dump(2).c_str());
+                    Http::send200Response(socket, L2MeasResource_.toJson(cellIds, ues).dump(2).c_str());
                 }
                 else if(ues.empty() && !cellIds.empty())
                 {
@@ -146,7 +146,7 @@ void RNIService::handleGETRequest(const std::string& uri, inet::TcpSocket* socke
                 }
                 else if(!ues.empty() && cellIds.empty())
                {
-                  // Http::send200Response(socket, L2MeasResource_.toJsonUe(ues).dump(2).c_str());
+                  Http::send200Response(socket, L2MeasResource_.toJsonUe(ues).dump(2).c_str());
                }
                else
                {
