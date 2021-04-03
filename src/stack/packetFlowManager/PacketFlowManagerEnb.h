@@ -48,7 +48,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
         typedef struct
             {
-                std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative pdcp sdu size
+                std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
                 simtime_t startBurstTransmission; // instant of the first trasmission of the burst
                 unsigned int burstSize; // PDCP sdu size of the burst
                 bool isComplited;
@@ -140,7 +140,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
         virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
 
-        virtual void insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu>) override;
+        virtual void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
 
 
         /*
@@ -149,7 +149,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         * @param lcid
         * @param macPduId Omnet id of the mac pdu
         */
-        virtual void macPduArrived(LogicalCid lcid, unsigned int macPduId) override;
+        virtual void macPduArrived(inet::Ptr<const LteMacPdu>) override;
 
         /*
         * This method is called after maxHarqTrasmission of a MAC PDU ID has been
@@ -158,7 +158,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         * @param lcid
         * @param macPduId Omnet id of the mac pdu to be discarded
         */
-        virtual void discardMacPdu(LogicalCid lcid, unsigned int macPduId) override;
+        virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
 
         /*
         * This method is used to take trace of all discarded RLC pdus. If all rlc pdus

@@ -101,29 +101,21 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 
     virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
 
-    virtual void insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu>) override;
-    
-    /*
-    * This method insert a new rlc seqnum and the corresponding pdcp pdus inside it
-    * @param lcid
-    * @param rlcPdu packet pointer
-    */
-
-
     /* 
     * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it
     * @param lcid 
-    * @param macPduId Omnet id of the mac pdu
-    * @param rlcSnoSet list of rlc pdu inside the rlc pdu
+    * @param macPdu packet pointer
     */  
+    virtual void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
+
 
     /*
-    * This method checks if the HARQ ack relative to a macPduId acknowledges an ENTIRE
+    * This method checks if the HARQ acSequenceNumberSetk relative to a macPduId acknowledges an ENTIRE
     * pdcp sdu 
     * @param lcid
     * @param macPduId Omnet id of the mac pdu 
     */
-    virtual void macPduArrived(LogicalCid lcid, unsigned int macPduId) override;
+    virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) override;
 
     /*
     * This method is called after maxHarqTrasmission of a MAC PDU ID has been
@@ -132,7 +124,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     * @param lcid
     * @param macPduId Omnet id of the mac pdu to be discarded
     */
-    virtual void discardMacPdu(LogicalCid lcid, unsigned int macPduId) override;
+    virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
 
     /*
      * This method is used to take trace of all discarded RLC pdus. If all rlc pdus

@@ -117,11 +117,16 @@ void PacketFlowManagerUe::initPdcpStatus(StatusDescriptor* desc, unsigned int pd
 
 void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 {
-    EV << "PacketFlowManagerUe::insertPdcpSdu"<< endl;
+    EV << pfmType.c_str() <<"::insertPdcpSdu"<< endl;
 //    // Control Information
 //    auto pkt = check_and_cast<inet::Packet *> (pktAux);
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
     LogicalCid lcid = lteInfo->getLcid();
+
+    if (connectionMap_.find(lcid) == connectionMap_.end())
+        initLcid(lcid, lteInfo->getSourceId());
+
+
     unsigned int pdcpSno = lteInfo->getSequenceNumber();
     int64_t  pdcpSize = pdcpPkt->getByteLength();
     int headerSize = lteInfo->getHeaderSize();
@@ -340,20 +345,20 @@ void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bo
     desc->rlcSdusPerPdu_.erase(rlcSno);
 }
 
-void PacketFlowManagerUe::insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
 {
+    EV << pfmType << "::insertMacPdu" << endl;
 
-    int ll = macPdu->getSduArraySize();
-    for(int i = 0; i < ll; ++i)
-    {
-        auto macSdu = macPdu->getSdu(i).peekAtFront<LteRlcUmDataPdu>();
-        unsigned int rlcSno = macSdu->getPduSequenceNumber();
-        auto info = macSdu->getNumTags();
-        EV << "BBC LCID: " << info << endl;
-       // EV << "MAC pdu: " << macPduId  <<  " has RLC pdu: " << rlcSno << endl;
-    }
-        return;
-
+    /*
+     * retreive the macPduId and the Lcid
+     */
+    int macPduId = macPdu->getId();
+    int len = macPdu->getSduArraySize();
+    if(len == 0)
+        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen",pfmType.c_str());
+    auto rlcPdu= macPdu->getSdu(0); // all rlc pdus have the same lcid
+    auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
+    int lcid = lteInfo ->getLcid();
 
     ConnectionMap::iterator cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end())
@@ -364,20 +369,17 @@ void PacketFlowManagerUe::insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPd
         return;
     }
 
-    unsigned int macPduId = macPdu->getId();
 
     // get the descriptor for this connection
     StatusDescriptor* desc = &cit->second;
     if (desc->macSdusPerPdu_.find(macPduId) != desc->macSdusPerPdu_.end())
         throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for logical CID %d. Aborting", pfmType.c_str(), macPduId, lcid);
 
-    int len = macPdu->getSduArraySize();
     for(int i = 0; i < len; ++i)
     {
         auto macSdu = macPdu->getSdu(i).peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
-        auto info = macSdu->getTag<UserControlInfo>();
-        EV << "BBC LCID: " << info->getLcid() << endl;
+
         EV << "MAC pdu: " << macPduId  <<  " has RLC pdu: " << rlcSno << endl;
 
 
@@ -410,8 +412,20 @@ void PacketFlowManagerUe::insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPd
     }
 }
 
-void PacketFlowManagerUe::macPduArrived(LogicalCid lcid, unsigned int macPdu)
+void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 {
+    EV << pfmType << "::macPduArrived" << endl;
+    /*
+     * retreive the macPduId and the Lcid
+     */
+    int macPduId = macPdu->getId();
+    int len = macPdu->getSduArraySize();
+    if(len == 0)
+        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen",pfmType.c_str());
+    auto rlcPdu= macPdu->getSdu(0); // all rlc pdus have the same lcid
+    auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
+    int lcid = lteInfo ->getLcid();
+
     std::map<LogicalCid, StatusDescriptor>::iterator cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end())
     {
@@ -431,7 +445,7 @@ void PacketFlowManagerUe::macPduArrived(LogicalCid lcid, unsigned int macPdu)
     // === recover the set of RLC PDU SN from the above MAC PDU ID === //
 
 //    unsigned int macPduId = desc->macPduPerProcess_[macPdu];
-    unsigned int macPduId = macPdu;
+
 
     if (macPduId == 0)
     {
@@ -514,7 +528,7 @@ void PacketFlowManagerUe::macPduArrived(LogicalCid lcid, unsigned int macPdu)
                     pdcpDelay.time += time;
                     pdcpDelay.pktCount += 1;
 
-                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "ms"<< endl;
+                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
 
 //                        ii.record(pdcpPduSno);
                     // update next sno
@@ -536,8 +550,18 @@ void PacketFlowManagerUe::macPduArrived(LogicalCid lcid, unsigned int macPdu)
     desc->macSdusPerPdu_.erase(mit); // erase MAC PDU ID
 }
 
-void PacketFlowManagerUe::discardMacPdu(LogicalCid lcid, unsigned int macPduId)
+void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
 {
+    /*
+     * retreive the macPduId and the Lcid
+     */
+    int macPduId = macPdu->getId();
+    int len = macPdu->getSduArraySize();
+    if(len == 0)
+        throw cRuntimeError("%s::macPduArrived - macPdu has no Rlc pdu! This, here, should not happen",pfmType.c_str());
+    auto rlcPdu= macPdu->getSdu(0); // all rlc pdus have the same lcid
+    auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
+    int lcid = lteInfo ->getLcid();
 
     ConnectionMap::iterator cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end())
