@@ -23,6 +23,7 @@ class LteMacBase;
 class LteRlcUm;
 class LteRlcUmDataPdu;
 
+
 /**
  * @class UmRxEntity
  * @brief Receiver entity for UM
@@ -99,6 +100,8 @@ class UmRxEntity : public omnetpp::cSimpleModule
     // Node id of the owner module
     MacNodeId ownerNodeId_;
 
+    LteRlcUm *rlc_;
+
     /*
      * Flow-related info.
      * Initialized with the control info of the first packet of the flow
@@ -138,6 +141,43 @@ class UmRxEntity : public omnetpp::cSimpleModule
     // (modify the lastPduReassembled_ and lastSnoDelivered_ counters)
     // useful for D2D after a mode switch
     bool resetFlag_;
+
+
+    /**
+     *  @author Alessandro Noferi
+     * UL throughput variables
+     * From TS 136 314
+     * UL data burst is the collective data received while the eNB
+     * estimate of the UE buffer size is continuously above zero by
+     * excluding transmission of the last piece of data.
+     */
+
+    enum BurstCheck
+    {
+        ENQUE, REORDERING
+    };
+
+    bool isBurst_; // a burst h started last TTI
+    bool t2Set_; // used to save t2
+    unsigned int totalBits_; // total bytes during the burst
+    unsigned int ttiBits_; // bytes during this tti
+    omnetpp::simtime_t t2_; // point in time the burst begins
+    omnetpp::simtime_t t1_; // point in time last pkt sent during burst
+
+
+    /*
+    * This method is used to manage a burst and calculate the UL tput of a UE
+    * It is called at the end of each TTI period and at the end of a t_reordering
+    * period. Only the EnodeB needs to manage the buffer, since only it has to
+    * calculate UL tput.
+    *
+    * @param event specifies when it is called, i.e after TTI or after timer reoridering
+    */
+    void handleBurst(BurstCheck event);
+
+
+
+
 
     // move forward the reordering window
     void moveRxWindow(const int pos);

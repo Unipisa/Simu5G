@@ -31,6 +31,17 @@ UmRxEntity::UmRxEntity() :
     lastPduReassembled_ = 0;
     nodeB_ = nullptr;
     init_ = false;
+
+    // @author Alessandro Noferi
+    isBurst_ = false;
+    t2Set_ = false;
+    totalBits_ = 0;
+    ttiBits_ = 0;
+    t2_ = 0;
+    t1_ = 0;
+//    ttiT2_ = 0;
+//    ttiT1_ = 0;
+//    lastTTI_ = 0;
 }
 
 UmRxEntity::~UmRxEntity()
@@ -213,6 +224,20 @@ void UmRxEntity::enque(cPacket* pktAux)
             rxWindowDesc_.reorderingSno_ = rxWindowDesc_.highestReceivedSno_;
         }
     }
+
+
+
+    /* @author Alessandro Noferi
+    *
+    * At the end of each enque, the state of the buffer is checked.
+    * A burst end does not mean that actually a burst is occurred,
+    * it is occurred if t1 - t2 > TTI
+    */
+
+   if(flowControlInfo_->getDirection() == UL) //only eNodeB checks the burst
+   {
+       handleBurst(ENQUE);
+   }
 }
 
 void UmRxEntity::moveRxWindow(const int pos)
@@ -730,7 +755,7 @@ void UmRxEntity::initialize()
     totalPduRcvdBytes_ = 0;
 
     cModule* parent = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
-
+    rlc_ = check_and_cast<LteRlcUm*>(parent);
     //statistics
 
     // TODO find a more elegant way
@@ -874,3 +899,81 @@ void UmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool c
         resetFlag_ = true;
     }
 }
+
+void UmRxEntity::handleBurst(BurstCheck event)
+{
+    /* burst management
+     * Accordindg to ETSI TS 128 552 v15.00.0 and
+     * ETSI 136 314 v15.1.0
+     * check buffer size:
+     *   - if 0:
+     *      if(burst = true) //it is ended
+     *           consider only totalbytes, last_t1 and t2 ( a burst occurred only if t1-t2> TTI
+     *           clear variables
+     *           reset isBurst
+     *      if burst = false nothing happen
+     *          clear temp var
+     *  - if 1:
+     *      if burst = true //burst is still running
+     *          update total var with temp vale
+     *      if burst = false // new busr activatf
+     *          burst = 1
+     *          update total var with temp var
+     */
+    EV_FATAL << "UmRxEntity::handleBurst - size: " << pduBuffer_.size() + ((buffered_.pkt== NULL)?0 : 1) << endl;
+
+    simtime_t t1 = simTime();
+
+    if(((pduBuffer_.size() + (buffered_.pkt== NULL))? 0 : 1) == 0) //last TTI emptied the burst
+    {
+        if(isBurst_) // burst ends
+        {
+            //send stats
+            // if the transmission requires two TTIs and I do not count
+            // the second last, in the simulator t1 - t2 is 0.
+
+            if((t1_ - t2_) > TTI)
+            {
+                Throughput throughput = {totalBits_, (t1_-t2_)};
+                rlc_->addUeThroughput(flowControlInfo_->getSourceId(), throughput);
+
+                EV_FATAL << "BURST ENDED - size : " << totalBits_ << endl;
+                EV_FATAL << "tput: size " << totalBits_ << " time " << (t1_- t2_) <<  endl;
+            }
+            totalBits_ = 0;
+            t2_ = 0;
+            t1_ = 0;
+
+            isBurst_ = false;
+        }
+        else
+        {
+            EV_FATAL << "NO BURST - size : " << totalBits_ << endl;
+        }
+    }
+    else
+    {
+        if(isBurst_ )
+        {
+            if(event == ENQUE) // handleBurts called at the end of the TTI
+            {
+                totalBits_ += ttiBits_;
+                t1_ = t1;
+                EV_FATAL << "BURST CONTINUE - size : " << totalBits_ << endl;
+            }
+        }
+        else
+        {
+            isBurst_ = true;
+            totalBits_ = ttiBits_;
+            t2_ = t1;
+            t1_ = t1; // it will be updated
+            EV_FATAL << "BURST STARTED - size : " << totalBits_ << endl;
+        }
+    }
+
+    // reset temporary (per tti) variables
+    ttiBits_ = 0;
+
+}
+

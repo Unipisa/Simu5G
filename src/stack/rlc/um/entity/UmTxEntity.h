@@ -60,6 +60,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
     {
         flowControlInfo_ = nullptr;
         lteRlc_ = nullptr;
+        packetFlowManager_ = nullptr;
     }
     virtual ~UmTxEntity()
     {
