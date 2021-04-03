@@ -121,15 +121,6 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
 
-
-        if(packetFlowManager_ != nullptr)
-        {
-//           packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            if(getDirection() == DL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            else if (getDirection() == UL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
-        }
     }
 
     // assign LCID

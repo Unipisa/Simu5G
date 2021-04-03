@@ -83,6 +83,7 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
     virtual void receiveDataFromSourceNode(Packet* pkt, MacNodeId sourceNode);
 
   public:
+    virtual void activeUeUL(std::set<MacNodeId>* ueSet);
 
 };
 

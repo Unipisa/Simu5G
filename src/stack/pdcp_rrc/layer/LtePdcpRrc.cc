@@ -37,6 +37,7 @@ LtePdcpRrcBase::LtePdcpRrcBase()
     lcid_ = 1;
 
     packetFlowManager_ = nullptr;
+    NRpacketFlowManager_ = nullptr;
 }
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
@@ -181,21 +182,6 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), mylcid);
 
-        /*
-         * @author Alessandro Noferi
-         *
-         * add new created lcid in the packetFlowManager
-         */
-
-        if(packetFlowManager_ != nullptr)
-        {
-//           packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            if(getDirection() == DL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            else if (getDirection() == UL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
-        }
-
     }
 
     // assign LCID
@@ -257,6 +243,12 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
     EV << "LtePdcp : Sending packet " << pkt->getName()
        << " on port DataPort$o\n";
 
+//    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
+//    {
+//        if(packetFlowManager_ != nullptr)
+//            packetFlowManager_->receivedPdcpSdu(pkt);
+//    }
+
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
     emit(sentPacketToUpperLayer, pkt);
@@ -304,18 +296,23 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
     /*
      * @author Alessandro Noferi
      *
-     * Since the other methods, e.g. fromData is overridden
+     * Since the other methods, e.g. fromData, are overridden
      * in many classes, this method is the only one used by
-     * all the classes (except the NRPdcpUe).
+     * all the classes (except the NRPdcpUe that it has its
+     * own sendToLowerLayer method).
      * So, the notification about the new PDCP to the pfm
-     * is done here
+     * is done here.
      *
+     * packets send in D2D mode are not considered
      */
 
-    if(packetFlowManager_ != nullptr)
-        packetFlowManager_->insertPdcpSdu(pkt);
+    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
+    {
+        if(packetFlowManager_ != nullptr)
+            packetFlowManager_->insertPdcpSdu(pkt);
+    }
 
-        // Send message
+    // Send message
     send(pkt, gate);
     emit(sentPacketToLowerLayer, pkt);
 }
@@ -370,10 +367,10 @@ void LtePdcpRrcBase::initialize(int stage)
             EV << "LtePdcpRrcBase::initialize - PacketFlowManager present" << endl;
             packetFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("packetFlowManager"));
         }
-        if(getParentModule()->findSubmodule("NRpacketFlowManager")!= -1)
+        if(getParentModule()->findSubmodule("nrPacketFlowManager")!= -1)
         {
-            EV << "LtePdcpRrcBase::initialize - PacketFlowManager present" << endl;
-            NRpacketFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("NRpacketFlowManager"));
+            EV << "LtePdcpRrcBase::initialize - NRpacketFlowManager present" << endl;
+            NRpacketFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("nrPacketFlowManager"));
         }
 
 

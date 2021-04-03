@@ -88,16 +88,6 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
         EV << "NRPdcpRrcEnb : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
-
-
-        if(packetFlowManager_ != nullptr)
-        {
-//           packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            if(getDirection() == DL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getDestId());
-            else if (getDirection() == UL)
-                packetFlowManager_->initLcid(mylcid, lteInfo->getSourceId());
-        }
     }
 
     // assign LCID
@@ -256,3 +246,14 @@ void NRPdcpRrcEnb::receiveDataFromSourceNode(Packet* pkt, MacNodeId sourceNode)
        fromLowerLayer(pkt);
    }
 }
+
+void NRPdcpRrcEnb::activeUeUL(std::set<MacNodeId>* ueSet)
+{
+    for(const auto& entity : rxEntities_)
+    {
+        MacNodeId nodeId = MacCidToNodeId(entity.first);
+        if(!(entity.second->isEmpty()))
+            ueSet->insert(nodeId);
+    }
+}
+
