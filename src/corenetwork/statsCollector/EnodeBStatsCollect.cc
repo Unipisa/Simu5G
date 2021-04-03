@@ -18,11 +18,17 @@
 Define_Module(EnodeBStatsCollector);
 EnodeBStatsCollector::EnodeBStatsCollector()
 {
-    rlc_ = nullptr;
-    packetDelay_ = nullptr;
-    mac_ = nullptr;
     pdcp_ = nullptr;
-    flowManager_ = nullptr;
+    rlc_ = nullptr;
+    mac_ = nullptr;
+    packetFlowManager_ = nullptr;
+
+    prbUsage_ = nullptr;
+    activeUsers_ = nullptr;;
+    discardRate_ = nullptr;;
+    packetDelay_ = nullptr;;
+    pdcpBytes_ = nullptr;;
+    tPut_ = nullptr;
 }
 
 
@@ -38,9 +44,19 @@ EnodeBStatsCollector::~EnodeBStatsCollector()
 }
 
 void EnodeBStatsCollector::initialize(int stage){
-    if (stage == inet::INITSTAGE_APPLICATION_LAYER)//inet::INITSTAGE_LOCAL)
+
+    if(stage == inet::INITSTAGE_LOCAL)
     {
-        EV << "EnodeBStatsCollector::initialize stage: "<< stage << endl;
+        EV << collectorType_ << "::initialize stage: "<< stage << endl;
+        collectorType_ = par("collectorType").stringValue();
+        std::string nodeType =  getAncestorPar("nodeType").stringValue();
+        nodeType_ = nodeType.compare("ENODEB") == 0? ENODEB: GNODEB;
+        EV << collectorType_ << "::initialize node type: "<< nodeType << endl;
+
+    }
+    else if (stage == inet::INITSTAGE_APPLICATION_LAYER)
+    {
+        EV << collectorType_ << "::initialize stage: "<< stage << endl;
 
         ecgi_.plmn.mcc = getAncestorPar("mcc").stdstringValue();
         ecgi_.plmn.mnc = getAncestorPar("mnc").stdstringValue();
@@ -55,14 +71,20 @@ void EnodeBStatsCollector::initialize(int stage){
         }
         else
         {
-            throw cRuntimeError("EnodeBStatsCollector::initialize - EnodeB statistic collector only works with RLC in UM mode");
+            throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode");
         }
         
         if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
-            flowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
-
+        {
+            EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
+            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+        }
+        else
+        {
+            EV << "NON CI STA" << endl;
+        }
         cellInfo_ = check_and_cast<LteCellInfo *>(getParentModule()->getSubmodule("cellInfo"));
-        ecgi_.cellId = cellInfo_->getMacCellId();
+        ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
 
         dl_total_prb_usage_cell.init("dl_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));
         ul_total_prb_usage_cell.init("ul_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));
@@ -93,12 +115,12 @@ void EnodeBStatsCollector::initialize(int stage){
 
         scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
         scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
-        scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
-        if(flowManager_ != nullptr)
+        if(packetFlowManager_ != nullptr)
         {
-            scheduleAt(NOW + discardRatePeriod_, discardRate_);
+            scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
+//            scheduleAt(NOW + discardRatePeriod_, discardRate_);
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
-            scheduleAt(NOW + tPutPeriod_,tPut_);
+//            scheduleAt(NOW + tPutPeriod_,tPut_);
         }
     }
 }
@@ -108,7 +130,7 @@ void EnodeBStatsCollector::handleMessage(cMessage *msg)
 {
     if(msg->isSelfMessage())
     {
-        EV << "EnodeBStatsCollector::handleMessage - get " << msg->getName() << "statistics" << endl;
+        EV << collectorType_ << "::handleMessage - get " << msg->getName() << "statistics" << endl;
 
         if(strcmp(msg->getName(),"prbUsage_") == 0)
         {
@@ -137,10 +159,10 @@ void EnodeBStatsCollector::handleMessage(cMessage *msg)
 
             // add packet discard rate stats for each user
             add_dl_nongbr_pdr_cell_perUser();
-            // ul is done add_ul_nongbr_pdr_cell
+            add_ul_nongbr_pdr_cell_perUser();
 
             //reset counters
-            flowManager_->resetDiscardCounter();
+            packetFlowManager_->resetDiscardCounter();
             resetDiscardCounterPerUe();
             scheduleAt(NOW + discardRatePeriod_, discardRate_);
 
@@ -168,58 +190,53 @@ void EnodeBStatsCollector::handleMessage(cMessage *msg)
 
     }
     else
+    {
+        EV << collectorType_ << "::handleMessage - it is not a self message" << endl;
         delete msg;
+    }
 }
 
 
 void EnodeBStatsCollector::resetDiscardCounterPerUe()
 {
-    EV << "EnodeBStatsCollector::resetDiscardCounterPerUe " << endl;
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-    for(; it != end ; ++it)
+    EV << collectorType_ << "::resetDiscardCounterPerUe " << endl;
+    for(auto const &ue : ueCollectors_)
     {
-        flowManager_->resetDiscardCounterPerUe(it->first);
+        packetFlowManager_->resetDiscardCounterPerUe(ue.first);
     }
 }
 
 void EnodeBStatsCollector::resetDelayCounterPerUe()
 {
-    EV << "EnodeBStatsCollector::resetDelayCounterPerUe " << endl;
-
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-    for(; it != end ; ++it)
+    EV << collectorType_ << "::resetDelayCounterPerUe " << endl;
+    for(auto const &ue : ueCollectors_)
     {
-        flowManager_->resetDelayCounterPerUe(it->first);
-        it->second->resetDelayCounter();
+        packetFlowManager_->resetDelayCounterPerUe(ue.first);
+        ue.second->resetDelayCounter();
     }
 }
 
 
 void EnodeBStatsCollector::resetThroughputCountersPerUe()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-        UeStatsCollectorMap::iterator end = ueCollectors_.end();
-        for(; it != end ; ++it)
-        {
-            flowManager_->resetThroughputCounterPerUe(it->first);
-        }
+    EV << collectorType_ << "::resetThroughputCountersPerUe " << endl;
+    for(auto const &ue : ueCollectors_)
+    {
+        packetFlowManager_->resetThroughputCounterPerUe(ue.first);
+    }
 }
 
 void EnodeBStatsCollector::resetBytesCountersPerUe()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-    for(; it != end ; ++it)
+    EV << collectorType_ << "::resetBytesCountersPerUe " << endl;
+    for(auto const &ue : ueCollectors_)
     {
-//        pdcp_->resetPdcpBytesDlPerUe(it->first);
-//        pdcp_->resetPdcpBytesUlPerUe(it->first);
+       packetFlowManager_->resetDataVolume(ue.first);
     }
 }
 
 
-// UeStatsCollector management methods
+// EnodeBStatsCollector management methods
 void EnodeBStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector* ueCollector)
 {
     if(ueCollectors_.find(id) == ueCollectors_.end())
@@ -228,7 +245,7 @@ void EnodeBStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector* ueColl
     }
     else
     {
-        throw cRuntimeError("EnodeBStatsCollector::addUeCollector - UeStatsCollector already present for UE nodeid[%d]", id);
+        throw cRuntimeError("%s::addUeCollector - UeStatsCollector already present for UE nodeid[%d]", collectorType_.c_str(), id);
     }
 }
 
@@ -241,7 +258,7 @@ void EnodeBStatsCollector::removeUeCollector(MacNodeId id)
     }
     else
     {
-        throw cRuntimeError("EnodeBStatsCollector::removeUeCollector - UeStatsCollector not present for UE nodeid[%d]", id);
+        throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE nodeid[%d]", collectorType_.c_str(), id);
     }
 }
 
@@ -254,7 +271,7 @@ UeStatsCollector* EnodeBStatsCollector::getUeCollector(MacNodeId id)
     }
     else
     {
-       throw cRuntimeError("EnodeBStatsCollector::removeUeCollector - UeStatsCollector not present for UE nodeid[%d]", id);
+       throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE nodeid[%d]", collectorType_.c_str(), id);
     }
 }
 
@@ -270,33 +287,35 @@ bool EnodeBStatsCollector::hasUeCollector(MacNodeId id)
 
 void EnodeBStatsCollector::add_dl_total_prb_usage_cell()
 {
-//    double prb_usage = mac_->getUtilization(DL);
-//    EV << "EnodeBStatsCollector::add_dl_total_prb_usage_cell " << prb_usage << "%"<< endl;
-//    dl_total_prb_usage_cell.addValue(prb_usage);
+    double prb_usage = mac_->getUtilization(DL);
+    EV << collectorType_ << "::add_dl_total_prb_usage_cell " << prb_usage << "%"<< endl;
+    dl_total_prb_usage_cell.addValue(prb_usage);
 }
 
 void EnodeBStatsCollector::add_ul_total_prb_usage_cell()
 {
-//    double prb_usage = mac_->getUtilization(UL);
-//    ul_total_prb_usage_cell.addValue(prb_usage);
+    double prb_usage = mac_->getUtilization(UL);
+    EV << collectorType_ << "::add_ul_total_prb_usage_cell " << prb_usage << "%"<< endl;
+    ul_total_prb_usage_cell.addValue(prb_usage);
 }
 
 void EnodeBStatsCollector::add_number_of_active_ue_dl_nongbr_cell()
 {
-//    int users = mac_->getActiveUeSet(DL);
-//    EV << "EnodeBStatsCollector::add_number_of_active_ue_dl_nongbr_cell " << users << endl;
-//    number_of_active_ue_dl_nongbr_cell.addValue(users);
+    int users = mac_->getActiveUesNumber(DL);
+    EV << collectorType_ << "::add_number_of_active_ue_dl_nongbr_cell " << users << endl;
+    number_of_active_ue_dl_nongbr_cell.addValue(users);
 }
 
 void EnodeBStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
 {
-//    int users = mac_->getActiveUeSet(UL);
-//    number_of_active_ue_ul_nongbr_cell.addValue(users);
+    int users = mac_->getActiveUesNumber(UL);
+    EV << collectorType_ << "::add_number_of_active_ue_ul_nongbr_cell " << users << endl;
+    number_of_active_ue_ul_nongbr_cell.addValue(users);
 }
 
 void EnodeBStatsCollector::add_dl_nongbr_pdr_cell()
 {
-    double discard = flowManager_->getDiscardedPkt();
+    double discard = packetFlowManager_->getDiscardedPkt();
     dl_nongbr_pdr_cell.addValue(discard);
 }
 
@@ -306,12 +325,9 @@ void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
     DiscardedPkts pair = {0,0};
     DiscardedPkts temp = {0,0};
 
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-        temp = it->second->getULDiscardedPkt();
+        temp = ue.second->getULDiscardedPkt();
         pair.discarded += temp.discarded;
         pair.total += temp.total;
     }
@@ -327,97 +343,98 @@ void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
 
 void EnodeBStatsCollector::add_dl_nongbr_pdr_cell_perUser()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
+    EV << collectorType_ << "add_dl_nongbr_pdr_cell_perUser()" << endl;;
     double discard;
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-        discard = flowManager_->getDiscardedPktPerUe(it->first);
-        it->second->add_dl_nongbr_pdr_ue(discard);
+        discard = packetFlowManager_->getDiscardedPktPerUe(ue.first);
+        ue.second->add_dl_nongbr_pdr_ue(discard);
+    }
+}
+void EnodeBStatsCollector::add_ul_nongbr_pdr_cell_perUser()
+{
+    EV << collectorType_ << "add_ul_nongbr_pdr_cell_perUser()" << endl;
+    for(auto const &ue : ueCollectors_)
+    {
+        ue.second->add_ul_nongbr_pdr_ue();
     }
 }
 
 void EnodeBStatsCollector::add_ul_nongbr_delay_perUser()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-    for(; it != end ; ++it)
+    EV << collectorType_ << "add_ul_nongbr_delay_perUser()" << endl;
+    for(auto const &ue : ueCollectors_)
     {
-        it->second->add_ul_nongbr_delay_ue();
+        ue.second->add_ul_nongbr_delay_ue();
     }
 }
 
 void EnodeBStatsCollector::add_dl_nongbr_delay_perUser()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
+    EV << collectorType_ << "add_dl_nongbr_delay_perUser()" << endl;;
     double delay;
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-        delay = flowManager_->getDelayStatsPerUe(it->first);
-        EV << "EnodeBStatsCollector::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << it->first << endl;
+        delay = packetFlowManager_->getDelayStatsPerUe(ue.first);
+        EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ue.first << endl;
         if(delay != 0)
-            it->second->add_dl_nongbr_delay_ue(delay);
+            ue.second->add_dl_nongbr_delay_ue(delay);
     }
 }
 
 void EnodeBStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
 {
-    EV << "EnodeBStatsCollector::add_ul_nongbr_data_volume_ue_perUser" << endl;
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
+    EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-//        bytes = pdcp_->getPdcpBytesUlPerUe(it->first);
-//        EV << "EnodeBStatsCollector::add_ul_nongbr_data_volume_ue_perUser - received :" << bytes << "B in UL from node id: " << it->first << endl;
-//        it->second->add_ul_nongbr_data_volume_ue(bytes);
+        bytes = packetFlowManager_->getDataVolume(ue.first, UL);
+        EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser - received :" << bytes << "B in UL from node id: " << ue.first << endl;
+        ue.second->add_ul_nongbr_data_volume_ue(bytes);
     }
 }
 
 void EnodeBStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
 {
-    EV << "EnodeBStatsCollector::add_dl_nongbr_data_volume_ue_perUser" << endl;
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
-    unsigned int bytes;
-    for(; it != end ; ++it)
-    {
-//        bytes = pdcp_->getPdcpBytesDlPerUe(it->first);
-//        EV << "EnodeBStatsCollector::add_dl_nongbr_data_volume_ue_perUser - sent :" << bytes << "B in DL from node id: " << it->first << endl;
-//        it->second->add_dl_nongbr_data_volume_ue(bytes);
-    }
+    EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser" << endl;
+       unsigned int bytes;
+       for(auto const &ue : ueCollectors_)
+       {
+           bytes = packetFlowManager_->getDataVolume(ue.first, DL);
+           EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser - sent :" << bytes << "B in DL to node id: " << ue.first << endl;
+           ue.second->add_dl_nongbr_data_volume_ue(bytes);
+       }
 }
 
 void EnodeBStatsCollector::add_dl_nongbr_throughput_ue_perUser()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
+    EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser" << endl;
     double throughput;
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-        throughput = flowManager_->getThroughputStatsPerUe(it->first);
-        EV << "EnodeBStatsCollector::add_dl_nongbr_throughput_ue_perUser - tput: " << throughput << " for node " << it->first << endl;
-        flowManager_->resetThroughputCounterPerUe(it->first);
+        throughput = packetFlowManager_->getThroughputStatsPerUe(ue.first);
+        EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser - tput: " << throughput << " for node " << ue.first << endl;
+        packetFlowManager_->resetThroughputCounterPerUe(ue.first);
         if(throughput > 0.0)
-            it->second->add_dl_nongbr_throughput_ue(throughput);
-
+            ue.second->add_dl_nongbr_throughput_ue(throughput);
     }
 }
 
 void EnodeBStatsCollector::add_ul_nongbr_throughput_ue_perUser()
 {
-    UeStatsCollectorMap::iterator it = ueCollectors_.begin();
-    UeStatsCollectorMap::iterator end = ueCollectors_.end();
+
+    EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser" << endl;
     double throughput;
-    for(; it != end ; ++it)
+    for(auto const &ue : ueCollectors_)
     {
-//        throughput = rlc_->getUeThroughput(it->first);
-//        rlc_->resetThroughputStats(it->first);
-//        if(throughput > 0.0)
-//            it->second->add_ul_nongbr_throughput_ue(throughput);
     }
 }
+
+
+
+/*
+ * Getters for RNIS service module
+ */
 
 int EnodeBStatsCollector::get_ul_nongbr_pdr_cell()
 {

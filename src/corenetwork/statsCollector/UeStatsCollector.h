@@ -36,13 +36,15 @@ class UeStatsCollector: public cSimpleModule
 {
     private:
 
+        std::string collectorType_; // ueCollectorStatsCollector or NRueCollectorStatsCollector
+
         // Used by the RNI service
         mec::AssociateId associateId_;
 
         // LTE Nic layers
-        LtePdcpRrcUe *pdcp_;
-        LteMacUe     *mac_;
-        PacketFlowManagerUe *flowManager_;
+//        LtePdcpRrcUe *pdcp_;
+        LteMacBase     *mac_;
+        PacketFlowManagerUe *packetFlowManager_;
 
         // packet delay
         L2MeasBase ul_nongbr_delay_ue;
@@ -72,7 +74,7 @@ class UeStatsCollector: public cSimpleModule
         void add_dl_nongbr_delay_ue(double value);// called by the eNodeBCollector
 
         // packet discard rate
-        void add_ul_nongbr_pdr_ue(double value); // called by this module, but from a method
+        void add_ul_nongbr_pdr_ue();
         void add_dl_nongbr_pdr_ue(double value); // called by the eNodeBCollector
 
         // throughput

@@ -15,9 +15,15 @@ package lte.corenetwork.statsCollector;
 // responds to requests
 
 //
-simple EnodeBStatsCollector 
+
+moduleinterface StatsCollector {
+    string collectorType; // it can be: "eNBStatsCollector, gNBStatsCollector, ueStatsCollector, NRueStatsCollector
+}
+
+module ENodeBStatsCollector like StatsCollector
 {
     parameters:
+        string collectorType = default("eNBStatsCollector");
 
 		bool movingAverage = default(false);
         
@@ -30,7 +36,7 @@ simple EnodeBStatsCollector
         int tPutPeriods = default(2);
 
 		// period duration for each l2 meas
-		double prbUsagePeriod  @unit(s)   = default(1s); // TTI period
+		double prbUsagePeriod  @unit(s)   = default(0.5s); // TTI period
         double activeUserPeriod @unit(s)  = default(0.1s);
         double dataVolumePeriod @unit(s)   = default(0.5s);
         double delayPacketPeriod @unit(s)  = default(0.5s);
@@ -38,4 +44,46 @@ simple EnodeBStatsCollector
         double tPutPeriod @unit(s) = default(1s);
 
         @display("i=block/cogwheel");
+        @class("EnodeBStatsCollector");
 }
+
+module GNodeBStatsCollector extends ENodeBStatsCollector
+{
+    parameters:
+        collectorType = default("gNBStatsCollector");
+}
+
+module UeStatsCollector like StatsCollector
+{
+    parameters:
+        string collectorType = default("ueStatsCollector");
+        string interfaceTableModule;
+        bool movingAverage = default(false);
+        
+        // time periods for measurements 
+        int dataVolumePeriods = default(2);
+        int delayPacketPeriods = default(2); //used by the ue collector, remove 
+        int discardRatePeriods = default(2);
+        int tPutPeriods = default(2);
+        
+        int numberOfSamples = default(20);
+        
+        @display("i=block/cogwheel");
+        @class("UeStatsCollector");   
+}
+
+module NRueStatsCollector extends UeStatsCollector
+{
+	parameters:
+	    collectorType = default("NRueStatsCollector");
+}
+
+
+
+
+
+
+
+
+
+

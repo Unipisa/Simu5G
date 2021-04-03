@@ -9,7 +9,7 @@
 
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
-#include "stack/mac/layer/LteMacUe.h"
+#include "stack/mac/layer/LteMacBase.h"
 #include "inet/common/ModuleAccess.h"
 #include "stack/packetFlowManager/PacketFlowManagerUe.h"
 
@@ -17,28 +17,72 @@ Define_Module(UeStatsCollector);
 
 UeStatsCollector::UeStatsCollector()
 {
-    pdcp_ = nullptr;
+//    pdcp_ = nullptr;
     mac_ = nullptr;
-    flowManager_ = nullptr;
+    packetFlowManager_ = nullptr;
 
 }
 
 void UeStatsCollector::initialize(int stage){
-    if (stage == inet::INITSTAGE_APPLICATION_LAYER) // same as lteMacUe, when read the interface entry
+    if(stage == inet::INITSTAGE_LOCAL)
+        {
+            collectorType_ = par("collectorType").stringValue();
+
+        }
+        else if (stage == inet::INITSTAGE_APPLICATION_LAYER) // same as lteMacUe, when read the interface entry
     {
         LteBinder* binder = getBinder();
 
 
-        mac_ = check_and_cast<LteMacUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("mac"));
-        pdcp_ = check_and_cast<LtePdcpRrcUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("pdcpRrc"));
+        mac_ = check_and_cast<LteMacBase *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("mac"));
+//        pdcp_ = check_and_cast<LtePdcpRrcUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("pdcpRrc"));
 
         associateId_.value = binder->getIPv4Address(mac_->getMacNodeId()).str(); // UE_IPV4_ADDRESS
         associateId_.type = "1"; // UE_IPV4_ADDRESS
 
+        /*
+         * Get packetFlowManager if present.
+         * When the ue has both Lte and NR nic, two UeStatsCollector are created.
+         * So each of them have to get the correct reference of the packetFlowManager,
+         * since they are splitted, too.
+         */
 
-        // get packetFlowManager if present
-        if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
-            flowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+        bool isNr_ = (strcmp(getAncestorPar("nicType").stdstringValue().c_str(),"NRNicUe") == 0) ? true : false;
+
+
+        if(isNr_) // the UE has both the Nics
+        {
+            if(collectorType_.compare("NRueStatsCollector") == 0) // collector relative to the NR side of the Ue Nic
+            {
+                if(getParentModule()->getSubmodule("lteNic")->findSubmodule("nrPacketFlowManager") != -1)
+                {
+                    EV << collectorType_ << "::initialize - NRpacketFlowManager reference" << endl;
+                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("nrPacketFlowManager"));
+                }
+                else
+                {
+                    throw cRuntimeError("%s::initialize - NRUe does not have NRpacketFlowManager. This should not happen", collectorType_.c_str());
+                }
+            }
+            else if(collectorType_.compare("ueStatsCollector") == 0)
+            {
+                if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
+                {
+                    EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
+                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+                }
+                else
+                {
+                    throw cRuntimeError("%s::initialize - Ue does not have packetFlowManager. This should not happen", collectorType_.c_str());
+                }
+            }
+
+        }
+        else // it is ueStatsCollector with only LteNic
+        {
+            if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
+                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+        }
 
         handover_ = false;
 
@@ -59,15 +103,15 @@ void UeStatsCollector::initialize(int stage){
 
 void UeStatsCollector::resetDelayCounter()
 {
-    if(flowManager_ != nullptr)
-        flowManager_ ->resetDelayCounter();
+    if(packetFlowManager_ != nullptr)
+        packetFlowManager_ ->resetDelayCounter();
 }
 
 void UeStatsCollector::add_ul_nongbr_delay_ue()
 {
-    if(flowManager_ != nullptr)
+    if(packetFlowManager_ != nullptr)
     {
-        double delay = flowManager_->getDelayStats();
+        double delay = packetFlowManager_->getDelayStats();
         if(delay != 0)
             EV << "UeStatsCollector::add_ul_nongbr_delay_ue() - delay: " << delay << endl;
         ul_nongbr_delay_ue.addValue(delay);
@@ -80,15 +124,18 @@ void UeStatsCollector::add_dl_nongbr_delay_ue(double value)
     dl_nongbr_delay_ue.addValue(value);
 }
 
-void UeStatsCollector::add_ul_nongbr_pdr_ue(double value)
+void UeStatsCollector::add_ul_nongbr_pdr_ue()
 {
-    ul_nongbr_pdr_ue.addValue(value);
+    DiscardedPkts pair = {0,0};
+    double rate = ((double)pair.discarded * 1000000) / pair.total;
+    ul_nongbr_pdr_ue.addValue(rate);
 }
 // called by the eNodeBCollector
 void UeStatsCollector::add_dl_nongbr_pdr_ue(double value)
 {
     dl_nongbr_pdr_ue.addValue(value);
 }
+
 
 // called by the eNodeBCollector
 void UeStatsCollector::add_ul_nongbr_throughput_ue(double value)
@@ -148,12 +195,11 @@ int UeStatsCollector::get_dl_nongbr_data_volume_ue()
 DiscardedPkts UeStatsCollector::getULDiscardedPkt()
 {
     DiscardedPkts pair = {0,0};
-    if(flowManager_ != nullptr)
+    if(packetFlowManager_ != nullptr)
     {
 
-        pair = flowManager_->getDiscardedPkt();
+        pair = packetFlowManager_->getDiscardedPkt();
         double rate = ((double)pair.discarded * 1000000) / pair.total;
-        add_ul_nongbr_pdr_ue(rate);
     }
     return pair;
 }

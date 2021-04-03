@@ -41,6 +41,9 @@ class EnodeBStatsCollector: public cSimpleModule
 {
     private:
 
+        std::string collectorType_;
+        LteNodeType nodeType_; // ENODEB or GNODEB
+
         // used by the RNI service
         mec::Ecgi ecgi_;
 
@@ -48,7 +51,7 @@ class EnodeBStatsCollector: public cSimpleModule
         LtePdcpRrcEnb *pdcp_;
         LteMacEnb     *mac_;
         LteRlcUm      *rlc_;
-        PacketFlowManagerEnb *flowManager_;
+        PacketFlowManagerEnb *packetFlowManager_;
 
         LteCellInfo *cellInfo_;
         
@@ -62,7 +65,7 @@ class EnodeBStatsCollector: public cSimpleModule
         L2MeasBase dl_nongbr_pdr_cell;
         L2MeasBase ul_nongbr_pdr_cell;
 
-        // TODO insert signals for statistics
+        // TODO insert signals for oMNeT++ statistics
 
 
         /*
@@ -95,6 +98,14 @@ class EnodeBStatsCollector: public cSimpleModule
 
         const mec::Ecgi& getEcgi() const;
         MacCellId getCellId() const;
+        LteNodeType getCellNodeType () const
+        {
+            return nodeType_;
+        }
+        void setCellNodeType(LteNodeType nodeType)
+        {
+            nodeType_  = nodeType;
+        }
 
         // UeStatsCollector management methods
 
@@ -178,6 +189,7 @@ class EnodeBStatsCollector: public cSimpleModule
         void add_dl_nongbr_delay_perUser();
         void add_ul_nongbr_delay_perUser();
         void add_dl_nongbr_pdr_cell_perUser();
+        void add_ul_nongbr_pdr_cell_perUser();
         void add_ul_nongbr_data_volume_ue_perUser();
         void add_dl_nongbr_data_volume_ue_perUser();
         void add_dl_nongbr_throughput_ue_perUser();
