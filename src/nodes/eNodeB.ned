@@ -30,8 +30,10 @@ import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 
-// 
-// eNodeB Module
+
+import lte.corenetwork.statsCollector.StatsCollector; 
+import lte.corenetwork.statsCollector.ENodeBStatsCollector; 
+// eNodeB Base Module
 // 
 // Module for eNodeB functionalities
 //
@@ -79,7 +81,17 @@ module eNodeB
 
         //# MEC support	
         string meHost = default("");		// symbolic name of the connected MEHost in the Network
-
+     
+        //# @author Alessandro Noferi
+       	string StatsCollectorType = default("ENodeBStatsCollector"); 
+        bool hasRNISupport = default(false);
+        
+        //# use it in case of emulation
+        string extMeAppsAddress = default(""); // Address of the external MeApp IP/mask
+        //# Plmn params (used by RNI Service in EnodeBStatsCollector)
+        string mcc = default("001"); // Test network
+        string mnc = default("01");  // Test network
+        
     gates:
         inout ppp @loose;         // connection to the Core Network
         input radioIn @directIn;  // connection to the radio interface
@@ -101,6 +113,10 @@ module eNodeB
             parameters:
                 @display("p=110.43,244.3775;is=s");
         }
+        
+        collector: <StatsCollectorType> like StatsCollector if hasRNISupport {
+    		@display("p=50,275;is=s");
+		}
 
         //#
         //# cellularNic modules

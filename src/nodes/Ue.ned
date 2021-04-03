@@ -28,6 +28,8 @@ import inet.transportlayer.contract.ISctp;
 import inet.common.MessageDispatcher;
 import simu5g.stack.ICellularNic;
 
+import lte.corenetwork.statsCollector.UeStatsCollector;
+
 // 
 // User Equipment Module
 //
@@ -80,9 +82,11 @@ module Ue
 
         //# Loopback interfaces
         int numLoInterfaces = default(1);
-        
+
         //# Num of PcapRecorders
         int numPcapRecorders = default(0); // no of PcapRecorders
+
+        bool hasRNISupport = default(false); 
 
     gates:
         input radioIn @directIn;     // connection to master
@@ -94,12 +98,12 @@ module Ue
         mobility: <mobilityType> like IMobility {
             @display("p=127.368004,172.26001;is=s");
         }
-        
+
         //# app layer 
         app[numApps]: <> like IApp {
             @display("p=374.47998,72.479996,row,140");
         }
-        
+
         //# transport layer 
         udp: <default(firstAvailableOrEmpty("Udp"))> like IUdp if hasUdp {
             parameters:
@@ -113,7 +117,7 @@ module Ue
             parameters:
                 @display("p=675,226");
         }
-        
+
         //# network layer
         ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
             parameters:
@@ -138,7 +142,7 @@ module Ue
             parameters:
                 @display("p=693.39197,521.856,row,150;q=txQueue");
         }
-        
+
         //# message dispatcher for SAP between application and transport layer
         at: MessageDispatcher {
             parameters:
@@ -158,7 +162,12 @@ module Ue
         pcapRecorder[numPcapRecorders]: PcapRecorder {
             @display("p=126.84,346.69598,r,10");
         }
-        
+
+        //# UeStatsCollector - for MEC
+        ueCollector: UeStatsCollector if hasRNISupport {
+            @display("p=171.536,445.75198;is=s");
+        }
+
     connections allowunconnected:
 
         //# 
@@ -223,7 +232,7 @@ module Ue
             nl.out++ --> lo[i].upperLayerIn;
             lo[i].upperLayerOut --> nl.in++;
         }
-        
+
         //#
         //# Connections between LTE/NR NIC and the radio medium
         //#
