@@ -19,6 +19,9 @@
 #include "stack/mac/packet/LteRac_m.h"
 #include "inet/common/TimeTag_m.h"
 
+#include "corenetwork/statsCollector/UeStatsCollector.h"
+
+
 Define_Module(LteMacUeD2D);
 
 using namespace inet;
@@ -67,6 +70,18 @@ void LteMacUeD2D::initialize(int stage)
 
             LteAmc *amc = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(cellId_))->getSubmodule("cellularNic")->getSubmodule("mac"))->getAmc();
             amc->attachUser(nodeId_, D2D);
+
+// TODO remove it. UeCollector connection made in LteMacUe Initialize
+//            if(isNrUe(nodeId_))
+//            {
+//                EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+//                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
+//                {
+//                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));
+//                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+//                }
+//            }
+
         }
         else
             enb_ = NULL;
@@ -243,9 +258,6 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());
                     else
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
-
-                    // @author Alessandro Noferi
-                    macPkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(MacCidToLcid(destCid));
 
                     macPduList_[carrierFreq][pktId] = macPkt;
                 }

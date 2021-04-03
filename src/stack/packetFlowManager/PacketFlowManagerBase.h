@@ -122,14 +122,14 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         * @param rlcPdu packet pointer
         */
 
-        virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {}
+        virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
 
         /* 
         * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it
         * @param lcid 
         * @param macPdu packet pointer
         */  
-        virtual void insertMacPdu(LogicalCid lcid, inet::Ptr<const LteMacPdu> macPdu){};
+        virtual void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
 
         /*
@@ -138,7 +138,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         * @param lcid
         * @param macPduId Omnet id of the mac pdu 
         */
-        virtual void macPduArrived(LogicalCid lcid, unsigned int macPduId) = 0;
+        virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
         /*
         * This method is called after maxHarqTrasmission of a MAC PDU ID has been
@@ -147,7 +147,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         * @param lcid
         * @param macPduId Omnet id of the mac pdu to be discarded
         */
-        virtual void discardMacPdu(LogicalCid lcid, unsigned int macPduId) = 0;
+        virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
         /*
         * This method is used to take trace of all discarded RLC pdus. If all rlc pdus

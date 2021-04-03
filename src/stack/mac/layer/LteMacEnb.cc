@@ -35,6 +35,7 @@
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 #include "stack/rlc/um/LteRlcUm.h"
+#include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
 
 Define_Module(LteMacEnb);
 
@@ -668,14 +669,6 @@ void LteMacEnb::macPduMake(MacCid cid)
                 pkt->addTagIfAbsent<UserControlInfo>()->setDirection(DL);
                 pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
 
-                /*
-                 * @author Alessandro Noferi
-                 *
-                 * Set the LCID, used by the packetFlowManager.
-                 * Don't know if such LCID could be obtained in other way, though.
-                 */
-                pkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(cid));
-
                 const UserTxParams& txInfo = amc_->computeTxParams(destId, DL, carrierFreq);
 
                 UserTxParams* txPara = new UserTxParams(txInfo);
@@ -923,6 +916,8 @@ bool LteMacEnb::bufferizePacket(cPacket* pktAux)
                 unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
                 packetFlowManager_->discardRlcPdu(lteInfo->getLcid(),rlcSno);
             }
+
+            // TODO add delete pkt (memory leak?)
 
         }
 
@@ -1275,7 +1270,24 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             {
                 activeUeSet.insert(*rit); // active users in RLC
             }
+        }
 
+        /*
+         * if the pdcp layer is NRPdcpRrc and isDualConnectivityEnabled
+         * also pdpd layer can have sdu buffered
+         */
+
+        NRPdcpRrcEnb *nrPdpc;
+        cModule *pdcp = getParentModule()->getSubmodule("pdcpRrc");
+        if(strcmp(pdcp->getClassName(), "NRPdcpRrcEnb") == 0)
+        {
+            nrPdpc = check_and_cast<NRPdcpRrcEnb*>(pdcp);
+            std::set<MacNodeId> activePdcpUe;
+            nrPdpc->activeUeUL(&activePdcpUe);
+            for(auto ue: activePdcpUe)
+            {
+                activeUeSet.insert(ue); // active users in RLC
+            }
         }
     }
 

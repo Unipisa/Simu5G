@@ -28,6 +28,7 @@
 #include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "corenetwork/statsCollector/UeStatsCollector.h"
 
 Define_Module(LteMacUe);
 
@@ -161,6 +162,47 @@ void LteMacUe::initialize(int stage)
             LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(cellId_))->getAmc();
             amc->attachUser(nodeId_, UL);
             amc->attachUser(nodeId_, DL);
+
+            /*
+             * @autor Alessandro Noferi
+             *
+             * This piece of code connects the UeCollector to the relative base station Collector.
+             * It checks the NIC, i.e. Lte or NR and chooses the correct UeCollector to connect.             *
+             */
+
+            cModule *module = binder_->getModuleByPath(binder_->getModuleNameByMacNodeId(cellId_));
+            std::string nodeType;
+            if(module->hasPar("nodeType"))
+                nodeType = module->par("nodeType").stdstringValue();
+
+            LteNodeType eNBType = binder_->getBaseStationTypeById(cellId_);
+
+
+            if(isNrUe(nodeId_) &&  eNBType == GNODEB)
+            {
+
+                EV << "I am a NR Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
+                {
+                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));
+                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+                }
+            }
+            else if (!isNrUe(nodeId_) && eNBType == ENODEB)
+            {
+                EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+                if(getParentModule()->getParentModule()->findSubmodule("ueCollector") != -1)
+                {
+                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("ueCollector"));
+                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+                }
+            }
+            else
+            {
+                EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: "<< cellId_ << " with is has a different type" <<  endl;
+            }
+
+            ////
         }
 
         // find interface entry and use its address
@@ -475,17 +517,6 @@ void LteMacUe::macPduMake(MacCid cid)
                 macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
                 macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
                 macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
-
-                /*
-                 * @author Alessandro Noferi
-                 *
-                 * Set the LCID, used by the packetFlowManager.
-                 * Don't know if such LCID could be obtained in other way, though.
-                 */
-
-                // @author Alessandro Noferi
-                macPkt->addTagIfAbsent<UserControlInfo>()->setPacketFlowManagerId(MacCidToLcid(destCid));
-
 
 
                 //macPkt->setControlInfo(uinfo);
