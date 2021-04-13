@@ -253,6 +253,8 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList>* scheduleList
             grant->setDirection(dir);
             grant->setCodewords(codewords);
 
+            EV_FATAL << "grant ID enb:" << grant->getGrandId() << "bytes "<< endl;
+
             // set total granted blocks
             grant->setTotalGrantedBlocks(granted);
             grant->setChunkLength(b(1));

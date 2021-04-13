@@ -410,6 +410,9 @@ void NRMacUe::macPduMake(MacCid cid)
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(dir);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(SHORT_BSR));
                     macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
+
+                    EV_FATAL << "grantId NR: " << schedulingGrant_[carrierFreq]->getGrandId() << endl;
+
                     if (usePreconfiguredTxParams_)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());
                     else
