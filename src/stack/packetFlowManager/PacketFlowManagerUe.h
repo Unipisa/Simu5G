@@ -99,7 +99,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     * @param lastIsFrag used to inform if the last pdcp is fragmented or not
     */
 
-    virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+    virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
 
     /* 
     * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it

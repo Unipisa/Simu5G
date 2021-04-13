@@ -122,7 +122,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         * @param rlcPdu packet pointer
         */
 
-        virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
+        virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
 
         /* 
         * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it

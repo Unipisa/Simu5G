@@ -200,7 +200,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 //    }
 //}
 
-void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
+void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
 {
         ConnectionMap::iterator cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end())
@@ -228,17 +228,22 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPd
 //        FlowControlInfo* lteInfo;
         FramingInfo fi = rlcPdu->getFramingInfo();
         unsigned numSdu = rlcPdu->getNumSdu();
-        RlcSduList* rlcSduList = rlcPdu->getRlcSudList();
+        const RlcSduList* rlcSduList = rlcPdu->getRlcSduList();
+        const RlcSduListSizes* rlcSduSizes = rlcPdu->getRlcSduSizes();
         auto lit = rlcSduList->begin();
+        auto sit = rlcSduSizes->begin();
         LteRlcSdu* rlcSdu;
         FlowControlInfo* lteInfo;
 
-        for (; lit != rlcSduList->end(); ++lit){
+        for (; lit != rlcSduList->end(); ++lit, ++sit){
             auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();
            //             lteInfo = check_and_cast<FlowControlInfo*>(rlcSdu->getControlInfo());
 
+
             unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
-            unsigned int pdcpPduLength = rlcSdu->getLengthMainPacket();
+            unsigned int pdcpPduLength = *(sit);
+
+            EV << pfmType.c_str() <<"::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << "bytes" <<  endl;
 
             // store the RLC SDUs (PDCP PDUs) included in the RLC PDU
             desc->rlcSdusPerPdu_[rlcSno].insert(pdcpSno);
@@ -609,9 +614,6 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
         // it has been assumed that the bursts are quickly emptied so the operation
         // is not computationally heavy
         }
-
-
-
 
 }
 

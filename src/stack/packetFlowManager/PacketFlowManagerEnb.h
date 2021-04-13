@@ -47,18 +47,44 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     protected:
 
         typedef struct
+        {
+            std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
+            simtime_t startBurstTransmission; // instant of the first trasmission of the burst
+            unsigned int burstSize; // PDCP sdu size of the burst
+            bool isComplited;
+        } BurstStatus;
+
+        typedef struct
+        {
+            int lastPdpcSno;
+            int totalLossPdcp;
+            unsigned int totalPdcpArrived;
+            unsigned int totalPdcpSno;
+
+            void clear()
             {
-                std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
-                simtime_t startBurstTransmission; // instant of the first trasmission of the burst
-                unsigned int burstSize; // PDCP sdu size of the burst
-                bool isComplited;
-            } BurstStatus;
-        //
+                lastPdpcSno = 0;
+                totalLossPdcp = 0;
+                totalPdcpArrived = 0;
+                totalPdcpSno = 0;
+            }
+
+            // resets the counters at the end of each period, i.e lastPdcpSno remains
+            void reset()
+            {
+                totalLossPdcp = 0;
+                totalPdcpArrived = 0;
+                totalPdcpSno = 0;
+            }
+        } PacketLoss;
+
+
         /*
         * The node can have different active connections (lcid) at the same time, hence we need to
         * maintain the status for each of them
         */
-        typedef struct {
+        typedef struct
+        {
             MacNodeId nodeId_; // dest node of this lcid
             bool burstState_; // control variable that controls one burst active at a time
             BurstId burstId_; // separates the bursts
@@ -75,11 +101,12 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
         LtePdcpRrcEnb * pdcp_;
 
+        typedef std::map<MacNodeId, PacketLoss> packetLossRateMap;
         typedef std::map<MacNodeId, DataVolume> dataVolume; // discard counter per NodeId (UE)
         typedef std::map<MacNodeId, DiscardedPkts> pktDiscardMap; // discard counter per NodeId (UE)
         typedef std::map<MacNodeId, Delay> delayMap;
         typedef std::map<MacNodeId, Throughput> throughputMap;
-
+        packetLossRateMap packetLossRate_;
         delayMap pdcpDelay_; // map that sums all the delay times of a dest NodeId (UE) and the corresponding counter
         throughputMap pdcpThroughput_; // map that sums all the bytes sent by a dest NodeId (UE) and the corresponding time elapsed
         pktDiscardMap pktDiscardCounterPerUe_;
@@ -138,7 +165,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         virtual void insertPdcpSdu(inet::Packet* pdcpPkt) override;
         virtual void receivedPdcpSdu(inet::Packet* pdcpPkt) override;
 
-        virtual void insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
+        virtual void insertRlcPdu(LogicalCid lcid,  const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
 
         virtual void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
 
@@ -181,14 +208,19 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         virtual void deleteUe(MacNodeId id);
 
        /*
-        * I also need methods that the PDCP layer calls when
-        * it needs the discarded pkts, pkt delay and throughput.
         * The methods are called per specific UE
         */
 
         virtual uint64_t getDataVolume(MacNodeId nodeId, Direction dir);
         virtual void resetDataVolume(MacNodeId nodeId, Direction dir);
         virtual void resetDataVolume(MacNodeId nodeId);
+
+
+
+        virtual double getPdpcLossRate();
+        virtual double getPdpcLossRatePerUe(MacNodeId id);
+        virtual void resetPdpcLossRates();
+        virtual void resetPdpcLossRatePerUe(MacNodeId id);
 
 
         virtual double getDiscardedPktPerUe(MacNodeId id);

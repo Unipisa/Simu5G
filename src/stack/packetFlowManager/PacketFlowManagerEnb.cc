@@ -148,7 +148,6 @@ void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet* pdcpPkt)
     if (connectionMap_.find(lcid) == connectionMap_.end())
         initLcid(lcid, lteInfo->getDestId());
 
-
     unsigned int pdcpSno = lteInfo->getSequenceNumber();
     int64_t  pduSize = pdcpPkt->getByteLength();
     int headerSize = lteInfo->getHeaderSize();
@@ -158,13 +157,15 @@ void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet* pdcpPkt)
     auto header = pdcpPkt->peekAtFront<LtePdcpPdu>();
     int sduSize= (B(pduSize) - header->getChunkLength()).get();
 
+    int sduSizeBits = (b(pdcpPkt->getBitLength()) - header->getChunkLength()).get();
+
     if(sduDataVolume_.find(nodeId) == sduDataVolume_.end())
-        sduDataVolume_[nodeId].dlBits = sduSize;
+        sduDataVolume_[nodeId].dlBits = sduSizeBits;
     else
-        sduDataVolume_[nodeId].dlBits += sduSize;
+        sduDataVolume_[nodeId].dlBits += sduSizeBits;
 ////
 
-    EV << pfmType << "::insertPdcpSdu - DL PDPC sdu bits: " << sduSize << " sent to node: " << nodeId << endl;
+    EV << pfmType << "::insertPdcpSdu - DL PDPC sdu bits: " << sduSizeBits << " sent to node: " << nodeId << endl;
     EV << pfmType << "::insertPdcpSdu - DL PDPC sdu bits: " << sduDataVolume_[nodeId].dlBits << " sent to node: " << nodeId << " in this perdiod" <<  endl;
 
     std::map<LogicalCid, StatusDescriptor>::iterator cit = connectionMap_.find(lcid);
@@ -208,11 +209,33 @@ void PacketFlowManagerEnb::receivedPdcpSdu(inet::Packet* pdcpPkt)
     else
         sduDataVolume_[nodeId].ulBits += sduBits;
 
-    EV << pfmType << "::insertPdcpSdu - UL PDPC sdu bits: " << sduDataVolume_[nodeId].ulBits << " received from node: " << nodeId << endl;
 
+    /*
+     * update packetLossRate UL
+     */
+    unsigned int sno = lteInfo->getSequenceNumber();
+    LogicalCid lcid = lteInfo->getLcid();
+    std::map<LogicalCid, PacketLoss>::iterator cit = packetLossRate_.find(nodeId);
+    if (cit == packetLossRate_.end())
+    {
+        packetLossRate_[nodeId].clear();
+        cit = packetLossRate_.find(nodeId);
     }
 
-void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {
+    while (sno > cit->second.lastPdpcSno +1)
+    {
+        cit->second.lastPdpcSno ++;
+        cit->second.totalPdcpSno ++;
+    }
+    cit->second.lastPdpcSno = sno;
+    cit->second.totalPdcpArrived += 1;
+    cit->second.totalPdcpSno += 1;
+
+    EV << pfmType << "::insertPdcpSdu - UL PDPC sdu bits: " << sduDataVolume_[nodeId].ulBits << " received from node: " << nodeId << endl;
+
+}
+
+void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {
      EV << pfmType << "::insertRlcPdu - Logical Cid: " << lcid << endl;
 
          std::map<LogicalCid, StatusDescriptor>::iterator cit = connectionMap_.find(lcid);
@@ -235,8 +258,10 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataP
 
          FramingInfo fi = rlcPdu->getFramingInfo();
          unsigned numSdu = rlcPdu->getNumSdu();
-         RlcSduList* rlcSduList = rlcPdu->getRlcSudList();
+         const RlcSduList* rlcSduList = rlcPdu->getRlcSduList();
+         const RlcSduListSizes* rlcSduSizes = rlcPdu->getRlcSduSizes();
          auto lit = rlcSduList->begin();
+         auto sit = rlcSduSizes->begin();
          LteRlcSdu* rlcSdu;
          FlowControlInfo* lteInfo;
 
@@ -262,7 +287,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataP
                  throw cRuntimeError("%s::insertRlcPdu - node %d and lcid %d . RLC burst status STOP incompatible with local status %d. Aborting",pfmType.c_str(),  desc->nodeId_, lcid, desc->burstState_ );
              desc->burstStatus_[desc->burstId_].isComplited = true;
              desc->burstState_ = false;
-             EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::insertRlcPdu STOP burst " << desc->burstId_<< " at: " << simTime()<< endl;
 
              /*
               * If the burst ends in the same TTI, it must be not counted.
@@ -270,10 +294,16 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataP
               * for each carrier in a TTI
               */
              simtime_t elapsedTime = simTime() - desc->burstStatus_[desc->burstId_].startBurstTransmission;
-             if (!(elapsedTime > TTI))
+             if (!(elapsedTime >= TTI))
              {
                  // remove the burst structure
                  desc->burstStatus_.erase(desc->burstId_);
+                 EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::insertRlcPdu burst " << desc->burstId_<< " deleted "<< endl;
+             }
+             else
+             {
+                 EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::insertRlcPdu STOP burst " << desc->burstId_<< " at: " << simTime()<< endl;
+
              }
          }
 
@@ -304,13 +334,13 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataP
          std::map<BurstId, BurstStatus>::iterator bsit;
          int i = 0;
          int rlcSduSize = 0;
-         for (; lit != rlcSduList->end(); ++lit)
+         for (; lit != rlcSduList->end(); ++lit, ++sit)
          {
              auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();
 //             lteInfo = check_and_cast<FlowControlInfo*>(rlcSdu->getControlInfo());
 
              unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
-             unsigned int pdcpPduLength = rlcSdu->getLengthMainPacket();
+             unsigned int pdcpPduLength = *(sit); // TODO fix with size of the chunk!!
 
              EV <<  "PacketFlowManagerEnb::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << "bytes" <<  endl;
      //
@@ -375,7 +405,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, inet::Ptr<LteRlcUmDataP
                  throw cRuntimeError("%s::insertRlcPdu - node %d and lcid %d . Burst status not found during active burst. Aborting",pfmType.c_str(),  desc->nodeId_, lcid);
              // add rlc to rlc set of the burst and the size
              EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::insertRlcPdu - lcid[" << lcid << "], insert RLC SDU of size " << rlcSduSize <<endl;
-
 
              bsit->second.rlcPdu[rlcSno] = rlcSduSize;
          }
@@ -781,11 +810,11 @@ void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor* desc, unsigned i
                     pdcpThroughput_.insert(std::pair<unsigned int, Throughput >(desc->nodeId_ , {0,0}));
                     tit = pdcpThroughput_.find(desc->nodeId_);
                 }
-                tit->second.pktSizeCount += bsit->second.burstSize;
+                tit->second.pktSizeCount += bsit->second.burstSize; //*8 --> bits
                 tit->second.time += (simTime() - bsit->second.startBurstTransmission);
                 double tp = ((double)bsit->second.burstSize)/(simTime() - bsit->second.startBurstTransmission).dbl();
 
-                EV_FATAL << NOW << " node id "<< desc->nodeId_  << " " << pfmType << "::removePdcpBurst Burst "<< bsit->first << " length " << simTime() - bsit->second.startBurstTransmission<< "s, with size " << bsit->second.burstSize <<"bits -> tput: "<< tp <<" b/s" <<endl;
+                EV_FATAL << NOW << " node id "<< desc->nodeId_  << " " << pfmType << "::removePdcpBurst Burst "<< bsit->first << " length " << simTime() - bsit->second.startBurstTransmission<< "s, with size " << bsit->second.burstSize <<"B -> tput: "<< tp <<" B/s" <<endl;
                 desc->burstStatus_.erase(bsit); // remove emptied burst
              }
             break;
@@ -890,7 +919,7 @@ double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
 
 //    if(it->second.pktSizeCount == 0) // a burst is not finished yet, return a tput of this period
 
-    double time = (it->second.time.dbl()*1000); // ms
+    double time = it->second.time.dbl(); // seconds
     if(time == 0){
         return 0.0;
     }
@@ -942,6 +971,54 @@ void PacketFlowManagerEnb::deleteUe(MacNodeId id)
     if(tit != pdcpThroughput_.end())
         pdcpThroughput_.erase(tit);
 }
+
+double PacketFlowManagerEnb::getPdpcLossRate()
+{
+    unsigned int lossPackets = 0; // Dloss
+    unsigned int totalPackets = 0; // N (it also counts missing pdcp sno)
+
+    for(const auto& ue : packetLossRate_)
+    {
+        lossPackets += ue.second.totalLossPdcp;
+        totalPackets += ue.second.totalPdcpSno;
+    }
+
+    if(totalPackets == 0) return 0;
+
+    return ((double) lossPackets * 1000000)/totalPackets;
+}
+
+double PacketFlowManagerEnb::getPdpcLossRatePerUe(MacNodeId id)
+{
+    auto it = packetLossRate_.find(id);
+    if(it != packetLossRate_.end())
+    {
+        return ((double) it->second.totalLossPdcp * 1000000)/it->second.totalPdcpSno;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void PacketFlowManagerEnb::resetPdpcLossRatePerUe(MacNodeId id)
+{
+    auto it = packetLossRate_.find(id);
+    if(it != packetLossRate_.end())
+    {
+        it->second.reset();
+    }
+}
+
+
+void PacketFlowManagerEnb::resetPdpcLossRates()
+{
+    for(auto& ue : packetLossRate_)
+    {
+        ue.second.reset();
+    }
+}
+
 
 uint64_t PacketFlowManagerEnb::getDataVolume(MacNodeId nodeId, Direction dir)
 {

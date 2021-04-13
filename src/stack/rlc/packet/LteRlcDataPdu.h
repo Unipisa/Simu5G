@@ -112,10 +112,15 @@ public:
     unsigned int getNumSdu() const { return numSdu_; }
 
     // @author Alessandro noferi
-    virtual RlcSduList* getRlcSudList()
+    virtual const RlcSduList* getRlcSduList()
     {
        return &sduList_;
     }
+    virtual const RlcSduListSizes* getRlcSduSizes()
+    {
+       return &sduSizes_;
+    }
+
 
     /**
      * pushSdu() gets ownership of the packet
