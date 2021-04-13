@@ -16,50 +16,6 @@
 package lte.apps.mec.MeApps;
 
 
-
-//
-// Client for a generic request-response style protocol over TCP.
-// May be used as a rough model of HTTP or FTP users.
-// Compatible with both IPv4 (~Ipv4) and IPv6 (~Ipv6).
-//
-// The model communicates with the server in sessions. During a session,
-// the client opens a single TCP connection to the server, sends several
-// requests (always waiting for the complete reply to arrive before
-// sending a new request), and closes the connection.
-//
-// The server app should be ~TcpGenericServerApp; the model sends ~GenericAppMsg
-// messages.
-//
-// Example settings:
-//
-// FTP:
-// <pre>
-//    numRequestsPerSession = exponential(3)
-//    requestLength = 1B*int(truncnormal(20,5))
-//    replyLength = 1B*int(exponential(1000000))
-// </pre>
-//
-// Note that this module doesn't open separate TCP connections for commands
-// and data transfer as the FTP protocol.
-//
-// HTTP:
-// <pre>
-//    numRequestsPerSession = 1 <i>(HTTP 1.0)</i>
-//    numRequestsPerSession = exponential(5) <i>(HTTP 1.1, with keepalive)</i>
-//    requestLength = 1B*int(truncnormal(350,20))
-//    replyLength = 1B*int(exponential(2000))
-// </pre>
-//
-// Note that since most web pages contain images and may contain frames,
-// applets etc, possibly from various servers, and browsers usually download
-// these items in parallel to the main HTML document, this module cannot
-// serve as a realistic web client.
-//
-// Also, with HTTP 1.0 it is the server that closes the connection after
-// sending the response, while in this model it is the client.
-//
-// @see ~TcpGenericServerApp, ~GenericAppMsg, ~TelnetApp
-//
 moduleinterface MeAppBase 
 {
     parameters:
@@ -84,5 +40,11 @@ moduleinterface MeAppBase
         @statistic[endToEndDelay](title="end-to-end delay"; source="dataAge(packetReceived)"; unit=s; record=histogram,weightedHistogram,vector; interpolationmode=none);
         @statistic[numActiveSessions](title="number of active sessions"; source=warmup(sum(connect)); record=max,timeavg,vector; interpolationmode=sample-hold; autoWarmupFilter=false);
         @statistic[numSessions](title="total number of sessions"; source="sum(connect+1)/2"; record=last);
+
+    gates:
+	  input mePlatformIn;
+	  output mePlatformOut;
+			    
+
 
 }

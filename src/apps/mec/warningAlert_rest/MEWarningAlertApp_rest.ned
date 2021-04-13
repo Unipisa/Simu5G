@@ -13,8 +13,7 @@ import lte.nodes.mec.MEPlatform.IMEApp;
 
 // MEWarningAlertApp simple module in charge to:
 //
-// 1) handling WarningAlertPacket of type INFO_UEAPP by forwarding to the MEWarningAlertService
-// 2) handling WarningAlertPacket of type INFO_MEAPP by adding source/destination info and forwarding to the VirtualisationManager
+// TODO
 
 simple MEWarningAlertApp_rest like IMEApp
 {
@@ -32,5 +31,9 @@ simple MEWarningAlertApp_rest like IMEApp
     gates:
         input socketIn; 
         output socketOut; 
+        
+        input mePlatformIn;
+	    output mePlatformOut;
+        
 }
 

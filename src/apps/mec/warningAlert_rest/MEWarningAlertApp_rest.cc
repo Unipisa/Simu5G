@@ -33,10 +33,14 @@ MEWarningAlertApp_rest::MEWarningAlertApp_rest()
 MEWarningAlertApp_rest::~MEWarningAlertApp_rest()
 {
     if(circle != nullptr)
-       // dropAndDelete(circle);
-//        circle->dropAndDelete(circle)
+    {
+        getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
         delete circle;
 //        dropAndDelete(circle);
+//        circle->dropAndDelete(circle);
+
+    }
+
     }
 
 
@@ -73,7 +77,6 @@ void MEWarningAlertApp_rest::initialize(int stage)
 
     cMessage *m = new cMessage("connect");
             scheduleAt(simTime()+0.5, m);
-
 
     circle = new cOvalFigure("circle");
     circle->setBounds(cFigure::Rectangle(150,200,120,120));
@@ -199,8 +202,7 @@ void MEWarningAlertApp_rest::handleTcpMsg()
                 //instantiation requirements and info
                 alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                 alert->setType(INFO_MEAPP);
-                alert->setMEModuleType("lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest");
-                alert->setMEModuleName("MEWarningAlertApp_rest");
+
 
                 //connection info
                 alert->setSourceAddress(meHostSimbolicAddress);
@@ -211,7 +213,7 @@ void MEWarningAlertApp_rest::handleTcpMsg()
 
                 alert->setChunkLength(inet::B(size_));
 
-                inet::Packet* packet = new inet::Packet("WarningAlertPacketStart");
+                inet::Packet* packet = new inet::Packet("WarningAlertPacketInfo");
                 packet->insertAtBack(alert);
                 ueSocket.sendTo(packet, destAddress_, destPort_);
 

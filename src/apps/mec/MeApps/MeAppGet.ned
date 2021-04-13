@@ -17,6 +17,7 @@ package lte.apps.mec.MeApps;
 
 import lte.apps.mec.MeApps.MeAppBase;
 import inet.applications.contract.IApp;
+
 simple MeAppGet like MeAppBase, IApp
 {
     parameters:       
@@ -46,5 +47,8 @@ simple MeAppGet like MeAppBase, IApp
     gates:
         input socketIn @labels(TcpCommand/up);
         output socketOut @labels(TcpCommand/down);
+        
+		input mePlatformIn;
+	  	output mePlatformOut;
         
 }

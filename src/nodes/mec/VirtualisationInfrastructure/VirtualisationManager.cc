@@ -186,12 +186,12 @@ void VirtualisationManager::startMEApp(inet::Packet* packet){
     auto pkt = packet->peekAtFront<MEAppPacket>();
 
     //checking if the service required is available
-//    if(findService(pkt->getRequiredService()) == SERVICE_NOT_AVAILABLE)
-//    {
-//        EV << "VirtualisationManager::startMEApp - Service required is not available: " << pkt->getRequiredService() << endl;
-//        throw cRuntimeError("VirtualisationManager::startMEApp - \tFATAL! Service required is not available!" );
-//        return;
-//    }
+    if(findService(pkt->getRequiredService()) == SERVICE_NOT_AVAILABLE)
+    {
+        EV << "VirtualisationManager::startMEApp - Service required is not available: " << pkt->getRequiredService() << endl;
+        throw cRuntimeError("VirtualisationManager::startMEApp - \tFATAL! Service required is not available!" );
+        return;
+    }
 
     //retrieve UE App ID
     int ueAppID = pkt->getUeAppID();
@@ -408,23 +408,25 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
          *
          * with the new MeApp management (i.e. they are directly connected to the transport layer)
          * it is the MeApp itself that looks for the MeService through the ServiceRegistry module present in the
-         * MePlatform
+         * MePlatform.
+         *
+         * This is true for MEC services etsi complaint, but for omnet-like services the classic method is used
          *
          */
 
 //        // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
-//        if(serviceIndex != NO_SERVICE)
-//        {
-//            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
-//            //connecting MEPlatform gates to the MEApp gates
-//            mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
-//            module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
-//
-//            //connecting internal MEPlatform gates to the required MEService gates
-//            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
-//            mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
-//        }
-//        else EV << "VirtualisationManager::instantiateMEApp - NO MEService required!"<< endl;
+        if(serviceIndex != NO_SERVICE)
+        {
+            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
+            //connecting MEPlatform gates to the MEApp gates
+            mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
+            module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
+
+            //connecting internal MEPlatform gates to the required MEService gates
+            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
+            mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
+        }
+        else EV << "VirtualisationManager::instantiateMEApp - NO MEService required!"<< endl;
 
         module->buildInside();
         module->scheduleStart(simTime());
