@@ -49,12 +49,19 @@ module VirtualisationInfrastructure
         bool hasIpv6 = default(false);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default("^.ipv4.routingTable");
+        
+        int numBGMecApp = default(0);
 
     gates:
 
         inout ppp[];				// connection with GtpEndpoint and local/externa networks
+        
+        output meBGAppOut[numBGMecApp];			// connection to the ME App input gate
+        input meBGAppIn[numBGMecApp];			// connection to the ME App output gate
+        
         output meAppOut[];			// connection to the ME App input gate
         input meAppIn[];			// connection to the ME App output gate
+        
         inout mePlatform;			// connection to the ME Platform
 
     submodules:
@@ -68,6 +75,11 @@ module VirtualisationInfrastructure
 //        routingTable: <routingTableType> like IRoutingTable if routingTableType != "" {
 //            parameters:
 //                @display("p=61.344,124.96;is=s");
+//        }
+
+
+//		bgApp[numBGMecApp]: <> like IApp {
+//            @display("p=551.04,73.8,row,140");
 //        }
 
         //#
@@ -137,6 +149,12 @@ module VirtualisationInfrastructure
         }
 
     connections allowunconnected:
+
+
+        for i=0..numBGMecApp-1 {
+            at.out++ --> meBGAppOut++;
+            at.in++ <--  meBGAppIn++;
+        }
 
 
         //# 

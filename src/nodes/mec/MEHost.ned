@@ -18,7 +18,7 @@ import simu5g.nodes.mec.MEPlatform.MEPlatform;
 //lte tunneling endpoint to connect externally with an eNodeB
 import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
 import inet.node.ethernet.Eth10G;
-
+import inet.applications.contract.IApp;
 // 
 //# MEHost module
 //
@@ -37,6 +37,7 @@ module MEHost
         double maxDisk @unit("B") = default(100TB);
         double maxCpu = default(1);						// percentage of available CPU
 
+		int numBGMecApp = default(0);
         //#connections
         string eNBList = default("");
 
@@ -65,6 +66,11 @@ module MEHost
             parameters:
                 @display("p=150,400;is=l");
         }
+        
+        
+		bgApp[numBGMecApp]: <> like IApp {
+            @display("p=551.04,73.8,row,140");
+        }
 
     connections allowunconnected:
 
@@ -85,5 +91,11 @@ module MEHost
             //#
             virtualisationInfrastructure.ppp++ <--> ppp++;
         }
+        
+        for i=0..numBGMecApp-1 {
+            bgApp[i].socketIn <-- virtualisationInfrastructure.meBGAppOut[i];
+            bgApp[i].socketOut --> virtualisationInfrastructure.meBGAppIn[i];
+        }
+        
         virtualisationInfrastructure.mePlatform <--> Eth10G <--> mePlatform.virtInfr;
 }

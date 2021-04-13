@@ -144,7 +144,6 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         virtual void getConnectedEnodeB();
 
 
-
         /*
          * This method parses a HTTP request splitting headers from body (if present)
          *
@@ -172,7 +171,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * the request queue is full. It responds with a HTTP 503
          */
         virtual void handleRequestQueueFull(omnetpp::cMessage *msg);
-        virtual void handleRequestQueueFull(HttpBaseMessage* msg);
+        virtual void handleRequestQueueFull(HttpRequestMessage* msg);
 
 
         /*
@@ -247,7 +246,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * @param msg request
          */
         virtual void newRequest(omnetpp::cMessage *msg);
-        virtual void newRequest(HttpBaseMessage *msg);
+        virtual void newRequest(HttpRequestMessage *msg);
 
 
 

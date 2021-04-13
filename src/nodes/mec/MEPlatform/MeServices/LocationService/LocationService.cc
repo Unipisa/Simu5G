@@ -46,7 +46,6 @@ void LocationService::initialize(int stage)
         LocationSubscriptionPeriod_ = par("LocationSubscriptionPeriod");
 
         subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer", 0.1);
-        subscriptionTimer_->setPeriod(0.1);
     }
 }
 

@@ -67,7 +67,7 @@ namespace Http {
         bytesChunk->setBytes(vec);
         chunkPayload = bytesChunk;
         chunkPayload->addTag<CreationTimeTag>()->setCreationTime(simTime());
-        Packet *packet = new Packet("HTTPPacket");
+        Packet *packet = new Packet("Packet");
         packet->insertAtBack(chunkPayload);
         socket->send(packet);
         EV <<"Http Utils - sendPacket" << endl;
@@ -305,7 +305,6 @@ namespace Http {
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
-
     void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
@@ -325,7 +324,6 @@ namespace Http {
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
-
     void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
@@ -370,7 +368,6 @@ namespace Http {
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
-
     void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::pair<std::string, std::string>& header, const char* body)
     {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
@@ -415,8 +412,6 @@ namespace Http {
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
-
-
 
 
     void send200Response(inet::TcpSocket *socket, const char* body){
@@ -485,7 +480,7 @@ namespace Http {
         return;
     }
 
-void send503Response(inet::TcpSocket *socket, const char *reason)
+    void send503Response(inet::TcpSocket *socket, const char *reason)
     {
         sendHttpResponse(socket, "503", "HTTP Version Not Supported" , reason);
         return;
@@ -504,7 +499,6 @@ void send503Response(inet::TcpSocket *socket, const char *reason)
         return;
     }
 
-
     void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body)
     {
         sendHttpRequest(socket, "GET", uri, host, body);
@@ -518,5 +512,4 @@ void send503Response(inet::TcpSocket *socket, const char *reason)
     }
 
 
-
-    }
+}

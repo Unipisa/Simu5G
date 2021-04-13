@@ -181,7 +181,6 @@ void MeServiceBase::socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableI
     socket->accept(availableInfo->getNewSocketId());
 }
 
-
 void MeServiceBase::socketClosed(inet::TcpSocket *socket)
 {
 //    if (operationalState == State::STOPPING_OPERATION && threadSet.empty() && !serverSocket.isOpen())
@@ -195,9 +194,24 @@ bool MeServiceBase::manageRequest()
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(currentRequestMessage_->getSockId()));
     if(socket)
     {
-        EV_INFO <<" MeServiceBase::manageRequest" << endl;
-//        handleCurrentRequest(socket);
-        handleRequest(socket);
+        /*
+         * Manage backgroundRequest
+         */
+
+        if(currentRequestMessage_->isBackgroundRequest())
+        {
+            if(currentRequestMessage_->isLastBackgroundRequest())
+            {
+                Http::send200Response(socket, "{Done}"); //notify the client last bg request served
+            }
+        }
+        else
+        {
+
+            //        handleCurrentRequest(socket);
+            handleRequest(socket);
+        }
+
         if(currentRequestMessage_ != nullptr)
         {
             delete currentRequestMessage_;
@@ -259,7 +273,7 @@ void MeServiceBase::handleRequestQueueFull(cMessage *msg)
     Http::send503Response(socket, reason.c_str());
 }
 
-void MeServiceBase::handleRequestQueueFull(HttpBaseMessage *msg)
+void MeServiceBase::handleRequestQueueFull(HttpRequestMessage *msg)
 {
     EV << " MeServiceBase::handleQueueFull" << endl;
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(msg->getSockId()));
@@ -267,6 +281,13 @@ void MeServiceBase::handleRequestQueueFull(HttpBaseMessage *msg)
     {
         throw cRuntimeError ("MeServiceBase::handleRequestQueueFull - socket not found, this should not happen.");
     }
+
+    if(msg->isBackgroundRequest() && !msg->isLastBackgroundRequest())
+    {
+        delete msg;
+        return;
+    }
+
     delete msg;
     std::string reason("{Request server queue full}");
     Http::send503Response(socket, reason.c_str());
@@ -286,7 +307,7 @@ void MeServiceBase::newRequest(cMessage *msg)
     scheduleNextEvent();
 }
 
-void MeServiceBase::newRequest(HttpBaseMessage *msg)
+void MeServiceBase::newRequest(HttpRequestMessage *msg)
 {
     EV << "Queue length: " << requests_.getLength() << endl;
     // If queue is full respond 503 queue full
@@ -328,25 +349,19 @@ void MeServiceBase::triggeredEvent(EventNotification* event)
 
 double MeServiceBase::calculateRequestServiceTime()
 {
-    double time = poisson(requestServiceTime_, REQUEST_RNG);
-                return (time*1e-6);
-
-    EV << "MeServiceBase::calculateRequestServiceTime()" << endl;
-    parseCurrentRequest();
-    if(currentRequestState_ == CORRECT)
+    double time;
+    /*
+     * Manage the case it is a background request
+     */
+    if(currentRequestMessage_->isBackgroundRequest())
     {
-        if(currentRequestServedmap_.at("method").compare("GET") == 0)
-        {
-            double time = poisson(requestServiceTime_, REQUEST_RNG);
-            return (time*1e-6);
-        }
+        time = poisson(requestServiceTime_, REQUEST_RNG);
     }
     else
     {
-        double time = poisson(requestServiceTime_, REQUEST_RNG);
-        return (time*1e-6);
+        time = poisson(requestServiceTime_, REQUEST_RNG);
     }
-    return 0;
+    return (time*1e-6);
 }
 
 void MeServiceBase::handleCurrentRequest(inet::TcpSocket *socket){

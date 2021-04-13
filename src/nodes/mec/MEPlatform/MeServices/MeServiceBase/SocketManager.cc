@@ -22,177 +22,176 @@ Define_Module(SocketManager);
 // TODO manage HTTP messages splitted in more TCP segments
 
 void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
-        EV << "SocketManager::dataArrived" << endl;
-        msg->removeControlInfo();
+    EV << "SocketManager::dataArrived" << endl;
+    msg->removeControlInfo();
 
-        std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
-        EV << "SocketManager::dataArrived - payload length: " << bytes.size() << endl;
-        std::string packet(bytes.begin(), bytes.end());
-        EV << "SocketManager::dataArrived - payload : " << packet << endl;
+    std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
+    EV << "SocketManager::dataArrived - payload length: " << bytes.size() << endl;
+    std::string packet(bytes.begin(), bytes.end());
+    EV << "SocketManager::dataArrived - payload : " << packet << endl;
 
-        //check fake packet
-
-       delete msg;
-      std::string delimiter = "\r\n\r\n";
-      size_t pos = 0;
-      std::string header;
-
-
-      if(currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg())
-      {
-          EV << "MeAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
-          Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
-          switch (res)
+    //check fake packet
+    if(packet.find("BulkRequest") != std::string::npos)
+    {
+        EV << "Bulk Request ";
+        std::string size = lte::utils::splitString(packet, ": ")[1];
+        int requests = std::stoi(size);
+        if(requests < 0)
+          throw cRuntimeError("Number of request must be non negative");
+        EV << " of size "<< requests << endl;
+        if(requests == 0)
+        {
+            return;
+        }
+        for(int i = 0 ; i < requests ; ++i)
+        {
+          if(i == requests -1)
           {
-          case (Http::COMPLETE_NO_DATA):
-              EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-              currentHttpMessage->setSockId(sock->getSocketId());
-              if(currentHttpMessage->getType() == REQUEST)
-            {
-                service->emitRequestQueueLength();
-                service->newRequest(currentHttpMessage);
-            }
-            else
-            {
-                delete currentHttpMessage;
-            }
-              if(currentHttpMessage != nullptr)
-              {
-                  currentHttpMessage = nullptr;
-              }
-              return;
-              break;
-          case (Http::COMPLETE_DATA):
-              EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-              currentHttpMessage->setSockId(sock->getSocketId());
-              if(currentHttpMessage->getType() == REQUEST)
-            {
-                service->emitRequestQueueLength();
-                service->newRequest(currentHttpMessage);
-            }
-            else
-            {
-                delete currentHttpMessage;
-            }
-              if(currentHttpMessage != nullptr)
-              {
-                  currentHttpMessage = nullptr;
-              }
-              break;
-          case (Http::INCOMPLETE_DATA):
-                  break;
-          case (Http::INCOMPLETE_NO_DATA):
-                  return;
-
+              HttpRequestMessage *req = new HttpRequestMessage();
+              req->setLastBackGroundRequest(true);
+              req->setSockId(sock->getSocketId());
+              req->setState(eCORRECT);
+              service->newRequest(req); //use it to send back response message (only for the last message)
           }
-      }
-
-      /*
-       * If I get here OR:
-       *  - I am not receiving an http message
-       *  - I was receiving an http message but I still have data (i.e a new HttpMessage) to manage.
-       *    Start reading the header
-       */
-
-      std::string temp;
-      if(bufferedData.length() > 0)
-      {
-          EV << "MeAppBase::parseReceivedMsg - buffered data" << endl;
-          temp = packet;
-          packet = bufferedData + temp;
-
-      }
-      // inserici la roba vecchia e ricordati dove sei arrivato
-      while ((pos = packet.find(delimiter)) != std::string::npos) {
-          header = packet.substr(0, pos);
-          packet.erase(0, pos+delimiter.length()); //remove header
-          currentHttpMessage = Http::parseHeader(header);
-          Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
-          switch (res)
+          else
           {
-          case (Http::COMPLETE_NO_DATA):
-              EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-              currentHttpMessage->setSockId(sock->getSocketId());
-              if(currentHttpMessage->getType() == REQUEST)
-              {
-                  service->emitRequestQueueLength();
-                  service->newRequest(currentHttpMessage);
-              }
-              else
-              {
-                  delete currentHttpMessage;
-              }
-              if(currentHttpMessage != nullptr)
-              {
-                  currentHttpMessage = nullptr;
-              }
-              return;
-              break;
-          case (Http::COMPLETE_DATA):
-                currentHttpMessage->setSockId(sock->getSocketId());
+              HttpRequestMessage *req = new HttpRequestMessage();
+              req->setBackGroundRequest(true);
+              req->setSockId(sock->getSocketId());
+              req->setState(eCORRECT);
+              service->newRequest(req);
+          }
+        }
+        delete msg;
+        return;
+    }
+
+
+    delete msg;
+    std::string delimiter = "\r\n\r\n";
+    size_t pos = 0;
+    std::string header;
+
+
+    if(currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg())
+    {
+      EV << "MeAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
+      Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+      switch (res)
+      {
+      case (Http::COMPLETE_NO_DATA):
+          EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+          currentHttpMessage->setSockId(sock->getSocketId());
           if(currentHttpMessage->getType() == REQUEST)
-            {
-                service->emitRequestQueueLength();
-                service->newRequest(currentHttpMessage);
-            }
-            else
-            {
-                delete currentHttpMessage;
-            }
-            if(currentHttpMessage != nullptr)
-            {
+        {
+            service->emitRequestQueueLength();
+            service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
+        }
+        else
+        {
+            delete currentHttpMessage;
+        }
+          if(currentHttpMessage != nullptr)
+          {
               currentHttpMessage = nullptr;
-            }
-              break;
-          case (Http::INCOMPLETE_DATA):
-                  break;
-          case (Http::INCOMPLETE_NO_DATA):
-                  return;
-
           }
-      }
-      // posso arrivare qua se non trovo il delimitatore
-      // a causa del segmento frammentato strano, devo salvare il contenuto
-      if(packet.length() != 0)
-      {
-          bufferedData = packet;
-      }
+          return;
+          break;
+      case (Http::COMPLETE_DATA):
+          EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+          currentHttpMessage->setSockId(sock->getSocketId());
+          if(currentHttpMessage->getType() == REQUEST)
+        {
+            service->emitRequestQueueLength();
+            service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
+        }
+        else
+        {
+            delete currentHttpMessage;
+        }
+          if(currentHttpMessage != nullptr)
+          {
+              currentHttpMessage = nullptr;
+          }
+          break;
+      case (Http::INCOMPLETE_DATA):
+              break;
+      case (Http::INCOMPLETE_NO_DATA):
+              return;
 
-//
-//        else if(packet.find("BulkRequest") != std::string::npos)
-//        {
-//            EV << "Bulk Request ";
-//            std::string size = lte::utils::splitString(packet, ": ")[1];
-//            int requests = std::stoi(size);
-//            if(requests < 0)
-//              throw cRuntimeError("Number of request must be non negative");
-//            EV << " of size "<< requests << endl;
-//            if(requests == 0)
-//            {
-//                delete msg;
-//                return;
-//            }
-//            for(int i = 0 ; i < requests ; ++i)
-//            {
-//              if(i == requests -1)
-//              {
-//                  msg->setName("lastFakeRequest");
-//                  service->newRequest(msg); //use it to send back response message (only for the last message)
-//              }
-//              else
-//              {
-//                  // simple cMessage, it does not need a socket
-//                  cMessage *request = new cMessage("fakeRequest");
-//                  service->newRequest(request);
-//              }
-//            }
-//            return;
-//        }
-//        else
-//        {
-//            EV << "packet: " << packet << endl;
-//            delete msg;
-//        }
+      }
+    }
+
+  /*
+   * If I get here OR:
+   *  - I am not receiving an http message
+   *  - I was receiving an http message but I still have data (i.e a new HttpMessage) to manage.
+   *    Start reading the header
+   */
+
+  std::string temp;
+  if(bufferedData.length() > 0)
+  {
+      EV << "MeAppBase::parseReceivedMsg - buffered data" << endl;
+      temp = packet;
+      packet = bufferedData + temp;
+
+  }
+  // inserici la roba vecchia e ricordati dove sei arrivato
+  while ((pos = packet.find(delimiter)) != std::string::npos) {
+      header = packet.substr(0, pos);
+      packet.erase(0, pos+delimiter.length()); //remove header
+      currentHttpMessage = Http::parseHeader(header);
+      Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+      switch (res)
+      {
+      case (Http::COMPLETE_NO_DATA):
+          EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+          currentHttpMessage->setSockId(sock->getSocketId());
+          if(currentHttpMessage->getType() == REQUEST)
+          {
+              service->emitRequestQueueLength();
+              service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
+          }
+          else
+          {
+              delete currentHttpMessage;
+          }
+          if(currentHttpMessage != nullptr)
+          {
+              currentHttpMessage = nullptr;
+          }
+          return;
+          break;
+      case (Http::COMPLETE_DATA):
+            currentHttpMessage->setSockId(sock->getSocketId());
+      if(currentHttpMessage->getType() == REQUEST)
+        {
+            service->emitRequestQueueLength();
+            service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
+        }
+        else
+        {
+            delete currentHttpMessage;
+        }
+        if(currentHttpMessage != nullptr)
+        {
+          currentHttpMessage = nullptr;
+        }
+          break;
+      case (Http::INCOMPLETE_DATA):
+              break;
+      case (Http::INCOMPLETE_NO_DATA):
+              return;
+
+      }
+  }
+  // posso arrivare qua se non trovo il delimitatore
+  // a causa del segmento frammentato strano, devo salvare il contenuto
+  if(packet.length() != 0)
+  {
+      bufferedData = packet;
+  }
 
 }
 
