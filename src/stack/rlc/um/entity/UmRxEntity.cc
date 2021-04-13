@@ -150,6 +150,13 @@ void UmRxEntity::enque(cPacket* pktAux)
     index = tsn - rxWindowDesc_.firstSno_;
     pduBuffer_.addAt(index, pktPdu);
     received_.at(index) = true;
+    /*
+     *  @author Alessandro Noferi
+     *  add RLC sdu bits for the burst (if any)
+     */
+//    int rlcSduSize = (B(pdu->getChunkLength()) - B(RLC_HEADER_UM)).get(); // RLC pdu size - RLC header
+//    ttiBits_ += rlcSduSize; // test
+//    EV << "UmRxEntity::enque - RlcSdu of size " << rlcSduSize << " arrived" << endl;
 
     // emit statistics
     MacNodeId ueId;
@@ -225,8 +232,6 @@ void UmRxEntity::enque(cPacket* pktAux)
         }
     }
 
-
-
     /* @author Alessandro Noferi
     *
     * At the end of each enque, the state of the buffer is checked.
@@ -276,6 +281,8 @@ void UmRxEntity::toPdcp(Packet* pktAux)
 
     auto rlcSdu = pktAux->popAtFront<LteRlcSdu>();
     LteRlcUm* lteRlc = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
+
+
 
     auto lteInfo = pktAux->getTag<FlowControlInfo>();
     unsigned int sno = rlcSdu->getSnoMainPacket();
@@ -413,6 +420,9 @@ void UmRxEntity::reassemble(unsigned int index)
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
                         
+                        // for burst
+                        ttiBits_ += sduLengthPktLeng;
+
                         if (buffered_.pkt != nullptr)
                         {
                             delete buffered_.pkt;
@@ -436,6 +446,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         buffered_.pkt = pktSdu;
                         pktSdu = nullptr;
                         buffered_.size = sduLengthPktLeng;
+                        // for burst
+                        ttiBits_ += sduLengthPktLeng;
                         EV << NOW << " UmRxEntity::reassemble Wait for the missing part..." << endl;
 
                         break;
@@ -449,6 +461,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         {
                             if (buffered_.pkt != nullptr)
                             {
+                                // for burst
+                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
                                 delete buffered_.pkt;
                                 buffered_.pkt = nullptr;
                                 buffered_.size = 0;
@@ -469,6 +483,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         {
                             if (buffered_.pkt != nullptr)
                             {
+                                // for burst
+                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
                                 delete buffered_.pkt;
                                 buffered_.pkt = nullptr;
                                 buffered_.size = 0;
@@ -486,6 +502,8 @@ void UmRxEntity::reassemble(unsigned int index)
                             throw cRuntimeError("UmRxEntity::reassemble(): failed reassembly, the reassembled SDU has size %d B, while the original SDU had size %d B",reassembledLength,sduWholeLength);
                         }
 
+                        // for burst
+                        ttiBits_ += sduLengthPktLeng;
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
@@ -510,6 +528,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         {
                             if (buffered_.pkt != nullptr)
                             {
+                                // for burst
+                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
                                 delete buffered_.pkt;
                                 buffered_.pkt = nullptr;
                                 buffered_.size = 0;
@@ -523,6 +543,9 @@ void UmRxEntity::reassemble(unsigned int index)
                         }
 
                         // buffered_->setByteLength(buffered_->getByteLength() + rlcSdu->getByteLength());
+
+                        // for burst
+                        ttiBits_ += sduLengthPktLeng;
                         buffered_.size += sduLengthPktLeng;
                         delete pktSdu;
                         pktSdu = nullptr;
@@ -550,6 +573,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         if (sduLengthPktLeng != sduWholeLength)
                             throw cRuntimeError("UmRxEntity::reassemble(): failed reassembly, the reassembled SDU has size %d B, while the original SDU had size %d B",sduLengthPktLeng,sduWholeLength);
 
+                        // for burst
+                        ttiBits_ += sduLengthPktLeng;
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
@@ -571,6 +596,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         {
                             if (buffered_.pkt != nullptr)
                             {
+                                // for burst
+                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
                                 delete buffered_.pkt;
                                 buffered_.pkt = nullptr;
                                 buffered_.size = 0;
@@ -591,6 +618,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         {
                             if (buffered_.pkt != nullptr)
                             {
+                                // for burst
+                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
                                 delete buffered_.pkt;
                                 buffered_.pkt = nullptr;
                                 buffered_.size = 0;
@@ -607,6 +636,8 @@ void UmRxEntity::reassemble(unsigned int index)
                             throw cRuntimeError("UmRxEntity::reassemble(): failed reassembly, the reassembled SDU has size %d B, while the original SDU had size %d B",reassembledLength,sduWholeLength);
                         }
 
+                        // for burst
+                        ttiBits_ += sduWholeLength; // remove the discarded SDU size from the tput
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
@@ -634,6 +665,9 @@ void UmRxEntity::reassemble(unsigned int index)
                     if (sduLengthPktLeng != sduWholeLength)
                         throw cRuntimeError("UmRxEntity::reassemble(): failed reassembly, the reassembled SDU has size %d B, while the original SDU had size %d B",sduLengthPktLeng,sduWholeLength);
 
+                    // for burst
+                    ttiBits_ += sduLengthPktLeng;
+
                     toPdcp(pktSdu);
                     pktSdu = nullptr;
 
@@ -657,6 +691,9 @@ void UmRxEntity::reassemble(unsigned int index)
                         buffered_.size = 0;
                     }
 
+                    // for burst
+                    ttiBits_ += sduLengthPktLeng;
+
                     buffered_.pkt = pktSdu;
                     buffered_.size = sduLengthPktLeng;
                     pktSdu = nullptr;
@@ -675,6 +712,8 @@ void UmRxEntity::reassemble(unsigned int index)
             if (sduLengthPktLeng != sduWholeLength)
                 throw cRuntimeError("UmRxEntity::reassemble(): failed reassembly, the reassembled SDU has size %d B, while the original SDU had size %d B",sduLengthPktLeng,sduWholeLength);
 
+            // for burst
+            ttiBits_ += sduLengthPktLeng;
             toPdcp(pktSdu);
             pktSdu = nullptr;
 
