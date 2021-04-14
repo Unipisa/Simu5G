@@ -1,0 +1,14 @@
+# workingdir,                        args,                                     simtimelimit,    fingerprint
+/simulations/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              786e-3073/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              3297-573b/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              0c47-9755/s, PASS,
+#/simulations/demo/,                  -f omnetpp.ini -c Large-VoIP_PF -r 0,     5s,             ada5-c3af/s, PASS,
+#/simulations/demo/,                  -f omnetpp.ini -c Large-VoIP_MaxCI -r 0,  5s,             981a-be0c/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              1078-2e4d/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              627e-5162/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              78c5-78d3/s, PASS,
+
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_MACresCheck -r 0,           5s,              627e-5162/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_MACresCheck -r 0,           5s,              78c5-78d3/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_PHYresCheck -r 0,           5s,              627e-5162/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_PHYresCheck -r 0,           5s,              78c5-78d3/s, PASS,

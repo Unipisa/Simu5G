@@ -1,0 +1,25 @@
+In this example the network consists of two UEs connected to one eNB, one PGW, 
+one router and one external (real) server.
+
+For downlink traffic the external server sends 10MB to ue1 using TCP.
+For uplink traffic, ue2 sends 10MB to the external server using TCP.
+
+To run this example, you have to run the external server(s):
+
+- For downlink traffic use e.g. "Iperf" with following command line:
+  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
+- For uplink traffic use e.g. "Iperf" with the following command line:
+  	iperf -s -P 1 -i 1 -p 10021
+
+IP addresses and routing tables are set up by using mrt files (see "routing" folder).
+ 
+ 
+=== HOW TO BUILD AND RUN ===
+
+Compile the simulator from the command line by running (in the root Simu5G folder):
+	$ make makefiles
+	$ make 
+	 	
+Run the simulation by launching the script ./run.sh 
+
+============================

@@ -1,0 +1,16 @@
+<features cppSourceRoots="src/common" definesFile="src/common/features.h">
+ <feature
+  id="Simu5G_Cars"
+  name="Simu5G Cars"
+  description = "5G-enabled vehicular networks"
+  initiallyEnabled = "false"
+  requires = ""
+  labels = ""
+  nedPackages = "simu5g.nodes.cars
+                 simu5g.simulations.cars
+                 simu5g.simulations.NR.cars"
+  extraSourceFolders = ""
+  compileFlags = ""
+  linkerFlags = ""
+ />
+</features>

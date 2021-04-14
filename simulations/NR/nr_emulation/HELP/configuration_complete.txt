@@ -1,0 +1,80 @@
+A) Setting up a (private) local network between the client and this host
+
+    1. Physically connect the client to this host, e.g. via Ethernet cable
+    2. Within the host, identify the name of the interface the client is connected to, by running *ifconfig*, call it <intf>.
+    3. If down, activate the interface, by running "ifup <intf>"
+    4. Assign an IP address to <intf>
+        - Run "sudo nano /etc/network/interfaces"
+        - Add an entry like the following (assume <intf>=eth1):
+            auto eth1
+            iface eth1 inet static
+            address 192.168.55.1
+            netmask 255.255.255.0
+            network 192.168.55.0
+            broadcast 192.168.55.255
+    
+    4bis) Setup a DHCP server on interface eth1 and assign address automatically to the client. In any case, take note of the IP address assigned to it.    
+    
+    5. If needed, "reboot" the interface by running
+        ifdown <intf>; ifup <intf>
+       or restart networking service
+        sudo systemctl restart networking
+
+    6. If DHCP was not used, on the client configure the network so as the client has an address belonging to the same network (e.g. 192.168.55.2) and set the gateway as the IP address of this host (e.g. 192.168.55.1). Add route towards the gateway.
+    
+B) Provide Internet access to the client:
+    1. Enable IP forwarding, by running "nano /etc/sysctl.conf" and edit the file as follows:
+        - net.ipv4.ip_forward=1
+    2. Add NAT rule:
+        sudo iptables -t nat -A POSTROUTING -s 192.168.55.0/24 -o eth0 -j MASQUERADE
+        sudo iptables-save
+        sudo iptables -L
+    3. Add route for packets destined to the client's network:
+        sudo route add -net 192.168.55.0 netmask 255.255.255.0 eth1
+    
+C) Now you can test the client's connectivity through this host
+    1. On the client, try to stream a video from the server
+    2. You should be able to play the video successfully
+
+D) In order to use SimuLTE/5G as network, set the firewall:
+    1. Run "sudo kate /etc/ufw/before.rules" and edit the file as follows:
+        # block traffic to the server on eth1
+        -A ufw-before-forward -i eth1 -d 5.6.7.8 -p tcp --dport 1935 -j DROP
+        # block traffic from server on eth0
+        -A ufw-before-forward -i eth0 -s 5.6.7.8 -p tcp --sport 1935 -j DROP
+    2. Reload firewall, by running "sudo ufw reload"
+    Note: the IP address/port must be set to the IP address/port of the server you want to download the video from 
+ 
+E) Check whether the firewall is working:
+    1. On the client, try to stream a video from the server
+    2. You should NOT be able to play the video anymore 
+    
+F) Make sure you have the correct version of OMNeT++ and INET. The framework has been tested using OMNeT++ v5.3 and INET-Framework v3.6.4
+    
+G) Clone the SimuLTE/5G repository from GitHub, next to the 'inet' folder, and import it to OMNeT++.
+    1. Start the IDE, and ensure that the 'inet' project is open and correctly built.
+    2. Import the project using: File | Import | General | Existing projects into Workspace. Then select the workspace dir as the root directory, and be sure NOT to check the "Copy projects into workspace" box. Click Finish.
+    3. You can build the project by pressing CTRL-B (Project | Build all)
+    4. To check if the installation went fine, try running an example from the IDE: select the simulation example's folder under 'simulations', and click 'Run' on the toolbar.
+    
+H) In order to make the "emulated" version of SimuLTE/5G network working fine, hack INET soruce code:
+    1. Decompress the archive inet-hacks.tar.gz that can be found in folder 'simulations/NR/nr_emulation/"
+    2. Substitute the included files to the original ones in the 'inet' project.
+    3. Recompile both INET and SimuLTE/5G
+
+I) Configure the SimuLTE/5G environment (use the 'simulations/NR/nr_emulation' folder as starting point):
+    1. In the omnetpp.ini file, set the UE's extHostAddress parameter to the IP address of the real host's interface (the one connected to the outer world, e.g. eth0). Get the IP address by running the command "ifconfig"
+        - *.ue[0].extHostAddress = "1.2.3.4"
+    2. Configure the routing tables of all the network devices in the simulated network. To do so, edit the .mrt files, included in the folder "routing". 
+        - Edit them so as to enable a path from the router to the UE, when the destination IP address is the one of the real host's interface (e.g. 1.2.3.4). 
+        - In the omnetpp.ini file, set the "routingTable.routingFiles" parameters to the path of the .mrt files.
+    3. In the omnetpp.ini file, set the "device" and "filterString" parameter for both the router and the UE.
+        - The "device" parameter is the name of the interface which you want to capture the packets from.
+        - The "filterString" parameter is filter expression specifying which packets need to be captured.
+    Note: the omnetpp.ini file includes examples of configuration, e.g. [Config Demo-TCP]    
+    
+J) Test the client connectivity again:
+    1. On the client, try to stream a video from the server
+    2. Make yourself comfortable and enjoy the video streamed over the LTE/5G network! :)
+
+        

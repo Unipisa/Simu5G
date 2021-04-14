@@ -1,0 +1,19 @@
+#! /bin/sh
+
+case "$-" in
+*i*) ;;
+*)  if [ "$1" != "-f" ]; then # allow use from scripts, as ". setenv -f"
+        echo "Error: not a login shell -- run this script as 'source setenv' or '. setenv'"
+        exit 1
+    fi
+esac
+
+if [ ! -f bin/simu5g ]; then
+    echo "Error: current working directory does not look like a Simu5G root directory"
+    # no exit -- it would close the shell
+else
+    export SIMU5G_ROOT=`pwd`
+    echo "$SIMU5G_ROOT added to PATH"
+    export PATH=$SIMU5G_ROOT/bin:$PATH
+fi
+

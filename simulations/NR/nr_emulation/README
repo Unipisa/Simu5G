@@ -1,0 +1,29 @@
+The external interface makes it possible to connect the simulation with real networks.
+
+In order to reach the simulated UE from a remote host:
+
+- Manually configure the routes on router, UPF, gNB and UE so that packets whose destination IP address is the one of the real host are forwarded to the simulated UE.
+  To do so, edit routing files (.mrt) or the IPv4NetworkConfigurator's XML file.     
+
+- The router is the entry point of packets from the real host, hence set its external interface 'ext0' so it captures packets passing on the 'eth0' interface of the real host, e.g.:
+      *.router.ext[0].device = "eth0"    
+
+- Set the filter parameter of the external interface so as it receives only relevant packets, e.g. packets from a given IP address
+      *.router.ext[0].filterString = "ip dst host 131.114.58.125 and ip src host 131.114.72.19" 
+
+- Packets arriving on 'eth0' are *copied* and sent to the simulation, rather than being *forwarded*. 
+         
+- In order to let packets get out of the simulated UEs towards the real host, the simulated UE is endowed with an external interface 'ext'. The latter must capture packets
+  leaving the host. To do so, the filter must be set accordingly, e.g.:
+      *.ue[0].ext.filterString = "tcp and ip src host 131.114.58.125 and dst host 131.114.72.19"
+      
+- The simulated UEs must be configured (via NED/INI) so as to enable the external interface (disabled by default), specifying the IP address of the real host, i.e.:
+      enableExtInterface = true;
+      extHostAddress = "131.114.58.125";
+
+- The ext interface of the UE must be "linked" to an other interface than eth0, e.g. eth1 (otherwise firewall will block packets)
+  
+
+- Start the simulation with root privileges. The command is the following:
+          
+sudo ../../../../../../omnetpp-5.3/bin/opp_run_dbg -m -u Cmdenv -c Terranet-demoTest -n ../..:../../../src:../../../../inet/src:../../../../inet/examples:../../../../inet/tutorials:../../../../inet/showcases --image-path=../../../images:../../../../inet/images -l ../../../src/lte -l ../../../../inet/src/INET omnetpp.ini

@@ -1,0 +1,6 @@
+<launch>
+  <copy file="heterogeneous.net.xml"/>
+  <copy file="heterogeneous.rou.xml"/>
+  <copy file="heterogeneous.sumocfg" type="config"/>
+  <copy file="gui-settings.xml"/>
+</launch>

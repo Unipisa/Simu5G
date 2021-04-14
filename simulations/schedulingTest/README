@@ -1,0 +1,2 @@
+The purpose of this case study is to test a multiband scheduling based on solving an optimization problem.
+In oder to run this scenario, a solver is required (e.g. IBM CPLEX) 

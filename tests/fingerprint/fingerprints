@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./lte_fingerprinttest -C ../.. -e ../../bin/simu5g $*

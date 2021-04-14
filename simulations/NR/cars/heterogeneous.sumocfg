@@ -1,0 +1,14 @@
+<configuration>
+  <input>
+    <net-file value="heterogeneous.net.xml"/>
+    <route-files value="heterogeneous.rou.xml"/>
+  </input>
+  <time>
+    <begin value="0"/>
+    <end value="500"/>
+    <step-length value="0.1"/>
+  </time>
+  <gui_only>
+    <gui-settings-file value="gui-settings.xml"/>
+   </gui_only>
+</configuration>

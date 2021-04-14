@@ -1,0 +1,7 @@
+<config>
+    <interface hosts='*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <!-- <route hosts="*"> -->
+    
+    <!-- all D2D-capable UEs participate in the multicast group --> 
+    <multicast-group hosts="ueD2D[*]" interfaces="wlan" address="224.0.0.10"/>
+</config>

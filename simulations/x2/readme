@@ -1,0 +1,42 @@
+The architecture to support X2 communications provides three main entities:
+- LteX2App modules
+- An LteX2Manager module
+- X2 "User" modules
+
+A LteX2App contains a client and a server module to provide peering communication with another eNodeB (an eNodeB
+have as many LteX2App as the number of peering eNodes) 
+An X2 "User" module is any module that wants to exploit the X2 interface.
+The core of this model is the LteX2Manager. It acts as a bridge between the "X2 user" modules and the LteX2Apps. 
+X2 "User" modules exchange information through messages of type LteX2Message. An LteX2Message contains a list
+of X2 Information Elements.
+
+If you want to implement your own X2 "user" module, you only need to:
+- define the module behaviour (you don't say?);
+- connect it to the LteX2Manager;
+- define one (or more) message(s) (extending LteX2Message), together with the corresponding 
+  information element(s) (extending X2InformationElement).
+...and the work is done!
+  
+We implemented an example of X2 "user" module: the LteCompManager. The latter performs a simple 
+CoMP-CS (Coordinated Scheduling) algorithm, which requires communication among a cluster of eNodeBs, 
+thus exploiting the X2. 
+An eNodeB can have either master role or slave role. Slave nodes send the amount of RBs required to satisfy 
+their users' load to the master node. The master node partitions the bandwidth based on the requests and sends 
+back the indication on which RBs are available for transmission and which not. A new scheduling module, named
+LteMaxCiComp, takes into account those information when allocating resources to UEs.
+
+*************************
+* X2 Simulation folder  *
+*************************
+This folder contains some tests for the X2 interface (omnetpp.ini).
+The tests consist in a scenario with three eNodeBs running the Coordinated Scheduling algorithm.
+We defined a mesh topology where eNBs are connected via point-to-point links. The corresponding network 
+definition can be found in the "networks" folder, by the name MultiCell_X2Mesh.
+Please note the peering configurations in the ini file: for each X2App, the address of the peering interface
+need to be specified.
+Two demo configurations have been defined, according to the deployment of the UEs:
+- Balanced: eNBs serve the same number of UEs	
+- Unbalanced: eNB1 serves more UEs than eNB2 and eNB3
+UEs have been randomly deployed over the hexagonal area served by the three eNodeBs. 
+Positions are defined in two separate ini files and included in the above configurations.
+
