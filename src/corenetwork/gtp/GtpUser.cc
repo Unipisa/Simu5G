@@ -139,9 +139,8 @@ void GtpUser::handleMessage(cMessage *msg)
 
 void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
 {
-    TftControlInfo * tftInfo = datagram->removeTag<TftControlInfo>();
+    auto tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
-    delete tftInfo;
 
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "]" << endl;
 

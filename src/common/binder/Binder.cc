@@ -550,7 +550,7 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
 }
 
 
-void Binder::registerMulticastGroup(MacNodeId nodeId, int32 groupId)
+void Binder::registerMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
     if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end())
     {
@@ -564,7 +564,7 @@ void Binder::registerMulticastGroup(MacNodeId nodeId, int32 groupId)
     }
 }
 
-bool Binder::isInMulticastGroup(MacNodeId nodeId, int32 groupId)
+bool Binder::isInMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
     if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end())
         return false;   // the node is not enrolled in any group

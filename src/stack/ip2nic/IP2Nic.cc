@@ -115,7 +115,7 @@ void IP2Nic::initialize(int stage)
                 // interfaces in setupNetworking called in INITSTAGE_NETWORK_CONFIGURATION
                 // we must reset it to false since the cellular NIC does not support broadcasts
                 // at the moment
-                interfaceEntry->setBroadcast(false);
+                networkIf->setBroadcast(false);
             }
         }
     } else if (stage == inet::INITSTAGE_TRANSPORT_LAYER) {
@@ -421,7 +421,7 @@ void IP2Nic::registerMulticastGroups()
         Ipv4Address addr = iface->getProtocolData<Ipv4InterfaceData>()->getJoinedMulticastGroup(i);
         // get the group id and add it to the binder
         uint32_t address = addr.getInt();
-        uint32_t mask = ~((uint32)255 << 24);      // 00000000 11111111 11111111 11111111
+        uint32_t mask = ~((uint32_t)255 << 24);      // 00000000 11111111 11111111 11111111
         uint32_t groupId = address & mask;
         binder_->registerMulticastGroup(nodeId_, groupId);
         // register also the NR stack, if any

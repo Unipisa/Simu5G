@@ -18,7 +18,7 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "corenetwork/gtp/GtpUserMsg_m.h"
 #include <inet/common/ModuleAccess.h>
-#include <inet/networklayer/common/InterfaceEntry.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "common/binder/Binder.h"
 #include <inet/linklayer/common/InterfaceTag_m.h>
@@ -62,7 +62,6 @@ class GtpUser : public omnetpp::cSimpleModule
     //end mec
 
     // detect LTE interface
-    inet::NetworkInterface* detectInterface();
     inet::NetworkInterface* ie_;
 
   protected:
@@ -77,8 +76,8 @@ class GtpUser : public omnetpp::cSimpleModule
     // receive a GTP-U packet from Udp, reads the TEID and decides whether performing label switching or removal
     void handleFromUdp(inet::Packet * gtpMsg);
 
-    // detect outgoing interface name (LteNic)
-    inet::InterfaceEntry *detectInterface();
+    // detect outgoing interface name (CellularNic)
+    inet::NetworkInterface *detectInterface();
 };
 
 #endif

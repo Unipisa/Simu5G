@@ -73,8 +73,8 @@ class LteMacPdu : public LteMacPdu_Base
     int64_t macPduLength_;
 
     /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
-    inet::int64_t macPduId_;
-    static inet::int64 numMacPdus_;
+    int64_t macPduId_;
+    static int64_t numMacPdus_;
 
   public:
 

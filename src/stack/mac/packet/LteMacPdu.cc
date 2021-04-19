@@ -11,5 +11,5 @@
 
 #include "stack/mac/packet/LteMacPdu.h"
 
-inet::int64 LteMacPdu::numMacPdus_ = 0;
+int64_t LteMacPdu::numMacPdus_ = 0;
 
