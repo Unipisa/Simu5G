@@ -62,13 +62,8 @@ Dependencies
 
 This version requires:
 
-- OMNeT++ 5.6.2
-- INET 4.2.2
-
-* tested on:
-  - Ubuntu 18.04 and 20.04
-  - macOS Catalina
-  - Windows 7 
+- OMNeT++ 6.0pre10
+- INET 4.3.1
 
 
 Simu5G Features
@@ -127,6 +122,14 @@ Applications
 - Voice-over-IP (VoIP)
 - Constant Bit Rate (CBR)
 - Trace-based Video-on-demand (VoD)
+
+
+Real-time emulation support
+---------------------------
+
+Simu5G supports real-time network emulation capabilities. Navigate to
+one of the examples included in the "emulation" folder and take a look
+at the README file included therein.
 
 
 Limitations
