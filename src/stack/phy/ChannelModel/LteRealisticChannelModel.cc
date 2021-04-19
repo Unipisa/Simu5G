@@ -783,7 +783,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    }
    speed = computeSpeed(bgUeId, ueCoord);
 
-   LteCellInfo* eNbCell = getCellInfo(eNbId);
+   CellInfo* eNbCell = getCellInfo(eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
    EV << "LteRealisticChannelModel::getSINR_bgUe - DIR=" << (( dir==DL )?"DL" : "UL")

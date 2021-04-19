@@ -11,7 +11,7 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
-import lte.stack.backgroundTrafficGenerator.BackgroundTrafficManager;
+import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficManager;
 
 module BackgroundTrafficGenerator
 {

@@ -7,7 +7,7 @@
 // and cannot be removed from it.
 // 
 
-package lte.stack.backgroundTrafficGenerator;
+package simu5g.stack.backgroundTrafficGenerator;
 
 moduleinterface IBackgroundTrafficManager 
 {
