@@ -24,16 +24,33 @@ enum HttpMsgType
 };
 
 enum HttpRequestState {
-    eCORRECT = 0;
-    eBAD_REQ_LINE = 1;
-    eBAD_HEADER = 2;
-    eBAD_HTTP = 3;
-    eBAD_REQUEST = 4;
-    eDIFF_HOST = 5;
-    eUNDEFINED = 6;
-    eBAD_METHOD = 7;
-    eBAD_RES_LINE = 8;
+    CORRECT 		= 0;
+    BAD_REQ_LINE 	= 1;
+    BAD_HEADER 		= 2;
+    BAD_HTTP 		= 3;
+	BAD_REQUEST		= 4;
+    DIFF_HOST 		= 5;
+    UNDEFINED 		= 6;
+    BAD_REQ_METHOD 	= 7;
+    BAD_RES_LINE 	= 8;
 };
+
+
+enum HttpResponseCode { 
+	OK 					= 0;	// 200
+    CREATED 			= 1;    // 201
+    NO_CONTENT 			= 2; 	// 204
+    BAD_REQ 			= 3;    // 400
+    UNAUTH 				= 4;    // 401
+    FORBIDDEN 			= 5;  	// 403
+    NOT_FOUND			= 6;  	// 404
+    NOT_ACC 			= 7;    // 406
+    TOO_REQS 			= 8;   	// 429
+    BAD_METHOD 			= 9; 	// 405
+    HTTP_NOT_SUPPORTED	= 10; 	// 505
+    SERV_UNAV 			= 11;    //503
+  };
+
     
 
 //

@@ -82,13 +82,23 @@ void MeAppBase::socketEstablished(TcpSocket * socket)
 
 void MeAppBase::socketDataArrived(inet::TcpSocket *, inet::Packet *msg, bool)
 {
+    EV << "MeAppBase::socketDataArrived" << endl;
+
+//  In progress. Trying to handle an app message coming from different tcp segments in a better way
+//    bool res = msg->hasAtFront<HttpResponseMessage>();
+//    auto pkc = msg->peekAtFront<HttpResponseMessage>(b(-1), Chunk::PF_ALLOW_EMPTY | Chunk::PF_ALLOW_SERIALIZATION | Chunk::PF_ALLOW_INCOMPLETE);
+//    if(pkc!=nullptr && pkc->isComplete() &&  !pkc->isEmpty()){
+//
+//    }
+//    else
+//    {
+//        EV << "Null"<< endl;
+//    }
+
 
 //
 //    EV << "MeAppBase::socketDataArrived - payload: " << endl;
-//    EV << "back " << msg->hasAtBack();
-//    EV << "fro msg->hasAtFront();
-    EV << "MeAppBase::socketDataArrived - payload: " << endl;
-
+//
     std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
 //    EV << packet << endl;
@@ -154,7 +164,7 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         packet = bufferedData + temp;
 
     }
-    // inserici la roba vecchia e ricordati dove sei arrivato
+
     while ((pos = packet.find(delimiter)) != std::string::npos) {
         header = packet.substr(0, pos);
         packet.erase(0, pos+delimiter.length()); //remove header

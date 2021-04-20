@@ -118,14 +118,14 @@ namespace Http {
                httpRequest->setType(REQUEST);
                if(!checkHttpRequestMethod(line[0]))
                {
-                   httpRequest->setState(eBAD_METHOD);
+                   httpRequest->setState(BAD_REQ_METHOD);
                    return httpRequest;
                }
                httpRequest->setMethod(line[0].c_str());
                httpRequest->setUri(line[1].c_str());
                if(!checkHttpVersion(line[2]))
                {
-                   httpRequest->setState(eBAD_HTTP);
+                   httpRequest->setState(BAD_HTTP);
                    return httpRequest;
                }
                httpRequest->setHttpProtocol(line[2].c_str());
@@ -133,7 +133,7 @@ namespace Http {
             }
             else
             {
-                httpRequest->setState(eBAD_REQ_LINE);
+                httpRequest->setState(BAD_REQ_LINE);
                 return httpRequest;
             }
 
@@ -160,11 +160,11 @@ namespace Http {
                         httpRequest->setHeaderField(line[0], line[1]);
                 }else
                 {
-                    httpRequest->setState(eBAD_HEADER);
+                    httpRequest->setState(BAD_HEADER);
                     return httpRequest;
                 }
             }
-            httpRequest->setState(eCORRECT);
+            httpRequest->setState(CORRECT);
             return httpRequest;
         }
 
@@ -181,7 +181,7 @@ namespace Http {
 
                 if(!checkHttpVersion(line[0]))
                   {
-                    httpResponse->setState(eBAD_HTTP);
+                    httpResponse->setState(BAD_HTTP);
                       return httpResponse;
                   }
                 httpResponse->setHttpProtocol(line[0].c_str());
@@ -196,7 +196,7 @@ namespace Http {
 
                if(!checkHttpVersion(line[0]))
                  {
-                   httpResponse->setState(eBAD_HTTP);
+                   httpResponse->setState(BAD_HTTP);
                      return httpResponse;
                  }
                httpResponse->setHttpProtocol(line[0].c_str());
@@ -207,7 +207,7 @@ namespace Http {
             }
             else
             {
-                httpResponse->setState(eBAD_RES_LINE);
+                httpResponse->setState(BAD_RES_LINE);
                 return httpResponse;
             }
 
@@ -231,11 +231,11 @@ namespace Http {
                         httpResponse->setHeaderField(line[0], line[1]);
                 }else
                 {
-                    httpResponse->setState(eBAD_HEADER);
+                    httpResponse->setState(BAD_HEADER);
                     return httpResponse;
                 }
             }
-            httpResponse->setState(eCORRECT);
+            httpResponse->setState(CORRECT);
             return httpResponse;
             /////
         }
@@ -425,24 +425,30 @@ namespace Http {
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body, std::pair<std::string, std::string>& header){
-            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
-            resp.setConnection("keep-alive");
-            resp.setBody(body);
-            resp.setHeaderField(header.first, header.second);
-            sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "201", "Created" ,header, body);
+        return;
+
+//
+//            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
+//            resp.setConnection("keep-alive");
+//            resp.setBody(body);
+//            resp.setHeaderField(header.first, header.second);
+//            sendPacket(resp.getPayload(), socket);
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body,std::map<std::string, std::string>& headers){
-            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
-            resp.setConnection("keep-alive");
-            resp.setBody(body);
-            std::map<std::string, std::string>::iterator it = headers.begin();
-            std::map<std::string, std::string>::iterator end = headers.end();
-            for(; it != end ; ++it)
-            {
-                resp.setHeaderField(it->first, it->second);
-            }
-            sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "201", "Created", headers, body);
+        return;
+//            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
+//            resp.setConnection("keep-alive");
+//            resp.setBody(body);
+//            std::map<std::string, std::string>::iterator it = headers.begin();
+//            std::map<std::string, std::string>::iterator end = headers.end();
+//            for(; it != end ; ++it)
+//            {
+//                resp.setHeaderField(it->first, it->second);
+//            }
+//            sendPacket(resp.getPayload(), socket);
     }
 
     void send204Response(inet::TcpSocket *socket){
@@ -451,13 +457,15 @@ namespace Http {
     }
 
     void send405Response(inet::TcpSocket *socket, const char* methods){
-        HTTPResponsePacket resp = HTTPResponsePacket(BAD_METHOD);
+        std::pair<std::string, std::string> header;
+        header.first="Allow: ";
         if(strcmp (methods,"") == 0)
-            resp.setHeaderField("Allow: ", "GET, POST, DELETE, PUT");
+            header.second = "GET, POST, DELETE, PUT";
         else{
-            resp.setHeaderField("Allow: ", std::string(methods));
+            header.second = std::string(methods);
         }
-        sendPacket(resp.getPayload(), socket);
+        sendHttpResponse(socket, "405", "Method Not Allowed" , header);
+        return;
     }
 
     void send400Response(inet::TcpSocket *socket){

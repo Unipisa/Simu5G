@@ -20,7 +20,8 @@ import inet.applications.contract.IApp;
 
 simple MeAppGet like MeAppBase, IApp
 {
-    parameters:       
+    parameters:      
+        string uri; 
         string localAddress = default(""); // may be left empty ("")
         int localPort = default(-1); // port number to listen on
         string connectAddress = default("");  // server address (may be symbolic)

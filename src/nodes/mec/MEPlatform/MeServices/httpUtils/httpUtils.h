@@ -6,8 +6,6 @@
 
 
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/response/HttpResponsePacket.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/request/HttpRequestPacket.h"
 
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 #include <string>

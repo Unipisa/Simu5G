@@ -89,7 +89,7 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage){
 void MecRequestBackgroundGeneratorApp::sendBulkRequest(){
 
     int numRequests = truncnormal(numberOfApplications_, 20, 2);
-    std::string payload = "BulkRequest: " + std::to_string(numberOfApplications_+1);
+    std::string payload = "BulkRequest: " + std::to_string(numRequests+1);
 
     Http::sendPacket(payload.c_str(), &socket);
 
