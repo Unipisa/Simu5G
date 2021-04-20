@@ -32,6 +32,7 @@ L2MeasBase::~L2MeasBase()
     }
 
 void L2MeasBase::addValue(double value){
+    lastValue_ = (int)value;
     sum_ += value;
     if(size_ < period_)
     {
@@ -65,4 +66,16 @@ int L2MeasBase::computeMean()
 int L2MeasBase::getMean()
 {
     return mean_;
+}
+
+
+void L2MeasBase::reset()
+{
+    lastValue_ = 0;
+    std::fill(values_.begin(), values_.end(), 0.);
+    size_ = 0;
+    index_ = 0;
+    sum_ = 0;
+    mean_ = 0;
+
 }

@@ -20,6 +20,7 @@ class L2MeasBase
         std::string name_;
         std::vector<double> values_;
         double sum_;
+        int lastValue_;
         int mean_;
         int index_;
         int period_;
@@ -36,6 +37,11 @@ class L2MeasBase
         virtual void addValue(double value);
         virtual int computeMean();
         virtual int getMean();
+        virtual int getLastValue()
+        {
+            return lastValue_;
+        }
+        virtual void reset();
 };
 
 
