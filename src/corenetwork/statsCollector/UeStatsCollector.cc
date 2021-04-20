@@ -114,7 +114,7 @@ void UeStatsCollector::add_ul_nongbr_delay_ue()
         double delay = packetFlowManager_->getDelayStats();
         if(delay != 0)
             EV << "UeStatsCollector::add_ul_nongbr_delay_ue() - delay: " << delay << endl;
-        ul_nongbr_delay_ue.addValue(delay);
+        ul_nongbr_delay_ue.addValue((int)delay);
     }
 }
 
@@ -126,9 +126,9 @@ void UeStatsCollector::add_dl_nongbr_delay_ue(double value)
 
 void UeStatsCollector::add_ul_nongbr_pdr_ue()
 {
-    DiscardedPkts pair = {0,0};
+    DiscardedPkts pair = packetFlowManager_->getDiscardedPkt();
     double rate = ((double)pair.discarded * 1000000) / pair.total;
-    ul_nongbr_pdr_ue.addValue(rate);
+    ul_nongbr_pdr_ue.addValue((int)rate);
 }
 // called by the eNodeBCollector
 void UeStatsCollector::add_dl_nongbr_pdr_ue(double value)
@@ -203,3 +203,20 @@ DiscardedPkts UeStatsCollector::getULDiscardedPkt()
     }
     return pair;
 }
+
+void UeStatsCollector::resetStats()
+{        // packet delay
+    ul_nongbr_delay_ue.reset();
+    dl_nongbr_delay_ue.reset();
+   // packet discard rate
+    ul_nongbr_pdr_ue.reset();
+    dl_nongbr_pdr_ue.reset();
+   // scheduled throughput
+    ul_nongbr_throughput_ue.reset();
+    dl_nongbr_throughput_ue.reset();
+   // data volume
+    ul_nongbr_data_volume_ue.reset();
+    dl_nongbr_data_volume_ue.reset();
+}
+
+

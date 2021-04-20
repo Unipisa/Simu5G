@@ -23,11 +23,14 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
+class UeStatsCollector;
+
 /**
  * The Binder module has one instance in the whole network.
  * It stores global mapping tables with OMNeT++ module IDs,
  * IP addresses, etc.
  */
+
 class Binder : public omnetpp::cSimpleModule
 {
   private:
@@ -542,6 +545,7 @@ class Binder : public omnetpp::cSimpleModule
     void addD2DMulticastTransmitter(MacNodeId nodeId);
     // get multicast transmitters
     std::set<MacNodeId>& getD2DMulticastTransmitters();
+
     /*
      *  Handover support
      */
@@ -564,6 +568,33 @@ class Binder : public omnetpp::cSimpleModule
     double computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal);
     double computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
     double computeRequestedRbsFromSinr(double sinr, double reqLoad);
+
+    /**
+     * @author Alessandro Noferi.
+     *
+     * UeStatsCollector management
+     */
+
+    /* this method adds the UeStastCollector reference to the eNodeBStatsCollector
+     * structure.
+     * @params:
+     *  ue: MacNodeId of the ue
+     *  ueCollector: reference to the collector
+     *  cell: MacCellId of the target eNB
+     */
+    void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector, MacCellId cell);
+
+    /* this method moves the UeStastCollector reference between the eNB's eNodeBStatsCollector
+     * structure.
+     * @params:
+     *  ue: MacNodeId of the ue
+     *  oldCell: MacCellId of the source eNB
+     *  newCell: MacCellId of the target eNB
+     */
+    void moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell);
+
+    LteNodeType getBaseStationTypeById(MacNodeId);
+
 
 };
 

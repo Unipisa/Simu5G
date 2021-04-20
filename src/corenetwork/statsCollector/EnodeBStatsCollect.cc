@@ -118,9 +118,9 @@ void EnodeBStatsCollector::initialize(int stage){
         if(packetFlowManager_ != nullptr)
         {
             scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
-//            scheduleAt(NOW + discardRatePeriod_, discardRate_);
+            scheduleAt(NOW + discardRatePeriod_, discardRate_);
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
-//            scheduleAt(NOW + tPutPeriod_,tPut_);
+            scheduleAt(NOW + tPutPeriod_,tPut_);
         }
     }
 }
@@ -216,7 +216,6 @@ void EnodeBStatsCollector::resetDelayCounterPerUe()
     }
 }
 
-
 void EnodeBStatsCollector::resetThroughputCountersPerUe()
 {
     EV << collectorType_ << "::resetThroughputCountersPerUe " << endl;
@@ -255,6 +254,7 @@ void EnodeBStatsCollector::removeUeCollector(MacNodeId id)
     if(it != ueCollectors_.end())
     {
         ueCollectors_.erase(it);
+        packetFlowManager_->deleteUe(id);
     }
     else
     {
@@ -285,18 +285,20 @@ bool EnodeBStatsCollector::hasUeCollector(MacNodeId id)
     return (ueCollectors_.find(id) != ueCollectors_.end()) ? true : false;
 }
 
+
+
 void EnodeBStatsCollector::add_dl_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(DL);
     EV << collectorType_ << "::add_dl_total_prb_usage_cell " << prb_usage << "%"<< endl;
-    dl_total_prb_usage_cell.addValue(prb_usage);
+    dl_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
 void EnodeBStatsCollector::add_ul_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(UL);
     EV << collectorType_ << "::add_ul_total_prb_usage_cell " << prb_usage << "%"<< endl;
-    ul_total_prb_usage_cell.addValue(prb_usage);
+    ul_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
 void EnodeBStatsCollector::add_number_of_active_ue_dl_nongbr_cell()
@@ -316,7 +318,7 @@ void EnodeBStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
 void EnodeBStatsCollector::add_dl_nongbr_pdr_cell()
 {
     double discard = packetFlowManager_->getDiscardedPkt();
-    dl_nongbr_pdr_cell.addValue(discard);
+    dl_nongbr_pdr_cell.addValue((int)discard);
 }
 
 void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
@@ -333,7 +335,7 @@ void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
     }
 
     pdr = ((double)pair.discarded * 1000000)/ pair.total;
-    ul_nongbr_pdr_cell.addValue(pdr);
+    ul_nongbr_pdr_cell.addValue((int)pdr);
 }
 
 
@@ -348,9 +350,10 @@ void EnodeBStatsCollector::add_dl_nongbr_pdr_cell_perUser()
     for(auto const &ue : ueCollectors_)
     {
         discard = packetFlowManager_->getDiscardedPktPerUe(ue.first);
-        ue.second->add_dl_nongbr_pdr_ue(discard);
+        ue.second->add_dl_nongbr_pdr_ue((int)discard);
     }
 }
+
 void EnodeBStatsCollector::add_ul_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "add_ul_nongbr_pdr_cell_perUser()" << endl;
@@ -378,7 +381,7 @@ void EnodeBStatsCollector::add_dl_nongbr_delay_perUser()
         delay = packetFlowManager_->getDelayStatsPerUe(ue.first);
         EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ue.first << endl;
         if(delay != 0)
-            ue.second->add_dl_nongbr_delay_ue(delay);
+            ue.second->add_dl_nongbr_delay_ue((int)delay);
     }
 }
 
@@ -416,7 +419,7 @@ void EnodeBStatsCollector::add_dl_nongbr_throughput_ue_perUser()
         EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser - tput: " << throughput << " for node " << ue.first << endl;
         packetFlowManager_->resetThroughputCounterPerUe(ue.first);
         if(throughput > 0.0)
-            ue.second->add_dl_nongbr_throughput_ue(throughput);
+            ue.second->add_dl_nongbr_throughput_ue((int)throughput);
     }
 }
 
@@ -427,20 +430,23 @@ void EnodeBStatsCollector::add_ul_nongbr_throughput_ue_perUser()
     double throughput;
     for(auto const &ue : ueCollectors_)
     {
+        throughput = rlc_->getUeThroughput(ue.first);
+        EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser - tput: " << throughput << " for node " << ue.first << endl;
+        rlc_->resetThroughputStats(ue.first);
+        if(throughput > 0.0)
+            ue.second->add_ul_nongbr_throughput_ue((int)throughput);
     }
 }
 
 
-
 /*
- * Getters for RNIS service module
+ * Getters for RNI service module
  */
 
 int EnodeBStatsCollector::get_ul_nongbr_pdr_cell()
 {
     return ul_nongbr_pdr_cell.getMean();
 }
-
 
 int EnodeBStatsCollector::get_dl_nongbr_pdr_cell()
 {
@@ -481,3 +487,11 @@ MacCellId EnodeBStatsCollector::getCellId()const
 {
     return cellInfo_->getMacCellId();
 }
+
+void EnodeBStatsCollector::resetStats(MacNodeId nodeId)
+{
+    auto ue = ueCollectors_.find(nodeId);
+    if(ue != ueCollectors_.end())
+        ue->second->resetStats();
+}
+

@@ -393,6 +393,13 @@ void NRPhyUe::doHandover()
     }
     binder_->updateUeInfoCellId(nodeId_,candidateMasterId_);
 
+    // @author Alessandro Noferi
+    if(getParentModule()->getParentModule()->findSubmodule("NRUeCollector") != -1)
+    {
+        binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
+    }
+
+
     // change masterId and notify handover to the MAC layer
     MacNodeId oldMaster = masterId_;
     masterId_ = candidateMasterId_;

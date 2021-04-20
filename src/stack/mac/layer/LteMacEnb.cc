@@ -1204,6 +1204,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
      * transmissions not yet terminated.
      */
     if(dir == DL){
+
         LteMacBuffers::const_iterator it = mbuf_.begin();
         LteMacBuffers::const_iterator end   =  mbuf_.end();
 
@@ -1213,7 +1214,6 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
                 activeUeSet.insert(MacCidToNodeId(it->first)); // active users in MAC
         }
 
-
         std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
         std::map<double, HarqTxBuffers>::const_iterator it1 = harqBuffers->begin();
         std::map<double, HarqTxBuffers>::const_iterator end1 = harqBuffers->end();
@@ -1222,9 +1222,11 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             HarqTxBuffers harqBuffer = it1->second;
             HarqTxBuffers::const_iterator itHarq = harqBuffer.begin();
             HarqTxBuffers::const_iterator endHarq = harqBuffer.end();
-            if(itHarq->second->isHarqBufferActive()){
-                activeUeSet.insert(itHarq->first); // active users in HARQ
-            }
+            for(; itHarq != endHarq ; ++itHarq){
+                if(itHarq->second->isHarqBufferActive()){
+                    activeUeSet.insert(itHarq->first); // active users in HARQ
+               }
+           }
         }
 
         // every time a RLC SDU enters the layer, a newPktData is sent to

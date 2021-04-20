@@ -939,37 +939,30 @@ void PacketFlowManagerEnb::resetThroughputCounterPerUe(MacNodeId id)
     it->second = {0,0};
 }
 
-void PacketFlowManagerEnb::deleteUe(MacNodeId id)
+void PacketFlowManagerEnb::deleteUe(MacNodeId nodeId)
 {
     /* It has to be deleted:
      * all structures with MacNodeId id
-     * all lcid belongs to MacNodeId id
+     * all lcids belonging to MacNodeId id
      */
-    std::map<LogicalCid, StatusDescriptor>::iterator it = connectionMap_.begin();
-
-    while(it != connectionMap_.end())
+    auto connIt = connectionMap_.begin();
+    while(connIt != connectionMap_.end())
     {
-        if(it->second.nodeId_ == id)
-        {
-            connectionMap_.erase(it++);
-        }
-        else
-        {
-            ++it;
-        }
+       if (connIt->second.nodeId_ == nodeId)
+       {
+           connIt = connectionMap_.erase(connIt);
+       }
+       else
+       {
+           ++connIt;
+       }
     }
 
-    std::map<MacNodeId, DiscardedPkts>::iterator pit = pktDiscardCounterPerUe_.find(id);
-    if( pit != pktDiscardCounterPerUe_.end())
-        pktDiscardCounterPerUe_.erase(pit);
-
-    delayMap::iterator dit = pdcpDelay_.find(id);
-    if(dit != pdcpDelay_.end())
-        pdcpDelay_.erase(dit);
-
-    throughputMap::iterator tit = pdcpThroughput_.find(id);
-    if(tit != pdcpThroughput_.end())
-        pdcpThroughput_.erase(tit);
+    packetLossRate_.erase(nodeId);
+    pdcpDelay_.erase(nodeId);
+    pdcpThroughput_.erase(nodeId);
+    pktDiscardCounterPerUe_.erase(nodeId);
+    sduDataVolume_.erase(nodeId);
 }
 
 double PacketFlowManagerEnb::getPdpcLossRate()
@@ -1058,3 +1051,5 @@ void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId)
 void PacketFlowManagerEnb::finish()
 {
 }
+
+

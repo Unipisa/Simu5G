@@ -205,6 +205,10 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         */
         // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId);
 
+        /*
+         * deletes all the LCID structures related to the UE
+         * called upon handover
+         */
         virtual void deleteUe(MacNodeId id);
 
        /*

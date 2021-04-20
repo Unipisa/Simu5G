@@ -40,7 +40,6 @@ typedef std::map<MacNodeId, UeStatsCollector*> UeStatsCollectorMap;
 class EnodeBStatsCollector: public cSimpleModule
 {
     private:
-
         std::string collectorType_;
         LteNodeType nodeType_; // ENODEB or GNODEB
 
@@ -216,6 +215,7 @@ class EnodeBStatsCollector: public cSimpleModule
         void resetBytesCountersPerUe();
         void resetThroughputCountersPerUe();
 
+        void resetStats(MacNodeId nodeId);
 
     protected:
         virtual void initialize(int stages);

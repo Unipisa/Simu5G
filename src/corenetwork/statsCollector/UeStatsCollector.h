@@ -130,8 +130,9 @@ class UeStatsCollector: public cSimpleModule
         int get_dl_gbr_data_volume_ue(){return -1;}
         int get_ul_gbr_data_volume_ue(){return -1;}
 
+        void resetStats();
 
-        void sedHandover(bool value)
+        void setHandover(bool value)
         {
             handover_ = value;
         }
@@ -144,12 +145,11 @@ class UeStatsCollector: public cSimpleModule
 
     protected:
         virtual void initialize(int stages);
-
         virtual int numInitStages() const { return INITSTAGE_LAST; }
+        virtual void handleMessage(cMessage *msg){}
 
-        virtual void handleMessage(cMessage *msg)
-        {
-        }
+
+
 
 };
 
