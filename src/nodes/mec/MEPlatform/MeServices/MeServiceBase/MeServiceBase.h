@@ -46,7 +46,6 @@
 #define SUBSCRIPTION_RNG 1
 
 typedef std::map<std::string, std::string> reqMap;
-enum RequestState {CORRECT, BAD_REQ_LINE, BAD_HEADER, BAD_HTTP, BAD_REQUEST, DIFF_HOST, UNDEFINED};
 
 class SocketManager;
 class SubscriptionBase;
@@ -84,14 +83,10 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
 
         std::vector<omnetpp::cModule*> eNodeB_;     //eNodeBs connected to the ME Host
 
-        /* TODO reimplement message management in a more OMNet++ style
-         */
-        omnetpp::cMessage *currentRequestServed_;
-        reqMap currentRequestServedmap_;
         int requestQueueSize_;
-        RequestState currentRequestState_;
 
-        HttpRequestMessage *currentRequestMessage_;
+
+        HttpRequestMessage *currentRequestMessageServed_;
 
 
         omnetpp::cMessage *requestService_;
@@ -143,22 +138,6 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          */
         virtual void getConnectedEnodeB();
 
-
-        /*
-         * This method parses a HTTP request splitting headers from body (if present)
-         *
-         * @param packet_ tcp packet payload
-         * @param socket to send back responses in case of the request is malformed
-         * @request pointer to the structure where to save the the parse result
-         */
-        virtual bool parseRequest(std::string& packet_, inet::TcpSocket *socket, reqMap* request);
-
-        /*
-         * This method parses a HTTP request splitting headers from body (if present).
-         * the request parsed is omnetpp::cMessage *currentRequestServed_;
-         */
-        virtual void parseCurrentRequest();
-
         /*
          * This method call the handle method according to the HTTP verb
          * e.g GET --> handleGetRequest()
@@ -170,7 +149,6 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          * This method manages the situation of an incoming request when
          * the request queue is full. It responds with a HTTP 503
          */
-        virtual void handleRequestQueueFull(omnetpp::cMessage *msg);
         virtual void handleRequestQueueFull(HttpRequestMessage* msg);
 
 
@@ -245,7 +223,6 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          *
          * @param msg request
          */
-        virtual void newRequest(omnetpp::cMessage *msg);
         virtual void newRequest(HttpRequestMessage *msg);
 
 

@@ -50,7 +50,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
               HttpRequestMessage *req = new HttpRequestMessage();
               req->setLastBackGroundRequest(true);
               req->setSockId(sock->getSocketId());
-              req->setState(eCORRECT);
+              req->setState(CORRECT);
               service->newRequest(req); //use it to send back response message (only for the last message)
           }
           else
@@ -58,7 +58,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
               HttpRequestMessage *req = new HttpRequestMessage();
               req->setBackGroundRequest(true);
               req->setSockId(sock->getSocketId());
-              req->setState(eCORRECT);
+              req->setState(CORRECT);
               service->newRequest(req);
           }
         }

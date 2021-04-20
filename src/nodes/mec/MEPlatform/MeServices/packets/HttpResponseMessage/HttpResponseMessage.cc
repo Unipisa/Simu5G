@@ -12,7 +12,7 @@ HttpResponseMessage::HttpResponseMessage(const char *name, short kind)
     setConnection("keep-alive");
     setBody("");
 }
-HttpResponseMessage::HttpResponseMessage(const responseCode res, const char *name, short kind)
+HttpResponseMessage::HttpResponseMessage(const HttpResponseCode res, const char *name, short kind)
 {
     setStatus(res);
     setContentType("application/json");
@@ -36,7 +36,7 @@ void HttpResponseMessage::setStatus(const char* status){
     this->status = status;
 }
 
-void HttpResponseMessage::setStatus(responseCode res){
+void HttpResponseMessage::setStatus(HttpResponseCode res){
     handleChange();
     switch(res) {
         case(OK):

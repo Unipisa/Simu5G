@@ -26,23 +26,6 @@
 #include <string>
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 
-#include "nodes/mec/MEPlatform/MeServices/packets/response/HttpResponsePacket.h"
-
-//enum responseCode { OK,         // 200
-//                    CREATED,    // 201
-//                    NO_CONTENT, // 204
-//                    BAD_REQ,    // 400
-//                    UNAUTH,     // 401
-//                    FORBIDDEN,  // 403
-//                    NOT_FOUND,  // 404
-//                    NOT_ACC,    // 406
-//                    TOO_REQS,   // 429
-//                    BAD_METHOD, // 405
-//                    HTTP_NOT_SUPPORTED, // 505
-//                    SERV_UNAV    //503
-//                  };
-
-
 /**
  * in HttpResponseMessage_m
  * {
@@ -59,7 +42,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
 {
     public:
         HttpResponseMessage(const char *name=nullptr, short kind=0);
-        HttpResponseMessage(const responseCode res, const char *name=nullptr, short kind=0);
+        HttpResponseMessage(const HttpResponseCode res, const char *name=nullptr, short kind=0);
         HttpResponseMessage& operator=(const HttpResponseMessage& other){if (this==&other) return *this; HttpResponseMessage_m::operator=(other); copy(other); return *this;}
 
         virtual HttpResponseMessage *dup() const override {return new HttpResponseMessage(*this);}
@@ -68,7 +51,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
         // key MUST be like "key: "
         virtual void setHeaderField(const std::string& key, const std::string& value);
 
-        virtual void setStatus(responseCode code);
+        virtual void setStatus(HttpResponseCode code);
         virtual void setStatus(const char* status) override;
         virtual std::string getPayload() const;
     private:

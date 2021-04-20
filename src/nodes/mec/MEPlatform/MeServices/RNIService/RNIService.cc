@@ -32,13 +32,9 @@ RNIService::RNIService():L2MeasResource_(){
 
 void RNIService::initialize(int stage)
 {
-    cSimpleModule::initialize(stage);
+    MeServiceBase::initialize(stage);
 
-    if (stage == inet::INITSTAGE_LOCAL) {
-        return;
-    }
-    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
-        MeServiceBase::initialize(stage);
+    if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         L2MeasResource_.addEnodeB(eNodeB_);
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     }
@@ -138,15 +134,15 @@ void RNIService::handleGETRequest(const std::string& uri, inet::TcpSocket* socke
                 //send response
                 if(!ues.empty() && !cellIds.empty())
                 {
-                    Http::send200Response(socket, L2MeasResource_.toJson(cellIds, ues).dump(2).c_str());
+                    Http::send200Response(socket, L2MeasResource_.toJson(cellIds, ues).dump().c_str());
                 }
                 else if(ues.empty() && !cellIds.empty())
                 {
-                    Http::send200Response(socket, L2MeasResource_.toJsonCell(cellIds).dump(2).c_str());
+                    Http::send200Response(socket, L2MeasResource_.toJsonCell(cellIds).dump().c_str());
                 }
                 else if(!ues.empty() && cellIds.empty())
                {
-                  Http::send200Response(socket, L2MeasResource_.toJsonUe(ues).dump(2).c_str());
+                  Http::send200Response(socket, L2MeasResource_.toJsonUe(ues).dump().c_str());
                }
                else
                {
@@ -155,7 +151,7 @@ void RNIService::handleGETRequest(const std::string& uri, inet::TcpSocket* socke
 
             }
             else if (splittedUri.size() == 1 ){ //no query params
-                Http::send200Response(socket,L2MeasResource_.toJson().dump(2).c_str());
+                Http::send200Response(socket,L2MeasResource_.toJson().dump().c_str());
                 return;
             }
             else //bad uri
