@@ -30,7 +30,7 @@ class MeasRepUeSubscription : public SubscriptionBase
         virtual bool fromJson(const nlohmann::ordered_json& json);
         virtual void sendSubscriptionResponse();
         virtual void sendNotification();
-        virtual EventNotification* handleSubscription(){};
+        virtual EventNotification* handleSubscription(){return nullptr;};
     protected:
         FilterCriteriaAssocTri filterCriteria_;
 

@@ -73,9 +73,9 @@ nlohmann::ordered_json L2Meas::toJson() const {
 		val["cellUEInfo"] = ueArray[0];
 	}
 	
-	l2Meas["L2Meas"] = val;
-	return l2Meas;
-}
+	//  l2Meas["L2Meas"] = val;
+    //  return l2Meas;
+        return val;}
 
 //
 nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) const {
@@ -116,6 +116,8 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
             found = false;
             eit = eNodeBs_.begin();
             for(; eit != eNodeBs_.end() ; ++eit){
+                if(eit->second->getCellNodeType() == ENODEB) // enodeb does not have nrNodeId
+                    continue;
                if(eit->second->hasUeCollector(nrNodeId))
                {
                    UeStatsCollector *ueColl = eit->second->getUeCollector(nrNodeId);
@@ -127,6 +129,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
             }
             if(!found)
             {
+               // ETSI sandBox does not return anything in case the ip is not valid
                std::string notFound = "Address: " + ipAddress.str() + " Not found.";
                ueArray.push_back(notFound);
             }
@@ -136,6 +139,8 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
             found = false;
             eit = eNodeBs_.begin();
             for(; eit != eNodeBs_.end() ; ++eit){
+                if(eit->second->getCellNodeType() == GNODEB) // gnodeb does not have lteNodeId
+                    continue;
                if(eit->second->hasUeCollector(lteNodeId))
                {
                    UeStatsCollector *ueColl = eit->second->getUeCollector(lteNodeId);
@@ -196,12 +201,10 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
         val["CellUEInfo"] = ueArray[0];
     }
 
-	l2Meas["L2Meas"] = val;
-	return l2Meas;
+//  l2Meas["L2Meas"] = val;
+//	return l2Meas;
+	return val;
 }
-
-
-
 
 //
 nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
@@ -209,6 +212,8 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
     nlohmann::ordered_json val ;
     nlohmann::ordered_json l2Meas;
     nlohmann::ordered_json cellArray;
+    nlohmann::ordered_json ueArray;
+
 
         if (timestamp_.isValid())
         {
@@ -223,6 +228,15 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
             if(it != eNodeBs_.end()){
                 CellInfo cellInfo = CellInfo(it->second);
                 cellArray.push_back(cellInfo.toJson());
+
+                UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
+                UeStatsCollectorMap::const_iterator uit = ueMap->begin();
+                UeStatsCollectorMap::const_iterator end = ueMap->end();
+                for(; uit != end ; ++uit)
+                {
+                    CellUEInfo cellUeInfo = CellUEInfo(uit->second, it->second->getEcgi());
+                    ueArray.push_back(cellUeInfo.toJson());
+                }
             }
         }
 
@@ -233,9 +247,15 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
             val["cellInfo"] = cellArray[0];
         }
 
-        l2Meas["L2Meas"] = val;
-        return l2Meas;
-
+        if(ueArray.size() > 1){
+            val["cellUEInfo"] = ueArray;
+        }
+        else if(ueArray.size() == 1){
+            val["cellUEInfo"] = ueArray[0];
+        }
+        //  l2Meas["L2Meas"] = val;
+        //  return l2Meas;
+            return val;
 }
 ////
 nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const
