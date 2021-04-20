@@ -815,7 +815,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
        //get tx angle
        omnetpp::cModule* eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
        LtePhyBase* ltePhy = eNbModule ?
-          check_and_cast<LtePhyBase*>(eNbModule->getSubmodule("lteNic")->getSubmodule("phy")) :
+          check_and_cast<LtePhyBase*>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
           nullptr;
 
        if (ltePhy && ltePhy->getTxDirection() == ANISOTROPIC)
