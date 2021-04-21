@@ -95,21 +95,21 @@ class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
 
     BackgroundCellChannelModel* getChannelModel() { return bgChannelModel_; }
 
-    const inet::Coord getPosition() { return pos_; }
+    const inet::Coord getPosition() const { return pos_; }
 
-    int getId() { return id_; }
+    int getId() const { return id_; }
 
-    double getTtiPeriod() {return ttiPeriod_; }
+    double getTtiPeriod() const {return ttiPeriod_; }
 
-    double getTxPower() { return txPower_; }
+    double getTxPower() const { return txPower_; }
 
-    TxDirectionType getTxDirection() { return txDirection_; }
+    TxDirectionType getTxDirection() const { return txDirection_; }
 
-    double getTxAngle() { return txAngle_; }
+    double getTxAngle() const { return txAngle_; }
 
-    bool isNr() { return isNr_; }
+    bool isNr() const { return isNr_; }
 
-    unsigned int getNumBands() { return numBands_; }
+    unsigned int getNumBands() const { return numBands_; }
 
     int getBandStatus(int band, Direction dir) { return bandStatus_[dir].at(band); }
     int getPrevBandStatus(int band, Direction dir) { return prevBandStatus_[dir].at(band); }

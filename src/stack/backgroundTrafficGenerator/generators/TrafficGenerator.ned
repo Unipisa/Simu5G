@@ -32,7 +32,6 @@ simple TrafficGeneratorBase like ITrafficGenerator
         int headerLen @unit(B) = default(33B); 
         double txPower @unit(dBm) = default(26dBm); 
         int fbPeriod = default(6); 
-        bool enableInterference = default(true);
         
         volatile double periodDl @unit("s") = default(uniform(10ms,50ms));
         volatile double periodUl @unit("s") = default(uniform(10ms,50ms));

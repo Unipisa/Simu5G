@@ -258,6 +258,11 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
      */
     virtual std::vector<double> getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase* bgUe, BackgroundBaseStation* bgBaseStation, Direction dir);
 
+    /*
+     * Compute received power for a background UE according to pathloss
+     *
+     */
+    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundBaseStation* bgBaseStation);
 };
 
 #endif

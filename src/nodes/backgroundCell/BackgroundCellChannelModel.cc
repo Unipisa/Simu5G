@@ -161,6 +161,9 @@ std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::
         snrVector[i] = finalRecvPower;
     }
 
+    // TODO add inter-cell interference!
+
+
     // compute and linearize total noise
     double totN = dBmToLinear(thermalNoise_ + noiseFigure);
 
@@ -785,4 +788,79 @@ double BackgroundCellChannelModel::jakesFading(MacNodeId nodeId, double speed, u
    // Output: |H_f|^2 = absolute channel impulse response due to fading.
    // Note that this may be >1 due to constructive interference.
    return linearToDb(re_h * re_h + im_h * im_h);
+}
+
+
+double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundBaseStation* bgBaseStation)
+{
+    double antennaGainTx = 0.0;
+    double antennaGainRx = 0.0;
+    double noiseFigure = 0.0;
+
+    EV << NOW << " BackgroundCellChannelModel::getReceivedPower_bgUe" << endl;
+
+    //===================== PARAMETERS SETUP ============================
+    if (dir == DL)
+    {
+        noiseFigure = ueNoiseFigure_; //dB
+        antennaGainTx = antennaGainEnB_; //dB
+        antennaGainRx = antennaGainUe_;  //dB
+    }
+    else // if( dir == UL )
+    {
+        antennaGainTx = antennaGainUe_;
+        antennaGainRx = antennaGainEnB_;
+        noiseFigure = bsNoiseFigure_;
+    }
+
+    EV << "BackgroundCellChannelModel::getReceivedPower_bgUe - DIR=" << (( dir==DL )?"DL" : "UL")
+                       << " - txPwr " << txPower << " - txPos[" << txPos << "] - rxPos[" << rxPos << "] " << endl;
+    //=================== END PARAMETERS SETUP =======================
+
+
+    //=============== PATH LOSS =================
+    // Note that shadowing and fading effects are not applied here and left FFW
+
+
+    //compute attenuation based on selected scenario and based on LOS or NLOS
+    double sqrDistance = txPos.distance(rxPos);
+    double dbp = 0;
+    double attenuation = computePathLoss(sqrDistance, dbp, losStatus);
+
+    //compute recvPower
+    double recvPower = txPower - attenuation; // (dBm-dB)=dBm
+
+    //add antenna gain
+    recvPower += antennaGainTx; // (dBm+dB)=dBm
+    recvPower += antennaGainRx; // (dBm+dB)=dBm
+    //sub cable loss
+    recvPower -= cableLoss_; // (dBm-dB)=dBm
+
+    //=============== ANGOLAR ATTENUATION =================
+    if (dir == DL && bgBaseStation->getTxDirection() == ANISOTROPIC)
+    {
+        // get tx angle
+        double txAngle = bgBaseStation->getTxAngle();
+
+        // compute the angle between uePosition and reference axis, considering the Bs as center
+        double ueAngle = computeAngle(txPos, rxPos);
+
+        // compute the reception angle between ue and eNb
+        double recvAngle = fabs(txAngle - ueAngle);
+
+        if (recvAngle > 180)
+            recvAngle = 360 - recvAngle;
+
+        double verticalAngle = computeVerticalAngle(txPos, rxPos);
+
+        // compute attenuation due to sectorial tx
+        double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+
+        recvPower -= angolarAtt;
+    }
+    //=============== END ANGOLAR ATTENUATION =================
+
+    //============ END PATH LOSS + ANGOLAR ATTENUATION ===============
+
+    return recvPower;
 }

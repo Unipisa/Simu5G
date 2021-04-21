@@ -954,6 +954,87 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    return snrVector;
 }
 
+double LteRealisticChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId)
+{
+    double antennaGainTx = 0.0;
+    double antennaGainRx = 0.0;
+    double noiseFigure = 0.0;
+
+    EV << NOW << " LteRealisticChannelModel::getReceivedPower_bgUe" << endl;
+
+    //===================== PARAMETERS SETUP ============================
+    if (dir == DL)
+    {
+        noiseFigure = ueNoiseFigure_; //dB
+        antennaGainTx = antennaGainEnB_; //dB
+        antennaGainRx = antennaGainUe_;  //dB
+    }
+    else // if( dir == UL )
+    {
+        antennaGainTx = antennaGainUe_;
+        antennaGainRx = antennaGainEnB_;
+        noiseFigure = bsNoiseFigure_;
+    }
+
+    EV << "LteRealisticChannelModel::getReceivedPower_bgUe - DIR=" << (( dir==DL )?"DL" : "UL")
+                       << " - txPwr " << txPower << " - txPos[" << txPos << "] - rxPos[" << rxPos << "] " << endl;
+    //=================== END PARAMETERS SETUP =======================
+
+
+    //=============== PATH LOSS =================
+    // Note that shadowing and fading effects are not applied here and left FFW
+
+
+    //compute attenuation based on selected scenario and based on LOS or NLOS
+    double sqrDistance = txPos.distance(rxPos);
+    double dbp = 0;
+    double attenuation = computePathLoss(sqrDistance, dbp, losStatus);
+
+    //compute recvPower
+    double recvPower = txPower - attenuation; // (dBm-dB)=dBm
+
+    //add antenna gain
+    recvPower += antennaGainTx; // (dBm+dB)=dBm
+    recvPower += antennaGainRx; // (dBm+dB)=dBm
+    //sub cable loss
+    recvPower -= cableLoss_; // (dBm-dB)=dBm
+
+    // ANGOLAR ATTENUATION
+    if (dir == DL)
+    {
+        //get tx angle
+        omnetpp::cModule* bsModule = getSimulation()->getModule(binder_->getOmnetId(bsId));
+        LtePhyBase* phy = bsModule ? check_and_cast<LtePhyBase*>(bsModule->getSubmodule("cellularNic")->getSubmodule("phy")) : nullptr;
+
+        if (phy && phy->getTxDirection() == ANISOTROPIC)
+        {
+            // get tx angle
+            double txAngle = phy->getTxAngle();
+
+            // compute the angle between uePosition and reference axis, considering the eNb as center
+            double ueAngle = computeAngle(txPos, rxPos);
+
+            // compute the reception angle between ue and eNb
+            double recvAngle = fabs(txAngle - ueAngle);
+
+            if (recvAngle > 180)
+                recvAngle = 360 - recvAngle;
+
+            double verticalAngle = computeVerticalAngle(txPos, rxPos);
+
+            // compute attenuation due to sectorial tx
+            double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+
+            recvPower -= angolarAtt;
+        }
+        // else, antenna is omni-directional
+    }
+    //============ END PATH LOSS + ANGOLAR ATTENUATION ===============
+
+    return recvPower;
+}
+
+
 std::vector<double> LteRealisticChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, Coord destCoord)
 {
    // AttenuationVector::iterator it;

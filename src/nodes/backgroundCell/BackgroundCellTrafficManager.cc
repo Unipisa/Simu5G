@@ -73,13 +73,39 @@ void BackgroundCellTrafficManager::initialize(int stage)
             bgAmc_ = new BackgroundCellAmcNr();
         else
             bgAmc_ = new BackgroundCellAmc();
-
-        enbTxPower_ = bgBaseStation_->getTxPower();
+    }
+    if (stage == inet::INITSTAGE_LAST-1)
+    {
+        bsTxPower_ = bgBaseStation_->getTxPower();
+        bsCoord_ = bgBaseStation_->getPosition();
 
         // create vector of BackgroundUEs
         for (int i=0; i < numBgUEs_; i++)
             bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
+
+        BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
+        info->init = false;
+        info->bgTrafficManager = this;
+        info->carrierFrequency = carrierFrequency_;
+        info->allocatedRbs[DL] = 0.0;
+        info->allocatedRbs[UL] = 0.0;
+
+        if (!getAncestorPar("enablePeriodicCqiUpdate"))
+        {
+            if (getAncestorPar("useAvgInterference"))
+            {
+                initializeAvgInterferenceComputation();
+                info->init = true;
+            }
+        }
+
+        getBinder()->addBgTrafficManagerInfo(info);
     }
+}
+
+unsigned int BackgroundCellTrafficManager::getNumBands()
+{
+    return bgBaseStation_->getNumBands();
 }
 
 
@@ -106,6 +132,11 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
         meanCqi = 2;
 
     return meanCqi;
+}
+
+Cqi BackgroundCellTrafficManager::computeCqiFromSinr(double sinr)
+{
+    return getCqiFromTable(sinr);
 }
 
 unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
@@ -138,4 +169,10 @@ void BackgroundCellTrafficManager::racHandled(MacNodeId bgUeId)
                                                              //      there are 6 slots between the first BSR and actual data
         scheduleAt(NOW + offset, notification);
     }
+}
+
+double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
+{
+    BackgroundCellChannelModel* bgChannelModel = bgBaseStation_->getChannelModel();
+    return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgBaseStation_);
 }

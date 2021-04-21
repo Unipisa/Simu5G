@@ -44,6 +44,11 @@ std::vector<double> LteDummyChannelModel::getSINR_bgUe(LteAirFrame *frame, UserC
    return tmp;
 }
 
+double LteDummyChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId)
+{
+   return 10000.0;
+}
+
 std::vector<double> LteDummyChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord)
 {
    std::vector<double> tmp;

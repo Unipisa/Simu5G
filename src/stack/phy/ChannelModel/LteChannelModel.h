@@ -116,6 +116,13 @@ class LteChannelModel : public omnetpp::cSimpleModule
      * @param lteinfo pointer to the user control info
      */
     virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo) = 0;
+
+    /*
+     * Compute received power for a background UE according to pathloss
+     *
+     */
+    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) = 0;
+
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
      * after that it throws a random number in order to check if this packet will be corrupted or not

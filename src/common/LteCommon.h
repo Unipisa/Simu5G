@@ -46,6 +46,7 @@ class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
 class ExtCell;
+class BackgroundTrafficManager;
 class BackgroundBaseStation;
 class TrafficGeneratorBase;
 
@@ -585,6 +586,20 @@ struct UeInfo
     omnetpp::cModule * ue;
     LtePhyBase* phy;
 };
+
+
+/**********************************
+ * Background UEs avg Cqi support *
+ *********************************/
+struct BgTrafficManagerInfo
+{
+    bool init;         // initialization flag
+    BackgroundTrafficManager* bgTrafficManager;
+    double carrierFrequency;
+    double allocatedRbs[2];
+};
+
+
 
 // uplink interference support
 struct UeAllocationInfo{

@@ -88,6 +88,11 @@ void BackgroundBaseStation::receiveSignal(cComponent *source, simsignal_t signal
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal)
     {
+        // this is a HACK to prevent the bgBaseStation to change its position when its background UEs change theirs
+        // this would happen because the background UEs' mobility module is a submodule of the bgBaseStation
+        if ( strcmp(this->getParentModule()->getFullName(), source->getParentModule()->getFullName()) != 0)
+            return;
+
         inet::IMobility *mobility = check_and_cast<inet::IMobility*>(obj);
         pos_ = mobility->getCurrentPosition();
     }

@@ -53,6 +53,14 @@ class Binder : public omnetpp::cSimpleModule
     // list of all UEs. Used for inter-cell interference evaluation
     std::vector<UeInfo*> ueList_;
 
+    // list of all background traffic manager. Used for background UEs CQI computation
+    std::vector<BgTrafficManagerInfo*> bgTrafficManagerList_;
+
+    // map of maps storing the mutual interference between BG cells
+    typedef std::map<unsigned int, std::map<unsigned int, double> > BgInterferenceMatrix;
+    BgInterferenceMatrix bgCellsInterferenceMatrix_;
+
+
     MacNodeId macNodeIdCounter_[3]; // MacNodeId Counter
     DeployedUesMap dMap_; // DeployedUes --> Master Mapping
 
@@ -118,7 +126,7 @@ class Binder : public omnetpp::cSimpleModule
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> > handoverTriggered_;
   protected:
     virtual void initialize(int stages) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
@@ -145,6 +153,11 @@ class Binder : public omnetpp::cSimpleModule
         while(enbList_.size() > 0){
             delete enbList_.back();
             enbList_.pop_back();
+        }
+
+        while(bgTrafficManagerList_.size() > 0){
+            delete bgTrafficManagerList_.back();
+            bgTrafficManagerList_.pop_back();
         }
 
         for (auto it = macNodeIdToModuleName_.begin(); it != macNodeIdToModuleName_.end(); ++it)
@@ -452,6 +465,16 @@ class Binder : public omnetpp::cSimpleModule
         return &ueList_;
     }
 
+    void addBgTrafficManagerInfo(BgTrafficManagerInfo* info)
+    {
+        bgTrafficManagerList_.push_back(info);
+    }
+
+    std::vector<BgTrafficManagerInfo*> * getBgTrafficManagerList()
+    {
+        return &bgTrafficManagerList_;
+    }
+
     Cqi meanCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
 
     Cqi medianCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
@@ -503,6 +526,16 @@ class Binder : public omnetpp::cSimpleModule
     void removeHandoverTriggered(MacNodeId nodeId);
 
     void updateUeInfoCellId(MacNodeId nodeId, MacCellId cellId);
+
+    /*
+     *  Background UEs and cells Support
+     */
+    void computeAverageCqiForBackgroundUes();
+    void updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands);
+    double computeInterferencePercentage(double n, double k, unsigned int numBands);
+    double computeSinr(unsigned int bgTrafficManagerId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
+    double computeRequestedRbsFromSinr(double sinr, double reqLoad);
+
 };
 
 #endif

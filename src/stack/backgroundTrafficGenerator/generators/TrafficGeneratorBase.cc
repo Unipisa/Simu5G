@@ -60,13 +60,15 @@ void TrafficGeneratorBase::initialize(int stage)
             scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
         }
 
-        enableInterference_ = par("enableInterference");
-        if (enableInterference_)
+        enablePeriodicCqiUpdate_ = getAncestorPar("enablePeriodicCqiUpdate");
+        if (enablePeriodicCqiUpdate_)
         {
             fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI); // TTI -> seconds
             fbSource_ = new cMessage("fbSource");
             scheduleAt(simTime(), fbSource_);
         }
+
+        useAvgInterference_ = getAncestorPar("useAvgInterference");
 
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
@@ -86,8 +88,8 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
             return;
         }
 
-        // if interference computation is disabled, update SINR when the UE changed its position
-        if (!enableInterference_ && positionUpdated_)
+        // if periodic CQI updateis disabled, and CQI was not estimated using avg interference, then update SINR when the UE changed its position
+        if (!enablePeriodicCqiUpdate_ && !useAvgInterference_ && positionUpdated_)
             updateMeasurements();
 
         if (!strcmp(msg->getName(), "selfSourceDl"))
@@ -127,6 +129,7 @@ void TrafficGeneratorBase::updateMeasurements()
     if (trafficEnabled_[UL])
         cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, pos_, txPower_);
 
+    std::cout << NOW << "TrafficGeneratorBase::updateMeasurements - bgUe " << bgUeIndex_ << " cqiDl[" << cqi_[DL] << "] cqiUl[" << cqi_[UL] << "] "<< endl;
 
     positionUpdated_ = false;
 }
@@ -150,6 +153,12 @@ unsigned int TrafficGeneratorBase::getBufferLength(Direction dir)
 {
     return bufferedBytes_[dir];
 }
+
+void TrafficGeneratorBase::setCqiFromSinr(double sinr, Direction dir)
+{
+    cqi_[dir] = bgTrafficManager_->computeCqiFromSinr(sinr);
+}
+
 
 Cqi TrafficGeneratorBase::getCqi(Direction dir)
 {

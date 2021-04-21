@@ -232,6 +232,13 @@ public:
    * @param lteinfo pointer to the user control info
    */
   virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo);
+
+  /*
+   * Compute received power for a background UE according to pathloss
+   *
+   */
+  virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId);
+
   /*
    * Compute Received useful signal for D2D transmissions
    */

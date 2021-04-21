@@ -70,6 +70,37 @@ void BackgroundTrafficManager::initialize(int stage)
         // get the reference to the MAC layer
         mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
     }
+    if (stage == inet::INITSTAGE_LAST-1)
+    {
+        if (channelModel_ == nullptr)
+        {
+            // get the reference to the channel model for the given carrier
+            LtePhyEnb* phy = check_and_cast<LtePhyEnb*>(getParentModule()->getParentModule()->getSubmodule("phy"));
+            bsTxPower_ = phy->getTxPwr();
+            bsCoord_ = phy->getCoord();
+            channelModel_ = phy->getChannelModel(carrierFrequency_);
+            if (channelModel_ == nullptr)
+                throw cRuntimeError("BackgroundTrafficManager::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_);
+        }
+
+        BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
+        info->init = false;
+        info->bgTrafficManager = this;
+        info->carrierFrequency = carrierFrequency_;
+        info->allocatedRbs[DL] = 0.0;
+        info->allocatedRbs[UL] = 0.0;
+
+        if (!getAncestorPar("enablePeriodicCqiUpdate"))
+        {
+            if (getAncestorPar("useAvgInterference"))
+            {
+                initializeAvgInterferenceComputation();
+                info->init = true;
+            }
+        }
+
+        getBinder()->addBgTrafficManagerInfo(info);
+    }
 }
 
 void BackgroundTrafficManager::handleMessage(cMessage *msg)
@@ -83,6 +114,11 @@ void BackgroundTrafficManager::handleMessage(cMessage *msg)
 
         delete notification;
     }
+}
+
+unsigned int BackgroundTrafficManager::getNumBands()
+{
+    return channelModel_->getNumBands();
 }
 
 void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
@@ -102,7 +138,8 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     {
         // get the reference to the channel model for the given carrier
         LtePhyEnb* phy = check_and_cast<LtePhyEnb*>(getParentModule()->getParentModule()->getSubmodule("phy"));
-        enbTxPower_ = phy->getTxPwr();
+        bsTxPower_ = phy->getTxPwr();
+        bsCoord_ = phy->getCoord();
         channelModel_ = phy->getChannelModel(carrierFrequency_);
         if (channelModel_ == nullptr)
             throw cRuntimeError("BackgroundTrafficManager::getCqi - cannot find channel model for carrier frequency %f", carrierFrequency_);
@@ -122,7 +159,7 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     if (dir == UL)
         cInfo->setTxPower(bgUeTxPower);
     else
-        cInfo->setTxPower(enbTxPower_);
+        cInfo->setTxPower(bsTxPower_);
 
     std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo);
 
@@ -146,10 +183,26 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     return meanCqi;
 }
 
+Cqi BackgroundTrafficManager::computeCqiFromSinr(double sinr)
+{
+    return getCqiFromTable(sinr);
+}
+
+
 TrafficGeneratorBase* BackgroundTrafficManager::getTrafficGenerator(MacNodeId bgUeId)
 {
     int index = bgUeId - BGUE_MIN_ID;
     return bgUe_.at(index);
+}
+
+std::vector<TrafficGeneratorBase*>::const_iterator BackgroundTrafficManager::getBgUesBegin()
+{
+    return bgUe_.begin();
+}
+
+std::vector<TrafficGeneratorBase*>::const_iterator BackgroundTrafficManager::getBgUesEnd()
+{
+    return bgUe_.end();
 }
 
 std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir)
@@ -221,3 +274,24 @@ void BackgroundTrafficManager::racHandled(MacNodeId bgUeId)
         scheduleAt(NOW + offset, notification);
     }
 }
+
+
+void BackgroundTrafficManager::initializeAvgInterferenceComputation()
+{
+    avgCellLoad_ = 0;
+
+    // get avg load for all the UEs and for the cell
+    for (int i=0; i < numBgUEs_; i++)
+    {
+        avgCellLoad_ += bgUe_.at(i)->getAvgLoad(DL);
+        avgUeLoad_.push_back(bgUe_.at(i)->getAvgLoad(UL));
+    }
+}
+
+double BackgroundTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
+{
+    MacNodeId bsId = mac_->getMacNodeId();
+    return channelModel_->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bsId);
+}
+
+
