@@ -673,7 +673,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    bgCellInterference.resize(numBands_, 0);
    if (enableBackgroundCellInterference_)
    {
-       computeBackgroundCellInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
+       computeBackgroundCellInterference(ueId, enbCoord, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
    }
 
    //============ EXTCELL INTERFERENCE COMPUTATION =================
@@ -913,7 +913,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    bgCellInterference.resize(numBands_, 0);
    if (enableBackgroundCellInterference_)
    {
-       computeBackgroundCellInterference(eNbId, bgUeId, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
+       computeBackgroundCellInterference(bgUeId, enbCoord, ueCoord, isCqi, lteInfo->getCarrierFrequency(), rbmap, dir, &bgCellInterference); // dBm
    }
 
    //============ EXTCELL INTERFERENCE COMPUTATION =================
@@ -2351,7 +2351,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
    return true;
 }
 
-bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir,
+bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir,
        std::vector<double>* interference)
 {
    EV << "**** Background Cell Interference **** " << endl;
@@ -2378,9 +2378,9 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId
            // get external cell position
            c = (*it)->getPosition();
            // computer distance between UE and the ext cell
-           dist = coord.distance(c);
+           dist = ueCoord.distance(c);
 
-           EV << "\t distance between UE[" << coord.x << "," << coord.y <<
+           EV << "\t distance between UE[" << ueCoord.x << "," << ueCoord.y <<
                    "] and backgroundCell[" << c.x << "," << c.y << "] is -> "
                    << dist << "\t";
 
@@ -2397,7 +2397,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId
            else
            {
                // compute the angle between uePosition and reference axis, considering the eNb as center
-               double ueAngle = computeAngle(c, coord);
+               double ueAngle = computeAngle(c, ueCoord);
 
                // compute the reception angle between ue and eNb
                double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
@@ -2405,7 +2405,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId
                if (recvAngle > 180)
                    recvAngle = 360 - recvAngle;
 
-               double verticalAngle = computeVerticalAngle(c, coord);
+               double verticalAngle = computeVerticalAngle(c, ueCoord);
 
                // compute attenuation due to sectorial tx
                angolarAtt = computeAngolarAttenuation(recvAngle, verticalAngle);
@@ -2477,9 +2477,9 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId eNbId
                    txPwr = bgUe->getTxPwr();
 
                    c = bgUe->getCoord();
-                   dist = coord.distance(c);
+                   dist = bsCoord.distance(c);
 
-                   EV << "\t distance between UE[" << coord.x << "," << coord.y <<
+                   EV << "\t distance between BgBS[" << bsCoord.x << "," << bsCoord.y <<
                            "] and backgroundUE[" << c.x << "," << c.y << "] is -> "
                            << dist << "\t";
 

@@ -418,7 +418,7 @@ protected:
    * evaluates total interference from external cells seen from the spot given by coord
    * @return total interference expressed in dBm
    */
-  virtual bool computeBackgroundCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double>* interference);
+  virtual bool computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double>* interference);
 
   /*
    * compute attenuation due to path loss and shadowing

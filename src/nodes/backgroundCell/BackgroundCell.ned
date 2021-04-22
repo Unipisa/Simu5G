@@ -130,4 +130,11 @@ simple BackgroundCellChannelModel
         // If jakes fading this parameter specify the number of path (tap channel) -->  
         int fading_paths = default(6);
         double delay_rms = default(363e-9);
+        
+        // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->  
+        bool bgCell_interference = default(true);
+        // if true, enables the inter-cell interference computation for DL connections -->  
+        bool downlink_interference = default(true);
+        // if true, enables the interference computation for UL connections -->
+        bool uplink_interference = default(true);
 }

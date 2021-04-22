@@ -82,6 +82,11 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     //avg delay spred in jakes fading
     double delayRMS_;
 
+    // enable/disable intercell interference computation
+    bool enableBackgroundCellInterference_;
+    bool enableDownlinkInterference_;
+    bool enableUplinkInterference_;
+
     // Store the last computed shadowing for each user
     std::map<MacNodeId, std::pair<inet::simtime_t, double> > lastComputedSF_;
 
@@ -243,6 +248,9 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     double getTwoDimDistance(inet::Coord a, inet::Coord b);
     double computeAngolarAttenuation(double hAngle, double vAngle);
 
+    bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);
+    bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);
+    bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, double carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double>* interference);
 
   protected:
     virtual void initialize(int stage);
