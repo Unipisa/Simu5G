@@ -771,7 +771,7 @@ void Binder::computeAverageCqiForBackgroundUes()
                 //---------------------------------------------------------------------
                 // STEP 3: update block allocation
                 // obtain UE load request and convert it to rbs based on SINR
-                double ueLoadDl = bgUe->getAvgLoad(DL);
+                double ueLoadDl = bgUe->getAvgLoad(DL) * 8;  // in bits
 //                double ueLoadUl = bgUe->getAvgLoad(UL);
                 double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
 //                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
@@ -798,7 +798,7 @@ void Binder::computeAverageCqiForBackgroundUes()
                 if (countInterferenceCheck == 1)
                 {
                     // update allocation elem for this background traffic manager
-                    info->allocatedRbs[DL] = cellRbsDl;
+                    info->allocatedRbs[DL] += ueRbsDl;
 //                    info->allocatedRbs[UL] = cellRbsUl;
 
                     EV << "BgTrafficManager " << bgTrafficManagerId << " - allocatedRbsDl[" << info->allocatedRbs[DL] << "]" << endl;
@@ -891,15 +891,15 @@ double Binder::computeInterferencePercentage(double n, double k, unsigned int nu
 {
 //    if (allocationType_ == FIRSTFIT_ALLOCATION)
 //    {
-//        if (n == 0)
-//            return 0;
-//
-//        double min = (n<k)?n:k;
-//        return (double)min/n;
+        if (n == 0)
+            return 0;
+
+        double min = (n<k)?n:k;
+        return (double)min/n;
 //    }
 //    else   // Random allocation
 //    {
-        return (double)k / numBands;
+//        return (double)k / numBands;
 //    }
 }
 
@@ -952,12 +952,15 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, double txPower, inet
 
 double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 {
-    const double MIN_SINR = -10;                    // TODO fix
-    const double MAX_SINR = 30;                     // TODO fix
-    const double MAX_SPECTRAL_EFFICIENCY = 1.44 * 1000000;  // TODO fix value
+    // TODO choose appropriate values for these constants
+    //      and make them configurable
+    const double MIN_SINR = -5.5;
+    const double MAX_SINR = 25.5;
+    const double MAX_SPECTRAL_EFFICIENCY = 2.5 * 1000000;
 
-    if( sinr <= MIN_SINR )
-        return 0;
+    // we let a UE to have a minimum CQI (2) even when SINR is too low (this is what our scheduler does)
+    if( sinr <= -3.5 )
+        sinr = -3.5;
     if (sinr > MAX_SINR)
         sinr = MAX_SINR;
 
