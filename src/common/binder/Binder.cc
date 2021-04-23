@@ -735,7 +735,10 @@ void Binder::computeAverageCqiForBackgroundUes()
             // STEP 1: update mutual interference
             // for iterations after the first one, update the interference before analyzing a whole cell
             if (countInterferenceCheck>1)
-                updateMutualInterference(bgTrafficManagerId, numBands);
+            {
+                updateMutualInterference(bgTrafficManagerId, numBands, DL);
+                updateMutualInterference(bgTrafficManagerId, numBands, UL);
+            }
 
             double cellRbsDl = 0;
             double cellRbsUl = 0;
@@ -750,7 +753,10 @@ void Binder::computeAverageCqiForBackgroundUes()
 
                 // for the first iteration, update interference before analyzing each UE
                 if(countInterferenceCheck==1)
-                    updateMutualInterference(bgTrafficManagerId, numBands);
+                {
+                    updateMutualInterference(bgTrafficManagerId, numBands, DL);
+                    updateMutualInterference(bgTrafficManagerId, numBands, UL);
+                }
 
 
                 //---------------------------------------------------------------------
@@ -758,24 +764,27 @@ void Binder::computeAverageCqiForBackgroundUes()
                 bool losStatus = false;
                 inet::Coord bsCoord = bgTrafficManager->getBsCoord();
                 inet::Coord bgUeCoord = bgUe->getCoord();
+                int bgUeId = bgUe->getId();
                 double bsTxPower = bgTrafficManager->getBsTxPower();
                 double bgUeTxPower = bgUe->getTxPwr();
 
-                double sinrDl = computeSinr(bgTrafficManagerId, bsTxPower, bsCoord, bgUeCoord, DL, losStatus);
-//                double sinrUl = computeSinr(bgTrafficManagerId, bgUeTxPower, bgUeCoord, bsCoord, UL, losStatus);
+                double sinrDl = computeSinr(bgTrafficManagerId, bgUeId, bsTxPower, bsCoord, bgUeCoord, DL, losStatus);
+                double sinrUl = computeSinr(bgTrafficManagerId, bgUeId, bgUeTxPower, bgUeCoord, bsCoord, UL, losStatus);
 
                 // update CQI for the bg UE
                 bgUe->setCqiFromSinr(sinrDl, DL);
-                bgUe->setCqiFromSinr(30.0, UL);   // TEMPORARY HACK
+                bgUe->setCqiFromSinr(sinrUl, UL);
 
                 //---------------------------------------------------------------------
                 // STEP 3: update block allocation
-                // obtain UE load request and convert it to rbs based on SINR
-                double ueLoadDl = bgUe->getAvgLoad(DL) * 8;  // in bits
-//                double ueLoadUl = bgUe->getAvgLoad(UL);
+
+                // obtain UE load request (in bits/second)
+                double ueLoadDl = bgUe->getAvgLoad(DL) * 8;
+                double ueLoadUl = bgUe->getAvgLoad(UL) * 8;
+
+                // convert the UE load request to rbs based on SINR
                 double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
-//                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
-                double ueRbsUl = 0;
+                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
 
                 EV << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] sinrDl[" << sinrDl << "] load[" << ueLoadDl << "] rbsDl[" << ueRbsDl << "]" << endl;
 
@@ -785,37 +794,38 @@ void Binder::computeAverageCqiForBackgroundUes()
                     throw cRuntimeError("Binder::computeAverageCqiForBackgroundUes - Error! Computed negative requested rbs\n");
                 }
 
-                double availableBandsDl = numBands - cellRbsDl;
-//                unsigned int availableBandsUl = numBands - cellRbsUl;
-
                 // check if there is room for ueRbs
-                ueRbsDl = (ueRbsDl > availableBandsDl) ? availableBandsDl : ueRbsDl;
-//                ueRbsUl = (ueRbsUl > availableBandsUl) ? availableBandsUl : ueRbsUl;
+                ueRbsDl = (ueRbsDl > numBands) ? numBands : ueRbsDl;
+                ueRbsUl = (ueRbsUl > numBands) ? numBands : ueRbsUl;
 
+                // update cell load
                 cellRbsDl += ueRbsDl;
-//                cellRbsUl += ueRbsUl;
+                cellRbsUl += ueRbsUl;
 
+                // update allocation for the UL
+                info->allocatedRbsUeUl.at(bgUeId) = ueRbsUl;
+
+                // update allocation for the DL only at the first iteration
                 if (countInterferenceCheck == 1)
                 {
-                    // update allocation elem for this background traffic manager
-                    info->allocatedRbs[DL] += ueRbsDl;
-//                    info->allocatedRbs[UL] = cellRbsUl;
-
-                    EV << "BgTrafficManager " << bgTrafficManagerId << " - allocatedRbsDl[" << info->allocatedRbs[DL] << "]" << endl;
-
+                    info->allocatedRbsDl = (cellRbsDl > numBands) ? numBands : cellRbsDl;
+                    info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
                 }
 
                 ++bgUes_it;
                 ++cont;
             }
 
-            if (countInterferenceCheck > 1)
-            {
-                // update allocation elem for this background traffic manager
-                info->allocatedRbs[DL] = cellRbsDl;
-//                info->allocatedRbs[UL] = cellRbsUl;
+            // update allocation elem for this background traffic manager
+            info->allocatedRbsDl = (cellRbsDl > numBands) ? numBands : cellRbsDl;
+            info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
 
-                EV << "BgTrafficManager " << bgTrafficManagerId << ": allocatedRbsDl[" << info->allocatedRbs[DL] << "]" << endl;
+            // if the total cellRbsUl is higher than numBands, then scale the allocation for all UEs
+            if (cellRbsUl > numBands)
+            {
+                double scaleFactor = (double)numBands / cellRbsUl;
+                for (unsigned int i=0; i < info->allocatedRbsUeUl.size(); i++)
+                    info->allocatedRbsUeUl[i] *= scaleFactor;
             }
         }
 
@@ -854,56 +864,121 @@ void Binder::computeAverageCqiForBackgroundUes()
 
 }
 
-void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands)
+void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands, Direction dir)
 {
-    EV << "Binder::updateMutualInterference - computing interference for traffic manager " << bgTrafficManagerId << endl;
+    EV << "Binder::updateMutualInterference - computing interference for traffic manager " << bgTrafficManagerId << " dir[" << dirToA(dir) << "]" << endl;
 
     double ownRbs, extRbs; // current rbs allocation
-
     BgTrafficManagerInfo* ownInfo = bgTrafficManagerList_.at(bgTrafficManagerId);
 
-    // obtain current allocation info
-    ownRbs = ownInfo->allocatedRbs[DL];
-
-    // loop through the BackgroundTrafficManagers (one per cell)
-    for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+    if (dir == DL)
     {
-        // skip own interference
-        if (extId == bgTrafficManagerId)
-            continue;
+        // obtain current allocation info
+        ownRbs = ownInfo->allocatedRbsDl;
 
-        // obtain current allocation info for interfering bg cell
-        BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
-        extRbs = extInfo->allocatedRbs[DL];
+        // loop through the BackgroundTrafficManagers (one per cell)
+        for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+        {
+            // skip own interference
+            if (extId == bgTrafficManagerId)
+                continue;
 
-        double newOverlapPercentage = computeInterferencePercentage(ownRbs, extRbs, numBands);
+            // obtain current allocation info for interfering bg cell
+            BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+            extRbs = extInfo->allocatedRbsDl;
 
-        EV << "ownId[" << bgTrafficManagerId << "] extId[" << extId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
+            double newOverlapPercentage = computeInterferencePercentageDl(ownRbs, extRbs, numBands);
+
+            EV << "ownId[" << bgTrafficManagerId << "] extId[" << extId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
 
 
-        // update interference
-        bgCellsInterferenceMatrix_[bgTrafficManagerId][extId] = newOverlapPercentage;
+            // update interference
+            bgCellsInterferenceMatrix_[bgTrafficManagerId][extId] = newOverlapPercentage;
 
-    }// end ext-cell computation
+        }// end ext-cell computation
+    }
+    else
+    {
+        // for each UE in the BG cell
+        auto bgUes_it = ownInfo->bgTrafficManager->getBgUesBegin();
+        auto bgUes_et = ownInfo->bgTrafficManager->getBgUesEnd();
+        while (bgUes_it != bgUes_et)
+        {
+            int bgUeId = (*bgUes_it)->getId();
+            uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
+
+            // RBs allocated to the BG UE
+            ownRbs = ownInfo->allocatedRbsUeUl.at(bgUeId);
+
+            // loop through the BackgroundTrafficManagers (one per cell)
+            for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+            {
+                // skip own interference
+                if (extId == bgTrafficManagerId)
+                    continue;
+
+                // obtain current allocation info for interfering bg cell
+                BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+
+                // for each UE in the ext BG cell
+                auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
+                auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
+                while (extBgUes_it != extBgUes_et)
+                {
+                    int extBgUeId = (*extBgUes_it)->getId();
+                    uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
+
+                    // RBs allocated to the interfering BG UE
+                    extRbs = extInfo->allocatedRbsUeUl.at(extBgUeId);
+
+                    double newOverlapPercentage = computeInterferencePercentageUl(ownRbs, extRbs, ownInfo->allocatedRbsUl, extInfo->allocatedRbsUl);
+
+                    EV << "ownId[" << globalBgUeId << "] extId[" << globalExtBgUeId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
+
+                    // update interference
+                    if (bgUesInterferenceMatrix_.find(globalBgUeId) == bgUesInterferenceMatrix_.end())
+                    {
+                        std::map<unsigned int, double> newMap;
+                        bgUesInterferenceMatrix_[globalBgUeId] = newMap;
+                    }
+                    else
+                        bgUesInterferenceMatrix_[globalBgUeId][globalExtBgUeId] = newOverlapPercentage;
+
+                    ++extBgUes_it;
+                }
+
+            }// end ext-cell computation
+
+            ++bgUes_it;
+        }
+    }
 }
 
-double Binder::computeInterferencePercentage(double n, double k, unsigned int numBands)
+double Binder::computeInterferencePercentageDl(double n, double k, unsigned int numBands)
 {
-//    if (allocationType_ == FIRSTFIT_ALLOCATION)
-//    {
-        if (n == 0)
-            return 0;
+    // assuming that the BS allocates starting from the first RB in DL
+    if (n == 0)
+        return 0;
 
-        double min = (n<k)?n:k;
-        return (double)min/n;
-//    }
-//    else   // Random allocation
-//    {
-//        return (double)k / numBands;
-//    }
+    double min = (n<k)?n:k;
+    return (double)min/n;
+
+//    // assuming the allocation is random
+//    return (double)k / numBands;
 }
 
-double Binder::computeSinr(unsigned int bgTrafficManagerId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
+double Binder::computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal)
+{
+    // assuming the allocation of one UE is random (within the total allocated by its cell, not the total available bands)
+
+    double max = (nTotal>kTotal)?nTotal:kTotal;
+    if (max == 0)
+        return 0.0;
+
+    return (double)k / max;
+}
+
+double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
 {
     double sinr;
 
@@ -928,17 +1003,49 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, double txPower, inet
 
         BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
 
-        inet::Coord extBsCoord = (extInfo->bgTrafficManager)->getBsCoord();
-        double extBsTxPower = (extInfo->bgTrafficManager)->getBsTxPower();
-
-        double overlapPercentage = bgCellsInterferenceMatrix_[bgTrafficManagerId][extId];
+        inet::Coord interfCoord;
+        double interfTxPower;
+        double overlapPercentage;
         double interferenceDbm = 0.0;
-        if (overlapPercentage > 0)
-            interferenceDbm = (extInfo->bgTrafficManager)->getReceivedPower_bgUe(extBsTxPower, extBsCoord, rxPos, dir, otherLos);
+        if (dir == DL)
+        {
+            interfCoord = (extInfo->bgTrafficManager)->getBsCoord();
+            interfTxPower = (extInfo->bgTrafficManager)->getBsTxPower();
 
-        // TODO? save the interference into a matrix, so that it can be used to evaluate if convergence has been reached
+            overlapPercentage = bgCellsInterferenceMatrix_[bgTrafficManagerId][extId];
+            if (overlapPercentage > 0)
+                interferenceDbm = (extInfo->bgTrafficManager)->getReceivedPower_bgUe(interfTxPower, interfCoord, rxPos, dir, otherLos);
 
-        totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
+            // TODO? save the interference into a matrix, so that it can be used to evaluate if convergence has been reached
+
+            totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
+        }
+        else
+        {
+            uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
+
+            // for each UE in the ext BG cell
+            auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
+            auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
+            while (extBgUes_it != extBgUes_et)
+            {
+                int extBgUeId = (*extBgUes_it)->getId();
+                uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
+
+                interfCoord = (*extBgUes_it)->getCoord();
+                interfTxPower = (*extBgUes_it)->getTxPwr();
+
+                overlapPercentage = bgUesInterferenceMatrix_[globalBgUeId][globalExtBgUeId];
+                if (overlapPercentage > 0)
+                    interferenceDbm = (extInfo->bgTrafficManager)->getReceivedPower_bgUe(interfTxPower, interfCoord, rxPos, dir, otherLos);
+
+                totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
+
+                // TODO? save the interference into a matrix, so that it can be used to evaluate if convergence has been reached
+
+                ++extBgUes_it;
+            }
+        }
     }
 
     double thermalNoise = -104.5;  // dBm TODO take it from the channel model

@@ -56,9 +56,11 @@ class Binder : public omnetpp::cSimpleModule
     // list of all background traffic manager. Used for background UEs CQI computation
     std::vector<BgTrafficManagerInfo*> bgTrafficManagerList_;
 
-    // map of maps storing the mutual interference between BG cells
     typedef std::map<unsigned int, std::map<unsigned int, double> > BgInterferenceMatrix;
+    // map of maps storing the mutual interference between BG cells
     BgInterferenceMatrix bgCellsInterferenceMatrix_;
+    // map of maps storing the mutual interference between BG UEs
+    BgInterferenceMatrix bgUesInterferenceMatrix_;
 
 
     MacNodeId macNodeIdCounter_[3]; // MacNodeId Counter
@@ -531,9 +533,10 @@ class Binder : public omnetpp::cSimpleModule
      *  Background UEs and cells Support
      */
     void computeAverageCqiForBackgroundUes();
-    void updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands);
-    double computeInterferencePercentage(double n, double k, unsigned int numBands);
-    double computeSinr(unsigned int bgTrafficManagerId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
+    void updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands, Direction dir);
+    double computeInterferencePercentageDl(double n, double k, unsigned int numBands);
+    double computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal);
+    double computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
     double computeRequestedRbsFromSinr(double sinr, double reqLoad);
 
 };

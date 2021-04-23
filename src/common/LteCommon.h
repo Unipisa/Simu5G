@@ -596,7 +596,9 @@ struct BgTrafficManagerInfo
     bool init;         // initialization flag
     BackgroundTrafficManager* bgTrafficManager;
     double carrierFrequency;
-    double allocatedRbs[2];
+    double allocatedRbsDl;
+    double allocatedRbsUl;
+    std::vector<double> allocatedRbsUeUl;
 };
 
 

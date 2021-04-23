@@ -87,8 +87,9 @@ void BackgroundCellTrafficManager::initialize(int stage)
         info->init = false;
         info->bgTrafficManager = this;
         info->carrierFrequency = carrierFrequency_;
-        info->allocatedRbs[DL] = 0.0;
-        info->allocatedRbs[UL] = 0.0;
+        info->allocatedRbsDl = 0.0;
+        info->allocatedRbsUl = 0.0;
+        info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
 
         if (!getAncestorPar("enablePeriodicCqiUpdate"))
         {
