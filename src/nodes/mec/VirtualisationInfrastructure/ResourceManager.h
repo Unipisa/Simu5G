@@ -17,6 +17,7 @@
 #include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
 #include "nodes/mec/MEPlatform/MEAppPacket_m.h"
 
+
 using namespace omnetpp;
 
 //###########################################################################
@@ -52,6 +53,9 @@ class ResourceManager : public cSimpleModule
     double allocatedRam;
     double allocatedDisk;
     double allocatedCPU;
+
+    double cpuClock;
+
     //storing resource allocation for each MEApp: resources required by UEApps
     //key = UE App ID - value resourceMapEntry
     std::map<int, resourceMapEntry> resourceMap;
@@ -59,6 +63,19 @@ class ResourceManager : public cSimpleModule
     public:
 
         ResourceManager();
+
+        /*
+         * returns the processing time needed to executes some instructions
+         *
+         * @param ueAppID identifier of the MecApp
+         * @param numOfInstructions number of instructions to be executed
+         *
+         */
+        virtual double calculateProcessingTime(int ueAppID, int numOfInstructions);
+
+        bool registerMecApp(int ueAppId, int reqRam, int  reqDisk, double reqCpu);
+        bool deRegisterMecApp(int ueAppId);
+
 
     protected:
 

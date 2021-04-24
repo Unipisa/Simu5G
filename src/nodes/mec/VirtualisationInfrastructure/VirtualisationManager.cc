@@ -380,6 +380,11 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         module->par("localAddress") = pkt->getDestinationAddress();
         module->par("localPort") = meAppPortCounter;
         module->par("uePort") = ueAppPort;
+
+        module->par("requiredRam") = pkt->getRequiredRam();
+        module->par("requiredDisk") = pkt->getRequiredDisk();
+        module->par("requiredCpu") = pkt->getRequiredCpu();
+
         meAppPortCounter++;
 
 
@@ -411,10 +416,8 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
          * MePlatform.
          *
          * This is true for MEC services etsi complaint, but for omnet-like services the classic method is used
-         *
+         * if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
          */
-
-//        // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
         if(serviceIndex != NO_SERVICE)
         {
             EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
