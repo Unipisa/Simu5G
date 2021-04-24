@@ -9,6 +9,9 @@
 #include "apps/mec/MeApps/MeAppBase.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
+#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/VirtualisationInfrastructure/ResourceManager.h"
+#include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 #include "common/utils/utils.h"
 
 using namespace omnetpp;
@@ -40,11 +43,32 @@ MeAppBase::~MeAppBase()
        currentHttpMessage = nullptr;
    }
 
+   cancelAndDelete(processedServiceResponse);
+
 }
 
 void MeAppBase::initialize(int stage)
 {
     TcpAppBase::initialize(stage);
+
+    if(stage != inet::INITSTAGE_APPLICATION_LAYER)
+        return;
+
+
+    mecAppId = getId();
+    requiredRam = par("requiredRam").intValue();
+    requiredDisk = par("requiredDisk").intValue();
+    requiredCpu = par("requiredCpu").doubleValue();
+
+    resourceManager = mec::getResourceManager();
+    meHost = getParentModule();
+    mePlatform = meHost->getSubmodule("mePlatform");
+
+    serviceRegistry = check_and_cast<ServiceRegistry *>(mePlatform->getSubmodule("serviceRegistry"));
+
+    resourceManager->registerMecApp(mecAppId, requiredRam, requiredDisk, requiredCpu);
+
+    processedServiceResponse = new cMessage("processedServiceResponse");
 }
 
 void MeAppBase::handleStartOperation(LifecycleOperation *operation)
@@ -69,7 +93,19 @@ void MeAppBase::handleCrashOperation(LifecycleOperation *operation)
 void MeAppBase::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->isSelfMessage())
+    {
+        if(strcmp(msg->getName(), "processedServiceResponse") == 0)
+        {
+            handleServiceMessage();
+            if(currentHttpMessage != nullptr)
+            {
+                delete currentHttpMessage;
+                currentHttpMessage = nullptr;
+            }
+        }
+        else
             handleSelfMessage(msg);
+    }
         else
             socket.processMessage(msg);
 }
@@ -118,28 +154,32 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
     {
         EV << "MeAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
         Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+        double time;
         switch (res)
         {
         case (Http::COMPLETE_NO_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            handleTcpMsg();
-            if(currentHttpMessage != nullptr)
-            {
-                delete currentHttpMessage;
-                currentHttpMessage = nullptr;
-            }
+            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+            scheduleAt(simTime()+time, processedServiceResponse);
+
+//            if(currentHttpMessage != nullptr)
+//            {
+//                delete currentHttpMessage;
+//                currentHttpMessage = nullptr;
+//            }
             return;
             break;
         case (Http::COMPLETE_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            handleTcpMsg();
-            if(currentHttpMessage != nullptr)
-            {
-                delete currentHttpMessage;
-                currentHttpMessage = nullptr;
-            }
+            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+                scheduleAt(simTime()+time, processedServiceResponse);
+//            if(currentHttpMessage != nullptr)
+//            {
+//                delete currentHttpMessage;
+//                currentHttpMessage = nullptr;
+//            }
             break;
         case (Http::INCOMPLETE_DATA):
                 break;
@@ -170,28 +210,31 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         packet.erase(0, pos+delimiter.length()); //remove header
         currentHttpMessage = Http::parseHeader(header);
         Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+        double time;
         switch (res)
         {
         case (Http::COMPLETE_NO_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            handleTcpMsg();
-            if(currentHttpMessage != nullptr)
-            {
-                delete currentHttpMessage;
-                currentHttpMessage = nullptr;
-            }
+            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+                scheduleAt(simTime()+time, processedServiceResponse);
+//            if(currentHttpMessage != nullptr)
+//               {
+//                   delete currentHttpMessage;
+//                   currentHttpMessage = nullptr;
+//               }
             return;
             break;
         case (Http::COMPLETE_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            handleTcpMsg();
-            if(currentHttpMessage != nullptr)
-            {
-                delete currentHttpMessage;
-                currentHttpMessage = nullptr;
-            }
+            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+                scheduleAt(simTime()+time, processedServiceResponse);
+//            if(currentHttpMessage != nullptr)
+//            {
+//                delete currentHttpMessage;
+//                currentHttpMessage = nullptr;
+//            }
             break;
         case (Http::INCOMPLETE_DATA):
                 break;
@@ -230,6 +273,7 @@ void MeAppBase::socketFailure(TcpSocket *sock, int code)
 void MeAppBase::finish()
 {
     TcpAppBase::finish();
+    resourceManager->deRegisterMecApp(mecAppId);
 }
 
 

@@ -27,7 +27,7 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp(){
 }
 
 
-void MecRequestBackgroundApp::handleTcpMsg()
+void MecRequestBackgroundApp::handleServiceMessage()
 {
     EV << "payload: " <<  currentHttpMessage->getBody() << endl;
     if(burstFlag)

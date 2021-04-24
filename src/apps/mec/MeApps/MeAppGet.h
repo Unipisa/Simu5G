@@ -44,7 +44,7 @@ class MeAppGet : public MeAppBase
 //      virtual bool isNodeUp();
 //      virtual bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
 
-      virtual void handleTcpMsg() override;
+      virtual void handleServiceMessage() override;
       virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
       virtual void established(int connId)override;
 

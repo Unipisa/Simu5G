@@ -16,7 +16,6 @@ using namespace omnetpp;
 class MecRequestForegroundApp : public MeAppBase
 {
 protected:
-
      inet::NodeStatus *nodeStatus = nullptr;
      cMessage *sendFGRequest;
 
@@ -30,7 +29,7 @@ protected:
    public:
      MecRequestForegroundApp() {}
      virtual ~MecRequestForegroundApp();
-     virtual void handleTcpMsg() override;
+     virtual void handleServiceMessage() override;
      virtual void established(int connId) override;
 };
 

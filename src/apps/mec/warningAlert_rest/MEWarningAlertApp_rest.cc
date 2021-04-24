@@ -34,11 +34,11 @@ MEWarningAlertApp_rest::~MEWarningAlertApp_rest()
 {
     if(circle != nullptr)
     {
-        getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
+        if(getSimulation()->getSystemModule()->getCanvas()->findFigure(circle) != -1)
+            getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
         delete circle;
 //        dropAndDelete(circle);
 //        circle->dropAndDelete(circle);
-
     }
 
     }
@@ -155,7 +155,7 @@ void MEWarningAlertApp_rest::finish(){
     }
 }
 
-void MEWarningAlertApp_rest::handleTcpMsg()
+void MEWarningAlertApp_rest::handleServiceMessage()
 {
     if(currentHttpMessage->getType() == REQUEST)
     {

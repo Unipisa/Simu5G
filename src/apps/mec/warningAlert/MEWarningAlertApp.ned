@@ -31,6 +31,11 @@ simple MEWarningAlertApp like IMEApp
         int packetSize = default(10);
         
         string interfaceTableModule = default("");
+        
+               	//resource required infos
+        int requiredRam @unit("B") = default(10MB);
+        int requiredDisk @unit("B") = default(100MB);
+        double requiredCpu = default(0.01);
            
     gates:
         input virtualisationInfrastructureIn;

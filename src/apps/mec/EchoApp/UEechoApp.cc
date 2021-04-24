@@ -139,9 +139,9 @@ void UEechoApp::sendStartMEWarningAlertApp()
     //instantiation requirements and info
     alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setType(START_MEAPP);
-    alert->setMEModuleType("inet.applications.udpapp.UdpEchoApp");
-    alert->setMEModuleName("UdpEchoApp");
-    alert->setRequiredService("MEWarningAlertService");
+    alert->setMEModuleType("lte.apps.mec.EchoApp.MECUdpEchoApp");
+    alert->setMEModuleName("MECUdpEchoApp");
+    alert->setRequiredService("NULL");
     alert->setRequiredRam(requiredRam);
     alert->setRequiredDisk(requiredDisk);
     alert->setRequiredCpu(requiredCpu);
@@ -174,9 +174,9 @@ void UEechoApp::sendStopMEWarningAlertApp()
     //termination requirements and info
     alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setType(STOP_MEAPP);
-    alert->setMEModuleType("lte.apps.mec.warningAlert_rest.MEWarningrAlertApp_rest");
-    alert->setMEModuleName("MEWarningAlertApp_rest");
-    alert->setRequiredService("MEWarningAlertService");
+    alert->setMEModuleType("lte.apps.mec.EchoApp.MECUdpEchoApp");
+    alert->setMEModuleName("MECUdpEchoApp");
+    alert->setRequiredService("NULL");
     alert->setRequiredRam(requiredRam);
     alert->setRequiredDisk(requiredDisk);
     alert->setRequiredCpu(requiredCpu);
@@ -211,7 +211,7 @@ void UEechoApp::sendInfoUEWarningAlertApp()
 
     position = mobility->getCurrentPosition();
     EV << "send position: " << position << endl;
-    inet::Packet* packet = new inet::Packet("WarningAlertPacketStart");
+    inet::Packet* packet = new inet::Packet("WarningAlertPacketInfo");
     auto alert = inet::makeShared<WarningAlertPacket>();
 
     //forwarding requirements and info
@@ -223,7 +223,7 @@ void UEechoApp::sendInfoUEWarningAlertApp()
     alert->setPositionY(position.y);
     alert->setPositionZ(position.z);
 
-    alert->setChunkLength(inet::B(size_));
+    alert->setChunkLength(inet::B(size_*2));
 
     packet->insertAtBack(alert);
     socket.sendTo(packet, meAppAddress, meAppPort);

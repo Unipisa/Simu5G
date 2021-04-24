@@ -45,6 +45,12 @@ simple MecRequestForegroundApp like MeAppBase, IApp
         @statistic[numSessions](title="total number of sessions"; source="sum(connect+1)/2"; record=last);
         @signal[responseTime](type=simtime_t);
         @statistic[responseTimeStat](title="Response Time"; source="responseTime"; record=mean,vector);
+        
+               	//resource required infos
+        int requiredRam @unit("B") = default(10MB);
+        int requiredDisk @unit("B") = default(100MB);
+        double requiredCpu = default(0.01);
+        
     gates:
         input socketIn @labels(TcpCommand/up);
         output socketOut @labels(TcpCommand/down);

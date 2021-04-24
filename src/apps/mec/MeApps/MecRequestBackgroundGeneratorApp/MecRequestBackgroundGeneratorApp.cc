@@ -23,7 +23,7 @@ Define_Module(MecRequestBackgroundGeneratorApp);
 MecRequestBackgroundGeneratorApp::~MecRequestBackgroundGeneratorApp(){}
 
 
-void MecRequestBackgroundGeneratorApp::handleTcpMsg()
+void MecRequestBackgroundGeneratorApp::handleServiceMessage()
 {
     EV << "payload: " <<  currentHttpMessage->getBody() << endl;
     if(burstFlag)

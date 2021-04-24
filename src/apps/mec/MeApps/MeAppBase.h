@@ -18,6 +18,10 @@
  *
  * It needs the following NED parameters: localAddress, localPort, connectAddress, connectPort.
  */
+
+class ResourceManager;
+class ServiceRegistry;
+
 class  MeAppBase : public inet::TcpAppBase
 {
   protected:
@@ -25,6 +29,20 @@ class  MeAppBase : public inet::TcpAppBase
     HttpBaseMessage* currentHttpMessage;
     std::string bufferedData;
     omnetpp::cMessage *sendTimer;
+    ResourceManager* resourceManager;
+
+    //references to MeHost module
+    cModule* meHost;
+    cModule* mePlatform;
+    ServiceRegistry * serviceRegistry;
+
+    int mecAppId;
+    int requiredRam;
+    int requiredDisk;
+    double requiredCpu;
+
+    omnetpp::cMessage* processedServiceResponse;
+
 protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -35,7 +53,7 @@ protected:
     virtual void parseReceivedMsg(std::string& packet);
     virtual void handleTimer(omnetpp::cMessage *msg) override {};
     virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
-    virtual void handleTcpMsg() = 0;
+    virtual void handleServiceMessage() = 0;
     virtual void established(int connId) = 0;
 
     /* inet::TcpSocket::CallbackInterface callback methods */

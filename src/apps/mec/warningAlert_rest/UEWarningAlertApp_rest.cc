@@ -133,7 +133,7 @@ void UEWarningAlertApp_rest::sendStartMEWarningAlertApp()
     alert->setType(START_MEAPP);
     alert->setMEModuleType("lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest");
     alert->setMEModuleName("MEWarningAlertApp_rest");
-    alert->setRequiredService("MEWarningAlertService");
+    alert->setRequiredService("NULL");
     alert->setRequiredRam(requiredRam);
     alert->setRequiredDisk(requiredDisk);
     alert->setRequiredCpu(requiredCpu);

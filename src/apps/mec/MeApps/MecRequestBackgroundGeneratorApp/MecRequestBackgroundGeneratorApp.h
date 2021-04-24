@@ -34,7 +34,7 @@ protected:
    public:
      MecRequestBackgroundGeneratorApp() {}
      virtual ~MecRequestBackgroundGeneratorApp();
-     virtual void handleTcpMsg() override;
+     virtual void handleServiceMessage() override;
      virtual void established(int connId) override;
 };
 

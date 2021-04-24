@@ -68,7 +68,7 @@ class MEWarningAlertApp_rest : public MeAppBase
 //        void handleInfoUEWarningAlertApp(WarningAlertPacket* pkt);
 //        void handleInfoMEWarningAlertApp(WarningAlertPacket* pkt);
 
-        void handleServicePacket();
+        void handleServiceMessage() override;
 
         virtual void modifySubscription();
 
@@ -80,7 +80,6 @@ class MEWarningAlertApp_rest : public MeAppBase
 //
 //        /* TCPSocket::CallbackInterface callback methods */
        virtual void established(int connId) override;
-       virtual void handleTcpMsg() override;
 
     public:
        MEWarningAlertApp_rest();

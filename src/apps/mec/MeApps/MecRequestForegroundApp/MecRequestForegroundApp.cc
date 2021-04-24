@@ -25,7 +25,7 @@ MecRequestForegroundApp::~MecRequestForegroundApp(){
 }
 
 
-void MecRequestForegroundApp::handleTcpMsg()
+void MecRequestForegroundApp::handleServiceMessage()
 {
     EV << "payload: " <<  currentHttpMessage->getBody() << endl;
     scheduleAt(simTime() + 0.01, sendFGRequest);

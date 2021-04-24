@@ -23,7 +23,7 @@ Define_Module(MeAppGet);
 MeAppGet::~MeAppGet(){}
 
 
-void MeAppGet::handleTcpMsg()
+void MeAppGet::handleServiceMessage()
 {
     EV << "payload: " <<  currentHttpMessage->getBody() << endl;
     //emit(responseTime_, simTime() - sendTimestamp);
