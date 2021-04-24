@@ -493,11 +493,6 @@ void LtePhyUe::doHandover()
     }
 }
 
-void LtePhyUe::moveUeCollectorForHandover()
-{
-    // TODO
-    }
-
 // TODO: ***reorganize*** method
 void LtePhyUe::handleAirFrame(cMessage* msg)
 {

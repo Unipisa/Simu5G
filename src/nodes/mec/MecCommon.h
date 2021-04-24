@@ -3,6 +3,7 @@
 
 #include <string>
 #include "common/LteCommon.h"
+#include "nodes/mec/VirtualisationInfrastructure/ResourceManager.h"
 
 
 enum RlcBurstStatus
@@ -10,38 +11,26 @@ enum RlcBurstStatus
     START, STOP, ACTIVE, INACTIVE
 };
 
-enum Trigger
-{
-    L2_MEAS_PERIODICAL, L2_MEAS_UTI_80, L2_MEAS_DL_TPU_1, UE_CQI
-};
-
-
-/*
- * temporary method to get the trigger of a RNI notification.
- * unused since the subscription are not implemented, yet
- */
-Trigger getTrigger(std::string& trigger);
-
 typedef struct
 {
-    unsigned int pktCount;
-    omnetpp::simtime_t time;
+    unsigned int pktCount = 0;
+    omnetpp::simtime_t time = 0;
 } Delay;
 
 typedef struct
 {
-    unsigned int pktSizeCount;
-    omnetpp::simtime_t time;
+    unsigned int pktSizeCount = 0;
+    omnetpp::simtime_t time = 0;
 } Throughput;
 
 typedef struct {
-    unsigned int discarded;
-    unsigned int total;
+    unsigned int discarded = 0;
+    unsigned int total = 0;
 } DiscardedPkts;
 
 typedef struct {
-    uint64_t ulBits;
-    uint64_t dlBits;
+    uint64_t ulBits = 0;
+    uint64_t dlBits = 0;
 } DataVolume;
 
 
@@ -98,6 +87,8 @@ namespace mec {
         
     };
     
+    ResourceManager* getResourceManager();
+
 }
 
 #endif

@@ -23,7 +23,6 @@ class L2MeasSubscription : public SubscriptionBase
         std::string appIstanceId;
         AssociateId associteId_;
         Ecgi ecgi;
-        Trigger trigger;
     }FilterCriteriaL2Meas;
 
     public:

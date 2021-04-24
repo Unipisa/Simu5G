@@ -139,10 +139,7 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
         //check trigger filter
         if(filterCriteria.contains("trigger"))
         {
-            std::string trigger = filterCriteria["trigger"];
-            filterCriteria_.trigger = getTrigger(trigger);
             //check if it is event trigger and notify, based on the state of the ues e cells
-
         }
 
         nlohmann::ordered_json response = body;

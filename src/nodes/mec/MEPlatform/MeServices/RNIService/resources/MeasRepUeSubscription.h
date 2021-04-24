@@ -20,7 +20,6 @@ class MeasRepUeSubscription : public SubscriptionBase
         std::string appIstanceId;
         AssociateId associteId_;
         Ecgi ecgi;
-        Trigger trigger;
     }FilterCriteriaAssocTri;
 
     public:
