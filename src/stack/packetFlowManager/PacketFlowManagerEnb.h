@@ -48,6 +48,13 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
         typedef struct
         {
+           unsigned int grantId;
+           simtime_t sendTimestamp;
+
+        }Grant;
+
+        typedef struct
+        {
             std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
             simtime_t startBurstTransmission; // instant of the first trasmission of the burst
             unsigned int burstSize; // PDCP sdu size of the burst
@@ -106,6 +113,11 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         typedef std::map<MacNodeId, DiscardedPkts> pktDiscardMap; // discard counter per NodeId (UE)
         typedef std::map<MacNodeId, Delay> delayMap;
         typedef std::map<MacNodeId, Throughput> throughputMap;
+        typedef std::map<MacNodeId, std::vector<Grant>> ULGrants;
+
+        std::map<MacNodeId, Delay> ULPktDelay_ ;
+
+        ULGrants ulGrants_;
         packetLossRateMap packetLossRate_;
         delayMap pdcpDelay_; // map that sums all the delay times of a dest NodeId (UE) and the corresponding counter
         throughputMap pdcpThroughput_; // map that sums all the bytes sent by a dest NodeId (UE) and the corresponding time elapsed
@@ -115,6 +127,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         short int harqProcesses_; // number of harq processes
 
         //debug vars to be deleted
+        cOutVector tt;
         std::map<MacNodeId,cOutVector> times_;
         std::map<MacNodeId,cOutVector> tput_;
 
@@ -178,6 +191,11 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         */
         virtual void macPduArrived(inet::Ptr<const LteMacPdu>) override;
 
+        virtual void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;
+
+
+
+
         /*
         * This method is called after maxHarqTrasmission of a MAC PDU ID has been
         * reached. The PDCP, RLC, sno referred to the macPdu are cleared from the
@@ -197,6 +215,9 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
 
         virtual void insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId) override;
+
+        virtual void grantSent(MacNodeId nodeId, unsigned int grantId) override;
+
 
         /*
         * invoked by the MAC layer to notify that harqProcId is completed.
@@ -233,6 +254,9 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
         virtual double getDelayStatsPerUe(MacNodeId id);
         virtual void resetDelayCounterPerUe(MacNodeId id);
+
+        virtual double getUlDelayStatsPerUe(MacNodeId id);
+        virtual void resetUlDelayCounterPerUe(MacNodeId id);
 
         virtual double getThroughputStatsPerUe(MacNodeId id);
         virtual void resetThroughputCounterPerUe(MacNodeId id);

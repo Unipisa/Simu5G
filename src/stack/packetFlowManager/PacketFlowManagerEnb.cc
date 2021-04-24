@@ -46,6 +46,8 @@ void PacketFlowManagerEnb::initialize(int stage)
 //        headerCompressedSize_ = pdcp_->par("headerCompressedSize");
         if (headerCompressedSize_ == -1)
             headerCompressedSize_ = 0;
+
+        tt.setName("delay");
     }
 }
 
@@ -657,11 +659,13 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
                     }
 
                     double time = (simTime() - pit->second.entryTime).dbl() ;
-                    //times_[desc->nodeId_].record(time);
+//                    if(desc->nodeId_ == 2053)
+//                        tt.record(time);
 
                     EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
 
                     dit->second.time += (simTime() - pit->second.entryTime);
+
                     dit->second.pktCount += 1;
 
 
@@ -876,6 +880,41 @@ void PacketFlowManagerEnb::insertHarqProcess(LogicalCid lcid, unsigned int harqP
 //    }
 }
 
+
+void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
+{
+    Grant grant= {grantId, simTime()};
+    for(auto grant : ulGrants_[nodeId])
+    {
+        if(grant.grantId == grantId)
+            throw cRuntimeError("%s::grantSent - grant [%d] for nodeId [%d] already present",pfmType.c_str(), grantId, nodeId);
+    }
+    EV_FATAL << NOW << " " << pfmType << "::grantSent - Added grant " << grantId << " for nodeId " << nodeId << endl;
+    ulGrants_[nodeId].push_back(grant);
+}
+
+void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantId)
+{
+
+    for (auto it = ulGrants_[nodeId].begin(); it != ulGrants_[nodeId].end();) {
+        if(it->grantId == grantId)
+        {
+
+            simtime_t time = simTime() - it->sendTimestamp;
+            EV_FATAL << NOW << " " << pfmType << "::grantSent - TB received from nodeId " << nodeId << " related to grantId " << grantId << " after " << time.dbl() << "seconds" << endl;
+            ULPktDelay_[nodeId].pktCount++;
+            ULPktDelay_[nodeId].time += time;
+
+            it = ulGrants_[nodeId].erase(it);
+            return; // it is present only one grant with this grantId for this nodeId
+
+        } else {
+            ++it;
+        }
+    }
+    throw cRuntimeError("%s::ulMacPduArrived - grant [%d] for nodeId [%d] not present",pfmType.c_str(), grantId, nodeId);
+}
+
 double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
 {
     delayMap::iterator it = pdcpDelay_.find(id);
@@ -891,8 +930,30 @@ double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
     EV_FATAL << NOW << " " << pfmType << "::getDelayStatsPerUe - Delay Stats for Node Id " << id << " total time: "<< (it->second.time.dbl())*1000 << "ms, pckcount: " <<it->second.pktCount   << endl;
     double totalMs = (it->second.time.dbl())*1000; // ms
     double delayMean = totalMs / it->second.pktCount;
+//    if(id == 2053)
+//        tt.record(delayMean);
     return delayMean;
 }
+
+double PacketFlowManagerEnb::getUlDelayStatsPerUe(MacNodeId id)
+{
+    auto it = ULPktDelay_.find(id);
+    if (it == ULPktDelay_.end())
+    {
+        // this may occur after a handover, when data structures are cleared
+        EV_FATAL << NOW << " " << pfmType << "::getUlDelayStatsPerUe - Delay Stats for Node Id " << id << " not present." << endl;
+        return 0;
+    }
+
+    if(it->second.pktCount == 0)
+        return 0;
+    EV_FATAL << NOW << " " << pfmType << "::getUlDelayStatsPerUe - Delay Stats for Node Id " << id << " total time: "<< (it->second.time.dbl())*1000 << "ms, pckcount: " <<it->second.pktCount   << endl;
+    double totalMs = (it->second.time.dbl())*1000; // ms
+    double delayMean = totalMs / it->second.pktCount;
+    return delayMean;
+}
+
+
 
 void PacketFlowManagerEnb::resetDelayCounterPerUe(MacNodeId id)
 {
@@ -900,12 +961,28 @@ void PacketFlowManagerEnb::resetDelayCounterPerUe(MacNodeId id)
     if (it == pdcpDelay_.end())
     {
        // this may occur after a handover, when data structures are cleared
-       EV_FATAL << NOW << " " << pfmType << "::getDelayStatsPerUe - Delay Stats for Node Id " << id << " not present." << endl;
+       EV_FATAL << NOW << " " << pfmType << "::resetDelayCounterPerUe - Delay Stats for Node Id " << id << " not present." << endl;
        return;
     }
 
     it->second = {0,0};
 }
+
+void PacketFlowManagerEnb::resetUlDelayCounterPerUe(MacNodeId id)
+{
+    auto it = ULPktDelay_.find(id);
+    if (it == ULPktDelay_.end())
+    {
+       // this may occur after a handover, when data structures are cleared
+       EV_FATAL << NOW << " " << pfmType << "::resetUlDelayCounterPerUe - Ul Delay Stats for Node Id " << id << " not present." << endl;
+       return;
+    }
+
+    it->second = {0,0};
+}
+
+
+
 
 double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
 {
@@ -917,7 +994,6 @@ double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
         return 0.0;
     }
 
-//    if(it->second.pktSizeCount == 0) // a burst is not finished yet, return a tput of this period
 
     double time = it->second.time.dbl(); // seconds
     if(time == 0){

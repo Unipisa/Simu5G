@@ -140,6 +140,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         */
         virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
+        virtual void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) {};
         /*
         * This method is called after maxHarqTrasmission of a MAC PDU ID has been
         * reached. The PDCP, RLC, sno referred to the macPdu are cleared from the
@@ -159,6 +160,8 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) = 0;
 
         virtual void insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId) = 0;
+
+        virtual void grantSent(MacNodeId nodeId, unsigned int grantId){}
 
         /*
         * invoked by the MAC layer to notify that harqProcId is completed.

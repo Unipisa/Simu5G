@@ -17,6 +17,8 @@
 #include "stack/mac/scheduler/LteSchedulerEnbUl.h"
 #include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
 
 Define_Module(LteMacEnbD2D);
 
@@ -253,8 +255,6 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList>* scheduleList
             grant->setDirection(dir);
             grant->setCodewords(codewords);
 
-            EV_FATAL << "grant ID enb:" << grant->getGrandId() << "bytes "<< endl;
-
             // set total granted blocks
             grant->setTotalGrantedBlocks(granted);
             grant->setChunkLength(b(1));
@@ -302,6 +302,8 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList>* scheduleList
             enbSchedulerUl_->readRbOccupation(nodeId, cit->first, map);
 
             grant->setGrantedBlocks(map);
+            if(packetFlowManager_ != nullptr)
+                packetFlowManager_->grantSent(nodeId, grant->getGrandId());
             // send grant to PHY layer
             pkt->insertAtFront(grant);
             sendLowerPackets(pkt);

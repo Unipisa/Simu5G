@@ -589,6 +589,8 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList>* scheduleList)
 
             grant->setGrantedBlocks(map);
             pkt->insertAtFront(grant);
+            if(packetFlowManager_ != nullptr)
+                packetFlowManager_->grantSent(nodeId, grant->getGrandId());
             // send grant to PHY layer
             sendLowerPackets(pkt);
         }

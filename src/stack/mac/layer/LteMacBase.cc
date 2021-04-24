@@ -193,6 +193,14 @@ void LteMacBase::fromPhy(cPacket *pktAux)
             harqRxBuffers_[carrierFreq][src] = hrb;
             hrb->insertPdu(cw,pdu);
         }
+
+        /*
+         * @author Alessandro Noferi
+         * Notify the pfm about the arrival of a TB from a UE.
+         * The packet contains the associated grantId.
+         */
+        if(packetFlowManager_ != nullptr)
+            packetFlowManager_->ulMacPduArrived(src, userInfo->getGrantId());
     }
     else if (userInfo->getFrameType() == RACPKT)
     {

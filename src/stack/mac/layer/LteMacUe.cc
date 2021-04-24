@@ -522,12 +522,8 @@ void LteMacUe::macPduMake(MacCid cid)
                  * and add it as tag for this macPkt.
                  *
                  * This is useful at eNB side to calculate the packet delay
-                 *
-                 *
-                 *
-                 *
                  */
-                EV_FATAL << "grantId: " << schedulingGrant_[carrierFreq]->getGrandId() << endl;
+                macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrandId());
                 macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
 
 
