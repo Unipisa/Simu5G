@@ -7,7 +7,7 @@
 // and cannot be removed from it.
 //
 
-package lte.simulations.NR.mec_rest;
+package lte.simulations.NR.mec_rest.warningApp;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
