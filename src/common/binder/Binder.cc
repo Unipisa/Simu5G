@@ -734,6 +734,8 @@ void Binder::computeAverageCqiForBackgroundUes()
             //---------------------------------------------------------------------
             // STEP 1: update mutual interference
             // for iterations after the first one, update the interference before analyzing a whole cell
+            // Note that it makes no sense computing this at the first iteration when the cell is allocating
+            // zero blocks still
             if (countInterferenceCheck>1)
             {
                 updateMutualInterference(bgTrafficManagerId, numBands, DL);
@@ -750,14 +752,6 @@ void Binder::computeAverageCqiForBackgroundUes()
             while (bgUes_it != bgUes_et)
             {
                 TrafficGeneratorBase* bgUe = *bgUes_it;
-
-                // for the first iteration, update interference before analyzing each UE
-                if(countInterferenceCheck==1)
-                {
-                    updateMutualInterference(bgTrafficManagerId, numBands, DL);
-                    updateMutualInterference(bgTrafficManagerId, numBands, UL);
-                }
-
 
                 //---------------------------------------------------------------------
                 // STEP 2: compute SINR

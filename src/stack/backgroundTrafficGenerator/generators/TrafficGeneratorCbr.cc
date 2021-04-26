@@ -39,6 +39,6 @@ simtime_t TrafficGeneratorCbr::getNextGenerationTime(Direction dir)
 
 double TrafficGeneratorCbr::getAvgLoad(Direction dir)
 {
-    double avgLoad = (double)size_[dir]/period_[dir];
+    double avgLoad = (double)(size_[dir] + headerLen_)/period_[dir];
     return avgLoad;
 }
