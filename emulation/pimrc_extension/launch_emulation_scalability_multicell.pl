@@ -59,8 +59,9 @@ foreach my $numerology (@numerology)
                     print "Numerology[$numerology] - RBs[$rbs] - UEs[$ues] - bgGnbs[$gnbs] - SndInt[$sndInt]\n\n";
                     
                     open ($out,">","scenario_multicell.ini") or die "ERROR: Unable to open output file"; 
-                    print $out "*.numBgGnbs = \${numBgGnbs=$gnbs}\n";
-                    print $out "**.bgTrafficGenerator[0].numBgUes = \${numBkUEs=$ues}\n";
+                    print $out "*.numBgCell = \${numBgCell=$gnbs}\n";
+                    print $out "*.gnb.cellularNic.bgTrafficGenerator[0].numBgUes = \${numBkUEs=$ues}\n";
+                    print $out "*.bgCell[*].bgTrafficGenerator.numBgUes = \${numBkUEs}\n";
                     print $out "*.carrierAggregation.componentCarrier[0].numBands = \${rbs=$rbs}\n";
                     print $out "*.carrierAggregation.componentCarrier[0].numerologyIndex = \${u=$numerology}\n";
                     
