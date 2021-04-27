@@ -24,9 +24,10 @@ simple MECRniDelayApp like IMEApp
         int uePort;
         string localAddress;	// i.e meHost.virtualisationInfrastructure
 		int localPort;					// i.e port where the MeApp is binded
-        int packetSize = default(10);
+        int packetSize = default(100);
         
         double getPeriod @unit("s") = default(100ms);
+        double period @unit("s") = default(100ms);
         double threshold @unit("s") = default(6ms);
         int thresholdCount = default(2);
         
@@ -39,7 +40,8 @@ simple MECRniDelayApp like IMEApp
         int requiredDisk @unit("B") = default(100MB);
         double requiredCpu = default(0.01);
         
-        
+        @signal[RNIL2Delay];
+        @statistic[RNIL2Delay](title="L2Meas Delay"; unit=""; source="RNIL2Delay"; record=vector);    
         
         
            

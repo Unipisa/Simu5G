@@ -36,7 +36,8 @@ module MEHost
         double maxRam @unit("B") = default(32GB);
         double maxDisk @unit("B") = default(100TB);
         double maxCpu = default(1);						// percentage of available CPU
-
+        double cpuClockSpeed @unit("Hz") = default(3GHz);	// CPU's clock speed
+        	
 		int numBGMecApp = default(0);
         //#connections
         string eNBList = default("");

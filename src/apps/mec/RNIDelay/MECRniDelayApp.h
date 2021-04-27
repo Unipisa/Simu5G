@@ -38,9 +38,12 @@ class MECRniDelayApp : public MeAppBase
 
 
     cMessage* sendGet;
+    cMessage* sendUe;
 
+    simsignal_t l2Delay;
 
     double getPeriod ;
+    double sendUePerdiod;
     double threshold;
     int thresholdCount;
 
@@ -66,9 +69,10 @@ class MECRniDelayApp : public MeAppBase
 //        void handleInfoMEWarningAlertApp(WarningAlertPacket* pkt);
 
         virtual void handleServiceMessage() override;
+        virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
 
-        virtual void sendRNISRequest(){};
-        virtual void sendDataToUe(){};
+        virtual void sendRNISRequest();
+        virtual void sendDataToUe();
 
         virtual void handleSelfMessage(cMessage *msg) override;
         /* Utility functions */

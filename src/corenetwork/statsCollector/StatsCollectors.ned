@@ -31,7 +31,6 @@ module ENodeBStatsCollector like StatsCollector
         int prbUsagePeriods = default(5);
         int dataVolumePeriods = default(2);
         int activeUserPeriods = default(10); //10*100ms = 1s
-        int delayPacketPeriods = default(2); //used by the ue collector, remove 
         int discardRatePeriods = default(2);
         int tPutPeriods = default(2);
 
@@ -39,7 +38,7 @@ module ENodeBStatsCollector like StatsCollector
 		double prbUsagePeriod  @unit(s)   = default(0.5s); // TTI period
         double activeUserPeriod @unit(s)  = default(0.1s);
         double dataVolumePeriod @unit(s)   = default(0.5s);
-        double delayPacketPeriod @unit(s)  = default(0.5s);
+        double delayPacketPeriod @unit(s)  = default(0.05s);
         double discardRatePeriod @unit(s) = default(60s);
         double tPutPeriod @unit(s) = default(1s);
 
@@ -58,11 +57,11 @@ module UeStatsCollector like StatsCollector
     parameters:
         string collectorType = default("ueStatsCollector");
         string interfaceTableModule;
-        bool movingAverage = default(false);
+        bool movingAverage = default(true);
         
         // time periods for measurements 
         int dataVolumePeriods = default(2);
-        int delayPacketPeriods = default(2); //used by the ue collector, remove 
+        int delayPacketPeriods = default(10);
         int discardRatePeriods = default(2);
         int tPutPeriods = default(2);
         

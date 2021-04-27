@@ -62,7 +62,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     Delay pdcpDelay;
 
     //debug vars to be deleted
-   omnetpp::cOutVector times_;
+    omnetpp::cOutVector times_;
     std::set<unsigned int> myset;
 
 
@@ -87,6 +87,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     virtual void clearLcid(LogicalCid lcid) override;
     // reset structures for all connections
     virtual void clearAllLcid() override;
+    virtual void clearStats();
 
 
     
@@ -145,14 +146,8 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
      */
     // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId);
 
-    /*
-     * I also need methods that the PDCP layer calls when
-     * it needs the discarded pkts, pkt delay and throughput.
-     * The methods are called per specific UE
-     */
 
     DiscardedPkts getDiscardedPkt();
-    void resetDiscardPktCounter();
 
     double getDelayStats();
     void resetDelayCounter();

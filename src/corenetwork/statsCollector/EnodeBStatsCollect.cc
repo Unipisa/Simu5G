@@ -52,7 +52,6 @@ void EnodeBStatsCollector::initialize(int stage){
         std::string nodeType =  getAncestorPar("nodeType").stringValue();
         nodeType_ = nodeType.compare("ENODEB") == 0? ENODEB: GNODEB;
         EV << collectorType_ << "::initialize node type: "<< nodeType << endl;
-
     }
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER)
     {
@@ -113,15 +112,15 @@ void EnodeBStatsCollector::initialize(int stage){
         // start scheduling the l2 meas
         // schedule only stats not using packetFlowManager
 
-        scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
-        scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
-        if(packetFlowManager_ != nullptr)
-        {
-            scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
-            scheduleAt(NOW + discardRatePeriod_, discardRate_);
+//        scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
+//        scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
+//        if(packetFlowManager_ != nullptr)
+//        {
+//            scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
+//            scheduleAt(NOW + discardRatePeriod_, discardRate_);
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
-            scheduleAt(NOW + tPutPeriod_,tPut_);
-        }
+//            scheduleAt(NOW + tPutPeriod_,tPut_);
+//        }
     }
 }
 
@@ -254,6 +253,7 @@ void EnodeBStatsCollector::removeUeCollector(MacNodeId id)
     if(it != ueCollectors_.end())
     {
         ueCollectors_.erase(it);
+        EV << "EnodeBStatsCollector::removeUeCollector - removing UE pfm stats for UE with id["<<id<<"]"<< endl;
         packetFlowManager_->deleteUe(id);
     }
     else
@@ -381,7 +381,9 @@ void EnodeBStatsCollector::add_dl_nongbr_delay_perUser()
         delay = packetFlowManager_->getDelayStatsPerUe(ue.first);
         EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ue.first << endl;
         if(delay != 0)
+        {
             ue.second->add_dl_nongbr_delay_ue((int)delay);
+        }
     }
 }
 

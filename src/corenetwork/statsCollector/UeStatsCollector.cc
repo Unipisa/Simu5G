@@ -205,7 +205,9 @@ DiscardedPkts UeStatsCollector::getULDiscardedPkt()
 }
 
 void UeStatsCollector::resetStats()
-{        // packet delay
+{
+    packetFlowManager_->clearStats();
+    // packet delay
     ul_nongbr_delay_ue.reset();
     dl_nongbr_delay_ue.reset();
    // packet discard rate

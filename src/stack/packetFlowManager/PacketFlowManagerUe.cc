@@ -94,6 +94,12 @@ void PacketFlowManagerUe::clearAllLcid()
     EV_FATAL << NOW << " " << pfmType.c_str() <<"::clearAllLcid - cleared data structures for all lcids "<< endl;
 }
 
+void PacketFlowManagerUe::clearStats()
+{
+    clearAllLcid();
+    resetDelayCounter();
+    resetDiscardCounter();
+}
 void PacketFlowManagerUe::initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int pdcpSize, simtime_t& arrivalTime)
 
 {
@@ -624,11 +630,6 @@ DiscardedPkts PacketFlowManagerUe::getDiscardedPkt()
 //    pair.discarded = pktDiscardCounterTotal_;
 //    pair.total = pdcp_->getPktCount();
     return pktDiscardCounterTotal_;
-}
-
-void PacketFlowManagerUe::resetDiscardPktCounter()
-{
- pktDiscardCounterTotal_ = {0,0};
 }
 
 

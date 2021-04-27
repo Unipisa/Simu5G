@@ -30,6 +30,7 @@ protected:
      MecRequestForegroundApp() {}
      virtual ~MecRequestForegroundApp();
      virtual void handleServiceMessage() override;
+     virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
      virtual void established(int connId) override;
 };
 

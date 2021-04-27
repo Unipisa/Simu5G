@@ -12,6 +12,7 @@
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
+#include "inet/transportlayer/contract/udp/UdpSocket.h"
 /**
  * Base class for clients app for TCP-based request-reply protocols or apps.
  * Handles a single session (and TCP connection) at a time.
@@ -41,6 +42,9 @@ class  MeAppBase : public inet::TcpAppBase
     int requiredDisk;
     double requiredCpu;
 
+    //UDP socket to communicate with the UeApp
+    inet::UdpSocket ueSocket;
+
     omnetpp::cMessage* processedServiceResponse;
 
 protected:
@@ -54,6 +58,8 @@ protected:
     virtual void handleTimer(omnetpp::cMessage *msg) override {};
     virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
     virtual void handleServiceMessage() = 0;
+    virtual void handleUeMessage(omnetpp::cMessage *msg) = 0;
+
     virtual void established(int connId) = 0;
 
     /* inet::TcpSocket::CallbackInterface callback methods */

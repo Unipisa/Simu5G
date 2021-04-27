@@ -15,7 +15,8 @@
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 
-
+#include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/MEPlatform/MEAppPacket_m.h"
 
 Define_Module(MECRniDelayApp);
 
@@ -32,6 +33,8 @@ MECRniDelayApp::MECRniDelayApp()
 MECRniDelayApp::~MECRniDelayApp()
 {
     cancelAndDelete(sendGet);
+    cancelAndDelete(sendUe);
+
 }
 
 
@@ -61,13 +64,15 @@ void MECRniDelayApp::initialize(int stage)
 //    socket.setCallback(this);
 //    socket.setOutputGate(gate("socketOut"));
 
+    l2Delay = registerSignal("RNIL2Delay");
 
     cMessage *m = new cMessage("connect");
     scheduleAt(simTime()+0.01, m);
 
     sendGet = new cMessage("sendGet");
-
+    sendUe = new cMessage("sendUe");
     getPeriod = par("getPeriod");
+    sendUePerdiod = par("period");
     threshold = par("threshold");
     thresholdCount = par("thresholdCount");
 
@@ -77,23 +82,6 @@ void MECRniDelayApp::initialize(int stage)
     EV << "MECRniDelayApp::initialize - UEWarningAlertApp Symbolic Address: " << ueSimbolicAddress <<  " [" << destAddress_.str() << "]" << endl;
 
 }
-
-//void MECRniDelayApp::handleMessageWhenUp(cMessage *msg)
-//{
-//    EV << "MeAppBase::handleMessageWhenUp" << endl;
-//    if (msg->isSelfMessage())
-//        handleSelfMessage(msg);
-//    else if (socket.belongsToSocket(msg))
-//        socket.processMessage(msg);
-//    else if (ueSocket.belongsToSocket(msg))
-//    {
-//        EV << "UDP MESSAGE" << endl;
-//        delete msg;
-//    }
-//    else
-//        delete msg;
-//
-//}
 
 
 void MECRniDelayApp::finish(){
@@ -112,11 +100,29 @@ void MECRniDelayApp::finish(){
 void MECRniDelayApp::handleServiceMessage()
 {
     EV << "MECRniDelayApp::handleServiceMessage()" << endl;
-    if(currentHttpMessage->getType() == REQUEST)
+//    if(currentHttpMessage->getType() == REQUEST)
+//    {
+//        Http::send204Response(&socket);
+//        nlohmann::json jsonBody;
+//        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << currentHttpMessage->getBody()<< endl;
+//        try
+//        {
+//
+//           jsonBody = nlohmann::json::parse(currentHttpMessage->getBody()); // get the JSON structure
+//        }
+//        catch(nlohmann::detail::parse_error e)
+//        {
+//           EV <<  e.what() << endl;
+//           // body is not correctly formatted in JSON, manage it
+//           return;
+//        }
+//    }
+    if(currentHttpMessage->getType() == RESPONSE)
     {
-        Http::send204Response(&socket);
+        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(currentHttpMessage);
+
         nlohmann::json jsonBody;
-        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << currentHttpMessage->getBody()<< endl;
+        EV << "MEClusterizeService::handleServiceMessage - RESPONSE " << endl;
         try
         {
 
@@ -128,18 +134,16 @@ void MECRniDelayApp::handleServiceMessage()
            // body is not correctly formatted in JSON, manage it
            return;
         }
-
-
+        if(jsonBody.contains("cellUEInfo"))
+        {
+            auto address = jsonBody["cellUEInfo"]["associatedId"]["value"];
+            int delay = jsonBody["cellUEInfo"]["dl_nongbr_delay_ue"];
+            EV <<"MECRniDelayApp::handleServiceMessage() - Address: "<< address << endl;
+            EV <<"MECRniDelayApp::handleServiceMessage() - Delay: "<< delay << endl;
+            emit(l2Delay, delay);
+        }
+        scheduleAt(simTime()+getPeriod, sendGet);
     }
-    else if(currentHttpMessage->getType() == RESPONSE)
-    {
-        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(currentHttpMessage);
-        EV << "MECRniDelayApp::handleServiceMessage() - response payload:\n"<<rspMsg->getBody() << endl;
-
-
-    }
-
-
 }
 
 void MECRniDelayApp::connect()
@@ -158,14 +162,32 @@ void MECRniDelayApp::connect()
 void MECRniDelayApp::established(int connId)
 {
     EV << "MECRniDelayApp::established" << endl;
-    const char * body = "";
-//    const char *uri = par("uri");
-    const string uri = "/example/rni/v2/queries/layer2_meas?ue_ipv4_address=acr:"+L3AddressResolver().resolve(ueSimbolicAddress).str();
-    EV << "MECRniDelayApp::established - get "<< uri << endl;
-    std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
+    scheduleAt(simTime()+sendUePerdiod, sendUe);
+    scheduleAt(simTime()+getPeriod, sendGet);
+}
 
+void MECRniDelayApp::sendRNISRequest()
+{
+    const string uri = "/example/rni/v2/queries/layer2_meas?ue_ipv4_address=acr:"+L3AddressResolver().resolve(ueSimbolicAddress).str();
+    EV << "MECRniDelayApp::sendRNISRequest - get "<< uri << endl;
+    std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
     Http::sendGetRequest(&socket, "GET", uri.c_str(), host.c_str());
- }
+}
+
+void MECRniDelayApp::sendDataToUe()
+{
+    EV << "MECRniDelayApp::sendDataToUe - sendData to UE" << endl;
+    // generate and send a packet
+    Packet *pkt = new Packet("DataPkt");
+    const auto& payload = makeShared<MEAppPacket>();
+    payload->addTag<CreationTimeTag>()->setCreationTime(simTime());
+    payload->setType(INFO_MEAPP);
+    payload->setChunkLength(inet::B(size_));
+    pkt->insertAtBack(payload);
+
+    ueSocket.sendTo(pkt, destAddress_, destPort_);
+    scheduleAt(simTime()+sendUePerdiod, sendUe);
+}
 
 void MECRniDelayApp::handleSelfMessage(cMessage *msg)
 {
@@ -173,7 +195,15 @@ void MECRniDelayApp::handleSelfMessage(cMessage *msg)
     if(strcmp(msg->getName(), "connect") == 0)
     {
         connect();
+        delete msg;
     }
-    delete msg;
+    else if(strcmp(msg->getName(), "sendUe") == 0)
+    {
+        sendDataToUe();
+    }
+    else if(strcmp(msg->getName(), "sendGet") == 0)
+    {
+        sendRNISRequest();
+    }
 
 }

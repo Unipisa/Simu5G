@@ -106,8 +106,14 @@ void MeAppBase::handleMessageWhenUp(cMessage *msg)
         else
             handleSelfMessage(msg);
     }
-        else
+    else
+    {
+        // from service or from ue app?
+        if(socket.belongsToSocket(msg))
             socket.processMessage(msg);
+        else if(ueSocket.belongsToSocket(msg))
+            handleUeMessage(msg);
+    }
 }
 
 void MeAppBase::socketEstablished(TcpSocket * socket)

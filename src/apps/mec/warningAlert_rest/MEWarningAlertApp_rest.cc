@@ -93,18 +93,15 @@ void MEWarningAlertApp_rest::initialize(int stage)
 
 void MEWarningAlertApp_rest::handleMessageWhenUp(cMessage *msg)
 {
-    EV << "MeAppBase::handleMessageWhenUp" << endl;
-    if (msg->isSelfMessage())
-        handleSelfMessage(msg);
-    else if (socket.belongsToSocket(msg))
-        socket.processMessage(msg);
-    else if (ueSocket.belongsToSocket(msg))
-    {
-        EV << "UDP MESSAGE" << endl;
-        delete msg;
-    }
-    else
-        delete msg;
+//    EV << "MEWarningAlertApp_rest::handleMessageWhenUp" << endl;
+//    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+//    if (ueSocket.belongsToSocket(packet))
+//    {
+//        EV << "UDP MESSAGE" << endl;
+//        delete msg;
+//    }
+//    else
+        MeAppBase::handleMessageWhenUp(msg);
 
 }
 

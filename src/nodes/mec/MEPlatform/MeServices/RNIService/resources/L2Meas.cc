@@ -195,10 +195,10 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
 	}
 
 	if(ueArray.size() > 1){
-        val["CellUEInfo"] = ueArray;
+        val["cellUEInfo"] = ueArray;
 	}
     else if(ueArray.size() == 1){
-        val["CellUEInfo"] = ueArray[0];
+        val["cellUEInfo"] = ueArray[0];
     }
 
 //  l2Meas["L2Meas"] = val;
@@ -263,7 +263,7 @@ nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vect
 	nlohmann::ordered_json val ;
     nlohmann::ordered_json l2Meas;
 	val["cellInfo"] = toJsonCell(cellsID)["L2Meas"]["cellInfo"];
-	val["CellUEInfo"] = toJsonUe(uesID)["L2Meas"]["CellUEInfo"];
+	val["cellUEInfo"] = toJsonUe(uesID)["L2Meas"]["cellUEInfo"];
 	l2Meas["L2Meas"] = val;
 	return l2Meas;
 

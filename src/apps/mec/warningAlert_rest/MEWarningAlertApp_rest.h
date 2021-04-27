@@ -11,7 +11,7 @@
 #define __MEWARNINGALERTAPP_REST_H_
 
 #include "omnetpp.h"
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
+
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
@@ -39,9 +39,6 @@ class MEWarningAlertApp_rest : public MeAppBase
 
     SockAddr serviceSockAddress;
 
-
-
-
     int size_;
     std::string subId;
 
@@ -52,8 +49,7 @@ class MEWarningAlertApp_rest : public MeAppBase
 
     cOvalFigure * circle; // circle danger zone
 
-    //UDP socket to communicate with the UeApp
-    inet::UdpSocket ueSocket;
+
     inet::L3Address destAddress_;
     int destPort_;
 
@@ -68,7 +64,8 @@ class MEWarningAlertApp_rest : public MeAppBase
 //        void handleInfoUEWarningAlertApp(WarningAlertPacket* pkt);
 //        void handleInfoMEWarningAlertApp(WarningAlertPacket* pkt);
 
-        void handleServiceMessage() override;
+        virtual void handleServiceMessage() override;
+        virtual void handleUeMessage(omnetpp::cMessage *msg){};
 
         virtual void modifySubscription();
 

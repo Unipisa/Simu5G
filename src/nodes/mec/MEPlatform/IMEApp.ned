@@ -24,6 +24,11 @@ moduleinterface IMEApp
         int uePort;
         string localAddress;	// i.e meHost.virtualisationInfrastructure
 		int localPort;					// i.e port where the MeApp is binded
+		
+		 //resource required infos
+        int requiredRam @unit("B");
+        int requiredDisk @unit("B");
+        double requiredCpu;
 }
 
 

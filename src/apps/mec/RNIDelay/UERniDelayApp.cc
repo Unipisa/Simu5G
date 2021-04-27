@@ -220,25 +220,13 @@ void UERniDelayApp::handleAckStartMECRniDelayApp(cMessage* msg)
 void UERniDelayApp::handleInfoMECRniDelayApp(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto pkt = packet->peekAtFront<WarningAlertPacket>();
 
-    EV << "UERniDelayApp::handleInfoMEWarningrAlertApp - Received " << pkt->getType() << " type WarningAlertPacket from: "<< pkt->getSourceAddress() << endl;
+    auto pkt = packet->peekAtFront<MEAppPacket>();
+    EV_INFO << "Data packet: " << inet::UdpSocket::getReceivedPacketInfo(packet) << endl;
 
-    //updating runtime color of the car icon background
-    if(pkt->getDanger()){
-
-        EV << "UERniDelayApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: DANGER!" << endl;
-        ue->getDisplayString().setTagArg("i",1, "red");
-    }
-    else{
-
-        EV << "UERniDelayApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: NO DANGER!" << endl;
-        ue->getDisplayString().setTagArg("i",1, "green");
-    }
 }
 void UERniDelayApp::handleAckStopMECRniDelayApp(cMessage* msg)
 {
-
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = packet->peekAtFront<MEAppPacket>();
 
