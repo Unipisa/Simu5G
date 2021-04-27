@@ -61,7 +61,8 @@ class Binder : public omnetpp::cSimpleModule
     BgInterferenceMatrix bgCellsInterferenceMatrix_;
     // map of maps storing the mutual interference between BG UEs
     BgInterferenceMatrix bgUesInterferenceMatrix_;
-
+    // maximum data rate achievable in one RB (NED parameter)
+    double maxDataRatePerRb_;
 
     MacNodeId macNodeIdCounter_[3]; // MacNodeId Counter
     DeployedUesMap dMap_; // DeployedUes --> Master Mapping

@@ -250,6 +250,8 @@ void Binder::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LAST)
     {
+        maxDataRatePerRb_ = par("maxDataRatePerRb");
+
         // if avg interference enabled, compute CQIs
         computeAverageCqiForBackgroundUes();
     }
@@ -828,31 +830,31 @@ void Binder::computeAverageCqiForBackgroundUes()
             condition = false;
     }
 
-    // DEBUG
-    // loop through the BackgroundTrafficManagers (one per cell)
-    for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
-    {
-        BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
-        if (!(info->init))
-            continue;
-
-        BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
-
-        // Compute the SINR for each UE within the cell
-        auto bgUes_it = bgTrafficManager->getBgUesBegin();
-        auto bgUes_et = bgTrafficManager->getBgUesEnd();
-        int cont = 0;
-        while (bgUes_it != bgUes_et)
-        {
-            TrafficGeneratorBase* bgUe = *bgUes_it;
-            Cqi cqiDl = bgUe->getCqi(DL);
-            Cqi cqiUl = bgUe->getCqi(UL);
-
-            std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] cqiDl[" << cqiDl << "] cqiUl[" << cqiUl << "] "<< endl;
-            ++bgUes_it;
-            ++cont;
-        }
-    }
+//    // DEBUG
+//    // loop through the BackgroundTrafficManagers (one per cell)
+//    for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
+//    {
+//        BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
+//        if (!(info->init))
+//            continue;
+//
+//        BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+//
+//        // Compute the SINR for each UE within the cell
+//        auto bgUes_it = bgTrafficManager->getBgUesBegin();
+//        auto bgUes_et = bgTrafficManager->getBgUesEnd();
+//        int cont = 0;
+//        while (bgUes_it != bgUes_et)
+//        {
+//            TrafficGeneratorBase* bgUe = *bgUes_it;
+//            Cqi cqiDl = bgUe->getCqi(DL);
+//            Cqi cqiUl = bgUe->getCqi(UL);
+//
+//            std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] cqiDl[" << cqiDl << "] cqiUl[" << cqiUl << "] "<< endl;
+//            ++bgUes_it;
+//            ++cont;
+//        }
+//    }
 
     EV << " ===== Binder::computeAverageCqiForBackgroundUes - END =====" << endl;
 
@@ -1057,7 +1059,6 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
     //      and make them configurable
     const double MIN_SINR = -5.5;
     const double MAX_SINR = 25.5;
-    const double MAX_SPECTRAL_EFFICIENCY = 2.5 * 1000000;
 
     // we let a UE to have a minimum CQI (2) even when SINR is too low (this is what our scheduler does)
     if( sinr <= -3.5 )
@@ -1069,7 +1070,7 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 
     double normalizedSinr = (sinr + fabs(MIN_SINR)) / sinrRange;
 
-    double bitRate = normalizedSinr * MAX_SPECTRAL_EFFICIENCY;
+    double bitRate = normalizedSinr * maxDataRatePerRb_;
 
     //     double rbs = bitRate/reqLoad;
     double rbs = reqLoad / bitRate;
