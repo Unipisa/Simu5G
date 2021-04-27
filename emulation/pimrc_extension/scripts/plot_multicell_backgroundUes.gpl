@@ -1,0 +1,104 @@
+#!/usr/bin/gnuplot -persist
+
+set terminal postscript enhanced color 
+
+set view map
+unset surface
+
+
+set datafile missing "NaN"
+set datafile separator "\t"
+
+set grid back lc rgb "gray" lw 1 lt 1
+
+
+
+# --- Styles definition --- #
+set style line 1 dt 1 lw 3 pt 7 ps 1.3 lc rgb "#00BB00"
+set style line 2 dt 1 lw 3 pt 2 ps 1.3 lc rgb "red"
+set style line 3 dt 1 lw 3 pt 5 ps 1.3 lc rgb "blue"
+set style line 4 dt 1 lw 3 pt 6 ps 1.3 lc rgb "brown"
+set style line 5 dt 1 lw 3 pt 4 ps 1.3 lc rgb "orange"
+
+set style line 11 dt 1 lw 2 pt 7 ps 0 lc rgb "#00BB00"
+set style line 12 dt 1 lw 2 pt 2 ps 0 lc rgb "red"
+set style line 13 dt 1 lw 2 pt 5 ps 0 lc rgb "blue"
+set style line 14 dt 1 lw 2 pt 6 ps 0 lc rgb "brown"
+set style line 15 dt 1 lw 2 pt 4 ps 0 lc rgb "orange"
+
+set style line 21 dt 2 lw 2 pt 7 lc rgb "#00BB00"
+set style line 22 dt 2 lw 2 pt 2 lc rgb "red"
+set style line 23 dt 2 lw 2 pt 5 lc rgb "blue"
+set style line 24 dt 2 lw 2 pt 6 lc rgb "brown"
+set style line 25 dt 2 lw 2 pt 4 lc rgb "orange"
+
+
+
+
+# --- PLOT ROUND TRIP TIME WITH DIFFERENT NUMBER OF BG CELLS (RBs=100) ---#                    
+
+set output 'plots/rtt-backgroundCells.ps'
+set multiplot layout 3,1
+set tmargin 0
+set bmargin 0.5
+
+# --- Key --- #
+set key center at 175,35 box opaque width 1 horizontal font ",14" title "Background cells"
+
+set xrange[50:300]
+#set yrange[19:22]
+set yrange[0:30]
+#set ytics 18,1,22
+set ytics 0,5,25
+
+set ylabel "RTT [ms]" font ",16" offset 1
+
+unset xlabel
+set xtics format ""
+
+set origin 0.2,0.63
+set size 0.6,0.28
+set title "{/Symbol m} = 0" offset -15,-3 font ",18"
+plot "stats/rtt-multicell-backgroundUEs-u=0-rbs=100.csv" using 1:2 ls 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle
+                            
+                            
+unset key
+set origin 0.2,0.35
+set size 0.6,0.28
+#set yrange[4:12]
+#set ytics 5,2,11
+set title "{/Symbol m} = 2" offset -15,-3 font ",18"
+plot "stats/rtt-multicell-backgroundUEs-u=2-rbs=100.csv" using 1:2 ls 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle
+                      
+                      
+set xlabel "Number of Background UEs per cell" font ",16"
+set xtics format "%.0f"
+set origin 0.2,0.07
+set size 0.6,0.28
+#set yrange[2:11]
+#set ytics 2,2,10
+set title "{/Symbol m} = 4" offset -15,-3 font ",18"
+plot "stats/rtt-multicell-backgroundUEs-u=4-rbs=100.csv" using 1:2 ls 1 with linespoints t col,\
+                            "" using 1:2:3 ls 11 with yerrorbars notitle,\
+                            "" using 1:4 ls 2 with linespoint t col,\
+                            "" using 1:4:5 ls 12 with yerrorbars notitle,\
+                            "" using 1:6 ls 3 with linespoint t col,\
+                            "" using 1:6:7 ls 13 with yerrorbars notitle
+
+
+unset multiplot
+                            
+# ------------------------------------------------------------#
+
+
+

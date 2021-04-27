@@ -39,10 +39,10 @@ my $out;
 my $sndInt = (0.04);
 
 # iteration variables
-my @numerology = (0,1,2,3,4);   
-my @rbs = (25,50,100);
-my @ues = (0,25,50,75,100,125,150,175,200);
-my @gnbs = (6);
+my @numerology = (0,2,4);   
+my @rbs = (100);
+my @ues = (0,50,100,150,200,250,300);
+my @gnbs = (3,6,9);
 my @runs = (0);
 foreach my $numerology (@numerology)
 {
@@ -87,7 +87,7 @@ foreach my $numerology (@numerology)
                         else
                         {
                         
-                            sleep(5); # wait simulation to start (is 5 seconds enough?)
+                            sleep(60); # wait simulation to start 
                                                                                 # father process - start real traffic on the sender
                             print " --- Starting traffic ---\n\n";
                             startTraffic($gnbs, $numerology, $rbs, $ues, $sndInt, $run);
