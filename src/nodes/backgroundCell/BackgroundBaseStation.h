@@ -83,6 +83,10 @@ class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
     void resetAllocation(Direction dir);
     /*****************************/
 
+    // statistics
+    simsignal_t bgAvgServedBlocksDl_;
+    simsignal_t bgAvgServedBlocksUl_;
+
   protected:
     virtual void initialize(int stage);
     virtual int numInitStages() const { return inet::INITSTAGE_LOCAL+2; }

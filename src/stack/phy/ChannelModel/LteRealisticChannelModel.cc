@@ -931,24 +931,18 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    // compute and linearize total noise
    double totN = dBmToLinear(thermalNoise_ + noiseFigure);
 
-   // denominator expressed in dBm as (N+extCell+multiCell)
-   double den;
-   double sumSnr = 0.0;
-   int usedRBs = 0;
    // add interference for each band
    for (unsigned int i = 0; i < numBands_; i++)
    {
+       // denominator expressed in dBm as (N+extCell+multiCell)
        //               (      mW              +          mW            +  mW  +        mW            )
-       den = linearToDBm(bgCellInterference[i] + extCellInterference[i] + totN + multiCellInterference[i]);
+       double den = linearToDBm(bgCellInterference[i] + extCellInterference[i] + totN + multiCellInterference[i]);
 
        EV << "\t bgCell[" << bgCellInterference[i] << "] - ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
           << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
 
        // compute final SINR
        snrVector[i] -= den;
-
-       sumSnr += snrVector[i];
-       ++usedRBs;
    }
 
    return snrVector;
@@ -2486,7 +2480,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                    // compute attenuation according to some path loss model
                    att = computeExtCellPathLoss(dist, nodeId);
 
-                   recvPwrDBm = (*it)->getTxPower() - att - angolarAtt - cableLoss_ + antennaGainUe_ + antennaGainBgUe;
+                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainUe_ + antennaGainBgUe;
                    recvPwr = dBmToLinear(recvPwrDBm);
 
                    (*interference)[i] += recvPwr;

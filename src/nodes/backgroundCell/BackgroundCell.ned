@@ -77,6 +77,12 @@ simple BackgroundBaseStation
 
         // carrier bandwidth
         int numBands = default(6);
+        
+        // statistics
+        @signal[bgAvgServedBlocksDl];
+        @statistic[bgAvgServedBlocksDl](title="Average DL served blocks for background cells"; unit=""; source="bgAvgServedBlocksDl"; record=mean, vector);
+        @signal[bgAvgServedBlocksUl];
+        @statistic[bgAvgServedBlocksUl](title="Average UL served blocks for background cells"; unit=""; source="bgAvgServedBlocksUl"; record=mean, vector);
 }
 
 simple BackgroundCellChannelModel

@@ -1175,6 +1175,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                // if the ext cell is active, add interference
                if (occ)
                {
+                   txPwr = bgUe->getTxPwr();
                    c = bgUe->getCoord();
                    dist = bgBsCoord.distance(c);
 

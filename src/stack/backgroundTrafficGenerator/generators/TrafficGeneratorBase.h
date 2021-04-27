@@ -75,6 +75,11 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // current CQI based on the last position update
     Cqi cqi_[2];
 
+    // statistics
+    simsignal_t bgAverageCqiDl_;
+    simsignal_t bgAverageCqiUl_;
+
+
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
     virtual void handleMessage(cMessage* msg) override;

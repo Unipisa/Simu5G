@@ -73,6 +73,10 @@ void TrafficGeneratorBase::initialize(int stage)
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;
+
+        // statistics
+        bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
+        bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
     }
 }
 
@@ -174,6 +178,12 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
         bytes = bufferedBytes_[dir];
 
     bufferedBytes_[dir] -= bytes;
+
+    // this simulates a transmission, so emit CQI statistic
+    if (dir == DL)
+        emit(bgAverageCqiDl_, (long)cqi_[DL]);
+    else
+        emit(bgAverageCqiUl_, (long)cqi_[UL]);
 
     return bufferedBytes_[dir];
 }

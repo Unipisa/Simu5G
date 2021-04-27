@@ -56,6 +56,10 @@ void BackgroundBaseStation::initialize(int stage)
 
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
+
+        // statistics
+        bgAvgServedBlocksDl_ = registerSignal("bgAvgServedBlocksDl");
+        bgAvgServedBlocksUl_ = registerSignal("bgAvgServedBlocksUl");
     }
     if (stage == inet::INITSTAGE_LOCAL+1)
     {
@@ -206,6 +210,12 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             break;
         }
     }
+
+    // emit statistics
+    if (dir == DL)
+        emit(bgAvgServedBlocksDl_, (long)b);
+    else
+        emit(bgAvgServedBlocksUl_, (long)b);
 
     EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
 }
