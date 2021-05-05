@@ -14,6 +14,7 @@
 #include "stack/mac/layer/LteMacEnbD2D.h"
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
+#include "stack/phy/layer/LtePhyBase.h"
 
 using namespace omnetpp;
 
@@ -474,6 +475,49 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
     return 0;
 }
 
+bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim)
+{
+    try
+    {
+        EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground --------------------::[ START RTX-SCHEDULE-BACKGROUND ]::--------------------" << endl;
+        EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
+
+        // --- Schedule RTX for background UEs --- //
+        std::map<int, unsigned int> bgScheduledRtx;
+        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
+                                       et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
+        for (; it != et; ++it)
+        {
+            int bgUeIndex = *it;
+            MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
+
+            unsigned cw = 0;
+            unsigned int rtxBytes = scheduleBgRtx(bgUeId, carrierFrequency, cw, bandLim);
+            if (rtxBytes > 0)
+                bgScheduledRtx[bgUeId] = rtxBytes;
+            EV << NOW << "LteSchedulerEnbUl::rtxscheduleBackground BG UE " << bgUeId << " - allocated bytes : " << rtxBytes << endl;
+        }
+
+        // consume bytes
+        for (auto it = bgScheduledRtx.begin(); it != bgScheduledRtx.end(); ++it)
+            bgTrafficManager->consumeBackloggedUeBytes(it->first, it->second, direction_, true); // in bytes
+
+        int availableBlocks = allocator_->computeTotalRbs();
+
+        EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground residual OFDM Space: " << availableBlocks << endl;
+
+        EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground --------------------::[  END RTX-SCHEDULE-BACKGROUND ]::--------------------" << endl;
+
+        return (availableBlocks == 0);
+    }
+    catch(std::exception& e)
+    {
+        throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxscheduleBackground(): %s", e.what());
+    }
+    return 0;
+}
+
 unsigned int
 LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
     std::vector<BandLimit>* bandLim, Remote antenna, bool limitBl)
@@ -881,6 +925,164 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
     catch(std::exception& e)
     {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::schedulePerAcidRtxD2D(): %s", e.what());
+    }
+    return 0;
+}
+
+unsigned int
+LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim, Remote antenna, bool limitBl)
+{
+    try
+    {
+        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        unsigned int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
+
+        // get the RTX buffer size
+        unsigned int queueLength = bgTrafficManager->getBackloggedUeBuffer(bgUeId, direction_, true); // in bytes
+        if (queueLength == 0)
+            return 0;
+
+        RbMap allocatedRbMap;
+
+        BandLimitVector tempBandLim;
+        tempBandLim.clear();
+        if (bandLim == nullptr)
+        {
+            // Create a vector of band limit using all bands
+            // FIXME: bandlim is never deleted
+
+            unsigned int numBands = mac_->getCellInfo()->getNumBands();
+            // for each band of the band vector provided
+            for (unsigned int i = 0; i < numBands; i++)
+            {
+                BandLimit elem;
+                // copy the band
+                elem.band_ = Band(i);
+                EV << "Putting band " << i << endl;
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
+                {
+                    elem.limit_[j]=-2;
+                }
+                tempBandLim.push_back(elem);
+            }
+            bandLim = &tempBandLim;
+        }
+
+        EV << NOW << "LteSchedulerEnbUl::scheduleBgRtx - Node[" << mac_->getMacNodeId() << ", User[" << bgUeId << "]"<< endl;
+
+        Codeword allocatedCw = 0;
+
+        // bytes to serve
+        unsigned int toServe = queueLength;
+        // blocks to allocate for each band
+        std::vector<unsigned int> assignedBlocks;
+        // bytes which blocks from the preceding vector are supposed to satisfy
+        std::vector<unsigned int> assignedBytes;
+
+        // end loop signal [same as bytes>0, but more secure]
+        bool finish = false;
+        // for each band
+        unsigned int size = bandLim->size();
+        for (unsigned int i = 0; (i < size) && (!finish); ++i)
+        {
+            // save the band and the relative limit
+            Band b = bandLim->at(i).band_;
+            int limit = bandLim->at(i).limit_.at(cw);
+
+            unsigned int bandAvailableBytes = availableBytesBackgroundUe(bgUeId, antenna, b, direction_, carrierFrequency, (limitBl) ? limit : -1); // available space (in bytes)
+
+            // use the provided limit as cap for available bytes, if it is not set to unlimited
+            if (limit >= 0)
+                bandAvailableBytes = limit < (int) bandAvailableBytes ? limit : bandAvailableBytes;
+
+            EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx BAND " << b << endl;
+            EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx total bytes:" << queueLength << " still to serve: " << toServe << " bytes" << endl;
+            EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx Available: " << bandAvailableBytes << " bytes" << endl;
+
+            unsigned int servedBytes = 0;
+            // there's no room on current band for serving the entire request
+            if (bandAvailableBytes < toServe)
+            {
+                // record the amount of served bytes
+                servedBytes = bandAvailableBytes;
+                // the request can be fully satisfied
+            }
+            else
+            {
+                // record the amount of served bytes
+                servedBytes = toServe;
+                // signal end loop - all data have been serviced
+                finish = true;
+            }
+
+            unsigned int servedBlocks = ceil((double)servedBytes/bytesPerBlock);
+
+            // update the bytes counter
+            toServe -= servedBytes;
+            // update the structures
+            assignedBlocks.push_back(servedBlocks);
+            assignedBytes.push_back(servedBytes);
+        }
+
+        if (toServe > 0)
+        {
+            // process couldn't be served - no sufficient space on available bands
+            EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx Unavailable space for serving node " << bgUeId << endl;
+            return 0;
+        }
+        else
+        {
+            std::map<Band, unsigned int> allocatedRbMapEntry;
+
+            // record the allocation
+            unsigned int size = assignedBlocks.size();
+            unsigned int cwAllocatedBlocks =0;
+            unsigned int allocatedBytes = 0;
+            for(unsigned int i = 0; i < size; ++i)
+            {
+                allocatedRbMapEntry[i] = 0;
+
+                // For each LB for which blocks have been allocated
+                Band b = bandLim->at(i).band_;
+
+                allocatedBytes += assignedBytes.at(i);
+                cwAllocatedBlocks +=assignedBlocks.at(i);
+                allocatedRbMapEntry[i] += assignedBlocks.at(i);
+
+                EV << "\t Cw->" << allocatedCw << "/" << MAX_CODEWORDS << endl;
+                //! handle multi-codeword allocation
+                if (allocatedCw!=MAX_CODEWORDS)
+                {
+                    EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx - adding " << assignedBlocks.at(i) << " to band " << i << endl;
+                    allocator_->addBlocks(antenna,b,bgUeId,assignedBlocks.at(i),assignedBytes.at(i));
+                }
+            }
+
+            // signal a retransmission
+
+            // mark codeword as used
+            if (allocatedCws_.find(bgUeId)!=allocatedCws_.end())
+                allocatedCws_.at(bgUeId)++;
+            else
+                allocatedCws_[bgUeId]=1;
+
+            EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx: " << allocatedBytes << " bytes served! " << endl;
+
+            // update rb map
+            allocatedRbMap[antenna] = allocatedRbMapEntry;
+
+            // if uplink interference is enabled, mark the occupation in the ul transmission map (for ul interference computation purposes)
+            LteChannelModel* channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
+            if (channelModel->isUplinkInterferenceEnabled())
+                binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
+
+
+            return allocatedBytes;
+        }
+    }
+    catch(std::exception& e)
+    {
+        throw cRuntimeError("Exception in LteSchedulerEnbUl::scheduleBgRtx(): %s", e.what());
     }
     return 0;
 }

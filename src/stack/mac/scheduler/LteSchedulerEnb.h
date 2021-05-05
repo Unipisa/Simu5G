@@ -222,6 +222,9 @@ class LteSchedulerEnb
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
         std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limibBl = false) = 0;
 
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+            Remote antenna = MACRO, bool limitBl = false) = 0;
+
     /**
      * Schedules capacity for a given connection without effectively perform the operation on the
      * real downlink/uplink buffer: instead, it performs the operation on a virtual buffer,
@@ -282,6 +285,12 @@ class LteSchedulerEnb
      * @return TRUE if OFDM space is exhausted.
      */
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
+
+    /**
+     * Schedule retransmissions for background UEs
+     * @return TRUE if OFDM space is exhausted.
+     */
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
 
     /*
      * OFDMA frame management

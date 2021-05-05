@@ -56,6 +56,12 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // CQI reporting period
     simtime_t fbPeriod_;
 
+    // retransmission probability
+    double rtxRate_;
+
+    // retransmission delay
+    double rtxDelay_;
+
     // message for scheduling CQI reporting
     cMessage* fbSource_;
 
@@ -65,6 +71,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
     // current DL and UL backlog
     unsigned int bufferedBytes_[2];
+
+    // current DL and UL backlog for retransmissions
+    unsigned int bufferedBytesRtx_[2];
 
     // the physical position of the UE (derived from display string or from mobility models)
     inet::Coord pos_;
@@ -78,7 +87,8 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // statistics
     simsignal_t bgAverageCqiDl_;
     simsignal_t bgAverageCqiUl_;
-
+    simsignal_t bgHarqErrorRateDl_;
+    simsignal_t bgHarqErrorRateUl_;
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
@@ -112,7 +122,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
     // returns the number of buffered bytes for the given direction
-    unsigned int getBufferLength(Direction dir);
+    unsigned int getBufferLength(Direction dir, bool rtx = false);
 
     // based on the given sinr, set the CQI for the given direction
     void setCqiFromSinr(double sinr, Direction dir);
@@ -121,7 +131,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     Cqi getCqi(Direction dir);
 
     // consume bytes from the queue and returns the updated buffer length
-    unsigned int consumeBytes(int bytes, Direction dir);
+    unsigned int consumeBytes(int bytes, Direction dir, bool rtx = false);
 };
 
 #endif

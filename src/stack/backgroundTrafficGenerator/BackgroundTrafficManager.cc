@@ -122,15 +122,22 @@ unsigned int BackgroundTrafficManager::getNumBands()
     return channelModel_->getNumBands();
 }
 
-void BackgroundTrafficManager::notifyBacklog(int index, Direction dir)
+void BackgroundTrafficManager::notifyBacklog(int index, Direction dir, bool rtx)
 {
     if (dir != DL && dir != UL)
         throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
 
-    if (dir == UL)
-        waitingForRac_.push_back(index);
+    if (!rtx)
+    {
+        if (dir == UL)
+            waitingForRac_.push_back(index);
+        else
+            backloggedBgUes_[DL].push_back(index);
+    }
     else
-        backloggedBgUes_[DL].push_back(index);
+    {
+        backloggedRtxBgUes_[dir].push_back(index);
+    }
 }
 
 Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
@@ -206,14 +213,20 @@ std::vector<TrafficGeneratorBase*>::const_iterator BackgroundTrafficManager::get
     return bgUe_.end();
 }
 
-std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir)
+std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesBegin(Direction dir, bool rtx)
 {
-    return backloggedBgUes_[dir].begin();
+    if (!rtx)
+        return backloggedBgUes_[dir].begin();
+    else
+        return backloggedRtxBgUes_[dir].begin();
 }
 
-std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesEnd(Direction dir)
+std::list<int>::const_iterator BackgroundTrafficManager::getBackloggedUesEnd(Direction dir, bool rtx)
 {
-    return backloggedBgUes_[dir].end();
+    if (!rtx)
+        return backloggedBgUes_[dir].end();
+    else
+        return backloggedRtxBgUes_[dir].end();
 }
 
 std::list<int>::const_iterator BackgroundTrafficManager::getWaitingForRacUesBegin()
@@ -226,10 +239,10 @@ std::list<int>::const_iterator BackgroundTrafficManager::getWaitingForRacUesEnd(
     return waitingForRac_.end();
 }
 
-unsigned int BackgroundTrafficManager::getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir)
+unsigned int BackgroundTrafficManager::getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx)
 {
     int index = bgUeId - BGUE_MIN_ID;
-    return bgUe_.at(index)->getBufferLength(dir);
+    return bgUe_.at(index)->getBufferLength(dir, rtx);
 }
 
 unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
@@ -241,14 +254,18 @@ unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bg
     return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
 }
 
-unsigned int BackgroundTrafficManager::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir)
+unsigned int BackgroundTrafficManager::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx)
 {
     int index = bgUeId - BGUE_MIN_ID;
-    int newBuffLen = bgUe_.at(index)->consumeBytes(bytes, dir);
+    int newBuffLen = bgUe_.at(index)->consumeBytes(bytes, dir, rtx);
 
     if (newBuffLen == 0)  // bg UE is no longer active
-        backloggedBgUes_[dir].remove(index);
-
+    {
+        if (!rtx)
+            backloggedBgUes_[dir].remove(index);
+        else
+            backloggedRtxBgUes_[dir].remove(index);
+    }
     return newBuffLen;
 }
 

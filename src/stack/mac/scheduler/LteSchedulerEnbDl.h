@@ -50,6 +50,12 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
 
     /**
+     * Schedule retransmissions for background UEs
+     * @return TRUE if OFDM space is exhausted.
+     */
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL);
+
+    /**
      * Schedules retransmission for the Harq Process of the given UE on a set of logical bands.
      * Each band has also assigned a band limit amount of bytes: no more than the specified
      * amount will be served on the given band for the acid.
@@ -63,6 +69,8 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
         std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+            Remote antenna = MACRO, bool limitBl = false);
 
     bool getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId);
 

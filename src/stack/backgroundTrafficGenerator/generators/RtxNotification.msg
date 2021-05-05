@@ -9,11 +9,8 @@
 // and cannot be removed from it.
 //
 
-import stack.phy.packet.AirFrame;
-
-//
-// This is LteAirFrame.
-//
-packet LteAirFrame extends AirFrame {
-    @customize(true);
+message RtxNotification 
+{
+    int bytes;       // number of bytes to be retransmitted
+    int direction;   // DL or UL
 }

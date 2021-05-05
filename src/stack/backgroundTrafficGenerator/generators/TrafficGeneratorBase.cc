@@ -10,7 +10,8 @@
 //
 
 #include "inet/mobility/contract/IMobility.h"
-#include "TrafficGeneratorBase.h"
+#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "stack/backgroundTrafficGenerator/generators/RtxNotification_m.h"
 
 Define_Module(TrafficGeneratorBase);
 
@@ -19,6 +20,7 @@ TrafficGeneratorBase::TrafficGeneratorBase()
     fbSource_ = nullptr;
     selfSource_[DL] = selfSource_[UL] = nullptr;
     bufferedBytes_[DL] = bufferedBytes_[UL] = 0;
+    bufferedBytesRtx_[DL] = bufferedBytesRtx_[UL] = 0;
     trafficEnabled_[DL] = trafficEnabled_[UL] = false;
 }
 
@@ -41,8 +43,9 @@ void TrafficGeneratorBase::initialize(int stage)
         startTime_[UL] = par("startTimeUl");
 
         headerLen_ = par("headerLen");
-
         txPower_ = par("txPower");
+        rtxRate_ = par("rtxRate");
+        rtxDelay_ = par("rtxDelay");
 
         bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getParentModule()->getSubmodule("manager"));
 
@@ -77,6 +80,8 @@ void TrafficGeneratorBase::initialize(int stage)
         // statistics
         bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
         bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
+        bgHarqErrorRateDl_ = registerSignal("bgHarqErrorRateDl");
+        bgHarqErrorRateUl_ = registerSignal("bgHarqErrorRateUl");
     }
 }
 
@@ -122,6 +127,18 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
             simtime_t offset = getNextGenerationTime(UL);
             scheduleAt(simTime()+offset, selfSource_[UL]);
         }
+        else if (!strcmp(msg->getName(), "rtxNotification"))
+        {
+            RtxNotification* rtxNotification = check_and_cast<RtxNotification*>(msg);
+            Direction dir = (Direction)rtxNotification->getDirection();
+            bufferedBytesRtx_[dir] += rtxNotification->getBytes();
+            if (rtxNotification->getBytes() == bufferedBytesRtx_[dir])
+            {
+                // the UE has become active, signal to the manager
+                bgTrafficManager_->notifyBacklog(bgUeIndex_, dir, true);
+            }
+            delete rtxNotification;
+        }
     }
 }
 
@@ -153,9 +170,12 @@ simtime_t TrafficGeneratorBase::getNextGenerationTime(Direction dir)
     return offset;
 }
 
-unsigned int TrafficGeneratorBase::getBufferLength(Direction dir)
+unsigned int TrafficGeneratorBase::getBufferLength(Direction dir, bool rtx)
 {
-    return bufferedBytes_[dir];
+    if (!rtx)
+        return bufferedBytes_[dir];
+    else
+        return bufferedBytesRtx_[dir];
 }
 
 void TrafficGeneratorBase::setCqiFromSinr(double sinr, Direction dir)
@@ -169,15 +189,27 @@ Cqi TrafficGeneratorBase::getCqi(Direction dir)
     return cqi_[dir];
 }
 
-unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
+unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool rtx)
 {
+    Enter_Method_Silent("TrafficGeneratorBase::consumeBytes");
+
     if (dir != DL && dir != UL)
        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
 
-    if (bytes > bufferedBytes_[dir])
-        bytes = bufferedBytes_[dir];
+    if (!rtx)
+    {
+        if (bytes > bufferedBytes_[dir])
+            bytes = bufferedBytes_[dir];
 
-    bufferedBytes_[dir] -= bytes;
+        bufferedBytes_[dir] -= bytes;
+    }
+    else
+    {
+        if (bytes > bufferedBytesRtx_[dir])
+            bytes = bufferedBytesRtx_[dir];
+
+        bufferedBytesRtx_[dir] -= bytes;
+    }
 
     // this simulates a transmission, so emit CQI statistic
     if (dir == DL)
@@ -185,7 +217,29 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir)
     else
         emit(bgAverageCqiUl_, (long)cqi_[UL]);
 
-    return bufferedBytes_[dir];
+    // "schedule" a retransmission with the given probability
+    double err = uniform(0.0, 1.0);
+    if (err < rtxRate_)
+    {
+        RtxNotification* rtxNotification = new RtxNotification("rtxNotification");
+        rtxNotification->setDirection(dir);
+        rtxNotification->setBytes(bytes);
+        scheduleAt(NOW + rtxDelay_, rtxNotification);
+
+        if (dir == DL)
+            emit(bgHarqErrorRateDl_, 1.0);
+        else
+            emit(bgHarqErrorRateUl_, 1.0);
+    }
+    else
+    {
+        if (dir == DL)
+            emit(bgHarqErrorRateDl_, 0.0);
+        else
+            emit(bgHarqErrorRateUl_, 0.0);
+    }
+
+    return ((!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir]);
 }
 
 

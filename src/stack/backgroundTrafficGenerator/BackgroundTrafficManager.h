@@ -38,6 +38,9 @@ class BackgroundTrafficManager : public cSimpleModule
     // indexes of the backlogged bg UEs
     std::list<int> backloggedBgUes_[2];
 
+    // indexes of the backlogged bg UEs for retransmission
+    std::list<int> backloggedRtxBgUes_[2];
+
     // indexes of the backlogged bg UEs waiting for RAC+BSR handshake
     std::list<int> waitingForRac_;
 
@@ -98,7 +101,7 @@ class BackgroundTrafficManager : public cSimpleModule
     inet::Coord getBsCoord() { return bsCoord_; }
 
     // invoked by the UE's traffic generator when new data is backlogged
-    virtual void notifyBacklog(int index, Direction dir);
+    virtual void notifyBacklog(int index, Direction dir, bool rtx = false);
 
     // returns the CQI based on the given position and power
     virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
@@ -114,15 +117,15 @@ class BackgroundTrafficManager : public cSimpleModule
     std::vector<TrafficGeneratorBase*>::const_iterator getBgUesEnd();
 
     // returns the begin (end) iterator of the vector of backlogged UEs
-    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir);
-    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir);
+    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false);
+    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir, bool rtx = false);
 
     // returns the begin (end) iterator of the vector of backlogged UEs hat are waiting for RAC handshake to finish
     std::list<int>::const_iterator getWaitingForRacUesBegin();
     std::list<int>::const_iterator getWaitingForRacUesEnd();
 
     // returns the buffer of the given UE for in the given direction
-    virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir);
+    virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx = false);
 
     // returns the bytes per block of the given UE for in the given direction
     virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
@@ -131,9 +134,7 @@ class BackgroundTrafficManager : public cSimpleModule
     virtual void racHandled(MacNodeId bgUeId);
 
     // update background UE's backlog and returns true if the buffer is empty
-    virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir);
-
-
+    virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false);
 
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);

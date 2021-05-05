@@ -646,6 +646,17 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
     Plane plane = allocator_->getOFDMPlane(bgUeId);
     allocator_->setRemoteAntenna(plane, antenna);
 
+    // search for already allocated codeword
+    unsigned int cwAlredyAllocated = 0;
+    if (allocatedCws_.find(bgUeId) != allocatedCws_.end())
+        cwAlredyAllocated = allocatedCws_.at(bgUeId);
+
+    if (cwAlredyAllocated > 0)
+    {
+        terminate = true;
+        return 0;
+    }
+
     // Check OFDM space
     if (allocator_->computeTotalRbs() == 0)
     {
@@ -969,6 +980,12 @@ unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Rem
     EV << "LteSchedulerEnb::availableBytes MacNodeId " << id << " Antenna " << dasToA(antenna) << " band " << b << endl;
     // Retrieving this user available resource blocks
     int blocks = allocator_->availableBlocks(id,antenna,b);
+    if (blocks == 0)
+    {
+        EV << "LteSchedulerEnb::availableBytes - No blocks available on band " << b << endl;
+        return 0;
+    }
+
     //Consistency Check
     if (limit>blocks && limit!=-1)
        throw cRuntimeError("LteSchedulerEnb::availableBytes signaled limit inconsistency with available space band b %d, limit %d, available blocks %d",b,limit,blocks);

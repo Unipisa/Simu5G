@@ -39,11 +39,18 @@ simple TrafficGeneratorBase like ITrafficGenerator
         volatile int packetSizeDl @unit(B) = default(intuniform(20B,100B));
         volatile int packetSizeUl @unit(B) = default(intuniform(20B,100B));
         
+        double rtxRate = default(0.1);
+        double rtxDelay @unit("s")= default(0.004s);
+        
         // statistics        
         @signal[bgAverageCqiDl];
         @statistic[bgAverageCqiDl](title="Average DL CQI for background UEs"; unit=""; source="bgAverageCqiDl"; record=mean);
         @signal[bgAverageCqiUl];
         @statistic[bgAverageCqiUl](title="Average UL CQI for background UEs"; unit=""; source="bgAverageCqiUl"; record=mean);
+        @signal[bgHarqErrorRateDl];
+        @statistic[bgHarqErrorRateDl](title="Average DL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateDl"; record=mean);
+        @signal[bgHarqErrorRateUl];
+        @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean);
 }
 
 //# add here your custom generators, by extending the base module

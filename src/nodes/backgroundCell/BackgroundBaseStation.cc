@@ -113,6 +113,54 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     int bytesPerBlock;
     MacNodeId bgUeId;
 
+
+    // --- schedule retransmissions --- //
+    std::map<MacNodeId, unsigned int> rtxScheduledBgUes;
+    std::list<int>::const_iterator rit = bgTrafficManager_->getBackloggedUesBegin(dir, true);
+    std::list<int>::const_iterator ret = bgTrafficManager_->getBackloggedUesEnd(dir, true);
+    for (; rit != ret; ++rit)
+    {
+        // if there is still space
+        if (b >= numBands_)
+        {
+            // space terminated
+            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            break;
+        }
+
+        bgUeIndex = *rit;
+        bgUeId = BGUE_MIN_ID + bgUeIndex;
+
+        bytesPerBlock = bgTrafficManager_->getBackloggedUeBytesPerBlock(bgUeId, dir);
+
+        unsigned int buffer = bgTrafficManager_->getBackloggedUeBuffer(bgUeId, dir, true);
+        unsigned int blocks = ceil((double)buffer/bytesPerBlock);
+        unsigned int allocatedBlocks = 0;
+        while (b < numBands_ && blocks > 0)
+        {
+            bandStatus_[dir][b] = 1;
+            if (dir == UL)
+                ulBandAllocation_[b] = bgUeId;
+
+            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "] for rtx" << endl;
+
+            blocks--;
+            b++;
+            allocatedBlocks++;
+        }
+
+        if (allocatedBlocks > 0)
+        {
+            unsigned int allocatedBytes = allocatedBlocks * bytesPerBlock;
+            rtxScheduledBgUes[bgUeId] = allocatedBytes;
+        }
+    }
+
+    // notify the traffic manager
+    for (auto mit = rtxScheduledBgUes.begin(); mit != rtxScheduledBgUes.end(); ++mit)
+        bgTrafficManager_->consumeBackloggedUeBytes(mit->first, mit->second, dir, true);
+
+    // --- schedule RAC (UL only) --- //
     if (dir == UL)
     {
         std::list<MacNodeId> servedRac;
@@ -123,6 +171,14 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
 
         for (; rit != ret; ++rit)
         {
+            // if there is still space
+            if (b >= numBands_)
+            {
+                // space terminated
+                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+                break;
+            }
+
             bgUeIndex = *rit;
             bgUeId = BGUE_MIN_ID + bgUeIndex;
 
@@ -159,8 +215,20 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     std::list<int>::const_iterator et = bgTrafficManager_->getBackloggedUesEnd(dir);
     for (; it != et; ++it)
     {
+        // if there is still space
+        if (b >= numBands_)
+        {
+            // space terminated
+            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            break;
+        }
+
         bgUeIndex = *it;
         bgUeId = BGUE_MIN_ID + bgUeIndex;
+
+        // if the BG UE has been already scheduled for rtx, skip it
+        if (rtxScheduledBgUes.find(bgUeId) != rtxScheduledBgUes.end())
+            continue;
 
         // the cid for a background UE is a 32bit integer composed as:
         // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
@@ -176,6 +244,14 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     // Schedule the connections in score order.
     while (!score.empty())
     {
+        // if there is still space
+        if (b >= numBands_)
+        {
+            // space terminated
+            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            break;
+        }
+
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
         bgUeId = current.x_ >> 16;
@@ -202,13 +278,6 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
 
         // remove UE from the list
         score.pop();
-
-        if (b >= numBands_)
-        {
-            // space terminated
-            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
-            break;
-        }
     }
 
     // emit statistics
