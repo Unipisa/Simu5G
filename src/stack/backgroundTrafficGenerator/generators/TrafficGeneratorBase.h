@@ -57,10 +57,10 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     simtime_t fbPeriod_;
 
     // retransmission probability
-    double rtxRate_;
+    double rtxRate_[2];
 
     // retransmission delay
-    double rtxDelay_;
+    double rtxDelay_[2];
 
     // message for scheduling CQI reporting
     cMessage* fbSource_;

@@ -39,8 +39,10 @@ simple TrafficGeneratorBase like ITrafficGenerator
         volatile int packetSizeDl @unit(B) = default(intuniform(20B,100B));
         volatile int packetSizeUl @unit(B) = default(intuniform(20B,100B));
         
-        double rtxRate = default(0.1);
-        double rtxDelay @unit("s")= default(0.004s);
+        double rtxRateDl = default(0.1);
+        double rtxDelayDl @unit("s")= default(0.006s);
+        double rtxRateUl = default(0.1);
+        double rtxDelayUl @unit("s")= default(0.006s);
         
         // statistics        
         @signal[bgAverageCqiDl];

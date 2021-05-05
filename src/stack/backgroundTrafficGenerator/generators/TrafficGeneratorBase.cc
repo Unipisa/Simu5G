@@ -44,8 +44,11 @@ void TrafficGeneratorBase::initialize(int stage)
 
         headerLen_ = par("headerLen");
         txPower_ = par("txPower");
-        rtxRate_ = par("rtxRate");
-        rtxDelay_ = par("rtxDelay");
+
+        rtxRate_[DL] = par("rtxRateDl");
+        rtxRate_[UL] = par("rtxRateUl");
+        rtxDelay_[DL] = par("rtxDelayDl");
+        rtxDelay_[UL] = par("rtxDelayUl");
 
         bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getParentModule()->getSubmodule("manager"));
 
@@ -219,12 +222,12 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
 
     // "schedule" a retransmission with the given probability
     double err = uniform(0.0, 1.0);
-    if (err < rtxRate_)
+    if (err < rtxRate_[dir])
     {
         RtxNotification* rtxNotification = new RtxNotification("rtxNotification");
         rtxNotification->setDirection(dir);
         rtxNotification->setBytes(bytes);
-        scheduleAt(NOW + rtxDelay_, rtxNotification);
+        scheduleAt(NOW + rtxDelay_[dir], rtxNotification);
 
         if (dir == DL)
             emit(bgHarqErrorRateDl_, 1.0);
