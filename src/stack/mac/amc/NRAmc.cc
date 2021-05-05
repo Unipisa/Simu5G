@@ -252,13 +252,22 @@ unsigned int NRAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, dou
 
     NRMCSelem mcsElem = getMcsElemPerCqi(cqi, dir);
     unsigned int numRe = getResourceElements(blocks, getSymbolsPerSlot(carrierFrequency, dir));
-    unsigned int modFactor = 2 << mcsElem.mod_;
+    unsigned int modFactor;
+    switch(mcsElem.mod_)
+    {
+        case _QPSK:   modFactor = 2; break;
+        case _16QAM:  modFactor = 4; break;
+        case _64QAM:  modFactor = 6; break;
+        case _256QAM: modFactor = 8; break;
+        default: throw cRuntimeError("NRAmc::computeCodewordTbs - unrecognized modulation.");
+    }
     double coderate = mcsElem.coderate_ / 1024;
     double nInfo = numRe * coderate * modFactor * layers;
 
     unsigned int tbs = computeTbsFromNinfo(floor(nInfo),coderate);
 
     EV << NOW << " NRAmc::computeBitsPerRbBackground Available space: " << tbs << "\n";
+
     return tbs;
 }
 
