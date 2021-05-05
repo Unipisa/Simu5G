@@ -1188,7 +1188,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                    double dbp = 0;
                    att = computePathLoss(dist, dbp, los);
 
-                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainUe_ + antennaGainBgUe;
+                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
                    recvPwr = dBmToLinear(recvPwrDBm);
 
                    (*interference)[i] += recvPwr;

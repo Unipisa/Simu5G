@@ -2480,7 +2480,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                    // compute attenuation according to some path loss model
                    att = computeExtCellPathLoss(dist, nodeId);
 
-                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainUe_ + antennaGainBgUe;
+                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
                    recvPwr = dBmToLinear(recvPwrDBm);
 
                    (*interference)[i] += recvPwr;
