@@ -3,6 +3,8 @@
 
 #include <string>
 #include "common/LteCommon.h"
+#include "inet/networklayer/common/L3Address.h"
+
 #include "nodes/mec/VirtualisationInfrastructure/ResourceManager.h"
 
 
@@ -33,6 +35,11 @@ typedef struct {
     uint64_t dlBits = 0;
 } DataVolume;
 
+typedef struct {
+    inet::L3Address addr;
+    int port;
+    std::string str() const { return addr.str() + ":" + std::to_string(port);}
+} SockAddr;
 
 namespace mec {
 

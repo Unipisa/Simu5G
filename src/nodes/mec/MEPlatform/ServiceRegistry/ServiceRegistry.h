@@ -19,15 +19,8 @@
 #include <omnetpp.h>
 #include "inet/networklayer/common/L3Address.h"
 #include "nodes/binder/LteBinder.h"
+#include "nodes/mec/MecCommon.h"
 #include <map>
-
-struct SockAddr
-{
-    inet::L3Address addr;
-    int port;
-
-    std::string str() const { return addr.str() + ":" + std::to_string(port);}
-};
 
 class ServiceRegistry: public omnetpp::cSimpleModule
 {

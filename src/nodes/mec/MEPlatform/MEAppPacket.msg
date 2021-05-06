@@ -25,6 +25,10 @@ class MEAppPacket extends inet::FieldsChunk {
     int	   sourcePort;   // added by Alessandro Noferi
     string destinationAddress;
     int	   destinationPort;   // added by Alessandro Noferi
+    string destinationMecAppAddress;
+    int	   destinationMecAppPort;   // added by Alessandro Noferi
+    
+    
     //instantiation informations
     string MEModuleType;			//path where to find the cModule of the MEApp to instantiate
     string MEModuleName;			//module class name of the MEApp to instantiate
