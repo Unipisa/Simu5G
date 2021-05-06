@@ -85,6 +85,16 @@ void VirtualisationManager::initialize(int stage)
     //------------------------------------
     interfaceTableModule = par("interfaceTableModule").stringValue();
 
+    interfaceTable = check_and_cast<inet::InterfaceTable*>(getParentModule()->getSubmodule("interfaceTable"));
+
+    EV << "interfaceNums: " << interfaceTable->getNumInterfaces() << endl;
+    EV << "interfaceNames: " << interfaceTable->getBiggestInterfaceId() << endl;
+
+    mecAppLocalAddress_ = interfaceTable->getInterfaceById(101)->getIpv4Address();  //TODO change search byId!!
+    mecAppRemoteAddress_ = interfaceTable->getInterfaceById(100)->getIpv4Address(); //TODO change search byId!!
+    EV << "mecAppLocalAddress: " << mecAppLocalAddress_.str() << endl;
+
+
 
     meAppPortCounter = 4001;
 }
@@ -320,7 +330,7 @@ void VirtualisationManager::stopMEApp(inet::Packet* packet){
     else EV << "VirtualisationManager::stopMEApp - \tWARNING: " << pkt->getMEModuleName() << " INSTANCE NOT FOUND!" << endl;
 }
 
-void VirtualisationManager::instantiateMEApp(cMessage* msg)
+SockAddr VirtualisationManager::instantiateMEApp(cMessage* msg)
 {
 
     EV << "VirtualisationManager::instantiateMEApp - processing..." << endl;
@@ -376,14 +386,19 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
 
 
         //initialize IMEApp Parameters
-        module->par("ueSimbolicAddress") = sourceAddress;
-        module->par("localAddress") = pkt->getDestinationAddress();
+        module->par("localAddress") = mecAppLocalAddress_.str().c_str(); //get address of the infrastructure
         module->par("localPort") = meAppPortCounter;
+        module->par("ueSimbolicAddress") = sourceAddress;
         module->par("uePort") = ueAppPort;
 
         module->par("requiredRam") = pkt->getRequiredRam();
         module->par("requiredDisk") = pkt->getRequiredDisk();
         module->par("requiredCpu") = pkt->getRequiredCpu();
+
+        SockAddr endPoint;
+        endPoint.addr = mecAppRemoteAddress_;
+        endPoint.port = meAppPortCounter;
+        EV << "VirtualisationManager::instantiateMEApp port"<< endPoint.port << endl;
 
         meAppPortCounter++;
 
@@ -438,13 +453,17 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         currentMEApps++;
 
         //Sending ACK to the UEApp
-        EV << "VirtualisationManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
-        ackMEAppPacket(packet, ACK_START_MEAPP);
+//        EV << "VirtualisationManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
+//        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
         EV << "VirtualisationManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
         EV << "VirtualisationManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+
+        return endPoint;
     }
+
+    return {inet::L3Address(), 0};
 }
 
 void VirtualisationManager::terminateMEApp(cMessage* msg)
@@ -476,8 +495,9 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
 
         //Sending ACK_STOP_MEAPP to the UEApp
         EV << "VirtualisationManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
+
         //before to remove the map entry!
-        ackMEAppPacket(packet, ACK_STOP_MEAPP);
+//        ackMEAppPacket(packet, ACK_STOP_MEAPP);
 
         int index = meAppMap[key].meAppGateIndex;
 
@@ -507,7 +527,7 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
         EV << "VirtualisationManager::terminateMEApp - \tWARNING: NO INSTANCE FOUND!" << endl;
         //Sending ACK_STOP_MEAPP to the UEApp
         EV << "VirtualisationManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
-        ackMEAppPacket(packet, ACK_STOP_MEAPP);
+//        ackMEAppPacket(packet, ACK_STOP_MEAPP);
     }
 }
 

@@ -15,6 +15,7 @@
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"           //to handle Car dynamically leaving the Network
+#include "inet/networklayer/common/InterfaceTable.h"
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -24,6 +25,8 @@
 //MEAppPacket
 #include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
 #include "nodes/mec/MEPlatform/MEAppPacket_m.h"
+
+#include "nodes/mec/MecCommon.h"
 
 //###########################################################################
 //data structures and values
@@ -56,8 +59,11 @@ struct meAppMapEntry
  *              e) forwarding downstream INFO_MEAPP packets
  */
 
+
 class VirtualisationManager : public cSimpleModule
 {
+    friend class MecOrchestratorManager; // Friend Class
+
     //------------------------------------
     //SIMULTE Binder module
     Binder* binder_;
@@ -74,6 +80,11 @@ class VirtualisationManager : public cSimpleModule
     cModule* virtualisationInfr;
     //------------------------------------
     const char* interfaceTableModule;
+    inet::InterfaceTable* interfaceTable;
+
+    inet::Ipv4Address mecAppLocalAddress_;
+    inet::Ipv4Address mecAppRemoteAddress_;
+
     //------------------------------------
     //parameters to control the number of ME APPs instantiated and to set gate sizes
     int maxMEApps;
@@ -141,7 +152,7 @@ class VirtualisationManager : public cSimpleModule
         void stopMEApp(inet::Packet*);
 
         // instancing the requested MEApp (called by handleResource)
-        void instantiateMEApp(cMessage*);
+        SockAddr instantiateMEApp(cMessage*);
 
         // terminating the correspondent MEApp (called by handleResource)
         void terminateMEApp(cMessage*);
