@@ -43,7 +43,6 @@ void ResourceManager::initialize(int stage)
         maxRam = meHost->par("maxRam").doubleValue();
         maxDisk = meHost->par("maxDisk").doubleValue();
         maxCPU = meHost->par("maxCpu").doubleValue();
-        cpuClock = meHost->par("cpuClockSpeed").doubleValue();
     }
 
 }
@@ -168,7 +167,6 @@ bool ResourceManager::deRegisterMecApp(int ueAppID)
 }
 
 
-
 double ResourceManager::calculateProcessingTime(int ueAppID, int numOfInstructions)
 {
     ASSERT(numOfInstructions >= 0);
@@ -176,9 +174,8 @@ double ResourceManager::calculateProcessingTime(int ueAppID, int numOfInstructio
     if(ueApp != resourceMap.end())
     {
         double time;
-        double cpi = uniform(1,2);
-        time = (cpi * numOfInstructions)/(cpuClock*ueApp->second.cpu);
-        EV << "cpi: " << cpi << endl;
+        double currentSpeed = ueApp->second.cpu *(maxCPU/allocatedCPU);
+        time = numOfInstructions/currentSpeed;
         return time;
     }
     else

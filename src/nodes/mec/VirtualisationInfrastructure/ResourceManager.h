@@ -30,6 +30,16 @@ struct resourceMapEntry
     double disk;
     double cpu;
 };
+
+struct availableResources
+{
+    double ram;
+    double disk;
+    double cpu;
+};
+
+
+
 //###########################################################################
 
 /**
@@ -75,6 +85,13 @@ class ResourceManager : public cSimpleModule
 
         bool registerMecApp(int ueAppId, int reqRam, int  reqDisk, double reqCpu);
         bool deRegisterMecApp(int ueAppId);
+        availableResources getAvailableResources() const {
+            availableResources avRes;
+            avRes.ram = maxRam - allocatedRam;
+            avRes.disk = maxDisk - allocatedDisk;
+            avRes.cpu = maxCPU - allocatedCPU;
+            return avRes;
+        }
 
 
     protected:
