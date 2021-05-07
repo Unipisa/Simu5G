@@ -44,15 +44,15 @@ simple TrafficGeneratorBase like ITrafficGenerator
         double rtxRateUl = default(0.1);
         double rtxDelayUl @unit("s")= default(0.006s);
         
-        // statistics        
+        // statistics   
         @signal[bgAverageCqiDl];
-        @statistic[bgAverageCqiDl](title="Average DL CQI for background UEs"; unit=""; source="bgAverageCqiDl"; record=mean);
+        @statistic[bgAverageCqiDl](title="Average DL CQI for background UEs"; unit=""; source="bgAverageCqiDl"; record=mean,vector);
         @signal[bgAverageCqiUl];
-        @statistic[bgAverageCqiUl](title="Average UL CQI for background UEs"; unit=""; source="bgAverageCqiUl"; record=mean);
+        @statistic[bgAverageCqiUl](title="Average UL CQI for background UEs"; unit=""; source="bgAverageCqiUl"; record=mean,vector);
         @signal[bgHarqErrorRateDl];
-        @statistic[bgHarqErrorRateDl](title="Average DL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateDl"; record=mean);
+        @statistic[bgHarqErrorRateDl](title="Average DL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateDl"; record=mean,vector);
         @signal[bgHarqErrorRateUl];
-        @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean);
+        @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean,vector);
 }
 
 //# add here your custom generators, by extending the base module

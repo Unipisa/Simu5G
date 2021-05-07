@@ -149,8 +149,12 @@ protected:
   //if dynamicLos is false this boolean is initialized to true if all user will be in LOS or false otherwise
   bool fixedLos_;
 
+  // if false, disable the collection of SINR statistics, which might be quite time-consuming
+  bool collectSinrStatistics_;
+
   // statistics
-  static omnetpp::simsignal_t rcvdSinr_;
+  static omnetpp::simsignal_t rcvdSinrDl_;
+  static omnetpp::simsignal_t rcvdSinrUl_;
   static omnetpp::simsignal_t distance_;
   static omnetpp::simsignal_t measuredSinr_;
 

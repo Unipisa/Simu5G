@@ -108,9 +108,14 @@ simple LteRealisticChannelModel extends LteChannelModel
     int rsrqShift = default(22);
     double rsrqScale = default(1.0);
     
+    // collection of SINR statistics can be disabled because it might be quite time-consuming
+    bool collectSinrStatistics = default(true);
+     
     // statistics
-    @signal[rcvdSinr];
-    @statistic[rcvdSinr](title="SINR measured at packet reception"; unit="dB"; source="rcvdSinr"; record=mean,vector);
+    @signal[rcvdSinrDl];
+    @statistic[rcvdSinrDl](title="SINR measured at packet reception, DL"; unit="dB"; source="rcvdSinrDl"; record=mean,vector);
+    @signal[rcvdSinrUl];
+    @statistic[rcvdSinrUl](title="SINR measured at packet reception, UL"; unit="dB"; source="rcvdSinrUl"; record=mean,vector);
     
     // statistics
     @signal[measuredSinr];

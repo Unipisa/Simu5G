@@ -703,6 +703,7 @@ GrantType aToGrantType(std::string a);
 const std::string grantTypeToA(GrantType gType);
 Binder* getBinder();
 CellInfo* getCellInfo(MacNodeId nodeId);
+omnetpp::cModule* getPhyByMacNodeId(MacNodeId nodeId);
 omnetpp::cModule* getMacByMacNodeId(MacNodeId nodeId);
 omnetpp::cModule* getRlcByMacNodeId(MacNodeId nodeId, LteRlcType rlcType);
 omnetpp::cModule* getPdcpByMacNodeId(MacNodeId nodeId);

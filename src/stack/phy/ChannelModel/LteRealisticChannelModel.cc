@@ -31,7 +31,8 @@ using namespace inet;
 using namespace omnetpp;
 Define_Module(LteRealisticChannelModel);
 
-simsignal_t LteRealisticChannelModel::rcvdSinr_ = registerSignal("rcvdSinr");
+simsignal_t LteRealisticChannelModel::rcvdSinrDl_ = registerSignal("rcvdSinrDl");
+simsignal_t LteRealisticChannelModel::rcvdSinrUl_ = registerSignal("rcvdSinrUl");
 simsignal_t LteRealisticChannelModel::distance_ = registerSignal("distance");
 simsignal_t LteRealisticChannelModel::measuredSinr_ = registerSignal("measuredSinr");
 
@@ -88,6 +89,8 @@ void LteRealisticChannelModel::initialize(int stage)
         delayRMS_ = par("delay_rms");
 
         enable_extCell_los_ = par("enable_extCell_los");
+
+        collectSinrStatistics_ = par("collectSinrStatistics");
 
         //get binder
         binder_ = getBinder();
@@ -1775,8 +1778,18 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteI
                       << " - CQI[" << cqi << "]- random error extracted[" << er << "]" << endl;
 
    // emit SINR statistic
-   if (usedRBs > 0)
-       emit(rcvdSinr_, sumSnr / usedRBs);
+   if (collectSinrStatistics_ && usedRBs > 0)
+   {
+       if (dir == DL) // we are on the UE
+           emit(rcvdSinrDl_, sumSnr / usedRBs);
+       else
+       {
+           // we are on the BS, so we need to retrieve the channel model of the sender
+           // XXX I know, there might be a faster way...
+           LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
+           ueChannelModel->emit(rcvdSinrUl_, sumSnr / usedRBs);
+       }
+   }
 
    if (er <= totalPer)
    {
@@ -1941,7 +1954,9 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo* 
       << " - CQI[" << cqi << "]- random error extracted[" << er << "]" << endl;
 
    // emit SINR statistic
-   emit(rcvdSinr_, sumSnr / usedRBs);
+   // TODO use a rcvdSinrD2D statistic
+   if (collectSinrStatistics_ && usedRBs > 0)
+       emit(rcvdSinrUl_, sumSnr / usedRBs);
 
    if (er <= totalPer)
    {

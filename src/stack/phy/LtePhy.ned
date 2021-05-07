@@ -46,7 +46,7 @@ simple LtePhyBase like LtePhy {
         // TODO move to LtePhyUeD2D module
         bool enableMulticastD2DRangeCheck = default(false);
         double multicastD2DRange @unit(m) = default(1000m);
-               
+             
     gates:
         input upperGateIn;       // from upper layer
         output upperGateOut;    // to upper layer
