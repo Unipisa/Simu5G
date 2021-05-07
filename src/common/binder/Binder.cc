@@ -13,6 +13,7 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include <cctype>
 #include <algorithm>
+#include "stack/mac/layer/LteMacUe.h"
 
 using namespace std;
 using namespace inet;
@@ -256,6 +257,65 @@ void Binder::initialize(int stage)
         computeAverageCqiForBackgroundUes();
     }
 
+}
+
+void Binder::finish()
+{
+    if (par("printHarqErrorRate"))
+    {
+        // open output file
+        std::ofstream out("rtxRate.ini");
+
+        std::string harqStr;
+
+        std::vector<UeInfo*>::iterator it = ueList_.begin(), et = ueList_.end();
+        for ( ; it != et; ++it)
+        {
+            std::stringstream ss;
+
+            UeInfo* info = *it;
+
+            if (info->id == 2049)  // skip the real UE
+                continue;
+
+            if (info->id < NR_UE_MIN_ID)
+                continue;
+
+            int cellId = info->cellId;
+            int ueIndex = info->ue->getIndex();
+
+            // get HARQ error rate
+            LteMacBase* macUe = check_and_cast<LteMacBase*>(info->ue->getSubmodule("cellularNic")->getSubmodule("nrMac"));
+            double harqErrorRateDl = macUe->getHarqErrorRate(DL);
+            double harqErrorRateUl = macUe->getHarqErrorRate(UL);
+
+
+            if (info->cellId == 1)
+            {
+                // the UE belongs to the central cell
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+
+                harqStr = ss.str();
+                ss.clear();
+            }
+            else
+            {
+                int bgCellId = cellId - 2;
+
+                // the UE belongs to a background cell
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+
+                harqStr = ss.str();
+                ss.clear();
+            }
+
+            out << harqStr;
+        }
+
+        out.close();
+    }
 }
 
 void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)

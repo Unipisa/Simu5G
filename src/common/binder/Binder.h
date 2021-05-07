@@ -133,6 +133,7 @@ class Binder : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
+    virtual void finish();
 
   public:
     Binder()

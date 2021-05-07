@@ -25,6 +25,6 @@ simple Binder
     parameters:
         int blerShift = default(0);
         double maxDataRatePerRb @unit("Mbps") = default(1.16Mbps);
-        
+        bool printHarqErrorRate = default(false);
         @display("i=block/cogwheel");
 }

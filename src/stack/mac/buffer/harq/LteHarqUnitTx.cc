@@ -248,6 +248,7 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
     }
 
     ue->emit(harqErrorRate_, sample);
+    ue->recordHarqErrorRate(sample, (Direction)dir);
 
     if (a == HARQACK)
         ue->emit(harqTxAttempts_, ntx);

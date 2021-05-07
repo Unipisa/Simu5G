@@ -30,6 +30,11 @@ LteMacBase::LteMacBase()
     mbuf_.clear();
     macBuffers_.clear();
     ttiPeriod_ = TTI;
+
+    harqErrorRateDlSum_ = 0;
+    harqErrorRateUlSum_ = 0;
+    harqErrorRateDlCount_ = 0;
+    harqErrorRateUlCount_ = 0;
 }
 
 LteMacBase::~LteMacBase()
