@@ -13,11 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package lte.nodes.mec.MECOrchestrator;
+package lte.nodes.mec.MECOrchestrator_tcpApp;
 
 import inet.applications.contract.IApp;
 
-simple MecOrchestratorManager  like IApp{
+simple MecOrchestratorManager_tcpApp  like IApp{
 
     parameters:
         @display("i=block/source");

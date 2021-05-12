@@ -13,7 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package lte.nodes.mec.MECOrchestrator;
+package lte.nodes.mec.MECOrchestrator_tcpApp;
+import lte.nodes.mec.MECOrchestrator_tcpApp.MecOrchestratorManager_tcpApp;
+
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
@@ -58,7 +60,6 @@ module MECOrchestrator
         output meAppOut[];			// connection to the ME App input gate
         input meAppIn[];			// connection to the ME App output gate
 
-        inout mePlatform;			// connection to the ME Platform
 
     submodules:
 
@@ -93,7 +94,7 @@ module MECOrchestrator
         //# Transport layer modules and corresponding application modules
         //#
 		// =============== UDP ============== //
-        mecOrchestratorManager: MecOrchestratorManager {
+        mecOrchestratorManager: MecOrchestratorManager_tcpApp {
             @display("p=549.69,74.045,row");
         }
 

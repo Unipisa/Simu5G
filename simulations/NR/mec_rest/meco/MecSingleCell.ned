@@ -20,7 +20,10 @@ import lte.nodes.NR.gNodeB;
 import lte.nodes.NR.NRUe;
 import lte.nodes.mec.MEHost;
 
-import lte.nodes.mec.MECOrchestrator.MECOrchestrator;
+import lte.nodes.mec.MECOrchestrator.MecOrchestrator;
+import lte.nodes.mec.LCMProxy.LCMProxy;
+
+
 
 network MecSingleCell_meco
 {
@@ -51,7 +54,7 @@ network MecSingleCell_meco
             @display("p=691.38,342.24;is=s");
         }
         upf: Upf {
-            @display("p=506.46,249.78;is=l");
+            @display("p=425.73624,249.77875;is=l");
         }
         gNodeB1: gNodeB {
             @display("p=140,250;is=vl");
@@ -64,15 +67,22 @@ network MecSingleCell_meco
             @display("p=404.34,144.9;is=l");
         }
 
-        mecOrchestrator: MECOrchestrator {
-            @display("p=506.63626,154.72125;is=l");
+        mecOrchestrator: MecOrchestrator {
+            @display("p=564.2775,249.77875;is=l");
+        }
+
+        lcmProxy: LCMProxy {
+            @display("p=490.45624,248.7675;i=device/smallrouter");
         }
 
 
     connections allowunconnected:
 
         upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        mecOrchestrator.ppp++ <--> Eth10G <--> upf.filterGate;       
+        lcmProxy.ppp++ <--> Eth10G <--> upf.filterGate;  
+        
+        lcmProxy.toMecOrchestrator --> mecOrchestrator.fromLcmProxy;
+        lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;     
 
         //#	mec
         // direct connection between gNodeB1 and meHost
