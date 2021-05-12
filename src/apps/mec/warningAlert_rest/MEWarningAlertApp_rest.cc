@@ -75,9 +75,6 @@ void MEWarningAlertApp_rest::initialize(int stage)
 //    socket.setOutputGate(gate("socketOut"));
 
 
-    cMessage *m = new cMessage("connect");
-            scheduleAt(simTime()+0.5, m);
-
     circle = new cOvalFigure("circle");
     circle->setBounds(cFigure::Rectangle(150,200,120,120));
     circle->setLineWidth(2);
@@ -150,6 +147,13 @@ void MEWarningAlertApp_rest::finish(){
 //
 //        send((cMessage*)packet, "socketOut");
     }
+}
+
+void MEWarningAlertApp_rest::handleUeMessage(omnetpp::cMessage *msg)
+{
+    EV << "ARRIVATO QUALCOSA" << endl;
+    cMessage *m = new cMessage("connect");
+    scheduleAt(simTime()+0.5, m);
 }
 
 void MEWarningAlertApp_rest::handleServiceMessage()

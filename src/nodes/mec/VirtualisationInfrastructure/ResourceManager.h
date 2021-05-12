@@ -14,6 +14,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
+#include "nodes/mec/MecCommon.h"
 #include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
 #include "nodes/mec/MEPlatform/MEAppPacket_m.h"
 
@@ -31,12 +32,6 @@ struct resourceMapEntry
     double cpu;
 };
 
-struct availableResources
-{
-    double ram;
-    double disk;
-    double cpu;
-};
 
 
 
@@ -85,8 +80,8 @@ class ResourceManager : public cSimpleModule
 
         bool registerMecApp(int ueAppId, int reqRam, int  reqDisk, double reqCpu);
         bool deRegisterMecApp(int ueAppId);
-        availableResources getAvailableResources() const {
-            availableResources avRes;
+        ResourceDescriptor getAvailableResources() const {
+            ResourceDescriptor avRes;
             avRes.ram = maxRam - allocatedRam;
             avRes.disk = maxDisk - allocatedDisk;
             avRes.cpu = maxCPU - allocatedCPU;

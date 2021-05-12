@@ -42,7 +42,7 @@ void ResourceManager::initialize(int stage)
     if(meHost != NULL){
         maxRam = meHost->par("maxRam").doubleValue();
         maxDisk = meHost->par("maxDisk").doubleValue();
-        maxCPU = meHost->par("maxCpu").doubleValue();
+        maxCPU = meHost->par("maxCpuSpeed").doubleValue();
     }
 
 }

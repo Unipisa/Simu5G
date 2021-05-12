@@ -127,7 +127,7 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
     {
         if(resourceType.compare("users") == 0 )
         {
-        //look for qurery parameters
+        //look for query parameters
             if(splittedUri.size() == 2) // uri has parameters eg. uriPath?param=value&param1=value
             {
                 std::vector<std::string> queryParameters = lte::utils::splitString(splittedUri[1], "&");

@@ -216,6 +216,22 @@ void UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp(cMessage* msg)
         scheduleAt(simTime() + stopTime, selfStop_);
         EV << "UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp - Starting sendStopMEWarningAlertApp() in " << stopTime << " seconds " << endl;
     }
+
+    //send start message alla mec app!
+
+    //REMOVE THIS. just debug
+
+    inet::Packet* pp = new inet::Packet("WarningAlertPacketStop");
+    auto alert = inet::makeShared<WarningAlertPacket>();
+
+    //termination requirements and info
+    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    pp->insertAtBack(alert);
+
+    inet::L3Address destApp = inet::L3Address(pkt->getDestinationMecAppAddress());
+    socket.sendTo(pp, destApp , pkt->getDestinationMecAppPort());
+
+
 }
 void UEWarningAlertApp_rest::handleInfoMEWarningAlertApp(cMessage* msg)
 {

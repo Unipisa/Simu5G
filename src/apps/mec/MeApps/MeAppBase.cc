@@ -25,6 +25,7 @@ MeAppBase::MeAppBase()
 {
     sendTimer = nullptr;
     currentHttpMessage = nullptr;
+    resourceManager = nullptr;
     }
 
 MeAppBase::~MeAppBase()
@@ -126,6 +127,7 @@ void MeAppBase::socketDataArrived(inet::TcpSocket *, inet::Packet *msg, bool)
 {
     EV << "MeAppBase::socketDataArrived" << endl;
 
+
 //  In progress. Trying to handle an app message coming from different tcp segments in a better way
 //    bool res = msg->hasAtFront<HttpResponseMessage>();
 //    auto pkc = msg->peekAtFront<HttpResponseMessage>(b(-1), Chunk::PF_ALLOW_EMPTY | Chunk::PF_ALLOW_SERIALIZATION | Chunk::PF_ALLOW_INCOMPLETE);
@@ -146,6 +148,7 @@ void MeAppBase::socketDataArrived(inet::TcpSocket *, inet::Packet *msg, bool)
 //    EV << packet << endl;
     delete msg;
     parseReceivedMsg(packet);
+
 }
 
 void MeAppBase::parseReceivedMsg(std::string& packet)
@@ -166,7 +169,10 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         case (Http::COMPLETE_NO_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+            if(resourceManager != nullptr)
+                time = resourceManager->calculateProcessingTime(mecAppId, 100);
+            else
+                time = 0;
             scheduleAt(simTime()+time, processedServiceResponse);
 
 //            if(currentHttpMessage != nullptr)
@@ -179,8 +185,10 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         case (Http::COMPLETE_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            time = resourceManager->calculateProcessingTime(mecAppId, 100);
-                scheduleAt(simTime()+time, processedServiceResponse);
+            if(resourceManager != nullptr)
+                            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+                        else
+                            time = 0;                scheduleAt(simTime()+time, processedServiceResponse);
 //            if(currentHttpMessage != nullptr)
 //            {
 //                delete currentHttpMessage;
@@ -215,6 +223,7 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         header = packet.substr(0, pos);
         packet.erase(0, pos+delimiter.length()); //remove header
         currentHttpMessage = Http::parseHeader(header);
+
         Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
         double time;
         switch (res)
@@ -222,8 +231,16 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         case (Http::COMPLETE_NO_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            time = resourceManager->calculateProcessingTime(mecAppId, 100);
-                scheduleAt(simTime()+time, processedServiceResponse);
+            if(resourceManager != nullptr)
+            {
+                time = resourceManager->calculateProcessingTime(mecAppId, 100);
+            }
+            else
+            {
+                time = 0;
+            }
+
+            scheduleAt(simTime()+time, processedServiceResponse);
 //            if(currentHttpMessage != nullptr)
 //               {
 //                   delete currentHttpMessage;
@@ -234,8 +251,10 @@ void MeAppBase::parseReceivedMsg(std::string& packet)
         case (Http::COMPLETE_DATA):
             EV << "MeAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
             currentHttpMessage->setSockId(socket.getSocketId());
-            time = resourceManager->calculateProcessingTime(mecAppId, 100);
-                scheduleAt(simTime()+time, processedServiceResponse);
+            if(resourceManager != nullptr)
+                            time = resourceManager->calculateProcessingTime(mecAppId, 100);
+                        else
+                            time = 0;                scheduleAt(simTime()+time, processedServiceResponse);
 //            if(currentHttpMessage != nullptr)
 //            {
 //                delete currentHttpMessage;
@@ -279,6 +298,7 @@ void MeAppBase::socketFailure(TcpSocket *sock, int code)
 void MeAppBase::finish()
 {
     TcpAppBase::finish();
+    if(resourceManager != nullptr)
     resourceManager->deRegisterMecApp(mecAppId);
 }
 

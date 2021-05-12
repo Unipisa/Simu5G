@@ -65,7 +65,7 @@ class MEWarningAlertApp_rest : public MeAppBase
 //        void handleInfoMEWarningAlertApp(WarningAlertPacket* pkt);
 
         virtual void handleServiceMessage() override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg){};
+        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
         virtual void modifySubscription();
 

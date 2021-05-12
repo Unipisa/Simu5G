@@ -32,11 +32,7 @@ simple MEWarningAlertApp_rest like IMEApp
         int requiredRam @unit("B") = default(10MB);
         int requiredDisk @unit("B") = default(100MB);
         double requiredCpu = default(0.01);
-        
-        
-        
-        
-           
+     
     gates:
         input socketIn; 
         output socketOut; 

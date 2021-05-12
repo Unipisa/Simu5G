@@ -5,8 +5,9 @@
 #include "common/LteCommon.h"
 #include "inet/networklayer/common/L3Address.h"
 
-#include "nodes/mec/VirtualisationInfrastructure/ResourceManager.h"
 
+
+class ResourceManager;
 
 enum RlcBurstStatus
 {
@@ -40,6 +41,14 @@ typedef struct {
     int port;
     std::string str() const { return addr.str() + ":" + std::to_string(port);}
 } SockAddr;
+
+typedef struct {
+    double ram;
+    double disk;
+    double cpu;
+} ResourceDescriptor;
+
+
 
 namespace mec {
 

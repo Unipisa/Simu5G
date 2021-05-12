@@ -19,21 +19,6 @@ package lte.apps.mec.MeApps;
 moduleinterface MeAppBase 
 {
     parameters:
-        string localAddress; // may be left empty ("")
-        int localPort; // port number to listen on
-        string connectAddress;  // server address (may be symbolic)
-        int connectPort ; // port number to connect to
-        double startTime ; // time first session begins
-        double stopTime ;  // time of finishing sending, negative values mean forever
-        int timeToLive ; // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
-        int dscp ; // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
-        int tos ; // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-        
-        @display("i=block/app");
-        @lifecycleSupport;
-        double stopOperationExtraTime @unit(s);    // extra time after lifecycle stop operation finished
-        double stopOperationTimeout @unit(s);    // timeout value for lifecycle stop operation
-
 		 //resource required infos
         int requiredRam @unit("B");
         int requiredDisk @unit("B");
@@ -43,6 +28,4 @@ moduleinterface MeAppBase
 	  input mePlatformIn;
 	  output mePlatformOut;
 			    
-
-
 }
