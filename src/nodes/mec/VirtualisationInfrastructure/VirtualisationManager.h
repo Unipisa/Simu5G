@@ -60,9 +60,18 @@ struct meAppMapEntry
  */
 
 
+class CreateAppMessage;
+class DeleteAppMessage;
+
+typedef struct
+{
+    std::string instanceId;
+    SockAddr endPoint;
+} MecAppInstanceInfo;
+
 class VirtualisationManager : public cSimpleModule
 {
-    friend class MecOrchestratorManager; // Friend Class
+    friend class MecOrchestrator; // Friend Class
 
     //------------------------------------
     //SIMULTE Binder module
@@ -152,10 +161,10 @@ class VirtualisationManager : public cSimpleModule
         void stopMEApp(inet::Packet*);
 
         // instancing the requested MEApp (called by handleResource)
-        SockAddr instantiateMEApp(cMessage*);
+        MecAppInstanceInfo instantiateMEApp(CreateAppMessage*);
 
         // terminating the correspondent MEApp (called by handleResource)
-        void terminateMEApp(cMessage*);
+        bool terminateMEApp(DeleteAppMessage*);
 
         // sending ACK_START_MEAPP or ACK_STOP_MEAPP (called by instantiateMEApp or terminateMEApp)
         void ackMEAppPacket(inet::Packet*, const char*);
