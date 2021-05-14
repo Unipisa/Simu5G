@@ -73,7 +73,7 @@ void NRMacUe::handleSelfMessage()
 
     if (noSchedulingGrants)
     {
-        EV << NOW << " LteMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
+        EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
         checkRAC();
         // TODO ensure all operations done  before return ( i.e. move H-ARQ rx purge before this point)
     }
@@ -592,7 +592,7 @@ void NRMacUe::macPduMake(MacCid cid)
 
             auto header = macPkt->removeAtFront<LteMacPdu>();
             // Attach BSR to PDU if RAC is won and wasn't already made
-            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade )
+            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade && size > 0)
             {
                 MacBsr* bsr = new MacBsr();
                 bsr->setTimestamp(simTime().dbl());
@@ -600,12 +600,14 @@ void NRMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
-
+                bsrAlreadyMade = true;
                 EV << "NRMacUe::macPduMake - BSR created with size " << size << endl;
             }
 
-            if (size > 0) // this prevent the UE to send an unnecessary RAC request
+            if (bsrAlreadyMade && size > 0) // this prevent the UE to send an unnecessary RAC request
+            {
                 bsrRtxTimer_ = bsrRtxTimerStart_;
+            }
             else
                 bsrRtxTimer_ = 0;
 

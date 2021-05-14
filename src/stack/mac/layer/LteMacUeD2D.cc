@@ -429,7 +429,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
             auto header = macPkt->removeAtFront<LteMacPdu>();
             // Attach BSR to PDU if RAC is won and wasn't already made
-            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade )
+            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade && size > 0)
             {
                 MacBsr* bsr = new MacBsr();
                 bsr->setTimestamp(simTime().dbl());
@@ -437,11 +437,11 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 header->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
-
+                bsrAlreadyMade = true;
                 EV << "LteMacUeD2D::macPduMake - BSR created with size " << size << endl;
             }
 
-            if (size > 0)  // this prevent the UE to send an unnecessary RAC request
+            if (bsrAlreadyMade && size > 0)  // this prevent the UE to send an unnecessary RAC request
                 bsrRtxTimer_ = bsrRtxTimerStart_;
             else
                 bsrRtxTimer_ = 0;
@@ -517,7 +517,6 @@ LteMacUeD2D::macHandleGrant(cPacket* pktAux)
     // delete old grant
     if (schedulingGrant_.find(carrierFrequency) != schedulingGrant_.end() && schedulingGrant_[carrierFrequency]!=nullptr)
     {
-//        delete schedulingGrant_[carrierFrequency];
         schedulingGrant_[carrierFrequency] = nullptr;
     }
 
@@ -564,6 +563,7 @@ void LteMacUeD2D::checkRAC()
         // decrease BSR timer
         bsrRtxTimer_--;
         EV << NOW << " LteMacUe::checkRAC - waiting for a grant, BSR rtx timer has not expired yet (timer=" << bsrRtxTimer_ << ")" << endl;
+
         return;
     }
 
@@ -600,7 +600,9 @@ void LteMacUeD2D::checkRAC()
     }
 
     if (!trigger && !triggerD2DMulticast)
+    {
         EV << NOW << " LteMacUeD2D::checkRAC , Ue " << nodeId_ << ",RAC aborted, no data in queues " << endl;
+    }
 
     if ((racRequested_=trigger) || (racD2DMulticastRequested_=triggerD2DMulticast))
     {

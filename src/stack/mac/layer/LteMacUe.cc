@@ -616,6 +616,7 @@ void LteMacUe::macPduMake(MacCid cid)
             //
             //        }
 
+            bool bsrAlreadyMade = false;
             auto header = macPkt->removeAtFront<LteMacPdu>();
             if (bsrTriggered_)
             {
@@ -626,11 +627,12 @@ void LteMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
 
                 bsrTriggered_ = false;
+                bsrAlreadyMade = true;
 
                 EV << "LteMacUe::macPduMake - BSR with size " << size << "created" << endl;
             }
 
-            if (size > 0)  // this prevent the UE to send an unnecessary RAC request
+            if (bsrAlreadyMade && size > 0)  // this prevent the UE to send an unnecessary RAC request
                 bsrRtxTimer_ = bsrRtxTimerStart_;
             else
                 bsrRtxTimer_ = 0;

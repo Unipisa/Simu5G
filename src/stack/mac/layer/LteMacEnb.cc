@@ -598,7 +598,7 @@ void LteMacEnb::macHandleRac(cPacket* pktAux)
 
     auto racPkt = pkt->removeAtFront<LteRac>();
     auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
-    
+
     enbSchedulerUl_->signalRac(uinfo->getSourceId(), uinfo->getCarrierFrequency());
 
     // TODO all RACs are marked are successful
