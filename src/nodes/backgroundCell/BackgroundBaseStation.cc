@@ -113,6 +113,52 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     int bytesPerBlock;
     MacNodeId bgUeId;
 
+    // --- schedule RAC (UL only) --- //
+    if (dir == UL)
+    {
+        std::list<MacNodeId> servedRac;
+
+        // handle RAC
+        std::list<int>::const_iterator rit = bgTrafficManager_->getWaitingForRacUesBegin();
+        std::list<int>::const_iterator ret = bgTrafficManager_->getWaitingForRacUesEnd();
+
+        for (; rit != ret; ++rit)
+        {
+            // if there is still space
+            if (b >= numBands_)
+            {
+                // space terminated
+                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+                break;
+            }
+
+            bgUeIndex = *rit;
+            bgUeId = BGUE_MIN_ID + bgUeIndex;
+
+            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
+
+            // allocate one block
+            bandStatus_[dir][b] = 1;
+            ulBandAllocation_[b] = bgUeId;
+            b++;
+
+            servedRac.push_back(bgUeId);
+
+            if (b >= numBands_)
+            {
+                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+                EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
+                return;
+            }
+        }
+
+        while (!servedRac.empty())
+        {
+            // notify the traffic manager that the RAC for this UE has been served
+            bgTrafficManager_->racHandled(servedRac.front());
+            servedRac.pop_front();
+        }
+    }
 
     // --- schedule retransmissions --- //
     std::map<MacNodeId, unsigned int> rtxScheduledBgUes;
@@ -160,52 +206,6 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     for (auto mit = rtxScheduledBgUes.begin(); mit != rtxScheduledBgUes.end(); ++mit)
         bgTrafficManager_->consumeBackloggedUeBytes(mit->first, mit->second, dir, true);
 
-    // --- schedule RAC (UL only) --- //
-    if (dir == UL)
-    {
-        std::list<MacNodeId> servedRac;
-
-        // handle RAC
-        std::list<int>::const_iterator rit = bgTrafficManager_->getWaitingForRacUesBegin();
-        std::list<int>::const_iterator ret = bgTrafficManager_->getWaitingForRacUesEnd();
-
-        for (; rit != ret; ++rit)
-        {
-            // if there is still space
-            if (b >= numBands_)
-            {
-                // space terminated
-                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
-                break;
-            }
-
-            bgUeIndex = *rit;
-            bgUeId = BGUE_MIN_ID + bgUeIndex;
-
-            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
-
-            // allocate one block
-            bandStatus_[dir][b] = 1;
-            ulBandAllocation_[b] = bgUeId;
-            b++;
-
-            servedRac.push_back(bgUeId);
-
-            if (b >= numBands_)
-            {
-                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
-                EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
-                return;
-            }
-        }
-
-        while (!servedRac.empty())
-        {
-            // notify the traffic manager that the RAC for this UE has been served
-            bgTrafficManager_->racHandled(servedRac.front());
-            servedRac.pop_front();
-        }
-    }
 
 
     // sort backlogged UEs (MaxC/I)

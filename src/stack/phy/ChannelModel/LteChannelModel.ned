@@ -117,9 +117,10 @@ simple LteRealisticChannelModel extends LteChannelModel
     @signal[rcvdSinrUl];
     @statistic[rcvdSinrUl](title="SINR measured at packet reception, UL"; unit="dB"; source="rcvdSinrUl"; record=mean,vector);
     
-    // statistics
-    @signal[measuredSinr];
-    @statistic[measuredSinr](title="SINR measured at feedback computation"; unit="dB"; source="measuredSinr"; record=mean,vector);
+    @signal[measuredSinrDl];
+    @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
+    @signal[measuredSinrUl];
+    @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
     
     @signal[distance];
     @statistic[distance](title="distance between UE and serving eNB"; unit="meters"; source="distance"; record=mean,vector);

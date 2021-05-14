@@ -44,15 +44,19 @@ simple TrafficGeneratorBase like ITrafficGenerator
         double rtxRateUl = default(0.1);
         double rtxDelayUl @unit("s")= default(0.006s);
         
-        // statistics   
+        // statistics 
+        @signal[bgMeasuredSinrDl];
+        @statistic[bgMeasuredSinrDl](title="Average DL SINR for background UEs"; unit=""; source="bgMeasuredSinrDl"; record=mean,count,vector);
+        @signal[bgMeasuredSinrUl];
+        @statistic[bgMeasuredSinrUl](title="Average UL SINR for background UEs"; unit=""; source="bgMeasuredSinrUl"; record=mean,count,vector);  
         @signal[bgAverageCqiDl];
-        @statistic[bgAverageCqiDl](title="Average DL CQI for background UEs"; unit=""; source="bgAverageCqiDl"; record=mean,vector);
+        @statistic[bgAverageCqiDl](title="Average DL CQI for background UEs"; unit=""; source="bgAverageCqiDl"; record=mean,count,vector);
         @signal[bgAverageCqiUl];
-        @statistic[bgAverageCqiUl](title="Average UL CQI for background UEs"; unit=""; source="bgAverageCqiUl"; record=mean,vector);
+        @statistic[bgAverageCqiUl](title="Average UL CQI for background UEs"; unit=""; source="bgAverageCqiUl"; record=mean,count,vector);
         @signal[bgHarqErrorRateDl];
-        @statistic[bgHarqErrorRateDl](title="Average DL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateDl"; record=mean,vector);
+        @statistic[bgHarqErrorRateDl](title="Average DL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateDl"; record=mean,count,vector);
         @signal[bgHarqErrorRateUl];
-        @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean,vector);
+        @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean,count,vector);
 }
 
 //# add here your custom generators, by extending the base module

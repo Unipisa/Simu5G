@@ -155,8 +155,9 @@ protected:
   // statistics
   static omnetpp::simsignal_t rcvdSinrDl_;
   static omnetpp::simsignal_t rcvdSinrUl_;
+  static omnetpp::simsignal_t measuredSinrDl_;
+  static omnetpp::simsignal_t measuredSinrUl_;
   static omnetpp::simsignal_t distance_;
-  static omnetpp::simsignal_t measuredSinr_;
 
   // rsrq from log file
   bool useRsrqFromLog_;

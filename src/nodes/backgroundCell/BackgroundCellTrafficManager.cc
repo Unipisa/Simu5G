@@ -119,15 +119,22 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
     std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgBaseStation_, dir);
 
     // convert the SNR to CQI and compute the mean
+    double meanSinr = 0;
     Cqi bandCqi, meanCqi = 0;
     std::vector<double>::iterator it = snr.begin();
 
     for (; it != snr.end(); ++it)
     {
+        meanSinr += *it;
+
         // lookup table that associates the SINR to a range of CQI values
         bandCqi = getCqiFromTable(*it);
         meanCqi += bandCqi;
     }
+
+    meanSinr /= snr.size();
+    bgUe->collectMeasuredSinr(meanSinr, dir);
+
     meanCqi /= snr.size();
     if(meanCqi < 2)
         meanCqi = 2;
@@ -135,10 +142,10 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
     return meanCqi;
 }
 
-Cqi BackgroundCellTrafficManager::computeCqiFromSinr(double sinr)
-{
-    return getCqiFromTable(sinr);
-}
+//Cqi BackgroundCellTrafficManager::computeCqiFromSinr(double sinr)
+//{
+//    return getCqiFromTable(sinr);
+//}
 
 unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
 {

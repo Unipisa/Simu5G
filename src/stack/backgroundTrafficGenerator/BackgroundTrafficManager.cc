@@ -176,14 +176,21 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     delete cInfo;
 
     // convert the SNR to CQI and compute the mean
+    double meanSinr = 0;
     Cqi bandCqi, meanCqi = 0;
     std::vector<double>::iterator it = snr.begin();
     for (; it != snr.end(); ++it)
     {
+        meanSinr += *it;
         // lookup table that associates the SINR to a range of CQI values.
         bandCqi = getCqiFromTable(*it);
         meanCqi += bandCqi;
     }
+
+    meanSinr /= snr.size();
+    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
+    bgUe->collectMeasuredSinr(meanSinr, dir);
+
     meanCqi /= snr.size();
     if(meanCqi < 2)
         meanCqi = 2;

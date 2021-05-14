@@ -33,8 +33,9 @@ Define_Module(LteRealisticChannelModel);
 
 simsignal_t LteRealisticChannelModel::rcvdSinrDl_ = registerSignal("rcvdSinrDl");
 simsignal_t LteRealisticChannelModel::rcvdSinrUl_ = registerSignal("rcvdSinrUl");
+simsignal_t LteRealisticChannelModel::measuredSinrDl_ = registerSignal("measuredSinrDl");
+simsignal_t LteRealisticChannelModel::measuredSinrUl_ = registerSignal("measuredSinrUl");
 simsignal_t LteRealisticChannelModel::distance_ = registerSignal("distance");
-simsignal_t LteRealisticChannelModel::measuredSinr_ = registerSignal("measuredSinr");
 
 void LteRealisticChannelModel::initialize(int stage)
 {
@@ -425,8 +426,6 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        std::vector<double> snrVector;
        snrVector.resize(numBands_, sinr);
 
-       emit(measuredSinr_,sinr);
-
        return snrVector;
    }
 
@@ -722,8 +721,18 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        ++usedRBs;
    }
 
-   if (dir == DL && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0)
-       emit(measuredSinr_,sumSnr/usedRBs);
+   // emit SINR statistic
+   if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0)
+   {
+       // we are on the BS, so we need to retrieve the channel model of the sender
+       // XXX I know, there might be a faster way...
+       LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
+
+       if (dir == DL) // we are on the UE
+           ueChannelModel->emit(measuredSinrDl_, sumSnr / usedRBs);
+       else
+           ueChannelModel->emit(measuredSinrUl_, sumSnr / usedRBs);
+   }
 
    //if sender is an eNodeB
    if (dir == DL)

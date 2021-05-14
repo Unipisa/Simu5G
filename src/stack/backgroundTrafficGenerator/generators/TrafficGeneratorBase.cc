@@ -81,6 +81,8 @@ void TrafficGeneratorBase::initialize(int stage)
         positionUpdated_ = true;
 
         // statistics
+        bgMeasuredSinrDl_ = registerSignal("bgMeasuredSinrDl");
+        bgMeasuredSinrUl_ = registerSignal("bgMeasuredSinrUl");
         bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
         bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
         bgHarqErrorRateDl_ = registerSignal("bgHarqErrorRateDl");
@@ -245,7 +247,6 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
     return ((!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir]);
 }
 
-
 void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal)
@@ -255,3 +256,12 @@ void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalI
         positionUpdated_ = true;
     }
 }
+
+void TrafficGeneratorBase::collectMeasuredSinr(double sample, Direction dir)
+{
+    if (dir == DL)
+        emit(bgMeasuredSinrDl_, sample);
+    else
+        emit(bgMeasuredSinrUl_, sample);
+}
+

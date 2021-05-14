@@ -49,9 +49,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManager
     // returns the CQI based on the given position and power
     virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
-    // returns the CQI based on the given sinr
-    virtual Cqi computeCqiFromSinr(double sinr);
-
     // returns the bytes per block of the given UE for in the given direction
     virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
 

@@ -85,6 +85,8 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     Cqi cqi_[2];
 
     // statistics
+    simsignal_t bgMeasuredSinrDl_;
+    simsignal_t bgMeasuredSinrUl_;
     simsignal_t bgAverageCqiDl_;
     simsignal_t bgAverageCqiUl_;
     simsignal_t bgHarqErrorRateDl_;
@@ -132,6 +134,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
     // consume bytes from the queue and returns the updated buffer length
     unsigned int consumeBytes(int bytes, Direction dir, bool rtx = false);
+
+    // for statistics purposes
+    void collectMeasuredSinr(double sample, Direction dir);
 };
 
 #endif
