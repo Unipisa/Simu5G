@@ -64,6 +64,8 @@ void BackgroundTrafficManager::initialize(int stage)
         // create vector of BackgroundUEs
         for (int i=0; i < numBgUEs_; i++)
             bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
+
+        phyPisaData_ = &(getBinder()->phyPisaData);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
     {
@@ -182,8 +184,8 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     for (; it != snr.end(); ++it)
     {
         meanSinr += *it;
-        // lookup table that associates the SINR to a range of CQI values.
-        bandCqi = getCqiFromTable(*it);
+
+        bandCqi = computeCqiFromSinr(*it);
         meanCqi += bandCqi;
     }
 
@@ -200,7 +202,36 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
 
 Cqi BackgroundTrafficManager::computeCqiFromSinr(double sinr)
 {
-    return getCqiFromTable(sinr);
+    int newsnr = floor(sinr + 0.5);
+    if (newsnr < phyPisaData_->minSnr())
+        return 0;
+    if (newsnr > phyPisaData_->maxSnr())
+        return 15;
+
+    unsigned int txm = 1;
+    std::vector<double> min;
+    int found = 0;
+    double low = 2;
+
+    // TODO do this once in the initialize
+    min.resize(phyPisaData_->nMcs(), 2);
+
+    double targetBler = 0.01; // TODO get this from parameters
+
+    for (int i = 0; i < phyPisaData_->nMcs(); i++)
+    {
+        double tmp = phyPisaData_->getBler(txm, i, newsnr);
+        double diff = targetBler - tmp;
+        min[i] = (diff > 0) ? diff : (diff * -1);
+        if (low >= min[i])
+        {
+            found = i;
+            low = min[i];
+        }
+    }
+    return found + 1;
+
+//    return getCqiFromTable(sinr);
 }
 
 
@@ -285,6 +316,7 @@ void BackgroundTrafficManager::racHandled(MacNodeId bgUeId)
     waitingForRac_.remove(index);
 
     // some bytes have been added in the RB assigned for the first BSR, consume them from the buffer
+    // TODO consider MAC and RLC header?
     unsigned int servedWithFirstBsr = getBackloggedUeBytesPerBlock(bgUeId, UL);
     unsigned int newBuffLen = consumeBackloggedUeBytes(bgUeId, servedWithFirstBsr, UL);
 

@@ -47,6 +47,7 @@ void TrafficGeneratorBase::initialize(int stage)
 
         rtxRate_[DL] = par("rtxRateDl");
         rtxRate_[UL] = par("rtxRateUl");
+
         rtxDelay_[DL] = par("rtxDelayDl");
         rtxDelay_[UL] = par("rtxDelayUl");
 
@@ -67,14 +68,35 @@ void TrafficGeneratorBase::initialize(int stage)
         }
 
         enablePeriodicCqiUpdate_ = getAncestorPar("enablePeriodicCqiUpdate");
+        useRandomCqi_ = getAncestorPar("useRandomCqi");
+        computeAvgInterference_ = getAncestorPar("computeAvgInterference");
         if (enablePeriodicCqiUpdate_)
         {
             fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI); // TTI -> seconds
             fbSource_ = new cMessage("fbSource");
             scheduleAt(simTime(), fbSource_);
         }
+        else if (!computeAvgInterference_)
+        {
+            // use fixed CQI given as parameters
 
-        useAvgInterference_ = getAncestorPar("useAvgInterference");
+            double cqiDl = normal(cqiMeanDl_, cqiStddevDl_);
+            if (cqiDl > 15)
+                cqi_[DL] = 15;
+            else if (cqiDl < 2)
+                cqi_[DL] = 2;
+            else
+                cqi_[DL] = floor(cqiDl);
+
+
+            double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
+            if (cqiUl > 15)
+                cqi_[DL] = 15;
+            else if (cqiUl < 2)
+                cqi_[UL] = 2;
+            else
+                cqi_[UL] = floor(cqiUl);
+        }
 
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
@@ -103,7 +125,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
         }
 
         // if periodic CQI updateis disabled, and CQI was not estimated using avg interference, then update SINR when the UE changed its position
-        if (!enablePeriodicCqiUpdate_ && !useAvgInterference_ && positionUpdated_)
+        if (!enablePeriodicCqiUpdate_ && !computeAvgInterference_ && positionUpdated_)
             updateMeasurements();
 
         if (!strcmp(msg->getName(), "selfSourceDl"))
@@ -149,13 +171,38 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 
 void TrafficGeneratorBase::updateMeasurements()
 {
-    if (trafficEnabled_[DL])
-        cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, pos_);
+    if (useRandomCqi_)
+    {
+        if (trafficEnabled_[DL])
+        {
+            double cqiDl = normal(cqiMeanDl_, cqiStddevDl_);
+            if (cqiDl > 15)
+                cqi_[DL] = 15;
+            else if (cqiDl < 2)
+                cqi_[DL] = 2;
+            else
+                cqi_[DL] = floor(cqiDl);
+        }
 
-    if (trafficEnabled_[UL])
-        cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, pos_, txPower_);
+        if (trafficEnabled_[UL])
+        {
+            double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
+            if (cqiUl > 15)
+                cqi_[DL] = 15;
+            else if (cqiUl < 2)
+                cqi_[UL] = 2;
+            else
+                cqi_[UL] = floor(cqiUl);
+        }
+    }
+    else
+    {
+        if (trafficEnabled_[DL])
+            cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, pos_);
 
-    std::cout << NOW << "TrafficGeneratorBase::updateMeasurements - bgUe " << bgUeIndex_ << " cqiDl[" << cqi_[DL] << "] cqiUl[" << cqi_[UL] << "] "<< endl;
+        if (trafficEnabled_[UL])
+            cqi_[UL] = bgTrafficManager_->computeCqi(bgUeIndex_, UL, pos_, txPower_);
+    }
 
     positionUpdated_ = false;
 }

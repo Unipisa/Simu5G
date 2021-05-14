@@ -51,7 +51,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     bool enablePeriodicCqiUpdate_;
 
     // if true, the CQI of the bg UE is computed by using an estimation of the average interference
-    bool useAvgInterference_;
+    bool computeAvgInterference_;
 
     // CQI reporting period
     simtime_t fbPeriod_;
@@ -81,6 +81,8 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // flag that signals when new SNR and CQI must be computed
     bool positionUpdated_;
 
+    bool useRandomCqi_;
+    double cqiMeanDl_;
     // current CQI based on the last position update
     Cqi cqi_[2];
 

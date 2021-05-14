@@ -13,6 +13,7 @@
 #define BACKGROUNDTRAFFICMANAGER_H_
 
 #include "common/LteCommon.h"
+#include "common/blerCurves/PhyPisaData.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 using namespace omnetpp;
@@ -46,6 +47,9 @@ class BackgroundTrafficManager : public cSimpleModule
 
     // references to the MAC and PHY layer of the e/gNodeB
     LteMacEnb* mac_;
+
+    //pointer to pisadata
+    PhyPisaData* phyPisaData_;
 
     /// TTI for this node
     double ttiPeriod_;

@@ -73,6 +73,8 @@ void BackgroundCellTrafficManager::initialize(int stage)
             bgAmc_ = new BackgroundCellAmcNr();
         else
             bgAmc_ = new BackgroundCellAmc();
+
+        phyPisaData_ = &(getBinder()->phyPisaData);
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
@@ -128,7 +130,8 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
         meanSinr += *it;
 
         // lookup table that associates the SINR to a range of CQI values
-        bandCqi = getCqiFromTable(*it);
+        bandCqi = computeCqiFromSinr(*it);
+
         meanCqi += bandCqi;
     }
 
@@ -141,11 +144,6 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
 
     return meanCqi;
 }
-
-//Cqi BackgroundCellTrafficManager::computeCqiFromSinr(double sinr)
-//{
-//    return getCqiFromTable(sinr);
-//}
 
 unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
 {
