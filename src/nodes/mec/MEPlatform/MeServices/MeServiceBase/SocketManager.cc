@@ -11,7 +11,6 @@
 #include "../MeServiceBase/MeServiceBase.h"
 #include <iostream>
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessageSerializer.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 
 

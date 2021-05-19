@@ -39,6 +39,7 @@ void MeServiceBase::initialize(int stage)
     {
         EV << "MeServiceBase::initialize" << endl;
 
+        serviceName_ = par("serviceName").stringValue();
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
         requestQueueSize_ = par("requestQueueSize");
@@ -78,12 +79,25 @@ void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     inet::L3Address localAdd(inet::L3AddressResolver().resolve(localAddress));
     EV << "Local Address resolved: "<< localAdd << endl;
 
+    ServiceDescriptor servDescriptor;
+    servDescriptor.name = par("serviceName").stringValue();
+    servDescriptor.version = par("serviceVersion").stringValue();
+    servDescriptor.serialize = par("serviceSerialize").stringValue();
+    servDescriptor.transportId = par("transportId").stringValue();
+    servDescriptor.transportName = par("transportName").stringValue();
+    servDescriptor.transportType = par("transportType").stringValue();
+    servDescriptor.transportProtocol = par("transportProtocol").stringValue();
 
-    std::string name (par("serviceName").stringValue()); //or this->getClassName()
-    EV << name << endl;
-    SockAddr sockAddr = {localAdd, localPort};
-    servRegistry_->registerMeService(name, sockAddr);
+    servDescriptor.catId = par("catId").stringValue();
+    servDescriptor.catName = par("catName").stringValue();
+    servDescriptor.catHref = par("catUri").stringValue();
+    servDescriptor.catVersion = par("catVersion").stringValue();
 
+
+    servDescriptor.addr = localAdd;
+    servDescriptor.port = localPort;
+
+    servRegistry_->registerMeService(servDescriptor);
 
     // e.g. 1.2.3.4:5050
     std::stringstream hostStream;
@@ -446,10 +460,10 @@ MeServiceBase::~MeServiceBase(){
         subscriptionEvents_.pop();
         delete notEv;
     }
-    std::cout << "Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
-        std::cout << "Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
+        std::cout << serviceName_<<" Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
         // stop periodic notification timer
 //        cMessage *msg =it->second->getNotificationTrigger();
 //        if(msg!= nullptr && msg->isScheduled())
@@ -457,7 +471,7 @@ MeServiceBase::~MeServiceBase(){
         delete it->second;
         subscriptions_.erase(it++);
     }
-    std::cout << "Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
 
 void MeServiceBase::emitRequestQueueLength()

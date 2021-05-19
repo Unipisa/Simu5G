@@ -58,6 +58,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         MeServiceBase();
 
     protected:
+        std::string serviceName_;
         inet::TcpSocket serverSocket; // Used to listen incoming connections
         inet::SocketMap socketMap; // Stores the connections
         typedef std::set<SocketManager *> ThreadSet;

@@ -50,6 +50,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
         virtual void addBodyChunk(const std::string& bodyChunk);
         // key MUST be like "key: "
         virtual void setHeaderField(const std::string& key, const std::string& value);
+        virtual std::string getHeaderField(const std::string& key) const;
 
         virtual void setStatus(HttpResponseCode code);
         virtual void setStatus(const char* status) override;

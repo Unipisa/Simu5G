@@ -42,6 +42,29 @@ typedef struct {
     std::string str() const { return addr.str() + ":" + std::to_string(port);}
 } SockAddr;
 
+
+typedef struct {
+    std::string name;
+    std::string version;
+    std::string serialize;
+
+    std::string transportId;
+    std::string transportName;
+    std::string transportType;
+    std::string transportProtocol;
+
+    std::string catHref;
+    std::string catId;
+    std::string catName;
+    std::string catVersion;
+
+    inet::L3Address addr;
+    int port;
+    std::string str() const { return addr.str() + ":" + std::to_string(port);}
+} ServiceDescriptor;
+
+
+
 typedef struct {
     double ram;
     double disk;
@@ -102,9 +125,6 @@ namespace mec {
         int nanoSecods;
         
     };
-    
-    ResourceManager* getResourceManager();
-
 }
 
 #endif

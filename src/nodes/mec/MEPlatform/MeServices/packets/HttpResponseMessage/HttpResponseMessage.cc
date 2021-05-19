@@ -112,6 +112,14 @@ void HttpResponseMessage::setHeaderField(const std::string& key, const std::stri
     headerFields_[key] = value;
 }
 
+std::string HttpResponseMessage::getHeaderField(const std::string& key)const
+{
+    auto it = headerFields_.find(key);
+    if(it == headerFields_.end())
+        return std::string();
+    return it->second;
+}
+
 std::string HttpResponseMessage::getPayload() const{
     std::string crlf = "\r\n";
     std::string payload = this->httpProtocol.str() +" " + this->code.str() + " " + status.str() + crlf;

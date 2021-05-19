@@ -20,7 +20,6 @@ import inet.applications.contract.IApp;
 simple LocationService like MeServiceBase, IApp
 {
     parameters:
-		string serviceName = default("LocationService");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")
@@ -31,7 +30,23 @@ simple LocationService like MeServiceBase, IApp
         double requestServiceTime  = default(5);
         double subscriptionServiceTime @unit(s) = default(0.5us);
         
-        string serverThreadClass = default("lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.SocketManager")
+        string serverThreadClass = default("lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.SocketManager");
+        
+        
+		string serviceName = default("LocationService");
+       	string serviceVersion = default("v2");
+       	string serviceSerialize = default("JSON");
+       	
+       	string transportId = default("LocAPI");
+       	string transportName = default("LocAPI");
+       	string transportType = default("REST_HTTP");
+       	string transportProtocol = default("HTTP");
+    
+    	string catId = default("");
+    	string catName = default("Location");
+    	string catUri = default("");
+    	string catVersion = default("v2");	
+        
         
         @display("i=block/app");
         @signal[requestQueueSize](type = long);

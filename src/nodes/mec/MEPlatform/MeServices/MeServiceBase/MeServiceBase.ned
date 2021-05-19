@@ -25,9 +25,45 @@ moduleinterface MeServiceBase
 {
     parameters:
         @display("i=block/app");
-        string serviceName;
         int requestQueueSize;
        	int subscriptionQueueSize;
+       	
+       	string serviceName;
+       	string serviceVersion;
+       	string serviceSerialize;
+       	
+       	string transportId;
+       	string transportName;
+       	string transportType;
+       	string transportProtocol;
+    
+    	string catId;
+    	string catName;
+    	string catUri;
+    	string catVersion;	
+       	
+//   	servDescriptor.name = par("serviceName").str();
+//    servDescriptor.category = par("serviceCategory").str();
+//    servDescriptor.version = par("serviceVersion").str();
+//    servDescriptor.serialize = par("serviceSerialize").str();
+//    servDescriptor.transportId = par("transportId").str();
+//    servDescriptor.transportName = par("transportName").str();
+//    servDescriptor.transportType = par("transportType").str();
+//    servDescriptor.transportProtocol = par("transportProtocol").str();
+//    
+//    servDescriptor.catId = par("catId").str();
+//    servDescriptor.catName = par("catName").str();
+//    servDescriptor.catHref = par("catUri").str();
+//    servDescriptor.catVersion = par("catVersion").str();
+
+
+       	
+       	
+       	
+       	
+       	
+       	
+       	
 	
 		string localAddress; // local address; may be left empty ("")
         int localPort;     // localPort number to listen on
