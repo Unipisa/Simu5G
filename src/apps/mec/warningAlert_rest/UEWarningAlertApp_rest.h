@@ -34,6 +34,7 @@ class UEWarningAlertApp_rest : public cSimpleModule
 {
     //communication
     inet::UdpSocket socket;
+
     int size_;
     simtime_t period_;
     int localPort_;
@@ -42,6 +43,11 @@ class UEWarningAlertApp_rest : public cSimpleModule
 
     char* sourceSimbolicAddress;            //Ue[x]
     char* destSimbolicAddress;              //meHost.virtualisationInfrastructure
+
+
+    int mecAppPort_;
+    inet::L3Address mecAppAddress_;
+
 
     // mobility informations
     cModule* ue;

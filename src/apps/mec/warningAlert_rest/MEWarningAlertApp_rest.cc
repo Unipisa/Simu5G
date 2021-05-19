@@ -11,6 +11,9 @@
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/Packet_m.h"
 
+#include "inet/networklayer/common/L3AddressTag_m.h"
+#include "inet/transportlayer/common/L4PortTag_m.h"
+
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
@@ -46,7 +49,7 @@ MEWarningAlertApp_rest::~MEWarningAlertApp_rest()
 
 void MEWarningAlertApp_rest::initialize(int stage)
 {
-    MeAppBase::initialize(stage);
+    MecAppBase::initialize(stage);
     EV << "MEWarningAlertApp_rest::initialize - stage " << stage << endl;
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
@@ -54,19 +57,18 @@ void MEWarningAlertApp_rest::initialize(int stage)
 
     //retrieving parameters
     size_ = par("packetSize");
-    ueSimbolicAddress = (char*)par("ueSimbolicAddress").stringValue();
-    meHostSimbolicAddress = (char*)par("localAddress").stringValue();
-    destAddress_ = inet::L3AddressResolver().resolve(ueSimbolicAddress);
-    destPort_ = par("uePort");
-    localPort_ = par("localPort");
-    meHost = getParentModule();
-    mePlatform = meHost->getSubmodule("mePlatform");
-
-    serviceRegistry = check_and_cast<ServiceRegistry *>(mePlatform->getSubmodule("serviceRegistry"));
+   // ueSimbolicAddress = (char*)par("ueSimbolicAddress").stringValue();
+//    meHostSimbolicAddress = (char*)par("localAddress").stringValue();
+//    destAddress_ = inet::L3AddressResolver().resolve(ueSimbolicAddress);
+//    destPort_ = par("uePort");
+//    localPort_ = par("localPort");
 
     // set Udp Socket
     ueSocket.setOutputGate(gate("socketOut"));
-    ueSocket.bind(localPort_);
+
+    localUePort = par("localUePort");
+    ueSocket.bind(localUePort);
+//    ueSocket.bind(localPort_);
 
 //    // set Tcp Socket
 //    socket.bind(L3AddressResolver().resolve(meHostSimbolicAddress), localPort_);
@@ -74,67 +76,61 @@ void MEWarningAlertApp_rest::initialize(int stage)
 //    socket.setCallback(this);
 //    socket.setOutputGate(gate("socketOut"));
 
-
-    circle = new cOvalFigure("circle");
-    circle->setBounds(cFigure::Rectangle(150,200,120,120));
-    circle->setLineWidth(2);
-    circle->setLineColor(cFigure::RED);
-    getSimulation()->getSystemModule()->getCanvas()->addFigure(circle);
-
-
     //testing
-    EV << "MEWarningAlertApp_rest::initialize - MEWarningAlertApp_rest Symbolic Address: " << meHostSimbolicAddress << endl;
-    EV << "MEWarningAlertApp_rest::initialize - UEWarningAlertApp Symbolic Address: " << ueSimbolicAddress <<  " [" << destAddress_.str() << "]" << endl;
+//    EV << "MEWarningAlertApp_rest::initialize - MEWarningAlertApp_rest Symbolic Address: " << meHostSimbolicAddress << endl;
+//    EV << "MEWarningAlertApp_rest::initialize - UEWarningAlertApp Symbolic Address: " << ueSimbolicAddress <<  " [" << destAddress_.str() << "]" << endl;
+
+    cMessage *msg = new cMessage("connect!");
+    scheduleAt(simTime() + 0.01, msg);
 
 }
 
-void MEWarningAlertApp_rest::handleMessageWhenUp(cMessage *msg)
+void MEWarningAlertApp_rest::handleMessage(cMessage *msg)
 {
-//    EV << "MEWarningAlertApp_rest::handleMessageWhenUp" << endl;
-//    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-//    if (ueSocket.belongsToSocket(packet))
-//    {
-//        EV << "UDP MESSAGE" << endl;
-//        delete msg;
-//    }
-//    else
-        MeAppBase::handleMessageWhenUp(msg);
-
+//        MecAppBase::handleMessage(msg);
+    if (msg->isSelfMessage())
+    {
+        EV << "MecAppBase::handleMessage" << endl;
+        if(strcmp(msg->getName(), "processedServiceResponse") == 0)
+        {
+            handleServiceMessage();
+            if(serviceHttpMessage != nullptr)
+            {
+                delete serviceHttpMessage;
+                serviceHttpMessage = nullptr;
+            }
+        }
+        else if (strcmp(msg->getName(), "processedMp1Response") == 0)
+        {
+            handleMp1Message();
+            if(mp1HttpMessage != nullptr)
+            {
+                delete mp1HttpMessage;
+                mp1HttpMessage = nullptr;
+            }
+        }
+        else
+        {
+            handleSelfMessage(msg);
+        }
+    }
+    else
+    {
+        // from service or from ue app?
+        if(serviceSocket_.belongsToSocket(msg))
+        {
+            serviceSocket_.processMessage(msg);
+        }
+        else if(mp1Socket_.belongsToSocket(msg))
+        {
+            mp1Socket_.processMessage(msg);
+        }
+        else
+        {
+            handleUeMessage(msg);
+        }
+    }
 }
-
-
-//void MEWarningAlertApp_rest::handleMessage(cMessage *msg)
-//{
-//    EV << "MEWarningAlertApp_rest::handleMessage - \n";
-//    MeAppBase::handleMessage(msg);
-//
-////
-////    if(msg->isSelfMessage())
-////    {
-////        if(strcmp(msg->getName(), "connect") == 0)
-////         {
-////             connect();
-////             delete msg;
-////         }
-////    }
-////    else{
-////
-////        if(ueSocket.belongsToSocket(msg))
-////        {
-////            EV << "UDP message" << endl;
-////            return msg;
-////        }
-////        else if(socket.belongsToSocket(msg))
-////        {
-////            socket.processMessage(msg);
-////        }
-////    }
-////        else
-////        {
-////            delete msg;
-////        }
-//
-//}
 
 void MEWarningAlertApp_rest::finish(){
 
@@ -151,22 +147,35 @@ void MEWarningAlertApp_rest::finish(){
 
 void MEWarningAlertApp_rest::handleUeMessage(omnetpp::cMessage *msg)
 {
+    // determine its source address/port
+
+    auto pk = check_and_cast<Packet *>(msg);
+    ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
+    ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
+
+    circle = new cOvalFigure("circle");
+    circle->setBounds(cFigure::Rectangle(150,200,120,120));
+    circle->setLineWidth(2);
+    circle->setLineColor(cFigure::RED);
+    getSimulation()->getSystemModule()->getCanvas()->addFigure(circle);
+
     EV << "ARRIVATO QUALCOSA" << endl;
+
     cMessage *m = new cMessage("connect");
     scheduleAt(simTime()+0.5, m);
 }
 
 void MEWarningAlertApp_rest::handleServiceMessage()
 {
-    if(currentHttpMessage->getType() == REQUEST)
+    if(serviceHttpMessage->getType() == REQUEST)
     {
-        Http::send204Response(&socket);
+        Http::send204Response(&serviceSocket_);
         nlohmann::json jsonBody;
-        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << currentHttpMessage->getBody()<< endl;
+        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << serviceHttpMessage->getBody()<< endl;
         try
         {
 
-           jsonBody = nlohmann::json::parse(currentHttpMessage->getBody()); // get the JSON structure
+           jsonBody = nlohmann::json::parse(serviceHttpMessage->getBody()); // get the JSON structure
         }
         catch(nlohmann::detail::parse_error e)
         {
@@ -194,8 +203,8 @@ void MEWarningAlertApp_rest::handleServiceMessage()
                     EV << "MEClusterizeService::handleTcpMsg - Ue is Exited in the danger zone "<< endl;
                     alert->setDanger(false);
                     std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-                    std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
-                    Http::sendDeleteRequest(&socket, host.c_str(), uri.c_str());
+                    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+                    Http::sendDeleteRequest(&serviceSocket_, host.c_str(), uri.c_str());
 
                 }
 
@@ -206,9 +215,9 @@ void MEWarningAlertApp_rest::handleServiceMessage()
 
 
                 //connection info
-                alert->setSourceAddress(meHostSimbolicAddress);
-                alert->setSourcePort(localPort_);
-                alert->setDestinationAddress(ueSimbolicAddress);
+//                alert->setSourceAddress(meHostSimbolicAddress);
+//                alert->setSourcePort(localPort_);
+//                alert->setDestinationAddress(ueSimbolicAddress);
 
                 //other info
 
@@ -216,20 +225,20 @@ void MEWarningAlertApp_rest::handleServiceMessage()
 
                 inet::Packet* packet = new inet::Packet("WarningAlertPacketInfo");
                 packet->insertAtBack(alert);
-                ueSocket.sendTo(packet, destAddress_, destPort_);
+                ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
 
             }
         }
     }
-    else if(currentHttpMessage->getType() == RESPONSE)
+    else if(serviceHttpMessage->getType() == RESPONSE)
     {
-        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(currentHttpMessage);
+        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(serviceHttpMessage);
 
 
         if(std::strcmp(rspMsg->getCode(), "204") == 0)
         {
             EV << "MEClusterizeService::handleTcpMsg - response 204 " << rspMsg->getBody()<< endl;
-             socket.close();
+             serviceSocket_.close();
              getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
 
         }
@@ -265,61 +274,18 @@ void MEWarningAlertApp_rest::handleServiceMessage()
         }
     }
 
-
-}
-
-void MEWarningAlertApp_rest::connect()
-{
-    socket.renewSocket();
-    EV << "MEWarningAlertApp_rest::connect" << endl;
-    // we need a new connId if this is not the first connection
-    //socket.renewSocket();
-
-    // use the service Registry to get ip and port of the service
-    serviceSockAddress = serviceRegistry->retrieveMeService("LocationService");
-    if(serviceSockAddress.addr.getType() == L3Address::NONE)
-        throw cRuntimeError("MEWarningAlertApp_rest::connect - MeService LocationService not found!");
-    EV << "MEWarningAlertApp_rest::connect to:  " << serviceSockAddress.str() << endl;
-    socket.connect(serviceSockAddress.addr, serviceSockAddress.port);
 }
 
 void MEWarningAlertApp_rest::modifySubscription()
 {
-    //    sendSubscription("Entering");
-        std::string body = "{  \"circleNotificationSubscription\": {"
-                           "\"callbackReference\" : {"
-                            "\"callbackData\":\"1234\","
-                            "\"notifyURL\":\"example.com/notification/1234\"},"
-                           "\"checkImmediate\": \"false\","
-                            "\"address\": \"" + destAddress_.str()+ "\","
-                            "\"clientCorrelator\": \"ciao\","
-                            "\"enteringLeavingCriteria\": \"Leaving\","
-                            "\"frequency\": 10,"
-                            "\"radius\": 60,"
-                            "\"trackingAccuracy\": 10,"
-                            "\"latitude\": 210,"
-                            "\"longitude\": 260"
-                            "}"
-                            "}\r\n";
-                std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-                std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
-                Http::sendPutRequest(&socket, body.c_str(), host.c_str(), uri.c_str());
-
-
-}
-
-void MEWarningAlertApp_rest::established(int connId)
-{
-    EV << "MEWarningAlertApp_rest::established" << endl;
-//    sendSubscription("Entering");
     std::string body = "{  \"circleNotificationSubscription\": {"
                        "\"callbackReference\" : {"
                         "\"callbackData\":\"1234\","
                         "\"notifyURL\":\"example.com/notification/1234\"},"
                        "\"checkImmediate\": \"false\","
-                        "\"address\": \"" + destAddress_.str()+ "\","
+                        "\"address\": \"" + ueAppAddress.str()+ "\","
                         "\"clientCorrelator\": \"ciao\","
-                        "\"enteringLeavingCriteria\": \"Entering\","
+                        "\"enteringLeavingCriteria\": \"Leaving\","
                         "\"frequency\": 10,"
                         "\"radius\": 60,"
                         "\"trackingAccuracy\": 10,"
@@ -327,18 +293,111 @@ void MEWarningAlertApp_rest::established(int connId)
                         "\"longitude\": 260"
                         "}"
                         "}\r\n";
-            std::string uri = "/example/location/v2/subscriptions/area/circle";
-            std::string host = socket.getRemoteAddress().str()+":"+std::to_string(socket.getRemotePort());
-            Http::sendPostRequest(&socket, body.c_str(), host.c_str(), uri.c_str());
+    std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
+    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+    Http::sendPutRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
+}
+
+void MEWarningAlertApp_rest::sendSubscription()
+{
+    std::string body = "{  \"circleNotificationSubscription\": {"
+                           "\"callbackReference\" : {"
+                            "\"callbackData\":\"1234\","
+                            "\"notifyURL\":\"example.com/notification/1234\"},"
+                           "\"checkImmediate\": \"false\","
+                            "\"address\": \"" + ueAppAddress.str()+ "\","
+                            "\"clientCorrelator\": \"ciao\","
+                            "\"enteringLeavingCriteria\": \"Entering\","
+                            "\"frequency\": 10,"
+                            "\"radius\": 60,"
+                            "\"trackingAccuracy\": 10,"
+                            "\"latitude\": 210,"
+                            "\"longitude\": 260"
+                            "}"
+                            "}\r\n";
+    std::string uri = "/example/location/v2/subscriptions/area/circle";
+    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+    Http::sendPostRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
+}
+
+void MEWarningAlertApp_rest::established(int connId)
+{
+    if(connId == mp1Socket_.getSocketId())
+    {
+        EV << "MEWarningAlertApp_rest::established - Mp1Socket"<< endl;
+        // get endPoint of the required service
+        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
+        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+
+        Http::sendGetRequest(&mp1Socket_, "GET", uri, host.c_str());
+        return;
+    }
+    else if (connId == serviceSocket_.getSocketId())
+    {
+        EV << "MEWarningAlertApp_rest::established - serviceSocket"<< endl;
+        sendSubscription();
+    }
+    else
+    {
+        throw cRuntimeError("MecAppBase::socketEstablished - Socket %s not recognized", connId);
+    }
+
+    EV << "MEWarningAlertApp_rest::established" << endl;
+//    sendSubscription("Entering");
+
+}
+
+void MEWarningAlertApp_rest::handleMp1Message()
+{
+//    throw cRuntimeError("QUiI");
+    EV << "MEWarningAlertApp_rest::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
+
+    try
+    {
+        nlohmann::json jsonBody = nlohmann::json::parse(mp1HttpMessage->getBody()); // get the JSON structure
+        if(!jsonBody.empty())
+        {
+            jsonBody = jsonBody[0];
+            std::string serName = jsonBody["serName"];
+            if(serName.compare("LocationService") == 0)
+            {
+                if(jsonBody.contains("transportInfo"))
+                {
+                    nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
+                    EV << "address: " << endPoint["host"] << " port: " <<  endPoint["port"] << endl;
+                    std::string address = endPoint["host"];
+                    serviceAddress = L3AddressResolver().resolve(address.c_str());;
+                    servicePort = endPoint["port"];
+                    //connect(&serviceSocket_, serviceAddress, servicePort);
+                }
+
+            }
+        }
+
+    }
+    catch(nlohmann::detail::parse_error e)
+    {
+        EV <<  e.what() << std::endl;
+        // body is not correctly formatted in JSON, manage it
+        return;
+    }
+
 }
 
 void MEWarningAlertApp_rest::handleSelfMessage(cMessage *msg)
 {
-
-    if(strcmp(msg->getName(), "connect") == 0)
+    if(strcmp(msg->getName(), "connect!") == 0)
     {
-        connect();
+        EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
+        connect(&mp1Socket_, mp1Address, mp1Port);
     }
+
+    else if(strcmp(msg->getName(), "connect") == 0)
+        {
+            EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
+            connect(&serviceSocket_, serviceAddress, servicePort);
+        }
+
     delete msg;
 
 }

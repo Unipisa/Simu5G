@@ -29,9 +29,13 @@ simple UEWarningAlertApp_rest like IApp
         
         //connection infos
         int localPort = default(4000);
-        int destPort = default(4000);
-        string destAddress;
+        
+        int destPort = default(4000); // ipAddress of the DeviceApp
+        string destAddress; // port of the DeviceApp
+        
         int packetSize = default(10);
+        
+        
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
         
         //resource required infos

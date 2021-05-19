@@ -5,12 +5,13 @@
 #include "inet/common/packet/chunk/BytesChunk.h"
 #include "inet/common/TagBase_m.h"
 #include "inet/common/TimeTag_m.h"
+#include "inet/common/ProtocolTag_m.h"
+
 #include "inet/common/INETDefs.h"
 #include "common/utils/utils.h"
 
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-
 
 
 namespace Http {
@@ -252,16 +253,187 @@ namespace Http {
         if(data->length() == 0  && httpMessage->getRemainingDataToRecv() == 0)
             return COMPLETE_NO_DATA;
         else if(data->length() > 0 && httpMessage->getRemainingDataToRecv() == 0)
-            return COMPLETE_DATA;
+            return COMPLETE_DATA; // there is a new message
         else if(data->length() == 0  && httpMessage->getRemainingDataToRecv() > 0)
-            return INCOMPLETE_NO_DATA;
+            return INCOMPLETE_NO_DATA; //
         else if(data->length() >= 0  && httpMessage->getRemainingDataToRecv() > 0)
-            return INCOMPLETE_DATA;
+            return INCOMPLETE_DATA; // this should not happen
         else
         {
             throw cRuntimeError("httpUtils parseTcpData - something went wrong: data length: %d and ramaining data to rcv: %d", data->length(),httpMessage->getRemainingDataToRecv() );
         }
     }
+
+
+    bool parseReceivedMsg(std::string& packet, std::string* storedData, HttpBaseMessage** currentHttpMessage)
+    {
+        EV_INFO << "httpUtils::parseReceivedMsg" << endl;
+        std::string delimiter = "\r\n\r\n";
+        size_t pos = 0;
+        std::string header;
+        int remainingData;
+
+        if(*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg())
+        {
+           EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
+           Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+           switch (res)
+           {
+           case (Http::COMPLETE_NO_DATA):
+               EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+               return true;
+               break;
+           case (Http::COMPLETE_DATA):
+                throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
+               break;
+           case (Http::INCOMPLETE_DATA):
+                   throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+           case (Http::INCOMPLETE_NO_DATA):
+                   return false;
+           }
+        }
+
+        /*
+        * If I get here OR:
+        *  - I am not receiving an http message
+        *  - I was receiving an http message but I still have data (i.e a new HttpMessage) to manage.
+        *    Start reading the header
+        */
+
+        std::string temp;
+        if(storedData->length() > 0)
+        {
+           EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
+           temp = packet;
+           packet = *storedData + temp;
+
+        }
+
+        while ((pos = packet.find(delimiter)) != std::string::npos) {
+           header = packet.substr(0, pos);
+           packet.erase(0, pos+delimiter.length()); //remove header
+//           HttpBaseMessage* newHttpMessage = Http::parseHeader(header);
+           *currentHttpMessage = Http::parseHeader(header);
+
+           Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+           double time;
+           switch (res)
+           {
+           case (Http::COMPLETE_NO_DATA):
+               EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+               return true;
+               break;
+           case (Http::COMPLETE_DATA):
+                   throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
+           case (Http::INCOMPLETE_DATA):
+                   throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+           case (Http::INCOMPLETE_NO_DATA):
+                   return false;
+           }
+        }
+        // posso arrivare qua se non trovo il delimitatore
+        // a causa del segmento frammentato strano, devo salvare il contenuto
+        // non ho creato ancora il messaggio
+        if(packet.length() != 0)
+        {
+           *storedData = packet;
+          return false;
+        }
+        return false;
+    }
+
+
+    HttpBaseMessage* parseReceivedMsg(inet::TcpSocket *socket, std::string& packet, omnetpp::cQueue& messageQueue, std::string* storedData, HttpBaseMessage* currentHttpMessage)
+    {
+        EV_INFO << "httpUtils::parseReceivedMsg" << endl;
+        std::string delimiter = "\r\n\r\n";
+        size_t pos = 0;
+        std::string header;
+        int remainingData;
+
+        if(currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg())
+        {
+            EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
+            Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+            double time;
+            switch (res)
+            {
+            case (Http::COMPLETE_NO_DATA):
+                EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                currentHttpMessage->setSockId(socket->getSocketId());
+                messageQueue.insert(currentHttpMessage);
+                currentHttpMessage = nullptr;
+                return nullptr;
+                break;
+            case (Http::COMPLETE_DATA):
+                EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                currentHttpMessage->setSockId(socket->getSocketId());
+                messageQueue.insert(currentHttpMessage);
+                currentHttpMessage = nullptr;
+                break;
+            case (Http::INCOMPLETE_DATA):
+                    throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+            case (Http::INCOMPLETE_NO_DATA):
+                    return currentHttpMessage;
+
+            }
+        }
+
+        /*
+         * If I get here OR:
+         *  - I am not receiving an http message
+         *  - I was receiving an http message but I still have data (i.e a new HttpMessage) to manage.
+         *    Start reading the header
+         */
+
+        std::string temp;
+        if(storedData->length() > 0)
+        {
+            EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
+            temp = packet;
+            packet = *storedData + temp;
+
+        }
+
+        while ((pos = packet.find(delimiter)) != std::string::npos) {
+            header = packet.substr(0, pos);
+            packet.erase(0, pos+delimiter.length()); //remove header
+            HttpBaseMessage* newHttpMessage = Http::parseHeader(header);
+
+            Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
+            double time;
+            switch (res)
+            {
+            case (Http::COMPLETE_NO_DATA):
+                EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                newHttpMessage->setSockId(socket->getSocketId());
+                messageQueue.insert(newHttpMessage);
+                newHttpMessage = nullptr;
+                return nullptr;
+                break;
+            case (Http::COMPLETE_DATA):
+                EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+            newHttpMessage->setSockId(socket->getSocketId());
+                messageQueue.insert(newHttpMessage);
+                newHttpMessage = nullptr;
+                break;
+            case (Http::INCOMPLETE_DATA):
+                    throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+            case (Http::INCOMPLETE_NO_DATA):
+                    return newHttpMessage;
+            }
+        }
+        // posso arrivare qua se non trovo il delimitatore
+        // a causa del segmento frammentato strano, devo salvare il contenuto
+        // non ho creato ancora il messaggio
+        if(packet.length() != 0)
+        {
+            *storedData = packet;
+           return nullptr;
+        }
+        return nullptr;
+    }
+
 
     void addBodyChunk(std::string* data, HttpBaseMessage* httpMessage)
     {
@@ -294,6 +466,8 @@ namespace Http {
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
+
         resPkt->setCode(code);
         resPkt->setStatus(reason);
         if(body != nullptr)
@@ -301,7 +475,7 @@ namespace Http {
             resPkt->setBody(body);
             resPkt->setContentLength(strlen(body));
         }
-        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
@@ -311,6 +485,7 @@ namespace Http {
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
         resPkt->setCode(code);
         resPkt->setStatus(reason);
         if(body != nullptr)
@@ -320,7 +495,7 @@ namespace Http {
         }
         resPkt->setHeaderField(header.first, header.second);
 
-        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
@@ -344,7 +519,7 @@ namespace Http {
             resPkt->setHeaderField(it->first, it->second);
         }
 
-        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
 
@@ -364,7 +539,7 @@ namespace Http {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
         }
-        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
@@ -383,7 +558,7 @@ namespace Http {
             reqPkt->setContentLength(strlen(body));
         }
         reqPkt->setHeaderField(header.first,header.second);
-        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
 
@@ -408,7 +583,7 @@ namespace Http {
         {
            reqPkt->setHeaderField(it->first, it->second);
         }
-        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }

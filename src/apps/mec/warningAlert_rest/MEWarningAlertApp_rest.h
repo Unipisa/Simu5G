@@ -21,7 +21,7 @@
 
 #include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 
-#include "apps/mec/MeApps/MeAppBase.h"
+#include "apps/mec/MeApps/MecAppBase.h"
 
 
 using namespace std;
@@ -31,47 +31,55 @@ using namespace omnetpp;
 /**
  * See MEWarningAlertApp_rest.ned
  */
-class MEWarningAlertApp_rest : public MeAppBase
+class MEWarningAlertApp_rest : public MecAppBase
 {
-    char* ueSimbolicAddress;
-    char* meHostSimbolicAddress;
-    int localPort_;
+    /*
+     *
+     */
+    inet::UdpSocket ueAppSocket_;
+    int localUePort;
 
-    SockAddr serviceSockAddress;
+//    char* ueSimbolicAddress;
+    inet::L3Address ueAppAddress;
+    int ueAppPort;
+
+
+//    char* meHostSimbolicAddress;
+//    inet::L3Address destAddress_;
+//    int destPort_;
+//
+//    int localPort_;
+
 
     int size_;
     std::string subId;
 
-    //references to MeHost module
-    cModule* meHost;
-    cModule* mePlatform;
-    ServiceRegistry * serviceRegistry;
-
     cOvalFigure * circle; // circle danger zone
 
 
-    inet::L3Address destAddress_;
-    int destPort_;
+    ;
 
     protected:
 
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
-//        virtual void handleMessage(cMessage *msg) override;
-        virtual void handleMessageWhenUp(cMessage *msg) override;
+        virtual void handleMessage(cMessage *msg) override;
+//        virtual void handleMessageWhenUp(cMessage *msg) override;
         virtual void finish() override;
 
 //        void handleInfoUEWarningAlertApp(WarningAlertPacket* pkt);
 //        void handleInfoMEWarningAlertApp(WarningAlertPacket* pkt);
 
         virtual void handleServiceMessage() override;
+        virtual void handleMp1Message() override;
+
         virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
         virtual void modifySubscription();
-
+        virtual void sendSubscription();
         virtual void handleSelfMessage(cMessage *msg) override;
         /* Utility functions */
-       virtual void connect() override;
+//       virtual void connect(inet::TcpSocket* socket, const inet::L3Address& address, const int port) override;
 //        virtual void close();
 //        virtual void sendPacket(cPacket *pkt);
 //

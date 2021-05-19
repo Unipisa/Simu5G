@@ -9,6 +9,9 @@
 
 #include "apps/mec/warningAlert_rest/UEWarningAlertApp_rest.h"
 #include "inet/common/TimeTag_m.h"
+#include "inet/common/packet/chunk/BytesChunk.h"
+
+using namespace inet;
 
 Define_Module(UEWarningAlertApp_rest);
 
@@ -97,6 +100,7 @@ void UEWarningAlertApp_rest::handleMessage(cMessage *msg)
     // Receiver Side
     else{
         inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+
         auto mePkt = packet->peekAtFront<MEAppPacket>();
 
         if (mePkt == 0)
@@ -123,7 +127,19 @@ void UEWarningAlertApp_rest::finish()
  */
 void UEWarningAlertApp_rest::sendStartMEWarningAlertApp()
 {
-    EV << "UEWarningAlertApp_rest::sendStartMEWarningAlertApp - Sending " << START_MEAPP << " type WarningAlertPacket\n";
+//    EV << "UEWarningAlertApp_rest::sendStartMEWarningAlertApp - Sending " << START_MEAPP << " type WarningAlertPacket\n";
+//    const char* start = "START";
+//
+//    Ptr<Chunk> chunkPayload;
+//    const auto& bytesChunk = inet::makeShared<BytesChunk>();
+//    std::vector<uint8_t> vec(start, start + strlen(start));
+//    bytesChunk->setBytes(vec);
+//    chunkPayload = bytesChunk;
+//    chunkPayload->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//    Packet *packet = new Packet("Packet");
+//    packet->insertAtBack(chunkPayload);
+//    socket.sendTo(packet, destAddress_, destPort_);
+
 
     inet::Packet* packet = new inet::Packet("WarningAlertPacketStart");
     auto alert = inet::makeShared<WarningAlertPacket>();
@@ -154,7 +170,7 @@ void UEWarningAlertApp_rest::sendStartMEWarningAlertApp()
     socket.sendTo(packet, destAddress_, destPort_);
 
     //rescheduling
-    scheduleAt(simTime() + period_, selfStart_);
+//    scheduleAt(simTime() + period_, selfStart_);
 }
 void UEWarningAlertApp_rest::sendStopMEWarningAlertApp()
 {
@@ -206,31 +222,36 @@ void UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = packet->peekAtFront<MEAppPacket>();
 
-    EV << "UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket from: "<< pkt->getSourceAddress() << endl;
 
-    cancelEvent(selfStart_);
+    mecAppAddress_ = L3AddressResolver().resolve(pkt->getDestinationMecAppAddress());
+    mecAppPort_ = pkt->getDestinationMecAppPort();
+    EV << "UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket. mecApp isntance is at: "<< mecAppAddress_<< ":" << mecAppPort_ << endl;
 
-    //scheduling sendStopMEWarningAlertApp()
-    if(!selfStop_->isScheduled()){
-        simtime_t  stopTime = par("stopTime");
-        scheduleAt(simTime() + stopTime, selfStop_);
-        EV << "UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp - Starting sendStopMEWarningAlertApp() in " << stopTime << " seconds " << endl;
-    }
+//    cancelEvent(selfStart_);
+//
+//    //scheduling sendStopMEWarningAlertApp()
+//    if(!selfStop_->isScheduled()){
+//        simtime_t  stopTime = par("stopTime");
+//        scheduleAt(simTime() + stopTime, selfStop_);
+//        EV << "UEWarningAlertApp_rest::handleAckStartMEWarningAlertApp - Starting sendStopMEWarningAlertApp() in " << stopTime << " seconds " << endl;
+//    }
+//
+//    //send start message alla mec app!
+//
 
-    //send start message alla mec app!
 
-    //REMOVE THIS. just debug
-
-    inet::Packet* pp = new inet::Packet("WarningAlertPacketStop");
+//    //REMOVE THIS. just debug
+//
+    inet::Packet* pp = new inet::Packet("WarningAlertPacketStart");
     auto alert = inet::makeShared<WarningAlertPacket>();
 
     //termination requirements and info
     alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+    alert->setChunkLength(inet::B(size_));
+
     pp->insertAtBack(alert);
-
-    inet::L3Address destApp = inet::L3Address(pkt->getDestinationMecAppAddress());
-    socket.sendTo(pp, destApp , pkt->getDestinationMecAppPort());
-
+    socket.sendTo(pp, mecAppAddress_ , mecAppPort_);
 
 }
 void UEWarningAlertApp_rest::handleInfoMEWarningAlertApp(cMessage* msg)

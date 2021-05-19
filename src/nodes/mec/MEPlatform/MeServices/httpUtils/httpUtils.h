@@ -8,6 +8,8 @@
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
+
 #include <string>
 
 namespace Http {
@@ -36,6 +38,14 @@ enum HttpMsgState {
 HttpBaseMessage* parseHeader(const std::string& header);
 
 HttpMsgState parseTcpData(std::string* data, HttpBaseMessage* httpMessage);
+
+
+bool parseReceivedMsg(std::string& packet, std::string* storedData, HttpBaseMessage** currentHttpMessage);
+
+
+// This function is not used, since our test cases does not require the possibility of receiving TCP segments with two http messages inside...
+HttpBaseMessage* parseReceivedMsg(inet::TcpSocket *socket, std::string& packet, omnetpp::cQueue& messageQueue, std::string* storedData, HttpBaseMessage* currentHttpMessage = nullptr );
+
 
 void addBodyChunk(std::string* data, HttpBaseMessage* httpMessage);
 
