@@ -15,6 +15,9 @@
 
 package lte.nodes.mec.MEPlatform.ServiceRegistry;
 
+import inet.applications.contract.IApp;
+import lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.MeServiceBase;
+
 
 // This module takes trace of all the MeServices in the MePlatform.
 // MeServices register themself with:
@@ -22,5 +25,29 @@ package lte.nodes.mec.MEPlatform.ServiceRegistry;
 // MeApps look for the desired MeService by its name and if present the
 // corresponding couple IpAddress:port.
 
-simple ServiceRegistry
-{}
+simple ServiceRegistry like IApp
+{
+        parameters:
+        @display("i=block/source");
+        @class("ServiceRegistry");
+        
+        string serviceName = default("ServiceRegistry");
+        int requestQueueSize = default(0);
+        int subscriptionQueueSize = default(0);
+        string localAddress = default(""); // local address; may be left empty ("")
+        int localPort = default(1000);     // localPort number to listen on
+        string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
+        
+        double requestServiceTime  = default(5);
+        double subscriptionServiceTime @unit(s) = default(0.5us);
+        
+        string serverThreadClass = default("lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.SocketManager");
+        
+        int destPort = default(4000);
+        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        
+                
+    gates:
+        output socketOut;
+        input socketIn;
+}

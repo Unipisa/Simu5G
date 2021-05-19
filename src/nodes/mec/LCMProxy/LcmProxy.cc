@@ -47,6 +47,7 @@ void LcmProxy::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         EV << "MeServiceBase::initialize" << endl;
+        serviceName_ = par("serviceName").stringValue();
 
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
@@ -111,6 +112,8 @@ void LcmProxy::handleMessageWhenUp(cMessage *msg)
             handleDeleteContextAppAckMessage(lcmMsg);
         }
 
+        pendingRequests.erase(lcmMsg->getRequestId());
+
         //TODO add notifation management
 
         delete msg;
@@ -128,11 +131,14 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
     CreateContextAppAckMessage* ack = check_and_cast<CreateContextAppAckMessage*>(msg);
     unsigned int reqSno = ack->getRequestId();
 
+    EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno << endl;
+
     auto req = pendingRequests.find(reqSno);
     if(req == pendingRequests.end())
         return;
 
     int connId = req->second.connId;
+    EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
     nlohmann::json jsonBody = req->second.appCont;
 
@@ -141,7 +147,7 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
 
         jsonBody["contextId"] = ack->getContextId();
         jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
-        jsonBody["appInfo"]["userAppInstanceInfo"]["referenceUri"]  = ack->getAppInstanceUri();
+        jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"]  = ack->getAppInstanceUri();
 //        jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
 
     }
@@ -153,7 +159,10 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
     if(socket)
     {
-       Http::send201Response(socket, jsonBody.dump().c_str());
+        std::stringstream uri;
+        uri << baseUriQueries_<<"/app_contexts/"<< ack->getContextId();
+        std::pair<std::string, std::string> locHeader("Location: ", uri.str());
+        Http::send201Response(socket, jsonBody.dump().c_str(), locHeader);
     }
     return;
 }
@@ -163,11 +172,12 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
     DeleteContextAppAckMessage* ack = check_and_cast<DeleteContextAppAckMessage*>(msg);
 
     unsigned int reqSno = ack->getRequestId();
-
+    EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno<<endl;
         auto req = pendingRequests.find(reqSno);
         if(req == pendingRequests.end())
             return;
     int connId = req->second.connId;
+    EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
 
@@ -183,7 +193,7 @@ void LcmProxy::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
 {
     EV << "LcmProxy::handleGETRequest" << endl;
     std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-    // uri must be in form example/v1/rni/queries/resource
+    // uri must be in form /example/dev_app/v1
     std::size_t lastPart = splittedUri[0].find_last_of("/");
     if(lastPart == std::string::npos)
     {
@@ -250,6 +260,7 @@ void LcmProxy::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
                             appList["appList"].push_back(appDesc->toAppInfo());
                         }
                     }
+                    Http::send200Response(socket, appList.dump().c_str());
                 }
             }
 
@@ -261,6 +272,9 @@ void LcmProxy::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
                 {
                     appList["appList"].push_back(it->second.toAppInfo());
                 }
+
+                Http::send200Response(socket, appList.dump().c_str());
+
             }
         }
         else //bad uri
@@ -332,6 +346,8 @@ void LcmProxy::handlePOSTRequest(const std::string& uri,const std::string& body,
                 createContext->setUeIpAddress(socket->getRemoteAddress().str().c_str());
                 pendingRequests[requestSno] = {socket->getSocketId(), requestSno, jsonBody};
 
+                EV << "POST request number: " << requestSno << " related to connId: " << socket->getSocketId() << endl;
+
                 requestSno++;
 
                 send(createContext, "toMecOrchestrator");
@@ -382,10 +398,12 @@ void LcmProxy::handleDELETERequest(const std::string& uri, inet::TcpSocket* sock
         deleteContext->setType(DELETE_CONTEXT_APP);
         deleteContext->setContextId(stoi(contextId));
 
-        requestSno++;
-
         pendingRequests[requestSno].connId = socket->getSocketId();
         pendingRequests[requestSno].requestId = requestSno;
+        EV << "DELETE request number: " << requestSno << " related to connId: " << socket->getSocketId() << endl;
+
+
+        requestSno++;
 
         send(deleteContext, "toMecOrchestrator");
     }

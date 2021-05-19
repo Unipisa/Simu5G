@@ -35,12 +35,16 @@ struct mecAppMapEntry
     std::string mecAppIsntanceId;
     int mecUeAppID;         //ID
     cModule* mecHost; // reference to the mecHost where the mec app has been deployed
-    cModule* virtualisationInfrastructure;       //for virtualisationInfrastructure methods
+    cModule* vim;       // for virtualisationInfrastructureManager methods
+    cModule* mecpm;     // for mecPlatformManager methods
+
     std::string ueSymbolicAddres;
     inet::L3Address ueAddress;  //for downstream using UDP Socket
     int uePort;
     inet::L3Address mecAppAddress;  //for downstream using UDP Socket
     int mecAppPort;
+
+    bool isEmulated;
 
     int lastAckStartSeqNum;
     int lastAckStopSeqNum;
@@ -62,7 +66,6 @@ struct mecAppMapEntry
 
  */
 
-class VirtualisationManager;
 class LcmProxyMessage;
 class MECOrchestratorMessage;
 

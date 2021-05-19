@@ -34,6 +34,13 @@ class ApplicationDescriptor
         std::vector<std::string> appServicesRequired_;
         std::vector<std::string> appServicesProduced_;
 
+        /*
+         * emulated mecApplication variables
+         */
+        bool isEmulated;
+        std::string externalAddress;
+        int externalPort;
+
 
     public:
         ApplicationDescriptor() {}
@@ -49,10 +56,15 @@ class ApplicationDescriptor
         std::string getAppProvider() const { return appProvider_; }
         std::string getAppInfoName() const { return appInfoName_; }
         std::string getAppDescription() const { return appDescription_; }
+        std::string getExternalAddress() const { return externalAddress; }
+        int getExternalPort() const { return externalPort; }
+
+
         ResourceDescriptor getVirtualResources() const { return virtualResourceDescritor_; }
         const std::vector<std::string>& getAppServicesRequired() const { return appServicesRequired_; }
         const std::vector<std::string>& getAppServicesProduced() const { return appServicesProduced_; }
 
+        bool isMecAppEmulated() const {return isEmulated;}
         /*
          * setters
          */

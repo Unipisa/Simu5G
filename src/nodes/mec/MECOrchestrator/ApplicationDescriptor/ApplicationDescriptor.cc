@@ -14,13 +14,10 @@
 using namespace omnetpp;
 ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
 {
-    int len = strlen(fileName);
-    char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
-    strcpy(buf,"ApplicationDescriptors/");
-    strcat(buf,fileName);
-    strcat(buf,".json");
     // read a JSON file
-    std::ifstream rawFile(buf);
+    std::ifstream rawFile(fileName);
+    if(!rawFile.good())
+        throw cRuntimeError("ApplicationDescriptor file: %s does not exist", fileName);
 
     nlohmann::json jsonFile;
     rawFile >> jsonFile;
@@ -65,6 +62,23 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
         {
             appServicesProduced_.push_back((std::string)jsonFile["appServiceProvided"]);
         }
+    }
+
+    /*
+     * if the application descriptor refers to a mec application running outside the simulator, i.e. emulation mode,
+     * the fields address and port refers to the endpoint to talk with the mec application
+     */
+    if(jsonFile.contains("emulatedMecApplication"))
+    {
+        isEmulated = true;
+        externalAddress = jsonFile["emulatedMecApplication"]["ipAddress"];
+        externalPort = jsonFile["emulatedMecApplication"]["port"];
+    }
+    else
+    {
+        isEmulated = false;
+        externalAddress = std::string();
+        externalPort = 0;
     }
 
     this->printApplicationDescriptor();

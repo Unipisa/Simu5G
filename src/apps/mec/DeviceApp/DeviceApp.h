@@ -8,41 +8,77 @@
 #ifndef APPS_MEC_MEAPPS_DEVICEAPP_H_
 #define APPS_MEC_MEAPPS_DEVICEAPP_H_
 
-#include "apps/mec/MeApps/MeAppBase.h"
-#include "inet/common/lifecycle/NodeStatus.h"
+#include <omnetpp.h>
+#include "inet/transportlayer/contract/udp/UdpSocket.h"
+#include "inet/transportlayer/contract/tcp/TcpSocket.h"
 
-using namespace omnetpp;
 
-class DeviceApp : public MeAppBase
+class HttpBaseMessage;
+
+
+class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
 {
     protected:
 
-      inet::NodeStatus *nodeStatus = nullptr;
-      bool earlySend = false;    // if true, don't wait with sendRequest() until established()
-      int numRequestsToSend = 0;    // requests to send in this session
-      bool flag;
-
-      simsignal_t responseTime_;
-
-//      virtual void sendRequest();
-//      virtual void rescheduleOrDeleteTimer(simtime_t d, short int msgKind);
+        inet::TcpSocket lcmProxySocket_;
+        inet::UdpSocket ueAppSocket_;
 
 
-      virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-      virtual void initialize(int stage) override;
-      virtual void sendMsg();
-//      virtual void handleTimer(cMessage *msg) override;
-//      virtual void socketEstablished(int connId, void *yourPtr) override;
-//      virtual void socketDataArrived(int connId, void *yourPtr, cPacket *msg, bool urgent) override;
-//      virtual void socketClosed(int connId, void *yourPtr) override;
-//      virtual void socketFailure(int connId, void *yourPtr, int code) override;
-//      virtual bool isNodeUp();
-//      virtual bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
+        inet::L3Address lcmProxyAddress;
+        int  lcmProxyPort;
 
-      virtual void handleServiceMessage() override;
-      virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
-      virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
-      virtual void established(int connId)override;
+
+        HttpBaseMessage* lcmProxyMessage;
+        std::string lcmProxyMessageBuffer;
+
+        omnetpp::cMessage* processedLcmProxyMessage;
+
+        int localPort;
+
+        inet::L3Address ueAppAddress;
+        int ueAppPort;
+
+        bool flag;
+
+        std::string appContextUri;
+        std::string mecAppEndPoint;
+
+        //      virtual void sendRequest();
+        //      virtual void rescheduleOrDeleteTimer(simtime_t d, short int msgKind);
+
+        virtual void initialize(int stage) override;
+        virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+        virtual void handleMessage(omnetpp::cMessage *msg) override;
+        virtual void finish() override;
+
+        /* Utility functions */
+//        virtual void parseReceivedMsg(inet::TcpSocket *socket, HttpBaseMessage* currentHttpMessage,  std::string& packet);
+        //    virtual void handleTimer(omnetpp::cMessage *msg) override {};
+        virtual void handleSelfMessage(omnetpp::cMessage *msg);
+        virtual void handleLcmProxyMessage();
+        void sendStartAppContext(inet::Packet *pk);
+        void sendStopAppContext(inet::Packet *pk);
+
+        virtual void handleUeMessage();
+
+        virtual void connectToLcmProxy();
+
+        /* inet::TcpSocket::CallbackInterface callback methods */
+        virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;
+        virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }
+        virtual void socketEstablished(inet::TcpSocket *socket) override;
+        virtual void socketPeerClosed(inet::TcpSocket *socket) override;
+        virtual void socketClosed(inet::TcpSocket *socket) override;
+        virtual void socketFailure(inet::TcpSocket *socket, int code) override;
+        virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
+        virtual void socketDeleted(inet::TcpSocket *socket) override {}
+
+        /* inet::UdpSocket::CallbackInterface callback methods */
+        virtual void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+        virtual void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+        virtual void socketClosed(inet::UdpSocket *socket) override;
+
+        virtual void established(int connId);
 
     public:
       DeviceApp() {}

@@ -18,11 +18,11 @@ package lte.nodes.mec.LCMProxy;
 import inet.applications.contract.IApp;
 import lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.MeServiceBase;
 
-simple LcmProxy  like MeServiceBase, IApp
+simple LcmProxy  like  IApp
 {
     parameters:
         @display("i=block/source");
-        
+        @class("LcmProxy");
         string serviceName = default("LCMProxy");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);

@@ -19,6 +19,9 @@ import inet.applications.contract.IApp;
 
 simple DeviceApp like IApp
 {
+    string lcmProxyAddress = default(""); // may be left empty ("")
+    int lcmProxyPort = default(-1); // port number to listen on
+    
     
     string localAddress = default(""); // may be left empty ("")
     int localPort = default(-1); // port number to listen on

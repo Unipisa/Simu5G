@@ -17,22 +17,21 @@
 #define NODES_MEC_MEPLATFORM_SERVICEREGISTRY_H_
 
 #include <omnetpp.h>
+#include "nodes/mec/MEPlatform/MeServices/MeServiceBase/MeServiceBase.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "nodes/binder/LteBinder.h"
 #include "nodes/mec/MecCommon.h"
+#include "nodes/mec/MEPlatform/ServiceRegistry/resources/ServiceInfo.h"
 #include <map>
 
-class ServiceRegistry: public omnetpp::cSimpleModule
+typedef std::map<const std::string, ServiceInfo> MecServicesMap;
+
+class ServiceRegistry: public MeServiceBase
 {
-public:
-    ServiceRegistry();
-    virtual ~ServiceRegistry();
-
-    void registerMeService(const std::string& MeServiceName,const SockAddr& sockAddr);
-    SockAddr retrieveMeService(const std::string& MeServiceName);
-
 private:
-    std::map<const std::string, SockAddr> MeServicesMap_;
+    // key serviceName
+
+    MecServicesMap mecServices_;
 
     //LteBinder (oracle module)
     LteBinder* binder_;
@@ -41,13 +40,26 @@ private:
     omnetpp::cModule* mePlatform;
     omnetpp::cModule* meHost;
 
+    std::string uuidBase;
+    int servIdCounter;
+public:
+    ServiceRegistry();
+    virtual ~ServiceRegistry();
+
+    void registerMeService(const ServiceDescriptor& servDesc);
+    SockAddr retrieveMeService(const std::string& MeServiceName);
+    const MecServicesMap* getAvailableServices()const;
 
 protected:
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    void initialize(int stage);
-    virtual void handleMessage(omnetpp::cMessage *msg);
-    virtual void finish();
+    void initialize(int stage) override;
+
+    void handleStartOperation(inet::LifecycleOperation *operation) override;
+
+    virtual void handleGETRequest(const std::string& uri, inet::TcpSocket* socket) override;
+    virtual void handlePOSTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
+    virtual void handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
+    virtual void handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) override;
 
 
 };
