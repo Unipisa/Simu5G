@@ -1,22 +1,18 @@
-In this example the network consists of two UEs connected to one gNB, one UPF, 
-one NAT router, one router and one external (real) server.
+ExtClientServer Emulation example
+---------------------------------
 
-For downlink traffic the external server sends 10MB to ue1 using TCP.
-For uplink traffic, ue2 sends 10MB to the external server using TCP.
+In this example the network consists of one UE connected to one gNB, one UPF, 
+one NAT router, one router, one external (real) server and one external (real) client.
 
-To run this example, you have to run the external server(s):
-
-- For the client application use, e.g., "Iperf" with following command line:
-  	iperf -c 10.0.2.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
-- For the server application use, e.g., "Iperf" with the following command line:
-  	iperf -s -P 1 -i 1 -p 10021
+The external client application (i.e. associated to the UE in the emulation) sends 10MB 
+using TCP to the external server application, traversing the emulated 5G network.
 
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
  
 *** NOTE ***
 In order to run an emulation where both the endpoints of a connection are real applications,
-the client application (e.g. on the UE) needs to use the IP address of the NAT router within the
-simulation as destination address. Such NAT router element will perform Network Address 
+the client application (i.e. associated to the UE) must use the IP address of the NAT router 
+within the emulation as destination address. Such NAT router will perform Network Address 
 Translation (NAT), according to the rules specified with the corresponding parameter in the 
 INI file. 
 For example, if the client IP address is 192.168.3.2, while the server
@@ -32,8 +28,8 @@ IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
                                          </config>")
  
  
- 
-=== HOW TO BUILD AND RUN ===
+How to build and run the emulation 
+----------------------------------
 
 1) Make sure that the emulation feature is enabled in the INET project:
 
@@ -42,10 +38,11 @@ IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
                tick the box "Network emulation support".
 - via the command line: in the root INET folder, type 'opp_featuretool enable NetworkEmulationSupport'.
 
-  If the feature was disabled, recompile INET with the command 'make' (in the root INET folder).  
+  Recompile INET with the command 'make makefiles && make' (in the root INET folder).  
 
 
-2) In order to be able to send/receive packets through sockets, set the application permissions: 
+2) In order to be able to send/receive packets through sockets, set the application permissions (specify
+   the path of your OMNeT installation): 
 
     sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run
     sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run_dbg
@@ -53,11 +50,24 @@ IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
 
 
 3) Compile Simu5G from the command line by running (in the root Simu5G folder):
+    
     $ . setenv
 	$ make makefiles
-	$ make 
+	$ make MODE=release 
 	 	
 	 	
-4) Run the simulation by launching either ./run_wSocket.sh or ./run_wTun.sh 
+4) Run the external server, e.g. use "Iperf" with the following command:
+  	    
+  	iperf -s -P 1 -i 1 -p 10021
 
-============================
+5) Run the emulation by launching either
+     
+    ./run_wSocket.sh 
+    
+        or 
+    
+    ./run_wTun.sh 
+
+6) Run the external client, e.g. use "Iperf" with the following command:
+  	    
+  	iperf -c 10.0.2.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0

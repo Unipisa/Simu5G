@@ -1,20 +1,17 @@
-In this example the network consists of two UEs connected to one eNB, one PGW, 
+ExtServer Emulation example
+---------------------------
+
+In this example the network consists of two UEs connected to one gNB, one UPF, 
 one router and one external (real) server.
 
-For downlink traffic the external server sends 10MB to ue1 using TCP.
-For uplink traffic, ue2 sends 10MB to the external server using TCP.
-
-To run this example, you have to run the external server(s):
-
-- For downlink traffic use e.g. "Iperf" with following command line:
-  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
-- For uplink traffic use e.g. "Iperf" with the following command line:
-  	iperf -s -P 1 -i 1 -p 10021
+The external server sends 10MB to ue1 using TCP (in the downlink), whereas 
+ue2 sends 10MB to the external server using TCP (in the uplinK).
 
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
  
  
-=== HOW TO BUILD AND RUN ===
+How to build and run the emulation 
+----------------------------------
 
 1) Make sure that the emulation feature is enabled in the INET project:
 
@@ -23,10 +20,11 @@ IP addresses and routing tables are set up by using mrt files (see "routing" fol
                tick the box "Network emulation support".
 - via the command line: in the root INET folder, type 'opp_featuretool enable NetworkEmulationSupport'.
 
-  If the feature was disabled, recompile INET with the command 'make' (in the root INET folder).  
+  Recompile INET with the command 'make makefiles && make' (in the root INET folder).  
 
 
-2) In order to be able to send/receive packets through sockets, set the application permissions: 
+2) In order to be able to send/receive packets through sockets, set the application permissions (specify
+   the path of your OMNeT installation): 
 
     sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run
     sudo setcap cap_net_raw,cap_net_admin=eip path/to/opp_run_dbg
@@ -34,11 +32,25 @@ IP addresses and routing tables are set up by using mrt files (see "routing" fol
 
 
 3) Compile Simu5G from the command line by running (in the root Simu5G folder):
+    
     $ . setenv
 	$ make makefiles
-	$ make 
+	$ make MODE=release 
 	 	
-	 	
-4) Run the simulation by launching either ./run_wSocket.sh or ./run_wTun.sh 
+4) Run the external server for the uplink traffic, e.g. use "Iperf" with the following command (type
+   "man iperf" for options description):
+  	    
+  	iperf -s -P 1 -i 1 -p 10021
 
-============================
+5) Run the emulation by launching either
+     
+    ./run_wSocket.sh 
+    
+        or 
+    
+    ./run_wTun.sh 
+
+6) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command(type
+   "man iperf" for options description):
+  	    
+  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
