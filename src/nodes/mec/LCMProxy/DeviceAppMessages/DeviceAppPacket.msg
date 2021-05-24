@@ -9,19 +9,21 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
+
+import nodes.mec.MEPlatform.MECPackets;
 //cplusplus {{
 //#include "nodes/mec/MEPlatform/MECPackets_m.h";
 //}}
 //import lte.nodes.mec.MEPlatform.MECPackets.MECPacket;
 
 
-class DeviceAppPacket extends inet::FieldsChunk {
-    unsigned int sno;
-    simtime_t timestamp;
-    
-    //type of message
-    string type;
-    string operation;
+class DeviceAppPacket extends MECPacket {
+//    unsigned int sno;
+//    simtime_t timestamp;
+//    
+//    //type of message
+//    string type;
+//    string operation;
 }
 
 class DeviceAppStartPacket extends DeviceAppPacket
@@ -29,23 +31,25 @@ class DeviceAppStartPacket extends DeviceAppPacket
     string mecAppDId;
 	string mecAppName;
 	string mecAppProvider;
+	string appPackageSource;
 }
 
 
 class DeviceAppStopPacket extends DeviceAppPacket
 {
+    string contextId;
 }
 
 class DeviceAppStartAckPacket extends DeviceAppPacket
 {
-    string result;
+    bool result;
     string ipAddress;
 	int port;
 }
 
 class DeviceAppStopAckPacket extends DeviceAppPacket
 {
-    string result;
+    bool result;
 }
 
 

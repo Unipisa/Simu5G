@@ -37,8 +37,8 @@ class MEAppPacket extends inet::FieldsChunk {
     int ueAppID;
     
     //resources required
-    unsigned int requiredDisk;
-    unsigned int requiredRam;
+    double requiredDisk;
+    double requiredRam;
     double requiredCpu;
     
     //service required

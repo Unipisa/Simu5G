@@ -59,8 +59,6 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         void sendStartAppContext(inet::Packet *pk);
         void sendStopAppContext(inet::Packet *pk);
 
-        virtual void handleUeMessage();
-
         virtual void connectToLcmProxy();
 
         /* inet::TcpSocket::CallbackInterface callback methods */

@@ -181,10 +181,15 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
 
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
 
-    //TODO check if success is false (what to do?)
     if(socket)
     {
-      Http::send204Response(socket);
+        if(ack->getSuccess() == true)
+            Http::send204Response(socket);
+        else
+        {
+            // TODO what to respond?
+        }
+
     }
     return;
 }

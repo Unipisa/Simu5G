@@ -20,14 +20,21 @@ moduleinterface IMEApp
     parameters:
         @display("i=block/app");
         
-        string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
-        int uePort;
-        string localAddress;	// i.e meHost.virtualisationInfrastructure
-		int localPort;					// i.e port where the MeApp is binded
+        int mecAppId;
+        
+        string mp1Address;
+        int mp1Port;
+        
+        int localUePort;
+        
+//        string ueSimbolicAddress; 		// i.e. UE[x] or car[x]
+//        int uePort;
+//        string localAddress;	// i.e meHost.virtualisationInfrastructure
+//		int localPort;					// i.e port where the MeApp is binded
 		
 		 //resource required infos
-        int requiredRam @unit("B");
-        int requiredDisk @unit("B");
+        double requiredRam @unit("B");
+        double requiredDisk @unit("B");
         double requiredCpu;
 }
 
