@@ -42,6 +42,7 @@ class DeviceAppStopPacket extends DeviceAppPacket
 
 class DeviceAppStartAckPacket extends DeviceAppPacket
 {
+    string contextId;
     bool result;
     string ipAddress;
 	int port;

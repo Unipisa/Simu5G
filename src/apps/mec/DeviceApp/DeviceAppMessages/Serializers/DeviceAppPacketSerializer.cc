@@ -15,14 +15,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "nodes/mec/LCMProxy/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
+#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
 
-#include "nodes/mec/LCMProxy/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
-#include "nodes/mec/LCMProxy/DeviceAppMessages/DeviceAppPacket_Types.h"
-
 #include <string>
+
+#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 namespace inet {
 
 Register_Serializer(DeviceAppPacket, DeviceAppMessageSerializer);
@@ -34,11 +34,6 @@ Register_Serializer(DeviceAppStopPacket, DeviceAppMessageSerializer);
 
 void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
 {
-//    throw cRuntimeError("seriliaze");
-    /* based on the type a specific stream is created */
-//    auto basePk = check_and_cast<DeviceAppPacket>(chunk);
-//    throw cRuntimeError("CIAO::deserialize - handleDeleteContextAppAckMessage codice sotto! STOp");
-
     EV << "DeviceAppMessageSerializer::serialize" << endl;
 
     auto startPosition = stream.getLength();
@@ -56,7 +51,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
         stream.writeString(sdata);
         int64_t remainders = B(startPk->getChunkLength() - (stream.getLength() - startPosition)).get();
         if (remainders < 0)
-            throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(startPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+            throw cRuntimeError("DeviceApp - START_MECAPP_CODE length = %d smaller than required %d bytes", (int)B(startPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
     else if(strcmp(ss.c_str(), ACK_START_MECAPP) == 0)
@@ -73,7 +68,8 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             stream.writeString(sdata);
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
             if (remainders < 0)
-                throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+                throw cRuntimeError("DeviceApp - START_ACK_CODE length = %d smaller than required %d bytes. Data: %s [%d]",
+                        (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get(), sdata.c_str(), sdata.size());
             stream.writeByteRepeatedly('?', remainders);
         }
         else
@@ -83,7 +79,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
 
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
             if (remainders < 0)
-                throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+                throw cRuntimeError("DeviceApp - START_NACK_CODE length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
             stream.writeByteRepeatedly('?', remainders);
         }
     }
@@ -98,7 +94,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
         stream.writeString(sdata);
         int64_t remainders = B(stopPk->getChunkLength() - (stream.getLength() - startPosition)).get();
         if (remainders < 0)
-            throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(stopPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+            throw cRuntimeError("DeviceApp - STOP_MECAPP_CODE length = %d smaller than required %d bytes", (int)B(stopPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
     else if(strcmp(ss.c_str(), ACK_STOP_MECAPP) == 0)
@@ -111,7 +107,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
 
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
             if (remainders < 0)
-                throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+                throw cRuntimeError("DeviceApp - STOP_ACK_CODE length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
             stream.writeByteRepeatedly('?', remainders);
         }
         else
@@ -120,17 +116,18 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             stream.writeByte((uint8_t) 0);
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
             if (remainders < 0)
-                throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+                throw cRuntimeError("DeviceApp - STOP_NACK_CODE length = %d smaller than required %d bytes", (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
             stream.writeByteRepeatedly('?', remainders);
         }
+    }
+    else
+    {
+        throw cRuntimeError("DeviceAppMessageSerializer::serialize - Code %d not recognized!", ss.c_str());
     }
 }
 
 const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stream) const
 {
-    /* I have to reads raw bytes and parse them. Then, according to the content return the correct
-     * packet, i.e. start or stop or ack
-     */
 
     EV << "DeviceAppMessageSerializer::deserialize" << endl;
 
@@ -147,7 +144,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
         {
             auto startPacket = makeShared<DeviceAppStartPacket>();
             startPacket->setType(START_MECAPP);
-          //  throw cRuntimeError("total lenght %d, pos %d , remain %d", B(stream.getLength().get()), B(stream.getPosition()).get(), B(stream.getRemainingLength()).get());
             stream.readBytes(bytes, messageDataLength);
             startPacket->setMecAppName((char*)&bytes[0]);
             return startPacket;
@@ -171,6 +167,8 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             stream.readBytes(bytes, messageDataLength);  // endPoint ipAddress:port (for now) or something else (later)
 //            std::string endPoint(bytes.begin(), bytes.end());
             std::vector<std::string> ipPort = cStringTokenizer((char*)&bytes[0], ":").asVector();
+            if(ipPort.size() != 2)
+                throw cRuntimeError("DeviceAppMessageSerializer::deserialize - endPoint must be ip:port, but is: %s ", (char*)&bytes[0]);
             ackPacket->setIpAddress(ipPort[0].c_str());
             ackPacket->setPort(atoi(ipPort[1].c_str()));
             return ackPacket;
@@ -211,107 +209,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
 
     throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Cancella codice sotto!");
 
-//    std::vector<uint8_t> bytes = stream.getData();
-    //TODO cast to char * for efficiency (check if uint8_t is char)
-
-    std::string packet(bytes.begin(), bytes.end());
-    std::vector<std::string> lines =  cStringTokenizer(packet.c_str(), "\n").asVector();
-    if(lines.size() == 0)
-    {
-        /*
-         * this is an error
-         */
-        throw cRuntimeError("DeviceAppMessageSerializer::deserialize - size == 0");
-    }
-
-    /* it could be a STOP message, or a DeviceAppStopAck */
-    if(lines[0].compare("STOP") == 0)
-    {
-        auto stopPacket = makeShared<DeviceAppStopPacket>();
-        stopPacket->setType(STOP_MECAPP);
-        // put timestamp tag
-        return stopPacket;
-    }
-    else if(lines[0].compare("STOP ACK") == 0)
-    {
-        auto stopAckPacket = makeShared<DeviceAppStopAckPacket>();
-        stopAckPacket->setType(ACK_STOP_MECAPP);
-        stopAckPacket->setResult("ACK");
-        // put timestamp tag
-        return stopAckPacket;
-    }
-    else if(lines[0].compare("STOP NACK") == 0)
-    {
-        auto stopAckPacket = makeShared<DeviceAppStopAckPacket>();
-        stopAckPacket->setType(ACK_STOP_MECAPP);
-        stopAckPacket->setResult("NACK");
-        // put timestamp tag
-        return stopAckPacket;
-    }
-
-    else if (lines[0].compare("START") == 0)
-    {
-        if(lines.size() == 3)
-        {
-           auto startPacket = makeShared<DeviceAppStartPacket>();
-           startPacket->setType(START_MECAPP);
-           for(int i = 1; i < 3 ; ++i)
-           {
-               std::vector<std::string> attribute =  cStringTokenizer(lines[i].c_str(), ": ").asVector();
-               if(attribute.size() != 2)
-               {
-                   throw cRuntimeError("DeviceAppMessageSerializer::deserialize - line not in the format 'attr_: name', %s", lines[i].c_str());
-               }
-               if(attribute[0].compare("appName") == 0)
-                   startPacket->setMecAppName(attribute[1].c_str());
-               else if(attribute[0].compare("appProvider") == 0)
-                   startPacket->setMecAppProvider(attribute[1].c_str());
-           }
-           return startPacket;
-        }
-        else
-        {
-            throw cRuntimeError("DeviceAppMessageSerializer::deserialize - DeviceAppStartPacket must be in the form:\nSTART\nname\nprovider");
-        }
-
-    }
-    else if (lines[0].compare("START ACK") == 0)
-    {
-        if(lines.size() == 3)
-        {
-            auto ackPacket = makeShared<DeviceAppStartAckPacket>();
-            ackPacket->setType(ACK_START_MECAPP);
-            ackPacket->setResult("ACK");
-            for(int i = 1; i < 3 ; ++i)
-            {
-                std::vector<std::string> attribute =  cStringTokenizer(lines[i].c_str(), ": ").asVector();
-                if(attribute.size() != 2)
-                {
-                    throw cRuntimeError("DeviceAppMessageSerializer::deserialize - line not in the format 'attr_: name', %s", lines[i].c_str());
-                }
-                if(attribute[0].compare("ipAddress") == 0)
-                    ackPacket->setIpAddress(attribute[1].c_str());
-                else if(attribute[0].compare("port") == 0)
-                    ackPacket->setPort(atoi(attribute[1].c_str()));
-            }
-           return ackPacket;
-        }
-        else
-        {
-            throw cRuntimeError("DeviceAppMessageSerializer::deserialize - DeviceAppStartPacket must be in the form:\nSTART\nname\nprovider");
-        }
-    }
-    else if (lines[0].compare("START NACK") == 0)
-    {
-        auto startPacket = makeShared<DeviceAppStartAckPacket>();
-        startPacket->setType(START_MECAPP);
-        startPacket->setResult("NACK");
-
-    }
-    else
-    {
-        throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Device App packet not recognized %s", lines[0].c_str());
-    }
 }
 
 } // namespace inet
