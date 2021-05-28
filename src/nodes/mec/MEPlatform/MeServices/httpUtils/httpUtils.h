@@ -10,18 +10,14 @@
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 
+#include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
+
+
 #include <string>
 
 namespace Http {
 
-/*
- * TODO
- *
- * consider to use only one method with the code as argument
- * e.g sendResponse(code, socket, body, *args)
- *
- *
- */
+
 enum HttpMsgState {
     COMPLETE_DATA,
     COMPLETE_NO_DATA,
@@ -29,11 +25,42 @@ enum HttpMsgState {
     INCOMPLETE_NO_DATA
 };
 
-//struct HTTPHeader
-//{
-//    DataType type;
-//    std::map<std::string, std::string> fields;
-//};
+
+
+/*
+     * TODO
+     *
+     * ProblemDetail structure from RFC 7807
+     * {
+     * "type": "https://example.com/probs/out-of-credit",
+     * "title": "You do not have enough credit.",
+     * "detail": "Your current balance is 30, but that costs 50.",
+     * "instance": "/account/12345/msgs/abc",
+     * "balance": 30,
+     * "accounts": ["/account/12345","/account/67890"],
+     * "status": 403
+     * }
+     */
+
+typedef struct
+{
+    std::string type;
+    std::string title;
+    std::string detail;
+    std::string status;
+
+    nlohmann::json toJson()
+    {
+        nlohmann::json problemDetails;
+        problemDetails["type"] = type;
+        problemDetails["title"] = title;
+        problemDetails["detail"] = detail;
+        problemDetails["status"] = status;
+        return problemDetails;
+    }
+
+} ProblemDetailBase;
+
 
 HttpBaseMessage* parseHeader(const std::string& header);
 
@@ -66,6 +93,8 @@ void send400Response(inet::TcpSocket *socket);
 
 void send404Response(inet::TcpSocket *socket);
 
+
+void send500Response(inet::TcpSocket *socket, const char *reason);
 void send505Response(inet::TcpSocket *socket);
 void send503Response(inet::TcpSocket *socket, const char *reason);
 

@@ -16,34 +16,8 @@
 
 namespace Http {
     using namespace inet;
+
     /*
-     * TODO
-     *
-     * ProblemDetail structure from RFC 7807
-     * {
-     * "type": "https://example.com/probs/out-of-credit",
-     * "title": "You do not have enough credit.",
-     * "detail": "Your current balance is 30, but that costs 50.",
-     * "instance": "/account/12345/msgs/abc",
-     * "balance": 30,
-     * "accounts": ["/account/12345","/account/67890"],
-     * "status": 403
-     * }
-     *
-     *
-     * {
-     *  "type": "https://example.net/validation-error",
-     *  "title": "Your request parameters didn't validate.",
-     *  "invalid-params": [ {
-     *      "name": "age",
-     *      "reason": "must be a positive integer"
-     *   },
-     *   {
-     *   "name": "color",
-     *   "reason": "must be 'green', 'red' or 'blue'"}
-     *   ]
-     *}
-     *
      *  Content-Type: application/problem+json
      *
      *  RNI API
@@ -57,7 +31,6 @@ namespace Http {
      *          "instance": "string"
      *      }
      *  }
-     *
      *
      */
 
@@ -93,16 +66,19 @@ namespace Http {
         std::vector<std::string>::iterator it = lines.begin();
         std::vector<std::string> line;
         EV << "Header: " << data << endl;
-        line = lte::utils::splitString(*it, " ");  // Request-Line e.g POST uri Http
-        if(line.size() < 3 ){
-            // neither a request nor response, return a null pointer
-            return nullptr;
-        }
+        // Request-Line: Method SP Request-URI SP HTTP-Version CRLF
+        // Status-Line: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+
+        line = lte::utils::splitString(*it, " ");
+//        if(line.size() < 3 ){
+//            // neither a request nor response, return a null pointer
+//            return nullptr;
+//        }
 
         /* it may be a request or a response, so the first line is different
          *
          * response: HTTP/1.1 code reason
-         * request:  method uri HTTP/1.1
+         * request:  verb uri HTTP/1.1
          *
          */
 
@@ -146,7 +122,7 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length") == 0 )
                     {
-                        EV << "CL: " << line[1] << endl;
+                        EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
                         httpRequest->setContentLength(std::stoi(line[1]));
                         httpRequest->setRemainingDataToRecv(std::stoi(line[1]));
                     }
@@ -156,7 +132,6 @@ namespace Http {
                         httpRequest->setHost(line[1].c_str());
                     else if (line[0].compare("Connection")== 0)
                         httpRequest->setConnection(line[1].c_str());
-
                     else
                         httpRequest->setHeaderField(line[0], line[1]);
                 }else
@@ -174,43 +149,70 @@ namespace Http {
         {
             EV << "It is a response" << endl;
             HttpResponseMessage* httpResponse = new HttpResponseMessage();
+            httpResponse->setType(RESPONSE);
 
-            // response line is: HTTPversion code reason
-            if(line.size() == 3)
-            {
-                httpResponse->setType(RESPONSE);
-
-                if(!checkHttpVersion(line[0]))
-                  {
-                    httpResponse->setState(BAD_HTTP);
-                      return httpResponse;
-                  }
-                httpResponse->setHttpProtocol(line[0].c_str());
-
-                httpResponse->setCode(line[1].c_str());
-                httpResponse->setStatus(line[2].c_str());
-            }
-
-            else if (line.size() == 4)
-            {
-                httpResponse->setType(RESPONSE);
-
-               if(!checkHttpVersion(line[0]))
-                 {
-                   httpResponse->setState(BAD_HTTP);
-                     return httpResponse;
-                 }
-               httpResponse->setHttpProtocol(line[0].c_str());
-
-               httpResponse->setCode(line[1].c_str());
-               httpResponse->setStatus((line[2]+line[3]).c_str());
-
-            }
-            else
-            {
+            if(line.size() < 3 || line.size() > 5 ){
+                EV << "httUtils::parseHeader - BAD_RES_LINE" << endl;
                 httpResponse->setState(BAD_RES_LINE);
                 return httpResponse;
+           }
+
+            // response line is: HTTPversion code reason
+            if(!checkHttpVersion(line[0]))
+            {
+                EV << "httUtils::parseHeader - BAD_HTTP" << endl;
+                httpResponse->setState(BAD_HTTP);
+                return httpResponse;
             }
+
+            httpResponse->setHttpProtocol(line[0].c_str());
+            httpResponse->setCode(line[1].c_str());
+
+            std::string reason;
+            int size = line.size();
+            for(int i = 2; i < size ; ++i)
+            {
+                reason += line[i];
+                if(i != size -1)
+                    reason += " ";
+            }
+
+            httpResponse->setStatus(reason.c_str());
+            EV << "httUtils::parseHeader - code " <<  httpResponse->getCode() << endl;
+
+//            if(line.size() == 3)
+//            {
+//                httpResponse->setType(RESPONSE);
+//
+//                if(!checkHttpVersion(line[0]))
+//                  {
+//                    httpResponse->setState(BAD_HTTP);
+//                      return httpResponse;
+//                  }
+//
+//                httpResponse->setStatus(line[2].c_str());
+//            }
+//
+//            else if (line.size() == 4)
+//            {
+//                httpResponse->setType(RESPONSE);
+//
+//               if(!checkHttpVersion(line[0]))
+//                 {
+//                   httpResponse->setState(BAD_HTTP);
+//                     return httpResponse;
+//                 }
+//               httpResponse->setHttpProtocol(line[0].c_str());
+//
+//               httpResponse->setCode(line[1].c_str());
+//               httpResponse->setStatus((line[2]+line[3]).c_str());
+//
+//            }
+//            else
+//            {
+//                httpResponse->setState(BAD_RES_LINE);
+//                return httpResponse;
+//            }
 
 
             /////
@@ -264,32 +266,30 @@ namespace Http {
         }
     }
 
-
     bool parseReceivedMsg(std::string& packet, std::string* storedData, HttpBaseMessage** currentHttpMessage)
     {
-        EV_INFO << "httpUtils::parseReceivedMsg" << endl;
+        EV_INFO << "httpUtils::parseReceivedMsg- start..." << endl;
         std::string delimiter = "\r\n\r\n";
         size_t pos = 0;
         std::string header;
         int remainingData;
-
         if(*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg())
         {
            EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
            Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
            switch (res)
            {
-           case (Http::COMPLETE_NO_DATA):
-               EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-               return true;
-               break;
-           case (Http::COMPLETE_DATA):
-                throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
-               break;
-           case (Http::INCOMPLETE_DATA):
-                   throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
-           case (Http::INCOMPLETE_NO_DATA):
-                   return false;
+               case (Http::COMPLETE_NO_DATA):
+                   EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                   return true;
+                   break;
+               case (Http::COMPLETE_DATA):
+                    throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
+                   break;
+               case (Http::INCOMPLETE_DATA):
+                       throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+               case (Http::INCOMPLETE_NO_DATA):
+                       return false;
            }
         }
 
@@ -310,25 +310,26 @@ namespace Http {
         }
 
         while ((pos = packet.find(delimiter)) != std::string::npos) {
+           EV << "MecAppBase::parseReceivedMsgn - new HTTP message"<< endl;
            header = packet.substr(0, pos);
            packet.erase(0, pos+delimiter.length()); //remove header
 //           HttpBaseMessage* newHttpMessage = Http::parseHeader(header);
            *currentHttpMessage = Http::parseHeader(header);
 
            Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
-           double time;
+
            switch (res)
            {
-           case (Http::COMPLETE_NO_DATA):
-               EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-               return true;
-               break;
-           case (Http::COMPLETE_DATA):
-                   throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
-           case (Http::INCOMPLETE_DATA):
-                   throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
-           case (Http::INCOMPLETE_NO_DATA):
-                   return false;
+               case (Http::COMPLETE_NO_DATA):
+                   EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                   return true;
+                   break;
+               case (Http::COMPLETE_DATA):
+                       throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
+               case (Http::INCOMPLETE_DATA):
+                       throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
+               case (Http::INCOMPLETE_NO_DATA):
+                       return false;
            }
         }
         // posso arrivare qua se non trovo il delimitatore
@@ -341,7 +342,6 @@ namespace Http {
         }
         return false;
     }
-
 
     HttpBaseMessage* parseReceivedMsg(inet::TcpSocket *socket, std::string& packet, omnetpp::cQueue& messageQueue, std::string* storedData, HttpBaseMessage* currentHttpMessage)
     {
@@ -439,18 +439,24 @@ namespace Http {
     {
         int len = data->length();
         int remainingLength = httpMessage->getRemainingDataToRecv();
+        if(remainingLength == 0 && len == 0)
+        {
+            EV << "httpUtils::addBodyChunk - no body" << endl;
+            return;
+        }
         EV << "httpUtils - addBodyChunk: data length: "<< len << "B. Remaining bytes: "<< remainingLength<< endl;
 
         if(httpMessage->getType() == RESPONSE)
         {
+            EV << "httpUtils::addBodyChunk - RESPONSE "<< endl;
             HttpResponseMessage* resp = dynamic_cast<HttpResponseMessage*>(httpMessage);
             resp->addBodyChunk(data->substr(0, remainingLength));
 
         }
         else if(httpMessage->getType() == REQUEST)
         {
+            EV << "httpUtils::addBodyChunk - REQUEST "<< endl;
             HttpRequestMessage* resp = dynamic_cast<HttpRequestMessage*>(httpMessage);
-            EV << "httpUtils - REQUEST "<< endl;
             resp->addBodyChunk(data->substr(0, remainingLength));
         }
 
@@ -463,10 +469,12 @@ namespace Http {
     void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+//        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
+
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
+//        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
         resPkt->setCode(code);
         resPkt->setStatus(reason);
@@ -475,17 +483,19 @@ namespace Http {
             resPkt->setBody(body);
             resPkt->setContentLength(strlen(body));
         }
-//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
     void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+//        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
+
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
+//        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
         resPkt->setCode(code);
         resPkt->setStatus(reason);
         if(body != nullptr)
@@ -495,13 +505,14 @@ namespace Http {
         }
         resPkt->setHeaderField(header.first, header.second);
 
-//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
     void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+//        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
@@ -519,7 +530,7 @@ namespace Http {
             resPkt->setHeaderField(it->first, it->second);
         }
 
-//        resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        resPkt->setChunkLength(B(resPkt->getPayload().size()));
         packet->insertAtBack(resPkt);
         socket->send(packet);
 
@@ -539,7 +550,7 @@ namespace Http {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
         }
-//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
@@ -558,7 +569,7 @@ namespace Http {
             reqPkt->setContentLength(strlen(body));
         }
         reqPkt->setHeaderField(header.first,header.second);
-//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
 
@@ -583,7 +594,7 @@ namespace Http {
         {
            reqPkt->setHeaderField(it->first, it->second);
         }
-//        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
@@ -602,28 +613,11 @@ namespace Http {
     void send201Response(inet::TcpSocket *socket, const char* body, std::pair<std::string, std::string>& header){
         sendHttpResponse(socket, "201", "Created" ,header, body);
         return;
-
-//
-//            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
-//            resp.setConnection("keep-alive");
-//            resp.setBody(body);
-//            resp.setHeaderField(header.first, header.second);
-//            sendPacket(resp.getPayload(), socket);
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body,std::map<std::string, std::string>& headers){
         sendHttpResponse(socket, "201", "Created", headers, body);
         return;
-//            HTTPResponsePacket resp = HTTPResponsePacket(CREATED);
-//            resp.setConnection("keep-alive");
-//            resp.setBody(body);
-//            std::map<std::string, std::string>::iterator it = headers.begin();
-//            std::map<std::string, std::string>::iterator end = headers.end();
-//            for(; it != end ; ++it)
-//            {
-//                resp.setHeaderField(it->first, it->second);
-//            }
-//            sendPacket(resp.getPayload(), socket);
     }
 
     void send204Response(inet::TcpSocket *socket){
@@ -666,6 +660,13 @@ namespace Http {
     void send503Response(inet::TcpSocket *socket, const char *reason)
     {
         sendHttpResponse(socket, "503", "HTTP Version Not Supported" , reason);
+        return;
+
+    }
+
+    void send500Response(inet::TcpSocket *socket, const char *reason)
+    {
+        sendHttpResponse(socket, "500", "Internal Error" , reason);
         return;
 
     }
