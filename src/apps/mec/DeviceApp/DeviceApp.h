@@ -11,9 +11,11 @@
 #include <omnetpp.h>
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
-
+#include "DeviceAppMessages/DeviceAppPacket_m.h"
 
 class HttpBaseMessage;
+
+enum State {IDLE, START, CREATE, DELETE};
 
 
 class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
@@ -23,10 +25,8 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         inet::TcpSocket lcmProxySocket_;
         inet::UdpSocket ueAppSocket_;
 
-
         inet::L3Address lcmProxyAddress;
         int  lcmProxyPort;
-
 
         HttpBaseMessage* lcmProxyMessage;
         std::string lcmProxyMessageBuffer;
@@ -43,8 +43,13 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         std::string appContextUri;
         std::string mecAppEndPoint;
 
-        //      virtual void sendRequest();
-        //      virtual void rescheduleOrDeleteTimer(simtime_t d, short int msgKind);
+        State appState;
+        std::string appName;
+
+        // variable set in ned, if the appDescriptor is not in the MEC orchestrator
+        std::string appProvider;
+        std::string appPackageSource;
+
 
         virtual void initialize(int stage) override;
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -56,8 +61,8 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         //    virtual void handleTimer(omnetpp::cMessage *msg) override {};
         virtual void handleSelfMessage(omnetpp::cMessage *msg);
         virtual void handleLcmProxyMessage();
-        void sendStartAppContext(inet::Packet *pk);
-        void sendStopAppContext(inet::Packet *pk);
+        void sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk);
+        void sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk);
 
         virtual void connectToLcmProxy();
 
@@ -79,11 +84,9 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         virtual void established(int connId);
 
     public:
-      DeviceApp() {}
+      DeviceApp();
       virtual ~DeviceApp();
 
  };
-
-
 
 #endif /* APPS_MEC_MEAPPS_DEVICEAPP_H_ */

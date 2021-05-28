@@ -22,6 +22,8 @@ simple DeviceApp like IApp
     string lcmProxyAddress = default(""); // may be left empty ("")
     int lcmProxyPort = default(-1); // port number to listen on
     
+    string appProvider;
+    string appPackageSource;
     
     string localAddress = default(""); // may be left empty ("")
     int localPort = default(-1); // port number to listen on
