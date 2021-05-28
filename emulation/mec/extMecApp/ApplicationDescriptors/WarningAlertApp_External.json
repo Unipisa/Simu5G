@@ -1,0 +1,16 @@
+{
+"appDid" : "WAMECAPP_External",
+"appName" : "MEWarningAlertApp_rest_External",
+"appProvider" : "lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 10,
+    "virtualCpu" : 1500,
+    "virtualMemory":10
+    },
+"emulatedMecApplication" :{
+    "ipAddress": "192.168.2.2",
+    "port": 4022
+    }
+}
