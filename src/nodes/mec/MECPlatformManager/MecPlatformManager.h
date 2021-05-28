@@ -47,7 +47,8 @@ class MecPlatformManager : public cSimpleModule
     bool terminateMEApp(DeleteAppMessage*);
     bool terminateEmulatedMEApp(DeleteAppMessage*);
 
-    const MecServicesMap* getAvailableServices();
+    const MecServicesMap* getAvailableMecServices() const;
+    const std::set<std::string>* getAvailableOmnetServices() const;
 
 };
 

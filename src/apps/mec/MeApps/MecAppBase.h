@@ -75,8 +75,6 @@ protected:
     virtual void finish() override;
 
     /* Utility functions */
-    virtual void parseReceivedMsg(inet::TcpSocket *socket, HttpBaseMessage* currentHttpMessage,  std::string& packet);
-//    virtual void handleTimer(omnetpp::cMessage *msg) override {};
     virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
     virtual void handleServiceMessage() = 0;
     virtual void handleMp1Message() = 0;

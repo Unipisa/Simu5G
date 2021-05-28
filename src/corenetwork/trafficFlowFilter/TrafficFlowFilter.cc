@@ -147,7 +147,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         return -3;
     }
     // emulation mode
-    else if (ownerType_ == ENB && !meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
+    else if (isBaseStation(ownerType_) && !meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
     {
         // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
         EV << "TrafficFlowFilterSimplified::findTrafficFlow - [emulation] returning flowId (-3) for tunneling to " << meHost << endl;

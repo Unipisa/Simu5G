@@ -34,6 +34,8 @@ class ApplicationDescriptor
         std::vector<std::string> appServicesRequired_;
         std::vector<std::string> appServicesProduced_;
 
+        std::string omnetppServiceRequired_;
+
         /*
          * emulated mecApplication variables
          */
@@ -56,6 +58,9 @@ class ApplicationDescriptor
         std::string getAppProvider() const { return appProvider_; }
         std::string getAppInfoName() const { return appInfoName_; }
         std::string getAppDescription() const { return appDescription_; }
+
+        std::string getOmnetppServiceRequired() const { return omnetppServiceRequired_; }
+
         std::string getExternalAddress() const { return externalAddress; }
         int getExternalPort() const { return externalPort; }
 

@@ -56,11 +56,6 @@ void MecAppBase::initialize(int stage)
 {
 //    TcpAppBase::initialize(stage);
 
-    /*
-     * TODO
-     */
-
-
     if(stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
@@ -226,173 +221,6 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
 
 }
 
-void MecAppBase::parseReceivedMsg(inet::TcpSocket *socket, HttpBaseMessage* currentHttpMessage, std::string& packet)
-{
-    EV_INFO << "MecAppBase::parseReceivedMsg" << endl;
-    std::string delimiter = "\r\n\r\n";
-    size_t pos = 0;
-    std::string header;
-    int remainingData;
-
-    if(currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg())
-    {
-        EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
-        Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
-        double time;
-        switch (res)
-        {
-        case (Http::COMPLETE_NO_DATA):
-            EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-            if(vim != nullptr)
-                time = vim->calculateProcessingTime(mecAppId, 100);
-            else
-                time = 0;
-            if(socket->getSocketId() == serviceSocket_.getSocketId())
-            {
-                currentHttpMessage->setSockId(serviceSocket_.getSocketId());
-                serviceHttpMessage = currentHttpMessage;
-                scheduleAt(simTime()+time, processedServiceResponse);
-            }
-            else if (socket->getSocketId() == mp1Socket_.getSocketId())
-            {
-                currentHttpMessage->setSockId(mp1Socket_.getSocketId());
-                mp1HttpMessage = currentHttpMessage;
-                scheduleAt(simTime()+time, processedMp1Response);
-
-            }
-            else
-            {
-                EV << "!UI" << endl;
-            }
-
-//            if(currentHttpMessage != nullptr)
-//            {
-//                delete currentHttpMessage;
-//                currentHttpMessage = nullptr;
-//            }
-            return;
-            break;
-        case (Http::COMPLETE_DATA):
-            /*
-             * TODO if there is an other msg, it is possible that the schedule at will execute the new one..
-             * for now thrown exeption since in our test cases, this should not happen
-             */
-                throw cRuntimeError("MecAppBase::parseReceivedMsg - case COMPLETE_DATA. TODO");
-//            EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-//            currentHttpMessage->setSockId(socket.getSocketId());
-//            if(vim != nullptr)
-//                time = vim->calculateProcessingTime(mecAppId, 100);
-//            else
-//                time = 0;                scheduleAt(simTime()+time, processedServiceResponse);
-//            if(currentHttpMessage != nullptr)
-//            {
-//                delete currentHttpMessage;
-//                currentHttpMessage = nullptr;
-//            }
-            break;
-        case (Http::INCOMPLETE_DATA):
-                break;
-        case (Http::INCOMPLETE_NO_DATA):
-                return;
-
-        }
-    }
-
-    /*
-     * If I get here OR:
-     *  - I am not receiving an http message
-     *  - I was receiving an http message but I still have data (i.e a new HttpMessage) to manage.
-     *    Start reading the header
-     */
-
-    std::string temp;
-    if(bufferedData.length() > 0)
-    {
-        EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
-        temp = packet;
-        packet = bufferedData + temp;
-
-    }
-
-    while ((pos = packet.find(delimiter)) != std::string::npos) {
-        header = packet.substr(0, pos);
-        packet.erase(0, pos+delimiter.length()); //remove header
-        currentHttpMessage = Http::parseHeader(header);
-
-        Http::HttpMsgState res = Http::parseTcpData(&packet, currentHttpMessage);
-        double time;
-        switch (res)
-        {
-        case (Http::COMPLETE_NO_DATA):
-            EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-
-            if(vim != nullptr)
-            {
-                time = vim->calculateProcessingTime(mecAppId, 100);
-            }
-            else
-            {
-                time = 0;
-            }
-
-            if(socket->getSocketId() == serviceSocket_.getSocketId())
-            {
-                currentHttpMessage->setSockId(serviceSocket_.getSocketId());
-                serviceHttpMessage = currentHttpMessage;
-                scheduleAt(simTime()+time, processedServiceResponse);
-            }
-            else if (socket->getSocketId() == mp1Socket_.getSocketId())
-            {
-                currentHttpMessage->setSockId(mp1Socket_.getSocketId());
-                mp1HttpMessage = currentHttpMessage;
-                scheduleAt(simTime()+time, processedMp1Response);
-
-            }
-            else
-                        {
-                            EV << "!UI" << endl;
-                        }
-//            if(currentHttpMessage != nullptr)
-//               {
-//                   delete currentHttpMessage;
-//                   currentHttpMessage = nullptr;
-//               }
-            return;
-            break;
-        case (Http::COMPLETE_DATA):
-            /*
-            * TODO if there is an other msg, it is possible that the schedule at will execute the new one..
-            * for now thrown exeption since in our test cases, this should not happen
-            */
-                throw cRuntimeError("MecAppBase::parseReceivedMsg - case COMPLETE_DATA. TODO");
-//            EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-//            currentHttpMessage->setSockId(socket.getSocketId());
-//            if(vim != nullptr)
-//                            time = vim->calculateProcessingTime(mecAppId, 100);
-//                        else
-//                            time = 0;                scheduleAt(simTime()+time, processedServiceResponse);
-//            if(currentHttpMessage != nullptr)
-//            {
-//                delete currentHttpMessage;
-//                currentHttpMessage = nullptr;
-//            }
-            break;
-        case (Http::INCOMPLETE_DATA):
-                break;
-        case (Http::INCOMPLETE_NO_DATA):
-                return;
-
-        }
-    }
-    // posso arrivare qua se non trovo il delimitatore
-    // a causa del segmento frammentato strano, devo salvare il contenuto
-    if(packet.length() != 0)
-    {
-        bufferedData = packet;
-    }
-
-}
-
 void MecAppBase::socketPeerClosed(TcpSocket *socket_)
 {
     EV << "MecAppBase::socketPeerClosed" << endl;
@@ -411,6 +239,11 @@ void MecAppBase::socketFailure(TcpSocket *sock, int code)
 
 void MecAppBase::finish()
 {
+    EV << "MecAppBase::finish()" << endl;
+    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+        serviceSocket_.close();
+    if(mp1Socket_.getState() != inet::TcpSocket::CONNECTED)
+        mp1Socket_.close();
 }
 
 

@@ -8,6 +8,7 @@
 //
 
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
 Define_Module(MecPlatformManager);
 
@@ -26,7 +27,7 @@ void MecPlatformManager::initialize(int stage)
         return;
     vim = check_and_cast<VirtualisationInfrastructureManager*>(getParentModule()->getSubmodule("vim"));
     cModule* mecPlatform = getParentModule()->getSubmodule("mecPlatform");
-    if(mecPlatform->findSubmodule("ServiceRegistry") != -1)
+    if(mecPlatform->findSubmodule("serviceRegistry") != -1)
     {
         serviceRegistry = check_and_cast<ServiceRegistry*>(mecPlatform->getSubmodule("serviceRegistry"));
     }
@@ -36,34 +37,54 @@ void MecPlatformManager::initialize(int stage)
 // instancing the requested MEApp (called by handleResource)
 MecAppInstanceInfo MecPlatformManager::instantiateMEApp(CreateAppMessage* msg)
 {
-    return vim->instantiateMEApp(msg);
+   MecAppInstanceInfo res = vim->instantiateMEApp(msg);
+   delete msg;
+   return res;
 }
 
 bool MecPlatformManager::instantiateEmulatedMEApp(CreateAppMessage* msg)
 {
-    return vim->instantiateEmulatedMEApp(msg);
+    bool res = vim->instantiateEmulatedMEApp(msg);
+    delete msg;
+    return res;
 }
 
 bool MecPlatformManager::terminateEmulatedMEApp(DeleteAppMessage* msg)
 {
-    return vim->terminateEmulatedMEApp(msg);
+    bool res = vim->terminateEmulatedMEApp(msg);
+    delete msg;
+    return res;
 }
 
 
 // terminating the correspondent MEApp (called by handleResource)
 bool MecPlatformManager::terminateMEApp(DeleteAppMessage* msg)
 {
-    return vim->terminateMEApp(msg);
+    bool res = vim->terminateMEApp(msg);
+    delete msg;
+    return res;
 }
 
-const MecServicesMap* MecPlatformManager::getAvailableServices(){
+const MecServicesMap* MecPlatformManager::getAvailableMecServices() const
+{
     if(serviceRegistry == nullptr)
         return nullptr;
     else
     {
-       return serviceRegistry->getAvailableServices();
+       return serviceRegistry->getAvailableMecServices();
     }
 }
+
+const std::set<std::string>* MecPlatformManager::getAvailableOmnetServices() const
+{
+    if(serviceRegistry == nullptr)
+        return nullptr;
+    else
+    {
+       return serviceRegistry->getAvailableOmnetServices();
+    }
+}
+
 
 
 

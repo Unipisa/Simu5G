@@ -96,7 +96,6 @@ void LcmProxy::handleStartOperation(inet::LifecycleOperation *operation)
     serverSocket.listen();
 }
 
-
 void LcmProxy::handleMessageWhenUp(cMessage *msg)
 {
     if(msg->arrivedOn("fromMecOrchestrator"))
@@ -142,27 +141,32 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
 
     nlohmann::json jsonBody = req->second.appCont;
 
-    if(ack->getSuccess())
-    {
-
-        jsonBody["contextId"] = ack->getContextId();
-        jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
-        jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"]  = ack->getAppInstanceUri();
-//        jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
-
-    }
-    else
-    {
-        // TODO you should do nothing
-    }
-
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
     if(socket)
     {
-        std::stringstream uri;
-        uri << baseUriQueries_<<"/app_contexts/"<< ack->getContextId();
-        std::pair<std::string, std::string> locHeader("Location: ", uri.str());
-        Http::send201Response(socket, jsonBody.dump().c_str(), locHeader);
+        if(ack->getSuccess())
+        {
+
+            jsonBody["contextId"] = std::to_string(ack->getContextId());
+            jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
+            jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"]  = ack->getAppInstanceUri();
+//            jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
+            std::stringstream uri;
+            uri << baseUriQueries_<<"/app_contexts/"<< ack->getContextId();
+            std::pair<std::string, std::string> locHeader("Location: ", uri.str());
+            Http::send201Response(socket, jsonBody.dump().c_str(), locHeader);
+
+        }
+        else
+        {
+            Http::ProblemDetailBase pd;
+            pd.type = "Request not succesfully completed";
+            pd.title = "CreateContext request result";
+            pd.detail = "the Mec system was not able to instantiate the mec application";
+            pd.status = "500";
+            Http::send500Response(socket, pd.toJson().dump().c_str());
+        }
+
     }
     return;
 }
@@ -183,11 +187,16 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
 
     if(socket)
     {
-        if(ack->getSuccess() == true)
+        if(ack->getSuccess() != true)
             Http::send204Response(socket);
         else
         {
-            // TODO what to respond?
+            Http::ProblemDetailBase pd;
+            pd.type = "Request not succesfully completed";
+            pd.title = "DeleteContext request result";
+            pd.detail = "the Mec system was not able to terminate the mec application";
+            pd.status = "500";
+            Http::send500Response(socket, pd.toJson().dump().c_str());
         }
 
     }

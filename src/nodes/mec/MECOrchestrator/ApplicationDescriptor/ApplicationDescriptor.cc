@@ -38,13 +38,14 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
             nlohmann::json serviceVector = jsonFile["appServiceRequired"];
             for(int i = 0; i < serviceVector.size(); ++i)
             {
-                std::string serviceName = serviceVector.at(i);
-                appServicesRequired_.push_back(serviceName);
+                nlohmann::json serviceDep = serviceVector.at(i);
+                appServicesRequired_.push_back((std::string)serviceDep["ServiceDependency"]["serName"]);
             }
         }
         else
         {
-            appServicesRequired_.push_back((std::string)jsonFile["appServiceRequired"]);
+            nlohmann::json serviceDep = jsonFile["appServiceRequired"];
+            appServicesRequired_.push_back((std::string)serviceDep["ServiceDependency"]["serName"]);
         }
     }
 
@@ -65,7 +66,22 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
     }
 
     /*
-     * if the application descriptor refers to a mec application running outside the simulator, i.e. emulation mode,
+     * There could exists mec services implemented as simple omnet++ modules, that communicate with the mec application
+     * through omnet-like messages. The application descriptor JSON file has a section to take in to account them.
+     * The list can be still found in the service registry
+     */
+
+    if(jsonFile.contains("omnetppServiceRequired"))
+    {
+        omnetppServiceRequired_ = jsonFile["omnetppServiceRequired"];
+    }
+    else
+    {
+        omnetppServiceRequired_.clear();
+    }
+
+    /*
+     * If the application descriptor refers to a mec application running outside the simulator, i.e. emulation mode,
      * the fields address and port refers to the endpoint to talk with the mec application
      */
     if(jsonFile.contains("emulatedMecApplication"))
