@@ -9,15 +9,8 @@
     "virtualCpu" : 1500,
     "virtualMemory":10
     },
-"appServiceRequired": [
-    {
-        "ServiceDependency" :{
-            "serName" : "LocationService",
-            "version" : "v2",
-            "serCategory": "Location"
-        }
+"emulatedMecApplication" :{
+    "ipAddress": "192.168.1.2",
+    "port": 2015
     }
-],
-
-"omnetppServiceRequired": "MEWarningAlertService"
 }

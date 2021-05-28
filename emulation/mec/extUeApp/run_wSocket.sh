@@ -16,7 +16,7 @@ sudo ip link set veth1 up
 # add routes for new link
 sudo route add -net 192.168.2.0 netmask 255.255.255.0 dev veth1
 sudo route add -net 192.168.3.0 netmask 255.255.255.0 dev veth1     # enables backward path to the simulation
-  sudo route add -net 192.168.8.0 netmask 255.255.255.0 dev veth1     # enables backward path to the simulation
+sudo route add -net 192.169.0.0 netmask 255.255.0.0 dev veth1     # enables backward path to the simulation
   
 sudo ethtool --offload veth1 rx off tx off # disable TCP checksum offloading to make sure that TCP checksum is actually calculated
 

@@ -7,7 +7,7 @@
 // and cannot be removed from it.
 //
 
-package lte.simulations.NR.mec_rest.meco;
+package lte.simulations.NR.mec_rest.meco_multiMecHost;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -20,12 +20,15 @@ import lte.nodes.NR.gNodeB;
 import lte.nodes.NR.NRUe;
 import lte.nodes.mec.MEHost;
 
+import inet.node.inet.Router;
+
+
 import lte.nodes.mec.MECOrchestrator.MecOrchestrator;
 import lte.nodes.mec.LCMProxy.LCMProxy;
 
 
 
-network MecSingleMecHost
+network MecTwoMecHosts
 {
     parameters:
 
@@ -54,37 +57,52 @@ network MecSingleMecHost
             @display("p=691.38,342.24;is=s");
         }
         upf: Upf {
-            @display("p=425.73624,249.77875;is=l");
+            @display("p=284.16125,259.89127;is=l");
         }
         gNodeB1: gNodeB {
-            @display("p=140,250;is=vl");
+            @display("p=137.53,259.89127;is=vl");
         }
         car[numCars]: NRUe {
-            @display("p=300,300");
-        }
-        //# MEC module
-        meHost: MEHost {
-            @display("p=404.34,144.9;is=l");
+            @display("p=145.62,385.28625");
         }
 
+        router: Router {
+            @display("p=391.35376,259.89127");
+        }
+
+        //# MEC modules
+        meHost1: MEHost {
+            @display("p=390.3425,385.28625;is=l");
+        }
+
+        meHost2: MEHost {
+            @display("p=513.715,385.28625;is=l");
+        }
+
+
         mecOrchestrator: MecOrchestrator {
-            @display("p=564.2775,249.77875;is=l");
+            @display("p=556.1875,177.98;is=l");
         }
 
         lcmProxy: LCMProxy {
-            @display("p=490.45624,248.7675;i=device/smallrouter");
+            @display("p=391.35376,176.96875;i=device/smallrouter");
         }
 
 
     connections allowunconnected:
 
         upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        lcmProxy.ppp++ <--> Eth10G <--> upf.filterGate;  
-        
+
+        router.pppg++ <--> Eth10G <--> upf.filterGate;
+
+        router.pppg++ <--> Eth10G <--> lcmProxy.ppp++;
+
         lcmProxy.toMecOrchestrator --> mecOrchestrator.fromLcmProxy;
-        lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;     
+        lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;
 
         //#	mec
         // direct connection between gNodeB1 and meHost
-        meHost.pppENB++ <--> Eth10G <--> gNodeB1.pppMEHost;
+        meHost1.ppp++ <--> Eth10G <--> router.pppg++;
+        meHost2.ppp++ <--> Eth10G <--> router.pppg++;
+
 }

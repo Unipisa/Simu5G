@@ -43,7 +43,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="nodes/mec/MECOrchestrator_tcpApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="apps/mec/EchoApp|nodes/mec/MECOrchestrator_tcpApp|apps/mec/RNIDelay|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -91,7 +91,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="nodes/mec/MECOrchestrator_tcpApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="apps/mec/warningAlert|apps/mec/EchoApp|nodes/mec/MECOrchestrator_tcpApp|apps/mec/RNIDelay|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
