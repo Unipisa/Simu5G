@@ -54,6 +54,7 @@ bool LocationService::manageSubscription()
     int subId = currentSubscriptionServed_->getSubId();
     if(subscriptions_.find(subId) != subscriptions_.end())
     {
+        EV << "LocationService::manageSubscription() - subscription with id: " << subId << " found" << endl;
         SubscriptionBase * sub = subscriptions_[subId]; //upcasting (getSubscriptionType is in Subscriptionbase)
         sub->sendNotification(currentSubscriptionServed_);
         if(currentSubscriptionServed_!= nullptr)
@@ -64,12 +65,12 @@ bool LocationService::manageSubscription()
     }
 
     else{
+        EV << "LocationService::manageSubscription() - subscription with id: " << subId << " not found. Removing from subscriptionTimer.." << endl;
         // the subscription has been deleted, e.g. due to closing socket
         // remove subId from AperiodocSubscription timer
         subscriptionTimer_->removeSubId(subId);
         if(subscriptionTimer_->getSubIdSetSize() == 0)
             cancelEvent(subscriptionTimer_);
-        EV << "NO" << endl;
         if(currentSubscriptionServed_!= nullptr)
                 delete currentSubscriptionServed_;
         currentSubscriptionServed_ = nullptr;
@@ -85,19 +86,25 @@ void LocationService::handleMessage(cMessage *msg)
         {
             EV << "subscriptionTimer" << endl;
             AperiodicSubscriptionTimer *subTimer = check_and_cast<AperiodicSubscriptionTimer*>(msg);
-            std::set<int> subIds = subTimer->getSubIdSet();
+            std::set<int> subIds = subTimer->getSubIdSet(); // TODO pass it as reference
             for(auto sub : subIds)
             {
                 if(subscriptions_.find(sub) != subscriptions_.end())
                 {
                     EV << "subscriptionTimer for subscription: " << sub << endl;
-                        SubscriptionBase * subscription = subscriptions_[sub]; //upcasting (getSubscriptionType is in Subscriptionbase)
-                        EventNotification *event = subscription->handleSubscription();
-                        if(event != nullptr)
-                            newSubscriptionEvent(event);
+                    SubscriptionBase * subscription = subscriptions_[sub]; //upcasting (getSubscriptionType is in Subscriptionbase)
+                    EventNotification *event = subscription->handleSubscription();
+                    if(event != nullptr)
+                        newSubscriptionEvent(event);
+                }
+                else
+                {
+                    EV << "remove subId " << sub << " from aperiodic trimer" << endl;
+                    subTimer->removeSubId(sub);
                 }
             }
-            scheduleAt(simTime()+subTimer->getPeriod(), msg);
+            if(subTimer->getSubIdSetSize() > 0)
+                scheduleAt(simTime()+subTimer->getPeriod(), msg);
             return;
         }
 
@@ -108,6 +115,7 @@ void LocationService::handleMessage(cMessage *msg)
 void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
 {
     EV_INFO << "LocationService::handleGETRequest" << endl;
+    std::cout << uri << std::endl;
     std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
     // uri must be in form example/v2/location/queries/resource
     std::size_t lastPart = splittedUri[0].find_last_of("/");
@@ -272,7 +280,7 @@ void LocationService::handlePOSTRequest(const std::string& uri,const std::string
             }
             catch(nlohmann::detail::parse_error e)
             {
-                std::cout <<  e.what() << std::endl;
+                std::cout << "LocationService::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
                 // body is not correctly formatted in JSON, manage it
                 Http::send400Response(socket); // bad body JSON
                 return;
@@ -426,10 +434,9 @@ void LocationService::handleDELETERequest(const std::string& uri, inet::TcpSocke
     }
 }
 
-
-
 void LocationService::finish()
 {
+    MeServiceBase::finish();
 // TODO
     return;
 }

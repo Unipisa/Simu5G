@@ -21,7 +21,7 @@ CircleNotificationSubscription::CircleNotificationSubscription()
  lastNotification = 0;
 }
 
-CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::vector<cModule*>& eNodeBs):
+CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<cModule*>& eNodeBs):
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
     binder = getBinder();
     baseResLocation_+= "area/circle";
@@ -67,6 +67,8 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
     nlohmann::ordered_json notification;
     notification["subscriptionNotification"] = val;
 
+//    if(socket_->getState())
+//        throw cRuntimeError("%d", socket_->getState());
     Http::sendPostRequest(socket_, notification.dump(2).c_str(), clientHost_.c_str(), clientUri_.c_str());
 
     // update last notification sent

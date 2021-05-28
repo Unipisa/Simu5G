@@ -82,7 +82,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         typedef std::map<unsigned int, SubscriptionBase*> Subscriptions;
         Subscriptions subscriptions_; //list of all active subscriptions
 
-        std::vector<omnetpp::cModule*> eNodeB_;     //eNodeBs connected to the ME Host
+        std::set<omnetpp::cModule*> eNodeB_;     //eNodeBs connected to the ME Host
 
         int requestQueueSize_;
 

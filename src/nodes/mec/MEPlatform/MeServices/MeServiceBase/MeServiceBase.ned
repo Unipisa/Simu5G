@@ -56,15 +56,6 @@ moduleinterface MeServiceBase
 //    servDescriptor.catHref = par("catUri").str();
 //    servDescriptor.catVersion = par("catVersion").str();
 
-
-       	
-       	
-       	
-       	
-       	
-       	
-       	
-	
 		string localAddress; // local address; may be left empty ("")
         int localPort;     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream"); // bytestream for emulation

@@ -20,6 +20,7 @@ moduleinterface IMEService
 {
     parameters:
         @display("i=block/app");  
+        string serviceName;
                 
     gates:
         

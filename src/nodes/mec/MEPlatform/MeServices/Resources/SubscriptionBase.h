@@ -22,12 +22,12 @@ class SubscriptionBase
 {
     public:
         SubscriptionBase();
-        SubscriptionBase(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::vector<omnetpp::cModule*>& eNodeBs);
+        SubscriptionBase(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
         virtual ~SubscriptionBase();
 
 //        nlohmann::ordered_json toJson() const override;
 
-        void addEnodeB(std::vector<omnetpp::cModule*>& eNodeBs);
+        void addEnodeB(std::set<omnetpp::cModule*>& eNodeBs);
         void addEnodeB(omnetpp::cModule* eNodeB);
 
 //        virtual nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const = 0;

@@ -24,7 +24,7 @@ class MeasRepUeSubscription : public SubscriptionBase
 
     public:
         MeasRepUeSubscription();
-        MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::vector<omnetpp::cModule*>& eNodeBs);
+        MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
         virtual ~MeasRepUeSubscription();
         virtual bool fromJson(const nlohmann::ordered_json& json);
         virtual void sendSubscriptionResponse();

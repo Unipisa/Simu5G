@@ -5,8 +5,8 @@ using namespace omnetpp;
 
 SubscriptionBase::SubscriptionBase() {}
 
-SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::vector<cModule*>& eNodeBs) {
-    std::vector<cModule*>::iterator it = eNodeBs.begin();
+SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*>& eNodeBs) {
+    std::set<cModule*>::iterator it = eNodeBs.begin();
     for(; it != eNodeBs.end() ; ++it){
         LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
@@ -17,8 +17,8 @@ SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, 
 //	notificationTrigger = nullptr;
 }
 
-void SubscriptionBase::addEnodeB(std::vector<cModule*>& eNodeBs) {
-    std::vector<cModule*>::iterator it = eNodeBs.begin();
+void SubscriptionBase::addEnodeB(std::set<cModule*>& eNodeBs) {
+    std::set<cModule*>::iterator it = eNodeBs.begin();
     for(; it != eNodeBs.end() ; ++it){
         LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));

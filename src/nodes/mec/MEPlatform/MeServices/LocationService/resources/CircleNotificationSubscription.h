@@ -20,7 +20,7 @@ class CircleNotificationSubscription : public SubscriptionBase
 {
     public:
         CircleNotificationSubscription();
-        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::vector<omnetpp::cModule*>& eNodeBs);
+        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
         virtual ~CircleNotificationSubscription();
 
 //        nlohmann::ordered_json toJson() const override;

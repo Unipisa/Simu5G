@@ -11,7 +11,7 @@
 using namespace omnetpp;
 
 MeasRepUeSubscription::MeasRepUeSubscription() :SubscriptionBase() {};
-MeasRepUeSubscription::MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::vector<cModule*>& eNodeBs):
+MeasRepUeSubscription::MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*>& eNodeBs):
         SubscriptionBase(subId,socket,baseResLocation, eNodeBs){};
 MeasRepUeSubscription:: ~MeasRepUeSubscription(){};
 

@@ -8,16 +8,16 @@ L2Meas::L2Meas() {
     binder_ = getBinder();
 }
 
-L2Meas::L2Meas(std::vector<cModule*>& eNodeBs) {
-	std::vector<cModule*>::iterator it = eNodeBs.begin();
+L2Meas::L2Meas(std::set<cModule*>& eNodeBs) {
+	std::set<cModule*>::iterator it = eNodeBs.begin();
 	for(; it != eNodeBs.end() ; ++it){
 		EnodeBStatsCollector * collector = check_and_cast<EnodeBStatsCollector *>((*it)->getSubmodule("collector"));
 		eNodeBs_.insert(std::pair<MacCellId, EnodeBStatsCollector *>(collector->getCellId(), collector));
 	}
 }
 
-void L2Meas::addEnodeB(std::vector<cModule*>& eNodeBs) {
-    std::vector<cModule*>::iterator it = eNodeBs.begin();
+void L2Meas::addEnodeB(std::set<cModule*>& eNodeBs) {
+    std::set<cModule*>::iterator it = eNodeBs.begin();
         for(; it != eNodeBs.end() ; ++it){
 			EnodeBStatsCollector * collector = check_and_cast<EnodeBStatsCollector *>((*it)->getSubmodule("collector"));
             eNodeBs_.insert(std::pair<MacCellId, EnodeBStatsCollector*>(collector->getCellId(), collector));

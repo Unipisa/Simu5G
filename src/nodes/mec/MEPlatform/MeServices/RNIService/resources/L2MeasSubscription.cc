@@ -11,7 +11,7 @@
 using namespace omnetpp;
 
 L2MeasSubscription::L2MeasSubscription() :SubscriptionBase() {};
-L2MeasSubscription::L2MeasSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::vector<cModule*>& eNodeBs):
+L2MeasSubscription::L2MeasSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*>& eNodeBs):
         SubscriptionBase(subId,socket,baseResLocation, eNodeBs){};
 L2MeasSubscription:: ~L2MeasSubscription(){};
 

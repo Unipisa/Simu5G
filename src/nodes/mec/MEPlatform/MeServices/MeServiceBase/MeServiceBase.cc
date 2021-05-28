@@ -29,6 +29,8 @@ MeServiceBase::MeServiceBase()
     binder_ = nullptr;
     meHost_ = nullptr;
     servRegistry_ = nullptr;
+    currentRequestMessageServed_ = nullptr;
+    currentSubscriptionServed_ = nullptr;
 }
 
 void MeServiceBase::initialize(int stage)
@@ -47,8 +49,6 @@ void MeServiceBase::initialize(int stage)
         subscriptionServiceTime_ = par("subscriptionServiceTime");
         subscriptionService_ = new cMessage("serveSubscription");
         subscriptionQueueSize_ = par("subscriptionQueueSize");
-        currentRequestMessageServed_ = nullptr;
-        currentSubscriptionServed_ = nullptr;
 
         subscriptionId_ = 0;
         subscriptions_.clear();
@@ -65,7 +65,13 @@ void MeServiceBase::initialize(int stage)
         servRegistry_ = check_and_cast<ServiceRegistry*>(getParentModule()->getSubmodule("serviceRegistry"));
 
         // get the gnb connected to the mehost
+        // TODO add connected gnbs/enbs as a list parameter, in case the me host is no direcly connected
+        // to the enodeb
         getConnectedEnodeB();
+
+        // TODO add connected gnbs/enbs as a list parameter, in case the me host is no direcly connected
+        // to the enodeb
+
     }
     inet::ApplicationBase::initialize(stage);
 }
@@ -136,9 +142,24 @@ void MeServiceBase::handleCrashOperation(inet::LifecycleOperation *operation)
 void MeServiceBase::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        EV << "isSelfMessage" << endl;
+        EV << " MeServiceBase::handleMessageWhenUp - "<< msg->getName() << endl;
         if(strcmp(msg->getName(), "serveSubscription") == 0)
         {
+//            maybe the service wants to perform some operations in case the subId is not present,
+//            so the service base just calls the manageSubscription() method.
+//            bool res = false;
+//            // fixme check if the subscription is stilla active, i.e. the client did not disconnected
+//            if(subscriptions_.find(currentSubscriptionServed_->getSubId()) != subscriptions_.end() )
+//                res = manageSubscription();
+//            else
+//            {
+//                // subscription id not present, client disconnected, do not manage.
+//                if(currentSubscriptionServed_!= nullptr)
+//                        delete currentSubscriptionServed_;
+//                currentSubscriptionServed_ = nullptr;
+//                return false;
+//            }
+//      }
             bool res = manageSubscription();
             scheduleNextEvent(!res);
         }
@@ -394,13 +415,33 @@ void MeServiceBase::refreshDisplay() const
 }
 
 void MeServiceBase::getConnectedEnodeB(){
+
+    EV <<"MeServiceBase::getConnectedEnodeB" << endl;
     int eNodeBsize = meHost_->gateSize("pppENB");
     for(int i = 0; i < eNodeBsize ; ++i){
-        cModule *eNodebName = meHost_->gate("pppENB$o", i) // pppENB[i] output
+        cModule *bsModule = meHost_->gate("pppENB$o", i) // pppENB[i] output
                                      ->getNextGate()       // eNodeB module connected gate
                                      ->getOwnerModule();   // eBodeB module
-        eNodeB_.push_back(eNodebName);
+
+        EV << "addd1: " << bsModule << endl;
+        eNodeB_.insert(bsModule);
+
     }
+
+    //getting the list of mec hosts associated to this mec system from parameter
+    if(meHost_->hasPar("eNBList") && strcmp(meHost_->par("eNBList").stringValue(), "")){
+
+       char* token = strtok ( (char*)meHost_->par("eNBList").stringValue(), ", ");            // split by commas
+       while (token != NULL)
+       {
+           EV <<"MeServiceBase::getConnectedEnodeB " << token << endl;
+           cModule *bsModule = getSimulation()->getModuleByPath(token);
+           EV << "add2: " << bsModule << endl;
+           eNodeB_.insert(bsModule);
+           token = strtok (NULL, ", ");
+       }
+    }
+
     return;
 }
 
@@ -411,9 +452,7 @@ void MeServiceBase::closeConnection(SocketManager * connection)
     // remove socket
        socketMap.removeSocket(connection->getSocket());
        threadSet.erase(connection);
-
        socketClosed(connection->getSocket());
-
        // remove thread object
        connection->deleteModule();
 }
@@ -421,10 +460,11 @@ void MeServiceBase::closeConnection(SocketManager * connection)
 void MeServiceBase::removeConnection(SocketManager *connection)
 {
 
-
     EV << "MeServiceBase::removeConnection"<<endl;
     // remove socket
-    delete socketMap.removeSocket(connection->getSocket());
+    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
+    sock->close();
+    delete sock;
     // remove thread object
     threadSet.erase(connection);
     connection->deleteModule();
@@ -435,9 +475,9 @@ void MeServiceBase::finish()
     EV << "MeServiceBase::finish()" << endl;
     serverSocket.close();
     while (!threadSet.empty())
-        {
-            removeConnection(*threadSet.begin());
-        }
+    {
+        removeConnection(*threadSet.begin());
+    }
 }
 
 MeServiceBase::~MeServiceBase(){

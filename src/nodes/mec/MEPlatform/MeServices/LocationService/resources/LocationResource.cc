@@ -10,18 +10,18 @@ LocationResource::LocationResource() {
     binder_ = nullptr;
 }
 
-LocationResource::LocationResource(std::string& baseUri, std::vector<cModule*>& eNodeBs, LteBinder *binder) {
+LocationResource::LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs, LteBinder *binder) {
     binder_ = binder;
     baseUri_ = baseUri;
-	std::vector<cModule*>::iterator it = eNodeBs.begin();
+	std::set<cModule*>::iterator it = eNodeBs.begin();
 	for(; it != eNodeBs.end() ; ++it){
 	    LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
 		eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
 	}
 }
 
-void LocationResource::addEnodeB(std::vector<cModule*>& eNodeBs) {
-    std::vector<cModule*>::iterator it = eNodeBs.begin();
+void LocationResource::addEnodeB(std::set<cModule*>& eNodeBs) {
+    std::set<cModule*>::iterator it = eNodeBs.begin();
         for(; it != eNodeBs.end() ; ++it){
             LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
             eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
@@ -67,7 +67,7 @@ User LocationResource::getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const
 {
     // throw exeption if macNodeId does no exist?
     inet::Ipv4Address ipAddress = binder_->getIPv4Address(nodeId);
-    std::string refUrl = baseUri_ + "?address=acr:" + ipAddress.str();
+    std::string refUrl = baseUri_ + "/users?address=acr:" + ipAddress.str();
     inet::Coord  speed = LocationUtils::getSpeed(nodeId);
     inet::Coord  position = LocationUtils::getCoordinates(nodeId);
     User ueInfo = User(ipAddress, cellId, refUrl);

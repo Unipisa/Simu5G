@@ -18,12 +18,12 @@ class L2Meas : public AttributeBase
 		 * and creates a CellInfo object
 		*/
         L2Meas();
-		L2Meas(std::vector<cModule*>& eNodeBs);
+		L2Meas(std::set<cModule*>& eNodeBs);
 		virtual ~L2Meas();
 
 		nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::vector<cModule*>& eNodeBs);
+		void addEnodeB(std::set<cModule*>& eNodeBs);
 		void addEnodeB(cModule* eNodeB);
 
 		nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;

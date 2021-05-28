@@ -2,7 +2,7 @@
 #define _LOCATION_H_
 
 #include "common/LteCommon.h"
-#include <vector>
+#include <set>
 #include <map>
 
 #include "nodes/mec/MEPlatform/MeServices/Resources/TimeStamp.h"
@@ -23,12 +23,12 @@ class LocationResource : public AttributeBase
 		 * and creates a CellInfo object
 		*/
         LocationResource();
-		LocationResource(std::string& baseUri, std::vector<cModule*>& eNodeBs, LteBinder* binder);
+		LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs, LteBinder* binder);
 		virtual ~LocationResource();
 
 		nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::vector<cModule*>& eNodeBs);
+		void addEnodeB(std::set<cModule*>& eNodeBs);
 		void addEnodeB(cModule* eNodeB);
 		void addBinder(LteBinder* binder);
 		void setBaseUri(const std::string& baseUri);
