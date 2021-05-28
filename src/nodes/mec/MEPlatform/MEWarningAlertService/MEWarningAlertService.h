@@ -14,7 +14,7 @@
 #define __MEWARNINGALERTSERVICE_H_
 
 //WarningAlertPacket
-#include "apps/mec/warningAlert/packets/WarningAlertPacket_m.h"
+//#include "apps/mec/warningAlert/packets/WarningAlertPacket_m.h"
 #include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
 
 #include "inet/common/geometry/common/Coord.h"

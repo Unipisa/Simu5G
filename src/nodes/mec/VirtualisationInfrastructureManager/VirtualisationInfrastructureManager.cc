@@ -71,14 +71,32 @@ void VirtualisationInfrastructureManager::initialize(int stage)
         mePlatform->setGateSize("meAppOut", maxMEApps);
         mePlatform->setGateSize("meAppIn", maxMEApps);
     }
-    // retrieving all available ME Services loaded
-    numServices = mePlatform->par("numServices");
-    for(int i=0; i<numServices; i++)
+
+    inet::InterfaceTable* platformInterfaceTable = check_and_cast<inet::InterfaceTable*>(mePlatform->getSubmodule("interfaceTable"));
+
+    int interfaceSize = platformInterfaceTable->getNumInterfaces();
+    bool found = false;
+    for(int i = 0 ; i < interfaceSize ; ++i)
     {
-        meServices.push_back(mePlatform->getSubmodule("udpService", i));
-        EV << "VirtualisationInfrastructureManager::initialize - Available meServices["<<i<<"] " << meServices.at(i)->getClassName() << endl;
+        if(strcmp("mp1Eth", platformInterfaceTable->getInterface(i)->getInterfaceName()) == 0)
+        {
+            mp1Address_ = platformInterfaceTable->getInterface(i)->getIpv4Address();
+            found = true;
+        }
     }
 
+    if(found == false)
+        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - interface for mecPlatform not found!!\n"
+                "has its name [mp1Eth] been changed?");
+
+
+    // retrieving all available ME Services loaded
+    numServices = mePlatform->par("numOmnetServices");
+    for(int i=0; i<numServices; i++)
+    {
+        meServices.push_back(mePlatform->getSubmodule("omnetService", i));
+        EV << "VirtualisationInfrastructureManager::initialize - Available meServices["<<i<<"] " << meServices.at(i)->getClassName() << endl;
+    }
 
     //------------------------------------
     //retrieve the set of free gates
@@ -86,7 +104,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
         freeGates.push_back(i);
 //    ------------------------------------
 //    interfaceTableModule = par("interfaceTableModule").stringValue();
-
 
 
     interfaceTable = check_and_cast<inet::InterfaceTable*>(meHost->getSubmodule("virtualisationInfrastructure")->getSubmodule("interfaceTable"));
@@ -103,7 +120,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
             mecAppLocalAddress_ = interfaceTable->getInterface(i)->getIpv4Address();
         }
     }
-
 
     meAppPortCounter = 4001;
 }
@@ -149,8 +165,8 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
             return false;
         }
         // creating MEApp module instance
-        cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
-        cModule *module = moduleType->create(meModuleName, meHost);       //MEAPP module-name & its Parent Module
+        cModuleType *moduleType = cModuleType::get("lte.nodes.mec.MEPlatform.EmulatedMecApp");
+        cModule *module = moduleType->create(meModuleName, meHost); //MEAPP module-name & its Parent Module
 
 
         std::stringstream appName;
@@ -181,7 +197,6 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
 //        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
-        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - "<< module->getName() <<" instanced!" << endl;
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
         return true;
     }
@@ -196,7 +211,7 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
     EV << "VirtualisationInfrastructureManager::instantiateMEApp - processing..." << endl;
 
     int serviceIndex = findService(msg->getRequiredService());
-   // char* sourceAddress = (char*)msg->getSourceAddress();
+
     char* meModuleName = (char*)msg->getMEModuleName();
 
     int ueAppPort  = msg->getSourcePort();
@@ -249,6 +264,8 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         meAppMapEntry newAppEntry;
 
         newAppEntry.meAppGateIndex = index;
+        newAppEntry.serviceIndex = serviceIndex;
+
         newAppEntry.meAppModule = module;
         //meAppMap[key].ueAddress = ueAppAddress;
         //meAppMap[key].uePort = ueAppPort;
@@ -279,6 +296,7 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         module->par("requiredCpu") = cpu;
         module->par("localUePort") = meAppPortCounter;
 
+        module->par("mp1Address") = mp1Address_.str();
 
         module->finalizeParameters();
 
@@ -325,7 +343,8 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
          * if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
          */
 
-        if(serviceIndex != NO_SERVICE)
+//        if(serviceIndex != NO_SERVICE)
+        if(serviceIndex >= 0)
         {
             EV << "VirtualisationInfrastructureManager::instantiateMEApp - Connecting to the: " << msg->getRequiredService()<< endl;
             //connecting MEPlatform gates to the MEApp gates
@@ -336,7 +355,8 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
             (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
             mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
         }
-        else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO MEService required!"<< endl;
+
+        else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO omnet++-like MECServices required!"<< endl;
 
         module->buildInside();
         module->scheduleStart(simTime());
@@ -344,9 +364,6 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
 
         currentMEApps++;
 
-        //Sending ACK to the UEApp
-//        EV << "VirtualisationInfrastructureManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
-//        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
@@ -414,18 +431,22 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage* msg)
 //        ackMEAppPacket(packet, ACK_STOP_MEAPP);
 
         int index = meAppMap[key].meAppGateIndex;
+        int serviceIndex = meAppMap[key].serviceIndex;
 
         // TODO manage gates me app to at
 
         virtualisationInfr->gate("meAppOut", index)->getPreviousGate()->disconnect();
         virtualisationInfr->gate("meAppIn", index)->disconnect();
 
-        //disconnecting internal MEPlatform gates to the MEService gates
-//        (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
-//        (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
-//        //disconnecting MEPlatform gates to the MEApp gates
-//        mePlatform->gate("meAppOut", index)->disconnect();
-//        mePlatform->gate("meAppIn", index)->disconnect();
+        if(serviceIndex >= 0)
+        {
+            //disconnecting internal MEPlatform gates to the MEService gates
+            (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
+            (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
+            //disconnecting MEPlatform gates to the MEApp gates
+            mePlatform->gate("meAppOut", index)->disconnect();
+            mePlatform->gate("meAppIn", index)->disconnect();
+        }
 
 
         //deallocte resources
@@ -446,6 +467,7 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage* msg)
 }
 
 int VirtualisationInfrastructureManager::findService(const char* serviceName){
+EV << "VirtualisationInfrastructureManager::findService " << serviceName << endl;
 
     if(!strcmp(serviceName, "NULL"))
         return NO_SERVICE;

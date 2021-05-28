@@ -63,45 +63,43 @@ void MEWarningAlertService::handleMessage(cMessage *msg)
 {
     EV << "MEWarningAlertService::handleMessage - \n";
 
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto alert = packet->peekAtFront<WarningAlertPacket>();
-    if(!strcmp(alert->getType(), INFO_UEAPP))
-        handleInfoUEWarningAlertApp(msg);
+//    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+//    auto alert = packet->peekAtFront<WarningAlertPacket>();
+//    if(!strcmp(alert->getType(), INFO_UEAPP))
+//        handleInfoUEWarningAlertApp(msg);
 
     delete msg;
 }
 
 void MEWarningAlertService::handleInfoUEWarningAlertApp(cMessage* msg){
 
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto alert = packet->peekAtFront<WarningAlertPacket>();
-
-    EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - Received " << alert->getType() << " type WarningAlertPacket from " << alert->getSourceAddress() << endl;
-
-    inet::Coord uePosition(alert->getPositionX(), alert->getPositionY(), alert->getPositionZ());
-
-    inet::Packet* respPacket = new inet::Packet("WarningAlertPacketInfo");
-    auto respAlert = inet::makeShared<WarningAlertPacket>();
-    respAlert->setType(INFO_MEAPP);
-
-    if(isInQuadrilateral(uePosition, dangerEdgeA, dangerEdgeB, dangerEdgeC, dangerEdgeD)){
-
-        respAlert->setDanger(true);
-        respAlert->setChunkLength(alert->getChunkLength());
-        respPacket->insertAtFront(respAlert);
-        send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
-
-        EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == TRUE!" << endl;
-    }
-    else{
-
-        respAlert->setDanger(false);
-        respAlert->setChunkLength(alert->getChunkLength());
-        respPacket->insertAtFront(respAlert);
-        send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
-
-        EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is not in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == FALSE!" << endl;
-    }
+//    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+//    auto alert = packet->peekAtFront<WarningAlertPacket>();
+//
+//    EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - Received " << alert->getType() << " type WarningAlertPacket from " << alert->getSourceAddress() << endl;
+//
+//    inet::Coord uePosition(alert->getPositionX(), alert->getPositionY(), alert->getPositionZ());
+//
+//    inet::Packet* respPacket = new inet::Packet("WarningAlertPacketInfo");
+//    auto respAlert = inet::makeShared<WarningAlertPacket>();
+//    respAlert->setType(INFO_MEAPP);
+//
+//    if(isInQuadrilateral(uePosition, dangerEdgeA, dangerEdgeB, dangerEdgeC, dangerEdgeD)){
+//
+//        respAlert->setDanger(true);
+//        respPacket->insertAtBack(alert);
+//        send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
+//
+//        EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == TRUE!" << endl;
+//    }
+//    else{
+//
+//        respAlert->setDanger(false);
+//        respPacket->insertAtBack(alert);
+//        send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
+//
+//        EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is not in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == FALSE!" << endl;
+//    }
 }
 
 bool MEWarningAlertService::isInTriangle(inet::Coord P, inet::Coord A, inet::Coord B, inet::Coord C){

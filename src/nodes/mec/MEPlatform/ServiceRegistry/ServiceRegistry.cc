@@ -78,6 +78,17 @@ void ServiceRegistry::initialize(int stage)
 
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
 
+
+    // read omnetServices_ names (used by the orchestrator to choose the mec host
+    // retrieving all available ME Services loaded
+   int numServices = mePlatform->par("numOmnetServices");
+   for(int i=0; i<numServices; i++)
+   {
+       cModule* service = mePlatform->getSubmodule("omnetService", i);
+       omnetServices_.insert(service->par("serviceName").stringValue());
+       EV << "QUiI " << service->par("serviceName").stringValue() << endl;
+   }
+
 }
 
 
@@ -240,11 +251,15 @@ SockAddr ServiceRegistry::retrieveMeService(const std::string& MeServiceName)
 
 }
 
-const MecServicesMap* ServiceRegistry::getAvailableServices() const
+const MecServicesMap* ServiceRegistry::getAvailableMecServices() const
 {
     return &mecServices_;
 }
 
+const std::set<std::string>* ServiceRegistry::getAvailableOmnetServices() const
+{
+    return &omnetServices_;
+}
 
 
 

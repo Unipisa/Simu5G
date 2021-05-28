@@ -37,6 +37,7 @@ using namespace omnetpp;
 struct meAppMapEntry
 {
     int meAppGateIndex;         //map key
+    int serviceIndex;         // service index
     cModule* meAppModule;       //for ME App termination
     inet::L3Address ueAddress;  //for downstream using UDP Socket
     int uePort;
@@ -90,6 +91,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     inet::InterfaceTable* interfaceTable;
     inet::Ipv4Address mecAppLocalAddress_;
     inet::Ipv4Address mecAppRemoteAddress_;
+    inet::Ipv4Address mp1Address_;
 
     //------------------------------------
     //parameters to control the number of ME APPs instantiated and to set gate sizes
@@ -165,7 +167,8 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
         bool isAllocable(double ram, double disk, double cpu)
         {
-            return (ram  < maxRam - allocatedRam &&
+            return (currentMEApps < maxMEApps &&
+                    ram  < maxRam - allocatedRam &&
                     disk < maxDisk - allocatedDisk &&
                     cpu  < maxCPU - allocatedCPU);
         }

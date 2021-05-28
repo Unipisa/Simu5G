@@ -23,6 +23,7 @@ import simu5g.nodes.mec.MEPlatform.IMEService;
 simple MEWarningAlertService like IMEService
 {
     parameters:
+        string serviceName = "MEWarningAlertService";
         
         double dangerEdgeAx @unit("m");
         double dangerEdgeAy @unit("m");

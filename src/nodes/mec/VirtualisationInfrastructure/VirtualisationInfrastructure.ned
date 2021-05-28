@@ -49,19 +49,20 @@ module VirtualisationInfrastructure
         bool hasIpv6 = default(false);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default("^.ipv4.routingTable");
-        
+
         int numBGMecApp = default(0);
+        int numExtEthInterfaces = default(0);
 
     gates:
 
         inout ppp[];				// connection with GtpEndpoint and local/externa networks
-        
+
         output meBGAppOut[numBGMecApp];			// connection to the ME App input gate
         input meBGAppIn[numBGMecApp];			// connection to the ME App output gate
-        
+
         output meAppOut[];			// connection to the ME App input gate
         input meAppIn[];			// connection to the ME App output gate
-        
+
         inout mePlatform;			// connection to the ME Platform
 
     submodules:
@@ -93,7 +94,13 @@ module VirtualisationInfrastructure
    	  	//# ethernet interface used for communicating with the MEC service in the MEC platform
         eth: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=739.23,521.52,row,150;q=txQueue");
+                @display("p=720,508,row,150;q=txQueue");
+        }
+
+        //# ethernet interface used for communicating with external applications in emulation mode
+        extEth[numExtEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=302,508,row,150;q=txQueue");
         }
 
 
@@ -113,9 +120,9 @@ module VirtualisationInfrastructure
         //# Transport layer modules and corresponding application modules
         //#
 		// =============== UDP ============== //
-        virtualisationManager: VirtualisationManager {
-            @display("p=657,74,row");
-        }
+//        virtualisationManager: VirtualisationManager {
+//            @display("p=657,74,row");
+//        }
 
         udp: Udp {
             @display("p=459,217");
@@ -123,13 +130,6 @@ module VirtualisationInfrastructure
 
         tcp: Tcp {
             @display("p=627,217");
-        }
-
-        //#
-        //# Resource Manager module
-        //#
-        resourceManager: ResourceManager {
-            @display("p=785,74,row");
         }
 
         // message dispatcher for SAP between application and transport layer
@@ -153,22 +153,14 @@ module VirtualisationInfrastructure
 
         for i=0..numBGMecApp-1 {
             at.out++ --> meBGAppOut++;
-            at.in++ <--  meBGAppIn++;
+            at.in++ <-- meBGAppIn++;
         }
-
-
-        //# 
-        //# VirtualisationManager to ResourceManager connections
-        //#
-        virtualisationManager.resourceManagerIn <-- resourceManager.virtualisationManagerOut;
-        virtualisationManager.resourceManagerOut --> resourceManager.virtualisationManagerIn;
-
 
         //# 
         //# VirtualisationManager to transport layer connections
         //#        
-        virtualisationManager.socketOut --> at.in++;
-        virtualisationManager.socketIn <-- at.out++;
+//        virtualisationManager.socketOut --> at.in++;
+//        virtualisationManager.socketIn <-- at.out++;
 
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;
@@ -203,6 +195,11 @@ module VirtualisationInfrastructure
             pppIf[i].upperLayerOut --> nl.in++;
             pppIf[i].upperLayerIn <-- nl.out++;
             pppIf[i].phys <--> ppp++;
+        }
+
+        for i=0..numExtEthInterfaces-1 {
+            extEth[i].upperLayerOut --> nl.in++;
+            extEth[i].upperLayerIn <-- nl.out++;
         }
 
         eth.upperLayerOut --> nl.in++;
