@@ -38,8 +38,8 @@ simple MecRequestBackgroundApp like MeAppBase, IApp
         double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
        
               	//resource required infos
-        int requiredRam @unit("B") = default(10MB);
-        int requiredDisk @unit("B") = default(100MB);
+        double requiredRam @unit("B") = default(10MB);
+        double requiredDisk @unit("B") = default(100MB);
         double requiredCpu = default(0.01);
     gates:
         input socketIn @labels(TcpCommand/up);

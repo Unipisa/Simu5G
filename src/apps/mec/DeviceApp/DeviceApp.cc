@@ -219,6 +219,9 @@ void DeviceApp::handleLcmProxyMessage()
 
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
                     appState = IDLE;
+
+                    lcmProxySocket_.close();
+
                     return;
                 }
                 else

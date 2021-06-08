@@ -9,16 +9,17 @@
 #define APPS_MEC_MEAPPS_MECAPPBASE_H_
 
 #include <omnetpp.h>
+#include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpMessages_m.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
+
+#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 /**
- * Base class for clients app for TCP-based request-reply protocols or apps.
- * Handles a single session (and TCP connection) at a time.
- *
- * It needs the following NED parameters: localAddress, localPort, connectAddress, connectPort.
+
  */
 
 class VirtualisationInfrastructureManager;

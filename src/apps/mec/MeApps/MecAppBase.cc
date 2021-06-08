@@ -7,11 +7,8 @@
 
 
 #include "apps/mec/MeApps/MecAppBase.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
 #include "nodes/mec/MecCommon.h"
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-#include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 #include "common/utils/utils.h"
 
 using namespace omnetpp;
@@ -77,7 +74,7 @@ void MecAppBase::initialize(int stage)
 //    socket.bind(*localAddress ? L3AddressResolver().resolve(localAddress) : L3Address(), localPort);
 //
 
-    mecAppId = par("mecAppId"); // FIXME use ueAppId!
+    mecAppId = par("mecAppId"); // FIXME mecAppId is the deviceAppId!
     requiredRam = par("requiredRam").doubleValue();
     requiredDisk = par("requiredDisk").doubleValue();
     requiredCpu = par("requiredCpu").doubleValue();
@@ -198,6 +195,8 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
         if(res)
         {
             serviceHttpMessage->setSockId(serviceSocket_.getSocketId());
+            if(vim == nullptr)
+                throw cRuntimeError("MecAppBase::socketDataArrived - vim is null!");
             double time = vim->calculateProcessingTime(mecAppId, 150);
             scheduleAt(simTime()+time, processedServiceResponse);
         }
@@ -208,6 +207,8 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
         if(res)
         {
             mp1HttpMessage->setSockId(mp1Socket_.getSocketId());
+            if(vim == nullptr)
+                throw cRuntimeError("MecAppBase::socketDataArrived - vim is null!");
             double time = vim->calculateProcessingTime(mecAppId, 150);
             scheduleAt(simTime()+time, processedMp1Response);
         }

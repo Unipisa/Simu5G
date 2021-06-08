@@ -8,12 +8,12 @@
 #ifndef APPS_MEC_MEAPPS_MEBGAPP_H_
 #define APPS_MEC_MEAPPS_MEBGAPP_H_
 
-#include "apps/mec/MeApps/MeAppBase.h"
+#include "apps/mec/MeApps/MecAppBase.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 
 using namespace omnetpp;
 
-class MecRequestBackgroundGeneratorApp : public MeAppBase
+class MecRequestBackgroundGeneratorApp : public MecAppBase
 {
 protected:
 
@@ -31,12 +31,17 @@ protected:
 
      virtual void sendBulkRequest();
 
+     virtual void handleServiceMessage() override;
+     virtual void handleMp1Message() override;
+
+     virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+
+
+     virtual void established(int connId) override;
+
    public:
      MecRequestBackgroundGeneratorApp() {}
      virtual ~MecRequestBackgroundGeneratorApp();
-     virtual void handleServiceMessage() override;
-     virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
-     virtual void established(int connId) override;
 };
 
 
