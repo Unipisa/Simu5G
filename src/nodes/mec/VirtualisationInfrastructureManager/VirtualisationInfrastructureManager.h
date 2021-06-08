@@ -139,6 +139,9 @@ class VirtualisationInfrastructureManager : public cSimpleModule
         // Resources manager methods
        virtual double calculateProcessingTime(int ueAppID, int numOfInstructions);
 
+       bool registerMecApp(int ueAppId, int reqRam, int  reqDisk, double reqCpu);
+       bool deRegisterMecApp(int ueAppId);
+
     protected:
 
         virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
@@ -152,8 +155,6 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
         //------------------------------------
 
-        bool registerMecApp(int ueAppId, int reqRam, int  reqDisk, double reqCpu);
-        bool deRegisterMecApp(int ueAppId);
         ResourceDescriptor getAvailableResources() const ;
 
         /*

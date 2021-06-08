@@ -10,7 +10,7 @@
 
 
 ServiceInfo::ServiceInfo(const std::string& serInstanceId, const std::string& serName, const CategoryRef& serCat, const std::string& version,
-                const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& sol, bool clo, bool local):
+                const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local):
                 serCategory_(serCat), transportInfo_(tInfo)
 {
     serInstanceId_ = serInstanceId;
@@ -22,6 +22,7 @@ ServiceInfo::ServiceInfo(const std::string& serInstanceId, const std::string& se
     scopeOfLocality_ = sol;
     consumedLocalOnly_ = clo;
     isLocal_ = local;
+    mecHost_ = mecHost;
 }
 
 nlohmann::ordered_json ServiceInfo::toJson() const

@@ -8,6 +8,8 @@
 //
 
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
+
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
 Define_Module(MecPlatformManager);
@@ -16,6 +18,7 @@ MecPlatformManager::MecPlatformManager()
 {
     vim = nullptr;
     serviceRegistry = nullptr;
+    mecOrchestrator = nullptr;
 }
 
 void MecPlatformManager::initialize(int stage)
@@ -23,7 +26,7 @@ void MecPlatformManager::initialize(int stage)
     EV << "VirtualisationInfrastructureManager::initialize - stage " << stage << endl;
     cSimpleModule::initialize(stage);
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage!=inet::INITSTAGE_LOCAL)
         return;
     vim = check_and_cast<VirtualisationInfrastructureManager*>(getParentModule()->getSubmodule("vim"));
     cModule* mecPlatform = getParentModule()->getSubmodule("mecPlatform");
@@ -31,6 +34,12 @@ void MecPlatformManager::initialize(int stage)
     {
         serviceRegistry = check_and_cast<ServiceRegistry*>(mecPlatform->getSubmodule("serviceRegistry"));
     }
+
+    const char * mecOrche = par("mecOrchestrator").stringValue();
+    cModule* module = getSimulation()->getModuleByPath(mecOrche);
+
+    if(module != nullptr)
+        mecOrchestrator = check_and_cast<MecOrchestrator*>(module);
 }
 
 
@@ -65,7 +74,7 @@ bool MecPlatformManager::terminateMEApp(DeleteAppMessage* msg)
     return res;
 }
 
-const MecServicesMap* MecPlatformManager::getAvailableMecServices() const
+const std::vector<ServiceInfo>* MecPlatformManager::getAvailableMecServices() const
 {
     if(serviceRegistry == nullptr)
         return nullptr;
@@ -83,6 +92,12 @@ const std::set<std::string>* MecPlatformManager::getAvailableOmnetServices() con
     {
        return serviceRegistry->getAvailableOmnetServices();
     }
+}
+
+void MecPlatformManager::registerMecService(ServiceDescriptor& serviceDescriptor) const
+{
+    if(mecOrchestrator != nullptr)
+        mecOrchestrator->registerMecService(serviceDescriptor);
 }
 
 

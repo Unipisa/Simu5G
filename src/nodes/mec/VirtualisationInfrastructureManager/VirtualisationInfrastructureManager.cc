@@ -485,46 +485,40 @@ EV << "VirtualisationInfrastructureManager::findService " << serviceName << endl
 
 bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam, int reqDisk, double reqCpu)
 {
-//    bool availableResources = false;
-//    availableResources = ((maxRam-allocatedRam-reqRam >= 0) && (maxDisk-allocatedDisk-reqDisk >= 0) && (maxCPU-allocatedCPU-reqCpu >= 0))? true : false;
-//    if(availableResources)
-//    {
-//        //storing information about ME App allocated resources
-//        resourceMap[ueAppID].ueAppID = ueAppID;
-//        resourceMap[ueAppID].ram = reqRam;
-//        resourceMap[ueAppID].disk = reqDisk;
-//        resourceMap[ueAppID].cpu = reqCpu;
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << resourceMap[ueAppID].ram <<" disk: "<< resourceMap[ueAppID].disk <<" cpu: "<< resourceMap[ueAppID].cpu << endl;
-//        allocateResources(reqRam, reqDisk, reqCpu);
-//        return true;
-//    }
-//    else{
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources NOT AVAILABLE for independent MecApp with module id " << ueAppID  << endl;
-//        return false;
-//    }
-
-    return true;
+    if(isAllocable(reqRam, reqDisk, reqRam))
+    {
+        //storing information about ME App allocated resources
+        meAppMap[ueAppID].ueAppID = ueAppID;
+        meAppMap[ueAppID].resources.ram = reqRam;
+        meAppMap[ueAppID].resources.disk = reqDisk;
+        meAppMap[ueAppID].resources.cpu = reqCpu;
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << meAppMap[ueAppID].resources.ram <<" disk: "<< meAppMap[ueAppID].resources.disk <<" cpu: "<< meAppMap[ueAppID].resources.cpu << endl;
+        allocateResources(reqRam, reqDisk, reqCpu);
+        return true;
+    }
+    else{
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources NOT AVAILABLE for independent MecApp with module id " << ueAppID  << endl;
+        return false;
+    }
 }
 
 bool VirtualisationInfrastructureManager::deRegisterMecApp(int ueAppID)
 {
-//    if(!resourceMap.empty() || resourceMap.find(ueAppID) != resourceMap.end())
-//    {
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources DEALLOCATED for MecApp with UEAppId " << ueAppID  << endl;
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << resourceMap[ueAppID].ram <<" disk: "<< resourceMap[ueAppID].disk <<" cpu: "<< resourceMap[ueAppID].cpu << endl;
-//        deallocateResources(resourceMap[ueAppID].ram, resourceMap[ueAppID].disk, resourceMap[ueAppID].cpu);
-//        //erasing map entry
-//        resourceMap.erase(ueAppID);
-//        return true;
-//    }
-//    else
-//    {
-//        EV << "VirtualisationInfrastructureManager::handleMEAppResources - NO ALLOCATION FOUND for MecApp with UEAppId id " << ueAppID  << endl;
-//        return false;
-//    }
-
-    return true;
+    if(!meAppMap.empty() || meAppMap.find(ueAppID) != meAppMap.end())
+    {
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources DEALLOCATED for MecApp with UEAppId " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << meAppMap[ueAppID].resources.ram <<" disk: "<< meAppMap[ueAppID].resources.disk <<" cpu: "<< meAppMap[ueAppID].resources.cpu << endl;
+        deallocateResources(meAppMap[ueAppID].resources.ram, meAppMap[ueAppID].resources.disk, meAppMap[ueAppID].resources.cpu);
+        //erasing map entry
+        meAppMap.erase(ueAppID);
+        return true;
+    }
+    else
+    {
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - NO ALLOCATION FOUND for MecApp with UEAppId id " << ueAppID  << endl;
+        return false;
+    }
 }
 
 double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID, int numOfInstructions)

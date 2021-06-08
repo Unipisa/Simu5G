@@ -44,6 +44,7 @@ typedef struct {
 
 
 typedef struct {
+    std::string mecHostname;
     std::string name;
     std::string version;
     std::string serialize;
@@ -57,6 +58,9 @@ typedef struct {
     std::string catId;
     std::string catName;
     std::string catVersion;
+
+    std::string scopeOfLocality;
+    bool isConsumedLocallyOnly;
 
     inet::L3Address addr;
     int port;

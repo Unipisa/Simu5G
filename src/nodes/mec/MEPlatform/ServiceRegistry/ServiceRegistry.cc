@@ -42,7 +42,11 @@ void ServiceRegistry::initialize(int stage)
     cSimpleModule::initialize(stage);
     inet::ApplicationBase::initialize(stage);
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+
+    /* since Mec Service will register at init stage INITSTAGE_APPLICATION_LAYER,
+     * be sure that the ServiceRegistry is ready
+     */
+    if (stage!=inet::INITSTAGE_APPLICATION_LAYER - 1)
         return;
 
     binder_ = getBinder();
@@ -86,9 +90,8 @@ void ServiceRegistry::initialize(int stage)
    {
        cModule* service = mePlatform->getSubmodule("omnetService", i);
        omnetServices_.insert(service->par("serviceName").stringValue());
-       EV << "QUiI " << service->par("serviceName").stringValue() << endl;
+       EV << "ServiceRegistry::initialize - omnetServiceName " << service->par("serviceName").stringValue() << endl;
    }
-
 }
 
 
@@ -189,23 +192,25 @@ void ServiceRegistry::handleGETRequest(const std::string& uri, inet::TcpSocket* 
                        }
                    }
 
-                   nlohmann::ordered_json jsonResBody;
+                nlohmann::ordered_json jsonResBody;
 
-                       for(auto sName : ser_name)
-                       {
-                           if(mecServices_.find(sName) != mecServices_.end())
-                           {
-                               jsonResBody.push_back(mecServices_.at(sName).toJson());
-                           }
-                       }
-                       Http::send200Response(socket, jsonResBody.dump().c_str());
+                for(auto sName : ser_name)
+                {
+                   for(const auto& serv : mecServices_)
+                   {
+                       if(serv.getName().compare(sName) == 0)
+                           jsonResBody.push_back(serv.toJson());
+                   }
+
+                }
+                Http::send200Response(socket, jsonResBody.dump().c_str());
                 }
 
                 else if (splittedUri.size() == 1 ){ //no query params
                     nlohmann::ordered_json jsonResBody;
                     for(auto& sName : mecServices_)
                     {
-                        jsonResBody.push_back(sName.second.toJson());
+                        jsonResBody.push_back(sName.toJson());
                     }
                 Http::send200Response(socket, jsonResBody.dump().c_str());
                }
@@ -220,9 +225,13 @@ void ServiceRegistry::handleDELETERequest(const std::string& uri, inet::TcpSocke
 
 void ServiceRegistry::registerMeService(const ServiceDescriptor& servDesc)
 {
-    if(mecServices_.find(servDesc.name) != mecServices_.end())
+
+    for(const auto& serv : mecServices_)
     {
-        throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present!", servDesc.name.c_str());
+        if(serv.getName().compare(servDesc.name) == 0 && serv.getMecHost().compare(servDesc.mecHostname) == 0)
+        {
+            throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
+        }
     }
 
     /*
@@ -234,11 +243,19 @@ void ServiceRegistry::registerMeService(const ServiceDescriptor& servDesc)
     CategoryRef catRef(servDesc.catHref, servDesc.catId, servDesc.catName, servDesc.catVersion);
 
     std::string serInstanceId = uuidBase + std::to_string(servIdCounter++);
-    ServiceInfo servInfo(serInstanceId, servDesc.name, catRef, servDesc.version, "ACTIVE" , tInfo, servDesc.serialize, "MEC_HOST", true, true);
 
-    mecServices_[servDesc.name] = servInfo;
 
-    EV << "ServiceRegistry::registerMeService - "<< servInfo.toJson().dump(2) << " added!" << endl;
+    if(meHost_)
+        int iw;
+    bool isLocal = (strcmp(meHost->getName(), servDesc.mecHostname.c_str()) == 0) ? true : false;
+
+
+
+    ServiceInfo servInfo(serInstanceId, servDesc.name, catRef, servDesc.version, "ACTIVE" , tInfo, servDesc.serialize, servDesc.mecHostname ,servDesc.scopeOfLocality , servDesc.isConsumedLocallyOnly, isLocal);
+
+    mecServices_.push_back(servInfo);
+
+    EV << "ServiceRegistry::registerMeService - "<< servInfo.toJson().dump(2) << "\nadded!" << endl;
 
 
 }
@@ -251,7 +268,7 @@ SockAddr ServiceRegistry::retrieveMeService(const std::string& MeServiceName)
 
 }
 
-const MecServicesMap* ServiceRegistry::getAvailableMecServices() const
+const std::vector<ServiceInfo>* ServiceRegistry::getAvailableMecServices() const
 {
     return &mecServices_;
 }

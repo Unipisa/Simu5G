@@ -25,9 +25,14 @@ class ServiceInfo : public AttributeBase
     public:
     ServiceInfo(){}
     ServiceInfo(const std::string& serInstanceId, const std::string& serName, const CategoryRef& serCat, const std::string& version,
-                const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& sol, bool clo, bool local);
+            const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local);
 
     nlohmann::ordered_json toJson() const;
+
+    const std::string& getName()const {return serName_;}
+    const std::string& getInstanceId() const {return serInstanceId_;}
+    const std::string& getMecHost() const {return mecHost_;}
+
 
     // getters
 
@@ -35,6 +40,7 @@ class ServiceInfo : public AttributeBase
         std::string serInstanceId_; // Identifier of the service instance assigned by the MEPM/MEC platform.
                                    // For the uniqueness UUID format is recommended.
         std::string serName_;
+        std::string mecHost_;
         CategoryRef serCategory_;
         std::string version_;
         std::string state_;

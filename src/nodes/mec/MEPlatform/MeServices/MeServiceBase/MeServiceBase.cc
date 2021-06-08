@@ -12,6 +12,7 @@
 
 #include "../MeServiceBase/MeServiceBase.h"
 #include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 
 #include "nodes/mec/MEPlatform/MeServices/Resources/SubscriptionBase.h"
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
@@ -29,6 +30,7 @@ MeServiceBase::MeServiceBase()
     binder_ = nullptr;
     meHost_ = nullptr;
     servRegistry_ = nullptr;
+    mecPlatformManager_ = nullptr;
     currentRequestMessageServed_ = nullptr;
     currentSubscriptionServed_ = nullptr;
 }
@@ -64,14 +66,15 @@ void MeServiceBase::initialize(int stage)
             throw cRuntimeError("MeServiceBase::initialize - ServiceRegistry not present!");
         servRegistry_ = check_and_cast<ServiceRegistry*>(getParentModule()->getSubmodule("serviceRegistry"));
 
+        cModule* module = meHost_->getSubmodule("mecPlatformManager");
+        if(module != nullptr)
+        {
+            EV << "MeServiceBase::initialize - MecPlatformManager found" << endl;
+            mecPlatformManager_ = check_and_cast<MecPlatformManager*>(module);
+        }
+
         // get the gnb connected to the mehost
-        // TODO add connected gnbs/enbs as a list parameter, in case the me host is no direcly connected
-        // to the enodeb
         getConnectedEnodeB();
-
-        // TODO add connected gnbs/enbs as a list parameter, in case the me host is no direcly connected
-        // to the enodeb
-
     }
     inet::ApplicationBase::initialize(stage);
 }
@@ -81,11 +84,14 @@ void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     EV << "MeServiceBase::handleStartOperation" << endl;
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
-    EV << "Local Address: " << localAddress << " port: " << localPort << endl;
+    EV << "MeServiceBase::handleStartOperation - local Address: " << localAddress << " port: " << localPort << endl;
     inet::L3Address localAdd(inet::L3AddressResolver().resolve(localAddress));
-    EV << "Local Address resolved: "<< localAdd << endl;
+    EV << "MeServiceBase::handleStartOperation - local Address resolved: "<< localAdd << endl;
+
+    EV << "MeServiceBase::handleStartOperation - registering MEC service..." << endl;
 
     ServiceDescriptor servDescriptor;
+    servDescriptor.mecHostname = meHost_->getName();
     servDescriptor.name = par("serviceName").stringValue();
     servDescriptor.version = par("serviceVersion").stringValue();
     servDescriptor.serialize = par("serviceSerialize").stringValue();
@@ -100,10 +106,23 @@ void MeServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     servDescriptor.catVersion = par("catVersion").stringValue();
 
 
+    servDescriptor.scopeOfLocality = par("scopeOfLocality").stringValue();
+    servDescriptor.isConsumedLocallyOnly = par("consumedLocalOnly").boolValue();
+
+
     servDescriptor.addr = localAdd;
     servDescriptor.port = localPort;
 
-    servRegistry_->registerMeService(servDescriptor);
+    if(mecPlatformManager_ == nullptr)
+    {
+        EV << "MeServiceBase::handleStartOperation - MEC Orchestrator not present. Register directly to the host Service Registry"<< endl;
+        servRegistry_->registerMeService(servDescriptor);
+    }
+    else
+    {
+        EV << "MeServiceBase::handleStartOperation - registering MEC service via MEC Orchestrator"<< endl;
+        mecPlatformManager_->registerMecService(servDescriptor);
+    }
 
     // e.g. 1.2.3.4:5050
     std::stringstream hostStream;
@@ -273,20 +292,23 @@ void MeServiceBase::scheduleNextEvent(bool now)
             scheduleAt(simTime() + 0 , subscriptionService_);
         else
         {
-            double time = poisson(subscriptionServiceTime_, REQUEST_RNG);
-            EV <<"time: "<< time*1e-6 << endl;
-            scheduleAt(simTime() + time*1e-6 , subscriptionService_);
+            double serviceTime = calculateSubscriptionServiceTime(); //must be >0
+            EV <<"MeServiceBase::scheduleNextEvent- subscription service time: "<< serviceTime << endl;
+            scheduleAt(simTime() + serviceTime , subscriptionService_);
         }
     }
     else if (requests_.getLength() != 0 && !requestService_->isScheduled() && !subscriptionService_->isScheduled())
     {
         currentRequestMessageServed_ = check_and_cast<HttpRequestMessage*>(requests_.pop());
-        //calculate the serviceTime base on the type | parameters
-        double serviceTime = calculateRequestServiceTime(); //must be >0
-        scheduleAt(simTime() + serviceTime , requestService_);
-       // EV << "scheduleNextEvent - Request execution started" << endl;
-        EV <<"request service time: "<< serviceTime << endl;
-
+        if(now)
+            scheduleAt(simTime() + 0 , subscriptionService_);
+        else
+        {
+            //calculate the serviceTime base on the type | parameters
+            double serviceTime = calculateRequestServiceTime(); //must be >0
+            EV <<"MeServiceBase::scheduleNextEvent- request service time: "<< serviceTime << endl;
+            scheduleAt(simTime() + serviceTime , requestService_);
+        }
     }
 }
 
@@ -364,6 +386,14 @@ double MeServiceBase::calculateRequestServiceTime()
     {
         time = poisson(requestServiceTime_, REQUEST_RNG);
     }
+    return (time*1e-6);
+}
+
+
+double MeServiceBase::calculateSubscriptionServiceTime()
+{
+    double time;
+    time = poisson(subscriptionServiceTime_, SUBSCRIPTION_RNG);
     return (time*1e-6);
 }
 
@@ -504,10 +534,6 @@ MeServiceBase::~MeServiceBase(){
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
         std::cout << serviceName_<<" Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
-        // stop periodic notification timer
-//        cMessage *msg =it->second->getNotificationTrigger();
-//        if(msg!= nullptr && msg->isScheduled())
-//            cancelAndDelete(it->second->getNotificationTrigger());
         delete it->second;
         subscriptions_.erase(it++);
     }

@@ -38,13 +38,14 @@ class CreateAppMessage extends inet::FieldsChunk {
     //instantiation informations
     string MEModuleType;			//path where to find the cModule of the MEApp to instantiate
     string MEModuleName;			//module class name of the MEApp to instantiate
+    int contextId;
     
     //identification information
     int ueAppID;
     
     //resources required
-    unsigned int requiredDisk;
-    unsigned int requiredRam;
+    double requiredDisk;
+    double requiredRam;
     double requiredCpu;
     
     //service required

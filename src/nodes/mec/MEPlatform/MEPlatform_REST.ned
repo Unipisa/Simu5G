@@ -44,8 +44,8 @@ module MEPlatform_REST
         string networkLayerType = default("IPv4NetworkLayer");
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         //# Num Services
-        int numServices = default(0);
-        int numRESTServices = default(0);
+        int numOmnetServices = default(0);
+        int numMecServices = default(0);
 
 
         @display("bgb=1122.99,610.08");
@@ -60,8 +60,7 @@ module MEPlatform_REST
 
         //# External Ethernet interfaces
 
-        int numExtEthInterfaces = default(0); //
-//        string extHostAddress = default("");
+        int numExtEthInterfaces = default(0); 
 
         //# Loopback interfaces
         int numLoInterfaces = default(1);
@@ -73,7 +72,7 @@ module MEPlatform_REST
     submodules:
 
         serviceRegistry: ServiceRegistry {
-            @display("p=60.522503,146.38;is=s");
+            @display("p=767.0875,74.5975;");
         }
 
         interfaceTable: InterfaceTable {
@@ -84,13 +83,13 @@ module MEPlatform_REST
         // routing table
 
 		//# old mec services NO REST
-        udpService[numServices]: <> like IMEService {
+        omnetService[numOmnetServices]: <> like IMEService {
             @display("p=237.25,81.9,row");
         }
 
 
 		//# app layer 
-        app[numRESTServices]: <> like IApp {
+        mecService[numMecServices]: <> like IApp {
             @display("p=551.04,73.8,row,140");
         }
 
@@ -127,7 +126,7 @@ module MEPlatform_REST
         }
 
          // ethernet interface used for communicating with interal MEC applications in the virtualization infrastructure
-        eth: <default("EthernetInterface")> like IEthernetInterface {
+        mp1Eth: <default("EthernetInterface")> like IEthernetInterface {
             parameters:
                 @display("p=739.23,521.52,row,150;q=txQueue");
         }
@@ -155,10 +154,14 @@ module MEPlatform_REST
         //# Internal Tcp/Udp applications connections with transport layer
         //#
 
-        for i=0..numRESTServices-1 {
-            app[i].socketOut --> at.in++;
-            app[i].socketIn <-- at.out++;
+        for i=0..numMecServices-1 {
+            mecService[i].socketOut --> at.in++;
+            mecService[i].socketIn <-- at.out++;
         }
+        
+        serviceRegistry.socketOut --> at.in++;
+        serviceRegistry.socketIn <-- at.out++;
+        
 
         at.out++ --> udp.appIn if hasUdp;
         at.in++ <-- udp.appOut if hasUdp;
@@ -205,8 +208,8 @@ module MEPlatform_REST
             lo[i].upperLayerOut --> nl.in++;
         }
 
-        eth.upperLayerOut --> nl.in++;
-        eth.upperLayerIn <-- nl.out++;
-        eth.phys <--> virtInfr;
+        mp1Eth.upperLayerOut --> nl.in++;
+        mp1Eth.upperLayerIn <-- nl.out++;
+        mp1Eth.phys <--> virtInfr;
 
 }

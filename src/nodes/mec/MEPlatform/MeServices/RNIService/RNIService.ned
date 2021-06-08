@@ -43,7 +43,9 @@ simple RNIService like MeServiceBase, IApp
     	string catName = default("RNI");
     	string catUri = default("");
     	string catVersion = default("v2");	
-        
+    	
+    	string scopeOfLocality = default("MEC_HOST");
+    	bool consumedLocalOnly = default(true);        
         
         @display("i=block/app");
         @signal[requestQueueSize](type = long);

@@ -13,6 +13,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
+#include "nodes/mec/MecCommon.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 #include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
 
@@ -25,10 +26,13 @@ using namespace omnetpp;
  */
 
 class ServiceRegistry;
+class MecOrchestrator;
 
 class MecPlatformManager : public cSimpleModule
 {
     protected:
+
+        MecOrchestrator* mecOrchestrator;
         VirtualisationInfrastructureManager* vim;
         ServiceRegistry* serviceRegistry;
     public:
@@ -39,17 +43,18 @@ class MecPlatformManager : public cSimpleModule
         virtual void handleMessage(cMessage*){}
         virtual void finish(){}
 
-    // instancing the requested MEApp (called by handleResource)
-    MecAppInstanceInfo instantiateMEApp(CreateAppMessage*);
-    bool instantiateEmulatedMEApp(CreateAppMessage*);
+        // instancing the requested MEApp (called by handleResource)
+        MecAppInstanceInfo instantiateMEApp(CreateAppMessage*);
+        bool instantiateEmulatedMEApp(CreateAppMessage*);
 
-    // terminating the correspondent MEApp (called by handleResource)
-    bool terminateMEApp(DeleteAppMessage*);
-    bool terminateEmulatedMEApp(DeleteAppMessage*);
+        // terminating the correspondent MEApp (called by handleResource)
+        bool terminateMEApp(DeleteAppMessage*);
+        bool terminateEmulatedMEApp(DeleteAppMessage*);
 
-    const MecServicesMap* getAvailableMecServices() const;
-    const std::set<std::string>* getAvailableOmnetServices() const;
+        const std::vector<ServiceInfo>* getAvailableMecServices() const;
+        const std::set<std::string>* getAvailableOmnetServices() const;
 
+        void registerMecService(ServiceDescriptor&) const;
 };
 
 #endif

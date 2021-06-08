@@ -26,6 +26,7 @@ package lte.nodes.mec.MECPlatformManager;
 simple MecPlatformManager
 {
     parameters:
+        string mecOrchestrator;
         @display("i=block/process");
 
 }

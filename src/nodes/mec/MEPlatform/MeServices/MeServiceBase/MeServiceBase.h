@@ -51,7 +51,9 @@ class SocketManager;
 class SubscriptionBase;
 class HttpRequestMessage;
 class ServiceRegistry;
+class MecPlatformManager;
 class EventNotification;
+
 class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
     public:
@@ -66,6 +68,8 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         std::string host_;
         LteBinder* binder_;
         omnetpp::cModule* meHost_;
+
+        MecPlatformManager* mecPlatformManager_;
         ServiceRegistry* servRegistry_;
 
         std::string baseUriQueries_;
@@ -166,6 +170,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         *
         */
         virtual double calculateRequestServiceTime();
+        virtual double calculateSubscriptionServiceTime();
 
         /*
          * Abstract methods

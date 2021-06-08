@@ -291,6 +291,13 @@ void LocationService::handlePOSTRequest(const std::string& uri,const std::string
             //correct subscription post
             if(res)
             {
+                EV << serviceName_ << " - correct subscription created!" << endl;
+                nlohmann::ordered_json response = jsonBody;
+                std::string resourceUrl = newSubscription->getResourceUrl();
+                response["circleNotificationSubscription"]["resourceURL"] = resourceUrl;
+                std::pair<std::string, std::string> p("Location: ", resourceUrl);
+                Http::send201Response(socket, response.dump(2).c_str(), p );
+
                 subscriptions_[subscriptionId_] = newSubscription;
                 //start timer
 
@@ -366,10 +373,14 @@ void LocationService::handlePUTRequest(const std::string& uri,const std::string&
 
            CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
            int id = sub->getSubscriptionId();
-           CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(id, socket , baseSubscriptionLocation_,  eNodeB_);
+           CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(id, socket , baseSubscriptionLocation_,  eNodeB_, sub->getFirstNotification(), sub->getLastoNotification());
            bool res = newSubscription->fromJson(jsonBody);
            if(res == true)
            {
+               nlohmann::ordered_json response = jsonBody;
+               std::string resourceUrl = newSubscription->getResourceUrl();
+               response["circleNotificationSubscription"]["resourceURL"] = resourceUrl;
+               Http::send200Response(socket, response.dump(2).c_str());
                delete it->second; // remove old subscription
                subscriptions_[id] = newSubscription; // replace with the new subscription
            }

@@ -12,6 +12,7 @@
 
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
+#include "nodes/mec/MecCommon.h"
 #include "nodes/binder/LteBinder.h"           //to handle Car dynamically leaving the Network
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
@@ -93,20 +94,14 @@ class MecOrchestrator : public cSimpleModule
         MecOrchestrator();
         const ApplicationDescriptor* getApplicationDescriptorByAppName(std::string& appName) const;
         const std::map<std::string, ApplicationDescriptor>* getApplicationDescriptors() const { return &mecApplicationDescriptors_;}
+        void registerMecService(ServiceDescriptor&) const;
 
     protected:
 
         virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
         void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
-        /*
-         * ----------------------------------Packet from ResourceManager handler---------------------------------
-         */
-        // receiving back from ResourceManager the start (1. resource allocated) or stop (2. resource deallocated) packets
-        // calling:
-        //          1) instantiateMEAPP() and then ackMEAppPacket() with ACK_START_MEAPP
-        //          2) terminateMEAPP() and then ackMEAppPacket() with ACK_STOP_MEAPP
-        void handleResource(cMessage*);
+
         /*
          * ------------------------------------------------------------------------------------------------------
          */

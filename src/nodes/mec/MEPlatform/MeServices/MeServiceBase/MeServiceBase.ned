@@ -41,6 +41,9 @@ moduleinterface MeServiceBase
     	string catName;
     	string catUri;
     	string catVersion;	
+    	
+    	string scopeOfLocality;
+    	bool consumedLocalOnly;
        	
 //   	servDescriptor.name = par("serviceName").str();
 //    servDescriptor.category = par("serviceCategory").str();

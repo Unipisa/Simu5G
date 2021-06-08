@@ -31,9 +31,9 @@ class ServiceRegistry: public MeServiceBase
 private:
     // key serviceName
 
-    MecServicesMap mecServices_;
+    //MecServicesMap mecServices_;
     std::set<std::string> omnetServices_;
-
+    std::vector<ServiceInfo> mecServices_;
     //LteBinder (oracle module)
     LteBinder* binder_;
 
@@ -49,7 +49,7 @@ public:
 
     void registerMeService(const ServiceDescriptor& servDesc);
     SockAddr retrieveMeService(const std::string& MeServiceName);
-    const MecServicesMap* getAvailableMecServices() const;
+    const std::vector<ServiceInfo>* getAvailableMecServices() const;
     const std::set<std::string>* getAvailableOmnetServices() const;
 
 protected:
