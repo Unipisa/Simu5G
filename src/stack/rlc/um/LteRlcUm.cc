@@ -250,6 +250,8 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
 void LteRlcUm::deleteQueues(MacNodeId nodeId)
 {
+    Enter_Method_Silent();
+
     UmTxEntities::iterator tit;
     UmRxEntities::iterator rit;
 

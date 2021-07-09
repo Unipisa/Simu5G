@@ -199,6 +199,8 @@ bool LteMacEnb::getPfTmsAwareFlag(Direction dir)
 
 void LteMacEnb::deleteQueues(MacNodeId nodeId)
 {
+    Enter_Method_Silent();
+
     LteMacBase::deleteQueues(nodeId);
 
     LteMacBufferMap::iterator bit;

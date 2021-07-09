@@ -1171,6 +1171,8 @@ void LteMacUe::doHandover(MacNodeId targetEnb)
 
 void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
+    Enter_Method_Silent();
+
     LteMacBuffers::iterator mit;
     LteMacBufferMap::iterator vit;
     for (mit = mbuf_.begin(); mit != mbuf_.end(); )

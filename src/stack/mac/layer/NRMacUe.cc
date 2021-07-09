@@ -317,7 +317,6 @@ void NRMacUe::macPduMake(MacCid cid)
                     // Call the appropriate function for make a BSR for a D2D communication
                     Packet* macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    double carrierFreq = git->second->getTag<UserControlInfo>()->getCarrierFrequency();
                     if (info != NULL)
                     {
                         info->setCarrierFrequency(carrierFreq);
