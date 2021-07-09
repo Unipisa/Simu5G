@@ -273,8 +273,6 @@ void VirtualisationManager::downstreamToUEApp(inet::Packet* packet){
 
             stopPacket->insertAtBack(spkt);
             stopMEApp(stopPacket);
-
-            delete(packet);
         }
         else
         {
@@ -282,7 +280,8 @@ void VirtualisationManager::downstreamToUEApp(inet::Packet* packet){
             socket.sendTo(packet, destAddress_, destPort_);
         }
     }
-    else EV << "VirtualisationeManager::downstreamToUEApp - \tWARNING forwarding to "<< destSimbolicAddr << ": meAppMap["<< key <<"] not found!" << endl;
+    else
+        EV << "VirtualisationeManager::downstreamToUEApp - \tWARNING forwarding to "<< destSimbolicAddr << ": meAppMap["<< key <<"] not found!" << endl;
 }
 
 void VirtualisationManager::stopMEApp(inet::Packet* packet){
@@ -492,7 +491,6 @@ void VirtualisationManager::ackMEAppPacket(inet::Packet* packet, const char* typ
         if(destId == 0)
         {
             EV << "VirtualisationManager::ackMEAppPacket - \tWARNING " << destSymbolicAddr << "has left the network!" << endl;
-            //throw cRuntimeError("VirtualisationManager::ackMEAppPacket - \tFATAL! Error destination has left the network!");
         }
         else
         {
@@ -506,13 +504,12 @@ void VirtualisationManager::ackMEAppPacket(inet::Packet* packet, const char* typ
             ack->setChunkLength(inet::B(pkt->getChunkLength()));
             ack->setSourceAddress(pkt->getDestinationAddress());
             ack->setDestinationAddress(destSymbolicAddr);
-            ackPacket->insertAtBack(ack);
+            ackPacket->insertAtFront(ack);
             socket.sendTo(ackPacket, destAddress_, destPort_);
         }
     }
-    else EV << "VirtualisationManager::ackMEAppPacket - \tWARNING in sending ack " << type <<" to "<< destSymbolicAddr << ": ueAppIdToMeAppMapKey["<< ueAppID <<"] not found!" << endl;
-
-    delete(packet);
+    else
+        EV << "VirtualisationManager::ackMEAppPacket - \tWARNING in sending ack " << type <<" to "<< destSymbolicAddr << ": ueAppIdToMeAppMapKey["<< ueAppID <<"] not found!" << endl;
 }
 /*
  * ######################################################################################################

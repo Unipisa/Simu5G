@@ -42,6 +42,7 @@ void MEWarningAlertApp::handleMessage(omnetpp::cMessage *msg)
 {
     EV << "MEWarningAlertApp::handleMessage - \n";
 
+
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = packet->peekAtFront<MEAppPacket>();
 
@@ -53,18 +54,10 @@ void MEWarningAlertApp::handleMessage(omnetpp::cMessage *msg)
     else if(!strcmp(pkt->getType(), INFO_MEAPP))    handleInfoMEWarningAlertApp(msg);
 }
 
-void MEWarningAlertApp::finish(){
-
-    EV << "MEWarningAlertApp::finish - Sending " << STOP_MEAPP << " to the MEIceAlertService" << endl;
-
-    if(gate("mePlatformOut")->isConnected()){
-
-        WarningAlertPacket* packet = new WarningAlertPacket();
-        packet->setType(STOP_MEAPP);
-
-        send((cMessage*)packet, "mePlatformOut");
-    }
+void MEWarningAlertApp::finish()
+{
 }
+
 void MEWarningAlertApp::handleInfoUEWarningAlertApp(cMessage* msg){
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
@@ -74,7 +67,6 @@ void MEWarningAlertApp::handleInfoUEWarningAlertApp(cMessage* msg){
 
     EV << "MEWarningAlertApp::handleInfoUEWarningAlertApp - Received: " << pkt->getType() << " type WarningAlertPacket from " << pkt->getSourceAddress() << ": delay: "<< delay << endl;
 
-    EV << "MEWarningAlertApp::handleInfoUEWarningAlertApp - Upstream " << pkt->getType() << " type WarningAlertPacket to MEIceAlertService \n";
     send(packet, "mePlatformOut");
 
     //testing

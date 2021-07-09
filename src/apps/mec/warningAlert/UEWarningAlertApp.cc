@@ -134,7 +134,6 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
     auto alert = inet::makeShared<WarningAlertPacket>();
 
     //instantiation requirements and info
-    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setType(START_MEAPP);
     alert->setMEModuleType("simu5g.apps.mec.warningAlert.MEWarningAlertApp");
     alert->setMEModuleName("MEWarningAlertApp");
@@ -153,6 +152,7 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
     //other info
     alert->setUeOmnetID(ue->getId());
     alert->setChunkLength(inet::B(size_));
+    alert->addTag<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(alert);
     socket.sendTo(packet, destAddress_, destPort_);
@@ -162,7 +162,7 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
 }
 void UEWarningAlertApp::sendInfoUEWarningAlertApp()
 {
-    EV << "UEWarningAlertApp::sendInfoUEInceAlertApp - Sending " << INFO_UEAPP <<" type WarningAlertPacket\n";
+    EV << "UEWarningAlertApp::sendInfoUEWarningAlertApp - Sending " << INFO_UEAPP <<" type WarningAlertPacket\n";
 
     position = mobility->getCurrentPosition();
 
@@ -170,7 +170,6 @@ void UEWarningAlertApp::sendInfoUEWarningAlertApp()
     auto alert = inet::makeShared<WarningAlertPacket>();
 
     //forwarding requirements and info
-    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setType(INFO_UEAPP);
     alert->setMEModuleName("MEWarningAlertApp");
     alert->setRequiredService("MEWarningAlertService");
@@ -185,6 +184,7 @@ void UEWarningAlertApp::sendInfoUEWarningAlertApp()
     //other info
     alert->setUeOmnetID(ue->getId());
     alert->setChunkLength(inet::B(size_));
+    alert->addTag<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     //INFO_UEAPP info
     alert->setPositionX(position.x);
@@ -205,7 +205,6 @@ void UEWarningAlertApp::sendStopMEWarningAlertApp()
     auto alert = inet::makeShared<WarningAlertPacket>();
 
     //termination requirements and info
-    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setType(STOP_MEAPP);
     alert->setMEModuleType("simu5g.apps.mec.warningAlert.MEWarningrAlertApp");
     alert->setMEModuleName("MEWarningAlertApp");
@@ -224,7 +223,9 @@ void UEWarningAlertApp::sendStopMEWarningAlertApp()
     //other info
     alert->setUeOmnetID(ue->getId());
     alert->setChunkLength(inet::B(size_));
+    alert->addTag<inet::CreationTimeTag>()->setCreationTime(simTime());
 
+    packet->insertAtBack(alert);
     socket.sendTo(packet, destAddress_, destPort_);
 
     // stopping the info updating
@@ -243,7 +244,7 @@ void UEWarningAlertApp::sendStopMEWarningAlertApp()
 void UEWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto pkt = packet->peekAtFront<WarningAlertPacket>();
+    auto pkt = packet->peekAtFront<MEAppPacket>();
 
     EV << "UEWarningAlertApp::handleAckStartMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket from: "<< pkt->getSourceAddress() << endl;
 
@@ -273,19 +274,19 @@ void UEWarningAlertApp::handleInfoMEWarningAlertApp(cMessage* msg)
     //updating runtime color of the car icon background
     if(pkt->getDanger()){
 
-        EV << "UEWarningAlertApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: DANGER!" << endl;
+        EV << "UEWarningAlertApp::handleInfoMEWarningAlertApp - Warning Alert Detected: DANGER!" << endl;
         ue->getDisplayString().setTagArg("i",1, "red");
     }
     else{
 
-        EV << "UEWarningAlertApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: NO DANGER!" << endl;
+        EV << "UEWarningAlertApp::handleInfoMEWarningAlertApp - Warning Alert Detected: NO DANGER!" << endl;
         ue->getDisplayString().setTagArg("i",1, "green");
     }
 }
 void UEWarningAlertApp::handleAckStopMEWarningAlertApp(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto pkt = packet->peekAtFront<WarningAlertPacket>();
+    auto pkt = packet->peekAtFront<MEAppPacket>();
 
     EV << "UEWarningAlertApp::handleAckStopMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket from: "<< pkt->getSourceAddress() << endl;
 
