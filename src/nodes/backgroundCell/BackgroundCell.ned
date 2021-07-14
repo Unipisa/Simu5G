@@ -38,8 +38,8 @@ module BackgroundCell
             @display("p=100,105;is=s");
         }
 
-        // perform the operations of the BackgroundCell
-        bgBaseStation: BackgroundBaseStation {
+        // perform the scheduling for the BackgroundCell
+        bgScheduler: BackgroundScheduler {
             @display("p=222,38,row");
         }
 
@@ -51,11 +51,11 @@ module BackgroundCell
 }
 
 
-simple BackgroundBaseStation
+simple BackgroundScheduler
 {
     parameters:
         @display("i=block/control");
-        @class("BackgroundBaseStation");
+        @class("BackgroundScheduler");
 
         // transmission power
         double txPower = default(46);

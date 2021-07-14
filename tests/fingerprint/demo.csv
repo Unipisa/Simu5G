@@ -8,7 +8,7 @@
 /simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              5f37-41be/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              1139-f0d8/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c CBR-UL -r 0,            5s,              7e29-bdd8/tplx, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,            5s,              b62f-942b/tplx, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,            5s,              f55d-1c65/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,            5s,              7f67-692e/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,            5s,              638c-f0c6/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c MixedTraffic -r 0,      5s,              f7b6-67a7/tplx, PASS,

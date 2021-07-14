@@ -60,7 +60,7 @@ void LteMacUeD2D::initialize(int stage)
 
         if (cellId_ > 0)
         {
-//            preconfiguredTxParams_ = getPreconfiguredTxParams();
+            preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
             enb_ = check_and_cast<LteMacEnbD2D*>(getMacByMacNodeId(cellId_));

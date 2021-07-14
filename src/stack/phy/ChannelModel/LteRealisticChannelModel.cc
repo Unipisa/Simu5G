@@ -18,7 +18,7 @@
 #include "stack/mac/amc/UserTxParams.h"
 #include "common/LteCommon.h"
 #include "nodes/ExtCell.h"
-#include "nodes/backgroundCell/BackgroundBaseStation.h"
+#include "nodes/backgroundCell/BackgroundScheduler.h"
 #include "stack/phy/layer/LtePhyUe.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
@@ -2374,9 +2374,9 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 {
    EV << "**** Background Cell Interference **** " << endl;
 
-   // get external cell list
-   BackgroundBaseStationList* list = binder_->getBackgroundBaseStationList(carrierFrequency);
-   BackgroundBaseStationList::iterator it = list->begin();
+   // get bg schedulers list
+   BackgroundSchedulerList* list = binder_->getBackgroundSchedulerList(carrierFrequency);
+   BackgroundSchedulerList::iterator it = list->begin();
 
    Coord c;
    double dist, // meters

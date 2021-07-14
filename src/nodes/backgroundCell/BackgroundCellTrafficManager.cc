@@ -10,7 +10,7 @@
 //
 
 #include "nodes/backgroundCell/BackgroundCellTrafficManager.h"
-#include "nodes/backgroundCell/BackgroundBaseStation.h"
+#include "nodes/backgroundCell/BackgroundScheduler.h"
 #include "nodes/backgroundCell/BackgroundCellAmc.h"
 #include "nodes/backgroundCell/BackgroundCellAmcNr.h"
 #include "stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
@@ -67,9 +67,9 @@ void BackgroundCellTrafficManager::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
-        bgBaseStation_ = check_and_cast<BackgroundBaseStation*>(getParentModule()->getParentModule()->getSubmodule("bgBaseStation"));
+        bgScheduler_ = check_and_cast<BackgroundScheduler*>(getParentModule()->getParentModule()->getSubmodule("bgScheduler"));
 
-        if (bgBaseStation_->isNr())
+        if (bgScheduler_->isNr())
             bgAmc_ = new BackgroundCellAmcNr();
         else
             bgAmc_ = new BackgroundCellAmc();
@@ -78,8 +78,8 @@ void BackgroundCellTrafficManager::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
-        bsTxPower_ = bgBaseStation_->getTxPower();
-        bsCoord_ = bgBaseStation_->getPosition();
+        bsTxPower_ = bgScheduler_->getTxPower();
+        bsCoord_ = bgScheduler_->getPosition();
 
         // create vector of BackgroundUEs
         for (int i=0; i < numBgUEs_; i++)
@@ -108,17 +108,17 @@ void BackgroundCellTrafficManager::initialize(int stage)
 
 unsigned int BackgroundCellTrafficManager::getNumBands()
 {
-    return bgBaseStation_->getNumBands();
+    return bgScheduler_->getNumBands();
 }
 
 
 Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    BackgroundCellChannelModel* bgChannelModel = bgBaseStation_->getChannelModel();
+    BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
     TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
 
     MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
-    std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgBaseStation_, dir);
+    std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgScheduler_, dir);
 
     // convert the SNR to CQI and compute the mean
     double meanSinr = 0;
@@ -171,7 +171,7 @@ void BackgroundCellTrafficManager::racHandled(MacNodeId bgUeId)
         ActiveUeNotification* notification = new ActiveUeNotification("activeUeNotification");
         notification->setIndex(index);
 
-        double offset = bgBaseStation_->getTtiPeriod() * 6;  // TODO make it configurable
+        double offset = bgScheduler_->getTtiPeriod() * 6;  // TODO make it configurable
                                                              //      there are 6 slots between the first BSR and actual data
         scheduleAt(NOW + offset, notification);
     }
@@ -179,6 +179,6 @@ void BackgroundCellTrafficManager::racHandled(MacNodeId bgUeId)
 
 double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
 {
-    BackgroundCellChannelModel* bgChannelModel = bgBaseStation_->getChannelModel();
-    return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgBaseStation_);
+    BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
+    return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgScheduler_);
 }

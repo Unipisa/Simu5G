@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __BACKGROUNDBASESTATION_H_
-#define __BACKGROUNDBASESTATION_H_
+#ifndef __BACKGROUNDSCHEDULER_H_
+#define __BACKGROUNDSCHEDULER_H_
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
@@ -22,7 +22,7 @@
 typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
 typedef std::priority_queue<ScoreDesc> ScoreList;
 
-class BackgroundBaseStation : public omnetpp::cSimpleModule, public cListener
+class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
 {
     // base station coordinates
     inet::Coord pos_;

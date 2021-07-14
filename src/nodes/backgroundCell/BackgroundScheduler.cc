@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/backgroundCell/BackgroundBaseStation.h"
+#include "nodes/backgroundCell/BackgroundScheduler.h"
 
-Define_Module(BackgroundBaseStation);
+Define_Module(BackgroundScheduler);
 
-void BackgroundBaseStation::initialize(int stage)
+void BackgroundScheduler::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL)
@@ -47,7 +47,7 @@ void BackgroundBaseStation::initialize(int stage)
         ulPrevBandAllocation_.resize(numBands_, 0);
         ulBandAllocation_.resize(numBands_, 0);
 
-        // TODO: if BackgroundBaseStation-interference is disabled, do not send selfMessages
+        // TODO: if BackgroundScheduler-interference is disabled, do not send selfMessages
         /* Start TTI tick */
         ttiTick_ = new omnetpp::cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
@@ -66,7 +66,7 @@ void BackgroundBaseStation::initialize(int stage)
          binder_ = getBinder();
 
          // add this cell to the binder
-         id_ = binder_->addBackgroundBaseStation(this, carrierFrequency_);
+         id_ = binder_->addBackgroundScheduler(this, carrierFrequency_);
 
          bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
          bgTrafficManager_->setCarrierFrequency(carrierFrequency_);
@@ -76,7 +76,7 @@ void BackgroundBaseStation::initialize(int stage)
     }
 }
 
-void BackgroundBaseStation::handleMessage(omnetpp::cMessage *msg)
+void BackgroundScheduler::handleMessage(omnetpp::cMessage *msg)
 {
     if (msg->isSelfMessage())
     {
@@ -88,7 +88,7 @@ void BackgroundBaseStation::handleMessage(omnetpp::cMessage *msg)
     }
 }
 
-void BackgroundBaseStation::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
+void BackgroundScheduler::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal)
     {
@@ -102,7 +102,7 @@ void BackgroundBaseStation::receiveSignal(cComponent *source, simsignal_t signal
     }
 }
 
-void BackgroundBaseStation::updateAllocation(Direction dir)
+void BackgroundScheduler::updateAllocation(Direction dir)
 {
     EV << "----- BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
 
@@ -128,14 +128,14 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             if (b >= numBands_)
             {
                 // space terminated
-                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+                EV << "BackgroundScheduler::updateAllocation - space ended" << endl;
                 break;
             }
 
             bgUeIndex = *rit;
             bgUeId = BGUE_MIN_ID + bgUeIndex;
 
-            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
+            EV << NOW << " BackgroundScheduler::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
 
             // allocate one block
             bandStatus_[dir][b] = 1;
@@ -146,7 +146,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
 
             if (b >= numBands_)
             {
-                EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+                EV << "BackgroundScheduler::updateAllocation - space ended" << endl;
                 EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
                 return;
             }
@@ -170,7 +170,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
         if (b >= numBands_)
         {
             // space terminated
-            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            EV << "BackgroundScheduler::updateAllocation - space ended" << endl;
             break;
         }
 
@@ -188,7 +188,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             if (dir == UL)
                 ulBandAllocation_[b] = bgUeId;
 
-            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "] for rtx" << endl;
+            EV << NOW << " BackgroundScheduler::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "] for rtx" << endl;
 
             blocks--;
             b++;
@@ -219,7 +219,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
         if (b >= numBands_)
         {
             // space terminated
-            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            EV << "BackgroundScheduler::updateAllocation - space ended" << endl;
             break;
         }
 
@@ -248,7 +248,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
         if (b >= numBands_)
         {
             // space terminated
-            EV << "BackgroundBaseStation::updateAllocation - space ended" << endl;
+            EV << "BackgroundScheduler::updateAllocation - space ended" << endl;
             break;
         }
 
@@ -266,7 +266,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
             if (dir == UL)
                 ulBandAllocation_[b] = bgUeId;
 
-            EV << NOW << " BackgroundBaseStation::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
+            EV << NOW << " BackgroundScheduler::updateAllocation - dir[" << dirToA(dir) << "] band[" << b << "] - allocated to ue[" << bgUeId << "]" << endl;
 
             blocks--;
             b++;
@@ -289,7 +289,7 @@ void BackgroundBaseStation::updateAllocation(Direction dir)
     EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
 }
 
-void BackgroundBaseStation::resetAllocation(Direction dir)
+void BackgroundScheduler::resetAllocation(Direction dir)
 {
     for (unsigned int i=0; i < numBands_; i++)
     {
@@ -304,13 +304,13 @@ void BackgroundBaseStation::resetAllocation(Direction dir)
 
 }
 
-TrafficGeneratorBase* BackgroundBaseStation::getBandInterferingUe(int band)
+TrafficGeneratorBase* BackgroundScheduler::getBandInterferingUe(int band)
 {
     MacNodeId bgUeId = ulBandAllocation_[band];
     return bgTrafficManager_->getTrafficGenerator(bgUeId);
 }
 
-TrafficGeneratorBase* BackgroundBaseStation::getPrevBandInterferingUe(int band)
+TrafficGeneratorBase* BackgroundScheduler::getPrevBandInterferingUe(int band)
 {
     MacNodeId bgUeId = ulPrevBandAllocation_[band];
     return bgTrafficManager_->getTrafficGenerator(bgUeId);

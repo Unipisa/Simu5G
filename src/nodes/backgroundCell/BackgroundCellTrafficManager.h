@@ -29,8 +29,8 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManager
 {
   protected:
 
-    // reference to background base station
-    BackgroundBaseStation* bgBaseStation_;
+    // reference to background scheduler
+    BackgroundScheduler* bgScheduler_;
 
     // reference to class AMC for this cell
     BackgroundCellAmc* bgAmc_;

@@ -10,7 +10,7 @@
 //
 
 #include "nodes/backgroundCell/BackgroundCellChannelModel.h"
-#include "nodes/backgroundCell/BackgroundBaseStation.h"
+#include "nodes/backgroundCell/BackgroundScheduler.h"
 #include "stack/phy/layer/LtePhyBase.h"
 #include "stack/phy/layer/LtePhyUe.h"
 #include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
@@ -68,14 +68,14 @@ void BackgroundCellChannelModel::initialize(int stage)
 
 }
 
-std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase* bgUe, BackgroundBaseStation* bgBaseStation, Direction dir)
+std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase* bgUe, BackgroundScheduler* bgScheduler, Direction dir)
 {
-    unsigned int numBands = bgBaseStation->getNumBands();
-    inet::Coord bgBsPos = bgBaseStation->getPosition();
-    int bgBsId = bgBaseStation->getId();
+    unsigned int numBands = bgScheduler->getNumBands();
+    inet::Coord bgBsPos = bgScheduler->getPosition();
+    int bgBsId = bgScheduler->getId();
 
     //get tx power
-    double recvPower = (dir == DL) ? bgBaseStation->getTxPower() : bgUe->getTxPwr(); // dBm
+    double recvPower = (dir == DL) ? bgScheduler->getTxPower() : bgUe->getTxPwr(); // dBm
 
     double antennaGainTx = 0.0;
     double antennaGainRx = 0.0;
@@ -112,11 +112,11 @@ std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::
 //    std::cout << "BackgroundCellChannelModel::getSinr - attenuation " << attenuation << " antennaGainTx-Rx " << antennaGainTx << " " << antennaGainRx << " cableLoss " << cableLoss_ << endl;
 
     //=============== ANGOLAR ATTENUATION =================
-    if (dir == DL && bgBaseStation->getTxDirection() == ANISOTROPIC)
+    if (dir == DL && bgScheduler->getTxDirection() == ANISOTROPIC)
     {
 
         // get tx angle
-        double txAngle = bgBaseStation->getTxAngle();
+        double txAngle = bgScheduler->getTxAngle();
 
         // compute the angle between uePosition and reference axis, considering the Bs as center
         double ueAngle = computeAngle(bgBsPos, bgUePos);
@@ -823,7 +823,7 @@ double BackgroundCellChannelModel::jakesFading(MacNodeId nodeId, double speed, u
 }
 
 
-double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundBaseStation* bgBaseStation)
+double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundScheduler* bgScheduler)
 {
     double antennaGainTx = 0.0;
     double antennaGainRx = 0.0;
@@ -869,10 +869,10 @@ double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::C
     recvPower -= cableLoss_; // (dBm-dB)=dBm
 
     //=============== ANGOLAR ATTENUATION =================
-    if (dir == DL && bgBaseStation->getTxDirection() == ANISOTROPIC)
+    if (dir == DL && bgScheduler->getTxDirection() == ANISOTROPIC)
     {
         // get tx angle
-        double txAngle = bgBaseStation->getTxAngle();
+        double txAngle = bgScheduler->getTxAngle();
 
         // compute the angle between uePosition and reference axis, considering the Bs as center
         double ueAngle = computeAngle(txPos, rxPos);
@@ -1066,8 +1066,8 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
    EV << "**** Background Cell Interference **** " << endl;
 
    // get external cell list
-   BackgroundBaseStationList* list = binder_->getBackgroundBaseStationList(carrierFrequency);
-   BackgroundBaseStationList::iterator it = list->begin();
+   BackgroundSchedulerList* list = binder_->getBackgroundSchedulerList(carrierFrequency);
+   BackgroundSchedulerList::iterator it = list->begin();
 
    Coord c;
    double dist, // meters

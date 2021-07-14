@@ -45,7 +45,7 @@ class Binder : public omnetpp::cSimpleModule
     std::map<double, ExtCellList> extCellList_;
 
     // list of static external cells. Used for intercell interference evaluation
-    std::map<double, BackgroundBaseStationList> bgBaseStationList_;
+    std::map<double, BackgroundSchedulerList> bgSchedulerList_;
 
     // list of all eNBs. Used for inter-cell interference evaluation
     std::vector<EnbInfo*> enbList_;
@@ -435,18 +435,18 @@ class Binder : public omnetpp::cSimpleModule
         return extCellList_[carrierFrequency];
     }
 
-    int addBackgroundBaseStation(BackgroundBaseStation* bgBaseStation, double carrierFrequency)
+    int addBackgroundScheduler(BackgroundScheduler* bgScheduler, double carrierFrequency)
     {
-        if (bgBaseStationList_.find(carrierFrequency) == bgBaseStationList_.end())
-            bgBaseStationList_[carrierFrequency] = BackgroundBaseStationList();
+        if (bgSchedulerList_.find(carrierFrequency) == bgSchedulerList_.end())
+            bgSchedulerList_[carrierFrequency] = BackgroundSchedulerList();
 
-        bgBaseStationList_[carrierFrequency].push_back(bgBaseStation);
-        return bgBaseStationList_[carrierFrequency].size() - 1;
+        bgSchedulerList_[carrierFrequency].push_back(bgScheduler);
+        return bgSchedulerList_[carrierFrequency].size() - 1;
     }
 
-    BackgroundBaseStationList* getBackgroundBaseStationList(double carrierFrequency)
+    BackgroundSchedulerList* getBackgroundSchedulerList(double carrierFrequency)
     {
-        return &bgBaseStationList_[carrierFrequency];
+        return &bgSchedulerList_[carrierFrequency];
     }
 
     void addEnbInfo(EnbInfo* info)
