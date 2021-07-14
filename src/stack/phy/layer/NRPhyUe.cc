@@ -182,7 +182,10 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
         if (lteInfo->getDirection() == DL)
+        {
             emit(averageCqiDl_, cqi);
+            recordCqi(cqi, DL);
+        }
     }
     // apply decider to received packet
     bool result = true;

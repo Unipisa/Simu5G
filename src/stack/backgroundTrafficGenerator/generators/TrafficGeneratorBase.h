@@ -62,6 +62,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // retransmission delay
     double rtxDelay_[2];
 
+    // loss probability
+    double lossRate_[2];
+
     // message for scheduling CQI reporting
     cMessage* fbSource_;
 
@@ -83,6 +86,10 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
     bool useRandomCqi_;
     double cqiMeanDl_;
+    double cqiStddevDl_;
+    double cqiMeanUl_;
+    double cqiStddevUl_;
+
     // current CQI based on the last position update
     Cqi cqi_[2];
 

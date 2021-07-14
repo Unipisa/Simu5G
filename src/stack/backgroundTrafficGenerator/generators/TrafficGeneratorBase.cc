@@ -67,6 +67,11 @@ void TrafficGeneratorBase::initialize(int stage)
             scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
         }
 
+        cqiMeanDl_ = par("cqiMeanDl");
+        cqiStddevDl_ = par("cqiStddevDl");
+        cqiMeanUl_ = par("cqiMeanUl");
+        cqiStddevUl_ = par("cqiStddevUl");
+
         enablePeriodicCqiUpdate_ = getAncestorPar("enablePeriodicCqiUpdate");
         useRandomCqi_ = getAncestorPar("useRandomCqi");
         computeAvgInterference_ = getAncestorPar("computeAvgInterference");
@@ -176,12 +181,13 @@ void TrafficGeneratorBase::updateMeasurements()
         if (trafficEnabled_[DL])
         {
             double cqiDl = normal(cqiMeanDl_, cqiStddevDl_);
+
             if (cqiDl > 15)
                 cqi_[DL] = 15;
             else if (cqiDl < 2)
                 cqi_[DL] = 2;
             else
-                cqi_[DL] = floor(cqiDl);
+                cqi_[DL] = floor(cqiDl+0.5);
         }
 
         if (trafficEnabled_[UL])
@@ -192,7 +198,7 @@ void TrafficGeneratorBase::updateMeasurements()
             else if (cqiUl < 2)
                 cqi_[UL] = 2;
             else
-                cqi_[UL] = floor(cqiUl);
+                cqi_[UL] = floor(cqiUl+0.5);
         }
     }
     else

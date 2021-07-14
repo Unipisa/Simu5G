@@ -14,6 +14,7 @@
 #include <cctype>
 #include <algorithm>
 #include "stack/mac/layer/LteMacUe.h"
+#include "stack/phy/layer/LtePhyUe.h"
 
 using namespace std;
 using namespace inet;
@@ -261,13 +262,24 @@ void Binder::initialize(int stage)
 
 void Binder::finish()
 {
-    if (par("printHarqErrorRate"))
+    if (par("printTrafficGeneratorConfig"))
     {
+        // build filename
+        std::stringstream outputFilenameStr;
+        outputFilenameStr << "trafficGeneratorConfigs/config";
+        cConfigurationEx* configEx = getEnvir()->getConfigEx();
+        outputFilenameStr << "-u=" << configEx->getVariable("u");
+        outputFilenameStr << "-rbs=" << configEx->getVariable("rbs");
+        outputFilenameStr << "-numBgCells=" << configEx->getVariable("numBgCells");
+        outputFilenameStr << "-numBkUEs=" << configEx->getVariable("numBkUEs");
+        outputFilenameStr << "-dist=" << configEx->getVariable("dist");
+        outputFilenameStr << "-repetition=" << configEx->getVariable("repetition") << ".ini";
+        std::string outputFilename = outputFilenameStr.str();
+
         // open output file
-        std::ofstream out("rtxRate.ini");
+        std::ofstream out(outputFilename);
 
-        std::string harqStr;
-
+        std::string toPrint;
         std::vector<UeInfo*>::iterator it = ueList_.begin(), et = ueList_.end();
         for ( ; it != et; ++it)
         {
@@ -289,14 +301,24 @@ void Binder::finish()
             double harqErrorRateDl = macUe->getHarqErrorRate(DL);
             double harqErrorRateUl = macUe->getHarqErrorRate(UL);
 
+            // get average CQI
+            LtePhyUe* phyUe = check_and_cast<LtePhyUe*>(info->phy);
+            double cqiDl = phyUe->getAverageCqi(DL);
+            double cqiUl = phyUe->getAverageCqi(UL);
+            double cqiVarianceDl = phyUe->getVarianceCqi(DL);
+            double cqiVarianceUl = phyUe->getVarianceCqi(UL);
 
             if (info->cellId == 1)
             {
                 // the UE belongs to the central cell
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiMeanDl = " << cqiDl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiStddevDl = " << sqrt(cqiVarianceDl) << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiMeanUl = " << cqiUl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
 
-                harqStr = ss.str();
+                toPrint = ss.str();
                 ss.clear();
             }
             else
@@ -306,12 +328,16 @@ void Binder::finish()
                 // the UE belongs to a background cell
                 ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
                 ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiMeanDl = " << cqiDl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiStddevDl = " << sqrt(cqiVarianceDl) << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiMeanUl = " << cqiUl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
 
-                harqStr = ss.str();
+                toPrint = ss.str();
                 ss.clear();
             }
 
-            out << harqStr;
+            out << toPrint;
         }
 
         out.close();
@@ -842,7 +868,7 @@ void Binder::computeAverageCqiForBackgroundUes()
                 double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
                 double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
 
-                EV << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] sinrDl[" << sinrDl << "] load[" << ueLoadDl << "] rbsDl[" << ueRbsDl << "]" << endl;
+//                std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] sinrUl[" << sinrUl << "] load[" << ueLoadUl << "] rbsUl[" << ueRbsUl << "]" << endl;
 
                 if(ueRbsDl<0 || ueRbsUl<0)
                 {
@@ -883,6 +909,9 @@ void Binder::computeAverageCqiForBackgroundUes()
                 for (unsigned int i=0; i < info->allocatedRbsUeUl.size(); i++)
                     info->allocatedRbsUeUl[i] *= scaleFactor;
             }
+
+//            std::cout << "BgTrafficManager " << bgTrafficManagerId << ": allocatedRbsDl[" << info->allocatedRbsDl << "] - allocatedRbsUl[" << info->allocatedRbsUl << "]" << endl;
+
         }
 
         EV << "* END ITERATION " << countInterferenceCheck << endl;
@@ -917,7 +946,6 @@ void Binder::computeAverageCqiForBackgroundUes()
 //    }
 
     EV << " ===== Binder::computeAverageCqiForBackgroundUes - END =====" << endl;
-
 }
 
 void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands, Direction dir)

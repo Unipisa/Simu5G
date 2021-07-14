@@ -43,6 +43,13 @@ simple TrafficGeneratorBase like ITrafficGenerator
         double rtxDelayDl @unit("s")= default(0.006s);
         double rtxRateUl = default(0.1);
         double rtxDelayUl @unit("s")= default(0.006s);
+              
+        // these values are only considered when
+        // - periodicCqi == false && computeAvgInterference == false 
+        double cqiMeanDl = default(15);
+        double cqiMeanUl = default(15);
+        double cqiStddevDl = default(0);
+        double cqiStddevUl = default(0);  
         
         // statistics 
         @signal[bgMeasuredSinrDl];

@@ -157,11 +157,11 @@ class LteMacBase : public omnetpp::cSimpleModule
     uint64_t nrToUpper_;
     uint64_t nrToLower_;
 
-
-    unsigned int harqErrorRateDlSum_;
-    unsigned int harqErrorRateUlSum_;
-    unsigned int harqErrorRateDlCount_;
-    unsigned int harqErrorRateUlCount_;
+    // support to print harqErrorRate at the end of the simulation
+    unsigned int totalHarqErrorRateDlSum_;
+    unsigned int totalHarqErrorRateUlSum_;
+    unsigned int totalHarqErrorRateDlCount_;
+    unsigned int totalHarqErrorRateUlCount_;
 
   public:
 
@@ -307,36 +307,8 @@ class LteMacBase : public omnetpp::cSimpleModule
     // visualization
     void refreshDisplay() const override;
 
-
-    void recordHarqErrorRate(unsigned int sample, Direction dir)
-    {
-        if (dir == DL)
-        {
-            harqErrorRateDlSum_ += sample;
-            harqErrorRateDlCount_++;
-        }
-        if (dir == UL)
-        {
-            harqErrorRateUlSum_ += sample;
-            harqErrorRateUlCount_++;
-        }
-    }
-
-    double getHarqErrorRate(Direction dir)
-    {
-        if (dir == DL)
-        {
-            if (harqErrorRateDlCount_ == 0)
-                return 0;
-            return (double)harqErrorRateDlSum_/harqErrorRateDlCount_;
-        }
-        if (dir == UL)
-        {
-            if (harqErrorRateUlCount_ == 0)
-                return 0;
-            return (double)harqErrorRateUlSum_/harqErrorRateUlCount_;
-        }
-    }
+    void recordHarqErrorRate(unsigned int sample, Direction dir);
+    double getHarqErrorRate(Direction dir);
 
   protected:
 
