@@ -23,9 +23,9 @@ sub startTraffic
     connect( SOCKET, pack_sockaddr_in($port, inet_aton($server)))
     or die "Can't connect to port $port! \n";
      
-    print SOCKET 1000;  
+    print SOCKET 1000;   
     print SOCKET $par_sndInt; 
-    print SOCKET "baseline-simple\n";
+    print SOCKET "baseline-singleUe\n";
                  
     close SOCKET or die "close: $!";
 }
@@ -33,37 +33,41 @@ sub startTraffic
 
 # iteration variables
 my @runs = (0);
-my $sndInt = 0.04;
+my @sndIntArray = (0.04,0.02,0.01,0.005);
 foreach my $run (@runs)
 {
-    my $pid = fork();
-    if ($pid == 0)
+    foreach my $sndInt (@sndIntArray)
     {
-        # child process - start simulation
-        print " --- Starting simulation ---\n\n";
-        system("./run_baseline_simple.sh");
-        
-        exit;
-    }
-    else
-    {
-        my $innerpid = fork();
-        if ($innerpid == 0)
+
+        my $pid = fork();
+        if ($pid == 0)
         {
-            system("./listener.pl");
+            # child process - start simulation
+            print " --- Starting simulation ---\n\n";
+            system("./run_baseline_singleUe.sh");
+            
             exit;
         }
         else
         {
-        
-            sleep(5); # wait simulation to start (is 5 seconds enough?)
-                                                                # father process - start real traffic on the sender
-            print " --- Starting traffic ---\n\n";
-            startTraffic($sndInt);
-        
-            # wait child to finish
+            my $innerpid = fork();
+            if ($innerpid == 0)
+            {
+                system("./listener.pl");
+                exit;
+            }
+            else
+            {
+            
+                sleep(5); # wait simulation to start (is 5 seconds enough?)
+                                                                    # father process - start real traffic on the sender
+                print " --- Starting traffic ---\n\n";
+                startTraffic($sndInt);
+            
+                # wait child to finish
+                wait();
+            }
             wait();
         }
-        wait();
     }
 }

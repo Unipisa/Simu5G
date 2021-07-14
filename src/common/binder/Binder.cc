@@ -868,8 +868,6 @@ void Binder::computeAverageCqiForBackgroundUes()
                 double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
                 double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
 
-//                std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] sinrUl[" << sinrUl << "] load[" << ueLoadUl << "] rbsUl[" << ueRbsUl << "]" << endl;
-
                 if(ueRbsDl<0 || ueRbsUl<0)
                 {
                     EV << "Error! Computed negative requested rbs DL[" << ueRbsDl << "] UL[" << ueRbsUl << "]" << endl;
@@ -909,8 +907,6 @@ void Binder::computeAverageCqiForBackgroundUes()
                 for (unsigned int i=0; i < info->allocatedRbsUeUl.size(); i++)
                     info->allocatedRbsUeUl[i] *= scaleFactor;
             }
-
-//            std::cout << "BgTrafficManager " << bgTrafficManagerId << ": allocatedRbsDl[" << info->allocatedRbsDl << "] - allocatedRbsUl[" << info->allocatedRbsUl << "]" << endl;
 
         }
 

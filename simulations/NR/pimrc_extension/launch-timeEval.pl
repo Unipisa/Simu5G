@@ -49,15 +49,15 @@ while(@ARGV)
 # configuration names in the .ini file
 my(@configs) = 
 (
-    "BgTrafficScalabilityEval-generated" , 
-    "BgTrafficScalabilityEval-simulated" 
+    "BgSingleCellValidation-generated" , 
+    #"BgSingleCellValidation-simulated" 
 );
 
 my($timeResultsDir) = "timeResults";
 mkdir($timeResultsDir);
 my($countProc) = 0;
 my($iniFile) = "omnetpp.ini";
-my($maxProc) = 16;
+my($maxProc) = 3;
 my($runs) = 10;
 my($parameters) = 9;
 my($total);
@@ -69,7 +69,7 @@ print "Total expected Runs: $total\n";
 
 foreach $config (@configs)
 {
-    $timeResultsDir = "timeResults/$config";    
+    $timeResultsDir = "timeResults/$config-probCqi";    
     mkdir($timeResultsDir);
     for( $j = 0 ; $j<$parameters; $j++ )
     {

@@ -12,7 +12,7 @@ set datafile separator ","
 set grid back lc rgb "gray" lw 1 lt 1
 
 # --- Key --- #
-set key box opaque left font ",16"
+set key box opaque left font ",16" width -3
 
 # --- Styles definition --- #
 set style fill solid border lc rgb "black"
@@ -29,56 +29,109 @@ set style line 11 lc rgb "black" ps 0 lw 1.5
 
 set boxwidth 0.5
 set style fill solid
-set xrange [-1:6]
+set xrange [-2:8]
 set xtics offset 0.5
-set xlabel "Distance from the gNB [m]"
+set xlabel "Distance from the gNB [m]" font ",16"
 
-set yrange [0:45]
+set yrange [0:55]
 set ylabel "SINR [dB] (DL)" font ",16" offset 1
 
-set output "plots/bgMulticellValidation_avgRcvdSinrDl.ps"
-plot "stats/bgMulticellValidation_avg_rcvdSinrDl_u=0_ues=50.csv" using 1:3:xtic(2) with boxes ls 2 t "Simulated Cells",\
-                                         "" using 1:3:4 with yerrorbars ls 11 notitle,\
-                                         "" using ($1+0.5):5 with boxes ls 1 t "Background Cells",\
-                                         "" using ($1+0.5):5:6 with yerrorbars ls 11 notitle
+set output "plots/bgMulticellValidation_avgRcvdSinrDl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_rcvdSinrDl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
 
-
-set yrange [0:45]
+set yrange [0:50]
 set ylabel "SINR [dB] (UL)" font ",16" offset 1
 
-set output "plots/bgMulticellValidation_avgRcvdSinrUl.ps"
-plot "stats/bgMulticellValidation_avg_rcvdSinrUl_u=0_ues=50.csv" using 1:3:xtic(2) with boxes ls 2 t "Simulated Cells",\
-                                         "" using 1:3:4 with yerrorbars ls 11 notitle,\
-                                         "" using ($1+0.5):5 with boxes ls 1 t "Background Cells",\
-                                         "" using ($1+0.5):5:6 with yerrorbars ls 11 notitle
+set output "plots/bgMulticellValidation_avgRcvdSinrUl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_rcvdSinrUl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
 
+set yrange [20:75]
+set ylabel "SINR [dB] (DL)" font ",16" offset 1
+set output "plots/bgMulticellValidation_avgMeasuredSinrDl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_measuredSinrDl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
+
+
+set yrange [20:60]
+set ylabel "SINR [dB] (UL)" font ",16" offset 1
+
+set output "plots/bgMulticellValidation_avgMeasuredSinrUl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_measuredSinrUl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
+      
+set yrange [11:17]
+set ylabel "CQI (DL)" font ",16" offset 1
+set output "plots/bgMulticellValidation_avgCqiDl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_cqiDl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
+
+
+set yrange [11:17]
+set ylabel "CQI (UL)" font ",16" offset 1
+
+set output "plots/bgMulticellValidation_avgCqiUl_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_cqiUl_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
                                          
-set yrange [0:0.05]
+set yrange [0:0.06]
 set ylabel "RTT [ms]" font ",16" offset 1
 to_ms(x) = x*1000
 
-set output "plots/bgMulticellValidation_avgRtt.ps"
-plot "stats/bgMulticellValidation_avg_rtt_u=0_ues=50.csv" using 1:3:xtic(2) with boxes ls 2 t "Simulated Cells",\
-                                         "" using 1:3:4 with yerrorbars ls 11 notitle,\
-                                         "" using ($1+0.5):5 with boxes ls 1 t "Background Cells",\
-                                         "" using ($1+0.5):5:6 with yerrorbars ls 11 notitle
+set output "plots/bgMulticellValidation_avgRtt_ues=50.ps"
+plot "stats/bgMulticellValidation_avg_rtt_u=0_ues=50.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
                                          
                                          
-set yrange [0:30]
+set yrange [0:55]
 set ylabel "Allocated RBs (DL)" font ",16" offset 1
+set xlabel "Per-cell offered load [Mbps]" font ",16"
 
-set output "plots/bgMulticellValidation_avgServedBlocksDl.ps"
-plot "stats/bgMulticellValidation_avg_servedBlocksDl_u=0_ues=50.csv" using 1:3:xtic(2) with boxes ls 2 t "Simulated Cells",\
-                                         "" using 1:3:4 with yerrorbars ls 11 notitle,\
-                                         "" using ($1+0.5):5 with boxes ls 1 t "Background Cells",\
-                                         "" using ($1+0.5):5:6 with yerrorbars ls 11 notitle
+set output "plots/bgMulticellValidation_avgServedBlocksDl_dist=125m.ps"
+plot "stats/bgMulticellValidation_avg_servedBlocksDl_u=0_dist=125m.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle
 
 
-set yrange [0:30]
+set yrange [0:55]
 set ylabel "Allocated RBs (UL)" font ",16" offset 1
 
-set output "plots/bgMulticellValidation_avgServedBlocksUl.ps"
-plot "stats/bgMulticellValidation_avg_servedBlocksUl_u=0_ues=50.csv" using 1:3:xtic(2) with boxes ls 2 t "Simulated Cells",\
-                                         "" using 1:3:4 with yerrorbars ls 11 notitle,\
-                                         "" using ($1+0.5):5 with boxes ls 1 t "Background Cells",\
-                                         "" using ($1+0.5):5:6 with yerrorbars ls 11 notitle
+set output "plots/bgMulticellValidation_avgServedBlocksUl_dist=125m.ps"
+plot "stats/bgMulticellValidation_avg_servedBlocksUl_u=0_dist=125m.csv" using ($1-0.5):3 with boxes ls 2 t "FG Cells",\
+                                         "" using ($1-0.5):3:4 with yerrorbars ls 11 notitle,\
+                                         "" using 1:5 with boxes ls 1 t "BG Cells, Real. CQI",\
+                                         "" using 1:5:6:xtic(2) with yerrorbars ls 11 notitle,\
+                                         "" using ($1+0.5):7 with boxes ls 3 t "BG Cells, Prob. CQI",\
+                                         "" using ($1+0.5):7:8 with yerrorbars ls 11 notitle

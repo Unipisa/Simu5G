@@ -27,21 +27,23 @@ sub startTraffic
     or die "Can't create a socket $!\n";
     connect( SOCKET, pack_sockaddr_in($port, inet_aton($server)))
     or die "Can't connect to port $port! \n";
-     
+    
+    print SOCKET 1000;  
     print SOCKET $par_sndInt; 
-    print SOCKET "gnbs=$par_gnbs-u=$par_numerology-rbs=$par_rbs-sndInt=$par_sndInt-bkUEs=$par_ues-#$par_run\n";
+    print SOCKET "gnbs=$par_gnbs-u=$par_numerology-rbs=$par_rbs-sndInt=$par_sndInt-bkUEs=$par_ues-dynamicPhy=true-#$par_run\n";
                  
     close SOCKET or die "close: $!";
 }
 
 
 my $out;
+my $configOut;
 my $sndInt = (0.04);
 
 # iteration variables
-my @numerology = (0,2,4);   
+my @numerology = (2,4);   
 my @rbs = (100);
-my @ues = (0,50,100,150,200,250,300);
+my @ues = (0);
 my @gnbs = (3,6,9);
 my @runs = (0);
 foreach my $numerology (@numerology)
@@ -59,13 +61,25 @@ foreach my $numerology (@numerology)
                     print "Numerology[$numerology] - RBs[$rbs] - UEs[$ues] - bgGnbs[$gnbs] - SndInt[$sndInt]\n\n";
                     
                     open ($out,">","scenario_multicell.ini") or die "ERROR: Unable to open output file"; 
-                    print $out "*.numBgCell = \${numBgCell=$gnbs}\n";
+                    print $out "*.numBgCell = \${numBgCells=$gnbs}\n";
                     print $out "*.gnb.cellularNic.bgTrafficGenerator[0].numBgUes = \${numBkUEs=$ues}\n";
                     print $out "*.bgCell[*].bgTrafficGenerator.numBgUes = \${numBkUEs}\n";
                     print $out "*.carrierAggregation.componentCarrier[0].numBands = \${rbs=$rbs}\n";
                     print $out "*.carrierAggregation.componentCarrier[0].numerologyIndex = \${u=$numerology}\n";
                     
                     close $out;
+                    
+                    
+#                     # XXX
+#                     # 
+#                     # launch here a simulation with foreground cells to obtain average CQI and RTX
+#                     # run simulation with foreground cells
+#                     system("simu5g -u Cmdenv -c BgMulticell-simulated -r 0 --cmdenv-redirect-output=false omnetpp-simulated.ini");
+#                     
+                    open ($configOut,">","trafficGeneratorConfig.ini") or die "ERROR: Unable to open config output file"; 
+                    print $configOut "include trafficGeneratorConfigs/config-u=${numerology}-rbs=${rbs}-numBgCells=${gnbs}-numBkUEs=${ues}-dist=50m-repetition=0.ini";
+                    close $configOut;
+                    
                     
                     my $pid = fork();
                     if ($pid == 0)
@@ -87,7 +101,8 @@ foreach my $numerology (@numerology)
                         else
                         {
                         
-                            sleep(60); # wait simulation to start 
+#                             sleep(60); # wait simulation to start 
+                            sleep(5); # wait simulation to start 
                                                                                 # father process - start real traffic on the sender
                             print " --- Starting traffic ---\n\n";
                             startTraffic($gnbs, $numerology, $rbs, $ues, $sndInt, $run);

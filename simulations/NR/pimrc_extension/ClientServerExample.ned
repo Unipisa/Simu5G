@@ -52,6 +52,12 @@ network ClientServerExample
         server: StandardHost {
             @display("p=223.2,71.423996;is=n;i=device/server");
         }
+        bgServerDl: StandardHost {
+            @display("p=271.188,261.14398;is=n;i=device/server");
+        }
+        bgServerUl: StandardHost {
+            @display("p=171.864,261.14398;is=n;i=device/server");
+        }
         router: Router {
             @display("p=223.875,175.36874;i=device/smallrouter");
         }
@@ -75,6 +81,8 @@ network ClientServerExample
         }
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;
+        bgServerDl.pppg++ <--> Eth10G <--> router.pppg++;
+        bgServerUl.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> natRouter.pppg++;
         natRouter.pppg++ <--> Eth10G <--> upf.filterGate;
         upf.pppg++ <--> Eth10G <--> gnb.ppp;

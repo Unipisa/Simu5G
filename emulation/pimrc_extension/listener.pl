@@ -62,7 +62,12 @@ my $out;
         
         print " --- Configuring the sender --- \n";
         
-        # read number of UEs from the connected client
+        # read message length
+        my $msgLen = "";
+        $client_socket->read($msgLen, 4);  # 4 chars
+        print "--> msg len set to $msgLen B\n";
+        
+        # read send interval 
         my $sndInt = "";
         $client_socket->read($sndInt, 4);  # 4 chars
         print "--> snd int set to $sndInt s\n";
@@ -74,7 +79,7 @@ my $out;
         
         # launch traffic and save statistics in the appropriate folder
         print " --- SENDER STARTED --- \n";
-        my $cmd = "$senderCmd -h 10.0.2.1 -p udp -s 1000 -t $sndInt -d 120 -o $outputfolder";
+        my $cmd = "$senderCmd -h 10.0.2.1 -p udp -s $msgLen -t $sndInt -d 120 -o $outputfolder";
         `$cmd`;
         print " --- SENDER TERMINATED --- \n\n";
         

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SNDINT=40
+SNDINT=40ms
 OUTPUTFOLDER="stats-backgroundUes"
 
 if [[ $1 != "noexport" ]] 
@@ -10,16 +10,17 @@ then
     echo "--> Exporting scalars..."
     for BKUES in `seq 0 25 200`; do
 	# option -T must be set to s if scalar, v if vector, t if statistics 
-	    opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
-        opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
+	opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-generated-realCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=false*.sca
+	opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-generated-probCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=true*.sca
+        opp_scavetool export -f 'module =~ "*.ue.app[0]" AND name =~ "rcvdPkLifetime:stats"' -F 'CSV-S' -T t -o ${OUTPUTFOLDER}/sca_rtt_bkUEs=${BKUES}-simulated.csv results/BgSingleCellValidation-simulated/*sndInt=${SNDINT}-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-generated-realCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=false*.sca        
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-generated-probCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=true*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-simulated.csv results/BgSingleCellValidation-simulated/*sndInt=${SNDINT}-bkUEs=${BKUES}-*.sca
 
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksUl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksUl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
-
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-generated.csv results/BgTrafficScalabilityEval-generated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
-
-        opp_scavetool export -f 'module =~ "*.gnb.lteNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-simulated.csv results/BgTrafficScalabilityEval-simulated/*sndInt=40ms-bkUEs=${BKUES}-*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-generated-realCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=false*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-generated-probCqi.csv results/BgSingleCellValidation-generated/*sndInt=${SNDINT}-bkUEs=${BKUES}-randomCqi=true*.sca
+        opp_scavetool export -f 'module =~ "*.gnb.cellularNic.mac" AND name =~ "avgServedBlocksDl:mean"' -F 'CSV-S' -T s -o ${OUTPUTFOLDER}/sca_blocksDl_bkUEs=${BKUES}-simulated.csv results/BgSingleCellValidation-simulated/*sndInt=${SNDINT}-bkUEs=${BKUES}-*.sca
 
     done
     echo "--> done"
@@ -38,12 +39,12 @@ for METRIC in rtt blocksUl blocksDl; do
 	OUTPUTFILE=${OUTPUTFOLDER}/avg_${METRIC}.csv
 
 	# print header
-	HEADER="v Background UEs | Scenario >\tBackgroundUEs\tBackgroundUEs-conf\tSimulatedUEs\tSimulatedUEs-conf\n"
+	HEADER="v Background UEs | Scenario >\tBG UEs (Real CQI)\tconf\tBG UEs (Prob CQI)\tconf\tSimulatedUEs\tSimulatedUEs-conf\n"
 	printf "$HEADER" > $OUTPUTFILE
 
-	for BKUES in `seq 0 25 200`; do
+	for BKUES in `seq 0 50 200`; do
             printf "${BKUES}" >> $OUTPUTFILE
-            for SCENARIO in generated simulated; do                           
+            for SCENARIO in generated-realCqi generated-probCqi simulated; do                           
 	        # get avg and conf int
 	        INPUTFILE="${OUTPUTFOLDER}/sca_${METRIC}_bkUEs=${BKUES}-${SCENARIO}.csv"
 	        printf "\t" >> $OUTPUTFILE

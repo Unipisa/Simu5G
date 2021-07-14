@@ -28,7 +28,8 @@ sub startTraffic
     or die "Can't create a socket $!\n";
     connect( SOCKET, pack_sockaddr_in($port, inet_aton($server)))
     or die "Can't connect to port $port! \n";
-     
+    
+    print SOCKET 1000;   
     print SOCKET $par_sndInt; 
     print SOCKET "ca=$par_ca-u=$par_numerology-rbs=$par_rbs-sndInt=$par_sndInt-bkUEs=$par_ues-#$par_run\n";
                  

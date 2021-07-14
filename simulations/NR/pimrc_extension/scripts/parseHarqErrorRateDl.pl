@@ -7,13 +7,11 @@ no warnings 'experimental::smartmatch';
 
 my($fileIn);
 my($fileOut);
-my($numRows) = 10;
-
-
+my($out);
 my($parameter);
 my($value);
-my($perc);
 
+my($moduleName)="gnb.cellularNic.bgTrafficGenerator[0]";
 
 while(@ARGV)
 {
@@ -32,24 +30,21 @@ while(@ARGV)
     given( $parameter ) 
     {
         # parameter file to be opened
-        when(/^-file/)
+        when(/^-i/)
         {
             # assign
             $fileIn = $value;
         }
-
-        when(/^-output/)
+        when(/^-o/)
         {
             # assign
             $fileOut = $value;
         }
-
-        when(/^-rows/)
+        when(/^-module/)
         {
             # assign
-            $numRows = $value;
+            $moduleName = $value;
         }
-
         default
         {
             die "<E> Unknown parameter \"$parameter\"! Run --h\n";
@@ -58,60 +53,38 @@ while(@ARGV)
 }
 
 my(@raw_data);
-my(@data);
 my($data_line);
-my($fl);
-my(@samples);
 
-
-$fl = $fileIn;
-open(DAT, $fl) || die("Could not open file!");
+open(DAT, $fileIn) || die("Could not open file!");
 @raw_data=<DAT>;
 close(DAT);
 
+# open output file
+open ($out,">",$fileOut) or die "ERROR: Unable to open temporary file"; 
 
-my($lineCounter) = 0;
+my($lineCounter)=1;
+my($index) = 0;
 foreach $data_line (@raw_data)
 {
     chomp($data_line);
 
-    #skip the first line
-    if($lineCounter == 0)
+    my(@scalar_line)=split("harqErrorRateDl:mean ",$data_line);
+    if ($#scalar_line == 0)
     {
         $lineCounter++;
         next;
     }
+    
+    my $val = @scalar_line[1];
+    if (!looks_like_number($val))  
+    {
+        next;
+    }
 
-    my(@data_values)=split(",",$data_line);
-    my $val = $data_values[13];
-   
-    push @samples, $val;
+    print $out "*.$moduleName.bgUE[$index].generator.rtxRateDl = $val\n";
 
     $lineCounter++;
+    $index++;
 }
-
-# --- compute mean --- #
-my($count) = 0;
-my($sum)=0;
-foreach my $sample (@samples)
-{
-    $sum = $sum + $sample; 
-    $count++;
-}
-my($mean)=$sum/$count;
-
-# --- compute confidence interval --- #
-$sum = 0;
-$count = 0;
-foreach my $sample (@samples)
-{
-    $sum = $sum + ($sample - $mean)**2;
-    $count++;
-}
-my($stddev) = sqrt($sum/$count);
-my($confidence) = 1.96*($stddev/sqrt($count));
-
-# --- print output --- #
-print $mean."\t".$confidence;
 
 

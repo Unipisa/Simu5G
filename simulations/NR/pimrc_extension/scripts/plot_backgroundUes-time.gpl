@@ -3,7 +3,7 @@
 set terminal postscript enhanced color 
 
 set view map
-set size ratio 0.5
+set size ratio 1
 set size 0.7,0.7
 unset surface
 
@@ -13,7 +13,7 @@ set datafile separator ","
 set grid back lc rgb "gray" lw 1 lt 1
 
 # --- Key --- #
-set key top left box opaque font ",16" 
+set key top left reverse Left box opaque font ",16" 
 
 # --- Styles definition --- #
 set style line 1 dt 1 lw 3 pt 7 ps 1.3 lc rgb "#00BB00"
@@ -36,15 +36,17 @@ set style line 25 dt 2 lw 2 pt 4 lc rgb "orange"
 
 
 set datafile separator ","
-set xrange [0:175]
-set xtics 0,25,175
+set xrange [0:200]
+set xtics 0,25,200
 set logscale y
-set yrange [1:*]
+set yrange [1:1000]
 set xlabel "Number of UEs"
 set ylabel "Execution time [s]" font ",16" offset 2
 
 set output 'stats-backgroundUes/backgroundUes-avgTime.ps'
-plot "stats-backgroundUes/avg_time.csv" using 1:2 ls 1 with linespoints t "Background UEs",\
+plot "stats-backgroundUes/avg_time.csv" using 1:6 ls 2 with linespoint t "FG UEs",\
+                            "" using 1:6:7 ls 12 with yerrorbars notitle,\
+                            "" using 1:2 ls 1 with linespoints t "BG UEs, Real. CQI",\
                             "" using 1:2:3 ls 11 with yerrorbars notitle,\
-                            "" using 1:4 ls 2 with linespoint t "Simualated UEs",\
-                            "" using 1:4:5 ls 12 with yerrorbars notitle
+                            "" using 1:4 ls 3 with linespoint t "BG UEs, Prob. CQI",\
+                            "" using 1:4:5 ls 13 with yerrorbars notitle

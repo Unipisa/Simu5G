@@ -79,7 +79,7 @@ foreach $data_line (@raw_data)
     }
 
     my(@data_values)=split(",",$data_line);
-    my $val = $data_values[13];
+    my $val = $data_values[15];
    
     push @samples, $val;
 

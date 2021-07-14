@@ -1,0 +1,65 @@
+#!/usr/bin/gnuplot -persist
+
+set terminal postscript enhanced color 
+
+set view map
+unset surface
+set size 0.7,0.7
+
+set datafile missing "NaN"
+set datafile separator "\t"
+
+set grid back lc rgb "gray" lw 1 lt 1
+
+
+
+# --- Styles definition --- #
+set style line 1 dt 1 lw 2 pt 7 ps 1 lc rgb "#00BB00"
+set style line 2 dt 1 lw 2 pt 2 ps 1 lc rgb "red"
+set style line 3 dt 1 lw 2 pt 5 ps 1 lc rgb "blue"
+set style line 4 dt 1 lw 2 pt 6 ps 1 lc rgb "brown"
+set style line 5 dt 1 lw 2 pt 4 ps 1 lc rgb "orange"
+
+set style line 11 dt 1 lw 2 pt 7 ps 0 lc rgb "#00BB00"
+set style line 12 dt 1 lw 2 pt 2 ps 0 lc rgb "red"
+set style line 13 dt 1 lw 2 pt 5 ps 0 lc rgb "blue"
+set style line 14 dt 1 lw 2 pt 6 ps 0 lc rgb "brown"
+set style line 15 dt 1 lw 2 pt 4 ps 0 lc rgb "orange"
+
+set style line 21 dt 2 lw 2 pt 7 lc rgb "#00BB00"
+set style line 22 dt 2 lw 2 pt 2 lc rgb "red"
+set style line 23 dt 2 lw 2 pt 5 lc rgb "blue"
+set style line 24 dt 2 lw 2 pt 6 lc rgb "brown"
+set style line 25 dt 2 lw 2 pt 4 lc rgb "orange"
+
+
+
+
+# --- PLOT ROUND TRIP TIME WITH DIFFERENT NUMBER OF BG CELLS (RBs=100) ---#                    
+
+set output 'plots/rtt-varFgBitrate.ps'
+
+# --- Key --- #
+set key left box opaque width 1 title "BG Cells"
+
+set xrange[0:2.5]
+set yrange[0:10]
+
+set ylabel "RTT [ms]"  offset 2
+set xlabel "Bitrate [Mbps]" 
+
+bytesToBits(x) = x * 8
+toBitrate(x) = ((1/x) * bytesToBits(1000)) / 1000000
+
+plot "stats/rtt-multicell-varFgBitrate-gnbs=3-ues=100-rbs=100.csv" using (toBitrate($1)):2 ls 1 with linespoints t "3",\
+                            "" using (toBitrate($1)):2:3 ls 11 with yerrorbars notitle,\
+     "stats/rtt-multicell-varFgBitrate-gnbs=6-ues=100-rbs=100.csv" using (toBitrate($1)):2 ls 2 with linespoints t "6",\
+                            "" using (toBitrate($1)):2:3 ls 12 with yerrorbars notitle,\
+     "stats/rtt-multicell-varFgBitrate-gnbs=9-ues=100-rbs=100.csv" using (toBitrate($1)):2 ls 3 with linespoints t "9",\
+                            "" using (toBitrate($1)):2:3 ls 13 with yerrorbars notitle
+                            
+                            
+
+
+
+

@@ -22,7 +22,7 @@ do
         printf "\n" >> $RTT_OUTPUT_FILE
 
 
-        for BKUES in `seq 0 20 200` ;
+        for BKUES in `seq 0 40 400` ;
         do
             # --- print row name --- "
             printf "$BKUES\t" >> $RTT_OUTPUT_FILE
