@@ -73,7 +73,7 @@ void TrafficGeneratorBase::initialize(int stage)
         cqiStddevUl_ = par("cqiStddevUl");
 
         enablePeriodicCqiUpdate_ = getAncestorPar("enablePeriodicCqiUpdate");
-        useRandomCqi_ = getAncestorPar("useRandomCqi");
+        useProbabilisticCqi_ = getAncestorPar("useProbabilisticCqi");
         computeAvgInterference_ = getAncestorPar("computeAvgInterference");
         if (enablePeriodicCqiUpdate_)
         {
@@ -176,7 +176,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 
 void TrafficGeneratorBase::updateMeasurements()
 {
-    if (useRandomCqi_)
+    if (useProbabilisticCqi_)
     {
         if (trafficEnabled_[DL])
         {

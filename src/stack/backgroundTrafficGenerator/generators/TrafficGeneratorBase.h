@@ -84,7 +84,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // flag that signals when new SNR and CQI must be computed
     bool positionUpdated_;
 
-    bool useRandomCqi_;
+    bool useProbabilisticCqi_;
     double cqiMeanDl_;
     double cqiStddevDl_;
     double cqiMeanUl_;
