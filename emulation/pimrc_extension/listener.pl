@@ -10,8 +10,8 @@ use IO::Socket::INET;
 
 use Getopt::Long;        # for options parsing
 
-my $senderCmd = "/home/giovanni/projects/emulation_sender/build/emulation_sender";	
-my $receiverCmd = "/home/giovanni/projects/emulation_receiver/build/emulation_receiver";
+my $senderCmd = "./emulation_sender";	
+my $receiverCmd = "./emulation_receiver";
 
 my $portNumber = "2021";  
 my $proto = "tcp";
