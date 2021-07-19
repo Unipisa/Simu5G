@@ -1,6 +1,0 @@
-This folder includes a simulation scenario that replicates the emulation scenario 
-included in emulation/testbed. The aim is to compare the performance of simulation and
-emulation in the same scenario.
- 
-In this example, the network consists of one UE connected to one gNB, one UPF, 
-one NAT router, one router and one server.
