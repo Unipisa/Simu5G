@@ -392,7 +392,7 @@ void IP2Nic::registerInterface()
                                                    // (IPv4NetworkConfigurator only supports "wlan" as wireless interface name)
     // TODO configure MTE size from NED
     networkIf->setMtu(1500);
-    //disable broadcast (not supported in LteNic), enable multicast
+    //disable broadcast (not supported in cellularNic), enable multicast
     networkIf->setBroadcast(false);
     networkIf->setMulticast(true);
     networkIf->setLoopback(false);

@@ -200,7 +200,10 @@ void LtePhyUeD2D::handleAirFrame(cMessage* msg)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
         if (lteInfo->getDirection() == DL)
+        {
             emit(averageCqiDl_, cqi);
+            recordCqi(cqi, DL);
+        }
     }
     // apply decider to received packet
     bool result = true;
@@ -331,7 +334,10 @@ void LtePhyUeD2D::handleUpperMessage(cMessage* msg)
     {
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[lteInfo->getCw()];
         if (lteInfo->getDirection() == UL)
+        {
             emit(averageCqiUl_, cqi);
+            recordCqi(cqi, UL);
+        }
         else if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)
             emit(averageCqiD2D_, cqi);
     }

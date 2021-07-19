@@ -62,7 +62,7 @@ Dependencies
 
 This version requires:
 
-- OMNeT++ 6.0pre10 or OMNeT++ 6.0pre10 
+- OMNeT++ 6.0pre10 or OMNeT++ 6.0pre11
 - INET 4.3.2
 
 

@@ -35,6 +35,20 @@ std::vector<double> LteDummyChannelModel::getSINR(LteAirFrame *frame, UserContro
    return tmp;
 }
 
+std::vector<double> LteDummyChannelModel::getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo)
+{
+   std::vector<double> tmp;
+   tmp.push_back(10000);
+   // fake SINR is needed by das (to decide which antenna set are used by the terminal)
+   // and handhover function to decide if the terminal should trigger the hanhover
+   return tmp;
+}
+
+double LteDummyChannelModel::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId)
+{
+   return 10000.0;
+}
+
 std::vector<double> LteDummyChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord)
 {
    std::vector<double> tmp;

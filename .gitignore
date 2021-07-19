@@ -62,6 +62,17 @@ ui/com.simulte.configeditor/bin/
 /simulations/*/*/positions*/
 /simulations/*/*/outLogs*/
 /simulations/*/*/scripts/plots*/
+/simulations/*/*/plots*/
+/simulations/*/*/timeResults*/
+/simulations/*/*/trafficGeneratorConfigs*/
+/simulations/*/*/routing*/bkUe?.mrt
+/simulations/*/*/routing*/bkUe??.mrt
+/simulations/*/*/routing*/bkUe???.mrt
+
+/emulation/*/results*/
+/emulation/*/stats*/
+/emulation/*/plots*/
+/emulation/*/trafficGeneratorConfigs*/
 
 vim files
 *.swp

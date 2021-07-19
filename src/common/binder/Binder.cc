@@ -13,6 +13,8 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include <cctype>
 #include <algorithm>
+#include "stack/mac/layer/LteMacUe.h"
+#include "stack/phy/layer/LtePhyUe.h"
 
 using namespace std;
 using namespace inet;
@@ -247,6 +249,93 @@ void Binder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
         phyPisaData.setBlerShift(par("blerShift"));
+
+    if (stage == inet::INITSTAGE_LAST)
+    {
+        maxDataRatePerRb_ = par("maxDataRatePerRb");
+
+        // if avg interference enabled, compute CQIs
+        computeAverageCqiForBackgroundUes();
+    }
+
+}
+
+void Binder::finish()
+{
+    if (par("printTrafficGeneratorConfig").boolValue())
+    {
+        // build filename
+        std::stringstream outputFilenameStr;
+        outputFilenameStr << "config";
+        cConfigurationEx* configEx = getEnvir()->getConfigEx();
+
+        const char* itervars = configEx->getVariable(CFGVAR_ITERATIONVARSF);
+        outputFilenameStr << "-" << itervars << "repetition=" << configEx->getVariable("repetition") << ".ini";
+        std::string outputFilename = outputFilenameStr.str();
+
+        // open output file
+        std::ofstream out(outputFilename);
+
+        std::string toPrint;
+        std::vector<UeInfo*>::iterator it = ueList_.begin(), et = ueList_.end();
+        for ( ; it != et; ++it)
+        {
+            std::stringstream ss;
+
+            UeInfo* info = *it;
+
+            if (info->id < NR_UE_MIN_ID)
+                continue;
+
+            int cellId = info->cellId;
+            int ueIndex = info->ue->getIndex();
+
+            // get HARQ error rate
+            LteMacBase* macUe = check_and_cast<LteMacBase*>(info->ue->getSubmodule("cellularNic")->getSubmodule("nrMac"));
+            double harqErrorRateDl = macUe->getHarqErrorRate(DL);
+            double harqErrorRateUl = macUe->getHarqErrorRate(UL);
+
+            // get average CQI
+            LtePhyUe* phyUe = check_and_cast<LtePhyUe*>(info->phy);
+            double cqiDl = phyUe->getAverageCqi(DL);
+            double cqiUl = phyUe->getAverageCqi(UL);
+            double cqiVarianceDl = phyUe->getVarianceCqi(DL);
+            double cqiVarianceUl = phyUe->getVarianceCqi(UL);
+
+            if (info->cellId == 1)
+            {
+                // the UE belongs to the central cell
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiMeanDl = " << cqiDl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiStddevDl = " << sqrt(cqiVarianceDl) << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiMeanUl = " << cqiUl << "\n";
+                ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
+
+                toPrint = ss.str();
+                ss.clear();
+            }
+            else
+            {
+                int bgCellId = cellId - 2;
+
+                // the UE belongs to a background cell
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiMeanDl = " << cqiDl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiStddevDl = " << sqrt(cqiVarianceDl) << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiMeanUl = " << cqiUl << "\n";
+                ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
+
+                toPrint = ss.str();
+                ss.clear();
+            }
+
+            out << toPrint;
+        }
+
+        out.close();
+    }
 }
 
 void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
@@ -358,14 +447,9 @@ void Binder::initAndResetUlTransmissionInfo()
     UplinkTransmissionMap::iterator it = ulTransmissionMap_.begin();
     for (; it != ulTransmissionMap_.end(); ++it)
     {
-        double carrierFrequency = it->first;
-        int numCarrierBands = componentCarriers_[carrierFrequency].numBands;
-
         // the second element (i.e. referring to the old time slot) becomes the first element
-        it->second.erase(it->second.begin());
-        // push a new element (i.e. referring to the current time slot)
-        it->second.push_back(std::vector<std::vector<UeAllocationInfo> >());
-        it->second[CURR_TTI].resize(numCarrierBands);
+        if (!(it->second.empty()))
+            it->second.erase(it->second.begin());
     }
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
@@ -377,12 +461,19 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.cellId = cellId;
     info.phy = phy;
     info.dir = dir;
+    info.trafficGen = nullptr;
 
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
     {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
         ulTransmissionMap_[carrierFreq].resize(2);
         ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+    else if (ulTransmissionMap_[carrierFreq].size() == 1)
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
 
@@ -397,6 +488,42 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
 
     lastUplinkTransmission_ = NOW;
 }
+
+void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir)
+{
+    UeAllocationInfo info;
+    info.nodeId = nodeId;
+    info.cellId = cellId;
+    info.phy = nullptr;
+    info.dir = dir;
+    info.trafficGen = trafficGen;
+
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].resize(2);
+        ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+    else if (ulTransmissionMap_[carrierFreq].size() == 1)
+    {
+        int numCarrierBands = componentCarriers_[carrierFreq].numBands;
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
+        ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
+    }
+
+    // for each allocated band, store the UE info
+    std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
+    for ( ; it != et; ++it)
+    {
+        Band b = it->first;
+        if (it->second > 0)
+            ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
+    }
+
+    lastUplinkTransmission_ = NOW;
+}
+
 
 const std::vector<std::vector<UeAllocationInfo> >* Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
 {
@@ -633,4 +760,400 @@ void Binder::removeHandoverTriggered(MacNodeId nodeId)
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> >::iterator it = handoverTriggered_.find(nodeId);
     if (it!=handoverTriggered_.end())
         handoverTriggered_.erase(it);
+}
+
+
+void Binder::computeAverageCqiForBackgroundUes()
+{
+    EV << " ===== Binder::computeAverageCqiForBackgroundUes - START =====" << endl;
+
+    // initialize interference matrix
+    for (unsigned int i=0; i<bgTrafficManagerList_.size(); i++)
+    {
+        std::map<unsigned int, double> tmp;
+        for (unsigned int j=0; j<bgTrafficManagerList_.size(); j++)
+            tmp[j] = 0.0;
+
+        bgCellsInterferenceMatrix_[i] = tmp;
+    }
+
+    // update interference until "condition" becomes true
+    // condition = at least one value of interference is above the threshold and
+    //             we did not reach the maximum number of iteration
+
+    bool condition = true;
+    const int MAX_INTERFERENCE_CHECK = 10;
+
+    // interference check needs to be done at least 2 times (1 setup)
+    unsigned int countInterferenceCheck = 0;
+
+    /*
+     * Compute SINR for each user and interference between cells (for DL) and UEs (for UL)
+     * This will be done in steps:
+     * 1) compute SINR without interference and update block usage
+     * 2) while average interference variation between 2 consecutives steps is above a certain threshold
+     *  - Update interference
+     *  - Compute SINR with interference
+     *  - Update cell block usage according to connect UEs
+     */
+    while(condition)
+    {
+        countInterferenceCheck++;
+        EV << " * ITERATION " <<  countInterferenceCheck << " *" << endl;
+
+        // --- MAIN Interference Check Cycle --- //
+
+        // loop through the BackgroundTrafficManagers (one per cell)
+        for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
+        {
+            BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
+            if (!(info->init))
+                continue;
+
+            BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+            unsigned int numBands = bgTrafficManager->getNumBands();
+
+            //---------------------------------------------------------------------
+            // STEP 1: update mutual interference
+            // for iterations after the first one, update the interference before analyzing a whole cell
+            // Note that it makes no sense computing this at the first iteration when the cell is allocating
+            // zero blocks still
+            if (countInterferenceCheck>1)
+            {
+                updateMutualInterference(bgTrafficManagerId, numBands, DL);
+                updateMutualInterference(bgTrafficManagerId, numBands, UL);
+            }
+
+            double cellRbsDl = 0;
+            double cellRbsUl = 0;
+
+            // Compute the SINR for each UE within the cell
+            auto bgUes_it = bgTrafficManager->getBgUesBegin();
+            auto bgUes_et = bgTrafficManager->getBgUesEnd();
+            int cont = 0;
+            while (bgUes_it != bgUes_et)
+            {
+                TrafficGeneratorBase* bgUe = *bgUes_it;
+
+                //---------------------------------------------------------------------
+                // STEP 2: compute SINR
+                bool losStatus = false;
+                inet::Coord bsCoord = bgTrafficManager->getBsCoord();
+                inet::Coord bgUeCoord = bgUe->getCoord();
+                int bgUeId = bgUe->getId();
+                double bsTxPower = bgTrafficManager->getBsTxPower();
+                double bgUeTxPower = bgUe->getTxPwr();
+
+                double sinrDl = computeSinr(bgTrafficManagerId, bgUeId, bsTxPower, bsCoord, bgUeCoord, DL, losStatus);
+                double sinrUl = computeSinr(bgTrafficManagerId, bgUeId, bgUeTxPower, bgUeCoord, bsCoord, UL, losStatus);
+
+                // update CQI for the bg UE
+                bgUe->setCqiFromSinr(sinrDl, DL);
+                bgUe->setCqiFromSinr(sinrUl, UL);
+
+                //---------------------------------------------------------------------
+                // STEP 3: update block allocation
+
+                // obtain UE load request (in bits/second)
+                double ueLoadDl = bgUe->getAvgLoad(DL) * 8;
+                double ueLoadUl = bgUe->getAvgLoad(UL) * 8;
+
+                // convert the UE load request to rbs based on SINR
+                double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
+                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
+
+                if(ueRbsDl<0 || ueRbsUl<0)
+                {
+                    EV << "Error! Computed negative requested rbs DL[" << ueRbsDl << "] UL[" << ueRbsUl << "]" << endl;
+                    throw cRuntimeError("Binder::computeAverageCqiForBackgroundUes - Error! Computed negative requested rbs\n");
+                }
+
+                // check if there is room for ueRbs
+                ueRbsDl = (ueRbsDl > numBands) ? numBands : ueRbsDl;
+                ueRbsUl = (ueRbsUl > numBands) ? numBands : ueRbsUl;
+
+                // update cell load
+                cellRbsDl += ueRbsDl;
+                cellRbsUl += ueRbsUl;
+
+                // update allocation for the UL
+                info->allocatedRbsUeUl.at(bgUeId) = ueRbsUl;
+
+                // update allocation for the DL only at the first iteration
+                if (countInterferenceCheck == 1)
+                {
+                    info->allocatedRbsDl = (cellRbsDl > numBands) ? numBands : cellRbsDl;
+                    info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
+                }
+
+                ++bgUes_it;
+                ++cont;
+            }
+
+            // update allocation elem for this background traffic manager
+            info->allocatedRbsDl = (cellRbsDl > numBands) ? numBands : cellRbsDl;
+            info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
+
+            // if the total cellRbsUl is higher than numBands, then scale the allocation for all UEs
+            if (cellRbsUl > numBands)
+            {
+                double scaleFactor = (double)numBands / cellRbsUl;
+                for (unsigned int i=0; i < info->allocatedRbsUeUl.size(); i++)
+                    info->allocatedRbsUeUl[i] *= scaleFactor;
+            }
+
+        }
+
+        EV << "* END ITERATION " << countInterferenceCheck << endl;
+        if ( countInterferenceCheck > MAX_INTERFERENCE_CHECK )
+            condition = false;
+    }
+
+//    // DEBUG
+//    // loop through the BackgroundTrafficManagers (one per cell)
+//    for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
+//    {
+//        BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
+//        if (!(info->init))
+//            continue;
+//
+//        BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+//
+//        // Compute the SINR for each UE within the cell
+//        auto bgUes_it = bgTrafficManager->getBgUesBegin();
+//        auto bgUes_et = bgTrafficManager->getBgUesEnd();
+//        int cont = 0;
+//        while (bgUes_it != bgUes_et)
+//        {
+//            TrafficGeneratorBase* bgUe = *bgUes_it;
+//            Cqi cqiDl = bgUe->getCqi(DL);
+//            Cqi cqiUl = bgUe->getCqi(UL);
+//
+//            std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] cqiDl[" << cqiDl << "] cqiUl[" << cqiUl << "] "<< endl;
+//            ++bgUes_it;
+//            ++cont;
+//        }
+//    }
+
+    EV << " ===== Binder::computeAverageCqiForBackgroundUes - END =====" << endl;
+}
+
+void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands, Direction dir)
+{
+    EV << "Binder::updateMutualInterference - computing interference for traffic manager " << bgTrafficManagerId << " dir[" << dirToA(dir) << "]" << endl;
+
+    double ownRbs, extRbs; // current rbs allocation
+    BgTrafficManagerInfo* ownInfo = bgTrafficManagerList_.at(bgTrafficManagerId);
+
+    if (dir == DL)
+    {
+        // obtain current allocation info
+        ownRbs = ownInfo->allocatedRbsDl;
+
+        // loop through the BackgroundTrafficManagers (one per cell)
+        for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+        {
+            // skip own interference
+            if (extId == bgTrafficManagerId)
+                continue;
+
+            // obtain current allocation info for interfering bg cell
+            BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+            extRbs = extInfo->allocatedRbsDl;
+
+            double newOverlapPercentage = computeInterferencePercentageDl(ownRbs, extRbs, numBands);
+
+            EV << "ownId[" << bgTrafficManagerId << "] extId[" << extId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
+
+
+            // update interference
+            bgCellsInterferenceMatrix_[bgTrafficManagerId][extId] = newOverlapPercentage;
+
+        }// end ext-cell computation
+    }
+    else
+    {
+        // for each UE in the BG cell
+        auto bgUes_it = ownInfo->bgTrafficManager->getBgUesBegin();
+        auto bgUes_et = ownInfo->bgTrafficManager->getBgUesEnd();
+        while (bgUes_it != bgUes_et)
+        {
+            int bgUeId = (*bgUes_it)->getId();
+            uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
+
+            // RBs allocated to the BG UE
+            ownRbs = ownInfo->allocatedRbsUeUl.at(bgUeId);
+
+            // loop through the BackgroundTrafficManagers (one per cell)
+            for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+            {
+                // skip own interference
+                if (extId == bgTrafficManagerId)
+                    continue;
+
+                // obtain current allocation info for interfering bg cell
+                BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+
+                // for each UE in the ext BG cell
+                auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
+                auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
+                while (extBgUes_it != extBgUes_et)
+                {
+                    int extBgUeId = (*extBgUes_it)->getId();
+                    uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
+
+                    // RBs allocated to the interfering BG UE
+                    extRbs = extInfo->allocatedRbsUeUl.at(extBgUeId);
+
+                    double newOverlapPercentage = computeInterferencePercentageUl(ownRbs, extRbs, ownInfo->allocatedRbsUl, extInfo->allocatedRbsUl);
+
+                    EV << "ownId[" << globalBgUeId << "] extId[" << globalExtBgUeId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
+
+                    // update interference
+                    if (bgUesInterferenceMatrix_.find(globalBgUeId) == bgUesInterferenceMatrix_.end())
+                    {
+                        std::map<unsigned int, double> newMap;
+                        bgUesInterferenceMatrix_[globalBgUeId] = newMap;
+                    }
+                    else
+                        bgUesInterferenceMatrix_[globalBgUeId][globalExtBgUeId] = newOverlapPercentage;
+
+                    ++extBgUes_it;
+                }
+
+            }// end ext-cell computation
+
+            ++bgUes_it;
+        }
+    }
+}
+
+double Binder::computeInterferencePercentageDl(double n, double k, unsigned int numBands)
+{
+    // assuming that the BS allocates starting from the first RB in DL
+    if (n == 0)
+        return 0;
+
+    double min = (n<k)?n:k;
+    return (double)min/n;
+
+//    // assuming the allocation is random
+//    return (double)k / numBands;
+}
+
+double Binder::computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal)
+{
+    // assuming the allocation of one UE is random (within the total allocated by its cell, not the total available bands)
+
+    double max = (nTotal>kTotal)?nTotal:kTotal;
+    if (max == 0)
+        return 0.0;
+
+    return (double)k / max;
+}
+
+double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
+{
+    double sinr;
+
+    BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
+    BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+
+    // TODO configure forceCellLos from config files
+    bool ownCellLos = losStatus;
+    bool otherLos = losStatus;
+
+    // compute good signal received power
+    double recvSignalDbm = bgTrafficManager->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, ownCellLos);
+
+    double totInterference = 0.0;
+
+    // loop through the BackgroundTrafficManagers (one per cell)
+    for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
+    {
+        // skip own interference
+        if (extId == bgTrafficManagerId)
+            continue;
+
+        BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+
+        inet::Coord interfCoord;
+        double interfTxPower;
+        double overlapPercentage;
+        double interferenceDbm = 0.0;
+        if (dir == DL)
+        {
+            interfCoord = (extInfo->bgTrafficManager)->getBsCoord();
+            interfTxPower = (extInfo->bgTrafficManager)->getBsTxPower();
+
+            overlapPercentage = bgCellsInterferenceMatrix_[bgTrafficManagerId][extId];
+            if (overlapPercentage > 0)
+                interferenceDbm = (extInfo->bgTrafficManager)->getReceivedPower_bgUe(interfTxPower, interfCoord, rxPos, dir, otherLos);
+
+            // TODO? save the interference into a matrix, so that it can be used to evaluate if convergence has been reached
+
+            totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
+        }
+        else
+        {
+            uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
+
+            // for each UE in the ext BG cell
+            auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
+            auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
+            while (extBgUes_it != extBgUes_et)
+            {
+                int extBgUeId = (*extBgUes_it)->getId();
+                uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
+
+                interfCoord = (*extBgUes_it)->getCoord();
+                interfTxPower = (*extBgUes_it)->getTxPwr();
+
+                overlapPercentage = bgUesInterferenceMatrix_[globalBgUeId][globalExtBgUeId];
+                if (overlapPercentage > 0)
+                    interferenceDbm = (extInfo->bgTrafficManager)->getReceivedPower_bgUe(interfTxPower, interfCoord, rxPos, dir, otherLos);
+
+                totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
+
+                // TODO? save the interference into a matrix, so that it can be used to evaluate if convergence has been reached
+
+                ++extBgUes_it;
+            }
+        }
+    }
+
+    double thermalNoise = -104.5;  // dBm TODO take it from the channel model
+    double linearNoise = dBmToLinear(thermalNoise);
+    double denomDbm = linearToDBm(linearNoise + totInterference);
+    sinr = recvSignalDbm - denomDbm;
+
+    return sinr;
+}
+
+
+double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
+{
+    // TODO choose appropriate values for these constants
+    //      and make them configurable
+    const double MIN_SINR = -5.5;
+    const double MAX_SINR = 25.5;
+
+    // we let a UE to have a minimum CQI (2) even when SINR is too low (this is what our scheduler does)
+    if( sinr <= -3.5 )
+        sinr = -3.5;
+    if (sinr > MAX_SINR)
+        sinr = MAX_SINR;
+
+    double sinrRange = MAX_SINR - MIN_SINR;
+
+    double normalizedSinr = (sinr + fabs(MIN_SINR)) / sinrRange;
+
+    double bitRate = normalizedSinr * maxDataRatePerRb_;
+
+    //     double rbs = bitRate/reqLoad;
+    double rbs = reqLoad / bitRate;
+
+    EV << "Binder::computeRequestedRbsFromSinr - sinr[" << sinr << "] - bitRate[" << bitRate << "] - rbs[" << rbs << "]" << endl;
+
+    return rbs;
 }

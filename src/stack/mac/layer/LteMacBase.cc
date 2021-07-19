@@ -30,6 +30,9 @@ LteMacBase::LteMacBase()
     mbuf_.clear();
     macBuffers_.clear();
     ttiPeriod_ = TTI;
+
+    totalHarqErrorRateDlSum_ = totalHarqErrorRateDlCount_ = 0;
+    totalHarqErrorRateUlSum_ = totalHarqErrorRateUlCount_ = 0;
 }
 
 LteMacBase::~LteMacBase()
@@ -479,4 +482,28 @@ void LteMacBase::refreshDisplay() const
         getDisplayString().setTagArg("t", 0, buf);
         getDisplayString().setTagArg("bgtt", 0, "Number of packets in and ouf the higher layer (hl) and the lower layer (ll).");
     }
+}
+
+
+void LteMacBase::recordHarqErrorRate(unsigned int sample, Direction dir)
+{
+    if (dir == DL)
+    {
+        totalHarqErrorRateDlSum_ += sample;
+        totalHarqErrorRateDlCount_++;
+    }
+    if (dir == UL)
+    {
+        totalHarqErrorRateUlSum_ += sample;
+        totalHarqErrorRateUlCount_++;
+    }
+}
+
+double LteMacBase::getHarqErrorRate(Direction dir)
+{
+    if (dir == DL)
+        return (double)totalHarqErrorRateDlSum_/totalHarqErrorRateDlCount_;
+    if (dir == UL)
+        return (double)totalHarqErrorRateUlSum_/totalHarqErrorRateUlCount_;
+
 }

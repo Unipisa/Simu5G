@@ -11,6 +11,7 @@
 
 #include "stack/mac/scheduling_modules/LteMaxCi.h"
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
+#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
 using namespace omnetpp;
 
@@ -98,21 +99,65 @@ void LteMaxCi::prepareSchedule()
         EV << NOW << " LteMaxCI::schedule computed for cid " << cid << " score of " << desc.score_ << endl;
     }
 
+    if (direction_ == UL || direction_ == DL)  // D2D background traffic not supported (yet?)
+    {
+        // query the BgTrafficManager to get the list of backlogged bg UEs to be added to the scorelist. This work
+        // is done by this module itself, so that backgroundTrafficManager is transparent to the scheduling policy in use
+
+        BackgroundTrafficManager* bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
+        std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_),
+                                         et = bgTrafficManager->getBackloggedUesEnd(direction_);
+
+        int bgUeIndex;
+        int bytesPerBlock;
+        MacNodeId bgUeId;
+        MacCid bgCid;
+        for (; it != et; ++it)
+        {
+            bgUeIndex = *it;
+            bgUeId = BGUE_MIN_ID + bgUeIndex;
+
+            // the cid for a background UE is a 32bit integer composed as:
+            // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
+            // - the least significant 16 bits are set to 0 (lcid=0)
+            bgCid = bgUeId << 16;
+
+            bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
+
+            ScoreDesc bgDesc(bgCid, bytesPerBlock);
+            score.push(bgDesc);
+        }
+    }
+
     // Schedule the connections in score order.
     while ( ! score.empty () )
     {
         // Pop the top connection from the list.
         ScoreDesc current = score.top ();
 
-        EV << NOW << " LteMaxCI::schedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
-
-        // Grant data to that connection.
         bool terminate = false;
         bool active = true;
         bool eligible = true;
-        unsigned int granted = requestGrant (current.x_, 4294967295U, terminate, active, eligible);
+        unsigned int granted;
 
-        EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to connection " << current.x_ << endl;
+        if ( MacCidToNodeId(current.x_) >= BGUE_MIN_ID)
+        {
+            EV << NOW << " LteMaxCI::schedule scheduling background UE " << MacCidToNodeId(current.x_) << " with score of " << current.score_ << endl;
+
+            // Grant data to that background connection.
+            granted = requestGrantBackground (current.x_, 4294967295U, terminate, active, eligible);
+
+            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to background UE " << MacCidToNodeId(current.x_) << endl;
+        }
+        else
+        {
+            EV << NOW << " LteMaxCI::schedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
+
+            // Grant data to that connection.
+            granted = requestGrant (current.x_, 4294967295U, terminate, active, eligible);
+
+            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to connection " << current.x_ << endl;
+        }
 
         // Exit immediately if the terminate flag is set.
         if ( terminate ) break;
@@ -129,8 +174,11 @@ void LteMaxCi::prepareSchedule()
         {
             EV << NOW << "LteMaxCI::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
 
-            carrierActiveConnectionSet_.erase(current.x_);
-            activeConnectionTempSet_.erase (current.x_);
+            if ( MacCidToNodeId(current.x_) <= BGUE_MIN_ID)
+            {
+                carrierActiveConnectionSet_.erase(current.x_);
+                activeConnectionTempSet_.erase (current.x_);
+            }
         }
     }
 }

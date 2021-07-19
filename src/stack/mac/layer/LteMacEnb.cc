@@ -308,6 +308,16 @@ void LteMacEnb::initialize(int stage)
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this);
         }
+
+        const CarrierInfoMap* carriers = cellInfo_->getCarrierInfoMap();
+        CarrierInfoMap::const_iterator it = carriers->begin();
+        int i = 0;
+        for ( ; it != carriers->end(); ++it, ++i)
+        {
+            double carrierFrequency = it->second.carrierFrequency;
+            bgTrafficManager_[carrierFrequency] = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator",i)->getSubmodule("manager"));
+            bgTrafficManager_[carrierFrequency]->setCarrierFrequency(carrierFrequency);
+        }
     }
     else if (stage == inet::INITSTAGE_LAST)
     {
@@ -588,8 +598,8 @@ void LteMacEnb::macHandleRac(cPacket* pktAux)
 
     auto racPkt = pkt->removeAtFront<LteRac>();
     auto uinfo = pkt->getTagForUpdate<UserControlInfo>();
-    
-    enbSchedulerUl_->signalRac(uinfo->getSourceId());
+
+    enbSchedulerUl_->signalRac(uinfo->getSourceId(), uinfo->getCarrierFrequency());
 
     // TODO all RACs are marked are successful
     racPkt->setSuccess(true);

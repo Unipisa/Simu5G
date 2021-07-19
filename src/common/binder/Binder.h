@@ -21,6 +21,7 @@
 #include "common/blerCurves/PhyPisaData.h"
 #include "nodes/ExtCell.h"
 #include "stack/mac/layer/LteMacBase.h"
+#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 /**
  * The Binder module has one instance in the whole network.
@@ -43,11 +44,25 @@ class Binder : public omnetpp::cSimpleModule
     // list of static external cells. Used for intercell interference evaluation
     std::map<double, ExtCellList> extCellList_;
 
+    // list of static external cells. Used for intercell interference evaluation
+    std::map<double, BackgroundSchedulerList> bgSchedulerList_;
+
     // list of all eNBs. Used for inter-cell interference evaluation
     std::vector<EnbInfo*> enbList_;
 
     // list of all UEs. Used for inter-cell interference evaluation
     std::vector<UeInfo*> ueList_;
+
+    // list of all background traffic manager. Used for background UEs CQI computation
+    std::vector<BgTrafficManagerInfo*> bgTrafficManagerList_;
+
+    typedef std::map<unsigned int, std::map<unsigned int, double> > BgInterferenceMatrix;
+    // map of maps storing the mutual interference between BG cells
+    BgInterferenceMatrix bgCellsInterferenceMatrix_;
+    // map of maps storing the mutual interference between BG UEs
+    BgInterferenceMatrix bgUesInterferenceMatrix_;
+    // maximum data rate achievable in one RB (NED parameter)
+    double maxDataRatePerRb_;
 
     MacNodeId macNodeIdCounter_[3]; // MacNodeId Counter
     DeployedUesMap dMap_; // DeployedUes --> Master Mapping
@@ -114,10 +129,11 @@ class Binder : public omnetpp::cSimpleModule
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> > handoverTriggered_;
   protected:
     virtual void initialize(int stages) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
+    virtual void finish();
 
   public:
     Binder()
@@ -141,6 +157,11 @@ class Binder : public omnetpp::cSimpleModule
         while(enbList_.size() > 0){
             delete enbList_.back();
             enbList_.pop_back();
+        }
+
+        while(bgTrafficManagerList_.size() > 0){
+            delete bgTrafficManagerList_.back();
+            bgTrafficManagerList_.pop_back();
         }
 
         for (auto it = macNodeIdToModuleName_.begin(); it != macNodeIdToModuleName_.end(); ++it)
@@ -414,6 +435,20 @@ class Binder : public omnetpp::cSimpleModule
         return extCellList_[carrierFrequency];
     }
 
+    int addBackgroundScheduler(BackgroundScheduler* bgScheduler, double carrierFrequency)
+    {
+        if (bgSchedulerList_.find(carrierFrequency) == bgSchedulerList_.end())
+            bgSchedulerList_[carrierFrequency] = BackgroundSchedulerList();
+
+        bgSchedulerList_[carrierFrequency].push_back(bgScheduler);
+        return bgSchedulerList_[carrierFrequency].size() - 1;
+    }
+
+    BackgroundSchedulerList* getBackgroundSchedulerList(double carrierFrequency)
+    {
+        return &bgSchedulerList_[carrierFrequency];
+    }
+
     void addEnbInfo(EnbInfo* info)
     {
         enbList_.push_back(info);
@@ -434,6 +469,16 @@ class Binder : public omnetpp::cSimpleModule
         return &ueList_;
     }
 
+    void addBgTrafficManagerInfo(BgTrafficManagerInfo* info)
+    {
+        bgTrafficManagerList_.push_back(info);
+    }
+
+    std::vector<BgTrafficManagerInfo*> * getBgTrafficManagerList()
+    {
+        return &bgTrafficManagerList_;
+    }
+
     Cqi meanCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
 
     Cqi medianCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
@@ -444,6 +489,7 @@ class Binder : public omnetpp::cSimpleModule
     omnetpp::simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
     void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase* phy, Direction dir);
+    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir);  // overloaded function for bgUes
     const std::vector<std::vector<UeAllocationInfo> >* getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support
@@ -484,6 +530,17 @@ class Binder : public omnetpp::cSimpleModule
     void removeHandoverTriggered(MacNodeId nodeId);
 
     void updateUeInfoCellId(MacNodeId nodeId, MacCellId cellId);
+
+    /*
+     *  Background UEs and cells Support
+     */
+    void computeAverageCqiForBackgroundUes();
+    void updateMutualInterference(unsigned int bgTrafficManagerId, unsigned int numBands, Direction dir);
+    double computeInterferencePercentageDl(double n, double k, unsigned int numBands);
+    double computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal);
+    double computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
+    double computeRequestedRbsFromSinr(double sinr, double reqLoad);
+
 };
 
 #endif

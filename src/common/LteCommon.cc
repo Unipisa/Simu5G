@@ -563,6 +563,19 @@ CellInfo* getCellInfo(MacNodeId nodeId)
     return module? check_and_cast<CellInfo*>(module->getSubmodule("cellInfo")) : nullptr;
 }
 
+cModule* getPhyByMacNodeId(MacNodeId nodeId)
+{
+    // UE might have left the simulation, return NULL in this case
+    // since we do not have a MAC-Module anymore
+    int id = getBinder()->getOmnetId(nodeId);
+    if (id == 0){
+        return nullptr;
+    }
+    if (isNrUe(nodeId))
+        return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrPhy"));
+    return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("phy"));
+}
+
 cModule* getMacByMacNodeId(MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case

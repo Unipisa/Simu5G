@@ -21,7 +21,7 @@ import simu5g.nodes.eNodeB;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
 import simu5g.nodes.PgwStandard;
-import simu5g.nodes.ExtCell;
+import simu5g.nodes.backgroundCell.BackgroundCell;
 import simu5g.world.radio.LteChannelControl;
 
 // SingleCell_withSecondaryGnb
@@ -34,7 +34,7 @@ network SingleCell_withSecondaryGnb
 {
     parameters:
         int numUe = default(1);
-        int numExtCells = default(0);
+        int numBgCells = default(0);
         @display("i=block/network2;bgb=991,558;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
@@ -67,11 +67,11 @@ network SingleCell_withSecondaryGnb
         secondaryGnb: gNodeB {
             @display("p=726.35,277.35626;is=vl");
         }
+        bgCell[numBgCells]: BackgroundCell {
+            @display("p=910.425,98.25625;is=vl");
+        }
         ue[numUe]: NRUe {
             @display("p=628.09375,411.68124");
-        }
-        extCell[numExtCells]: ExtCell {
-            @display("p=100,480;is=vl");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

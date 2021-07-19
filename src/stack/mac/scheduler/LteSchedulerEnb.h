@@ -222,6 +222,9 @@ class LteSchedulerEnb
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
         std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limibBl = false) = 0;
 
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+            Remote antenna = MACRO, bool limitBl = false) = 0;
+
     /**
      * Schedules capacity for a given connection without effectively perform the operation on the
      * real downlink/uplink buffer: instead, it performs the operation on a virtual buffer,
@@ -243,6 +246,8 @@ class LteSchedulerEnb
     virtual unsigned int scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
             BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
+    virtual unsigned int scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
+            BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
     /*
      * Getter for active connection set
      */
@@ -273,13 +278,19 @@ class LteSchedulerEnb
      * Updates current schedule list with RAC requests (only for UL).
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool racschedule(double carrierFrequency) = 0;
+    virtual bool racschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
+
+    /**
+     * Schedule retransmissions for background UEs
+     * @return TRUE if OFDM space is exhausted.
+     */
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
 
     /*
      * OFDMA frame management
@@ -310,6 +321,16 @@ class LteSchedulerEnb
      * @return available space in bytes
      */
     unsigned int availableBytes(const MacNodeId id, const Remote antenna, Band b, Codeword cw, Direction dir, double carrierFrequency, int limit = -1);
+    /**
+     * Returns the available space for a given (background) user, antenna, logical band and codeword, in bytes.
+     *
+     * @param id MAC node Id
+     * @param antenna antenna
+     * @param b band
+     * @param cw codeword
+     * @return available space in bytes
+     */
+    unsigned int availableBytesBackgroundUe(const MacNodeId id, const Remote antenna, Band b, Direction dir, double carrierFrequency, int limit = -1);
 
     unsigned int allocatedCws(MacNodeId nodeId)
     {

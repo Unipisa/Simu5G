@@ -276,8 +276,6 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
 
             it->second.bandLimit.clear();
 
-            // check the number of codewords
-            unsigned int numCodewords = 1;
             // for each band of the band vector provided
             for (unsigned int i = 0; i < numBands_; i++)
             {
@@ -288,7 +286,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
                 int limit = (i >= it->second.firstBand && i <= it->second.lastBand) ? -1 : -2;
 
                 elem.limit_.clear();
-                for (unsigned int j = 0; j < numCodewords; j++)
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
                     elem.limit_.push_back(limit);
 
                 it->second.bandLimit.push_back(elem);

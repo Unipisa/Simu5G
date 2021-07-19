@@ -103,6 +103,15 @@ class LtePhyUe : public LtePhyBase
 
     omnetpp::simtime_t lastFeedback_;
 
+    // support to print averageCqi at the end of the simulation
+    std::vector<short int> cqiDlSamples_;
+    std::vector<short int> cqiUlSamples_;
+    unsigned int cqiDlSum_;
+    unsigned int cqiUlSum_;
+    unsigned int cqiDlCount_;
+    unsigned int cqiUlCount_;
+
+
     virtual void initialize(int stage) override;
     virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
     virtual void handleAirFrame(omnetpp::cMessage* msg) override;
@@ -141,6 +150,10 @@ class LtePhyUe : public LtePhyBase
         double fd = (speed / SPEED_OF_LIGHT) * carrierFrequency_;
         return 0.1 / fd;
     }
+
+    void recordCqi(unsigned int sample, Direction dir);
+    double getAverageCqi(Direction dir);
+    double getVarianceCqi(Direction dir);
 };
 
 #endif  /* _LTE_AIRPHYUE_H_ */
