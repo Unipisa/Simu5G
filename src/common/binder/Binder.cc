@@ -262,18 +262,15 @@ void Binder::initialize(int stage)
 
 void Binder::finish()
 {
-    if (par("printTrafficGeneratorConfig"))
+    if (par("printTrafficGeneratorConfig").boolValue())
     {
         // build filename
         std::stringstream outputFilenameStr;
-        outputFilenameStr << "trafficGeneratorConfigs/config";
+        outputFilenameStr << "config";
         cConfigurationEx* configEx = getEnvir()->getConfigEx();
-        outputFilenameStr << "-u=" << configEx->getVariable("u");
-        outputFilenameStr << "-rbs=" << configEx->getVariable("rbs");
-        outputFilenameStr << "-numBgCells=" << configEx->getVariable("numBgCells");
-        outputFilenameStr << "-numBkUEs=" << configEx->getVariable("numBkUEs");
-        outputFilenameStr << "-dist=" << configEx->getVariable("dist");
-        outputFilenameStr << "-repetition=" << configEx->getVariable("repetition") << ".ini";
+
+        const char* itervars = configEx->getVariable(CFGVAR_ITERATIONVARSF);
+        outputFilenameStr << "-" << itervars << "repetition=" << configEx->getVariable("repetition") << ".ini";
         std::string outputFilename = outputFilenameStr.str();
 
         // open output file
@@ -286,9 +283,6 @@ void Binder::finish()
             std::stringstream ss;
 
             UeInfo* info = *it;
-
-            if (info->id == 2049)  // skip the real UE
-                continue;
 
             if (info->id < NR_UE_MIN_ID)
                 continue;
