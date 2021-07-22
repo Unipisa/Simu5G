@@ -25,8 +25,6 @@ enum HttpMsgState {
     INCOMPLETE_NO_DATA
 };
 
-
-
 /*
      * TODO
      *
@@ -61,7 +59,6 @@ typedef struct
 
 } ProblemDetailBase;
 
-
 HttpBaseMessage* parseHeader(const std::string& header);
 
 HttpMsgState parseTcpData(std::string* data, HttpBaseMessage* httpMessage);
@@ -87,10 +84,12 @@ void send201Response(inet::TcpSocket *socket, const char *body);
 void send201Response(inet::TcpSocket *socket, const char* body, std::pair<std::string, std::string>& header);
 void send201Response(inet::TcpSocket *socket, const char* body, std::map<std::string, std::string>& headers);
 void send204Response(inet::TcpSocket *socket);
-void send405Response(inet::TcpSocket *socket, const char *methods =  "" );
+
+
+void send405Response(inet::TcpSocket *socket, const char *methods =  nullptr );
 void send400Response(inet::TcpSocket *socket, const char *reason);
 void send400Response(inet::TcpSocket *socket);
-
+void send404Response(inet::TcpSocket *socket, const char *reason);
 void send404Response(inet::TcpSocket *socket);
 
 
@@ -99,21 +98,21 @@ void send505Response(inet::TcpSocket *socket);
 void send503Response(inet::TcpSocket *socket, const char *reason);
 
 
-void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, const char* body = nullptr);
-void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::pair<std::string, std::string>& header, const char* body = nullptr);
-void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::map<std::string, std::string>& headers, const char* body = nullptr);
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, const char* uri, const char* parameters = nullptr, const char* body = nullptr);
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, std::pair<std::string, std::string>& header, const char* uri, const char* parameters = nullptr, const char* body = nullptr);
+void sendHttpRequest(inet::TcpSocket *socket, const char* method, std::map<std::string, std::string>& headers, const char* uri, const char* parameters = nullptr, const char* body = nullptr);
 
 
 
-void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, const char* body = nullptr);
-void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body = nullptr);
-void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body = nullptr);
+void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, const char* body = nullptr);
+void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::pair<std::string, std::string>& header, const char* body = nullptr);
+void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::map<std::string, std::string>& headers, const char* body = nullptr);
 
 
 
-void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri);
-void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri);
-void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body = nullptr);
+void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri, const char* parameters = nullptr);
+void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri, const char* parameters = nullptr);
+void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body = nullptr, const char* parameters = nullptr);
 void sendDeleteRequest(inet::TcpSocket *socket, const char* host, const char* uri);
 
 

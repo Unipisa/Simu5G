@@ -12,7 +12,7 @@ HttpResponseMessage::HttpResponseMessage(const char *name, short kind)
     setConnection("keep-alive");
     setBody("");
 }
-HttpResponseMessage::HttpResponseMessage(const HttpResponseCode res, const char *name, short kind)
+HttpResponseMessage::HttpResponseMessage(const HttpResponseStatus res, const char *name, short kind)
 {
     setStatus(res);
     setContentType("application/json");
@@ -36,51 +36,51 @@ void HttpResponseMessage::setStatus(const char* status){
     this->status = status;
 }
 
-void HttpResponseMessage::setStatus(HttpResponseCode res){
+void HttpResponseMessage::setStatus(HttpResponseStatus res){
     handleChange();
     switch(res) {
         case(OK):
-            this->code = "200";
+            this->code = 200;
             this->status = "OK";
             break;
         case(CREATED):
-            this->code = "201";
+            this->code = 201;
             this->status = "Created";
             break;
         case(NO_CONTENT):
-            this->code = "204";
+            this->code = 204;
             this->status = "No Content";
             break;
         case(BAD_REQ):
-            this->code = "200";
+            this->code = 200;
             this->status = "BadRequest";
             break;
         case(UNAUTH):
-            this->code = "401";
+            this->code = 401;
             this->status = "Unauthorized";
             break;
         case(FORBIDDEN):
-            this->code = "403";
+            this->code = 403;
             this->status = "Forbidden";
             break;
         case(NOT_FOUND):
-            this->code = "404";
+            this->code = 404;
             this->status = "Not Found";
             break;
         case(NOT_ACC):
-            this->code = "406";
+            this->code = 406;
             this->status = "Not Acceptable";
             break;
         case(TOO_REQS):
-            this->code = "429";
+            this->code = 429;
             this->status = "Too Many Requests";
             break;
         case(BAD_METHOD):
-            this->code = "405";
+            this->code = 405;
             this->status = "Method Not Allowed";
             break;
         case(HTTP_NOT_SUPPORTED):
-            this->code = "505";
+            this->code = 505;
             this->status = "HTTP Version Not Supported";
             break;
         default:
@@ -122,7 +122,7 @@ std::string HttpResponseMessage::getHeaderField(const std::string& key)const
 
 std::string HttpResponseMessage::getPayload() const{
     std::string crlf = "\r\n";
-    std::string payload = this->httpProtocol.str() +" " + this->code.str() + " " + status.str() + crlf;
+    std::string payload = this->httpProtocol.str() +" " + std::to_string(this->code) + " " + status.str() + crlf;
     if(contentLength != 0)
         payload += "Content-Length: " + std::to_string(this->contentLength) + crlf;
     payload += "Content-Type: " + this->contentType.str() + crlf;

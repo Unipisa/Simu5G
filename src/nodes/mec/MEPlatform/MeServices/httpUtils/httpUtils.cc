@@ -99,7 +99,29 @@ namespace Http {
                    return httpRequest;
                }
                httpRequest->setMethod(line[0].c_str());
-               httpRequest->setUri(line[1].c_str());
+
+               /*
+                * get URI and parameters
+                */
+               std::vector<std::string> uriParams =  cStringTokenizer(line[1].c_str(), "?").asVector();
+               if(uriParams.size() == 2)
+               {
+                   EV << "ci sono parametri" << endl;
+                   httpRequest->setUri(uriParams[0].c_str());
+                   httpRequest->setParameters(uriParams[1].c_str());
+               }
+               else if(uriParams.size() == 1)
+               {
+                   EV << "non ci sono parametri" << endl;
+                   httpRequest->setUri(uriParams[0].c_str());
+               }
+               else
+               {
+                   EV << "Errore parametri" << endl;
+                   httpRequest->setState(BAD_REQ_URI);
+                  return httpRequest;
+               }
+
                if(!checkHttpVersion(line[2]))
                {
                    httpRequest->setState(BAD_HTTP);
@@ -166,7 +188,7 @@ namespace Http {
             }
 
             httpResponse->setHttpProtocol(line[0].c_str());
-            httpResponse->setCode(line[1].c_str());
+            httpResponse->setCode(std::stoi(line[1]));
 
             std::string reason;
             int size = line.size();
@@ -269,6 +291,8 @@ namespace Http {
     bool parseReceivedMsg(std::string& packet, std::string* storedData, HttpBaseMessage** currentHttpMessage)
     {
         EV_INFO << "httpUtils::parseReceivedMsg- start..." << endl;
+        EV_INFO << "httpUtils::parseReceivedMsg- HTTP message: " << packet << endl;
+
         std::string delimiter = "\r\n\r\n";
         size_t pos = 0;
         std::string header;
@@ -337,6 +361,7 @@ namespace Http {
         // non ho creato ancora il messaggio
         if(packet.length() != 0)
         {
+            EV << "MecAppBase::parseReceivedMsgn - stored data: " << packet << endl;
            *storedData = packet;
           return false;
         }
@@ -466,7 +491,7 @@ namespace Http {
 
     }
 
-    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, const char* body)
+    void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
 //        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
@@ -487,7 +512,7 @@ namespace Http {
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
-    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
+    void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
 //        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
@@ -509,7 +534,7 @@ namespace Http {
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
-    void sendHttpResponse(inet::TcpSocket *socket, const char* code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
+    void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
     {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
 //        EV << "httpUtils - sendHttpResponse - body: "<< body<< endl;
@@ -536,7 +561,7 @@ namespace Http {
 
     }
 
-    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, const char* body)
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, const char* uri, const char* parameters, const char* body)
     {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
@@ -550,11 +575,15 @@ namespace Http {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
         }
-        reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        if(parameters != nullptr)
+        {
+            reqPkt->setParameters(parameters);
+        }
+        reqPkt->setChunkLength(B(reqPkt->getPayload().size())); // TODO get size more efficiently
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
-    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::pair<std::string, std::string>& header, const char* body)
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, std::pair<std::string, std::string>& header, const char* uri, const char* parameters, const char* body)
     {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
@@ -567,6 +596,10 @@ namespace Http {
         {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
+        }
+        if(parameters != nullptr)
+        {
+            reqPkt->setParameters(parameters);
         }
         reqPkt->setHeaderField(header.first,header.second);
         reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
@@ -574,7 +607,7 @@ namespace Http {
         socket->send(packet);
 
     }
-    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* uri, const char* host, std::map<std::string, std::string>& headers, const char* body)
+    void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, std::map<std::string, std::string>& headers, const char* uri, const char* parameters, const char* body)
     {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
@@ -587,6 +620,10 @@ namespace Http {
         {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
+        }
+        if(parameters != nullptr)
+        {
+            reqPkt->setParameters(parameters);
         }
         std::map<std::string, std::string>::iterator it = headers.begin();
         std::map<std::string, std::string>::iterator end = headers.end();
@@ -601,97 +638,119 @@ namespace Http {
 
 
     void send200Response(inet::TcpSocket *socket, const char* body){
-        sendHttpResponse(socket, "200", "OK" , body);
+        sendHttpResponse(socket, 200, "OK" , body);
         return;
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body){
-            sendHttpResponse(socket, "201", "Created" , body);
+            sendHttpResponse(socket, 201, "Created" , body);
             return;
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body, std::pair<std::string, std::string>& header){
-        sendHttpResponse(socket, "201", "Created" ,header, body);
+        sendHttpResponse(socket, 201, "Created" ,header, body);
         return;
     }
 
     void send201Response(inet::TcpSocket *socket, const char* body,std::map<std::string, std::string>& headers){
-        sendHttpResponse(socket, "201", "Created", headers, body);
+        sendHttpResponse(socket, 201, "Created", headers, body);
         return;
     }
 
     void send204Response(inet::TcpSocket *socket){
-        sendHttpResponse(socket, "204", "No Content");
+        sendHttpResponse(socket, 204, "No Content");
         return;
     }
 
     void send405Response(inet::TcpSocket *socket, const char* methods){
         std::pair<std::string, std::string> header;
         header.first="Allow: ";
-        if(strcmp (methods,"") == 0)
+        if(methods == nullptr)
             header.second = "GET, POST, DELETE, PUT";
         else{
             header.second = std::string(methods);
         }
-        sendHttpResponse(socket, "405", "Method Not Allowed" , header);
+        sendHttpResponse(socket, 405, "Method Not Allowed" , header);
         return;
     }
 
-    void send400Response(inet::TcpSocket *socket){
-        sendHttpResponse(socket, "400", "Bad Request" , "{ \"send400Response\" : \"TODO implement ProblemDetails\"}");
+    void send400Response(inet::TcpSocket *socket)
+    {
+        sendHttpResponse(socket, 400, "Bad Request" , "{ \"send400Response\" : \"TODO implement ProblemDetails\"}");
     }
 
     void send400Response(inet::TcpSocket *socket, const char *reason)
     {
-        sendHttpResponse(socket, "400", "Bad Request" , reason);
+        ProblemDetailBase probDet;
+        probDet.detail = reason;
+        probDet.status = "400";
+        probDet.title = "400 Response";
+        probDet.type = "Client Error";
+
+        sendHttpResponse(socket, 400, "Bad Request" , probDet.toJson().dump().c_str());
         return;
     }
 
-    void send404Response(inet::TcpSocket *socket){
-        sendHttpResponse(socket, "404", "Not Found" , "{ \"send404Response\" : \"TODO implement ProblemDetails\"}");
+    void send404Response(inet::TcpSocket *socket, const char *reason)
+    {
+        ProblemDetailBase probDet;
+        probDet.detail = reason;
+        probDet.status = "404";
+        probDet.title = "404 Response";
+        probDet.type = "Client Error";
+
+        sendHttpResponse(socket, 400, "Bad Request" , probDet.toJson().dump().c_str());
+       sendHttpResponse(socket, 400, "Bad Request" , reason);
+       return;
+    }
+
+    void send404Response(inet::TcpSocket *socket)
+    {
+        sendHttpResponse(socket, 404, "Not Found" , "{ \"send404Response\" : \"TODO implement ProblemDetails\"}");
         return;
     }
 
-    void send505Response(inet::TcpSocket *socket){
-        sendHttpResponse(socket, "505", "HTTP Version Not Supported");
+    void send505Response(inet::TcpSocket *socket)
+    {
+        sendHttpResponse(socket, 505, "HTTP Version Not Supported");
         return;
     }
 
     void send503Response(inet::TcpSocket *socket, const char *reason)
     {
-        sendHttpResponse(socket, "503", "HTTP Version Not Supported" , reason);
+        sendHttpResponse(socket, 503 , "HTTP Version Not Supported" , reason);
         return;
 
     }
 
     void send500Response(inet::TcpSocket *socket, const char *reason)
     {
-        sendHttpResponse(socket, "500", "Internal Error" , reason);
+        sendHttpResponse(socket, 500, "Internal Error" , reason);
         return;
 
     }
 
-    void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri)
+    void sendPostRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri, const char* parameters)
     {
-        sendHttpRequest(socket, "POST", uri, host, body);
+        sendHttpRequest(socket, "POST", host, uri, parameters, body);
         return;
     }
 
-    void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri)
+    void sendPutRequest(inet::TcpSocket *socket, const char* body, const char* host, const char* uri, const char* parameters)
     {
-        sendHttpRequest(socket, "PUT", uri, host, body);
+        sendHttpRequest(socket, "PUT", host, uri, parameters, body);
         return;
     }
 
-    void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri,const char* body)
+    void sendGetRequest(inet::TcpSocket *socket, const char* host, const char* uri, const char* parameters, const char* body)
     {
-        sendHttpRequest(socket, "GET", uri, host, body);
+        sendHttpRequest(socket, "GET", host, uri, parameters, body);
         return;
     }
 
     void sendDeleteRequest(inet::TcpSocket *socket, const char* host, const char* uri)
     {
-        sendHttpRequest(socket, "DELETE", uri, host);
+        sendHttpRequest(socket, "DELETE", host, uri);
         return;
     }
 

@@ -42,7 +42,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
 {
     public:
         HttpResponseMessage(const char *name=nullptr, short kind=0);
-        HttpResponseMessage(const HttpResponseCode res, const char *name=nullptr, short kind=0);
+        HttpResponseMessage(const HttpResponseStatus res, const char *name=nullptr, short kind=0);
         HttpResponseMessage& operator=(const HttpResponseMessage& other){if (this==&other) return *this; HttpResponseMessage_m::operator=(other); copy(other); return *this;}
 
         virtual HttpResponseMessage *dup() const override {return new HttpResponseMessage(*this);}
@@ -52,7 +52,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
         virtual void setHeaderField(const std::string& key, const std::string& value);
         virtual std::string getHeaderField(const std::string& key) const;
 
-        virtual void setStatus(HttpResponseCode code);
+        virtual void setStatus(HttpResponseStatus code);
         virtual void setStatus(const char* status) override;
         virtual std::string getPayload() const;
     private:

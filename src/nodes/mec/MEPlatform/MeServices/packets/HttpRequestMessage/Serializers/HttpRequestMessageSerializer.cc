@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessageSerializer.h"
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/Serializers/HttpRequestMessageSerializer.h"
 
 #include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
@@ -42,7 +42,6 @@ void HttpRequestMessageSerializer::serialize(MemoryOutputStream& stream, const P
 
 const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& stream) const
 {
-
     EV << "HttpRequestMessageSerializer::deserialize" << endl;
     auto startPosition = stream.getPosition();
     auto applicationPacket = makeShared<HttpRequestMessage>();

@@ -36,7 +36,11 @@ void HttpRequestMessage::setHeaderField(const std::string& key , const std::stri
 
 std::string HttpRequestMessage::getPayload() const{
     std::string crlf = "\r\n";
-    std::string payload = this->method.str() + " " + this->uri.str() + " " + this->httpProtocol.str() + crlf;
+    std::string payload;
+    if(this->parameters.size() == 0)
+        payload = this->method.str() + " " + this->uri.str() + " " + this->httpProtocol.str() + crlf;
+    else
+        payload = this->method.str() + " " + this->uri.str() + "?"+ this->parameters.str() + " " + this->httpProtocol.str() + crlf;
     if(host != "")
         payload += "Host: " + this->host.str() + crlf;
 
