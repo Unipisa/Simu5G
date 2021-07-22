@@ -115,14 +115,14 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
          */
         if(contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId.compare(contAppMsg->getAppDId()) == 0)
         {
-        //        meAppMap[ueAppID].lastAckStartSeqNum = pkt->getSno();
-        //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
-        //        ackMEAppPacket(ueAppID, ACK_START_MEAPP);
-        //testing
-        EV << "MecOrchestrator::startMEApp - \tWARNING: required MEApp instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
-        EV << "MecOrchestrator::startMEApp  - sending ackMEAppPacket with "<< ACK_START_MEAPP << endl;
-        sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
-        return;
+            //        meAppMap[ueAppID].lastAckStartSeqNum = pkt->getSno();
+            //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
+            //        ackMEAppPacket(ueAppID, ACK_START_MEAPP);
+            //testing
+            EV << "MecOrchestrator::startMEApp - \tWARNING: required MEApp instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
+            EV << "MecOrchestrator::startMEApp  - sending ackMEAppPacket with "<< ACK_START_MEAPP << endl;
+            sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
+            return;
         }
     }
 
@@ -383,12 +383,16 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         VirtualisationInfrastructureManager *vim = check_and_cast<VirtualisationInfrastructureManager*> (mecHost->getSubmodule("vim"));
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
-        if(!res)
+        if(!res) // skip this MEC host if it has not enough resources
             continue;
+
+        // Temporally select this mec host as the best
+        bestHost = mecHost;
 
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager*> (mecHost->getSubmodule("mecPlatformManager"));
         auto mecServices = mecpm ->getAvailableMecServices();
         std::string serviceName;
+
         /* I assume the app requires only one mec service */
         if(appDesc.getAppServicesRequired().size() > 0)
         {
@@ -396,7 +400,8 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         }
         else
         {
-            bestHost = mecHost;
+            // If the MEC app does not require any MEC service, the first available MEC host is taken
+//            bestHost = mecHost;
             break;
         }
         auto it = mecServices->begin();

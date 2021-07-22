@@ -36,10 +36,14 @@ void MecPlatformManager::initialize(int stage)
     }
 
     const char * mecOrche = par("mecOrchestrator").stringValue();
-    cModule* module = getSimulation()->getModuleByPath(mecOrche);
+    cModule* module = getSimulation()->findModuleByPath(mecOrche);
 
     if(module != nullptr)
         mecOrchestrator = check_and_cast<MecOrchestrator*>(module);
+    else
+    {
+        EV << "MecPlatformManager::initialize - Mec Orchestrator ["<< mecOrche << "] not found" << endl;
+    }
 }
 
 

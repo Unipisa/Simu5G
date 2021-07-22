@@ -55,8 +55,6 @@ module LCMProxy
 
         //to external networks (internet)
         inout ppp[];
-        inout pppUpf[];
-
 
         output toMecOrchestrator;
         input fromMecOrchestrator;			// connection to the ME App output gate

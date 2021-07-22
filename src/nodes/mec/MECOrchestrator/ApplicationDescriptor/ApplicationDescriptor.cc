@@ -5,10 +5,8 @@
  *      Author: linofex
  */
 
-
-
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-
+#include <math.h>       /* pow */
 #include  <iostream>
 
 using namespace omnetpp;
@@ -28,8 +26,8 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
     appInfoName_ = jsonFile["appInfoName"];
     appDescription_ = jsonFile["appDescription"];
     virtualResourceDescritor_.cpu  = jsonFile["virtualComputeDescriptor"]["virtualCpu"];
-    virtualResourceDescritor_.disk = jsonFile["virtualComputeDescriptor"]["virtualDisk"];
-    virtualResourceDescritor_.ram  = jsonFile["virtualComputeDescriptor"]["virtualMemory"];
+    virtualResourceDescritor_.disk = pow(10,6) * double(jsonFile["virtualComputeDescriptor"]["virtualDisk"]);   // this quantity is in MB
+    virtualResourceDescritor_.ram  = pow(10,6) * double(jsonFile["virtualComputeDescriptor"]["virtualMemory"]); // this quantity is in MB
 
     if(jsonFile.contains("appServiceRequired"))
     {
@@ -82,7 +80,7 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
 
     /*
      * If the application descriptor refers to a mec application running outside the simulator, i.e. emulation mode,
-     * the fields address and port refers to the endpoint to talk with the mec application
+     * the fields address and port refers to the endpoint to communicate with the mec application
      */
     if(jsonFile.contains("emulatedMecApplication"))
     {

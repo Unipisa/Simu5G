@@ -73,6 +73,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
         if(currentHttpMessage->getType() == REQUEST)
         {
             service->emitRequestQueueLength();
+            currentHttpMessage->setArrivalTime(simTime());
             service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
         }
         else
