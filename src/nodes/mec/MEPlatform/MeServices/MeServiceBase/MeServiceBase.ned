@@ -44,6 +44,10 @@ moduleinterface MeServiceBase
     	
     	string scopeOfLocality;
     	bool consumedLocalOnly;
+    	
+    	bool loadGenerator;
+    	double betaa;
+    	int numBGApps;
        	
 //   	servDescriptor.name = par("serviceName").str();
 //    servDescriptor.category = par("serviceCategory").str();
@@ -69,6 +73,9 @@ moduleinterface MeServiceBase
 
 		@signal[requestQueueSize](type = long);
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
+        @signal[responseTime](type = long);
+        @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
+        
 
 //    gates:
 //        input socketIn @labels(TcpCommand/up);

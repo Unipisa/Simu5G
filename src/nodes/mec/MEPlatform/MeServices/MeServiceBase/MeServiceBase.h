@@ -13,7 +13,7 @@
 #include <queue>
 #include "inet/applications/base/ApplicationBase.h"
 
-
+#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
 #include "nodes/binder/LteBinder.h"
 #include "nodes/mec/MecCommon.h"
@@ -76,6 +76,19 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
         std::string baseUriSubscriptions_;
         std::string baseSubscriptionLocation_;
 
+
+        /* 
+        * Load generator variables
+        * the current implementation assumes a M/M/1 system
+        */
+        bool loadGenerator_;
+        double lambda_; // arrival rate of a BG request form a BG app
+        double beta_; // arrival rate of a BG request form a BG app
+
+        int numBGApps_; // number of BG apps
+        double rho_;
+        omnetpp::simtime_t lastFGRequestArrived_;
+
         unsigned int subscriptionId_; // identifier for new subscriptions
 
         // currently not uses
@@ -106,6 +119,7 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
 
         // signals for statistics
         omnetpp::simsignal_t requestQueueSizeSignal_;
+        omnetpp::simsignal_t responseTimeSignal_;
 
 
         /*
@@ -188,10 +202,10 @@ class MeServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICall
          *
          */
 
-        virtual void handleGETRequest(const std::string& uri, inet::TcpSocket* socket) = 0;
-        virtual void handlePOSTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket)   = 0;
-        virtual void handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket)    = 0;
-        virtual void handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) = 0;
+        virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) = 0;
+        virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   = 0;
+        virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    = 0;
+        virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) = 0;
 
 
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }

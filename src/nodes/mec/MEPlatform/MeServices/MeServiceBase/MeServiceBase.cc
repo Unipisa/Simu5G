@@ -15,7 +15,7 @@
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 
 #include "nodes/mec/MEPlatform/MeServices/Resources/SubscriptionBase.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+
 
 #include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
 #include "nodes/mec/MEPlatform/MeServices/MeServiceBase/SocketManager.h"
@@ -33,6 +33,9 @@ MeServiceBase::MeServiceBase()
     mecPlatformManager_ = nullptr;
     currentRequestMessageServed_ = nullptr;
     currentSubscriptionServed_ = nullptr;
+    lastFGRequestArrived_ = 0;
+    loadGenerator_ = false;
+    rho_ = 0;
 }
 
 void MeServiceBase::initialize(int stage)
@@ -52,14 +55,40 @@ void MeServiceBase::initialize(int stage)
         subscriptionService_ = new cMessage("serveSubscription");
         subscriptionQueueSize_ = par("subscriptionQueueSize");
 
+        EV << "MeServiceBase::initialize - mean request service time " << requestServiceTime_ << endl;
+        EV << "MeServiceBase::initialize - mean subscription service time " << subscriptionServiceTime_<< endl;
+
+        EV << "MeServiceBase::initialize" << endl;
+
+
         subscriptionId_ = 0;
         subscriptions_.clear();
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+        responseTimeSignal_ = registerSignal("responseTime");
+
         binder_ = getBinder();
         meHost_ = getParentModule() // MePlatform
                 ->getParentModule(); // MeHost
 
+        loadGenerator_ = par("loadGenerator").boolValue();
+        if(loadGenerator_)
+        {
+            beta_ = par("betaa").doubleValue();
+            lambda_ = 1/beta_;
+            numBGApps_ = par("numBGApps").intValue();
+            /*
+             * check if the system is stable.
+             * For M/M/1 --> rho (lambda_/mu) < 1
+             * If arrivals come from multiple indipendent exponential sources:
+             * (numBGApps*lambda_)/mu) < 1
+             */
+            double lambdaT = lambda_*(numBGApps_+1);
+            rho_ = lambdaT*requestServiceTime_;
+            if(rho_ >= 1)
+                throw cRuntimeError ("M/M/1 system is unstable: rho is %f", rho_);
+            EV <<"MeServiceBase::initialize - rho: "<< rho_ <<  endl;
+        }
 
         int found = getParentModule()->findSubmodule("serviceRegistry");
         if(found == -1)
@@ -167,7 +196,7 @@ void MeServiceBase::handleMessageWhenUp(cMessage *msg)
 //            maybe the service wants to perform some operations in case the subId is not present,
 //            so the service base just calls the manageSubscription() method.
 //            bool res = false;
-//            // fixme check if the subscription is stilla active, i.e. the client did not disconnected
+//            // fixme check if the subscription is still active, i.e. the client did not disconnected
 //            if(subscriptions_.find(currentSubscriptionServed_->getSubId()) != subscriptions_.end() )
 //                res = manageSubscription();
 //            else
@@ -257,9 +286,10 @@ bool MeServiceBase::manageRequest()
         }
         else
         {
-
-            //        handleCurrentRequest(socket);
             handleRequest(socket);
+            simtime_t responseTime = simTime() - currentRequestMessageServed_->getArrivalTime();
+            EV_INFO <<" MeServiceBase::manageRequest - Response time - " << responseTime << endl;
+            emit(responseTimeSignal_, responseTime);
         }
 
         if(currentRequestMessageServed_ != nullptr)
@@ -269,7 +299,7 @@ bool MeServiceBase::manageRequest()
         }
         return true;
     }
-    else // socket has been closed or some error occured, discard request
+    else // socket has been closed or some error occurred, discard request
     {
         // I should schedule immediately a new request execution
         if(currentRequestMessageServed_ != nullptr)
@@ -300,6 +330,16 @@ void MeServiceBase::scheduleNextEvent(bool now)
     else if (requests_.getLength() != 0 && !requestService_->isScheduled() && !subscriptionService_->isScheduled())
     {
         currentRequestMessageServed_ = check_and_cast<HttpRequestMessage*>(requests_.pop());
+
+        if(loadGenerator_)
+        {
+            /*
+             * If the loadGenerator flag is active, use the responseTime calculated at arriving time
+             */
+            scheduleAt(simTime() + currentRequestMessageServed_->getResponseTime() , requestService_);
+            return;
+        }
+
         if(now)
             scheduleAt(simTime() + 0 , subscriptionService_);
         else
@@ -341,17 +381,58 @@ void MeServiceBase::newRequest(HttpRequestMessage *msg)
        return;
     }
 
+    /*
+     * If the loadGenerator flag is active, it means that arriving FG requests
+     * needs to wait the serving of other requests (i.e. background requests (BG)).
+     * Our implementation supposes BG requests arrive exponentially, but you can
+     * manage the load generation as you prefer.
+     *
+     * When the FG request queue is empty, upon a FG arrive the number of requests
+     * already in the system is calculated supposing a M/M/1 system with service mu.
+     */
+    if(loadGenerator_)
+    {
+        int numOfBGReqs;
+
+        if(requests_.getLength() == 0)
+        {
+            // debug
+            numOfBGReqs = geometric((1-rho_), 0);
+            EV << "MeServiceBase::newRequest - number of BG requests in front of this FG request: " << numOfBGReqs << endl;
+
+        }
+        else
+        {
+            simtime_t deltaTime = simTime() - lastFGRequestArrived_;
+            numOfBGReqs = poisson(deltaTime.dbl()*numBGApps_*lambda_, 0); // BG requests arrived in period of time deltaTime
+            // debug
+            EV << "MeServiceBase::newRequest - number of BG requests between this and the last FG request: " << numOfBGReqs << endl;
+        }
+        double responseTime = erlang_k(numOfBGReqs+1, requestServiceTime_, REQUEST_RNG);
+        double sunOfresponseTimes = 0;
+        for(int i = 0 ; i < numOfBGReqs+1; ++i)
+        {
+            sunOfresponseTimes += exponential(requestServiceTime_, REQUEST_RNG);
+        }
+
+        EV << "MeServiceBase::newRequest - FG request service time is (sunOfresponseTimes): " << sunOfresponseTimes << endl;
+        EV << "MeServiceBase::newRequest - FG request service time is: " << responseTime << endl;
+
+        msg->setResponseTime(sunOfresponseTimes);
+        lastFGRequestArrived_ = simTime();
+        emit(requestQueueSizeSignal_, numOfBGReqs+1);
+    }
+
     requests_.insert(msg);
     scheduleNextEvent();
 }
-
-
 
 void MeServiceBase::newSubscriptionEvent(EventNotification* event)
 {
     EV << "Queue length: " << subscriptionEvents_.size() << endl;
     // If queue is full delete event
     if(subscriptionQueueSize_ != 0 && subscriptionEvents_.size() == subscriptionQueueSize_){
+        EV << "MeServiceBase::newSubscriptionEvent - subscription queue is full. Deleting event..." << endl;
         delete event;
         return;
     }
@@ -380,52 +461,49 @@ double MeServiceBase::calculateRequestServiceTime()
      */
     if(currentRequestMessageServed_->isBackgroundRequest())
     {
-        time = poisson(requestServiceTime_, REQUEST_RNG);
+        time = exponential(requestServiceTime_, REQUEST_RNG);
     }
     else
     {
-        time = poisson(requestServiceTime_, REQUEST_RNG);
+        time = exponential(requestServiceTime_, REQUEST_RNG);
     }
-    return (time*1e-6);
+//    return (time*1e-6);
+    EV << "MeServiceBase::calculateRequestServiceTime - time: " << time << endl;
+    return time;
 }
-
 
 double MeServiceBase::calculateSubscriptionServiceTime()
 {
     double time;
-    time = poisson(subscriptionServiceTime_, SUBSCRIPTION_RNG);
-    return (time*1e-6);
+    time = exponential(subscriptionServiceTime_, SUBSCRIPTION_RNG);
+//    return (time*1e-6);
+    return time;
+
 }
 
 void MeServiceBase::handleCurrentRequest(inet::TcpSocket *socket){}
 
-// old version, before request parsing. Not used anymore
+
 void MeServiceBase::handleRequest(inet::TcpSocket *socket){
     EV << "MeServiceBase::handleRequest" << endl;
 
      if(currentRequestMessageServed_->getState() == CORRECT){ // request-line is well formatted
          if(std::strcmp(currentRequestMessageServed_->getMethod(),"GET") == 0)
          {
-             std::string uri(currentRequestMessageServed_->getUri());
-             handleGETRequest(uri, socket); // pass URI
+             handleGETRequest(currentRequestMessageServed_, socket); // pass URI
          }
          else if(std::strcmp(currentRequestMessageServed_->getMethod(),"POST") == 0) //subscription
          {
-             std::string uri(currentRequestMessageServed_->getUri());
-             std::string body(currentRequestMessageServed_->getBody());
-             handlePOSTRequest(uri, body,  socket); // pass URI
+             handlePOSTRequest(currentRequestMessageServed_,  socket); // pass URI
          }
 
          else if(std::strcmp(currentRequestMessageServed_->getMethod(),"PUT") == 0)
          {
-            std::string uri(currentRequestMessageServed_->getUri());
-            std::string body(currentRequestMessageServed_->getBody());
-            handlePUTRequest(uri, body,  socket); // pass URI
+            handlePUTRequest(currentRequestMessageServed_,  socket); // pass URI
          }
          else if(std::strcmp(currentRequestMessageServed_->getMethod(),"DELETE") == 0)
         {
-         std::string uri(currentRequestMessageServed_->getUri());
-         handleDELETERequest(uri,  socket); // pass URI
+         handleDELETERequest(currentRequestMessageServed_,  socket); // pass URI
         }
          else
          {
@@ -471,7 +549,6 @@ void MeServiceBase::getConnectedEnodeB(){
            token = strtok (NULL, ", ");
        }
     }
-
     return;
 }
 
@@ -489,7 +566,6 @@ void MeServiceBase::closeConnection(SocketManager * connection)
 
 void MeServiceBase::removeConnection(SocketManager *connection)
 {
-
     EV << "MeServiceBase::removeConnection"<<endl;
     // remove socket
     inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
@@ -511,7 +587,7 @@ void MeServiceBase::finish()
 }
 
 MeServiceBase::~MeServiceBase(){
-
+    std::cout << "~"<< serviceName_ << std::endl;
         // remove and delete threads
 
     cancelAndDelete(requestService_);
@@ -530,19 +606,19 @@ MeServiceBase::~MeServiceBase(){
         subscriptionEvents_.pop();
         delete notEv;
     }
-    std::cout << serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << "~"<< serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
         std::cout << serviceName_<<" Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
         delete it->second;
         subscriptions_.erase(it++);
     }
-    std::cout << serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << "~"<< serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
 
 void MeServiceBase::emitRequestQueueLength()
 {
-    emit(requestQueueSizeSignal_, requests_.getLength());
+   // emit(requestQueueSizeSignal_, requests_.getLength());
 }
 
 
@@ -551,7 +627,7 @@ void MeServiceBase::removeSubscritions(int connId)
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
         if (it->second->getSocketConnId() == connId) {
-            std::cout << "Remnove subscription with id = " << it->second->getSubscriptionId();
+            std::cout << "Remove subscription with id = " << it->second->getSubscriptionId();
             delete it->second;
             subscriptions_.erase(it++);
             std::cout << " list length: " << subscriptions_.size() << std::endl;
