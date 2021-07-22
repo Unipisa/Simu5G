@@ -52,10 +52,10 @@ class LocationService: public MeServiceBase
     virtual void finish() override;
     virtual void handleMessage(cMessage *msg) override;
 
-    virtual void handleGETRequest(const std::string& uri, inet::TcpSocket* socket) override;
-    virtual void handlePOSTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
-    virtual void handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) override;
-    virtual void handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) override;
+    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
+    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
+    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
 
     /*
      * This method is called for every element in the subscriptions_ queue.

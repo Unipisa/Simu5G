@@ -122,6 +122,7 @@ void LcmProxy::handleMessageWhenUp(cMessage *msg)
     else
     {
         MeServiceBase::handleMessageWhenUp(msg);
+
     }
 }
 
@@ -187,7 +188,7 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
 
     if(socket)
     {
-        if(ack->getSuccess() != true)
+        if(ack->getSuccess() == true)
             Http::send204Response(socket);
         else
         {
@@ -203,186 +204,175 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
     return;
 }
 
-void LcmProxy::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
+void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     EV << "LcmProxy::handleGETRequest" << endl;
-    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-    // uri must be in form /example/dev_app/v1
-    std::size_t lastPart = splittedUri[0].find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case resourceType would be empty and the baseUri == uri
-    // by the way the next if statement solve this problem
-    std::string baseUri = splittedUri[0].substr(0,lastPart);
-    std::string resourceType =  splittedUri[0].substr(lastPart+1);
+    std::string uri = currentRequestMessageServed->getUri();
+//    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
+//    // uri must be in form /example/dev_app/v1
+//    std::size_t lastPart = splittedUri[0].find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
+//    // find_last_of does not take in to account if the uri has a last /
+//    // in this case resourceType would be empty and the baseUri == uri
+//    // by the way the next if statement solve this problem
+//    std::string baseUri = splittedUri[0].substr(0,lastPart);
+//    std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
-    if(baseUri.compare(baseUriQueries_) == 0 ) //queries
+    if(uri.compare(baseUriQueries_+"/app_list") == 0 ) //queries
     {
-        if(resourceType.compare("app_list") == 0 )
+        std::string params = currentRequestMessageServed->getParameters();
+       //look for query parameters
+        if(!params.empty())
         {
-            //look for query parameters
-            if(splittedUri.size() == 2) // uri has parameters eg. uriPath?param=value&param1=value
-            {
-                std::vector<std::string> queryParameters = lte::utils::splitString(splittedUri[1], "&");
-                /*
-                * supported paramater:
-                * - appName
-                */
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+            /*
+            * supported paramater:
+            * - appName
+            */
 
-                std::vector<std::string> appNames;
+            std::vector<std::string> appNames;
 
-                std::vector<std::string>::iterator it  = queryParameters.begin();
-                std::vector<std::string>::iterator end = queryParameters.end();
-                std::vector<std::string> params;
-                std::vector<std::string> splittedParams;
-                for(; it != end; ++it){
-                    if(it->rfind("appName", 0) == 0) // cell_id=par1,par2
-                    {
-                        EV <<"LcmProxy::handleGETRequest - parameters: " << endl;
-                        params = lte::utils::splitString(*it, "=");
-                        if(params.size()!= 2) //must be param=values
-                        {
-                            Http::send400Response(socket);
-                            return;
-                        }
-                        splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                        std::vector<std::string>::iterator pit  = splittedParams.begin();
-                        std::vector<std::string>::iterator pend = splittedParams.end();
-                        for(; pit != pend; ++pit){
-                            EV << "appName: " <<*pit << endl;
-                            appNames.push_back(*pit);
-                        }
-                    }
-                    else // bad parameters
+            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator end = queryParameters.end();
+            std::vector<std::string> params;
+            std::vector<std::string> splittedParams;
+            for(; it != end; ++it){
+                if(it->rfind("appName", 0) == 0) // cell_id=par1,par2
+                {
+                    EV <<"LcmProxy::handleGETRequest - parameters: " << endl;
+                    params = lte::utils::splitString(*it, "=");
+                    if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-
-                    nlohmann::ordered_json appList;
-                    // construct the result based on the appName vector
-                    for(auto appName : appNames)
-                    {
-                        const ApplicationDescriptor* appDesc = mecOrchestrator_->getApplicationDescriptorByAppName(appName);
-                        if(appDesc != nullptr)
-                        {
-                            appList["appList"].push_back(appDesc->toAppInfo());
-                        }
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pend = splittedParams.end();
+                    for(; pit != pend; ++pit){
+                        EV << "appName: " <<*pit << endl;
+                        appNames.push_back(*pit);
                     }
-                    Http::send200Response(socket, appList.dump().c_str());
                 }
-            }
-
-            else if (splittedUri.size() == 1 ){ //no query params
-                nlohmann::ordered_json appList;
-                auto appDescs = mecOrchestrator_->getApplicationDescriptors();
-                auto it = appDescs->begin();
-                for(; it != appDescs->end() ; ++it)
+                else // bad parameters
                 {
-                    appList["appList"].push_back(it->second.toAppInfo());
+                    Http::send400Response(socket);
+                    return;
                 }
-
-                Http::send200Response(socket, appList.dump().c_str());
-
             }
-        }
-        else //bad uri
-        {
-            Http::send404Response(socket);
 
+
+            nlohmann::ordered_json appList;
+            // construct the result based on the appName vector
+            for(auto appName : appNames)
+            {
+                const ApplicationDescriptor* appDesc = mecOrchestrator_->getApplicationDescriptorByAppName(appName);
+                if(appDesc != nullptr)
+                {
+                    appList["appList"].push_back(appDesc->toAppInfo());
+                }
+            }
+            Http::send200Response(socket, appList.dump().c_str());
+        }
+
+
+        else { //no query params
+            nlohmann::ordered_json appList;
+            auto appDescs = mecOrchestrator_->getApplicationDescriptors();
+            auto it = appDescs->begin();
+            for(; it != appDescs->end() ; ++it)
+            {
+                appList["appList"].push_back(it->second.toAppInfo());
+            }
+
+            Http::send200Response(socket, appList.dump().c_str());
         }
     }
-    else if (splittedUri[0].compare(baseUriSubscriptions_) == 0) //subs
-    {
-        // TODO implement subscription?
-        Http::send404Response(socket);
-    }
-    else // not found
+
+    else //bad uri
     {
         Http::send404Response(socket);
+
     }
 
 }
 
-void LcmProxy::handlePOSTRequest(const std::string& uri,const std::string& body, inet::TcpSocket* socket)
+void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
+    std::string uri = currentRequestMessageServed->getUri();
+    std::string body = currentRequestMessageServed->getBody();
     EV << "LcmProxy::handlePOSTRequest - uri: "<< uri << endl;
-    // uri must be in form /example/dev_app/v1/app_context
-    std::size_t lastPart = uri.find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        EV << "LcmProxy::handlePOSTRequest - incorrect URI" << endl;
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case subscriptionType would be empty and the baseUri == uri
-    // by the way the next if statement solves this problem
-    std::string baseUri = uri.substr(0,lastPart);
-    std::string subscriptionType =  uri.substr(lastPart+1);
-
-    EV << "LcmProxy::handlePOSTRequest - baseuri: "<< baseUri << endl;
+//    // uri must be in form /example/dev_app/v1/app_context
+//    std::size_t lastPart = uri.find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        EV << "LcmProxy::handlePOSTRequest - incorrect URI" << endl;
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
+//    // find_last_of does not take in to account if the uri has a last /
+//    // in this case subscriptionType would be empty and the baseUri == uri
+//    // by the way the next if statement solves this problem
+//    std::string baseUri = uri.substr(0,lastPart);
+//    std::string subscriptionType =  uri.substr(lastPart+1);
+//
+//    EV << "LcmProxy::handlePOSTRequest - baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(baseUri.compare(baseUriSubscriptions_) == 0)
+    if(uri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
     {
-        EV << "subscriptionType: "<< subscriptionType << endl;
-
-        if(subscriptionType.compare("app_contexts") == 0)
+        nlohmann::json jsonBody;
+        try
         {
-            nlohmann::json jsonBody;
-            try
-            {
-                jsonBody = nlohmann::json::parse(body); // get the JSON structure
-            }
-            catch(nlohmann::detail::parse_error e)
-            {
-                throw cRuntimeError("LcmProxy::handlePOSTRequest - %s", e.what());
-                // body is not correctly formatted in JSON, manage it
-                Http::send400Response(socket); // bad body JSON
-                return;
-            }
+            jsonBody = nlohmann::json::parse(body); // get the JSON structure
+        }
+        catch(nlohmann::detail::parse_error e)
+        {
+            throw cRuntimeError("LcmProxy::handlePOSTRequest - %s", e.what());
+            // body is not correctly formatted in JSON, manage it
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
 
-            // Parse the JSON  body to organize the App instantion
-            CreateContextAppMessage * createContext = parseContextCreateRequest(jsonBody);
-            if(createContext != nullptr)
-            {
-                createContext->setType(CREATE_CONTEXT_APP);
-                createContext->setRequestId(requestSno);
-                createContext->setConnectionId(socket->getSocketId());
-                createContext->setAppContext(jsonBody);
+        // Parse the JSON  body to organize the App instantion
+        CreateContextAppMessage * createContext = parseContextCreateRequest(jsonBody);
+        if(createContext != nullptr)
+        {
+            createContext->setType(CREATE_CONTEXT_APP);
+            createContext->setRequestId(requestSno);
+            createContext->setConnectionId(socket->getSocketId());
+            createContext->setAppContext(jsonBody);
 
-                createContext->setUeIpAddress(socket->getRemoteAddress().str().c_str());
-                pendingRequests[requestSno] = {socket->getSocketId(), requestSno, jsonBody};
+            createContext->setUeIpAddress(socket->getRemoteAddress().str().c_str());
+            pendingRequests[requestSno] = {socket->getSocketId(), requestSno, jsonBody};
 
-                EV << "POST request number: " << requestSno << " related to connId: " << socket->getSocketId() << endl;
+            EV << "POST request number: " << requestSno << " related to connId: " << socket->getSocketId() << endl;
 
-                requestSno++;
+            requestSno++;
 
-                send(createContext, "toMecOrchestrator");
-                // TODO manage the next request or the response
-                // save app context in a map structure
-            }
-            else
-            {
-                Http::send400Response(socket); // bad body JSON
-            }
+            send(createContext, "toMecOrchestrator");
+            // TODO manage the next request or the response
+            // save app context in a map structure
         }
         else
         {
-            Http::send404Response(socket); //
+            Http::send400Response(socket); // bad body JSON
         }
+    }
+    else
+    {
+        Http::send404Response(socket); //
     }
 }
 
-void LcmProxy::handlePUTRequest(const std::string& uri,const std::string& body, inet::TcpSocket* socket){}
+void LcmProxy::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){}
 
-void LcmProxy::handleDELETERequest(const std::string& uri, inet::TcpSocket* socket)
+void LcmProxy::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     //    DELETE /exampleAPI/location/v1/subscriptions/area/circle/sub123 HTTP/1.1
     //    Accept: application/xml
@@ -390,21 +380,26 @@ void LcmProxy::handleDELETERequest(const std::string& uri, inet::TcpSocket* sock
 
     EV << "LocationService::handleDELETERequest" << endl;
     // uri must be in form /example/dev_app/v1/app_context/contextId
+    std::string uri = currentRequestMessageServed->getUri();
+//    std::size_t lastPart = uri.find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
+//
+//    // find_last_of does not take in to account if the uri has a last /
+//    // in this case subscriptionType would be empty and the baseUri == uri
+//    // by the way the next if statement solve this problem
+//    std::string baseUri = uri.substr(0,lastPart);
+//    std::string contextId =  uri.substr(lastPart+1);
+//
+//    // it has to be managed the case when the sub is /area/circle (it has two slashes)
 
-    std::size_t lastPart = uri.find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
+    std::size_t lastPart = uri.find_last_of("/"); // split at contextId
+    std::string baseUri = uri.substr(0,lastPart); // uri
+    std::string contextId =  uri.substr(lastPart+1); // contextId
 
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case subscriptionType would be empty and the baseUri == uri
-    // by the way the next if statement solve this problem
-    std::string baseUri = uri.substr(0,lastPart);
-    std::string contextId =  uri.substr(lastPart+1);
-
-    // it has to be managed the case when the sub is /area/circle (it has two slashes)
     if(baseUri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
     {
         DeleteContextAppMessage * deleteContext = new DeleteContextAppMessage();
@@ -415,7 +410,6 @@ void LcmProxy::handleDELETERequest(const std::string& uri, inet::TcpSocket* sock
         pendingRequests[requestSno].connId = socket->getSocketId();
         pendingRequests[requestSno].requestId = requestSno;
         EV << "DELETE request number: " << requestSno << " related to connId: " << socket->getSocketId() << endl;
-
 
         requestSno++;
 
@@ -483,5 +477,4 @@ void LcmProxy::finish()
 }
 
 LcmProxy::~LcmProxy(){
-
 }

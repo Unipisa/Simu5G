@@ -106,18 +106,21 @@ namespace Http {
                std::vector<std::string> uriParams =  cStringTokenizer(line[1].c_str(), "?").asVector();
                if(uriParams.size() == 2)
                {
-                   EV << "ci sono parametri" << endl;
+                   // debug
+                   EV << "There are parameters" << endl;
                    httpRequest->setUri(uriParams[0].c_str());
                    httpRequest->setParameters(uriParams[1].c_str());
                }
                else if(uriParams.size() == 1)
                {
-                   EV << "non ci sono parametri" << endl;
+                   // debug
+                   EV << "There are not parameters" << endl;
                    httpRequest->setUri(uriParams[0].c_str());
                }
                else
                {
-                   EV << "Errore parametri" << endl;
+                   //debug
+                   EV << "Parameters error" << endl;
                    httpRequest->setState(BAD_REQ_URI);
                   return httpRequest;
                }
@@ -291,8 +294,6 @@ namespace Http {
     bool parseReceivedMsg(std::string& packet, std::string* storedData, HttpBaseMessage** currentHttpMessage)
     {
         EV_INFO << "httpUtils::parseReceivedMsg- start..." << endl;
-        EV_INFO << "httpUtils::parseReceivedMsg- HTTP message: " << packet << endl;
-
         std::string delimiter = "\r\n\r\n";
         size_t pos = 0;
         std::string header;

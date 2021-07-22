@@ -112,128 +112,120 @@ void LocationService::handleMessage(cMessage *msg)
     MeServiceBase::handleMessage(msg);
 }
 
-void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* socket)
+void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     EV_INFO << "LocationService::handleGETRequest" << endl;
-    std::cout << uri << std::endl;
-    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-    // uri must be in form example/v2/location/queries/resource
-    std::size_t lastPart = splittedUri[0].find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case resourceType would be empty and the baseUri == uri
-    // by the way the next if statement solves this problem
-    std::string baseUri = splittedUri[0].substr(0,lastPart);
-    std::string resourceType =  splittedUri[0].substr(lastPart+1);
+    std::string uri = currentRequestMessageServed->getUri();
+//    std::cout << uri << std::endl;
+//    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
+//    // uri must be in form example/v2/location/queries/resource
+//    std::size_t lastPart = splittedUri[0].find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
+//    // find_last_of does not take in to account if the uri has a last /
+//    // in this case resourceType would be empty and the baseUri == uri
+//    // by the way the next if statement solves this problem
+//    std::string baseUri = splittedUri[0].substr(0,lastPart);
+//    std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
-    if(baseUri.compare(baseUriQueries_) == 0 ) //queries
+    if(uri.compare(baseUriQueries_+"/users") == 0 ) //queries
     {
-        if(resourceType.compare("users") == 0 )
-        {
+        std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
-            if(splittedUri.size() == 2) // uri has parameters eg. uriPath?param=value&param1=value
-            {
-                std::vector<std::string> queryParameters = lte::utils::splitString(splittedUri[1], "&");
-                /*
-                * supported paramater:
-                * - ue_ipv4_address
-                * - accessPointId
-                */
+        if(!params.empty())
+        {
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+            /*
+            * supported paramater:
+            * - ue_ipv4_address
+            * - accessPointId
+            */
 
-                std::vector<MacCellId> cellIds;
-                std::vector<inet::Ipv4Address> ues;
+            std::vector<MacCellId> cellIds;
+            std::vector<inet::Ipv4Address> ues;
 
-                std::vector<std::string>::iterator it  = queryParameters.begin();
-                std::vector<std::string>::iterator end = queryParameters.end();
-                std::vector<std::string> params;
-                std::vector<std::string> splittedParams;
-                for(; it != end; ++it){
-                    if(it->rfind("accessPointId", 0) == 0) // cell_id=par1,par2
-                    {
-                        EV <<"LocationService::handleGETReques - parameters: " << endl;
-                        params = lte::utils::splitString(*it, "=");
-                        if(params.size()!= 2) //must be param=values
-                        {
-                            Http::send400Response(socket);
-                            return;
-                        }
-                        splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                        std::vector<std::string>::iterator pit  = splittedParams.begin();
-                        std::vector<std::string>::iterator pend = splittedParams.end();
-                        for(; pit != pend; ++pit){
-                            EV << "cellId: " <<*pit << endl;
-                            cellIds.push_back((MacCellId)std::stoi(*pit));
-                        }
-                    }
-                    else if(it->rfind("address", 0) == 0)
-                    {
-                        params = lte::utils::splitString(*it, "=");
-                        splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                        std::vector<std::string>::iterator pit  = splittedParams.begin();
-                        std::vector<std::string>::iterator pend = splittedParams.end();
-                        for(; pit != pend; ++pit){
-                            std::vector<std::string> address = lte::utils::splitString((*pit), ":");
-                            if(address.size()!= 2) //must be param=acr:values
-                            {
-                                Http::send400Response(socket);
-                                return;
-                            }
-                           //manage ipv4 address without any macnode id
-                            //or do the conversion inside Location..
-                           ues.push_back(inet::Ipv4Address(address[1].c_str()));
-                        }
-                    }
-                    else // bad parameters
+            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator end = queryParameters.end();
+            std::vector<std::string> params;
+            std::vector<std::string> splittedParams;
+            for(; it != end; ++it){
+                if(it->rfind("accessPointId", 0) == 0) // accessPointId=par1,par2
+                {
+                    EV <<"LocationService::handleGETReques - parameters: " << endl;
+                    params = lte::utils::splitString(*it, "=");
+                    if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pend = splittedParams.end();
+                    for(; pit != pend; ++pit){
+                        EV << "cellId: " <<*pit << endl;
+                        cellIds.push_back((MacCellId)std::stoi(*pit));
+                    }
                 }
-
-                //send response
-                if(!ues.empty() && !cellIds.empty())
+                else if(it->rfind("address", 0) == 0)
                 {
-                    EV <<"LocationService::handleGETReques - toJson(cellIds, ues) " << endl;
-                    Http::send200Response(socket, LocationResource_.toJson(cellIds, ues).dump(0).c_str());
+                    params = lte::utils::splitString(*it, "=");
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pend = splittedParams.end();
+                    for(; pit != pend; ++pit){
+                        std::vector<std::string> address = lte::utils::splitString((*pit), ":");
+                        if(address.size()!= 2) //must be param=acr:values
+                        {
+                            Http::send400Response(socket);
+                            return;
+                        }
+                       //manage ipv4 address without any macnode id
+                        //or do the conversion inside Location..
+                       ues.push_back(inet::Ipv4Address(address[1].c_str()));
+                    }
                 }
-                else if(ues.empty() && !cellIds.empty())
+                else // bad parameters
                 {
-                    EV <<"LocationService::handleGETReques - toJson(cellIds) " << endl;
-                    Http::send200Response(socket, LocationResource_.toJsonCell(cellIds).dump(0).c_str());
+                    Http::send400Response(socket);
+                    return;
                 }
-                else if(!ues.empty() && cellIds.empty())
-               {
-                   EV <<"LocationService::handleGETReques - toJson(ues) " << endl;
-                   Http::send200Response(socket, LocationResource_.toJsonUe(ues).dump(0).c_str());
-               }
-               else
-               {
-                   Http::send400Response(socket);
-               }
 
             }
-            else if (splittedUri.size() == 1 ){ //no query params
-                EV <<"LocationService::handleGETReques - toJson() " << endl;
-                Http::send200Response(socket,LocationResource_.toJson().dump(0).c_str());
-                return;
-            }
-            else //bad uri
+
+            //send response
+            if(!ues.empty() && !cellIds.empty())
             {
-                Http::send404Response(socket);
+                EV <<"LocationService::handleGETReques - toJson(cellIds, ues) " << endl;
+                Http::send200Response(socket, LocationResource_.toJson(cellIds, ues).dump(0).c_str());
             }
+            else if(ues.empty() && !cellIds.empty())
+            {
+                EV <<"LocationService::handleGETReques - toJson(cellIds) " << endl;
+                Http::send200Response(socket, LocationResource_.toJsonCell(cellIds).dump(0).c_str());
+            }
+            else if(!ues.empty() && cellIds.empty())
+           {
+               EV <<"LocationService::handleGETReques - toJson(ues) " << endl;
+               Http::send200Response(socket, LocationResource_.toJsonUe(ues).dump(0).c_str());
+           }
+           else
+           {
+               Http::send400Response(socket);
+           }
+
         }
         else
-        {
-            Http::send404Response(socket);
+        { //no query params
+            EV <<"LocationService::handleGETReques - toJson() " << endl;
+            Http::send200Response(socket,LocationResource_.toJson().dump(0).c_str());
+            return;
         }
     }
-    else if (splittedUri[0].compare(baseUriSubscriptions_) == 0) //subs
+    else if (uri.compare(baseSubscriptionLocation_) == 0) // return the list of the subscriptions
     {
         // TODO implement list of subscriptions
         Http::send404Response(socket);
@@ -245,84 +237,76 @@ void LocationService::handleGETRequest(const std::string& uri, inet::TcpSocket* 
 
 }
 
-void LocationService::handlePOSTRequest(const std::string& uri,const std::string& body, inet::TcpSocket* socket)
+void LocationService::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     EV << "LocationService::handlePOSTRequest" << endl;
-    // uri must be in form example/location/v2/subscriptions/sub_type
-    // or
-    // example/location/v2/subscriptions/type/sub_type () e.g /area/circle
-    std::size_t lastPart = uri.find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        EV << "LocationService::handlePOSTRequest - incorrect URI" << endl;
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case subscriptionType would be empty and the baseUri == uri
-    // by the way the next if statement solves this problem
-    std::string baseUri = uri.substr(0,lastPart);
-    std::string subscriptionType =  uri.substr(lastPart+1);
+    std::string uri = currentRequestMessageServed->getUri();
+    std::string body = currentRequestMessageServed->getBody();
 
-    EV << "LocationService::handlePOSTRequest - baseuri: "<< baseUri << endl;
+//    // uri must be in form example/location/v2/subscriptions/sub_type
+//    // or
+//    // example/location/v2/subscriptions/type/sub_type () e.g /area/circle
+//    std::size_t lastPart = uri.find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        EV << "LocationService::handlePOSTRequest - incorrect URI" << endl;
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
+//    // find_last_of does not take in to account if the uri has a last /
+//    // in this case subscriptionType would be empty and the baseUri == uri
+//    // by the way the next if statement solves this problem
+//    std::string baseUri = uri.substr(0,lastPart);
+//    std::string subscriptionType =  uri.substr(lastPart+1);
+//
+//    EV << "LocationService::handlePOSTRequest - baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(baseUri.compare(baseUriSubscriptions_+"/area") == 0)
+    if(uri.compare(baseUriSubscriptions_+"/area/circle") == 0)
     {
-        EV << "subscriptionType: "<< subscriptionType << endl;
-
-        if(subscriptionType.compare("circle") == 0)
+        nlohmann::json jsonBody;
+        try
         {
-            nlohmann::json jsonBody;
-            try
+            jsonBody = nlohmann::json::parse(body); // get the JSON structure
+        }
+        catch(nlohmann::detail::parse_error e)
+        {
+            std::cout << "LocationService::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
+            // body is not correctly formatted in JSON, manage it
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(subscriptionId_, socket , baseSubscriptionLocation_,  eNodeB_);
+        bool res = newSubscription->fromJson(jsonBody);
+        //correct subscription post
+        if(res)
+        {
+            EV << serviceName_ << " - correct subscription created!" << endl;
+            // add resource url and send back the response
+            nlohmann::ordered_json response = jsonBody;
+            std::string resourceUrl = newSubscription->getResourceUrl();
+            response["circleNotificationSubscription"]["resourceURL"] = resourceUrl;
+            std::pair<std::string, std::string> p("Location: ", resourceUrl);
+            Http::send201Response(socket, response.dump(2).c_str(), p);
+
+            subscriptions_[subscriptionId_] = newSubscription;
+
+            if(newSubscription->getCheckImmediate())
             {
-                jsonBody = nlohmann::json::parse(body); // get the JSON structure
+                EventNotification *event = newSubscription->handleSubscription();
+                if(event != nullptr)
+                    newSubscriptionEvent(event);
             }
-            catch(nlohmann::detail::parse_error e)
-            {
-                std::cout << "LocationService::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
-                // body is not correctly formatted in JSON, manage it
-                Http::send400Response(socket); // bad body JSON
-                return;
-            }
-
-            CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(subscriptionId_, socket , baseSubscriptionLocation_,  eNodeB_);
-            bool res = newSubscription->fromJson(jsonBody);
-            //correct subscription post
-            if(res)
-            {
-                EV << serviceName_ << " - correct subscription created!" << endl;
-                nlohmann::ordered_json response = jsonBody;
-                std::string resourceUrl = newSubscription->getResourceUrl();
-                response["circleNotificationSubscription"]["resourceURL"] = resourceUrl;
-                std::pair<std::string, std::string> p("Location: ", resourceUrl);
-                Http::send201Response(socket, response.dump(2).c_str(), p );
-
-                subscriptions_[subscriptionId_] = newSubscription;
-                //start timer
-
-                subscriptionTimer_->insertSubId(subscriptionId_);
-                if(newSubscription->getCheckImmediate())
-                {
-                    EventNotification *event = newSubscription->handleSubscription();
-                    if(event != nullptr)
-                        newSubscriptionEvent(event);
-                }
-
-                if(!subscriptionTimer_->isScheduled())
-                    scheduleAt(simTime() + subscriptionTimer_->getPeriod(), subscriptionTimer_);
-                subscriptionId_ ++;
-            }
-            else
-            {
-                delete newSubscription;
-                return;
-            }
-
+            //start timer
+            subscriptionTimer_->insertSubId(subscriptionId_);
+            if(!subscriptionTimer_->isScheduled())
+                scheduleAt(simTime() + subscriptionTimer_->getPeriod(), subscriptionTimer_);
+            subscriptionId_ ++;
         }
         else
         {
-            Http::send404Response(socket); //resource not found
+            delete newSubscription;
             return;
         }
     }
@@ -332,22 +316,27 @@ void LocationService::handlePOSTRequest(const std::string& uri,const std::string
     }
 }
 
-void LocationService::handlePUTRequest(const std::string& uri,const std::string& body, inet::TcpSocket* socket){
+void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
     EV << "LocationService::handlePUTRequest" << endl;
+    std::string uri = currentRequestMessageServed->getUri();
+    std::string body = currentRequestMessageServed->getBody();
+
     // uri must be in form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
-    std::size_t lastPart = uri.find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        EV << "1" << endl;
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
+//    std::size_t lastPart = uri.find_last_of("/");
+//    if(lastPart == std::string::npos)
+//    {
+//        EV << "1" << endl;
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
     // find_last_of does not take in to account if the uri has a last /
     // in this case subscriptionType would be empty and the baseUri == uri
     // by the way the next if statement solves this problem
-    std::string baseUri = uri.substr(0,lastPart);
+
+    std::size_t lastPart = uri.find_last_of("/"); // split at contextId
+    std::string baseUri = uri.substr(0,lastPart); // uri
     int subId =  std::stoi(uri.substr(lastPart+1));
 
     EV << "LocationService::handlePUTRequest - baseuri: "<< baseUri << endl;
@@ -390,10 +379,14 @@ void LocationService::handlePUTRequest(const std::string& uri,const std::string&
            }
        }
     }
+    else
+    {
+        Http::send404Response(socket); // bad body JSON
+    }
 
 }
 
-void LocationService::handleDELETERequest(const std::string& uri, inet::TcpSocket* socket)
+void LocationService::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
 //    DELETE /exampleAPI/location/v1/subscriptions/area/circle/sub123 HTTP/1.1
 //    Accept: application/xml
@@ -403,13 +396,14 @@ void LocationService::handleDELETERequest(const std::string& uri, inet::TcpSocke
     // uri must be in form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
+    std::string uri = currentRequestMessageServed->getUri();
     std::size_t lastPart = uri.find_last_of("/");
-    if(lastPart == std::string::npos)
-    {
-        EV << "1" << endl;
-        Http::send404Response(socket); //it is not a correct uri
-        return;
-    }
+//    if(lastPart == std::string::npos)
+//    {
+//        EV << "1" << endl;
+//        Http::send404Response(socket); //it is not a correct uri
+//        return;
+//    }
 
     // find_last_of does not take in to account if the uri has a last /
     // in this case subscriptionType would be empty and the baseUri == uri

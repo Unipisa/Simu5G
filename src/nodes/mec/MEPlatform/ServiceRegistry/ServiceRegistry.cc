@@ -79,6 +79,7 @@ void ServiceRegistry::initialize(int stage)
     subscriptions_.clear();
 
     requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+    responseTimeSignal_ = registerSignal("responseTime");
 
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
 
@@ -118,110 +119,116 @@ void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
 }
 
 
-void ServiceRegistry::handleGETRequest(const std::string& uri, inet::TcpSocket* socket){
+void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
     EV << "ServiceRegistry::handleGETRequest" << endl;
-       std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-       // uri must be in form example/mec_service_mgmt/v1
-       std::size_t lastPart = splittedUri[0].find_last_of("/");
-       if(lastPart == std::string::npos)
-       {
-           Http::send404Response(socket); //it is not a correct uri
-           return;
-       }
-       // find_last_of does not take in to account if the uri has a last /
-       // in this case resourceType would be empty and the baseUri == uri
-       // by the way the next if statement solve this problem
-       std::string baseUri = splittedUri[0].substr(0,lastPart);
-       std::string resourceType =  splittedUri[0].substr(lastPart+1);
+    std::string uri = currentRequestMessageServed->getUri();
+//       std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
+//       // uri must be in form example/mec_service_mgmt/v1
+//       std::size_t lastPart = splittedUri[0].find_last_of("/");
+//       if(lastPart == std::string::npos)
+//       {
+//           Http::send404Response(socket); //it is not a correct uri
+//           return;
+//       }
+//       // find_last_of does not take in to account if the uri has a last /
+//       // in this case resourceType would be empty and the baseUri == uri
+//       // by the way the next if statement solve this problem
+//       std::string baseUri = splittedUri[0].substr(0,lastPart);
+//       std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
        // check it is a GET for a query or a subscription
-       if(baseUri.compare(baseUriQueries_) == 0 ) //queries
-       {
-           if(resourceType.compare("services") == 0 )
-           {
-               //look for query parameters
-               if(splittedUri.size() == 2) // uri has parameters eg. uriPath?param=value&param1=value
-               {
-                   std::vector<std::string> queryParameters = lte::utils::splitString(splittedUri[1], "&");
-                   /*
-                   * supported paramater:
-                   * - ser_instance_id
-                   * - ser_name
-                   */
+   if(uri.compare(baseUriQueries_+"/services") == 0 ) //queries
+   {
+       std::string params = currentRequestMessageServed->getParameters();
+        //look for query parameters
+        if(!params.empty())
+        {
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+            /*
+            * supported paramater:
+            * - ser_instance_id
+            * - ser_name
+            */
 
-                   std::vector<std::string> ser_name;
-                   std::vector<std::string> ser_instance_id;
+            std::vector<std::string> ser_name;
+            std::vector<std::string> ser_instance_id;
 
-                   std::vector<std::string>::iterator it  = queryParameters.begin();
-                   std::vector<std::string>::iterator end = queryParameters.end();
-                   std::vector<std::string> params;
-                   std::vector<std::string> splittedParams;
-                   for(; it != end; ++it){
-                       if(it->rfind("ser_instance_id", 0) == 0) // cell_id=par1,par2
-                        {
-                          EV <<"ServiceRegistry::handleGETReques - parameters: " << endl;
-                          params = lte::utils::splitString(*it, "=");
-                          if(params.size()!= 2) //must be param=values
-                          {
-                              Http::send400Response(socket);
-                              return;
-                          }
-                          splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                          std::vector<std::string>::iterator pit  = splittedParams.begin();
-                          std::vector<std::string>::iterator pend = splittedParams.end();
-                          for(; pit != pend; ++pit){
-                              EV << "ser_instance_id: " <<*pit << endl;
-                              ser_instance_id.push_back(*pit);
-                          }
-                        }
-                        else if(it->rfind("ser_name", 0) == 0)
-                        {
-                          params = lte::utils::splitString(*it, "=");
-                          splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                          std::vector<std::string>::iterator pit  = splittedParams.begin();
-                          std::vector<std::string>::iterator pend = splittedParams.end();
-                          for(; pit != pend; ++pit){
-                              EV << "ser_name: " <<*pit << endl;
-                              ser_name.push_back(*pit);
-                          }
-                       }
-                       else // bad parameters
-                       {
-                           Http::send400Response(socket);
-                           return;
-                       }
-                   }
-
-                nlohmann::ordered_json jsonResBody;
-
-                for(auto sName : ser_name)
+            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator end = queryParameters.end();
+            std::vector<std::string> params;
+            std::vector<std::string> splittedParams;
+            for(; it != end; ++it){
+                if(it->rfind("ser_instance_id", 0) == 0) // cell_id=par1,par2
                 {
-                   for(const auto& serv : mecServices_)
-                   {
-                       if(serv.getName().compare(sName) == 0)
-                           jsonResBody.push_back(serv.toJson());
-                   }
-
-                }
-                Http::send200Response(socket, jsonResBody.dump().c_str());
-                }
-
-                else if (splittedUri.size() == 1 ){ //no query params
-                    nlohmann::ordered_json jsonResBody;
-                    for(auto& sName : mecServices_)
+                    EV <<"ServiceRegistry::handleGETReques - parameters: " << endl;
+                    params = lte::utils::splitString(*it, "=");
+                    if(params.size()!= 2) //must be param=values
                     {
-                        jsonResBody.push_back(sName.toJson());
+                        Http::send400Response(socket);
+                        return;
                     }
-                Http::send200Response(socket, jsonResBody.dump().c_str());
-               }
-           }
-       }
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pend = splittedParams.end();
+                    for(; pit != pend; ++pit){
+                        EV << "ser_instance_id: " <<*pit << endl;
+                        ser_instance_id.push_back(*pit);
+                    }
+                }
+                else if(it->rfind("ser_name", 0) == 0)
+                {
+                    params = lte::utils::splitString(*it, "=");
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pend = splittedParams.end();
+                    for(; pit != pend; ++pit){
+                        EV << "ser_name: " <<*pit << endl;
+                        ser_name.push_back(*pit);
+                    }
+                }
+                else // bad parameters
+                {
+                    Http::send400Response(socket);
+                    return;
+                }
+            }
+
+            nlohmann::ordered_json jsonResBody;
+
+            for(auto sName : ser_name)
+            {
+                for(const auto& serv : mecServices_)
+                {
+                    if(serv.getName().compare(sName) == 0)
+                        jsonResBody.push_back(serv.toJson());
+                }
+            }
+
+            // TODO add for for serviceid!
+
+            Http::send200Response(socket, jsonResBody.dump().c_str());
+        }
+
+        else //no query params
+        {
+            nlohmann::ordered_json jsonResBody;
+            for(auto& sName : mecServices_)
+            {
+            jsonResBody.push_back(sName.toJson());
+            }
+            Http::send200Response(socket, jsonResBody.dump().c_str());
+        }
+   }
+   else
+   {
+       Http::send404Response(socket); //it is not a correct uri
+   }
 }
 
 
-void ServiceRegistry::handlePOSTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket){};
-void ServiceRegistry::handlePUTRequest(const std::string& uri, const std::string& body, inet::TcpSocket* socket) {};
-void ServiceRegistry::handleDELETERequest(const std::string& uri, inet::TcpSocket* socket) {};
+void ServiceRegistry::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){};
+void ServiceRegistry::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) {};
+void ServiceRegistry::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) {};
 
 void ServiceRegistry::registerMeService(const ServiceDescriptor& servDesc)
 {

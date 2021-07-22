@@ -17,6 +17,9 @@ using namespace inet;
 
 MecAppBase::MecAppBase()
 {
+    meHost = nullptr;
+    mePlatform = nullptr;;
+    serviceRegistry = nullptr;
     sendTimer = nullptr;
     serviceHttpMessage = nullptr;
     mp1HttpMessage = nullptr;

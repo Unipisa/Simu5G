@@ -27,12 +27,15 @@ simple LocationService like MeServiceBase, IApp
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
         double LocationSubscriptionPeriod @unit(s)= default(1s);
         
-        double requestServiceTime  = default(5);
+        bool loadGenerator = default(false);
+    	double betaa  = default(0);  // used only if loadGenerator is true
+    	int numBGApps = default(0); // used only if loadGenerator is true
+        
+        double requestServiceTime  @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
         
         string serverThreadClass = default("lte.nodes.mec.MEPlatform.MeServices.MeServiceBase.SocketManager");
-        
-        
+                
 		string serviceName = default("LocationService");
        	string serviceVersion = default("v2");
        	string serviceSerialize = default("JSON");
@@ -53,6 +56,9 @@ simple LocationService like MeServiceBase, IApp
         @display("i=block/app");
         @signal[requestQueueSize](type = long);
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
+        @signal[responseTime](type = long);
+        @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
+        
 
     gates:
         input socketIn @labels(TcpCommand/up);

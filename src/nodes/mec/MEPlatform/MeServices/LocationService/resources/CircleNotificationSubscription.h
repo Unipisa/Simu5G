@@ -21,6 +21,7 @@ class CircleNotificationSubscription : public SubscriptionBase
     public:
         CircleNotificationSubscription();
         CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
+        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
         virtual ~CircleNotificationSubscription();
 
 //        nlohmann::ordered_json toJson() const override;
@@ -36,6 +37,11 @@ class CircleNotificationSubscription : public SubscriptionBase
 
         virtual bool getCheckImmediate() const { return checkImmediate;}
 
+        bool getFirstNotification() const {return firstNotificationSent;}
+        omnetpp::simtime_t getLastoNotification() const { return lastNotification;}
+
+        std::string getResourceUrl() const { return resourceURL;}
+
         bool findUe(MacNodeId nodeId);
 
     protected:
@@ -44,7 +50,7 @@ class CircleNotificationSubscription : public SubscriptionBase
         omnetpp::simtime_t lastNotification;
         bool firstNotificationSent;
 
-        std::map<MacNodeId, bool> users; // optional: NO the bool is the initial potition wrt the area
+        std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area
 
         std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the are
 

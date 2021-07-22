@@ -25,6 +25,15 @@ CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subI
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
     binder = getBinder();
     baseResLocation_+= "area/circle";
+    firstNotificationSent = false;
+};
+
+CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<cModule*>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot):
+SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
+    binder = getBinder();
+    baseResLocation_+= "area/circle";
+    firstNotificationSent = firstNotSent;
+    lastNotification = lastNot;
 };
 
 CircleNotificationSubscription::~CircleNotificationSubscription(){
@@ -37,8 +46,13 @@ void CircleNotificationSubscription::sendSubscriptionResponse(){}
 void CircleNotificationSubscription::sendNotification(EventNotification *event)
 {
     EV << "CircleNotificationSubscription::sendNotification" << endl;
+
+    EV << firstNotificationSent << " last " << lastNotification << " now " << simTime() << " frequency" << frequency << endl;
     if(firstNotificationSent && (simTime() - lastNotification) <= frequency)
+    {
+        EV <<"CircleNotificationSubscription::sendNotification - notification event occured near the last one. Frequency for notifications is: " << frequency << endl;
         return;
+    }
 
     CircleNotificationEvent *circleEvent = check_and_cast<CircleNotificationEvent*>(event);
 
@@ -103,7 +117,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     else
     {
         EV << "1" << endl;
-        Http::send400Response(socket_);
+        Http::send400Response(socket_, "circleNotificationSubscription JSON name is mandatory");
         return false;
     }
     nlohmann::ordered_json jsonBody = body["circleNotificationSubscription"];
@@ -137,9 +151,8 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     }
     else
     {
-        EV << "3" << endl;
-
-        Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
+        // callbackReference is mandatory and takes exactly 1 value
+        Http::send400Response(socket_, "callbackReference JSON name is mandatory");
         return false;
     }
 
@@ -165,8 +178,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     else
    {
         EV << "4" << endl;
-
-       Http::send400Response(socket_); //frequency is mandatory
+        Http::send400Response(socket_, "frequency JSON name is mandatory");
        return false;
    }
 
@@ -175,12 +187,10 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
         radius = jsonBody["radius"];
     }
     else
-   {
-        EV << "5" << endl;
-
-       Http::send400Response(socket_); //radius is mandatory
-       return false;
-   }
+    {
+        Http::send400Response(socket_, "radius JSON name is mandatory");
+        return false;
+    }
 
     if(jsonBody.contains("center") || (jsonBody.contains("latitude") && jsonBody.contains("longitude")))
     {
@@ -200,8 +210,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     }
     else
    {
-       EV << "6" << endl;
-       Http::send400Response(socket_); //postion is mandatory#include "apps/mec/MeServices/LocationService/resources/CurrentLocation.h"
+       Http::send400Response(socket_, "Position coordinates JSON names are mandatory");
        return false;
    }
 
@@ -211,10 +220,9 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     }
     else
    {
-       EV << "7" << endl;
-       Http::send400Response(socket_); //trackingAccuracy is manda0, tory
-       return false;
-   }
+        Http::send400Response(socket_, "trackingAccuracy JSON name is mandatory");//trackingAccuracy is mandatory
+        return false;
+    }
 
     if(jsonBody.contains("enteringLeavingCriteria"))
     {
@@ -233,9 +241,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     }
     else
    {
-       EV << "8" << endl;
-
-       Http::send400Response(socket_); //enteringLeavingCriteria is mandatory
+       Http::send400Response(socket_, "enteringLeavingCriteria JSON name is mandatory");//trackingAccuracy is mandatory
        return false;
    }
 
@@ -248,8 +254,11 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
             {
                 std::string add =  addressVector.at(i);
                 MacNodeId id = binder->getMacNodeId(inet::Ipv4Address(add.c_str()));
-
-                //check if the address
+                /*
+                 * check if the address is already present in the network.
+                 * If not, do anything. Maybe such address will be available later.
+                 * OR make a 400 response telling one address is not available?
+                 */
 
                 if(id == 0 || !findUe(id))
                 {
@@ -261,14 +270,13 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                 else
                 {
                 // set the initial state
-
                     inet::Coord coord = LocationUtils::getCoordinates(id);
                     inet::Coord center = inet::Coord(latitude,longitude,0.);
                     EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
                     EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
                     EV << "distance: " << coord.distance(center) <<endl;
 
-                    users[id] = (coord.distance(center) <= radius) ? true : false;
+                    users[id] = (coord.distance(center) <= radius) ? true : false; // true = inside
                 }
             }
         }
@@ -277,37 +285,31 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
             std::string add =  jsonBody["address"];
             MacNodeId id = binder->getMacNodeId(inet::Ipv4Address(add.c_str()));
             if(id == 0 || !findUe(id))
-            { EV << "IP NON ESISTE" << endl;}
+            {
+                EV << "IP NON ESISTE" << endl;
+            }
             else
             {
-            // set the initial state
-            inet::Coord coord = LocationUtils::getCoordinates(id);
-            inet::Coord center = inet::Coord(latitude,longitude,0.);
-            EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
-            EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
-            EV << "distance: " << coord.distance(center) <<endl;
-            users[id] = (coord.distance(center) <= radius) ? true : false;
+                // set the initial state
+                inet::Coord coord = LocationUtils::getCoordinates(id);
+                inet::Coord center = inet::Coord(latitude,longitude,0.);
+                EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
+                EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
+                EV << "distance: " << coord.distance(center) <<endl;
+                users[id] = (coord.distance(center) <= radius) ? true : false;
             }
 
         }
     }
-       else
-      {
-           EV << "8" << endl;
-          Http::send400Response(socket_); //address is mandatory
-          return false;
-      }
+    else
+    {
+        Http::send400Response(socket_, "address JSON name is mandatory");//address is mandatory
+        return false;
+    }
 
 
-    // add resource url and send back the response
-    nlohmann::ordered_json response = body;
     resourceURL = baseResLocation_+ "/" + std::to_string(subscriptionId_);
-    response["circleNotificationSubscription"]["resourceURL"] = resourceURL;
-    std::pair<std::string, std::string> p("Location: ", resourceURL);
-    Http::send201Response(socket_, response.dump(2).c_str(), p );
-    firstNotificationSent = false;
-
-return true;
+    return true;
 }
 
 EventNotification* CircleNotificationSubscription::handleSubscription()
@@ -336,6 +338,10 @@ EventNotification* CircleNotificationSubscription::handleSubscription()
                 EV << "dentro" << endl;
                 found = true;
             }
+            else if (coord.distance(center) >= radius)
+            {
+                it->second = false;
+            }
         }
         else
         {
@@ -344,6 +350,11 @@ EventNotification* CircleNotificationSubscription::handleSubscription()
                 EV << "fuori" << endl;
                 found = true;
             }
+            else if (coord.distance(center) <= radius)
+            {
+                it->second = true;
+            }
+
         }
 
         if(found)

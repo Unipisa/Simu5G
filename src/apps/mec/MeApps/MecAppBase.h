@@ -62,8 +62,6 @@ class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICall
     double requiredDisk;
     double requiredCpu;
 
-    //UDP socket to communicate with the UeApp
-    inet::UdpSocket ueSocket;
 
     omnetpp::cMessage* processedServiceResponse;
     omnetpp::cMessage* processedMp1Response;
