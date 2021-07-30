@@ -183,6 +183,7 @@ void NRMacUe::handleSelfMessage()
                         signal.second = cwListRetx;
                         currHarq->markSelected(signal,schedulingGrant_[carrierFrequency]->getUserTxParams()->getLayers().size());
                         retx = true;
+                        break;
                     }
                 }
             }
