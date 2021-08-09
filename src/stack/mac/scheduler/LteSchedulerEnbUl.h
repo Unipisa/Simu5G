@@ -43,7 +43,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     std::map<double, HarqStatus> harqStatus_;
 
     //! RAC requests flags: signals wheter an UE shall be granted the RAC allocation
-    RacStatus racStatus_;
+    std::map<double, RacStatus> racStatus_;
 
   public:
 
@@ -54,7 +54,8 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * Updates current schedule list with RAC grant responses.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool racschedule(double carrierFrequency);
+    virtual bool racschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
+    virtual void racscheduleBackground(unsigned int& racAllocatedBlocks, double carrierFrequency, BandLimitVector* bandLim = NULL);
 
     /**
      * Updates current schedule list with HARQ retransmissions.
@@ -63,11 +64,22 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
 
     /**
-     * signals RAC request to the scheduler (called by eNb)
+     * Schedule retransmissions for background UEs
+     * @return TRUE if OFDM space is exhausted.
      */
-    virtual void signalRac(const MacNodeId nodeId)
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL);
+
+    /**
+     * signals RAC request to the scheduler (called by e/gNb)
+     */
+    virtual void signalRac(MacNodeId nodeId, double carrierFrequency)
     {
-        racStatus_[nodeId] = true;
+        if (racStatus_.find(carrierFrequency) == racStatus_.end())
+        {
+            RacStatus newMap;
+            racStatus_[carrierFrequency] = newMap;
+        }
+        racStatus_.at(carrierFrequency)[nodeId] = true;
     }
 
     /**
@@ -87,6 +99,9 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
 
     unsigned int schedulePerAcidRtxD2D(MacNodeId destId, MacNodeId senderId, double carrierFrequency, Codeword cw, unsigned char acid,
         std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
+
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+            Remote antenna = MACRO, bool limitBl = false);
 
     void removePendingRac(MacNodeId nodeId);
 };

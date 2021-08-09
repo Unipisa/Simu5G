@@ -16,5 +16,4 @@ import stack.phy.packet.AirFrame;
 //
 packet LteAirFrame extends AirFrame {
     @customize(true);
-    //TODO: add txmode for MIMO operations
 }

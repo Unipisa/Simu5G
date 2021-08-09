@@ -432,6 +432,8 @@ void LtePdcpRrcEnb::initialize(int stage)
 
 void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
 {
+    Enter_Method_Silent();
+
     PdcpTxEntities::iterator tit;
     PdcpRxEntities::iterator rit;
 

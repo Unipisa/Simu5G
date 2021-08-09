@@ -154,6 +154,11 @@ class LtePhyBase : public ChannelAccess
      */
     ~LtePhyBase();
 
+    const LteChannelModel* getPrimaryChannelModel()
+    {
+        return primaryChannelModel_;
+    }
+
     const std::map<double, LteChannelModel*>* getChannelModels()
     {
         return &channelModel_;

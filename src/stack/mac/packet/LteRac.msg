@@ -13,7 +13,7 @@ import inet.common.packet.chunk.Chunk;
 
 class LteRac extends inet::FieldsChunk
 {
-   // meaningful only for DL (response) RAC packets : if true RAC request has been admitted.
+    // meaningful only for DL (response) RAC packets : if true RAC request has been admitted.
     bool success;
     chunkLength = inet::B(1); // TODO: size 0
 }

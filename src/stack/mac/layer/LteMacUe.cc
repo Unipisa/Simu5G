@@ -54,6 +54,8 @@ LteMacUe::LteMacUe() :
     maxRacBackoff_ = 1;
     raRespTimer_ = 0;
     raRespWinStart_ = 3;
+    bsrRtxTimer_ = 0;
+    bsrRtxTimerStart_ = 40; // TODO check value and make it configurable (see standard 38.331, RetxBSR-Timer)
     nodeType_ = UE;
 
     // KLUDGE: this was unitialized, this is just a guess
@@ -614,6 +616,7 @@ void LteMacUe::macPduMake(MacCid cid)
             //
             //        }
 
+            bool bsrAlreadyMade = false;
             auto header = macPkt->removeAtFront<LteMacPdu>();
             if (bsrTriggered_)
             {
@@ -624,8 +627,15 @@ void LteMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
 
                 bsrTriggered_ = false;
+                bsrAlreadyMade = true;
+
                 EV << "LteMacUe::macPduMake - BSR with size " << size << "created" << endl;
             }
+
+            if (bsrAlreadyMade && size > 0)  // this prevent the UE to send an unnecessary RAC request
+                bsrRtxTimer_ = bsrRtxTimerStart_;
+            else
+                bsrRtxTimer_ = 0;
 
             // insert updated MacPdu
             macPkt->insertAtFront(header);
@@ -1032,6 +1042,14 @@ LteMacUe::checkRAC()
         return;
     }
 
+    if (bsrRtxTimer_>0)
+    {
+        // decrease BSR timer
+        bsrRtxTimer_--;
+        EV << NOW << " LteMacUe::checkRAC - waiting for a grant, BSR rtx timer has not expired yet (timer=" << bsrRtxTimer_ << ")" << endl;
+        return;
+    }
+
     //     Avoids double requests whithin same TTI window
     if (racRequested_)
     {
@@ -1063,6 +1081,8 @@ LteMacUe::checkRAC()
         auto racReq = makeShared<LteRac>();
         pkt->insertAtFront(racReq);
 
+        double carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
+        pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFrequency);
         pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
@@ -1171,6 +1191,8 @@ void LteMacUe::doHandover(MacNodeId targetEnb)
 
 void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
+    Enter_Method_Silent();
+
     LteMacBuffers::iterator mit;
     LteMacBufferMap::iterator vit;
     for (mit = mbuf_.begin(); mit != mbuf_.end(); )

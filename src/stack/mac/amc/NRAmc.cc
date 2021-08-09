@@ -112,7 +112,15 @@ unsigned int NRAmc::computeCodewordTbs(UserTxParams* info, Codeword cw, Directio
 {
     std::vector<unsigned char> layers = info->getLayers();
     NRMCSelem mcsElem = getMcsElemPerCqi(info->readCqiVector().at(cw), dir);
-    unsigned int modFactor = 2 << mcsElem.mod_;
+    unsigned int modFactor;
+    switch(mcsElem.mod_)
+    {
+        case _QPSK:   modFactor = 2; break;
+        case _16QAM:  modFactor = 4; break;
+        case _64QAM:  modFactor = 6; break;
+        case _256QAM: modFactor = 8; break;
+        default: throw cRuntimeError("NRAmc::computeCodewordTbs - unrecognized modulation.");
+    }
     double coderate = mcsElem.coderate_ / 1024;
     double nInfo = numRe * coderate * modFactor * layers.at(cw);
 
@@ -221,6 +229,44 @@ unsigned int NRAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigne
     // DEBUG
     EV << NOW << " NRAmc::computeBitsOnNRbs Resource Blocks: " << blocks << "\n";
     EV << NOW << " NRAmc::computeBitsOnNRbs Available space: " << tbs << "\n";
+
+    return tbs;
+}
+
+unsigned int NRAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+{
+    // DEBUG
+    EV << NOW << " NRAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << " carrierFrequency: " << carrierFrequency << endl;
+
+    // if CQI == 0 the UE is out of range, thus return 0
+    if (cqi == 0)
+    {
+        EV << NOW << " NRAmc::computeBitsPerRbBackground - CQI equal to zero, return no bytes available" << endl;
+        return 0;
+    }
+
+    unsigned int blocks = 1;
+    unsigned char layers = 1;
+
+    // compute TBS
+
+    NRMCSelem mcsElem = getMcsElemPerCqi(cqi, dir);
+    unsigned int numRe = getResourceElements(blocks, getSymbolsPerSlot(carrierFrequency, dir));
+    unsigned int modFactor;
+    switch(mcsElem.mod_)
+    {
+        case _QPSK:   modFactor = 2; break;
+        case _16QAM:  modFactor = 4; break;
+        case _64QAM:  modFactor = 6; break;
+        case _256QAM: modFactor = 8; break;
+        default: throw cRuntimeError("NRAmc::computeCodewordTbs - unrecognized modulation.");
+    }
+    double coderate = mcsElem.coderate_ / 1024;
+    double nInfo = numRe * coderate * modFactor * layers;
+
+    unsigned int tbs = computeTbsFromNinfo(floor(nInfo),coderate);
+
+    EV << NOW << " NRAmc::computeBitsPerRbBackground Available space: " << tbs << "\n";
 
     return tbs;
 }

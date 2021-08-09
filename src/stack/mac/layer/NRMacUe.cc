@@ -73,7 +73,7 @@ void NRMacUe::handleSelfMessage()
 
     if (noSchedulingGrants)
     {
-        EV << NOW << " LteMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
+        EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
         checkRAC();
         // TODO ensure all operations done  before return ( i.e. move H-ARQ rx purge before this point)
     }
@@ -183,6 +183,7 @@ void NRMacUe::handleSelfMessage()
                         signal.second = cwListRetx;
                         currHarq->markSelected(signal,schedulingGrant_[carrierFrequency]->getUserTxParams()->getLayers().size());
                         retx = true;
+                        break;
                     }
                 }
             }
@@ -317,7 +318,6 @@ void NRMacUe::macPduMake(MacCid cid)
                     // Call the appropriate function for make a BSR for a D2D communication
                     Packet* macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    double carrierFreq = git->second->getTag<UserControlInfo>()->getCarrierFrequency();
                     if (info != NULL)
                     {
                         info->setCarrierFrequency(carrierFreq);
@@ -342,11 +342,14 @@ void NRMacUe::macPduMake(MacCid cid)
                         bsrAlreadyMade = true;
                         EV << "NRMacUe::macPduMake - BSR D2D created with size " << sizeBsr << "created" << endl;
                     }
+
+                    bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevent the UE to send an unnecessary RAC request
                 }
                 else
                 {
                     bsrD2DMulticastTriggered_ = false;
                     bsrTriggered_ = false;
+                    bsrRtxTimer_ = 0;
                 }
             }
             break;
@@ -590,7 +593,7 @@ void NRMacUe::macPduMake(MacCid cid)
 
             auto header = macPkt->removeAtFront<LteMacPdu>();
             // Attach BSR to PDU if RAC is won and wasn't already made
-            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade )
+            if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade && size > 0)
             {
                 MacBsr* bsr = new MacBsr();
                 bsr->setTimestamp(simTime().dbl());
@@ -598,8 +601,16 @@ void NRMacUe::macPduMake(MacCid cid)
                 header->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
+                bsrAlreadyMade = true;
                 EV << "NRMacUe::macPduMake - BSR created with size " << size << endl;
             }
+
+            if (bsrAlreadyMade && size > 0) // this prevent the UE to send an unnecessary RAC request
+            {
+                bsrRtxTimer_ = bsrRtxTimerStart_;
+            }
+            else
+                bsrRtxTimer_ = 0;
 
             macPkt->insertAtFront(header);
 

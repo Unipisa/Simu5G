@@ -90,7 +90,9 @@ simple LteRealisticChannelModel extends LteChannelModel
 
     double delay_rms = default(363e-9);
 
-    // if true, enables the inter-cell interference computation for DL connections from external cells -->  
+    // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->  
+    bool bgCell_interference = default(true);
+    // if true, enables the inter-cell interference computation for DL connections from external cells (maybe this is obsolete and should be removed) -->  
     bool extCell_interference = default(true);
     // if true, enables the inter-cell interference computation for DL connections -->  
     bool downlink_interference = default(false);
@@ -106,13 +108,19 @@ simple LteRealisticChannelModel extends LteChannelModel
     int rsrqShift = default(22);
     double rsrqScale = default(1.0);
     
+    // collection of SINR statistics can be disabled because it might be quite time-consuming
+    bool collectSinrStatistics = default(true);
+     
     // statistics
-    @signal[rcvdSinr];
-    @statistic[rcvdSinr](title="SINR measured at packet reception"; unit="dB"; source="rcvdSinr"; record=mean,vector);
+    @signal[rcvdSinrDl];
+    @statistic[rcvdSinrDl](title="SINR measured at packet reception, DL"; unit="dB"; source="rcvdSinrDl"; record=mean,vector);
+    @signal[rcvdSinrUl];
+    @statistic[rcvdSinrUl](title="SINR measured at packet reception, UL"; unit="dB"; source="rcvdSinrUl"; record=mean,vector);
     
-    // statistics
-    @signal[measuredSinr];
-    @statistic[measuredSinr](title="SINR measured at feedback computation"; unit="dB"; source="measuredSinr"; record=mean,vector);
+    @signal[measuredSinrDl];
+    @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
+    @signal[measuredSinrUl];
+    @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
     
     @signal[distance];
     @statistic[distance](title="distance between UE and serving eNB"; unit="meters"; source="distance"; record=mean,vector);

@@ -7,6 +7,8 @@ one NAT router, one router, one external (real) server and one external (real) c
 The external client application (i.e. associated to the UE in the emulation) sends 10MB 
 using TCP to the external server application, traversing the emulated 5G network.
 
+Packets sent needs to be smaller than the MTU of the veth interface (1500 byte by default)
+
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
  
 *** NOTE ***

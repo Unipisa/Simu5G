@@ -5,7 +5,7 @@ In this example the network consists of two UEs connected to one gNB, one UPF,
 one router and one external (real) server.
 
 The external server sends 10MB to ue1 using TCP (in the downlink), whereas 
-ue2 sends 10MB to the external server using TCP (in the uplinK).
+ue2 sends 10MB to the external server using TCP (in the uplink).
 
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
  

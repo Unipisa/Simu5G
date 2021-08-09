@@ -24,6 +24,8 @@ LtePhyUe::LtePhyUe()
 {
     handoverStarter_ = nullptr;
     handoverTrigger_ = nullptr;
+    cqiDlSum_ = cqiUlSum_ = 0;
+    cqiDlCount_ = cqiUlCount_ = 0;
 }
 
 LtePhyUe::~LtePhyUe()
@@ -169,7 +171,8 @@ void LtePhyUe::initialize(int stage)
                 cInfo->setSourceId(cellId);
                 cInfo->setTxPower(cellTxPower);
                 cInfo->setCoord(cellPos);
-                cInfo->setFrameType(FEEDBACKPKT);
+                cInfo->setFrameType(BROADCASTPKT);
+                cInfo->setDirection(DL);
 
                 // get RSSI from the eNB
                 std::vector<double>::iterator it;
@@ -574,6 +577,7 @@ void LtePhyUe::handleAirFrame(cMessage* msg)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
         emit(averageCqiDl_, cqi);
+        recordCqi(cqi, DL);
     }
     // apply decider to received packet
     bool result = true;
@@ -667,7 +671,10 @@ void LtePhyUe::handleUpperMessage(cMessage* msg)
     {
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[lteInfo->getCw()];
         if (lteInfo->getDirection() == UL)
+        {
             emit(averageCqiUl_, cqi);
+            recordCqi(cqi, UL);
+        }
         else if (lteInfo->getDirection() == D2D)
             emit(averageCqiD2D_, cqi);
     }
@@ -775,6 +782,63 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
 
     delete frame;
     delete uinfo;
+}
+
+void LtePhyUe::recordCqi(unsigned int sample, Direction dir)
+{
+    if (dir == DL)
+    {
+        cqiDlSamples_.push_back(sample);
+        cqiDlSum_ += sample;
+        cqiDlCount_++;
+    }
+    if (dir == UL)
+    {
+        cqiUlSamples_.push_back(sample);
+        cqiUlSum_ += sample;
+        cqiUlCount_++;
+    }
+}
+
+double LtePhyUe::getAverageCqi(Direction dir)
+{
+    if (dir == DL)
+    {
+        if (cqiDlCount_ == 0)
+            return 0;
+        return (double)cqiDlSum_/cqiDlCount_;
+    }
+    if (dir == UL)
+    {
+        if (cqiUlCount_ == 0)
+            return 0;
+        return (double)cqiUlSum_/cqiUlCount_;
+    }
+}
+
+double LtePhyUe::getVarianceCqi(Direction dir)
+{
+    double avgCqi = getAverageCqi(dir);
+    double err, sum = 0;
+
+    if (dir == DL)
+    {
+        for (auto it = cqiDlSamples_.begin(); it != cqiDlSamples_.end(); ++it)
+        {
+            err = avgCqi - *it;
+            sum = (err * err);
+        }
+        return sum/cqiDlSamples_.size();
+    }
+    if (dir == UL)
+    {
+        for (auto it = cqiUlSamples_.begin(); it != cqiUlSamples_.end(); ++it)
+        {
+            err = avgCqi - *it;
+            sum = (err * err);
+        }
+        return sum/cqiUlSamples_.size();
+    }
 }
 
 void LtePhyUe::finish()

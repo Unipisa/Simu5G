@@ -88,7 +88,7 @@ void CbrSender::handleMessage(cMessage *msg)
 void CbrSender::initTraffic()
 {
     std::string destAddress = par("destAddress").stringValue();
-    cModule* destModule = getModuleByPath(par("destAddress").stringValue());
+    cModule* destModule = findModuleByPath(par("destAddress").stringValue());
     if (destModule == nullptr)
     {
         // this might happen when users are created dynamically

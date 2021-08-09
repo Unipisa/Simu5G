@@ -157,6 +157,12 @@ class LteMacBase : public omnetpp::cSimpleModule
     uint64_t nrToUpper_;
     uint64_t nrToLower_;
 
+    // support to print harqErrorRate at the end of the simulation
+    unsigned int totalHarqErrorRateDlSum_;
+    unsigned int totalHarqErrorRateUlSum_;
+    unsigned int totalHarqErrorRateDlCount_;
+    unsigned int totalHarqErrorRateUlCount_;
+
   public:
 
     /**
@@ -192,6 +198,16 @@ class LteMacBase : public omnetpp::cSimpleModule
     /*
      * Getters
      */
+
+    double getTtiPeriod()
+    {
+        return ttiPeriod_;
+    }
+
+    LtePhyBase* getPhy()
+    {
+        return phy_;
+    }
 
     MacNodeId getMacNodeId()
     {
@@ -290,6 +306,9 @@ class LteMacBase : public omnetpp::cSimpleModule
 
     // visualization
     void refreshDisplay() const override;
+
+    void recordHarqErrorRate(unsigned int sample, Direction dir);
+    double getHarqErrorRate(Direction dir);
 
   protected:
 

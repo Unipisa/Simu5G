@@ -46,6 +46,7 @@ protected:
   bool shadowing_;
 
   // enable/disable intercell interference computation
+  bool enableBackgroundCellInterference_;
   bool enableExtCellInterference_;
   bool enableDownlinkInterference_;
   bool enableUplinkInterference_;
@@ -128,6 +129,8 @@ protected:
 
   // for each node and for each band we store information about jakes fading
   std::map<MacNodeId, std::vector<JakesFadingData> > jakesFadingMap_;
+  // for each node and for each band we store information about jakes fading
+  std::map<MacNodeId, std::vector<JakesFadingData> > jakesFadingMapBgUe_;
 
   typedef std::vector<JakesFadingData> JakesFadingVector;
   typedef std::map<MacNodeId, JakesFadingVector> JakesFadingMap;
@@ -146,10 +149,15 @@ protected:
   //if dynamicLos is false this boolean is initialized to true if all user will be in LOS or false otherwise
   bool fixedLos_;
 
+  // if false, disable the collection of SINR statistics, which might be quite time-consuming
+  bool collectSinrStatistics_;
+
   // statistics
-  static omnetpp::simsignal_t rcvdSinr_;
+  static omnetpp::simsignal_t rcvdSinrDl_;
+  static omnetpp::simsignal_t rcvdSinrUl_;
+  static omnetpp::simsignal_t measuredSinrDl_;
+  static omnetpp::simsignal_t measuredSinrUl_;
   static omnetpp::simsignal_t distance_;
-  static omnetpp::simsignal_t measuredSinr_;
 
   // rsrq from log file
   bool useRsrqFromLog_;
@@ -222,6 +230,20 @@ public:
    * @param lteinfo pointer to the user control info
    */
   virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo);
+  /*
+   * Compute sinr for each band for a background UE according to pathloss
+   *
+   * @param frame pointer to the packet
+   * @param lteinfo pointer to the user control info
+   */
+  virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo);
+
+  /*
+   * Compute received power for a background UE according to pathloss
+   *
+   */
+  virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId);
+
   /*
    * Compute Received useful signal for D2D transmissions
    */
@@ -325,8 +347,9 @@ public:
    * @param nodeid mac node id of UE
    * @param band logical bend id
    * @param cqiDl if true, the jakesMap in the UE side should be used
+   * @param isBgUe if true, this is called for a background UE
    */
-  double jakesFading(MacNodeId noedId, double speed, unsigned int band, bool cqiDl);
+  double jakesFading(MacNodeId noedId, double speed, unsigned int band, bool cqiDl, bool isBgUe = false);
   /*
    * Compute LOS probability
    *
@@ -397,6 +420,12 @@ protected:
   virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double>* interference);
 
   /*
+   * evaluates total interference from external cells seen from the spot given by coord
+   * @return total interference expressed in dBm
+   */
+  virtual bool computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double>* interference);
+
+  /*
    * compute attenuation due to path loss and shadowing
    * @return attenuation expressed in dBm
    */
@@ -407,7 +436,7 @@ protected:
    * @param id mac id of the user
    */
   JakesFadingMap * obtainUeJakesMap(MacNodeId id);
-
+  JakesFadingMap * obtainUeJakesMap_bgUe(MacNodeId id);
 };
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */

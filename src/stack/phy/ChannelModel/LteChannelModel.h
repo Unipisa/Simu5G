@@ -56,17 +56,17 @@ class LteChannelModel : public omnetpp::cSimpleModule
     /*
      * Returns the carrier frequency
      */
-    virtual double getCarrierFrequency() { return carrierFrequency_; }
+    virtual double getCarrierFrequency() const { return carrierFrequency_; }
 
     /*
      * Returns the number of logical bands
      */
-    virtual unsigned int getNumBands() { return numBands_; }
+    virtual unsigned int getNumBands() const { return numBands_; }
 
     /*
      * Returns the numerology index
      */
-    virtual unsigned int getNumerologyIndex() { return componentCarrier_->getNumerologyIndex(); }
+    virtual unsigned int getNumerologyIndex() const { return componentCarrier_->getNumerologyIndex(); }
 
     virtual void setPhy( LtePhyBase * phy ) { phy_ = phy ; }
 
@@ -109,6 +109,20 @@ class LteChannelModel : public omnetpp::cSimpleModule
      * @param lteinfo pointer to the user control info
      */
     virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo) = 0;
+    /*
+     * Compute sinr for each band for a background UE according to pathloss
+     *
+     * @param frame pointer to the packet
+     * @param lteinfo pointer to the user control info
+     */
+    virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo) = 0;
+
+    /*
+     * Compute received power for a background UE according to pathloss
+     *
+     */
+    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) = 0;
+
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
      * after that it throws a random number in order to check if this packet will be corrupted or not

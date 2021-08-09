@@ -46,6 +46,9 @@ class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
 class ExtCell;
+class BackgroundTrafficManager;
+class BackgroundScheduler;
+class TrafficGeneratorBase;
 
 
 /**
@@ -75,8 +78,10 @@ public:
 /// Node Id bounds
 #define ENB_MIN_ID 1
 #define ENB_MAX_ID 1023
+#define BGUE_ID 1024
 #define UE_MIN_ID 1025
 #define NR_UE_MIN_ID 2049
+#define BGUE_MIN_ID 4097
 #define UE_MAX_ID 65535
 
 /// Max Number of Codewords
@@ -582,15 +587,33 @@ struct UeInfo
     LtePhyBase* phy;
 };
 
+
+/**********************************
+ * Background UEs avg Cqi support *
+ *********************************/
+struct BgTrafficManagerInfo
+{
+    bool init;         // initialization flag
+    BackgroundTrafficManager* bgTrafficManager;
+    double carrierFrequency;
+    double allocatedRbsDl;
+    double allocatedRbsUl;
+    std::vector<double> allocatedRbsUeUl;
+};
+
+
+
 // uplink interference support
 struct UeAllocationInfo{
     MacNodeId nodeId;
     MacCellId cellId;
     LtePhyBase* phy;
+    TrafficGeneratorBase* trafficGen;
     Direction dir;
 };
 
 typedef std::vector<ExtCell*> ExtCellList;
+typedef std::vector<BackgroundScheduler*> BackgroundSchedulerList;
 
 /*****************
  *  PHY Support  *
@@ -680,6 +703,7 @@ GrantType aToGrantType(std::string a);
 const std::string grantTypeToA(GrantType gType);
 Binder* getBinder();
 CellInfo* getCellInfo(MacNodeId nodeId);
+omnetpp::cModule* getPhyByMacNodeId(MacNodeId nodeId);
 omnetpp::cModule* getMacByMacNodeId(MacNodeId nodeId);
 omnetpp::cModule* getRlcByMacNodeId(MacNodeId nodeId, LteRlcType rlcType);
 omnetpp::cModule* getPdcpByMacNodeId(MacNodeId nodeId);

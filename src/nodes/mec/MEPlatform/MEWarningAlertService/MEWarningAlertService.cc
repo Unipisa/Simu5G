@@ -87,7 +87,8 @@ void MEWarningAlertService::handleInfoUEWarningAlertApp(cMessage* msg){
     if(isInQuadrilateral(uePosition, dangerEdgeA, dangerEdgeB, dangerEdgeC, dangerEdgeD)){
 
         respAlert->setDanger(true);
-        respPacket->insertAtBack(alert);
+        respAlert->setChunkLength(alert->getChunkLength());
+        respPacket->insertAtFront(respAlert);
         send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
 
         EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == TRUE!" << endl;
@@ -95,7 +96,8 @@ void MEWarningAlertService::handleInfoUEWarningAlertApp(cMessage* msg){
     else{
 
         respAlert->setDanger(false);
-        respPacket->insertAtBack(alert);
+        respAlert->setChunkLength(alert->getChunkLength());
+        respPacket->insertAtFront(respAlert);
         send(respPacket, "meAppOut", msg->getArrivalGate()->getIndex());
 
         EV << "MEWarningAlertService::handleInfoUEWarningAlertApp - "<< respAlert->getSourceAddress() << " is not in Danger Area! Sending the " << INFO_MEAPP << " type WarningAlertPacket with danger == FALSE!" << endl;

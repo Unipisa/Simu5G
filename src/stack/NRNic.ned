@@ -27,7 +27,7 @@ module NRNicEnb extends LteNicEnbD2D
     parameters:
         LtePdcpRrcType = default("NRPdcpRrcEnb");
         LteMacType = default("NRMacGnb");
-        @display("bgb=430.97598,443.52");
+        @display("bgb=694,443");
 }
 
 //
@@ -47,27 +47,27 @@ module NRNicUe extends LteNicUeD2D
         											// be aware of the existing of the second 
         											// PHY layer (needed at handover)
 
-        @display("bgb=481,443");
+        @display("bgb=694,443");
 
     submodules:
         // RLC Layer
         nrRlc: LteRlc {
-            @display("p=411,226");
+            @display("p=466,226");
             d2dCapable = d2dCapable;
         }
         // MAC Layer
         nrMac: <NRMacType> like LteMac {
             interfaceTableModule = interfaceTableModule;
-            @display("p=411,314");
+            @display("p=466,314");
         }
         // PHY Layer
         nrPhy: <NRPhyType> like LtePhy {
-            @display("p=411,389");
+            @display("p=466,389");
             @class(LtePhyType);
         }
         // NR Channel Model 
         nrChannelModel[numNRCarriers]: <NRChannelModelType> like LteChannelModelInterface {
-            @display("p=144,389");
+            @display("p=232,389");
         }
 
         // Feedback generator submodule

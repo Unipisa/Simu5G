@@ -892,6 +892,33 @@ unsigned int LteAmc::computeBitsOnNRbs_MB(MacNodeId id, Band b,  unsigned int bl
 
 }
 
+unsigned int LteAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+{
+    // DEBUG
+    EV << NOW << " LteAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << endl;
+
+    // if CQI == 0 the UE is out of range, thus return 0
+    if (cqi == 0)
+    {
+        EV << NOW << " LteAmc::computeBitsPerRbBackground - CQI equal to zero, return no bytes available" << endl;
+        return 0;
+    }
+
+    unsigned int iTbs = getItbsPerCqi(cqi, dir);
+    LteMod mod = cqiTable[cqi].mod_;
+    unsigned int i = (mod == _QPSK ? 0 : (mod == _16QAM ? 9 : (mod == _64QAM ? 15 : 0)));
+
+    EV << NOW << " LteAmc::computeBitsPerRbBackground Modulation: " << modToA(mod) << " - iTbs: " << iTbs << " i: " << i << endl;
+
+    unsigned char layers = 1;
+    const unsigned int* tbsVect = itbs2tbs(mod, TRANSMIT_DIVERSITY, layers, iTbs - i);
+    unsigned int blocks = 1;
+
+    EV << NOW << " LteAmc::computeBitsPerRbBackground Available space: " << tbsVect[blocks-1] << "\n";
+    return tbsVect[blocks - 1];
+}
+
+
 bool LteAmc::setPilotUsableBands(MacNodeId id , std::vector<unsigned short>  usableBands)
 {
     pilot_->setUsableBands(id,usableBands);
