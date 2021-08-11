@@ -2,6 +2,6 @@
     <interface hosts='*' address='10.x.x.x' netmask='255.255.255.0'/>
     <!-- <route hosts="*"> -->
 
-    <multicast-group hosts="ue*[*]" interfaces="wlan" address="224.0.0.10"/>
+    <multicast-group hosts="ue*[*]" interfaces="cellular" address="224.0.0.10"/>
 
 </config>

@@ -11,12 +11,12 @@
 
 package simu5g.simulations.NR.mec_warning_alert;
 
-import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import simu5g.world.radio.LteChannelControl;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.Upf;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
@@ -38,7 +38,7 @@ network MecSingleCell
         routingRecorder: RoutingTableRecorder {
             @display("p=690,104.88;is=s");
         }
-        configurator: Ipv4NetworkConfigurator {
+        configurator: CellularNetworkConfigurator {
             @display("p=690,184.92");
         }
         channelControl: LteChannelControl {
