@@ -36,13 +36,13 @@ module Car extends Ue
         @display("i=device/car");
 
         //# Mobility
-        mobilityType = default("VeinsInetMobility");
+        mobility.typename = default("VeinsInetMobility");
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
         
         ipv4.configurator.typename = "HostAutoConfigurator";
-        ipv4.configurator.interfaces = "wlan";
+        ipv4.configurator.interfaces = "cellular";
         
     submodules:
 	    configurator: HostAutoConfigurator {
@@ -61,13 +61,13 @@ module NRCar extends NRUe
         @display("i=device/car");
 
         //# Mobility
-        mobilityType = default("VeinsInetMobility");
+        mobility.typename = default("VeinsInetMobility");
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
         
         ipv4.configurator.typename = "HostAutoConfigurator";
-        ipv4.configurator.interfaces = "wlan";
+        ipv4.configurator.interfaces = "cellular";
         
     submodules:
 	    configurator: HostAutoConfigurator {

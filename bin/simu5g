@@ -1,7 +1,7 @@
 #! /bin/sh
 
 SIMU5G_SRC=$SIMU5G_ROOT/src
-INET_SRC=`(cd $SIMU5G_ROOT/../inet4.3/src ; pwd)`
+INET_SRC=`(cd $SIMU5G_ROOT/../inet4/src ; pwd)`
 COMMAND_LINE_OPTIONS="-n $SIMU5G_ROOT/simulations:$SIMU5G_ROOT/emulation:$SIMU5G_SRC:$INET_SRC"
 
 if [ -f $SIMU5G_SRC/libsimu5g.so -o -f $SIMU5G_SRC/libsimu5g.dll -o -f $SIMU5G_SRC/libsimu5g.dylib ]; then

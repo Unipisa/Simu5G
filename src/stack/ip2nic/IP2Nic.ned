@@ -25,6 +25,7 @@ simple IP2Nic like INetworkLayer2CellularNic
     parameters:
         string nodeType;    
         string interfaceTableModule;
+        string interfaceName = default("cellular"); 
         string routingTableModule;
         @display("i=block/layer");
     gates:

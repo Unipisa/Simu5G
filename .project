@@ -3,7 +3,8 @@
 	<name>simu5G</name>
 	<comment></comment>
 	<projects>
-		<project>inet4.3</project>
+		<project>inet</project>
+		<project>veins_inet</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

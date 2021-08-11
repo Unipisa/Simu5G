@@ -194,7 +194,7 @@ module eNodeB
         gtpUser: GtpUser {
             parameters:
                 @display("p=1041.22,372.88");
-                ipOutInterface = "wlan";       // FIXME: we should use a different name, eg. "cellular" for the LteNic
+                ipOutInterface = "cellular";
         }
 
         gtpUserX2: GtpUserX2 {

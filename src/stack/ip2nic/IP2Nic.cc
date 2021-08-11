@@ -92,7 +92,7 @@ void IP2Nic::initialize(int stage)
     else if (stage == inet::INITSTAGE_STATIC_ROUTING) {
         if (nodeType_ == UE) {
             // TODO: shift to routing stage
-            // if the UE has been created dynamically, we need to manually add a default route having "wlan" as output interface
+            // if the UE has been created dynamically, we need to manually add a default route having our cellular interface as output interface
             // otherwise we are not able to reach devices outside the cellular network
             if (NOW > 0) {
                 /**
@@ -388,8 +388,7 @@ void IP2Nic::registerInterface()
         return;
 
     networkIf = getContainingNicModule(this);
-    networkIf->setInterfaceName("wlan");           // FIXME: user different name for cellular interfaces
-                                                   // (IPv4NetworkConfigurator only supports "wlan" as wireless interface name)
+    networkIf->setInterfaceName(par("interfaceName").stdstringValue().c_str());
     // TODO configure MTE size from NED
     networkIf->setMtu(1500);
     //disable broadcast (not supported in cellularNic), enable multicast
@@ -413,7 +412,7 @@ void IP2Nic::registerMulticastGroups()
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
     if (!ift)
         return;
-    iface = ift->findInterfaceByName("wlan");
+    iface = ift->findInterfaceByName(par("interfaceName").stdstringValue().c_str());
     unsigned int numOfAddresses = iface->getProtocolData<Ipv4InterfaceData>()->getNumOfJoinedMulticastGroups();
 
     for (unsigned int i=0; i<numOfAddresses; ++i)

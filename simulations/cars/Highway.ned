@@ -10,7 +10,6 @@
 //
 package simu5g.simulations.cars;
 
-import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.inet.AdhocHost;
 import inet.node.inet.Router;
@@ -19,6 +18,7 @@ import inet.node.ethernet.Eth10G;
 
 import simu5g.world.radio.LteChannelControl;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.PgwStandard;
 import simu5g.common.binder.Binder;
 import simu5g.nodes.eNodeB;
@@ -40,7 +40,7 @@ network Highway
         routingRecorder: RoutingTableRecorder {
             @display("p=50,75;is=s");
         }
-        configurator: Ipv4NetworkConfigurator {
+        configurator: CellularNetworkConfigurator {
             @display("p=50,125");
         }
 
