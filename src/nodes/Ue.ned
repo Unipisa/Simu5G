@@ -48,7 +48,7 @@ module Ue
 
 
         //# Mobility
-        string mobilityType = default("StationaryMobility");
+        mobility.typename = default("StationaryMobility");
 
         //# Apps
         int numApps = default(0);   // no of apps.
@@ -91,7 +91,7 @@ module Ue
         interfaceTable: InterfaceTable {
             @display("p=127.368004,257.868;is=s");
         }
-        mobility: <mobilityType> like IMobility {
+        mobility: <default("")> like IMobility if typename != "" {
             @display("p=127.368004,172.26001;is=s");
         }
         

@@ -36,7 +36,7 @@ module Car extends Ue
         @display("i=device/car");
 
         //# Mobility
-        mobilityType = default("VeinsInetMobility");
+        mobility.typename = default("VeinsInetMobility");
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
@@ -61,7 +61,7 @@ module NRCar extends NRUe
         @display("i=device/car");
 
         //# Mobility
-        mobilityType = default("VeinsInetMobility");
+        mobility.typename = default("VeinsInetMobility");
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
