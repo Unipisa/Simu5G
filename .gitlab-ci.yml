@@ -1,0 +1,69 @@
+variables:
+  RV: 'crownet/scripts'
+  OPPCONTTAG: '6.0pre11'   # tag of OMNeT++ container to be used
+  #OPPCONTTAG: 'latest'
+  #INETBRANCH: 'master'
+  INETBRANCH: 'v4.3.2'
+
+stages:
+  - build
+  - test
+
+# this job 
+# - prepares the environment
+#   (pulls required docker containers, clones and builds inet)
+# - builds the simulte project itself
+Build:
+  stage: build
+  before_script:
+    # docker login asks for the password to be passed through stdin for security
+    # we use $CI_JOB_TOKEN here which is a special token provided by GitLab
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker pull $CI_REGISTRY/rover/crownet/omnetpp:${OPPCONTTAG}
+  script:
+    - "mkdir .tmp"
+    - "mv * .tmp"
+    - "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@sam-dev.cs.hm.edu/rover/crownet.git"
+    - "mv .tmp simu5g"
+    - "git clone --branch ${INETBRANCH} https://gitlab-ci-token:${CI_JOB_TOKEN}@sam-dev.cs.hm.edu/rover/inet.git inet4"
+    - "cd inet4"
+    - "../$RV/omnetpp ${OPPCONTTAG} exec make makefiles"
+    - "../$RV/omnetpp ${OPPCONTTAG} exec make -j16; TEST_STATUS=${PIPESTATUS[0]}"
+    # we do not need the inet sources anymore - delete them to have less artifacts
+    - "find . -name \"*.cc\" -type f -delete"
+    # build simulte itself
+    - "cd ../simu5g"
+    - "../$RV/omnetpp ${OPPCONTTAG} exec make makefiles"
+    - "../$RV/omnetpp ${OPPCONTTAG} exec make -j16"
+  artifacts:
+    paths:
+    # we keep the scripts
+    - crownet/scripts
+    # we need to keep the ned files and the simu5g lib
+    - simu5g
+    # we need to keep the ned files and the inet lib (all stored in the src subfolder)
+    - inet4/src
+    expire_in: 2 weeks
+
+# This job runs the 4G fingerprint tests
+4G_Fingerprints:
+  stage: test
+  script:
+    - "cd simu5g/tests/fingerprint"
+    - "../../../$RV/omnetpp ${OPPCONTTAG} exec ./fingerprints"
+  artifacts:
+    paths:
+    - simu5g/tests/fingerprint
+    expire_in: 2 weeks
+
+# This job runs the 5G fingerprint tests
+5G_Fingerprints:
+  stage: test
+  script:
+    - "cd simu5g/tests/fingerprint/NR"
+    - "../../../$RV/omnetpp ${OPPCONTTAG} exec ./fingerprints"
+  artifacts:
+    paths:
+    - simu5g/tests/fingerprint
+    expire_in: 2 weeks
+
