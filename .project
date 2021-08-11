@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>inet</project>
+		<project>veins_inet</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

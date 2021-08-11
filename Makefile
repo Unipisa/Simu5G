@@ -13,7 +13,7 @@ cleanall: checkmakefiles
 	@rm -f src/Makefile
 
 makefiles:
-	@cd src && opp_makemake --make-so -f --deep -o simu5g -O out -KINET_PROJ=../../inet4.3 -DINET_IMPORT -I. -I$$\(INET_PROJ\)/src -L$$\(INET_PROJ\)/src -lINET$$\(D\)
+	@cd src && opp_makemake --make-so -f --deep -o simu5g -O out -KINET_PROJ=../../inet4 -DINET_IMPORT -I. -I$$\(INET_PROJ\)/src -L$$\(INET_PROJ\)/src -lINET$$\(D\)
 
 checkmakefiles:
 	@if [ ! -f src/Makefile ]; then \
