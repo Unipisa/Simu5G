@@ -1,0 +1,115 @@
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
+package simu5g.nodes.mec;
+
+import lte.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
+import lte.nodes.mec.MECPlatform.MECPlatform;
+import lte.nodes.mec.MECPlatformManager.MecPlatformManager;
+import lte.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
+
+
+
+
+//lte tunneling endpoint to connect externally with an eNodeB
+import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
+import inet.node.ethernet.Eth10G;
+import inet.applications.contract.IApp;
+// 
+//# MEHost module
+//
+module MECHost
+{
+    parameters:
+        @display("i=device/mainframe;bgb=1000,500");
+
+        //# Node specs
+        string nodeType = "MEHost";						// DO NOT CHANGE
+        string gateway = default("upf");
+
+        //#	ME Host Resources
+        int maxMECApps = default(0);
+        double maxRam @unit("B") = default(32GB);
+        double maxDisk @unit("B") = default(100TB);
+        double maxCpuSpeed = default(300000); 	 // CPU's clock speed in Million Instruction per Seconds (MIPS)
+
+        int numBGMecApp = default(0);
+        //#connections
+        string eNBList = default("");
+
+    gates:
+
+		//to local radio networks
+        inout pppENB[];
+
+        //to external networks (internet)
+        inout ppp[];
+
+    submodules:
+
+        virtualisationInfrastructure: VirtualisationInfrastructure {
+            parameters:
+                @display("p=500,400");
+        }
+
+        mecPlatform: MECPlatform {
+            parameters:
+                @display("p=573.535,158.12999;is=m");
+        }
+
+        mecPlatformManager: MecPlatformManager {
+            parameters:
+                @display("p=865.94995,116.715;is=m");
+        }
+
+        vim: VirtualisationInfrastructureManager {
+            parameters:
+                @display("p=865.94995,224.64499;is=m");
+        }
+
+        //gtp endpoint to connect directly with an eNodeB
+        gtpEndpoint: GtpEndpoint {
+            parameters:
+                @display("p=150,400;is=l");
+        }
+
+
+        bgApp[numBGMecApp]: <> like IApp {
+            @display("p=360.185,224.64499,row,140");
+        }
+
+    connections allowunconnected:
+
+        //ppp++ <--> virtualisationInfrastructure.ppp++;
+
+        //#
+        //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
+        //#
+        virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
+
+        for i=0..sizeof(pppENB)-1 {
+            pppENB++ <--> gtpEndpoint.pppg++;
+        }
+
+        for i=0..sizeof(ppp)-1 {
+            //#
+            //# external connection to external networks
+            //#
+            virtualisationInfrastructure.ppp++ <--> ppp++;
+        }
+
+        for i=0..numBGMecApp-1 {
+            bgApp[i].socketIn <-- virtualisationInfrastructure.meBGAppOut[i];
+            bgApp[i].socketOut --> virtualisationInfrastructure.meBGAppIn[i];
+        }
+
+        virtualisationInfrastructure.mePlatform <--> Eth10G <--> mecPlatform.virtInfr;
+}
