@@ -12,7 +12,7 @@
 
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 #include "nodes/binder/LteBinder.h"           //to handle Car dynamically leaving the Network
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
@@ -21,8 +21,8 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 //MEAppPacket
-#include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MEPlatform/MEAppPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
 
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 
@@ -50,26 +50,22 @@ struct mecAppMapEntry
     int lastAckStartSeqNum;
     int lastAckStopSeqNum;
 
-
 };
-
-////###########################################################################
-
-/**
- * MecOrchestrator
- *
- *  The task of this class is:
- *       1) handling all types of MEAppPacket:
- *              a) START_MEAPP:
- *                  query the ResourceManager & instantiate dynamically the MEApp specified into the meAppModuleType and meAppModuleName fields of the packet
- *              b) STOP_MEAP --> terminate a MEApp & query the ResourceManager to free resources
- *              c) replying with ACK_START_MEAPP or ACK_STOP_MEAPP to the UEApp
-
- */
 
 class LcmProxyMessage;
 class MECOrchestratorMessage;
 
+//
+// This module implements the MEC orchestrator of a MEC system.
+// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations
+// of the standard by using OMNeT++ features.
+// Communications with the LCM proxy occur via connections, while the MEC hosts associated with
+// the MEC system (and the MEC orchestrator) are managed with the mecHostList parameter.
+// This MEC orchestrator provides:
+//   - MEC app instantiation
+//   - MEC app termination
+//   - MEC app run-time onboarding
+//
 
 class MecOrchestrator : public cSimpleModule
 {
@@ -85,15 +81,25 @@ class MecOrchestrator : public cSimpleModule
     //storing the UEApp and MEApp informations
     //key = contextId - value mecAppMapEntry
     std::map<int, mecAppMapEntry> meAppMap;
-
     std::map<std::string, ApplicationDescriptor> mecApplicationDescriptors_;
 
     int contextIdCounter;
+
+    double onboardingTime;
+    double instantiationTime;
+    double terminationTime;
 
     public:
         MecOrchestrator();
         const ApplicationDescriptor* getApplicationDescriptorByAppName(std::string& appName) const;
         const std::map<std::string, ApplicationDescriptor>* getApplicationDescriptors() const { return &mecApplicationDescriptors_;}
+
+        /*
+         * This method registers the MEC service on all the Service Registry of the MEC host associated
+         * with the MEC system
+         *
+         * @param ServiceDescriptor descriptor of the MEC service to register
+         */
         void registerMecService(ServiceDescriptor&) const;
 
     protected:
@@ -102,37 +108,61 @@ class MecOrchestrator : public cSimpleModule
         void initialize(int stage);
         virtual void handleMessage(cMessage *msg);
 
-        /*
-         * ------------------------------------------------------------------------------------------------------
-         */
-        /*
-         * ------------------------------------------MEAppPacket handlers----------------------------------------
-         */
-        // handling all possible MEAppPacket types by invoking specific methods
+
+
         void handleLcmProxyMessage(cMessage* msg);
 
-        // handling START_MEAPP type
-        // by forwarding the packet to the ResourceManager if there are available MEApp "free slots"
-        void startMEApp(LcmProxyMessage*);
+        // handling CREATE_CONTEXT_APP type
+        // it selects the most suitable MEC host and calls the method of its MEC platform manager to require
+        // the MEC app instantiation
+        void startMECApp(LcmProxyMessage*);
 
-        //finding the ME Service requested by UE App among the ME Services available on the ME Host
-        //return: the index of service (in mePlatform.udpService) or SERVICE_NOT_AVAILABLE or NO_SERVICE
-        int findService(const char* serviceName);
+        // handling DELETE_CONTEXT_APP type
+        // it calls the method of the MEC platform manager of the MEC host where the MEC app has been deployed
+        // to delete the MEC app
+        void stopMECApp(LcmProxyMessage*);
 
 
-        // handling STOP_MEAPP type
-        // forwarding the packet to the ResourceManager
-        void stopMEApp(LcmProxyMessage*);
-
-        // sending ACK_START_MEAPP or ACK_STOP_MEAPP (called by instantiateMEApp or terminateMEApp)
+        // sending ACK_CREATE_CONTEXT_APP or ACK_DELETE_CONTEXT_APP
         void sendCreateAppContextAck(bool result, unsigned int requestSno, int contextId = -1);
         void sendDeleteAppContextAck(bool result, unsigned int requestSno, int contextId = -1);
 
-
+        /*
+         * This method selects the most suitable MEC host where to deploy the MEC app.
+         * The policies for the choice of the MEC host refer both from computation requirements
+         * and required MEC services.
+         *
+         * The current implementations of the method selects the MEC host based on the availability of the
+         * required resources and the MEC host that also runs the required MEC service (if any) has precedence
+         * among the others.
+         *
+         * @param ApplicationDescriptor with the computation and MEC services requirements
+         *
+         * @return pointer to the MEC host compound module (if any, else nullptr)
+         */
         cModule* findBestMecHost(const ApplicationDescriptor&);
 
+        /*
+         * MEC hosts associated to the MEC system are configured through the mecHostList NED parameter.
+         * This method gets the references to them.
+         */
         void getConnectedMecHosts();
+
+        /*
+         * The list of the MEC app descriptor to be onboarded at initialization time is
+         * configured through the mecApplicationPackageList NED parameter.
+         * This method loads the app descriptors in the mecApplicationDescriptors_ map
+         *
+         */
         void onboardApplicationPackages();
+
+        /*
+         * This method loads the app descriptors at runtime.
+         *
+         * @param ApplicationDescriptor with the computation and MEC services requirements
+         *
+         * @return ApplicationDescriptor structure of the MEC app descriptor
+         */
         const ApplicationDescriptor& onboardApplicationPackage(const char* fileName);
     };
 

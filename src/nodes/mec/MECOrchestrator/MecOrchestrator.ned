@@ -1,20 +1,25 @@
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 package lte.nodes.mec.MECOrchestrator;
 
+// 
+// This module implements the MEC orchestrator of a MEC system.
+// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations 
+// of the standard by using OMNeT++ features.
+// Communications with the LCM proxy occur via connections, while the MEC hosts associated with
+// the MEC system (and the MEC orchestrator) are managed with the mecHostList parameter.
+// This MEC orchestrator provides:
+//   - MEC app instantiation
+//   - MEC app termination
+//   - MEC app run-time onboarding
+// 
 
 simple MecOrchestrator
 {
@@ -23,9 +28,13 @@ simple MecOrchestrator
 	    string mecHostList = default("");
 	    string mecApplicationPackageList = default("");
 	    
-
+	    // times to simulate lifecycle operations 
+	    double onboardingTime @unit(s) = default(50ms);
+	    double instantiationTime @unit(s) = default(50ms);
+	    double terminationTime @unit(s) = default(50ms);
+	
     gates:
-        
+                
         output toLcmProxy;
         input fromLcmProxy;
 

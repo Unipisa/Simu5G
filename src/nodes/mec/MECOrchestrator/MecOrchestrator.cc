@@ -1,43 +1,54 @@
-/*
- * MecOrchestrator.cc
- *
- *  Created on: Apr 26, 2021
- *      Author: linofex
- */
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
+
+
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
-#include "nodes/mec/MEPlatform/ServiceRegistry/ServiceRegistry.h"
-
+#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
-
-
 
 #include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
 #include "nodes/mec/LCMProxy/LCMProxyMessages/LCMProxyMessages_types.h"
 #include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppMessage.h"
 #include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppAckMessage.h"
 
+//emulation debug
+#include <iostream>
 
 Define_Module(MecOrchestrator);
 
 MecOrchestrator::MecOrchestrator()
 {
+    meAppMap.clear();
+    mecApplicationDescriptors_.clear();
 }
 
 void MecOrchestrator::initialize(int stage)
 {
-    EV << "MecOrchestrator::initialize - stage " << stage << endl;
     cSimpleModule::initialize(stage);
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_LOCAL)
         return;
+    EV << "MecOrchestrator::initialize - stage " << stage << endl;
+
+    binder_ = getBinder();
+
+    onboardingTime = par("onboardingTime").doubleValue();
+    instantiationTime = par("instantiationTime").doubleValue();
+    terminationTime = par("terminationTime").doubleValue();
+
     getConnectedMecHosts();
     onboardApplicationPackages();
-    binder_ = getBinder();
 
 }
 
@@ -47,6 +58,7 @@ void MecOrchestrator::handleMessage(cMessage *msg)
     {
         if(strcmp(msg->getName(), "MECOrchestratorMessage") == 0)
         {
+            EV << "MecOrchestrator::handleMessage - "  << msg->getName() << endl;
             MECOrchestratorMessage* meoMsg = check_and_cast<MECOrchestratorMessage*>(msg);
             if(strcmp(meoMsg->getType(), CREATE_CONTEXT_APP) == 0)
             {
@@ -60,10 +72,11 @@ void MecOrchestrator::handleMessage(cMessage *msg)
         }
     }
 
-//    //handling resource allocation confirmation
+    // handle message from the LCM proxy
     else if(msg->arrivedOn("fromLcmProxy"))
     {
-          handleLcmProxyMessage(msg);
+        EV << "MecOrchestrator::handleMessage - "  << msg->getName() << endl;
+        handleLcmProxyMessage(msg);
     }
 
     delete msg;
@@ -71,39 +84,32 @@ void MecOrchestrator::handleMessage(cMessage *msg)
 
 }
 
-/*
- * ######################################################################################################
- */
-/*
- * #######################################MEAPP PACKETS HANDLERS####################################
- */
-
-void MecOrchestrator::handleLcmProxyMessage(cMessage* msg){
-
+void MecOrchestrator::handleLcmProxyMessage(cMessage* msg)
+{
     LcmProxyMessage* lcmMsg = check_and_cast<LcmProxyMessage*>(msg);
 
-    /* Handling START_MEAPP */
+    /* Handling CREATE_CONTEXT_APP */
     if(!strcmp(lcmMsg->getType(), CREATE_CONTEXT_APP))
-        startMEApp(lcmMsg);
+        startMECApp(lcmMsg);
 
-    /* Handling STOP_MEAPP */
+    /* Handling DELETE_CONTEXT_APP */
     else if(!strcmp(lcmMsg->getType(), DELETE_CONTEXT_APP))
-        stopMEApp(lcmMsg);
+        stopMECApp(lcmMsg);
 }
 
-void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
-
-
+void MecOrchestrator::startMECApp(LcmProxyMessage* msg)
+{
     CreateContextAppMessage* contAppMsg = check_and_cast<CreateContextAppMessage*>(msg);
 
     EV << "MecOrchestrator::createMeApp - processing... request id: " << contAppMsg->getRequestId() << endl;
 
     //retrieve UE App ID
     int ueAppID = atoi(contAppMsg->getDevAppId());
+
     /*
-     * The Mec orchestrator has to decide where to deploy the mec application.
-     * It has to check if the Meapp has been already deployed
-     *
+     * The Mec orchestrator has to decide where to deploy the MEC application.
+     * - It checks if the MEC app has been already deployed
+     * - It selects the most suitable MEC host     *
      */
 
     for(const auto& contextApp : meAppMap)
@@ -119,8 +125,8 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
             //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
             //        ackMEAppPacket(ueAppID, ACK_START_MEAPP);
             //testing
-            EV << "MecOrchestrator::startMEApp - \tWARNING: required MEApp instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
-            EV << "MecOrchestrator::startMEApp  - sending ackMEAppPacket with "<< ACK_START_MEAPP << endl;
+            EV << "MecOrchestrator::startMECApp - \tWARNING: required MEC App instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
+            EV << "MecOrchestrator::startMECApp  - sending ackMEAppPacket with "<< ACK_CREATE_CONTEXT_APP << endl;
             sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
             return;
         }
@@ -132,9 +138,11 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
 
     if(contAppMsg->getOnboarded() == false)
     {
-       const ApplicationDescriptor& appDesc = onboardApplicationPackage(contAppMsg->getAppPackagePath());
-       appDid = appDesc.getAppDId();
-       processingTime += 0.01;
+        // onboard app descriptor
+        EV << "MecOrchestrator::startMECApp - onboarding appDescriptor from: " << contAppMsg->getAppPackagePath() << endl;
+        const ApplicationDescriptor& appDesc = onboardApplicationPackage(contAppMsg->getAppPackagePath());
+        appDid = appDesc.getAppDId();
+        processingTime += onboardingTime;
     }
     else
     {
@@ -143,7 +151,11 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
 
     auto it = mecApplicationDescriptors_.find(appDid);
     if(it == mecApplicationDescriptors_.end())
-       throw cRuntimeError("MecOrchestrator::startMEApp - Application package with AppDId[%s] not onboarded", contAppMsg->getAppDId());
+    {
+        EV << "MecOrchestrator::startMECApp - Application package with AppDId["<< contAppMsg->getAppDId() << "] not onboarded." << endl;
+        sendCreateAppContextAck(false, contAppMsg->getRequestId());
+//        throw cRuntimeError("MecOrchestrator::startMECApp - Application package with AppDId[%s] not onboarded", contAppMsg->getAppDId());
+    }
 
     const ApplicationDescriptor& desc = it->second;
 
@@ -161,23 +173,12 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
         createAppMsg->setRequiredRam(desc.getVirtualResources().ram);
         createAppMsg->setRequiredDisk(desc.getVirtualResources().disk);
 
-        // TODO remove services management in the message. The mec application already knows.
-        // this field is useful for mec services non etsi mec compliant (e.g. omnet++ like messages)
+        // This field is useful for mec services no etsi mec compliant (e.g. omnet++ like)
         // In such case, the vim has to connect the gates between the mec application and the service
 
-//        if(desc.getAppServicesRequired().size() != 0)
-//            createAppMsg->setRequiredService(desc.getAppServicesRequired()[0].c_str());
-//        else
-//            createAppMsg->setRequiredService("NULL");
-//
-//        if(desc.getAppServicesProduced().size() != 0)
-//            createAppMsg->setProvidedService(desc.getAppServicesProduced()[0].c_str());
-//        else
-//            createAppMsg->setProvidedService("NULL");
-
-        // insert omnetlike services, only one is supported, for now
+        // insert OMNeT like services, only one is supported, for now
         if(!desc.getOmnetppServiceRequired().empty())
-           createAppMsg->setRequiredService(desc.getOmnetppServiceRequired().c_str());
+            createAppMsg->setRequiredService(desc.getOmnetppServiceRequired().c_str());
         else
             createAppMsg->setRequiredService("NULL");
 
@@ -214,6 +215,7 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
 
          if(desc.isMecAppEmulated())
          {
+             EV << "MecOrchestrator::startMECApp - MEC app is emulated" << endl;
              bool result = mecpm->instantiateEmulatedMEApp(createAppMsg);
              appInfo.status = result;
              appInfo.endPoint.addr = inet::L3Address(desc.getExternalAddress().c_str());
@@ -226,21 +228,21 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
          {
              appInfo = mecpm->instantiateMEApp(createAppMsg);
              newMecApp.isEmulated = false;
-
          }
 
          if(!appInfo.status)
          {
+             EV << "MecOrchestrator::startMECApp - something went wrong during MEC app instantiation"<< endl;
              MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
              msg->setType(CREATE_CONTEXT_APP);
              msg->setRequestId(contAppMsg->getRequestId());
              msg->setSuccess(false);
-             processingTime += 0.010;
+             processingTime += instantiationTime;
              scheduleAt(simTime() + processingTime, msg);
              return;
          }
 
-         EV << "VirtualisationManager::instantiateMEApp new MEC applciation with name: " << appInfo.instanceId << " instantiated on " << appInfo.endPoint.addr.str() << ":" << appInfo.endPoint.port << endl;
+         EV << "MecOrchestrator::startMECApp - new MEC application with name: " << appInfo.instanceId << " instantiated on MEC host []"<< newMecApp.mecHost << " at "<< appInfo.endPoint.addr.str() << ":" << appInfo.endPoint.port << endl;
 
          newMecApp.mecAppAddress = appInfo.endPoint.addr;
          newMecApp.mecAppPort = appInfo.endPoint.port;
@@ -256,34 +258,37 @@ void MecOrchestrator::startMEApp(LcmProxyMessage* msg){
 
          contextIdCounter++;
 
-         processingTime += 0.010;
+         processingTime += instantiationTime;
          scheduleAt(simTime() + processingTime, msg);
     }
     else
     {
+        //throw cRuntimeError("MecOrchestrator::startMECApp - A suitable MEC host has not been selected");
+        EV << "MecOrchestrator::startMECApp - A suitable MEC host has not been selected" << endl;
         MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
         msg->setType(CREATE_CONTEXT_APP);
         msg->setRequestId(contAppMsg->getRequestId());
         msg->setSuccess(false);
-        processingTime += 0.010;
+        processingTime += instantiationTime/2;
         scheduleAt(simTime() + processingTime, msg);
     }
 
 }
 
-void MecOrchestrator::stopMEApp(LcmProxyMessage* msg){
-    EV << "MecOrchestrator::stopMEApp - processing..." << endl;
+void MecOrchestrator::stopMECApp(LcmProxyMessage* msg){
+    EV << "MecOrchestrator::stopMECApp - processing..." << endl;
 
     DeleteContextAppMessage* contAppMsg = check_and_cast<DeleteContextAppMessage*>(msg);
 
     int contextId = contAppMsg->getContextId();
-    EV << "MecOrchestrator::stopMEApp - processing contextId: "<< contextId << endl;
-    //checking if ueAppIdToMeAppMapKey entry map does exist
+    EV << "MecOrchestrator::stopMECApp - processing contextId: "<< contextId << endl;
+    // checking if ueAppIdToMeAppMapKey entry map does exist
     if(meAppMap.empty() || (meAppMap.find(contextId) == meAppMap.end()))
     {
-//      maybe it has been deleted
-        EV << "MecOrchestrator::stopMEApp - \tWARNING Mec Application ["<< meAppMap[contextId].mecUeAppID <<"] not found!" << endl;
-        throw cRuntimeError("MecOrchestrator::stopMEApp - \tERROR ueAppIdToMeAppMapKey entry not found!");
+        // maybe it has already been deleted
+        EV << "MecOrchestrator::stopMECApp - \tWARNING Mec Application ["<< meAppMap[contextId].mecUeAppID <<"] not found!" << endl;
+        sendDeleteAppContextAck(false, contAppMsg->getRequestId(), contextId);
+//        throw cRuntimeError("MecOrchestrator::stopMECApp - \tERROR ueAppIdToMeAppMapKey entry not found!");
         return;
     }
 
@@ -299,6 +304,7 @@ void MecOrchestrator::stopMEApp(LcmProxyMessage* msg){
      if(meAppMap[contextId].isEmulated)
      {
          isTerminated =  mecpm->terminateEmulatedMEApp(deleteAppMsg);
+         std::cout << "terminateEmulatedMEApp with result: " << isTerminated << std::endl;
      }
      else
      {
@@ -311,17 +317,17 @@ void MecOrchestrator::stopMEApp(LcmProxyMessage* msg){
      mecoMsg->setContextId(contAppMsg->getContextId());
      if(isTerminated)
      {
-         EV << "MecOrchestrator::stopMEApp - mec Application ["<< meAppMap[contextId].mecUeAppID << "] removed"<< endl;
+         EV << "MecOrchestrator::stopMECApp - mec Application ["<< meAppMap[contextId].mecUeAppID << "] removed"<< endl;
          meAppMap.erase(contextId);
          mecoMsg->setSuccess(true);
      }
      else
      {
-         EV << "MecOrchestrator::stopMEApp - mec Application ["<< meAppMap[contextId].mecUeAppID << "] not removed"<< endl;
+         EV << "MecOrchestrator::stopMECApp - mec Application ["<< meAppMap[contextId].mecUeAppID << "] not removed"<< endl;
          mecoMsg->setSuccess(false);
      }
 
-    double processingTime = 0.010;
+    double processingTime = terminationTime;
     scheduleAt(simTime() + processingTime, mecoMsg);
 
 }
@@ -347,13 +353,12 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
         if(meAppMap.empty() || meAppMap.find(contextId) == meAppMap.end())
         {
             EV << "MecOrchestrator::ackMEAppPacket - ERROR meApp["<< contextId << "] does not exist!" << endl;
-            throw cRuntimeError("MecOrchestrator::ackMEAppPacket - ERROR meApp[%d] does not exist!", contextId);
+//            throw cRuntimeError("MecOrchestrator::ackMEAppPacket - ERROR meApp[%d] does not exist!", contextId);
             return;
         }
-    //
+
         mecAppMapEntry mecAppStatus = meAppMap[contextId];
 
-//        EV << "MecOrchestrator::ackMEAppPacket - sending successful ack  to: [" << destAddress_.str() <<"]" << endl;
         ack->setSuccess(true);
         ack->setContextId(contextId);
         ack->setAppInstanceId(mecAppStatus.mecAppIsntanceId.c_str());
@@ -383,10 +388,14 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         VirtualisationInfrastructureManager *vim = check_and_cast<VirtualisationInfrastructureManager*> (mecHost->getSubmodule("vim"));
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
-        if(!res) // skip this MEC host if it has not enough resources
+        if(!res)
+        {
+            EV << "MecOrchestrator::findBestMecHost - MEC host []"<< mecHost << " has not got enough resources. Searching again..." << endl;
             continue;
+        }
 
         // Temporally select this mec host as the best
+        EV << "MecOrchestrator::findBestMecHost - MEC host []"<< mecHost << " temporally chosen as bet MEC host, checking for the required MEC services.." << endl;
         bestHost = mecHost;
 
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager*> (mecHost->getSubmodule("mecPlatformManager"));
@@ -400,8 +409,6 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         }
         else
         {
-            // If the MEC app does not require any MEC service, the first available MEC host is taken
-//            bestHost = mecHost;
             break;
         }
         auto it = mecServices->begin();
@@ -415,7 +422,9 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         }
     }
     if(bestHost != nullptr)
-        EV << "MecOrchestrator::findBestMecHost - best MecHost: " << bestHost << endl;
+        EV << "MecOrchestrator::findBestMecHost - best MEC host: " << bestHost << endl;
+    else
+        EV << "MecOrchestrator::findBestMecHost - no MEC host found"<< endl;
 
     return bestHost;
 }
@@ -462,17 +471,15 @@ const ApplicationDescriptor& MecOrchestrator::onboardApplicationPackage(const ch
 
 void MecOrchestrator::registerMecService(ServiceDescriptor& serviceDescriptor) const
 {
-    EV << "MecOrchestrator::registerMecService - Registering MEC service ["<<serviceDescriptor.name << "]" << endl;
-    EV << "MecOrchestrator::registerMecService size " << mecHosts.size() << endl;
+    EV << "MecOrchestrator::registerMecService - Registering MEC service [" << serviceDescriptor.name << "]" << endl;
     for(auto mecHost : mecHosts)
     {
-//        cModule* module = mecHost->getModuleByPath(".mecPlatform.serviceRegistry");
         cModule* module = mecHost->getSubmodule("mecPlatform")->getSubmodule("serviceRegistry");
         if(module != nullptr)
         {
             EV << "MecOrchestrator::registerMecService - Registering MEC service ["<<serviceDescriptor.name << "] in MEC host [" << mecHost->getName()<<"]" << endl;
             ServiceRegistry* serviceRegistry = check_and_cast<ServiceRegistry*>(module);
-            serviceRegistry->registerMeService(serviceDescriptor);
+            serviceRegistry->registerMecService(serviceDescriptor);
         }
     }
 }
