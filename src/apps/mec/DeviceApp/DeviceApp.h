@@ -1,9 +1,12 @@
-/*
- * MeGetApp.h
- *
- *  Created on: Dec 6, 2020
- *      Author: linofex
- */
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
 
 #ifndef APPS_MEC_MEAPPS_DEVICEAPP_H_
 #define APPS_MEC_MEAPPS_DEVICEAPP_H_
@@ -13,9 +16,31 @@
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "DeviceAppMessages/DeviceAppPacket_m.h"
 
+
+/*
+ * This is a very simple application implementing some Device Application functionalities,
+ * i.e. instantiation and termination of MEC apps requests.
+ * It follows the ETSI specification of ETSI GS MEC 016 V2.2.1 (2020-04)
+ *
+ * In particular it receives requests from the relative UE app (it is supposed that each UE
+ * app has it own device app) and it interfaces with the UALCM proxy via the RESTful API.
+ *
+ * TCP socket management is minimal, it send requests only if the socket is connected and
+ * responds with nacks (withe reason to the UE app) if not.
+ *
+ * Communication with the UE app occurs via set of OMNeT++ messages:
+ *  - request instantation of a MEC app
+ *  - request termination of a MEC app
+ *  - ACK and NACK about the above requests
+ *
+ * This device app can be also queried by external UE app (in emulation mode). So, the
+ * serializer/deserializer for the the above messages is provided within the
+ * DeviceAppMessages/Serializers folder
+ */
+
 class HttpBaseMessage;
 
-enum State {IDLE, START, CREATE, DELETE};
+enum State {IDLE, START, APPCREATED, CREATING,  DELETE, DELETING};
 
 
 class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
@@ -47,7 +72,7 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         std::string appName;
 
         // variable set in ned, if the appDescriptor is not in the MEC orchestrator
-        std::string appProvider;
+//        std::string appProvider; not used
         std::string appPackageSource;
 
 
@@ -57,8 +82,6 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         virtual void finish() override;
 
         /* Utility functions */
-//        virtual void parseReceivedMsg(inet::TcpSocket *socket, HttpBaseMessage* currentHttpMessage,  std::string& packet);
-        //    virtual void handleTimer(omnetpp::cMessage *msg) override {};
         virtual void handleSelfMessage(omnetpp::cMessage *msg);
         virtual void handleLcmProxyMessage();
         void sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk);
@@ -80,8 +103,6 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
         virtual void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
         virtual void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
         virtual void socketClosed(inet::UdpSocket *socket) override;
-
-        virtual void established(int connId);
 
     public:
       DeviceApp();

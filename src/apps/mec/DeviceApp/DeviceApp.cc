@@ -1,29 +1,28 @@
-/*
- * DeviceApp.cc
- *
- *  Created on: Dec 6, 2020
- *      Author: linofex
- */
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 
 #include "apps/mec/DeviceApp/DeviceApp.h"
-#include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 #include "common/utils/utils.h"
 #include <string>
 #include "DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/MEPlatform/MeServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "inet/common/TimeTag_m.h"
 #include "inet/networklayer/common/L3AddressTag_m.h"
 #include "inet/transportlayer/common/L4PortTag_m.h"
 
 #include "inet/common/packet/chunk/BytesChunk.h"
-#include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
-
-
-
+#include "nodes/mec/utils/httpUtils/json.hpp"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 
 using namespace inet;
@@ -54,7 +53,8 @@ void DeviceApp::handleLcmProxyMessage()
         {
             case START:
             {
-                if(strcmp(response->getCode(), "200") == 0) // Successful response of a get
+                EV << "DeviceApp::handleLcmProxyMessage - START" << endl;
+                if(response->getCode() == 200) // Successful response of the get
                 {
                     nlohmann::json jsonResponseBody = nlohmann::json::parse(response->getBody());
                     nlohmann::json jsonRequestBody;
@@ -84,7 +84,8 @@ void DeviceApp::handleLcmProxyMessage()
                         jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";
 
                         jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
-                        jsonRequestBody["appInfo"]["appProvider"] = appProvider;//startPk->getMecAppProvider();//"lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest";
+                        // do not add the appProvider field (even if it is mandatory in ETSI specs. The MEC orchestrator we implemented does not use it
+                        // jsonRequestBody["appInfo"]["appProvider"] = appProvider;//startPk->getMecAppProvider();//"lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest";
                     }
 
                     const char *uri = "/example/dev_app/v1/app_contexts";
@@ -94,7 +95,7 @@ void DeviceApp::handleLcmProxyMessage()
                     Http::sendPostRequest(&lcmProxySocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
 
                     //send request
-                    appState = CREATE;
+                    appState = CREATING;
                     return;
                 }
                 else
@@ -105,23 +106,22 @@ void DeviceApp::handleLcmProxyMessage()
                 break;
             }
 
-            case CREATE:
+            case CREATING:
             {
-                if(strcmp(response->getCode(), "201") == 0) // Successful response of the post
+                EV << "DeviceApp::handleLcmProxyMessage - CREATING" << endl;
+                if(response->getCode() == 201) // Successful response of the post
                 {
                     nlohmann::json jsonBody =  nlohmann::json::parse(lcmProxyMessage->getBody());
 
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
 
-                    /*
-                     * TODO manage cases with no responses
-                     */
                     std::string contextUri = response->getHeaderField("Location");
 
                     if(contextUri.empty())
                     {
                         //ERROR
-                        EV << "DeviceApp::handleLcmProxyMessage - ERROR - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
+                        EV << "DeviceApp::handleLcmProxyMessage - ERROR (on CREATE 201) - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
+
                         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                         //instantiation requirements and info
@@ -131,13 +131,12 @@ void DeviceApp::handleLcmProxyMessage()
                         //connection info
                         nack->setResult(false);
                         // TODO add reason?
-
+                        throw cRuntimeError("201 vuoto");
                         nack->setChunkLength(inet::B(2)); //just code and data length = 0
 
                         packet->insertAtBack(nack);
 
                     }
-
                     else
                     {
                         appContextUri = contextUri;
@@ -163,21 +162,20 @@ void DeviceApp::handleLcmProxyMessage()
                         ack->setPort(atoi(endPoint[1].c_str()));
 
                         ack->setChunkLength(inet::B(2+mecAppEndPoint.size()+contextId.size()+1));
-                        ack->setChunkLength(inet::B(2+mecAppEndPoint.size()+1));
-
+//                        ack->setChunkLength(inet::B(2+mecAppEndPoint.size()+1));
 
                         packet->insertAtBack(ack);
                     }
 
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 
-                    appState = CREATE;
+                    appState = APPCREATED;
                     return;
                 }
-                else
+                else if(response->getCode() == 500)
                 {
                     //ERROR
-                    EV << "DeviceApp::handleLcmProxyMessage - ERROR - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
+                    EV << "DeviceApp::handleLcmProxyMessage - ERROR (on CREATE "<<  response->getCode() << ") - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
                     auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                     //instantiation requirements and info
@@ -186,64 +184,84 @@ void DeviceApp::handleLcmProxyMessage()
 
                     //connection info
                     nack->setResult(false);
-                    // TODO add reason?
-
-                    nack->setChunkLength(inet::B(2)); //just code and data length = 0
+                    nack->setReason("LCM proxy responded 500");
+                    if(strlen(nack->getReason()))
+                    {
+                       nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
+                    }
+                    else
+                    {
+                       nack->setChunkLength(inet::B(2)); //just code and data length = 0
+                    }
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
                     packet->insertAtBack(nack);
-
+                    throw cRuntimeError("LCM proxy responded 500");
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 
                     appState = IDLE;
-                    return;
-                }
-                break;
-            }
-
-            case DELETE:
-            {
-                if(strcmp(response->getCode(), "204") == 0) // Successful response of the delete
-                {
-                    // send start mec app
-                    inet::Packet* packet = new inet::Packet("DeviceAppStopAckPacket");
-                    auto ack = inet::makeShared<DeviceAppStopAckPacket>();
-
-                    //instantiation requirements and info
-                    ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-                    ack->setType(ACK_STOP_MECAPP);
-
-                    //connection info
-                    ack->setResult(true);
-                    ack->setChunkLength(inet::B(2));
-                    packet->insertAtBack(ack);
-
-                    ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
-                    appState = IDLE;
-
-                    lcmProxySocket_.close();
-
                     return;
                 }
                 else
                 {
-                    inet::Packet* packet = new inet::Packet("DeviceAppStopAckPacket");
-                    auto ack = inet::makeShared<DeviceAppStopAckPacket>();
-
-                    //instantiation requirements and info
-                    ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-                    ack->setType(ACK_STOP_MECAPP);
-
-                    ack->setResult(false);
-                    ack->setChunkLength(inet::B(2));
-                    packet->insertAtBack(ack);
-
-                    ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
-                    // send nack ack
-                    appState = DELETE;
-                    return;
+                    // in state create only 201 and 500 code are allowed, if other code arrives, something went wrong...
+                    EV << "DeviceApp::handleLcmProxyMessage - HTTP code " << response->getCode() << " not allowe in CREATE state" << endl;
                 }
                 break;
+            }
 
+            case DELETING:
+            {
+                inet::Packet* packet = new inet::Packet("DeviceAppStopAckPacket");
+                auto ack = inet::makeShared<DeviceAppStopAckPacket>();
+                //instantiation requirements and info
+                ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+                ack->setType(ACK_STOP_MECAPP);
+
+                if(response->getCode() == 204) // Successful response of the delete
+                {
+                    ack->setResult(true);
+                    ack->setChunkLength(inet::B(2));
+                    packet->insertAtBack(ack);
+                    appState = IDLE;
+                }
+                else if(response->getCode() == 404)
+                {
+                    ack->setResult(false);
+                    ack->setReason("ContextId not found, maybe it has been already deleted");
+                    if(strlen(ack->getReason()))
+                    {
+                        ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
+                    }
+                    else
+                    {
+                        ack->setChunkLength(inet::B(2)); //just code and data length = 0
+                    }
+                    packet->insertAtBack(ack);
+                    appState = IDLE;
+
+                }
+                else if(response->getCode() == 500)
+                {
+                    ack->setResult(false);
+                    ack->setReason("MEC app termination did not success");
+                    if(strlen(ack->getReason()))
+                    {
+                        ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
+                    }
+                    else
+                    {
+                        ack->setChunkLength(inet::B(2)); //just code and data length = 0
+                    }
+                    packet->insertAtBack(ack);
+
+                    appState = APPCREATED;
+                    return;
+                }
+
+                // send nack/ack
+                ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
+
+                break;
             }
 
             case IDLE:
@@ -256,11 +274,6 @@ void DeviceApp::handleLcmProxyMessage()
         // TODO implement subscriptions
         return;
     }
-
-}
-
-void DeviceApp::established(int connId)
-{
 
 }
 
@@ -298,19 +311,24 @@ void DeviceApp::initialize(int stage){
 
     const char *lcmAddress = par("lcmProxyAddress").stringValue();
     lcmProxyAddress = L3AddressResolver().resolve(lcmAddress);
+    EV << "DeviceApp::initialize - lcmProxyAddress: " << lcmProxyAddress.str() << endl;
     lcmProxyPort = par("lcmProxyPort");
 
     processedLcmProxyMessage = new cMessage("processedLcmProxyMessage");
 
-    appProvider = par("appProvider").stringValue();
+//    appProvider = par("appProvider").stringValue();
     appPackageSource = par("appPackageSource").stringValue();
 
     appState = IDLE;
 
-    cMessage *msg = new cMessage("connect");
-    scheduleAt(simTime()+0.05 , msg);
-}
+    /* directly connect to the LCM proxy
+    * instead of waiting for a requeste from the UE, it is
+    * easier to manage
+    */
 
+    cMessage *msg = new cMessage("connect");
+    scheduleAt(simTime()+0.0 , msg);
+}
 
 void DeviceApp::handleMessage(omnetpp::cMessage *msg)
 {
@@ -319,7 +337,6 @@ void DeviceApp::handleMessage(omnetpp::cMessage *msg)
         handleSelfMessage(msg);
         return;
     }
-
     else if(ueAppSocket_.belongsToSocket(msg))
     {
         ueAppSocket_.processMessage(msg);
@@ -342,9 +359,10 @@ void DeviceApp::connectToLcmProxy()
 
     if (lcmProxyAddress.isUnspecified()) {
         EV_ERROR << "Connecting to " << lcmProxyAddress << " port=" << lcmProxyPort << ": cannot resolve destination address\n";
+        throw cRuntimeError("LCM proxy address is unspecified!");
     }
     else {
-        EV_INFO << "Connecting to " << lcmProxyAddress << " port=" << lcmProxyPort << endl;
+        EV << "Connecting to " << lcmProxyAddress << " port=" << lcmProxyPort << endl;
         lcmProxySocket_.connect(lcmProxyAddress, lcmProxyPort);
     }
 }
@@ -362,13 +380,50 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
      */
     appName = startPk->getMecAppName();
 
-    std::stringstream uri;
-    uri << "/example/dev_app/v1/app_list?appName="<<appName;
+    std::string uri("/example/dev_app/v1/app_list");
+    std::stringstream params;
+    params << "appName="<<appName;
 
     std::string host = lcmProxySocket_.getRemoteAddress().str()+":"+std::to_string(lcmProxySocket_.getRemotePort());
 
-    Http::sendGetRequest(&lcmProxySocket_, host.c_str(), uri.str().c_str());
-    appState = START;
+    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE)
+    {
+        Http::sendGetRequest(&lcmProxySocket_, host.c_str(), uri.c_str(), params.str().c_str());
+        appState = START;
+    }
+    else if(lcmProxySocket_.getState() != inet::TcpSocket::CONNECTED)
+    {
+        // send nack to the UE app
+
+        inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
+        auto nack = inet::makeShared<DeviceAppStartAckPacket>();
+
+        //instantiation requirements and info
+        nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        nack->setType(ACK_START_MECAPP);
+
+        //connection info
+        nack->setResult(false);
+
+        nack->setReason("LCM proxy not connected");
+        if(strlen(nack->getReason()))
+        {
+            nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
+        }
+        else
+        {
+            nack->setChunkLength(inet::B(2)); //just code and data length = 0
+        }
+        packet->insertAtBack(nack);
+        throw cRuntimeError("LCM proxy not connected");
+        ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
+
+        return;
+    }
+    else if(appState != IDLE)
+    {
+        EV << "DeviceApp::sendStartAppContext already sent" << endl;
+    }
 
     return;
 }
@@ -379,15 +434,54 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
     if(stopPk == nullptr)
         throw cRuntimeError("DeviceApp::sendStopAppContext - DeviceAppStopPacket is null");
 
+    /*
+     * Not used, since the UE app is 1-1 with the device app, so the latter uses the
+     *  appContextUri saved during startContext
+     */
     std::string cId = stopPk->getContextId();
 
-    EV << "DeviceApp::sendStopAppContext" << endl;
+
     std::string host = lcmProxySocket_.getRemoteAddress().str()+":"+std::to_string(lcmProxySocket_.getRemotePort());
-    Http::sendDeleteRequest(&lcmProxySocket_, host.c_str(), appContextUri.c_str());
 
-    appState = DELETE;
+    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED)
+    {
+        EV << "DeviceApp::sendStopAppContext - send DELETE for MEC app: " << appContextUri << endl;
+        Http::sendDeleteRequest(&lcmProxySocket_, host.c_str(), appContextUri.c_str());
+        appState = DELETING;
+    }
+    else if(appState == DELETING)
+    {
+        EV << "DeviceApp::sendStopAppContext - DELETE command already sent - discarding packet" << endl;
+        return;
+    }
+    else if(lcmProxySocket_.getState() != inet::TcpSocket::CONNECTED)
+    {
+        EV << "DeviceApp::sendStopAppContext - LCM proxy not connected" << endl;
+
+        inet::Packet* packet = new inet::Packet("DeviceAppStopAckPacket");
+        auto ack = inet::makeShared<DeviceAppStopAckPacket>();
+
+        //instantiation requirements and info
+        ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        ack->setType(ACK_STOP_MECAPP);
+
+        ack->setResult(false);
+        ack->setReason("LCM proxy not connected");
+
+        if(strlen(ack->getReason()))
+        {
+           ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
+        }
+        else
+        {
+           ack->setChunkLength(inet::B(2)); //just code and data length = 0
+        }
+        packet->insertAtBack(ack);
+
+        ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
+        return;
+    }
 }
-
 
 // ------ UDP socket Callback implementation
 
@@ -399,7 +493,6 @@ void DeviceApp::socketDataArrived(UdpSocket *socket, Packet *pk)
 
     //    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = pk->peekAtFront<DeviceAppPacket>();
-
     EV << "DeviceAppPacket type: " << pkt->getType() << endl;
     if(strcmp(pkt->getType(), START_MECAPP) == 0)
     {
@@ -459,7 +552,8 @@ void DeviceApp::socketPeerClosed(inet::TcpSocket *socket)
 void DeviceApp::socketClosed(inet::TcpSocket *socket) {}
 void DeviceApp::socketFailure(inet::TcpSocket *socket, int code) {}
 
-
-
 void DeviceApp::finish()
-{}
+{
+    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED)
+        lcmProxySocket_.close();
+}
