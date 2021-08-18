@@ -1,7 +1,7 @@
 {
 "appDid" : "WAMECAPP_External",
 "appName" : "MEWarningAlertApp_rest_External",
-"appProvider" : "lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest",
+"appProvider" : "lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest_External",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{

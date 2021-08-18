@@ -4,15 +4,18 @@
     <interface hosts="car*" names="wlan" address="10.x.x.x" netmask="255.0.0.0"/>
     
     <interface hosts="car*" names="eth0" address="192.168.3.x" netmask="255.255.255.0"/>
-    <interface hosts="meHost.mecPlatform" names="eth" address="192.168.8.x" netmask="255.255.255.0"/>
+    <interface hosts="meHost.mecPlatform" names="mp1Eth" address="192.168.8.x" netmask="255.255.255.0"/>
 	<interface hosts="meHost.virtualisationInfrastructure" names="extEth0" address="192.168.2.x" netmask="255.255.255.0"/>
 
     <!-- Assign 192.168.x.x addresses to all other interfaces -->
-    <interface hosts="**" address="192.169.x.x" netmask="255.255.255.0"/>
+    <interface hosts="**" address="192.168.x.x" netmask="255.255.255.0"/>
 
     <!-- Routes -->
-	<route hosts="car[*]" destination="192.168.2.0" netmask="255.255.255.0" interface="wlan" metric="0"/>
-	<route hosts="gnb*" destination="192.168.2.0" netmask="255.255.255.0" interface="pppMEHostIf" metric="0"/>
+	<route hosts="car" destination="192.168.3.0" netmask="255.255.255.0" interface="eth0" metric="0"/>
+	<route hosts="gnb*" destination="192.168.3.0" netmask="255.255.255.0" interface="wlan" metric="0"/>
+    <route hosts="natRouter" destination="192.168.3.0" netmask="255.255.255.0" interface="wlan" metric="0"/>
+        
+
 	<route hosts="meHost.virtualisationInfrastructure" destination="192.168.2.0" netmask="255.255.255.0" interface="extEth0" metric="0"/>
 	<route hosts="meHost.virtualisationInfrastructure" destination="192.168.8.0" netmask="255.255.255.0" interface="eth" metric="0"/>
 	

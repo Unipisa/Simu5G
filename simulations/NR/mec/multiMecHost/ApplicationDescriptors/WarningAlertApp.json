@@ -1,5 +1,5 @@
 {
-"appDid" : "WAMECAPPEXT",
+"appDid" : "WAMECAPP",
 "appName" : "MECWarningAlertApp",
 "appProvider" : "lte.apps.mec.WarningAlert.MECWarningAlertApp",
 "appInfoName" : "appInfoName_",
@@ -9,9 +9,15 @@
     "virtualCpu" : 1500,
     "virtualMemory":10
     },
-"emulatedMecApplication" :{
-    "ipAddress": "10.0.2.1",
-    "port": 4022
+"appServiceRequired": [
+    {
+        "ServiceDependency" :{
+            "serName" : "LocationService",
+            "version" : "v2",
+            "serCategory": "Location"
+        }
     }
-}
+],
 
+"omnetppServiceRequired": "MEWarningAlertService"
+}

@@ -7,7 +7,7 @@
 // and cannot be removed from it.
 //
 
-package lte.emulation.mec.extUeAppMecApp;
+package lte.simulations.NR.mec.multiMecHost;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -22,14 +22,13 @@ import lte.nodes.mec.MECHost;
 
 import inet.node.inet.Router;
 
-import inet.visualizer.canvas.integrated.IntegratedCanvasVisualizer;
 
 import lte.nodes.mec.MECOrchestrator.MecOrchestrator;
 import lte.nodes.mec.LCMProxy.LCMProxy;
 
 
 
-network MecExtApps
+network MecTwoMecHosts
 {
     parameters:
 
@@ -41,23 +40,21 @@ network MecExtApps
         @display("bgb=805.92,499.56");
 
     submodules:
-//  		visualizer: IntegratedCanvasVisualizer {
-//            @display("p=72.54,425.19598");
-//        }
+
         routingRecorder: RoutingTableRecorder {
             @display("p=690,104.88;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=556.1875,34.3825");
+            @display("p=690,184.92");
         }
         channelControl: LteChannelControl {
             @display("p=690,24.84;is=s");
         }
         binder: LteBinder {
-            @display("p=474.27625,34.3825;is=s");
+            @display("p=690,264.96;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=368.095,34.3825;is=s");
+            @display("p=691.38,342.24;is=s");
         }
         upf: Upf {
             @display("p=284.16125,259.89127;is=l");
@@ -65,46 +62,47 @@ network MecExtApps
         gNodeB1: gNodeB {
             @display("p=137.53,259.89127;is=vl");
         }
-        router: Router {
-            @display("p=544.0525,259.89127");
+        car[numCars]: NRUe {
+            @display("p=145.62,385.28625");
         }
 
-        natRouter: Router {
-            @display("p=429.78125,258.88;i=device/smallrouter");
+        router: Router {
+            @display("p=391.35376,259.89127");
         }
 
         //# MEC modules
         mecHost1: MECHost {
-            @display("p=694.72876,259.89127;is=l");
+            @display("p=390.3425,385.28625;is=l");
         }
 
+        mecHost2: MECHost {
+            @display("p=513.715,385.28625;is=l");
+        }
+
+
         mecOrchestrator: MecOrchestrator {
-            @display("p=435.84875,184.0475;is=l");
+            @display("p=556.1875,177.98;is=l");
         }
 
         lcmProxy: LCMProxy {
-            @display("p=544.0525,183.03625;i=device/smallrouter");
+            @display("p=391.35376,176.96875;i=device/smallrouter");
         }
 
-
-        car: NRUe {
-            @display("p=51.57375,259.89127");
-        }
 
     connections allowunconnected:
 
         upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
 
-        natRouter.pppg++ <--> Eth10G <--> upf.filterGate;
-        natRouter.pppg++ <--> Eth10G <--> router.pppg++; 
+        router.pppg++ <--> Eth10G <--> upf.filterGate;
 
-	//#	mec
-        mecHost1.ppp++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> lcmProxy.ppp++;
 
         lcmProxy.toMecOrchestrator --> mecOrchestrator.fromLcmProxy;
         lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;
 
-        
+        //#	mec
+        // direct connection between gNodeB1 and meHost
+        mecHost1.ppp++ <--> Eth10G <--> router.pppg++;
+        mecHost2.ppp++ <--> Eth10G <--> router.pppg++;
 
 }
