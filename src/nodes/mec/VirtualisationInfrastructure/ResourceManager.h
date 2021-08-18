@@ -14,9 +14,9 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
-#include "nodes/mec/MecCommon.h"
-#include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MEPlatform/MEAppPacket_m.h"
+#include "nodes/mec/utils/MecCommon.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
 
 
 using namespace omnetpp;

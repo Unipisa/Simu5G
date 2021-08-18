@@ -139,7 +139,7 @@ simple LteRlcUm like ILteRlcUm {
         
         //# SDU-level statistics
         @signal[rlcDelayDl];
-        @statistic[rlcDelayDl](title="Delay at the rlc layer UL"; unit="s"; source="rlcDelayDl"; record=mean,vector);
+        @statistic[rlcDelayDl](title="Delay at the rlc layer DL"; unit="s"; source="rlcDelayDl"; record=mean,vector);
         @signal[rlcThroughputDl];
         @statistic[rlcThroughputDl](title="Throughput at the rlc layer DL"; unit="Bps"; source="rlcThroughputDl"; record=mean,vector);
         @signal[rlcDelayUl];

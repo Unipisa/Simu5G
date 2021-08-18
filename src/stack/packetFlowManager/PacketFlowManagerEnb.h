@@ -12,7 +12,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 #include "PacketFlowManagerBase.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
@@ -126,24 +126,11 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         LteNodeType nodeType_; // UE or ENODED (used for set MACROS)
         short int harqProcesses_; // number of harq processes
 
-        //debug vars to be deleted
-        cOutVector tt;
-        std::map<MacNodeId,cOutVector> times_;
-        std::map<MacNodeId,cOutVector> tput_;
+        // debug var that calculates DL delay of a UE (with id 2053)
+        // used to evaluate the delay with respect to the one reported by Simu5G
+        cOutVector timesUe_;
 
         /*
-         * This method checks if a PDCP PDU of a Lcid is part of a burst of data.
-         * In a positive case, according to the ack boolen its size it is counted in the
-         * total og burst size.
-         * It is called by macPduArrived (ack true) and rlcPduDsicard (ack false)
-         * @param desc lcid descriptor
-         * @param pdcpStatus pdcpstatus structure of the pdcp
-         * @param pdcpSno pdcp sequence number
-         * @bool ack pdcp pdcp arrived flag
-         */
-         virtual void removePdcpBurst(StatusDescriptor* desc, PdcpStatus& pdcpStatus,  unsigned int pdcpSno, bool ack);
-
-       /*
         * This method checks if a PDCP PDU of a Lcid is part of a burst of data.
         * In a positive case, according to the ack boolen its size it is counted in the
         * total og burst size.

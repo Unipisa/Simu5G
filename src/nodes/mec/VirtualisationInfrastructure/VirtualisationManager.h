@@ -23,10 +23,10 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 //MEAppPacket
-#include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MEPlatform/MEAppPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
 
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 //###########################################################################
 //data structures and values

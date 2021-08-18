@@ -28,18 +28,18 @@ module ENodeBStatsCollector like StatsCollector
 		bool movingAverage = default(false);
         
         // used to calculate l2meas as averages 
-        int prbUsagePeriods = default(5);
-        int dataVolumePeriods = default(2);
-        int activeUserPeriods = default(10); //10*100ms = 1s
-        int discardRatePeriods = default(2);
-        int tPutPeriods = default(2);
+        int prbUsagePeriods = default(15);
+        int dataVolumePeriods = default(15);
+        int activeUserPeriods = default(15); //10*100ms = 1s
+        int discardRatePeriods = default(15);
+        int tPutPeriods = default(15);
 
 		// period duration for each l2 meas
-		double prbUsagePeriod  @unit(s)   = default(0.5s); // TTI period
+		double prbUsagePeriod  @unit(s)   = default(0.01s); // TTI period
         double activeUserPeriod @unit(s)  = default(0.1s);
         double dataVolumePeriod @unit(s)   = default(0.5s);
         double delayPacketPeriod @unit(s)  = default(0.05s);
-        double discardRatePeriod @unit(s) = default(60s);
+        double discardRatePeriod @unit(s) = default(10s);
         double tPutPeriod @unit(s) = default(1s);
 
         @display("i=block/cogwheel");
@@ -60,10 +60,10 @@ module UeStatsCollector like StatsCollector
         bool movingAverage = default(true);
         
         // time periods for measurements 
-        int dataVolumePeriods = default(2);
+        int dataVolumePeriods = default(15);
         int delayPacketPeriods = default(10);
-        int discardRatePeriods = default(2);
-        int tPutPeriods = default(2);
+        int discardRatePeriods = default(15);
+        int tPutPeriods = default(15);
         
         int numberOfSamples = default(20);
         

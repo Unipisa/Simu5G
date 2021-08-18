@@ -7,12 +7,13 @@
 // and cannot be removed from it.
 //
 
+
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
-import nodes.mec.MEPlatform.MECPackets;
+import nodes.mec.MECPlatform.MECPackets;
 //cplusplus {{
-//#include "nodes/mec/MEPlatform/MECPackets_m.h";
+//#include "nodes/mec/MECPlatform/MECPackets_m.h";
 //}}
 //import lte.nodes.mec.MEPlatform.MECPackets.MECPacket;
 
@@ -45,12 +46,14 @@ class DeviceAppStartAckPacket extends DeviceAppPacket
     string contextId;
     bool result;
     string ipAddress;
+    string reason;
 	int port;
 }
 
 class DeviceAppStopAckPacket extends DeviceAppPacket
 {
     bool result;
+    string reason;
 }
 
 

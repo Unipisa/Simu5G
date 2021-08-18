@@ -15,7 +15,7 @@
 #include <omnetpp.h>
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/rlc/LteRlcDefs.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 class LteRlcUm;
 class PacketFlowManagerBase;

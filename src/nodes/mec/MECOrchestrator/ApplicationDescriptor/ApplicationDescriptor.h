@@ -1,9 +1,11 @@
-/*
- * ApplicationDescriptor.h
- *
- *  Created on: May 6, 2021
- *      Author: linofex
- */
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 #ifndef NODES_MEC_MECORCHESTRATOR_APPLICATIONDESCRIPTOR_APPLICATIONDESCRIPTOR_H_
 #define NODES_MEC_MECORCHESTRATOR_APPLICATIONDESCRIPTOR_APPLICATIONDESCRIPTOR_H_
@@ -11,8 +13,8 @@
 
 #include <string.h>
 #include <omnetpp.h>
-#include "nodes/mec/MecCommon.h"
-#include "nodes/mec/MEPlatform/MeServices/httpUtils/json.hpp"
+#include "nodes/mec/utils/MecCommon.h"
+#include "nodes/mec/utils/httpUtils/json.hpp"
 
 class ApplicationDescriptor
 {
@@ -70,10 +72,10 @@ class ApplicationDescriptor
         const std::vector<std::string>& getAppServicesProduced() const { return appServicesProduced_; }
 
         bool isMecAppEmulated() const {return isEmulated;}
+
         /*
          * setters
          */
-
         void setAppDId(const std::string& appdId) { appDId_ = appdId;}
         void setAppName(const std::string& appName) {appName_ = appName;}
         void setAppProvider(const std::string& appProvider) {appProvider_ =  appProvider;}

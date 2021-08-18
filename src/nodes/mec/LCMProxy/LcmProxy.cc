@@ -1,31 +1,40 @@
-//TODO intro
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
+
+// INET
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/common/ModuleAccess.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "inet/transportlayer/contract/tcp/TcpCommand_m.h"
-#include "apps/mec/warningAlert_rest/UEWarningAlertApp_rest.h"
-#include "inet/applications/tcpapp/GenericAppMsg_m.h"
-#include <iostream>
-#include "nodes/mec/LCMProxy/LcmProxy.h"
-
-#include <string>
-#include <vector>
-//#include "apps/mec/MeServices/packets/HttpResponsePacket.h"
-#include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
-#include "common/utils/utils.h"
 #include "inet/networklayer/contract/ipv4/Ipv4Address.h"
 
+#include <iostream>
+#include <string>
+#include <vector>
 
-#include "nodes/mec/MEPlatform/MeServices/Resources/SubscriptionBase.h"
+// Utils
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "common/utils/utils.h"
 
+// MEC system
+#include "nodes/mec/LCMProxy/LcmProxy.h"
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
+
+// Messages
 #include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppMessage.h"
 #include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppAckMessage.h"
+#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
 #include "nodes/mec/LCMProxy/LCMProxyMessages/LCMProxyMessages_types.h"
 
 Define_Module(LcmProxy);
@@ -39,6 +48,8 @@ LcmProxy::LcmProxy()
     scheduledSubscription = false;
     mecOrchestrator_ = nullptr;
     requestSno = 0;
+    subscriptionId_ = 0;
+    subscriptions_.clear();
 }
 
 void LcmProxy::initialize(int stage)
@@ -46,7 +57,7 @@ void LcmProxy::initialize(int stage)
     EV << "LcmProxy::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        EV << "MeServiceBase::initialize" << endl;
+        EV << "MecServiceBase::initialize" << endl;
         serviceName_ = par("serviceName").stringValue();
 
         requestServiceTime_ = par("requestServiceTime");
@@ -58,9 +69,6 @@ void LcmProxy::initialize(int stage)
         subscriptionQueueSize_ = par("subscriptionQueueSize");
         currentRequestMessageServed_ = nullptr;
         currentSubscriptionServed_ = nullptr;
-
-        subscriptionId_ = 0;
-        subscriptions_.clear();
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         binder_ = getBinder();
@@ -112,16 +120,13 @@ void LcmProxy::handleMessageWhenUp(cMessage *msg)
         }
 
         pendingRequests.erase(lcmMsg->getRequestId());
-
-        //TODO add notifation management
-
         delete msg;
 
         return;
     }
     else
     {
-        MeServiceBase::handleMessageWhenUp(msg);
+        MecServiceBase::handleMessageWhenUp(msg);
 
     }
 }
@@ -135,14 +140,19 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
 
     auto req = pendingRequests.find(reqSno);
     if(req == pendingRequests.end())
+    {
+        EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
         return;
+    }
 
     int connId = req->second.connId;
+
     EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
     nlohmann::json jsonBody = req->second.appCont;
 
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
+
     if(socket)
     {
         if(ack->getSuccess())
@@ -150,7 +160,7 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
 
             jsonBody["contextId"] = std::to_string(ack->getContextId());
             jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
-            jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"]  = ack->getAppInstanceUri();
+            jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"]  = ack->getAppInstanceUri(); // add the end point
 //            jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
             std::stringstream uri;
             uri << baseUriQueries_<<"/app_contexts/"<< ack->getContextId();
@@ -177,10 +187,14 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
     DeleteContextAppAckMessage* ack = check_and_cast<DeleteContextAppAckMessage*>(msg);
 
     unsigned int reqSno = ack->getRequestId();
-    EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno<<endl;
-        auto req = pendingRequests.find(reqSno);
-        if(req == pendingRequests.end())
-            return;
+
+    auto req = pendingRequests.find(reqSno);
+    if(req == pendingRequests.end())
+    {
+        EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
+        return;
+    }
+
     int connId = req->second.connId;
     EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
@@ -208,19 +222,6 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
 {
     EV << "LcmProxy::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
-//    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-//    // uri must be in form /example/dev_app/v1
-//    std::size_t lastPart = splittedUri[0].find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case resourceType would be empty and the baseUri == uri
-//    // by the way the next if statement solve this problem
-//    std::string baseUri = splittedUri[0].substr(0,lastPart);
-//    std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
     if(uri.compare(baseUriQueries_+"/app_list") == 0 ) //queries
@@ -241,6 +242,7 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
             std::vector<std::string>::iterator end = queryParameters.end();
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;
+
             for(; it != end; ++it){
                 if(it->rfind("appName", 0) == 0) // cell_id=par1,par2
                 {
@@ -266,8 +268,8 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
                 }
             }
 
-
             nlohmann::ordered_json appList;
+
             // construct the result based on the appName vector
             for(auto appName : appNames)
             {
@@ -277,6 +279,7 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
                     appList["appList"].push_back(appDesc->toAppInfo());
                 }
             }
+            // if the appList is empty, send an empty 200 response
             Http::send200Response(socket, appList.dump().c_str());
         }
 
@@ -307,21 +310,6 @@ void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessage
     std::string uri = currentRequestMessageServed->getUri();
     std::string body = currentRequestMessageServed->getBody();
     EV << "LcmProxy::handlePOSTRequest - uri: "<< uri << endl;
-//    // uri must be in form /example/dev_app/v1/app_context
-//    std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "LcmProxy::handlePOSTRequest - incorrect URI" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case subscriptionType would be empty and the baseUri == uri
-//    // by the way the next if statement solves this problem
-//    std::string baseUri = uri.substr(0,lastPart);
-//    std::string subscriptionType =  uri.substr(lastPart+1);
-//
-//    EV << "LcmProxy::handlePOSTRequest - baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
     if(uri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
@@ -356,8 +344,6 @@ void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessage
             requestSno++;
 
             send(createContext, "toMecOrchestrator");
-            // TODO manage the next request or the response
-            // save app context in a map structure
         }
         else
         {
@@ -370,7 +356,9 @@ void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessage
     }
 }
 
-void LcmProxy::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){}
+void LcmProxy::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
+    Http::send404Response(socket, "PUT not implemented, yet");
+}
 
 void LcmProxy::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
@@ -381,19 +369,7 @@ void LcmProxy::handleDELETERequest(const HttpRequestMessage *currentRequestMessa
     EV << "LocationService::handleDELETERequest" << endl;
     // uri must be in form /example/dev_app/v1/app_context/contextId
     std::string uri = currentRequestMessageServed->getUri();
-//    std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case subscriptionType would be empty and the baseUri == uri
-//    // by the way the next if statement solve this problem
-//    std::string baseUri = uri.substr(0,lastPart);
-//    std::string contextId =  uri.substr(lastPart+1);
-//
+
 //    // it has to be managed the case when the sub is /area/circle (it has two slashes)
 
     std::size_t lastPart = uri.find_last_of("/"); // split at contextId
@@ -439,10 +415,7 @@ CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::jso
     }
 
     std::string devAppId = jsonBody["associateDevAppId"];
-    if(appInfo.contains("appDId"))
-    {
 
-    }
     // the mec app package is already onboarded (from the device application pov)
     if(appInfo.contains("appDId"))
     {
@@ -453,6 +426,7 @@ CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::jso
         createContext->setAppDId(appDId.c_str());
         return  createContext;
     }
+
     // the mec app package is not onboarded, but the uri of the app package is provided
     else if (appInfo.contains("appPackageSource"))
     {
@@ -465,14 +439,13 @@ CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::jso
     }
     else
     {
-    // neither the two is present and it is not allowed
+    // neither the two is present and this is not allowed
         return nullptr;
     }
 }
 
 void LcmProxy::finish()
 {
-// TODO
     return;
 }
 

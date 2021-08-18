@@ -80,7 +80,7 @@ module eNodeB
         bool hasSctp = true;
 
         //# MEC support	
-        string meHost = default("");		// symbolic name of the connected MEHost in the Network
+        string mecHost = default("");		// symbolic name of the connected MEHost in the Network
      
         //# @author Alessandro Noferi
        	string StatsCollectorType = default("ENodeBStatsCollector"); 

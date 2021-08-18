@@ -1,9 +1,11 @@
-/*
- * ApplicationDescriptor.cc
- *
- *  Created on: May 6, 2021
- *      Author: linofex
- */
+//
+//                           Simu5G
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include <math.h>       /* pow */
@@ -79,8 +81,8 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
     }
 
     /*
-     * If the application descriptor refers to a mec application running outside the simulator, i.e. emulation mode,
-     * the fields address and port refers to the endpoint to communicate with the mec application
+     * If the application descriptor refers to a MEC application running outside the simulator, i.e. emulation mode,
+     * the fields address and port refers to the endpoint to communicate with the MEC application
      */
     if(jsonFile.contains("emulatedMecApplication"))
     {

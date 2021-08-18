@@ -1,28 +1,20 @@
 //
-// Copyright (C) 2020 OpenSim Ltd.
+//                           Simu5G
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
 //
 
-#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
 
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
-#include "nodes/mec/MEPlatform/MeServices/httpUtils/httpUtils.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include <string>
 
-#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "../../../../../apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 namespace inet {
 
 Register_Serializer(DeviceAppPacket, DeviceAppMessageSerializer);
@@ -56,6 +48,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
     }
     else if(strcmp(ss.c_str(), ACK_START_MECAPP) == 0)
     {
+
         auto ackPk = staticPtrCast<const DeviceAppStartAckPacket>(chunk);
 
         if(ackPk->getResult() == true)
@@ -66,7 +59,9 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             stream.writeByte((uint8_t) START_ACK_CODE);
             stream.writeByte((uint8_t)(sdata.size()));
             stream.writeString(sdata);
+//            throw cRuntimeError("%s", sdata.c_str());
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
+//            throw cRuntimeError("%d, %d, %d", remainders, sdata.size(), ackPk->getChunkLength());
             if (remainders < 0)
                 throw cRuntimeError("DeviceApp - START_ACK_CODE length = %d smaller than required %d bytes. Data: %s [%d]",
                         (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get(), sdata.c_str(), sdata.size());
@@ -74,6 +69,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
         }
         else
         {
+//            throw cRuntimeError("false");
             stream.writeByte((uint8_t) START_NACK_CODE);
             stream.writeByte((uint8_t)0);
 
@@ -155,7 +151,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             stopPacket->setType(STOP_MECAPP);
             stream.readBytes(bytes, messageDataLength);
             stopPacket->setContextId((char*)&bytes[0]);
-            // put timestamp tag
             return stopPacket;
             break;
         }
@@ -179,7 +174,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             auto stopAckPacket = makeShared<DeviceAppStartAckPacket>();
             stopAckPacket->setType(ACK_START_MECAPP);
             stopAckPacket->setResult("NACK");
-            // put timestamp tag
             return stopAckPacket;
             break;
         }
@@ -188,7 +182,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             auto stopAckPacket = makeShared<DeviceAppStopAckPacket>();
             stopAckPacket->setType(ACK_STOP_MECAPP);
             stopAckPacket->setResult("ACK");
-            // put timestamp tag
             return stopAckPacket;
             break;
         }

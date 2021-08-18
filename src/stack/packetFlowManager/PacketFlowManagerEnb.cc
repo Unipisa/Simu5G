@@ -47,7 +47,7 @@ void PacketFlowManagerEnb::initialize(int stage)
         if (headerCompressedSize_ == -1)
             headerCompressedSize_ = 0;
 
-        tt.setName("delay");
+        timeUe_.setName("delay");
     }
 }
 
@@ -662,15 +662,16 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
                         }
 
                         double time = (simTime() - pit->second.entryTime).dbl() ;
-        //                    if(desc->nodeId_ == 2053)
-        //                        tt.record(time);
+
+                        // uncomment this to register DL delays
+//                        if(desc->nodeId_ == 2053)
+//                            timeUe_.record(time);
 
                         EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
 
                         dit->second.time += (simTime() - pit->second.entryTime);
 
                         dit->second.pktCount += 1;
-
 
                         // update next sno
                         nextPdcpSno_ = pdcpPduSno+1;
@@ -755,44 +756,6 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
         mit->second.clear();
         desc->macSdusPerPdu_.erase(mit); // erase MAC PDU ID
    }
-}
-
-void PacketFlowManagerEnb::removePdcpBurst(StatusDescriptor* desc, PdcpStatus& pdcpStatus,  unsigned int pdcpSno, bool ack)
-{
-    // check end of a burst
-    // for each burst_id we have to search if the relative set has the RLC
-    // it has been assumed that the bursts are quickly emptied so the operation
-    // is not computationally heavy
-    // the other solution is to create <rlcPdu, burst_id> map
-//    std::map<BurstId, BurstStatus>::iterator bsit = desc->burstStatus_.begin();
-//    SequenceNumberSet::iterator rlcpit;
-//    for(; bsit != desc->burstStatus_.end(); ++bsit)
-//    {
-//        rlcpit =  bsit->second.rlcPdu.find(pdcpSno);
-//        if(rlcpit != bsit->second.rlcPdu.end())
-//        {
-//            if(ack == true)
-//            {
-//            // if arrived, sum it to the thpVolDl
-//            bsit->second.burstSize += pdcpStatus.pdcpSduSize;
-//            }
-//            bsit->second.rlcPdu.erase(rlcpit);
-//            if(bsit->second.rlcPdu.empty() && bsit->second.isComplited)
-//            {
-//                // compute throughput
-//                throughputMap::iterator tit = pdcpThroughput_.find(desc->nodeId_);
-//                if(tit == pdcpThroughput_.end())
-//                    throw cRuntimeError("%s::macPduArrived - Node id %d is not in pdcp throughput map structure, this should not happen. Aborting",pfmType.c_str(),  desc->nodeId_);
-//                tit->second.pktSizeCount += bsit->second.burstSize;
-//                tit->second.time += (simTime() - bsit->second.startBurstTransmission);
-//                double tp = bsit->second.burstSize/(simTime() - bsit->second.startBurstTransmission).dbl();
-//                tput_[desc->nodeId_].record(tp);
-//                EV_FATAL << NOW << " node id "<< desc->nodeId_  << " " << pfmType << "::removePdcpBurst Burst "<< bsit->first << " length " << simTime() - bsit->second.startBurstTransmission<< " tput: "<< tp << endl;
-//                desc->burstStatus_.erase(bsit); // remove emptied burst
-//             }
-//            break;
-//        }
-//    }
 }
 
 void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack)
@@ -940,8 +903,6 @@ double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
     EV_FATAL << NOW << " " << pfmType << "::getDelayStatsPerUe - Delay Stats for Node Id " << id << " total time: "<< (it->second.time.dbl())*1000 << "ms, pckcount: " <<it->second.pktCount   << endl;
     double totalMs = (it->second.time.dbl())*1000; // ms
     double delayMean = totalMs / it->second.pktCount;
-//    if(id == 2053)
-//        tt.record(delayMean);
     return delayMean;
 }
 

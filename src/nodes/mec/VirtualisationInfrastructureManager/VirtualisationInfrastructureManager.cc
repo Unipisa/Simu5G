@@ -21,11 +21,14 @@ VirtualisationInfrastructureManager::VirtualisationInfrastructureManager()
 
 void VirtualisationInfrastructureManager::initialize(int stage)
 {
-    EV << "VirtualisationInfrastructureManager::initialize - stage " << stage << endl;
     cSimpleModule::initialize(stage);
+
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER-1)
         return;
+
+    EV << "VirtualisationInfrastructureManager::initialize - stage " << stage << endl;
+
     //------------------------------------
     // Binder module
     binder_ = getBinder();
@@ -33,46 +36,62 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
 
     //------------------------------------
-    meHost = getParentModule();
-    if(meHost->hasPar("maxMEApps"))
-        maxMEApps = meHost->par("maxMEApps");
+    mecHost = getParentModule();
+    if(mecHost->hasPar("maxMECApps"))
+        maxMECApps = mecHost->par("maxMECApps");
     else
-        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - \tFATAL! Error when getting meHost.maxMEApps parameter!");
+        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - \tFATAL! Error when getting mecHost.maxMECApps parameter!");
 
-    maxRam = meHost->par("maxRam").doubleValue();
-    maxDisk = meHost->par("maxDisk").doubleValue();
-    maxCPU = meHost->par("maxCpuSpeed").doubleValue();
+    maxRam = mecHost->par("maxRam").doubleValue();
+    maxDisk = mecHost->par("maxDisk").doubleValue();
+    maxCPU = mecHost->par("maxCpuSpeed").doubleValue();
 
     allocatedRam = 0.0;
     allocatedDisk = 0.0;
     allocatedCPU = 0.0;
     printResources();
 
-    //    //setting gate sizes for VirtualisationInfrastructureManager and VirtualisationInfrastructure
-//    this->setGateSize("meAppOut", maxMEApps);
-//    this->setGateSize("meAppIn", maxMEApps);
-    virtualisationInfr = meHost->getSubmodule("virtualisationInfrastructure");
-    if(virtualisationInfr == nullptr)
-        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - meHost.maxMEApps parameter!");
+    const char *schedulingMode = par("scheduling").stringValue();
+    if(strcmp(schedulingMode, "segregation") == 0)
+    {
+        EV << "VirtualisationInfrastructureManager::initialize - scheduling mode is: segregation" << endl;
+        scheduling = SEGREGATION;
+    }
+    else if(strcmp(schedulingMode, "fair") == 0)
+    {
+        EV << "VirtualisationInfrastructureManager::initialize - scheduling mode is: fair" << endl;
+        scheduling = FAIR_SHARING;
+    }
+    else
+    {
+        EV << "VirtualisationInfrastructureManager::initialize - scheduling mode: " << schedulingMode<< " not recognized. Using default mode: segregation" << endl;
+        scheduling = SEGREGATION;
+    }
 
-    virtualisationInfr->setGateSize("meAppOut", maxMEApps);
-    virtualisationInfr->setGateSize("meAppIn", maxMEApps);
+    //    //setting gate sizes for VirtualisationInfrastructureManager and VirtualisationInfrastructure
+
+    virtualisationInfr = mecHost->getSubmodule("virtualisationInfrastructure");
+    if(virtualisationInfr == nullptr)
+        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMECApps parameter!");
+
+    virtualisationInfr->setGateSize("meAppOut", maxMECApps);
+    virtualisationInfr->setGateSize("meAppIn", maxMECApps);
     //VirtualisationInfrastructure internal gate connections with VirtualisationInfrastructureManager
-//        for(int index = 0; index < maxMEApps; index++)
+//        for(int index = 0; index < maxMECApps; index++)
 //        {
 //            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
 //            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
 //        }
 
-    mePlatform = meHost->getSubmodule("mecPlatform");
+    mecPlatform = mecHost->getSubmodule("mecPlatform");
     //setting  gate sizes for MEPlatform
-    if(mePlatform->gateSize("meAppOut") == 0 || mePlatform->gateSize("meAppIn") == 0)
+    if(mecPlatform->gateSize("meAppOut") == 0 || mecPlatform->gateSize("meAppIn") == 0)
     {
-        mePlatform->setGateSize("meAppOut", maxMEApps);
-        mePlatform->setGateSize("meAppIn", maxMEApps);
+        mecPlatform->setGateSize("meAppOut", maxMECApps);
+        mecPlatform->setGateSize("meAppIn", maxMECApps);
     }
 
-    inet::InterfaceTable* platformInterfaceTable = check_and_cast<inet::InterfaceTable*>(mePlatform->getSubmodule("interfaceTable"));
+    inet::InterfaceTable* platformInterfaceTable = check_and_cast<inet::InterfaceTable*>(mecPlatform->getSubmodule("interfaceTable"));
 
     int interfaceSize = platformInterfaceTable->getNumInterfaces();
     bool found = false;
@@ -81,6 +100,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
         if(strcmp("mp1Eth", platformInterfaceTable->getInterface(i)->getInterfaceName()) == 0)
         {
             mp1Address_ = platformInterfaceTable->getInterface(i)->getIpv4Address();
+            mp1Port_ = par("mp1Port");
             found = true;
         }
     }
@@ -91,22 +111,22 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
 
     // retrieving all available ME Services loaded
-    numServices = mePlatform->par("numOmnetServices");
+    numServices = mecPlatform->par("numOmnetServices");
     for(int i=0; i<numServices; i++)
     {
-        meServices.push_back(mePlatform->getSubmodule("omnetService", i));
+        meServices.push_back(mecPlatform->getSubmodule("omnetService", i));
         EV << "VirtualisationInfrastructureManager::initialize - Available meServices["<<i<<"] " << meServices.at(i)->getClassName() << endl;
     }
 
     //------------------------------------
     //retrieve the set of free gates
-    for(int i = 0; i < maxMEApps; i++)
+    for(int i = 0; i < maxMECApps; i++)
         freeGates.push_back(i);
 //    ------------------------------------
 //    interfaceTableModule = par("interfaceTableModule").stringValue();
 
 
-    interfaceTable = check_and_cast<inet::InterfaceTable*>(meHost->getSubmodule("virtualisationInfrastructure")->getSubmodule("interfaceTable"));
+    interfaceTable = check_and_cast<inet::InterfaceTable*>(mecHost->getSubmodule("virtualisationInfrastructure")->getSubmodule("interfaceTable"));
 
     /*
      * NOTE: if the mecHost is connected both to ppp and pppENB gates, 2 pppIf interfaces are present in the
@@ -128,7 +148,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 //            throw cRuntimeError("VirtualisationInfrastructureManager::initialize - Unknown interface [%s] found. Have you changed the names?", interfaceTable->getInterface(i)->getInterfaceName());
 //        }
     }
-    meAppPortCounter = 4001;
+    mecAppPortCounter = 4001;
 }
 
 void VirtualisationInfrastructureManager::handleMessage(cMessage *msg)
@@ -145,7 +165,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     char* meModuleName = (char*)msg->getMEModuleName();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
-    if(currentMEApps < maxMEApps &&  meAppMap.find(ueAppID) == meAppMap.end())
+    if(currentMEApps < maxMECApps &&  mecAppMap.find(ueAppID) == mecAppMap.end())
     {
         //creating ueAppIdToMeAppMapKey map entry
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - ueAppIdToMeAppMapKey[" << ueAppID << endl;
@@ -173,29 +193,29 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         }
         // creating MEApp module instance
 //        cModuleType *moduleType = cModuleType::get("lte.nodes.mec.MEPlatform.EmulatedMecApplication");
-//        cModule *module = moduleType->create(meModuleName, meHost); //MEAPP module-name & its Parent Module
+//        cModule *module = moduleType->create(meModuleName, mecHost); //MEAPP module-name & its Parent Module
 
 
         std::stringstream appName;
         appName << meModuleName << "[" <<  msg->getContextId() << "]";
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - meModuleName: " << appName.str() << endl;
 
-        //creating the meAppMap map entry
-        meAppMapEntry newAppEntry;
+        //creating the mecAppMap map entry
+        mecAppEntry newAppEntry;
 
         newAppEntry.meAppGateIndex = -1;
         newAppEntry.meAppModule = nullptr;
-        //meAppMap[key].ueAddress = ueAppAddress;
-        //meAppMap[key].uePort = ueAppPort;
+        //mecAppMap[key].ueAddress = ueAppAddress;
+        //mecAppMap[key].uePort = ueAppPort;
         newAppEntry.ueAppID = ueAppID;
-//        newAppEntry.meAppPort = meAppPortCounter;
+//        newAppEntry.meAppPort = mecAppPortCounter;
         newAppEntry.resources.ram  = ram;
         newAppEntry.resources.disk = disk;
         newAppEntry.resources.cpu  = cpu;
 
-        meAppMap.insert(std::pair<int,meAppMapEntry>(key, newAppEntry));
+        mecAppMap.insert(std::pair<int,mecAppEntry>(key, newAppEntry));
 
-//        meAppPortCounter++;
+//        mecAppPortCounter++;
 
         currentMEApps++;
 
@@ -204,7 +224,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
 //        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
-        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
         return true;
     }
     else
@@ -227,7 +247,7 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
     int ueAppID = msg->getUeAppID();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
-    if(currentMEApps < maxMEApps &&  meAppMap.find(ueAppID) == meAppMap.end())
+    if(currentMEApps < maxMECApps &&  mecAppMap.find(ueAppID) == mecAppMap.end())
     {
         //getting the first available gate
         int index = freeGates.front();
@@ -262,27 +282,27 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         }
         // creating MEApp module instance
         cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
-        cModule *module = moduleType->create(meModuleName, meHost);       //MEAPP module-name & its Parent Module
+        cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
         std::stringstream appName;
         appName << meModuleName << "[" <<  msg->getContextId() << "]";
         module->setName(appName.str().c_str());
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
-        //creating the meAppMap map entry
-        meAppMapEntry newAppEntry;
+        //creating the mecAppMap map entry
+        mecAppEntry newAppEntry;
 
         newAppEntry.meAppGateIndex = index;
         newAppEntry.serviceIndex = serviceIndex;
 
         newAppEntry.meAppModule = module;
-        //meAppMap[key].ueAddress = ueAppAddress;
-        //meAppMap[key].uePort = ueAppPort;
+        //mecAppMap[key].ueAddress = ueAppAddress;
+        //mecAppMap[key].uePort = ueAppPort;
         newAppEntry.ueAppID = ueAppID;
-        newAppEntry.meAppPort = meAppPortCounter;
+        newAppEntry.meAppPort = mecAppPortCounter;
         newAppEntry.resources.ram  = ram;
         newAppEntry.resources.disk = disk;
         newAppEntry.resources.cpu  = cpu;
 
-        meAppMap.insert(std::pair<int,meAppMapEntry>(key, newAppEntry));
+        mecAppMap.insert(std::pair<int,mecAppEntry>(key, newAppEntry));
 
 
         //displaying ME App dynamically created (after 70 they will overlap..)
@@ -291,19 +311,15 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         module->setDisplayString(display.str().c_str());
 
 
-        //initialize IMEApp Parameters
-        /*
-         * TODO decide if set the endPoint of the serviceRegistry (i.e. mp1)
-         * here, or default in the ned
-         */
-
+        //initialize IMECApp Parameters
         module->par("mecAppId") = ueAppID;
         module->par("requiredRam") = ram;
         module->par("requiredDisk") = disk;
         module->par("requiredCpu") = cpu;
-        module->par("localUePort") = meAppPortCounter;
-
+        module->par("localUePort") = mecAppPortCounter;
         module->par("mp1Address") = mp1Address_.str();
+        module->par("mp1Port") = mp1Port_;
+
 
         module->finalizeParameters();
 
@@ -311,11 +327,11 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         instanceInfo.instanceId = appName.str();
 
         instanceInfo.endPoint.addr = mecAppRemoteAddress_;
-        instanceInfo.endPoint.port = meAppPortCounter;
+        instanceInfo.endPoint.port = mecAppPortCounter;
 
         EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo.endPoint.port << endl;
 
-        meAppPortCounter++;
+        mecAppPortCounter++;
 
 //        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppSimbolicAddress: " << sourceAddress << endl;
 
@@ -355,12 +371,12 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         {
             EV << "VirtualisationInfrastructureManager::instantiateMEApp - Connecting to the: " << msg->getRequiredService()<< endl;
             //connecting MEPlatform gates to the MEApp gates
-            mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
-            module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
+            mecPlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
+            module->gate("mePlatformOut")->connectTo(mecPlatform->gate("meAppIn", index));
 
             //connecting internal MEPlatform gates to the required MEService gates
-            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mePlatform->gate("meAppOut", index));
-            mePlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
+            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mecPlatform->gate("meAppOut", index));
+            mecPlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
         }
 
         else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO omnet++-like MECServices required!"<< endl;
@@ -374,7 +390,7 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
 
         //testing
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
         instanceInfo.status = true;
         return instanceInfo;
@@ -391,20 +407,20 @@ bool VirtualisationInfrastructureManager::terminateEmulatedMEApp(DeleteAppMessag
 {
     int ueAppID = msg->getUeAppID();
 
-    if(!meAppMap.empty() && meAppMap.find(ueAppID) != meAppMap.end())
+    if(!mecAppMap.empty() && mecAppMap.find(ueAppID) != mecAppMap.end())
     {
-        //retrieve meAppMap map key
+        //retrieve mecAppMap map key
         int key = ueAppID;
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - " << meAppMap[key].meAppModule->getName() << " terminated!" << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - " << mecAppMap[key].meAppModule->getName() << " terminated!" << endl;
         currentMEApps--;
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
 
         //deallocte resources
-        deallocateResources(meAppMap[key].resources.ram, meAppMap[key].resources.disk, meAppMap[key].resources.cpu);
+        deallocateResources(mecAppMap[key].resources.ram, mecAppMap[key].resources.disk, mecAppMap[key].resources.cpu);
 
         //update map
-        meAppMap.erase(ueAppID);
+        mecAppMap.erase(ueAppID);
 
         return true;
     }
@@ -419,26 +435,26 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage* msg)
 {
     int ueAppID = msg->getUeAppID();
 
-    if(!meAppMap.empty() && meAppMap.find(ueAppID) != meAppMap.end())
+    if(!mecAppMap.empty() && mecAppMap.find(ueAppID) != mecAppMap.end())
     {
-        //retrieve meAppMap map key
+        //retrieve mecAppMap map key
         int key = ueAppID;
 
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - " << meAppMap[key].meAppModule->getName() << " terminated!" << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - " << mecAppMap[key].meAppModule->getName() << " terminated!" << endl;
         //terminating the ME App instance
-        meAppMap[key].meAppModule->callFinish();
-        meAppMap[key].meAppModule->deleteModule();
+        mecAppMap[key].meAppModule->callFinish();
+        mecAppMap[key].meAppModule->deleteModule();
         currentMEApps--;
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
         //Sending ACK_STOP_MEAPP to the UEApp
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
+//        EV << "VirtualisationInfrastructureManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
 
         //before to remove the map entry!
 //        ackMEAppPacket(packet, ACK_STOP_MEAPP);
 
-        int index = meAppMap[key].meAppGateIndex;
-        int serviceIndex = meAppMap[key].serviceIndex;
+        int index = mecAppMap[key].meAppGateIndex;
+        int serviceIndex = mecAppMap[key].serviceIndex;
 
         // TODO manage gates me app to at
 
@@ -451,16 +467,16 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage* msg)
             (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
             (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
             //disconnecting MEPlatform gates to the MEApp gates
-            mePlatform->gate("meAppOut", index)->disconnect();
-            mePlatform->gate("meAppIn", index)->disconnect();
+            mecPlatform->gate("meAppOut", index)->disconnect();
+            mecPlatform->gate("meAppIn", index)->disconnect();
         }
 
 
         //deallocte resources
-        deallocateResources(meAppMap[key].resources.ram, meAppMap[key].resources.disk, meAppMap[key].resources.cpu);
+        deallocateResources(mecAppMap[key].resources.ram, mecAppMap[key].resources.disk, mecAppMap[key].resources.cpu);
 
         //update map
-        meAppMap.erase(ueAppID);
+        mecAppMap.erase(ueAppID);
 
         freeGates.push_back(index);
 
@@ -494,7 +510,7 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
 {
     EV << "VirtualisationInfrastructureManager::registerMecApp - RAM: " << reqRam << " CPU: " << reqCpu << " disk: "<< reqDisk<< endl;
     printResources();
-    if(meAppMap.find(ueAppID) == meAppMap.end())
+    if(mecAppMap.find(ueAppID) == mecAppMap.end())
     {
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - independent MEC application with mecAppId ["<< ueAppID << "] already instantiated"<< endl;
     }
@@ -502,16 +518,16 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
     if(isAllocable(reqRam, reqDisk, reqCpu))
     {
         //storing information about ME App allocated resources
-        meAppMapEntry appEntry;
+        mecAppEntry appEntry;
 
         appEntry.ueAppID = ueAppID;
         appEntry.resources.ram = reqRam;
         appEntry.resources.disk = reqDisk;
         appEntry.resources.cpu = reqCpu;
-        meAppMap.insert({ueAppID, appEntry});
+        mecAppMap.insert({ueAppID, appEntry});
 
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << meAppMap[ueAppID].resources.ram <<" disk: "<< meAppMap[ueAppID].resources.disk <<" cpu: "<< meAppMap[ueAppID].resources.cpu << endl;
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
         allocateResources(reqRam, reqDisk, reqCpu);
         return true;
     }
@@ -523,13 +539,13 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
 
 bool VirtualisationInfrastructureManager::deRegisterMecApp(int ueAppID)
 {
-    if(!meAppMap.empty() || meAppMap.find(ueAppID) != meAppMap.end())
+    if(!mecAppMap.empty() || mecAppMap.find(ueAppID) != mecAppMap.end())
     {
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources DEALLOCATED for MecApp with UEAppId " << ueAppID  << endl;
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << meAppMap[ueAppID].resources.ram <<" disk: "<< meAppMap[ueAppID].resources.disk <<" cpu: "<< meAppMap[ueAppID].resources.cpu << endl;
-        deallocateResources(meAppMap[ueAppID].resources.ram, meAppMap[ueAppID].resources.disk, meAppMap[ueAppID].resources.cpu);
+        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
+        deallocateResources(mecAppMap[ueAppID].resources.ram, mecAppMap[ueAppID].resources.disk, mecAppMap[ueAppID].resources.cpu);
         //erasing map entry
-        meAppMap.erase(ueAppID);
+        mecAppMap.erase(ueAppID);
         return true;
     }
     else
@@ -543,12 +559,20 @@ double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID,
 {
     ASSERT(numOfInstructions >= 0);
 
-    auto ueApp = meAppMap.find(ueAppID);
-    if(ueApp != meAppMap.end())
+    auto ueApp = mecAppMap.find(ueAppID);
+    if(ueApp != mecAppMap.end())
     {
         double time;
-        double currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
-        time = numOfInstructions/currentSpeed;
+        if(scheduling == FAIR_SHARING)
+        {
+            double currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
+            time = numOfInstructions/currentSpeed;
+        }
+        else
+        {
+            double currentSpeed = ueApp->second.resources.cpu;
+            time = numOfInstructions/currentSpeed;
+        }
         EV << "VirtualisationInfrastructureManager::calculateProcessingTime - calculated time: " << time << endl;
 
         return time;

@@ -20,7 +20,7 @@
 #include "stack/rlc/um/entity/UmRxEntity.h"
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/mac/layer/LteMacBase.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 class UmTxEntity;
 class UmRxEntity;

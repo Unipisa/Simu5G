@@ -12,7 +12,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 
 typedef std::set<unsigned int> SequenceNumberSet;

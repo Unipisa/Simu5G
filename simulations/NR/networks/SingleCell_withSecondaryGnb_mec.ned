@@ -21,7 +21,7 @@ import lte.nodes.NR.NRUe;
 import lte.world.radio.LteChannelControl;
 import lte.epc.PgwStandardSimplified;
 import lte.nodes.ExtCell;
-import lte.nodes.mec.MEHost;
+import lte.nodes.mec.MECHost;
 
 // SingleCell_withSecondaryGnb
 //
@@ -71,7 +71,7 @@ network SingleCell_withSecondaryGnb_mec
         }
 
         //# MEC module
-        meHost: MEHost {
+        mecHost: MECHost {
             @display("p=626.85,151.7375;is=l");
         }
 
@@ -88,9 +88,9 @@ network SingleCell_withSecondaryGnb_mec
         masterEnb.x2++ <--> Eth10G <--> secondaryGnb.x2++;
         
          //#	mec
-        // direct connection between base stations and meHost
-        meHost.pppENB++ <--> Eth10G <--> masterEnb.pppMEHost;
-        meHost.pppENB++ <--> Eth10G <--> secondaryGnb.pppMEHost;
+        // direct connection between base stations and mecHost
+        mecHost.pppENB++ <--> Eth10G <--> masterEnb.pppMEHost;
+        mecHost.pppENB++ <--> Eth10G <--> secondaryGnb.pppMEHost;
         
         
 }

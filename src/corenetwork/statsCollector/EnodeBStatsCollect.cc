@@ -94,7 +94,7 @@ void EnodeBStatsCollector::initialize(int stage){
         dl_nongbr_pdr_cell.init("dl_nongbr_pdr_cell", par("discardRatePeriods"), false);
         ul_nongbr_pdr_cell.init("ul_nongbr_pdr_cell", par("discardRatePeriods"), false);
 
-        // setup timer
+        // setup timers
         prbUsage_    = new cMessage("prbUsage_");
         activeUsers_ = new cMessage("activeUsers_");
         discardRate_ = new cMessage("discardRate_");
@@ -112,15 +112,15 @@ void EnodeBStatsCollector::initialize(int stage){
         // start scheduling the l2 meas
         // schedule only stats not using packetFlowManager
 
-//        scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
-//        scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
-//        if(packetFlowManager_ != nullptr)
-//        {
-//            scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
-//            scheduleAt(NOW + discardRatePeriod_, discardRate_);
+        scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
+        scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
+        if(packetFlowManager_ != nullptr)
+        {
+            scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
+            scheduleAt(NOW + discardRatePeriod_, discardRate_);
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
-//            scheduleAt(NOW + tPutPeriod_,tPut_);
-//        }
+            scheduleAt(NOW + tPutPeriod_,tPut_);
+        }
     }
 }
 

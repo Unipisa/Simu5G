@@ -1,19 +1,12 @@
 //
-// Copyright (C) 2020 OpenSim Ltd.
+//                           Simu5G
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// This file is part of a software released under the license included in file
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself,
+// and cannot be removed from it.
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
+
 
 #ifndef _DEVAPPPACKETSERIALIZER_H_
 #define _DEVAPPPACKETSERIALIZER_H_
@@ -23,9 +16,29 @@
 namespace inet {
 
 enum DevAppCode {START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_CODE, START_NACK_CODE, STOP_NACK_CODE};
+
 /**
  * Converts between ApplicationPacket and binary (network byte order) application packet.
+ *
+ * This serializer works for all the DeviceAppPacket packets.
+ * The structure of a DeviceAppPacket packets is the following:
+ * - packet type code (as of DevAppCode enum)
+ * - length of the subsequent package size
+ * - data
+ *
+ * auto pkt = pk->peekAtFront<DeviceAppPacket>();
+ * if(strcmp(pkt->getType(), START_MECAPP) == 0)
+ *      it is a DeviceAppStartPacket
+ *
+ * Codes:
+ * 0 START
+ * 1 STOP
+ * 2 ACK START
+ * 3 ACK STOP
+ * 4 NACK START
+ * 5 NACK STOP
  */
+
 class INET_API DeviceAppMessageSerializer : public FieldsChunkSerializer
 {
   protected:

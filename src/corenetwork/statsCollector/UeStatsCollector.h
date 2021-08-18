@@ -11,7 +11,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
-#include "nodes/mec/MecCommon.h"
+#include "nodes/mec/utils/MecCommon.h"
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include <string>
 #include "corenetwork/statsCollector/UeStatsCollector.h"

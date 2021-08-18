@@ -34,9 +34,9 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
 
     //mec
-    if(getParentModule()->hasPar("meHost")){
+    if(getParentModule()->hasPar("mecHost")){
 
-        meHost = getParentModule()->par("meHost").stdstringValue();
+        meHost = getParentModule()->par("mecHost").stringValue();
         if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
         {
             /*
