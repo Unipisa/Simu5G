@@ -1,14 +1,16 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
-#ifndef _CELLINFO_H_
-#define _CELLINFO_H_
+#ifndef _RNICELLINFO_H_
+#define _RNICELLINFO_H_
 
 #include <vector>
 #include <omnetpp.h>
@@ -16,13 +18,13 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "corenetwork/statsCollector/EnodeBStatsCollector.h"
+#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 
 
 
-class CellInfo : public AttributeBase {
+class RNICellInfo : public AttributeBase {
   protected:
-    EnodeBStatsCollector* collector_; // it has the cellCollector and the map <Ipue -> uecollector>
+    BaseStationStatsCollector* collector_; // it has the cellCollector and the map <Ipue -> uecollector>
     Ecgi ecgi_;
 
   /**
@@ -39,9 +41,9 @@ class CellInfo : public AttributeBase {
 
 
 public:
-  CellInfo();
-  CellInfo(EnodeBStatsCollector* eNodeB);
-  virtual ~CellInfo();
+  RNICellInfo();
+  RNICellInfo(BaseStationStatsCollector* eNodeB);
+  virtual ~RNICellInfo();
 
   UeStatsCollectorMap* getCollectorMap() const;
   
@@ -52,5 +54,5 @@ public:
 
 };
 
-#endif // _CELLINFO_H_
+#endif // _RNICELLINFO_H_
 

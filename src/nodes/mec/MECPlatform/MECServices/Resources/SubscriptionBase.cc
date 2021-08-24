@@ -1,14 +1,16 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "corenetwork/lteCellInfo/LteCellInfo.h"
+#include "common/cellInfo/CellInfo.h"
 
 using namespace omnetpp;
 
@@ -17,8 +19,8 @@ SubscriptionBase::SubscriptionBase() {}
 SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*>& eNodeBs) {
     std::set<cModule*>::iterator it = eNodeBs.begin();
     for(; it != eNodeBs.end() ; ++it){
-        LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
-        eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+        CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+        eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     }
 	subscriptionId_ = subId;
 	socket_ = socket;
@@ -29,15 +31,15 @@ SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, 
 void SubscriptionBase::addEnodeB(std::set<cModule*>& eNodeBs) {
     std::set<cModule*>::iterator it = eNodeBs.begin();
     for(; it != eNodeBs.end() ; ++it){
-        LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
-        eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+        CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+        eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
         EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
     }
 }
 
 void SubscriptionBase::addEnodeB(cModule* eNodeB) {
-    LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>(eNodeB->getSubmodule("cellInfo"));
-    eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+    CellInfo * cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
+    eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     EV << "LocationResource::addEnodeB with cellId: "<< cellInfo->getMacCellId() << endl;
     EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
 }
@@ -45,137 +47,7 @@ void SubscriptionBase::addEnodeB(cModule* eNodeB) {
 
 SubscriptionBase::~SubscriptionBase() {}
 
-//
-//nlohmann::ordered_json SubscriptionBase::toJson() const {
-////	nlohmann::ordered_json val ;
-////	nlohmann::ordered_json SubscriptionBase;
-////	nlohmann::ordered_json cellArray;
-////	nlohmann::ordered_json ueArray;
-////
-////	if (timestamp_.isValid())
-////	{
-//////		timestamp_.setSeconds();
-////		val["timestamp"] = timestamp_.toJson();
-////	}
-////
-////	std::map<MacCellId, EnodeBStatsCollector *>::const_iterator it = eNodeBs_.begin();
-////	for(; it != eNodeBs_.end() ; ++it){
-////	    UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
-////        UeStatsCollectorMap::const_iterator uit = ueMap->begin();
-////        UeStatsCollectorMap::const_iterator end = ueMap->end();
-////        for(; uit != end ; ++uit)
-////        {
-////            CellUEInfo cellUeInfo = CellUEInfo(uit->second, it->second->getEcgi());
-////            ueArray.push_back(cellUeInfo.toJson());
-////        }
-////		CellInfo cellInfo = CellInfo(it->second);
-////		cellArray.push_back(cellInfo.toJson());
-////	}
-////
-////	if(cellArray.size() > 1){
-////		val["cellInfo"] = cellArray;
-////    }
-////	else if(cellArray.size() == 1){
-////		val["cellInfo"] = cellArray[0];
-////	}
-////
-////	if(ueArray.size() > 1){
-////		val["CellUEInfo"] = ueArray;
-////    }
-////	else if(ueArray.size() == 1){
-////		val["CellUEInfo"] = ueArray[0];
-////	}
-////
-////	SubscriptionBase["SubscriptionBase"] = val;
-////	return SubscriptionBase;
-//}
-//
-////
-//nlohmann::ordered_json SubscriptionBase::toJsonUe(std::vector<MacNodeId>& uesID) const {
-////	nlohmann::ordered_json val ;
-////	nlohmann::ordered_json SubscriptionBase;
-////	nlohmann::ordered_json ueArray;
-////
-////	if (timestamp_.isValid())
-////	{
-//////		timestamp_.setSeconds();
-////		val["timestamp"] = timestamp_.toJson();
-////	}
-////
-////
-////	std::vector<MacNodeId>::const_iterator uit = uesID.begin();
-////	std::map<MacCellId, EnodeBStatsCollector*>::const_iterator eit;
-////	bool found = false;
-////	for(; uit != uesID.end() ; ++uit){
-////	    found = false;
-////	    eit = eNodeBs_.begin();
-////	    for(; eit != eNodeBs_.end() ; ++eit){
-////            if(eit->second->hasUeCollector(*uit))
-////            {
-////                UeStatsCollector *ueColl = eit->second->getUeCollector(*uit);
-////                CellUEInfo cellUeInfo = CellUEInfo(ueColl, eit->second->getEcgi());
-////                ueArray.push_back(cellUeInfo.toJson());
-////                found = true;
-////                break; // next ue id
-////            }
-////        }
-////        if(!found)
-////        {
-////
-////        }
-////	}
-////
-////	if(ueArray.size() > 1){
-////        val["CellUEInfo"] = ueArray;
-////	}
-////    else if(ueArray.size() == 1){
-////        val["CellUEInfo"] = ueArray[0];
-////    }
-////
-////	SubscriptionBase["SubscriptionBase"] = val;
-////	return SubscriptionBase;
-//}
-//
-////
-//nlohmann::ordered_json SubscriptionBase::toJsonCell(std::vector<MacCellId>& cellsID) const
-//{
-////    nlohmann::ordered_json val ;
-////    nlohmann::ordered_json SubscriptionBase;
-////    nlohmann::ordered_json cellArray;
-////
-////        if (timestamp_.isValid())
-////        {
-////    //      timestamp_.setSeconds();
-////            val["timestamp"] = timestamp_.toJson();
-////        }
-////
-////        std::vector<MacCellId>::const_iterator cid =  cellsID.begin();
-////        std::map<MacCellId, EnodeBStatsCollector *>::const_iterator it;
-////        for(; cid != cellsID.end() ; ++cid){
-////            it = eNodeBs_.find(*cid);
-////            if(it != eNodeBs_.end()){
-////                CellInfo cellInfo = CellInfo(it->second);
-////                cellArray.push_back(cellInfo.toJson());
-////            }
-////        }
-////
-////        if(cellArray.size() > 1){
-////            val["cellInfo"] = cellArray;
-////        }
-////        else if(cellArray.size() == 1){
-////            val["cellInfo"] = cellArray[0];
-////        }
-////
-////        SubscriptionBase["SubscriptionBase"] = val;
-////        return SubscriptionBase;
-//
-//}
-//////
-//nlohmann::ordered_json SubscriptionBase::toJson(std::vector<MacCellId>& cellsID, std::vector<MacNodeId>& uesID) const
-//{
-//
-//}
-//
+
 
 bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
 {

@@ -1,28 +1,30 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
 
-#include "../../RNIService/resources/CellInfo.h"
-#include "corenetwork/statsCollector/EnodeBStatsCollector.h"
+#include "RNICellInfo.h"
+#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 
-CellInfo::CellInfo(){}
+RNICellInfo::RNICellInfo(){}
 
-CellInfo::CellInfo(EnodeBStatsCollector* eNodeB){
+RNICellInfo::RNICellInfo(BaseStationStatsCollector* eNodeB){
   collector_ = eNodeB;
   ecgi_.setEcgi(collector_->getEcgi());
 //  ueList_ =    eNodeB->getUeListCollectors();
 }
 
-CellInfo::~CellInfo(){}
+RNICellInfo::~RNICellInfo(){}
 
 
-nlohmann::ordered_json CellInfo::toJsonCell() const  {
+nlohmann::ordered_json RNICellInfo::toJsonCell() const  {
     nlohmann::ordered_json val;
 	val["ecgi"] = ecgi_.toJson();
 
@@ -83,18 +85,18 @@ nlohmann::ordered_json CellInfo::toJsonCell() const  {
 	return val;
 }
 
-UeStatsCollectorMap* CellInfo::getCollectorMap() const
+UeStatsCollectorMap* RNICellInfo::getCollectorMap() const
 {
 	return collector_->getCollectorMap();
 }
 
-Ecgi CellInfo::getEcgi() const
+Ecgi RNICellInfo::getEcgi() const
 {
 	return ecgi_;
 }
 
 
-nlohmann::ordered_json CellInfo::toJson() const {
+nlohmann::ordered_json RNICellInfo::toJson() const {
 	nlohmann::ordered_json val = toJsonCell();
 	
 //	// per UE
@@ -116,7 +118,7 @@ nlohmann::ordered_json CellInfo::toJson() const {
 }
 
 
-//nlohmann::ordered_json CellInfo::toJson(std::vector<Ipv4>& uesID) const {
+//nlohmann::ordered_json RNICellInfo::toJson(std::vector<Ipv4>& uesID) const {
 //	nlohmann::ordered_json val = toJsonCell();
 //	nlohmann::ordered_json jsonArray;
 //	std::vector<Ipv4>&::const_iterator it = uesID.begin();

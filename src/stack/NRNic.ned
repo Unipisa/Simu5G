@@ -18,6 +18,7 @@ import simu5g.stack.mac.LteMac;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
+import simu5g.stack.packetFlowManager.PacketFlowManager;
 
 //
 // e/gNodeB with NR stack
@@ -80,12 +81,12 @@ module NRNicUe extends LteNicUeD2D
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=144,50;is=s");
         }
-                 		//#
+ 		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
-            @display("p=197,299");
-        }
+//        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+//            @display("p=197,299");
+//        }
 
     connections:
 

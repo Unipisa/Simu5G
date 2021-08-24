@@ -1,9 +1,11 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -23,7 +25,8 @@ UeStatsCollector::UeStatsCollector()
 
 }
 
-void UeStatsCollector::initialize(int stage){
+void UeStatsCollector::initialize(int stage)
+{
     if(stage == inet::INITSTAGE_LOCAL)
         {
             collectorType_ = par("collectorType").stringValue();
@@ -31,11 +34,11 @@ void UeStatsCollector::initialize(int stage){
         }
         else if (stage == inet::INITSTAGE_APPLICATION_LAYER) // same as lteMacUe, when read the interface entry
     {
-        LteBinder* binder = getBinder();
+        Binder* binder = getBinder();
 
 
-        mac_ = check_and_cast<LteMacBase *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("mac"));
-//        pdcp_ = check_and_cast<LtePdcpRrcUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("pdcpRrc"));
+        mac_ = check_and_cast<LteMacBase *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"));
+//        pdcp_ = check_and_cast<LtePdcpRrcUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("pdcpRrc"));
 
         associateId_.value = binder->getIPv4Address(mac_->getMacNodeId()).str(); // UE_IPV4_ADDRESS
         associateId_.type = "1"; // UE_IPV4_ADDRESS
@@ -54,10 +57,10 @@ void UeStatsCollector::initialize(int stage){
         {
             if(collectorType_.compare("NRueStatsCollector") == 0) // collector relative to the NR side of the Ue Nic
             {
-                if(getParentModule()->getSubmodule("lteNic")->findSubmodule("nrPacketFlowManager") != -1)
+                if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("nrPacketFlowManager") != -1)
                 {
                     EV << collectorType_ << "::initialize - NRpacketFlowManager reference" << endl;
-                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("nrPacketFlowManager"));
+                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("nrPacketFlowManager"));
                 }
                 else
                 {
@@ -66,10 +69,10 @@ void UeStatsCollector::initialize(int stage){
             }
             else if(collectorType_.compare("ueStatsCollector") == 0)
             {
-                if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
+                if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
                 {
                     EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
-                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
                 }
                 else
                 {
@@ -80,8 +83,8 @@ void UeStatsCollector::initialize(int stage){
         }
         else // it is ueStatsCollector with only LteNic
         {
-            if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
-                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+            if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
+                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
         }
 
         handover_ = false;

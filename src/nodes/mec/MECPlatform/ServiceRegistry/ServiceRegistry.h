@@ -1,11 +1,13 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-/// 
+//
 
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_H_
@@ -13,7 +15,6 @@
 #include <omnetpp.h>
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "inet/networklayer/common/L3Address.h"
-#include "nodes/binder/LteBinder.h"
 #include "nodes/mec/utils/MecCommon.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 #include <map>
@@ -34,7 +35,6 @@ private:
     std::set<std::string> omnetServices_;
     std::vector<ServiceInfo> mecServices_;
     //LteBinder (oracle module)
-    LteBinder* binder_;
 
     //parent modules
     omnetpp::cModule* mePlatform;

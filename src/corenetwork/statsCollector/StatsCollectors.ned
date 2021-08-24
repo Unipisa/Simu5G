@@ -1,14 +1,15 @@
-// 
-//                           SimuLTE
-// 
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself, 
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
-
-package lte.corenetwork.statsCollector;
+package simu5g.corenetwork.statsCollector;
 // 
 // This is the statistic collector of an eNodeB. It stores all the attributes of the RNI 
 // service Layer2Meaurements resource. The RNI service will call its methods in order to 
@@ -20,7 +21,7 @@ moduleinterface StatsCollector {
     string collectorType; // it can be: "eNBStatsCollector, gNBStatsCollector, ueStatsCollector, NRueStatsCollector
 }
 
-module ENodeBStatsCollector like StatsCollector
+module BaseStationStatsCollector like StatsCollector
 {
     parameters:
         string collectorType = default("eNBStatsCollector");
@@ -43,10 +44,10 @@ module ENodeBStatsCollector like StatsCollector
         double tPutPeriod @unit(s) = default(1s);
 
         @display("i=block/cogwheel");
-        @class("EnodeBStatsCollector");
+        @class("BaseStationStatsCollector");
 }
 
-module GNodeBStatsCollector extends ENodeBStatsCollector
+module GNodeBStatsCollector extends BaseStationStatsCollector
 {
     parameters:
         collectorType = default("gNBStatsCollector");

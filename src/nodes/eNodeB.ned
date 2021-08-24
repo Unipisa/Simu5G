@@ -1,11 +1,9 @@
 // 
-//                  Simu5G
-//
-// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//                           Simu5G
 // 
 // This file is part of a software released under the license included in file
-// "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// "license.pdf". This license can be also found at http://www.ltesimulator.com/
+// The above file and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
 
@@ -31,9 +29,10 @@ import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 
 
-import lte.corenetwork.statsCollector.StatsCollector; 
-import lte.corenetwork.statsCollector.ENodeBStatsCollector; 
-// eNodeB Base Module
+import simu5g.corenetwork.statsCollector.StatsCollector; 
+
+// 
+// eNodeB Module
 // 
 // Module for eNodeB functionalities
 //
@@ -83,7 +82,7 @@ module eNodeB
         string mecHost = default("");		// symbolic name of the connected MEHost in the Network
      
         //# @author Alessandro Noferi
-       	string StatsCollectorType = default("ENodeBStatsCollector"); 
+       	string StatsCollectorType = default("BaseStationStatsCollector"); 
         bool hasRNISupport = default(false);
         
         //# use it in case of emulation
@@ -91,7 +90,7 @@ module eNodeB
         //# Plmn params (used by RNI Service in EnodeBStatsCollector)
         string mcc = default("001"); // Test network
         string mnc = default("01");  // Test network
-        
+
     gates:
         inout ppp @loose;         // connection to the Core Network
         input radioIn @directIn;  // connection to the radio interface

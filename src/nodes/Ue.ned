@@ -28,7 +28,7 @@ import inet.transportlayer.contract.ISctp;
 import inet.common.MessageDispatcher;
 import simu5g.stack.ICellularNic;
 
-import lte.corenetwork.statsCollector.UeStatsCollector;
+import simu5g.corenetwork.statsCollector.UeStatsCollector;
 
 // 
 // User Equipment Module

@@ -1,41 +1,44 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/L2Meas.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "corenetwork/statsCollector/EnodeBStatsCollector.h"
-#include "nodes/binder/LteBinder.h"
+#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/RNICellInfo.h"
+#include "common/binder/Binder.h"
 #include "CellUEInfo.h"
 
 L2Meas::L2Meas() {
     binder_ = getBinder();
 }
 
-L2Meas::L2Meas(std::set<cModule*>& eNodeBs) {
-	std::set<cModule*>::iterator it = eNodeBs.begin();
+L2Meas::L2Meas(std::set<omnetpp::cModule*>& eNodeBs) {
+	std::set<omnetpp::cModule*>::iterator it = eNodeBs.begin();
 	for(; it != eNodeBs.end() ; ++it){
-		EnodeBStatsCollector * collector = check_and_cast<EnodeBStatsCollector *>((*it)->getSubmodule("collector"));
-		eNodeBs_.insert(std::pair<MacCellId, EnodeBStatsCollector *>(collector->getCellId(), collector));
+		BaseStationStatsCollector * collector = check_and_cast<BaseStationStatsCollector *>((*it)->getSubmodule("collector"));
+		eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
 	}
 }
 
-void L2Meas::addEnodeB(std::set<cModule*>& eNodeBs) {
-    std::set<cModule*>::iterator it = eNodeBs.begin();
+void L2Meas::addEnodeB(std::set<omnetpp::cModule*>& eNodeBs) {
+    std::set<omnetpp::cModule*>::iterator it = eNodeBs.begin();
         for(; it != eNodeBs.end() ; ++it){
-			EnodeBStatsCollector * collector = check_and_cast<EnodeBStatsCollector *>((*it)->getSubmodule("collector"));
-            eNodeBs_.insert(std::pair<MacCellId, EnodeBStatsCollector*>(collector->getCellId(), collector));
+			BaseStationStatsCollector * collector = check_and_cast<BaseStationStatsCollector *>((*it)->getSubmodule("collector"));
+            eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector*>(collector->getCellId(), collector));
         }
 }
 
-void L2Meas::addEnodeB(cModule* eNodeB) {
-    EnodeBStatsCollector * collector = check_and_cast<EnodeBStatsCollector *>(eNodeB->getSubmodule("collector"));
-	eNodeBs_.insert(std::pair<MacCellId, EnodeBStatsCollector *>(collector->getCellId(), collector));
+void L2Meas::addEnodeB(omnetpp::cModule* eNodeB) {
+    BaseStationStatsCollector * collector = check_and_cast<BaseStationStatsCollector *>(eNodeB->getSubmodule("collector"));
+	eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
 }
 
 
@@ -54,7 +57,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
 		val["timestamp"] = timestamp_.toJson();
 	}
 
-	std::map<MacCellId, EnodeBStatsCollector *>::const_iterator it = eNodeBs_.begin();
+	std::map<MacCellId, BaseStationStatsCollector *>::const_iterator it = eNodeBs_.begin();
 	for(; it != eNodeBs_.end() ; ++it){
 	    UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
         UeStatsCollectorMap::const_iterator uit = ueMap->begin();
@@ -64,7 +67,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
             CellUEInfo cellUeInfo = CellUEInfo(uit->second, it->second->getEcgi());
             ueArray.push_back(cellUeInfo.toJson());
         }
-		CellInfo cellInfo = CellInfo(it->second);
+		RNICellInfo cellInfo = RNICellInfo(it->second);
 		cellArray.push_back(cellInfo.toJson());
 	}
 
@@ -98,7 +101,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
 		val["timestamp"] = timestamp_.toJson();
 	}
 
-	std::map<MacCellId, EnodeBStatsCollector*>::const_iterator eit;
+	std::map<MacCellId, BaseStationStatsCollector*>::const_iterator eit;
 	bool found = false;
 	for(auto ipAddress: uesID){
 
@@ -231,11 +234,11 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
         }
 
         std::vector<MacCellId>::const_iterator cid =  cellsID.begin();
-        std::map<MacCellId, EnodeBStatsCollector *>::const_iterator it;
+        std::map<MacCellId, BaseStationStatsCollector *>::const_iterator it;
         for(; cid != cellsID.end() ; ++cid){
             it = eNodeBs_.find(*cid);
             if(it != eNodeBs_.end()){
-                CellInfo cellInfo = CellInfo(it->second);
+                RNICellInfo cellInfo = RNICellInfo(it->second);
                 cellArray.push_back(cellInfo.toJson());
 
                 UeStatsCollectorMap *ueMap = it->second->getCollectorMap();

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package lte.nodes.mec.MECPlatform;
+package simu5g.nodes.mec.MECPlatform;
 
 
 moduleinterface IMECApp

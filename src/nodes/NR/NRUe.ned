@@ -15,7 +15,7 @@ package simu5g.nodes.NR;
 import simu5g.nodes.Ue;
 import simu5g.stack.NRNicUe;
 
-import lte.corenetwork.statsCollector.NRueStatsCollector;
+import simu5g.corenetwork.statsCollector.NRueStatsCollector;
 // 
 // User Equipment Module
 //
@@ -33,9 +33,9 @@ module NRUe extends Ue
 
     submodules:
         //# UeStatsCollector - for MEC
-        NRueCollector: NRueStatsCollector if hasRNISupport {
-            @display("p=73.687996,445.75198;is=s");
-        }
+//        NRueCollector: NRueStatsCollector if hasRNISupport {
+//            @display("p=73.687996,445.75198;is=s");
+//        }
 
     connections allowunconnected:
 

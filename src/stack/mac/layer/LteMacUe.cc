@@ -175,8 +175,7 @@ void LteMacUe::initialize(int stage)
             if(module->hasPar("nodeType"))
                 nodeType = module->par("nodeType").stdstringValue();
 
-            LteNodeType eNBType = binder_->getBaseStationTypeById(cellId_);
-
+            RanNodeType eNBType = binder_->getBaseStationTypeById(cellId_);
 
             if(isNrUe(nodeId_) &&  eNBType == GNODEB)
             {
@@ -199,7 +198,7 @@ void LteMacUe::initialize(int stage)
             }
             else
             {
-                EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: "<< cellId_ << " with is has a different type" <<  endl;
+                EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: "<< cellId_ << " has a different type" <<  endl;
             }
 
             ////

@@ -1,15 +1,16 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
+package simu5g.nodes.mec.MECPlatform.MECServices.LocationService;
 
-package lte.nodes.mec.MECPlatform.MECServices.LocationService;
-
-import lte.nodes.mec.MECPlatform.MECServices.MECServiceBase.IMECService;
+import simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.IMECService;
 import inet.applications.contract.IApp;
 
 //# Location Service module
@@ -31,7 +32,7 @@ simple LocationService like IMECService, IApp
         double requestServiceTime  @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
         
-        string serverThreadClass = default("lte.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
+        string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
                 
 		string serviceName = default("LocationService");
        	string serviceVersion = default("v2");

@@ -51,7 +51,7 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
 
     //@author Alessandro Noferi
     //
-    //for emulation
+    // for emulation when the MEC host is directly connected to the BS
     inet::L3Address meAppsExtAddress_;
     int meAppsExtAddressMask_;
 

@@ -434,7 +434,7 @@ void LteMacBase::initialize(int stage)
         else{
             if(getParentModule()->findSubmodule("packetFlowManager") != -1)
             {
-                LteNodeType nt = getNodeType();
+                RanNodeType nt = getNodeType();
                 const char *cnt = (nt == UE)? "UE": (nt == ENODEB)? "ENODEB": "GNODEB";
                 EV << "LteMacBase::initialize - MAC layer, nodeType: "<< cnt  << endl;
                 packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("packetFlowManager"));

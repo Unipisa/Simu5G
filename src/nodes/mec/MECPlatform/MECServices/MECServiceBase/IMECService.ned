@@ -1,13 +1,15 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
-package lte.nodes.mec.MECPlatform.MECServices.MECServiceBase;
+package simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase;
 
 // This class implements the general structure of a Mec Service. It holds all the TCP connections with 
 // the Mec Applications and manages its lifecycle. It manages Request-Replay and Subscribe-Notify schemes.

@@ -11,10 +11,10 @@
 
 package simu5g.nodes.mec;
 
-import lte.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
-import lte.nodes.mec.MECPlatform.MECPlatform;
-import lte.nodes.mec.MECPlatformManager.MecPlatformManager;
-import lte.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
+import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
+import simu5g.nodes.mec.MECPlatform.MECPlatform;
+import simu5g.nodes.mec.MECPlatformManager.MecPlatformManager;
+import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
 
 
 

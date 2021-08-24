@@ -1,14 +1,16 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
-package lte.nodes.mec.LCMProxy;
-import lte.nodes.mec.LCMProxy.LcmProxy;
+package simu5g.nodes.mec.LCMProxy;
+import simu5g.nodes.mec.LCMProxy.LcmProxy;
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
@@ -23,7 +25,7 @@ import inet.linklayer.contract.IEthernetInterface;
 import inet.applications.contract.IApp;
 
 //lte tunneling endpoint to connect externally with an eNodeB
-import lte.nodes.mec.GtpEndpoint.GtpEndpoint;
+import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
 import inet.node.ethernet.Eth10G;
 import inet.networklayer.common.InterfaceTable;
 

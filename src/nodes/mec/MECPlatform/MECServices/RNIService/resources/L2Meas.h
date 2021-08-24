@@ -1,9 +1,11 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -14,16 +16,15 @@
 #include <vector>
 #include <map>
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/CellInfo.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
-class EnodeBStatsCollector;
-class LteBinder;
+class BaseStationStatsCollector;
+class Binder;
 
 /*
 * This class is responsable to retrieve the L2 measures and create the JSON body
 * response. It maintains the list of all the eNB/gNBs associated with the MEC host
-* where the RNIS is running and keeps the pointers to the EnodeBStatsCollector.*
+* where the RNIS is running and keeps the pointers to the s.*
 */
 
 
@@ -31,13 +32,13 @@ class L2Meas : public AttributeBase
 {
 	public:
         L2Meas();
-		L2Meas(std::set<cModule*>& eNodeBs);
+		L2Meas(std::set<omnetpp::cModule*>& eNodeBs);
 		virtual ~L2Meas();
 
 		nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::set<cModule*>& eNodeBs);
-		void addEnodeB(cModule* eNodeB);
+		void addEnodeB(std::set<omnetpp::cModule*>& eNodeBs);
+		void addEnodeB(omnetpp::cModule* eNodeB);
 
 		nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
 		nlohmann::ordered_json toJsonUe(std::vector<inet::Ipv4Address>& uesID) const;
@@ -47,11 +48,8 @@ class L2Meas : public AttributeBase
 	protected:
 
 		TimeStamp timestamp_;
-		std::map<MacCellId, EnodeBStatsCollector*> eNodeBs_;
-		LteBinder *binder_;
-
-		
-
+		std::map<MacCellId, BaseStationStatsCollector*> eNodeBs_;
+		Binder *binder_;
 };
 
 

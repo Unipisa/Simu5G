@@ -1,9 +1,11 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -47,7 +49,7 @@ void PacketFlowManagerEnb::initialize(int stage)
         if (headerCompressedSize_ == -1)
             headerCompressedSize_ = 0;
 
-        timeUe_.setName("delay");
+        timesUe_.setName("delay");
     }
 }
 
@@ -665,7 +667,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                         // uncomment this to register DL delays
 //                        if(desc->nodeId_ == 2053)
-//                            timeUe_.record(time);
+//                            timesUe_.record(time);
 
                         EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
 

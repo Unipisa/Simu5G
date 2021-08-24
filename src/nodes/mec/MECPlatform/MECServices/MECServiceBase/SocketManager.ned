@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package lte.nodes.mec.MECPlatform.MECServices.MECServiceBase;
+package simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase;
 
 simple SocketManager
 {

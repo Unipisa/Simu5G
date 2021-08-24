@@ -1,10 +1,11 @@
-
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -16,15 +17,15 @@
 #include "nodes/mec/utils/MecCommon.h"
 #include <map>
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
-#include "corenetwork/lteCellInfo/LteCellInfo.h"
+#include "common/cellInfo/CellInfo.h"
 using namespace inet;
 
 /**
- * This is the statistic collector of an eNodeB. It stores all the attributes of the RNI
+ * This is the statistic collector of an eNodeB/gNodeB. It stores all the attributes of the RNI
  * service Layer2Meaurements resource. The RNI service will call its methods in order to
- * responds to requests.
+ * respond to requests.
  * It holds a map structure with all the UeCollectors of the UEs connected to the
- * eNodeB
+ * eNodeB/gNodeB
  */
 
 
@@ -32,16 +33,15 @@ class UeStatsCollector;
 class LteMacEnb;
 class LtePdcpRrcEnb;
 class PacketFlowManagerEnb;
-class LteCellInfo;
 class LteRlcUm;
 
 typedef std::map<MacNodeId, UeStatsCollector*> UeStatsCollectorMap;
 
-class EnodeBStatsCollector: public cSimpleModule
+class BaseStationStatsCollector: public cSimpleModule
 {
     private:
         std::string collectorType_;
-        LteNodeType nodeType_; // ENODEB or GNODEB
+        RanNodeType nodeType_; // ENODEB or GNODEB
 
         // used by the RNI service
         mec::Ecgi ecgi_;
@@ -52,7 +52,7 @@ class EnodeBStatsCollector: public cSimpleModule
         LteRlcUm      *rlc_;
         PacketFlowManagerEnb *packetFlowManager_;
 
-        LteCellInfo *cellInfo_;
+        CellInfo *cellInfo_;
         
         UeStatsCollectorMap ueCollectors_;
 
@@ -92,16 +92,16 @@ class EnodeBStatsCollector: public cSimpleModule
         double tPutPeriod_;
 
     public:
-        EnodeBStatsCollector();
-        virtual ~EnodeBStatsCollector();
+        BaseStationStatsCollector();
+        virtual ~BaseStationStatsCollector();
 
         const mec::Ecgi& getEcgi() const;
         MacCellId getCellId() const;
-        LteNodeType getCellNodeType () const
+        RanNodeType getCellNodeType () const
         {
             return nodeType_;
         }
-        void setCellNodeType(LteNodeType nodeType)
+        void setCellNodeType(RanNodeType nodeType)
         {
             nodeType_  = nodeType;
         }
@@ -111,7 +111,7 @@ class EnodeBStatsCollector: public cSimpleModule
         /*
          * addUeCollector adds the UE collector to the list;
          * Called during UE initialization and after handover
-         * where the UE moves to the eNobeB of this EnodeBStatsCollector
+         * where the UE moves to the eNobeB/gNodeB of this BaseStationStatsCollector
          * @param id of the UE to add
          * @param ueCollector pointer to the ueStatsCollector
          */
@@ -120,7 +120,7 @@ class EnodeBStatsCollector: public cSimpleModule
         /*
          * removeUeCollector removes the UE collector from the list;
          * Called during UE termination and after handover
-         * where the UE moves to another eNobeB
+         * where the UE moves to another eNobeB/gNodeB
          * @param id of the UE to remove
          */
         void removeUeCollector(MacNodeId id);
@@ -137,7 +137,7 @@ class EnodeBStatsCollector: public cSimpleModule
 
         /*
          * hasUeCollector returns true if the EnodeB
-         * associated to this eNodeBCollector
+         * associated to this BaseStationStatsCollector
          *
          * @param id relative to a UeStatsCollector
          */
@@ -218,11 +218,11 @@ class EnodeBStatsCollector: public cSimpleModule
         void resetStats(MacNodeId nodeId);
 
     protected:
-        virtual void initialize(int stages);
+        virtual void initialize(int stages) override;
 
-        virtual int numInitStages() const { return INITSTAGE_LAST; }
+        virtual int numInitStages() const override { return INITSTAGE_LAST; }
 
-        virtual void handleMessage(cMessage *msg);
+        virtual void handleMessage(cMessage *msg) override;
 
 };
 

@@ -1,13 +1,15 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
-#include "corenetwork/statsCollector/EnodeBStatsCollector.h"
+#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 #include "stack/packetFlowManager/PacketFlowManagerEnb.h"
 #include "stack/rlc/um/LteRlcUm.h"
@@ -15,8 +17,8 @@
 #include "stack/mac/layer/LteMacEnb.h"
 #include <string>
 
-Define_Module(EnodeBStatsCollector);
-EnodeBStatsCollector::EnodeBStatsCollector()
+Define_Module(BaseStationStatsCollector);
+BaseStationStatsCollector::BaseStationStatsCollector()
 {
     pdcp_ = nullptr;
     rlc_ = nullptr;
@@ -32,7 +34,7 @@ EnodeBStatsCollector::EnodeBStatsCollector()
 }
 
 
-EnodeBStatsCollector::~EnodeBStatsCollector()
+BaseStationStatsCollector::~BaseStationStatsCollector()
 {
     cancelAndDelete(pdcpBytes_);
     cancelAndDelete(prbUsage_);
@@ -43,7 +45,7 @@ EnodeBStatsCollector::~EnodeBStatsCollector()
 
 }
 
-void EnodeBStatsCollector::initialize(int stage){
+void BaseStationStatsCollector::initialize(int stage){
 
     if(stage == inet::INITSTAGE_LOCAL)
     {
@@ -60,29 +62,29 @@ void EnodeBStatsCollector::initialize(int stage){
         ecgi_.plmn.mcc = getAncestorPar("mcc").stdstringValue();
         ecgi_.plmn.mnc = getAncestorPar("mnc").stdstringValue();
 
-        mac_ = check_and_cast<LteMacEnb *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("mac"));
-        pdcp_ = check_and_cast<LtePdcpRrcEnb *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("pdcpRrc"));
+        mac_ = check_and_cast<LteMacEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"));
+        pdcp_ = check_and_cast<LtePdcpRrcEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("pdcpRrc"));
 
-        cModule *rlc = getParentModule()->getSubmodule("lteNic")->getSubmodule("rlc");
+        cModule *rlc = getParentModule()->getSubmodule("cellularNic")->getSubmodule("rlc");
         if(rlc->findSubmodule("um") != -1)
         {
-            rlc_ = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("rlc")->getSubmodule("um"));
+            rlc_ = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule("um"));
         }
         else
         {
             throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode");
         }
         
-        if(getParentModule()->getSubmodule("lteNic")->findSubmodule("packetFlowManager") != -1)
+        if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
         {
             EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
-            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("lteNic")->getSubmodule("packetFlowManager"));
+            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
         }
         else
         {
             EV << "NON CI STA" << endl;
         }
-        cellInfo_ = check_and_cast<LteCellInfo *>(getParentModule()->getSubmodule("cellInfo"));
+        cellInfo_ = check_and_cast<CellInfo *>(getParentModule()->getSubmodule("cellInfo"));
         ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
 
         dl_total_prb_usage_cell.init("dl_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));
@@ -125,7 +127,7 @@ void EnodeBStatsCollector::initialize(int stage){
 }
 
 
-void EnodeBStatsCollector::handleMessage(cMessage *msg)
+void BaseStationStatsCollector::handleMessage(cMessage *msg)
 {
     if(msg->isSelfMessage())
     {
@@ -196,7 +198,7 @@ void EnodeBStatsCollector::handleMessage(cMessage *msg)
 }
 
 
-void EnodeBStatsCollector::resetDiscardCounterPerUe()
+void BaseStationStatsCollector::resetDiscardCounterPerUe()
 {
     EV << collectorType_ << "::resetDiscardCounterPerUe " << endl;
     for(auto const &ue : ueCollectors_)
@@ -205,7 +207,7 @@ void EnodeBStatsCollector::resetDiscardCounterPerUe()
     }
 }
 
-void EnodeBStatsCollector::resetDelayCounterPerUe()
+void BaseStationStatsCollector::resetDelayCounterPerUe()
 {
     EV << collectorType_ << "::resetDelayCounterPerUe " << endl;
     for(auto const &ue : ueCollectors_)
@@ -215,7 +217,7 @@ void EnodeBStatsCollector::resetDelayCounterPerUe()
     }
 }
 
-void EnodeBStatsCollector::resetThroughputCountersPerUe()
+void BaseStationStatsCollector::resetThroughputCountersPerUe()
 {
     EV << collectorType_ << "::resetThroughputCountersPerUe " << endl;
     for(auto const &ue : ueCollectors_)
@@ -224,7 +226,7 @@ void EnodeBStatsCollector::resetThroughputCountersPerUe()
     }
 }
 
-void EnodeBStatsCollector::resetBytesCountersPerUe()
+void BaseStationStatsCollector::resetBytesCountersPerUe()
 {
     EV << collectorType_ << "::resetBytesCountersPerUe " << endl;
     for(auto const &ue : ueCollectors_)
@@ -234,8 +236,8 @@ void EnodeBStatsCollector::resetBytesCountersPerUe()
 }
 
 
-// EnodeBStatsCollector management methods
-void EnodeBStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector* ueCollector)
+// BaseStationStatsCollector management methods
+void BaseStationStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector* ueCollector)
 {
     if(ueCollectors_.find(id) == ueCollectors_.end())
     {
@@ -247,13 +249,13 @@ void EnodeBStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector* ueColl
     }
 }
 
-void EnodeBStatsCollector::removeUeCollector(MacNodeId id)
+void BaseStationStatsCollector::removeUeCollector(MacNodeId id)
 {
     std::map<MacNodeId, UeStatsCollector*>::iterator it = ueCollectors_.find(id);
     if(it != ueCollectors_.end())
     {
         ueCollectors_.erase(it);
-        EV << "EnodeBStatsCollector::removeUeCollector - removing UE pfm stats for UE with id["<<id<<"]"<< endl;
+        EV << "BaseStationStatsCollector::removeUeCollector - removing UE pfm stats for UE with id["<<id<<"]"<< endl;
         packetFlowManager_->deleteUe(id);
     }
     else
@@ -262,7 +264,7 @@ void EnodeBStatsCollector::removeUeCollector(MacNodeId id)
     }
 }
 
-UeStatsCollector* EnodeBStatsCollector::getUeCollector(MacNodeId id)
+UeStatsCollector* BaseStationStatsCollector::getUeCollector(MacNodeId id)
 {
     std::map<MacNodeId, UeStatsCollector*>::iterator it = ueCollectors_.find(id);
     if(it != ueCollectors_.end())
@@ -275,53 +277,53 @@ UeStatsCollector* EnodeBStatsCollector::getUeCollector(MacNodeId id)
     }
 }
 
-UeStatsCollectorMap* EnodeBStatsCollector::getCollectorMap()
+UeStatsCollectorMap* BaseStationStatsCollector::getCollectorMap()
 {
     return &ueCollectors_;
 }
 
-bool EnodeBStatsCollector::hasUeCollector(MacNodeId id)
+bool BaseStationStatsCollector::hasUeCollector(MacNodeId id)
 {
     return (ueCollectors_.find(id) != ueCollectors_.end()) ? true : false;
 }
 
 
 
-void EnodeBStatsCollector::add_dl_total_prb_usage_cell()
+void BaseStationStatsCollector::add_dl_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(DL);
     EV << collectorType_ << "::add_dl_total_prb_usage_cell " << prb_usage << "%"<< endl;
     dl_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
-void EnodeBStatsCollector::add_ul_total_prb_usage_cell()
+void BaseStationStatsCollector::add_ul_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(UL);
     EV << collectorType_ << "::add_ul_total_prb_usage_cell " << prb_usage << "%"<< endl;
     ul_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
-void EnodeBStatsCollector::add_number_of_active_ue_dl_nongbr_cell()
+void BaseStationStatsCollector::add_number_of_active_ue_dl_nongbr_cell()
 {
     int users = mac_->getActiveUesNumber(DL);
     EV << collectorType_ << "::add_number_of_active_ue_dl_nongbr_cell " << users << endl;
     number_of_active_ue_dl_nongbr_cell.addValue(users);
 }
 
-void EnodeBStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
+void BaseStationStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
 {
     int users = mac_->getActiveUesNumber(UL);
     EV << collectorType_ << "::add_number_of_active_ue_ul_nongbr_cell " << users << endl;
     number_of_active_ue_ul_nongbr_cell.addValue(users);
 }
 
-void EnodeBStatsCollector::add_dl_nongbr_pdr_cell()
+void BaseStationStatsCollector::add_dl_nongbr_pdr_cell()
 {
     double discard = packetFlowManager_->getDiscardedPkt();
     dl_nongbr_pdr_cell.addValue((int)discard);
 }
 
-void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
+void BaseStationStatsCollector::add_ul_nongbr_pdr_cell()
 {
     double pdr = 0.0;
     DiscardedPkts pair = {0,0};
@@ -343,7 +345,7 @@ void EnodeBStatsCollector::add_ul_nongbr_pdr_cell()
 
 // for each user save stats
 
-void EnodeBStatsCollector::add_dl_nongbr_pdr_cell_perUser()
+void BaseStationStatsCollector::add_dl_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "add_dl_nongbr_pdr_cell_perUser()" << endl;;
     double discard;
@@ -354,7 +356,7 @@ void EnodeBStatsCollector::add_dl_nongbr_pdr_cell_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_ul_nongbr_pdr_cell_perUser()
+void BaseStationStatsCollector::add_ul_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "add_ul_nongbr_pdr_cell_perUser()" << endl;
     for(auto const &ue : ueCollectors_)
@@ -363,7 +365,7 @@ void EnodeBStatsCollector::add_ul_nongbr_pdr_cell_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_ul_nongbr_delay_perUser()
+void BaseStationStatsCollector::add_ul_nongbr_delay_perUser()
 {
     EV << collectorType_ << "add_ul_nongbr_delay_perUser()" << endl;
     for(auto const &ue : ueCollectors_)
@@ -372,7 +374,7 @@ void EnodeBStatsCollector::add_ul_nongbr_delay_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_dl_nongbr_delay_perUser()
+void BaseStationStatsCollector::add_dl_nongbr_delay_perUser()
 {
     EV << collectorType_ << "add_dl_nongbr_delay_perUser()" << endl;;
     double delay;
@@ -387,7 +389,7 @@ void EnodeBStatsCollector::add_dl_nongbr_delay_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
+void BaseStationStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
 {
     EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
@@ -399,7 +401,7 @@ void EnodeBStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
+void BaseStationStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser" << endl;
        unsigned int bytes;
@@ -411,7 +413,7 @@ void EnodeBStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
        }
 }
 
-void EnodeBStatsCollector::add_dl_nongbr_throughput_ue_perUser()
+void BaseStationStatsCollector::add_dl_nongbr_throughput_ue_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser" << endl;
     double throughput;
@@ -425,7 +427,7 @@ void EnodeBStatsCollector::add_dl_nongbr_throughput_ue_perUser()
     }
 }
 
-void EnodeBStatsCollector::add_ul_nongbr_throughput_ue_perUser()
+void BaseStationStatsCollector::add_ul_nongbr_throughput_ue_perUser()
 {
 
     EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser" << endl;
@@ -445,52 +447,52 @@ void EnodeBStatsCollector::add_ul_nongbr_throughput_ue_perUser()
  * Getters for RNI service module
  */
 
-int EnodeBStatsCollector::get_ul_nongbr_pdr_cell()
+int BaseStationStatsCollector::get_ul_nongbr_pdr_cell()
 {
     return ul_nongbr_pdr_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_dl_nongbr_pdr_cell()
+int BaseStationStatsCollector::get_dl_nongbr_pdr_cell()
 {
     return dl_nongbr_pdr_cell.getMean();
 }
 
 // since GBR rab has not been implemented nongbr = total
-int EnodeBStatsCollector::get_dl_total_prb_usage_cell() {
+int BaseStationStatsCollector::get_dl_total_prb_usage_cell() {
     return dl_total_prb_usage_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_ul_total_prb_usage_cell() {
+int BaseStationStatsCollector::get_ul_total_prb_usage_cell() {
     return ul_total_prb_usage_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_dl_nongbr_prb_usage_cell() {
+int BaseStationStatsCollector::get_dl_nongbr_prb_usage_cell() {
     return dl_total_prb_usage_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_ul_nongbr_prb_usage_cell() {
+int BaseStationStatsCollector::get_ul_nongbr_prb_usage_cell() {
     return ul_total_prb_usage_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_number_of_active_ue_dl_nongbr_cell(){
+int BaseStationStatsCollector::get_number_of_active_ue_dl_nongbr_cell(){
     return number_of_active_ue_dl_nongbr_cell.getMean();
 }
 
-int EnodeBStatsCollector::get_number_of_active_ue_ul_nongbr_cell(){
+int BaseStationStatsCollector::get_number_of_active_ue_ul_nongbr_cell(){
     return number_of_active_ue_ul_nongbr_cell.getMean();
 }
 
-const mec::Ecgi& EnodeBStatsCollector::getEcgi() const
+const mec::Ecgi& BaseStationStatsCollector::getEcgi() const
 {
     return ecgi_;
 }
 
-MacCellId EnodeBStatsCollector::getCellId()const
+MacCellId BaseStationStatsCollector::getCellId()const
 {
     return cellInfo_->getMacCellId();
 }
 
-void EnodeBStatsCollector::resetStats(MacNodeId nodeId)
+void BaseStationStatsCollector::resetStats(MacNodeId nodeId)
 {
     auto ue = ueCollectors_.find(nodeId);
     if(ue != ueCollectors_.end())

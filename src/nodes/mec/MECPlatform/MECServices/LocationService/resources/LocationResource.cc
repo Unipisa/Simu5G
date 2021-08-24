@@ -1,43 +1,55 @@
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
 
-#include "corenetwork/lteCellInfo/LteCellInfo.h"
+#include "common/cellInfo/CellInfo.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 
-#include "nodes/binder/LteBinder.h"
+#include "common/binder/Binder.h"
+
 LocationResource::LocationResource() {
     binder_ = nullptr;
 }
 
-LocationResource::LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs, LteBinder *binder) {
+LocationResource::LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs, Binder *binder) {
     binder_ = binder;
     baseUri_ = baseUri;
 	std::set<cModule*>::iterator it = eNodeBs.begin();
 	for(; it != eNodeBs.end() ; ++it){
-	    LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
-		eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+	    CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+		eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
 	}
 }
 
 void LocationResource::addEnodeB(std::set<cModule*>& eNodeBs) {
     std::set<cModule*>::iterator it = eNodeBs.begin();
         for(; it != eNodeBs.end() ; ++it){
-            LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>((*it)->getSubmodule("cellInfo"));
-            eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+            CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+            eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
             EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
         }
 }
 
 void LocationResource::addEnodeB(cModule* eNodeB) {
 
-    LteCellInfo * cellInfo = check_and_cast<LteCellInfo *>(eNodeB->getSubmodule("cellInfo"));
-    eNodeBs_.insert(std::pair<MacCellId, LteCellInfo *>(cellInfo->getMacCellId(), cellInfo));
+    CellInfo * cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
+    eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     EV << "LocationResource::addEnodeB with cellId: "<< cellInfo->getMacCellId() << endl;
     EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
 
 }
 
-void LocationResource::addBinder(LteBinder *binder)
+void LocationResource::addBinder(Binder *binder)
 {
     binder_= binder;
 }
@@ -76,7 +88,7 @@ User LocationResource::getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const
 
 
 
-nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, LteCellInfo *>::const_iterator it) const
+nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, CellInfo *>::const_iterator it) const
 {
     nlohmann::ordered_json ueArray;
     EV << "LocationResource::toJson() - gnb" << it->first << endl;
@@ -113,7 +125,7 @@ nlohmann::ordered_json LocationResource::toJson() const {
 	nlohmann::ordered_json val ;
 	nlohmann::ordered_json userList;
 	nlohmann::ordered_json ueArray;
-	std::map<MacCellId, LteCellInfo *>::const_iterator it = eNodeBs_.begin();
+	std::map<MacCellId, CellInfo *>::const_iterator it = eNodeBs_.begin();
 
 	for(; it != eNodeBs_.end() ; ++it){
 	    ueArray.push_back(getUserListPerCell(it));
@@ -137,7 +149,7 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
 	nlohmann::ordered_json ueArray;
 
 	std::vector<inet::Ipv4Address>::const_iterator uit = uesID.begin();
-	std::map<MacCellId, LteCellInfo*>::const_iterator eit;
+	std::map<MacCellId, CellInfo*>::const_iterator eit;
 	std::map<MacNodeId, inet::Coord>::const_iterator pit;
 	const std::map<MacNodeId, inet::Coord>* uePositionList;
 	bool found = false;
@@ -181,7 +193,7 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
     nlohmann::ordered_json ueArray;
 
     std::vector<MacCellId>::const_iterator cid =  cellsID.begin();
-    std::map<MacCellId, LteCellInfo *>::const_iterator it;
+    std::map<MacCellId, CellInfo *>::const_iterator it;
     const std::map<MacNodeId, inet::Coord>* uePositionList;
 
     for(; cid != cellsID.end() ; ++cid){

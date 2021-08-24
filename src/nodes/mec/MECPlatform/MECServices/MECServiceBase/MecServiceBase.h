@@ -1,9 +1,11 @@
 //
-//                           SimuLTE
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -25,7 +27,7 @@
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/MecCommon.h"
 
-#include "nodes/binder/LteBinder.h"
+#include "common/binder/Binder.h"
 
 /**
  *
@@ -38,6 +40,10 @@
  * Each connection is managed by the SocketManager object that implements the TcpSocket::CallbackInterface
  * It must be subclassed and only the methods relative to the requests management (e.g handleGETrequest)
  * have to be implemented.
+ *
+ * Note:
+ * currently subscription mode is implemented using the same socket the client used to create the subscription (i.e. the POST request).
+ * A more elastic solution, i.e. usage of the endpoint specified in the POST request,  is planned to be implemented soon.
  *
  */
 
@@ -66,7 +72,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         typedef std::set<SocketManager *> ThreadSet;
         ThreadSet threadSet;
         std::string host_;
-        LteBinder* binder_;
+        Binder* binder_;
         omnetpp::cModule* meHost_;
 
         MecPlatformManager* mecPlatformManager_;

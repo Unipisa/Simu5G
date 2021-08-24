@@ -1,15 +1,19 @@
-/*
- * CircleNotificationSubscription.cc
- *
- *  Created on: Dec 27, 2020
- *      Author: linofex
- */
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
 #include "common/LteCommon.h"
-#include "corenetwork/lteCellInfo/LteCellInfo.h"
-#include "nodes/binder/LteBinder.h"
+#include "common/cellInfo/CellInfo.h"
+#include "common/binder/Binder.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
 #include "nodes/mec/MECPlatform/EventNotification/CircleNotificationEvent.h"
 using namespace omnetpp;
@@ -377,13 +381,12 @@ EventNotification* CircleNotificationSubscription::handleSubscription()
 
 bool CircleNotificationSubscription::findUe(MacNodeId nodeId)
 {
-    std::map<MacCellId, LteCellInfo*>::const_iterator  eit = eNodeBs_.begin();
+    std::map<MacCellId, CellInfo*>::const_iterator  eit = eNodeBs_.begin();
     std::map<MacNodeId, inet::Coord>::const_iterator pit;
     const std::map<MacNodeId, inet::Coord>* uePositionList;
     for(; eit != eNodeBs_.end() ; ++eit){
-       uePositionList = eit->second->getUePositionList();
-       pit = uePositionList->find(nodeId);
-       if(pit != uePositionList->end())
+        inet::Coord uePos = eit->second->getUePosition(nodeId);
+       if(uePos != inet::Coord::ZERO)
        {
            return true;
        }

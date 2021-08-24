@@ -1,9 +1,13 @@
-/*
- * CircleNotificationSubscription.h
- *
- *  Created on: Dec 27, 2020
- *      Author: linofex
- */
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
 
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
@@ -46,7 +50,7 @@ class CircleNotificationSubscription : public SubscriptionBase
 
     protected:
 
-        LteBinder* binder; //used to retrieve NodeId - Ipv4Address mapping
+        Binder* binder; //used to retrieve NodeId - Ipv4Address mapping
         omnetpp::simtime_t lastNotification;
         bool firstNotificationSent;
 

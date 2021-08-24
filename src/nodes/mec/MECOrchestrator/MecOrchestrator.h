@@ -1,9 +1,11 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -13,7 +15,7 @@
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
-#include "nodes/binder/LteBinder.h"           //to handle Car dynamically leaving the Network
+#include "common/binder/Binder.h"           //to handle Car dynamically leaving the Network
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -71,7 +73,7 @@ class MecOrchestrator : public cSimpleModule
 {
     //------------------------------------
     //Binder module
-    LteBinder* binder_;
+    Binder* binder_;
     //------------------------------------
 
     //parent modules
