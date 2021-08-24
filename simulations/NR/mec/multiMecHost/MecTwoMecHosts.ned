@@ -7,24 +7,24 @@
 // and cannot be removed from it.
 //
 
-package lte.simulations.NR.mec.multiMecHost;
+package simu5g.simulations.NR.mec.multiMecHost;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
-import lte.world.radio.LteChannelControl;
-import lte.nodes.binder.LteBinder;
-import lte.common.carrierAggregation.CarrierAggregation;
-import lte.nodes.Upf;
-import lte.nodes.NR.gNodeB;
-import lte.nodes.NR.NRUe;
-import lte.nodes.mec.MECHost;
+import simu5g.world.radio.LteChannelControl;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.Upf;
+import simu5g.nodes.NR.gNodeB;
+import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.mec.MECHost;
 
 import inet.node.inet.Router;
 
 
-import lte.nodes.mec.MECOrchestrator.MecOrchestrator;
-import lte.nodes.mec.LCMProxy.LCMProxy;
+import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
+import simu5g.nodes.mec.LCMProxy.LCMProxy;
 
 
 
@@ -50,7 +50,7 @@ network MecTwoMecHosts
         channelControl: LteChannelControl {
             @display("p=690,24.84;is=s");
         }
-        binder: LteBinder {
+        binder: Binder {
             @display("p=690,264.96;is=s");
         }
         carrierAggregation: CarrierAggregation {
