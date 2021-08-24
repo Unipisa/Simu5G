@@ -160,12 +160,6 @@ class CellInfo : public omnetpp::cSimpleModule
     {
         return cellId_;
     }
-
-    const std::map<MacNodeId, inet::Coord>* getUePositionList()
-    {
-        return &uePosition;
-    }
-
     int getRbyDl()
     {
         return rbyDl_;
@@ -248,8 +242,17 @@ class CellInfo : public omnetpp::cSimpleModule
 
     inet::Coord getUePosition(MacNodeId id)
     {
-        return uePosition[id];
+        if(uePosition.find(id) != uePosition.end())
+            return uePosition[id];
+        else
+            return inet::Coord::ZERO;
     }
+
+    const std::map<MacNodeId, inet::Coord>* getUePositionList()
+    {
+        return &uePosition;
+    }
+
     void setUePosition(MacNodeId id, inet::Coord c)
     {
         uePosition[id] = c;

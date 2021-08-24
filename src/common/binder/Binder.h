@@ -136,7 +136,7 @@ class Binder : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
-    virtual void finish();
+    virtual void finish() override;
 
   public:
     Binder()
@@ -379,6 +379,27 @@ class Binder : public omnetpp::cSimpleModule
 
 
     /**
+    * @author Alessandro Noferi
+    *
+    * Returns the IP address for the given MacNodeId
+    *
+    * @param MacNodeId of the node
+    * @return IP address corresponding to the MacNodeId
+    *
+    */
+   inet::Ipv4Address getIPv4Address(MacNodeId nodeId)
+   {
+       for (const auto& kv : macNodeIdToIPAddress_) {
+           if(kv.second == nodeId)
+               return kv.first;
+       }
+       for (const auto& kv : nrMacNodeIdToIPAddress_) {
+           if(kv.second == nodeId)
+               return kv.first;
+       }
+       return inet::Ipv4Address::UNSPECIFIED_ADDRESS;
+   }
+    /**
      * Returns the X2NodeId for the given IP address
      *
      * @param address IP address
@@ -569,13 +590,13 @@ class Binder : public omnetpp::cSimpleModule
     double computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
     double computeRequestedRbsFromSinr(double sinr, double reqLoad);
 
-    /**
+    /*
      * @author Alessandro Noferi.
      *
      * UeStatsCollector management
      */
 
-    /* this method adds the UeStastCollector reference to the eNodeBStatsCollector
+    /* this method adds the UeStastCollector reference to the baseStationStatsCollector
      * structure.
      * @params:
      *  ue: MacNodeId of the ue
@@ -584,7 +605,7 @@ class Binder : public omnetpp::cSimpleModule
      */
     void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector, MacCellId cell);
 
-    /* this method moves the UeStastCollector reference between the eNB's eNodeBStatsCollector
+    /* this method moves the UeStastCollector reference between the eNB/gNB's baseStationStatsCollector
      * structure.
      * @params:
      *  ue: MacNodeId of the ue
@@ -593,7 +614,7 @@ class Binder : public omnetpp::cSimpleModule
      */
     void moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell);
 
-    LteNodeType getBaseStationTypeById(MacNodeId);
+    RanNodeType getBaseStationTypeById(MacNodeId);
 
 
 };
