@@ -224,7 +224,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
     UmRxEntities rxEntities_;
 
     /**
-     * @author Alessandro
+     * @author Alessandro Noferi
      * Holds the throughput stats for each UE
      * identified by the srcId of the
      * FlowControlInfo in each entity

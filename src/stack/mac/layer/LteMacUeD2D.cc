@@ -342,32 +342,6 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             MacNodeId destId = pit->first.first;
             Codeword cw = pit->first.second;
 
-            // Check if the HarqTx buffer already exists for the destId
-            // Get a reference for the destId TXBuffer
-            LteHarqBufferTx* txBuf;
-            HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
-            if ( hit != harqTxBuffers.end() )
-            {
-                // The tx buffer already exists
-                txBuf = hit->second;
-            }
-            else
-            {
-                // The tx buffer does not exist yet for this mac node id, create one
-                LteHarqBufferTx* hb;
-                // FIXME: hb is never deleted
-                auto info = pit->second->getTag<UserControlInfo>();
-
-                if (info->getDirection() == UL) {
-                    hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
-                }
-                else { // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
-                }
-                harqTxBuffers[destId] = hb;
-                txBuf = hb;
-            }
-
             // search for an empty unit within current harq process
             UnitList txList = txBuf->getEmptyUnits(currentHarq_);
             EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
