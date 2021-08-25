@@ -1,3 +1,7 @@
+# Author: Alessandro Noferi
+#
+# This script has been tested with Python 3.6.9
+
 import socket
 import time
 from struct import * 

@@ -1,9 +1,10 @@
+# Author: Alessandro Noferi
+#
+# This script has been tested with Python 3.6.9
+
 import socket
 import time
 from struct import * 
-
-code = 1
-length = 23
 
 devAppAddressPort   = ("192.168.4.1", 4500)
 bufferSize  = 50
