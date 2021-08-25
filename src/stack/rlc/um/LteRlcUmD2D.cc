@@ -29,6 +29,7 @@ UmTxEntity* LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 
     // Find TXBuffer for this CID
     MacCid cid = idToMacCid(nodeId, lcid);
+    EV << "LteRlcUmD2D::getTxBuffer for node ["<< nodeId<<"]" << " with lcid ["<< lcid<<"]"<< " and cid ["<<cid<<"]"<< endl;
     UmTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end())
     {
@@ -150,7 +151,7 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
 
     RanNodeType nodeType;
     std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
-    if (strcmp(nodeTypePar.c_str(), "ENODEB") == 0)
+    if (strcmp(nodeTypePar.c_str(), "ENODEB") == 0 || strcmp(nodeTypePar.c_str(), "GNODEB") == 0)
         nodeType = ENODEB;
     else if (strcmp(nodeTypePar.c_str(), "GNODEB") == 0)
         nodeType = GNODEB;

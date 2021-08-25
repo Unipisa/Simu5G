@@ -15,6 +15,7 @@
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"           //to handle Car dynamically leaving the Network
+#include "inet/networklayer/common/InterfaceTable.h"
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -22,8 +23,10 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 //MEAppPacket
-#include "nodes/mec/MEPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MEPlatform/MEAppPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
+
+#include "nodes/mec/utils/MecCommon.h"
 
 //###########################################################################
 //data structures and values
@@ -38,7 +41,9 @@ struct meAppMapEntry
     int meAppGateIndex;         //map key
     cModule* meAppModule;       //for ME App termination
     inet::L3Address ueAddress;  //for downstream using UDP Socket
-    int ueAppID;               //for identifying the UEApp
+    int uePort;
+    int ueAppID;                //for identifying the UEApp
+    int meAppPort;              //socket port of the meApp
 };
 //###########################################################################
 
@@ -54,8 +59,20 @@ struct meAppMapEntry
  *              e) forwarding downstream INFO_MEAPP packets
  */
 
+
+class CreateAppMessage;
+class DeleteAppMessage;
+
+typedef struct
+{
+    std::string instanceId;
+    SockAddr endPoint;
+} MecAppInstanceInfo;
+
 class VirtualisationManager : public cSimpleModule
 {
+    friend class MecOrchestrator; // Friend Class
+
     //------------------------------------
     //SIMULTE Binder module
     Binder* binder_;
@@ -72,10 +89,17 @@ class VirtualisationManager : public cSimpleModule
     cModule* virtualisationInfr;
     //------------------------------------
     const char* interfaceTableModule;
+    inet::InterfaceTable* interfaceTable;
+
+    inet::Ipv4Address mecAppLocalAddress_;
+    inet::Ipv4Address mecAppRemoteAddress_;
+
     //------------------------------------
     //parameters to control the number of ME APPs instantiated and to set gate sizes
     int maxMEApps;
     int currentMEApps;
+
+    int meAppPortCounter; // counter to assign socket ports to MeApps
     //------------------------------------
     //set of ME Services loaded into the ME Host & Platform
     int numServices;
@@ -137,10 +161,10 @@ class VirtualisationManager : public cSimpleModule
         void stopMEApp(inet::Packet*);
 
         // instancing the requested MEApp (called by handleResource)
-        void instantiateMEApp(cMessage*);
+        MecAppInstanceInfo instantiateMEApp(CreateAppMessage*);
 
         // terminating the correspondent MEApp (called by handleResource)
-        void terminateMEApp(cMessage*);
+        bool terminateMEApp(DeleteAppMessage*);
 
         // sending ACK_START_MEAPP or ACK_STOP_MEAPP (called by instantiateMEApp or terminateMEApp)
         void ackMEAppPacket(inet::Packet*, const char*);

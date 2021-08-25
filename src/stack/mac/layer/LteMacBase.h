@@ -13,12 +13,14 @@
 #define _LTE_LTEMACBASE_H_
 
 #include "common/LteCommon.h"
+#include "common/LteControlInfo.h"
 
 class LteHarqBufferTx;
 class LteHarqBufferRx;
 class Binder;
 class FlowControlInfo;
 class LteMacBuffer;
+class PacketFlowManagerBase;
 
 /**
  * Map associating a nodeId with the corresponding TX H-ARQ buffer.
@@ -139,6 +141,10 @@ class LteMacBase : public omnetpp::cSimpleModule
 
     // reference to the phy layer
     LtePhyBase* phy_;
+
+    // @author Alessandro Noferi
+    // reference to the packetFlowManager
+    PacketFlowManagerBase * packetFlowManager_;
 
     // support to different numerologies
     typedef struct {
@@ -309,6 +315,17 @@ class LteMacBase : public omnetpp::cSimpleModule
 
     void recordHarqErrorRate(unsigned int sample, Direction dir);
     double getHarqErrorRate(Direction dir);
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * methods called by mac layer and the HarqBuffers to notify
+     * MAC pdus events to packetFlowManager
+     */
+    virtual void insertMacPdu(const inet::Packet *macPdu);
+    virtual void harqAckToFlowManager(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu);
+    virtual void discardMacPdu(const inet::Packet *macPdu);
+    virtual void discardRlcPdu(inet::IntrusivePtr<const UserControlInfo> lteInfo, unsigned int rlcSno);
 
   protected:
 

@@ -34,20 +34,39 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
 
     //mec
-    if(getParentModule()->hasPar("meHost")){
+       if(getParentModule()->hasPar("mecHost")){
 
-        meHost = getParentModule()->par("meHost").stdstringValue();
-        if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
-        {
-            std::stringstream meHostName;
-            meHostName << meHost.c_str() << ".virtualisationInfrastructure";
-            meHost = meHostName.str();
-            meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
+           meHost = getParentModule()->par("mecHost").stringValue();
+           if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
+           {
+               /*
+                * @author Alessandro Noferi
+                *
+                */
+               //begin
+               std::string extAddress = getAncestorPar("extMeAppsAddress").stringValue();
+               if(strcmp(extAddress.c_str(), ""))
+               {
+                   std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();
+                   if(extAdd.size() != 2){
+                       throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be like address/mask");
+                   }
+                   meAppsExtAddress_ = inet::L3AddressResolver().resolve(extAdd[0].c_str());
+                   meAppsExtAddressMask_ = atoi(extAdd[1].c_str());
+                   EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str()<<"/"<< meAppsExtAddressMask_<< endl;
+               }
+               //end
 
-            EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
-        }
-    }
-    //end mec
+               std::stringstream meHostName;
+               meHostName << meHost.c_str() << ".virtualisationInfrastructure";
+               meHost = meHostName.str();
+               meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
+
+               EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
+           }
+       }
+
+       //end mec
 
     // register service processing IP-packets on the LTE Uu Link
     auto gateIn = gate("internetFilterGateIn");
@@ -105,7 +124,7 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     }
     else
     {
-
+        
         // add control info to the normal ip datagram. This info will be read by the GTP-U application
         auto tftInfo = pkt->addTag<TftControlInfo>();
         tftInfo->setTft(tftId);
@@ -125,6 +144,13 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     {
         // the destination is the ME Host
         EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << meHost << endl;
+        return -3;
+    }
+    // emulation mode
+    else if (isBaseStation(ownerType_) && !meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
+    {
+        // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
+        EV << "TrafficFlowFilter::findTrafficFlow - [emulation] returning flowId (-3) for tunneling to " << meHost << endl;
         return -3;
     }
     else if(ownerType_ == GTPENDPOINT)

@@ -141,7 +141,6 @@ void LteHarqBufferTx::markSelected(UnitList unitIds, unsigned char availableTbs)
 
 void LteHarqBufferTx::insertPdu(unsigned char acid, Codeword cw, Packet *pkt)
 {
-
     auto pdu = pkt->peekAtFront<LteMacPdu>();
 
     if (selectedAcid_ == HARQ_NONE)
@@ -163,6 +162,8 @@ void LteHarqBufferTx::insertPdu(unsigned char acid, Codeword cw, Packet *pkt)
     EV << "H-ARQ TX: new pdu (id " << pdu->getId() << " ) inserted into process " << (int)acid << " "
     "codeword id: " << (int)cw << " "
     "for node with id " << tag->getDestId() << endl;
+
+    macOwner_->insertMacPdu(pkt);
 }
 
 UnitList
@@ -212,7 +213,6 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
     EV << "LteHarqBufferTx::receiveHarqFeedback - start" << endl;
 
     auto fbpkt = pkt->peekAtFront<LteHarqFeedback>();
-
     bool result = fbpkt->getResult();
     HarqAcknowledgment harqResult = result ? HARQACK : HARQNACK;
     Codeword cw = fbpkt->getCw();
@@ -240,9 +240,25 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
         throw cRuntimeError("H-ARQ TX: fb is not for the pdu in this unit, maybe the addressed one was dropped");
     }
 
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * place this piece of code before:
+     * (*processes_)[acid]->pduFeedback(harqResult, cw);
+     * since it delete the pdu
+     */
+    if(harqResult  == HARQACK)
+    {
+        auto macPdu = (*processes_)[acid]->getPdu(cw)->peekAtFront<LteMacPdu>();
+        auto userInfo = pkt->getTag<UserControlInfo>();
+        macOwner_->harqAckToFlowManager(userInfo, macPdu);
+    }
+
     bool reset = (*processes_)[acid]->pduFeedback(harqResult, cw);
     if (reset)
         numEmptyProc_++;
+
 
     // debug output
     const char *ack = result ? "ACK" : "NACK";
@@ -357,6 +373,23 @@ LteHarqBufferTx::getSelectedProcess()
 {
     return getProcess(selectedAcid_);
 }
+
+
+// @author Alessandro noferi
+
+bool LteHarqBufferTx::isHarqBufferActive() const {
+    std::vector<LteHarqProcessTx *>::const_iterator it =  processes_->begin();
+    std::vector<LteHarqProcessTx *>::const_iterator end = processes_->end();
+    for(; it != end; ++it){
+        if((*it)->isHarqProcessActive()){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 
 LteHarqBufferTx::~LteHarqBufferTx()
 {

@@ -32,6 +32,11 @@
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
+#include "stack/rlc/um/LteRlcUm.h"
+#include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
+
 Define_Module(LteMacEnb);
 
 using namespace omnetpp;
@@ -584,6 +589,8 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList>* scheduleList)
 
             grant->setGrantedBlocks(map);
             pkt->insertAtFront(grant);
+            if(packetFlowManager_ != nullptr)
+                packetFlowManager_->grantSent(nodeId, grant->getGrandId());
             // send grant to PHY layer
             sendLowerPackets(pkt);
         }
@@ -901,6 +908,19 @@ bool LteMacEnb::bufferizePacket(cPacket* pktAux)
                 emit(macBufferOverflowDl_,sample);
             else
                 emit(macBufferOverflowUl_,sample);
+
+
+            EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
+            // @author Alessandro Noferi
+            // discard the RLC
+            if(packetFlowManager_ != nullptr)
+            {
+                unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+                packetFlowManager_->discardRlcPdu(lteInfo->getLcid(),rlcSno);
+            }
+
+            // TODO add delete pkt (memory leak?)
+
         }
 
         EV << "LteMacBuffers : Using old buffer on node: " <<
@@ -1158,3 +1178,127 @@ ConflictGraph* LteMacEnb::getConflictGraph()
 {
     return nullptr;
 }
+
+
+double LteMacEnb::getUtilization(Direction dir)
+{
+    if(dir == DL){
+        return enbSchedulerDl_->getUtilization()*100;
+    }
+    else if(dir == UL)
+    {
+        return enbSchedulerUl_->getUtilization()*100;
+    }
+    else
+    {
+        throw cRuntimeError("LteMacEnb::getSchedDiscipline(): unrecognized direction %d", (int) dir);
+    }
+}
+
+int LteMacEnb::getActiveUesNumber(Direction dir)
+{
+    std::set<MacNodeId> activeUeSet;
+
+    /*
+     * According to ETSI 136 314:
+     * Active UEs in DL are users whre there is
+     * buffered data in MAC RLC PDCP, plus data in HARQ
+     * transmissions not yet terminated.
+     */
+    if(dir == DL){
+
+        LteMacBuffers::const_iterator it = mbuf_.begin();
+        LteMacBuffers::const_iterator end   =  mbuf_.end();
+
+        // from macCid to NodeId
+        for (; it != end ; ++it){
+            if(it->second->getQueueLength() != 0)
+                activeUeSet.insert(MacCidToNodeId(it->first)); // active users in MAC
+        }
+
+        std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
+        std::map<double, HarqTxBuffers>::const_iterator it1 = harqBuffers->begin();
+        std::map<double, HarqTxBuffers>::const_iterator end1 = harqBuffers->end();
+
+        for(; it1 != end1 ; ++it1){
+            HarqTxBuffers harqBuffer = it1->second;
+            HarqTxBuffers::const_iterator itHarq = harqBuffer.begin();
+            HarqTxBuffers::const_iterator endHarq = harqBuffer.end();
+            for(; itHarq != endHarq ; ++itHarq){
+                if(itHarq->second->isHarqBufferActive()){
+                    activeUeSet.insert(itHarq->first); // active users in HARQ
+               }
+           }
+        }
+
+        // every time a RLC SDU enters the layer, a newPktData is sent to
+        // mac to inform the presence of data in RLC.
+        LteMacBufferMap::const_iterator vit = macBuffers_.begin();
+        LteMacBufferMap::const_iterator eit = macBuffers_.end();
+        for(; vit != eit ; ++vit)
+        {
+            if(!vit->second->isEmpty())
+                activeUeSet.insert(MacCidToNodeId(vit->first)); // active users in RLC
+        }
+    }
+    else if (dir == UL)
+    {
+        // extract pdus from all harqrxbuffers and pass them to unmaker
+        auto mit = harqRxBuffers_.begin();
+        auto met = harqRxBuffers_.end();
+        for (; mit != met; mit++)
+        {
+            auto hit = mit->second.begin();
+            auto het = mit->second.end();
+            for (; hit != het; hit++)
+            {
+                if(hit->second->isHarqBufferActive()){
+                    activeUeSet.insert(hit->first); // active users in HARQ
+                }
+
+            }
+        }
+
+//
+        // check the presence of um
+        LteRlcUm *rlcUm;
+        cModule *rlc = getParentModule()->getSubmodule("rlc");
+        if(rlc->findSubmodule("um") != -1)
+        {
+            rlcUm = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("rlc")->getSubmodule("um"));
+            std::set<MacNodeId> activeRlcUe;
+            rlcUm->activeUeUL(&activeRlcUe);
+            std::set<MacNodeId>::iterator rit =  activeRlcUe.begin();
+            std::set<MacNodeId>::iterator endrit =  activeRlcUe.end();
+            for(; rit != endrit ; ++rit)
+            {
+                activeUeSet.insert(*rit); // active users in RLC
+            }
+        }
+
+        /*
+         * if the pdcp layer is NRPdcpRrc and isDualConnectivityEnabled
+         * also pdpd layer can have sdu buffered
+         */
+
+        NRPdcpRrcEnb *nrPdpc;
+        cModule *pdcp = getParentModule()->getSubmodule("pdcpRrc");
+        if(strcmp(pdcp->getClassName(), "NRPdcpRrcEnb") == 0)
+        {
+            nrPdpc = check_and_cast<NRPdcpRrcEnb*>(pdcp);
+            std::set<MacNodeId> activePdcpUe;
+            nrPdpc->activeUeUL(&activePdcpUe);
+            for(auto ue: activePdcpUe)
+            {
+                activeUeSet.insert(ue); // active users in RLC
+            }
+        }
+    }
+
+    else {
+        throw cRuntimeError("LteMacEnb::getSchedDiscipline(): unrecognized direction %d", (int) dir);
+    }
+    return activeUeSet.size();
+
+}
+

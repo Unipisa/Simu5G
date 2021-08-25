@@ -1,0 +1,34 @@
+ifconfig:
+
+# interface to the router
+name: ppp1
+    inet_addr: 10.0.3.2
+    Mask: 255.255.255.0
+    MTU: 1500
+    POINTTOPOINT MULTICAST
+
+# interface to the upf
+name: ppp0
+    inet_addr: 10.0.2.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    POINTTOPOINT MULTICAST
+ifconfigend.
+
+route:
+
+#Destination     Gateway          Genmask          Flags  Metric  Iface
+10.0.1.0         *                255.255.255.0    H      0       ppp0
+10.0.2.0         *                255.255.255.0    H      0       ppp0
+
+10.0.3.0         *                255.255.255.0    H      0       ppp1
+10.0.4.0         *                255.255.255.0    H      0       ppp1
+10.0.5.0         *                255.255.255.0    H      0       ppp1
+10.0.6.0         *                255.255.255.0    H      0       ppp1
+
+192.168.2.0      *                255.255.255.0    H      0       ppp1
+192.168.3.0      *                255.255.255.0    H      0       ppp0
+0.0.0.0          *                0.0.0.0          G      0       ppp0
+
+routeend.
+

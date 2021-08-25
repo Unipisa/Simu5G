@@ -11,6 +11,9 @@
 
 #include "nodes/mec/VirtualisationInfrastructure/VirtualisationManager.h"
 
+#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
+#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+
 Define_Module(VirtualisationManager);
 
 VirtualisationManager::VirtualisationManager()
@@ -53,11 +56,11 @@ void VirtualisationManager::initialize(int stage)
         virtualisationInfr->setGateSize("meAppOut", maxMEApps);
         virtualisationInfr->setGateSize("meAppIn", maxMEApps);
         //VirtualisationInfrastructure internal gate connections with VirtualisationManager
-        for(int index = 0; index < maxMEApps; index++)
-        {
-            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
-            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
-        }
+//        for(int index = 0; index < maxMEApps; index++)
+//        {
+//            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
+//            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
+//        }
         mePlatform = meHost->getSubmodule("mePlatform");
         //setting  gate sizes for MEPlatform
         if(mePlatform->gateSize("meAppOut") == 0 || mePlatform->gateSize("meAppIn") == 0)
@@ -84,6 +87,17 @@ void VirtualisationManager::initialize(int stage)
         freeGates.push_back(i);
     //------------------------------------
     interfaceTableModule = par("interfaceTableModule").stringValue();
+
+    interfaceTable = check_and_cast<inet::InterfaceTable*>(getParentModule()->getSubmodule("interfaceTable"));
+
+    EV << "interfaceNums: " << interfaceTable->getNumInterfaces() << endl;
+    EV << "interfaceNames: " << interfaceTable->getBiggestInterfaceId() << endl;
+
+    mecAppLocalAddress_ = interfaceTable->getInterfaceById(101)->getIpv4Address();  //TODO change search byId!!
+    mecAppRemoteAddress_ = interfaceTable->getInterfaceById(100)->getIpv4Address(); //TODO change search byId!!
+    EV << "mecAppLocalAddress: " << mecAppLocalAddress_.str() << endl;
+
+    meAppPortCounter = 4001;
 }
 
 void VirtualisationManager::handleMessage(cMessage *msg)
@@ -131,13 +145,13 @@ void VirtualisationManager::handleResource(cMessage* msg){
     else if(!strcmp(meAppPkt->getType(), START_MEAPP))
     {
         EV << "VirtualisationManager::handleResource - calling instantiateMEApp" << endl;
-        instantiateMEApp(msg);
+     //   instantiateMEApp(msg);
     }
     //handling MEAPP termination
     else if(!strcmp(meAppPkt->getType(), STOP_MEAPP))
     {
         EV << "VirtualisationManager::handleResource - calling terminateMEApp" << endl;
-        terminateMEApp(msg);
+       // terminateMEApp(msg);
     }
 }
 
@@ -160,11 +174,16 @@ void VirtualisationManager::handleMEAppPacket(inet::Packet* packet){
 
     /* Handling INFO_UEAPP */
     else if(!strcmp(pkt->getType(), INFO_UEAPP))
-        upstreamToMEApp(packet);
-
+    {
+        throw cRuntimeError("VirtualisationManager::handleMEAppPacket - Virtualization Infrastructure only manages START and STOP meApp messages!");
+        delete packet;
+    }
     /* Handling INFO_MEAPP */
     else if(!strcmp(pkt->getType(), INFO_MEAPP))
-        downstreamToUEApp(packet);
+    {
+        throw cRuntimeError("VirtualisationManager::handleMEAppPacket - Virtualization Infrastructure only manages START and STOP meApp messages!");
+        delete packet;
+    }
 
     /* Handling STOP_MEAPP */
     else if(!strcmp(pkt->getType(), STOP_MEAPP))
@@ -312,20 +331,19 @@ void VirtualisationManager::stopMEApp(inet::Packet* packet){
     else EV << "VirtualisationManager::stopMEApp - \tWARNING: " << pkt->getMEModuleName() << " INSTANCE NOT FOUND!" << endl;
 }
 
-void VirtualisationManager::instantiateMEApp(cMessage* msg)
+MecAppInstanceInfo VirtualisationManager::instantiateMEApp(CreateAppMessage* msg)
 {
 
     EV << "VirtualisationManager::instantiateMEApp - processing..." << endl;
 
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto pkt = packet->peekAtFront<MEAppPacket>();
+    int serviceIndex = findService(msg->getRequiredService());
+    char* sourceAddress = (char*)msg->getSourceAddress();
+    char* meModuleName = (char*)msg->getMEModuleName();
 
-    int serviceIndex = findService(pkt->getRequiredService());
-    char* sourceAddress = (char*)pkt->getSourceAddress();
-    char* meModuleName = (char*)pkt->getMEModuleName();
+    int ueAppPort  = msg->getSourcePort();
 
     //retrieve UE App ID
-    int ueAppID = pkt->getUeAppID();
+    int ueAppID = msg->getUeAppID();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
     if(currentMEApps < maxMEApps &&  ueAppIdToMeAppMapKey.find(ueAppID) == ueAppIdToMeAppMapKey.end())
@@ -345,40 +363,79 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         EV << "VirtualisationManager::instantiateMEApp - UEAppL3Address: " << ueAppAddress.str() << endl;
 
         // creating MEApp module instance
-        cModuleType *moduleType = cModuleType::get(pkt->getMEModuleType());         //MEAPP module package (i.e. path!)
+        cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
         cModule *module = moduleType->create(meModuleName, meHost);       //MEAPP module-name & its Parent Module
         std::stringstream appName;
         appName << meModuleName << "[" <<  sourceAddress << "]";
         module->setName(appName.str().c_str());
-
+        EV << "VirtualisationManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
         //creating the meAppMap map entry
         meAppMap[key].meAppGateIndex = index;
         meAppMap[key].meAppModule = module;
         meAppMap[key].ueAddress = ueAppAddress;
+        meAppMap[key].uePort = ueAppPort;
         meAppMap[key].ueAppID = ueAppID;
+        meAppMap[key].meAppPort = meAppPortCounter;
 
         //displaying ME App dynamically created (after 70 they will overlap..)
         std::stringstream display;
         display << "p=" << (80 + ((index%5)*200)%1000) << "," << (100 + (50*(index/5)%350)) << ";is=vs";
         module->setDisplayString(display.str().c_str());
 
-        //initialize IMEApp Parameters
-        module->par("ueSimbolicAddress") = sourceAddress;
-        module->par("meHostSimbolicAddress") = pkt->getDestinationAddress();
-        module->par("interfaceTableModule") = interfaceTableModule;
 
+        //initialize IMEApp Parameters
+        module->par("localAddress") = mecAppLocalAddress_.str().c_str(); //get address of the infrastructure
+        module->par("localPort") = meAppPortCounter;
+        module->par("ueSimbolicAddress") = sourceAddress;
+        module->par("uePort") = ueAppPort;
+
+        module->par("requiredRam") = msg->getRequiredRam();
+        module->par("requiredDisk") = msg->getRequiredDisk();
+        module->par("requiredCpu") = msg->getRequiredCpu();
+
+        MecAppInstanceInfo instanceInfo;
+        instanceInfo.instanceId = appName.str();
+
+        instanceInfo.endPoint.addr = mecAppRemoteAddress_;
+        instanceInfo.endPoint.port = meAppPortCounter;
+        EV << "VirtualisationManager::instantiateMEApp port"<< instanceInfo.endPoint.port << endl;
+
+        meAppPortCounter++;
+
+
+        module->par("interfaceTableModule") = interfaceTableModule;
+        // add meAppPortCpounter
         module->finalizeParameters();
 
         EV << "VirtualisationManager::instantiateMEApp - UEAppSimbolicAddress: " << sourceAddress << endl;
 
         //connecting VirtualisationInfrastructure gates to the MEApp gates
-        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("virtualisationInfrastructureIn"));
-        module->gate("virtualisationInfrastructureOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
 
-        // if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
+        // add gates to the 'at' layer and connect them to the virtualisationInfr gates
+        cModule *at = virtualisationInfr->getSubmodule("at");
+        if(at == nullptr)
+            throw cRuntimeError("at module, i.e. message dispatcher for SAP between application and transport layer non found");
+        cGate* newAtInGate = at->getOrCreateFirstUnconnectedGate("in", 0, false, true);
+        cGate* newAtOutGate = at->getOrCreateFirstUnconnectedGate("out", 0, false, true);
+        newAtOutGate->connectTo(virtualisationInfr->gate("meAppOut", index));
+        virtualisationInfr->gate("meAppIn", index)->connectTo(newAtInGate);
+
+        // connect virtualisationInfr gates to the meApp
+        virtualisationInfr->gate("meAppOut", index)->connectTo(module->gate("socketIn"));
+        module->gate("socketOut")->connectTo(virtualisationInfr->gate("meAppIn", index));
+        /*
+         * @author Alessandro Noferi
+         *
+         * with the new MeApp management (i.e. they are directly connected to the transport layer)
+         * it is the MeApp itself that looks for the MeService through the ServiceRegistry module present in the
+         * MePlatform.
+         *
+         * This is true for MEC services etsi complaint, but for omnet-like services the classic method is used
+         * if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
+         */
         if(serviceIndex != NO_SERVICE)
         {
-            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << pkt->getRequiredService()<< endl;
+            EV << "VirtualisationManager::instantiateMEApp - Connecting to the: " << msg->getRequiredService()<< endl;
             //connecting MEPlatform gates to the MEApp gates
             mePlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
             module->gate("mePlatformOut")->connectTo(mePlatform->gate("meAppIn", index));
@@ -396,23 +453,26 @@ void VirtualisationManager::instantiateMEApp(cMessage* msg)
         currentMEApps++;
 
         //Sending ACK to the UEApp
-        EV << "VirtualisationManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
-        ackMEAppPacket(packet, ACK_START_MEAPP);
+//        EV << "VirtualisationManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
+//        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
         EV << "VirtualisationManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
         EV << "VirtualisationManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMEApps << endl;
+
+        return instanceInfo;
+    }
+    else
+    {
+        MecAppInstanceInfo instanceInfo;
+        instanceInfo.instanceId = "NOAPP";
+        return instanceInfo;
     }
 }
 
-void VirtualisationManager::terminateMEApp(cMessage* msg)
+bool VirtualisationManager::terminateMEApp(DeleteAppMessage* msg)
 {
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto pkt = packet->peekAtFront<MEAppPacket>();
-
-    int serviceIndex = findService(pkt->getRequiredService());
-    //retrieve UE App ID
-    int ueAppID = pkt->getUeAppID();
+    int ueAppID = msg->getUeAppID();
 
     if(!ueAppIdToMeAppMapKey.empty() && ueAppIdToMeAppMapKey.find(ueAppID) != ueAppIdToMeAppMapKey.end())
     {
@@ -423,7 +483,7 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
         {
             EV << "VirtualisationManager::terminateMEApp - \ERROR meAppMap["<< key << "] does not exist!" << endl;
             throw cRuntimeError("VirtualisationManager::terminateMEApp - \ERROR meAppMap entry does not exist!");
-            return;
+            return false;
         }
         EV << "VirtualisationManager::terminateMEApp - " << meAppMap[key].meAppModule->getName() << " terminated!" << endl;
         //terminating the ME App instance
@@ -434,16 +494,23 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
 
         //Sending ACK_STOP_MEAPP to the UEApp
         EV << "VirtualisationManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
+
         //before to remove the map entry!
-        ackMEAppPacket(packet, ACK_STOP_MEAPP);
+//        ackMEAppPacket(packet, ACK_STOP_MEAPP);
 
         int index = meAppMap[key].meAppGateIndex;
+
+        // TODO manage gates me app to at
+
+        virtualisationInfr->gate("meAppOut", index)->getPreviousGate()->disconnect();
+        virtualisationInfr->gate("meAppIn", index)->disconnect();
+
         //disconnecting internal MEPlatform gates to the MEService gates
-        (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
-        (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
-        //disconnecting MEPlatform gates to the MEApp gates
-        mePlatform->gate("meAppOut", index)->disconnect();
-        mePlatform->gate("meAppIn", index)->disconnect();
+//        (meServices.at(serviceIndex))->gate("meAppOut", index)->disconnect();
+//        (meServices.at(serviceIndex))->gate("meAppIn", index)->disconnect();
+//        //disconnecting MEPlatform gates to the MEApp gates
+//        mePlatform->gate("meAppOut", index)->disconnect();
+//        mePlatform->gate("meAppIn", index)->disconnect();
 
         //update maps
         ueAppIdToMeAppMapKey.erase(ueAppIdToMeAppMapKey.find(ueAppID));
@@ -453,13 +520,13 @@ void VirtualisationManager::terminateMEApp(cMessage* msg)
             meAppMap.erase (it1);
 
         freeGates.push_back(index);
+
+        return true;
     }
     else
     {
         EV << "VirtualisationManager::terminateMEApp - \tWARNING: NO INSTANCE FOUND!" << endl;
-        //Sending ACK_STOP_MEAPP to the UEApp
-        EV << "VirtualisationManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
-        ackMEAppPacket(packet, ACK_STOP_MEAPP);
+        return false;
     }
 }
 
@@ -485,6 +552,7 @@ void VirtualisationManager::ackMEAppPacket(inet::Packet* packet, const char* typ
         }
 
         destAddress_ = meAppMap[key].ueAddress;
+        int destUePort = meAppMap[key].uePort;
 
         //checking if the UE is in the network & sending by socket
         MacNodeId destId = binder_->getMacNodeId(destAddress_.toIpv4());

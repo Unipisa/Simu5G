@@ -55,6 +55,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
         pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(HARQPKT);
         pkt->addTagIfAbsent<UserControlInfo>()->setDirection(pduInfo->getDirection());
         pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(pduInfo->getCarrierFrequency());
+
         pkt->insertAtFront(fb);
     }
 

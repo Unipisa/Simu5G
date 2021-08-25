@@ -15,8 +15,10 @@
 #include <omnetpp.h>
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/rlc/LteRlcDefs.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 class LteRlcUm;
+class PacketFlowManagerBase;
 
 /**
  * @class UmTxEntity
@@ -58,6 +60,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
     {
         flowControlInfo_ = nullptr;
         lteRlc_ = nullptr;
+        packetFlowManager_ = nullptr;
     }
     virtual ~UmTxEntity()
     {
@@ -117,6 +120,22 @@ class UmTxEntity : public omnetpp::cSimpleModule
 
     // reference to the parent's RLC layer
     LteRlcUm* lteRlc_;
+
+
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * reference to packetFlowManager in order to be able
+     * to count discarded and packet delay
+     *
+     * Be sure to control every time if it is null, this module
+     * it is not mandatory for a correct network simulation.
+     * It is use useful e.g for RNI service within MEC
+     */
+    PacketFlowManagerBase* packetFlowManager_;
+    RlcBurstStatus burstStatus_;
+
 
     /*
      * Flow-related info.

@@ -13,6 +13,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/amc/UserTxParams.h"
 
+using namespace omnetpp;
+
 class UserTxParams;
 
 class LteSchedulingGrant : public LteSchedulingGrant_Base
@@ -38,6 +40,9 @@ private:
     RbMap grantedBlocks;
     std::vector<unsigned int> grantedCwBytes;
     Direction direction_;
+    unsigned int grantId;
+
+    static unsigned int grantIdCounter;
 
   public:
 
@@ -46,6 +51,8 @@ private:
     {
         userTxParams = nullptr;
         grantedCwBytes.resize(MAX_CODEWORDS);
+
+        grantId = grantIdCounter++;
     }
 
     ~LteSchedulingGrant()
@@ -143,4 +150,10 @@ private:
     {
         return direction_;
     }
+
+    unsigned int getGrandId() const
+    {
+        return grantId;
+    }
+
 };

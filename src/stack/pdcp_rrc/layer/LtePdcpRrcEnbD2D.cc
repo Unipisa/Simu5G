@@ -14,6 +14,9 @@
 #include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "inet/common/packet/Packet.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
+
 Define_Module(LtePdcpRrcEnbD2D);
 
 using namespace omnetpp;

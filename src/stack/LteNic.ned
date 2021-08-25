@@ -29,6 +29,7 @@ import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.x2.LteX2Manager;
 
+import simu5g.stack.packetFlowManager.PacketFlowManager;
 // 
 // Interface for the 3GPP Stack.
 //
@@ -55,6 +56,10 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
+        
+        string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
+        bool hasRNISupport = default(false);
+
         string LtePhyType;
         string nodeType;
         double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
@@ -113,6 +118,13 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=100,389");
         }
 
+         		//#
+        //# Modules used to take trace of PDCP pkt flow
+        //#
+        packetFlowManager: <PacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+            @display("p=69,299");
+        }
+
     connections allowunconnected:
         ip2nic.stackNic <--> pdcpRrc.DataPort;
 
@@ -152,6 +164,7 @@ module LteNicUe extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcUe");
         LteMacType = default("LteMacUe");
         LtePhyType = default("LtePhyUe");
+        PacketFlowManagerType = default("PacketFlowManagerUe");
         d2dCapable = default(false);          // DO NOT CHANGE
 
     submodules:
@@ -170,6 +183,8 @@ module LteNicUeD2D extends LteNicUe
         LtePdcpRrcType = default("LtePdcpRrcUeD2D");
         LteMacType = default("LteMacUeD2D");
         LtePhyType = default("LtePhyUeD2D");
+        PacketFlowManagerType = default("PacketFlowManagerUe");
+
         d2dCapable = default(true);             // DO NOT CHANGE
         bool d2dInitialMode = default(false);
         @display("bgb=704,443");
@@ -184,6 +199,7 @@ module LteNicEnb extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcEnb");
         LteMacType = default("LteMacEnb");
         LtePhyType = default("LtePhyEnb");
+        PacketFlowManagerType = default("PacketFlowManagerEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
         string LteCompManagerType = default("LteCompManagerProportional");
@@ -242,6 +258,7 @@ module LteNicEnbD2D extends LteNicEnb
         LtePdcpRrcType = default("LtePdcpRrcEnbD2D");
         LteMacType = default("LteMacEnbD2D");
         LtePhyType = default("LtePhyEnbD2D");
+        PacketFlowManagerType = default("PacketFlowManagerEnb");
         d2dCapable = default(true);   // DO NOT CHANGE
         string d2dModeSelectionType = default("D2DModeSelectionBase");
 

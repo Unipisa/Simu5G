@@ -18,6 +18,9 @@
 #include "inet/transportlayer/tcp_common/TcpHeader.h"
 #include "inet/transportlayer/udp/UdpHeader_m.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
+
 Define_Module(LtePdcpRrcUe);
 Define_Module(LtePdcpRrcEnb);
 
@@ -32,6 +35,9 @@ LtePdcpRrcBase::LtePdcpRrcBase()
 {
     ht_ = new ConnectionsTable();
     lcid_ = 1;
+
+    packetFlowManager_ = nullptr;
+    NRpacketFlowManager_ = nullptr;
 }
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
@@ -175,6 +181,7 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
         EV << "LteRrc : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), mylcid);
+
     }
 
     // assign LCID
@@ -236,6 +243,12 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
     EV << "LtePdcp : Sending packet " << pkt->getName()
        << " on port DataPort$o\n";
 
+//    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
+//    {
+//        if(packetFlowManager_ != nullptr)
+//            packetFlowManager_->receivedPdcpSdu(pkt);
+//    }
+
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
     emit(sentPacketToUpperLayer, pkt);
@@ -280,7 +293,26 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
 
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << portName << endl;
 
-        // Send message
+    /*
+     * @author Alessandro Noferi
+     *
+     * Since the other methods, e.g. fromData, are overridden
+     * in many classes, this method is the only one used by
+     * all the classes (except the NRPdcpUe that it has its
+     * own sendToLowerLayer method).
+     * So, the notification about the new PDCP to the pfm
+     * is done here.
+     *
+     * packets send in D2D mode are not considered
+     */
+
+    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
+    {
+        if(packetFlowManager_ != nullptr)
+            packetFlowManager_->insertPdcpSdu(pkt);
+    }
+
+    // Send message
     send(pkt, gate);
     emit(sentPacketToLowerLayer, pkt);
 }
@@ -330,6 +362,20 @@ void LtePdcpRrcBase::initialize(int stage)
         sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
         sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
+        if(getParentModule()->findSubmodule("packetFlowManager")!= -1)
+        {
+            EV << "LtePdcpRrcBase::initialize - PacketFlowManager present" << endl;
+            packetFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("packetFlowManager"));
+        }
+        if(getParentModule()->findSubmodule("nrPacketFlowManager")!= -1)
+        {
+            EV << "LtePdcpRrcBase::initialize - NRpacketFlowManager present" << endl;
+            NRpacketFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("nrPacketFlowManager"));
+        }
+
+
+
+        // TODO WATCH_MAP(gatemap_);
         WATCH(headerCompressedSize_);
         WATCH(nodeId_);
         WATCH(lcid_);

@@ -16,6 +16,9 @@
 #include "stack/mac/layer/LteMacUe.h"
 #include "stack/phy/layer/LtePhyUe.h"
 
+#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "corenetwork/statsCollector/UeStatsCollector.h"
+
 using namespace std;
 using namespace inet;
 
@@ -1157,3 +1160,139 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 
     return rbs;
 }
+
+/*
+ * @author Alessandro Noferi
+ */
+
+void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector , MacNodeId cell)
+{
+    EV << "LteBinder::addUeCollector"<< endl;
+    std::vector<EnbInfo*>::iterator it = enbList_.begin(), end = enbList_.end();
+    cModule *enb = nullptr;
+    BaseStationStatsCollector * enbColl = nullptr;
+
+    // check if the coallector is already present in a cell
+    for(; it != end ; ++it)
+    {
+        enb = (*it)->eNodeB;
+        if (enb->getSubmodule("collector") != nullptr)
+        {
+            enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
+            if(enbColl->hasUeCollector(ue))
+            {
+                EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << (*it)->id << "]" << endl;
+                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%d] already present in eNodeB [%d]", ue,(*it)->id ) ;
+            }
+        }
+        else
+        {
+            EV << "LteBinder::addUeCollector - eNodeB [" << (*it)->id << "] does not have the eNodeBStatsCollector" << endl;
+//            throw cRuntimeError("LteBinder::addUeCollector - eNodeB [%d] does not have the eNodeBStatsCollector", (*it)->id ) ;
+
+        }
+
+    }
+
+    // no cell has the UeCollector, add it
+    enb = getParentModule()->getSubmodule(getModuleNameByMacNodeId(cell));
+    if (enb->getSubmodule("collector") != nullptr)
+    {
+        enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
+        enbColl->addUeCollector(ue, ueCollector);
+        EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] added to eNodeB [" << cell << "]" << endl;
+    }
+    else
+    {
+        EV << "LteBinder::addUeCollector - eNodeB [" << cell << "] does not have the eNodeBStatsCollector." <<
+              " UeCollector for node [" << ue << "] NOT added to eNodeB [" << cell << "]" << endl;
+//        throw cRuntimeError("LteBinder::addUeCollector - eNodeBStatsCollector not present in eNodeB [%d]",(*it)->id ) ;
+    }
+}
+
+
+void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
+{
+    EV << "LteBinder::moveUeCollector" << endl;
+    RanNodeType oldCellType = getBaseStationTypeById(oldCell);
+    RanNodeType newCellType = getBaseStationTypeById(newCell);
+
+    // get and remove the UeCollector from the OldCell
+    const char* cellModuleName = getModuleNameByMacNodeId(oldCell); // eNodeB module name
+    cModule *oldEnb = getParentModule()->getSubmodule(cellModuleName); //  eNobe module
+    BaseStationStatsCollector * enbColl = nullptr;
+    UeStatsCollector * ueColl = nullptr;
+    if (oldEnb->getSubmodule("collector") != nullptr)
+    {
+       enbColl = check_and_cast<BaseStationStatsCollector *>(oldEnb->getSubmodule("collector"));
+       if(enbColl->hasUeCollector(ue))
+       {
+           ueColl = enbColl->getUeCollector(ue);
+           ueColl->resetStats();
+           enbColl->removeUeCollector(ue);
+       }
+       else
+       {
+           throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%d] not present in eNodeB [%d]", ue,oldCell ) ;
+       }
+    }
+    else
+    {
+        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%d]", oldCell) ;
+    }
+    // if the two base station are the same type, just move the collector
+    if(oldCellType == newCellType)
+    {
+        addUeCollectorToEnodeB(ue, ueColl, newCell);
+    }
+    else
+    {
+        if(newCellType == GNODEB)
+        {
+            // retrieve NrUeCollector
+            cModule *ueModule = getModuleByPath(getModuleNameByMacNodeId(ue));
+            if(ueModule->findSubmodule("NRueCollector") == -1)
+                ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
+            else
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got NRueCollector required for the gNB", ue) ;
+            addUeCollectorToEnodeB(ue, ueColl, newCell);
+
+        }
+        else if (newCellType == ENODEB)
+        {
+            // retrieve NrUeCollector
+            cModule *ueModule = getModuleByPath(getModuleNameByMacNodeId(ue));
+            if(ueModule->findSubmodule("ueCollector") == -1)
+                ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
+            else
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got ueCollector required for the eNB", ue) ;
+            addUeCollectorToEnodeB(ue, ueColl, newCell);
+        }
+        else
+        {
+            throw cRuntimeError("LteBinder::moveUeCollector - The new cell is not a cell [%d]", newCellType) ;
+        }
+    }
+}
+
+RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
+{
+    cModule *module = getModuleByPath(getModuleNameByMacNodeId(cellId));
+    std::string nodeType;
+    if(module->hasPar("nodeType"))
+    {
+        nodeType = module->par("nodeType").stdstringValue();
+        if(nodeType.compare("ENODEB") == 0)
+            return ENODEB;
+        else if(nodeType.compare("GNODEB") == 0)
+            return GNODEB;
+        else
+            return UNKNOWN_NODE_TYPE;
+    }
+    else
+    {
+        return UNKNOWN_NODE_TYPE;
+    }
+}
+
+

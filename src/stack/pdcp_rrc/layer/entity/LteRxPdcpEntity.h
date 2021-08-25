@@ -51,6 +51,16 @@ class LteRxPdcpEntity : public cSimpleModule
 
     // obtain the IP datagram from the PDCP PDU
     void handlePacketFromLowerLayer(Packet* pkt);
+
+    /*
+     * @author Alessandro Noferi
+     *
+     * This method is used with NRRxPdcpEntity that has
+     * sdu buffer. In particular it used when the
+     * RNI service requests the number of active users
+     * in UL, that also count buffered UL data in pdpc.
+     */
+    virtual bool isEmpty() const {return true;}
 };
 
 #endif
