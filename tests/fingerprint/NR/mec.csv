@@ -1,0 +1,4 @@
+# workingdir,                            args,                                                  simtimelimit,    fingerprint,
+/simulations/NR/mec/singleMecHost,       -f omnetpp.ini -c Test -r 0,       20s,              ccd6-916f/tplx,PASS,
+/simulations/NR/mec/multiMecHost,        -f omnetpp.ini -c Test -r 0,       20s,              3f2d-004c/tplx,PASS,
+/simulations/NR/mec/RNIDelay,            -f omnetpp.ini -c Test -r 0,       5s,              57ab-dfcc/tplx,PASS,

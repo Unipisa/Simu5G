@@ -83,5 +83,4 @@ vim files
 .cproject
 
 # files for performance evaluation
-*.csv
 *.ipynb
