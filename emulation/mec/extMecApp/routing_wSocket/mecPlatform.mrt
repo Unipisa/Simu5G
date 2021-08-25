@@ -1,16 +1,19 @@
 ifconfig:
-    
-name: wlan
-    inet_addr: 10.0.0.1
+
+# interface to the virtInfr
+name: mp1Eth  
+    inet_addr: 10.0.5.2
     Mask: 255.255.255.0
     MTU: 1500
+    Metric: 1
     POINTTOPOINT MULTICAST
-    
+
 ifconfigend.
 
 route:
+
 #Destination     Gateway          Genmask          Flags  Metric  Iface
-0.0.0.0          *                0.0.0.0          G      0       wlan
+0.0.0.0          *                0.0.0.0          G      0       mp1Eth
 
 routeend.
 

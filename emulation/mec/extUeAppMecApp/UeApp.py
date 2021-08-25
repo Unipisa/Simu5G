@@ -14,9 +14,9 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Send to server using created UDP socket
 appName = "MECWarningAlertApp"
-bytes = pack('!BB', 0, len(appName))
-bytes = bytes + str.encode(appName)
-UDPClientSocket.sendto(bytes, devAppAddressPort)
+bytesToSend = pack('!BB', 0, len(appName))
+bytesToSend = bytesToSend + bytes(appName, 'utf-8')
+UDPClientSocket.sendto(bytesToSend, devAppAddressPort)
 
 print("Message to device application sent")
 
@@ -65,12 +65,6 @@ while(True):
                 bytes = bytes + str.encode(appName)
                 time.sleep(1)
                 UDPClientSocket.sendto(bytes, devAppAddressPort)
-        elif(int(code) == 3): 
-            print("MEC app started car monitoring")
-        elif(int(code) == 4): 
-            print("sending start message to the MEC app again")
-            UDPClientSocket.sendto(start_msg, (ip, int(port)))
-            
         else:
             # code unrecognized
             print("Code {} unrecognized".format(code))

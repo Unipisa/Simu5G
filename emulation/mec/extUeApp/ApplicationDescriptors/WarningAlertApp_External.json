@@ -1,7 +1,7 @@
 {
-"appDid" : "WAMECAPP",
-"appName" : "MEWarningAlertApp_rest",
-"appProvider" : "lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest",
+"appDid" : "WAMECAPPEXT",
+"appName" : "MECWarningAlertApp",
+"appProvider" : "simu5g.apps.mec.WarningAlert.MECWarningAlertApp",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{
@@ -10,7 +10,8 @@
     "virtualMemory":10
     },
 "emulatedMecApplication" :{
-    "ipAddress": "192.168.1.2",
-    "port": 2015
+    "ipAddress": "10.0.2.1",
+    "port": 4022
     }
 }
+

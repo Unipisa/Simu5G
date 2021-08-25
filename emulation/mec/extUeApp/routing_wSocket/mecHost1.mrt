@@ -1,7 +1,7 @@
 ifconfig:
 
 # interface to the router
-name: pppIf0
+name: pppIf1 
     inet_addr: 10.0.4.2
     Mask: 255.255.255.0
     MTU: 1500
@@ -9,7 +9,7 @@ name: pppIf0
     POINTTOPOINT MULTICAST
 
 # interface to the router
-name: pppIf1
+name: pppIf0
     inet_addr: 10.0.8.2
     Mask: 255.255.255.0
     MTU: 1500
@@ -24,20 +24,12 @@ name: eth
     MTU: 1500
     POINTTOPOINT MULTICAST
 
-# external interface
-name: extEth0
-    inet_addr: 192.168.2.1
-    Mask: 255.255.255.0
-    MTU: 1500
-    POINTTOPOINT MULTICAST
-
 
 ifconfigend.
 
 route:
 
 #Destination     Gateway          Genmask          Flags  Metric  Iface
-192.168.2.0      *                255.255.255.0    H      0       extEth0
 10.0.5.0         *                255.255.255.0    H      0       eth
 0.0.0.0          *                0.0.0.0          G      0       pppIf0
 

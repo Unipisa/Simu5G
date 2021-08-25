@@ -88,11 +88,6 @@ print("Connected to the Locatione Service")
 ServiceSocket.send(str.encode(pload))
 print("Subscription request sent!")
 
-# send ACK start to the UE app
-ack_msg = pack('!BB', 3, 0)
-
-UeSocket.sendto(ack_msg, address)
-
 p = HttpParser()
 resBody = []
 
@@ -137,14 +132,13 @@ while True:
         break
 
 res = json.loads("".join(resBody))
-
 print("Event Notification arrived!!\n" + json.dumps(res,indent=4)+ "\n")
 
 coordinates = res['subscriptionNotification']['terminalLocationList']['currentLocation']
+
 coords = str(coordinates['x'])+","+str(coordinates['y'])
-print("coordinates are: {}".format(coords))
 alert_msg = pack('!BBB', 2, len(coords), True)
-alert_msg = alert_msg + bytes(coords, 'utf-8')
+alert_msg = alert_msg + str.encode(coords)
 
 #send alert to ue
 UeSocket.sendto(alert_msg, address)
@@ -169,13 +163,13 @@ pl = {
   }
 }
 
-plBody = json.dumps(pl)
+ee = json.dumps(pl)
 
 pload = "PUT /example/location/v2/subscriptions/area/circle/0 HTTP/1.1\r\n"\
         "Host: "+locationAddress+":"+str(locationPort)+"\r\n"\
         "Content-Type: application/json\r\n"\
-        "Content-Length: "+str(len(plBody))+"\r\n"\
-        "\r\n"+plBody
+        "Content-Length: "+str(len(ee))+"\r\n"\
+        "\r\n"+ee
 
 
 ServiceSocket.send(str.encode(pload))

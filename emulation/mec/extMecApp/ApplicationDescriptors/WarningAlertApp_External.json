@@ -1,7 +1,7 @@
 {
-"appDid" : "WAMECAPP_External",
-"appName" : "MEWarningAlertApp_rest_External",
-"appProvider" : "lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest_External",
+"appDid" : "WAMECAPPEXT",
+"appName" : "MECWarningAlertApp_External",
+"appProvider" : "simu5g.apps.mec.WarningAlert.MECWarningAlertApp",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{
@@ -14,3 +14,4 @@
     "port": 4022
     }
 }
+

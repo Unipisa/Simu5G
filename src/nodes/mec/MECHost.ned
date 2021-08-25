@@ -32,7 +32,7 @@ module MECHost
         @display("i=device/mainframe;bgb=1000,500");
 
         //# Node specs
-        string nodeType = "MEHost";						// DO NOT CHANGE
+        string nodeType = "MECHost";						// DO NOT CHANGE
         string gateway = default("upf");
 
         //#	ME Host Resources
@@ -90,10 +90,7 @@ module MECHost
 
         //ppp++ <--> virtualisationInfrastructure.ppp++;
 
-        //#
-        //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
-        //#
-        virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
+
 
         for i=0..sizeof(pppENB)-1 {
             pppENB++ <--> gtpEndpoint.pppg++;
@@ -105,6 +102,11 @@ module MECHost
             //#
             virtualisationInfrastructure.ppp++ <--> ppp++;
         }
+
+        //#
+        //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
+        //#
+        virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
 
         for i=0..numBGMecApp-1 {
             bgApp[i].socketIn <-- virtualisationInfrastructure.meBGAppOut[i];

@@ -86,6 +86,24 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
             throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(alertPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
+    else if(strcmp(ss.c_str(), START_ACK) == 0)
+    {
+        auto alertPk = staticPtrCast<const WarningAlertPacket>(chunk);
+        stream.writeByte((uint8_t) 3);
+        int64_t remainders = B(alertPk->getChunkLength() - (stream.getLength() - startPosition)).get();
+        if (remainders < 0)
+            throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(alertPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+        stream.writeByteRepeatedly('?', remainders);
+    }
+    else if(strcmp(ss.c_str(), START_NACK) == 0)
+        {
+            auto alertPk = staticPtrCast<const WarningAlertPacket>(chunk);
+            stream.writeByte((uint8_t) 4);
+            int64_t remainders = B(alertPk->getChunkLength() - (stream.getLength() - startPosition)).get();
+            if (remainders < 0)
+                throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(alertPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
+            stream.writeByteRepeatedly('?', remainders);
+        }
     else
     {
         throw cRuntimeError("WarningAlertPacketSerializer - WarningAlertPacket type %s not recognized", ss.c_str());
@@ -118,7 +136,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
 
             std::vector<std::string> coords = cStringTokenizer((char*)&bytes[0], ",").asVector();
             if(coords.size() != 3)
-                throw cRuntimeError("DeviceAppMessageSerializer::deserialize - start application message must be in form x,y,radius. But is %s", data.c_str());
+                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - start application message must be in form x,y,radius. But is %s", data.c_str());
 
             double x = std::stod(coords[0]);
             double y = std::stod(coords[1]);
@@ -142,8 +160,9 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
         {
             auto alertPacket = makeShared<WarningAlertPacket>();
             alertPacket->setType(WARNING_ALERT);
-            bool res = (bool)(stream.readByte());
+
             B messageDataLength = B(stream.readByte());
+            bool res = (bool)(stream.readByte());
             std::vector<uint8_t> bytes;
             stream.readBytes(bytes, messageDataLength);
             std::string data(bytes.begin(), bytes.end());
@@ -151,7 +170,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             std::vector<std::string> coords = cStringTokenizer((char*)&bytes[0], ",").asVector();
 
             if(coords.size() != 2)
-                throw cRuntimeError("DeviceAppMessageSerializer::deserialize - WARNING application message must be in form x,y. But is %s", data.c_str());
+                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - WARNING application message must be in form x,y. But is %s", data.c_str());
             alertPacket->setDanger(res);
             alertPacket->setPositionX(std::stod(coords[0]));
             alertPacket->setPositionY(std::stod(coords[1]));
@@ -166,9 +185,36 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             break;
         }
 
+        case 3 : // ACK START
+        {
+            auto ackStartPacket = makeShared<WarningAppPacket>();
+            ackStartPacket->setType(START_ACK);
+
+            B remainders = totalLength - (stream.getPosition());
+            ASSERT(remainders >= B(0));
+            stream.readByteRepeatedly('?', remainders.get());
+
+            return ackStartPacket;
+            break;
+
+        }
+        case 4 : // NACK START
+        {
+            auto nackStartPacket = makeShared<WarningAppPacket>();
+            nackStartPacket->setType(START_NACK);
+
+            B remainders = totalLength - (stream.getPosition());
+            ASSERT(remainders >= B(0));
+            stream.readByteRepeatedly('?', remainders.get());
+
+            return nackStartPacket;
+            break;
+        }
+
+
         default:
         {
-            throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Code %d not recognized!", messageCode);
+            throw cRuntimeError("WarningAlertPacketSerializer::deserialize - Code %d not recognized!", messageCode);
         }
     }
 
