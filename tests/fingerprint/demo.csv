@@ -2,7 +2,7 @@
 /simulations/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              41d2-5138/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              399a-ba18/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              edd2-07a7/tplx, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c Large-VoIP_PF -r 0,     5s,              096d-2d5a/tplx, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c Large-VoIP_PF -r 0,     5s,              8a3c-d76c/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c Large-VoIP_MaxCI -r 0,  5s,              e881-53bf/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              3bf8-d474/tplx, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              5f37-41be/tplx, PASS,
