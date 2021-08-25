@@ -114,7 +114,7 @@ Advanced features
 - CoMP Coordinated Scheduling support
 - Device-to-device communications
 - Support for vehicular mobility (integration with Veins 5.1)
-- Simplified model of Multi-access Edge Computing (MEC) Host
+- ETSI-compiant model of Multi-access Edge Computing (MEC) Hosts
 
 
 Applications
