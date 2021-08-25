@@ -153,13 +153,6 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         EV << "TrafficFlowFilter::findTrafficFlow - [emulation] returning flowId (-3) for tunneling to " << meHost << endl;
         return -3;
     }
-    // emulation mode
-    else if (isBaseStation(ownerType_) && !meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
-    {
-        // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
-        EV << "TrafficFlowFilter::findTrafficFlow - [emulation] returning flowId (-3) for tunneling to " << meHost << endl;
-        return -3;
-    }
     else if(ownerType_ == GTPENDPOINT)
     {
         // send only messages direct to UEs --> UEs have macNodeId != 0

@@ -321,35 +321,61 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-    std::map<double, MacPduList>::iterator lit;
-    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
-    {
-        double carrierFreq = lit->first;
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-            continue;
-
-        if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
+        std::map<double, MacPduList>::iterator lit;
+        for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
         {
-            HarqTxBuffers newHarqTxBuffers;
-            harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
-        }
-        HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
+            double carrierFreq = lit->first;
+            // skip if this is not the turn of this carrier
+            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
+                continue;
 
-        MacPduList::iterator pit;
-        for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
-        {
-            MacNodeId destId = pit->first.first;
-            Codeword cw = pit->first.second;
+            if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
+            {
+                HarqTxBuffers newHarqTxBuffers;
+                harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
+            }
+            HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-            // search for an empty unit within current harq process
-            UnitList txList = txBuf->getEmptyUnits(currentHarq_);
-            EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
+            MacPduList::iterator pit;
+            for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
+            {
+                MacNodeId destId = pit->first.first;
+                Codeword cw = pit->first.second;
 
-            //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
-            auto macPkt = pit->second;
+                // Check if the HarqTx buffer already exists for the destId
+                // Get a reference for the destId TXBuffer
+                LteHarqBufferTx* txBuf;
+                HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
+                if ( hit != harqTxBuffers.end() )
+                {
+                    // The tx buffer already exists
+                    txBuf = hit->second;
+                }
+                else
+                {
+                    // The tx buffer does not exist yet for this mac node id, create one
+                    LteHarqBufferTx* hb;
+                    // FIXME: hb is never deleted
+                    auto info = pit->second->getTag<UserControlInfo>();
 
-            /* BSR related operations
+                    if (info->getDirection() == UL) {
+                        hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    }
+                    else { // D2D or D2D_MULTI
+                        hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    }
+                    harqTxBuffers[destId] = hb;
+                    txBuf = hb;
+                }
+
+                // search for an empty unit within current harq process
+                UnitList txList = txBuf->getEmptyUnits(currentHarq_);
+                EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
+
+                //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
+                auto macPkt = pit->second;
+
+                /* BSR related operations
 
             // according to the TS 36.321 v8.7.0, when there are uplink resources assigned to the UE, a BSR
             // has to be send even if there is no data in the user's queues. In few words, a BSR is always
