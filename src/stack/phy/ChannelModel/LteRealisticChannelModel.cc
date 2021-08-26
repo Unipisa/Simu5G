@@ -744,6 +744,255 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    return snrVector;
 }
 
+std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo)
+{
+   if (useRsrqFromLog_)
+   {
+       int time = -1, rsrq = oldRsrq_;
+       double currentTime = simTime().dbl();
+       if (currentTime > oldTime_+1)
+       {
+           std::ifstream file;
+
+           // open the rsrq file
+           file.clear();
+           file.open("rsrqFile.dat");
+
+           file >> time;
+           file >> rsrq;
+
+           file.close();
+
+           oldTime_ = simTime().dbl();
+           oldRsrq_ = rsrq;
+
+           std::cout << "LteRealisticChannelModel::getSINR - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
+       }
+
+       double sinr = rsrqScale_ * (rsrq + rsrqShift_);
+       std::vector<double> snrVector;
+       snrVector.resize(numBands_, sinr);
+
+       return snrVector;
+   }
+
+   //get tx power
+   double recvPower = lteInfo->getTxPower(); // dBm
+
+   //Get the Resource Blocks used to transmit this packet
+   RbMap rbmap = lteInfo->getGrantedBlocks();
+
+   //get move object associated to the packet
+   //this object is refereed to eNodeB if direction is DL or UE if direction is UL
+   Coord coord = lteInfo->getCoord();
+
+   // position of eNb and UE
+   Coord ueCoord;
+   Coord enbCoord;
+
+   double antennaGainTx = 0.0;
+   double antennaGainRx = 0.0;
+   double noiseFigure = 0.0;
+   double speed = 0.0;
+
+   // true if we are computing a CQI for the DL direction
+   bool cqiDl = false;
+
+   MacNodeId ueId = 0;
+   MacNodeId eNbId = 0;
+
+   Direction dir = (Direction) lteInfo->getDirection();
+
+   EV << "------------ GET SINR ----------------" << endl;
+   //===================== PARAMETERS SETUP ============================
+   /*
+    * if direction is DL and this is not a feedback packet,
+    * this function has been called by LteRealisticChannelModel::error() in the UE
+    *
+    *         DownLink error computation
+    */
+   if (dir == DL && (lteInfo->getFrameType() != FEEDBACKPKT))
+   {
+       //set noise Figure
+       noiseFigure = ueNoiseFigure_; //dB
+       //set antenna gain Figure
+       antennaGainTx = antennaGainEnB_; //dB
+       antennaGainRx = antennaGainUe_;  //dB
+
+       // get MacId for Ue and eNb
+       ueId = lteInfo->getDestId();
+       eNbId = lteInfo->getSourceId();
+
+       // get position of Ue and eNb
+       ueCoord = phy_->getCoord();
+       enbCoord = lteInfo->getCoord();
+
+       speed = computeSpeed(ueId, phy_->getCoord());
+   }
+   /*
+    * If direction is UL OR
+    * if the packet is a feedback packet
+    * it means that this function is called by the feedback computation module
+    *
+    * located in the eNodeB that compute the feedback received by the UE
+    * Hence the UE macNodeId can be taken by the sourceId of the lteInfo
+    * and the speed of the UE is contained by the Move object associated to the lteinfo
+    */
+   else // UL/DL CQI & UL error computation
+   {
+       // get MacId for Ue and eNb
+       ueId = lteInfo->getSourceId();
+       eNbId = lteInfo->getDestId();
+
+       if (dir == DL)
+       {
+           //set noise Figure
+           noiseFigure = ueNoiseFigure_; //dB
+           //set antenna gain Figure
+           antennaGainTx = antennaGainEnB_; //dB
+           antennaGainRx = antennaGainUe_;  //dB
+
+           // use the jakes map in the UE side
+           cqiDl = true;
+       }
+       else // if( dir == UL )
+       {
+           // TODO check if antennaGainEnB should be added in UL direction too
+           antennaGainTx = antennaGainUe_;
+           antennaGainRx = antennaGainEnB_;
+           noiseFigure = bsNoiseFigure_;
+
+           // use the jakes map in the eNb side
+           cqiDl = false;
+       }
+       speed = computeSpeed(ueId, coord);
+
+       // get position of Ue and eNb
+       ueCoord = coord;
+       enbCoord = phy_->getCoord();
+   }
+
+   CellInfo* eNbCell = getCellInfo(eNbId);
+   const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
+
+   EV << "LteRealisticChannelModel::getSINR - srcId=" << lteInfo->getSourceId()
+                      << " - destId=" << lteInfo->getDestId()
+                      << " - DIR=" << (( dir==DL )?"DL" : "UL")
+                      << " - frameType=" << ((lteInfo->getFrameType()==FEEDBACKPKT)?"feedback":"other")
+                      << endl
+                      << eNbTypeString << " - txPwr " << lteInfo->getTxPower()
+                      << " - ueCoord[" << ueCoord << "] - enbCoord[" << enbCoord << "] - ueId[" << ueId << "] - enbId[" << eNbId << "]" <<
+                      endl;
+   //=================== END PARAMETERS SETUP =======================
+
+   //=============== PATH LOSS + SHADOWING + FADING =================
+   EV << "\t using parameters - noiseFigure=" << noiseFigure << " - antennaGainTx=" << antennaGainTx << " - antennaGainRx=" << antennaGainRx <<
+           " - txPwr=" << lteInfo->getTxPower() << " - for ueId=" << ueId << endl;
+
+   // attenuation for the desired signal
+   double attenuation;
+   if ((lteInfo->getFrameType() == FEEDBACKPKT))
+       attenuation = getAttenuation(ueId, UL, coord); // dB
+   else
+       attenuation = getAttenuation(ueId, dir, coord); // dB
+
+   //compute attenuation (PATHLOSS + SHADOWING)
+   recvPower -= attenuation; // (dBm-dB)=dBm
+
+   //add antenna gain
+   recvPower += antennaGainTx; // (dBm+dB)=dBm
+   recvPower += antennaGainRx; // (dBm+dB)=dBm
+
+   //sub cable loss
+   recvPower -= cableLoss_; // (dBm-dB)=dBm
+
+   //=============== ANGOLAR ATTENUATION =================
+   if (dir == DL)
+   {
+       //get tx angle
+       omnetpp::cModule* eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+       LtePhyBase* ltePhy = eNbModule ?
+          check_and_cast<LtePhyBase*>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
+          nullptr;
+
+       if (ltePhy && ltePhy->getTxDirection() == ANISOTROPIC)
+       {
+           // get tx angle
+           double txAngle = ltePhy->getTxAngle();
+
+           // compute the angle between uePosition and reference axis, considering the eNb as center
+           double ueAngle = computeAngle(enbCoord, ueCoord);
+
+           // compute the reception angle between ue and eNb
+           double recvAngle = fabs(txAngle - ueAngle);
+
+           if (recvAngle > 180)
+               recvAngle = 360 - recvAngle;
+
+           double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
+
+           // compute attenuation due to sectorial tx
+           double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+
+           recvPower -= angolarAtt;
+       }
+       // else, antenna is omni-directional
+   }
+   //=============== END ANGOLAR ATTENUATION =================
+
+   std::vector<double> rsrpVector;
+   rsrpVector.resize(numBands_, 0.0);
+
+   // compute and add interference due to fading
+   // Apply fading for each band
+   // if the phy layer is localized we can assume that for each logical band we have different fading attenuation
+   // if the phy layer is distributed the number of logical band should be set to 1
+   double fadingAttenuation = 0;
+
+   // for each logical band
+   // FIXME compute fading only for used RBs
+   for (unsigned int i = 0; i < numBands_; i++)
+   {
+       fadingAttenuation = 0;
+       //if fading is enabled
+       if (fading_)
+       {
+           //Appling fading
+           if (fadingType_ == RAYLEIGH)
+               fadingAttenuation = rayleighFading(ueId, i);
+
+           else if (fadingType_ == JAKES)
+               fadingAttenuation = jakesFading(ueId, speed, i, cqiDl);
+       }
+       // add fading contribution to the received pwr
+       double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
+
+       //if txmode is multi user the tx power is dived by the number of paired user
+       // in db divede by 2 means -3db
+       if (lteInfo->getTxMode() == MULTI_USER)
+       {
+           finalRecvPower -= 3;
+       }
+
+       EV << " LteRealisticChannelModel::getSINR node " << ueId
+          << ((lteInfo->getFrameType() == FEEDBACKPKT) ?
+           " FEEDBACK PACKET " : " NORMAL PACKET ")
+          << " band " << i << " recvPower " << recvPower
+          << " direction " << dirToA(dir) << " antenna gain tx "
+          << antennaGainTx << " antenna gain rx " << antennaGainRx
+          << " noise figure " << noiseFigure
+          << " cable loss   " << cableLoss_
+          << " attenuation (pathloss + shadowing) " << attenuation
+          << " speed " << speed << " thermal noise " << thermalNoise_
+          << " fading attenuation " << fadingAttenuation << endl;
+
+       rsrpVector[i] = finalRecvPower;
+   }
+   //============ END PATH LOSS + SHADOWING + FADING ===============
+
+   return rsrpVector;
+}
+
 std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
    //get tx power

@@ -59,6 +59,13 @@ class LteDummyChannelModel : public LteChannelModel
     */
    virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo);
    /*
+    * Compute FAKE received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+    *
+    * @param frame pointer to the packet
+    * @param lteinfo pointer to the user control info
+    */
+   virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo);
+   /*
     * Compute sinr for each band for a background UE according to pathloss
     *
     * @param frame pointer to the packet

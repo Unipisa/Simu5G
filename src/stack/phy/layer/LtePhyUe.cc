@@ -177,7 +177,7 @@ void LtePhyUe::initialize(int stage)
                 // get RSSI from the eNB
                 std::vector<double>::iterator it;
                 double rssi = 0;
-                std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, cInfo);
+                std::vector<double> rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
                 for (it = rssiV.begin(); it != rssiV.end(); ++it)
                     rssi += *it;
                 rssi /= rssiV.size();   // compute the mean over all RBs

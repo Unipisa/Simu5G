@@ -133,6 +133,13 @@ class LteChannelModel : public omnetpp::cSimpleModule
      */
     virtual bool isError_D2D(LteAirFrame *frame, UserControlInfo* lteInfo, const std::vector<double>& rsrpVector)=0;
     /*
+     * Compute Received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     *
+     * @param frame pointer to the packet
+     * @param lteinfo pointer to the user control info
+     */
+    virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo) = 0;
+    /*
      * Compute Received useful signal for D2D transmissions
      */
     virtual std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord) = 0;
