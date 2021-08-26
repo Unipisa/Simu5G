@@ -38,25 +38,25 @@ network MultiCell_withSecondaryGnb
         @display("i=block/network2;bgb=1100,800;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=50,25;is=s");
+            @display("p=104.52,62.712;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=50.993748,99.5;is=s");
+            @display("p=106.128,131.856;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50.993748,172.88126");
+            @display("p=106.128,237.984");
         }
         binder: Binder {
-            @display("p=49.75,247.50624;is=s");
+            @display("p=106.128,334.464;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=106.128,418.08;is=s");
         }
         server: StandardHost {
-            @display("p=215.16875,49.75;is=n;i=device/server");
+            @display("p=273.36002,48.24;is=n;i=device/server");
         }
         router: Router {
-            @display("p=366.90625,48.50625;i=device/smallrouter");
+            @display("p=393.96,46.632;i=device/smallrouter");
         }
         pgw: PgwStandard {
             @display("p=529.8375,49.75;is=n");
