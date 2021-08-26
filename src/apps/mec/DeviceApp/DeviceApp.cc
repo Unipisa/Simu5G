@@ -33,29 +33,29 @@ Define_Module(DeviceApp);
 
 DeviceApp::DeviceApp()
 {
-    lcmProxyMessage = nullptr;
-    processedLcmProxyMessage = nullptr;
+    UALCMPMessage = nullptr;
+    processedUALCMPMessage = nullptr;
 }
 
 DeviceApp::~DeviceApp()
 {
-    cancelAndDelete(processedLcmProxyMessage);
+    cancelAndDelete(processedUALCMPMessage);
 }
 
 
-void DeviceApp::handleLcmProxyMessage()
+void DeviceApp::handleUALCMPMessage()
 {
-    EV << "DeviceApp::handleLcmProxyMessage: " <<  lcmProxyMessage->getBody() << endl;
+    EV << "DeviceApp::handleUALCMPMessage: " <<  UALCMPMessage->getBody() << endl;
 
-    if(lcmProxyMessage->getType() == RESPONSE)
+    if(UALCMPMessage->getType() == RESPONSE)
     {
-        HttpResponseMessage * response = dynamic_cast<HttpResponseMessage*>(lcmProxyMessage);
+        HttpResponseMessage * response = dynamic_cast<HttpResponseMessage*>(UALCMPMessage);
 
         switch(appState)
         {
             case START:
             {
-                EV << "DeviceApp::handleLcmProxyMessage - START" << endl;
+                EV << "DeviceApp::handleUALCMPMessage - START" << endl;
                 if(response->getCode() == 200) // Successful response of the get
                 {
                     nlohmann::json jsonResponseBody = nlohmann::json::parse(response->getBody());
@@ -81,7 +81,7 @@ void DeviceApp::handleLcmProxyMessage()
 
                     if(found == false)
                     {
-                        EV << "DeviceApp::handleLcmProxyMessage: application descriptor for appName: " << appName << " not found." << endl;
+                        EV << "DeviceApp::handleUALCMPMessage: application descriptor for appName: " << appName << " not found." << endl;
                         jsonRequestBody["associateDevAppId"] = std::to_string(getId());
                         jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";
 
@@ -92,9 +92,9 @@ void DeviceApp::handleLcmProxyMessage()
 
                     const char *uri = "/example/dev_app/v1/app_contexts";
 
-                    std::string host = lcmProxySocket_.getRemoteAddress().str()+":"+std::to_string(lcmProxySocket_.getRemotePort());
+                    std::string host = UALCMPSocket_.getRemoteAddress().str()+":"+std::to_string(UALCMPSocket_.getRemotePort());
 
-                    Http::sendPostRequest(&lcmProxySocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
+                    Http::sendPostRequest(&UALCMPSocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
 
                     //send request
                     appState = CREATING;
@@ -102,18 +102,18 @@ void DeviceApp::handleLcmProxyMessage()
                 }
                 else
                 {
-                    // this should not happen. This device app always sends well formed requests to the lcmProxy
-                    throw cRuntimeError("DeviceApp::handleLcmProxyMessage() - this should not happen. This device app sends well formed requests to the lcmProxy.");
+                    // this should not happen. This device app always sends well formed requests to the UALCMP
+                    throw cRuntimeError("DeviceApp::handleUALCMPMessage() - this should not happen. This device app sends well formed requests to the UALCMP.");
                 }
                 break;
             }
 
             case CREATING:
             {
-                EV << "DeviceApp::handleLcmProxyMessage - CREATING" << endl;
+                EV << "DeviceApp::handleUALCMPMessage - CREATING" << endl;
                 if(response->getCode() == 201) // Successful response of the post
                 {
-                    nlohmann::json jsonBody =  nlohmann::json::parse(lcmProxyMessage->getBody());
+                    nlohmann::json jsonBody =  nlohmann::json::parse(UALCMPMessage->getBody());
 
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
 
@@ -122,7 +122,7 @@ void DeviceApp::handleLcmProxyMessage()
                     if(contextUri.empty())
                     {
                         //ERROR
-                        EV << "DeviceApp::handleLcmProxyMessage - ERROR (on CREATE 201) - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
+                        EV << "DeviceApp::handleUALCMPMessage - ERROR (on CREATE 201) - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
 
                         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
@@ -144,8 +144,8 @@ void DeviceApp::handleLcmProxyMessage()
                         appContextUri = contextUri;
                         mecAppEndPoint = jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"];
 
-                        EV << "DeviceApp::handleLcmProxyMessage - reference URI of the application instance context is: " << appContextUri << endl;
-                        EV << "DeviceApp::handleLcmProxyMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
+                        EV << "DeviceApp::handleUALCMPMessage - reference URI of the application instance context is: " << appContextUri << endl;
+                        EV << "DeviceApp::handleUALCMPMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
 
                         std::vector<std::string> endPoint =  cStringTokenizer(mecAppEndPoint.c_str(), ":").asVector();
                         EV << "vectore size: " << endPoint[0] << " e " << atoi(endPoint[1].c_str()) << endl;
@@ -177,7 +177,7 @@ void DeviceApp::handleLcmProxyMessage()
                 else if(response->getCode() == 500)
                 {
                     //ERROR
-                    EV << "DeviceApp::handleLcmProxyMessage - ERROR (on CREATE "<<  response->getCode() << ") - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
+                    EV << "DeviceApp::handleUALCMPMessage - ERROR (on CREATE "<<  response->getCode() << ") - Mec Application Context not created, i.e. the MEC app has not been instantiated"<< endl;
                     auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                     //instantiation requirements and info
@@ -206,7 +206,7 @@ void DeviceApp::handleLcmProxyMessage()
                 else
                 {
                     // in state create only 201 and 500 code are allowed, if other code arrives, something went wrong...
-                    EV << "DeviceApp::handleLcmProxyMessage - HTTP code " << response->getCode() << " not allowe in CREATE state" << endl;
+                    EV << "DeviceApp::handleUALCMPMessage - HTTP code " << response->getCode() << " not allowe in CREATE state" << endl;
                 }
                 break;
             }
@@ -268,7 +268,7 @@ void DeviceApp::handleLcmProxyMessage()
 
             case IDLE:
             default:
-                throw cRuntimeError("DeviceApp::handleLcmProxyMessage() - appstate IDLE. No messages should arrive from the lcmProxy");
+                throw cRuntimeError("DeviceApp::handleUALCMPMessage() - appstate IDLE. No messages should arrive from the UALCMP");
         }
     }
     else
@@ -282,15 +282,15 @@ void DeviceApp::handleLcmProxyMessage()
 void DeviceApp::handleSelfMessage(cMessage *msg){
     if(strcmp(msg->getName(), "connect") == 0)
     {
-        connectToLcmProxy();
+        connectToUALCMP();
         delete msg;
     }
-    else if(strcmp(msg->getName(), "processedLcmProxyMessage") == 0)
+    else if(strcmp(msg->getName(), "processedUALCMPMessage") == 0)
     {
-        handleLcmProxyMessage();
-        if(lcmProxyMessage != nullptr)
-            delete lcmProxyMessage;
-        lcmProxyMessage = nullptr;
+        handleUALCMPMessage();
+        if(UALCMPMessage != nullptr)
+            delete UALCMPMessage;
+        UALCMPMessage = nullptr;
     }
 }
 
@@ -301,22 +301,22 @@ void DeviceApp::initialize(int stage){
     localPort = par("localPort");
 
     ueAppSocket_.setOutputGate(gate("socketOut"));
-    lcmProxySocket_.setOutputGate(gate("socketOut"));
+    UALCMPSocket_.setOutputGate(gate("socketOut"));
 
     ueAppSocket_.bind(localPort); // bind ueSocket to listen on local port
-    lcmProxySocket_.bind(8740); // bind ueSocket to listen on local port
+    UALCMPSocket_.bind(8740); // bind ueSocket to listen on local port
 
 
     ueAppSocket_.setCallback(this);
 
-    lcmProxySocket_.setCallback(this);
+    UALCMPSocket_.setCallback(this);
 
-    const char *lcmAddress = par("lcmProxyAddress").stringValue();
-    lcmProxyAddress = L3AddressResolver().resolve(lcmAddress);
-    EV << "DeviceApp::initialize - lcmProxyAddress: " << lcmProxyAddress.str() << endl;
-    lcmProxyPort = par("lcmProxyPort");
+    const char *lcmAddress = par("UALCMPAddress").stringValue();
+    UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
+    EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
+    UALCMPPort = par("UALCMPPort");
 
-    processedLcmProxyMessage = new cMessage("processedLcmProxyMessage");
+    processedUALCMPMessage = new cMessage("processedUALCMPMessage");
 
 //    appProvider = par("appProvider").stringValue();
     appPackageSource = par("appPackageSource").stringValue();
@@ -344,9 +344,9 @@ void DeviceApp::handleMessage(omnetpp::cMessage *msg)
         ueAppSocket_.processMessage(msg);
         delete msg;
     }
-    else if(lcmProxySocket_.belongsToSocket(msg))
+    else if(UALCMPSocket_.belongsToSocket(msg))
     {
-        lcmProxySocket_.processMessage(msg);
+        UALCMPSocket_.processMessage(msg);
     }
 
 //    delete msg;
@@ -354,18 +354,18 @@ void DeviceApp::handleMessage(omnetpp::cMessage *msg)
 }
 
 
-void DeviceApp::connectToLcmProxy()
+void DeviceApp::connectToUALCMP()
 {
     // we need a new connId if this is not the first connection
-    lcmProxySocket_.renewSocket();
+    UALCMPSocket_.renewSocket();
 
-    if (lcmProxyAddress.isUnspecified()) {
-        EV_ERROR << "Connecting to " << lcmProxyAddress << " port=" << lcmProxyPort << ": cannot resolve destination address\n";
+    if (UALCMPAddress.isUnspecified()) {
+        EV_ERROR << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << ": cannot resolve destination address\n";
         throw cRuntimeError("LCM proxy address is unspecified!");
     }
     else {
-        EV << "Connecting to " << lcmProxyAddress << " port=" << lcmProxyPort << endl;
-        lcmProxySocket_.connect(lcmProxyAddress, lcmProxyPort);
+        EV << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << endl;
+        UALCMPSocket_.connect(UALCMPAddress, UALCMPPort);
     }
 }
 
@@ -386,14 +386,14 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
     std::stringstream params;
     params << "appName="<<appName;
 
-    std::string host = lcmProxySocket_.getRemoteAddress().str()+":"+std::to_string(lcmProxySocket_.getRemotePort());
+    std::string host = UALCMPSocket_.getRemoteAddress().str()+":"+std::to_string(UALCMPSocket_.getRemotePort());
 
-    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE)
+    if(UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE)
     {
-        Http::sendGetRequest(&lcmProxySocket_, host.c_str(), uri.c_str(), params.str().c_str());
+        Http::sendGetRequest(&UALCMPSocket_, host.c_str(), uri.c_str(), params.str().c_str());
         appState = START;
     }
-    else if(lcmProxySocket_.getState() != inet::TcpSocket::CONNECTED)
+    else if(UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED)
     {
         // send nack to the UE app
 
@@ -443,12 +443,12 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
     std::string cId = stopPk->getContextId();
 
 
-    std::string host = lcmProxySocket_.getRemoteAddress().str()+":"+std::to_string(lcmProxySocket_.getRemotePort());
+    std::string host = UALCMPSocket_.getRemoteAddress().str()+":"+std::to_string(UALCMPSocket_.getRemotePort());
 
-    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED)
+    if(UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED)
     {
         EV << "DeviceApp::sendStopAppContext - send DELETE for MEC app: " << appContextUri << endl;
-        Http::sendDeleteRequest(&lcmProxySocket_, host.c_str(), appContextUri.c_str());
+        Http::sendDeleteRequest(&UALCMPSocket_, host.c_str(), appContextUri.c_str());
         appState = DELETING;
     }
     else if(appState == DELETING)
@@ -456,7 +456,7 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
         EV << "DeviceApp::sendStopAppContext - DELETE command already sent - discarding packet" << endl;
         return;
     }
-    else if(lcmProxySocket_.getState() != inet::TcpSocket::CONNECTED)
+    else if(UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED)
     {
         EV << "DeviceApp::sendStopAppContext - LCM proxy not connected" << endl;
 
@@ -529,25 +529,25 @@ void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bo
     delete msg;
 //    EV << packet << endl;
 
-    bool res = Http::parseReceivedMsg(packet, &lcmProxyMessageBuffer, &lcmProxyMessage);
+    bool res = Http::parseReceivedMsg(packet, &UALCMPMessageBuffer, &UALCMPMessage);
     if(res)
     {
-        EV << "DeviceApp::socketDataArrived - schedule processedLcmProxyMessage" << endl;
-        lcmProxyMessage->setSockId(lcmProxySocket_.getSocketId());
+        EV << "DeviceApp::socketDataArrived - schedule processedUALCMPMessage" << endl;
+        UALCMPMessage->setSockId(UALCMPSocket_.getSocketId());
         double time = 0.005;
-        scheduleAt(simTime()+time, processedLcmProxyMessage);
+        scheduleAt(simTime()+time, processedUALCMPMessage);
     }
 }
 void DeviceApp::socketEstablished(inet::TcpSocket *socket)
 {
-    EV <<"DeviceApp::socketEstablished - lcmProxySocket established " << endl;
+    EV <<"DeviceApp::socketEstablished - UALCMPSocket established " << endl;
 }
 void DeviceApp::socketPeerClosed(inet::TcpSocket *socket)
 {
     EV << "DeviceApp::socketPeerClosed"<< endl;
-    if (lcmProxySocket_.getState() == TcpSocket::PEER_CLOSED) {
+    if (UALCMPSocket_.getState() == TcpSocket::PEER_CLOSED) {
            EV_INFO << "remote TCP closed, closing here as well\n";
-           lcmProxySocket_.close();
+           UALCMPSocket_.close();
        }
 
 }
@@ -556,6 +556,6 @@ void DeviceApp::socketFailure(inet::TcpSocket *socket, int code) {}
 
 void DeviceApp::finish()
 {
-    if(lcmProxySocket_.getState() == inet::TcpSocket::CONNECTED)
-        lcmProxySocket_.close();
+    if(UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED)
+        UALCMPSocket_.close();
 }

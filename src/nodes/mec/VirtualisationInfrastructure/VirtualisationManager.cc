@@ -11,7 +11,7 @@
 
 #include "nodes/mec/VirtualisationInfrastructure/VirtualisationManager.h"
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
 Define_Module(VirtualisationManager);

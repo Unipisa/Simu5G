@@ -25,7 +25,7 @@ import inet.node.inet.Router;
 import inet.visualizer.canvas.integrated.IntegratedCanvasVisualizer;
 
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
-import simu5g.nodes.mec.LCMProxy.LCMProxy;
+import simu5g.nodes.mec.UALCMP.UALCMP;
 
 
 
@@ -78,7 +78,7 @@ network MecExtUEApp
             @display("p=435.84875,184.0475;is=l");
         }
 
-        lcmProxy: LCMProxy {
+        ualcmp: UALCMP {
             @display("p=544.0525,183.03625;i=device/smallrouter");
         }
 
@@ -96,10 +96,10 @@ network MecExtUEApp
 
 	//#	mec
         mecHost1.ppp++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> lcmProxy.ppp++;
+        router.pppg++ <--> Eth10G <--> ualcmp.ppp++;
 
-        lcmProxy.toMecOrchestrator --> mecOrchestrator.fromLcmProxy;
-        lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;
+        ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
+        ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
 
         
 

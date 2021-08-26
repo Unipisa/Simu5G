@@ -49,16 +49,16 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
 {
     protected:
 
-        inet::TcpSocket lcmProxySocket_;
+        inet::TcpSocket UALCMPSocket_;
         inet::UdpSocket ueAppSocket_;
 
-        inet::L3Address lcmProxyAddress;
-        int  lcmProxyPort;
+        inet::L3Address UALCMPAddress;
+        int  UALCMPPort;
 
-        HttpBaseMessage* lcmProxyMessage;
-        std::string lcmProxyMessageBuffer;
+        HttpBaseMessage* UALCMPMessage;
+        std::string UALCMPMessageBuffer;
 
-        omnetpp::cMessage* processedLcmProxyMessage;
+        omnetpp::cMessage* processedUALCMPMessage;
 
         int localPort;
 
@@ -85,11 +85,11 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
 
         /* Utility functions */
         virtual void handleSelfMessage(omnetpp::cMessage *msg);
-        virtual void handleLcmProxyMessage();
+        virtual void handleUALCMPMessage();
         void sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk);
         void sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk);
 
-        virtual void connectToLcmProxy();
+        virtual void connectToUALCMP();
 
         /* inet::TcpSocket::CallbackInterface callback methods */
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;

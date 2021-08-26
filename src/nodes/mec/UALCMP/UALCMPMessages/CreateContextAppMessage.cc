@@ -10,7 +10,7 @@
 //
 
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
 
 CreateContextAppMessage::CreateContextAppMessage(const char *name, short kind) : ::CreateContextApp(name, kind)
 {

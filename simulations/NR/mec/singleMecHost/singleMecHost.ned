@@ -21,7 +21,7 @@ import simu5g.nodes.NR.NRUe;
 import simu5g.nodes.mec.MECHost;
 
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
-import simu5g.nodes.mec.LCMProxy.LCMProxy;
+import simu5g.nodes.mec.UALCMP.UALCMP;
 
 
 
@@ -71,7 +71,7 @@ network singleMecHost
             @display("p=564.2775,249.77875;is=l");
         }
 
-        lcmProxy: LCMProxy {
+        ualcmp: UALCMP {
             @display("p=490.45624,248.7675;i=device/smallrouter");
         }
 
@@ -79,10 +79,10 @@ network singleMecHost
     connections allowunconnected:
 
         upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        lcmProxy.ppp++ <--> Eth10G <--> upf.filterGate;  
+        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;  
         
-        lcmProxy.toMecOrchestrator --> mecOrchestrator.fromLcmProxy;
-        lcmProxy.fromMecOrchestrator <-- mecOrchestrator.toLcmProxy;     
+        ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
+        ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;     
 
         //#	mec
         // direct connection between gNodeB1 and mecHost

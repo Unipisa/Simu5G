@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.LCMProxy;
-import simu5g.nodes.mec.LCMProxy.LcmProxy;
+package simu5g.nodes.mec.UALCMP;
+import simu5g.nodes.mec.UALCMP.UALCMPApp;
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
@@ -30,7 +30,7 @@ import inet.node.ethernet.Eth10G;
 import inet.networklayer.common.InterfaceTable;
 
 
-module LCMProxy
+module UALCMP
 {
     parameters:
         @networkNode();
@@ -93,7 +93,7 @@ module LCMProxy
         //# Transport layer modules and corresponding application modules
         //#
 		// =============== UDP ============== //
-        lcmProxy: LcmProxy {
+        ualcmpApp: UALCMPApp {
             @display("p=549.69,74.045,row");
         }
 
@@ -131,13 +131,13 @@ module LCMProxy
     connections allowunconnected:
 
         //# 
-        //# lcmProxy to transport layer connections
+        //# UALCMP to transport layer connections
         //#        
-        lcmProxy.socketOut --> at.in++;
-        lcmProxy.socketIn <-- at.out++;
+        ualcmpApp.socketOut --> at.in++;
+        ualcmpApp.socketIn <-- at.out++;
 
-        lcmProxy.toMecOrchestrator --> toMecOrchestrator;
-        lcmProxy.fromMecOrchestrator <-- fromMecOrchestrator;
+        ualcmpApp.toMecOrchestrator --> toMecOrchestrator;
+        ualcmpApp.fromMecOrchestrator <-- fromMecOrchestrator;
 
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;

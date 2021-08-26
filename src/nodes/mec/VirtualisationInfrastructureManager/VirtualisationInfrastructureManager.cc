@@ -11,7 +11,7 @@
 
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
 Define_Module(VirtualisationInfrastructureManager);
@@ -360,12 +360,12 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         /*
          * @author Alessandro Noferi
          *
-         * with the new MeApp management (i.e. they are directly connected to the transport layer)
-         * it is the MeApp itself that looks for the MeService through the ServiceRegistry module present in the
+         * with the new MecApp management (i.e. they are directly connected to the transport layer)
+         * it is the MecApp itself that looks for the MeService through the ServiceRegistry module present in the
          * MePlatform.
          *
          * This is true for MEC services etsi complaint, but for omnet-like services the classic method is used
-         * if there is a service required: link the MEApp to MEPLATFORM to MESERVICE
+         * if there is a service required: link the MECApp to MECPLATFORM to MECSERVICE
          */
 
 //        if(serviceIndex != NO_SERVICE)

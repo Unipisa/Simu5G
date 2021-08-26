@@ -15,7 +15,7 @@ import inet.common.packet.chunk.Chunk;
 
 message MECOrchestratorMessage {
     int contextId; // identifier of the ueMecApp 
-    int requestId; // used to inform the lcmProxy to which request the response refers
+    int requestId; // used to inform the UALCMP to which request the response refers
     string type; // trigger of mecApp setup or termination 	 
     bool success;   
 }

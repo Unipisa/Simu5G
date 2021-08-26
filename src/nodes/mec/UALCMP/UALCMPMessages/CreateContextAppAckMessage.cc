@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppAckMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 
 CreateContextAppAckMessage::CreateContextAppAckMessage(const char *name, short kind) : ::CreateContextAppAck(name, kind)
 {

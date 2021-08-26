@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-message LcmProxyMessage {
-    string type; // LcmProxy messageType (appListReq, appListRes, create, delete)
+message UALCMPMessage {
+    string type; // UALCMPMessage messageType (appListReq, appListRes, create, delete)
     int connectionId; // Placeholder to retrieve the correct devApp socket
     int requestId;
 }
 
 
-message CreateContextApp extends LcmProxyMessage
+message CreateContextApp extends UALCMPMessage
 {
 	bool onboarded;
 	string appPackagePath; // if onboarded == false
@@ -27,7 +27,7 @@ message CreateContextApp extends LcmProxyMessage
 	string devAppId;      //device app identifier, used as identifier for the mecapp (i.e. ueAppId)
 }
 
-message CreateContextAppAck extends LcmProxyMessage
+message CreateContextAppAck extends UALCMPMessage
 {
 	bool success;
 	string appInstanceUri;
@@ -36,12 +36,12 @@ message CreateContextAppAck extends LcmProxyMessage
 	int contextId;	
 }
 
-message DeleteContextAppMessage extends LcmProxyMessage
+message DeleteContextAppMessage extends UALCMPMessage
 {
 	int contextId;
 }
 
-message DeleteContextAppAckMessage extends LcmProxyMessage
+message DeleteContextAppAckMessage extends UALCMPMessage
 {
     bool success;
 	int contextId;

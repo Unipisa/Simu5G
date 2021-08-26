@@ -16,8 +16,8 @@ import inet.applications.contract.IApp;
 
 simple DeviceApp like IApp
 {
-    string lcmProxyAddress = default(""); // may be left empty ("")
-    int lcmProxyPort = default(-1); // port number to listen on
+    string UALCMPAddress = default(""); // may be left empty ("")
+    int UALCMPPort = default(-1); // port number to listen on
     
     string appProvider = default("");
     string appPackageSource =  default("");

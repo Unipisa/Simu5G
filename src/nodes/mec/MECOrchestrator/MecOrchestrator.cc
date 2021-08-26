@@ -19,10 +19,10 @@
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LCMProxyMessages_types.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppMessage.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppAckMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 
 //emulation debug
 #include <iostream>
@@ -75,10 +75,10 @@ void MecOrchestrator::handleMessage(cMessage *msg)
     }
 
     // handle message from the LCM proxy
-    else if(msg->arrivedOn("fromLcmProxy"))
+    else if(msg->arrivedOn("fromUALCMP"))
     {
         EV << "MecOrchestrator::handleMessage - "  << msg->getName() << endl;
-        handleLcmProxyMessage(msg);
+        handleUALCMPMessage(msg);
     }
 
     delete msg;
@@ -86,9 +86,9 @@ void MecOrchestrator::handleMessage(cMessage *msg)
 
 }
 
-void MecOrchestrator::handleLcmProxyMessage(cMessage* msg)
+void MecOrchestrator::handleUALCMPMessage(cMessage* msg)
 {
-    LcmProxyMessage* lcmMsg = check_and_cast<LcmProxyMessage*>(msg);
+    UALCMPMessage* lcmMsg = check_and_cast<UALCMPMessage*>(msg);
 
     /* Handling CREATE_CONTEXT_APP */
     if(!strcmp(lcmMsg->getType(), CREATE_CONTEXT_APP))
@@ -99,7 +99,7 @@ void MecOrchestrator::handleLcmProxyMessage(cMessage* msg)
         stopMECApp(lcmMsg);
 }
 
-void MecOrchestrator::startMECApp(LcmProxyMessage* msg)
+void MecOrchestrator::startMECApp(UALCMPMessage* msg)
 {
     CreateContextAppMessage* contAppMsg = check_and_cast<CreateContextAppMessage*>(msg);
 
@@ -277,7 +277,7 @@ void MecOrchestrator::startMECApp(LcmProxyMessage* msg)
 
 }
 
-void MecOrchestrator::stopMECApp(LcmProxyMessage* msg){
+void MecOrchestrator::stopMECApp(UALCMPMessage* msg){
     EV << "MecOrchestrator::stopMECApp - processing..." << endl;
 
     DeleteContextAppMessage* contAppMsg = check_and_cast<DeleteContextAppMessage*>(msg);
@@ -342,7 +342,7 @@ void MecOrchestrator::sendDeleteAppContextAck(bool result, unsigned int requestS
     ack->setRequestId(requestSno);
     ack->setSuccess(result);
 
-    send(ack, "toLcmProxy");
+    send(ack, "toUALCMP");
 }
 
 void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestSno, int contextId)
@@ -375,7 +375,7 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
     {
         ack->setSuccess(false);
     }
-    send(ack, "toLcmProxy");
+    send(ack, "toUALCMP");
 }
 
 

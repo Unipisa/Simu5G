@@ -37,7 +37,7 @@ simple MecOrchestrator
 	
     gates:
                 
-        output toLcmProxy;
-        input fromLcmProxy;
+        output toUALCMP;
+        input fromUALCMP;
 
 }

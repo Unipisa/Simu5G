@@ -12,7 +12,7 @@
 #ifndef NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPMESSAGE_H_
 #define NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPMESSAGE_H_
 
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
 

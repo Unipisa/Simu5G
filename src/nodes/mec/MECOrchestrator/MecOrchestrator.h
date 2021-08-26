@@ -54,7 +54,7 @@ struct mecAppMapEntry
 
 };
 
-class LcmProxyMessage;
+class UALCMPMessage;
 class MECOrchestratorMessage;
 
 //
@@ -112,17 +112,17 @@ class MecOrchestrator : public cSimpleModule
 
 
 
-        void handleLcmProxyMessage(cMessage* msg);
+        void handleUALCMPMessage(cMessage* msg);
 
         // handling CREATE_CONTEXT_APP type
         // it selects the most suitable MEC host and calls the method of its MEC platform manager to require
         // the MEC app instantiation
-        void startMECApp(LcmProxyMessage*);
+        void startMECApp(UALCMPMessage*);
 
         // handling DELETE_CONTEXT_APP type
         // it calls the method of the MEC platform manager of the MEC host where the MEC app has been deployed
         // to delete the MEC app
-        void stopMECApp(LcmProxyMessage*);
+        void stopMECApp(UALCMPMessage*);
 
 
         // sending ACK_CREATE_CONTEXT_APP or ACK_DELETE_CONTEXT_APP

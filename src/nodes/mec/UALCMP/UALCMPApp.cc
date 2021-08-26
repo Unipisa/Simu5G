@@ -27,21 +27,21 @@
 #include "common/utils/utils.h"
 
 // MEC system
-#include "nodes/mec/LCMProxy/LcmProxy.h"
+#include "nodes/mec/UALCMP/UALCMPApp.h"
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
 
 
 // Messages
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppMessage.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/CreateContextAppAckMessage.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LcmProxyMessages_m.h"
-#include "nodes/mec/LCMProxy/LCMProxyMessages/LCMProxyMessages_types.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
+#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
 
-Define_Module(LcmProxy);
+Define_Module(UALCMPApp);
 
-LcmProxy::LcmProxy()
+UALCMPApp::UALCMPApp()
 {
     baseUriQueries_ = "/example/dev_app/v1";
     baseUriSubscriptions_ = baseUriQueries_;
@@ -54,9 +54,9 @@ LcmProxy::LcmProxy()
     subscriptions_.clear();
 }
 
-void LcmProxy::initialize(int stage)
+void UALCMPApp::initialize(int stage)
 {
-    EV << "LcmProxy::initialize stage " << stage << endl;
+    EV << "UALCMPApp::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
     {
         EV << "MecServiceBase::initialize" << endl;
@@ -84,9 +84,9 @@ void LcmProxy::initialize(int stage)
     inet::ApplicationBase::initialize(stage);
 }
 
-void LcmProxy::handleStartOperation(inet::LifecycleOperation *operation)
+void UALCMPApp::handleStartOperation(inet::LifecycleOperation *operation)
 {
-    EV << "LcmProxy::handleStartOperation" << endl;
+    EV << "UALCMPApp::handleStartOperation" << endl;
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
@@ -106,12 +106,12 @@ void LcmProxy::handleStartOperation(inet::LifecycleOperation *operation)
     serverSocket.listen();
 }
 
-void LcmProxy::handleMessageWhenUp(cMessage *msg)
+void UALCMPApp::handleMessageWhenUp(cMessage *msg)
 {
     if(msg->arrivedOn("fromMecOrchestrator"))
     {
         // manage here the messages from mecOrchestrator
-        LcmProxyMessage * lcmMsg = check_and_cast<LcmProxyMessage*>(msg);
+        UALCMPMessage * lcmMsg = check_and_cast<UALCMPMessage*>(msg);
         if(strcmp(lcmMsg->getType(), ACK_CREATE_CONTEXT_APP) == 0)
         {
             handleCreateContextAppAckMessage(lcmMsg);
@@ -133,23 +133,23 @@ void LcmProxy::handleMessageWhenUp(cMessage *msg)
     }
 }
 
-void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
+void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
 {
     CreateContextAppAckMessage* ack = check_and_cast<CreateContextAppAckMessage*>(msg);
     unsigned int reqSno = ack->getRequestId();
 
-    EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno << endl;
+    EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << endl;
 
     auto req = pendingRequests.find(reqSno);
     if(req == pendingRequests.end())
     {
-        EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
+        EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
         return;
     }
 
     int connId = req->second.connId;
 
-    EV << "LcmProxy::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
+    EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
     nlohmann::json jsonBody = req->second.appCont;
 
@@ -184,7 +184,7 @@ void LcmProxy::handleCreateContextAppAckMessage(LcmProxyMessage *msg)
     return;
 }
 
-void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
+void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
 {
     DeleteContextAppAckMessage* ack = check_and_cast<DeleteContextAppAckMessage*>(msg);
 
@@ -193,12 +193,12 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
     auto req = pendingRequests.find(reqSno);
     if(req == pendingRequests.end())
     {
-        EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
+        EV << "UALCMPApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno<< " not present in pendingRequests. Discarding... "<<endl;
         return;
     }
 
     int connId = req->second.connId;
-    EV << "LcmProxy::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
+    EV << "UALCMPApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: "<< connId << endl;
 
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
 
@@ -220,9 +220,9 @@ void LcmProxy::handleDeleteContextAppAckMessage(LcmProxyMessage *msg)
     return;
 }
 
-void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
+void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
-    EV << "LcmProxy::handleGETRequest" << endl;
+    EV << "UALCMPApp::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
@@ -248,7 +248,7 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
             for(; it != end; ++it){
                 if(it->rfind("appName", 0) == 0) // cell_id=par1,par2
                 {
-                    EV <<"LcmProxy::handleGETRequest - parameters: " << endl;
+                    EV <<"UALCMPApp::handleGETRequest - parameters: " << endl;
                     params = lte::utils::splitString(*it, "=");
                     if(params.size()!= 2) //must be param=values
                     {
@@ -307,11 +307,11 @@ void LcmProxy::handleGETRequest(const HttpRequestMessage *currentRequestMessageS
 
 }
 
-void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
+void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     std::string uri = currentRequestMessageServed->getUri();
     std::string body = currentRequestMessageServed->getBody();
-    EV << "LcmProxy::handlePOSTRequest - uri: "<< uri << endl;
+    EV << "UALCMPApp::handlePOSTRequest - uri: "<< uri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
     if(uri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
@@ -323,7 +323,7 @@ void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessage
         }
         catch(nlohmann::detail::parse_error e)
         {
-            throw cRuntimeError("LcmProxy::handlePOSTRequest - %s", e.what());
+            throw cRuntimeError("UALCMPApp::handlePOSTRequest - %s", e.what());
             // body is not correctly formatted in JSON, manage it
             Http::send400Response(socket); // bad body JSON
             return;
@@ -358,11 +358,11 @@ void LcmProxy::handlePOSTRequest(const HttpRequestMessage *currentRequestMessage
     }
 }
 
-void LcmProxy::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
+void UALCMPApp::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
     Http::send404Response(socket, "PUT not implemented, yet");
 }
 
-void LcmProxy::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
+void UALCMPApp::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     //    DELETE /exampleAPI/location/v1/subscriptions/area/circle/sub123 HTTP/1.1
     //    Accept: application/xml
@@ -400,11 +400,11 @@ void LcmProxy::handleDELETERequest(const HttpRequestMessage *currentRequestMessa
 
 }
 
-CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::json& jsonBody)
+CreateContextAppMessage* UALCMPApp::parseContextCreateRequest(const nlohmann::json& jsonBody)
 {
     if(!jsonBody.contains("appInfo"))
     {
-        EV << "LcmProxy::parseContextCreateRequest - appInfo attribute not found" << endl;
+        EV << "UALCMPApp::parseContextCreateRequest - appInfo attribute not found" << endl;
         return nullptr;
     }
 
@@ -412,7 +412,7 @@ CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::jso
 
     if(!jsonBody.contains("associateDevAppId"))
     {
-       EV << "LcmProxy::parseContextCreateRequest - associateDevAppId attribute not found" << endl;
+       EV << "UALCMPApp::parseContextCreateRequest - associateDevAppId attribute not found" << endl;
        return nullptr;
     }
 
@@ -446,10 +446,10 @@ CreateContextAppMessage* LcmProxy::parseContextCreateRequest(const nlohmann::jso
     }
 }
 
-void LcmProxy::finish()
+void UALCMPApp::finish()
 {
     return;
 }
 
-LcmProxy::~LcmProxy(){
+UALCMPApp::~UALCMPApp(){
 }

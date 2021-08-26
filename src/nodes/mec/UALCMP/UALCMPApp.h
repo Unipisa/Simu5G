@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LCMPROXY_H
-#define _LCMPROXY_H
+#ifndef _UALCMPAPP_H
+#define _UALCMPAPP_H
 
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
 class MecOrchestrator;
 class CreateContextAppMessage;
-class LcmProxyMessage;
+class UALCMPMessage;
 
 //
 // This module implements (part of) the mx2 reference point a device app uses to
@@ -31,7 +31,7 @@ class LcmProxyMessage;
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 
 
-class LcmProxy: public MecServiceBase
+class UALCMPApp: public MecServiceBase
 {
   private:
 
@@ -52,7 +52,7 @@ class LcmProxy: public MecServiceBase
     std::map<unsigned int, LcmRequestStatus> pendingRequests;
 
   public:
-    LcmProxy();
+    UALCMPApp();
   protected:
 
     virtual void initialize(int stage) override;
@@ -74,8 +74,8 @@ class LcmProxy: public MecServiceBase
      * These two methods manage the responses coming from the MEC orchestrator and
      * create the HTTP responses to the Device apps
      */
-    void handleCreateContextAppAckMessage(LcmProxyMessage *msg);
-    void handleDeleteContextAppAckMessage(LcmProxyMessage *msg);
+    void handleCreateContextAppAckMessage(UALCMPMessage *msg);
+    void handleDeleteContextAppAckMessage(UALCMPMessage *msg);
 
 
     /*
@@ -90,10 +90,10 @@ class LcmProxy: public MecServiceBase
      */
     CreateContextAppMessage* parseContextCreateRequest(const nlohmann::json&);
 
-    virtual ~LcmProxy();
+    virtual ~UALCMPApp();
 
 
 };
 
-#endif //_LCMPROXY_H
+#endif //_UALCMPAPP_H
 

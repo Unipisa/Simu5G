@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.LCMProxy;
+package simu5g.nodes.mec.UALCMP;
 
 import inet.applications.contract.IApp;
 
@@ -25,12 +25,12 @@ import inet.applications.contract.IApp;
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 
 
-simple LcmProxy  like  IApp
+simple UALCMPApp  like  IApp
 {
     parameters:
         @display("i=block/source");
-        @class("LcmProxy");
-        string serviceName = default("LCMProxy");
+        @class("UALCMPApp");
+        string serviceName = default("UALCMP");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")

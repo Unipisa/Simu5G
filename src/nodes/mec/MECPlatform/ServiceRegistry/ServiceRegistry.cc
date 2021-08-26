@@ -94,7 +94,7 @@ void ServiceRegistry::initialize(int stage)
 
 void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
 {
-    EV << "LcmProxy::handleStartOperation" << endl;
+    EV << "ServiceRegistry::handleStartOperation" << endl;
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
