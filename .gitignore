@@ -70,9 +70,7 @@ ui/com.simulte.configeditor/bin/
 /simulations/*/*/routing*/bkUe???.mrt
 
 /emulation/*/results*/
-/emulation/*/stats*/
 /emulation/*/plots*/
-/emulation/*/trafficGeneratorConfigs*/
 
 vim files
 *.swp
