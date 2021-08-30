@@ -42,7 +42,7 @@
 
 class HttpBaseMessage;
 
-enum State {IDLE, START, APPCREATED, CREATING,  DELETE, DELETING};
+enum State {IDLE, START, APPCREATED, CREATING, DELETING};
 
 
 class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
