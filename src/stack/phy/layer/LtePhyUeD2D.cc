@@ -428,13 +428,13 @@ void LtePhyUeD2D::storeAirFrame(LteAirFrame* newFrame)
         }
         if (allocatedRbs > 0)
             rsrpMean = sum / allocatedRbs;
-        EV << NOW << " LtePhyUeD2D::storeAirFrame - Average RSRP from node " << newInfo->getSourceId() << ": " << rsrpMean ;
+        EV << NOW << " LtePhyUeD2D::storeAirFrame - Average RSRP from node " << newInfo->getSourceId() << ": " << rsrpMean << endl;
     }
     else  // distance
     {
         Coord newSenderCoord = newInfo->getCoord();
         distance = myCoord.distance(newSenderCoord);
-        EV << NOW << " LtePhyUeD2D::storeAirFrame - Distance from node " << newInfo->getSourceId() << ": " << distance ;
+        EV << NOW << " LtePhyUeD2D::storeAirFrame - Distance from node " << newInfo->getSourceId() << ": " << distance << endl;
     }
 
     if (!d2dReceivedFrames_.empty())
