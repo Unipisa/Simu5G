@@ -2,7 +2,7 @@
 
 /simulations/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              4b78-b15b/s, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              1a71-23d7/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              79cc-98f5/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              79c8-98f5/s, PASS,
 
 /simulations/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              2785-2f46/s, PASS,
 /simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              a943-9b67/s, PASS,
