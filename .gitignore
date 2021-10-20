@@ -64,7 +64,6 @@ ui/com.simulte.configeditor/bin/
 /simulations/*/*/scripts/plots*/
 /simulations/*/*/plots*/
 /simulations/*/*/timeResults*/
-/simulations/*/*/trafficGeneratorConfigs*/
 /simulations/*/*/routing*/bkUe?.mrt
 /simulations/*/*/routing*/bkUe??.mrt
 /simulations/*/*/routing*/bkUe???.mrt
