@@ -1,16 +1,12 @@
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
 // 
 
 #ifndef NRCHANNELMODEL_3GPP38_901_H_
@@ -18,6 +14,15 @@
 
 #include "stack/phy/ChannelModel/NRChannelModel.h"
 
+
+// NRChannelModel_3GPP38_901
+//
+// This channel model implements path loss, LOS probability and shadowing according to
+// the following specifications:
+//     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
+//
+// TODO implements Urban Macro only
+//
 class NRChannelModel_3GPP38_901 : public NRChannelModel
 {
 
@@ -27,7 +32,7 @@ public:
     /*
      * Compute LOS probability (taken from TR 36.873)
      *
-     * @param d between UE and eNodeB
+     * @param d between UE and gNodeB
      * @param nodeid mac node id of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
@@ -35,8 +40,8 @@ public:
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
-     * @param 3d_distance between UE and eNodeB (3D)
-     * @param 2d_distance between UE and eNodeB (2D)
+     * @param 3d_distance between UE and gNodeB (3D)
+     * @param 2d_distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
     virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
@@ -44,7 +49,7 @@ public:
     /*
      * 3D-UMa path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los);
@@ -52,7 +57,7 @@ public:
     /*
      * compute std deviation of shadowing according to scenario and visibility
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param nodeid mac node id of UE
      */
     double getStdDev(bool dist, MacNodeId nodeId);
@@ -60,7 +65,7 @@ public:
     /*
      * Compute shadowing
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param nodeid mac node id of UE
      * @param speed speed of UE
      */

@@ -205,9 +205,9 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
 {
     ShadowFadingMap* actualShadowingMap;
 
-    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
-        actualShadowingMap = obtainShadowingMap(nodeId);
-    else
+//    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
+//        actualShadowingMap = obtainShadowingMap(nodeId);
+//    else
         actualShadowingMap = &lastComputedSF_;
 
     double mean = 0;
@@ -220,9 +220,9 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
     double att;
 
     // if direction is DOWNLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is myMove_ varible
+    // the Move object associated to the UE is myMove_ variable
     // if direction is UPLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is move varible
+    // the Move object associated to the UE is move variable
 
     // if shadowing for current user has never been computed
     if (actualShadowingMap->find(nodeId) == actualShadowingMap->end())
@@ -774,7 +774,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
            oldTime_ = simTime().dbl();
            oldRsrq_ = rsrq;
 
-           std::cout << "LteRealisticChannelModel::getSINR - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
+           std::cout << "LteRealisticChannelModel::getRSRP - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
        }
 
        double sinr = rsrqScale_ * (rsrq + rsrqShift_);
@@ -883,7 +883,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
    CellInfo* eNbCell = getCellInfo(eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
-   EV << "LteRealisticChannelModel::getSINR - srcId=" << lteInfo->getSourceId()
+   EV << "LteRealisticChannelModel::getRSRP - srcId=" << lteInfo->getSourceId()
                       << " - destId=" << lteInfo->getDestId()
                       << " - DIR=" << (( dir==DL )?"DL" : "UL")
                       << " - frameType=" << ((lteInfo->getFrameType()==FEEDBACKPKT)?"feedback":"other")
@@ -900,9 +900,9 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
    // attenuation for the desired signal
    double attenuation;
    if ((lteInfo->getFrameType() == FEEDBACKPKT))
-       attenuation = getAttenuation(ueId, UL, coord); // dB
+       attenuation = getAttenuation(ueId, UL, coord, cqiDl); // dB
    else
-       attenuation = getAttenuation(ueId, dir, coord); // dB
+       attenuation = getAttenuation(ueId, dir, coord, cqiDl); // dB
 
    //compute attenuation (PATHLOSS + SHADOWING)
    recvPower -= attenuation; // (dBm-dB)=dBm
@@ -982,7 +982,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
            finalRecvPower -= 3;
        }
 
-       EV << " LteRealisticChannelModel::getSINR node " << ueId
+       EV << " LteRealisticChannelModel::getRSRP node " << ueId
           << ((lteInfo->getFrameType() == FEEDBACKPKT) ?
            " FEEDBACK PACKET " : " NORMAL PACKET ")
           << " band " << i << " recvPower " << recvPower
@@ -1067,7 +1067,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    // Note that shadowing and fading effects are not applied here and left FFW
 
    // UL because we are computing a feedback
-   double attenuation = getAttenuation(bgUeId, UL, ueCoord);
+   double attenuation = getAttenuation(bgUeId, UL, ueCoord, cqiDl);
 
    //compute recvPower
    recvPower -= attenuation; // (dBm-dB)=dBm
@@ -3070,7 +3070,7 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
 
                    // get rx power and attenuation from this UE
                    double rxPwr = txPwr - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-                   double att = getAttenuation(ueId, UL, ueCoord);
+                   double att = getAttenuation(ueId, UL, ueCoord, false);
                    (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
                    EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
@@ -3129,7 +3129,7 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
 
                    // get tx power and attenuation from this UE
                    double rxPwr = txPwr - cableLoss_ + antennaGainUe_ + antennaGainEnB_;
-                   double att = getAttenuation(ueId, UL, ueCoord);
+                   double att = getAttenuation(ueId, UL, ueCoord, false);
                    (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
                    EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
@@ -3207,7 +3207,7 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
 
                    // get tx power and attenuation from this UE
                    double rxPwr = txPwr - cableLoss_ + 2 * antennaGainUe_;
-                   double att = getAttenuation_D2D(ueId, D2D, ueCoord, destId, destCoord);
+                   double att = getAttenuation_D2D(ueId, D2D, ueCoord, destId, destCoord, false);
                    (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
                    EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
@@ -3265,7 +3265,7 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
 
                    // get tx power and attenuation from this UE
                    double rxPwr = txPwr - cableLoss_ + 2 * antennaGainUe_;
-                   double att = getAttenuation_D2D(ueId, D2D, ueCoord, destId, destCoord);
+                   double att = getAttenuation_D2D(ueId, D2D, ueCoord, destId, destCoord, false);
                    (*interference)[i] += dBmToLinear(rxPwr-att);//(dBm-dB)=dBm
 
                    EV << "\t band " << i << "/pwr[" << rxPwr-att << "]-int[" << (*interference)[i] << "]" << endl;
