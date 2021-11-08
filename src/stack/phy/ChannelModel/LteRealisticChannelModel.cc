@@ -205,9 +205,9 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
 {
     ShadowFadingMap* actualShadowingMap;
 
-//    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
-//        actualShadowingMap = obtainShadowingMap(nodeId);
-//    else
+    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
+        actualShadowingMap = obtainShadowingMap(nodeId);
+    else
         actualShadowingMap = &lastComputedSF_;
 
     double mean = 0;

@@ -155,7 +155,7 @@ double NRChannelModel_3GPP38_901::getStdDev(bool dist, MacNodeId nodeId)
         if (losMap_[nodeId])
             return 4.;
         else
-            return 8.;
+            return 6.;
     }
     return NRChannelModel::getStdDev(dist, nodeId);
 }
@@ -180,9 +180,9 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
     double att;
 
     // if direction is DOWNLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is myMove_ varible
+    // the Move object associated to the UE is myMove_ variable
     // if direction is UPLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is move varible
+    // the Move object associated to the UE is move variable
 
     // if shadowing for current user has never been computed
     if (actualShadowingMap->find(nodeId) == actualShadowingMap->end())
