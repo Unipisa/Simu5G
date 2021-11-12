@@ -39,6 +39,10 @@ protected:
   // distance from the building wall
   double inside_distance_;
 
+  // flag for using high-loss or low-loss model for building penetration
+  // see table 7.4.3-2 in TR 38.901
+  bool useBuildingPenetrationHighLossModel_;
+
   // Average street's wide
   double wStreet_;
 

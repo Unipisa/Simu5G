@@ -11,15 +11,13 @@
 
 #include "stack/phy/ChannelModel/NRChannelModel_3GPP38_901.h"
 
-// attenuation value to be returned if max. distance of a scenario has been violated
-// and tolerating the maximum distance violation is enabled
-#define ATT_MAXDISTVIOLATED 1000
-
 Define_Module(NRChannelModel_3GPP38_901);
 
 void NRChannelModel_3GPP38_901::initialize(int stage)
 {
     NRChannelModel::initialize(stage);
+    if (inside_building_)
+        useBuildingPenetrationHighLossModel_ = par("useBuildingPenetrationHighLossModel").boolValue();
 }
 
 void NRChannelModel_3GPP38_901::computeLosProbability(double d, MacNodeId nodeId)
@@ -31,8 +29,15 @@ void NRChannelModel_3GPP38_901::computeLosProbability(double d, MacNodeId nodeId
        return;
    }
 
-   if (scenario_ == URBAN_MACROCELL)
+   switch (scenario_)
    {
+   case URBAN_MICROCELL:
+        if (d <= 18.0)
+            p = 1.0;
+        else
+            p = (18.0 / d) + exp(-1 * d / 36.0) * (1.0 - (18.0 / d));
+        break;
+   case URBAN_MACROCELL:
        if (d <= 18.0)
            p = 1.0;
        else
@@ -40,17 +45,55 @@ void NRChannelModel_3GPP38_901::computeLosProbability(double d, MacNodeId nodeId
            double C = (hUe_ <= 13.0) ? 0 : pow((hUe_-13.0)/10.0, 1.5);
            p = ( (18 / d) + exp(-1 * d / 63) * (1 - (18 / d)) ) * ( 1 + C * (5.0/4.0) * pow(d/100.0,3) * exp(-1 * d/150.0) );
        }
+       break;
+   case RURAL_MACROCELL:
+        if (d <= 10)
+            p = 1;
+        else
+            p = exp(-1 * (d - 10.0) / 1000);
+        break;
+   case INDOOR_HOTSPOT:
+           if (d <= 5.0)
+               p = 1;
+           else if (d <= 49.0)
+               p = exp(-1 * (d - 5.0) / 70.8);
+           else
+               p = exp(-1 * (d - 49.0) / 211.7);
+           break;
+    default:
+        NRChannelModel::computeLosProbability(d,nodeId);
+        return;
+    }
 
-       double random = uniform(0.0, 1.0);
-       if (random <= p)
-           losMap_[nodeId] = true;
-       else
-           losMap_[nodeId] = false;
-   }
-   else
-       NRChannelModel::computeLosProbability(d, nodeId);
+    double random = uniform(0.0, 1.0);
+    if (random <= p)
+        losMap_[nodeId] = true;
+    else
+        losMap_[nodeId] = false;
 }
 
+double NRChannelModel_3GPP38_901::computePenetrationLoss(double threeDimDistance)
+{
+    double penetrationLoss = 0.0;
+    double inside_distance = (inside_distance_ < threeDimDistance) ? inside_distance_ : threeDimDistance;
+    double pLoss_in = 0.5 * inside_distance;
+    double pLoss_tw = 0.0;
+    if (carrierFrequency_ <= 6.0)
+        pLoss_tw = 20.0;
+    else
+    {
+        double Lglass = 2 + 0.2 * carrierFrequency_;
+        double LiirGlass = 23 + 0.3 * carrierFrequency_;
+        double Lconcrete = 5 + 4 * carrierFrequency_;
+
+        if (useBuildingPenetrationHighLossModel_)
+            pLoss_tw = 5 - 10 * log10( 0.7 * pow(10,(-Lglass/10)) + 0.3 * pow(10,(-Lconcrete/10)) ) + normal(0.0,4.4);
+        else
+            pLoss_tw = 5 - 10 * log10( 0.3 * pow(10,(-LiirGlass/10)) + 0.7 * pow(10,(-Lconcrete/10)) ) + normal(0.0,6.5);
+    }
+    penetrationLoss = pLoss_tw + pLoss_in;
+    return penetrationLoss;
+}
 
 double NRChannelModel_3GPP38_901::computePathLoss(double threeDimDistance, double twoDimDistance, bool los)
 {
@@ -82,30 +125,13 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
    if (twoDimDistance < 10)
        twoDimDistance = 10;
 
-   if (twoDimDistance > 5000){
-       if(tolerateMaxDistViolation_)
-           return ATT_MAXDISTVIOLATED;
-       else
-           throw cRuntimeError("Error LOS urban macrocell path loss model is valid for d<5000 m");
-   }
+   if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
+       throw cRuntimeError("Error urban macrocell path loss model is valid for d<5000m only");
 
    // compute penetration loss
    double penetrationLoss = 0.0;
    if (inside_building_)
-   {
-       double inside_distance = (inside_distance_ < threeDimDistance) ? inside_distance_ : threeDimDistance;
-       double pLoss_in = 0.5 * inside_distance;
-       double pLoss_tw = 0.0;
-       if (carrierFrequency_ <= 6.0)
-           pLoss_tw = 20.0;
-       else
-       {
-           double Lglass = 2 + 0.2 * carrierFrequency_;
-           double Lconcrete = 5 + 4 * carrierFrequency_;
-           pLoss_tw = 5 - 10 * log10( 0.7 * pow(10,(-Lglass/10)) + 0.7 * pow(10,(-Lconcrete/10)) ) + normal(0.0,4.4);
-       }
-       penetrationLoss = pLoss_tw + pLoss_in;
-   }
+       penetrationLoss = computePenetrationLoss(threeDimDistance);
 
    // compute break-point distance
    double hEnvir = 0.0;
@@ -123,43 +149,200 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
        hVec.push_back(bound);
        hEnvir = hVec[intuniform(0, hVec.size())];
    }
-
    double hNodeB = hNodeB_ - hEnvir;
    double hUe = hUe_ - hEnvir;
-
    double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
 
+   // compute LOS path loss
    double pLoss_los = 0.0;
    if (twoDimDistance < dbp)
        pLoss_los = 28 + 22 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
    else
        pLoss_los = 28 + 40 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 9 * log10( (dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_) ) );
+   pLoss_los += penetrationLoss;
+
+   double pLoss = 0.0;
+   if (los)
+       pLoss = pLoss_los;
+   else
+   {
+       // compute NLOS path loss
+       double pLoss_nlos = 13.54 + 39.08 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 0.6 * (hUe_ - 1.5);
+       pLoss_nlos += penetrationLoss;
+
+       pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
+   }
+   return pLoss;
+}
+
+double NRChannelModel_3GPP38_901::computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los)
+{
+   if (twoDimDistance < 10)
+       twoDimDistance = 10;
+
+   if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
+       throw cRuntimeError("Error urban microcell path loss model is valid for d<5000m only");
+
+   // compute penetration loss
+   double penetrationLoss = 0.0;
+   if (inside_building_)
+       penetrationLoss = computePenetrationLoss(threeDimDistance);
+
+   // compute break-point distance
+   double hEnvir = 1.0;
+   double hNodeB = hNodeB_ - hEnvir;
+   double hUe = hUe_ - hEnvir;
+   double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+
+   // compute LOS path loss
+   double pLoss_los = 0.0;
+   if (twoDimDistance < dbp)
+       pLoss_los = 32.4 + 21 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
+   else
+       pLoss_los = 32.4 + 40 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 9.5 * log10( (dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_) ) );
+   pLoss_los += penetrationLoss;
+
+   double pLoss = 0.0;
+   if (los)
+       pLoss = pLoss_los;
+   else
+   {
+       // compute NLOS path loss
+       double pLoss_nlos = 35.3 * log10(threeDimDistance) + 22.4 + 21.3 * log10(carrierFrequency_) - 0.3 * (hUe_ - 1.5);
+       pLoss_nlos += penetrationLoss;
+
+       pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
+   }
+   return pLoss;
+}
+
+double NRChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los)
+{
+   if (twoDimDistance < 10)
+       twoDimDistance = 10;
 
    if (los)
-       return pLoss_los + penetrationLoss;
+   {
+       if (twoDimDistance > 10000 && !tolerateMaxDistViolation_)
+           throw cRuntimeError("Error: LOS rural macrocell path loss model is valid for d<10000m only");
+   }
+   else
+   {
+       if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
+           throw cRuntimeError("Error: NLOS rural macrocell path loss model is valid for d<5000m only");
+   }
+   // compute penetration loss
+   double penetrationLoss = 0.0;
+   if (inside_building_)
+   {
+       penetrationLoss = computePenetrationLoss(threeDimDistance);
+   }
 
-   // NLOS case (optional PL in 3GPP 38.901 v16.1.0
+   // compute break-point distance
+   double dbp = 2 * M_PI * hNodeB_ * hUe_ * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
 
-   double pLoss_nlos = 32.4 + 20 * log10(carrierFrequency_) + 30 * log10(threeDimDistance);
-   return pLoss_nlos;
+   double h = 5.0; // average building height
+   double A = 0.03 * pow(h,1.72);
+   double B = 0.044 * pow(h,1.72);
+   double min1 = (A < 10) ? A : 10;
+   double min2 = (B < 14.77) ? B : 14.77;
+   double pLoss_los = 0.0;
+   if (twoDimDistance < dbp)
+   {
+       pLoss_los = 20 * log10(40 * M_PI * threeDimDistance * (carrierFrequency_ / 3.0)) + min1 * log10(threeDimDistance) - min2 + 0.002 * log10(h) * threeDimDistance;
+   }
+   else
+   {
+       pLoss_los = 20 * log10(40 * M_PI * dbp * (carrierFrequency_ / 3.0)) + min1 * log10(dbp) - min2 + 0.002 * log10(h) * dbp
+               + 40 * log10(threeDimDistance / dbp);
+   }
+   pLoss_los += penetrationLoss;
 
-//   double pLoss_nlos = 13.54 + 39.08 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 0.6 * (hUe_ - 1.5);
-//
-//   return (pLoss_los > pLoss_nlos) ? pLoss_los + penetrationLoss : pLoss_nlos + penetrationLoss;
+   double pLoss = 0.0;
+   if (los)
+       pLoss = pLoss_los;
+   else
+   {
+       double W = 20.0;  // average street width
+       double pLoss_nlos = 161.04 - 7.1 * log10(W) + 7.5 * log10(h) - (24.37 - 3.7 * pow(h/hNodeB_,2)) * log10(hNodeB_)
+               + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3.0) + 20 * log10(carrierFrequency_)
+               - (3.2 * pow((log10(11.75 * hUe_)),2) - 4.97);
+       pLoss_nlos += penetrationLoss;
+       pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
+   }
+
+   return pLoss;
+}
+
+double NRChannelModel_3GPP38_901::computeIndoor(double threeDimDistance, double twoDimDistance, bool los)
+{
+   if (threeDimDistance < 1)
+       threeDimDistance = 1;
+
+   if (threeDimDistance > 150 && !tolerateMaxDistViolation_)
+       throw cRuntimeError("Error indoor hotspot path loss model is valid for d<150m only");
+
+   // compute penetration loss
+   double penetrationLoss = 0.0;
+   if (inside_building_)
+       penetrationLoss = computePenetrationLoss(threeDimDistance);
+
+   // compute LOS path loss
+   double pLoss_los = 32.4 + 17.3 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
+   pLoss_los += penetrationLoss;
+
+   double pLoss = 0.0;
+   if (los)
+       pLoss = pLoss_los;
+   else
+   {
+       // compute NLOS path loss
+       double pLoss_nlos = 38.3 * log10(threeDimDistance) + 17.3 + 24.9 * log10(carrierFrequency_);
+       pLoss_nlos += penetrationLoss;
+
+       pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
+   }
+   return pLoss;
 }
 
 double NRChannelModel_3GPP38_901::getStdDev(bool dist, MacNodeId nodeId)
 {
-    if (scenario_ == URBAN_MACROCELL)
+    switch (scenario_)
     {
+    case URBAN_MICROCELL:
+        if (losMap_[nodeId])
+            return 4.;
+        else
+            return 7.82;
+        break;
+    case INDOOR_HOTSPOT:
+        if (losMap_[nodeId])
+            return 3.;
+        else
+            return 8.03;
+        break;
+    case URBAN_MACROCELL:
         if (losMap_[nodeId])
             return 4.;
         else
             return 6.;
+        break;
+    case RURAL_MACROCELL:
+        if (losMap_[nodeId])
+        {
+            if (dist)
+                return 4.;
+            else
+                return 6.;
+        }
+        else
+            return 8.;
+        break;
+    default:
+        throw cRuntimeError("Wrong path-loss scenario value %d", scenario_);
     }
-    return NRChannelModel::getStdDev(dist, nodeId);
+    return 0.0;
 }
-
 
 double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl)
 {

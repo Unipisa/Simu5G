@@ -21,8 +21,6 @@
 // the following specifications:
 //     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
-// TODO implements Urban Macro only
-//
 class NRChannelModel_3GPP38_901 : public NRChannelModel
 {
 
@@ -30,12 +28,20 @@ public:
     virtual void initialize(int stage);
 
     /*
-     * Compute LOS probability (taken from TR 36.873)
+     * Compute LOS probability (taken from TR TR 38.901)
      *
      * @param d between UE and gNodeB
      * @param nodeid mac node id of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
+
+    /*
+     * Compute the building penetration loss for indoor UE
+     * See section 7.4.3 of TR 38.901
+     *
+     * @param 3d_distance between UE and gNodeB (3D)
+     */
+    virtual double computePenetrationLoss(double threeDimDistance);
 
     /*
      * Compute the path-loss attenuation according to the selected scenario
@@ -47,12 +53,36 @@ public:
     virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
 
     /*
-     * 3D-UMa path loss model (taken from TR 36.873)
+     * UMa path loss model (taken from TR 38.901)
      *
      * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los);
+
+    /*
+     * UMi path loss model (taken from TR 38.901)
+     *
+     * @param distance between UE and gNodeB
+     * @param los line-of-sight flag
+     */
+    double computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los);
+
+    /*
+     * UMa path loss model (taken from TR 38.901)
+     *
+     * @param distance between UE and gNodeB
+     * @param los line-of-sight flag
+     */
+    double computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los);
+
+    /*
+     * InH path loss model (taken from TR 38.901)
+     *
+     * @param distance between UE and gNodeB
+     * @param los line-of-sight flag
+     */
+    double computeIndoor(double threeDimDistance, double twoDimDistance, bool los);
 
     /*
      * compute std deviation of shadowing according to scenario and visibility
