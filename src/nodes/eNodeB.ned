@@ -50,6 +50,9 @@ module eNodeB
         @figure[linkLayer](type=rectangle; pos=250,456; size=1000,130; fillColor=#0000ff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
         @figure[linkLayer.title](type=text; pos=1245,461; anchor=ne; text="link layer");
         @figure[submodules];
+        @statistic[posX](source="xCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
+        @statistic[posY](source="yCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
+            
 
         //# Node specs
         string nodeType = default("ENODEB");        // DO NOT CHANGE
