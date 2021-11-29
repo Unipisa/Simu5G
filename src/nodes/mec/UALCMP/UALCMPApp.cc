@@ -78,7 +78,8 @@ void UALCMPApp::initialize(int stage)
 
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
-        mecOrchestrator_ = check_and_cast<MecOrchestrator*>(getSimulation()->getModuleByPath("mecOrchestrator"));
+        std::string mecOrchestratorHostname = getAncestorPar("mecOrchestratorHostname").stringValue();
+        mecOrchestrator_ = check_and_cast<MecOrchestrator*>(getSimulation()->getModuleByPath(mecOrchestratorHostname.c_str()));
     }
 
     inet::ApplicationBase::initialize(stage);
