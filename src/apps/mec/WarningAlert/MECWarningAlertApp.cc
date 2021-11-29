@@ -305,7 +305,6 @@ void MECWarningAlertApp::handleServiceMessage()
             {
                 nlohmann::json criteria = jsonBody["subscriptionNotification"]["enteringLeavingCriteria"] ;
                 auto alert = inet::makeShared<WarningAlertPacket>();
-                alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                 alert->setType(WARNING_ALERT);
 
                 if(criteria == "Entering")
@@ -348,6 +347,7 @@ void MECWarningAlertApp::handleServiceMessage()
                 alert->setPositionX(jsonBody["subscriptionNotification"]["terminalLocationList"]["currentLocation"]["x"]);
                 alert->setPositionY(jsonBody["subscriptionNotification"]["terminalLocationList"]["currentLocation"]["y"]);
                 alert->setChunkLength(inet::B(20));
+                alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
                 inet::Packet* packet = new inet::Packet("WarningAlertPacketInfo");
                 packet->insertAtBack(alert);

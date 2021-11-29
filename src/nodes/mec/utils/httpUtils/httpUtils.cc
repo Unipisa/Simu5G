@@ -479,7 +479,6 @@ namespace Http {
 
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
-        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
         resPkt->setCode(code);
@@ -499,7 +498,6 @@ namespace Http {
 
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
-        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
         resPkt->setCode(code);
@@ -512,6 +510,8 @@ namespace Http {
         resPkt->setHeaderField(header.first, header.second);
 
         resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
         packet->insertAtBack(resPkt);
         socket->send(packet);
     }
@@ -520,7 +520,6 @@ namespace Http {
         EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
-        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
 
@@ -539,6 +538,8 @@ namespace Http {
         }
 
         resPkt->setChunkLength(B(resPkt->getPayload().size()));
+        resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
         packet->insertAtBack(resPkt);
         socket->send(packet);
 
@@ -549,7 +550,6 @@ namespace Http {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
-        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
 
@@ -566,6 +566,8 @@ namespace Http {
             reqPkt->setParameters(parameters);
         }
         reqPkt->setChunkLength(B(reqPkt->getPayload().size())); // TODO get size more efficiently
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
@@ -574,7 +576,6 @@ namespace Http {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
-        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
         reqPkt->setMethod(method);
@@ -591,6 +592,8 @@ namespace Http {
         }
         reqPkt->setHeaderField(header.first,header.second);
         reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
         packet->insertAtBack(reqPkt);
         socket->send(packet);
 
@@ -600,7 +603,6 @@ namespace Http {
         EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
-        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
 
@@ -623,6 +625,8 @@ namespace Http {
            reqPkt->setHeaderField(it->first, it->second);
         }
         reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
+        reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
         packet->insertAtBack(reqPkt);
         socket->send(packet);
     }
