@@ -57,9 +57,9 @@ moduleinterface IMECService
         double subscriptionServiceTime @unit(s);
         string serverThreadClass;
 
-		@signal[requestQueueSize](type = long);
+		@signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
-        @signal[responseTime](type = long);
+        @signal[responseTime];
         @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
         
 }
