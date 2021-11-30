@@ -42,8 +42,6 @@ private:
     Direction direction_;
     unsigned int grantId;
 
-    static unsigned int grantIdCounter;
-
   public:
 
     LteSchedulingGrant() :
@@ -52,7 +50,7 @@ private:
         userTxParams = nullptr;
         grantedCwBytes.resize(MAX_CODEWORDS);
 
-        grantId = grantIdCounter++;
+        grantId = getChunkId();
     }
 
     ~LteSchedulingGrant()
