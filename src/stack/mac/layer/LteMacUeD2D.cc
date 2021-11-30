@@ -538,10 +538,6 @@ LteMacUeD2D::macHandleGrant(cPacket* pktAux)
 
     // store received grant
     schedulingGrant_[carrierFrequency] = grant;
-
-    EV_FATAL << "grantId recevive grant: " << grant->getGrandId() << endl;
-
-
     if (grant->getPeriodic())
     {
         periodCounter_[carrierFrequency] = grant->getPeriod();

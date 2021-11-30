@@ -876,7 +876,7 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
         {
 
             simtime_t time = simTime() - it->sendTimestamp;
-            EV_FATAL << NOW << " " << pfmType << "::grantSent - TB received from nodeId " << nodeId << " related to grantId " << grantId << " after " << time.dbl() << "seconds" << endl;
+            EV_FATAL << NOW << " " << pfmType << "::ulMacPduArrived - TB received from nodeId " << nodeId << " related to grantId " << grantId << " after " << time.dbl() << "seconds" << endl;
             ULPktDelay_[nodeId].pktCount++;
             ULPktDelay_[nodeId].time += time;
 

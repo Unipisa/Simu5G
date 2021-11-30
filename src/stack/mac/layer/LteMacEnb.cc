@@ -589,8 +589,17 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList>* scheduleList)
 
             grant->setGrantedBlocks(map);
             pkt->insertAtFront(grant);
+
+            /*
+             * @author Alessandro Noferi
+             * Notify the pfm about the successful arrival of a TB from a UE.
+             * From ETSI TS 138314 V16.0.0 (2020-07)
+             *   tSched: the point in time when the UL MAC SDU i is scheduled as
+             *   per the scheduling grant provided
+             */
             if(packetFlowManager_ != nullptr)
                 packetFlowManager_->grantSent(nodeId, grant->getGrandId());
+
             // send grant to PHY layer
             sendLowerPackets(pkt);
         }
@@ -778,6 +787,19 @@ void LteMacEnb::macPduUnmake(cPacket* pktAux)
 {
     auto pkt = check_and_cast<Packet*>(pktAux);
     auto macPkt = pkt->removeAtFront<LteMacPdu>();
+
+    /*
+     * @author Alessandro Noferi
+     * Notify the pfm about the successful arrival of a TB from a UE.
+     * From ETSI TS 138314 V16.0.0 (2020-07)
+     * tSucc: the point in time when the MAS SDU i was received successfully by the network
+     */
+    auto userInfo = pkt->getTag<UserControlInfo>();
+
+    if(packetFlowManager_ != nullptr)
+    {
+        packetFlowManager_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
+    }
 
     while (macPkt->hasSdu())
     {
