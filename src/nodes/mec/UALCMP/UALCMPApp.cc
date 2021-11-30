@@ -73,6 +73,7 @@ void UALCMPApp::initialize(int stage)
         currentSubscriptionServed_ = nullptr;
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+        responseTimeSignal_ = registerSignal("responseTime");
         binder_ = getBinder();
     }
 
