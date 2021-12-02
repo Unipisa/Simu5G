@@ -56,7 +56,10 @@ network SingleCell_Standalone
             @display("p=363.175,115.66875;i=device/smallrouter");
         }
         upf: Upf {
-            @display("p=527.35,116.9125;is=l");
+            @display("p=527.35,116.9125");
+        }
+        iUpf: Upf {
+            @display("p=725,118");
         }
         gnb: gNodeB {
             @display("p=726.35,277.35626;is=vl");
@@ -70,5 +73,6 @@ network SingleCell_Standalone
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.filterGate;
-        upf.pppg++ <--> Eth10G <--> gnb.ppp;
+        upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
+        iUpf.pppg++ <--> Eth10G <--> gnb.ppp;
 }
