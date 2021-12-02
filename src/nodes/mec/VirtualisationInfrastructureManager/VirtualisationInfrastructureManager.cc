@@ -235,7 +235,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     }
 }
 
-MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateAppMessage* msg)
+MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(CreateAppMessage* msg)
 {
     EV << "VirtualisationInfrastructureManager::instantiateMEApp - processing..." << endl;
 
@@ -278,8 +278,8 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
                     "cpu: " << cpu << endl <<
                     "cannot be instantiated due to unavailable resources" << endl;
 
-            MecAppInstanceInfo instanceInfo;
-            instanceInfo.status = false;
+            MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+            instanceInfo->status = false;
             return instanceInfo;
         }
         // creating MEApp module instance
@@ -325,13 +325,13 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
 
         module->finalizeParameters();
 
-        MecAppInstanceInfo instanceInfo;
-        instanceInfo.instanceId = appName.str();
+        MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+        instanceInfo->instanceId = appName.str();
 
-        instanceInfo.endPoint.addr = mecAppRemoteAddress_;
-        instanceInfo.endPoint.port = mecAppPortCounter;
+        instanceInfo->endPoint.addr = mecAppRemoteAddress_;
+        instanceInfo->endPoint.port = mecAppPortCounter;
 
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo.endPoint.port << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo->endPoint.port << endl;
 
         mecAppPortCounter++;
 
@@ -394,13 +394,13 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
-        instanceInfo.status = true;
+        instanceInfo->status = true;
         return instanceInfo;
     }
     else
     {
-        MecAppInstanceInfo instanceInfo;
-        instanceInfo.status = false;
+        MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+        instanceInfo->status = false;
         return instanceInfo;
     }
 }

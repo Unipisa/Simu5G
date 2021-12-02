@@ -213,16 +213,17 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
           * The application descriptor contains the address and port information to communicate with the mec application
           */
 
-         MecAppInstanceInfo appInfo;
+         MecAppInstanceInfo* appInfo = nullptr;
 
          if(desc.isMecAppEmulated())
          {
              EV << "MecOrchestrator::startMECApp - MEC app is emulated" << endl;
              bool result = mecpm->instantiateEmulatedMEApp(createAppMsg);
-             appInfo.status = result;
-             appInfo.endPoint.addr = inet::L3Address(desc.getExternalAddress().c_str());
-             appInfo.endPoint.port = desc.getExternalPort();
-             appInfo.instanceId = "emulated_" + desc.getAppName();
+             appInfo = new MecAppInstanceInfo();
+             appInfo->status = result;
+             appInfo->endPoint.addr = inet::L3Address(desc.getExternalAddress().c_str());
+             appInfo->endPoint.port = desc.getExternalPort();
+             appInfo->instanceId = "emulated_" + desc.getAppName();
              newMecApp.isEmulated = true;
 
          }
@@ -232,7 +233,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
              newMecApp.isEmulated = false;
          }
 
-         if(!appInfo.status)
+         if(!appInfo->status)
          {
              EV << "MecOrchestrator::startMECApp - something went wrong during MEC app instantiation"<< endl;
              MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
@@ -244,11 +245,11 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
              return;
          }
 
-         EV << "MecOrchestrator::startMECApp - new MEC application with name: " << appInfo.instanceId << " instantiated on MEC host []"<< newMecApp.mecHost << " at "<< appInfo.endPoint.addr.str() << ":" << appInfo.endPoint.port << endl;
+         EV << "MecOrchestrator::startMECApp - new MEC application with name: " << appInfo->instanceId << " instantiated on MEC host []"<< newMecApp.mecHost << " at "<< appInfo->endPoint.addr.str() << ":" << appInfo->endPoint.port << endl;
 
-         newMecApp.mecAppAddress = appInfo.endPoint.addr;
-         newMecApp.mecAppPort = appInfo.endPoint.port;
-         newMecApp.mecAppIsntanceId = appInfo.instanceId;
+         newMecApp.mecAppAddress = appInfo->endPoint.addr;
+         newMecApp.mecAppPort = appInfo->endPoint.port;
+         newMecApp.mecAppIsntanceId = appInfo->instanceId;
          newMecApp.contextId = contextIdCounter;
          meAppMap[contextIdCounter] = newMecApp;
 
@@ -262,6 +263,8 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
 
          processingTime += instantiationTime;
          scheduleAt(simTime() + processingTime, msg);
+
+         delete appInfo;
     }
     else
     {
