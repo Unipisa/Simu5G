@@ -428,23 +428,24 @@ MacNodeId Binder::getMasterNode(MacNodeId slaveId)
     return secondaryNodeToMasterNode_[slaveId];
 }
 
-void Binder::registerMecHostToGtp(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress)
+void Binder::registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress)
 {
-    mecHostAddressToGtpAddress_[mecHostAddress] = gtpAddress;
+    mecHostToUpfAddress_[mecHostAddress] = gtpAddress;
 }
 
-bool Binder::isMecHostAddress(const inet::L3Address& mecHostAddress)
+bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
 {
-    if (mecHostAddressToGtpAddress_.find(mecHostAddress) == mecHostAddressToGtpAddress_.end())
+    if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
         return false;
     return true;
 }
 
-const inet::L3Address& Binder::getGtpMecHost(const inet::L3Address& mecHostAddress)
 {
-    if (mecHostAddressToGtpAddress_.find(mecHostAddress) == mecHostAddressToGtpAddress_.end())
-         throw cRuntimeError("Binder::getGtpMecHost - address not found");
-    return mecHostAddressToGtpAddress_[mecHostAddress];
+const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostAddress)
+{
+    if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
+         throw cRuntimeError("Binder::getUpfFromMecHost - address not found");
+    return mecHostToUpfAddress_[mecHostAddress];
 }
 
 void Binder::registerName(MacNodeId nodeId, const char* moduleName)

@@ -130,7 +130,7 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
 TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L3Address destAddress)
 {
     // check whether the destination address is a (simulated) MEC host's address
-    if (binder_->isMecHostAddress(destAddress))
+    if (binder_->isMecHost(destAddress))
     {
         EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << endl;
         return -3;

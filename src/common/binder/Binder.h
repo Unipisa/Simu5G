@@ -46,8 +46,8 @@ class Binder : public omnetpp::cSimpleModule
 
     // for GTP tunneling with MEC hosts involved
     // this map associates the L3 address of the Virt. Infrastructure of a MEC host to
-    // the IP address of the corresponding GTP endpoint (UPF)
-    std::map<inet::L3Address, inet::L3Address> mecHostAddressToGtpAddress_;
+    // the IP address of the corresponding UPF
+    std::map<inet::L3Address, inet::L3Address> mecHostToUpfAddress_;
 
     // list of static external cells. Used for intercell interference evaluation
     std::map<double, ExtCellList> extCellList_;
@@ -433,11 +433,18 @@ class Binder : public omnetpp::cSimpleModule
 //    }
 
     /**
-     * Associates the given MEC Host address to its corresponding GTP endpoint (UPF)
+     * Associates the given MEC Host address to its corresponding UPF
      */
-    void registerMecHostToGtp(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress);
-    bool isMecHostAddress(const inet::L3Address& mecHostAddress);
-    const inet::L3Address& getGtpMecHost(const inet::L3Address& mecHostAddress);
+    void registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress);
+    /**
+     * Returns true if the given address belongs to a MEC host
+     */
+    bool isMecHost(const inet::L3Address& mecHostAddress);
+    /**
+     * Returns the UPF address corresponding to the given MEC Host address
+     */
+    const inet::L3Address& getUpfFromMecHost(const inet::L3Address& mecHostAddress);
+     */
 
 
     /**

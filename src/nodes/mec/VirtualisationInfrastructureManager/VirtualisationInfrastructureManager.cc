@@ -78,7 +78,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     // register MEC addresses to the Binder
     inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(virtualisationInfr->getFullPath().c_str());
     inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
-    binder_->registerMecHostToGtp(mecHostAddress, gtpAddress);
+    binder_->registerMecHostUpfAddress(mecHostAddress, gtpAddress);
 
     virtualisationInfr->setGateSize("meAppOut", maxMECApps);
     virtualisationInfr->setGateSize("meAppIn", maxMECApps);

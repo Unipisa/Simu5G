@@ -164,7 +164,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
         {
             // retrieve the address of the UPF included within the MEC host
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
-            tunnelPeerAddress = binder_->getGtpMecHost(inet::L3Address(destAddr));
+            tunnelPeerAddress = binder_->getUpfFromMecHost(inet::L3Address(destAddr));
         }
         else  // send to a BS
         {
@@ -222,7 +222,8 @@ void GtpUser::handleFromUdp(Packet * pkt)
     {
         // destination is not a UE
 
-        if(binder_->isMecHostAddress(destAddr))
+        // check if the destination is a MEC host
+        if(binder_->isMecHost(destAddr))
         {
             if (ownerType_== UPF_MEC)
             {
@@ -233,7 +234,7 @@ void GtpUser::handleFromUdp(Packet * pkt)
             }
 
             //tunneling to the MEC Host's UPF
-            tunnelPeerAddress = binder_->getGtpMecHost(destAddr);
+            tunnelPeerAddress = binder_->getUpfFromMecHost(destAddr);
             EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to " << tunnelPeerAddress.str() << endl;
         }
         else
