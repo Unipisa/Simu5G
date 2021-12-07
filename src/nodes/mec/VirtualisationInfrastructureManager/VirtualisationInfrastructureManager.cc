@@ -8,9 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-
+#include <inet/networklayer/common/L3AddressResolver.h>
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
@@ -75,6 +74,11 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     virtualisationInfr = mecHost->getSubmodule("virtualisationInfrastructure");
     if(virtualisationInfr == nullptr)
         throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMECApps parameter!");
+
+    // register MEC addresses to the Binder
+    inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(virtualisationInfr->getFullPath().c_str());
+    inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(mecHost->getSubmodule("gtpEndpoint")->getFullPath().c_str());
+    binder_->registerMecHostToGtp(mecHostAddress, gtpAddress);
 
     virtualisationInfr->setGateSize("meAppOut", maxMECApps);
     virtualisationInfr->setGateSize("meAppIn", maxMECApps);

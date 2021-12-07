@@ -34,37 +34,37 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
 
     //mec
-       if(getParentModule()->hasPar("mecHost")){
+    if(getParentModule()->hasPar("mecHost")){
 
-           meHost = getParentModule()->par("mecHost").stringValue();
-           if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
-           {
-               /*
-                * @author Alessandro Noferi
-                *
-                */
-               //begin
-               std::string extAddress = getAncestorPar("extMeAppsAddress").stringValue();
-               if(strcmp(extAddress.c_str(), ""))
-               {
-                   std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();
-                   if(extAdd.size() != 2){
-                       throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be like address/mask");
-                   }
-                   meAppsExtAddress_ = inet::L3AddressResolver().resolve(extAdd[0].c_str());
-                   meAppsExtAddressMask_ = atoi(extAdd[1].c_str());
-                   EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str()<<"/"<< meAppsExtAddressMask_<< endl;
-               }
-               //end
+        meHost = getParentModule()->par("mecHost").stringValue();
+        if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
+        {
+            /*
+             * @author Alessandro Noferi
+             *
+             */
+            //begin
+            std::string extAddress = getAncestorPar("extMeAppsAddress").stringValue();
+            if(strcmp(extAddress.c_str(), ""))
+            {
+                std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();
+                if(extAdd.size() != 2){
+                    throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be like address/mask");
+                }
+                meAppsExtAddress_ = inet::L3AddressResolver().resolve(extAdd[0].c_str());
+                meAppsExtAddressMask_ = atoi(extAdd[1].c_str());
+                EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str()<<"/"<< meAppsExtAddressMask_<< endl;
+            }
+            //end
 
-               std::stringstream meHostName;
-               meHostName << meHost.c_str() << ".virtualisationInfrastructure";
-               meHost = meHostName.str();
-               meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
+            std::stringstream meHostName;
+            meHostName << meHost.c_str() << ".virtualisationInfrastructure";
+            meHost = meHostName.str();
+            meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
 
-               EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
-           }
-       }
+            EV << "TrafficFlowFilter::initialize - meHost: " << meHost << " meHostAddress: " << meHostAddress.str() << endl;
+        }
+    }
 
        //end mec
 
@@ -116,68 +116,63 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     // run packet filter and associate a flowId to the connection (default bearer?)
     // search within tftTable the proper entry for this destination
     TrafficFlowTemplateId tftId = findTrafficFlow(srcAddr, destAddr);   // search for the tftId in the binder
-    if(tftId == -2)
-    {
-        // the destination has been removed from the simulation. Delete msg
-        EV << "TrafficFlowFilter::handleMessage - Destination has lost its connection or has been removed from the simulation. Delete packet." << endl;
-        delete msg;
-    }
-    else
-    {
-        
-        // add control info to the normal ip datagram. This info will be read by the GTP-U application
-        auto tftInfo = pkt->addTag<TftControlInfo>();
-        tftInfo->setTft(tftId);
 
-        EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << endl;
+    // add control info to the normal ip datagram. This info will be read by the GTP-U application
+    auto tftInfo = pkt->addTag<TftControlInfo>();
+    tftInfo->setTft(tftId);
 
-        // send the datagram to the GTP-U module
-        send(pkt,"gtpUserGateOut");
-    }
+    EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << endl;
+
+    // send the datagram to the GTP-U module
+    send(pkt,"gtpUserGateOut");
 }
 
 TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L3Address destAddress)
 {
-    //mec
-    // check this before the other!
-    if (isBaseStation(ownerType_) && destAddress.operator == (meHostAddress))
+    // check whether the destination address is a (simulated) MEC host's address
+    if (binder_->isMecHostAddress(destAddress))
     {
-        // the destination is the ME Host
-        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << meHost << endl;
+        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << endl;
         return -3;
     }
     // emulation mode
-    else if (isBaseStation(ownerType_) && !meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
+    else if (!meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
     {
         // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
-        EV << "TrafficFlowFilter::findTrafficFlow - [emulation] returning flowId (-3) for tunneling to " << meHost << endl;
+        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << " (external) " << endl;
         return -3;
     }
-    else if(ownerType_ == GTPENDPOINT)
-    {
-        // send only messages direct to UEs --> UEs have macNodeId != 0
-        MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
-        MacNodeId destMaster = binder_->getNextHop(destId);
-        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId for " <<  binder_->getModuleNameByMacNodeId(destMaster) <<": "<< destMaster << endl;
-        return destMaster;
-    }
-    //end mec
-    //
+//    else if(ownerType_ == GTPENDPOINT)
+//    {
+//        // send only messages direct to UEs --> UEs have macNodeId != 0
+//        MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
+//        MacNodeId destMaster = binder_->getNextHop(destId);
+//        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId for " <<  binder_->getModuleNameByMacNodeId(destMaster) <<": "<< destMaster << endl;
+//        return destMaster;
+//    }
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
     if (destId == 0)
     {
-        EV << "TrafficFlowFilter::findTrafficFlow - destId = "<< destId << endl;
-
-        if (isBaseStation(ownerType_))
-            return -1;   // the destination is outside the LTE network, so send the packet to the PGW
-        else // PGW or UPF
+        EV << "TrafficFlowFilter::findTrafficFlow - destination "<< destAddress.str() << " is not a UE. ";
+        if (ownerType_ == UPF || ownerType_ == PGW)
+        {
+            EV << "Remove packet from the simulation." << endl;
             return -2;   // the destination UE has been removed from the simulation
+        }
+        else // BS or MEC
+        {
+            EV << "Forward packet to the gateway." << endl;
+            return -1;   // the destination might be outside the cellular network, send the packet to the gateway
+        }
     }
 
     MacNodeId destBS = binder_->getNextHop(destId);
     if (destBS == 0)
+    {
+        EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
         return -2;   // the destination UE is not attached to any nodeB
+    }
 
     // the serving node for the UE might be a secondary node in case of NR Dual Connectivity
     // obtains the master node, if any (the function returns destEnb if it is a master already)

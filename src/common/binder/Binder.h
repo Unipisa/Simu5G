@@ -44,6 +44,11 @@ class Binder : public omnetpp::cSimpleModule
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
     std::map<int, OmnetId> nodeIds_;
 
+    // for GTP tunneling with MEC hosts involved
+    // this map associates the L3 address of the Virt. Infrastructure of a MEC host to
+    // the IP address of the corresponding GTP endpoint (UPF)
+    std::map<inet::L3Address, inet::L3Address> mecHostAddressToGtpAddress_;
+
     // list of static external cells. Used for intercell interference evaluation
     std::map<double, ExtCellList> extCellList_;
 
@@ -426,6 +431,15 @@ class Binder : public omnetpp::cSimpleModule
 //            return;
 //        x2Address_[nodeId] = interfAddr;
 //    }
+
+    /**
+     * Associates the given MEC Host address to its corresponding GTP endpoint (UPF)
+     */
+    void registerMecHostToGtp(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress);
+    bool isMecHostAddress(const inet::L3Address& mecHostAddress);
+    const inet::L3Address& getGtpMecHost(const inet::L3Address& mecHostAddress);
+
+
     /**
      * Associates the given MAC node ID to the name of the module
      */
