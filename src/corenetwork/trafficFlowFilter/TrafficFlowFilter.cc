@@ -85,8 +85,8 @@ CoreNodeType TrafficFlowFilter::selectOwnerType(const char * type)
         return PGW;
     else if(strcmp(type,"UPF") == 0)
         return UPF;
-    else if(strcmp(type, "GTPENDPOINT") == 0)
-        return GTPENDPOINT;
+    else if(strcmp(type, "UPF_MEC") == 0)
+        return UPF_MEC;
     else
         error("TrafficFlowFilter::selectOwnerType - unknown owner type [%s]. Aborting...",type);
 
@@ -142,14 +142,6 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << " (external) " << endl;
         return -3;
     }
-//    else if(ownerType_ == GTPENDPOINT)
-//    {
-//        // send only messages direct to UEs --> UEs have macNodeId != 0
-//        MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
-//        MacNodeId destMaster = binder_->getNextHop(destId);
-//        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId for " <<  binder_->getModuleNameByMacNodeId(destMaster) <<": "<< destMaster << endl;
-//        return destMaster;
-//    }
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
     if (destId == 0)

@@ -48,7 +48,7 @@ void GtpUser::initialize(int stage)
         // check if this is a gNB connected as secondary node
         bool connectedBS = isBaseStation(ownerType_) && getParentModule()->gate("ppp$o")->isConnected();
 
-        if (connectedBS || ownerType_ == GTPENDPOINT)
+        if (connectedBS || ownerType_ == UPF_MEC)
             gwAddress_ = L3AddressResolver().resolve(getAncestorPar("gateway"));
     }
 
@@ -86,10 +86,8 @@ CoreNodeType GtpUser::selectOwnerType(const char * type)
         return PGW;
     else if(strcmp(type,"UPF") == 0)
         return UPF;
-    //mec
-    else if(strcmp(type, "GTPENDPOINT") == 0)
-        return GTPENDPOINT;
-    //end mec
+    else if(strcmp(type, "UPF_MEC") == 0)
+        return UPF_MEC;
 
     error("GtpUser::selectOwnerType - unknown owner type [%s]. Aborting...",type);
 
@@ -226,7 +224,7 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
         if(binder_->isMecHostAddress(destAddr))
         {
-            if (ownerType_== GTPENDPOINT)
+            if (ownerType_== UPF_MEC)
             {
                 // we are on the MEC, local delivery
                 EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
@@ -234,7 +232,7 @@ void GtpUser::handleFromUdp(Packet * pkt)
                 return;
             }
 
-            //tunneling to the ME Host GtpEndpoint
+            //tunneling to the MEC Host's UPF
             tunnelPeerAddress = binder_->getGtpMecHost(destAddr);
             EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to " << tunnelPeerAddress.str() << endl;
         }

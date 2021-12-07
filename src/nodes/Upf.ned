@@ -35,10 +35,9 @@ module Upf extends NetworkLayerNodeBase
         @figure[transportLayer.title](type=text; pos=1245,161; anchor=ne; text="transport layer");
         @figure[submodules];
 
-        string nodeType = "UPF";
+        string nodeType = default("UPF");   // do NOT change!
         forwarding = default(true);
         multicastForwarding = default(false);
-        // numPppInterfaces = 1;
 
     gates:
         // this gate is used for the UPF connected to the external data network

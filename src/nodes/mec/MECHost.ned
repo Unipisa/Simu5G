@@ -15,9 +15,7 @@ import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructur
 import simu5g.nodes.mec.MECPlatform.MECPlatform;
 import simu5g.nodes.mec.MECPlatformManager.MecPlatformManager;
 import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
-
-// tunneling endpoint to connect externally with an eNodeB
-import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
+import simu5g.nodes.Upf;
 import inet.node.ethernet.Eth10G;
 import inet.applications.contract.IApp;
 // 
@@ -72,10 +70,11 @@ module MECHost
                 @display("p=865.94995,224.64499;is=m");
         }
 
-        //gtp endpoint to connect directly with an eNodeB
-        gtpEndpoint: GtpEndpoint {
+        // UPF module used to connect the MEC host to the 5G Core Network (either a BS or a UPF)
+        upf_mec: Upf {
             parameters:
-                @display("p=150,400;is=l");
+                @display("p=150,400");
+                nodeType = "UPF_MEC";
         }
 
 
@@ -86,7 +85,7 @@ module MECHost
     connections allowunconnected:
 
         for i=0..sizeof(pppENB)-1 {
-            pppENB++ <--> gtpEndpoint.pppg++;
+            pppENB++ <--> upf_mec.pppg++;
         }
 
         for i=0..sizeof(ppp)-1 {
@@ -99,7 +98,7 @@ module MECHost
         //#
         //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
         //#
-        virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
+        virtualisationInfrastructure.ppp++ <--> Eth10G <--> upf_mec.filterGate;
 
         for i=0..numBGMecApp-1 {
             bgApp[i].socketIn <-- virtualisationInfrastructure.meBGAppOut[i];

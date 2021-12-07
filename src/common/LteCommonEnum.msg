@@ -216,7 +216,7 @@ enum CoreNodeType
     SGW = 2;
     GNB = 3;          // 5G
     UPF = 4;
-    GTPENDPOINT = 5;   // MEC
+    UPF_MEC = 5;      // MEC
 };
 
 //  Subframe type 

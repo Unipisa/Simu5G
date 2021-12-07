@@ -19,13 +19,9 @@ import inet.networklayer.contract.INetworkLayer;
 import inet.applications.contract.IApp;
 import inet.transportlayer.udp.Udp;
 import inet.transportlayer.tcp.Tcp;
-
 import inet.common.MessageDispatcher;
 import inet.linklayer.contract.IEthernetInterface;
 import inet.applications.contract.IApp;
-
-//lte tunneling endpoint to connect externally with an eNodeB
-import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
 import inet.node.ethernet.Eth10G;
 import inet.networklayer.common.InterfaceTable;
 
@@ -123,13 +119,6 @@ module UALCMP
             parameters:
                 @display("p=550,446;b=600,5,,,,1");
         }
-
-//        //gtp endpoint to connect directly with an eNodeB
-//        gtpEndpoint: GtpEndpoint {
-//            parameters:
-//                //nodeType = "GTPENDPOINT";
-//                @display("p=153.11,507.02;is=l");
-//        }
 
     connections allowunconnected:
 

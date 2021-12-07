@@ -27,8 +27,6 @@ import simu5g.common.cellInfo.CellInfo;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
-
-
 import simu5g.corenetwork.statsCollector.StatsCollector; 
 
 // 
