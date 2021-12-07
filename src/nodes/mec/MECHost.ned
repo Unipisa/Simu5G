@@ -16,10 +16,7 @@ import simu5g.nodes.mec.MECPlatform.MECPlatform;
 import simu5g.nodes.mec.MECPlatformManager.MecPlatformManager;
 import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
 
-
-
-
-//lte tunneling endpoint to connect externally with an eNodeB
+// tunneling endpoint to connect externally with an eNodeB
 import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
 import inet.node.ethernet.Eth10G;
 import inet.applications.contract.IApp;
@@ -29,7 +26,7 @@ import inet.applications.contract.IApp;
 module MECHost
 {
     parameters:
-        @display("i=device/mainframe;bgb=1000,500");
+        @display("i=device/server2;bgb=1000,500");
 
         //# Node specs
         string nodeType = "MECHost";						// DO NOT CHANGE
@@ -62,7 +59,7 @@ module MECHost
 
         mecPlatform: MECPlatform {
             parameters:
-                @display("p=573.535,158.12999;is=m");
+                @display("p=573.535,158.12999");
         }
 
         mecPlatformManager: MecPlatformManager {
@@ -83,14 +80,10 @@ module MECHost
 
 
         bgApp[numBGMecApp]: <> like IApp {
-            @display("p=360.185,224.64499,row,140");
+            @display("p=362.69498,156.875,row,140");
         }
 
     connections allowunconnected:
-
-        //ppp++ <--> virtualisationInfrastructure.ppp++;
-
-
 
         for i=0..sizeof(pppENB)-1 {
             pppENB++ <--> gtpEndpoint.pppg++;

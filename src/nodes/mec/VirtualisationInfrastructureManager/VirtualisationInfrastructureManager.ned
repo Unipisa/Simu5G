@@ -23,7 +23,7 @@ package simu5g.nodes.mec.VirtualisationInfrastructureManager;
 simple VirtualisationInfrastructureManager
 {
     parameters:
-        @display("i=block/process");
+        @display("i=block/control");
         
         int mp1Port = default(10021);
         string scheduling = default("segregation");

@@ -22,7 +22,7 @@ simple MecPlatformManager
 {
     parameters:
         string mecOrchestrator;
-        @display("i=block/process");
+        @display("i=block/control");
 
 }
 
