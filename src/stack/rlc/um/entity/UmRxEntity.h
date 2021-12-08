@@ -127,6 +127,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
     struct Buffered {
          inet::Packet* pkt = nullptr;
          size_t size;
+         unsigned int currentPduSno;   // next PDU sequence number expected
     } buffered_;
 
     // Sequence number of the last SDU delivered to the upper layer
@@ -187,6 +188,10 @@ class UmRxEntity : public omnetpp::cSimpleModule
 
     // deliver a PDCP PDU to the PDCP layer
     void toPdcp(inet::Packet* rlcSdu);
+
+    // clear buffered SDU
+    void clearBufferedSdu();
+
 };
 
 #endif

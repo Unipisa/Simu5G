@@ -422,32 +422,21 @@ void UmRxEntity::reassemble(unsigned int index)
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
                         
-                        // for burst
-                        ttiBits_ += sduLengthPktLeng;
-
-                        if (buffered_.pkt != nullptr)
-                        {
-                            delete buffered_.pkt;
-                            buffered_.pkt = nullptr;
-                            buffered_.size = 0;
-                        }
+                        clearBufferedSdu();
 
                         break;
                     }
                     case 1: {  // FI=01
                         EV << NOW << " UmRxEntity::reassemble The PDU includes the first part [" << sduLengthPktLeng <<" B] of a SDU [sno=" << sduSno << "]" << endl;
 
-                        if (buffered_.pkt != nullptr)
-                        {
-                            delete buffered_.pkt;
-                            buffered_.pkt = nullptr;
-                            buffered_.size = 0;
-                        }
+                        clearBufferedSdu();
 
                         // buffer the SDU and wait for the missing portion
                         buffered_.pkt = pktSdu;
                         pktSdu = nullptr;
                         buffered_.size = sduLengthPktLeng;
+                        buffered_.currentPduSno = pduSno;
+
                         // for burst
                         ttiBits_ += sduLengthPktLeng;
                         EV << NOW << " UmRxEntity::reassemble Wait for the missing part..." << endl;
@@ -461,15 +450,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         // check SDU SN
                         if (buffered_.pkt == nullptr || (rlcSdu->getSnoMainPacket() != buffered_.pkt->peekAtFront<LteRlcSdu>()->getSnoMainPacket()) || ignoreFragment)
                         {
-                            if (buffered_.pkt != nullptr)
-                            {
-                                // for burst
-                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
-                                delete buffered_.pkt;
-                                buffered_.pkt = nullptr;
-                                buffered_.size = 0;
-                            }
-
+                            clearBufferedSdu();
                             EV << NOW << " UmRxEntity::reassemble The SDU cannot be reassembled, first part missing" << endl;
 
                             //delete rlcSdu;
@@ -483,15 +464,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         unsigned int reassembledLength = buffered_.size + sduLengthPktLeng;
                         if (reassembledLength < sduWholeLength)
                         {
-                            if (buffered_.pkt != nullptr)
-                            {
-                                // for burst
-                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
-                                delete buffered_.pkt;
-                                buffered_.pkt = nullptr;
-                                buffered_.size = 0;
-                            }
-
+                            clearBufferedSdu();
                             EV << NOW << " UmRxEntity::reassemble The SDU cannot be reassembled, mid part missing" << endl;
 
                             //delete rlcSdu;
@@ -509,12 +482,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
-                        if (buffered_.pkt != nullptr)
-                        {
-                            delete buffered_.pkt;
-                            buffered_.pkt = nullptr;
-                            buffered_.size = 0;
-                        }
+                        clearBufferedSdu();
 
                         break;
                     }
@@ -528,15 +496,7 @@ void UmRxEntity::reassemble(unsigned int index)
                             snoMainPacketBuffered = buffered_.pkt->peekAtFront<LteRlcSdu>()->getSnoMainPacket();
                         if (buffered_.pkt == nullptr || (rlcSdu->getSnoMainPacket() != snoMainPacketBuffered))
                         {
-                            if (buffered_.pkt != nullptr)
-                            {
-                                // for burst
-                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
-                                delete buffered_.pkt;
-                                buffered_.pkt = nullptr;
-                                buffered_.size = 0;
-                            }
-
+                            clearBufferedSdu();
                             EV << NOW << " UmRxEntity::reassemble The SDU cannot be reassembled, first part missing" << endl;
 
                             delete pktSdu;
@@ -549,6 +509,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         // for burst
                         ttiBits_ += sduLengthPktLeng;
                         buffered_.size += sduLengthPktLeng;
+                        buffered_.currentPduSno = pduSno;
                         delete pktSdu;
                         pktSdu = nullptr;
 
@@ -580,12 +541,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
-                        if (buffered_.pkt != nullptr)
-                        {
-                            delete buffered_.pkt;
-                            buffered_.pkt = nullptr;
-                            buffered_.size = 0;
-                        }
+                        clearBufferedSdu();
 
                         break;
                     }
@@ -596,15 +552,8 @@ void UmRxEntity::reassemble(unsigned int index)
                         // check SDU SN
                         if (buffered_.pkt == nullptr || (rlcSdu->getSnoMainPacket() != buffered_.pkt->peekAtFront<LteRlcSdu>()->getSnoMainPacket()) || ignoreFragment)
                         {
-                            if (buffered_.pkt != nullptr)
-                            {
-                                // for burst
-                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
-                                delete buffered_.pkt;
-                                buffered_.pkt = nullptr;
-                                buffered_.size = 0;
-                            }
 
+                            clearBufferedSdu();
                             EV << NOW << " UmRxEntity::reassemble The SDU cannot be reassembled, first part missing" << endl;
 
                             delete pktSdu;
@@ -618,15 +567,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         unsigned int reassembledLength = buffered_.size + sduLengthPktLeng;
                         if (reassembledLength < sduWholeLength)
                         {
-                            if (buffered_.pkt != nullptr)
-                            {
-                                // for burst
-                                ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
-                                delete buffered_.pkt;
-                                buffered_.pkt = nullptr;
-                                buffered_.size = 0;
-                            }
-
+                            clearBufferedSdu();
                             EV << NOW << " UmRxEntity::reassemble The SDU cannot be reassembled, mid part missing" << endl;
 
                             delete pktSdu;
@@ -643,12 +584,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
 
-                        if (buffered_.pkt != nullptr)
-                        {
-                            delete buffered_.pkt;
-                            buffered_.pkt = nullptr;
-                            buffered_.size = 0;
-                        }
+                        clearBufferedSdu();
 
                         break;
                     }
@@ -673,12 +609,7 @@ void UmRxEntity::reassemble(unsigned int index)
                     toPdcp(pktSdu);
                     pktSdu = nullptr;
 
-                    if (buffered_.pkt != nullptr)
-                    {
-                        delete buffered_.pkt;
-                        buffered_.pkt = nullptr;
-                        buffered_.size = 0;
-                    }
+                    clearBufferedSdu();
 
                     break;
                 }
@@ -686,18 +617,14 @@ void UmRxEntity::reassemble(unsigned int index)
                     // it is the first portion of a SDU, bufferize it
                     EV << NOW << " UmRxEntity::reassemble The PDU includes the first part [" << sduLengthPktLeng <<" B] of a SDU [sno=" << sduSno << "]" << endl;
 
-                    if (buffered_.pkt != nullptr)
-                    {
-                        delete buffered_.pkt;
-                        buffered_.pkt = nullptr;
-                        buffered_.size = 0;
-                    }
+                    clearBufferedSdu();
 
                     // for burst
                     ttiBits_ += sduLengthPktLeng;
 
                     buffered_.pkt = pktSdu;
                     buffered_.size = sduLengthPktLeng;
+                    buffered_.currentPduSno = pduSno;
                     pktSdu = nullptr;
 
                     EV << NOW << " UmRxEntity::reassemble Wait for the missing part..." << endl;
@@ -719,12 +646,7 @@ void UmRxEntity::reassemble(unsigned int index)
             toPdcp(pktSdu);
             pktSdu = nullptr;
 
-            if (buffered_.pkt != nullptr)
-            {
-                delete buffered_.pkt;
-                buffered_.pkt = nullptr;
-                buffered_.size = 0;
-            }
+            clearBufferedSdu();
         }
 
         if (pktSdu != nullptr) {
@@ -890,6 +812,17 @@ void UmRxEntity::handleMessage(cMessage* msg)
     }
 }
 
+void UmRxEntity::clearBufferedSdu(){
+    if (buffered_.pkt != nullptr){
+        // for burst
+        ttiBits_ -= buffered_.size; // remove the discarded SDU size from the tput
+        delete buffered_.pkt;
+        buffered_.pkt = nullptr;
+        buffered_.size = 0;
+        buffered_.currentPduSno = 0;
+    }
+}
+
 void UmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer)
 {
     if (oldConnection)
@@ -918,12 +851,8 @@ void UmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool c
                 received_[i] = false;
             }
 
-            if (buffered_.pkt != nullptr)
-            {
-                delete buffered_.pkt;
-                buffered_.pkt = nullptr;
-                buffered_.size = 0;
-            }
+            clearBufferedSdu();
+
 
             // stop the timer
             if (t_reordering_.busy())
