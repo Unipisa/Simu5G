@@ -843,6 +843,8 @@ void UmRxEntity::clearBufferedSdu(){
 
 void UmRxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer)
 {
+    Enter_Method_Silent("rlcHandleD2DModeSwitch()");
+
     if (oldConnection)
     {
         if (getNodeTypeById(ownerNodeId_) == UE && oldMode == IM)
