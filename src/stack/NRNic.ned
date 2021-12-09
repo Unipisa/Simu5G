@@ -18,6 +18,7 @@ import simu5g.stack.mac.LteMac;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
+import simu5g.stack.packetFlowManager.PacketFlowManager;
 
 //
 // e/gNodeB with NR stack
@@ -27,7 +28,9 @@ module NRNicEnb extends LteNicEnbD2D
     parameters:
         LtePdcpRrcType = default("NRPdcpRrcEnb");
         LteMacType = default("NRMacGnb");
+        LteChannelModelType = default("NRChannelModel_3GPP38_901");
         @display("bgb=694,443");
+        PacketFlowManagerType = default("NRPacketFlowManagerGnb");
 }
 
 //
@@ -38,7 +41,12 @@ module NRNicUe extends LteNicUeD2D
     parameters:
         string NRMacType = default("NRMacUe");
         string NRPhyType = default("NRPhyUe");
-        string NRChannelModelType = default("NRChannelModel");
+        string NRChannelModelType = default("NRChannelModel_3GPP38_901");
+
+        PacketFlowManagerType = default("PacketFlowManagerUe");
+        
+        string NRPacketFlowManagerType = default("NRPacketFlowManagerUe");
+      
         int numNRCarriers = default(1);
 
         LtePdcpRrcType = default("NRPdcpRrcUe");
@@ -74,6 +82,12 @@ module NRNicUe extends LteNicUeD2D
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=144,50;is=s");
         }
+ 		//#
+        //# Modules used to take trace of PDCP pkt flow
+        //#
+//        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+//            @display("p=197,299");
+//        }
 
     connections:
 

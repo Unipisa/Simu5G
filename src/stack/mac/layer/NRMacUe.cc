@@ -126,68 +126,68 @@ void NRMacUe::handleSelfMessage()
     scheduleList_.clear();
     requestedSdus_ = 0;
     if (!noSchedulingGrants) // if a grant is configured
-    {
-        EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
+     {
+         EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
 
-        bool retx = false;
+         bool retx = false;
 
-        HarqTxBuffers::iterator it2;
-        LteHarqBufferTx * currHarq;
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit)
-        {
-            double carrierFrequency = mtit->first;
+         HarqTxBuffers::iterator it2;
+         LteHarqBufferTx * currHarq;
+         std::map<double, HarqTxBuffers>::iterator mtit;
+         for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit)
+         {
+             double carrierFrequency = mtit->first;
 
-            // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
-                continue;
+             // skip if this is not the turn of this carrier
+             if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
+                 continue;
 
-            // skip if no grant is configured for this carrier
-            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
-                continue;
+             // skip if no grant is configured for this carrier
+             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
+                 continue;
 
-            for(it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++)
-            {
-                currHarq = it2->second;
-                unsigned int numProcesses = currHarq->getNumProcesses();
+             for(it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++)
+             {
+                 currHarq = it2->second;
+                 unsigned int numProcesses = currHarq->getNumProcesses();
 
-                for (unsigned int proc = 0; proc < numProcesses; proc++)
-                {
-                    LteHarqProcessTx* currProc = currHarq->getProcess(proc);
+                 for (unsigned int proc = 0; proc < numProcesses; proc++)
+                 {
+                     LteHarqProcessTx* currProc = currHarq->getProcess(proc);
 
-                    // check if the current process has unit ready for retx
-                    bool ready = currProc->hasReadyUnits();
-                    CwList cwListRetx = currProc->readyUnitsIds();
+                     // check if the current process has unit ready for retx
+                     bool ready = currProc->hasReadyUnits();
+                     CwList cwListRetx = currProc->readyUnitsIds();
 
-                    EV << "\t [process=" << proc << "] , [retx=" << ((ready)?"true":"false") << "] , [n=" << cwListRetx.size() << "]" << endl;
+                     EV << "\t [process=" << proc << "] , [retx=" << ((ready)?"true":"false") << "] , [n=" << cwListRetx.size() << "]" << endl;
 
-                    // check if one 'ready' unit has the same direction of the grant
-                    bool checkDir = false;
-                    CwList::iterator cit = cwListRetx.begin();
-                    for (; cit != cwListRetx.end(); ++cit)
-                    {
-                        Codeword cw = *cit;
-                        auto info = currProc->getPdu(cw)->getTag<UserControlInfo>();
-                        if (info->getDirection() == schedulingGrant_[carrierFrequency]->getDirection())
-                        {
-                            checkDir = true;
-                            break;
-                        }
-                    }
+                     // check if one 'ready' unit has the same direction of the grant
+                     bool checkDir = false;
+                     CwList::iterator cit = cwListRetx.begin();
+                     for (; cit != cwListRetx.end(); ++cit)
+                     {
+                         Codeword cw = *cit;
+                         auto info = currProc->getPdu(cw)->getTag<UserControlInfo>();
+                         if (info->getDirection() == schedulingGrant_[carrierFrequency]->getDirection())
+                         {
+                             checkDir = true;
+                             break;
+                         }
+                     }
 
-                    // if a retransmission is needed
-                    if(ready && checkDir)
-                    {
-                        UnitList signal;
-                        signal.first = proc;
-                        signal.second = cwListRetx;
-                        currHarq->markSelected(signal,schedulingGrant_[carrierFrequency]->getUserTxParams()->getLayers().size());
-                        retx = true;
-                        break;
-                    }
-                }
-            }
-        }
+                     // if a retransmission is needed
+                     if(ready && checkDir)
+                     {
+                         UnitList signal;
+                         signal.first = proc;
+                         signal.second = cwListRetx;
+                         currHarq->markSelected(signal,schedulingGrant_[carrierFrequency]->getUserTxParams()->getLayers().size());
+                         retx = true;
+                         break;
+                     }
+                 }
+             }
+         }
         // if no retx is needed, proceed with normal scheduling
         if(!retx)
         {
@@ -410,6 +410,9 @@ void NRMacUe::macPduMake(MacCid cid)
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(dir);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(SHORT_BSR));
                     macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
+
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrandId());
+
                     if (usePreconfiguredTxParams_)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());
                     else

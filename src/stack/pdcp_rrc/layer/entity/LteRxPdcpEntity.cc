@@ -10,6 +10,7 @@
 //
 
 #include "stack/pdcp_rrc/layer/entity/LteRxPdcpEntity.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 Define_Module(LteRxPdcpEntity);
 
@@ -30,8 +31,19 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet* pkt)
     // pop PDCP header
     pkt->popAtFront<LtePdcpPdu>();
 
+    // TODO NRRxentity could delete this packet in handlePdcpSdu()...
+    auto lteInfo = pkt->getTag<FlowControlInfo>();
+    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
+    {
+        PacketFlowManagerBase *flowManager = pdcp_->getPacketFlowManager();
+            if(flowManager != nullptr)
+                flowManager->receivedPdcpSdu(pkt);
+    }
+
+
     // perform PDCP operations
     pdcp_->headerDecompress(pkt); // Decompress packet header
+
 
     // handle PDCP SDU
     handlePdcpSdu(pkt);

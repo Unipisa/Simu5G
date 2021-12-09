@@ -38,19 +38,19 @@ network SingleCell_withSecondaryGnb
         @display("i=block/network2;bgb=991,558;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=50,25;is=s");
+            @display("p=87.0625,24.875;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=50,75;is=s");
+            @display("p=88.30625,85.81875;is=s");
         }
         configurator: CellularNetworkConfigurator {
             @display("p=50,125");
         }
         binder: Binder {
-            @display("p=50,175;is=s");
+            @display("p=88.30625,230.09375;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=88.30625,289.79376;is=s");
         }
         server: StandardHost {
             @display("p=210.19374,63.431248;is=n;i=device/server");

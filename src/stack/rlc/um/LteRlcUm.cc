@@ -337,3 +337,61 @@ void LteRlcUm::handleMessage(cMessage* msg)
     }
     return;
 }
+
+void LteRlcUm::activeUeUL(std::set<MacNodeId>* ueSet)
+{
+    UmRxEntities::const_iterator it = rxEntities_.begin();
+    UmRxEntities::const_iterator end = rxEntities_.end();
+    for(; it != end; ++it)
+    {
+        MacNodeId nodeId = MacCidToNodeId(it->first);
+        if((ueSet->find(nodeId) == ueSet->end()) && !it->second->isEmpty())
+            ueSet->insert(nodeId);
+    }
+}
+
+
+
+void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughtput)
+{
+    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
+    if(it == ulThroughput_.end())
+    {
+        ulThroughput_[nodeId] = throughtput;
+
+    }
+    else
+    {
+        it->second.pktSizeCount += throughtput.pktSizeCount;
+        it->second.time += throughtput.time;
+    }
+}
+
+double LteRlcUm::getUeThroughput(MacNodeId nodeId)
+{
+    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
+    if(it == ulThroughput_.end())
+    {
+        return 0;
+    }
+    else
+    {
+        return (it->second.pktSizeCount / (it->second.time).dbl());
+    }
+}
+
+void LteRlcUm::resetThroughputStats(MacNodeId nodeId)
+{
+    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
+    if(it == ulThroughput_.end())
+    {
+        return;
+    }
+    else
+    {
+        it->second.pktSizeCount = 0;
+        it->second.time = 0;
+    }
+}
+
+

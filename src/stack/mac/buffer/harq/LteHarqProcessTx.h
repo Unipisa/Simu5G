@@ -184,6 +184,17 @@ class LteHarqProcessTx
     omnetpp::simtime_t getTxTime(Codeword cw);
     bool isUnitMarked(Codeword cw);
     bool isDropped();
+
+    /**
+     * @author Alessandro noferi
+     *
+     * Check if the process is active
+     *
+     * @return true if at least on unit status is not TXHARQ_PDU_EMPTY
+     */
+
+    bool isHarqProcessActive();
+
     virtual ~LteHarqProcessTx();
 
   protected:

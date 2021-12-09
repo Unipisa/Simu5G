@@ -61,7 +61,6 @@ class GtpUser : public omnetpp::cSimpleModule
     inet::L3Address meHostGtpEndpointAddress;
     //end mec
 
-    // detect LTE interface
     inet::NetworkInterface* ie_;
 
   protected:

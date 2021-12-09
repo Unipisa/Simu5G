@@ -22,7 +22,7 @@ void NRChannelModel::initialize(int stage)
     LteRealisticChannelModel::initialize(stage);
 }
 
-double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord)
+double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
 {
    double movement = .0;
    double speed = .0;
@@ -44,6 +44,9 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
        computeLosProbability(twoDimDistance, nodeId);
    }
 
+   if(dir == DL)
+       emit(distance_,twoDimDistance);
+
    //compute attenuation based on selected scenario and based on LOS or NLOS
    bool los = losMap_[nodeId];
    double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
@@ -51,7 +54,7 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
    //    Applying shadowing only if it is enabled by configuration
    //    log-normal shadowing
    if (shadowing_)
-       attenuation += computeShadowing(twoDimDistance, nodeId, speed);
+       attenuation += computeShadowing(twoDimDistance, nodeId, speed, cqiDl);
 
    // update current user position
 

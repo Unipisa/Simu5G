@@ -20,6 +20,7 @@
 #include "stack/rlc/um/entity/UmRxEntity.h"
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/mac/layer/LteMacBase.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 class UmTxEntity;
 class UmRxEntity;
@@ -98,6 +99,27 @@ class LteRlcUm : public omnetpp::cSimpleModule
     virtual void resumeDownstreamInPackets(MacNodeId peerId) {}
 
     virtual bool isEmptyingTxBuffer(MacNodeId peerId) { return false; }
+
+    /**
+     * @author Alessandro Noferi
+     * It fills the ueSet argument with the MacNodeIds that have
+     * RLC data in the entities
+     *
+     */
+    void activeUeUL(std::set<MacNodeId>* ueSet);
+
+
+    /**
+     * @author Alessandro Noferi
+     * Methods used by RlcEntity and EnodeBCollector respectively
+     * in order to manage UL throughput stats.
+     */
+
+    void addUeThroughput(MacNodeId nodeId, Throughput throughput);
+    double getUeThroughput(MacNodeId nodeId);
+    void resetThroughputStats(MacNodeId nodeId);
+
+
 
   protected:
 
@@ -200,6 +222,18 @@ class LteRlcUm : public omnetpp::cSimpleModule
     typedef std::map<MacCid, UmRxEntity*> UmRxEntities;
     UmTxEntities txEntities_;
     UmRxEntities rxEntities_;
+
+    /**
+     * @author Alessandro Noferi
+     * Holds the throughput stats for each UE
+     * identified by the srcId of the
+     * FlowControlInfo in each entity
+     *
+     */
+    typedef std::map<MacNodeId, Throughput > ULThroughputPerUE;
+    ULThroughputPerUE ulThroughput_;
+
+
 };
 
 #endif

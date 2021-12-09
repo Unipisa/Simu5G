@@ -40,6 +40,8 @@ void LtePf::prepareSchedule()
         ++cidIt;
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
+        grantedBytes_[cid] = 0;
+
         if(nodeId == 0 || id == 0)
         {
             // node has left the simulation - erase corresponding CIDs
@@ -63,6 +65,8 @@ void LtePf::prepareSchedule()
             EV << "CID " << cid << " of node "<< nodeId << " removed from active connection set - no OmnetId in Binder known.";
             continue;
         }
+
+
 
         // compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId,dir,carrierFrequency_);

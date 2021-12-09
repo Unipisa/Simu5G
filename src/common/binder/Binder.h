@@ -23,11 +23,14 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
+class UeStatsCollector;
+
 /**
  * The Binder module has one instance in the whole network.
  * It stores global mapping tables with OMNeT++ module IDs,
  * IP addresses, etc.
  */
+
 class Binder : public omnetpp::cSimpleModule
 {
   private:
@@ -133,7 +136,7 @@ class Binder : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
-    virtual void finish();
+    virtual void finish() override;
 
   public:
     Binder()
@@ -326,7 +329,7 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the MacNodeId for the given IP address
      *
      * @param address IP address
-     * @return MacNodeId corresponding to the IP addres
+     * @return MacNodeId corresponding to the IP address
      */
     MacNodeId getMacNodeId(inet::Ipv4Address address)
     {
@@ -343,13 +346,35 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the MacNodeId for the given IP address
      *
      * @param address IP address
-     * @return MacNodeId corresponding to the IP addres
+     * @return MacNodeId corresponding to the IP address
      */
     MacNodeId getNrMacNodeId(inet::Ipv4Address address)
     {
         if (nrMacNodeIdToIPAddress_.find(address) == nrMacNodeIdToIPAddress_.end())
             return 0;
         return nrMacNodeIdToIPAddress_[address];
+    }
+
+    /**
+     * author Alessandro Noferi
+     *
+     * Returns the IP address for the given MacNodeId
+     *
+     * @param MacNodeId of the node
+     * @return IP address corresponding to the MacNodeId
+     *
+     */
+    inet::Ipv4Address getIPv4Address(MacNodeId nodeId)
+    {
+        for (const auto& kv : macNodeIdToIPAddress_) {
+            if(kv.second == nodeId)
+                return kv.first;
+        }
+        for (const auto& kv : nrMacNodeIdToIPAddress_) {
+            if(kv.second == nodeId)
+                return kv.first;
+        }
+        return inet::Ipv4Address::UNSPECIFIED_ADDRESS;
     }
     /**
      * Returns the X2NodeId for the given IP address
@@ -518,6 +543,7 @@ class Binder : public omnetpp::cSimpleModule
     void addD2DMulticastTransmitter(MacNodeId nodeId);
     // get multicast transmitters
     std::set<MacNodeId>& getD2DMulticastTransmitters();
+
     /*
      *  Handover support
      */
@@ -540,6 +566,33 @@ class Binder : public omnetpp::cSimpleModule
     double computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal);
     double computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
     double computeRequestedRbsFromSinr(double sinr, double reqLoad);
+
+    /*
+     * @author Alessandro Noferi.
+     *
+     * UeStatsCollector management
+     */
+
+    /* this method adds the UeStastCollector reference to the baseStationStatsCollector
+     * structure.
+     * @params:
+     *  ue: MacNodeId of the ue
+     *  ueCollector: reference to the collector
+     *  cell: MacCellId of the target eNB
+     */
+    void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector, MacCellId cell);
+
+    /* this method moves the UeStastCollector reference between the eNB/gNB's baseStationStatsCollector
+     * structure.
+     * @params:
+     *  ue: MacNodeId of the ue
+     *  oldCell: MacCellId of the source eNB
+     *  newCell: MacCellId of the target eNB
+     */
+    void moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell);
+
+    RanNodeType getBaseStationTypeById(MacNodeId);
+
 
 };
 

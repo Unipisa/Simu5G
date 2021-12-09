@@ -96,6 +96,8 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
     virtual void initialize();
 
     virtual void handleMessage(cMessage *msg);
+
+    virtual bool isEmpty() const {return sduBuffer_.size() == 0;}
 };
 
 #endif

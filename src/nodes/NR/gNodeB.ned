@@ -22,7 +22,7 @@ module gNodeB extends eNodeB
     parameters:
         @networkNode();
         @display("i=device/antennatower;bgb=1260,600");
-
+		StatsCollectorType = default("GNodeBStatsCollector"); 
         gateway = default("upf");
         nodeType = "GNODEB";        // DO NOT CHANGE
         nicType = default("NRNicEnb");

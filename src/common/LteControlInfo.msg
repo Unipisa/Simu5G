@@ -70,7 +70,9 @@ class LteControlInfo extends inet::TagBase {
 
     uint16 lcid;                                        // Logical Connection Identifier
     int32 multicastGroupId = -1;                        // Identifier for a multicast group (it is in range [0:[2^28)-1] ) 
-                                                        // For unicast communications, this field is -1    
+                                                        // For unicast communications, this field is -1
+      
+                                                          
 }
 
 //
@@ -130,6 +132,8 @@ class UserControlInfo extends LteControlInfo {
     double d2dTxPower;                                 //D2D Transmission Power (used for feedback reporting of D2D links
     // blocks granted on all Remotes, all Bands
     unsigned int totalGrantedBlocks;
+    
+    unsigned int grantId;		// grantId related to the grand that allowed the sending of a MEC PDU (used only for MAC PDU sent by UEs)
 
     //#
     //# Follows a list of elements only present in

@@ -187,6 +187,18 @@ class LteHarqBufferTx
     std::vector<LteHarqProcessTx *> * getHarqProcesses(){ return processes_ ; }
     unsigned int getNumProcesses() { return numProc_; }
 
+
+    /**
+     * @author Alessandro noferi
+     *
+     * Check if the buffer is active
+     *
+     * @return true if the TxHarqPduStatus of all units of all processes is not TXHARQ_PDU_EMPTY
+     */
+
+    bool isHarqBufferActive() const;
+
+
     virtual ~LteHarqBufferTx();
 
   protected:

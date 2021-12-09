@@ -177,7 +177,7 @@ void LtePhyUe::initialize(int stage)
                 // get RSSI from the eNB
                 std::vector<double>::iterator it;
                 double rssi = 0;
-                std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, cInfo);
+                std::vector<double> rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
                 for (it = rssiV.begin(); it != rssiV.end(); ++it)
                     rssi += *it;
                 rssi /= rssiV.size();   // compute the mean over all RBs
@@ -434,6 +434,12 @@ void LtePhyUe::doHandover()
     }
     binder_->updateUeInfoCellId(nodeId_,candidateMasterId_);
 
+    // @author Alessandro Noferi
+    if(getParentModule()->getParentModule()->findSubmodule("ueCollector") != -1)
+    {
+        binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
+    }
+
     // change masterId and notify handover to the MAC layer
     MacNodeId oldMaster = masterId_;
     masterId_ = candidateMasterId_;
@@ -486,7 +492,6 @@ void LtePhyUe::doHandover()
         enbIp2Nic->signalHandoverCompleteTarget(nodeId_,oldMaster);
     }
 }
-
 
 // TODO: ***reorganize*** method
 void LtePhyUe::handleAirFrame(cMessage* msg)

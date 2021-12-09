@@ -27,6 +27,9 @@
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "corenetwork/statsCollector/UeStatsCollector.h"
+
 Define_Module(LteMacUe);
 
 using namespace inet;
@@ -159,6 +162,46 @@ void LteMacUe::initialize(int stage)
             LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(cellId_))->getAmc();
             amc->attachUser(nodeId_, UL);
             amc->attachUser(nodeId_, DL);
+
+            /*
+             * @autor Alessandro Noferi
+             *
+             * This piece of code connects the UeCollector to the relative base station Collector.
+             * It checks the NIC, i.e. Lte or NR and chooses the correct UeCollector to connect.             *
+             */
+
+            cModule *module = binder_->getModuleByPath(binder_->getModuleNameByMacNodeId(cellId_));
+            std::string nodeType;
+            if(module->hasPar("nodeType"))
+                nodeType = module->par("nodeType").stdstringValue();
+
+            RanNodeType eNBType = binder_->getBaseStationTypeById(cellId_);
+
+            if(isNrUe(nodeId_) &&  eNBType == GNODEB)
+            {
+
+                EV << "I am a NR Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
+                {
+                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));
+                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+                }
+            }
+            else if (!isNrUe(nodeId_) && eNBType == ENODEB)
+            {
+                EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+                if(getParentModule()->getParentModule()->findSubmodule("ueCollector") != -1)
+                {
+                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("ueCollector"));
+                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+                }
+            }
+            else
+            {
+                EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: "<< cellId_ << " has a different type" <<  endl;
+            }
+
+            ////
         }
 
         // find interface entry and use its address
@@ -402,6 +445,15 @@ bool LteMacUe::bufferizePacket(cPacket* pktAux)
             }
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
+
+            // @author Alessandro Noferi
+            // discard the RLC
+            if(packetFlowManager_ != nullptr)
+            {
+                unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+                packetFlowManager_->discardRlcPdu(lteInfo->getLcid(),rlcSno);
+            }
+
             delete pkt;
             return false;
         }
@@ -462,7 +514,16 @@ void LteMacUe::macPduMake(MacCid cid)
                 macPkt->addTagIfAbsent<UserControlInfo>()->setDestId(destId);
                 macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
                 macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
+                /*
+                 * @author Alessandro Noferi
+                 * retrieve the grantId from the grant obj in schedulingGrant_[carrierFreq]
+                 * and add it as tag for this macPkt.
+                 *
+                 * This is useful at eNB side to calculate the packet delay
+                 */
+                macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrandId());
                 macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
+
 
                 //macPkt->setControlInfo(uinfo);
                 macPkt->setTimestamp(NOW);

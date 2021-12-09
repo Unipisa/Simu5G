@@ -295,10 +295,6 @@ class LteFeedback
     void print(MacCellId cellId, MacNodeId nodeId, Direction dir, const char* s) const;
 };
 
-
-
-
-
 /**
  * @class LteMuMimoMatrix
  *

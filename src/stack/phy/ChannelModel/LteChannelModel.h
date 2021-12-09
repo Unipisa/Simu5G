@@ -87,7 +87,7 @@ class LteChannelModel : public omnetpp::cSimpleModule
      * @param dir traffic direction
      * @param move position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord) = 0;
+    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) = 0;
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
@@ -132,6 +132,13 @@ class LteChannelModel : public omnetpp::cSimpleModule
      * @param rsrpVector the received signal for each RB, if it has already been computed
      */
     virtual bool isError_D2D(LteAirFrame *frame, UserControlInfo* lteInfo, const std::vector<double>& rsrpVector)=0;
+    /*
+     * Compute Received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     *
+     * @param frame pointer to the packet
+     * @param lteinfo pointer to the user control info
+     */
+    virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo) = 0;
     /*
      * Compute Received useful signal for D2D transmissions
      */

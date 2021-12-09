@@ -87,6 +87,13 @@ class LteMacPdu : public LteMacPdu_Base
         macPduLength_ = 0;
         sduList_ = new cPacketQueue("SDU List");
         take(sduList_);
+        /*
+        * @author Alessandro Noferi
+        *
+        * getChunkId returns and int (static var in chunk.h)
+        * TODO think about create our own static variable
+        */
+        macPduId_ = getChunkId();
     }
 
     /*

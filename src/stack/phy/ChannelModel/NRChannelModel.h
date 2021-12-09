@@ -25,9 +25,9 @@ public:
      *
      * @param nodeid mac node id of UE
      * @param dir traffic direction
-     * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
+     * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of gNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord);
+    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
 
     /*
     *  Compute Attenuation caused by transmission direction
@@ -39,7 +39,7 @@ public:
     /*
      * Compute LOS probability (taken from TR 36.873)
      *
-     * @param d between UE and eNodeB
+     * @param d between UE and gNodeB
      * @param nodeid mac node id of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
@@ -47,8 +47,8 @@ public:
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
-     * @param 3d_distance between UE and eNodeB (3D)
-     * @param 2d_distance between UE and eNodeB (2D)
+     * @param 3d_distance between UE and gNodeB (3D)
+     * @param 2d_distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
     virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
@@ -56,7 +56,7 @@ public:
     /*
      * 3D-InH path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeIndoor(double threeDimDistance, double twoDimDistance, bool los);
@@ -64,7 +64,7 @@ public:
     /*
      * 3D-UMi path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los);
@@ -72,7 +72,7 @@ public:
     /*
      * 3D-UMa path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los);
@@ -80,7 +80,7 @@ public:
     /*
      * 3D-RMa path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and eNodeB
+     * @param distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los);

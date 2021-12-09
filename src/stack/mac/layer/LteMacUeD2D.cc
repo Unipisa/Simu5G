@@ -19,6 +19,9 @@
 #include "stack/mac/packet/LteRac_m.h"
 #include "inet/common/TimeTag_m.h"
 
+#include "corenetwork/statsCollector/UeStatsCollector.h"
+
+
 Define_Module(LteMacUeD2D);
 
 using namespace inet;
@@ -67,6 +70,18 @@ void LteMacUeD2D::initialize(int stage)
 
             LteAmc *amc = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(cellId_))->getSubmodule("cellularNic")->getSubmodule("mac"))->getAmc();
             amc->attachUser(nodeId_, D2D);
+
+// TODO remove it. UeCollector connection made in LteMacUe Initialize
+//            if(isNrUe(nodeId_))
+//            {
+//                EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
+//                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
+//                {
+//                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));
+//                    binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
+//                }
+//            }
+
         }
         else
             enb_ = NULL;
@@ -244,7 +259,8 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     else
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(schedulingGrant_[carrierFreq]->getUserTxParams()->dup());
 
-                    macPkt->addTagIfAbsent<CreationTimeTag>()->setCreationTime(NOW);
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrandId());
+
                     macPduList_[carrierFreq][pktId] = macPkt;
                 }
                 else
@@ -305,61 +321,61 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-    std::map<double, MacPduList>::iterator lit;
-    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
-    {
-        double carrierFreq = lit->first;
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-            continue;
-
-        if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
+        std::map<double, MacPduList>::iterator lit;
+        for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
         {
-            HarqTxBuffers newHarqTxBuffers;
-            harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
-        }
-        HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
+            double carrierFreq = lit->first;
+            // skip if this is not the turn of this carrier
+            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
+                continue;
 
-        MacPduList::iterator pit;
-        for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
-        {
-            MacNodeId destId = pit->first.first;
-            Codeword cw = pit->first.second;
-
-            // Check if the HarqTx buffer already exists for the destId
-            // Get a reference for the destId TXBuffer
-            LteHarqBufferTx* txBuf;
-            HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
-            if ( hit != harqTxBuffers.end() )
+            if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
             {
-                // The tx buffer already exists
-                txBuf = hit->second;
+                HarqTxBuffers newHarqTxBuffers;
+                harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
             }
-            else
+            HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
+
+            MacPduList::iterator pit;
+            for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
             {
-                // The tx buffer does not exist yet for this mac node id, create one
-                LteHarqBufferTx* hb;
-                // FIXME: hb is never deleted
-                auto info = pit->second->getTag<UserControlInfo>();
+                MacNodeId destId = pit->first.first;
+                Codeword cw = pit->first.second;
 
-                if (info->getDirection() == UL) {
-                    hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                // Check if the HarqTx buffer already exists for the destId
+                // Get a reference for the destId TXBuffer
+                LteHarqBufferTx* txBuf;
+                HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
+                if ( hit != harqTxBuffers.end() )
+                {
+                    // The tx buffer already exists
+                    txBuf = hit->second;
                 }
-                else { // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                else
+                {
+                    // The tx buffer does not exist yet for this mac node id, create one
+                    LteHarqBufferTx* hb;
+                    // FIXME: hb is never deleted
+                    auto info = pit->second->getTag<UserControlInfo>();
+
+                    if (info->getDirection() == UL) {
+                        hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    }
+                    else { // D2D or D2D_MULTI
+                        hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    }
+                    harqTxBuffers[destId] = hb;
+                    txBuf = hb;
                 }
-                harqTxBuffers[destId] = hb;
-                txBuf = hb;
-            }
 
-            // search for an empty unit within current harq process
-            UnitList txList = txBuf->getEmptyUnits(currentHarq_);
-            EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
+                // search for an empty unit within current harq process
+                UnitList txList = txBuf->getEmptyUnits(currentHarq_);
+                EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
-            //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
-            auto macPkt = pit->second;
+                //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
+                auto macPkt = pit->second;
 
-            /* BSR related operations
+                /* BSR related operations
 
             // according to the TS 36.321 v8.7.0, when there are uplink resources assigned to the UE, a BSR
             // has to be send even if there is no data in the user's queues. In few words, a BSR is always
@@ -522,6 +538,9 @@ LteMacUeD2D::macHandleGrant(cPacket* pktAux)
 
     // store received grant
     schedulingGrant_[carrierFrequency] = grant;
+
+    EV_FATAL << "grantId recevive grant: " << grant->getGrandId() << endl;
+
 
     if (grant->getPeriodic())
     {

@@ -64,15 +64,12 @@ ui/com.simulte.configeditor/bin/
 /simulations/*/*/scripts/plots*/
 /simulations/*/*/plots*/
 /simulations/*/*/timeResults*/
-/simulations/*/*/trafficGeneratorConfigs*/
 /simulations/*/*/routing*/bkUe?.mrt
 /simulations/*/*/routing*/bkUe??.mrt
 /simulations/*/*/routing*/bkUe???.mrt
 
 /emulation/*/results*/
-/emulation/*/stats*/
 /emulation/*/plots*/
-/emulation/*/trafficGeneratorConfigs*/
 
 vim files
 *.swp
@@ -81,3 +78,6 @@ vim files
 
 # project file 
 .cproject
+
+# files for performance evaluation
+*.ipynb

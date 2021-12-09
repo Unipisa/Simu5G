@@ -53,4 +53,4 @@ How to build and run the emulation
 6) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command(type
    "man iperf" for options description):
   	    
-  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -l 10.0M -f m -t 0
+  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m

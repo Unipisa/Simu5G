@@ -10,6 +10,8 @@
 //
 
 #include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+
 
 Define_Module(NRPdcpRrcEnb);
 
@@ -244,3 +246,14 @@ void NRPdcpRrcEnb::receiveDataFromSourceNode(Packet* pkt, MacNodeId sourceNode)
        fromLowerLayer(pkt);
    }
 }
+
+void NRPdcpRrcEnb::activeUeUL(std::set<MacNodeId>* ueSet)
+{
+    for(const auto& entity : rxEntities_)
+    {
+        MacNodeId nodeId = MacCidToNodeId(entity.first);
+        if(!(entity.second->isEmpty()))
+            ueSet->insert(nodeId);
+    }
+}
+

@@ -53,9 +53,9 @@ void GtpUser::initialize(int stage)
     }
 
     //mec
-    if(getParentModule()->hasPar("meHost"))
+    if(getParentModule()->hasPar("mecHost"))
     {
-        std::string meHost = getParentModule()->par("meHost").stringValue();
+        std::string meHost = getParentModule()->par("mecHost").stringValue();
         if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), "")){
 
             std::stringstream meHostName;

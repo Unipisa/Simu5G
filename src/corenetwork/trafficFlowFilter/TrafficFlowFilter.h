@@ -49,6 +49,12 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     //only if owner type is GTPENDPOINT
     inet::L3Address eNodeBAddress;
 
+    //@author Alessandro Noferi
+    //
+    // for emulation when the MEC host is directly connected to the BS
+    inet::L3Address meAppsExtAddress_;
+    int meAppsExtAddressMask_;
+
 
   protected:
     virtual int numInitStages() const override{ return inet::INITSTAGE_LAST+1; }
