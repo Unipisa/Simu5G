@@ -39,6 +39,7 @@ class Binder : public omnetpp::cSimpleModule
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
     std::map<MacNodeId, char*> macNodeIdToModuleName_;
+    std::map<MacNodeId, cModule*> macNodeIdToModuleRef_;
     std::map<MacNodeId, LteMacBase*> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
@@ -444,9 +445,6 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the UPF address corresponding to the given MEC Host address
      */
     const inet::L3Address& getUpfFromMecHost(const inet::L3Address& mecHostAddress);
-     */
-
-
     /**
      * Associates the given MAC node ID to the name of the module
      */
@@ -455,6 +453,14 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the module name for the given MAC node ID
      */
     const char* getModuleNameByMacNodeId(MacNodeId nodeId);
+    /**
+     * Associates the given MAC node ID to the module
+     */
+    void registerModule(MacNodeId nodeId, cModule* module);
+    /**
+     * Returns the module for the given MAC node ID
+     */
+    cModule* getModuleByMacNodeId(MacNodeId nodeId);
 
     /*
      * getDeployedUes() returns the affiliates

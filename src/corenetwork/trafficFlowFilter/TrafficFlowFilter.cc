@@ -33,6 +33,11 @@ void TrafficFlowFilter::initialize(int stage)
     // reading and setting owner type
     ownerType_ = selectOwnerType(par("ownerType"));
 
+    if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
+    {
+        gateway_ = getAncestorPar("gateway").stringValue();
+    }
+
     //mec
     if(getParentModule()->hasPar("mecHost")){
 
@@ -132,6 +137,14 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     // check whether the destination address is a (simulated) MEC host's address
     if (binder_->isMecHost(destAddress))
     {
+        // check if the destination belongs to another core network (for multi-operator scenarios)
+        const char* destGw = (inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stringValue();
+        if (strcmp(gateway_, destGw) != 0)
+        {
+            // the destination is a MEC host under a different core network, send the packet to the gateway
+            return -1;
+        }
+
         EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << endl;
         return -3;
     }
@@ -172,6 +185,14 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     if (isBaseStation(ownerType_))
     {
+        // check if the destination belongs to another core network (for multi-operator scenarios)
+        const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
+        if (strcmp(gateway_, destGw) != 0)
+        {
+            // the destination is a Base Station under a different core network, send the packet to the gateway
+            return -1;
+        }
+
         MacNodeId srcMaster = binder_->getNextHop(binder_->getMacNodeId(srcAddress.toIpv4()));
         if (fastForwarding_ && srcMaster == destMaster)
             return 0;                 // local delivery

@@ -289,9 +289,11 @@ void LteMacEnb::initialize(int stage)
         info->eNodeB = this->getParentModule()->getParentModule();  // reference to the eNodeB module
         binder_->addEnbInfo(info);
 
-        // register the pair <id,name> to the binder
+        // register the pairs <id,name> and <id, module> to the binder
+        cModule* module = getParentModule()->getParentModule();
         const char* moduleName = getParentModule()->getParentModule()->getFullName();
         binder_->registerName(nodeId_, moduleName);
+        binder_->registerModule(nodeId_, module);
 
         // get the reference to the PHY layer
         phy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("phy"));

@@ -440,7 +440,6 @@ bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
     return true;
 }
 
-{
 const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostAddress)
 {
     if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
@@ -455,12 +454,26 @@ void Binder::registerName(MacNodeId nodeId, const char* moduleName)
     strcpy(macNodeIdToModuleName_[nodeId], moduleName);
 }
 
+void Binder::registerModule(MacNodeId nodeId, cModule* module)
+{
+    macNodeIdToModuleRef_[nodeId] = module;
+}
+
 const char* Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleName_.find(nodeId) == macNodeIdToModuleName_.end())
         throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID not found");
     return macNodeIdToModuleName_[nodeId];
 }
+
+
+cModule* Binder::getModuleByMacNodeId(MacNodeId nodeId)
+{
+    if (macNodeIdToModuleRef_.find(nodeId) == macNodeIdToModuleRef_.end())
+        throw cRuntimeError("Binder::getModuleByMacNodeId - node ID not found");
+    return macNodeIdToModuleRef_[nodeId];
+}
+
 
 ConnectedUesMap Binder::getDeployedUes(MacNodeId localId, Direction dir)
 {

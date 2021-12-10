@@ -49,7 +49,10 @@ void GtpUser::initialize(int stage)
         bool connectedBS = isBaseStation(ownerType_) && getParentModule()->gate("ppp$o")->isConnected();
 
         if (connectedBS || ownerType_ == UPF_MEC)
-            gwAddress_ = L3AddressResolver().resolve(getAncestorPar("gateway"));
+        {
+            const char* gateway = getAncestorPar("gateway").stringValue();
+            gwAddress_ = L3AddressResolver().resolve(gateway);
+        }
     }
 
     if(isBaseStation(ownerType_))
