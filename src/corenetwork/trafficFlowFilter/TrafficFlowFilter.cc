@@ -32,11 +32,15 @@ void TrafficFlowFilter::initialize(int stage)
 
     // reading and setting owner type
     ownerType_ = selectOwnerType(par("ownerType"));
-
-    if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
+    if (ownerType_ == PGW || ownerType_ == UPF)
+    {
+        gateway_ = getParentModule()->getFullName();
+    }
+    else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
     {
         gateway_ = getAncestorPar("gateway").stringValue();
     }
+
 
     //mec
     if(getParentModule()->hasPar("mecHost")){
@@ -182,23 +186,32 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     // the serving node for the UE might be a secondary node in case of NR Dual Connectivity
     // obtains the master node, if any (the function returns destEnb if it is a master already)
     MacNodeId destMaster = binder_->getMasterNode(destBS);
+    MacNodeId srcMaster = binder_->getNextHop(binder_->getMacNodeId(srcAddress.toIpv4()));
 
     if (isBaseStation(ownerType_))
     {
-        // check if the destination belongs to another core network (for multi-operator scenarios)
-        const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
-        if (strcmp(gateway_, destGw) != 0)
-        {
-            // the destination is a Base Station under a different core network, send the packet to the gateway
-            return -1;
-        }
-
-        MacNodeId srcMaster = binder_->getNextHop(binder_->getMacNodeId(srcAddress.toIpv4()));
         if (fastForwarding_ && srcMaster == destMaster)
             return 0;                 // local delivery
-        return -1;   // send the packet to the PGW/UPF
+
+        return -1;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
+                     // TODO if the BS is within the same core network, there should be a direct tunnel to
+                     //      it without going through the gateway (for now, this is not implemented as it
+                     //      may cause packets being transmitted via the X2
+
     }
 
+    // MEC host or PGW/UPF
+
+    // check if the destination belongs to another core network (for multi-operator scenarios)
+    const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
+    if (strcmp(gateway_, destGw) != 0)
+    {
+        // the destination is a Base Station under a different core network, send the packet to the gateway
+        EV << "Forward packet to the gateway" << endl;
+        return -1;
+    }
+
+    EV << "Forward packet to BS " << destMaster << endl;
     return destMaster;
 }
 
