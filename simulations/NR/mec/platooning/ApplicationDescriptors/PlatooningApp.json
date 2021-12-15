@@ -1,0 +1,12 @@
+{
+"appDid" : "PLATOONMECAPP",
+"appName" : "MECPlatooningApp",
+"appProvider" : "simu5g.apps.mec.PlatooningApp.MECPlatooningApp",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 10,
+    "virtualCpu" : 1500,
+    "virtualMemory":10
+    }
+}
