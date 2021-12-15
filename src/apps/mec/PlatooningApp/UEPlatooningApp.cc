@@ -29,8 +29,8 @@ Define_Module(UEPlatooningApp);
 
 UEPlatooningApp::UEPlatooningApp()
 {
-    selfStart_ = NULL;
-    selfStop_ = NULL;
+    selfStart_ = nullptr;
+    selfStop_ = nullptr;
     status_ = NOT_JOINED;
 }
 

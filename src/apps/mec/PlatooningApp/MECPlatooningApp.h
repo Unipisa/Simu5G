@@ -32,12 +32,19 @@ class MECPlatooningApp : public MecAppBase
     // temp
     double  newAcceleration_;
 
-    //UDP socket to communicate with the UeApp
+    // UDP socket to communicate with the UeApp
     inet::UdpSocket ueSocket;
     int localUePort;
 
+    // address+port of the UeApp
     inet::L3Address ueAppAddress;
     int ueAppPort;
+
+    // endpoint for contacting the Location Service
+    // this is obtained by sending a GET request to the Service Registry as soon as
+    // the connection with the latter has been established
+    inet::L3Address locationServiceAddress_;
+    int locationServicePort_;
 
     std::string subId;
 
@@ -46,29 +53,31 @@ class MECPlatooningApp : public MecAppBase
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
-
     virtual void finish() override;
+    virtual void handleSelfMessage(cMessage *msg) override;
 
-    virtual void handleServiceMessage() override {}
-    virtual void handleMp1Message() override {}
+    // @brief handler for data received from the service registry
+    virtual void handleMp1Message() override;
 
+    // @brief handler for data received from a MEC service
+    virtual void handleServiceMessage() override;
+
+    // @brief multiplexer for data received from a Client app
     virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
 //    virtual void modifySubscription();
 //    virtual void sendSubscription();
 //    virtual void sendDeleteSubscription();
 
-    virtual void handleSelfMessage(cMessage *msg) override;
-
-    // handler for request to join a platoon from the UE
+    // @brief handler for request to join a platoon from the UE
     void handleJoinPlatoonRequest(cMessage* msg);
-    // handler for request to leave a platoon from the UE
+    // @brief handler for request to leave a platoon from the UE
     void handleLeavePlatoonRequest(cMessage* msg);
 
     void control();
 
-//        /* TCPSocket::CallbackInterface callback methods */
-    virtual void established(int connId) override {}
+    /* TCPSocket::CallbackInterface callback methods */
+    virtual void established(int connId) override;
 
   public:
     MECPlatooningApp();
