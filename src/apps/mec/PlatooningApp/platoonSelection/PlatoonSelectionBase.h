@@ -13,11 +13,14 @@
 #define __PLATOONSELECTIONBASE_H_
 
 #include "omnetpp.h"
+#include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 
 using namespace std;
 using namespace omnetpp;
 
-
+class MECPlatooningProviderApp;
+class PlatoonControllerBase;
+typedef std::map<int, PlatoonControllerBase*> ControllerMap;
 
 /*
  * PlatoonSelectionBase
@@ -40,10 +43,10 @@ class PlatoonSelectionBase
     //
     // this function must return the index of the selected platoon, -1 if no
     // platoons are available
-    virtual int findBestPlatoon() = 0;
+    virtual int findBestPlatoon(const ControllerMap& activeControllers) = 0;
 
   public:
-    PlatoonSelectionBase() {}
+    PlatoonSelectionBase(){}
     virtual ~PlatoonSelectionBase() {}
 };
 

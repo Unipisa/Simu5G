@@ -34,7 +34,6 @@ MECPlatooningApp::MECPlatooningApp(): MecAppBase()
 
 MECPlatooningApp::~MECPlatooningApp()
 {
-
 }
 
 
@@ -46,15 +45,21 @@ void MECPlatooningApp::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    //retrieving parameters
-    newAcceleration_ = 0.0;
-
     // set UDP Socket
-    localUePort = par("localUePort");
-    ueSocket.setOutputGate(gate("socketOut"));
-    ueSocket.bind(localUePort);
+    localPort = par("localUePort");
+    socket.setOutputGate(gate("socketOut"));
+    socket.bind(localPort);
+
+    // TODO add a new socket to handle communication with the provider app
 
     EV << "MECPlatooningApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
+
+    // get platooning provider info
+    platooningProviderAddress_ = L3Address(par("platooningProviderAddress").stringValue());
+    platooningProviderPort_ = par("platooningProviderPort");
+
+    // send registration request to the provider app
+    registerToPlatooningProviderApp();
 
     // connect with the service registry
     EV << "MECPlatooningApp::initialize - Initialize connection with the service registry via Mp1" << endl;
@@ -65,7 +70,7 @@ void MECPlatooningApp::handleMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
-        if(ueSocket.belongsToSocket(msg))
+        if(socket.belongsToSocket(msg))
         {
             handleUeMessage(msg);
             return;
@@ -87,12 +92,8 @@ void MECPlatooningApp::finish()
 
 void MECPlatooningApp::handleSelfMessage(cMessage *msg)
 {
-    if (strcmp(msg->getName(), "controllerTrigger") == 0)
-    {
-        control();
-
-        scheduleAt(simTime()+0.1, msg);
-    }
+    // nothing to do here
+    delete msg;
 }
 
 void MECPlatooningApp::handleMp1Message()
@@ -255,42 +256,64 @@ void MECPlatooningApp::handleServiceMessage()
 
 }
 
+void MECPlatooningApp::registerToPlatooningProviderApp()
+{
+    inet::Packet* packet = new Packet ("PlatooningRegistrationPacket");
+    auto registration = inet::makeShared<PlatooningRegistrationPacket>();
+    registration->setType(REGISTRATION_REQUEST);
+    registration->setMecAppId(getId());
+    int chunkLen = sizeof(getId())+sizeof(localPort);
+    registration->setChunkLength(inet::B(chunkLen));
+
+    packet->insertAtFront(registration);
+    packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(packet, platooningProviderAddress_, platooningProviderPort_);
+}
+
+
 void MECPlatooningApp::handleUeMessage(omnetpp::cMessage *msg)
 {
     // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);
-    ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
-    ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
-
     auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
 
-    if(strcmp(platooningPkt->getType(), JOIN_REQUEST) == 0)
+    // TODO use enumerate variables instead of strings for comparison
+
+    if(strcmp(platooningPkt->getType(), REGISTRATION_RESPONSE) == 0) // from mec provider app
+        handleProviderRegistrationResponse(msg);
+
+    else if(strcmp(platooningPkt->getType(), JOIN_REQUEST) == 0)     // from client app
     {
+        // TODO move this somewhere else
+        ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
+        ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
+
         handleJoinPlatoonRequest(msg);
-
-        if(par("logger").boolValue())
-        {
-            ofstream myfile;
-            myfile.open ("example.txt", ios::app);
-            if(myfile.is_open())
-            {
-                myfile <<"["<< NOW << "] MEWarningAlertApp - Received message from UE, connecting to the Location Service\n";
-                myfile.close();
-            }
-        }
-
-        // start controlling
-        cMessage *trigger = new cMessage("controllerTrigger");
-        scheduleAt(simTime()+0.1, trigger);
     }
-    else if (strcmp(platooningPkt->getType(), LEAVE_REQUEST) == 0)
-    {
+
+    else if (strcmp(platooningPkt->getType(), LEAVE_REQUEST) == 0)   // from client app
         handleLeavePlatoonRequest(msg);
-    }
+
+    else if (strcmp(platooningPkt->getType(), JOIN_RESPONSE) == 0)   // from mec provider app
+        handleJoinPlatoonResponse(msg);
+
+    else if (strcmp(platooningPkt->getType(), LEAVE_RESPONSE) == 0)  // from mec provider app
+        handleLeavePlatoonResponse(msg);
+
+    else if (strcmp(platooningPkt->getType(), PLATOON_CMD) == 0)  // from mec provider app
+        handlePlatoonCommand(msg);
+
     else
-    {
         throw cRuntimeError("MECPlatooningApp::handleUeMessage - packet not recognized");
-    }
+}
+
+void MECPlatooningApp::handleProviderRegistrationResponse(cMessage* msg)
+{
+    EV << "MECPlatooningApp::handleProviderRegistrationResponse - Received registration response from the MECPlatooningProviderApp" << endl;
+
+    // TODO do stuff
+
+    delete msg;
 }
 
 
@@ -299,18 +322,13 @@ void MECPlatooningApp::handleJoinPlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto joinReq = packet->removeAtFront<PlatooningJoinPacket>();
 
-    EV << "MECPlatooningApp::handleJoinRequest - Received join request from ..." << endl;
+    EV << "MECPlatooningApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
 
-    // accept the request and send ACK
-    inet::Packet* responsePacket = new Packet (packet->getName());
-    joinReq->setType(JOIN_RESPONSE);
-    joinReq->setResponse(true);
-    joinReq->setColor("green");
-    responsePacket->insertAtFront(joinReq);
-    responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-
-    ueSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
-    EV << "UEPlatooningApp::sendJoinPlatoonRequest() - Join response sent to the UE" << endl;
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    joinReq->setMecAppId(getId());
+    fwPacket->insertAtFront(joinReq);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
 
     delete packet;
 }
@@ -320,37 +338,68 @@ void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->removeAtFront<PlatooningLeavePacket>();
 
-    EV << "MECPlatooningApp::handleJoinRequest - Received leave request from ..." << endl;
+    EV << "MECPlatooningApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningProviderApp" << endl;
 
-    inet::Packet* responsePacket = new Packet (packet->getName());
-
-    // accept the request and send ACK
-    leaveReq->setType(LEAVE_RESPONSE);
-    leaveReq->setResponse(true);
-    responsePacket->insertAtFront(leaveReq);
-    responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-
-    ueSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
-    EV << "UEPlatooningApp::sendJoinPlatoonRequest() - Join response sent to the UE" << endl;
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    leaveReq->setMecAppId(getId());
+    fwPacket->insertAtFront(leaveReq);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
 
     delete packet;
 }
 
-void MECPlatooningApp::control()
+void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
 {
-    inet::Packet* pkt = new inet::Packet("PlatooningInfoPacket");
-    auto cmd = inet::makeShared<PlatooningInfoPacket>();
-    cmd->setType(PLATOON_CMD);
-    cmd->setNewAcceleration(newAcceleration_);
-    cmd->setChunkLength(inet::B( sizeof(double) ));
-    cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    pkt->insertAtBack(cmd);
+    // forward to client
 
-    ueSocket.sendTo(pkt, ueAppAddress, ueAppPort);
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto joinResp = packet->removeAtFront<PlatooningJoinPacket>();
 
-    EV << "UEPlatooningApp::control() - Sent new acceleration value[" << newAcceleration_ << "] to the UE" << endl;
+    EV << "MECPlatooningApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    fwPacket->insertAtFront(joinResp);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+
+    delete packet;
 }
+
+void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
+{
+    // forward to client
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto leaveResp = packet->removeAtFront<PlatooningLeavePacket>();
+
+    EV << "MECPlatooningApp::handleLeavePlatoonResponse - Forward leave response to the UE" << endl;
+
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    fwPacket->insertAtFront(leaveResp);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+
+    delete packet;
+}
+
+void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
+{
+    // forward to client
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto cmd = packet->removeAtFront<PlatooningInfoPacket>();
+
+    EV << "MECPlatooningApp::handlePlatoonCommand - Forward new command to the UE" << endl;
+
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    fwPacket->insertAtFront(cmd);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+
+    delete packet;
+}
+
 
 //void MECPlatooningApp::modifySubscription()
 //{

@@ -13,12 +13,14 @@
 
 PlatoonControllerBase::PlatoonControllerBase()
 {
-    mecPlatooningApp_ = nullptr;
+    mecPlatooningProviderApp_ = nullptr;
 }
 
-PlatoonControllerBase::PlatoonControllerBase(MECPlatooningApp* mecPlatooningApp)
+PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
 {
-    mecPlatooningApp_ = mecPlatooningApp;
+    mecPlatooningProviderApp_ = mecPlatooningProviderApp;
+    index_ = index;
+    controlPeriod_ = controlPeriod;
 }
 
 PlatoonControllerBase::~PlatoonControllerBase()
@@ -28,16 +30,33 @@ PlatoonControllerBase::~PlatoonControllerBase()
 
 
 
-bool PlatoonControllerBase::addPlatoonMember()
+bool PlatoonControllerBase::addPlatoonMember(int mecAppId)
 {
-    EV << "PlatoonControllerBase::addPlatoonMember - New member added to the platoon" << endl;
+    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
+
+    if (members_.empty())
+    {
+        // start controlling the platoon, set a timer
+        mecPlatooningProviderApp_->startControllerTimer(index_, controlPeriod_);
+    }
+
+
+    members_.insert(mecAppId);
 
     return true;
 }
 
-bool PlatoonControllerBase::removePlatoonMember()
+bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
 {
-    EV << "PlatoonControllerBase::removePlatoonMember - Member removed from the platoon" << endl;
+    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
+
+    members_.erase(mecAppId);
+
+    if (members_.empty())
+    {
+        // stop controlling the platoon, stop the timer
+        mecPlatooningProviderApp_->stopControllerTimer(index_);
+    }
 
     return true;
 }

@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#include "../platoonController/PlatoonControllerSample.h"
+#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerSample.h"
 
 PlatoonControllerSample::PlatoonControllerSample()
 {
 }
 
-PlatoonControllerSample::PlatoonControllerSample(MECPlatooningApp* mecPlatooningApp)
-    : PlatoonControllerBase(mecPlatooningApp)
+PlatoonControllerSample::PlatoonControllerSample(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
+    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod)
 {
 }
 
@@ -25,15 +25,27 @@ PlatoonControllerSample::~PlatoonControllerSample()
     EV << "PlatoonControllerSample::~PlatoonControllerSample - Destructor called" << endl;
 }
 
-bool PlatoonControllerSample::controlPlatoon()
+const CommandList* PlatoonControllerSample::controlPlatoon()
 {
     EV << "PlatoonControllerSample::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
     // TODO implement controller
 
-    EV << "PlatoonControllerSample::controlPlatoon() - Sending new acceleration values to the UEs" << endl;
+    CommandList* cmdList = new CommandList();
 
-    return true;
+    MecAppIdSet::iterator it = members_.begin();
+    for (; it != members_.end(); ++it)
+    {
+        EV << "PlatoonControllerSample::control() - Computing new command for MEC app " << *it << "..." << endl;
+
+        double newAcceleration = 0.0;
+
+        // TODO compute new acceleration
+        (*cmdList)[*it] = newAcceleration;
+
+        EV << "PlatoonControllerSample::control() - New acceleration value for " << *it << " [" << newAcceleration << "]" << endl;
+    }
+    return cmdList;
 }
 
 

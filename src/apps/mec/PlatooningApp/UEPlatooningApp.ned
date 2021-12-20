@@ -38,9 +38,11 @@ simple UEPlatooningApp like IApp
         double startTime @unit("s") = default(0s); 
         double stopTime @unit("s") = default(120s);
         
+        double joinTime @unit("s") = default(-1s); 
+        double leaveTime @unit("s") = default(119s); 
+        
         string mecAppName = default("MECPlatooningApp");
         
-        bool logger = default(false);
         string interfaceTableModule;
                     
     gates:

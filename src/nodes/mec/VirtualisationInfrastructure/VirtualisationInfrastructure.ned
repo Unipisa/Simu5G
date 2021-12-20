@@ -16,6 +16,7 @@ import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.ILoopbackInterface;
 import inet.linklayer.ethernet.contract.IEthernetLayer;
 import inet.linklayer.ppp.PppInterface;
+import inet.linklayer.contract.ILoopbackInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
 import inet.networklayer.contract.IRoutingTable;
@@ -50,6 +51,7 @@ module VirtualisationInfrastructure
 
         int numIndependentMecApp = default(0);
         int numExtEthInterfaces = default(0);
+        int numLoInterfaces = default(1);
 
     gates:
 
@@ -86,10 +88,10 @@ module VirtualisationInfrastructure
                 registerProtocol = true;
                 @display("p=326.6525,511.135");
         }
-
-        lo: <default("LoopbackInterface")> like ILoopbackInterface {
+        //# loopback interface 
+        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
             parameters:
-                @display("p=548.37,660.075,row,150");
+                @display("p=880.1,507.75,row,150");
         }
 
         //#
@@ -192,6 +194,12 @@ module VirtualisationInfrastructure
         encap.upperLayerOut --> nl.in++ if numExtEthInterfaces != 0;
         encap.upperLayerIn <-- nl.out++ if numExtEthInterfaces != 0;
 
-        nl.out++ --> lo.upperLayerIn;
-        lo.upperLayerOut --> nl.in++;
+        eth.upperLayerOut --> nl.in++;
+        eth.upperLayerIn <-- nl.out++;
+        eth.phys <--> mePlatform;
+
+        for i=0..numLoInterfaces-1 {
+            nl.out++ --> lo[i].upperLayerIn;
+            lo[i].upperLayerOut --> nl.in++;
+        }
 }

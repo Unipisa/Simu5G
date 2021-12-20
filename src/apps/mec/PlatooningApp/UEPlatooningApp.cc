@@ -38,8 +38,6 @@ UEPlatooningApp::~UEPlatooningApp()
 {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
-    cancelAndDelete(selfMecAppStart_);
-
 }
 
 void UEPlatooningApp::initialize(int stage)
@@ -49,8 +47,6 @@ void UEPlatooningApp::initialize(int stage)
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
-
-    log = par("logger").boolValue();
 
     //retrieve parameters
     joinRequestPacketSize_ = par("joinRequestPacketSize");
@@ -89,7 +85,6 @@ void UEPlatooningApp::initialize(int stage)
     //initializing the auto-scheduling messages
     selfStart_ = new cMessage("selfStart");
     selfStop_ = new cMessage("selfStop");
-    selfMecAppStart_ = new cMessage("selfMecAppStart");
 
     //starting UEPlatooningApp
     simtime_t startTime = par("startTime");
@@ -110,6 +105,16 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
             sendStartMECPlatooningApp();
         else if(!strcmp(msg->getName(), "selfStop"))
             sendStopMECPlatooningApp();
+        else if (!strcmp(msg->getName(), "joinTimer"))
+        {
+            sendJoinPlatoonRequest();             // send request for joining a platoon
+            delete msg;
+        }
+        else if (!strcmp(msg->getName(), "leaveTimer"))
+        {
+            sendLeavePlatoonRequest();             // send request for leaving a platoon
+            delete msg;
+        }
         else
             throw cRuntimeError("UEPlatooningApp::handleMessage - \tWARNING: Unrecognized self message");
     }
@@ -180,18 +185,6 @@ void UEPlatooningApp::sendStartMECPlatooningApp()
 
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
 
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE sent start message to the Device App \n";
-            myfile.close();
-
-        }
-    }
-
     //rescheduling
     scheduleAt(simTime() + 0.5, selfStart_);
 }
@@ -210,17 +203,6 @@ void UEPlatooningApp::sendStopMECPlatooningApp()
     packet->insertAtBack(stop);
 
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE sent stop message to the Device App \n";
-            myfile.close();
-        }
-    }
 
     //rescheduling
     if(selfStop_->isScheduled())
@@ -253,8 +235,21 @@ void UEPlatooningApp::handleAckStartMECPlatooningApp(cMessage* msg)
         EV << "UEPlatooningApp::handleAckStartMECPlatooningApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
     }
 
-    // send request for joining a platoon
-    sendJoinPlatoonRequest();
+    // schedule a join request after joinTime seconds
+    cMessage* joinTimer = new cMessage("joinTimer");
+    double joinTime = par("joinTime");
+    if (joinTime == -1)
+        scheduleAt(simTime(), joinTimer);
+    else
+        scheduleAt(simTime() + joinTime, joinTimer);
+
+    // schedule a leave request after leaveTime seconds
+    cMessage* leaveTimer = new cMessage("leaveTimer");
+    double leaveTime = par("leaveTime");
+    if (leaveTime == -1)
+        scheduleAt(simTime() + par("stopTime") - 1.0, leaveTimer);  // TODO check this
+    else
+        scheduleAt(simTime() + leaveTime, leaveTimer);
 }
 
 
@@ -274,17 +269,6 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     joinReq->setChunkLength(inet::B(joinRequestPacketSize_));
     joinReq->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(joinReq);
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE sent start join request to the MEC application \n";
-            myfile.close();
-        }
-    }
 
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
     EV << "UEPlatooningApp::sendJoinPlatoonRequest() - Join request sent to the MEC app" << endl;
@@ -306,17 +290,6 @@ void UEPlatooningApp::sendLeavePlatoonRequest()
     leaveReq->setChunkLength(inet::B(leaveRequestPacketSize_));
     leaveReq->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(leaveReq);
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE sent leave request to the MEC application \n";
-            myfile.close();
-        }
-    }
 
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
     EV << "UEPlatooningApp::sendLeavePlatoonRequest() - Leave request sent to the MEC app" << endl;
@@ -349,17 +322,6 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
         EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request rejected" << endl;
 
     }
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE received a response to a join request from the MEC application \n";
-            myfile.close();
-        }
-    }
 }
 
 void UEPlatooningApp::recvLeavePlatoonResponse(cMessage* msg)
@@ -388,17 +350,6 @@ void UEPlatooningApp::recvLeavePlatoonResponse(cMessage* msg)
         EV << "UEPlatooningApp::recvLeavePlatoonResponse() - Leave request rejected" << endl;
 
     }
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE received a response to a leave request from the MEC application \n";
-            myfile.close();
-        }
-    }
 }
 
 
@@ -415,18 +366,6 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
     mobility->setAcceleration(newAcceleration);
 
     EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
-
-    if(log)
-    {
-        ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UEPlatooningApp - UE received a new command from the platoon controller\n";
-            myfile.close();
-        }
-    }
-
 }
 void UEPlatooningApp::handleAckStopMECPlatooningApp(cMessage* msg)
 {

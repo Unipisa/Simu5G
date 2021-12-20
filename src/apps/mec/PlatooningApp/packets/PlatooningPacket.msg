@@ -9,10 +9,16 @@
 // and cannot be removed from it.
 //
 
+
 import nodes.mec.MECPlatform.MECPackets;
 
 class PlatooningAppPacket extends MECPacket
-{}
+{
+    int mecAppId;
+}
+
+
+// === Packets between MECPlatooningApp and MECPlatooningProviderApp === //
 
 class PlatooningJoinPacket extends PlatooningAppPacket
 {       
@@ -32,3 +38,11 @@ class PlatooningInfoPacket extends PlatooningAppPacket
 }
 
 
+
+// === Packets between MECPlatooningApp and MECPlatooningProviderApp === //
+
+class PlatooningRegistrationPacket extends PlatooningAppPacket
+{
+    //string mecAppAddress;
+    //int mecAppPort;
+}

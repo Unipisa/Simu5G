@@ -17,7 +17,7 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 //
 //  This is a MEC app that ... TBC
 //
-simple MECPlatooningApp like IMECApp, IApp
+simple MECPlatooningProviderApp like IMECApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");
@@ -26,10 +26,7 @@ simple MECPlatooningApp like IMECApp, IApp
         string interfaceTableModule = default("");
         
         int mecAppId;
-        int localUePort;
-        
-        string platooningProviderAddress = default("127.0.0.1");
-        int platooningProviderPort = default(5500);
+        int localUePort = default(5500);
         
         string mp1Address = default("");
         int mp1Port = default(10021);
@@ -43,8 +40,6 @@ simple MECPlatooningApp like IMECApp, IApp
 		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-		
-		bool logger = default(false);
 
     gates:
 	  input mePlatformIn;

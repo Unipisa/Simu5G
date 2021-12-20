@@ -65,11 +65,6 @@ class UEPlatooningApp: public cSimpleModule
     cMessage *selfStart_;
     cMessage *selfStop_;
 
-    cMessage *selfMecAppStart_;
-
-    // uses to write in a log a file
-    bool log;
-
   public:
     ~UEPlatooningApp();
     UEPlatooningApp();

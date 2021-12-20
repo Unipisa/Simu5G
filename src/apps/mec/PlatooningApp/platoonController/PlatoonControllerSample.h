@@ -30,18 +30,12 @@ class PlatoonControllerSample : public PlatoonControllerBase
 
   protected:
 
-    // @brief add a new member to the platoon
-    virtual bool addPlatoonMember();
-
-    // @brief remove a member from the platoon
-    virtual bool removePlatoonMember();
-
     // @brief run the global platoon controller
-    virtual bool controlPlatoon();
+    virtual const CommandList* controlPlatoon();
 
   public:
     PlatoonControllerSample();
-    PlatoonControllerSample(MECPlatooningApp* mecPlatooningApp);
+    PlatoonControllerSample(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
     virtual ~PlatoonControllerSample();
 };
 

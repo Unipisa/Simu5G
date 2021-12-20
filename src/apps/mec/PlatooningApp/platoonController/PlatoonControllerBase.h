@@ -13,12 +13,15 @@
 #define __PLATOONCONTROLLERBASE_H_
 
 #include "omnetpp.h"
-#include "apps/mec/PlatooningApp/MECPlatooningApp.h"
+#include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 
 using namespace std;
 using namespace omnetpp;
 
-class MECPlatooningApp;
+typedef std::set<int> MecAppIdSet;
+typedef std::map<int, double> CommandList;
+
+class MECPlatooningProviderApp;
 
 /*
  * PlatoonControllerBase
@@ -31,29 +34,35 @@ class MECPlatooningApp;
  */
 class PlatoonControllerBase
 {
-    friend class MECPlatooningApp;
-    friend class MECPlatooningProviderApp;
-
-    // reference to the MEC Platooning App
-    MECPlatooningApp* mecPlatooningApp_;
-
-    // temp
-    double  newAcceleration_;
 
   protected:
 
+    friend class MECPlatooningProviderApp;
+
+    // reference to the MEC Platooning App
+    MECPlatooningProviderApp* mecPlatooningProviderApp_;
+
+    // platoon controller identifier within a PlatoonProviderApp
+    int index_;
+
+    // periodicity for running the controller
+    double controlPeriod_;
+
+    // set of platoon members. It includes the ID of their MEC apps
+    MecAppIdSet members_;
+
     // @brief add a new member to the platoon
-    virtual bool addPlatoonMember();
+    virtual bool addPlatoonMember(int mecAppId);
 
     // @brief remove a member from the platoon
-    virtual bool removePlatoonMember();
+    virtual bool removePlatoonMember(int mecAppId);
 
     // @brief run the global platoon controller
-    virtual bool controlPlatoon() = 0;
+    virtual const CommandList* controlPlatoon() = 0;
 
   public:
     PlatoonControllerBase();
-    PlatoonControllerBase(MECPlatooningApp* mecPlatooningApp);
+    PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
     virtual ~PlatoonControllerBase();
 };
 

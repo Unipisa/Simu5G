@@ -20,13 +20,22 @@ PlatoonSelectionSample::~PlatoonSelectionSample()
     EV << "PlatoonSelectionSample::~PlatoonSelectionSample - Destructor called" << endl;
 }
 
-int PlatoonSelectionSample::findBestPlatoon()
+int PlatoonSelectionSample::findBestPlatoon(const ControllerMap& activeControllers)
 {
     EV << "PlatoonSelectionSample::findBestPlatoon - finding the best platoon for a given UE" << endl;
 
     // TODO implement custom algorithm
 
-    return -1;
+    int selectedPlatoon = -1;
+    ControllerMap::const_iterator it = activeControllers.begin();
+    for (; it != activeControllers.end(); ++it)
+    {
+        selectedPlatoon = it->first;
+    }
+
+    EV << "PlatoonSelectionSample::findBestPlatoon - selected platoon with index " << selectedPlatoon << endl;
+
+    return selectedPlatoon;
 }
 
 
