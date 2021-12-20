@@ -24,14 +24,25 @@ class PlatooningAppPacket extends MECPacket
 
 class PlatooningJoinPacket extends PlatooningAppPacket
 {       
-    bool response;    // flag set by the MEC app with the ACK/NACK to join a platoon
-    string color;     // color assigned to the members of the platoon
-    
     inet::L3Address ueAddress; // address of the UE
+    
+    int controllerIndex;  // index of the controller instance
+                          // in request messages, it is the platoon the UE would like to join
+                          // in response messages, it is the platoon the UE actually joined
+     
+    // --- request --- //
+    
+    // --- response --- //
+    bool response;        // flag set by the MEC app with the ACK/NACK to join a platoon
+    string color;         // color assigned to the members of the platoon
 }
 
 class PlatooningLeavePacket extends PlatooningAppPacket
 {       
+    // --- request --- //
+    int controllerIndex;  // index of the controller instance
+    
+    // --- response --- //
     bool response;    // flag set by the MEC app with the ACK/NACK to leave a platoon
 
 }

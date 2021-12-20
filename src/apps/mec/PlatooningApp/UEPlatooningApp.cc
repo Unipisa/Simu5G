@@ -266,6 +266,7 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     inet::Packet* pkt = new inet::Packet("PlatooningJoinPacket");
     auto joinReq = inet::makeShared<PlatooningJoinPacket>();
     joinReq->setType(JOIN_REQUEST);
+    joinReq->setControllerIndex(-1);   // TODO -1 means attach to any available platoon for this UE
     joinReq->setChunkLength(inet::B(joinRequestPacketSize_));
     joinReq->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(joinReq);

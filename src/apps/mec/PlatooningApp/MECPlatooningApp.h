@@ -31,7 +31,7 @@ class MECPlatooningApp : public MecAppBase
     inet::UdpSocket ueAppSocket;
     int localUePort;
 
-    // TODO add a new socket to handle communication with the provider app
+    // socket to handle communication with the provider app
     inet::UdpSocket platooningProviderAppSocket;
     int localPlatooningProviderPort;
 
@@ -45,8 +45,7 @@ class MECPlatooningApp : public MecAppBase
     inet::L3Address locationServiceAddress_;
     int locationServicePort_;
 
-    std::string subId;
-
+    // endpoint for contacting the MEC platooning provider app
     inet::L3Address platooningProviderAddress_;
     int platooningProviderPort_;
 
@@ -55,6 +54,9 @@ class MECPlatooningApp : public MecAppBase
     double lastYposition;
     double lastZposition;
 
+    // when joined a platoon, stores the index of the controller
+    // -1 means that this MEC app does not belong to any platoon
+    int controllerIndex_;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

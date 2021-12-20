@@ -69,6 +69,9 @@ void MECPlatooningApp::initialize(int stage)
     // send registration request to the provider app
     registerToPlatooningProviderApp();
 
+    // initially, not connected to any controller
+    controllerIndex_ = -1;
+
     // connect with the service registry
 //    EV << "MECPlatooningApp::initialize - Initialize connection with the service registry via Mp1" << endl;
 //    connect(&mp1Socket_, mp1Address, mp1Port);
@@ -280,6 +283,7 @@ void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     leaveReq->setMecAppId(getId());
+    leaveReq->setControllerIndex(controllerIndex_);
     fwPacket->insertAtFront(leaveReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
@@ -293,6 +297,10 @@ void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto joinResp = packet->removeAtFront<PlatooningJoinPacket>();
+
+    // set controller index
+    if (joinResp->getResponse())
+        controllerIndex_ = joinResp->getControllerIndex();
 
     EV << "MECPlatooningApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
@@ -314,6 +322,11 @@ void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveResp = packet->removeAtFront<PlatooningLeavePacket>();
+
+    // detach controller index
+    if (leaveResp->getResponse())
+        controllerIndex_ = -1;
+
 
     EV << "MECPlatooningApp::handleLeavePlatoonResponse - Forward leave response to the UE" << endl;
 

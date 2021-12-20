@@ -302,36 +302,43 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
 
     EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - Received join request from MEC App " << mecAppId << endl;
 
-    // find the most suitable platoonController for this new request
     PlatoonControllerBase* platoonController;
-    int selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_);
-    if (selectedPlatoon < 0)
+    int selectedPlatoon = joinReq->getControllerIndex();
+    if (joinReq->getControllerIndex() == -1)
     {
-        // if no active platoon managers can be used, create one
-        platoonController = new PlatoonControllerSample(this, nextControllerIndex_);
-        platoonControllers_[nextControllerIndex_] = platoonController;
+        // the UE has not explicitly selected a platoon
 
-        EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << endl;
-        nextControllerIndex_++;
+        // find the most suitable platoonController for this new request
+        selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_);
+        if (selectedPlatoon < 0)
+        {
+            // if no active platoon managers can be used, create one
+            selectedPlatoon = nextControllerIndex_++;
+            platoonController = new PlatoonControllerSample(this, selectedPlatoon);
+            platoonControllers_[selectedPlatoon] = platoonController;
+            EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << endl;
+        }
     }
-    else if (platoonControllers_.find(selectedPlatoon) != platoonControllers_.end())
+
+    if (platoonControllers_.find(selectedPlatoon) != platoonControllers_.end())
     {
         platoonController = platoonControllers_[selectedPlatoon];
         EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to platoon " << selectedPlatoon << endl;
     }
     else
-        throw cRuntimeError("MECPlatooningProviderApp::handleJoinPlatoonRequest - invalid platoon manager index[%d] - size[%d]\n", selectedPlatoon, (int)platoonControllers_.size());
+        throw cRuntimeError("MECPlatooningProviderApp::handleJoinPlatoonRequest - invalid platoon manager index[%d]\n", selectedPlatoon);
 
     // add the member to the identified platoonController
     bool success = platoonController->addPlatoonMember(mecAppId, joinReq->getUeAddress());
 
-
+    // prepare response
     inet::Packet* responsePacket = new Packet (packet->getName());
     joinReq->setType(JOIN_RESPONSE);
     if (success)
     {
         // accept the request and send ACK
         joinReq->setResponse(true);
+        joinReq->setControllerIndex(selectedPlatoon);
         joinReq->setColor("green");
     }
     else
@@ -354,11 +361,15 @@ void MECPlatooningProviderApp::handleLeavePlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->removeAtFront<PlatooningLeavePacket>();
     int mecAppId = leaveReq->getMecAppId();
+    int controllerIndex = leaveReq->getControllerIndex();
 
     EV << "MECPlatooningProviderApp::handleLeavePlatoonRequest - Received leave request from MEC app " << mecAppId << endl;
 
     // TODO retrieve the platoonController for this member
-    PlatoonControllerBase* platoonController = platoonControllers_.at(0);
+    if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
+        throw cRuntimeError("MECPlatooningProviderApp::handleLeavePlatoonRequest - platoon with index %d does not exist", controllerIndex);
+
+    PlatoonControllerBase* platoonController = platoonControllers_.at(controllerIndex);
     if (platoonController == nullptr)
     {
         EV << "MECPlatooningProviderApp::handleLeavePlatoonRequest - the UE was not registered to any platoonController " << endl;

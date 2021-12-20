@@ -32,17 +32,15 @@ PlatoonControllerBase::~PlatoonControllerBase()
 
 bool PlatoonControllerBase::addPlatoonMember(int mecAppId)
 {
-    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
-
     if (members_.empty())
     {
         // start controlling the platoon, set a timer
         mecPlatooningProviderApp_->startControllerTimer(index_, controlPeriod_);
     }
 
-
     members_.insert(mecAppId);
 
+    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
     return true;
 }
 
@@ -60,16 +58,23 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
 
 bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
 {
-    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
+    MecAppIdSet::iterator it = members_.find(mecAppId);
+    if (it == members_.end())
+    {
+        EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] was not part of this platoon" << endl;
+        return false;
+    }
 
     members_.erase(mecAppId);
 
+    // check if the platoon is now empty
     if (members_.empty())
     {
         // stop controlling the platoon, stop the timer
         mecPlatooningProviderApp_->stopControllerTimer(index_);
     }
 
+    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
     return true;
 }
 
