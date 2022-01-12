@@ -82,7 +82,7 @@ void MecRequestForegroundApp::established(int connId)
         }
         else
         {
-            throw cRuntimeError("MecRequestBackgroundApp::socketEstablished - Socket %s not recognized", connId);
+            throw cRuntimeError("MecRequestBackgroundApp::socketEstablished - Socket %d not recognized", connId);
         }
 }
 
@@ -139,7 +139,6 @@ void MecRequestForegroundApp::initialize(int stage){
 }
 
 void MecRequestForegroundApp::sendRequest(){
-    const char * body = "";
     const char *uri = "/example/location/v2/queries/users";
     std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
 

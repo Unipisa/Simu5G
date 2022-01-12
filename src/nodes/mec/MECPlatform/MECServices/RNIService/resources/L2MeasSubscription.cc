@@ -164,12 +164,8 @@ void L2MeasSubscription::sendSubscriptionResponse(){
         val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
         val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
 
-
-
-
-
 }
-void L2MeasSubscription::sendNotification(){}
+void L2MeasSubscription::sendNotification(EventNotification *event){}
 
 
 

@@ -120,7 +120,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
     }
     else
     {
-        throw cRuntimeError("DeviceAppMessageSerializer::serialize - Code %d not recognized!", ss.c_str());
+        throw cRuntimeError("DeviceAppMessageSerializer::serialize - Code %s not recognized!", ss.c_str());
     }
 }
 

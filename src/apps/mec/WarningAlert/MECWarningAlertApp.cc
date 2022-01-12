@@ -238,7 +238,7 @@ void MECWarningAlertApp::established(int connId)
     }
     else
     {
-        throw cRuntimeError("MecAppBase::socketEstablished - Socket %s not recognized", connId);
+        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
     }
 }
 
