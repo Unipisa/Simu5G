@@ -28,10 +28,12 @@ using namespace omnetpp;
 class MECPlatooningApp : public MecAppBase
 {
     // UDP socket to communicate with the UeApp
-    inet::UdpSocket socket;
-    int localPort;
+    inet::UdpSocket ueAppSocket;
+    int localUePort;
 
     // TODO add a new socket to handle communication with the provider app
+    inet::UdpSocket platooningProviderAppSocket;
+    int localPlatooningProviderPort;
 
     // address+port of the UeApp
     inet::L3Address ueAppAddress;
@@ -47,6 +49,12 @@ class MECPlatooningApp : public MecAppBase
 
     inet::L3Address platooningProviderAddress_;
     int platooningProviderPort_;
+
+    // coordinates of the last position retrieved
+    double lastXposition;
+    double lastYposition;
+    double lastZposition;
+
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -68,6 +76,7 @@ class MECPlatooningApp : public MecAppBase
 //    virtual void sendSubscription();
 //    virtual void sendDeleteSubscription();
 
+    void requestLocation();
     // @brief notify the PlatooningProviderApp about the presence
     //        of this new MecApp
     void registerToPlatooningProviderApp();

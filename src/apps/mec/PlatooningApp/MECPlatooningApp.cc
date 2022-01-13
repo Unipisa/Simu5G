@@ -30,6 +30,9 @@ using namespace omnetpp;
 
 MECPlatooningApp::MECPlatooningApp(): MecAppBase()
 {
+    lastXposition = 0.;
+    lastYposition = 0.;
+    lastZposition = 0.;
 }
 
 MECPlatooningApp::~MECPlatooningApp()
@@ -45,12 +48,17 @@ void MECPlatooningApp::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    // set UDP Socket
-    localPort = par("localUePort");
-    socket.setOutputGate(gate("socketOut"));
-    socket.bind(localPort);
+    // set UE UDP Socket
+    localUePort = par("localUePort");
+    ueAppSocket.setOutputGate(gate("socketOut"));
+    ueAppSocket.bind(localUePort);
+
 
     // TODO add a new socket to handle communication with the provider app
+    localPlatooningProviderPort = par("localPlatooningProviderPort");
+    platooningProviderAppSocket.setOutputGate(gate("socketOut"));
+    platooningProviderAppSocket.bind(localPlatooningProviderPort+this->getIndex()); // base+index vector;
+
 
     EV << "MECPlatooningApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
@@ -70,7 +78,7 @@ void MECPlatooningApp::handleMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
-        if(socket.belongsToSocket(msg))
+        if(ueAppSocket.belongsToSocket(msg) || platooningProviderAppSocket.belongsToSocket(msg))
         {
             handleUeMessage(msg);
             return;
@@ -140,119 +148,46 @@ void MECPlatooningApp::handleMp1Message()
 
 void MECPlatooningApp::handleServiceMessage()
 {
-//    if(serviceHttpMessage->getType() == REQUEST)
-//    {
-//        Http::send204Response(&serviceSocket_); // send back 204 no content
-//        nlohmann::json jsonBody;
-//        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << serviceHttpMessage->getBody()<< endl;
-//        try
-//        {
-//           jsonBody = nlohmann::json::parse(serviceHttpMessage->getBody()); // get the JSON structure
-//        }
-//        catch(nlohmann::detail::parse_error e)
-//        {
-//           std::cout  <<  e.what() << std::endl;
-//           // body is not correctly formatted in JSON, manage it
-//           return;
-//        }
-//
-//        if(jsonBody.contains("subscriptionNotification"))
-//        {
-//            if(jsonBody["subscriptionNotification"].contains("enteringLeavingCriteria"))
-//            {
-//                nlohmann::json criteria = jsonBody["subscriptionNotification"]["enteringLeavingCriteria"] ;
-//                auto alert = inet::makeShared<WarningAlertPacket>();
-//                alert->setType(WARNING_ALERT);
-//
-//                if(criteria == "Entering")
-//                {
-//                    EV << "MEClusterizeService::handleTcpMsg - Ue is Entered in the danger zone "<< endl;
-//                    alert->setDanger(true);
-//
-//                    if(par("logger").boolValue())
-//                    {
-//                        ofstream myfile;
-//                        myfile.open ("example.txt", ios::app);
-//                        if(myfile.is_open())
-//                        {
-//                            myfile <<"["<< NOW << "] MEWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE's entered the red zone! \n";
-//                            myfile.close();
-//                        }
-//                    }
-//
-//                    // send subscription for leaving..
-//                    modifySubscription();
-//
-//                }
-//                else if (criteria == "Leaving")
-//                {
-//                    EV << "MEClusterizeService::handleTcpMsg - Ue left from the danger zone "<< endl;
-//                    alert->setDanger(false);
-//                    if(par("logger").boolValue())
-//                    {
-//                        ofstream myfile;
-//                        myfile.open ("example.txt", ios::app);
-//                        if(myfile.is_open())
-//                        {
-//                            myfile <<"["<< NOW << "] MEWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE's exited the red zone! \n";
-//                            myfile.close();
-//                        }
-//                    }
-//                    sendDeleteSubscription();
-//                }
-//
-//                alert->setPositionX(jsonBody["subscriptionNotification"]["terminalLocationList"]["currentLocation"]["x"]);
-//                alert->setPositionY(jsonBody["subscriptionNotification"]["terminalLocationList"]["currentLocation"]["y"]);
-//                alert->setChunkLength(inet::B(20));
-//                alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-//
-//                inet::Packet* packet = new inet::Packet("WarningAlertPacketInfo");
-//                packet->insertAtBack(alert);
-//                ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
-//
-//            }
-//        }
-//    }
-//    else if(serviceHttpMessage->getType() == RESPONSE)
-//    {
-//        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(serviceHttpMessage);
-//
-//        if(rspMsg->getCode() == 204) // in response to a DELETE
-//        {
-//            EV << "MEClusterizeService::handleTcpMsg - response 204, removing circle" << rspMsg->getBody()<< endl;
-//             serviceSocket_.close();
-//
-//        }
-//        else if(rspMsg->getCode() == 201) // in response to a POST
-//        {
-//            nlohmann::json jsonBody;
-//            EV << "MEClusterizeService::handleTcpMsg - response 201 " << rspMsg->getBody()<< endl;
-//            try
-//            {
-//               jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
-//            }
-//            catch(nlohmann::detail::parse_error e)
-//            {
-//               EV <<  e.what() << endl;
-//               // body is not correctly formatted in JSON, manage it
-//               return;
-//            }
-//            std::string resourceUri = jsonBody["circleNotificationSubscription"]["resourceURL"];
-//            std::size_t lastPart = resourceUri.find_last_of("/");
-//            if(lastPart == std::string::npos)
-//            {
-//                EV << "1" << endl;
-//                return;
-//            }
-//            // find_last_of does not take in to account if the uri has a last /
-//            // in this case subscriptionType would be empty and the baseUri == uri
-//            // by the way the next if statement solve this problem
-//            std::string baseUri = resourceUri.substr(0,lastPart);
-//            //save the id
-//            subId = resourceUri.substr(lastPart+1);
-//            EV << "subId: " << subId << endl;
-//        }
-//    }
+    if(serviceHttpMessage->getType() == RESPONSE)
+    {
+        HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(serviceHttpMessage);
+        if(rspMsg->getCode() == 200) // in response to a successful GET request
+        {
+            nlohmann::json jsonBody;
+//            EV << "MECPlatooningApp::handleServiceMessage - response 200 " << rspMsg->getBody()<< endl;
+            EV << "MECPlatooningApp::handleServiceMessage - response 200 " << endl;
+
+            try
+            {
+              jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
+              lastXposition = jsonBody["userInfo"]["locationInfo"]["x"];
+              lastYposition = jsonBody["userInfo"]["locationInfo"]["y"];
+              lastZposition = jsonBody["userInfo"]["locationInfo"]["z"];
+
+              EV << "MECPlatooningApp::handleServiceMessage - lastXposition: " << lastXposition << " lastYposition: " << lastYposition << endl;
+
+            }
+            catch(nlohmann::detail::parse_error e)
+            {
+              EV <<  e.what() << endl;
+              // body is not correctly formatted in JSON, manage it
+              return;
+            }
+
+        }
+
+        // some error occured, show the HTTP code for now
+        else
+        {
+            EV << "MECPlatooningApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
+        }
+    }
+    // it is a request. It should not arrive, for now (think about sub-not)
+    else
+    {
+        HttpRequestMessage *reqMsg = dynamic_cast<HttpRequestMessage*>(serviceHttpMessage);
+        EV << "MECPlatooningApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded"  << endl;
+    }
 
 }
 
@@ -262,12 +197,12 @@ void MECPlatooningApp::registerToPlatooningProviderApp()
     auto registration = inet::makeShared<PlatooningRegistrationPacket>();
     registration->setType(REGISTRATION_REQUEST);
     registration->setMecAppId(getId());
-    int chunkLen = sizeof(getId())+sizeof(localPort);
+    int chunkLen = sizeof(getId())+sizeof(localUePort);
     registration->setChunkLength(inet::B(chunkLen));
 
     packet->insertAtFront(registration);
     packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(packet, platooningProviderAddress_, platooningProviderPort_);
+    platooningProviderAppSocket.sendTo(packet, platooningProviderAddress_, platooningProviderPort_);
 }
 
 
@@ -328,7 +263,7 @@ void MECPlatooningApp::handleJoinPlatoonRequest(cMessage* msg)
     joinReq->setMecAppId(getId());
     fwPacket->insertAtFront(joinReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
+    platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
 
     delete packet;
 }
@@ -344,7 +279,7 @@ void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
     leaveReq->setMecAppId(getId());
     fwPacket->insertAtFront(leaveReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
+    platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
 
     delete packet;
 }
@@ -358,10 +293,14 @@ void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
 
     EV << "MECPlatooningApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
+    // if response is True, start to require UE location from Location service (if established)
+    // test
+    requestLocation();
+
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(joinResp);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+    ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
 
     delete packet;
 }
@@ -378,7 +317,7 @@ void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(leaveResp);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+    ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
 
     delete packet;
 }
@@ -395,7 +334,7 @@ void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(cmd);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    socket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+    ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
 
     delete packet;
 }
@@ -481,15 +420,40 @@ void MECPlatooningApp::established(int connId)
     {
         EV << "MECPlatooningApp::established - serviceSocket"<< endl;
 
+        //sendGETRequest
+
+
         // here, the connection with the Location Service has been established
         // TODO how to distinguish the service in case this app uses more than one MEC service?
     }
     else
     {
-        throw cRuntimeError("MecAppBase::socketEstablished - Socket %s not recognized", connId);
+        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
     }
 }
 
+void MECPlatooningApp::requestLocation()
+{
+    //check if the ueAppAddress is specified
+    if(ueAppAddress.isUnspecified())
+    {
+        EV << "MECPlatooningApp::requestLocation(): The IP address of the UE is unknown" << endl;
+        return;
+    }
+
+    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+    {
+        EV << "MECPlatooningApp::requestLocation(): send request to the Location Service" << endl;
+        std::stringstream uri;
+        uri << "/example/location/v2/queries/users?address=acr:" << ueAppAddress.str();
+        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
+    }
+    else
+    {
+        EV << "MECPlatooningApp::requestLocation(): Location Service not connected" << endl;
+    }
+}
 
 
 
