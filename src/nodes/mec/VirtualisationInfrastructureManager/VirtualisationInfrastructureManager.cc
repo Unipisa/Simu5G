@@ -256,7 +256,9 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
         }
         // creating MEApp module instance
         cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
-        cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
+//        cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
+
+        cModule *module = moduleType->create(meModuleName, mecHost, maxMECApps, index);
         std::stringstream appName;
         appName << meModuleName << "\n" << module->getId();
         module->setName(appName.str().c_str());
