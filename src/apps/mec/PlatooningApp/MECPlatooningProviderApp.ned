@@ -26,7 +26,8 @@ simple MECPlatooningProviderApp like IMECApp, IApp
         string interfaceTableModule = default("");
         
         int mecAppId;
-        int localUePort = default(5500);
+        int localUePort = default(5900);
+        int platooningConsumerAppsPort = default(5500);
         
         string mp1Address = default("");
         int mp1Port = default(10021);

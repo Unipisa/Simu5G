@@ -55,9 +55,9 @@ void MECPlatooningProviderApp::initialize(int stage)
     platoonSelection_ = new PlatoonSelectionSample();
 
     // set UDP Socket
-    localUePort = par("localUePort");
-    ueSocket.setOutputGate(gate("socketOut"));
-    ueSocket.bind(localUePort);
+    platooningConsumerAppsPort = par("platooningConsumerAppsPort");
+    platooningConsumerAppsSocket.setOutputGate(gate("socketOut"));
+    platooningConsumerAppsSocket.bind(platooningConsumerAppsPort);
 
     EV << "MECPlatooningProviderApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 }
@@ -66,7 +66,7 @@ void MECPlatooningProviderApp::handleMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
-        if(ueSocket.belongsToSocket(msg))
+        if(platooningConsumerAppsSocket.belongsToSocket(msg))
         {
             // determine its source address/port
             auto pk = check_and_cast<Packet *>(msg);
@@ -153,7 +153,7 @@ void MECPlatooningProviderApp::handleRegistrationRequest(cMessage* msg)
     registrationReq->setType(REGISTRATION_RESPONSE);
     respPacket->insertAtFront(registrationReq);
     respPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    ueSocket.sendTo(respPacket, mecAppAddress, mecAppPort);
+    platooningConsumerAppsSocket.sendTo(respPacket, mecAppAddress, mecAppPort);
 
     EV << "MECPlatooningProviderApp::handleRegistrationRequest - Sending response to MEC app " << mecAppId << " [" << mecAppAddress.str() << ":" << mecAppPort << "]" << endl;
 
@@ -209,7 +209,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
     responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     // send response to the UE's MEC app
-    ueSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
+    platooningConsumerAppsSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
     EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - Join response sent to the UE" << endl;
 
     delete packet;
@@ -252,7 +252,7 @@ void MECPlatooningProviderApp::handleLeavePlatoonRequest(cMessage* msg)
     responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     // send response to the UE's MEC app
-    ueSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
+    platooningConsumerAppsSocket.sendTo(responsePacket, ueAppAddress, ueAppPort);
     EV << "MECPlatooningProviderApp::handleLeavePlatoonRequest() - Leave response sent to the UE" << endl;
 
     delete packet;
@@ -330,7 +330,7 @@ void MECPlatooningProviderApp::handleControllerTimer(cMessage* msg)
             cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
             pkt->insertAtBack(cmd);
 
-            ueSocket.sendTo(pkt, endpoint.address, endpoint.port);
+            platooningConsumerAppsSocket.sendTo(pkt, endpoint.address, endpoint.port);
             EV << "MECPlatooningProviderApp::handleControllerTimer() - Sent new acceleration value[" << newAcceleration << "] to MEC App " << it->first << " [" << endpoint.address.str() << ":" << endpoint.port << "]" << endl;
         }
         delete cmdList;

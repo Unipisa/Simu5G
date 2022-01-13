@@ -45,9 +45,9 @@ class MECPlatooningProviderApp : public MecAppBase
 {
     friend class PlatoonControllerBase;
 
-    // UDP socket to communicate with the UeApp
-    inet::UdpSocket ueSocket;
-    int localUePort;
+    // UDP socket to communicate with the MecConsumerApps of the UEs
+    inet::UdpSocket platooningConsumerAppsSocket;
+    int platooningConsumerAppsPort;
 
     // address+port of the UeApp
     inet::L3Address ueAppAddress;
