@@ -15,14 +15,14 @@
 TimeStamp::TimeStamp()
 {
     seconds_ = omnetpp::simTime().dbl();
-    nanoSeconds_ = 0;
+    nanoSeconds_ = (double)omnetpp::simTime().dbl()*1000;
     valid_ = true;
 }
 
 TimeStamp::TimeStamp(bool valid)
 {
-    seconds_ = seconds_ = omnetpp::simTime().dbl();
-    nanoSeconds_ = 0;
+    seconds_ =  omnetpp::simTime().dbl();
+    nanoSeconds_ = (double)omnetpp::simTime().dbl()*1000;
     valid_ = valid;
 }
 

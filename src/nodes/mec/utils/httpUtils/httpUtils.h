@@ -128,6 +128,7 @@ namespace Http {
      * @param storedDatapointer to a variable where to store undefined data (e.g. segmented header)
      * @param currentHttpMessage variable for storing the current HTTP message
      * @param messageQueue queue where to insert completed Http Messages
+     * @return bool - if true a complete message has been inserted in the queue
      */
     bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messageQueue, std::string* storedData, HttpBaseMessage** currentHttpMessage = nullptr );
 
