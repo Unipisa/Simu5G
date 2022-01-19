@@ -76,7 +76,9 @@ class MECPlatooningApp : public MecAppBase
 //    virtual void sendSubscription();
 //    virtual void sendDeleteSubscription();
 
+    // @brief sends a GET request to the Location Service to retrieve the location of the UE
     void requestLocation();
+
     // @brief notify the PlatooningProviderApp about the presence
     //        of this new MecApp
     void registerToPlatooningProviderApp();

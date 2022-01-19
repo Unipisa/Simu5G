@@ -11,6 +11,8 @@
 
 
 import nodes.mec.MECPlatform.MECPackets;
+import inet.networklayer.common.L3Address;
+
 
 class PlatooningAppPacket extends MECPacket
 {
@@ -24,6 +26,8 @@ class PlatooningJoinPacket extends PlatooningAppPacket
 {       
     bool response;    // flag set by the MEC app with the ACK/NACK to join a platoon
     string color;     // color assigned to the members of the platoon
+    
+    inet::L3Address ueAddress; // address of the UE
 }
 
 class PlatooningLeavePacket extends PlatooningAppPacket

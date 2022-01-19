@@ -70,8 +70,8 @@ void MECPlatooningApp::initialize(int stage)
     registerToPlatooningProviderApp();
 
     // connect with the service registry
-    EV << "MECPlatooningApp::initialize - Initialize connection with the service registry via Mp1" << endl;
-    connect(&mp1Socket_, mp1Address, mp1Port);
+//    EV << "MECPlatooningApp::initialize - Initialize connection with the service registry via Mp1" << endl;
+//    connect(&mp1Socket_, mp1Address, mp1Port);
 }
 
 void MECPlatooningApp::handleMessage(cMessage *msg)
@@ -257,10 +257,13 @@ void MECPlatooningApp::handleJoinPlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto joinReq = packet->removeAtFront<PlatooningJoinPacket>();
 
+    inet::L3Address ueAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+
     EV << "MECPlatooningApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     joinReq->setMecAppId(getId());
+    joinReq->setUeAddress(ueAddress);
     fwPacket->insertAtFront(joinReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
@@ -295,7 +298,7 @@ void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
 
     // if response is True, start to require UE location from Location service (if established)
     // test
-    requestLocation();
+    //requestLocation();
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(joinResp);
