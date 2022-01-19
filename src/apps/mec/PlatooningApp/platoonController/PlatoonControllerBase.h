@@ -53,6 +53,8 @@ class PlatoonControllerBase
     // platoon controller identifier within a PlatoonProviderApp
     int index_;
 
+    // current direction of the platoon
+    inet::Coord direction_;
     // periodicity for running the controller
     double controlPeriod_;
 
@@ -87,6 +89,9 @@ class PlatoonControllerBase
     PlatoonControllerBase();
     PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
     virtual ~PlatoonControllerBase();
+
+    void setDirection(inet::Coord direction) { direction_ = direction; }
+    inet::Coord getDirection() { return direction_; }
 };
 
 #endif

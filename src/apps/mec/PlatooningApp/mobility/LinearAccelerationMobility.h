@@ -37,6 +37,8 @@ class LinearAccelerationMobility : public LinearMobility
   public:
     LinearAccelerationMobility();
 
+    /** @brief Get the direction */
+    virtual Coord getDirection() { return direction; }
     /** @brief Update the acceleration value*/
     virtual void setAcceleration(double newAcceleration);
     /** @brief Get the absolute value of the acceleration */

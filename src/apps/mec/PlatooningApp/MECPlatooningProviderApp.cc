@@ -307,6 +307,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
     if (joinReq->getControllerIndex() == -1)
     {
         // the UE has not explicitly selected a platoon
+        inet::Coord direction = joinReq->getDirection();
 
         // find the most suitable platoonController for this new request
         selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_);
@@ -315,8 +316,9 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
             // if no active platoon managers can be used, create one
             selectedPlatoon = nextControllerIndex_++;
             platoonController = new PlatoonControllerSample(this, selectedPlatoon);
+            platoonController->setDirection(direction);
             platoonControllers_[selectedPlatoon] = platoonController;
-            EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << endl;
+            EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;
         }
     }
 

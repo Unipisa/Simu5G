@@ -14,13 +14,22 @@ import nodes.mec.MECPlatform.MECPackets;
 import inet.networklayer.common.L3Address;
 
 
+cplusplus {{
+    #include "inet/common/geometry/common/Coord.h"
+    using namespace inet;
+}};
+
+class Coord {
+    @existingClass;
+}
+
 class PlatooningAppPacket extends MECPacket
 {
     int mecAppId;
 }
 
 
-// === Packets between MECPlatooningApp and MECPlatooningProviderApp === //
+// === Packets between UEPlatooningApp and MECPlatooningApp/MECPlatooningProviderApp === //
 
 class PlatooningJoinPacket extends PlatooningAppPacket
 {       
@@ -29,8 +38,10 @@ class PlatooningJoinPacket extends PlatooningAppPacket
     int controllerIndex;  // index of the controller instance
                           // in request messages, it is the platoon the UE would like to join
                           // in response messages, it is the platoon the UE actually joined
-     
+    
     // --- request --- //
+    Coord direction;      // cartesian coordinates to specify the direction of the UE
+    Coord lastPosition;   // last coordinates of the UE
     
     // --- response --- //
     bool response;        // flag set by the MEC app with the ACK/NACK to join a platoon

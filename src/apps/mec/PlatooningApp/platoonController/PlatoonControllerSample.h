@@ -28,7 +28,7 @@ class MECPlatooningApp;
 class PlatoonControllerSample : public PlatoonControllerBase
 {
 
-  protected:
+protected:
 
     // @brief run the global platoon controller
     virtual const CommandList* controlPlatoon();
