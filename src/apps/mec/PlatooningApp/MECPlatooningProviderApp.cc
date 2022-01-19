@@ -11,7 +11,8 @@
 
 #include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
-#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerSample.h"
+#include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
+#include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/PlatooningApp/packets/PlatooningPacket_Types.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
@@ -310,12 +311,12 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         inet::Coord direction = joinReq->getDirection();
 
         // find the most suitable platoonController for this new request
-        selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_);
+        selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_, direction);
         if (selectedPlatoon < 0)
         {
             // if no active platoon managers can be used, create one
             selectedPlatoon = nextControllerIndex_++;
-            platoonController = new PlatoonControllerSample(this, selectedPlatoon);
+            platoonController = new RajamaniPlatoonController(this, selectedPlatoon); // TODO select the controller
             platoonController->setDirection(direction);
             platoonControllers_[selectedPlatoon] = platoonController;
             EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;
@@ -332,6 +333,8 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
 
     // add the member to the identified platoonController
     bool success = platoonController->addPlatoonMember(mecAppId, joinReq->getUeAddress());
+
+    // TODO might need to add here some information about the vehicle in the controller
 
     // prepare response
     inet::Packet* responsePacket = new Packet (packet->getName());

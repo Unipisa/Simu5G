@@ -281,6 +281,8 @@ void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
 
     EV << "MECPlatooningApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningProviderApp" << endl;
 
+    // TODO get latest UE position (from the Location Service) and add it to the message for the provider app
+
     inet::Packet* fwPacket = new Packet (packet->getName());
     leaveReq->setMecAppId(getId());
     leaveReq->setControllerIndex(controllerIndex_);

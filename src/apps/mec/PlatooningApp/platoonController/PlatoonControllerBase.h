@@ -15,6 +15,7 @@
 #include "omnetpp.h"
 #include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
+#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
 
 using namespace std;
 using namespace omnetpp;
@@ -27,6 +28,7 @@ typedef struct
 
 typedef std::set<int> MecAppIdSet;
 typedef std::map<inet::L3Address, UEStatus> UEStatuses;
+typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
 typedef std::map<int, double> CommandList;
 
 class MECPlatooningProviderApp;
@@ -55,14 +57,28 @@ class PlatoonControllerBase
 
     // current direction of the platoon
     inet::Coord direction_;
+
+    // target speed for the platoon
+    double targetSpeed_;
+
+    // minimum acceptable acceleration value
+    double minAcceleration_;
+
+    // maximum acceptable acceleration value
+    double maxAcceleration_;
+
     // periodicity for running the controller
     double controlPeriod_;
 
-    // set of platoon members. It includes the ID of their MEC apps
-    MecAppIdSet members_;
     // TODO  not used, yet. Only  the addresses are used to retrieve the location.
     // replace it with the structure provided by GN
     UEStatuses ueInfo_;
+
+    // info about platoon members. The key is the ID of their MEC apps
+    PlatoonMembersInfo membersInfo_;
+
+    // store the id of the vehicles sorted according to their position in the platoon
+    std::list<int> platoonPositions_;
 
     // @brief add a new member to the platoon
     virtual bool addPlatoonMember(int mecAppId);
@@ -86,12 +102,14 @@ class PlatoonControllerBase
     virtual const CommandList* controlPlatoon() = 0;
 
   public:
-    PlatoonControllerBase();
     PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
     virtual ~PlatoonControllerBase();
 
     void setDirection(inet::Coord direction) { direction_ = direction; }
     inet::Coord getDirection() { return direction_; }
+
+    void setTargetSpeed(double speed) { targetSpeed_ = speed; }
+    double getTargetSpeed() { return targetSpeed_; }
 };
 
 #endif

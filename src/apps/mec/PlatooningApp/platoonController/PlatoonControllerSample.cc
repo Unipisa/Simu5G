@@ -11,10 +11,6 @@
 
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerSample.h"
 
-PlatoonControllerSample::PlatoonControllerSample()
-{
-}
-
 PlatoonControllerSample::PlatoonControllerSample(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
     : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod)
 {
@@ -37,23 +33,17 @@ const CommandList* PlatoonControllerSample::controlPlatoon()
 
     CommandList* cmdList = new CommandList();
 
-    MecAppIdSet::iterator it = members_.begin();
-    for (; it != members_.end(); ++it)
+    PlatoonMembersInfo::iterator it = membersInfo_.begin();
+    for (; it != membersInfo_.end(); ++it)
     {
-        EV << "PlatoonControllerSample::control() - Computing new command for MEC app " << *it << "..." << endl;
+        EV << "PlatoonControllerSample::control() - Computing new command for MEC app " << it->first << "..." << endl;
 
+        // Dummy controller
         double newAcceleration = 0.0;
 
-        // TODO compute new acceleration
-        (*cmdList)[*it] = newAcceleration;
+        (*cmdList)[it->first] = newAcceleration;
 
-        EV << "PlatoonControllerSample::control() - New acceleration value for " << *it << " [" << newAcceleration << "]" << endl;
+        EV << "PlatoonControllerSample::control() - New acceleration value for " << it->first << " [" << newAcceleration << "]" << endl;
     }
     return cmdList;
 }
-
-
-
-
-
-

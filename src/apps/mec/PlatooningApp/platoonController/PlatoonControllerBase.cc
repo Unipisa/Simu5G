@@ -11,16 +11,15 @@
 
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 
-PlatoonControllerBase::PlatoonControllerBase()
-{
-    mecPlatooningProviderApp_ = nullptr;
-}
-
 PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
 {
     mecPlatooningProviderApp_ = mecPlatooningProviderApp;
     index_ = index;
     controlPeriod_ = controlPeriod;
+
+    // TODO make these parametric
+    minAcceleration_ = -5.0;
+    maxAcceleration_ = 1.5;
 }
 
 PlatoonControllerBase::~PlatoonControllerBase()
@@ -32,13 +31,14 @@ PlatoonControllerBase::~PlatoonControllerBase()
 
 bool PlatoonControllerBase::addPlatoonMember(int mecAppId)
 {
-    if (members_.empty())
+    if (membersInfo_.empty())
     {
         // start controlling the platoon, set a timer
         mecPlatooningProviderApp_->startControllerTimer(index_, controlPeriod_);
     }
 
-    members_.insert(mecAppId);
+    PlatoonVehicleInfo newVehicleInfo;
+    membersInfo_[mecAppId] = newVehicleInfo;
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
     return true;
@@ -58,17 +58,17 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
 
 bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
 {
-    MecAppIdSet::iterator it = members_.find(mecAppId);
-    if (it == members_.end())
+    PlatoonMembersInfo::iterator it = membersInfo_.find(mecAppId);
+    if (it == membersInfo_.end())
     {
         EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] was not part of this platoon" << endl;
         return false;
     }
 
-    members_.erase(mecAppId);
+    membersInfo_.erase(mecAppId);
 
     // check if the platoon is now empty
-    if (members_.empty())
+    if (membersInfo_.empty())
     {
         // stop controlling the platoon, stop the timer
         mecPlatooningProviderApp_->stopControllerTimer(index_);
