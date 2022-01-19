@@ -29,6 +29,10 @@ const CommandList* PlatoonControllerSample::controlPlatoon()
 {
     EV << "PlatoonControllerSample::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
+    // TEST
+    EV << "REQUIRE PLATOON" << endl;
+    requirePlatoonPositions();
+
     // TODO implement controller
 
     CommandList* cmdList = new CommandList();

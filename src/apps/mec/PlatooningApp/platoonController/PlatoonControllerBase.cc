@@ -46,6 +46,18 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId)
     return true;
 }
 
+bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAddress)
+{
+    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] with IP address [" << ueAddress << "] added to the platoon" << endl;
+
+    addPlatoonMember(mecAppId);
+    UEStatus newUe;
+    ueInfo_.insert(std::pair<inet::L3Address, UEStatus>(ueAddress, newUe) );
+    return true;
+}
+
+
+
 bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
 {
     EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
@@ -61,6 +73,42 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     return true;
 }
 
+bool PlatoonControllerBase::removePlatoonMember(int mecAppId, inet::L3Address ueAddress)
+{
+    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] with IP address [" << ueAddress << "] removed from the platoon" << endl;
+    removePlatoonMember(mecAppId);
+    //iterate
+    ueInfo_.erase(ueAddress);
+
+    return true;
+}
+
+void PlatoonControllerBase::requirePlatoonPositions()
+{
+    EV << "PlatoonControllerBase::requirePlatoonPositions" << endl;
+    std::set<inet::L3Address> ueAddresses;
+    for(UEStatuses::const_iterator it = ueInfo_.begin(); it != ueInfo_.end(); ++it)
+    {
+        ueAddresses.insert(it->first);
+    }
+    EV << "PlatoonControllerBase::requirePlatoonPositions "<< ueAddresses.size() << endl;
+    mecPlatooningProviderApp_->requirePlatoonLocations(index_, &ueAddresses);
+}
+
+void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
+{
+    EV << "PlatoonControllerBase::updatePlatoonPositions - size " << uesInfo->size() << endl;
+    auto it = uesInfo->begin();
+    for(;it != uesInfo->end(); ++it)
+    {
+        EV << "UE info:\naddress ["<< it->address.str() << "]\n" <<
+                "timestamp: " << it->timestamp << "\n" <<
+                "coords: ("<<it->position.x<<"," << it->position.y<<"," << it->position.z<<")\n"<<
+                "speed: " << it->speed << " mps" << endl;
+
+    }
+
+}
 
 
 

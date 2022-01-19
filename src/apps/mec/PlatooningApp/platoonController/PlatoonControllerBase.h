@@ -14,11 +14,19 @@
 
 #include "omnetpp.h"
 #include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 
 using namespace std;
 using namespace omnetpp;
 
+typedef struct
+{
+    inet::Coord lastPosition = inet::Coord::NIL;
+    simtime_t lastTimeStamp = 0;
+} UEStatus;
+
 typedef std::set<int> MecAppIdSet;
+typedef std::map<inet::L3Address, UEStatus> UEStatuses;
 typedef std::map<int, double> CommandList;
 
 class MECPlatooningProviderApp;
@@ -50,12 +58,27 @@ class PlatoonControllerBase
 
     // set of platoon members. It includes the ID of their MEC apps
     MecAppIdSet members_;
+    // TODO  not used, yet. Only  the addresses are used to retrieve the location.
+    // replace it with the structure provided by GN
+    UEStatuses ueInfo_;
 
     // @brief add a new member to the platoon
     virtual bool addPlatoonMember(int mecAppId);
 
     // @brief remove a member from the platoon
     virtual bool removePlatoonMember(int mecAppId);
+
+    // @brief add a new member to the platoon with address
+    virtual bool addPlatoonMember(int mecAppId, inet::L3Address);
+
+    // @brief remove a member from the platoon with address
+    virtual bool removePlatoonMember(int mecAppId, inet::L3Address);
+
+    // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
+    virtual void updatePlatoonPositions(std::vector<UEInfo>*);
+    // @brief require the location of the platoon UEs to the mecPlatooningProviderApp
+    virtual void requirePlatoonPositions();
+
 
     // @brief run the global platoon controller
     virtual const CommandList* controlPlatoon() = 0;
