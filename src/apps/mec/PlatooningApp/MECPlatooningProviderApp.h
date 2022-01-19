@@ -14,6 +14,8 @@
 
 #include "omnetpp.h"
 
+#include <queue>
+
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
@@ -24,6 +26,7 @@
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 
 using namespace std;
 using namespace omnetpp;
@@ -53,6 +56,12 @@ class MECPlatooningProviderApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
+    // endpoint for contacting the Location Service
+    // this is obtained by sending a GET request to the Service Registry as soon as
+    // the connection with the latter has been established
+    inet::L3Address locationServiceAddress_;
+    int locationServicePort_;
+
     // for each registered MEC app, stores its connection endpoint info
     std::map<int, MECAppEndpoint> mecAppEndpoint_;
 
@@ -61,6 +70,9 @@ class MECPlatooningProviderApp : public MecAppBase
 
     // index to be assigned to the next controller
     int nextControllerIndex_;
+
+    // FIFO queue with the platoon index id of the pending requests
+    std::queue<int> controllerPendingRequests;
 
     // maps of active platoon managers
     ControllerMap platoonControllers_;
@@ -93,6 +105,11 @@ class MECPlatooningProviderApp : public MecAppBase
     void stopControllerTimer(int controllerIndex);
     // @brief handler called when a controller timer expires
     void handleControllerTimer(cMessage* msg);
+
+    // @brief used to require the position of the cars of a platoon on behalf of the platoon controller
+    void requirePlatoonLocations(int controllerIndex, const set<inet::L3Address>* ues);
+    // @brief used to require the position of the cars of a platoon to the Location Service
+    void sendGetRequest(const std::string& ues);
 
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;

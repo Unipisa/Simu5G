@@ -59,7 +59,11 @@ void MECPlatooningProviderApp::initialize(int stage)
     platooningConsumerAppsSocket.setOutputGate(gate("socketOut"));
     platooningConsumerAppsSocket.bind(platooningConsumerAppsPort);
 
-    EV << "MECPlatooningProviderApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
+    EV << "MECPlatooningProviderApp::initialize - MECc application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
+
+   // connect with the service registry
+   EV << "MECPlatooningProviderApp::initialize - Initialize connection with the Service Registry via Mp1" << endl;
+   connect(&mp1Socket_, mp1Address, mp1Port);
 }
 
 void MECPlatooningProviderApp::handleMessage(cMessage *msg)
@@ -125,11 +129,141 @@ void MECPlatooningProviderApp::handleSelfMessage(cMessage *msg)
 
 void MECPlatooningProviderApp::handleMp1Message()
 {
+    EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
+
+      try
+      {
+          nlohmann::json jsonBody = nlohmann::json::parse(mp1HttpMessage->getBody()); // get the JSON structure
+          if(!jsonBody.empty())
+          {
+              jsonBody = jsonBody[0];
+              std::string serName = jsonBody["serName"];
+              if(serName.compare("LocationService") == 0)
+              {
+                  if(jsonBody.contains("transportInfo"))
+                  {
+                      nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
+                      EV << "address: " << endPoint["host"] << " port: " <<  endPoint["port"] << endl;
+                      std::string address = endPoint["host"];
+                      locationServiceAddress_ = L3AddressResolver().resolve(address.c_str());;
+                      locationServicePort_ = endPoint["port"];
+
+                      // once we obtained the endpoint of the Location Service, establish a connection with it
+                      connect(&serviceSocket_, locationServiceAddress_, locationServicePort_);
+                  }
+              }
+              else
+              {
+                  EV << "MECPlatooningApp::handleMp1Message - LocationService not found"<< endl;
+                  locationServiceAddress_ = L3Address();
+              }
+          }
+
+      }
+      catch(nlohmann::detail::parse_error e)
+      {
+          EV <<  e.what() << std::endl;
+          // body is not correctly formatted in JSON, manage it
+          return;
+      }
 }
 
 void MECPlatooningProviderApp::handleServiceMessage()
 {
-}
+        if(serviceHttpMessage->getType() == RESPONSE)
+        {
+            // If the request is associated to a controller no more available, just discard
+             int controllerIndex = controllerPendingRequests.front();
+             controllerPendingRequests.pop();
+             ControllerMap::iterator it = platoonControllers_.find(controllerIndex);
+             if(it == platoonControllers_.end())
+             {
+                 EV << "MECPlatooningProviderApp::handleServiceMessage - platoon controller with index ["<< controllerIndex <<"] no more available"<< endl;
+                 return;
+             }
+
+
+            HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage*>(serviceHttpMessage);
+            if(rspMsg->getCode() == 200) // in response to a successful GET request
+            {
+                nlohmann::json jsonBody;
+                EV << "MECPlatooningProviderApp::handleServiceMessage - response 200 " << endl;
+
+                try
+                {
+                  jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
+                  std::vector<UEInfo> uesInfo;
+                  //get the positions of all ues
+                  if(!jsonBody.contains("userInfo"))
+                  {
+                      EV << "MECPlatooningProviderApp::handleServiceMessage: ues not found" << endl;
+                      return;
+                  }
+                  nlohmann::json jsonUeInfo = jsonBody["userInfo"];
+                  if(jsonUeInfo.is_array())
+                  {
+                      for(int i = 0 ; i < jsonUeInfo.size(); i++)
+                      {
+                            nlohmann::json ue = jsonUeInfo.at(i);
+                            EV << "UE INFO " << ue << endl;
+                            UEInfo ueInfo;
+                            std::string address = ue["address"];
+                            EV << "MECPlatooningProviderApp::handleServiceMessage: address [" << address << "]" << endl;
+                            EV << "AA " << address.substr(address.find(":")+1, address.size()) << endl;
+                            ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
+                            ueInfo.timestamp = ue["timeStamp"]["nanoSeconds"];
+                            ueInfo.position = inet::Coord(double(ue["locationInfo"]["x"]), double(ue["locationInfo"]["y"]), double(ue["locationInfo"]["z"]));
+                            if(ue["locationInfo"].contains("velocity"))
+                                ueInfo.speed = ue["locationInfo"]["velocity"]["horizontalSpeed"];
+                            else
+                                ueInfo.speed = -1000; // TODO define
+                            uesInfo.push_back(ueInfo);
+                      }
+                  }
+                  else
+                  {
+                      UEInfo ueInfo;
+                      std::string address = jsonUeInfo["address"];
+                      ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
+                      ueInfo.timestamp = jsonUeInfo["timeStamp"]["nanoSeconds"];
+                      ueInfo.position = inet::Coord(double(jsonUeInfo["locationInfo"]["x"]), double(jsonUeInfo["locationInfo"]["y"]), double(jsonUeInfo["locationInfo"]["z"]));
+                      if(ue["locationInfo"].contains("velocity"))
+                          ueInfo.speed = ue["locationInfo"]["velocity"]["horizontalSpeed"];
+                      else
+                          ueInfo.speed = -1000; // TODO define
+                      uesInfo.push_back(ueInfo);
+                  }
+
+                  EV << "MECPlatooningProviderApp::handleServiceMessage - update the platoon positions for controller ["<< controllerIndex << "]" << endl;
+
+                  // notify the controller
+                  PlatoonControllerBase* platoonController = it->second;
+                  platoonController->updatePlatoonPositions(&uesInfo);
+
+                }
+                catch(nlohmann::detail::parse_error e)
+                {
+                  EV <<  e.what() << endl;
+                  // body is not correctly formatted in JSON, manage it
+                  return;
+                }
+
+            }
+
+            // some error occured, show the HTTP code for now
+            else
+            {
+                EV << "MECPlatooningProviderApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
+            }
+        }
+        // it is a request. It should not arrive, for now (think about sub-not)
+        else
+        {
+            HttpRequestMessage *reqMsg = dynamic_cast<HttpRequestMessage*>(serviceHttpMessage);
+            EV << "MECPlatooningProviderApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded"  << endl;
+        }
+ }
+
 
 void MECPlatooningProviderApp::handleRegistrationRequest(cMessage* msg)
 {
@@ -189,7 +323,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         throw cRuntimeError("MECPlatooningProviderApp::handleJoinPlatoonRequest - invalid platoon manager index[%d] - size[%d]\n", selectedPlatoon, (int)platoonControllers_.size());
 
     // add the member to the identified platoonController
-    bool success = platoonController->addPlatoonMember(mecAppId);
+    bool success = platoonController->addPlatoonMember(mecAppId, joinReq->getUeAddress());
 
 
     inet::Packet* responsePacket = new Packet (packet->getName());
@@ -340,15 +474,59 @@ void MECPlatooningProviderApp::handleControllerTimer(cMessage* msg)
     scheduleAt(simTime() + timer->getControlPeriod(), timer);
 }
 
+void MECPlatooningProviderApp::requirePlatoonLocations(int controllerIndex, const std::set<inet::L3Address>* ues)
+{
+    // get the Address of the UEs
+    std::stringstream ueAddresses;
+    EV << "MECPlatooningProviderApp::requireUELocations - " << ues->size() << endl;
+    for( std::set<inet::L3Address>::iterator it = ues->begin(); it != ues->end(); ++it)
+    {
+        EV << "MECPlatooningProviderApp::requireUELocations - " << *it << endl;
+        ueAddresses << "acr:" << *it;
+        if(next(it) != ues->end())
+            ueAddresses << ",";
+    }
+    // send GET request
+    sendGetRequest(ueAddresses.str());
+
+    // insert the controller id in the requests queue
+    controllerPendingRequests.push(controllerIndex);
+    }
+
+void MECPlatooningProviderApp::sendGetRequest(const std::string& ues)
+{
+    //check if the ueAppAddress is specified
+    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+    {
+        EV << "MECPlatooningProviderApp::sendGetRequest(): send request to the Location Service" << endl;
+        std::stringstream uri;
+        uri << "/example/location/v2/queries/users?address=" << ues;
+        EV << "MECPlatooningProviderApp::requestLocation(): uri: "<< uri.str() << endl;
+        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
+    }
+    else
+    {
+        EV << "MECPlatooningProviderApp::sendGetRequest(): Location Service not connected" << endl;
+    }
+}
+
 void MECPlatooningProviderApp::established(int connId)
 {
     if(connId == mp1Socket_.getSocketId())
     {
+        EV << "MECPlatooningProviderApp::established - Mp1Socket"<< endl;
 
+        // once the connection with the Service Registry has been established, obtain the
+        // endPoint (address+port) of the Location Service
+        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
+        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+
+        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
     }
     else if (connId == serviceSocket_.getSocketId())
     {
-
+        EV << "MECPlatooningProviderApp::established - Location Service"<< endl;
     }
     else
     {
