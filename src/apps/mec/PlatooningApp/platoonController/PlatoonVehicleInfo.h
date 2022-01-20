@@ -29,25 +29,39 @@ class PlatoonVehicleInfo
   protected:
 
     inet::Coord position_;
-    inet::Coord speed_;
+    double speed_;
+    simtime_t timestamp_;
+    inet::L3Address ueAddress_;
 
   public:
-    PlatoonVehicleInfo() {}
+    PlatoonVehicleInfo()
+    {
+        position_ = inet::Coord::NIL;
+        speed_ = 0.0;
+        timestamp_ = 0.0;
+        ueAddress_ = inet::L3Address();
+    }
     virtual ~PlatoonVehicleInfo() {}
 
     friend std::ostream& operator<<(std::ostream& os, const PlatoonVehicleInfo& vehicleInfo)
     {
         os << "pos" << vehicleInfo.position_;
         os << ", ";
-        os << "speed(" << vehicleInfo.speed_.length() << "mps)";
+        os << "speed(" << vehicleInfo.speed_ << "mps)";
         return os;
     }
 
     void setPosition(inet::Coord position) { position_ = position; }
-    inet::Coord getPosition() { return position_; }
+    inet::Coord getPosition() const { return position_; }
 
-    void setSpeed(inet::Coord speed) { speed_ = speed; }
-    inet::Coord getSpeed() { return speed_; }
+    void setSpeed(double speed) { speed_ = speed; }
+    double getSpeed() const { return speed_; }
+
+    void setTimestamp(simtime_t timestamp) { timestamp_ = timestamp; }
+    simtime_t getTimestamp() const { return timestamp_; }
+
+    void setUeAddress(inet::L3Address address) { ueAddress_ = address; }
+    inet::L3Address getUeAddress() const { return ueAddress_; }
 };
 
 #endif

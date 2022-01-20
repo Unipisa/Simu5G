@@ -20,14 +20,7 @@
 using namespace std;
 using namespace omnetpp;
 
-typedef struct
-{
-    inet::Coord lastPosition = inet::Coord::NIL;
-    simtime_t lastTimeStamp = 0;
-} UEStatus;
-
 typedef std::set<int> MecAppIdSet;
-typedef std::map<inet::L3Address, UEStatus> UEStatuses;
 typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
 typedef std::map<int, double> CommandList;
 
@@ -70,9 +63,8 @@ class PlatoonControllerBase
     // periodicity for running the controller
     double controlPeriod_;
 
-    // TODO  not used, yet. Only  the addresses are used to retrieve the location.
-    // replace it with the structure provided by GN
-    UEStatuses ueInfo_;
+    // periodicity for updating the positions
+    double updatePositionPeriod_;
 
     // info about platoon members. The key is the ID of their MEC apps
     PlatoonMembersInfo membersInfo_;
@@ -80,29 +72,23 @@ class PlatoonControllerBase
     // store the id of the vehicles sorted according to their position in the platoon
     std::list<int> platoonPositions_;
 
+    // @brief require the location of the platoon UEs to the mecPlatooningProviderApp
+    std::set<inet::L3Address> getUeAddressList();
+
     // @brief add a new member to the platoon
-    virtual bool addPlatoonMember(int mecAppId);
+    virtual bool addPlatoonMember(int mecAppId, inet::L3Address);
 
     // @brief remove a member from the platoon
     virtual bool removePlatoonMember(int mecAppId);
 
-    // @brief add a new member to the platoon with address
-    virtual bool addPlatoonMember(int mecAppId, inet::L3Address);
-
-    // @brief remove a member from the platoon with address
-    virtual bool removePlatoonMember(int mecAppId, inet::L3Address);
-
     // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
     virtual void updatePlatoonPositions(std::vector<UEInfo>*);
-    // @brief require the location of the platoon UEs to the mecPlatooningProviderApp
-    virtual void requirePlatoonPositions();
-
 
     // @brief run the global platoon controller
     virtual const CommandList* controlPlatoon() = 0;
 
   public:
-    PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
+    PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~PlatoonControllerBase();
 
     void setDirection(inet::Coord direction) { direction_ = direction; }

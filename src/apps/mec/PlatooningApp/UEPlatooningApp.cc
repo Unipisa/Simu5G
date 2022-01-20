@@ -11,7 +11,7 @@
 
 #include "apps/mec/PlatooningApp/UEPlatooningApp.h"
 #include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_Types.h"
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 

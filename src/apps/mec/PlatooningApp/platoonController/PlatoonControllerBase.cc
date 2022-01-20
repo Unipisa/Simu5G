@@ -11,11 +11,12 @@
 
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 
-PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
+PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
 {
     mecPlatooningProviderApp_ = mecPlatooningProviderApp;
     index_ = index;
     controlPeriod_ = controlPeriod;
+    updatePositionPeriod_ = updatePositionPeriod;
 
     // TODO make these parametric
     minAcceleration_ = -5.0;
@@ -27,34 +28,34 @@ PlatoonControllerBase::~PlatoonControllerBase()
     EV << "PlatoonControllerBase::~PlatoonControllerBase - Destructor called" << endl;
 }
 
-
-
-bool PlatoonControllerBase::addPlatoonMember(int mecAppId)
+bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAddress)
 {
     if (membersInfo_.empty())
     {
+        // update positions, set a timer
+        UpdatePositionTimer* posTimer = new UpdatePositionTimer("PlatooningTimer");
+        posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
+        posTimer->setControllerIndex(index_);
+        posTimer->setPeriod(controlPeriod_);
+        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.1);
+
         // start controlling the platoon, set a timer
-        mecPlatooningProviderApp_->startControllerTimer(index_, controlPeriod_);
+        ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
+        ctrlTimer->setType(PLATOON_CONTROL_TIMER);
+        ctrlTimer->setControllerIndex(index_);
+        ctrlTimer->setPeriod(controlPeriod_);
+        mecPlatooningProviderApp_->startTimer(ctrlTimer, controlPeriod_);
     }
 
     PlatoonVehicleInfo newVehicleInfo;
+    newVehicleInfo.setUeAddress(ueAddress);
     membersInfo_[mecAppId] = newVehicleInfo;
+
+    // TODO assign position in the platoon
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
     return true;
 }
-
-bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAddress)
-{
-    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] with IP address [" << ueAddress << "] added to the platoon" << endl;
-
-    addPlatoonMember(mecAppId);
-    UEStatus newUe;
-    ueInfo_.insert(std::pair<inet::L3Address, UEStatus>(ueAddress, newUe) );
-    return true;
-}
-
-
 
 bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
 {
@@ -71,33 +72,25 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     if (membersInfo_.empty())
     {
         // stop controlling the platoon, stop the timer
-        mecPlatooningProviderApp_->stopControllerTimer(index_);
+        mecPlatooningProviderApp_->stopTimer(index_, PLATOON_UPDATE_POSITION_TIMER);
+        mecPlatooningProviderApp_->stopTimer(index_, PLATOON_CONTROL_TIMER);
     }
 
     EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
     return true;
 }
 
-bool PlatoonControllerBase::removePlatoonMember(int mecAppId, inet::L3Address ueAddress)
+std::set<inet::L3Address> PlatoonControllerBase::getUeAddressList()
 {
-    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] with IP address [" << ueAddress << "] removed from the platoon" << endl;
-    removePlatoonMember(mecAppId);
-    //iterate
-    ueInfo_.erase(ueAddress);
-
-    return true;
-}
-
-void PlatoonControllerBase::requirePlatoonPositions()
-{
-    EV << "PlatoonControllerBase::requirePlatoonPositions" << endl;
     std::set<inet::L3Address> ueAddresses;
-    for(UEStatuses::const_iterator it = ueInfo_.begin(); it != ueInfo_.end(); ++it)
+    PlatoonMembersInfo::const_iterator it = membersInfo_.begin();
+    for(; it != membersInfo_.end(); ++it)
     {
-        ueAddresses.insert(it->first);
+        ueAddresses.insert(it->second.getUeAddress());
     }
-    EV << "PlatoonControllerBase::requirePlatoonPositions "<< ueAddresses.size() << endl;
-    mecPlatooningProviderApp_->requirePlatoonLocations(index_, &ueAddresses);
+    EV << "PlatoonControllerBase::getUeAddressList "<< ueAddresses.size() << endl;
+
+    return ueAddresses;
 }
 
 void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
@@ -110,9 +103,7 @@ void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
                 "timestamp: " << it->timestamp << "\n" <<
                 "coords: ("<<it->position.x<<"," << it->position.y<<"," << it->position.z<<")\n"<<
                 "speed: " << it->speed << " mps" << endl;
-
     }
-
 }
 
 

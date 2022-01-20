@@ -9,8 +9,18 @@
 // and cannot be removed from it.
 //
 
-packet ControllerTimer
+packet PlatooningTimer
 {
-    int controllerIndex; 
-    double controlPeriod;   
+   int controllerIndex; 
+   int type; 
+}
+
+packet ControlTimer extends PlatooningTimer
+{
+    double period;   
+}
+
+packet UpdatePositionTimer extends PlatooningTimer
+{
+    double period;   
 }

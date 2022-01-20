@@ -49,7 +49,7 @@ protected:
     virtual const CommandList* controlPlatoon();
 
   public:
-    SafePlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0);
+    SafePlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~SafePlatoonController();
 };
 

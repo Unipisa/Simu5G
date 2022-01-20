@@ -11,9 +11,9 @@
 
 #include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
+#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerSample.h"
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_Types.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
@@ -121,10 +121,26 @@ void MECPlatooningProviderApp::finish()
 
 void MECPlatooningProviderApp::handleSelfMessage(cMessage *msg)
 {
-    if (strcmp(msg->getName(), "ControllerTimer") == 0)
+    if (strcmp(msg->getName(), "PlatooningTimer") == 0)
     {
-        // a controller timer has been fired
-        handleControllerTimer(msg);
+        PlatooningTimer* timer = check_and_cast<PlatooningTimer*>(msg);
+
+        switch(timer->getType())
+        {
+            case PLATOON_CONTROL_TIMER:
+            {
+                ControlTimer* ctrlTimer = check_and_cast<ControlTimer*>(timer);
+                handleControlTimer(ctrlTimer);
+                break;
+            }
+            case PLATOON_UPDATE_POSITION_TIMER:
+            {
+                UpdatePositionTimer* posTimer = check_and_cast<UpdatePositionTimer*>(timer);
+                handleUpdatePositionTimer(posTimer);
+                break;
+            }
+            default: throw cRuntimeError("MECPlatooningProviderApp::handleSelfMessage - unrecognized timer type %d", timer->getType());
+        }
     }
 }
 
@@ -228,8 +244,8 @@ void MECPlatooningProviderApp::handleServiceMessage()
                       ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
                       ueInfo.timestamp = jsonUeInfo["timeStamp"]["nanoSeconds"];
                       ueInfo.position = inet::Coord(double(jsonUeInfo["locationInfo"]["x"]), double(jsonUeInfo["locationInfo"]["y"]), double(jsonUeInfo["locationInfo"]["z"]));
-                      if(ue["locationInfo"].contains("velocity"))
-                          ueInfo.speed = ue["locationInfo"]["velocity"]["horizontalSpeed"];
+                      if(jsonUeInfo["locationInfo"].contains("velocity"))
+                          ueInfo.speed = jsonUeInfo["locationInfo"]["velocity"]["horizontalSpeed"];
                       else
                           ueInfo.speed = -1000; // TODO define
                       uesInfo.push_back(ueInfo);
@@ -316,7 +332,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         {
             // if no active platoon managers can be used, create one
             selectedPlatoon = nextControllerIndex_++;
-            platoonController = new RajamaniPlatoonController(this, selectedPlatoon); // TODO select the controller
+            platoonController = new PlatoonControllerSample(this, selectedPlatoon); // TODO select the controller and set periods
             platoonController->setDirection(direction);
             platoonControllers_[selectedPlatoon] = platoonController;
             EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;
@@ -408,47 +424,71 @@ void MECPlatooningProviderApp::handleLeavePlatoonRequest(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningProviderApp::startControllerTimer(int controllerIndex, double controlPeriod)
+void MECPlatooningProviderApp::startTimer(cMessage* msg, double timeOffset)
 {
-    if (controlPeriod < 0.0)
-        throw cRuntimeError("MECPlatooningProviderApp::startControllerTimer - control period not valid[%f]", controlPeriod);
-    if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
-        throw cRuntimeError("MECPlatooningProviderApp::startControllerTimer - controller with index %d not found", controllerIndex);
+    if (timeOffset < 0.0)
+        throw cRuntimeError("MECPlatooningProviderApp::startTimer - time offset not valid[%f]", timeOffset);
 
-    // if a timer was already set for this controller, cancel it
-    if (activeControllerTimer_.find(controllerIndex) != activeControllerTimer_.end())
-        cancelAndDelete(activeControllerTimer_.at(controllerIndex));
+    PlatooningTimer* timer = check_and_cast<PlatooningTimer*>(msg);
+    int controllerIndex = timer->getControllerIndex();
+    if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
+        throw cRuntimeError("MECPlatooningProviderApp::startTimer - controller with index %d not found", controllerIndex);
+
+    if (timer->getType() == PLATOON_CONTROL_TIMER)
+    {
+        // if a control timer was already set for this controller, cancel it
+        if (activeControlTimer_.find(controllerIndex) != activeControlTimer_.end())
+            cancelAndDelete(activeControlTimer_.at(controllerIndex));
+
+        // store timer into the timers' data structure. This is necessary to retrieve the timer in case it needs to be canceled
+        activeControlTimer_[controllerIndex] = timer;
+
+        EV << "MECPlatooningProviderApp::startTimer() - New ControlTimer set for controller " << controllerIndex << " in " << timeOffset << "s" << endl;
+    }
+    else if (timer->getType() == PLATOON_UPDATE_POSITION_TIMER)
+    {
+        // if a position timer was already set for this controller, cancel it
+        if (activeUpdatePositionTimer_.find(controllerIndex) != activeUpdatePositionTimer_.end())
+            cancelAndDelete(activeUpdatePositionTimer_.at(controllerIndex));
+
+        // store timer into the timers' data structure. This is necessary to retrieve the timer in case it needs to be canceled
+        activeUpdatePositionTimer_[controllerIndex] = timer;
+
+        EV << "MECPlatooningProviderApp::startTimer() - New UpdatePositionTimer set for controller " << controllerIndex << " in " << timeOffset << "s" << endl;
+    }
 
     //schedule timer
-    ControllerTimer* newTimer = new ControllerTimer("ControllerTimer");
-    newTimer->setControllerIndex(controllerIndex);
-    newTimer->setControlPeriod(controlPeriod);
-    scheduleAt(simTime() + controlPeriod, newTimer);
-
-    // store timer into the timers' data structure. This is necessary to retrieve the timer in case it needs to be canceled
-    activeControllerTimer_[controllerIndex] = newTimer;
-
-    EV << "MECPlatooningProviderApp::startControllerTimer() - New timer set for controller " << controllerIndex << " - period[" << controlPeriod << "s]" << endl;
-
+    scheduleAt(simTime() + timeOffset, timer);
 }
 
-void MECPlatooningProviderApp::stopControllerTimer(int controllerIndex)
+void MECPlatooningProviderApp::stopTimer(int controllerIndex, PlatooningTimerType timerType)
 {
-    if (activeControllerTimer_.find(controllerIndex) == activeControllerTimer_.end())
-        throw cRuntimeError("MECPlatooningProviderApp::stopControllerTimer - no active controller timer with index %d", controllerIndex);
+    if (timerType == PLATOON_CONTROL_TIMER)
+    {
+        if (activeControlTimer_.find(controllerIndex) == activeControlTimer_.end())
+            throw cRuntimeError("MECPlatooningProviderApp::stopTimer - no active ControlTimer with index %d", controllerIndex);
 
-    cancelAndDelete(activeControllerTimer_.at(controllerIndex));
-    EV << "MECPlatooningProviderApp::startControllerTimer() - Timer for controller " << controllerIndex << "has been stopped" << endl;
+        cancelAndDelete(activeControlTimer_.at(controllerIndex));
+        EV << "MECPlatooningProviderApp::stopTimer - ControlTimer for controller " << controllerIndex << "has been stopped" << endl;
+    }
+    else if (timerType == PLATOON_UPDATE_POSITION_TIMER)
+    {
+        if (activeUpdatePositionTimer_.find(controllerIndex) == activeUpdatePositionTimer_.end())
+            throw cRuntimeError("MECPlatooningProviderApp::stopTimer - no active UpdatePositionTimer with index %d", controllerIndex);
 
+        cancelAndDelete(activeUpdatePositionTimer_.at(controllerIndex));
+        EV << "MECPlatooningProviderApp::stopTimer - UpdatePositionTimer for controller " << controllerIndex << "has been stopped" << endl;
+    }
+    else
+        throw cRuntimeError("MECPlatooningProviderApp::stopTimer - unrecognized timer type %d", timerType);
 }
 
-void MECPlatooningProviderApp::handleControllerTimer(cMessage* msg)
+void MECPlatooningProviderApp::handleControlTimer(ControlTimer* ctrlTimer)
 {
-    ControllerTimer* timer = check_and_cast<ControllerTimer*>(msg);
-    int controllerIndex = timer->getControllerIndex();
+    int controllerIndex = ctrlTimer->getControllerIndex();
 
     if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
-        throw cRuntimeError("MECPlatooningProviderApp::handleControllerTimer - controller with index %d not found", controllerIndex);
+        throw cRuntimeError("MECPlatooningProviderApp::handleControlTimer - controller with index %d not found", controllerIndex);
 
     // retrieve platoon controller and run the control algorithm
     PlatoonControllerBase* platoonController = platoonControllers_.at(controllerIndex);
@@ -468,7 +508,7 @@ void MECPlatooningProviderApp::handleControllerTimer(cMessage* msg)
             double newAcceleration = it->second;
 
             if (mecAppEndpoint_.find(mecAppId) == mecAppEndpoint_.end())
-                throw cRuntimeError("MECPlatooningProviderApp::handleControllerTimer - endpoint for MEC app %d not found.", mecAppId);
+                throw cRuntimeError("MECPlatooningProviderApp::handleControlTimer - endpoint for MEC app %d not found.", mecAppId);
 
             MECAppEndpoint endpoint = mecAppEndpoint_.at(mecAppId);
 
@@ -487,17 +527,39 @@ void MECPlatooningProviderApp::handleControllerTimer(cMessage* msg)
     }
 
     // re-schedule controller timer
-    scheduleAt(simTime() + timer->getControlPeriod(), timer);
+    if (ctrlTimer->getPeriod() > 0.0)
+        scheduleAt(simTime() + ctrlTimer->getPeriod(), ctrlTimer);
+    else
+        stopTimer(controllerIndex, (PlatooningTimerType)ctrlTimer->getType());
+}
+
+void MECPlatooningProviderApp::handleUpdatePositionTimer(UpdatePositionTimer* posTimer)
+{
+    int controllerIndex = posTimer->getControllerIndex();
+
+    if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
+        throw cRuntimeError("MECPlatooningProviderApp::handleUpdatePositionTimer - controller with index %d not found", controllerIndex);
+
+    // retrieve platoon controller and run the control algorithm
+    PlatoonControllerBase* platoonController = platoonControllers_.at(controllerIndex);
+    std::set<inet::L3Address> addressList = platoonController->getUeAddressList();
+    requirePlatoonLocations(controllerIndex, &addressList);
+
+    // re-schedule controller timer
+    if (posTimer->getPeriod() > 0.0)
+        scheduleAt(simTime() + posTimer->getPeriod(), posTimer);
+    else
+        stopTimer(controllerIndex, (PlatooningTimerType)posTimer->getType());
 }
 
 void MECPlatooningProviderApp::requirePlatoonLocations(int controllerIndex, const std::set<inet::L3Address>* ues)
 {
     // get the Address of the UEs
     std::stringstream ueAddresses;
-    EV << "MECPlatooningProviderApp::requireUELocations - " << ues->size() << endl;
+    EV << "MECPlatooningProviderApp::requirePlatoonLocations - " << ues->size() << endl;
     for( std::set<inet::L3Address>::iterator it = ues->begin(); it != ues->end(); ++it)
     {
-        EV << "MECPlatooningProviderApp::requireUELocations - " << *it << endl;
+        EV << "MECPlatooningProviderApp::requirePlatoonLocations - " << *it << endl;
         ueAddresses << "acr:" << *it;
         if(next(it) != ues->end())
             ueAddresses << ",";
@@ -507,7 +569,7 @@ void MECPlatooningProviderApp::requirePlatoonLocations(int controllerIndex, cons
 
     // insert the controller id in the requests queue
     controllerPendingRequests.push(controllerIndex);
-    }
+}
 
 void MECPlatooningProviderApp::sendGetRequest(const std::string& ues)
 {

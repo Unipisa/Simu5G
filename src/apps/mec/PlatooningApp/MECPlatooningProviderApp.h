@@ -20,13 +20,12 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 #include "apps/mec/MecApps/MecAppBase.h"
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/packets/ControllerTimer_m.h"
+#include "apps/mec/PlatooningApp/packets/PlatooningTimer_m.h"
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionBase.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 
 using namespace std;
 using namespace omnetpp;
@@ -41,7 +40,7 @@ typedef struct
 } MECAppEndpoint;
 
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
-typedef std::map<int, ControllerTimer*> ControllerTimerMap;
+typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, double> CommandList;
 
 class MECPlatooningProviderApp : public MecAppBase
@@ -76,7 +75,13 @@ class MECPlatooningProviderApp : public MecAppBase
 
     // maps of active platoon managers
     ControllerMap platoonControllers_;
-    ControllerTimerMap activeControllerTimer_;
+
+    // store the scheduled control timers
+    PlatooningTimerMap activeControlTimer_;
+
+    // store the scheduled update position timers
+    PlatooningTimerMap activeUpdatePositionTimer_;
+
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -99,12 +104,15 @@ class MECPlatooningProviderApp : public MecAppBase
     // @brief handler for request to leave a platoon from the UE
     void handleLeavePlatoonRequest(cMessage* msg);
 
-    // @brief used by a controller to set a periodic timer
-    void startControllerTimer(int controllerIndex, double controlPeriod);
-    // @brief used by a controller to stop a periodic timer
-    void stopControllerTimer(int controllerIndex);
-    // @brief handler called when a controller timer expires
-    void handleControllerTimer(cMessage* msg);
+    // @brief used by a controller to set a timer
+    void startTimer(cMessage* msg, double timeOffset);
+    // @brief used by a controller to stop a  timer
+    void stopTimer(int controllerIndex, PlatooningTimerType timerType);
+
+    // @brief handler called when a ControlTimer expires
+    void handleControlTimer(ControlTimer* ctrlTimer);
+    // @brief handler called when an UpdatePositionTimer expires
+    void handleUpdatePositionTimer(UpdatePositionTimer* posTimer);
 
     // @brief used to require the position of the cars of a platoon on behalf of the platoon controller
     void requirePlatoonLocations(int controllerIndex, const set<inet::L3Address>* ues);

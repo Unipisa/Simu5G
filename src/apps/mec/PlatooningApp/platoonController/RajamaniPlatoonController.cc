@@ -11,8 +11,8 @@
 
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 
-RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
-    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod)
+RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
+    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO check values and make them parametric
     C1_ = 0.5;
@@ -52,7 +52,7 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
 
         EV << "RajamaniPlatoonController::control() - Computing new command for MEC app " << mecAppId << " - vehicle info[" << vehicleInfo << "]" << endl;
 
-        double speed = vehicleInfo.getSpeed().length();
+        double speed = vehicleInfo.getSpeed();
         double newAcceleration = 0.0;
         if (mecAppId == leaderId)
         {
@@ -69,9 +69,9 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
 
             double distanceToPreceding = vehicleInfo.getPosition().distance(leaderVehicleInfo.getPosition());
             double leaderAcceleration = cmdList->at(leaderId);
-            double leaderSpeed = leaderVehicleInfo.getSpeed().length();
+            double leaderSpeed = leaderVehicleInfo.getSpeed();
             double precedingAcceleration = cmdList->at(precedingVehicleId);
-            double precedingSpeed = precedingVehicleInfo.getSpeed().length();
+            double precedingSpeed = precedingVehicleInfo.getSpeed();
 
             newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
         }

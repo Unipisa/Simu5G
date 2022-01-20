@@ -10,7 +10,7 @@
 //
 
 #include "apps/mec/PlatooningApp/MECPlatooningApp.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_Types.h"
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"

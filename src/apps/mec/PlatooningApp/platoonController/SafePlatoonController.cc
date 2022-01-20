@@ -11,8 +11,8 @@
 
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 
-SafePlatoonController::SafePlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod)
-    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod)
+SafePlatoonController::SafePlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
+    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO make this parametric
     criticalDistance_ = 0.5;
@@ -44,7 +44,7 @@ const CommandList* SafePlatoonController::controlPlatoon()
         double newAcceleration = 0.0;
         if (mecAppId == leaderId)
         {
-            newAcceleration = computeLeaderAcceleration(vehicleInfo.getSpeed().length());
+            newAcceleration = computeLeaderAcceleration(vehicleInfo.getSpeed());
         }
         else
         {
@@ -57,8 +57,8 @@ const CommandList* SafePlatoonController::controlPlatoon()
 
             //Collision-free Longitudinal distance controller: inputs
             double distanceToLeading = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());
-            double followerSpeed = vehicleInfo.getSpeed().length();
-            double leadingSpeed = precedingVehicleInfo.getSpeed().length();
+            double followerSpeed = vehicleInfo.getSpeed();
+            double leadingSpeed = precedingVehicleInfo.getSpeed();
 
             newAcceleration = computeMemberAcceleration(distanceToLeading, leadingSpeed, followerSpeed);
         }
