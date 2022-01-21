@@ -54,6 +54,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
     membersInfo_[mecAppId] = newVehicleInfo;
 
     // TODO assign position in the platoon
+    platoonPositions_.push_back(mecAppId);
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
     return true;
@@ -101,6 +102,17 @@ void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
     auto it = uesInfo->begin();
     for(;it != uesInfo->end(); ++it)
     {
+        PlatoonMembersInfo::iterator mit = membersInfo_.begin();
+        for(; mit != membersInfo_.end(); ++mit)
+        {
+            if (mit->second.getUeAddress() == it->address)
+            {
+                mit->second.setPosition(it->position);
+                mit->second.setSpeed(it->speed);
+                mit->second.setTimestamp(it->timestamp);
+            }
+        }
+
         EV << "UE info:\naddress ["<< it->address.str() << "]\n" <<
                 "timestamp: " << it->timestamp << "\n" <<
                 "coords: ("<<it->position.x<<"," << it->position.y<<"," << it->position.z<<")\n"<<
