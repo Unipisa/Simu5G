@@ -53,7 +53,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
     newVehicleInfo.setUeAddress(ueAddress);
     membersInfo_[mecAppId] = newVehicleInfo;
 
-    // TODO assign position in the platoon
+    // TODO assign correct positions in the platoon
     platoonPositions_.push_back(mecAppId);
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
@@ -69,6 +69,16 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
         return false;
     }
 
+    // remove mecAppId from relevant data structures
+    std::list<int>::iterator pt = platoonPositions_.begin();
+    for ( ; pt != platoonPositions_.end(); ++pt)
+    {
+        if (*pt == mecAppId)
+        {
+            platoonPositions_.erase(pt);
+            break;
+        }
+    }
     membersInfo_.erase(mecAppId);
 
     // check if the platoon is now empty
