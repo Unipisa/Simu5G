@@ -332,7 +332,8 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         {
             // if no active platoon managers can be used, create one
             selectedPlatoon = nextControllerIndex_++;
-            platoonController = new PlatoonControllerSample(this, selectedPlatoon); // TODO select the controller and set periods
+//            platoonController = new PlatoonControllerSample(this, selectedPlatoon); // TODO select the controller and set periods
+            platoonController = new RajamaniPlatoonController(this, selectedPlatoon, 0.1, 0.1); // TODO select the controller and set periods
             platoonController->setDirection(direction);
             platoonControllers_[selectedPlatoon] = platoonController;
             EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;

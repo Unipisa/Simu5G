@@ -19,11 +19,10 @@ RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProviderApp* m
     xi_ = 1;
     wn_ = 1;
 
-    double lambda = (xi_ + sqrt(xi_*xi_ - 1)) * wn_;
     k_[0] = 1 - C1_;
     k_[1] = C1_;
-    k_[2] = - (2 * xi_ - C1_ * lambda );
-    k_[3] = - (lambda * C1_);
+    k_[2] = - ( (2 * xi_) - ( C1_ * (xi_ + sqrt(xi_*xi_ - 1) ) ) ) * wn_;
+    k_[3] = - ((xi_ + sqrt(xi_*xi_ - 1)) * wn_ * C1_);
     k_[4] = - (wn_ * wn_);
 
     targetSpacing_ = 10.0;
@@ -67,7 +66,7 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
             int precedingVehicleId = *precIt;
             PlatoonVehicleInfo precedingVehicleInfo = membersInfo_.at(precedingVehicleId);
 
-            double distanceToPreceding = vehicleInfo.getPosition().distance(leaderVehicleInfo.getPosition());
+            double distanceToPreceding = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());
             double leaderAcceleration = cmdList->at(leaderId);
             double leaderSpeed = leaderVehicleInfo.getSpeed();
             double precedingAcceleration = cmdList->at(precedingVehicleId);
@@ -102,10 +101,19 @@ double RajamaniPlatoonController::computeMemberAcceleration(double speed, double
 {
     double acceleration = 0.0;
 
-    double spacingError = distanceToPreceding + targetSpacing_;  // longitudinal spacing error
+    double spacingError = targetSpacing_ - distanceToPreceding;  // longitudinal spacing error
+
+    EV << NOW << " RajamaniPlatoonController::computeMemberAcceleration - precAcc[" << precedingAcceleration << "]"
+                                                                   << " - leaderAcc[" << leaderAcceleration << "]"
+                                                                   << " - relPrecSpeed[" << (speed - precedingSpeed) << "]"
+                                                                   << " - relLeadSpeed[" << (speed - leaderSpeed) << "]"
+                                                                   << " - spacingError[" << spacingError << "]" << endl;
+
 
     // compute acceleration (see equation 6 in R.Rajamani et al.)
     acceleration = k_[0] * precedingAcceleration + k_[1] * leaderAcceleration + k_[2] * (speed - precedingSpeed) + k_[3] * (speed - leaderSpeed) + k_[4] * spacingError;
+
+    EV << NOW << " RajamaniPlatoonController::computeMemberAcceleration - computed acceleration = " << acceleration << endl;
 
     // bound acceleration
     acceleration = (acceleration < minAcceleration_)? minAcceleration_ : (acceleration > maxAcceleration_)? maxAcceleration_ : acceleration;

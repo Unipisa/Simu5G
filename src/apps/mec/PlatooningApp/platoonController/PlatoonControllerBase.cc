@@ -21,6 +21,8 @@ PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatoo
     // TODO make these parametric
     minAcceleration_ = -5.0;
     maxAcceleration_ = 1.5;
+
+    targetSpeed_ = 10.0;
 }
 
 PlatoonControllerBase::~PlatoonControllerBase()
@@ -37,7 +39,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
         posTimer->setControllerIndex(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.1);
+        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.02);
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
