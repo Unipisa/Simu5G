@@ -316,6 +316,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto joinReq = packet->removeAtFront<PlatooningJoinPacket>();
     int mecAppId = joinReq->getMecAppId();
+    inet::Coord position = joinReq->getLastPosition();
 
     EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - Received join request from MEC App " << mecAppId << endl;
 
@@ -327,12 +328,11 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         inet::Coord direction = joinReq->getDirection();
 
         // find the most suitable platoonController for this new request
-        selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_, direction);
+        selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_, position, direction);
         if (selectedPlatoon < 0)
         {
             // if no active platoon managers can be used, create one
             selectedPlatoon = nextControllerIndex_++;
-//            platoonController = new PlatoonControllerSample(this, selectedPlatoon); // TODO select the controller and set periods
             platoonController = new RajamaniPlatoonController(this, selectedPlatoon, 0.1, 0.1); // TODO select the controller and set periods
             platoonController->setDirection(direction);
             platoonControllers_[selectedPlatoon] = platoonController;
@@ -349,9 +349,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         throw cRuntimeError("MECPlatooningProviderApp::handleJoinPlatoonRequest - invalid platoon manager index[%d]\n", selectedPlatoon);
 
     // add the member to the identified platoonController
-    bool success = platoonController->addPlatoonMember(mecAppId, joinReq->getUeAddress());
-
-    // TODO might need to add here some information about the vehicle in the controller
+    bool success = platoonController->addPlatoonMember(mecAppId, position, joinReq->getUeAddress());
 
     // prepare response
     inet::Packet* responsePacket = new Packet (packet->getName());

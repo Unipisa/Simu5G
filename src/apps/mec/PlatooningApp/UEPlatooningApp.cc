@@ -268,6 +268,7 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     joinReq->setType(JOIN_REQUEST);
     joinReq->setControllerIndex(-1);   // TODO -1 means attach to any available platoon for this UE
     joinReq->setDirection(mobility->getDirection());
+    joinReq->setLastPosition(mobility->getCurrentPosition());   // TODO this should be retrieved by the MecPlatooningConsumerApp via the Location Service
     joinReq->setChunkLength(inet::B(joinRequestPacketSize_));
     joinReq->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(joinReq);

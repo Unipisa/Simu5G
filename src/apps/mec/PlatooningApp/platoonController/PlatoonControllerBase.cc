@@ -30,7 +30,7 @@ PlatoonControllerBase::~PlatoonControllerBase()
     EV << "PlatoonControllerBase::~PlatoonControllerBase - Destructor called" << endl;
 }
 
-bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAddress)
+bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::Coord position, inet::L3Address ueAddress)
 {
     if (membersInfo_.empty())
     {
@@ -39,7 +39,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
         posTimer->setControllerIndex(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.02);
+        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.02); // TODO check timing
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
@@ -49,12 +49,35 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::L3Address ueAdd
         mecPlatooningProviderApp_->startTimer(ctrlTimer, controlPeriod_);
     }
 
+    // assign correct positions in the platoon
+    // we compare the current position of the new vehicle against the position of other members,
+    // starting from the platoon leader. We compute the of coordinates difference between the new vehicle and
+    // the current member in the loop. The position of the new vehicle is found as soon as we find that
+    // the difference has not the same sign as the direction of the platoon
+    bool found = false;
+    std::list<int>::iterator pt = platoonPositions_.begin();
+    for (; pt != platoonPositions_.end(); ++pt)
+    {
+        inet::Coord curMemberPos = membersInfo_.at(*pt).getPosition();
+        inet::Coord diff = curMemberPos - position;
+
+        if (diff.getSign().x != direction_.getSign().x || diff.getSign().y != direction_.getSign().y)
+        {
+            // insert the new vehicle in front of the current member
+            platoonPositions_.insert(pt, mecAppId);
+            found = true;
+            break;
+        }
+        // else current member is in front of the new vehicle, keep scanning
+    }
+    if (!found)
+        platoonPositions_.push_back(mecAppId);
+
+    // add vehicle info to the relevant data structure
     PlatoonVehicleInfo newVehicleInfo;
+    newVehicleInfo.setPosition(position);
     newVehicleInfo.setUeAddress(ueAddress);
     membersInfo_[mecAppId] = newVehicleInfo;
-
-    // TODO assign correct positions in the platoon
-    platoonPositions_.push_back(mecAppId);
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
     return true;

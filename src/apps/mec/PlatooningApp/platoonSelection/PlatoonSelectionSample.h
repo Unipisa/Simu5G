@@ -31,7 +31,7 @@ class PlatoonSelectionSample : public PlatoonSelectionBase
     //
     // this function must return the index of the selected platoon, -1 if no
     // platoons are available
-    virtual int findBestPlatoon(const ControllerMap& activeControllers, inet::Coord direction);
+    virtual int findBestPlatoon(const ControllerMap& activeControllers, inet::Coord position, inet::Coord direction);
 
   public:
     PlatoonSelectionSample();

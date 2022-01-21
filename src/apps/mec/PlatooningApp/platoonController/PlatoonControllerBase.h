@@ -76,7 +76,7 @@ class PlatoonControllerBase
     std::set<inet::L3Address> getUeAddressList();
 
     // @brief add a new member to the platoon
-    virtual bool addPlatoonMember(int mecAppId, inet::L3Address);
+    virtual bool addPlatoonMember(int mecAppId, inet::Coord position, inet::L3Address);
 
     // @brief remove a member from the platoon
     virtual bool removePlatoonMember(int mecAppId);

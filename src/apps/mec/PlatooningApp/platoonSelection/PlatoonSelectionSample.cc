@@ -20,7 +20,7 @@ PlatoonSelectionSample::~PlatoonSelectionSample()
     EV << "PlatoonSelectionSample::~PlatoonSelectionSample - Destructor called" << endl;
 }
 
-int PlatoonSelectionSample::findBestPlatoon(const ControllerMap& activeControllers, inet::Coord direction)
+int PlatoonSelectionSample::findBestPlatoon(const ControllerMap& activeControllers, inet::Coord position, inet::Coord direction)
 {
     EV << "PlatoonSelectionSample::findBestPlatoon - finding the best platoon for a given UE" << endl;
 
