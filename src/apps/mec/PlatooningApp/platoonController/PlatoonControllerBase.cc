@@ -11,9 +11,9 @@
 
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 
-PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
+PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod, double updatePositionPeriod)
 {
-    mecPlatooningProviderApp_ = mecPlatooningProviderApp;
+    mecPlatooningProducerApp_ = mecPlatooningProducerApp;
     index_ = index;
     controlPeriod_ = controlPeriod;
     updatePositionPeriod_ = updatePositionPeriod;
@@ -39,14 +39,14 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::Coord position,
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
         posTimer->setControllerIndex(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProviderApp_->startTimer(posTimer, controlPeriod_ - 0.02); // TODO check timing
+        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.02); // TODO check timing
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
         ctrlTimer->setType(PLATOON_CONTROL_TIMER);
         ctrlTimer->setControllerIndex(index_);
         ctrlTimer->setPeriod(controlPeriod_);
-        mecPlatooningProviderApp_->startTimer(ctrlTimer, controlPeriod_);
+        mecPlatooningProducerApp_->startTimer(ctrlTimer, controlPeriod_);
     }
 
     // assign correct positions in the platoon
@@ -108,8 +108,8 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     if (membersInfo_.empty())
     {
         // stop controlling the platoon, stop the timer
-        mecPlatooningProviderApp_->stopTimer(index_, PLATOON_UPDATE_POSITION_TIMER);
-        mecPlatooningProviderApp_->stopTimer(index_, PLATOON_CONTROL_TIMER);
+        mecPlatooningProducerApp_->stopTimer(index_, PLATOON_UPDATE_POSITION_TIMER);
+        mecPlatooningProducerApp_->stopTimer(index_, PLATOON_CONTROL_TIMER);
     }
 
     EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from platoon " << index_ << endl;

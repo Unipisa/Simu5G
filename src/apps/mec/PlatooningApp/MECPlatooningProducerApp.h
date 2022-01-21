@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __MECPLATOONINGPROVIDERAPP_H_
-#define __MECPLATOONINGPROVIDERAPP_H_
+#ifndef __MECPLATOONINGPRODUCERAPP_H_
+#define __MECPLATOONINGPRODUCERAPP_H_
 
 #include "omnetpp.h"
 
@@ -43,7 +43,7 @@ typedef std::map<int, PlatoonControllerBase*> ControllerMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, double> CommandList;
 
-class MECPlatooningProviderApp : public MecAppBase
+class MECPlatooningProducerApp : public MecAppBase
 {
     friend class PlatoonControllerBase;
 
@@ -124,8 +124,8 @@ class MECPlatooningProviderApp : public MecAppBase
     virtual void established(int connId) override;
 
   public:
-    MECPlatooningProviderApp();
-    virtual ~MECPlatooningProviderApp();
+    MECPlatooningProducerApp();
+    virtual ~MECPlatooningProducerApp();
 
 };
 

@@ -11,8 +11,8 @@
 
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 
-SafePlatoonController::SafePlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
-    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod, updatePositionPeriod)
+SafePlatoonController::SafePlatoonController(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod, double updatePositionPeriod)
+    : PlatoonControllerBase(mecPlatooningProducerApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO make this parametric
     criticalDistance_ = 0.5;

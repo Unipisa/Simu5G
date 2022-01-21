@@ -13,7 +13,8 @@
 #define __PLATOONCONTROLLERBASE_H_
 
 #include "omnetpp.h"
-#include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
+
+#include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
 
@@ -24,7 +25,7 @@ typedef std::set<int> MecAppIdSet;
 typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
 typedef std::map<int, double> CommandList;
 
-class MECPlatooningProviderApp;
+class MECPlatooningProducerApp;
 
 /*
  * PlatoonControllerBase
@@ -40,12 +41,12 @@ class PlatoonControllerBase
 
   protected:
 
-    friend class MECPlatooningProviderApp;
+    friend class MECPlatooningProducerApp;
 
     // reference to the MEC Platooning App
-    MECPlatooningProviderApp* mecPlatooningProviderApp_;
+    MECPlatooningProducerApp* mecPlatooningProducerApp_;
 
-    // platoon controller identifier within a PlatoonProviderApp
+    // platoon controller identifier within a PlatoonProducerApp
     int index_;
 
     // current direction of the platoon
@@ -88,7 +89,7 @@ class PlatoonControllerBase
     virtual const CommandList* controlPlatoon() = 0;
 
   public:
-    PlatoonControllerBase(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
+    PlatoonControllerBase(MECPlatooningProducerApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~PlatoonControllerBase();
 
     void setDirection(inet::Coord direction) { direction_ = direction; }

@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __MECPLATOONINGAPP_H_
-#define __MECPLATOONINGAPP_H_
+#ifndef __MECPLATOONINGCONSUMERAPP_H_
+#define __MECPLATOONINGCONSUMERAPP_H_
 
 #include "omnetpp.h"
 
@@ -25,7 +25,7 @@
 using namespace std;
 using namespace omnetpp;
 
-class MECPlatooningApp : public MecAppBase
+class MECPlatooningConsumerApp : public MecAppBase
 {
     // UDP socket to communicate with the UeApp
     inet::UdpSocket ueAppSocket;
@@ -103,8 +103,8 @@ class MECPlatooningApp : public MecAppBase
     virtual void established(int connId) override;
 
   public:
-    MECPlatooningApp();
-    virtual ~MECPlatooningApp();
+    MECPlatooningConsumerApp();
+    virtual ~MECPlatooningConsumerApp();
 
 };
 

@@ -17,7 +17,7 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 //
 //  This is a MEC app that ... TBC
 //
-simple MECPlatooningApp like IMECApp, IApp
+simple MECPlatooningConsumerApp like IMECApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");

@@ -45,7 +45,7 @@ simple UEPlatooningApp like IApp
         // if -1, the MEC will try to find the best platoon 
         int controllerIndex = default(-1);
         
-        string mecAppName = default("MECPlatooningApp");
+        string mecAppName = default("MECPlatooningConsumerApp");
         
         string interfaceTableModule;
                     

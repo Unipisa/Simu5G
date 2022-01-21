@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/MECPlatooningApp.h"
+#include "apps/mec/PlatooningApp/MECPlatooningConsumerApp.h"
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
@@ -23,24 +23,24 @@
 
 #include <fstream>
 
-Define_Module(MECPlatooningApp);
+Define_Module(MECPlatooningConsumerApp);
 
 using namespace inet;
 using namespace omnetpp;
 
-MECPlatooningApp::MECPlatooningApp(): MecAppBase()
+MECPlatooningConsumerApp::MECPlatooningConsumerApp(): MecAppBase()
 {
     lastXposition = 0.;
     lastYposition = 0.;
     lastZposition = 0.;
 }
 
-MECPlatooningApp::~MECPlatooningApp()
+MECPlatooningConsumerApp::~MECPlatooningConsumerApp()
 {
 }
 
 
-void MECPlatooningApp::initialize(int stage)
+void MECPlatooningConsumerApp::initialize(int stage)
 {
     MecAppBase::initialize(stage);
 
@@ -60,7 +60,7 @@ void MECPlatooningApp::initialize(int stage)
     platooningProviderAppSocket.bind(localPlatooningProviderPort+this->getIndex()); // base+index vector;
 
 
-    EV << "MECPlatooningApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
+    EV << "MECPlatooningConsumerApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
     // get platooning provider info
     platooningProviderAddress_ = L3Address(par("platooningProviderAddress").stringValue());
@@ -73,11 +73,11 @@ void MECPlatooningApp::initialize(int stage)
     controllerIndex_ = -1;
 
     // connect with the service registry
-//    EV << "MECPlatooningApp::initialize - Initialize connection with the service registry via Mp1" << endl;
+//    EV << "MECPlatooningConsumerApp::initialize - Initialize connection with the service registry via Mp1" << endl;
 //    connect(&mp1Socket_, mp1Address, mp1Port);
 }
 
-void MECPlatooningApp::handleMessage(cMessage *msg)
+void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
@@ -91,25 +91,25 @@ void MECPlatooningApp::handleMessage(cMessage *msg)
 
 }
 
-void MECPlatooningApp::finish()
+void MECPlatooningConsumerApp::finish()
 {
     MecAppBase::finish();
-    EV << "MECPlatooningApp::finish()" << endl;
+    EV << "MECPlatooningConsumerApp::finish()" << endl;
     if(gate("socketOut")->isConnected())
     {
 
     }
 }
 
-void MECPlatooningApp::handleSelfMessage(cMessage *msg)
+void MECPlatooningConsumerApp::handleSelfMessage(cMessage *msg)
 {
     // nothing to do here
     delete msg;
 }
 
-void MECPlatooningApp::handleMp1Message()
+void MECPlatooningConsumerApp::handleMp1Message()
 {
-    EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
+    EV << "MECPlatooningConsumerApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try
     {
@@ -134,7 +134,7 @@ void MECPlatooningApp::handleMp1Message()
             }
             else
             {
-                EV << "MECPlatooningApp::handleMp1Message - LocationService not found"<< endl;
+                EV << "MECPlatooningConsumerApp::handleMp1Message - LocationService not found"<< endl;
                 locationServiceAddress_ = L3Address();
             }
         }
@@ -149,7 +149,7 @@ void MECPlatooningApp::handleMp1Message()
 
 }
 
-void MECPlatooningApp::handleServiceMessage()
+void MECPlatooningConsumerApp::handleServiceMessage()
 {
     if(serviceHttpMessage->getType() == RESPONSE)
     {
@@ -157,8 +157,8 @@ void MECPlatooningApp::handleServiceMessage()
         if(rspMsg->getCode() == 200) // in response to a successful GET request
         {
             nlohmann::json jsonBody;
-//            EV << "MECPlatooningApp::handleServiceMessage - response 200 " << rspMsg->getBody()<< endl;
-            EV << "MECPlatooningApp::handleServiceMessage - response 200 " << endl;
+//            EV << "MECPlatooningConsumerApp::handleServiceMessage - response 200 " << rspMsg->getBody()<< endl;
+            EV << "MECPlatooningConsumerApp::handleServiceMessage - response 200 " << endl;
 
             try
             {
@@ -167,7 +167,7 @@ void MECPlatooningApp::handleServiceMessage()
               lastYposition = jsonBody["userInfo"]["locationInfo"]["y"];
               lastZposition = jsonBody["userInfo"]["locationInfo"]["z"];
 
-              EV << "MECPlatooningApp::handleServiceMessage - lastXposition: " << lastXposition << " lastYposition: " << lastYposition << endl;
+              EV << "MECPlatooningConsumerApp::handleServiceMessage - lastXposition: " << lastXposition << " lastYposition: " << lastYposition << endl;
 
             }
             catch(nlohmann::detail::parse_error e)
@@ -182,19 +182,19 @@ void MECPlatooningApp::handleServiceMessage()
         // some error occured, show the HTTP code for now
         else
         {
-            EV << "MECPlatooningApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
+            EV << "MECPlatooningConsumerApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
         }
     }
     // it is a request. It should not arrive, for now (think about sub-not)
     else
     {
         HttpRequestMessage *reqMsg = dynamic_cast<HttpRequestMessage*>(serviceHttpMessage);
-        EV << "MECPlatooningApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded"  << endl;
+        EV << "MECPlatooningConsumerApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded"  << endl;
     }
 
 }
 
-void MECPlatooningApp::registerToPlatooningProviderApp()
+void MECPlatooningConsumerApp::registerToPlatooningProviderApp()
 {
     inet::Packet* packet = new Packet ("PlatooningRegistrationPacket");
     auto registration = inet::makeShared<PlatooningRegistrationPacket>();
@@ -209,7 +209,7 @@ void MECPlatooningApp::registerToPlatooningProviderApp()
 }
 
 
-void MECPlatooningApp::handleUeMessage(omnetpp::cMessage *msg)
+void MECPlatooningConsumerApp::handleUeMessage(omnetpp::cMessage *msg)
 {
     // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);
@@ -242,12 +242,12 @@ void MECPlatooningApp::handleUeMessage(omnetpp::cMessage *msg)
         handlePlatoonCommand(msg);
 
     else
-        throw cRuntimeError("MECPlatooningApp::handleUeMessage - packet not recognized");
+        throw cRuntimeError("MECPlatooningConsumerApp::handleUeMessage - packet not recognized");
 }
 
-void MECPlatooningApp::handleProviderRegistrationResponse(cMessage* msg)
+void MECPlatooningConsumerApp::handleProviderRegistrationResponse(cMessage* msg)
 {
-    EV << "MECPlatooningApp::handleProviderRegistrationResponse - Received registration response from the MECPlatooningProviderApp" << endl;
+    EV << "MECPlatooningConsumerApp::handleProviderRegistrationResponse - Received registration response from the MECPlatooningProviderApp" << endl;
 
     // TODO do stuff
 
@@ -255,14 +255,14 @@ void MECPlatooningApp::handleProviderRegistrationResponse(cMessage* msg)
 }
 
 
-void MECPlatooningApp::handleJoinPlatoonRequest(cMessage* msg)
+void MECPlatooningConsumerApp::handleJoinPlatoonRequest(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto joinReq = packet->removeAtFront<PlatooningJoinPacket>();
 
     inet::L3Address ueAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
 
-    EV << "MECPlatooningApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
+    EV << "MECPlatooningConsumerApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     joinReq->setMecAppId(getId());
@@ -274,12 +274,12 @@ void MECPlatooningApp::handleJoinPlatoonRequest(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
+void MECPlatooningConsumerApp::handleLeavePlatoonRequest(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->removeAtFront<PlatooningLeavePacket>();
 
-    EV << "MECPlatooningApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningProviderApp" << endl;
+    EV << "MECPlatooningConsumerApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningProviderApp" << endl;
 
     // TODO get latest UE position (from the Location Service) and add it to the message for the provider app
 
@@ -293,7 +293,7 @@ void MECPlatooningApp::handleLeavePlatoonRequest(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
+void MECPlatooningConsumerApp::handleJoinPlatoonResponse(cMessage* msg)
 {
     // forward to client
 
@@ -304,7 +304,7 @@ void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
     if (joinResp->getResponse())
         controllerIndex_ = joinResp->getControllerIndex();
 
-    EV << "MECPlatooningApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
+    EV << "MECPlatooningConsumerApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
     // if response is True, start to require UE location from Location service (if established)
     // test
@@ -318,7 +318,7 @@ void MECPlatooningApp::handleJoinPlatoonResponse(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
+void MECPlatooningConsumerApp::handleLeavePlatoonResponse(cMessage* msg)
 {
     // forward to client
 
@@ -330,7 +330,7 @@ void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
         controllerIndex_ = -1;
 
 
-    EV << "MECPlatooningApp::handleLeavePlatoonResponse - Forward leave response to the UE" << endl;
+    EV << "MECPlatooningConsumerApp::handleLeavePlatoonResponse - Forward leave response to the UE" << endl;
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(leaveResp);
@@ -340,14 +340,14 @@ void MECPlatooningApp::handleLeavePlatoonResponse(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
+void MECPlatooningConsumerApp::handlePlatoonCommand(cMessage* msg)
 {
     // forward to client
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto cmd = packet->removeAtFront<PlatooningInfoPacket>();
 
-    EV << "MECPlatooningApp::handlePlatoonCommand - Forward new command to the UE" << endl;
+    EV << "MECPlatooningConsumerApp::handlePlatoonCommand - Forward new command to the UE" << endl;
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(cmd);
@@ -358,7 +358,7 @@ void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
 }
 
 
-//void MECPlatooningApp::modifySubscription()
+//void MECPlatooningConsumerApp::modifySubscription()
 //{
 //    std::string body = "{  \"circleNotificationSubscription\": {"
 //                       "\"callbackReference\" : {"
@@ -380,7 +380,7 @@ void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
 //    Http::sendPutRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
 //}
 //
-//void MECPlatooningApp::sendSubscription()
+//void MECPlatooningConsumerApp::sendSubscription()
 //{
 //    std::string body = "{  \"circleNotificationSubscription\": {"
 //                           "\"callbackReference\" : {"
@@ -414,18 +414,18 @@ void MECPlatooningApp::handlePlatoonCommand(cMessage* msg)
 //    Http::sendPostRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
 //}
 //
-//void MECPlatooningApp::sendDeleteSubscription()
+//void MECPlatooningConsumerApp::sendDeleteSubscription()
 //{
 //    std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
 //    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
 //    Http::sendDeleteRequest(&serviceSocket_, host.c_str(), uri.c_str());
 //}
 
-void MECPlatooningApp::established(int connId)
+void MECPlatooningConsumerApp::established(int connId)
 {
     if(connId == mp1Socket_.getSocketId())
     {
-        EV << "MECPlatooningApp::established - Mp1Socket"<< endl;
+        EV << "MECPlatooningConsumerApp::established - Mp1Socket"<< endl;
 
         // once the connection with the Service Registry has been established, obtain the
         // endPoint (address+port) of the Location Service
@@ -436,7 +436,7 @@ void MECPlatooningApp::established(int connId)
     }
     else if (connId == serviceSocket_.getSocketId())
     {
-        EV << "MECPlatooningApp::established - serviceSocket"<< endl;
+        EV << "MECPlatooningConsumerApp::established - serviceSocket"<< endl;
 
         //sendGETRequest
 
@@ -446,22 +446,22 @@ void MECPlatooningApp::established(int connId)
     }
     else
     {
-        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
+        throw cRuntimeError("MECPlatooningConsumerApp::socketEstablished - Socket %d not recognized", connId);
     }
 }
 
-void MECPlatooningApp::requestLocation()
+void MECPlatooningConsumerApp::requestLocation()
 {
     //check if the ueAppAddress is specified
     if(ueAppAddress.isUnspecified())
     {
-        EV << "MECPlatooningApp::requestLocation(): The IP address of the UE is unknown" << endl;
+        EV << "MECPlatooningConsumerApp::requestLocation(): The IP address of the UE is unknown" << endl;
         return;
     }
 
     if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
     {
-        EV << "MECPlatooningApp::requestLocation(): send request to the Location Service" << endl;
+        EV << "MECPlatooningConsumerApp::requestLocation(): send request to the Location Service" << endl;
         std::stringstream uri;
         uri << "/example/location/v2/queries/users?address=acr:" << ueAppAddress.str();
         std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
@@ -469,7 +469,7 @@ void MECPlatooningApp::requestLocation()
     }
     else
     {
-        EV << "MECPlatooningApp::requestLocation(): Location Service not connected" << endl;
+        EV << "MECPlatooningConsumerApp::requestLocation(): Location Service not connected" << endl;
     }
 }
 

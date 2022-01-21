@@ -11,8 +11,8 @@
 
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 
-RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProviderApp* mecPlatooningProviderApp, int index, double controlPeriod, double updatePositionPeriod)
-    : PlatoonControllerBase(mecPlatooningProviderApp, index, controlPeriod, updatePositionPeriod)
+RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod, double updatePositionPeriod)
+    : PlatoonControllerBase(mecPlatooningProducerApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO check values and make them parametric
     C1_ = 0.5;

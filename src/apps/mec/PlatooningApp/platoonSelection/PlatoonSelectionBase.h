@@ -13,12 +13,12 @@
 #define __PLATOONSELECTIONBASE_H_
 
 #include "omnetpp.h"
-#include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
+#include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
 
 using namespace std;
 using namespace omnetpp;
 
-class MECPlatooningProviderApp;
+class MECPlatooningProducerApp;
 class PlatoonControllerBase;
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
 
@@ -35,7 +35,7 @@ class PlatoonSelectionBase
 {
 
     friend class MECPlatooningApp;
-    friend class MECPlatooningProviderApp;
+    friend class MECPlatooningProducerApp;
 
   protected:
 
