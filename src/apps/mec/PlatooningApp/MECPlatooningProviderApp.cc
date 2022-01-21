@@ -11,7 +11,6 @@
 
 #include "apps/mec/PlatooningApp/MECPlatooningProviderApp.h"
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
-#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerSample.h"
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
