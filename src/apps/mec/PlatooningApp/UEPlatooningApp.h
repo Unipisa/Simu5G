@@ -41,6 +41,7 @@ class UEPlatooningApp: public cSimpleModule
 
     int joinRequestPacketSize_;
     int leaveRequestPacketSize_;
+    int controllerIndex_;
 
     // DeviceApp info
     int localPort_;

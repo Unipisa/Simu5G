@@ -68,6 +68,7 @@ class MECPlatooningProviderApp : public MecAppBase
     PlatoonSelectionBase* platoonSelection_;
 
     // index to be assigned to the next controller
+    // (used for controllers created automatically, which have index >= 1000)
     int nextControllerIndex_;
 
     // FIFO queue with the platoon index id of the pending requests

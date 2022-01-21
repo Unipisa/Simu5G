@@ -79,7 +79,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::Coord position,
     newVehicleInfo.setUeAddress(ueAddress);
     membersInfo_[mecAppId] = newVehicleInfo;
 
-    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to the platoon" << endl;
+    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to platoon " << index_ << endl;
     return true;
 }
 
@@ -88,7 +88,7 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     PlatoonMembersInfo::iterator it = membersInfo_.find(mecAppId);
     if (it == membersInfo_.end())
     {
-        EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] was not part of this platoon" << endl;
+        EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] was not part of platoon " << index_ << endl;
         return false;
     }
 
@@ -112,7 +112,7 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
         mecPlatooningProviderApp_->stopTimer(index_, PLATOON_CONTROL_TIMER);
     }
 
-    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from the platoon" << endl;
+    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from platoon " << index_ << endl;
     return true;
 }
 

@@ -51,6 +51,10 @@ void UEPlatooningApp::initialize(int stage)
     //retrieve parameters
     joinRequestPacketSize_ = par("joinRequestPacketSize");
     leaveRequestPacketSize_ = par("leaveRequestPacketSize");
+    controllerIndex_ = par("controllerIndex");
+    if (controllerIndex_ >= 1000)
+        throw cRuntimeError("UEPlatooningApp::initialize - controller index %d is not valid. Indexes >= 1000 are reserved", controllerIndex_);
+
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
 
@@ -124,7 +128,6 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
         inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
 
         inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-        int port = packet->getTag<L4PortInd>()->getSrcPort();
 
         /*
          * From Device app
@@ -266,7 +269,7 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     inet::Packet* pkt = new inet::Packet("PlatooningJoinPacket");
     auto joinReq = inet::makeShared<PlatooningJoinPacket>();
     joinReq->setType(JOIN_REQUEST);
-    joinReq->setControllerIndex(-1);   // TODO -1 means attach to any available platoon for this UE
+    joinReq->setControllerIndex(controllerIndex_);
     joinReq->setDirection(mobility->getDirection());
     joinReq->setLastPosition(mobility->getCurrentPosition());   // TODO this should be retrieved by the MecPlatooningConsumerApp via the Location Service
     joinReq->setChunkLength(inet::B(joinRequestPacketSize_));

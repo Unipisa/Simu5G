@@ -41,6 +41,10 @@ simple UEPlatooningApp like IApp
         double joinTime @unit("s") = default(-1s); 
         double leaveTime @unit("s") = default(119s); 
         
+        // the index of the platoon the UE wants to join. It must be < 1000
+        // if -1, the MEC will try to find the best platoon 
+        int controllerIndex = default(-1);
+        
         string mecAppName = default("MECPlatooningApp");
         
         string interfaceTableModule;

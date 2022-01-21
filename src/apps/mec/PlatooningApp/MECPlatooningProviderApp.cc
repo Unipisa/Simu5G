@@ -33,7 +33,7 @@ using namespace omnetpp;
 MECPlatooningProviderApp::MECPlatooningProviderApp(): MecAppBase()
 {
     platoonSelection_ = nullptr;
-    nextControllerIndex_ = 0;
+    nextControllerIndex_ = 1000;
 }
 
 MECPlatooningProviderApp::~MECPlatooningProviderApp()
@@ -316,6 +316,7 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
     auto joinReq = packet->removeAtFront<PlatooningJoinPacket>();
     int mecAppId = joinReq->getMecAppId();
     inet::Coord position = joinReq->getLastPosition();
+    inet::Coord direction = joinReq->getDirection();
 
     EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - Received join request from MEC App " << mecAppId << endl;
 
@@ -323,19 +324,14 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
     int selectedPlatoon = joinReq->getControllerIndex();
     if (joinReq->getControllerIndex() == -1)
     {
-        // the UE has not explicitly selected a platoon
-        inet::Coord direction = joinReq->getDirection();
-
+        // the UE did not specify the controller index explicitly
         // find the most suitable platoonController for this new request
         selectedPlatoon = platoonSelection_->findBestPlatoon(platoonControllers_, position, direction);
         if (selectedPlatoon < 0)
         {
-            // if no active platoon managers can be used, create one
+            // no platoons found
+            // select the index to be assign to the new controller
             selectedPlatoon = nextControllerIndex_++;
-            platoonController = new RajamaniPlatoonController(this, selectedPlatoon, 0.1, 0.1); // TODO select the controller and set periods
-            platoonController->setDirection(direction);
-            platoonControllers_[selectedPlatoon] = platoonController;
-            EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;
         }
     }
 
@@ -345,7 +341,14 @@ void MECPlatooningProviderApp::handleJoinPlatoonRequest(cMessage* msg)
         EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to platoon " << selectedPlatoon << endl;
     }
     else
-        throw cRuntimeError("MECPlatooningProviderApp::handleJoinPlatoonRequest - invalid platoon manager index[%d]\n", selectedPlatoon);
+    {
+        // if no active platoon controller can be used, create one
+        platoonController = new RajamaniPlatoonController(this, selectedPlatoon, 0.1, 0.1); // TODO select the controller and set periods
+        platoonController->setDirection(direction);
+        platoonControllers_[selectedPlatoon] = platoonController;
+        EV << "MECPlatooningProviderApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << selectedPlatoon << " - dir[" << direction << "]" << endl;
+
+    }
 
     // add the member to the identified platoonController
     bool success = platoonController->addPlatoonMember(mecAppId, position, joinReq->getUeAddress());
@@ -485,6 +488,8 @@ void MECPlatooningProviderApp::handleControlTimer(ControlTimer* ctrlTimer)
 {
     int controllerIndex = ctrlTimer->getControllerIndex();
 
+    EV << "MECPlatooningProviderApp::handleControlTimer - Control platoon with index " << controllerIndex << endl;
+
     if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
         throw cRuntimeError("MECPlatooningProviderApp::handleControlTimer - controller with index %d not found", controllerIndex);
 
@@ -534,6 +539,8 @@ void MECPlatooningProviderApp::handleControlTimer(ControlTimer* ctrlTimer)
 void MECPlatooningProviderApp::handleUpdatePositionTimer(UpdatePositionTimer* posTimer)
 {
     int controllerIndex = posTimer->getControllerIndex();
+
+    EV << "MECPlatooningProviderApp::handleUpdatePositionTimer - Request position updates for platoon with index " << controllerIndex << endl;
 
     if (platoonControllers_.find(controllerIndex) == platoonControllers_.end())
         throw cRuntimeError("MECPlatooningProviderApp::handleUpdatePositionTimer - controller with index %d not found", controllerIndex);
