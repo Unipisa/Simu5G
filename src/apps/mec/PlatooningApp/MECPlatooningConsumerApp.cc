@@ -107,7 +107,7 @@ void MECPlatooningConsumerApp::handleSelfMessage(cMessage *msg)
     delete msg;
 }
 
-void MECPlatooningConsumerApp::handleMp1Message()
+void MECPlatooningConsumerApp::handleMp1Message(int connId)
 {
     EV << "MECPlatooningConsumerApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
@@ -129,7 +129,7 @@ void MECPlatooningConsumerApp::handleMp1Message()
                     locationServicePort_ = endPoint["port"];
 
                     // once we obtained the endpoint of the Location Service, establish a connection with it
-                    connect(&serviceSocket_, locationServiceAddress_, locationServicePort_);
+                    //connect(&serviceSocket_, locationServiceAddress_, locationServicePort_);
                 }
             }
             else
@@ -149,7 +149,11 @@ void MECPlatooningConsumerApp::handleMp1Message()
 
 }
 
-void MECPlatooningConsumerApp::handleServiceMessage()
+void MECPlatooningConsumerApp::handleHttpMessage(int connId)
+{
+}
+
+void MECPlatooningConsumerApp::handleServiceMessage(int connId)
 {
     if(serviceHttpMessage->getType() == RESPONSE)
     {
@@ -423,54 +427,54 @@ void MECPlatooningConsumerApp::handlePlatoonCommand(cMessage* msg)
 
 void MECPlatooningConsumerApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
-    {
-        EV << "MECPlatooningConsumerApp::established - Mp1Socket"<< endl;
-
-        // once the connection with the Service Registry has been established, obtain the
-        // endPoint (address+port) of the Location Service
-        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
-
-        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
-    }
-    else if (connId == serviceSocket_.getSocketId())
-    {
-        EV << "MECPlatooningConsumerApp::established - serviceSocket"<< endl;
-
-        //sendGETRequest
-
-
-        // here, the connection with the Location Service has been established
-        // TODO how to distinguish the service in case this app uses more than one MEC service?
-    }
-    else
-    {
-        throw cRuntimeError("MECPlatooningConsumerApp::socketEstablished - Socket %d not recognized", connId);
-    }
+//    if(connId == mp1Socket_.getSocketId())
+//    {
+//        EV << "MECPlatooningConsumerApp::established - Mp1Socket"<< endl;
+//
+//        // once the connection with the Service Registry has been established, obtain the
+//        // endPoint (address+port) of the Location Service
+//        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
+//        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+//
+//        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+//    }
+//    else if (connId == serviceSocket_.getSocketId())
+//    {
+//        EV << "MECPlatooningConsumerApp::established - serviceSocket"<< endl;
+//
+//        //sendGETRequest
+//
+//
+//        // here, the connection with the Location Service has been established
+//        // TODO how to distinguish the service in case this app uses more than one MEC service?
+//    }
+//    else
+//    {
+//        throw cRuntimeError("MECPlatooningConsumerApp::socketEstablished - Socket %d not recognized", connId);
+//    }
 }
 
 void MECPlatooningConsumerApp::requestLocation()
 {
-    //check if the ueAppAddress is specified
-    if(ueAppAddress.isUnspecified())
-    {
-        EV << "MECPlatooningConsumerApp::requestLocation(): The IP address of the UE is unknown" << endl;
-        return;
-    }
-
-    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
-    {
-        EV << "MECPlatooningConsumerApp::requestLocation(): send request to the Location Service" << endl;
-        std::stringstream uri;
-        uri << "/example/location/v2/queries/users?address=acr:" << ueAppAddress.str();
-        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
-    }
-    else
-    {
-        EV << "MECPlatooningConsumerApp::requestLocation(): Location Service not connected" << endl;
-    }
+//    //check if the ueAppAddress is specified
+//    if(ueAppAddress.isUnspecified())
+//    {
+//        EV << "MECPlatooningConsumerApp::requestLocation(): The IP address of the UE is unknown" << endl;
+//        return;
+//    }
+//
+//    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+//    {
+//        EV << "MECPlatooningConsumerApp::requestLocation(): send request to the Location Service" << endl;
+//        std::stringstream uri;
+//        uri << "/example/location/v2/queries/users?address=acr:" << ueAppAddress.str();
+//        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+//        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
+//    }
+//    else
+//    {
+//        EV << "MECPlatooningConsumerApp::requestLocation(): Location Service not connected" << endl;
+//    }
 }
 
 

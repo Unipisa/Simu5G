@@ -66,10 +66,11 @@ class MECPlatooningConsumerApp : public MecAppBase
     virtual void handleSelfMessage(cMessage *msg) override;
 
     // @brief handler for data received from the service registry
-    virtual void handleMp1Message() override;
+    virtual void handleMp1Message(int connId) override;
 
     // @brief handler for data received from a MEC service
-    virtual void handleServiceMessage() override;
+    virtual void handleServiceMessage(int connId) override;
+    virtual void handleHttpMessage(int connId) override;
 
     // @brief multiplexer for data received from a Client app
     virtual void handleUeMessage(omnetpp::cMessage *msg) override;

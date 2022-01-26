@@ -33,19 +33,18 @@ using namespace omnetpp;
 class PlatoonControllerBase;
 class PlatoonSelectionBase;
 
-typedef struct
-{
-    inet::L3Address address;
-    int port;
-} MECAppEndpoint;
-
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
+
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, double> CommandList;
 
 class MECPlatooningProducerApp : public MecAppBase
 {
     friend class PlatoonControllerBase;
+
+     inet::TcpSocket *mp1Socket_;
+     inet::TcpSocket *serviceSocket_;
+
 
     // UDP socket to communicate with the MecConsumerApps of the UEs
     inet::UdpSocket platooningConsumerAppsSocket;
@@ -62,7 +61,7 @@ class MECPlatooningProducerApp : public MecAppBase
     int locationServicePort_;
 
     // for each registered MEC app, stores its connection endpoint info
-    std::map<int, MECAppEndpoint> mecAppEndpoint_;
+    std::map<int, IPEndPoint> mecAppEndpoint_;
 
     // reference to the class running the platoon selection algorithm
     PlatoonSelectionBase* platoonSelection_;
@@ -90,13 +89,14 @@ class MECPlatooningProducerApp : public MecAppBase
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
     virtual void handleSelfMessage(cMessage *msg) override;
+    virtual void handleHttpMessage(int connId) override;
     virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
 
     // @brief handler for data received from the service registry
-    virtual void handleMp1Message() override;
+    virtual void handleMp1Message(int connId) override;
 
     // @brief handler for data received from a MEC service
-    virtual void handleServiceMessage() override;
+    virtual void handleServiceMessage(int connId) override;
 
     // @brief handler for registration request from a MEC platooning app
     void handleRegistrationRequest(cMessage* msg);

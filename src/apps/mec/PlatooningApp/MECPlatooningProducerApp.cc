@@ -63,7 +63,10 @@ void MECPlatooningProducerApp::initialize(int stage)
 
    // connect with the service registry
    EV << "MECPlatooningProducerApp::initialize - Initialize connection with the Service Registry via Mp1" << endl;
-   connect(&mp1Socket_, mp1Address, mp1Port);
+
+   mp1Socket_ = addNewSocket();
+   serviceSocket_ =  addNewSocket();
+   connect(mp1Socket_, mp1Address, mp1Port);
 }
 
 void MECPlatooningProducerApp::handleMessage(cMessage *msg)
@@ -143,8 +146,26 @@ void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
     }
 }
 
-void MECPlatooningProducerApp::handleMp1Message()
+void MECPlatooningProducerApp::handleHttpMessage(int connId)
 {
+    if (connId == mp1Socket_->getSocketId())
+    {
+        handleMp1Message(connId);
+    }
+    else if (connId == serviceSocket_->getSocketId())
+    {
+        handleServiceMessage(connId);
+    }
+    else
+    {
+        throw cRuntimeError("Socket with connId [%d] is not present in thi application!", connId);
+    }
+}
+void MECPlatooningProducerApp::handleMp1Message(int connId)
+{
+    // for now I only have just one Service Registry
+    HttpMessageStatus* msgStatus = (HttpMessageStatus*)mp1Socket_->getUserData();
+    mp1HttpMessage = msgStatus->currentMessage;
     EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
       try
@@ -165,7 +186,12 @@ void MECPlatooningProducerApp::handleMp1Message()
                       locationServicePort_ = endPoint["port"];
 
                       // once we obtained the endpoint of the Location Service, establish a connection with it
-                      connect(&serviceSocket_, locationServiceAddress_, locationServicePort_);
+                      connect(serviceSocket_, locationServiceAddress_, locationServicePort_);
+                      // TODO
+                      /* organize multi location services in multi mec hosts.
+                       * read the json with the array of services e create the array of sockets or just
+                       * add them to the map.
+                       */
                   }
               }
               else
@@ -184,8 +210,11 @@ void MECPlatooningProducerApp::handleMp1Message()
       }
 }
 
-void MECPlatooningProducerApp::handleServiceMessage()
+void MECPlatooningProducerApp::handleServiceMessage(int connId)
 {
+    // for now I only have just one Location service
+    HttpMessageStatus* msgStatus = (HttpMessageStatus*)serviceSocket_->getUserData();
+    serviceHttpMessage = msgStatus->currentMessage;
         if(serviceHttpMessage->getType() == RESPONSE)
         {
             // If the request is associated to a controller no more available, just discard
@@ -579,14 +608,14 @@ void MECPlatooningProducerApp::requirePlatoonLocations(int controllerIndex, cons
 void MECPlatooningProducerApp::sendGetRequest(const std::string& ues)
 {
     //check if the ueAppAddress is specified
-    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+    if(serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
     {
         EV << "MECPlatooningProducerApp::sendGetRequest(): send request to the Location Service" << endl;
         std::stringstream uri;
         uri << "/example/location/v2/queries/users?address=" << ues;
         EV << "MECPlatooningProducerApp::requestLocation(): uri: "<< uri.str() << endl;
-        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
+        std::string host = serviceSocket_->getRemoteAddress().str()+":"+std::to_string(serviceSocket_->getRemotePort());
+        Http::sendGetRequest(serviceSocket_, host.c_str(), uri.str().c_str());
     }
     else
     {
@@ -596,18 +625,21 @@ void MECPlatooningProducerApp::sendGetRequest(const std::string& ues)
 
 void MECPlatooningProducerApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
+    EV <<"MECPlatooningProducerApp::established - connId ["<< connId << "]" << endl;
+
+
+    if(connId == mp1Socket_->getSocketId())
     {
         EV << "MECPlatooningProducerApp::established - Mp1Socket"<< endl;
 
         // once the connection with the Service Registry has been established, obtain the
         // endPoint (address+port) of the Location Service
         const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+        std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
 
-        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+        Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
     }
-    else if (connId == serviceSocket_.getSocketId())
+    else if (connId == serviceSocket_->getSocketId())
     {
         EV << "MECPlatooningProducerApp::established - Location Service"<< endl;
     }
