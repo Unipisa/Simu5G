@@ -1,0 +1,18 @@
+{
+"numUEs" : 1,
+"uePos": [
+    {
+        "x" : 350,
+        "y" : 400
+    }
+],
+"ueTraffic": [
+    {
+        "packetSize" : 200,
+        "sendPeriod" : 0.1
+    }
+],
+"maxProc" : 8,
+"config" : ["Policy1","Policy2","Policy3"],
+"repetitions" : 3
+}
