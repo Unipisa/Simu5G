@@ -68,6 +68,7 @@ class SimulationResource : public http_resource
     SimConfigResource* simConfigRes_;
     
     void prepareSimulation();
+    void runSimulation();
 
   public:
 

@@ -168,21 +168,18 @@ void SimulationResource::bind(ParametersResource* paramRes, SimConfigResource* s
 
 const std::shared_ptr<http_response> SimulationResource::render_GET(const http_request& req)
 {
-     string responseString;
+    string responseString = "OK\n";
 
-     if (req.get_arg("start") != "")
-     {
-         prepareSimulation();
-         responseString = "done\n";         
-     }
-     else
-         responseString = "start key not found\n";
+    prepareSimulation();
+    runSimulation();
 
-     return std::shared_ptr<http_response>(new string_response(responseString.c_str()));
+    return std::shared_ptr<http_response>(new string_response(responseString.c_str()));
 }
 
 void SimulationResource::prepareSimulation()
 {
+    cout << "--- Now preparing simulation campaign ---" << endl;
+
     ofstream outScenarioConf;
     ofstream outRunScript;
 
@@ -219,7 +216,7 @@ void SimulationResource::prepareSimulation()
 
 
     // write run script
-    outRunScript.open("run_dt.sh");
+    outRunScript.open("run_dt.sh");  // TODO maybe you need to make sure that execution permission is assigned
 
     outRunScript << "#!/bin/bash" << endl << endl;
     outRunScript << WARN_MSG << endl << endl;
@@ -237,9 +234,24 @@ void SimulationResource::prepareSimulation()
                      << " opp_run -l $SIMU5G_SRC/simu5g "
                      << "-n $COMMAND_LINE_OPTIONS "
                      << "-c " << config.at(i) << " "
-                     << "-r " << runs << endl;
+                     << "-r " << runs << " ";
+        if (i == 0)
+            outRunScript << "> sim_log" << endl;
+        else
+            outRunScript << ">> sim_log" << endl;
     }
+
+//    outRunScript << endl << "printf \"end\"" << endl;
+
     outRunScript.close();
+}
 
+void SimulationResource::runSimulation()
+{
+    cout << "--- Now running simulation campaign... ";
+    cout.flush();
 
+    FILE* fp = popen("./run_dt.sh","r");
+    fclose(fp);
+    cout << "DONE ---" << endl;
 }
