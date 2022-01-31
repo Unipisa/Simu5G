@@ -69,6 +69,7 @@ class SimulationResource : public http_resource
     
     void prepareSimulation();
     void runSimulation();
+    string_response* parseResults(const std::vector<string>& metrics);
 
   public:
 

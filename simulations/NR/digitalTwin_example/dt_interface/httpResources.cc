@@ -18,6 +18,7 @@ const std::shared_ptr<http_response> ParametersResource::render_POST(const http_
      {
          // we received a file
          parseParametersFromJson(req.get_arg("document"));
+         cout << "--- Received new simulation parameters from " << req.get_requestor() << endl;
      }
      return std::shared_ptr<http_response>(new string_response("Parameters are set!\n"));
 }
@@ -96,6 +97,7 @@ const std::shared_ptr<http_response> SimConfigResource::render_POST(const http_r
      {
          // we received a file
          parseSimConfigFromJson(req.get_arg("document"));
+         cout << "--- Received new simulation configurations from " << req.get_requestor() << endl;
      }
      return std::shared_ptr<http_response>(new string_response("Sim configs are set!\n"));
 }
@@ -168,18 +170,32 @@ void SimulationResource::bind(ParametersResource* paramRes, SimConfigResource* s
 
 const std::shared_ptr<http_response> SimulationResource::render_GET(const http_request& req)
 {
-    string responseString = "OK\n";
+    cout << "--- Received request to start a new simulation campaign from " << req.get_requestor() << endl;
 
+    // get requested metrics
+    cout << "Requested metrics:" << endl;
+    std::vector<string> metrics;
+    const std::map<string, string, http::arg_comparator> args = req.get_args();
+    for (auto it = args.begin(); it != args.end(); ++it)
+    {   
+        cout << "\t" << it->first << endl;
+        metrics.push_back(it->first);  // TODO check if the metric is listed among the available ones (report some error or null value in the response)
+    }
+
+    // prepare and run simulation campaign
     prepareSimulation();
     runSimulation();
 
-    return std::shared_ptr<http_response>(new string_response(responseString.c_str()));
+    // extract metrics and build the JSON-formatted response 
+    string_response* response = parseResults(metrics);
+
+    cout << "--- Response sent to " << req.get_requestor() << endl;
+    cout << "-----------------------------------------------------" << endl << endl;
+    return std::shared_ptr<http_response>(response);
 }
 
 void SimulationResource::prepareSimulation()
 {
-    cout << "--- Now preparing simulation campaign ---" << endl;
-
     ofstream outScenarioConf;
     ofstream outRunScript;
 
@@ -241,8 +257,6 @@ void SimulationResource::prepareSimulation()
             outRunScript << ">> sim_log" << endl;
     }
 
-//    outRunScript << endl << "printf \"end\"" << endl;
-
     outRunScript.close();
 }
 
@@ -251,7 +265,60 @@ void SimulationResource::runSimulation()
     cout << "--- Now running simulation campaign... ";
     cout.flush();
 
+    // run simulations
     FILE* fp = popen("./run_dt.sh","r");
     fclose(fp);
+
     cout << "DONE ---" << endl;
+}
+
+string_response* SimulationResource::parseResults(const std::vector<string>& metrics)
+{
+    nlohmann::json jResp;
+
+    cout << "--- Now parsing simulation results... ";
+    cout.flush();
+
+    string stat[4] = {"mean", "variance", "stddev", "confidenceinterval"};
+    stringstream ss;
+    char result[64];
+    std::vector<string>& config = simConfigRes_->getConfigs();
+    for (unsigned int i = 0; i < config.size(); i++)
+    {
+        ss.str("");
+        ss << "./scripts/extractStats.sh " << config.at(i);
+        for (unsigned int j = 0; j < metrics.size(); j++)
+        {
+            ss << " " << metrics[j];
+
+            // run script for parsing the given metric
+            FILE* fp = popen(ss.str().c_str(),"r");
+   
+            // read from the pipe and build JSON response
+            nlohmann::json obj_primary;
+            for (unsigned int i = 0; i < 4; i++)
+            {
+                fgets(result,64,fp);
+                result[strlen(result)-1] = '\0';
+                obj_primary[stat[i]] = result;
+            }
+            jResp[metrics[j].c_str()][config[i].c_str()]["primaryCell"] = obj_primary;
+
+            nlohmann::json obj_secondary;
+            for (unsigned int i = 0; i < 4; i++)
+            {
+                fgets(result,64,fp);
+                result[strlen(result)-1] = '\0';
+                obj_secondary[stat[i]] = result;
+            }
+            jResp[metrics[j].c_str()][config[i].c_str()]["secondaryCell"] = obj_secondary;
+
+            fclose(fp);
+        }
+    }
+
+    cout << "DONE ---" << endl << endl;
+
+    string_response* response = new string_response(jResp.dump(4).c_str());
+    return response;
 }

@@ -3,7 +3,8 @@
 
 int main(int argc, char* argv[])
 {
-    webserver ws = create_webserver(8080);
+    const int portNumber = 8080;
+    webserver ws = create_webserver(portNumber);
 
     ParametersResource paramRes;
     SimConfigResource simConfigRes;
@@ -13,6 +14,8 @@ int main(int argc, char* argv[])
     ws.register_resource("/parameters",&paramRes);
     ws.register_resource("/simconfig",&simConfigRes);
     ws.register_resource("/sim",&simRes);
+
+    cout << "- Listening on port " << portNumber << endl;
 
     ws.start(true);
 
