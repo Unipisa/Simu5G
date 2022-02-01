@@ -64,16 +64,21 @@ class SimConfigResource : public http_resource
 
 class SimulationResource : public http_resource
 {
+    std::vector<string> availableMetrics_;
+
     ParametersResource* paramRes_;
     SimConfigResource* simConfigRes_;
     
+    string_response* buildAvailableMetricsResponse();
+    bool isMetricAvailable(string metric);
+
     void prepareSimulation();
     void runSimulation();
     string_response* parseResults(const std::vector<string>& metrics);
 
   public:
 
+    SimulationResource();
     void bind(ParametersResource* paramRes, SimConfigResource* simConfigRes);
-
     const std::shared_ptr<http_response> render_GET(const http_request& req);
 };

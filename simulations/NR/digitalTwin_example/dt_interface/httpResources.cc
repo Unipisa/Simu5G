@@ -162,33 +162,75 @@ void SimConfigResource::parseSimConfigFromJson(string content)
     }
 }
 
+
+SimulationResource::SimulationResource()  
+{
+    // set available metrics
+    availableMetrics_.push_back("macCellThroughputDl");
+}
+
 void SimulationResource::bind(ParametersResource* paramRes, SimConfigResource* simConfigRes)
 {
     paramRes_ = paramRes;
     simConfigRes_ = simConfigRes;
 }
 
+string_response* SimulationResource::buildAvailableMetricsResponse()
+{
+    nlohmann::json jResp;
+
+    for (auto it = availableMetrics_.begin(); it != availableMetrics_.end(); ++it)
+        jResp.push_back(*it);
+
+    string_response* response = new string_response(jResp.dump(4).c_str());
+    return response;
+}
+
+bool SimulationResource::isMetricAvailable(string metric)
+{
+   for (auto it = availableMetrics_.begin(); it != availableMetrics_.end(); ++it)
+   {
+       if (metric == *it)
+           return true;
+   }
+   return false;
+}
+
 const std::shared_ptr<http_response> SimulationResource::render_GET(const http_request& req)
 {
     cout << "--- Received request to start a new simulation campaign from " << req.get_requestor() << endl;
 
+    string_response* response;
+    
     // get requested metrics
     cout << "Requested metrics:" << endl;
     std::vector<string> metrics;
     const std::map<string, string, http::arg_comparator> args = req.get_args();
-    for (auto it = args.begin(); it != args.end(); ++it)
-    {   
-        cout << "\t" << it->first << endl;
-        metrics.push_back(it->first);  // TODO check if the metric is listed among the available ones (report some error or null value in the response)
+
+    if (args.empty())
+    {
+        // returns the list of available resources
+        response = buildAvailableMetricsResponse();
     }
+    else
+    {
+        for (auto it = args.begin(); it != args.end(); ++it)
+        {    
+            cout << "\t" << it->first << endl;
 
-    // prepare and run simulation campaign
-    prepareSimulation();
-    runSimulation();
+            // check if the metric is listed among the available ones (report some error or null value in the response)
+            if (isMetricAvailable(it->first))
+                metrics.push_back(it->first);            
+        }
 
-    // extract metrics and build the JSON-formatted response 
-    string_response* response = parseResults(metrics);
+        // prepare and run simulation campaign
+        prepareSimulation();
+        runSimulation();
 
+        // extract metrics and build the JSON-formatted response 
+        response = parseResults(metrics);
+
+    }
     cout << "--- Response sent to " << req.get_requestor() << endl;
     cout << "-----------------------------------------------------" << endl << endl;
     return std::shared_ptr<http_response>(response);
