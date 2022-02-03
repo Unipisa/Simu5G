@@ -35,6 +35,9 @@ LteMacBase::LteMacBase()
     totalHarqErrorRateDlSum_ = totalHarqErrorRateDlCount_ = 0;
     totalHarqErrorRateUlSum_ = totalHarqErrorRateUlCount_ = 0;
     packetFlowManager_ = nullptr;
+
+    totalCellRcvdBytes_[DL] = 0;
+    totalCellRcvdBytes_[UL] = 0;
 }
 
 LteMacBase::~LteMacBase()

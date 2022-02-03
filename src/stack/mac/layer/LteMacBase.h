@@ -71,6 +71,8 @@ class LteMacBase : public omnetpp::cSimpleModule
     ::omnetpp::simsignal_t sentPacketToLowerLayer;
     ::omnetpp::simsignal_t measuredItbs_;
 
+    unsigned int totalCellRcvdBytes_[2];
+
     /*
      * Data Structures
      */
@@ -180,6 +182,8 @@ class LteMacBase : public omnetpp::cSimpleModule
      * Deletes MAC Buffers
      */
     virtual ~LteMacBase();
+
+    unsigned int* getTotalCellRcvdBytes(Direction dir) { return &totalCellRcvdBytes_[dir]; }
 
     /**
      * deleteQueues() must be called on handover

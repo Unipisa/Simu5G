@@ -48,7 +48,7 @@ class LteHarqBufferRx
     bool isMulticast_;
 
     //Statistics
-    static unsigned int totalCellRcvdBytes_;
+    unsigned int* totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_ = 0;
     omnetpp::simsignal_t macDelay_;
     omnetpp::simsignal_t macCellThroughput_;

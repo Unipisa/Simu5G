@@ -16,8 +16,6 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
-unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
-
 using namespace omnetpp;
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
@@ -40,6 +38,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
     {
         nodeB_ = macOwner_;
+        totalCellRcvdBytes_ = check_and_cast<LteMacBase*>(nodeB_)->getTotalCellRcvdBytes(UL);
         macDelay_ = macUe_->registerSignal("macDelayUl");
         macThroughput_ = getMacByMacNodeId(nodeId_)->registerSignal("macThroughputUl");
         macCellThroughput_ = macOwner_->registerSignal("macCellThroughputUl");
@@ -47,6 +46,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
     else // this is a UE
     {
         nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
+        totalCellRcvdBytes_ = check_and_cast<LteMacBase*>(nodeB_)->getTotalCellRcvdBytes(DL);
         macThroughput_ = macOwner_->registerSignal("macThroughputDl");
         macCellThroughput_ = nodeB_->registerSignal("macCellThroughputDl");
         macDelay_ = macOwner_->registerSignal("macDelayDl");
@@ -145,12 +145,12 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 macUe_->emit(macDelay_, (NOW - pktTemp->getCreationTime()).dbl());
 
                 // Calculate Throughput by sending the number of bits for this packet
-                totalCellRcvdBytes_ += size;
+                (*totalCellRcvdBytes_) += size;
                 totalRcvdBytes_ += size;
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 double tputSample = (double)totalRcvdBytes_ / den;
-                double cellTputSample = (double)totalCellRcvdBytes_ / den;
+                double cellTputSample = (double)(*totalCellRcvdBytes_) / den;
 
                 // emit throughput statistics
                 if (den > 0)

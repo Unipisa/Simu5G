@@ -40,6 +40,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacN
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
     {
         nodeB_ = macOwner_;
+        totalCellRcvdBytes_ = macOwner_->getTotalCellRcvdBytes(UL);
         macDelay_ = macOwner_->registerSignal("macDelayUl");
         macThroughput_ = getMacByMacNodeId(nodeId_)->registerSignal("macThroughputUl");
         macCellThroughput_ = macOwner_->registerSignal("macCellThroughputUl");
@@ -50,6 +51,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacN
     else // this is a UE
     {
         nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
+        totalCellRcvdBytes_ = macOwner_->getTotalCellRcvdBytes(DL);
         macThroughput_ = macOwner_->registerSignal("macThroughputDl");
         macCellThroughput_ = nodeB_->registerSignal("macCellThroughputDl");
         macDelay_ = macOwner_->registerSignal("macDelayDl");
@@ -164,12 +166,12 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
 
                 // Calculate Throughput by sending the number of bits for this packet
                 totalRcvdBytes_ += size;
-                totalCellRcvdBytes_ += size;
+                (*totalCellRcvdBytes_) += size;
 
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 double tputSample = (double)totalRcvdBytes_ / den;
-                double cellTputSample = (double)totalCellRcvdBytes_ / den;
+                double cellTputSample = (double)(*totalCellRcvdBytes_) / den;
 
                 // emit throughput statistics
                 if (info->getDirection() == D2D)
