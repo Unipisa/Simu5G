@@ -12,24 +12,47 @@
 
 import nodes.mec.MECPlatform.MECPackets;
 import inet.networklayer.common.L3Address;
+import inet.common.INETDefs;
+import inet.common.packet.chunk.Chunk;
 
 
 cplusplus {{
     #include "inet/common/geometry/common/Coord.h"
     using namespace inet;
+    #include "nodes/mec/utils/httpUtils/json.hpp"
+	using namespace nlohmann;
+	#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+	
+	#include <vector>
+	#include <map>
+	
+	typedef std::map<int, std::vector<PlatoonVehicleInfo *>> Platoons;
 }};
+
+class Platoons {
+    @existingClass;
+};
+
+class PlatoonVehicleInfo {
+    @existingClass;
+}
 
 class Coord {
     @existingClass;
 }
 
-class PlatooningAppPacket extends MECPacket
+class json {
+    @existingClass;
+}
+
+class PlatooningAppPacket extends inet::FieldsChunk 
 {
+    int type;
     int mecAppId;
 }
 
 
-// === Packets between UEPlatooningApp and MECPlatooningApp/MECPlatooningProviderApp === //
+// === Packets between UEPlatooningApp and MECPlatooningApp/MECPlatooningProducerApp === //
 
 class PlatooningJoinPacket extends PlatooningAppPacket
 {       
@@ -52,9 +75,10 @@ class PlatooningLeavePacket extends PlatooningAppPacket
 {       
     // --- request --- //
     int controllerIndex;  // index of the controller instance
-    
+	int producerAppId;    // id of the producer app (in case of federation)
+	
     // --- response --- //
-    bool response;    // flag set by the MEC app with the ACK/NACK to leave a platoon
+    bool response;        // flag set by the MEC app with the ACK/NACK to leave a platoon
 
 }
 
@@ -64,11 +88,32 @@ class PlatooningInfoPacket extends PlatooningAppPacket
 }
 
 
-
-// === Packets between MECPlatooningApp and MECPlatooningProviderApp === //
+// === Packets between MECPlatooningApp and MECPlatooningProducerApp === //
 
 class PlatooningRegistrationPacket extends PlatooningAppPacket
 {
     //string mecAppAddress;
     //int mecAppPort;
+}
+
+
+// === Packets between MECProducerApps === //
+
+class PlatooningAvailablePlatoonsPacket extends PlatooningAppPacket
+{
+    int requestId;
+    int producerAppId;
+	Platoons platoons;
+}
+
+
+
+class PlatooningAddMemberPacket extends PlatooningAppPacket
+{
+    inet::L3Address ueAddress; 
+    Coord position; 
+    int producerAppId;
+    //int mecAppId; already in the base packet
+    int platoonIndex; 
+    bool response;
 }
