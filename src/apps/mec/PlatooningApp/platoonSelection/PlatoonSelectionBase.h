@@ -20,7 +20,10 @@ using namespace omnetpp;
 
 class MECPlatooningProducerApp;
 class PlatoonControllerBase;
+
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
+typedef std::map<int, std::map<int, std::vector<PlatoonVehicleInfo *>> > GlobalAvailablePlatoons;
+
 
 /*
  * PlatoonSelectionBase
@@ -44,6 +47,8 @@ class PlatoonSelectionBase
     // this function must return the index of the selected platoon, -1 if no
     // platoons are available
     virtual int findBestPlatoon(const ControllerMap& activeControllers, inet::Coord position, inet::Coord direction) = 0;
+    virtual PlatoonIndex findBestPlatoon(const int localProducerApp, const ControllerMap& activeControllers, const GlobalAvailablePlatoons& globalControllers, inet::Coord position, inet::Coord direction) = 0;
+
 
   public:
     PlatoonSelectionBase(){}

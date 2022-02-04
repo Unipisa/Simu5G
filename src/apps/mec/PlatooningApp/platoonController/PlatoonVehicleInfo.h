@@ -28,6 +28,8 @@ class PlatoonVehicleInfo
 
   protected:
 
+    int mecAppId_;
+    int producerAppId_;
     inet::Coord position_;
     double speed_;
     simtime_t timestamp_;
@@ -56,6 +58,13 @@ class PlatoonVehicleInfo
 
     void setSpeed(double speed) { speed_ = speed; }
     double getSpeed() const { return speed_; }
+
+    void setMecAppId(double mecAppId) { mecAppId_ = mecAppId; }
+    double getMecAppId() const { return mecAppId_; }
+
+    void setProducerAppId(int producerAppId) { producerAppId_ = producerAppId; }
+    int getProducerAppId() const { return producerAppId_; }
+
 
     void setTimestamp(simtime_t timestamp) { timestamp_ = timestamp; }
     simtime_t getTimestamp() const { return timestamp_; }

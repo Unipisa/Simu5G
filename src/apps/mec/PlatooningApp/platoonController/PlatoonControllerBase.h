@@ -17,6 +17,7 @@
 #include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+#include "nodes/mec/utils/httpUtils/json.hpp"
 
 using namespace std;
 using namespace omnetpp;
@@ -74,10 +75,10 @@ class PlatoonControllerBase
     std::list<int> platoonPositions_;
 
     // @brief require the location of the platoon UEs to the mecPlatooningProviderApp
-    std::set<inet::L3Address> getUeAddressList();
+    std::map<int, std::set<inet::L3Address> > getUeAddressList();
 
     // @brief add a new member to the platoon
-    virtual bool addPlatoonMember(int mecAppId, inet::Coord position, inet::L3Address);
+    virtual bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
 
     // @brief remove a member from the platoon
     virtual bool removePlatoonMember(int mecAppId);
@@ -97,6 +98,9 @@ class PlatoonControllerBase
 
     void setTargetSpeed(double speed) { targetSpeed_ = speed; }
     double getTargetSpeed() { return targetSpeed_; }
+
+    nlohmann::json dumpPlatoonToJSON() const;
+    std::vector<PlatoonVehicleInfo *> getPlatoonMembers();
 };
 
 #endif

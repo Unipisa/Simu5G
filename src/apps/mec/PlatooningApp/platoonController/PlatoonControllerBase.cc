@@ -30,7 +30,7 @@ PlatoonControllerBase::~PlatoonControllerBase()
     EV << "PlatoonControllerBase::~PlatoonControllerBase - Destructor called" << endl;
 }
 
-bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::Coord position, inet::L3Address ueAddress)
+bool PlatoonControllerBase::addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address ueAddress)
 {
     if (membersInfo_.empty())
     {
@@ -77,6 +77,8 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, inet::Coord position,
     PlatoonVehicleInfo newVehicleInfo;
     newVehicleInfo.setPosition(position);
     newVehicleInfo.setUeAddress(ueAddress);
+    newVehicleInfo.setMecAppId(mecAppId);
+    newVehicleInfo.setProducerAppId(producerAppId);
     membersInfo_[mecAppId] = newVehicleInfo;
 
     EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to platoon " << index_ << endl;
@@ -116,13 +118,13 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     return true;
 }
 
-std::set<inet::L3Address> PlatoonControllerBase::getUeAddressList()
+std::map<int, std::set<inet::L3Address> > PlatoonControllerBase::getUeAddressList()
 {
-    std::set<inet::L3Address> ueAddresses;
+    std::map<int, std::set<inet::L3Address> > ueAddresses;
     PlatoonMembersInfo::const_iterator it = membersInfo_.begin();
     for(; it != membersInfo_.end(); ++it)
     {
-        ueAddresses.insert(it->second.getUeAddress());
+        ueAddresses[it->second.getProducerAppId()].insert(it->second.getUeAddress());
     }
     EV << "PlatoonControllerBase::getUeAddressList "<< ueAddresses.size() << endl;
 
@@ -154,5 +156,45 @@ void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
 }
 
 
+nlohmann::json PlatoonControllerBase::dumpPlatoonToJSON() const
+{
+    nlohmann::json dumpedPlatoon;
+    nlohmann::json platoonMembers;
+    dumpedPlatoon["targetSpeed"] = targetSpeed_;
+    dumpedPlatoon["direction"]["x"] = direction_.x;
+    dumpedPlatoon["direction"]["y"] = direction_.y;
+    dumpedPlatoon["direction"]["z"] = direction_.z;
+    dumpedPlatoon["minAcceleration"] = minAcceleration_;
+    dumpedPlatoon["maxAcceleration"] = maxAcceleration_;
+    dumpedPlatoon["controlPeriod"] = controlPeriod_;
+    dumpedPlatoon["updatePositionPeriod"] = updatePositionPeriod_;
+    for(const auto& vehiclePos: platoonPositions_)
+    {
+        auto vehicle = membersInfo_.at(vehiclePos);
+        nlohmann::json jsonVehicle;
+        jsonVehicle["id"] = vehiclePos;
+        jsonVehicle["timestamp"] = vehicle.getTimestamp().dbl();
+        jsonVehicle["speed"] = vehicle.getSpeed();
+        Coord pos = vehicle.getPosition();
+        jsonVehicle["position"]["x"] = pos.x;
+        jsonVehicle["position"]["y"] = pos.y;
+        jsonVehicle["position"]["z"] = pos.z;
+        platoonMembers.push_back(jsonVehicle);
+    }
+    nlohmann::json platoonInfo;
+    platoonInfo["platoonInfo"] = dumpedPlatoon;
+    return  platoonInfo;
+}
+
+std::vector<PlatoonVehicleInfo *> PlatoonControllerBase::getPlatoonMembers()
+{
+    std::vector<PlatoonVehicleInfo *> platoons;
+    for(auto& vehicle: membersInfo_)
+    {
+        platoons.push_back(&(vehicle.second));
+    }
+
+    return platoons;
+}
 
 

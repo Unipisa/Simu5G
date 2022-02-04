@@ -45,6 +45,38 @@ int PlatoonSelectionSample::findBestPlatoon(const ControllerMap& activeControlle
     return selectedPlatoon;
 }
 
+PlatoonIndex PlatoonSelectionSample::findBestPlatoon(const int localProducerApp, const ControllerMap& activeControllers, const GlobalAvailablePlatoons& globalControllers, inet::Coord position, inet::Coord direction)
+{
+    EV << "PlatoonSelectionSample::findBestPlatoon - finding the best global platoon for a given UE" << endl;
+    EV << globalControllers.size() << endl;
+    PlatoonIndex platIndex;
+    if(globalControllers.size() == 0)
+    {
+        EV << "PlatoonSelectionSample::findBestPlatoon - there are not other platoons in the federation, choose one from local ones.."<< endl;
+        platIndex.producerApp = localProducerApp;
+        platIndex.platoonIndex = findBestPlatoon(activeControllers, position, direction);
+    }
+    else
+    {
+        for(const auto& p : globalControllers )
+        {
+            EV << "producerApp: " << p.first << endl;
+            for(const auto& pp: p.second)
+            {
+                EV << "platoon index: " << pp.first << endl;
+            }
+        }
+
+        auto it = globalControllers.find(0); //producerApp 0
+        if(it == globalControllers.end())
+            throw cRuntimeError("PlatoonSelectionSample::findBestPlatoon- ERROR");
+        platIndex.producerApp = it->first;
+        platIndex.platoonIndex = 1000;
+        EV << "PlatoonSelectionSample::findBestPlatoon - selected global platoon with index " << platIndex.platoonIndex << endl;
+    }
+
+    return platIndex;
+}
 
 
 
