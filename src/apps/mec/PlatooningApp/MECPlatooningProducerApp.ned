@@ -26,8 +26,10 @@ simple MECPlatooningProducerApp like IMECApp, IApp
         string interfaceTableModule = default("");
         
         int mecAppId;
+        int producerAppId;
         int localUePort = default(5900);
         int platooningConsumerAppsPort = default(5500);
+        int platooningProducerAppsPort = default(8500);
         
         string mp1Address = default("");
         int mp1Port = default(10021);
@@ -41,7 +43,9 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-
+	
+		object federatedProducerApps = default([]);
+		
     gates:
 	  input mePlatformIn;
 	  output mePlatformOut;

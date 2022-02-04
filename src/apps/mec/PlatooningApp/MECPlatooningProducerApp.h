@@ -32,19 +32,26 @@ using namespace omnetpp;
 
 class PlatoonControllerBase;
 class PlatoonSelectionBase;
+class CurrentPlatoonRequestTimer;
+class PlatoonVehicleInfo;
 
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
-
+typedef std::map<int, AppEndpoint> ProducerAppMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, double> CommandList;
+typedef std::map<int, std::map<int, std::vector<PlatoonVehicleInfo *>> > GlobalAvailablePlatoons;
 
 class MECPlatooningProducerApp : public MecAppBase
 {
     friend class PlatoonControllerBase;
 
+    int producerAppId_;
+
      inet::TcpSocket *mp1Socket_;
      inet::TcpSocket *serviceSocket_;
 
+     inet::UdpSocket platooningProducerAppsSocket_; // socket used to communicate with other MecProduderApps
+     int platooningProducerAppsPort;
 
     // UDP socket to communicate with the MecConsumerApps of the UEs
     inet::UdpSocket platooningConsumerAppsSocket;
@@ -60,8 +67,17 @@ class MECPlatooningProducerApp : public MecAppBase
     inet::L3Address locationServiceAddress_;
     int locationServicePort_;
 
-    // for each registered MEC app, stores its connection endpoint info
-    std::map<int, IPEndPoint> mecAppEndpoint_;
+    HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage* mp1HttpMessage;
+
+    // for each registered MEC app, stores its connection endpoint info and the producerApp id where is its platoon
+    std::map<int, ConsumerAppInfo> consumerAppEndpoint_;
+    // this map stores the producerApp id associated with a consumer App managed by a local platoon (useful for the leave hase)
+    std::map<int, int> remoteConsumerAppToProducerApp_;
+
+    // for each PlatoonProducerApp in the federation, stores its connection endpoint info
+    std::map<int, ProducerAppInfo> producerAppEndpoint_;
+
 
     // reference to the class running the platoon selection algorithm
     PlatoonSelectionBase* platoonSelection_;
@@ -70,8 +86,8 @@ class MECPlatooningProducerApp : public MecAppBase
     // (used for controllers created automatically, which have index >= 1000)
     int nextControllerIndex_;
 
-    // FIFO queue with the platoon index id of the pending requests
-    std::queue<int> controllerPendingRequests;
+    // maps of location of the MecProducerApps in other Mes systems
+    ProducerAppMap platooningProducerApps_;
 
     // maps of active platoon managers
     ControllerMap platoonControllers_;
@@ -82,6 +98,12 @@ class MECPlatooningProducerApp : public MecAppBase
     // store the scheduled update position timers
     PlatooningTimerMap activeUpdatePositionTimer_;
 
+    // timer upon join request to retrieve inter-producerApp platoons
+    CurrentPlatoonRequestTimer *currentPlatoonRequestTimer_;
+    GlobalAvailablePlatoons currentAvailablePlatoons_;
+    cQueue consumerAppRequests_; // cMessage requests;
+    int requestCounter_;
+    double retrievePlatoonsInfoDuration_;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -102,8 +124,39 @@ class MECPlatooningProducerApp : public MecAppBase
     void handleRegistrationRequest(cMessage* msg);
     // @brief handler for request to join a platoon from the UE
     void handleJoinPlatoonRequest(cMessage* msg);
+
+    //@brief it sends a response about a JOIN request
+    void sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg);
+
+    //@brief handler for JOIN request queue to wait for the available platoons running on the federated producerApps
+    void handlePendingJoinRequest(cMessage* msg);
+
+    //@brief it manages a local platoon based on the index
+    bool manageLocalPlatoon(int& index, cMessage* req);
+
     // @brief handler for request to leave a platoon from the UE
     void handleLeavePlatoonRequest(cMessage* msg);
+    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
+    void handleAvailablePlatoonsRequest(cMessage* msg);
+    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
+    void handleAvailablePlatoonsResponse(cMessage* msg);
+
+    //------ handlers for inter producerApps communication ------//
+    //@brief handler for request to add a new member in a platoon
+    void handleAddMemberRequest(cMessage* msg);
+    //@brief handler for response of a request to add a member into a remote platoon
+    void handleAddMemberResponse(cMessage* msg);
+    //@brief handler for request to remove a member in a platoon
+    void handleRemoveMemberRequest(cMessage* msg);
+    //@brief handler for response of a request to remove a member into a remote platoon
+    void handleRemoveMemberResponse(cMessage* msg);
+    //@brief handler to forward command messages to PlatooningConsumerApp
+    void handlePlatoonCommand(cMessage* msg);
+
+    // @brief handler for add a PlatooningConsumerApp to a local platoon
+    void handleAddMember(cMessage* msg);
+    // @brief handler for remove a PlatooningConsumerApp to a local platoon
+    bool removePlatoonMember(int controllerIndex, int mecAppId);
 
     // @brief used by a controller to set a timer
     void startTimer(cMessage* msg, double timeOffset);
@@ -116,9 +169,9 @@ class MECPlatooningProducerApp : public MecAppBase
     void handleUpdatePositionTimer(UpdatePositionTimer* posTimer);
 
     // @brief used to require the position of the cars of a platoon on behalf of the platoon controller
-    void requirePlatoonLocations(int controllerIndex, const set<inet::L3Address>* ues);
+    void requirePlatoonLocations(int producerAppId, int controllerIndex, const set<inet::L3Address>& ues);
     // @brief used to require the position of the cars of a platoon to the Location Service
-    void sendGetRequest(const std::string& ues);
+    void sendGetRequest(int producerAppId, const std::string& ues);
 
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;
