@@ -135,28 +135,28 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length") == 0 )
                     {
-                        EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                         httpRequest->setContentLength(std::stoi(line[1]));
                         httpRequest->setRemainingDataToRecv(std::stoi(line[1]));
                     }
                     else if (line[0].compare("Content-Type") == 0)
                     {
-                        EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                         httpRequest->setContentType(line[1].c_str());
                     }
                     else if (line[0].compare("Host")== 0)
                     {
-                        EV << "httpUtili::parseHeader - Host: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Host: " << line[1] << endl;
                         httpRequest->setHost(line[1].c_str());
                     }
                     else if (line[0].compare("Connection")== 0)
                     {
-                        EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                         httpRequest->setConnection(line[1].c_str());
                     }
                     else
                     {
-                        EV << "httpUtili::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
+                        EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
                         httpRequest->setHeaderField(line[0], line[1]);
                     }
                 }
@@ -213,23 +213,23 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length")== 0)
                     {
-                        EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                         httpResponse->setContentLength(std::stoi(line[1]));
                         httpResponse->setRemainingDataToRecv(std::stoi(line[1]));
                     }
                     else if (line[0].compare("Content-Type")== 0)
                     {
-                        EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                         httpResponse->setContentType(line[1].c_str());
                     }
                     else if (line[0].compare("Connection")== 0)
                     {
-                        EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                         httpResponse->setConnection(line[1].c_str());
                     }
                     else
                     {
-                        EV << "httpUtili::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
+                        EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
                         httpResponse->setHeaderField(line[0], line[1]);
                     }
                 }else
