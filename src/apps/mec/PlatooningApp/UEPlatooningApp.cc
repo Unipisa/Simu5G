@@ -154,14 +154,14 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
             if (mePkt == 0)
                 throw cRuntimeError("UEPlatooningApp::handleMessage - \tFATAL! Error when casting to PlatooningAppPacket");
 
-            if(!strcmp(mePkt->getType(), JOIN_RESPONSE))
+            if(mePkt->getType() == JOIN_RESPONSE)
                 recvJoinPlatoonResponse(msg);
-            else if(!strcmp(mePkt->getType(), LEAVE_RESPONSE))
+            else if(mePkt->getType() == LEAVE_RESPONSE)
                 recvLeavePlatoonResponse(msg);
-            else if(!strcmp(mePkt->getType(), PLATOON_CMD))
+            else if(mePkt->getType() == PLATOON_CMD)
                 recvPlatoonCommand(msg);
             else
-                throw cRuntimeError("UEPlatooningApp::handleMessage - \tFATAL! Error, PlatooningAppPacket type %s not recognized", mePkt->getType());
+                throw cRuntimeError("UEPlatooningApp::handleMessage - \tFATAL! Error, PlatooningAppPacket type %d not recognized", mePkt->getType());
         }
         delete msg;
     }
@@ -321,7 +321,7 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
 
-        EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request accepted" << endl;
+        EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request accepted, platoon index " << joinResp->getControllerIndex() << endl;
     }
     else
     {

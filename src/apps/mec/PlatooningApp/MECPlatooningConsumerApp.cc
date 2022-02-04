@@ -221,10 +221,10 @@ void MECPlatooningConsumerApp::handleUeMessage(omnetpp::cMessage *msg)
 
     // TODO use enumerate variables instead of strings for comparison
 
-    if(strcmp(platooningPkt->getType(), REGISTRATION_RESPONSE) == 0) // from mec provider app
+    if(platooningPkt->getType() == REGISTRATION_RESPONSE) // from mec provider app
         handleProviderRegistrationResponse(msg);
 
-    else if(strcmp(platooningPkt->getType(), JOIN_REQUEST) == 0)     // from client app
+    else if(platooningPkt->getType() == JOIN_REQUEST)     // from client app
     {
         // TODO move this somewhere else
         ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
@@ -233,16 +233,16 @@ void MECPlatooningConsumerApp::handleUeMessage(omnetpp::cMessage *msg)
         handleJoinPlatoonRequest(msg);
     }
 
-    else if (strcmp(platooningPkt->getType(), LEAVE_REQUEST) == 0)   // from client app
+    else if (platooningPkt->getType() == LEAVE_REQUEST)  // from client app
         handleLeavePlatoonRequest(msg);
 
-    else if (strcmp(platooningPkt->getType(), JOIN_RESPONSE) == 0)   // from mec provider app
+    else if (platooningPkt->getType() == JOIN_RESPONSE)  // from mec provider app
         handleJoinPlatoonResponse(msg);
 
-    else if (strcmp(platooningPkt->getType(), LEAVE_RESPONSE) == 0)  // from mec provider app
+    else if (platooningPkt->getType() == LEAVE_RESPONSE) // from mec provider app
         handleLeavePlatoonResponse(msg);
 
-    else if (strcmp(platooningPkt->getType(), PLATOON_CMD) == 0)  // from mec provider app
+    else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
         handlePlatoonCommand(msg);
 
     else

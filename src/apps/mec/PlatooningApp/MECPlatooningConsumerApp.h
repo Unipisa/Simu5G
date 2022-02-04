@@ -31,7 +31,7 @@ class MECPlatooningConsumerApp : public MecAppBase
     inet::UdpSocket ueAppSocket;
     int localUePort;
 
-    // socket to handle communication with the provider app
+    // socket to handle communication with the MecProviderApp
     inet::UdpSocket platooningProviderAppSocket;
     int localPlatooningProviderPort;
 
@@ -48,6 +48,10 @@ class MECPlatooningConsumerApp : public MecAppBase
     // endpoint for contacting the MEC platooning provider app
     inet::L3Address platooningProviderAddress_;
     int platooningProviderPort_;
+
+    HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage* mp1HttpMessage;
+
 
     // coordinates of the last position retrieved
     double lastXposition;

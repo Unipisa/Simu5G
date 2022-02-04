@@ -39,7 +39,7 @@ simple UEPlatooningApp like IApp
         double stopTime @unit("s") = default(120s);
         
         double joinTime @unit("s") = default(-1s); 
-        double leaveTime @unit("s") = default(119s); 
+        double leaveTime @unit("s") = default(-1s); 
         
         // the index of the platoon the UE wants to join. It must be < 1000
         // if -1, the MEC will try to find the best platoon 
