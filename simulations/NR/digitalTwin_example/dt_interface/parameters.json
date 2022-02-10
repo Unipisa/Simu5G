@@ -1,18 +1,34 @@
 {
-"numUEs" : 1,
+"numUEs" : 3,
 "uePos": [
     {
-        "x" : 350,
+        "x" : 400,
         "y" : 400
+    },
+    {
+        "x" : 600,
+        "y" : 600
+    },
+    {
+        "x" : 400,
+        "y" : 600
     }
 ],
 "ueTraffic": [
     {
         "packetSize" : 200,
         "sendPeriod" : 0.1
+    },
+    {
+        "packetSize" : 200,
+        "sendPeriod" : 0.1
+    },    
+    {
+        "packetSize" : 200,
+        "sendPeriod" : 0.1
     }
 ],
 "maxProc" : 8,
-"config" : ["Policy1","Policy2","Policy3"],
+"config" : ["CA-FirstOnly","CA-BestChannel"],
 "repetitions" : 3
 }

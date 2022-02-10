@@ -47,7 +47,7 @@ foreach $data_line (@raw_data)
     # retrieve column 'value' (5th column)
     @data_values = split(",",$data_line);
 
-    $sample = $data_values[5];
+    $sample = $data_values[7];
     $sum = $sum + $sample;
     push @samples, $sample;
 

@@ -167,6 +167,7 @@ SimulationResource::SimulationResource()
 {
     // set available metrics
     availableMetrics_.push_back("macCellThroughputDl");
+    availableMetrics_.push_back("avgServedBlocksDl");
 }
 
 void SimulationResource::bind(ParametersResource* paramRes, SimConfigResource* simConfigRes)
@@ -198,22 +199,23 @@ bool SimulationResource::isMetricAvailable(string metric)
 
 const std::shared_ptr<http_response> SimulationResource::render_GET(const http_request& req)
 {
-    cout << "--- Received request to start a new simulation campaign from " << req.get_requestor() << endl;
-
     string_response* response;
     
     // get requested metrics
-    cout << "Requested metrics:" << endl;
     std::vector<string> metrics;
     const std::map<string, string, http::arg_comparator> args = req.get_args();
 
     if (args.empty())
     {
+        cout << "--- Received request to provide the available metrics from " << req.get_requestor() << endl;
         // returns the list of available resources
         response = buildAvailableMetricsResponse();
     }
     else
     {
+        cout << "--- Received request to start a new simulation campaign from " << req.get_requestor() << endl;
+
+        cout << "Requested metrics:" << endl;
         for (auto it = args.begin(); it != args.end(); ++it)
         {    
             cout << "\t" << it->first << endl;
@@ -262,7 +264,7 @@ void SimulationResource::prepareSimulation()
     {
         // set position
         outScenarioConf << "*.ue[" << i << "].mobility.initialX = " << uePos.at(i).x << "m" << endl;
-        outScenarioConf << "*.ue[" << i << "].mobility.initialX = " << uePos.at(i).y << "m" << endl;
+        outScenarioConf << "*.ue[" << i << "].mobility.initialY = " << uePos.at(i).y << "m" << endl;
 
         // set traffic
         outScenarioConf << "*.server.app[" << i << "].PacketSize = " << ueTraffic.at(i).packetSize << endl;
@@ -327,15 +329,26 @@ string_response* SimulationResource::parseResults(const std::vector<string>& met
     std::vector<string>& config = simConfigRes_->getConfigs();
     for (unsigned int i = 0; i < config.size(); i++)
     {
-        ss.str("");
-        ss << "./scripts/extractStats.sh " << config.at(i);
         for (unsigned int j = 0; j < metrics.size(); j++)
         {
-            ss << " " << metrics[j];
+            ss.str("");
+            ss << "./scripts/extractStats.sh " << config.at(i) << " " << metrics[j];
 
             // run script for parsing the given metric
             FILE* fp = popen(ss.str().c_str(),"r");
    
+            // read from the pipe and build JSON response
+            nlohmann::json obj_primary;
+            for (unsigned int i = 0; i < 4; i++)
+            {
+                fgets(result,64,fp);
+                result[strlen(result)-1] = '\0';
+                obj_primary[stat[i]] = result;
+            }
+            jResp[metrics[j].c_str()][config[i].c_str()]["gnb"] = obj_primary;
+
+
+/* CHECK FOR DUAL CONNECTIVITY SCENARIOS
             // read from the pipe and build JSON response
             nlohmann::json obj_primary;
             for (unsigned int i = 0; i < 4; i++)
@@ -354,7 +367,7 @@ string_response* SimulationResource::parseResults(const std::vector<string>& met
                 obj_secondary[stat[i]] = result;
             }
             jResp[metrics[j].c_str()][config[i].c_str()]["secondaryCell"] = obj_secondary;
-
+*/
             fclose(fp);
         }
     }

@@ -13,4 +13,4 @@ sleep 5
 
 # send GET request to run simulations and obtain the metrics specified by the query string (add -v option for details)
 # it will return a JSON-formatted text inside the body of the response 
-curl "http://localhost:8080/sim?macCellThroughputDl"
+curl "http://localhost:8080/sim?macCellThroughputDl&avgServedBlocksDl"
