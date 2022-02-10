@@ -56,7 +56,7 @@ LteMaxCiOptMB::LteMaxCiOptMB()
  */
 void LteMaxCiOptMB::generateProblem()
 {
-    int totUes = carrierActiveConnectionSet_.size();
+    int totUes = carrierActiveConnectionSet_->size();
     // skip problem generation if no User is active
     if(totUes==0)
     {
@@ -104,7 +104,7 @@ void LteMaxCiOptMB::generateProblem()
     // for each band configuration
     vector<int> cqiPerConfig;
     vector<Cqi> cqiPerBand;
-    for ( ActiveSet::iterator it = carrierActiveConnectionSet_.begin ();it != carrierActiveConnectionSet_.end (); ++it )
+    for ( ActiveSet::iterator it = carrierActiveConnectionSet_->begin ();it != carrierActiveConnectionSet_->end (); ++it )
     {
         cqiPerConfig.clear();
         MacNodeId ueId = MacCidToNodeId(*it);
@@ -607,7 +607,7 @@ void LteMaxCiOptMB::applyScheduling()
         if ( ! active )
         {
             EV << NOW << "LteMaxCiMultiband::schedule scheduling UE " << ueId << " set to inactive " << endl;
-            carrierActiveConnectionSet_.erase(ueCid);
+            carrierActiveConnectionSet_->erase(ueCid);
             activeConnectionTempSet_.erase (ueCid);
         }
     }

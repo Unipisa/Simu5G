@@ -105,6 +105,21 @@ SchedDiscipline LteMacEnb::getSchedDiscipline(Direction dir)
     }
 }
 
+
+CarrierAssignerDiscipline LteMacEnb::getCarrierAssignerDiscipline(Direction dir)
+{
+    if (dir == DL)
+        return aToCarrierAssignerDiscipline(
+            par("carrierAssignerDisciplineDl").stdstringValue());
+    else if (dir == UL)
+        return aToCarrierAssignerDiscipline(
+            par("carrierAssignerDisciplineUl").stdstringValue());
+    else
+    {
+        throw cRuntimeError("LteMacEnb::getSchedDiscipline(): unrecognized direction %d", (int) dir);
+    }
+}
+
 void LteMacEnb::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();

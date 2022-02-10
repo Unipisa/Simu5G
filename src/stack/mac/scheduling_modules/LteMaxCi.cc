@@ -30,7 +30,7 @@ void LteMaxCi::prepareSchedule()
     unsigned int blocks =0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); )
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_->begin ();it1 != carrierActiveConnectionSet_->end (); )
     {
         // Current connection.
         cid = *it1;
@@ -43,7 +43,7 @@ void LteMaxCi::prepareSchedule()
                 // node has left the simulation - erase corresponding CIDs
                 activeConnectionSet_->erase(cid);
                 activeConnectionTempSet_.erase(cid);
-                carrierActiveConnectionSet_.erase(cid);
+                carrierActiveConnectionSet_->erase(cid);
                 continue;
         }
 
@@ -176,7 +176,7 @@ void LteMaxCi::prepareSchedule()
 
             if ( MacCidToNodeId(current.x_) <= BGUE_MIN_ID)
             {
-                carrierActiveConnectionSet_.erase(current.x_);
+                carrierActiveConnectionSet_->erase(current.x_);
                 activeConnectionTempSet_.erase (current.x_);
             }
         }

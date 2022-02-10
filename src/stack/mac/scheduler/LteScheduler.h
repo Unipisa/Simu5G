@@ -77,7 +77,7 @@ class LteScheduler
     ActiveSet activeConnectionTempSet_;
 
     //! Per-carrier Active set. Temporary variable used for storing the set of connections allowed in this carrier
-    ActiveSet carrierActiveConnectionSet_;
+    ActiveSet* carrierActiveConnectionSet_;
 
     //! Frequency of the carrier handled by this scheduler
     double carrierFrequency_;
@@ -210,6 +210,7 @@ class LteScheduler
      * used by scheduling modules
      */
     void buildCarrierActiveConnectionSet();
+
 
 };
 

@@ -36,7 +36,7 @@ void LteDrr::prepareSchedule()
         if(getBinder()->getOmnetId(nodeId) == 0){
             activeTempList_.erase();          // remove from the active list
             activeConnectionTempSet_.erase(cid);
-            carrierActiveConnectionSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             EV << "CID " << cid << " of node "<< nodeId << " removed from active connection set - no OmnetId in Binder known.";
             continue;
         }
@@ -84,7 +84,7 @@ void LteDrr::prepareSchedule()
         {
             activeTempList_.erase();          // remove from the active list
             activeConnectionTempSet_.erase(cid);
-            carrierActiveConnectionSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             desc.deficit_ = 0;       // reset the deficit to zero
             desc.active_ = false;   // set this descriptor as inactive
             desc.addQuantum_ = true;

@@ -27,7 +27,6 @@ enum FeedbackType
     ALLBANDS = 0; PREFERRED = 1; WIDEBAND = 2;
 };
 
-/// Feedback periodicity
 enum FbPeriodicity
 {
     PERIODIC = 0; APERIODIC = 1;
@@ -110,6 +109,18 @@ enum SchedDiscipline
     MAXCI_COMP = 5;
     ALLOCATOR_BESTFIT = 6;
     UNKNOWN_DISCIPLINE = 7;
+};
+
+//
+//  Carrier Assignment discipline
+// 
+
+enum CarrierAssignerDiscipline
+{
+    DEFAULT = 0;
+    BEST_CHANNEL = 1;
+    FIRST_ONLY = 2;
+    UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE = 3;
 };
 
 // specifies how the final CQI will be computed from the multiband ones

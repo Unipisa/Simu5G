@@ -197,7 +197,7 @@ void LteScheduler::schedule()
     activeConnectionSet_ = eNbScheduler_->readActiveConnections();
 
     // obtain the list of cids that can be scheduled on this carrier
-    buildCarrierActiveConnectionSet();
+    carrierActiveConnectionSet_ = eNbScheduler_->readCarrierActiveConnections(carrierFrequency_);
 
     // scheduling
     prepareSchedule();

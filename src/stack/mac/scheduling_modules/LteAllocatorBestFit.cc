@@ -151,7 +151,7 @@ void LteAllocatorBestFit::prepareSchedule()
     ActiveSet inactive_connections;
     inactive_connections.clear();
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); ++it1 )
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_->begin ();it1 != carrierActiveConnectionSet_->end (); ++it1 )
     {
         // Current connection.
         cid = *it1;
@@ -229,7 +229,7 @@ void LteAllocatorBestFit::prepareSchedule()
     //Delete inactive connections
     for(ActiveSet::iterator in_it = inactive_connections.begin();in_it!=inactive_connections.end();++in_it)
     {
-        carrierActiveConnectionSet_.erase(*in_it);
+        carrierActiveConnectionSet_->erase(*in_it);
         activeConnectionTempSet_.erase(*in_it);
     }
 

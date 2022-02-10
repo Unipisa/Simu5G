@@ -207,6 +207,13 @@ class LteMacEnb : public LteMacBase
      */
     SchedDiscipline getSchedDiscipline(Direction dir);
 
+
+    /**
+     * Returns the carrier assigner discipline for the given direction.
+     * @par dir link direction
+     */
+    CarrierAssignerDiscipline getCarrierAssignerDiscipline(Direction dir);
+
     /*
      * Return the current active set (active connections)
      * @par direction

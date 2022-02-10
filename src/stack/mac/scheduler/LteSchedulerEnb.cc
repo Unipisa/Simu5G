@@ -20,6 +20,9 @@
 #include "stack/mac/scheduling_modules/LteMaxCiOptMB.h"
 #include "stack/mac/scheduling_modules/LteMaxCiComp.h"
 #include "stack/mac/scheduling_modules/LteAllocatorBestFit.h"
+#include "stack/mac/carrier_assigner_modules/CarrierAssignerDefault.h"
+#include "stack/mac/carrier_assigner_modules/CarrierAssignerBestChannel.h"
+#include "stack/mac/carrier_assigner_modules/CarrierAssignerFirstOnly.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/phy/layer/LtePhyBase.h"
@@ -60,6 +63,11 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     avgServedBlocksUl_ = other.avgServedBlocksUl_;
     emptyBandLim_ = other.emptyBandLim_;
 
+
+    // Copy carrier assigner
+    CarrierAssignerDiscipline caDiscipline = mac_->getCarrierAssignerDiscipline(direction_);
+    carrierAssigner_ = getCarrierAssigner(caDiscipline);
+
     // Copy schedulers
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
@@ -74,6 +82,8 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
         newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
         newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
+
+        carrierAssigner_->initializeCarrierActiveConnectionSet(it->second.carrierFrequency);
     }
 
     // Copy Allocator
@@ -88,6 +98,7 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
 LteSchedulerEnb::~LteSchedulerEnb()
 {
     delete allocator_;
+    delete carrierAssigner_;
     std::vector<LteScheduler*>::iterator it = scheduler_.begin();
     for ( ; it != scheduler_.end(); ++it)
         delete *it;
@@ -106,6 +117,10 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
     harqTxBuffers_ = mac_->getHarqTxBuffers();
     harqRxBuffers_ = mac_->getHarqRxBuffers();
 
+    // Create carrier assigner
+    CarrierAssignerDiscipline caDiscipline = mac_->getCarrierAssignerDiscipline(direction_);
+    carrierAssigner_ = getCarrierAssigner(caDiscipline);
+
     // Create LteScheduler. One per carrier
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
@@ -120,6 +135,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
         newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
         newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
+
+        carrierAssigner_->initializeCarrierActiveConnectionSet(it->second.carrierFrequency);
     }
 
     // Create Allocator
@@ -155,6 +172,9 @@ std::map<double, LteMacScheduleList>* LteSchedulerEnb::schedule()
 
     // clean the allocator
     resetAllocator();
+
+    // assign connections to the carriers in which they can be scheduled, based on the selected policy
+    carrierAssigner_->assign();
 
     // schedule one carrier at a time
     LteScheduler* scheduler = NULL;
@@ -1049,6 +1069,24 @@ LteScheduler* LteSchedulerEnb::getScheduler(SchedDiscipline discipline)
     }
 }
 
+CarrierAssigner* LteSchedulerEnb::getCarrierAssigner(CarrierAssignerDiscipline discipline)
+{
+    EV << "Creating Carrier Assigner " << carrierAssignerDisciplineToA(discipline) << endl;
+
+    switch(discipline)
+    {
+        case DEFAULT:
+        return new CarrierAssignerDefault(this, mac_, direction_);
+        case BEST_CHANNEL:
+        return new CarrierAssignerBestChannel(this, mac_, direction_);
+        case FIRST_ONLY:
+        return new CarrierAssignerFirstOnly(this, mac_, direction_);
+        default:
+        throw cRuntimeError("CarrierAssigner not recognized");
+        return nullptr;
+    }
+}
+
 void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
 {
     if (sleep)
@@ -1096,6 +1134,11 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
 ActiveSet* LteSchedulerEnb::readActiveConnections()
 {
     return &activeConnectionSet_;
+}
+
+ActiveSet* LteSchedulerEnb::readCarrierActiveConnections(double carrierFrequency)
+{
+    return carrierAssigner_->getCarrierActiveConnectionSet(carrierFrequency);
 }
 
 void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)

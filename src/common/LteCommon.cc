@@ -248,6 +248,30 @@ SchedDiscipline aToSchedDiscipline(std::string s)
     return UNKNOWN_DISCIPLINE;
 }
 
+const std::string carrierAssignerDisciplineToA(CarrierAssignerDiscipline discipline)
+{
+    int i = 0;
+    while (caDisciplines[i].discipline != UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE)
+    {
+        if (caDisciplines[i].discipline == discipline)
+            return caDisciplines[i].disciplineName;
+        i++;
+    }
+    return "UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE";
+}
+
+CarrierAssignerDiscipline aToCarrierAssignerDiscipline(std::string s)
+{
+    int i = 0;
+    while (caDisciplines[i].discipline != UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE)
+    {
+        if (caDisciplines[i].disciplineName == s)
+            return caDisciplines[i].discipline;
+        i++;
+    }
+    return UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE;
+}
+
 const std::string dasToA(const Remote r)
 {
     int i = 0;

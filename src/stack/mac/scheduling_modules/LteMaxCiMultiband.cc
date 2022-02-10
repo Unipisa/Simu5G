@@ -40,7 +40,7 @@ void LteMaxCiMultiband::prepareSchedule()
     // UsableBands * usableBands;
     if(debug)
         cout << NOW << " LteMaxCiMultiband::prepareSchedule - Tot Active Connections:"<< activeConnectionTempSet_.size() << endl;
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); ++it1 )
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_->begin ();it1 != carrierActiveConnectionSet_->end (); ++it1 )
     {
         // Current connection.
         cid = *it1;
@@ -52,7 +52,7 @@ void LteMaxCiMultiband::prepareSchedule()
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
-            carrierActiveConnectionSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             continue;
         }
         // obtain a vector of CQI, one for each band
@@ -122,7 +122,7 @@ void LteMaxCiMultiband::prepareSchedule()
         if ( ! active )
         {
             EV << NOW << "LteMaxCiMultiband::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
-            carrierActiveConnectionSet_.erase(current.x_);
+            carrierActiveConnectionSet_->erase(current.x_);
             activeConnectionTempSet_.erase (current.x_);
         }
     }

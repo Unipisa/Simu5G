@@ -229,7 +229,12 @@ simple LteMacEnb extends LteMacBase {
         // Scheduling discipline. See LteCommon.h for discipline meaning.
         string schedulingDisciplineDl = default("MAXCI");
         string schedulingDisciplineUl = default("MAXCI");
-      
+
+        
+        // Carrier assigner discipline. See LteCommon.h for discipline meaning.
+        string carrierAssignerDisciplineDl = default("DEFAULT");
+        string carrierAssignerDisciplineUl = default("DEFAULT");
+        
         // Proportional Fair parameters
         double pfAlpha    = default(0.95);
                             

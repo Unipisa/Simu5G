@@ -31,8 +31,8 @@ void LtePf::prepareSchedule()
     // Build the score list by cycling through the active connections.
     ScoreList score;
 
-    ActiveSet::iterator cidIt = carrierActiveConnectionSet_.begin();
-    ActiveSet::iterator cidEt = carrierActiveConnectionSet_.end();
+    ActiveSet::iterator cidIt = carrierActiveConnectionSet_->begin();
+    ActiveSet::iterator cidEt = carrierActiveConnectionSet_->end();
 
     for(; cidIt != cidEt; )
     {
@@ -47,7 +47,7 @@ void LtePf::prepareSchedule()
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
-            carrierActiveConnectionSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             continue;
         }
 
@@ -61,7 +61,7 @@ void LtePf::prepareSchedule()
         // check if node is still a valid node in the simulation - might have been dynamically removed
         if(getBinder()->getOmnetId(nodeId) == 0){
             activeConnectionTempSet_.erase(cid);
-            carrierActiveConnectionSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             EV << "CID " << cid << " of node "<< nodeId << " removed from active connection set - no OmnetId in Binder known.";
             continue;
         }
@@ -156,7 +156,7 @@ void LtePf::prepareSchedule()
         {
             EV << NOW << "LtePf::execSchedule NOT ACTIVE" << endl;
             activeConnectionTempSet_.erase (current.x_);
-            carrierActiveConnectionSet_.erase(current.x_);
+            carrierActiveConnectionSet_->erase(current.x_);
         }
     }
 }

@@ -20,6 +20,7 @@
 class LteScheduler;
 class LteAllocationModule;
 class LteMacEnb;
+class CarrierAssigner;
 
 /**
  * @class LteSchedulerEnb
@@ -75,6 +76,9 @@ class LteSchedulerEnb
 
     // System allocator, carries out the block-allocation functions.
     LteAllocationModule *allocator_;
+
+    // Module that assigns UEs to a given carrier component on each TTI
+    CarrierAssigner *carrierAssigner_;
 
     // Scheduling agent. One per carrier
     std::vector<LteScheduler*> scheduler_;
@@ -260,9 +264,10 @@ class LteSchedulerEnb
     virtual unsigned int scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
             BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
     /*
-     * Getter for active connection set
+     * Getters for active connection set
      */
     ActiveSet* readActiveConnections();
+    ActiveSet* readCarrierActiveConnections(double carrierFrequency);
 
     void removeActiveConnections(MacNodeId nodeId);
 
@@ -368,6 +373,13 @@ class LteSchedulerEnb
      * @param discipline scheduler discipline
      */
     LteScheduler* getScheduler(SchedDiscipline discipline);
+
+    /**
+     * Returns a particular CarrierAssigner subclass,
+     * implementing the given discipline.
+     * @param discipline carrier assigner discipline
+     */
+    CarrierAssigner* getCarrierAssigner(CarrierAssignerDiscipline discipline);
 };
 
 #endif // _LTE_LTESCHEDULERENB_H_

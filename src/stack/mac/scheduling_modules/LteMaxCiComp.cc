@@ -75,7 +75,7 @@ void LteMaxCiComp::prepareSchedule()
     unsigned int blocks =0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); ++it1 )
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_->begin ();it1 != carrierActiveConnectionSet_->end (); ++it1 )
     {
         // Current connection.
         cid = *it1;
@@ -87,6 +87,7 @@ void LteMaxCiComp::prepareSchedule()
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
+            carrierActiveConnectionSet_->erase(cid);
             continue;
         }
 
@@ -175,7 +176,7 @@ void LteMaxCiComp::prepareSchedule()
         if ( ! active )
         {
             EV << NOW << "LteMaxCiComp::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
-            carrierActiveConnectionSet_.erase(current.x_);
+            carrierActiveConnectionSet_->erase(current.x_);
             activeConnectionTempSet_.erase (current.x_);
         }
     }

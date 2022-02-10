@@ -186,6 +186,23 @@ const SchedDisciplineTable disciplines[] = {
     ELEM(UNKNOWN_DISCIPLINE)
 };
 
+/********************************
+ * Carrier Assigner discipline  *
+ ********************************/
+
+struct CarrierAssignerDisciplineTable
+{
+    CarrierAssignerDiscipline discipline;
+    std::string disciplineName;
+};
+
+const CarrierAssignerDisciplineTable caDisciplines[] = {
+    ELEM(DEFAULT),
+    ELEM(BEST_CHANNEL),
+    ELEM(FIRST_ONLY),
+    ELEM(UNKNOWN_CARRIER_ASSIGNER_DISCIPLINE)
+};
+
 /*************************
  *   Transmission Modes  *
  *************************/
@@ -639,6 +656,8 @@ const std::string txModeToA(TxMode tx);
 TxMode aToTxMode(std::string s);
 const std::string schedDisciplineToA(SchedDiscipline discipline);
 SchedDiscipline aToSchedDiscipline(std::string s);
+const std::string carrierAssignerDisciplineToA(CarrierAssignerDiscipline discipline);
+CarrierAssignerDiscipline aToCarrierAssignerDiscipline(std::string s);
 Remote aToDas(std::string s);
 const std::string dasToA(const Remote r);
 const std::string nodeTypeToA(const RanNodeType t);
