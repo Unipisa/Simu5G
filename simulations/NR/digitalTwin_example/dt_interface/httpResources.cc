@@ -12,7 +12,7 @@ const std::shared_ptr<http_response> ParametersResource::render_POST(const http_
      if (req.get_arg("document") == "")
      {
          // we received url-encoded data
-         std::cout << " NO FILE " << std::endl;
+         parseParametersFromJson(req.get_content());
      }  
      else
      {
@@ -33,7 +33,7 @@ void ParametersResource::parseParametersFromJson(string content)
     }
     catch(nlohmann::detail::parse_error e)
     {
-        std::cout  <<  e.what() << std::endl;
+        std::cerr  <<  e.what() << std::endl;
         // file is not correctly formatted in JSON
         exit(1);
     }
@@ -374,6 +374,7 @@ string_response* SimulationResource::parseResults(const std::vector<string>& met
 
     cout << "DONE ---" << endl << endl;
 
-    string_response* response = new string_response(jResp.dump(4).c_str());
+    cout << jResp.dump(4).c_str() << endl;
+    string_response* response = new string_response(jResp.dump().c_str());
     return response;
 }
