@@ -4,12 +4,17 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include "json.hpp"
+#include "utils/json.hpp"
+#include "deployment.h"
+
 
 using namespace std;
 using namespace nlohmann;
 
 enum HttpMethod { GET, POST };
+
+
+const unsigned int ueLoad[] = { 20, 30 }; 
 
 string sendHttpMessage(HttpMethod method, string hostname, unsigned int port, const char* resource, const char* qString = NULL, const char* filePath = NULL, const char* data = NULL)
 {
@@ -57,25 +62,28 @@ string sendHttpMessage(HttpMethod method, string hostname, unsigned int port, co
 }
 
 
-json buildSimulationParameters()
+json buildSimulationParameters(const Deployment& deployment)
 {
     stringstream ss;
     json j;
-
+     
     // add numUEs
-    int numUEs = 20;
+    int numUEs = deployment.getNumUEs();
+    std::cout << "--> numUEs[" << numUEs << "]" << endl;
     j["numUEs"] = numUEs;
     
+    const vector<Coord>& pos = deployment.getPositions(); 
     json jUeArray;
     for (int i = 0; i < numUEs; i++)
     {
+        std::cout << "-----> [" << pos[i].x_ << ", " << pos[i].y_ << "]" << endl;
         json jPos;
-        jPos["x"] = 400 + 10 * i;
-        jPos["y"] = 400 + 10 * i;       
+        jPos["x"] = pos[i].x_; 
+        jPos["y"] = pos[i].y_;    
         j["uePos"].push_back(jPos);
 
         json jTraffic;
-        jTraffic["packetSize"] = 20;
+        jTraffic["packetSize"] = 2000;  // 160 kbps
         jTraffic["sendPeriod"] = 0.1;  
         j["ueTraffic"].push_back(jTraffic);		
     }
@@ -97,6 +105,7 @@ int main(int argc, char* argv[])
     string response;
     json jResponse;
     ofstream csvOutTput, csvOutBlocks;
+    double deltaMovement = 10.0;  // CHECK
     
     if (argc != 2)
     {
@@ -105,16 +114,14 @@ int main(int argc, char* argv[])
     }
     numSnapshots = atoi(argv[1]);
 
+    // create the deployment
+    Deployment deployment;
    
     // get list of available metrics
     response = sendHttpMessage(GET, hostname, port, "sim", NULL, NULL);
     jResponse = json::parse(response);
     cout << jResponse.dump(4) << endl;
 
-    // send sim config
-    response = sendHttpMessage(POST, hostname, port, "simconfig", NULL, "./simconfig.json");
-    cout << response << endl;
-    
     // open output files
     csvOutTput.open("stats/macCellThroughputDl.csv");
     csvOutBlocks.open("stats/avgServedBlocksDl.csv");
@@ -129,8 +136,31 @@ int main(int argc, char* argv[])
 
     for (int snapshot = 0; snapshot < numSnapshots; snapshot++)
     {
+        // move existing UEs by a maximum distance of delta
+        if (snapshot > 0)
+            deployment.updatePositions(deltaMovement);
+
+        // add or remove UEs
+        int numUEs = ueLoad[snapshot];
+        int currentUes = deployment.getNumUEs(); 
+        int diff = numUEs - currentUes;
+        if (diff > 0)      
+        {
+            std::cout << "Adding " << diff << " UEs " << endl;
+            deployment.addUEs(diff);
+        }
+        else if (diff < 0)
+        {
+            std::cout << "Removing " << diff << " UEs " << endl;
+            deployment.removeUEs(diff * -1);
+        }
+
         // build parameters.json
-        json jParameters = buildSimulationParameters();
+        json jParameters = buildSimulationParameters(deployment);
+
+        // send sim config
+        response = sendHttpMessage(POST, hostname, port, "simconfig", NULL, "./simconfig.json");
+        cout << response << endl;
 
         // send parameters
         response = sendHttpMessage(POST, hostname, port, "parameters", NULL, "./parameters.json", NULL);

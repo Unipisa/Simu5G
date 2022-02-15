@@ -1,5 +1,5 @@
 #include "httpResources.h"
-#include "json.hpp"         // library for handling JSON files
+#include "utils/json.hpp"         // library for handling JSON files
 #include <sstream>
 #include <fstream>
 
@@ -232,6 +232,9 @@ const std::shared_ptr<http_response> SimulationResource::render_GET(const http_r
         // extract metrics and build the JSON-formatted response 
         response = parseResults(metrics);
 
+        // clear configurations
+        simConfigRes_->clear();
+        paramRes_->clear();
     }
     cout << "--- Response sent to " << req.get_requestor() << endl;
     cout << "-----------------------------------------------------" << endl << endl;
@@ -373,6 +376,10 @@ string_response* SimulationResource::parseResults(const std::vector<string>& met
     }
 
     cout << "DONE ---" << endl << endl;
+
+    // clear result folder
+    FILE* fp = popen("./clearResultFolder.sh","r");
+    fclose(fp);
 
     cout << jResp.dump(4).c_str() << endl;
     string_response* response = new string_response(jResp.dump().c_str());

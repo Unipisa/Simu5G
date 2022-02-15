@@ -36,6 +36,7 @@ class ParametersResource : public http_resource
      unsigned int getNumUEs() { return numUEs_; }
      std::vector<Position>& getUePos() { return uePos_; }
      std::vector<TrafficProfile>& getUeTraffic() { return ueTraffic_; }     
+     void clear() { uePos_.clear(); ueTraffic_.clear(); }
 
   public:
 
@@ -56,6 +57,7 @@ class SimConfigResource : public http_resource
      std::vector<string>& getConfigs() { return config_; }
      unsigned int& getMaxProc() { return maxProc_; }
      std::string& getRuns() { return runs_; }
+     void clear() { config_.clear(); }
 
   public:
 
