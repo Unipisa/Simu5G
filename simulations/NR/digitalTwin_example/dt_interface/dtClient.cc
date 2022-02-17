@@ -5,6 +5,7 @@
 #include <sstream>
 #include <map>
 #include "utils/json.hpp"
+#include "utils/rng.h"
 #include "deployment.h"
 
 
@@ -13,8 +14,8 @@ using namespace nlohmann;
 
 enum HttpMethod { GET, POST };
 
-
-const unsigned int ueLoad[] = { 20, 30 }; 
+const int numSnapshots = 30;  // can be read from command line
+unsigned int ueLoad[numSnapshots]; 
 
 string sendHttpMessage(HttpMethod method, string hostname, unsigned int port, const char* resource, const char* qString = NULL, const char* filePath = NULL, const char* data = NULL)
 {
@@ -83,8 +84,8 @@ json buildSimulationParameters(const Deployment& deployment)
         j["uePos"].push_back(jPos);
 
         json jTraffic;
-        jTraffic["packetSize"] = 2000;  // 160 kbps
-        jTraffic["sendPeriod"] = 0.1;  
+        jTraffic["packetSize"] = 2000;  // 320 kbps
+        jTraffic["sendPeriod"] = 0.05;  
         j["ueTraffic"].push_back(jTraffic);		
     }
 
@@ -99,20 +100,34 @@ json buildSimulationParameters(const Deployment& deployment)
 
 int main(int argc, char* argv[])
 {
-    int numSnapshots;
     string hostname = "http://localhost";
     unsigned int port = 8080; 
     string response;
     json jResponse;
-    ofstream csvOutTput, csvOutBlocks;
-    double deltaMovement = 10.0;  // CHECK
+    ofstream csvOutTput, csvOutBlocks, csvOutPower;
+    double deltaMovement = 50.0;  // CHECK
     
-    if (argc != 2)
-    {
-        cerr << "Usage: ... " << endl;
-        exit(1);
-    }
-    numSnapshots = atoi(argv[1]);
+    RNG randGen(1);  // rng for traffic profile
+
+    // configure traffic profile
+
+    for (unsigned int i = 0; i < 4; i++)
+        ueLoad[i] = randGen.uniform(10,15);
+    for (unsigned int i = 4; i < 8; i++)
+        ueLoad[i] = randGen.uniform(13,18);
+    for (unsigned int i = 8; i < 12; i++)
+        ueLoad[i] = randGen.uniform(15,22);
+    for (unsigned int i = 12; i < 15; i++)
+        ueLoad[i] = randGen.uniform(18,23);
+    for (unsigned int i = 15; i < 18; i++)
+        ueLoad[i] = randGen.uniform(20,28);
+    for (unsigned int i = 18; i < 23; i++)
+        ueLoad[i] = randGen.uniform(25,35);
+    for (unsigned int i = 23; i < 27; i++)
+        ueLoad[i] = randGen.uniform(20,27);
+    for (unsigned int i = 27; i < 30; i++)
+        ueLoad[i] = randGen.uniform(12,20);
+
 
     // create the deployment
     Deployment deployment;
@@ -125,6 +140,7 @@ int main(int argc, char* argv[])
     // open output files
     csvOutTput.open("stats/macCellThroughputDl.csv");
     csvOutBlocks.open("stats/avgServedBlocksDl.csv");
+    csvOutPower.open("stats/avgPowerConsumption.csv");
 
     // print headers
     csvOutTput << "Time\t"
@@ -133,6 +149,13 @@ int main(int argc, char* argv[])
     csvOutBlocks << "Time\t"
                << "BestChannel_Mean\tBestChannel_Variance\tBestChannel_Stddev\tBestChannel_ConfidenceInterval\t"
                << "FirstOnly_Mean\tFirstOnly_Variance\tFirstOnly_Stddev\tFirstOnly_ConfidenceInterval\n";
+    csvOutPower << "Time\t"
+               << "BestChannel_Mean\tBestChannel_Variance\tBestChannel_Stddev\tBestChannel_ConfidenceInterval\t"
+               << "FirstOnly_Mean\tFirstOnly_Variance\tFirstOnly_Stddev\tFirstOnly_ConfidenceInterval\n";
+
+    csvOutTput.close();
+    csvOutBlocks.close();
+    csvOutPower.close();
 
     for (int snapshot = 0; snapshot < numSnapshots; snapshot++)
     {
@@ -167,10 +190,14 @@ int main(int argc, char* argv[])
         cout << response << endl;
 
         // run simulations and obtain statistics
-        response = sendHttpMessage(GET, hostname, port, "sim", "avgServedBlocksDl&macCellThroughputDl", NULL);
+        response = sendHttpMessage(GET, hostname, port, "sim", "avgCellPowerConsumption&avgServedBlocksDl&macCellThroughputDl", NULL);
         jResponse = json::parse(response);
         cout << jResponse.dump(4) << endl;
         
+        csvOutTput.open("stats/macCellThroughputDl.csv", std::ios::app);
+        csvOutBlocks.open("stats/avgServedBlocksDl.csv", std::ios::app);
+        csvOutPower.open("stats/avgPowerConsumption.csv", std::ios::app);
+
         // parse statistics
         json j;
         j = jResponse["macCellThroughputDl"]["CA-BestChannel"]["gnb"];
@@ -183,10 +210,19 @@ int main(int argc, char* argv[])
         j = jResponse["avgServedBlocksDl"]["CA-FirstOnly"]["gnb"];
         csvOutBlocks << j["mean"] << "\t" << j["variance"] << "\t" << j["stddev"] << "\t" << j["confidenceinterval"] << "\n";
 
+        j = jResponse["avgCellPowerConsumption"]["CA-BestChannel"]["gnb"];
+        csvOutPower << snapshot << "\t" << j["mean"] << "\t" << j["variance"] << "\t" << j["stddev"] << "\t" << j["confidenceinterval"] << "\t";
+        j = jResponse["avgCellPowerConsumption"]["CA-FirstOnly"]["gnb"];
+        csvOutPower << j["mean"] << "\t" << j["variance"] << "\t" << j["stddev"] << "\t" << j["confidenceinterval"] << "\n";
+
+        csvOutTput.close();
+        csvOutBlocks.close();
+        csvOutPower.close();
     }
 
     csvOutTput.close();
     csvOutBlocks.close();
+    csvOutPower.close();
 
     return 0;
 }

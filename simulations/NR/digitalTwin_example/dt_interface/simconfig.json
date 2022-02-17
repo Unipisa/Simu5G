@@ -1,0 +1,5 @@
+{
+    "maxProc" : 10,
+    "config" : ["CA-FirstOnly","CA-BestChannel"],
+    "repetitions" : 10
+}

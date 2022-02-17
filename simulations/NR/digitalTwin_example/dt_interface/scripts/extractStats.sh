@@ -15,10 +15,17 @@ case $METRIC in
     #opp_scavetool export -f 'name=~macCellThroughputDl:mean AND module=~*masterEnb*' -F 'CSV-S' -T s -o stats/${CONFIG}/sca_${METRIC}_enb.csv results/${CONFIG}/*.sca >/dev/null
     #opp_scavetool export -f 'name=~macCellThroughputDl:mean AND module=~*secondaryGnb*' -F 'CSV-S' -T s -o stats/${CONFIG}/sca_${METRIC}_gnb.csv results/${CONFIG}/*.sca >/dev/null
     opp_scavetool export -f 'name=~macCellThroughputDl:mean AND module=~*gnb*' -F 'CSV-S' -T s -o stats/${CONFIG}/sca_${METRIC}.csv results/${CONFIG}/*.sca >/dev/null
+    $ORIGDIR/scripts/getMean.pl $CONFIG ${METRIC}
     ;;
 
   avgServedBlocksDl)
     opp_scavetool export -f 'name=~avgServedBlocksDl:mean AND module=~*gnb*' -F 'CSV-S' -T s -o stats/${CONFIG}/sca_${METRIC}.csv results/${CONFIG}/*.sca >/dev/null
+    $ORIGDIR/scripts/getMean.pl $CONFIG ${METRIC}
+    ;;
+
+  avgCellPowerConsumption)
+    opp_scavetool export -f 'name=~avgServedBlocksDl:mean AND module=~*gnb*' -F 'CSV-S' -T s -o stats/${CONFIG}/sca_${METRIC}.csv results/${CONFIG}/*.sca >/dev/null
+    $ORIGDIR/scripts/getMeanPowerConsumption.pl $CONFIG ${METRIC}
     ;;
 
   *)
@@ -28,7 +35,7 @@ esac
 
 #$ORIGDIR/scripts/getMean.pl $CONFIG ${METRIC}_enb
 #$ORIGDIR/scripts/getMean.pl $CONFIG ${METRIC}_gnb
-$ORIGDIR/scripts/getMean.pl $CONFIG ${METRIC}
+
 
 
 cd $ORIGDIR

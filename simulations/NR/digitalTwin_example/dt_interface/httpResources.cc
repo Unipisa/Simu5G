@@ -168,6 +168,7 @@ SimulationResource::SimulationResource()
     // set available metrics
     availableMetrics_.push_back("macCellThroughputDl");
     availableMetrics_.push_back("avgServedBlocksDl");
+    availableMetrics_.push_back("avgCellPowerConsumption");
 }
 
 void SimulationResource::bind(ParametersResource* paramRes, SimConfigResource* simConfigRes)
