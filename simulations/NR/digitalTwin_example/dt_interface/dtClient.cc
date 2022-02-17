@@ -105,29 +105,39 @@ int main(int argc, char* argv[])
     string response;
     json jResponse;
     ofstream csvOutTput, csvOutBlocks, csvOutPower;
-    double deltaMovement = 50.0;  // CHECK
+    ofstream csvOutUes;
+    double deltaMovement = 50.0;  // CHECK (max 6 km/h)
     
     RNG randGen(1);  // rng for traffic profile
 
     // configure traffic profile
 
     for (unsigned int i = 0; i < 4; i++)
-        ueLoad[i] = randGen.uniform(10,15);
+        ueLoad[i] = randGen.uniform(5,10);
     for (unsigned int i = 4; i < 8; i++)
-        ueLoad[i] = randGen.uniform(13,18);
-    for (unsigned int i = 8; i < 12; i++)
-        ueLoad[i] = randGen.uniform(15,22);
-    for (unsigned int i = 12; i < 15; i++)
-        ueLoad[i] = randGen.uniform(18,23);
-    for (unsigned int i = 15; i < 18; i++)
-        ueLoad[i] = randGen.uniform(20,28);
-    for (unsigned int i = 18; i < 23; i++)
-        ueLoad[i] = randGen.uniform(25,35);
-    for (unsigned int i = 23; i < 27; i++)
+        ueLoad[i] = randGen.uniform(7,12);
+    for (unsigned int i = 8; i < 11; i++)
+        ueLoad[i] = randGen.uniform(12,15);
+    for (unsigned int i = 11; i < 14; i++)
+        ueLoad[i] = randGen.uniform(15,23);
+    for (unsigned int i = 14; i < 17; i++)
+        ueLoad[i] = randGen.uniform(22,30);
+    for (unsigned int i = 17; i < 23; i++)
+        ueLoad[i] = randGen.uniform(28,38);
+    for (unsigned int i = 23; i < 26; i++)
         ueLoad[i] = randGen.uniform(20,27);
+    for (unsigned int i = 26; i < 27; i++)
+        ueLoad[i] = randGen.uniform(15,20);
     for (unsigned int i = 27; i < 30; i++)
-        ueLoad[i] = randGen.uniform(12,20);
+        ueLoad[i] = randGen.uniform(5,15);
 
+    csvOutUes.open("stats/generatedUEs.csv");
+    csvOutTput << "Time\tNumUEs" << endl; 
+    for (int snapshot = 0; snapshot < numSnapshots; snapshot++)
+    {
+        csvOutUes << snapshot << "\t" << ueLoad[snapshot] << "\n";
+    }
+    csvOutUes.close();
 
     // create the deployment
     Deployment deployment;

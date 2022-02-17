@@ -1,0 +1,69 @@
+#!/usr/bin/gnuplot -persist
+
+set terminal postscript enhanced color 
+
+set view map
+set size ratio 0.6
+set size 0.75,0.75
+unset surface
+
+set datafile missing "NaN"
+set datafile separator "\t"
+
+set grid back lc rgb "gray" lw 1 lt 1
+
+# --- Key --- #
+set key left top box invert opaque width 1
+set key font ",16" 
+
+# --- Styles definition --- #
+set style line 1 dt 1 lw 3 pt 7 ps 0 lc rgb "#00BB00"
+set style line 2 dt 1 lw 3 pt 2 ps 0 lc rgb "red"
+set style line 3 dt 1 lw 3 pt 5 ps 0 lc rgb "blue"
+set style line 4 dt 1 lw 3 pt 6 ps 0 lc rgb "brown"
+set style line 5 dt 1 lw 3 pt 6 ps 0 lc rgb "yellow"
+
+
+set xrange[0:*]
+set xtics font ",16"
+set ytics font ",16"
+set xlabel "Checkpoint Number" font ",16"
+
+
+
+# --- PLOT CELL THROUGHPUT --- #
+
+toMbps(x) = x/1000000 
+set ytics 0,0.3
+set yrange[0.3:*]
+set ylabel "Throughput [Mbps]" font ",16"
+set output "plots/macCellThroughputDl.eps"
+plot "stats/macCellThroughputDl.csv" using 1:(toMbps($2)) ls 1 with lines t "2 CC", "" using 1:(toMbps($2)):(toMbps($5)) ls 1 with yerrorbars notitle,\
+                                  "" using 1:(toMbps($6)) ls 2 with lines t "1 CC", "" using 1:(toMbps($6)):(toMbps($9)) ls 2 with yerrorbars notitle
+
+
+# --- PLOT POWER CONSUMPTION --- #
+
+set ytics auto
+set yrange[150:*]
+set ylabel "Consumed Power [W]" font ",16"
+set output "plots/avgPowerConsumption.eps"
+plot "stats/avgPowerConsumption.csv" using 1:2 ls 1 with lines t "2 CC", "" using 1:2:5 ls 1 with yerrorbars notitle,\
+                                  "" using 1:6 ls 2 with lines t "1 CC", "" using 1:6:9 ls 2 with yerrorbars notitle
+
+
+# --- PLOT SERVED BLOCKS --- #
+
+set yrange[0:*]
+set ylabel "Allocated RBs" font ",16"
+set output "plots/avgServedBlocksDl.eps"
+plot "stats/avgServedBlocksDl.csv" using 1:2 ls 1 with lines t "2 CC", "" using 1:2:5 ls 1 with yerrorbars notitle,\
+                                  "" using 1:6 ls 2 with lines t "1 CC", "" using 1:6:9 ls 2 with yerrorbars notitle
+
+# --- PLOT NUMBER OF UEs --- #
+
+unset key
+set yrange[0:*]
+set ylabel "Number of UEs" font ",16"
+set output "plots/generatedUEs.eps"
+plot "stats/generatedUEs.csv" using 1:2 ls 1 ps 1 with linespoints notitle
