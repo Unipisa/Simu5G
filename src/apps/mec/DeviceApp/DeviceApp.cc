@@ -127,7 +127,6 @@ void DeviceApp::handleUALCMPMessage()
                         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                         //instantiation requirements and info
-                        nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                         nack->setType(ACK_START_MECAPP);
 
                         //connection info
@@ -135,6 +134,7 @@ void DeviceApp::handleUALCMPMessage()
                         // TODO add reason?
                         throw cRuntimeError("201 vuoto");
                         nack->setChunkLength(inet::B(2)); //just code and data length = 0
+                        nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
                         packet->insertAtBack(nack);
 
@@ -153,7 +153,6 @@ void DeviceApp::handleUALCMPMessage()
                         auto ack = inet::makeShared<DeviceAppStartAckPacket>();
 
                         //instantiation requirements and info
-                        ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                         ack->setType(ACK_START_MECAPP);
 
                         //connection info
@@ -164,7 +163,7 @@ void DeviceApp::handleUALCMPMessage()
                         ack->setPort(atoi(endPoint[1].c_str()));
 
                         ack->setChunkLength(inet::B(2+mecAppEndPoint.size()+contextId.size()+1));
-//                        ack->setChunkLength(inet::B(2+mecAppEndPoint.size()+1));
+                        ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
                         packet->insertAtBack(ack);
                     }
@@ -181,7 +180,6 @@ void DeviceApp::handleUALCMPMessage()
                     auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                     //instantiation requirements and info
-                    nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     nack->setType(ACK_START_MECAPP);
 
                     //connection info
@@ -195,6 +193,8 @@ void DeviceApp::handleUALCMPMessage()
                     {
                        nack->setChunkLength(inet::B(2)); //just code and data length = 0
                     }
+                    nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
                     packet->insertAtBack(nack);
                     throw cRuntimeError("LCM proxy responded 500");
@@ -216,13 +216,13 @@ void DeviceApp::handleUALCMPMessage()
                 inet::Packet* packet = new inet::Packet("DeviceAppStopAckPacket");
                 auto ack = inet::makeShared<DeviceAppStopAckPacket>();
                 //instantiation requirements and info
-                ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                 ack->setType(ACK_STOP_MECAPP);
 
                 if(response->getCode() == 204) // Successful response of the delete
                 {
                     ack->setResult(true);
                     ack->setChunkLength(inet::B(2));
+                    ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
                     appState = IDLE;
                 }
@@ -238,6 +238,7 @@ void DeviceApp::handleUALCMPMessage()
                     {
                         ack->setChunkLength(inet::B(2)); //just code and data length = 0
                     }
+                    ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
                     appState = IDLE;
 
@@ -254,6 +255,7 @@ void DeviceApp::handleUALCMPMessage()
                     {
                         ack->setChunkLength(inet::B(2)); //just code and data length = 0
                     }
+                    ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
 
                     appState = APPCREATED;
@@ -401,7 +403,6 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
         //instantiation requirements and info
-        nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         nack->setType(ACK_START_MECAPP);
 
         //connection info
@@ -416,6 +417,7 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
         {
             nack->setChunkLength(inet::B(2)); //just code and data length = 0
         }
+        nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         packet->insertAtBack(nack);
         throw cRuntimeError("LCM proxy not connected");
         ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
@@ -464,7 +466,6 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
         auto ack = inet::makeShared<DeviceAppStopAckPacket>();
 
         //instantiation requirements and info
-        ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         ack->setType(ACK_STOP_MECAPP);
 
         ack->setResult(false);
@@ -478,6 +479,7 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
         {
            ack->setChunkLength(inet::B(2)); //just code and data length = 0
         }
+        ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         packet->insertAtBack(ack);
 
         ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);

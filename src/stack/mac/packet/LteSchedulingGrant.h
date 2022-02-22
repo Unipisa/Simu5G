@@ -42,8 +42,6 @@ private:
     Direction direction_;
     unsigned int grantId;
 
-    static unsigned int grantIdCounter;
-
   public:
 
     LteSchedulingGrant() :
@@ -52,7 +50,7 @@ private:
         userTxParams = nullptr;
         grantedCwBytes.resize(MAX_CODEWORDS);
 
-        grantId = grantIdCounter++;
+        grantId = getChunkId();
     }
 
     ~LteSchedulingGrant()
@@ -132,7 +130,7 @@ private:
         grantedCwBytes[k] = grantedCwBytes_var;
     }
 
-    virtual void insertGrantedCwBytes(unsigned int grantedCwBytes) override {
+    virtual void appendGrantedCwBytes(unsigned int grantedCwBytes) override {
         throw cRuntimeError("insertGrantedCwBytes not implemented");
     }
     virtual void insertGrantedCwBytes(size_t k, unsigned int grantedCwBytes) override {

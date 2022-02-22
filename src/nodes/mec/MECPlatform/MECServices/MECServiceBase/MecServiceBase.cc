@@ -538,16 +538,6 @@ void MecServiceBase::refreshDisplay() const
 void MecServiceBase::getConnectedEnodeB(){
 
     EV <<"MecServiceBase::getConnectedEnodeB" << endl;
-    int eNodeBsize = meHost_->gateSize("pppENB");
-    for(int i = 0; i < eNodeBsize ; ++i){
-        cModule *bsModule = meHost_->gate("pppENB$o", i) // pppENB[i] output
-                                     ->getNextGate()       // eNodeB module connected gate
-                                     ->getOwnerModule();   // eBodeB module
-
-        EV << "addd1: " << bsModule << endl;
-        eNodeB_.insert(bsModule);
-
-    }
 
     //getting the list of mec hosts associated to this mec system from parameter
     if(meHost_->hasPar("eNBList") && strcmp(meHost_->par("eNBList").stringValue(), "")){

@@ -289,9 +289,11 @@ void LteMacEnb::initialize(int stage)
         info->eNodeB = this->getParentModule()->getParentModule();  // reference to the eNodeB module
         binder_->addEnbInfo(info);
 
-        // register the pair <id,name> to the binder
+        // register the pairs <id,name> and <id, module> to the binder
+        cModule* module = getParentModule()->getParentModule();
         const char* moduleName = getParentModule()->getParentModule()->getFullName();
         binder_->registerName(nodeId_, moduleName);
+        binder_->registerModule(nodeId_, module);
 
         // get the reference to the PHY layer
         phy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("phy"));
@@ -377,7 +379,7 @@ void LteMacEnb::macSduRequest()
         for (it = cit->second.begin(); it != cit->second.end(); it++)
         {   // loop on cids
             MacCid destCid = it->first.first;
-            Codeword cw = it->first.second;
+            // Codeword cw = it->first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
             // for each band, count the number of bytes allocated for this ue (dovrebbe essere per cid)
@@ -589,8 +591,17 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList>* scheduleList)
 
             grant->setGrantedBlocks(map);
             pkt->insertAtFront(grant);
+
+            /*
+             * @author Alessandro Noferi
+             * Notify the pfm about the successful arrival of a TB from a UE.
+             * From ETSI TS 138314 V16.0.0 (2020-07)
+             *   tSched: the point in time when the UL MAC SDU i is scheduled as
+             *   per the scheduling grant provided
+             */
             if(packetFlowManager_ != nullptr)
                 packetFlowManager_->grantSent(nodeId, grant->getGrandId());
+
             // send grant to PHY layer
             sendLowerPackets(pkt);
         }
@@ -778,6 +789,19 @@ void LteMacEnb::macPduUnmake(cPacket* pktAux)
 {
     auto pkt = check_and_cast<Packet*>(pktAux);
     auto macPkt = pkt->removeAtFront<LteMacPdu>();
+
+    /*
+     * @author Alessandro Noferi
+     * Notify the pfm about the successful arrival of a TB from a UE.
+     * From ETSI TS 138314 V16.0.0 (2020-07)
+     * tSucc: the point in time when the MAS SDU i was received successfully by the network
+     */
+    auto userInfo = pkt->getTag<UserControlInfo>();
+
+    if(packetFlowManager_ != nullptr)
+    {
+        packetFlowManager_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
+    }
 
     while (macPkt->hasSdu())
     {

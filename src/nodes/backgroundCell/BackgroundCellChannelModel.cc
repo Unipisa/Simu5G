@@ -1020,7 +1020,7 @@ bool BackgroundCellChannelModel::computeUplinkInterference(MacNodeId bgUeId,  in
            for (; ue_it != ue_et; ++ue_it)
            {
                MacNodeId ueId = ue_it->nodeId;
-               MacCellId cellId = ue_it->cellId;
+               // MacCellId cellId = ue_it->cellId;
                Direction dir = ue_it->dir;
                double txPwr;
                inet::Coord ueCoord;

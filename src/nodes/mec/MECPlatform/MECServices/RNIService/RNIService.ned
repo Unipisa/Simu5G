@@ -55,7 +55,7 @@ simple RNIService like IMECService, IApp
     	bool consumedLocalOnly = default(true);        
         
         @display("i=block/app");
-        @signal[requestQueueSize](type = long);
+        @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
 
     gates:

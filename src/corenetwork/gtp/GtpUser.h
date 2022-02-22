@@ -49,17 +49,8 @@ class GtpUser : public omnetpp::cSimpleModule
 
     CoreNodeType selectOwnerType(const char * type);
 
-
-    //mec
-    //only if owner type is ENB
+    // if this module is on BS, this variable includes the ID of the BS
     MacNodeId myMacNodeID;
-    // to intercept traffic for ME Host
-    std::string meHostVirtualisationInfrastructure;
-    inet::L3Address meHostVirtualisationInfrastructureAddress;
-    // to tunnel traffic for ME Host
-    std::string meHostGtpEndpoint;
-    inet::L3Address meHostGtpEndpointAddress;
-    //end mec
 
     inet::NetworkInterface* ie_;
 

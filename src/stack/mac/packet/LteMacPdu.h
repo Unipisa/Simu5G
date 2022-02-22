@@ -186,7 +186,7 @@ class LteMacPdu : public LteMacPdu_Base
         ASSERT(false);
     }
 
-    virtual void insertSdu(const inet::Packet& sdu) override
+    virtual void appendSdu(const inet::Packet& sdu) override
     {
         ASSERT(false);
     }

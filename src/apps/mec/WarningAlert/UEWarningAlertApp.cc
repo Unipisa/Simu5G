@@ -123,7 +123,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
 
         inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-        int port = packet->getTag<L4PortInd>()->getSrcPort();
+        // int port = packet->getTag<L4PortInd>()->getSrcPort();
 
         /*
          * From Device app
@@ -187,12 +187,12 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
     auto start = inet::makeShared<DeviceAppStartPacket>();
 
     //instantiation requirements and info
-    start->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     start->setType(START_MECAPP);
     start->setMecAppName(mecAppName.c_str());
     //start->setMecAppProvider("lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest_External");
 
     start->setChunkLength(inet::B(2+mecAppName.size()+1));
+    start->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(start);
 
@@ -221,10 +221,10 @@ void UEWarningAlertApp::sendStopMEWarningAlertApp()
     auto stop = inet::makeShared<DeviceAppStopPacket>();
 
     //termination requirements and info
-    stop->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     stop->setType(STOP_MECAPP);
 
     stop->setChunkLength(inet::B(size_));
+    stop->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(stop);
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
@@ -287,8 +287,8 @@ void UEWarningAlertApp::sendMessageToMECApp(){
     alert->setCenterPositionX(par("positionX").doubleValue());
     alert->setCenterPositionY(par("positionY").doubleValue());
     alert->setRadius(par("radius").doubleValue());
-    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     alert->setChunkLength(inet::B(20));
+    alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(alert);
 
     if(log)

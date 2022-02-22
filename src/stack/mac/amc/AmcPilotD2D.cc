@@ -27,7 +27,7 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
     preconfiguredTxParams_->writePmi(intuniform(getEnvir()->getRNG(0),1, pow(ri, (double) 2)));   // taken from LteFeedbackComputationRealistic::computeFeedback
 
     if (cqi < 0 || cqi > 15)
-        throw cRuntimeError("AmcPilotD2D::setPreconfiguredTxParams - CQI %s is not a valid value. Aborting", cqi);
+        throw cRuntimeError("AmcPilotD2D::setPreconfiguredTxParams - CQI %hu is not a valid value. Aborting", cqi);
     preconfiguredTxParams_->writeCqi(std::vector<Cqi>(1,cqi));
 
     BandSet b;

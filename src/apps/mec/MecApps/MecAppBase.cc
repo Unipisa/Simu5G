@@ -213,7 +213,7 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
     }
     else
     {
-        throw cRuntimeError("MecAppBase::socketDataArrived - Socket %s not recognized", socket->getSocketId());
+        throw cRuntimeError("MecAppBase::socketDataArrived - Socket with id %d not recognized", socket->getSocketId());
     }
     delete msg;
 

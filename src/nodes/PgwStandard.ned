@@ -51,7 +51,7 @@ module PgwStandard extends NetworkLayerNodeBase
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
                 @display("p=675,80");
-                ownerType = nodeType;
+                ownerType = parent.nodeType;
         }
         gtp_user: GtpUser {
             parameters:

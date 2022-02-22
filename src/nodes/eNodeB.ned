@@ -27,8 +27,6 @@ import simu5g.common.cellInfo.CellInfo;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
-
-
 import simu5g.corenetwork.statsCollector.StatsCollector; 
 
 // 
@@ -58,9 +56,9 @@ module eNodeB
         //# Node specs
         string nodeType = default("ENODEB");        // DO NOT CHANGE
         string gateway = default("pgw");
-        int masterId = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity 
-        int macNodeId = default(0); // TODO: this is not a real parameter
-        int macCellId = default(0);  // TODO: this is not a real parameter
+        int masterId @mutable = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity 
+        int macNodeId @mutable = default(0); // TODO: this is not a real parameter
+        int macCellId @mutable = default(0);  // TODO: this is not a real parameter
         double txPower @unit(mw) = default(100mw);
         string nicType = default("LteNicEnb");
 
@@ -126,7 +124,7 @@ module eNodeB
         cellularNic: <nicType> like ICellularNic {
             parameters:
                 @display("p=433.54,520.4525");
-                nodeType = nodeType;
+                nodeType = parent.nodeType;
         }
 
         pppIf: PppInterface {
@@ -207,7 +205,7 @@ module eNodeB
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
                 @display("p=1172.36,372.88");
-                ownerType = nodeType;
+                ownerType = parent.nodeType;
         }
         gtpUser: GtpUser {
             parameters:

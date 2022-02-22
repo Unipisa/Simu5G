@@ -19,25 +19,30 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 
 //
 // Implements a simple model of the 5GC UPF
-// In the current version, the core network in Simu5G supports one UPF only (working as gateway to the Internet, like the LTE PGW)
+//
+// The core network can contain multiple UPFs: see example in "simulations/NR/standalone"
+// UPF not connected to an external Data Network are intermediate UPFs. In the current version, intermediate UPFs just act
+// like IP routers. 
+// UPFs connected to an external Data Network take care of (de)tunneling packets according to GTP
 //
 module Upf extends NetworkLayerNodeBase
 {
     parameters:
-        @display("bgb=1350,750;i=device/mainframe");
+        @display("bgb=1350,750;i=abstract/switch");
         @figure[applicationLayer](type=rectangle; pos=250,6; size=1000,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
         @figure[applicationLayer.title](type=text; pos=1245,11; anchor=ne; text="application layer");
         @figure[transportLayer](type=rectangle; pos=250,156; size=1000,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
         @figure[transportLayer.title](type=text; pos=1245,161; anchor=ne; text="transport layer");
         @figure[submodules];
-            
-        string nodeType = "UPF"; 
+
+        string nodeType = default("UPF");   // do NOT change!
         forwarding = default(true);
         multicastForwarding = default(false);
-        // numPppInterfaces = 1;
 
     gates:
-        inout filterGate @labels(PppFrame-conn);
+        // this gate is used for the UPF connected to the external data network
+        // it must be left unconnected for intermediate UPFs 
+        inout filterGate @loose @labels(PppFrame-conn);
 
     submodules:
         pppIf: PppInterface {
@@ -46,12 +51,12 @@ module Upf extends NetworkLayerNodeBase
         }
         udp: Udp {
             parameters:
-                @display("p=329,206");
+                @display("p=374.0425,201.4075");
         }
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
-                @display("p=675,80");
-                ownerType = nodeType;
+                @display("p=881.7925,79.5475");
+                ownerType = parent.nodeType;
         }
         gtp_user: GtpUser {
             parameters:
@@ -67,7 +72,7 @@ module Upf extends NetworkLayerNodeBase
         }
 
     connections:
-        
+
         gtp_user.socketOut --> at.in++;
         gtp_user.socketIn <-- at.out++;
 
@@ -75,7 +80,7 @@ module Upf extends NetworkLayerNodeBase
         pppIf.upperLayerIn <-- gtp_user.pppGate;
 
         trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
-        
+
         // at dispatcher to transport layer connections
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;

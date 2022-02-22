@@ -50,9 +50,9 @@ void MecPlatformManager::initialize(int stage)
 
 
 // instancing the requested MEApp (called by handleResource)
-MecAppInstanceInfo MecPlatformManager::instantiateMEApp(CreateAppMessage* msg)
+MecAppInstanceInfo* MecPlatformManager::instantiateMEApp(CreateAppMessage* msg)
 {
-   MecAppInstanceInfo res = vim->instantiateMEApp(msg);
+   MecAppInstanceInfo* res = vim->instantiateMEApp(msg);
    delete msg;
    return res;
 }

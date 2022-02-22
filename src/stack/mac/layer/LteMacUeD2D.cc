@@ -538,10 +538,6 @@ LteMacUeD2D::macHandleGrant(cPacket* pktAux)
 
     // store received grant
     schedulingGrant_[carrierFrequency] = grant;
-
-    EV_FATAL << "grantId recevive grant: " << grant->getGrandId() << endl;
-
-
     if (grant->getPeriodic())
     {
         periodCounter_[carrierFrequency] = grant->getPeriod();
@@ -1002,7 +998,7 @@ UserTxParams* LteMacUeD2D::getPreconfiguredTxParams()
     if (cqi < 0 || cqi > 15)
     {
         delete txParams;
-        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %s is not a valid value. Aborting", cqi);
+        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %hu is not a valid value. Aborting", cqi);
     }
     txParams->writeCqi(std::vector<Cqi>(1,cqi));
 

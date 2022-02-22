@@ -819,6 +819,7 @@ double LtePhyUe::getAverageCqi(Direction dir)
             return 0;
         return (double)cqiUlSum_/cqiUlCount_;
     }
+    throw cRuntimeError("Direction %d is not handled.", dir);
 }
 
 double LtePhyUe::getVarianceCqi(Direction dir)
@@ -844,6 +845,7 @@ double LtePhyUe::getVarianceCqi(Direction dir)
         }
         return sum/cqiUlSamples_.size();
     }
+    throw cRuntimeError("Direction %d is not handled.", dir);
 }
 
 void LtePhyUe::finish()

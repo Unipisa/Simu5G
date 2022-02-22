@@ -26,7 +26,7 @@ package simu5g.nodes.mec.MECOrchestrator;
 simple MecOrchestrator
 {
     parameters:
-
+        @display("i=device/mainframe;bgb=1006.50995,692.76");
 	    string mecHostList = default("");
 	    string mecApplicationPackageList = default("");
 	    
