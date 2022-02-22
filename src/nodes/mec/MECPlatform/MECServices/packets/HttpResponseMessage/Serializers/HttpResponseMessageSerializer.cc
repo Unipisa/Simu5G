@@ -43,12 +43,11 @@ void HttpResponseMessageSerializer::serialize(MemoryOutputStream& stream, const 
 const Ptr<Chunk> HttpResponseMessageSerializer::deserialize(MemoryInputStream& stream) const
 {
     EV << "HttpResponseMessageSerializer::deserialize" << endl;
-    // auto startPosition = stream.getPosition();
+//    auto startPosition = stream.getPosition();
     auto applicationPacket = makeShared<HttpResponseMessage>();
-    // TODO:
-    // B dataLength = B(stream.getLength());
-    // size_t pos = 0;
-    return applicationPacket;
+//    B dataLength = B(stream.getLength());
+//    size_t pos = 0;
+        return applicationPacket;
 }
 
 } // namespace inet

@@ -79,8 +79,8 @@ User LocationResource::getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const
     // throw exeption if macNodeId does no exist?
     inet::Ipv4Address ipAddress = binder_->getIPv4Address(nodeId);
     std::string refUrl = baseUri_ + "/users?address=acr:" + ipAddress.str();
-    // inet::Coord  speed = LocationUtils::getSpeed(nodeId);
-    //inet::Coord  position = LocationUtils::getCoordinates(nodeId);
+//    inet::Coord  speed = LocationUtils::getSpeed(nodeId);
+//    inet::Coord  position = LocationUtils::getCoordinates(nodeId);
     User ueInfo = User(ipAddress, cellId, refUrl);
     return ueInfo;
 }
@@ -194,7 +194,7 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
 
     std::vector<MacCellId>::const_iterator cid =  cellsID.begin();
     std::map<MacCellId, CellInfo *>::const_iterator it;
-    // const std::map<MacNodeId, inet::Coord>* uePositionList;
+//    const std::map<MacNodeId, inet::Coord>* uePositionList;
 
     for(; cid != cellsID.end() ; ++cid){
         it = eNodeBs_.find(*cid);

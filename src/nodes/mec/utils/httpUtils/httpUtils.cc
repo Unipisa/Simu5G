@@ -271,7 +271,7 @@ namespace Http {
         std::string delimiter = "\r\n\r\n";
         size_t pos = 0;
         std::string header;
-        //int remainingData;
+//        int remainingData;
         if(*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg())
         {
            EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
@@ -352,13 +352,13 @@ namespace Http {
         std::string delimiter = "\r\n\r\n";
         size_t pos = 0;
         std::string header;
-        // int remainingData;
+//        int remainingData;
 
         if(*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg())
         {
             EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
             Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
-            // double time;
+//            double time;
             switch (res)
             {
             case (Http::COMPLETE_NO_DATA):

@@ -202,7 +202,7 @@ DiscardedPkts UeStatsCollector::getULDiscardedPkt()
     {
 
         pair = packetFlowManager_->getDiscardedPkt();
-        // double rate = ((double)pair.discarded * 1000000) / pair.total;
+        //double rate = ((double)pair.discarded * 1000000) / pair.total;
     }
     return pair;
 }
