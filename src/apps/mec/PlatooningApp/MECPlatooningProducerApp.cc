@@ -15,6 +15,7 @@
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "apps/mec/PlatooningApp/packets/CurrentPlatoonRequestTimer_m.h"
+#include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
 
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
@@ -24,6 +25,7 @@
 #include "inet/common/packet/Packet_m.h"
 #include "inet/networklayer/common/L3AddressTag_m.h"
 #include "inet/transportlayer/common/L4PortTag_m.h"
+
 
 #include <fstream>
 
@@ -69,6 +71,12 @@ void MECPlatooningProducerApp::initialize(int stage)
 
     producerAppId_ = par("producerAppId");
     nextControllerIndex_ = 1000* (1 + producerAppId_);
+
+
+    received_ = 0;
+
+    updatesDifferences_ = registerSignal("updateDiffs");
+
 
     EV << "MECPlatooningProducerApp::initialize - MEC application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
@@ -140,8 +148,8 @@ void MECPlatooningProducerApp::handleMessage(cMessage *msg)
 
                 // start controlling
                 // TODO remove?
-                cMessage *trigger = new cMessage("controllerTrigger");
-                scheduleAt(simTime()+0.1, trigger);
+//                cMessage *trigger = new cMessage("controllerTrigger");
+//                scheduleAt(simTime()+0.1, trigger);
             }
             else if (platooningPkt->getType() == LEAVE_REQUEST)
             {
@@ -221,6 +229,29 @@ void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
             {
                 ControlTimer* ctrlTimer = check_and_cast<ControlTimer*>(timer);
                 handleControlTimer(ctrlTimer);
+                EV << "TEST" << endl;
+//                // emit stats about the difference of the updates
+//                if(received_ == 2)
+//                {
+//                    EV << "DIFFERENZA: " << second-first << endl;
+                    if(simTime() > 10)
+                    {
+                        simtime_t diff;
+                        if(producerAppEndpoint_[0].lastResponse > producerAppEndpoint_[1].lastResponse)
+                            diff = producerAppEndpoint_[0].lastResponse - producerAppEndpoint_[1].lastResponse;
+                        else
+                            diff = producerAppEndpoint_[1].lastResponse - producerAppEndpoint_[0].lastResponse;
+
+                        emit(updatesDifferences_, diff);
+                    }
+//                    received_ = 0;
+//                }
+//                else
+//                {
+//                    //emit(updatesDifferences_, 0);
+//                    received_ = 0;
+//                }
+
                 break;
             }
             case PLATOON_UPDATE_POSITION_TIMER:
@@ -316,6 +347,13 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
     {
         if(producerApp.second.locationServiceSocket->getSocketId() == connId)
         {
+            /*
+             * bad code, just for quick result
+             * store the last time you received the update
+             *
+             */
+            producerApp.second.lastResponse = simTime();
+
             HttpMessageStatus* msgStatus = (HttpMessageStatus*)producerApp.second.locationServiceSocket->getUserData();
             httpMessage = msgStatus->currentMessage;
             // If the request is associated to a controller no more available, just discard
@@ -343,6 +381,8 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
         {
             nlohmann::json jsonBody;
             EV << "MECPlatooningProducerApp::handleServiceMessage - response 200 " << endl;
+
+            received_++;
 
             try
             {
@@ -512,7 +552,7 @@ void MECPlatooningProducerApp::handleAddMemberResponse(cMessage *msg)
 
     // send response to the UE's MEC app
     platooningConsumerAppsSocket.sendTo(responsePacket, endpoint->second.address, endpoint->second.port);
-
+    EV << "MECPlatooningProducerApp::handleAddMemberResponse - Join response sent to the consumer app with id[" << res->getMecAppId() << "]" << endl;
     delete packet;
 }
 
@@ -857,7 +897,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
 
         ProducerAppInfo producerAppEndpoint = producerAppEndpoint_[index.producerApp];
         platooningProducerAppsSocket_.sendTo(responsePacket, producerAppEndpoint.address, producerAppEndpoint.port);
-        EV << "MECPlatooningProducerApp::sendJoinPlatoonRequest - Join response sent to the UE" << endl;
+
         delete packet; // delete  join packet, it is not useful anymore
         return;
     }
@@ -889,7 +929,13 @@ bool MECPlatooningProducerApp::manageLocalPlatoon(int& index, cMessage* req)
     else
     {
         // if no active platoon controller can be used, create one
-        platoonController = new RajamaniPlatoonController(this, index, 0.1, 0.1); // TODO select the controller and set periods
+        if(!strcmp(par("controller").stringValue(), "rajamani"))
+            platoonController = new RajamaniPlatoonController(this, index, 0.1, 0.1); // TODO select the controller and set periods
+        else if(!strcmp(par("controller").stringValue(), "safe"))
+            platoonController = new SafePlatoonController(this, index, 0.1, 0.1); // TODO select the controller and set periods
+        else
+            throw cRuntimeError("MECPlatooningProducerApp::manageLocalPlatoon(): Controller with name %s not found", par("controller").stringValue());
+
         platoonController->setDirection(direction);
         platoonControllers_[index] = platoonController;
         EV << "MECPlatooningProducerApp::sendJoinPlatoonRequest - MEC App " << mecAppId << " added to new platoon " << index << " - dir[" << direction << "]" << endl;
@@ -1187,7 +1233,8 @@ void MECPlatooningProducerApp::handleControlTimer(ControlTimer* ctrlTimer)
         for (; it != cmdList->end(); ++it)
         {
             int mecAppId = it->first;
-            double newAcceleration = it->second;
+            double newAcceleration = it->second.acceleration;
+            inet::L3Address precUeAddress = it->second.address;
             bool isRemote = false;
             int remoteProducerAppId;
 
@@ -1213,6 +1260,7 @@ void MECPlatooningProducerApp::handleControlTimer(ControlTimer* ctrlTimer)
             cmd->setNewAcceleration(newAcceleration);
             cmd->setChunkLength(inet::B( sizeof(double) ));
             cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+            cmd->addTagIfAbsent<inet::PrecedingVehicleTag>()->setUeAddress(precUeAddress);
             pkt->insertAtBack(cmd);
 
 

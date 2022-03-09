@@ -38,7 +38,7 @@ class PlatoonVehicleInfo;
 typedef std::map<int, PlatoonControllerBase*> ControllerMap;
 typedef std::map<int, AppEndpoint> ProducerAppMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
-typedef std::map<int, double> CommandList;
+typedef std::map<int, CommandInfo> CommandList;
 typedef std::map<int, std::map<int, std::vector<PlatoonVehicleInfo *>> > GlobalAvailablePlatoons;
 
 class MECPlatooningProducerApp : public MecAppBase
@@ -104,6 +104,11 @@ class MECPlatooningProducerApp : public MecAppBase
     cQueue consumerAppRequests_; // cMessage requests;
     int requestCounter_;
     double retrievePlatoonsInfoDuration_;
+
+    int received_;
+    simtime_t lastFirst;
+    simtime_t lastSecond;
+    simsignal_t updatesDifferences_;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

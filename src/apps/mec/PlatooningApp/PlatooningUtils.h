@@ -95,6 +95,7 @@ typedef struct
     int locationServicePort;
     // FIFO queue with the platoon index id of the pending requests
     std::queue<int> controllerPendingRequests;
+    simtime_t lastResponse = 0;
 } ProducerAppInfo;
 
 
@@ -103,6 +104,14 @@ typedef struct
     int producerApp;
     int platoonIndex;
 } PlatoonIndex;
+
+typedef struct
+{
+    double acceleration;
+    inet::L3Address address;
+} CommandInfo;
+
+
 
 
 

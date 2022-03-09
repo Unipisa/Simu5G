@@ -46,6 +46,10 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 	
 		object federatedProducerApps = default([]);
 		
+		string controller = default("rajamani");
+		
+		@signal[updateDiffs];
+        @statistic[updateDiffs](title="difference LS response times"; unit="ms"; source="updateDiffs"; record=mean, stats, vector); 
     gates:
 	  input mePlatformIn;
 	  output mePlatformOut;

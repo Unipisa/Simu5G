@@ -59,12 +59,31 @@ class UEPlatooningApp: public cSimpleModule
     LinearAccelerationMobility* mobility;
     inet::Coord position;
 
+    // Address of the preceding vehicle (used to compute stats)
+    inet::L3Address precedingVehicleAddress_;
+    LinearAccelerationMobility* precedingVehicleModule_;
+
     // current status of the UE
     UePlatoonStatus status_;
 
     //scheduling
     cMessage *selfStart_;
     cMessage *selfStop_;
+
+    // sinusoidal pattern
+    cMessage* sinusoidalMsg_;
+    double sinusoidalPeriod_;
+
+
+    // signals for statistics
+    cMessage *statsMsg_;
+    double statsPeriod_;
+    simsignal_t speedSignal_;
+    simsignal_t accelerationSignal_;
+    simsignal_t interdistanceSignal_;
+    simsignal_t lifeCycleEventSignal_;
+    simsignal_t cmdlatency_;
+
 
   public:
     ~UEPlatooningApp();
@@ -76,6 +95,8 @@ class UEPlatooningApp: public cSimpleModule
     void initialize(int stage);
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
+
+    void emitStats();
 
     // --- Functions to interact with the DeviceApp --- //
     void sendStartMECPlatooningApp();

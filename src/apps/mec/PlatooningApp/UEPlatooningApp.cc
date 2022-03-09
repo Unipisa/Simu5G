@@ -14,6 +14,8 @@
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
+
 
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
@@ -21,6 +23,8 @@
 #include "inet/transportlayer/common/L4PortTag_m.h"
 
 #include <fstream>
+
+#include <math.h>
 
 using namespace inet;
 using namespace std;
@@ -31,6 +35,8 @@ UEPlatooningApp::UEPlatooningApp()
 {
     selfStart_ = nullptr;
     selfStop_ = nullptr;
+    precedingVehicleModule_ = nullptr;
+    precedingVehicleAddress_ = L3Address();
     status_ = NOT_JOINED;
 }
 
@@ -38,6 +44,7 @@ UEPlatooningApp::~UEPlatooningApp()
 {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
+    cancelAndDelete(statsMsg_);
 }
 
 void UEPlatooningApp::initialize(int stage)
@@ -97,6 +104,27 @@ void UEPlatooningApp::initialize(int stage)
 
     //testing
     EV << "UEPlatooningApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
+
+    // register signals for stats
+    speedSignal_ = registerSignal("speed");
+    accelerationSignal_ = registerSignal("acceleration");
+    interdistanceSignal_ = registerSignal("precedingVehicleDistance");
+    lifeCycleEventSignal_ = registerSignal("lifeCycleEvents");
+    cmdlatency_ = registerSignal("cmdLatency");
+
+    statsMsg_ = new cMessage("statsMsg");
+    statsPeriod_ = 0.2;
+    scheduleAt(simTime() + statsPeriod_, statsMsg_);
+
+    // sinusoidalPattern
+    if(par("sinusoidal").boolValue())
+    {
+        sinusoidalMsg_ = new cMessage("sinusoidalMsg");
+        sinusoidalPeriod_ = 0.100;
+        scheduleAt(simTime()+sinusoidalPeriod_, sinusoidalMsg_);
+    }
+    mobility->setAcceleration(0.0);
+
 }
 
 void UEPlatooningApp::handleMessage(cMessage *msg)
@@ -118,6 +146,20 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
         {
             sendLeavePlatoonRequest();             // send request for leaving a platoon
             delete msg;
+        }
+        else if(!strcmp(msg->getName(), "statsMsg"))
+        {
+            emitStats();
+            scheduleAt(simTime() + statsPeriod_, msg);
+        }
+        else if(!strcmp(msg->getName(), "sinusoidalMsg"))
+        {
+            double factor = 3 * cos (180*simTime().dbl() * 3.14 /180);
+            EV << "ACC: " <<factor << endl;
+            mobility->setAcceleration(factor);
+            emit(accelerationSignal_, mobility->getMaxAcceleration());
+            EV << "ACC: " << mobility->getMaxAcceleration() << endl;
+            scheduleAt(simTime()+sinusoidalPeriod_, sinusoidalMsg_);
         }
         else
             throw cRuntimeError("UEPlatooningApp::handleMessage - \tWARNING: Unrecognized self message");
@@ -277,6 +319,7 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     pkt->insertAtBack(joinReq);
 
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
+    emit(lifeCycleEventSignal_, simTime());
     EV << "UEPlatooningApp::sendJoinPlatoonRequest() - Join request sent to the MEC app" << endl;
 }
 
@@ -317,6 +360,7 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
     if (resp)
     {
         status_ = JOINED;
+        emit(lifeCycleEventSignal_, simTime());
 
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
@@ -348,6 +392,7 @@ void UEPlatooningApp::recvLeavePlatoonResponse(cMessage* msg)
 
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, "white");
+        emit(lifeCycleEventSignal_, simTime());
 
         EV << "UEPlatooningApp::recvLeavePlatoonResponse() - Leave request accepted" << endl;
     }
@@ -364,14 +409,54 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto cmd = packet->peekAtFront<PlatooningInfoPacket>();
+    auto precUeAddress = cmd->getTag<PrecedingVehicleTag>()->getUeAddress();
+    auto creationTime = cmd->getTag<CreationTimeTag>()->getCreationTime();
+
+    /* Check the preceding vehicle
+     * possible scenarios:
+     *  - a new preceding car is added to the platoon
+     *  - a preceding car left the platoon
+     */
+
+    if(precedingVehicleAddress_ != precUeAddress)
+    {
+        if(precUeAddress.isUnspecified())
+        {
+           // I am the new leader
+            precedingVehicleModule_ = nullptr;
+        }
+        else
+        {
+            cModule *tmpModule  = L3AddressResolver().findHostWithAddress(precUeAddress); // TODO it could be heavy! think of also send UE to the controller...
+            if(tmpModule == nullptr)
+            {
+                throw cRuntimeError("UEPlatooningApp::recvPlatoonCommand(): car module id for IP address %s not found!", precUeAddress.str().c_str());
+            }
+            precedingVehicleModule_ = check_and_cast<LinearAccelerationMobility*>(tmpModule->getSubmodule("mobility"));
+        }
+
+    }
 
     EV << "UEPlatooningApp::recvPlatoonCommand - Received " << cmd->getType() << " type PlatooningPacket"<< endl;
 
     // obtain command from the controller and apply it to the mobility module
+//    if(!par("sinusoidal").boolValue())
+//    {
     double newAcceleration = cmd->getNewAcceleration();
     mobility->setAcceleration(newAcceleration);
-
     EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
+//    }
+
+    if(precedingVehicleModule_ != nullptr)
+    {
+        double distancePrecedingVehicle = mobility->getCurrentPosition().distance(precedingVehicleModule_->getCurrentPosition());
+        emit(interdistanceSignal_, distancePrecedingVehicle);
+    }
+    emit(cmdlatency_, simTime()-creationTime);
+
+    emitStats();
+    if(statsMsg_->isScheduled())
+        cancelEvent(statsMsg_);
 }
 void UEPlatooningApp::handleAckStopMECPlatooningApp(cMessage* msg)
 {
@@ -388,4 +473,12 @@ void UEPlatooningApp::handleAckStopMECPlatooningApp(cMessage* msg)
     ue->getDisplayString().setTagArg("i",1, "white");
 
     cancelEvent(selfStop_);
+}
+
+
+void UEPlatooningApp::emitStats()
+{
+    // emit stats
+    emit(speedSignal_, mobility->getCurrentVelocity().length());
+    emit(accelerationSignal_, mobility->getMaxAcceleration());
 }

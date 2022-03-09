@@ -45,9 +45,26 @@ simple UEPlatooningApp like IApp
         // if -1, the MEC will try to find the best platoon 
         int controllerIndex = default(-1);
         
+        bool sinusoidal = default(false);
+        
         string mecAppName = default("MECPlatooningConsumerApp");
         
         string interfaceTableModule;
+        
+        // stats
+        @signal[cmdLatency];
+        @statistic[cmdLatency](title="cmdLatency"; unit="s"; source="cmdLatency"; record=stats, mean, vector); 
+        @signal[speed];
+        @statistic[speed](title="Vehicle speed"; unit="double"; source="speed"; record=stats, mean, vector);   
+        @signal[acceleration];
+        @statistic[acceleration](title="Vehicle acceleration"; unit="double"; source="acceleration"; record=stats, mean, vector);    
+        @signal[precedingVehicleDistance];
+        @statistic[precedingVehicleDistance](title="Vehicle distance"; unit="double"; source="precedingVehicleDistance"; record=stats, mean, vector);    
+        @signal[lifeCycleEvents];
+        @statistic[lifeCycleEvents](title="Platooning events"; unit="s"; source="lifeCycleEvents"; interpolationmode="none"; record=stats, mean, vector);    
+
+        
+            
                     
     gates:
         output socketOut;
