@@ -24,7 +24,7 @@ using namespace omnetpp;
 
 typedef std::set<int> MecAppIdSet;
 typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
-typedef std::map<int, double> CommandList;
+typedef std::map<int, CommandInfo> CommandList;
 
 class MECPlatooningProducerApp;
 

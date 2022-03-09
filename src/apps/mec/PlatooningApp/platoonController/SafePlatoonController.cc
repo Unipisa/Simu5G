@@ -16,6 +16,7 @@ SafePlatoonController::SafePlatoonController(MECPlatooningProducerApp* mecPlatoo
 {
     // TODO make this parametric
     criticalDistance_ = 0.5;
+//    targetSpeed_ = 19.4;
 }
 
 SafePlatoonController::~SafePlatoonController()
@@ -38,10 +39,10 @@ const CommandList* SafePlatoonController::controlPlatoon()
     {
         int mecAppId = *it;
         PlatoonVehicleInfo vehicleInfo = membersInfo_.at(mecAppId);
-
         EV << "SafePlatoonController::control() - Computing new command for MEC app " << mecAppId << " - vehicle info[" << vehicleInfo << "]" << endl;
 
         double newAcceleration = 0.0;
+        inet::L3Address precedingVehicleAddress = L3Address();
         if (mecAppId == leaderId)
         {
             newAcceleration = computeLeaderAcceleration(vehicleInfo.getSpeed());
@@ -61,10 +62,11 @@ const CommandList* SafePlatoonController::controlPlatoon()
             double leadingSpeed = precedingVehicleInfo.getSpeed();
 
             newAcceleration = computeMemberAcceleration(distanceToLeading, leadingSpeed, followerSpeed);
+            precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
         }
 
         // TODO compute new acceleration
-        (*cmdList)[mecAppId] = newAcceleration;
+        (*cmdList)[mecAppId] =  {newAcceleration, precedingVehicleAddress};
 
         EV << "SafePlatoonController::control() - New acceleration value for " << mecAppId << " [" << newAcceleration << "]" << endl;
     }

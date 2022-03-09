@@ -22,7 +22,7 @@ PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProducerApp* mecPlatoo
     minAcceleration_ = -5.0;
     maxAcceleration_ = 1.5;
 
-    targetSpeed_ = 10.0;
+    targetSpeed_ = 25;
 }
 
 PlatoonControllerBase::~PlatoonControllerBase()
@@ -142,6 +142,9 @@ void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
         {
             if (mit->second.getUeAddress() == it->address)
             {
+                mit->second.setLastSpeed(mit->second.getLastSpeed());
+                mit->second.setLastTimestamp(mit->second.getLastTimestamp());
+
                 mit->second.setPosition(it->position);
                 mit->second.setSpeed(it->speed);
                 mit->second.setTimestamp(it->timestamp);

@@ -32,7 +32,10 @@ class PlatoonVehicleInfo
     int producerAppId_;
     inet::Coord position_;
     double speed_;
+    double lastSpeed_;
     simtime_t timestamp_;
+    simtime_t lastTimestamp_;
+
     inet::L3Address ueAddress_;
 
   public:
@@ -59,6 +62,10 @@ class PlatoonVehicleInfo
     void setSpeed(double speed) { speed_ = speed; }
     double getSpeed() const { return speed_; }
 
+    void setLastSpeed(double speed) { lastSpeed_ = speed; }
+    double getLastSpeed() const { return lastSpeed_; }
+
+
     void setMecAppId(double mecAppId) { mecAppId_ = mecAppId; }
     double getMecAppId() const { return mecAppId_; }
 
@@ -68,6 +75,11 @@ class PlatoonVehicleInfo
 
     void setTimestamp(simtime_t timestamp) { timestamp_ = timestamp; }
     simtime_t getTimestamp() const { return timestamp_; }
+
+    void setLastTimestamp(simtime_t timestamp) { lastTimestamp_ = timestamp; }
+    simtime_t getLastTimestamp() const { return lastTimestamp_; }
+
+
 
     void setUeAddress(inet::L3Address address) { ueAddress_ = address; }
     inet::L3Address getUeAddress() const { return ueAddress_; }

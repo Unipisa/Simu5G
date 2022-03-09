@@ -53,6 +53,7 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
 
         double speed = vehicleInfo.getSpeed();
         double newAcceleration = 0.0;
+        inet::L3Address precedingVehicleAddress = L3Address();
         if (mecAppId == leaderId)
         {
             newAcceleration = computeLeaderAcceleration(speed);
@@ -67,16 +68,17 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
             PlatoonVehicleInfo precedingVehicleInfo = membersInfo_.at(precedingVehicleId);
 
             double distanceToPreceding = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());
-            double leaderAcceleration = cmdList->at(leaderId);
+            double leaderAcceleration = cmdList->at(leaderId).acceleration;
             double leaderSpeed = leaderVehicleInfo.getSpeed();
-            double precedingAcceleration = cmdList->at(precedingVehicleId);
+            double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration;
             double precedingSpeed = precedingVehicleInfo.getSpeed();
 
             newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
+            precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
         }
 
         // TODO compute new acceleration
-        (*cmdList)[mecAppId] = newAcceleration;
+        (*cmdList)[mecAppId] = {newAcceleration, precedingVehicleAddress};
 
         EV << "RajamaniPlatoonController::control() - New acceleration value for " << mecAppId << " [" << newAcceleration << "]" << endl;
     }
