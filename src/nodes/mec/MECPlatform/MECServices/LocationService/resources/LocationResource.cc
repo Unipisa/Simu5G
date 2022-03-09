@@ -158,6 +158,7 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
 	    found = false;
 	    eit = eNodeBs_.begin();
 	    for(; eit != eNodeBs_.end() ; ++eit){
+	        EV << "LocationResource::toJsonUe() - Looking for nodeId " << nodeId << " in gNB with id "<< eit->first << " [eNodeBs length "<< eNodeBs_.size() << "] " << endl;
 	        uePositionList = eit->second->getUePositionList();
 	        pit = uePositionList->find(nodeId);
 	        if(pit != uePositionList->end())
@@ -166,11 +167,13 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
 	            if(ueInfo.getIpv4Address() != inet::Ipv4Address::UNSPECIFIED_ADDRESS)
 	                ueArray.push_back(ueInfo.toJson());
                 found = true;
+                EV << "LocationResource::toJsonUe() - Found nodeId " << nodeId << " in gNB with id "<< eit->first << endl;
                 break; // next ue id
 	        }
         }
         if(!found)
         {
+            EV << "LocationResource::toJsonUe() - NOT Found nodeId " << nodeId << " in gNB with id "<< eit->first << endl;
            std::string notFound = "Address: " + (*uit).str() + " Not found.";
            ueArray.push_back(notFound);
         }

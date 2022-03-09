@@ -65,6 +65,9 @@ void ServiceRegistry::initialize(int stage)
     requestService_ = new cMessage("serveRequest");
     requestQueueSize_ = par("requestQueueSize");
 
+    requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+    responseTimeSignal_ = registerSignal("responseTime");
+
     subscriptionServiceTime_ = par("subscriptionServiceTime");
     subscriptionService_ = new cMessage("serveSubscription");
     subscriptionQueueSize_ = par("subscriptionQueueSize");

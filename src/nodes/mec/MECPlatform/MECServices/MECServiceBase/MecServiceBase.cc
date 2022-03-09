@@ -538,18 +538,19 @@ void MecServiceBase::getConnectedBaseStations(){
 
     EV <<"MecServiceBase::getConnectedBaseStations" << endl;
 
-    //getting the list of BS associated to this mec system from NED
-    if(meHost_->hasPar("bsList") && strcmp(meHost_->par("bsList").stringValue(), "")){
-
-       char* token = strtok ( (char*)meHost_->par("bsList").stringValue(), ", ");            // split by commas
-       while (token != NULL)
-       {
-           EV <<"MecServiceBase::getConnectedBaseStations " << token << endl;
-           cModule *bsModule = getSimulation()->getModuleByPath(token);
-           EV << "add2: " << bsModule << endl;
-           eNodeB_.insert(bsModule);
-           token = strtok (NULL, ", ");
-       }
+    //getting the list of mec hosts associated to this mec system from parameter
+    if(meHost_->hasPar("eNBList") && strcmp(meHost_->par("eNBList").stringValue(), "")){
+        std::string enbList = meHost_->par("eNBList").stdstringValue();
+        EV <<"MecServiceBase::getConnectedEnodeB list " << (char*)meHost_->par("eNBList").stringValue() << endl;
+        char* token = strtok ((char*)enbList.c_str() , ", ");            // split by commas
+        while (token != NULL)
+        {
+            EV <<"MecServiceBase::getConnectedEnodeB " << token << endl;
+            cModule *bsModule = getSimulation()->getModuleByPath(token);
+            EV << "add2: " << bsModule << endl;
+            eNodeB_.insert(bsModule);
+            token = strtok (NULL, ", ");
+        }
     }
     return;
 }
