@@ -49,6 +49,8 @@ network MultiOperator
         int numBgCells = default(0);
         bool enableMecOperatorB = default(true);
         @display("i=block/network2;bgb=2050.9824,801.22876");//;bgi=background/pisa_large");
+        
+        int linkLength @unit(m) = default(500m);
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
@@ -178,5 +180,5 @@ network MultiOperator
         gnb_B3.x2++ <--> Eth10G {  length = 500m; } <--> gnb_B4.x2++;
 
         //# Routers connection
-        router1.pppg++ <--> Eth10G {  length = 3000m; } <--> router2.pppg++;
+        router1.pppg++ <-->  Eth10G {  length = linkLength*2e5; }  <--> router2.pppg++;
 }
