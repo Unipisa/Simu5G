@@ -285,7 +285,7 @@ void MECPlatooningProducerApp::handleMp1Message(int connId)
 {
     // for now I only have just one Service Registry
     HttpMessageStatus* msgStatus = (HttpMessageStatus*)mp1Socket_->getUserData();
-    mp1HttpMessage = msgStatus->currentMessage;
+    mp1HttpMessage = (HttpBaseMessage*)msgStatus->httpMessageQueue.front();
     EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
       try
@@ -355,7 +355,7 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
             producerApp.second.lastResponse = simTime();
 
             HttpMessageStatus* msgStatus = (HttpMessageStatus*)producerApp.second.locationServiceSocket->getUserData();
-            httpMessage = msgStatus->currentMessage;
+            httpMessage = (HttpBaseMessage*)msgStatus->httpMessageQueue.front();
             // If the request is associated to a controller no more available, just discard
              controllerIndex = producerApp.second.controllerPendingRequests.front();
              producerApp.second.controllerPendingRequests.pop();

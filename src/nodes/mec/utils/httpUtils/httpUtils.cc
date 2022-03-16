@@ -60,6 +60,7 @@ namespace Http {
         std::vector<std::string>::iterator it = lines.begin();
         std::vector<std::string> line;
         EV << "httpUtils::parseHeader - Header: " << data << endl;
+        //std::cout << "httpUtils::parseHeader - Header: " << data << std::endl;
 
         // Request-Line: Method SP Request-URI SP HTTP-Version CRLF
         // Status-Line: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
