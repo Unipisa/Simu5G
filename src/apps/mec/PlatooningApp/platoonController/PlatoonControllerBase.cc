@@ -39,7 +39,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, int producerAppId, in
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
         posTimer->setControllerIndex(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.02); // TODO check timing
+        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.04); // TODO check timing
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
