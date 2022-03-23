@@ -67,6 +67,9 @@ backups
 /simulations/*/*/routing*/bkUe??.mrt
 /simulations/*/*/routing*/bkUe???.mrt
 
+/simulations/*/*/*/stats*/
+/simulations/*/*/*/plots*/
+
 /emulation/*/results*/
 /emulation/*/plots*/
 /emulation/*/stats*/test*/

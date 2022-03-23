@@ -3,7 +3,7 @@
 set terminal postscript enhanced color 
 
 set view map
-set size ratio 0.6
+set size ratio 0.5
 set size 0.75,0.75
 unset surface
 
