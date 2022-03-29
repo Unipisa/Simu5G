@@ -42,6 +42,13 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
 
     CommandList* cmdList = new CommandList();
 
+    // if adjustPosition flag is true, update all the position to the most recent timestamp
+    if(mecPlatooningProducerApp_->getAdjustPositionFlag())
+    {
+        adjustPositions();
+    }
+
+
     // loop through the vehicles following their order in the platoon
     std::list<int>::iterator it = platoonPositions_.begin();
     for (; it != platoonPositions_.end(); ++it)
@@ -57,6 +64,8 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
         if (mecAppId == leaderId)
         {
             newAcceleration = computeLeaderAcceleration(speed);
+            //membersInfo_.at(mecAppId).setAcceleration(newAcceleration);
+
         }
         else
         {
@@ -74,6 +83,7 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
             double precedingSpeed = precedingVehicleInfo.getSpeed();
 
             newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
+            //membersInfo_.at(mecAppId).setAcceleration(newAcceleration);
             precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
         }
 

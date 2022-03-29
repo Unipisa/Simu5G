@@ -89,6 +89,8 @@ class PlatoonControllerBase
     // @brief run the global platoon controller
     virtual const CommandList* controlPlatoon() = 0;
 
+    virtual void adjustPositions();
+
   public:
     PlatoonControllerBase(MECPlatooningProducerApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~PlatoonControllerBase();

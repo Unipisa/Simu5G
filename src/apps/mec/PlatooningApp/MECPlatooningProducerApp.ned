@@ -48,6 +48,9 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 		
 		string controller = default("rajamani");
 		
+		bool adjustPosition = default(false);
+		bool sendBulk = default(true);
+		
 		@signal[updateDiffs];
         @statistic[updateDiffs](title="difference LS response times"; unit="ms"; source="updateDiffs"; record=mean, stats, vector); 
     gates:

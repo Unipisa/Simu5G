@@ -73,6 +73,9 @@ void MECPlatooningProducerApp::initialize(int stage)
     nextControllerIndex_ = 1000* (1 + producerAppId_);
 
 
+    adjustPosition_  = par("adjustPosition").boolValue();
+    sendBulk_ = par("sendBulk").boolValue();
+
     received_ = 0;
 
     updatesDifferences_ = registerSignal("updateDiffs");
@@ -388,6 +391,7 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
             {
               jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
               std::vector<UEInfo> uesInfo;
+//              EV << "BODY" <<jsonBody.dump(2) << endl;
               //get the positions of all ues
               if(!jsonBody.contains("userInfo"))
               {
@@ -421,16 +425,20 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
               }
               else
               {
-                  UEInfo ueInfo;
-                  std::string address = jsonUeInfo["address"];
-                  ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
-                  ueInfo.timestamp = jsonUeInfo["timeStamp"]["nanoSeconds"];
-                  ueInfo.position = inet::Coord(double(jsonUeInfo["locationInfo"]["x"]), double(jsonUeInfo["locationInfo"]["y"]), double(jsonUeInfo["locationInfo"]["z"]));
-                  if(jsonUeInfo["locationInfo"].contains("velocity"))
-                      ueInfo.speed = jsonUeInfo["locationInfo"]["velocity"]["horizontalSpeed"];
-                  else
-                      ueInfo.speed = -1000; // TODO define
-                  uesInfo.push_back(ueInfo);
+                  if(!jsonUeInfo.is_string())
+                  {
+
+                      UEInfo ueInfo;
+                      std::string address = jsonUeInfo["address"];
+                      ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
+                      ueInfo.timestamp = jsonUeInfo["timeStamp"]["nanoSeconds"];
+                      ueInfo.position = inet::Coord(double(jsonUeInfo["locationInfo"]["x"]), double(jsonUeInfo["locationInfo"]["y"]), double(jsonUeInfo["locationInfo"]["z"]));
+                      if(jsonUeInfo["locationInfo"].contains("velocity"))
+                          ueInfo.speed = jsonUeInfo["locationInfo"]["velocity"]["horizontalSpeed"];
+                      else
+                          ueInfo.speed = -1000; // TODO define
+                      uesInfo.push_back(ueInfo);
+                  }
               }
 
               EV << "MECPlatooningProducerApp::handleServiceMessage - update the platoon positions for controller ["<< controllerIndex << "]" << endl;
@@ -1252,8 +1260,8 @@ void MECPlatooningProducerApp::handleControlTimer(ControlTimer* ctrlTimer)
                     isRemote = true;
                 }
             }
-
             inet::Packet* pkt = new inet::Packet("PlatooningInfoPacket");
+
             auto cmd = inet::makeShared<PlatooningInfoPacket>();
             cmd->setType(PLATOON_CMD);
             cmd->setMecAppId(mecAppId); // used in case of it is sent to an other produceApp
@@ -1262,7 +1270,6 @@ void MECPlatooningProducerApp::handleControlTimer(ControlTimer* ctrlTimer)
             cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
             cmd->addTagIfAbsent<inet::PrecedingVehicleTag>()->setUeAddress(precUeAddress);
             pkt->insertAtBack(cmd);
-
 
             if(!isRemote)
             {
@@ -1326,14 +1333,32 @@ void MECPlatooningProducerApp::requirePlatoonLocations(int producerAppId, int co
     {
         EV << "MECPlatooningProducerApp::requirePlatoonLocations - " << *it << endl;
         ueAddresses << "acr:" << *it;
-        if(next(it) != ues.end())
-            ueAddresses << ",";
-    }
-    // send GET request
-    sendGetRequest(producerAppId, ueAddresses.str());
 
-    // insert the controller id in the relative requests queue
-    producerApp->second.controllerPendingRequests.push(controllerIndex);
+        if(!sendBulk_)
+        {
+            //    // send GET request
+            sendGetRequest(producerAppId, ueAddresses.str());
+            // insert the controller id in the relative requests queue
+            producerApp->second.controllerPendingRequests.push(controllerIndex);
+            ueAddresses.str("");
+            ueAddresses.clear();
+        }
+        else
+        {
+
+            if(next(it) != ues.end())
+                ueAddresses << ",";
+        }
+    }
+
+    if(sendBulk_)
+    {
+        // send GET request
+        sendGetRequest(producerAppId, ueAddresses.str());
+
+        //insert the controller id in the relative requests queue
+        producerApp->second.controllerPendingRequests.push(controllerIndex);
+    }
 }
 
 void MECPlatooningProducerApp::sendGetRequest(int producerAppId, const std::string& ues)

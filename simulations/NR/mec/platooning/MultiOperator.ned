@@ -35,11 +35,6 @@ import simu5g.world.radio.LteChannelControl;
 // Also see 'demo.xml' for the correct configuration of network interfaces 
 //
 
-channel propDelay extends Eth10G
-{
-    length = 1000m;
-}
-
 network MultiOperator
 {
     parameters:
@@ -50,7 +45,7 @@ network MultiOperator
         bool enableMecOperatorB = default(true);
         @display("i=block/network2;bgb=2050.9824,801.22876");//;bgi=background/pisa_large");
         
-        int linkLength @unit(m) = default(500m);
+        int linkLength @unit(m) = default(1m); // it is in ms!!!!
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");

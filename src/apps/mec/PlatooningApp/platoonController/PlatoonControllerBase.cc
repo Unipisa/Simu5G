@@ -39,7 +39,7 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, int producerAppId, in
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
         posTimer->setControllerIndex(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.04); // TODO check timing
+        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.03); // TODO check timing
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
@@ -131,6 +131,33 @@ std::map<int, std::set<inet::L3Address> > PlatoonControllerBase::getUeAddressLis
     return ueAddresses;
 }
 
+void PlatoonControllerBase::adjustPositions()
+{
+    /*
+     * find the most recent timestamp
+     * for every older timestamp compute the new position
+     */
+    double now = simTime().dbl()*1000;
+
+    for(auto &vehicle: membersInfo_)
+    {
+        double deltaTs = (now - vehicle.second.getTimestamp())/1000; //to ms
+        EV << "PlatoonControllerBase::adjustPositions() - deltaTs is " << deltaTs << endl;
+
+        // TODO consider to adjust the position for every coord!
+        EV << "PlatoonControllerBase::adjustPositions() - old position: " << vehicle.second.getPosition().str() << endl;
+        double newPosition = vehicle.second.getPosition().x + vehicle.second.getSpeed() * deltaTs + 0.5 * vehicle.second.getAcceleration() * deltaTs * deltaTs; // TODO add acceleration part
+
+        double newSpeed = vehicle.second.getSpeed() + vehicle.second.getAcceleration() * deltaTs;
+        vehicle.second.setPositionX(newPosition);
+        vehicle.second.setSpeed(newSpeed);
+        vehicle.second.setTimestamp(now);
+
+        EV << "PlatoonControllerBase::adjustPositions() - new position: " << vehicle.second.getPosition().str() << endl;
+    }
+}
+
+
 void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
 {
     EV << "PlatoonControllerBase::updatePlatoonPositions - size " << uesInfo->size() << endl;
@@ -142,8 +169,9 @@ void PlatoonControllerBase::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
         {
             if (mit->second.getUeAddress() == it->address)
             {
-                mit->second.setLastSpeed(mit->second.getLastSpeed());
-                mit->second.setLastTimestamp(mit->second.getLastTimestamp());
+                mit->second.setLastPosition(mit->second.getPosition());
+                mit->second.setLastSpeed(mit->second.getSpeed());
+                mit->second.setLastTimestamp(mit->second.getTimestamp());
 
                 mit->second.setPosition(it->position);
                 mit->second.setSpeed(it->speed);
@@ -176,7 +204,7 @@ nlohmann::json PlatoonControllerBase::dumpPlatoonToJSON() const
         auto vehicle = membersInfo_.at(vehiclePos);
         nlohmann::json jsonVehicle;
         jsonVehicle["id"] = vehiclePos;
-        jsonVehicle["timestamp"] = vehicle.getTimestamp().dbl();
+        jsonVehicle["timestamp"] = vehicle.getTimestamp();
         jsonVehicle["speed"] = vehicle.getSpeed();
         Coord pos = vehicle.getPosition();
         jsonVehicle["position"]["x"] = pos.x;

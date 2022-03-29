@@ -30,11 +30,13 @@ class PlatoonVehicleInfo
 
     int mecAppId_;
     int producerAppId_;
+    double acceleration_;
     inet::Coord position_;
+    inet::Coord lastPosition_;
     double speed_;
     double lastSpeed_;
-    simtime_t timestamp_;
-    simtime_t lastTimestamp_;
+    double timestamp_;
+    double lastTimestamp_;
 
     inet::L3Address ueAddress_;
 
@@ -43,6 +45,7 @@ class PlatoonVehicleInfo
     {
         position_ = inet::Coord::NIL;
         speed_ = 0.0;
+        acceleration_ = 0.0;
         timestamp_ = 0.0;
         ueAddress_ = inet::L3Address();
     }
@@ -57,10 +60,21 @@ class PlatoonVehicleInfo
     }
 
     void setPosition(inet::Coord position) { position_ = position; }
+    void setPositionX(double position) { position_.x = position; }
+    void setPositionY(double position) { position_.y = position; }
+    void setPositionZ(double position) { position_.z = position; }
+
     inet::Coord getPosition() const { return position_; }
+
+    void setLastPosition(inet::Coord position) { lastPosition_ = position; }
+    inet::Coord getLastPosition() const { return lastPosition_; }
+
 
     void setSpeed(double speed) { speed_ = speed; }
     double getSpeed() const { return speed_; }
+
+    void setAcceleration(double acceleration) { acceleration_ = acceleration; }
+    double getAcceleration() const { return acceleration_; }
 
     void setLastSpeed(double speed) { lastSpeed_ = speed; }
     double getLastSpeed() const { return lastSpeed_; }
@@ -73,11 +87,11 @@ class PlatoonVehicleInfo
     int getProducerAppId() const { return producerAppId_; }
 
 
-    void setTimestamp(simtime_t timestamp) { timestamp_ = timestamp; }
-    simtime_t getTimestamp() const { return timestamp_; }
+    void setTimestamp(double timestamp) { timestamp_ = timestamp; }
+    double getTimestamp() const { return timestamp_; }
 
-    void setLastTimestamp(simtime_t timestamp) { lastTimestamp_ = timestamp; }
-    simtime_t getLastTimestamp() const { return lastTimestamp_; }
+    void setLastTimestamp(double timestamp) { lastTimestamp_ = timestamp; }
+    double getLastTimestamp() const { return lastTimestamp_; }
 
 
 

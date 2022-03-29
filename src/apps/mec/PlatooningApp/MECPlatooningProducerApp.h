@@ -47,11 +47,11 @@ class MECPlatooningProducerApp : public MecAppBase
 
     int producerAppId_;
 
-     inet::TcpSocket *mp1Socket_;
-     inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
+    inet::TcpSocket *serviceSocket_;
 
-     inet::UdpSocket platooningProducerAppsSocket_; // socket used to communicate with other MecProduderApps
-     int platooningProducerAppsPort;
+    inet::UdpSocket platooningProducerAppsSocket_; // socket used to communicate with other MecProduderApps
+    int platooningProducerAppsPort;
 
     // UDP socket to communicate with the MecConsumerApps of the UEs
     inet::UdpSocket platooningConsumerAppsSocket;
@@ -69,6 +69,15 @@ class MECPlatooningProducerApp : public MecAppBase
 
     HttpBaseMessage* serviceHttpMessage;
     HttpBaseMessage* mp1HttpMessage;
+
+    // flag to let the controller to adjust the position if timestamp does not match
+    bool adjustPosition_;
+
+    // flag to let the controller to send GET requests in a separated way
+    bool sendBulk_;
+
+
+
 
     // for each registered MEC app, stores its connection endpoint info and the producerApp id where is its platoon
     std::map<int, ConsumerAppInfo> consumerAppEndpoint_;
@@ -109,6 +118,9 @@ class MECPlatooningProducerApp : public MecAppBase
     simtime_t lastFirst;
     simtime_t lastSecond;
     simsignal_t updatesDifferences_;
+
+
+
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -184,6 +196,9 @@ class MECPlatooningProducerApp : public MecAppBase
   public:
     MECPlatooningProducerApp();
     virtual ~MECPlatooningProducerApp();
+
+
+    bool getAdjustPositionFlag() { return adjustPosition_; }
 
 };
 

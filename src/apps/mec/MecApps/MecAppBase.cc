@@ -65,13 +65,14 @@ MecAppBase::~MecAppBase()
         while(!msgStatus->httpMessageQueue.isEmpty())
         {
             std::cout << "Deleting httpMessages message" << std::endl;
-
             delete msgStatus->httpMessageQueue.pop();
         }
         if(msgStatus->currentMessage != nullptr )
             delete msgStatus->currentMessage;
 
     }
+
+    // it calls delete, too
     sockets_.deleteSockets();
 
     cancelAndDelete(processMessage_);
