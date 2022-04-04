@@ -24,9 +24,9 @@ module NRUe extends Ue
     parameters:
         nicType = default("NRNicUe");
 
-        int nrMasterId = default(0);
-        int nrMacNodeId = default(0); // TODO: this is not a real parameter
-        int nrMacCellId = default(0); // TODO: this is not a real parameter
+        int nrMasterId @mutable = default(0);
+        int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter
+        int nrMacCellId @mutable = default(0); // TODO: this is not a real parameter
 
     gates:
         input nrRadioIn @directIn;     // connection to master    
