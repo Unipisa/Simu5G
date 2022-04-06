@@ -1,9 +1,9 @@
 variables:
   RV: 'crownet/scripts'
-  OPPCONTTAG: '6.0pre11'   # tag of OMNeT++ container to be used
+  OPPCONTTAG: '6.0rc2'   # tag of OMNeT++ container to be used
   #OPPCONTTAG: 'latest'
   #INETBRANCH: 'master'
-  INETBRANCH: 'v4.3.2'
+  INETBRANCH: 'v4.3.7'
   BUILDMODE: 'debug'       # we use MODE=debug since currently for the upstream project, fingerprints are created in debug mode
 
 stages:
@@ -68,3 +68,13 @@ Build:
     - simu5g/tests/fingerprint/NR
     expire_in: 2 weeks
 
+# This job runs the MEC fingerprint tests
+MEC_Fingerprints:
+  stage: test
+  script:
+    - "cd simu5g/tests/fingerprint/mec"
+    - "../../../../$RV/omnetpp ${OPPCONTTAG} exec ./fingerprints"
+  artifacts:
+    paths:
+    - simu5g/tests/fingerprint/mec
+    expire_in: 2 weeks
