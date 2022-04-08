@@ -141,7 +141,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         * @bool ack pdcp pdcp arrived flag
         */
 
-        virtual void removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack) ;
+        virtual void removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack);
 
         /*
          * This method creates a pdcpStatus structure when a pdcpSdu arrives at the PDCP layer.

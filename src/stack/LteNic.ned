@@ -72,7 +72,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool dualConnectivityEnabled = default(false);
         int numCarriers = default(1);
 
-        string address = default("auto");
+        string address @mutable = default("auto");
 
     gates:
         //#
@@ -89,9 +89,9 @@ module LteNicBase extends NetworkInterface like ICellularNic
     submodules:
         // bridge between radio nic and network layer
         ip2nic: <default("IP2Nic")> like INetworkLayer2CellularNic {
-            nodeType = nodeType;
-            interfaceTableModule = interfaceTableModule;
-            routingTableModule = routingTableModule;
+            nodeType = parent.nodeType;
+            interfaceTableModule = parent.interfaceTableModule;
+            routingTableModule = parent.routingTableModule;
             @display("p=362,67");
         }
         // PDCP-RRC Layer
@@ -101,11 +101,11 @@ module LteNicBase extends NetworkInterface like ICellularNic
         // RLC Layer
         rlc: LteRlc {
             @display("p=362,226");
-            d2dCapable = d2dCapable;
+            d2dCapable = parent.d2dCapable;
         }
         // MAC Layer
         mac: <LteMacType> like LteMac {
-            interfaceTableModule = interfaceTableModule;
+            interfaceTableModule = parent.interfaceTableModule;
             @display("p=363,314");
         }
         // LtePhy submodule
@@ -151,8 +151,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
         //# external: lower connection
         radioIn --> phy.radioIn;
-        ip2nic.upperLayerOut --> {  delay = processingDelayOut; } --> upperLayerOut;
-        upperLayerIn --> {  delay = processingDelayIn; } --> ip2nic.upperLayerIn;
+        ip2nic.upperLayerOut --> {  delay = parent.processingDelayOut; } --> upperLayerOut;
+        upperLayerIn --> {  delay = parent.processingDelayIn; } --> ip2nic.upperLayerIn;
 }
 
 //

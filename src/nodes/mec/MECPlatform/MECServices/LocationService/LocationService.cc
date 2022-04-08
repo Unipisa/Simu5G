@@ -427,7 +427,7 @@ void LocationService::handleDELETERequest(const HttpRequestMessage *currentReque
         Subscriptions::iterator it = subscriptions_.find(subId);
         if(it != subscriptions_.end())
         {
-            CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
+            // CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
             subscriptionTimer_->removeSubId(subId);
             if(subscriptionTimer_->getSubIdSetSize() == 0 && subscriptionTimer_->isScheduled())
                 cancelEvent(subscriptionTimer_);

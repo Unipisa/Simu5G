@@ -63,9 +63,9 @@ module Ue
 
         //# Node specs
         string nodeType = "UE";  // DO NOT CHANGE
-        int masterId;
-        int macNodeId = default(0); // TODO: this is not a real parameter
-        int macCellId = default(0); // TODO: this is not a real parameter
+        int masterId @mutable;
+        int macNodeId @mutable = default(0); // TODO: this is not a real parameter
+        int macCellId @mutable = default(0); // TODO: this is not a real parameter
 
         //# D2D capability
         string nicType = default("LteNicUe");
@@ -134,7 +134,7 @@ module Ue
                 @display("p=524.272,521.856,row,150");
         }
         cellularNic: <nicType> like ICellularNic {
-            nodeType = nodeType;
+            nodeType = parent.nodeType;
             @display("p=374.47998,523.06396");
         }
         // ethernet interface used for communicating with external applications in emulation mode

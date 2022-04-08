@@ -72,7 +72,7 @@ void BaseStationStatsCollector::initialize(int stage){
         }
         else
         {
-            throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode");
+            throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode", collectorType_.c_str() );
         }
         
         if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)

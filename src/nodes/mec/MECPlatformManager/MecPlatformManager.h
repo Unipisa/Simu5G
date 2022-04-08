@@ -59,7 +59,7 @@ class MecPlatformManager : public cSimpleModule
          * is known at the MEC orchestrator (in the appDescriptor)
          */
         // instantiating the MEC app
-        MecAppInstanceInfo instantiateMEApp(CreateAppMessage*);
+        MecAppInstanceInfo* instantiateMEApp(CreateAppMessage*);
         bool instantiateEmulatedMEApp(CreateAppMessage*);
         // terminating the correspondent MEC app
         bool terminateMEApp(DeleteAppMessage*);

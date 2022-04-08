@@ -34,9 +34,9 @@ class L2MeasSubscription : public SubscriptionBase
         L2MeasSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*>& eNodeBs);
         virtual ~L2MeasSubscription();
         virtual bool fromJson(const nlohmann::ordered_json& json);
-        virtual void sendSubscriptionResponse();
-        virtual void sendNotification();
-        virtual EventNotification* handleSubscription(){return nullptr;};
+        virtual void sendSubscriptionResponse() override;
+        virtual void sendNotification(EventNotification *event) override;
+        virtual EventNotification* handleSubscription() override {return nullptr;}
 
     protected:
         FilterCriteriaL2Meas filterCriteria_;

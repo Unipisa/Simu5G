@@ -193,14 +193,6 @@ void LteMacBase::fromPhy(cPacket *pktAux)
             harqRxBuffers_[carrierFreq][src] = hrb;
             hrb->insertPdu(cw,pdu);
         }
-
-        /*
-         * @author Alessandro Noferi
-         * Notify the pfm about the arrival of a TB from a UE.
-         * The packet contains the associated grantId.
-         */
-        if(packetFlowManager_ != nullptr)
-            packetFlowManager_->ulMacPduArrived(src, userInfo->getGrantId());
     }
     else if (userInfo->getFrameType() == RACPKT)
     {
@@ -571,5 +563,5 @@ double LteMacBase::getHarqErrorRate(Direction dir)
         return (double)totalHarqErrorRateDlSum_/totalHarqErrorRateDlCount_;
     if (dir == UL)
         return (double)totalHarqErrorRateUlSum_/totalHarqErrorRateUlCount_;
-
+    throw cRuntimeError("LteMacBase::getHarqErrorRate - unhandled direction %d", dir);
 }

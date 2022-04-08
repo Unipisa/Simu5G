@@ -15,12 +15,7 @@ import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructur
 import simu5g.nodes.mec.MECPlatform.MECPlatform;
 import simu5g.nodes.mec.MECPlatformManager.MecPlatformManager;
 import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfrastructureManager;
-
-
-
-
-//lte tunneling endpoint to connect externally with an eNodeB
-import simu5g.nodes.mec.GtpEndpoint.GtpEndpoint;
+import simu5g.nodes.Upf;
 import inet.node.ethernet.Eth10G;
 import inet.applications.contract.IApp;
 // 
@@ -29,7 +24,7 @@ import inet.applications.contract.IApp;
 module MECHost
 {
     parameters:
-        @display("i=device/mainframe;bgb=1000,500");
+        @display("i=device/server2;bgb=1000,500");
 
         //# Node specs
         string nodeType = "MECHost";						// DO NOT CHANGE
@@ -62,7 +57,7 @@ module MECHost
 
         mecPlatform: MECPlatform {
             parameters:
-                @display("p=573.535,158.12999;is=m");
+                @display("p=573.535,158.12999");
         }
 
         mecPlatformManager: MecPlatformManager {
@@ -75,25 +70,22 @@ module MECHost
                 @display("p=865.94995,224.64499;is=m");
         }
 
-        //gtp endpoint to connect directly with an eNodeB
-        gtpEndpoint: GtpEndpoint {
+        // UPF module used to connect the MEC host to the 5G Core Network (either a BS or a UPF)
+        upf_mec: Upf {
             parameters:
-                @display("p=150,400;is=l");
+                @display("p=150,400");
+                nodeType = "UPF_MEC";
         }
 
 
         bgApp[numBGMecApp]: <> like IApp {
-            @display("p=360.185,224.64499,row,140");
+            @display("p=362.69498,156.875,row,140");
         }
 
     connections allowunconnected:
 
-        //ppp++ <--> virtualisationInfrastructure.ppp++;
-
-
-
         for i=0..sizeof(pppENB)-1 {
-            pppENB++ <--> gtpEndpoint.pppg++;
+            pppENB++ <--> upf_mec.pppg++;
         }
 
         for i=0..sizeof(ppp)-1 {
@@ -106,7 +98,7 @@ module MECHost
         //#
         //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
         //#
-        virtualisationInfrastructure.ppp++ <--> Eth10G <--> gtpEndpoint.filterGate;
+        virtualisationInfrastructure.ppp++ <--> Eth10G <--> upf_mec.filterGate;
 
         for i=0..numBGMecApp-1 {
             bgApp[i].socketIn <-- virtualisationInfrastructure.meBGAppOut[i];

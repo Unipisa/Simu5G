@@ -48,33 +48,17 @@ void GtpUser::initialize(int stage)
         // check if this is a gNB connected as secondary node
         bool connectedBS = isBaseStation(ownerType_) && getParentModule()->gate("ppp$o")->isConnected();
 
-        if (connectedBS || ownerType_ == GTPENDPOINT)
-            gwAddress_ = L3AddressResolver().resolve(getAncestorPar("gateway"));
-    }
-
-    //mec
-    if(getParentModule()->hasPar("mecHost"))
-    {
-        std::string meHost = getParentModule()->par("mecHost").stringValue();
-        if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), "")){
-
-            std::stringstream meHostName;
-            meHostName << meHost.c_str() << ".gtpEndpoint";
-            meHostGtpEndpoint = meHostName.str();
-            meHostGtpEndpointAddress = inet::L3AddressResolver().resolve(meHostGtpEndpoint.c_str());
-
-            EV << "GtpUser::initialize - meHost: " << meHost << " meHostGtpEndpointAddress: " << meHostGtpEndpointAddress.str() << endl;
-
-            std::stringstream meHostName2;
-            meHostName2 << meHost.c_str() << ".virtualisationInfrastructure";
-            meHostVirtualisationInfrastructure = meHostName.str();
-            meHostVirtualisationInfrastructureAddress = inet::L3AddressResolver().resolve(meHostVirtualisationInfrastructure.c_str());
+        if (connectedBS || ownerType_ == UPF_MEC)
+        {
+            const char* gateway = getAncestorPar("gateway").stringValue();
+            gwAddress_ = L3AddressResolver().resolve(gateway);
         }
     }
 
-    if(isBaseStation(ownerType_)){
+    if(isBaseStation(ownerType_))
         myMacNodeID = getParentModule()->par("macNodeId");
-    }
+    else
+        myMacNodeID = 0;
 
     ie_ = detectInterface();
 }
@@ -105,10 +89,8 @@ CoreNodeType GtpUser::selectOwnerType(const char * type)
         return PGW;
     else if(strcmp(type,"UPF") == 0)
         return UPF;
-    //mec
-    else if(strcmp(type, "GTPENDPOINT") == 0)
-        return GTPENDPOINT;
-    //end mec
+    else if(strcmp(type, "UPF_MEC") == 0)
+        return UPF_MEC;
 
     error("GtpUser::selectOwnerType - unknown owner type [%s]. Aborting...",type);
 
@@ -139,10 +121,39 @@ void GtpUser::handleMessage(cMessage *msg)
 
 void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
 {
+    /*
+     * when we get here, it means that the packet is entering the core network and it may need to be tunneled to some destination,
+     * based on the trafficFlowId found by the TrafficFlowFilter:
+     * 1) tftId == -2, the destination does not belong to the simulation anymore
+     *    --> delete the packet
+     * 2) tftId -- 0, we are on a BS and the destination is a UE under the same gNB
+     *    --> forward the packet to the local LTE/NR NIC
+     * 3) tftId == -1, destination is outside the radio network
+     *    --> tunnel the packet towards the CN gateway
+     * 3) tftId == -3, destination is a MEC host
+     *    3a) the MEC host is inside the same core network
+     *        --> tunnel the packet towards the MEC host
+     *    3b) the MEC host is inside another core network
+     *        --> tunnel the packet towards the CN gateway
+     * 4) otherwise, destination is a UE
+     *    4a) the UE is inside the same network
+     *        --> tunnel the packet towards its serving BS
+     *    4b) the UE is inside another network
+     *        --> tunnel the packet towards the CN gateway
+     */
+
     auto tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
 
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "]" << endl;
+
+    if(flowId == -2)
+    {
+        // the destination has been removed from the simulation. Delete datagram
+        EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Delete packet." << endl;
+        delete datagram;
+        return;
+    }
 
     // If we are on the eNB and the flowId represents the ID of this eNB, forward the packet locally
     if (flowId == 0)
@@ -152,8 +163,11 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
     }
     else
     {
-        // create a new GtpUserMessage
-        // and encapsulate the datagram within the GtpUserMessage
+        // the packet is ready to be tunneled via GTP to another node in the core network
+        const auto& hdr = datagram->peekAtFront<Ipv4Header>();
+        const Ipv4Address& destAddr = hdr->getDestAddress();
+
+        // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
         auto header = makeShared<GtpUserMsg>();
         header->setTeid(0);
         header->setChunkLength(B(8));
@@ -165,33 +179,57 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
         delete datagram;
 
         L3Address tunnelPeerAddress;
-        if (flowId == -1) // send to the PGW or UPF
+        if (flowId == -1) // send to the gateway
         {
+            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
         }
-        //mec
-        else if(flowId == -3) // for E/GNB --> tunneling to the connected GTPENDPOINT (ME Host)
+        else if(flowId == -3) // send to a MEC host
         {
-            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling from " << getParentModule()->getFullName() << " to " << meHostGtpEndpoint << endl;
-            tunnelPeerAddress = meHostGtpEndpointAddress;
+            // check if the destination MEC host is within the same core network
+
+
+            // retrieve the address of the UPF included within the MEC host
+            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << destAddr.str() << endl;
+            tunnelPeerAddress = binder_->getUpfFromMecHost(inet::L3Address(destAddr));
         }
-        //
-        //end mec
-        else
+        else  // send to a BS
         {
+            // check if the destination is within the same core network
+
+
             // get the symbolic IP address of the tunnel destination ID
             // then obtain the address via IPvXAddressResolver
             const char* symbolicName = binder_->getModuleNameByMacNodeId(flowId);
+            EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << symbolicName << endl;
             tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
         }
         socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
     }
 }
 
-// TODO: method needs to be refactored - redundant code
 void GtpUser::handleFromUdp(Packet * pkt)
 {
-    EV << "GtpUser::handleFromUdp - Decapsulating and sending to local connection." << endl;
+    /*
+     * when we get here, it means that the packet reached the end of the tunnel and it needs to be decapsulated.
+     * The following cases can occur:
+     * 1) the packet has been received by a BS (this GtpUser module is inside a BS)
+     *    --> the destination is for sure a UE served by this BS, hence we decapsulate the packet and deliver it locally
+     * 2) the packet has been received by a MecHost (this GtpUser module is inside a MEC host's UPF)
+     *    --> the destination is for sure the MEC host, hence we decapsulate the packet and deliver it locally
+     * 3) the packet has been received by a "border" PGW/UPF (this GtpUser is inside a PGW/UPF)
+     *    3a) the destination of the packet is NOT a UE
+     *        --> the destination is for sure outside this network (e.g. a remote server or a node within another radio network),
+     *            hence we decapsulate the packet and deliver it to the outbound interface
+     *    3b) the destination of the packet is a UE
+     *        3b1) the serving BS of the UE does NOT belong to the same radio network as the PGW/UPF
+     *             --> we decapsulate the packet and deliver it to the outbound interface
+     *        3b2) the serving BS of the UE belongs to the same radio network as the PGW/UPF
+     *             --> we decapsulate the packet, re-encapsulate it and send it to the correct BS
+     */
+
+
+    EV << "GtpUser::handleFromUdp - Decapsulating and forwarding to the correct destination" << endl;
 
     // re-create the original IP datagram and send it to the local network
     auto originalPacket = new Packet (pkt->getName());
@@ -203,95 +241,146 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
     delete pkt;
 
-    if (ownerType_ == PGW || ownerType_ == UPF)
+    const auto& hdr = originalPacket->peekAtFront<Ipv4Header>();
+    const Ipv4Address& destAddr = hdr->getDestAddress();
+
+    if (isBaseStation(ownerType_))
     {
-        const auto& hdr = originalPacket->peekAtFront<Ipv4Header>();
-        const Ipv4Address& destAddr = hdr->getDestAddress();
-        MacNodeId destId = binder_->getMacNodeId(destAddr);
-
-        if (destId != 0)
-        {
-             // create a new GtpUserMessage
-             // encapsulate the datagram within the GtpUserMsg
-             auto header = makeShared<GtpUserMsg>();
-             header->setTeid(0);
-             header->setChunkLength(B(8));
-             auto gtpPacket = new Packet(originalPacket->getName());
-             gtpPacket->insertAtFront(header);
-             auto data = originalPacket->peekData();
-             gtpPacket->insertAtBack(data);
-             delete originalPacket;
-
-             MacNodeId destMaster = binder_->getNextHop(destId);
-             const char* symbolicName = binder_->getModuleNameByMacNodeId(destMaster);
-             L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
-             socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
-             EV << "GtpUser::handleFromUdp - Destination is a MEC server. Sending GTP packet to " << symbolicName << endl;
-             return;
-        }
-    }
-
-    //mec
-    if(isBaseStation(ownerType_)) {
-        const auto& hdr = originalPacket->peekAtFront<Ipv4Header>();
-        const Ipv4Address& destAddr = hdr->getDestAddress();
-
-         // add Interface-Request for cellular NIC
+        // add Interface-Request for cellular NIC
         if (ie_ != nullptr)
             originalPacket->addTagIfAbsent<InterfaceReq>()->setInterfaceId(ie_->getInterfaceId());
 
-        MacNodeId destId = binder_->getMacNodeId(destAddr);
-        MacNodeId destMaster = binder_->getNextHop(destId);
-
-        EV << "GtpUser::handleFromUdp - DestMaster: " << destMaster << " (MacNodeId) my: " << myMacNodeID << " (MacNodeId)" << endl;
-
-        L3Address tunnelPeerAddress;
-        //checking if serving eNodeB it's --> send to the Radio-NIC
-        if(myMacNodeID == destMaster)
-        {
-            EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
-            // local delivery
-            send(originalPacket,"pppGate");
-            return;
-        }
-        else if(destAddr.operator ==(meHostVirtualisationInfrastructureAddress.toIpv4()))
-        {
-            //tunneling to the ME Host GtpEndpoint
-            EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to (GTPENDPOINT) " << meHostGtpEndpointAddress.str() << endl;
-            tunnelPeerAddress = meHostGtpEndpointAddress;
-        }
-        else
-        {
-            //tunneling to the PGW/UPF
-            EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to the CN gateway " << gwAddress_.str() << endl;
-            tunnelPeerAddress = gwAddress_;
-
-        }
-
-        // send the message to the correct BS or to the Internet, through the PGW
-        // * create a new GtpUserMessage
-        // * encapsulate the datagram within the GtpUserMsg
-        auto header = makeShared<GtpUserMsg>();
-        header->setTeid(0);
-        header->setChunkLength(B(8));
-        auto gtpMsg = new Packet(originalPacket->getName());
-        gtpMsg->insertAtFront(header);
-        auto data = originalPacket->peekData();
-        gtpMsg->insertAtBack(data);
-        delete originalPacket;
-
-        // create a new GtpUserMessage
-        socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
-
-    }
-    if(ownerType_== GTPENDPOINT)
-    {
-        //deliver to the MEHosto VirtualisationInfrastructure!
+        EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
+        // local delivery
         send(originalPacket,"pppGate");
-        return;
     }
-    //end mec
+    else if(ownerType_== UPF_MEC )
+    {
+        // we are on the MEC, local delivery
+        EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
+        send(originalPacket,"pppGate");
+    }
+    else if (ownerType_== PGW || ownerType_ == UPF)
+    {
+        MacNodeId destId = binder_->getMacNodeId(destAddr);
+        if (destId != 0)  // final destination is a UE
+        {
+            MacNodeId destMaster = binder_->getNextHop(destId);
 
-    // destination is outside the radio network
-    send(originalPacket,"pppGate");
+            // check if the destination belongs to the same core network (for multi-operator scenarios)
+            const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
+            if (strcmp(this->getParentModule()->getFullName(), destGw) == 0)
+            {
+                // the destination is a Base Station under the same core network as this PGW/UPF,
+                // tunnel the packet toward that BS
+                const char* symbolicName = binder_->getModuleNameByMacNodeId(destMaster);
+                L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
+                EV << "GtpUser::handleFromUdp - tunneling to BS " << symbolicName << endl;
+
+                // send the message to the BS through GTP tunneling
+                // * create a new GtpUserMessage
+                // * encapsulate the datagram within the GtpUserMsg
+                auto header = makeShared<GtpUserMsg>();
+                header->setTeid(0);
+                header->setChunkLength(B(8));
+                auto gtpMsg = new Packet(originalPacket->getName());
+                gtpMsg->insertAtFront(header);
+                auto data = originalPacket->peekData();
+                gtpMsg->insertAtBack(data);
+                delete originalPacket;
+
+                // create a new GtpUserMessage
+                EV << "GtpUser::handleFromUdp - Tunneling datagram to " << tunnelPeerAddress.str() << ", final destination[" << destAddr.str() << "]" << endl;
+                socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
+                return;
+            }
+        }
+
+        // destination is outside the radio network
+        EV << "GtpUser::handleFromUdp - Sending datagram outside the radio network, destination[" << destAddr.str() << "]" << endl;
+        send(originalPacket,"pppGate");
+    }
+
+//
+//    L3Address tunnelPeerAddress;
+//
+//
+//
+//    const auto& hdr = originalPacket->peekAtFront<Ipv4Header>();
+//    const Ipv4Address& destAddr = hdr->getDestAddress();
+//    MacNodeId destId = binder_->getMacNodeId(destAddr);
+//    if (destId != 0)  // final destination is a UE
+//    {
+//        MacNodeId destMaster = binder_->getNextHop(destId);
+//
+//        // check if this packet has been decapsulated on the destination UE's serving BS
+//        // if so, deliver it locally (to the Radio-NIC)
+//        if(myMacNodeID == destMaster)
+//        {
+//            // add Interface-Request for cellular NIC
+//           if (ie_ != nullptr)
+//               originalPacket->addTagIfAbsent<InterfaceReq>()->setInterfaceId(ie_->getInterfaceId());
+//
+//            EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
+//            // local delivery
+//            send(originalPacket,"pppGate");
+//            return;
+//        }
+
+//        const char* symbolicName = binder_->getModuleNameByMacNodeId(destMaster);
+//        tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
+//        EV << "GtpUser::handleFromUdp - tunneling to BS " << symbolicName << endl;
+//    }
+//    else
+//    {
+//        // destination is not a UE
+//
+//        // if the packet has been decapsulated at a MEC host and the dest address belongs to a MEC host, then we
+//        // reached the correct destination. Deliver the packet locally.
+//        if(ownerType_== UPF_MEC && binder_->isMecHost(destAddr))
+//        {
+//                // we are on the MEC, local delivery
+//                EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
+//                send(originalPacket,"pppGate");
+//                return;
+//        }
+//
+//        // if the packet has been decapsulated at some other node, re-encapsulate it toward the correct destination
+//        // TODO maybe this case never even happens... to be checked
+//        if(binder_->isMecHost(destAddr))
+//        {
+//            //tunneling to the MEC Host's UPF
+//            tunnelPeerAddress = binder_->getUpfFromMecHost(destAddr);
+//            EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to " << tunnelPeerAddress.str() << endl;
+//        }
+//        else
+//        {
+//            if (ownerType_== PGW || ownerType_ == UPF)
+//            {
+//                // destination is outside the radio network
+//                send(originalPacket,"pppGate");
+//                return;
+//            }
+//
+//            //tunneling to the PGW/UPF
+//            EV << "GtpUser::handleFromUdp - Datagram for " << destAddr.str() << ": tunneling to the CN gateway " << gwAddress_.str() << endl;
+//            tunnelPeerAddress = gwAddress_;
+//        }
+//    }
+//
+//
+//    // send the message to the another core network element through GTP tunneling
+//    // * create a new GtpUserMessage
+//    // * encapsulate the datagram within the GtpUserMsg
+//    auto header = makeShared<GtpUserMsg>();
+//    header->setTeid(0);
+//    header->setChunkLength(B(8));
+//    auto gtpMsg = new Packet(originalPacket->getName());
+//    gtpMsg->insertAtFront(header);
+//    auto data = originalPacket->peekData();
+//    gtpMsg->insertAtBack(data);
+//    delete originalPacket;
+//
+//    // create a new GtpUserMessage
+//    socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
 }

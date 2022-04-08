@@ -430,7 +430,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 
 double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId)
 {
-   double movement = .0;
+   // double movement = .0;
    double speed = .0;
 
    speed = computeSpeed(nodeId, phy_->getCoord());
@@ -442,7 +442,7 @@ double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double tw
 
    if(!enable_extCell_los_)
       los = false;
-   double dbp = 0;
+   // double dbp = 0;
    double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
 
    //TODO Apply shadowing to each interfering extCell signal
@@ -451,13 +451,13 @@ double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double tw
    //    log-normal shadowing
    if (shadowing_)
    {
-       double mean = 0;
+       // double mean = 0;
 
        //        Get std deviation according to los/nlos and selected scenario
 
        //        double stdDev = getStdDev(dist < dbp, nodeId);
-       double time = 0;
-       double space = 0;
+       // double time = 0;
+       // double space = 0;
        double att;
        //
        //

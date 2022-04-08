@@ -39,10 +39,16 @@ class Binder : public omnetpp::cSimpleModule
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
     std::map<MacNodeId, char*> macNodeIdToModuleName_;
+    std::map<MacNodeId, cModule*> macNodeIdToModuleRef_;
     std::map<MacNodeId, LteMacBase*> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
     std::map<int, OmnetId> nodeIds_;
+
+    // for GTP tunneling with MEC hosts involved
+    // this map associates the L3 address of the Virt. Infrastructure of a MEC host to
+    // the IP address of the corresponding UPF
+    std::map<inet::L3Address, inet::L3Address> mecHostToUpfAddress_;
 
     // list of static external cells. Used for intercell interference evaluation
     std::map<double, ExtCellList> extCellList_;
@@ -426,6 +432,19 @@ class Binder : public omnetpp::cSimpleModule
 //            return;
 //        x2Address_[nodeId] = interfAddr;
 //    }
+
+    /**
+     * Associates the given MEC Host address to its corresponding UPF
+     */
+    void registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress);
+    /**
+     * Returns true if the given address belongs to a MEC host
+     */
+    bool isMecHost(const inet::L3Address& mecHostAddress);
+    /**
+     * Returns the UPF address corresponding to the given MEC Host address
+     */
+    const inet::L3Address& getUpfFromMecHost(const inet::L3Address& mecHostAddress);
     /**
      * Associates the given MAC node ID to the name of the module
      */
@@ -434,6 +453,14 @@ class Binder : public omnetpp::cSimpleModule
      * Returns the module name for the given MAC node ID
      */
     const char* getModuleNameByMacNodeId(MacNodeId nodeId);
+    /**
+     * Associates the given MAC node ID to the module
+     */
+    void registerModule(MacNodeId nodeId, cModule* module);
+    /**
+     * Returns the module for the given MAC node ID
+     */
+    cModule* getModuleByMacNodeId(MacNodeId nodeId);
 
     /*
      * getDeployedUes() returns the affiliates

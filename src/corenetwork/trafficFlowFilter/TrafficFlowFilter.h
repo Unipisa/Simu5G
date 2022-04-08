@@ -39,6 +39,9 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     // must be re-sent down without going through the Internet
     bool fastForwarding_;
 
+    // store the name of the gateway node (for MEC Hosts and base stations only)
+    const char* gateway_;
+
     CoreNodeType selectOwnerType(const char * type);
 
     // === MEC support === //

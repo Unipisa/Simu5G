@@ -15,8 +15,8 @@ cplusplus {{
 #include "stack/phy/packet/ModulationType.h"
 }}
 
-
-class inet::Coord {@existingClass;}
+import inet.common.geometry.Geometry;
+//class inet::Coord; {@existingClass;}
 class ModulationType {@existingClass;};
 
 //

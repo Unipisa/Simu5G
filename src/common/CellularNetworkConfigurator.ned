@@ -12,6 +12,11 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
+// Note: This extension would better be in the L3NetworkConfiguratorBase class
+//       within the inet framework. We have opened a corrensponding pull request
+//       (see https://github.com/inet-framework/inet/pull/753) - if it is merged,
+//       the CellularNetworkConfigurator can be removed completely for newer INET 
+//       versions (>4.3.7).)
 
 package simu5g.common;
 

@@ -74,9 +74,6 @@ void ServiceRegistry::initialize(int stage)
     subscriptionId_ = 0;
     subscriptions_.clear();
 
-    requestQueueSizeSignal_ = registerSignal("requestQueueSize");
-    responseTimeSignal_ = registerSignal("responseTime");
-
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
 
 
@@ -234,8 +231,6 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
     std::string serInstanceId = uuidBase + std::to_string(servIdCounter++);
 
 
-    if(meHost_)
-        int iw;
     bool isLocal = (strcmp(meHost->getName(), servDesc.mecHostname.c_str()) == 0) ? true : false;
 
 

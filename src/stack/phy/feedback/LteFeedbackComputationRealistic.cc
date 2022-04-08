@@ -241,7 +241,7 @@ LteFeedback LteFeedbackComputationRealistic::computeFeedback(const Remote remote
     {
         // Compute Rank Index
         rank = computeRank(id);
-        if (rank < 2 && (txmode == OL_SPATIAL_MULTIPLEXING || CL_SPATIAL_MULTIPLEXING))
+        if (rank < 2 && (txmode == OL_SPATIAL_MULTIPLEXING || txmode == CL_SPATIAL_MULTIPLEXING))
             return fb;
         //Set Rank
         fb.setRankIndicator(rank);

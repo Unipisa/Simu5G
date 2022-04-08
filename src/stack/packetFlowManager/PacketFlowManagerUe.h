@@ -72,9 +72,8 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     protected:
 
     virtual void initialize(int stage) override;
-    virtual void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int pdcpSize, omnetpp::simtime_t& arrivalTime) ;
+    virtual void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
     virtual void removePdcpBurst(StatusDescriptor* desc, PdcpStatus& pdcpStatus,  unsigned int pdcpSno, bool ack) {};
-
 
 
 //    bool hasFragments(LogicalCid lcid, unsigned int pdcp);

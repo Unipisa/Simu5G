@@ -37,6 +37,7 @@ module MECPlatform
 {
     parameters:
         @networkNode();
+        @display("bgb=1122.99,610.08;i=block/cogwheel");
 
         //# Network Layer specs
         string networkLayerType = default("IPv4NetworkLayer");
@@ -44,9 +45,6 @@ module MECPlatform
         //# Num Services
         int numOmnetServices = default(0);
         int numMecServices = default(0);
-
-
-        @display("bgb=1122.99,610.08");
 
         //# Transport Layer specs
         bool hasTcp = default(true);

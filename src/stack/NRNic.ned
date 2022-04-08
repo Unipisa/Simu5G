@@ -61,11 +61,11 @@ module NRNicUe extends LteNicUeD2D
         // RLC Layer
         nrRlc: LteRlc {
             @display("p=466,226");
-            d2dCapable = d2dCapable;
+            d2dCapable = parent.d2dCapable;
         }
         // MAC Layer
         nrMac: <NRMacType> like LteMac {
-            interfaceTableModule = interfaceTableModule;
+            interfaceTableModule = parent.interfaceTableModule;
             @display("p=466,314");
         }
         // PHY Layer

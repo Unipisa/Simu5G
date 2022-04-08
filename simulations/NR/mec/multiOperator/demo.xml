@@ -1,0 +1,20 @@
+<config>
+    <!-- Assign addresses 10.x.x.x to operator A's nodes --> 
+    <interface hosts="gnb_A*" names="cellular" address="10.x.x.x" netmask="255.0.0.0"/>
+    <interface hosts="ue_A*" names="cellular" address="10.x.x.x" netmask="255.0.0.0"/>
+    
+    <!-- Assign addresses 11.x.x.x to operator B's nodes --> 
+    <interface hosts="gnb_B*" names="cellular" address="11.x.x.x" netmask="255.0.0.0"/>
+    <interface hosts="ue_B*" names="cellular" address="11.x.x.x" netmask="255.0.0.0"/>
+    
+    <!-- 'wireless' tags specify which hosts are within the same wireless network (i.e. which nodes have
+         a direct link between them). This configuration prevents the CellularNetworkConfigurator; to setup
+         routes from gnb_A(B)* and ue_B(A)*. 
+         If not specified, the CellularNetworkConfigurator assumes that all cellular interfaces are at 1-hop 
+         distance and routing tables are built accordingly --> 
+    <wireless hosts="gnb_A* ue_A*" interfaces="cellular"/>
+    <wireless hosts="gnb_B* ue_B*" interfaces="cellular"/>
+    
+    <!-- Assign 192.168.x.x addresses to all other interfaces -->
+    <interface hosts="**" address="192.168.x.x" netmask="255.255.255.0"/>
+</config>

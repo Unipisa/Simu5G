@@ -8,7 +8,7 @@ name: eth0
     Metric: 1
     POINTTOPOINT MULTICAST
     
-name: wlan
+name: cellular
     inet_addr: 10.0.0.1
     Mask: 255.255.255.0
     MTU: 1500
@@ -20,7 +20,7 @@ route:
 #Destination     Gateway          Genmask          Flags  Metric  Iface
 192.168.2.0      *                255.255.255.0    H      0       eth0
 192.168.3.0      *                255.255.255.0    H      0       eth0
-0.0.0.0          *                0.0.0.0          G      0       wlan
+0.0.0.0          *                0.0.0.0          G      0       cellular
 
 routeend.
 

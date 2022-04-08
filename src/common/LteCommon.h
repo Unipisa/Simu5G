@@ -40,6 +40,8 @@
 
 class Binder;
 class CellInfo;
+class LteCellInfo;
+class LteNodeTable;
 class LteMacEnb;
 class LteMacBase;
 class LtePhyBase;

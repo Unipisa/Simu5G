@@ -84,14 +84,25 @@ void LteX2Manager::handleMessage(cMessage *msg)
         EV << "LteX2Manager::handleMessage - Received message from LTE stack" << endl;
         fromStack(pkt);
     }
-    else  // from X2
+    else  // from X2 or X2GTP
     {
-        // the incoming gate belongs to a gate vector, so get its index
-        int gateIndex = incoming->getIndex();
+        if (strcmp(incoming->getBaseName(), "x2Gtp") == 0) {
+            // incoming data from X2GTP
+            EV << "LteX2Manager::handleMessage - Received message from X2-GTP" << endl;
+        }
+        else // from X2
+        {
+            if (strcmp(incoming->getBaseName(), "x2") != 0)
+            {
+                throw cRuntimeError(this, "LteX2Manager::handleMessage: invalid incoming gate");
+            }
 
-        // incoming data from X2
-        EV << "LteX2Manager::handleMessage - Received message from X2, gate " << gateIndex << endl;
+            // the incoming gate belongs to a gate vector, so get its index
+            int gateIndex = incoming->getIndex();
 
+            // incoming data from X2
+            EV << "LteX2Manager::handleMessage - Received message from X2, gate " << gateIndex << endl;
+        }
         // call handler
         fromX2(pkt);
     }

@@ -8,9 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-
+#include <inet/networklayer/common/L3AddressResolver.h>
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
@@ -75,6 +74,11 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     virtualisationInfr = mecHost->getSubmodule("virtualisationInfrastructure");
     if(virtualisationInfr == nullptr)
         throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMECApps parameter!");
+
+    // register MEC addresses to the Binder
+    inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(virtualisationInfr->getFullPath().c_str());
+    inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
+    binder_->registerMecHostUpfAddress(mecHostAddress, gtpAddress);
 
     virtualisationInfr->setGateSize("meAppOut", maxMECApps);
     virtualisationInfr->setGateSize("meAppIn", maxMECApps);
@@ -235,7 +239,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     }
 }
 
-MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateAppMessage* msg)
+MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(CreateAppMessage* msg)
 {
     EV << "VirtualisationInfrastructureManager::instantiateMEApp - processing..." << endl;
 
@@ -243,7 +247,7 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
 
     char* meModuleName = (char*)msg->getMEModuleName();
 
-    int ueAppPort  = msg->getSourcePort();
+    // int ueAppPort  = msg->getSourcePort();
 
     //retrieve UE App ID
     int ueAppID = msg->getUeAppID();
@@ -278,8 +282,8 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
                     "cpu: " << cpu << endl <<
                     "cannot be instantiated due to unavailable resources" << endl;
 
-            MecAppInstanceInfo instanceInfo;
-            instanceInfo.status = false;
+            MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+            instanceInfo->status = false;
             return instanceInfo;
         }
         // creating MEApp module instance
@@ -325,13 +329,13 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
 
         module->finalizeParameters();
 
-        MecAppInstanceInfo instanceInfo;
-        instanceInfo.instanceId = appName.str();
+        MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+        instanceInfo->instanceId = appName.str();
 
-        instanceInfo.endPoint.addr = mecAppRemoteAddress_;
-        instanceInfo.endPoint.port = mecAppPortCounter;
+        instanceInfo->endPoint.addr = mecAppRemoteAddress_;
+        instanceInfo->endPoint.port = mecAppPortCounter;
 
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo.endPoint.port << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo->endPoint.port << endl;
 
         mecAppPortCounter++;
 
@@ -394,13 +398,13 @@ MecAppInstanceInfo VirtualisationInfrastructureManager::instantiateMEApp(CreateA
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - "<< module->getName() <<" instanced!" << endl;
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
-        instanceInfo.status = true;
+        instanceInfo->status = true;
         return instanceInfo;
     }
     else
     {
-        MecAppInstanceInfo instanceInfo;
-        instanceInfo.status = false;
+        MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+        instanceInfo->status = false;
         return instanceInfo;
     }
 }

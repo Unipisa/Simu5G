@@ -171,7 +171,7 @@ void MeasRepUeSubscription::sendSubscriptionResponse(){
 
 
 }
-void MeasRepUeSubscription::sendNotification(){}
+void MeasRepUeSubscription::sendNotification(EventNotification *event){}
 
 
 

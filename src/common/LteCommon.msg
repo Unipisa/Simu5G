@@ -13,7 +13,6 @@ cplusplus {{
 #include "common/LteCommon.h"
 }}
 
-
 struct Lambda
 {
     @existingClass;
@@ -152,6 +151,7 @@ class X2InformationElement
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -159,6 +159,7 @@ class LteMacBuffer
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -166,20 +167,7 @@ class LteMacQueue
 {
     @existingClass;
     @opaque;
-    @toString(.str());
-}
-
-class MacControlElement
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-class LteMacPdu
-{
-    @existingClass;
-    @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -187,6 +175,7 @@ class Binder
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -194,13 +183,16 @@ class LteCellInfo
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
+
 }
 
 class LteMacEnb
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -208,6 +200,7 @@ class LteMacBase
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
 
@@ -215,28 +208,23 @@ class LtePhyBase
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
-
 
 class LteRealisticChannelModel
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
-
-//class LteControlInfo
-//{
-//    @existingClass;
-//    @opaque;
-//    @toString(.str());
-//}
 
 class ExtCell
 {
     @existingClass;
     @opaque;
+    @polymorphic(false);
     @toString(.str());
 }
  

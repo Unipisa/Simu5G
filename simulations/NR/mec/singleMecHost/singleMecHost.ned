@@ -28,13 +28,13 @@ import simu5g.nodes.mec.UALCMP.UALCMP;
 network singleMecHost
 {
     parameters:
+        @display("i=block/network2;bgb=811.0225,507.6475;bgi=background/pisa");
 
-        int numCars = default(0);
+        int numUes = default(0);
 
         double playgroundSizeX @unit(m); // x size of the area the nodes are in (in meters)
         double playgroundSizeY @unit(m); // y size of the area the nodes are in (in meters)
         double playgroundSizeZ @unit(m); // z size of the area the nodes are in (in meters)
-        @display("bgb=805.92,499.56");
 
     submodules:
 
@@ -42,7 +42,7 @@ network singleMecHost
             @display("p=690,104.88;is=s");
         }
         configurator: CellularNetworkConfigurator {
-            @display("p=690,184.92");
+            @display("p=690,184.92;is=s");
         }
         channelControl: LteChannelControl {
             @display("p=690,24.84;is=s");
@@ -54,37 +54,39 @@ network singleMecHost
             @display("p=691.38,342.24;is=s");
         }
         upf: Upf {
-            @display("p=425.73624,249.77875;is=l");
+            @display("p=545.0638,249.77875");
+        }
+        iUpf: Upf {
+            @display("p=352.92624,249.77875");
         }
         gNodeB1: gNodeB {
             @display("p=140,250;is=vl");
         }
-        car[numCars]: NRUe {
-            @display("p=300,300");
+        ue[numUes]: NRUe {
+            @display("p=237.64375,310.45377");
         }
         //# MEC module
         mecHost: MECHost {
-            @display("p=404.34,144.9;is=l");
+            @display("p=352.92624,145.62;is=l");
         }
 
         mecOrchestrator: MecOrchestrator {
-            @display("p=564.2775,249.77875;is=l");
+            @display("p=544.0525,63.70875;is=l");
         }
 
         ualcmp: UALCMP {
-            @display("p=490.45624,248.7675;i=device/smallrouter");
+            @display("p=545.0638,158.76625;i=device/smallrouter");
         }
 
 
     connections allowunconnected:
 
-        upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;  
-        
-        ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
-        ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;     
+        upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
+        iUpf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
+        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
 
-        //#	mec
-        // direct connection between gNodeB1 and mecHost
-        mecHost.pppENB++ <--> Eth10G <--> gNodeB1.pppMEHost;
+        ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
+        ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
+
+        mecHost.pppENB++ <--> Eth10G <--> iUpf.pppg++;
 }

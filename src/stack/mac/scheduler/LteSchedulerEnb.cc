@@ -1061,7 +1061,6 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     std::vector<std::vector<unsigned int> >::const_iterator planeIt =
         allocator_->getAllocatedBlocksBegin();
 
-    double utilization = 0.0;
     double allocatedBlocks = 0;
     unsigned int plane = 0;
     unsigned int antenna = 0;
