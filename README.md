@@ -62,8 +62,8 @@ Dependencies
 
 This version requires:
 
-- OMNeT++ 6.0pre10 or OMNeT++ 6.0pre11
-- INET 4.3.2
+- OMNeT++ 6.0rc2
+- INET 4.3.7
 
 
 Simu5G Features
