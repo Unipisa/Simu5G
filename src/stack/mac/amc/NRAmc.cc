@@ -49,6 +49,8 @@ unsigned int NRAmc::getResourceElementsPerBlock(unsigned int symbolsPerSlot)
     unsigned int reSignal = 1;
     unsigned int nOverhead = 0;
 
+    if (symbolsPerSlot == 0)
+        return 0;
     return (numSubcarriers * symbolsPerSlot) - reSignal - nOverhead;
 }
 
