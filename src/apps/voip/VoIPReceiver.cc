@@ -97,7 +97,7 @@ void VoIPReceiver::handleMessage(cMessage *msg)
     EV << "VoIPReceiver::handleMessage - Packet received: TALK[" << voipHeader->getIDtalk() << "] - FRAME[" << voipHeader->getIDframe() << " size: " << voipHeader->getChunkLength() << " bytes]\n";
 
     // emit throughput sample
-    totalRcvdBytes_ += (int)voipHeader->getChunkLength().get();
+    totalRcvdBytes_ += (int)B(voipHeader->getChunkLength()).get();
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
     if (interval > 0.0)
     {
