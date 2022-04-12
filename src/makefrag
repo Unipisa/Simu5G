@@ -9,4 +9,5 @@ MSGC:=$(MSGC) --msg6
 #
 ifeq ($(PLATFORM),win32.x86_64)
   LDFLAGS += -lws2_32
+  LDFLAGS += -Wl,-Xlink=-force:multiple
 endif
