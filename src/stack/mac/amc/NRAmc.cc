@@ -69,6 +69,9 @@ unsigned int NRAmc::computeTbsFromNinfo(double nInfo, double coderate)
     unsigned int tbs = 0;
     unsigned int _nInfo = 0;
     unsigned int n = 0;
+    if (nInfo == 0)
+        return 0;
+
     if (nInfo <= 3824)
     {
         n = std::max((int)3, (int)(floor(log2(nInfo) - 6)));
