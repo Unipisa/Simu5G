@@ -1,14 +1,13 @@
 # workingdir,                        args,                                     simtimelimit,    fingerprint
-
 /simulations/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              06b4-44b6/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              fbae-05d3/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              4892-1d0a/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              fbfe-05d3/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP_PF -r 0,           5s,              4882-1c0a/s, PASS,
 
-/simulations/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              91b5-9cbd/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              a048-7d67/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              501d-1372/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              c5a8-c86d/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              8038-7d67/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              101d-1373/s, PASS,
 
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_MACresCheck -r 0,           5s,              a048-7d67/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_MACresCheck -r 0,           5s,              501d-1372/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_PHYresCheck -r 0,           5s,              a048-7d67/s, PASS,
-/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_PHYresCheck -r 0,           5s,              501d-1372/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_MACresCheck -r 0,           5s,              8038-7d67/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_MACresCheck -r 0,           5s,              101d-1373/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-DL_PHYresCheck -r 0,           5s,              8038-7d67/s, PASS,
+/simulations/demo/,                  -f omnetpp.ini -c VoIP-UL_PHYresCheck -r 0,           5s,              101d-1373/s, PASS,
