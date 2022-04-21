@@ -67,3 +67,59 @@ set yrange[0:*]
 set ylabel "Number of UEs" font ",16"
 set output "plots/generatedUEs.eps"
 plot "stats/generatedUEs.csv" using 1:2 ls 1 ps 1 with linespoints notitle
+
+
+
+
+##############################
+# PLOT CHARTS IN A MULTIPLOT #
+##############################
+
+set output "plots/eval_usecase.eps"
+
+set tmargin 0
+set bmargin 0
+set lmargin 2
+set rmargin 2
+set size 1,1.15
+set size ratio 0.5
+set multiplot layout 3,1 offset 0,0.1
+
+unset xtics
+unset xlabel
+unset grid
+
+set ytics font ",14"
+
+# --- PLOT NUMBER OF UEs --- #
+set yrange[0:*]
+set ylabel "Number of UEs" font ",14" 
+plot "stats/generatedUEs.csv" using 1:2 ls 3 ps 1 with linespoints notitle
+
+
+# --- PLOT CELL THROUGHPUT --- #
+set key left top box invert opaque width 1 font ",14"
+toMbps(x) = x/1000000 
+set ytics 0,0.3
+set yrange[0.3:2.3]
+set ylabel "Throughput [Mbps]" font ",14" offset 1
+
+plot "stats/macCellThroughputDl.csv" using 1:(toMbps($2)) ls 1 with lines t "CA-2CC", "" using 1:(toMbps($2)):(toMbps($5)) ls 1 with yerrorbars notitle,\
+                                  "" using 1:(toMbps($6)) ls 2 with lines t "CA-1CC", "" using 1:(toMbps($6)):(toMbps($9)) ls 2 with yerrorbars notitle
+
+
+
+# --- PLOT POWER CONSUMPTION --- #
+set xlabel "Checkpoint Number" font ",14" 
+set xrange[0:*]
+set xtics scale 0 nomirror font ",12"
+
+set ytics 150,100
+set yrange[150:700]
+set ylabel "Consumed Power [W]" font ",14" offset 1
+
+plot "stats/avgPowerConsumption.csv" using 1:2 ls 1 with lines t "CA-2CC", "" using 1:2:5 ls 1 with yerrorbars notitle,\
+                                  "" using 1:6 ls 2 with lines t "CA-1CC", "" using 1:6:9 ls 2 with yerrorbars notitle
+
+unset multiplot
+
