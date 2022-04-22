@@ -74,6 +74,8 @@ network Highway
         eNodeB2: eNodeB {
             @display("p=391,313;is=vl");
         }
+        //# submodule vector to store all cars - will be filled dynamically during simulations
+        car[0]: Car;
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;

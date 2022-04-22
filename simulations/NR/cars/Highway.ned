@@ -22,7 +22,7 @@ import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.Upf;
 import simu5g.common.binder.Binder;
 import simu5g.nodes.NR.gNodeB;
-import simu5g.nodes.cars.Car;
+import simu5g.nodes.cars.NRCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 
@@ -74,6 +74,8 @@ network Highway
         gNodeB2: gNodeB {
             @display("p=391,313;is=vl");
         }
+        //# submodule vector to store all cars - will be filled dynamically during simulations
+        car[0]: NRCar;
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;

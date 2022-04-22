@@ -40,14 +40,10 @@ module Car extends Ue
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
+        *.interfaceTableModule = default(absPath(".interfaceTable"));
         
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular";
-        
-    submodules:
-	    configurator: HostAutoConfigurator {
-            @display("p=126.4,413.96");
-        }
 }
 
 
@@ -68,9 +64,4 @@ module NRCar extends NRUe
         
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular";
-        
-    submodules:
-	    configurator: HostAutoConfigurator {
-            @display("p=126.4,413.96");
-        }
 }

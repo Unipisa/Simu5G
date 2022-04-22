@@ -98,10 +98,33 @@ module Ue
         mobility: <default("")> like IMobility if typename != "" {
             @display("p=127.368004,172.26001;is=s");
         }
-
-        //# app layer 
-        app[numApps]: <> like IApp {
-            @display("p=374.47998,72.479996,row,140");
+        
+        //# layer submodules (must be ordered from lower to upper layers)
+               
+        //# link layer 
+        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
+            parameters:
+                @display("p=524.272,521.856,row,150");
+        }
+        cellularNic: <nicType> like ICellularNic {
+            nodeType = parent.nodeType;
+            @display("p=374.47998,523.06396");
+        }
+        
+        //# ethernet interface used for communicating with external applications in emulation mode
+        eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=693.39197,521.856,row,150;q=txQueue");
+        }
+        
+        //# network layer
+        ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
+            parameters:
+                @display("p=375,376;q=queue");
+        }
+        ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
+            parameters:
+                @display("p=525,376;q=queue");
         }
 
         //# transport layer 
@@ -117,30 +140,10 @@ module Ue
             parameters:
                 @display("p=675,226");
         }
-
-        //# network layer
-        ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
-            parameters:
-                @display("p=375,376;q=queue");
-        }
-        ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
-            parameters:
-                @display("p=525,376;q=queue");
-        }
-       
-        //# link layer 
-        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
-            parameters:
-                @display("p=524.272,521.856,row,150");
-        }
-        cellularNic: <nicType> like ICellularNic {
-            nodeType = parent.nodeType;
-            @display("p=374.47998,523.06396");
-        }
-        // ethernet interface used for communicating with external applications in emulation mode
-        eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
-            parameters:
-                @display("p=693.39197,521.856,row,150;q=txQueue");
+        
+        //# app layer 
+        app[numApps]: <> like IApp {
+            @display("p=374.47998,72.479996,row,140");
         }
 
         //# message dispatcher for SAP between application and transport layer
