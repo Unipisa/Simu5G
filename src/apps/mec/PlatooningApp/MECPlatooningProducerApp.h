@@ -35,11 +35,11 @@ class PlatoonSelectionBase;
 class CurrentPlatoonRequestTimer;
 class PlatoonVehicleInfo;
 
-typedef std::map<int, PlatoonControllerBase*> ControllerMap;
+typedef std::map<int, PlatoonControllerStatus *> ControllerMap;
 typedef std::map<int, AppEndpoint> ProducerAppMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, CommandInfo> CommandList;
-typedef std::map<int, std::map<int, std::vector<PlatoonVehicleInfo *>> > GlobalAvailablePlatoons;
+typedef std::map<int, std::map<int,  PlatoonControllerStatus *>> GlobalAvailablePlatoons;
 
 class MECPlatooningProducerApp : public MecAppBase
 {
@@ -51,11 +51,15 @@ class MECPlatooningProducerApp : public MecAppBase
     inet::TcpSocket *serviceSocket_;
 
     inet::UdpSocket platooningProducerAppsSocket_; // socket used to communicate with other MecProduderApps
-    int platooningProducerAppsPort;
+    int platooningProducerAppsPort_;
 
     // UDP socket to communicate with the MecConsumerApps of the UEs
-    inet::UdpSocket platooningConsumerAppsSocket;
-    int platooningConsumerAppsPort;
+    inet::UdpSocket platooningConsumerAppsSocket_;
+    int platooningConsumerAppsPort_;
+
+    // UDP socket to communicate with the MecControllerApps
+    inet::UdpSocket platooningControllerAppsSocket_;
+    int platooningControllerAppsPort_;
 
     // address+port of the UeApp
     inet::L3Address ueAppAddress;
@@ -76,9 +80,6 @@ class MECPlatooningProducerApp : public MecAppBase
     // flag to let the controller to send GET requests in a separated way
     bool sendBulk_;
 
-
-
-
     // for each registered MEC app, stores its connection endpoint info and the producerApp id where is its platoon
     std::map<int, ConsumerAppInfo> consumerAppEndpoint_;
     // this map stores the producerApp id associated with a consumer App managed by a local platoon (useful for the leave hase)
@@ -86,7 +87,8 @@ class MECPlatooningProducerApp : public MecAppBase
 
     // for each PlatoonProducerApp in the federation, stores its connection endpoint info
     std::map<int, ProducerAppInfo> producerAppEndpoint_;
-
+    // maps of location of the MecProducerApps in other Mes systems
+    ProducerAppMap platooningProducerApps_;
 
     // reference to the class running the platoon selection algorithm
     PlatoonSelectionBase* platoonSelection_;
@@ -95,8 +97,7 @@ class MECPlatooningProducerApp : public MecAppBase
     // (used for controllers created automatically, which have index >= 1000)
     int nextControllerIndex_;
 
-    // maps of location of the MecProducerApps in other Mes systems
-    ProducerAppMap platooningProducerApps_;
+
 
     // maps of active platoon managers
     ControllerMap platoonControllers_;
@@ -119,9 +120,6 @@ class MECPlatooningProducerApp : public MecAppBase
     simtime_t lastSecond;
     simsignal_t updatesDifferences_;
 
-
-
-
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
@@ -137,58 +135,58 @@ class MECPlatooningProducerApp : public MecAppBase
     // @brief handler for data received from a MEC service
     virtual void handleServiceMessage(int connId) override;
 
-    // @brief handler for registration request from a MEC platooning app
-    void handleRegistrationRequest(cMessage* msg);
-    // @brief handler for request to join a platoon from the UE
-    void handleJoinPlatoonRequest(cMessage* msg);
 
-    //@brief it sends a response about a JOIN request
-    void sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg);
+    // ############ Receiver side ############
+
+    // From MECPlatooningControllerApps
+
+    // @brief handler for heartbeats from the MECPlatooningControllerApps
+    void  handleHeartbeat(cMessage* msg);
+    //@brief handler for a "new member notification" coming from a controller
+    void handleNewMemberNotification(cMessage* msg);
+    //@brief handler for a "leave member notification" coming from a controller
+    void handleLeaveMemberNotification(cMessage* msg);
+
+    void handleControllerNotification(cMessage* msg);
+
+    // From MECPlatooningConsumerApps
+
+    // @brief handler for request of the list of the available platoons
+    void handleDiscoverPlatoonRequest(cMessage* msg);
+    // @brief handler for request to discover and associate to the most suitable platoon
+    // it creates a new platoon if needed
+    void handleDiscoverAndAssociatePlatoonRequest(cMessage* msg);
+    // @brief handler to request for associate a specific platoon
+    void handleAssociatePlatoonRequest(cMessage* msg);
+
+
+    // From MECPlatooningProducerApps
+
+    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
+    void handleAvailablePlatoonsRequest(cMessage* msg);
+
+
+    // ############ Receiver side ############
+
+    // To MECPlatooningProducerApps
+
+    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
+    void handleAvailablePlatoonsResponse(cMessage* msg);
+
+
+    // @brief handler for configuration response from MECPlatooningControllerApp
+    void handleControllerConfigurationResponse(cMessage* msg);
 
     //@brief handler for JOIN request queue to wait for the available platoons running on the federated producerApps
     void handlePendingJoinRequest(cMessage* msg);
 
-    //@brief it manages a local platoon based on the index
-    bool manageLocalPlatoon(int& index, cMessage* req);
+    //@brief this function instantiate a new local MECPlatoonControllerApp
+    int instantiateLocalPlatoon(inet::Coord& direction);
 
-    // @brief handler for request to leave a platoon from the UE
-    void handleLeavePlatoonRequest(cMessage* msg);
-    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
-    void handleAvailablePlatoonsRequest(cMessage* msg);
-    // @brief handler for the notification of a new platoon from a PlatooningProducerApp
-    void handleAvailablePlatoonsResponse(cMessage* msg);
 
-    //------ handlers for inter producerApps communication ------//
-    //@brief handler for request to add a new member in a platoon
-    void handleAddMemberRequest(cMessage* msg);
-    //@brief handler for response of a request to add a member into a remote platoon
-    void handleAddMemberResponse(cMessage* msg);
-    //@brief handler for request to remove a member in a platoon
-    void handleRemoveMemberRequest(cMessage* msg);
-    //@brief handler for response of a request to remove a member into a remote platoon
-    void handleRemoveMemberResponse(cMessage* msg);
-    //@brief handler to forward command messages to PlatooningConsumerApp
-    void handlePlatoonCommand(cMessage* msg);
-
-    // @brief handler for add a PlatooningConsumerApp to a local platoon
-    void handleAddMember(cMessage* msg);
-    // @brief handler for remove a PlatooningConsumerApp to a local platoon
-    bool removePlatoonMember(int controllerIndex, int mecAppId);
-
-    // @brief used by a controller to set a timer
-    void startTimer(cMessage* msg, double timeOffset);
-    // @brief used by a controller to stop a  timer
-    void stopTimer(int controllerIndex, PlatooningTimerType timerType);
-
-    // @brief handler called when a ControlTimer expires
-    void handleControlTimer(ControlTimer* ctrlTimer);
-    // @brief handler called when an UpdatePositionTimer expires
-    void handleUpdatePositionTimer(UpdatePositionTimer* posTimer);
-
-    // @brief used to require the position of the cars of a platoon on behalf of the platoon controller
-    void requirePlatoonLocations(int producerAppId, int controllerIndex, const set<inet::L3Address>& ues);
-    // @brief used to require the position of the cars of a platoon to the Location Service
-    void sendGetRequest(int producerAppId, const std::string& ues);
+    // @brief controls all the MECPlatooningControllerApps to check the last hb received.
+    // If it is too old, remove the controller from the structure
+    void controlHeartbeats();
 
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;

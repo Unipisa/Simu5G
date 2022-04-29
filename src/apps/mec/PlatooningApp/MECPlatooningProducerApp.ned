@@ -30,6 +30,7 @@ simple MECPlatooningProducerApp like IMECApp, IApp
         int localUePort = default(5900);
         int platooningConsumerAppsPort = default(5500);
         int platooningProducerAppsPort = default(8500);
+        int platooningControllerAppsPort = default(6500);
         
         string mp1Address = default("");
         int mp1Port = default(10021);
@@ -46,10 +47,13 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 	
 		object federatedProducerApps = default([]);
 		
-		string controller = default("rajamani");
-		
-		bool adjustPosition = default(false);
-		bool sendBulk = default(true);
+		// to create controllers
+		string transitionalController = "";
+		string longitudinalController = "Safe";
+		double controlPeriod @unit(s)= 0.100s; 
+		double updatePositionPeriod @unit(s) = 0.070s; 
+		bool adjustPosition = false;
+		bool sendBulk = true;
 		
 		@signal[updateDiffs];
         @statistic[updateDiffs](title="difference LS response times"; unit="ms"; source="updateDiffs"; record=mean, stats, vector); 
