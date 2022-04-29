@@ -304,7 +304,8 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
         module->finalizeParameters();
 
         MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
-        instanceInfo->instanceId = appName.str();
+        instanceInfo->instanceId = meModuleName;
+        instanceInfo-> instanceIntegerId = ueAppID;
 
         instanceInfo->endPoint.addr = mecAppRemoteAddress_;
         instanceInfo->endPoint.port = mecAppPortCounter;
@@ -364,6 +365,8 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
         module->buildInside();
         module->scheduleStart(simTime());
         module->callInitialize();
+
+        instanceInfo->module = module;
 
         currentMEApps++;
 
