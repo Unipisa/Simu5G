@@ -1,9 +1,15 @@
 #ifndef __PLATOONINGUTILS_
 #define __PLATOONINGUTILS_
 
+#include <queue>
+
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
+
+
+#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+
 //#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 
 //#define REGISTRATION_REQUEST "RegistrationRequest"
@@ -45,11 +51,43 @@ typedef enum
     ADD_MEMBER_RESPONSE = 10,
 
     REMOVE_MEMBER_REQUEST = 11,
-    REMOVE_MEMBER_RESPONSE = 12
+    REMOVE_MEMBER_RESPONSE = 12,
+
+    CONF_CONTROLLER = 13,
+    CONF_CONTROLLER_RESPONSE = 14,
+
+    DISCOVER_PLATOONS_REQUEST = 15,
+    DISCOVER_PLATOONS_RESPONSE = 16,
+
+    DISCOVER_ASSOCIATE_PLATOON_REQUEST = 17,
+    DISCOVER_ASSOCIATE_PLATOON_RESPONSE = 18,
+
+    ASSOCIATE_PLATOON_REQUEST = 19,
+    ASSOCIATE_PLATOON_RESPONSE = 20,
+
+    CONTROLLER_NOTIFICATION = 21,
 
 } PlatooningPacketType;
 
+typedef enum
+{
+    NEW_MEMBER = 0,
+    REMOVED_MEMBER = 1,
+    NEW_ORDER= 2,
+    HEARTBEAT = 3
+} ControllerNotificationType;
 
+
+typedef enum
+{
+    IDLE = 0,
+    DISCOVERY = 1,
+    DISCOVERY_AND_ASSOCIATE = 2,
+    ASSOCIATE = 3,
+    JOIN = 4,
+    JOINED_PLATOON = 5,
+    LEAVE = 6
+} PlatooningConsumerAppState;
 
 
 typedef enum
@@ -98,6 +136,17 @@ typedef struct
     simtime_t lastResponse = 0;
 } ProducerAppInfo;
 
+
+typedef struct
+{
+    int controllerId;
+    AppEndpoint controllerEndpoint;
+    inet::Coord direction;
+    std::vector<PlatoonVehicleInfo> vehicles;
+    cModule * pointerToMECPlatooningControllerApp;
+    simtime_t lastHeartBeat;
+    int mecAppId;
+} PlatoonControllerStatus;
 
 typedef struct
 {

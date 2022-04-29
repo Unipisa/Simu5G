@@ -30,7 +30,7 @@ int PlatoonSelectionSample::findBestPlatoon(const ControllerMap& activeControlle
     ControllerMap::const_iterator it = activeControllers.begin();
     for (; it != activeControllers.end(); ++it)
     {
-        inet::Coord platoonDir = it->second->getDirection();
+        inet::Coord platoonDir = it->second->direction;
 
         // consider the platoon as candidate only if the direction is the same (TODO consider small errors)
         if (direction == platoonDir)

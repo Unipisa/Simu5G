@@ -21,8 +21,8 @@ using namespace omnetpp;
 class MECPlatooningProducerApp;
 class PlatoonControllerBase;
 
-typedef std::map<int, PlatoonControllerBase*> ControllerMap;
-typedef std::map<int, std::map<int, std::vector<PlatoonVehicleInfo *>> > GlobalAvailablePlatoons;
+typedef std::map<int, PlatoonControllerStatus*> ControllerMap;
+typedef std::map<int, std::map<int, PlatoonControllerStatus *> > GlobalAvailablePlatoons;
 
 
 /*

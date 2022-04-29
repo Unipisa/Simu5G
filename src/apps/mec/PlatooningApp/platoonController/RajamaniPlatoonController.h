@@ -52,7 +52,7 @@ protected:
     virtual const CommandList* controlPlatoon();
 
   public:
-    RajamaniPlatoonController(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
+    RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~RajamaniPlatoonController();
 };
 

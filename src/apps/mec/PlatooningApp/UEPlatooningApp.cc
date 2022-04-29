@@ -114,7 +114,7 @@ void UEPlatooningApp::initialize(int stage)
 
     statsMsg_ = new cMessage("statsMsg");
     statsPeriod_ = 0.2;
-    scheduleAt(simTime() + statsPeriod_, statsMsg_);
+    //scheduleAt(simTime() + statsPeriod_, statsMsg_);
 
     // sinusoidalPattern
     if(par("sinusoidal").boolValue())
@@ -309,9 +309,9 @@ void UEPlatooningApp::sendJoinPlatoonRequest()
     // send request to join a platoon to the MEC application
 
     inet::Packet* pkt = new inet::Packet("PlatooningJoinPacket");
-    auto joinReq = inet::makeShared<PlatooningJoinPacket>();
-    joinReq->setType(JOIN_REQUEST);
-    joinReq->setControllerIndex(controllerIndex_);
+    auto joinReq = inet::makeShared<PlatooningDiscoverAndAssociatePlatoonPacket>();
+    joinReq->setType(DISCOVER_ASSOCIATE_PLATOON_REQUEST);
+//    joinReq->setControllerIndex(controllerIndex_);
     joinReq->setDirection(mobility->getDirection());
     joinReq->setLastPosition(mobility->getCurrentPosition());   // TODO this should be retrieved by the MecPlatooningConsumerApp via the Location Service
     joinReq->setChunkLength(inet::B(joinRequestPacketSize_));
@@ -365,7 +365,7 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
 
-        EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request accepted, platoon index " << joinResp->getControllerIndex() << endl;
+        EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request accepted, platoon index " << joinResp->getControllerId() << endl;
     }
     else
     {

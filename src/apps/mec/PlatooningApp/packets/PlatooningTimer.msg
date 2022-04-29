@@ -11,7 +11,7 @@
 
 packet PlatooningTimer
 {
-   int controllerIndex; 
+   int controllerId; 
    int type; 
 }
 

@@ -10,10 +10,11 @@
 //
 
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
+#include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
 
-PlatoonControllerBase::PlatoonControllerBase(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod, double updatePositionPeriod)
+PlatoonControllerBase::PlatoonControllerBase(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod)
 {
-    mecPlatooningProducerApp_ = mecPlatooningProducerApp;
+    mecPlatooningControllerApp_ = mecPlatooningControllerApp;
     index_ = index;
     controlPeriod_ = controlPeriod;
     updatePositionPeriod_ = updatePositionPeriod;
@@ -37,16 +38,16 @@ bool PlatoonControllerBase::addPlatoonMember(int mecAppId, int producerAppId, in
         // update positions, set a timer
         UpdatePositionTimer* posTimer = new UpdatePositionTimer("PlatooningTimer");
         posTimer->setType(PLATOON_UPDATE_POSITION_TIMER);
-        posTimer->setControllerIndex(index_);
+        posTimer->setControllerId(index_);
         posTimer->setPeriod(controlPeriod_);
-        mecPlatooningProducerApp_->startTimer(posTimer, controlPeriod_ - 0.03); // TODO check timing
+        mecPlatooningControllerApp_->startTimer(posTimer, updatePositionPeriod_); // TODO check timing
 
         // start controlling the platoon, set a timer
         ControlTimer* ctrlTimer = new ControlTimer("PlatooningTimer");
         ctrlTimer->setType(PLATOON_CONTROL_TIMER);
-        ctrlTimer->setControllerIndex(index_);
+        ctrlTimer->setControllerId(index_);
         ctrlTimer->setPeriod(controlPeriod_);
-        mecPlatooningProducerApp_->startTimer(ctrlTimer, controlPeriod_);
+        mecPlatooningControllerApp_->startTimer(ctrlTimer, controlPeriod_);
     }
 
     // assign correct positions in the platoon
@@ -110,8 +111,8 @@ bool PlatoonControllerBase::removePlatoonMember(int mecAppId)
     if (membersInfo_.empty())
     {
         // stop controlling the platoon, stop the timer
-        mecPlatooningProducerApp_->stopTimer(index_, PLATOON_UPDATE_POSITION_TIMER);
-        mecPlatooningProducerApp_->stopTimer(index_, PLATOON_CONTROL_TIMER);
+        mecPlatooningControllerApp_->stopTimer(PLATOON_UPDATE_POSITION_TIMER);
+        mecPlatooningControllerApp_->stopTimer(PLATOON_CONTROL_TIMER);
     }
 
     EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from platoon " << index_ << endl;
@@ -217,12 +218,12 @@ nlohmann::json PlatoonControllerBase::dumpPlatoonToJSON() const
     return  platoonInfo;
 }
 
-std::vector<PlatoonVehicleInfo *> PlatoonControllerBase::getPlatoonMembers()
+std::vector<PlatoonVehicleInfo> PlatoonControllerBase::getPlatoonMembers()
 {
-    std::vector<PlatoonVehicleInfo *> platoons;
+    std::vector<PlatoonVehicleInfo> platoons;
     for(auto& vehicle: membersInfo_)
     {
-        platoons.push_back(&(vehicle.second));
+        platoons.push_back(vehicle.second);
     }
 
     return platoons;

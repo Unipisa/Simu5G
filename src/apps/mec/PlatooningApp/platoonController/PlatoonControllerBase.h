@@ -27,6 +27,7 @@ typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
 typedef std::map<int, CommandInfo> CommandList;
 
 class MECPlatooningProducerApp;
+class MECPlatooningControllerApp;
 
 /*
  * PlatoonControllerBase
@@ -43,9 +44,10 @@ class PlatoonControllerBase
   protected:
 
     friend class MECPlatooningProducerApp;
+    friend class MECPlatooningControllerApp;
 
     // reference to the MEC Platooning App
-    MECPlatooningProducerApp* mecPlatooningProducerApp_;
+    MECPlatooningControllerApp* mecPlatooningControllerApp_;
 
     // platoon controller identifier within a PlatoonProducerApp
     int index_;
@@ -92,7 +94,7 @@ class PlatoonControllerBase
     virtual void adjustPositions();
 
   public:
-    PlatoonControllerBase(MECPlatooningProducerApp* mecPlatooningProviderApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
+    PlatoonControllerBase(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~PlatoonControllerBase();
 
     void setDirection(inet::Coord direction) { direction_ = direction; }
@@ -102,7 +104,7 @@ class PlatoonControllerBase
     double getTargetSpeed() { return targetSpeed_; }
 
     nlohmann::json dumpPlatoonToJSON() const;
-    std::vector<PlatoonVehicleInfo *> getPlatoonMembers();
+    std::vector<PlatoonVehicleInfo> getPlatoonMembers();
 };
 
 #endif

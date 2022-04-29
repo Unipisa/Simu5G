@@ -22,16 +22,23 @@ cplusplus {{
     #include "nodes/mec/utils/httpUtils/json.hpp"
 	using namespace nlohmann;
 	#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+	#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 	
 	#include <vector>
 	#include <map>
 	
-	typedef std::map<int, std::vector<PlatoonVehicleInfo *>> Platoons;
+	typedef std::map<int, PlatoonControllerStatus *> Platoons;
+	typedef std::vector<PlatoonVehicleInfo> Vehicles;
 }};
 
 class Platoons {
     @existingClass;
 };
+
+class Vehicles {
+    @existingClass;
+};
+
 
 class PlatoonVehicleInfo {
     @existingClass;
@@ -48,7 +55,9 @@ class json {
 class PlatooningAppPacket extends inet::FieldsChunk 
 {
     int type;
-    int mecAppId;
+    int consumerAppId;
+    int producerAppId;
+    
 }
 
 
@@ -58,9 +67,11 @@ class PlatooningJoinPacket extends PlatooningAppPacket
 {       
     inet::L3Address ueAddress; // address of the UE
     
-    int controllerIndex;  // index of the controller instance
+    int controllerId;  // index of the controller instance
                           // in request messages, it is the platoon the UE would like to join
                           // in response messages, it is the platoon the UE actually joined
+    
+        
     
     // --- request --- //
     Coord direction;      // cartesian coordinates to specify the direction of the UE
@@ -74,8 +85,8 @@ class PlatooningJoinPacket extends PlatooningAppPacket
 class PlatooningLeavePacket extends PlatooningAppPacket
 {       
     // --- request --- //
-    int controllerIndex;  // index of the controller instance
-	int producerAppId;    // id of the producer app (in case of federation)
+    int controllerId;  // index of the controller instance
+	    // id of the producer app (in case of federation)
 	
     // --- response --- //
     bool response;        // flag set by the MEC app with the ACK/NACK to leave a platoon
@@ -102,18 +113,80 @@ class PlatooningRegistrationPacket extends PlatooningAppPacket
 class PlatooningAvailablePlatoonsPacket extends PlatooningAppPacket
 {
     int requestId;
-    int producerAppId;
+    
 	Platoons platoons;
 }
 
 
-
 class PlatooningAddMemberPacket extends PlatooningAppPacket
 {
-    inet::L3Address ueAddress; 
+    inet::L3Address ueAddress;
+    
+    inet::L3Address consumerAddress;
+    int consumerPort;
+     
     Coord position; 
-    int producerAppId;
+    
     //int mecAppId; already in the base packet
-    int platoonIndex; 
+    int controllerId; 
     bool response;
 }
+
+
+
+class PlatooningConfigureControllerPacket extends PlatooningAppPacket
+{
+    Coord direction;
+    int controllerId;
+    
+    string traversalController;
+    string longitudinalController;
+    double controlPeriod; 
+	double updatePositionPeriod; 
+	bool adjustPosition = false;
+	bool sendBulk = true;
+   				
+    bool response;
+}
+
+
+class PlatooningDiscoverPlatoonPacket extends PlatooningAppPacket
+{
+    bool onlyLocalPlatoons;
+}
+
+class PlatooningDiscoverAndAssociatePlatoonPacket extends PlatooningDiscoverPlatoonPacket
+{
+               
+        // --- request --- //
+        Coord direction;      // cartesian coordinates to specify the direction of the UE
+        Coord lastPosition;   // last coordinates of the UE
+        inet::L3Address ueAddress; // address of the UE
+        
+        // --- response --- //
+        bool result;
+        int controllerId;
+        inet::L3Address controllerAddress;
+		int controllerPort;
+		
+		string color;         // color assigned to the members of the platoon
+}
+
+class PlatooningAssociatePlatoonPacket extends PlatooningDiscoverAndAssociatePlatoonPacket
+{
+}
+
+
+class PlatooningControllerNotificationPacket extends PlatooningAppPacket
+{
+    int notificationType;
+    
+    int controllerId; 
+   
+    Vehicles vehiclesOrder;
+ 	simtime_t heartbeatTimeStamp;
+}
+
+
+
+

@@ -19,6 +19,7 @@ using namespace std;
 using namespace omnetpp;
 
 class MECPlatooningApp;
+class MECPlatooningControllerApp;
 
 /*
  * SafePlatoonController
@@ -49,7 +50,7 @@ protected:
     virtual const CommandList* controlPlatoon();
 
   public:
-    SafePlatoonController(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
+    SafePlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
     virtual ~SafePlatoonController();
 };
 

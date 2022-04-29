@@ -10,9 +10,10 @@
 //
 
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
+#include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
 
-RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningProducerApp* mecPlatooningProducerApp, int index, double controlPeriod, double updatePositionPeriod)
-    : PlatoonControllerBase(mecPlatooningProducerApp, index, controlPeriod, updatePositionPeriod)
+RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod)
+    : PlatoonControllerBase(mecPlatooningControllerApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO check values and make them parametric
     C1_ = 0.5;
@@ -43,7 +44,7 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
     CommandList* cmdList = new CommandList();
 
     // if adjustPosition flag is true, update all the position to the most recent timestamp
-    if(mecPlatooningProducerApp_->getAdjustPositionFlag())
+    if(mecPlatooningControllerApp_->getAdjustPositionFlag())
     {
         adjustPositions();
     }
