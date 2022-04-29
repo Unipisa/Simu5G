@@ -28,6 +28,7 @@ simple MECPlatooningConsumerApp like IMECApp, IApp
         int mecAppId;
         int localUePort;
         int localPlatooningProviderPort = default(5700);
+        int localPlatooningControllerPort = default(7700);
         
         string platooningProviderAddress = default("127.0.0.1");
         int platooningProviderPort = default(5500);

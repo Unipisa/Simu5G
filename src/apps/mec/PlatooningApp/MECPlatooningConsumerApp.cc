@@ -10,7 +10,6 @@
 //
 
 #include "apps/mec/PlatooningApp/MECPlatooningConsumerApp.h"
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
@@ -33,6 +32,8 @@ MECPlatooningConsumerApp::MECPlatooningConsumerApp(): MecAppBase()
     lastXposition = 0.;
     lastYposition = 0.;
     lastZposition = 0.;
+
+    state_ = IDLE;
 }
 
 MECPlatooningConsumerApp::~MECPlatooningConsumerApp()
@@ -59,6 +60,9 @@ void MECPlatooningConsumerApp::initialize(int stage)
     platooningProviderAppSocket.setOutputGate(gate("socketOut"));
     platooningProviderAppSocket.bind(localPlatooningProviderPort+this->getIndex()); // base+index vector;
 
+    localPlatooningControllerPort = par("localPlatooningControllerPort");
+    platooningControllerAppSocket.setOutputGate(gate("socketOut"));
+    platooningControllerAppSocket.bind(localPlatooningControllerPort+this->getIndex()); // base+index vector;
 
     EV << "MECPlatooningConsumerApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
@@ -67,10 +71,10 @@ void MECPlatooningConsumerApp::initialize(int stage)
     platooningProviderPort_ = par("platooningProviderPort");
 
     // send registration request to the provider app
-    registerToPlatooningProviderApp();
+//    registerToPlatooningProviderApp();
 
     // initially, not connected to any controller
-    controllerIndex_ = -1;
+    controllerId_ = -1;
 
     // connect with the service registry
 //    EV << "MECPlatooningConsumerApp::initialize - Initialize connection with the service registry via Mp1" << endl;
@@ -81,14 +85,38 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
-        if(ueAppSocket.belongsToSocket(msg) || platooningProviderAppSocket.belongsToSocket(msg))
+        auto pk = check_and_cast<Packet *>(msg);
+        auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
+
+        if(ueAppSocket.belongsToSocket(msg))
         {
             handleUeMessage(msg);
             return;
         }
+        else if (platooningProviderAppSocket.belongsToSocket(msg))
+        {
+            if (platooningPkt->getType() == DISCOVER_ASSOCIATE_PLATOON_RESPONSE)  // from mec provider app
+                handleDiscoverAndAssociatePlatoonResponse(msg);
+            else if (platooningPkt->getType() == DISCOVER_PLATOONS_RESPONSE)  // from mec provider app
+                handleDiscoverPlatoonResponse(msg);
+            else if (platooningPkt->getType() == ASSOCIATE_PLATOON_RESPONSE)  // from mec provider app
+                handleAssociatePlatoonResponse(msg);
+            return;
+        }
+        else if (platooningControllerAppSocket.belongsToSocket(msg))
+        {
+            if (platooningPkt->getType() == JOIN_RESPONSE)  // from mec provider app
+                handleJoinPlatoonResponse(msg);
+
+            else if (platooningPkt->getType() == LEAVE_RESPONSE) // from mec provider app
+                handleLeavePlatoonResponse(msg);
+
+            else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
+                handlePlatoonCommand(msg);
+            return;
+        }
     }
     MecAppBase::handleMessage(msg);
-
 }
 
 void MECPlatooningConsumerApp::finish()
@@ -203,7 +231,7 @@ void MECPlatooningConsumerApp::registerToPlatooningProviderApp()
     inet::Packet* packet = new Packet ("PlatooningRegistrationPacket");
     auto registration = inet::makeShared<PlatooningRegistrationPacket>();
     registration->setType(REGISTRATION_REQUEST);
-    registration->setMecAppId(getId());
+    registration->setConsumerAppId(getId());
     int chunkLen = sizeof(getId())+sizeof(localUePort);
     registration->setChunkLength(inet::B(chunkLen));
 
@@ -215,39 +243,98 @@ void MECPlatooningConsumerApp::registerToPlatooningProviderApp()
 
 void MECPlatooningConsumerApp::handleUeMessage(omnetpp::cMessage *msg)
 {
-    // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);
     auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
 
-    // TODO use enumerate variables instead of strings for comparison
-
-    if(platooningPkt->getType() == REGISTRATION_RESPONSE) // from mec provider app
-        handleProviderRegistrationResponse(msg);
-
-    else if(platooningPkt->getType() == JOIN_REQUEST)     // from client app
-    {
-        // TODO move this somewhere else
-        ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
-        ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
-
-        handleJoinPlatoonRequest(msg);
-    }
-
-    else if (platooningPkt->getType() == LEAVE_REQUEST)  // from client app
+    if (platooningPkt->getType() == DISCOVER_ASSOCIATE_PLATOON_REQUEST)
+       handleDiscoverAndAssociatePlatoonRequest(msg);
+    else if (platooningPkt->getType() == DISCOVER_PLATOONS_REQUEST)
+       handleDiscoverPlatoonRequest(msg);
+    else if (platooningPkt->getType() == ASSOCIATE_PLATOON_REQUEST)
+       handleAssociatePlatoonRequest(msg);
+    else if (platooningPkt->getType() == LEAVE_REQUEST)
         handleLeavePlatoonRequest(msg);
 
-    else if (platooningPkt->getType() == JOIN_RESPONSE)  // from mec provider app
-        handleJoinPlatoonResponse(msg);
+}
 
-    else if (platooningPkt->getType() == LEAVE_RESPONSE) // from mec provider app
-        handleLeavePlatoonResponse(msg);
 
-    else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
-        handlePlatoonCommand(msg);
+void MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonRequest(cMessage* msg)
+{
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto joinReq = packet->removeAtFront<PlatooningDiscoverAndAssociatePlatoonPacket>();
+
+
+    ueAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+    ueAppPort  = packet->getTag<L4PortInd>()->getSrcPort();
+
+    // save direction info (needed for join request)
+    direction_ = joinReq->getDirection();
+    lastPosition_ = joinReq->getLastPosition();
+
+    EV << "MECPlatooningConsumerApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
+
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    joinReq->setConsumerAppId(getId());
+//    joinReq->setUeAddress(ueAppAddress);
+    fwPacket->insertAtFront(joinReq);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
+
+    state_ = DISCOVERY_AND_ASSOCIATE;
+    delete packet;
+}
+
+
+
+void MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse(cMessage* msg)
+{
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto discResp = packet->removeAtFront<PlatooningDiscoverAndAssociatePlatoonPacket>();
+
+    if(state_ != DISCOVERY_AND_ASSOCIATE)
+    {
+        EV << "MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse - The status is not DISCOVERY_AND_ASSOCIATE. This message will be discarded." << endl;
+        delete packet;
+        state_ = IDLE;
+        // TODO send notification to UE?
+    }
+
+    if(discResp->getResult())
+    {
+        // require to join the platoon
+        platooningControllerAddress_ = discResp->getControllerAddress();
+        platooningControllerPort_ = discResp->getControllerPort();
+        mecPlatoonProducerAppId_ = discResp->getProducerAppId();
+        int platoonId = discResp->getControllerId();
+
+        inet::Packet* pkt = new inet::Packet("PlatooningJoinPacket");
+        auto joinReq = inet::makeShared<PlatooningJoinPacket>();
+
+        joinReq->setType(JOIN_REQUEST);
+        joinReq->setUeAddress(ueAppAddress);
+        joinReq->setProducerAppId(mecPlatoonProducerAppId_);
+        joinReq->setDirection(direction_);
+        joinReq->setLastPosition(lastPosition_); // TODO a new position must be retrieved!!
+        joinReq->setControllerId(platoonId);
+        joinReq->setChunkLength(B(16));
+        joinReq->setConsumerAppId(getId());
+
+        pkt->insertAtFront(joinReq);
+        pkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+        platooningControllerAppSocket.sendTo(pkt, platooningControllerAddress_, platooningControllerPort_);
+        state_ = JOIN;
+    }
 
     else
-        throw cRuntimeError("MECPlatooningConsumerApp::handleUeMessage - packet not recognized");
+    {
+        EV << "MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse - No platoon found, turn in IDLE state." << endl;
+        state_ = IDLE;
+        // TODO send notification to UE?
+    }
+
 }
+
 
 void MECPlatooningConsumerApp::handleProviderRegistrationResponse(cMessage* msg)
 {
@@ -268,18 +355,28 @@ void MECPlatooningConsumerApp::handleJoinPlatoonRequest(cMessage* msg)
 
     EV << "MECPlatooningConsumerApp::handleJoinPlatoonRequest - Forward join request to the MECPlatooningProviderApp" << endl;
 
+    /*
+     * TODO
+     * choose here if just DISCOVER or DISCOVER and ASSOCIATE.
+     * For now is always DISCOVER and ASSCOI
+     */
+
     inet::Packet* fwPacket = new Packet (packet->getName());
-    joinReq->setMecAppId(getId());
+    joinReq->setConsumerAppId(getId());
+
     joinReq->setUeAddress(ueAddress);
     fwPacket->insertAtFront(joinReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
+
+    state_ = DISCOVERY_AND_ASSOCIATE;
 
     delete packet;
 }
 
 void MECPlatooningConsumerApp::handleLeavePlatoonRequest(cMessage* msg)
 {
+
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->removeAtFront<PlatooningLeavePacket>();
 
@@ -288,11 +385,13 @@ void MECPlatooningConsumerApp::handleLeavePlatoonRequest(cMessage* msg)
     // TODO get latest UE position (from the Location Service) and add it to the message for the provider app
 
     inet::Packet* fwPacket = new Packet (packet->getName());
-    leaveReq->setMecAppId(getId());
-    leaveReq->setControllerIndex(controllerIndex_);
+    leaveReq->setConsumerAppId(getId());
+    leaveReq->setControllerId(controllerId_);
     fwPacket->insertAtFront(leaveReq);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    platooningProviderAppSocket.sendTo(fwPacket, platooningProviderAddress_, platooningProviderPort_);
+
+    platooningControllerAppSocket.sendTo(fwPacket, platooningControllerAddress_, platooningControllerPort_);
+
 
     delete packet;
 }
@@ -306,7 +405,7 @@ void MECPlatooningConsumerApp::handleJoinPlatoonResponse(cMessage* msg)
 
     // set controller index
     if (joinResp->getResponse())
-        controllerIndex_ = joinResp->getControllerIndex();
+        controllerId_ = joinResp->getControllerId();
 
     EV << "MECPlatooningConsumerApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
@@ -319,6 +418,7 @@ void MECPlatooningConsumerApp::handleJoinPlatoonResponse(cMessage* msg)
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
 
+    state_ = JOINED_PLATOON;
     delete packet;
 }
 
@@ -331,8 +431,7 @@ void MECPlatooningConsumerApp::handleLeavePlatoonResponse(cMessage* msg)
 
     // detach controller index
     if (leaveResp->getResponse())
-        controllerIndex_ = -1;
-
+        controllerId_ = -1;
 
     EV << "MECPlatooningConsumerApp::handleLeavePlatoonResponse - Forward leave response to the UE" << endl;
 
@@ -360,7 +459,6 @@ void MECPlatooningConsumerApp::handlePlatoonCommand(cMessage* msg)
 
     delete packet;
 }
-
 
 //void MECPlatooningConsumerApp::modifySubscription()
 //{

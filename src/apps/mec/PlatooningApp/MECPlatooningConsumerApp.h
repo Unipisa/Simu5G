@@ -19,6 +19,8 @@
 
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
+#include "apps/mec/PlatooningApp/PlatooningUtils.h"
+
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 
@@ -27,6 +29,11 @@ using namespace omnetpp;
 
 class MECPlatooningConsumerApp : public MecAppBase
 {
+
+    PlatooningConsumerAppState state_;
+
+    int mecPlatoonProducerAppId_;
+
     // UDP socket to communicate with the UeApp
     inet::UdpSocket ueAppSocket;
     int localUePort;
@@ -34,6 +41,9 @@ class MECPlatooningConsumerApp : public MecAppBase
     // socket to handle communication with the MecProviderApp
     inet::UdpSocket platooningProviderAppSocket;
     int localPlatooningProviderPort;
+
+    inet::UdpSocket platooningControllerAppSocket;
+    int localPlatooningControllerPort;
 
     // address+port of the UeApp
     inet::L3Address ueAppAddress;
@@ -49,6 +59,12 @@ class MECPlatooningConsumerApp : public MecAppBase
     inet::L3Address platooningProviderAddress_;
     int platooningProviderPort_;
 
+    // endpoint for contacting the MEC platooningControllerApp
+    inet::L3Address platooningControllerAddress_;
+    int platooningControllerPort_;
+
+
+
     HttpBaseMessage* serviceHttpMessage;
     HttpBaseMessage* mp1HttpMessage;
 
@@ -58,9 +74,13 @@ class MECPlatooningConsumerApp : public MecAppBase
     double lastYposition;
     double lastZposition;
 
+    inet::Coord direction_;
+    inet::Coord lastPosition_;
+
+
     // when joined a platoon, stores the index of the controller
     // -1 means that this MEC app does not belong to any platoon
-    int controllerIndex_;
+    int controllerId_;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -85,6 +105,25 @@ class MECPlatooningConsumerApp : public MecAppBase
 
     // @brief sends a GET request to the Location Service to retrieve the location of the UE
     void requestLocation();
+
+    // From MECPlatooningProducerApp
+
+    // @brief handler for response of the list of the available platoons
+    void handleDiscoverPlatoonResponse(cMessage* msg){};
+    // @brief handler for response to discover and associate to the most suitable platoon
+    // it creates a new platoon if needed
+    void handleDiscoverAndAssociatePlatoonResponse(cMessage* msg);
+    // @brief handler to response for associate a specific platoon
+    void handleAssociatePlatoonResponse(cMessage* msg){};
+
+
+    // @brief handler for request of the list of the available platoons
+    void handleDiscoverPlatoonRequest(cMessage* msg){};
+    // @brief handler for request to discover and associate to the most suitable platoon
+    // it creates a new platoon if needed
+    void handleDiscoverAndAssociatePlatoonRequest(cMessage* msg);
+    // @brief handler to request for associate a specific platoon
+    void handleAssociatePlatoonRequest(cMessage* msg){};
 
     // @brief notify the PlatooningProviderApp about the presence
     //        of this new MecApp
