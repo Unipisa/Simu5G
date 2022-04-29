@@ -16,7 +16,7 @@ using namespace omnetpp;
 void CarrierAssignerDefault::assign()
 {
 
-    if (binder_ == NULL)
+    if (binder_ == nullptr)
          binder_ = getBinder();
 
     const ActiveSet* activeConnectionSet = schedulerEnb_->readActiveConnections();

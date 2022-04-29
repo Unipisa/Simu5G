@@ -28,6 +28,7 @@ class CarrierAssignerDefault : public CarrierAssigner
     CarrierAssignerDefault(LteSchedulerEnb* schedEnb, LteMacEnb* mac, Direction dir) :
         CarrierAssigner(schedEnb, mac, dir)
     {
+        binder_ = nullptr;
     }
     /**
      * Destructor.
