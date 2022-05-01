@@ -63,24 +63,8 @@ Dependencies
 This version requires:
 
 - OMNeT++ 6.0
-- INET 4.3.7
+- INET 4.3.9
 
-Note: INET 4.3.7 has a small bug regarding SCTP connections. It has been fixed on the INET master but
-until a new release is available, the following fix needs to be applied manually: 
-
-```
---- a/src/inet/transportlayer/sctp/SctpAssociationBase.cc
-+++ b/src/inet/transportlayer/sctp/SctpAssociationBase.cc
-@@ -82,7 +82,7 @@ SctpPathVariables::SctpPathVariables(const L3Address& addr, SctpAssociation *ass
- 
-     cmtCCGroup = 0;
-     lastTransmission = simTime();
--    sendAllRandomizer = RNGCONTEXT uniform(0, (1 << 31));
-+    sendAllRandomizer = RNGCONTEXT uniform(0, (1u << 31));
-     pseudoCumAck = 0;
-     newPseudoCumAck = false;
-     findPseudoCumAck = true; // Set findPseudoCumAck to TRUE for new destination.
-```
 
 Simu5G Features
 ---------------
