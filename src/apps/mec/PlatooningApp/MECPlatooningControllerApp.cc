@@ -43,6 +43,9 @@ MECPlatooningControllerApp::MECPlatooningControllerApp(): MecAppBase()
     isConfigured_ = false;
     updatePositionTimer_ = nullptr;
     controlTimer_ = nullptr;
+    maneuvringVehicle_ = nullptr; // one at a time
+    maneuvringVehicleJoinMsg_ = nullptr;
+    state_ = INACTIVE_CONTROLLER;
 
 }
 
@@ -51,6 +54,12 @@ MECPlatooningControllerApp::~MECPlatooningControllerApp()
     delete platoonSelection_;
     delete longitudinalController_;
     delete transitionalController_;
+    delete maneuvringVehicle_;
+//    delete maneuvringVehicleJoinMsg_;
+    while(!joinRequests_.isEmpty())
+    {
+        delete joinRequests_.pop();
+    }
 }
 
 void MECPlatooningControllerApp::initialize(int stage)
@@ -205,41 +214,27 @@ void MECPlatooningControllerApp::handleSelfMessage(cMessage *msg)
 
         switch(timer->getType())
         {
-            case PLATOON_CONTROL_TIMER:
+            case PLATOON_LONGITUDINAL_CONTROL_TIMER:
             {
                 ControlTimer* ctrlTimer = check_and_cast<ControlTimer*>(timer);
-                handleControlTimer(ctrlTimer);
-//                EV << "TEST" << endl;
-////                // emit stats about the difference of the updates
-////                if(received_ == 2)
-////                {
-////                    EV << "DIFFERENZA: " << second-first << endl;
-//                    if(simTime() > 10)
-//                    {
-//                        simtime_t diff;
-//                        if(producerAppEndpoint_[0].lastResponse > producerAppEndpoint_[1].lastResponse)
-//                            diff = producerAppEndpoint_[0].lastResponse - producerAppEndpoint_[1].lastResponse;
-//                        else
-//                            diff = producerAppEndpoint_[1].lastResponse - producerAppEndpoint_[0].lastResponse;
-//
-//                        emit(updatesDifferences_, diff);
-//                    }
-//                    received_ = 0;
-//                }
-//                else
-//                {
-//                    //emit(updatesDifferences_, 0);
-//                    received_ = 0;
-//                }
-
+                handleLongitudinalControllerTimer(ctrlTimer);
                 break;
             }
-            case PLATOON_UPDATE_POSITION_TIMER:
+            case PLATOON_LATERAL_CONTROL_TIMER:
+            {
+                ControlTimer* ctrlTimer = check_and_cast<ControlTimer*>(timer);
+                handleLateralControllerTimer(ctrlTimer);
+                break;
+            }
+            case PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER:
+            case PLATOON_LATERAL_UPDATE_POSITION_TIMER:
+
             {
                 UpdatePositionTimer* posTimer = check_and_cast<UpdatePositionTimer*>(timer);
                 handleUpdatePositionTimer(posTimer);
                 break;
             }
+
             default: throw cRuntimeError("MECPlatooningControllerApp::handleSelfMessage - unrecognized timer type %d", timer->getType());
         }
     }
@@ -383,15 +378,13 @@ void MECPlatooningControllerApp::handleServiceMessage(int connId)
                   for(int i = 0 ; i < jsonUeInfo.size(); i++)
                   {
                         nlohmann::json ue = jsonUeInfo.at(i);
-                        EV << "UE INFO " << ue << endl;
+                        //EV << "UE INFO " << ue << endl;
                         if(ue.is_string())
                         {
                             continue;
                         }
                         UEInfo ueInfo;
                         std::string address = ue["address"];
-                        EV << "MECPlatooningControllerApp::handleServiceMessage: address [" << address << "]" << endl;
-                        EV << "AA " << address.substr(address.find(":")+1, address.size()) << endl;
                         ueInfo.address = inet::L3Address(address.substr(address.find(":")+1, address.size()).c_str());
                         ueInfo.timestamp = ue["timeStamp"]["nanoSeconds"];
                         ueInfo.position = inet::Coord(double(ue["locationInfo"]["x"]), double(ue["locationInfo"]["y"]), double(ue["locationInfo"]["z"]));
@@ -421,7 +414,7 @@ void MECPlatooningControllerApp::handleServiceMessage(int connId)
               }
 
               // notify the controller
-              longitudinalController_->updatePlatoonPositions(&uesInfo);
+              updatePlatoonPositions(&uesInfo);
 
             }
             catch(nlohmann::detail::parse_error e)
@@ -454,6 +447,7 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage * msg)
 
     platooningProducerAppEndpoint_.address = packet->getTag<L3AddressInd>()->getSrcAddress();
     platooningProducerAppEndpoint_.port = packet->getTag<L4PortInd>()->getSrcPort();
+    direction_ = confMsg->getDirection();
 
     //   cModule* vi = this->getParentModule();
    cModule* localProducerAppModule = this->getModuleByPath("^.bgApp[0]");
@@ -483,6 +477,8 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage * msg)
 
    producerAppId_ =  confMsg->getProducerAppId();
 
+   minimumDistanceForManoeuvre_ = par("minimumDistanceForManoeuvre").doubleValue();
+
    mp1Socket_ = addNewSocket();
    connect(mp1Socket_, mp1Address, mp1Port);
 
@@ -501,15 +497,21 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage * msg)
     if(strcmp( confMsg->getLongitudinalController() , "Rajamani") == 0 )
     {
         longitudinalController_ =   new RajamaniPlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod);
-        EV << "Controller is  " << par("longitudinalController").str() << endl;
-
     }
     else if(strcmp( confMsg->getLongitudinalController(), "Safe") == 0 )
         longitudinalController_ =   new SafePlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod);
 
     longitudinalController_->setDirection(confMsg->getDirection());
 
-    transitionalController_ = nullptr;
+    transitionalController_ = new RajamaniPlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod, true);
+
+
+
+    controlPerdiodLongitudinal_ = controlPeriod;
+    controlPerdiodLateral_ = controlPeriod;
+
+    updatePositionTimerLongitudinal_ = updatePositionPeriod;
+    updatePositionTimerLateral_ = updatePositionPeriod;
 
     isConfigured_ = true;
 
@@ -527,9 +529,7 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage * msg)
 
 bool MECPlatooningControllerApp::addMember(int consumerAppId, L3Address& carIpAddress ,Coord& position, int producerAppId)
 {
-    if(isConfigured_ == false)
-        throw cRuntimeError("CONF PACKER NOT ARRIVED");
-    bool success = longitudinalController_->addPlatoonMember(consumerAppId, producerAppId,  position, carIpAddress);
+    bool success = addPlatoonMember(consumerAppId, producerAppId,  position, carIpAddress);
 
     if(success)
     {
@@ -576,37 +576,30 @@ void MECPlatooningControllerApp::handleRegistrationRequest(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg)
+void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool success)
 {
-    /*
-     * We should check where the car is. For now, we should only add the car to the platoon and start the CRUISE phase
-     */
+    EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest" << endl;
+
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     L3Address consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
     int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
     auto req = packet->removeAtFront<PlatooningJoinPacket>();
 
-    int consumerAppId = req->getConsumerAppId();
-    int producerAppId = req->getProducerAppId();
-    L3Address carIpAddress = req->getUeAddress();
-    Coord position = req->getLastPosition();
-
-    // suppose all checks are ok, add the car to the platoon
-
-    bool success = addMember(consumerAppId, carIpAddress, position, producerAppId);
-
     req->setType(JOIN_RESPONSE);
 
     if(success)
     {
+        //add the car to the platoon
+
+        int consumerAppId = req->getConsumerAppId();
+        int producerAppId = req->getProducerAppId();
+        L3Address carIpAddress = req->getUeAddress();
+        inet::Coord position = req->getLastPosition();
+
+        addMember(consumerAppId, carIpAddress, position, producerAppId);
+
         req->setColor("green");
         // save info in some data structure
-        ConsumerAppInfo info;
-        info.address = consumerAppAddress;
-        info.port = consumerAppPort;
-        info.producerAppId = producerAppId; //for now, after the join it will be set
-
-        consumerAppEndpoint_[consumerAppId] = info;
 
         // add CONTROLLER_NOTIFICATION TO THE PRODUCER APP
         inet::Packet* pkt = new inet::Packet("PlatooningControllerNotificationPacket");
@@ -614,14 +607,15 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg)
 
         notification->setType(CONTROLLER_NOTIFICATION);
         notification->setNotificationType(NEW_MEMBER);
-        notification->setConsumerAppId(consumerAppId);
+        notification->setConsumerAppId(req->getConsumerAppId());
 
         notification->setControllerId(controllerId_);
-        notification->setProducerAppId(producerAppId);
+        notification->setProducerAppId(req->getProducerAppId());
 
-        notification->setVehiclesOrder(longitudinalController_->getPlatoonMembers());
+        auto members = getPlatoonMembers();
+
+        notification->setVehiclesOrder(members);
         notification->setHeartbeatTimeStamp(simTime());
-
 
         notification->setChunkLength(inet::B(20 +  sizeof(members)));
         notification->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
@@ -629,7 +623,14 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg)
 
         platooningProducerAppSocket_.sendTo(pkt, platooningProducerAppEndpoint_.address, platooningProducerAppEndpoint_.port);
 
-        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << consumerAppId << "] added to platoon" << endl;
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] added to platoon" << endl;
+    }
+
+    else
+    {
+        req->setColor("red");
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] not added to platoon" << endl;
+
     }
 
     req->setResponse(success);
@@ -638,10 +639,225 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg)
     responsePacket->insertAtBack(req);
     // TODO look for endpoint in the structure?
     platooningConsumerAppsSocket_.sendTo(responsePacket, consumerAppAddress, consumerAppPort);
-    EV << "MECPlatooningControllerApp::sendJoinPlatoonRequest - Join response sent to the UE" << endl;
+    EV << "MECPlatooningControllerApp::sendJoinPlatoonRequest - Join response sent to MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << endl;
+
+    if(!joinRequests_.isEmpty() && state_ != MANOEUVRE){
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - Process next join request" << endl;
+        cMessage* newJoin = check_and_cast<cMessage*>(joinRequests_.pop());
+        maneuvringVehicleJoinMsg_ = nullptr;
+        delete maneuvringVehicle_;
+        maneuvringVehicle_ = nullptr;
+        handleJoinPlatoonRequest(newJoin, true);
+    }
+    else if(joinRequests_.isEmpty() && state_ != MANOEUVRE)
+    {
+        maneuvringVehicleJoinMsg_ = nullptr;
+        delete maneuvringVehicle_;
+        maneuvringVehicle_ = nullptr;
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - No other vehicles are waiting, switch to cruise" << endl;
+        if(membersInfo_.size() > 0)
+            switchState(CRUISE); // no other vehicles are waiting, switch to cruise
+        else
+            switchState(INACTIVE_CONTROLLER);
+    }
+
+    delete packet; // delete join request
+}
+
+void MECPlatooningControllerApp::switchState(ControllerState state)
+{
+    EV << "MECPlatooningControllerApp::switchState" << endl;
+
+    if(controlTimer_ == nullptr)
+    {
+        controlTimer_ = new ControlTimer("PlatooningTimer");
+    }
+    if(updatePositionTimer_ == nullptr)
+    {
+        updatePositionTimer_ = new UpdatePositionTimer("PlatooningTimer");
+    }
+
+    if(state == CRUISE){
+        EV << "MECPlatooningControllerApp::switchState - CRUISE " << endl;
+        controlTimer_->setType(PLATOON_LONGITUDINAL_CONTROL_TIMER);
+        controlTimer_->setPeriod(controlPerdiodLongitudinal_); // it starts with the lateral period.
+        startTimer(controlTimer_, controlPerdiodLongitudinal_);
+
+        updatePositionTimer_->setType(PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER);
+        updatePositionTimer_->setPeriod(updatePositionTimerLongitudinal_); // it starts with the lateral period.
+        startTimer(updatePositionTimer_, updatePositionTimerLongitudinal_); // TODO check timing
+
+        state_ = CRUISE;
+
+    }
+
+    else if(state == MANOEUVRE)
+    {
+        EV << "MECPlatooningControllerApp::switchState - MANOEUVRE " << endl;
+        controlTimer_->setType(PLATOON_LATERAL_CONTROL_TIMER);
+        controlTimer_->setPeriod(controlPerdiodLateral_); // it starts with the lateral period.
+        startTimer(controlTimer_, controlPerdiodLateral_);
+
+        updatePositionTimer_->setType(PLATOON_LATERAL_UPDATE_POSITION_TIMER);
+        updatePositionTimer_->setPeriod(updatePositionTimerLateral_); // it starts with the lateral period.
+        startTimer(updatePositionTimer_, updatePositionTimerLateral_); // TODO check timing
+
+        state_ = MANOEUVRE;
+    }
+
+    else if(state  == INACTIVE_CONTROLLER)
+    {
+
+        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_CONTROL_TIMER : PLATOON_LATERAL_CONTROL_TIMER);
+        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER : PLATOON_LATERAL_UPDATE_POSITION_TIMER);
+        state_ = INACTIVE_CONTROLLER;
+    }
+
+}
+
+void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fromQueue)
+{
+    /*
+     * We should check where the car is. For now, we should only add the car to the platoon and start the CRUISE phase
+     */
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    L3Address consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+    int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+    auto req = packet->peekAtFront<PlatooningJoinPacket>();
+
+    int consumerAppId = req->getConsumerAppId();
+    int producerAppId = req->getProducerAppId();
+    L3Address carIpAddress = req->getUeAddress();
+    Coord position = req->getLastPosition();
+
+    ConsumerAppInfo info;
+    info.address = consumerAppAddress;
+    info.port = consumerAppPort;
+    info.producerAppId = producerAppId; //for now, after the join it will be set
+
+    consumerAppEndpoint_[consumerAppId] = info;
+
+    // check if the car is near enough to be managed
+
+    /*
+     * TODO
+     *
+     * check there is already one car in MANEUVRING POSITION and in case queue this request and
+     * notify the consumer app. for now th enotification is not implemented
+     *
+     * If the controller is not in MANEUVRING check if the car can be inserted:
+     *  - if it is near enough
+     *  - its speed
+     *
+     *
+     *  Once the maneuver ends add the car to platoon
+     */
+
+    if(state_ == INACTIVE_CONTROLLER || state_ == CRUISE)
+    {
+
+        PlatoonVehicleInfo* lastCar = getLastPlatoonCar();
+        if(lastCar != nullptr && position.distance(lastCar->getPosition()) > minimumDistanceForManoeuvre_)
+        {
+            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << "meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
+            EV << "last " << position.distance(lastCar->getPosition()) << endl;
+            EV << "leader" <<position.distance(getPlatoonLeader()->getPosition()) <<  endl;
+            finalizeJoinPlatoonRequest(msg, false);
+        }
+        else
+        {
+            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: switching to state MANOEUVRE" << endl;
+            if(maneuvringVehicle_ != nullptr)
+            {
+                throw cRuntimeError("MECPlatooningControllerApp::handleJoinPlatoonRequest(): Error, maneuvringVehicle_ is not null!");
+            }
+
+            maneuvringVehicle_ = new PlatoonVehicleInfo();
+            maneuvringVehicle_->setPosition(position);
+            maneuvringVehicle_->setUeAddress(carIpAddress);
+            maneuvringVehicle_->setMecAppId(consumerAppId);
+            maneuvringVehicle_->setProducerAppId(producerAppId);
+            maneuvringVehicleJoinMsg_ = msg;
+
+            ConsumerAppInfo info;
+            info.address = consumerAppAddress;
+            info.port = consumerAppPort;
+            info.producerAppId = producerAppId; //for now, after the join it will be set
+
+            consumerAppEndpoint_[consumerAppId] = info;
+
+            // START MANOUVRING
+            switchState(MANOEUVRE);
+
+            sendManoeuvreNotification(msg);
+        }
+    }
+    else
+    {
+        // it is already in MANOEUVRE, queue
+        // suppose all checks are ok, add the car to the platoon
+        PlatoonVehicleInfo* lastCar = getLastPlatoonCar();
+        if(lastCar != nullptr && position.distance(lastCar->getPosition()) > minimumDistanceForManoeuvre_)
+        {
+            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << "meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
+            finalizeJoinPlatoonRequest(msg, false);
+            return;
+        }
+        else
+        {
+            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: Another car is currently the platoon. The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is queued up" << endl;
+
+            joinRequests_.insert(msg);
+            sendQueuedJoinNotification(msg);
+        }
+    }
+}
+
+void MECPlatooningControllerApp::sendQueuedJoinNotification(cMessage* msg)
+{
+    EV << "MECPlatooningControllerApp::sendQueuedJoinNotification" << endl;
+    inet::Packet* packet =  new inet::Packet("PlatooningQueuedJoinNotificationPacket");
+    auto manNotification = inet::makeShared<PlatooningQueuedJoinNotificationPacket>();
+    manNotification->setType(QUEUED_JOIN_NOTIFICATION);
+    manNotification->setResponse(true);
+    manNotification->setColor("yellow");
+    manNotification->setControllerId(controllerId_);
+    manNotification->setChunkLength(B(10));
+
+    packet->insertAtBack(manNotification);
+    packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+    // send response to the UE's MEC app
+
+    inet::Packet* pkt = check_and_cast<inet::Packet*>(msg);
+    L3Address address = pkt->getTag<L3AddressInd>()->getSrcAddress();
+    int port = pkt->getTag<L4PortInd>()->getSrcPort();
+    platooningConsumerAppsSocket_.sendTo(packet, address, port);
+
+}
 
 
-    delete packet;
+void MECPlatooningControllerApp::sendManoeuvreNotification(cMessage* msg)
+{
+    inet::Packet* packet =  new inet::Packet("PlatooningManoeuvreNotificationPacket");
+    auto manNotification = inet::makeShared<PlatooningManoeuvreNotificationPacket>();
+    manNotification->setType(MANOEUVRE_NOTIFICATION);
+    manNotification->setResponse(true);
+    manNotification->setColor("cyan");
+    manNotification->setControllerId(controllerId_);
+    manNotification->setChunkLength(B(10));
+
+    packet->insertAtBack(manNotification);
+    packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+    // send response to the UE's MEC app
+    inet::Packet* pkt = check_and_cast<inet::Packet*>(msg);
+    L3Address address = pkt->getTag<L3AddressInd>()->getSrcAddress();
+    int port = pkt->getTag<L4PortInd>()->getSrcPort();
+    auto req = pkt->peekAtFront<PlatooningJoinPacket>();
+    platooningConsumerAppsSocket_.sendTo(packet, address, port);
+
+    EV << "MECPlatooningControllerApp::sendManoeuvreNotification - Manoeuvre notification sent to MECPlatoonConsumerApp with id [" << req->getConsumerAppId() << "]" << endl;
 }
 
 void MECPlatooningControllerApp::sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg)
@@ -671,7 +887,7 @@ void MECPlatooningControllerApp::sendJoinPlatoonResponse(bool success, int plato
 
     // send response to the UE's MEC app
     platooningConsumerAppsSocket_.sendTo(responsePacket, address, port);
-    EV << "MECPlatooningControllerApp::sendJoinPlatoonRequest - Join response sent to the UE" << endl;
+    EV << "MECPlatooningControllerApp::sendJoinPlatoonRequest - Join response sent to MECPlatoonConsumerApp with id [" << joinReq->getConsumerAppId() << "]" << endl;
 
     delete packet;
 }
@@ -710,7 +926,7 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg)
             notification->setControllerId(controllerId_);
             notification->setProducerAppId(leaveReq->getProducerAppId());
 
-            auto members = longitudinalController_->getPlatoonMembers();
+            auto members = getPlatoonMembers();
             notification->setVehiclesOrder(members);
             notification->setHeartbeatTimeStamp(simTime());
 
@@ -740,15 +956,40 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg)
     delete packet;
 }
 
+
 bool MECPlatooningControllerApp::removePlatoonMember(int mecAppId)
 {
-    EV << "MECPlatooningControllerApp::removePlatoonMember - Received leave request from MEC app " << mecAppId << endl;
+    PlatoonMembersInfo::iterator it = membersInfo_.find(mecAppId);
+    if (it == membersInfo_.end())
+    {
+        EV << "MECPlatooningControllerApp::removePlatoonMember - Member [" << mecAppId << "] was not part of platoon " << endl;
+        return false;
+    }
 
-   // remove the member from the identified platoonController
-   bool success = longitudinalController_->removePlatoonMember(mecAppId);
+    // remove mecAppId from relevant data structures
+    std::list<int>::iterator pt = platoonPositions_.begin();
+    for ( ; pt != platoonPositions_.end(); ++pt)
+    {
+        if (*pt == mecAppId)
+        {
+            platoonPositions_.erase(pt);
+            break;
+        }
+    }
+    membersInfo_.erase(mecAppId);
 
-   return success;
+    // check if the platoon is now empty
+    if (membersInfo_.empty())
+    {
+        if(state_ == CRUISE)
+            switchState(INACTIVE_CONTROLLER);
+        // TODO if is it MANOEUVRE?
+    }
+
+    EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from platoon " << endl;
+    return true;
 }
+
 
 void MECPlatooningControllerApp::startTimer(cMessage* msg, double timeOffset)
 {
@@ -756,28 +997,29 @@ void MECPlatooningControllerApp::startTimer(cMessage* msg, double timeOffset)
         throw cRuntimeError("MECPlatooningControllerApp::startTimer - time offset not valid[%f]", timeOffset);
 
     PlatooningTimer* timer = check_and_cast<PlatooningTimer*>(msg);
+    PlatooningTimerType timerType = (PlatooningTimerType)timer->getType();
 
-    if (timer->getType() == PLATOON_CONTROL_TIMER)
+    if (timerType == PLATOON_LATERAL_CONTROL_TIMER || timerType == PLATOON_LONGITUDINAL_CONTROL_TIMER)
     {
         // if a control timer was already set for this controller, cancel it
         if(controlTimer_ != nullptr && controlTimer_->isScheduled())
-            cancelAndDelete(controlTimer_);
+            cancelEvent(controlTimer_);
 
         EV << "MECPlatooningControllerApp::startTimer() - New ControlTimer set for controller " << controllerId_ << " in " << timeOffset << "s" << endl;
 
-        controlTimer_ = check_and_cast<ControlTimer*>(msg);
+        controlTimer_ = check_and_cast<ControlTimer*>(timer);
         //schedule timer
         scheduleAt(simTime() + timeOffset, controlTimer_);
     }
-    else if (timer->getType() == PLATOON_UPDATE_POSITION_TIMER)
+    else if (timerType == PLATOON_LATERAL_UPDATE_POSITION_TIMER || timerType == PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER)
     {
         // if a position timer was already set for this controller, cancel it
         if(updatePositionTimer_ != nullptr && updatePositionTimer_->isScheduled())
-            cancelAndDelete(updatePositionTimer_);
+            cancelEvent(updatePositionTimer_);
 
         EV << "MECPlatooningControllerApp::startTimer() - New UpdatePositionTimer set for controller " << controllerId_ << " in " << timeOffset << "s" << endl;
 
-        updatePositionTimer_ = check_and_cast<UpdatePositionTimer*>(msg);
+        updatePositionTimer_ = check_and_cast<UpdatePositionTimer*>(timer);
         //schedule timer
         scheduleAt(simTime() + timeOffset, updatePositionTimer_);
     }
@@ -786,15 +1028,15 @@ void MECPlatooningControllerApp::startTimer(cMessage* msg, double timeOffset)
 
 void MECPlatooningControllerApp::stopTimer(PlatooningTimerType timerType)
 {
-    if (timerType == PLATOON_CONTROL_TIMER)
+    if (timerType == PLATOON_LATERAL_CONTROL_TIMER || timerType == PLATOON_LONGITUDINAL_CONTROL_TIMER)
     {
         if (controlTimer_ == nullptr || !controlTimer_->isScheduled())
-            throw cRuntimeError("MECPlatooningControllerApp::stopTimer - no active ControlTimer with index %d", controllerId_);
+            throw cRuntimeError("MECPlatooningControllerApp::stopTimer - no active ControlTimer");
 
         cancelAndDelete(controlTimer_);
         EV << "MECPlatooningControllerApp::stopTimer - ControlTimer for controller " << controllerId_ << "has been stopped" << endl;
     }
-    else if (timerType == PLATOON_UPDATE_POSITION_TIMER)
+    else if (timerType == PLATOON_LATERAL_UPDATE_POSITION_TIMER || timerType == PLATOON_LONGITUDINAL_CONTROL_TIMER)
     {
         if (updatePositionTimer_ == nullptr || !updatePositionTimer_->isScheduled())
             throw cRuntimeError("MECPlatooningControllerApp::stopTimer - no active UpdatePositionTimer with index %d", controllerId_);
@@ -806,7 +1048,7 @@ void MECPlatooningControllerApp::stopTimer(PlatooningTimerType timerType)
         throw cRuntimeError("MECPlatooningControllerApp::stopTimer - unrecognized timer type %d", timerType);
 }
 
-void MECPlatooningControllerApp::handleControlTimer(ControlTimer* ctrlTimer)
+void MECPlatooningControllerApp::handleLongitudinalControllerTimer(ControlTimer* ctrlTimer)
 {
     int controllerIndex = ctrlTimer->getControllerId();
 
@@ -859,23 +1101,89 @@ void MECPlatooningControllerApp::handleControlTimer(ControlTimer* ctrlTimer)
         stopTimer((PlatooningTimerType)ctrlTimer->getType());
 }
 
+void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrlTimer)
+{
+    EV << "MECPlatooningControllerApp::handleControlTimer - Control platoon" << endl;
+
+    const CommandList* cmdList = transitionalController_->controlPlatoon();
+
+    // TODO the function might end here, the controller will provide the commands as soon as it will be finished
+
+    if (cmdList != nullptr)
+    {
+        // send a command to every connected MecApp
+        // TODO this will be changed once we know the interface with the controller
+
+        CommandList::const_iterator it = cmdList->begin();
+        for (; it != cmdList->end(); ++it)
+        {
+            int mecAppId = it->first;
+            if(maneuvringVehicle_ != nullptr && maneuvringVehicle_->getMecAppId() == mecAppId)
+            {
+                EV << "MECPlatooningControllerApp::handleControlTimer - is the maneuvering vehicle" << endl;
+                if(it->second.isManouveringEnded)
+                {
+                    switchState(CRUISE);
+                    finalizeJoinPlatoonRequest(maneuvringVehicleJoinMsg_, it->second.isManouveringEnded);
+                }
+            }
+            double newAcceleration = it->second.acceleration;
+            inet::L3Address precUeAddress = it->second.address;
+
+            auto consumerApp = consumerAppEndpoint_.find(mecAppId);
+            if (consumerApp == consumerAppEndpoint_.end())
+            {
+                throw cRuntimeError("MECPlatooningControllerApp::handleControlTimer - endpoint for MEC app %d not found.", mecAppId);
+            }
+            inet::Packet* pkt = new inet::Packet("PlatooningInfoPacket");
+
+            auto cmd = inet::makeShared<PlatooningInfoPacket>();
+            cmd->setType(PLATOON_CMD);
+            cmd->setConsumerAppId(mecAppId); // used in case of it is sent to an other produceApp
+            cmd->setNewAcceleration(newAcceleration);
+            cmd->setChunkLength(inet::B( sizeof(double) + sizeof(int) + 1));
+            cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+            cmd->addTagIfAbsent<inet::PrecedingVehicleTag>()->setUeAddress(precUeAddress);
+            pkt->insertAtBack(cmd);
+
+            //send to the relative consumer App
+            platooningConsumerAppsSocket_.sendTo(pkt, consumerApp->second.address , consumerApp->second.port);
+        }
+        delete cmdList;
+    }
+
+        // re-schedule controller timer
+        if (ctrlTimer->getPeriod() > 0.0 && !ctrlTimer->isScheduled())
+            scheduleAt(simTime() + ctrlTimer->getPeriod(), ctrlTimer);
+        else if(ctrlTimer->getPeriod() <= 0.0)
+            stopTimer((PlatooningTimerType)ctrlTimer->getType());
+}
+
 void MECPlatooningControllerApp::handleUpdatePositionTimer(UpdatePositionTimer* posTimer)
 {
 
     EV << "MECPlatooningControllerApp::handleUpdatePositionTimer - Request position updates for platoon with index " << controllerId_ << endl;
 
     // retrieve platoon controller and run the control algorithm
-    std::map<int, std::set<inet::L3Address> > addressList = longitudinalController_->getUeAddressList();
-
+    std::map<int, std::set<inet::L3Address> > addressList = getUeAddressList();
+    if(posTimer->getType() == PLATOON_LATERAL_UPDATE_POSITION_TIMER) // add the maneuvring vehicle
+    {
+        if(maneuvringVehicle_ == nullptr)
+        {
+            throw cRuntimeError("MECPlatooningControllerApp::handleUpdatePositionTimer - Error maneuvringVehicle_ is nullptr!");
+        }
+        EV << "MECPlatooningControllerApp::handleUpdatePositionTimer - Added maneuvring vehicle " << endl;
+        addressList[maneuvringVehicle_->getProducerAppId()].insert(maneuvringVehicle_->getUeAddress());
+    }
     for(const auto& produceApp : addressList)
     {
         requirePlatoonLocations(produceApp.first, produceApp.second);
     }
 
     // re-schedule controller timer
-    if (posTimer->getPeriod() > 0.0)
+    if (posTimer->getPeriod() > 0.0 && !posTimer->isScheduled())
         scheduleAt(simTime() + posTimer->getPeriod(), posTimer);
-    else
+    else if (posTimer->getPeriod() <= 0.0 )
         stopTimer((PlatooningTimerType)posTimer->getType());
 }
 
@@ -976,5 +1284,151 @@ void MECPlatooningControllerApp::established(int connId)
 
 
 
+bool MECPlatooningControllerApp::addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address ueAddress)
+{
+    // assign correct positions in the platoon
+    // we compare the current position of the new vehicle against the position of other members,
+    // starting from the platoon leader. We compute the of coordinates difference between the new vehicle and
+    // the current member in the loop. The position of the new vehicle is found as soon as we find that
+    // the difference has not the same sign as the direction of the platoon
+    bool found = false;
+    std::list<int>::iterator pt = platoonPositions_.begin();
+    for (; pt != platoonPositions_.end(); ++pt)
+    {
+        inet::Coord curMemberPos = membersInfo_.at(*pt).getPosition();
+        inet::Coord diff = curMemberPos - position;
+
+        if (diff.getSign().x != direction_.getSign().x || diff.getSign().y != direction_.getSign().y)
+        {
+            // insert the new vehicle in front of the current member
+            platoonPositions_.insert(pt, mecAppId);
+            found = true;
+            break;
+        }
+        // else current member is in front of the new vehicle, keep scanning
+    }
+    if (!found)
+        platoonPositions_.push_back(mecAppId);
+
+    // add vehicle info to the relevant data structure
+    PlatoonVehicleInfo newVehicleInfo;
+    newVehicleInfo.setPosition(position);
+    newVehicleInfo.setUeAddress(ueAddress);
+    newVehicleInfo.setMecAppId(mecAppId);
+    newVehicleInfo.setProducerAppId(producerAppId);
+    membersInfo_[mecAppId] = newVehicleInfo;
+
+    EV << "PlatoonControllerBase::addPlatoonMember - New member [" << mecAppId << "] added to platoon" << endl;
+    return true;
+}
+
+
+std::map<int, std::set<inet::L3Address> > MECPlatooningControllerApp::getUeAddressList()
+{
+    std::map<int, std::set<inet::L3Address> > ueAddresses;
+    PlatoonMembersInfo::const_iterator it = membersInfo_.begin();
+    for(; it != membersInfo_.end(); ++it)
+    {
+        ueAddresses[it->second.getProducerAppId()].insert(it->second.getUeAddress());
+    }
+    EV << "PlatoonControllerBase::getUeAddressList "<< ueAddresses.size() << endl;
+
+    return ueAddresses;
+}
+
+void MECPlatooningControllerApp::adjustPositions()
+{
+    /*
+     * find the most recent timestamp
+     * for every older timestamp compute the new position
+     */
+    double now = simTime().dbl()*1000;
+
+    for(auto &vehicle: membersInfo_)
+    {
+        double deltaTs = (now - vehicle.second.getTimestamp())/1000; //to ms
+        EV << "PlatoonControllerBase::adjustPositions() - deltaTs is " << deltaTs << endl;
+
+        // TODO consider to adjust the position for every coord!
+        EV << "PlatoonControllerBase::adjustPositions() - old position: " << vehicle.second.getPosition().str() << endl;
+        double newPosition = vehicle.second.getPosition().x + vehicle.second.getSpeed() * deltaTs + 0.5 * vehicle.second.getAcceleration() * deltaTs * deltaTs; // TODO add acceleration part
+
+        double newSpeed = vehicle.second.getSpeed() + vehicle.second.getAcceleration() * deltaTs;
+        vehicle.second.setPositionX(newPosition);
+        vehicle.second.setSpeed(newSpeed);
+        vehicle.second.setTimestamp(now);
+
+        EV << "PlatoonControllerBase::adjustPositions() - new position: " << vehicle.second.getPosition().str() << endl;
+    }
+}
+
+std::vector<PlatoonVehicleInfo> MECPlatooningControllerApp::getPlatoonMembers()
+{
+    std::vector<PlatoonVehicleInfo> vehicles;
+    for(auto& vec : membersInfo_)
+    {
+        vehicles.push_back(vec.second);
+    }
+    return vehicles;
+}
+
+
+void MECPlatooningControllerApp::updatePlatoonPositions(std::vector<UEInfo>* uesInfo)
+{
+    EV << "PlatoonControllerBase::updatePlatoonPositions - size " << uesInfo->size() << endl;
+    auto it = uesInfo->begin();
+    for(;it != uesInfo->end(); ++it)
+    {
+        PlatoonMembersInfo::iterator mit = membersInfo_.begin();
+        for(; mit != membersInfo_.end(); ++mit)
+        {
+            if (mit->second.getUeAddress() == it->address)
+            {
+                mit->second.setLastPosition(mit->second.getPosition());
+                mit->second.setLastSpeed(mit->second.getSpeed());
+                mit->second.setLastTimestamp(mit->second.getTimestamp());
+
+                mit->second.setPosition(it->position);
+                mit->second.setSpeed(it->speed);
+                mit->second.setTimestamp(it->timestamp);
+
+                break;
+            }
+        }
+        if(mit  == membersInfo_.end())
+        {
+            // check the manuevring
+            if(state_ == MANOEUVRE && maneuvringVehicle_ != nullptr)
+            {
+                EV << "PlatoonControllerBase::updatePlatoonPositions - Updating maneuvring vehicle " << endl;
+                maneuvringVehicle_->setPosition(it->position);
+                maneuvringVehicle_->setSpeed(it->speed);
+                maneuvringVehicle_->setTimestamp(it->timestamp);
+
+            }
+        }
+
+        EV << "UE info:\naddress ["<< it->address.str() << "]\n" <<
+                "timestamp: " << it->timestamp << "\n" <<
+                "coords: ("<<it->position.x<<"," << it->position.y<<"," << it->position.z<<")\n"<<
+                "speed: " << it->speed << " mps" << endl;
+    }
+}
+
+
+PlatoonVehicleInfo* MECPlatooningControllerApp::getPlatoonLeader()
+{
+    if(platoonPositions_.size() == 0)
+        return nullptr;
+    int leader = platoonPositions_.front();
+    return &membersInfo_.at(leader);
+}
+PlatoonVehicleInfo* MECPlatooningControllerApp::getLastPlatoonCar()
+{
+    if(platoonPositions_.size() == 0)
+        return nullptr;
+    int back = platoonPositions_.back();
+    return &membersInfo_.at(back);
+}
 
 

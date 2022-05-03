@@ -39,6 +39,8 @@ simple MECPlatooningControllerApp like IMECApp
         string mp1Address = default("");
         int mp1Port = default(10021);
         
+        double minimumDistanceForManoeuvre @unit(m) = default(150m);
+       
 		 //resource required info
         double requiredRam @unit("B");
         double requiredDisk @unit("B");

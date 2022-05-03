@@ -26,6 +26,8 @@
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionBase.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+
 
 using namespace std;
 using namespace omnetpp;
@@ -39,6 +41,7 @@ typedef std::map<int, PlatoonControllerStatus*> ControllerMap;
 typedef std::map<int, AppEndpoint> ProducerAppMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, CommandInfo> CommandList;
+typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
 typedef std::map<int, std::map<int, PlatoonControllerStatus *> > GlobalAvailablePlatoons;
 
 class MECPlatooningControllerApp : public MecAppBase
@@ -46,9 +49,26 @@ class MECPlatooningControllerApp : public MecAppBase
 //    friend class PlatoonLongitudinalControllerBase;
     friend class PlatoonControllerBase;
 //    friend class PlatoonTransitionalControllerBase;
-
+protected:
     int controllerId_;
     int producerAppId_;
+
+    inet::Coord direction_;
+
+    ControllerState state_;
+
+    // info about platoon members. The key is the ID of their MEC apps
+    PlatoonMembersInfo membersInfo_;
+
+    PlatoonVehicleInfo* maneuvringVehicle_; // one at a time
+    cMessage* maneuvringVehicleJoinMsg_;
+
+    // store the id of the vehicles sorted according to their position in the platoon
+    std::list<int> platoonPositions_;
+
+    cQueue joinRequests_; // cMessage requests;
+
+    double minimumDistanceForManoeuvre_;
 
     inet::UdpSocket platooningProducerAppSocket_; // socket used to communicate with the producer App
     inet::UdpSocket platooningConsumerAppsSocket_; // socket used to communicate with the consumer Apps
@@ -99,7 +119,13 @@ class MECPlatooningControllerApp : public MecAppBase
     PlatooningTimer* updatePositionTimer_;
 
 
-  protected:
+    double controlPerdiodLongitudinal_;
+    double controlPerdiodLateral_;
+
+    double updatePositionTimerLongitudinal_;
+    double updatePositionTimerLateral_;
+
+
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
@@ -124,15 +150,17 @@ class MECPlatooningControllerApp : public MecAppBase
     // @brief handler for registration request from a MEC platooning app
     void handleRegistrationRequest(cMessage* msg);
     // @brief handler for request to join a platoon from the UE
-    void handleJoinPlatoonRequest(cMessage* msg);
+    void handleJoinPlatoonRequest(cMessage* msg, bool fromQueue = false);
 
     //@brief it sends a response about a JOIN request
     void sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg);
 
+    void sendManoeuvreNotification(cMessage* msg);
+    void sendQueuedJoinNotification(cMessage* msg);
+
     // @brief handler for request to leave a platoon from the UE
     void handleLeavePlatoonRequest(cMessage* msg);
     // @brief handler for the notification of a new platoon from a PlatooningProducerApp
-
 
     //------ handlers for inter producerApps communication ------//
     //@brief handler for request to add a new member in a platoon
@@ -143,13 +171,25 @@ class MECPlatooningControllerApp : public MecAppBase
     // @brief handler for remove a PlatooningConsumerApp to a local platoon
     bool removePlatoonMember(int mecAppId);
 
+    void finalizeJoinPlatoonRequest(cMessage* msg, bool success);
+
+    // @brief add a new member to the platoon
+    bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
+
+    // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
+    void updatePlatoonPositions(std::vector<UEInfo>*);
+
+    std::map<int, std::set<inet::L3Address> > getUeAddressList();
+
     // @brief used by a controller to set a timer
     void startTimer(cMessage* msg, double timeOffset);
     // @brief used by a controller to stop a  timer
     void stopTimer(PlatooningTimerType timerType);
 
     // @brief handler called when a ControlTimer expires
-    void handleControlTimer(ControlTimer* ctrlTimer);
+    void handleLongitudinalControllerTimer(ControlTimer* ctrlTimer);
+    void handleLateralControllerTimer(ControlTimer* ctrlTimer);
+
     // @brief handler called when an UpdatePositionTimer expires
     void handleUpdatePositionTimer(UpdatePositionTimer* posTimer);
 
@@ -166,7 +206,25 @@ class MECPlatooningControllerApp : public MecAppBase
     virtual ~MECPlatooningControllerApp();
 
 
+    // info about platoon members. The key is the ID of their MEC apps
+    PlatoonMembersInfo* getMemberInfo(){ return &membersInfo_;}
+    PlatoonVehicleInfo* getManoeuvringVehicle(){ return maneuvringVehicle_;} // one at a time
+    std::vector<PlatoonVehicleInfo> getPlatoonMembers();
+    ControllerState getState() const { return state_;}
+
+    PlatoonVehicleInfo* getPlatoonLeader();
+    PlatoonVehicleInfo* getLastPlatoonCar();
+
+
+    void switchState(ControllerState state);
+
+    // store the id of the vehicles sorted according to their position in the platoon
+    std::list<int>* getPlatoonPositions(){return &platoonPositions_;}
+
+
     bool getAdjustPositionFlag() { return adjustPosition_; }
+
+    void adjustPositions();
 
 };
 

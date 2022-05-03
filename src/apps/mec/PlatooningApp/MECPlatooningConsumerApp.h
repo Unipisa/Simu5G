@@ -143,6 +143,9 @@ class MECPlatooningConsumerApp : public MecAppBase
     // @brief handler for message containing the new command from the controller
     void handlePlatoonCommand(cMessage* msg);
 
+    void handleManoeuvreNotification(cMessage* msg);
+    void handleQueuedJoinNotification(cMessage* msg);
+
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;
 

@@ -113,6 +113,11 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
 
             else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
                 handlePlatoonCommand(msg);
+            else if (platooningPkt->getType() == MANOEUVRE_NOTIFICATION)  // from mec provider app
+                handleManoeuvreNotification(msg);
+            else if (platooningPkt->getType() == QUEUED_JOIN_NOTIFICATION)  // from mec provider app
+                handleQueuedJoinNotification(msg);
+
             return;
         }
     }
@@ -254,7 +259,6 @@ void MECPlatooningConsumerApp::handleUeMessage(omnetpp::cMessage *msg)
        handleAssociatePlatoonRequest(msg);
     else if (platooningPkt->getType() == LEAVE_REQUEST)
         handleLeavePlatoonRequest(msg);
-
 }
 
 
@@ -294,7 +298,6 @@ void MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse(cMessag
     if(state_ != DISCOVERY_AND_ASSOCIATE)
     {
         EV << "MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse - The status is not DISCOVERY_AND_ASSOCIATE. This message will be discarded." << endl;
-        delete packet;
         state_ = IDLE;
         // TODO send notification to UE?
     }
@@ -333,6 +336,7 @@ void MECPlatooningConsumerApp::handleDiscoverAndAssociatePlatoonResponse(cMessag
         // TODO send notification to UE?
     }
 
+    delete packet;
 }
 
 
@@ -419,6 +423,51 @@ void MECPlatooningConsumerApp::handleJoinPlatoonResponse(cMessage* msg)
     ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
 
     state_ = JOINED_PLATOON;
+    delete packet;
+}
+
+
+void MECPlatooningConsumerApp::handleManoeuvreNotification(cMessage* msg)
+{
+    // forward to client
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto manNotification = packet->removeAtFront<PlatooningManoeuvreNotificationPacket>();
+
+    EV << "MECPlatooningConsumerApp::handleManoeuvreNotification - Forward manoeuvre notification to the UE" << endl;
+
+    // if response is True, start to require UE location from Location service (if established)
+    // test
+    //requestLocation();
+
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    fwPacket->insertAtFront(manNotification);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+
+    state_ = MANOEUVRING;
+    delete packet;
+}
+
+void MECPlatooningConsumerApp::handleQueuedJoinNotification(cMessage* msg)
+{
+    // forward to client
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto qJoinNotification = packet->removeAtFront<PlatooningQueuedJoinNotificationPacket>();
+
+    EV << "MECPlatooningConsumerApp::handleQueuedJoinNotification - Forward queued join notification to the UE" << endl;
+
+    // if response is True, start to require UE location from Location service (if established)
+    // test
+    //requestLocation();
+
+    inet::Packet* fwPacket = new Packet (packet->getName());
+    fwPacket->insertAtFront(qJoinNotification);
+    fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+    ueAppSocket.sendTo(fwPacket, ueAppAddress, ueAppPort);
+
+    state_ = MANOEUVRING;
     delete packet;
 }
 
