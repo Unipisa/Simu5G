@@ -43,8 +43,8 @@ class PlatoonControllerBase
 
   protected:
 
-    friend class MECPlatooningProducerApp;
-    friend class MECPlatooningControllerApp;
+//    friend class MECPlatooningProducerApp;
+//    friend class MECPlatooningControllerApp;
 
     // reference to the MEC Platooning App
     MECPlatooningControllerApp* mecPlatooningControllerApp_;
@@ -71,27 +71,26 @@ class PlatoonControllerBase
     double updatePositionPeriod_;
 
     // info about platoon members. The key is the ID of their MEC apps
-    PlatoonMembersInfo membersInfo_;
+    //PlatoonMembersInfo membersInfo_;
 
     // store the id of the vehicles sorted according to their position in the platoon
-    std::list<int> platoonPositions_;
+    //std::list<int> platoonPositions_;
 
     // @brief require the location of the platoon UEs to the mecPlatooningProviderApp
-    std::map<int, std::set<inet::L3Address> > getUeAddressList();
+//    std::map<int, std::set<inet::L3Address> > getUeAddressList();
 
     // @brief add a new member to the platoon
-    virtual bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
+    //virtual bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
 
     // @brief remove a member from the platoon
-    virtual bool removePlatoonMember(int mecAppId);
+    //virtual bool removePlatoonMember(int mecAppId);
 
     // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
-    virtual void updatePlatoonPositions(std::vector<UEInfo>*);
+    //virtual void updatePlatoonPositions(std::vector<UEInfo>*);
 
-    // @brief run the global platoon controller
-    virtual const CommandList* controlPlatoon() = 0;
 
-    virtual void adjustPositions();
+
+//    virtual void adjustPositions();
 
   public:
     PlatoonControllerBase(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
@@ -100,11 +99,14 @@ class PlatoonControllerBase
     void setDirection(inet::Coord direction) { direction_ = direction; }
     inet::Coord getDirection() { return direction_; }
 
+    // @brief run the global platoon controller
+    virtual const CommandList* controlPlatoon() = 0;
+
     void setTargetSpeed(double speed) { targetSpeed_ = speed; }
     double getTargetSpeed() { return targetSpeed_; }
 
-    nlohmann::json dumpPlatoonToJSON() const;
-    std::vector<PlatoonVehicleInfo> getPlatoonMembers();
+//    nlohmann::json dumpPlatoonToJSON() const;
+//    std::vector<PlatoonVehicleInfo> getPlatoonMembers();
 };
 
 #endif
