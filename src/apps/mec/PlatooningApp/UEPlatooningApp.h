@@ -29,11 +29,6 @@
 
 using namespace omnetpp;
 
-typedef enum {
-    NOT_JOINED,
-    JOINED
-} UePlatoonStatus;
-
 class UEPlatooningApp: public cSimpleModule
 {
     //communication to device app and mec app
@@ -109,9 +104,9 @@ class UEPlatooningApp: public cSimpleModule
     void sendLeavePlatoonRequest();
     void recvJoinPlatoonResponse(cMessage* msg);
     void recvLeavePlatoonResponse(cMessage* msg);
+    void recvManoeuvreNotification(cMessage* msg);
+    void recvQueuedJoinNotification(cMessage* msg);
     void recvPlatoonCommand(cMessage* msg);
-
-
 };
 
 #endif

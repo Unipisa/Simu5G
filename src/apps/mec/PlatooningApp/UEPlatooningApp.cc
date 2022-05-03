@@ -202,6 +202,11 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
                 recvLeavePlatoonResponse(msg);
             else if(mePkt->getType() == PLATOON_CMD)
                 recvPlatoonCommand(msg);
+            else if (mePkt->getType() == MANOEUVRE_NOTIFICATION)  // from mec provider app
+                recvManoeuvreNotification(msg);
+            else if (mePkt->getType() == QUEUED_JOIN_NOTIFICATION)  // from mec provider app
+                recvQueuedJoinNotification(msg);
+
             else
                 throw cRuntimeError("UEPlatooningApp::handleMessage - \tFATAL! Error, PlatooningAppPacket type %d not recognized", mePkt->getType());
         }
@@ -344,6 +349,62 @@ void UEPlatooningApp::sendLeavePlatoonRequest()
     EV << "UEPlatooningApp::sendLeavePlatoonRequest() - Leave request sent to the MEC app" << endl;
 }
 
+void UEPlatooningApp::recvQueuedJoinNotification(cMessage* msg)
+{
+    EV << "UEPlatooningApp::recvQueuedJoinNotification() - Queued Join notification from the MEC app" << endl;
+
+    // handle response to a previous join request from the MEC application
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto joinResp = packet->peekAtFront<PlatooningQueuedJoinNotificationPacket>();
+
+    bool resp = joinResp->getResponse();
+
+    // TODO store some local information about the platoon (is this needed? the UE may be unaware of the platoon)
+    if (resp)
+    {
+        status_ = QUEUED_JOIN;
+
+        //updating runtime color of the icon
+        ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
+
+        EV << "UEPlatooningApp::recvQueuedJoinNotification() -  Queued Join notification accepted, platoon index " << joinResp->getControllerId() << endl;
+    }
+    else
+    {
+        EV << "UEPlatooningApp::recvQueuedJoinNotification() - Queued Join notification rejected" << endl;
+
+    }
+}
+
+
+void UEPlatooningApp::recvManoeuvreNotification(cMessage* msg)
+{
+    EV << "UEPlatooningApp::recvManoeuvreNotification() - Manouevre notification from the MEC app" << endl;
+
+    // handle response to a previous join request from the MEC application
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto joinResp = packet->peekAtFront<PlatooningManoeuvreNotificationPacket>();
+
+    bool resp = joinResp->getResponse();
+
+    // TODO store some local information about the platoon (is this needed? the UE may be unaware of the platoon)
+    if (resp)
+    {
+        status_ = MANOEUVRE_TO_PLATOON;
+
+        //updating runtime color of the icon
+        ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
+
+        EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manouevre notification accepted, platoon index " << joinResp->getControllerId() << endl;
+    }
+    else
+    {
+        EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manouevre notification rejected" << endl;
+
+    }
+}
 
 void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
 {
@@ -369,6 +430,8 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
     }
     else
     {
+        //updating runtime color of the icon
+        ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
         EV << "UEPlatooningApp::recvJoinPlatoonResponse() - Join request rejected" << endl;
 
     }
