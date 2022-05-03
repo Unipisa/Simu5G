@@ -40,6 +40,8 @@ class RajamaniPlatoonController : public PlatoonControllerBase
 
     double targetSpacing_;   // desired spacing between vehicles
 
+    bool isLateral_;
+
 protected:
 
     // compute the acceleration for the platoon leader
@@ -52,7 +54,7 @@ protected:
     virtual const CommandList* controlPlatoon();
 
   public:
-    RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);
+    RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0, bool isLateral = false);
     virtual ~RajamaniPlatoonController();
 };
 

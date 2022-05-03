@@ -66,7 +66,8 @@ typedef enum
     ASSOCIATE_PLATOON_RESPONSE = 20,
 
     CONTROLLER_NOTIFICATION = 21,
-
+    MANOEUVRE_NOTIFICATION = 22,
+    QUEUED_JOIN_NOTIFICATION = 23
 } PlatooningPacketType;
 
 typedef enum
@@ -86,15 +87,36 @@ typedef enum
     ASSOCIATE = 3,
     JOIN = 4,
     JOINED_PLATOON = 5,
-    LEAVE = 6
+    LEAVE = 6,
+    MANOEUVRING = 7
+
 } PlatooningConsumerAppState;
+
+typedef enum {
+    NOT_JOINED,
+    JOINED,
+    MANOEUVRE_TO_PLATOON,
+    QUEUED_JOIN
+} UePlatoonStatus;
 
 
 typedef enum
 {
-    PLATOON_CONTROL_TIMER = 0,
-    PLATOON_UPDATE_POSITION_TIMER = 1,
+    PLATOON_LONGITUDINAL_CONTROL_TIMER = 0,
+    PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER = 1,
+
+    PLATOON_LATERAL_CONTROL_TIMER = 2,
+    PLATOON_LATERAL_UPDATE_POSITION_TIMER = 3,
+
 } PlatooningTimerType;
+
+typedef enum
+{
+    INACTIVE_CONTROLLER = 0,
+    CRUISE = 1,
+    MANOEUVRE = 2,
+
+} ControllerState;
 
 //typedef struct
 //{
@@ -158,6 +180,7 @@ typedef struct
 {
     double acceleration;
     inet::L3Address address;
+    bool isManouveringEnded;
 } CommandInfo;
 
 

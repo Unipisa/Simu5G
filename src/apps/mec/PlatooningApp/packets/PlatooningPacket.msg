@@ -82,6 +82,25 @@ class PlatooningJoinPacket extends PlatooningAppPacket
     string color;         // color assigned to the members of the platoon
 }
 
+
+class PlatooningManoeuvreNotificationPacket extends PlatooningAppPacket
+{
+    int controllerId;  // index of the controller instance
+    // --- response --- //
+    bool response;        // flag set by the MEC app with the ACK/NACK to join a platoon
+    string color;         // color assigned to the members of the platoon
+}
+
+class PlatooningQueuedJoinNotificationPacket extends PlatooningAppPacket
+{
+    int controllerId;  // index of the controller instance
+    // --- response --- //
+    bool response;        // flag set by the MEC app with the ACK/NACK to join a platoon
+    string color;         // color assigned to the members of the platoon
+}
+
+
+
 class PlatooningLeavePacket extends PlatooningAppPacket
 {       
     // --- request --- //

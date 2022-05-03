@@ -80,8 +80,8 @@ class PlatoonVehicleInfo
     double getLastSpeed() const { return lastSpeed_; }
 
 
-    void setMecAppId(double mecAppId) { mecAppId_ = mecAppId; }
-    double getMecAppId() const { return mecAppId_; }
+    void setMecAppId(int mecAppId) { mecAppId_ = mecAppId; }
+    int getMecAppId() const { return mecAppId_; }
 
     void setProducerAppId(int producerAppId) { producerAppId_ = producerAppId; }
     int getProducerAppId() const { return producerAppId_; }

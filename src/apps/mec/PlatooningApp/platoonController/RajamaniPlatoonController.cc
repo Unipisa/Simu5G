@@ -12,7 +12,7 @@
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
 
-RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod)
+RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod, bool isLateral)
     : PlatoonControllerBase(mecPlatooningControllerApp, index, controlPeriod, updatePositionPeriod)
 {
     // TODO check values and make them parametric
@@ -26,6 +26,8 @@ RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp*
     k_[3] = - ((xi_ + sqrt(xi_*xi_ - 1)) * wn_ * C1_);
     k_[4] = - (wn_ * wn_);
 
+    isLateral_ = isLateral;
+
     targetSpacing_ = 10.0;
 }
 
@@ -38,61 +40,108 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
 {
     EV << "RajamaniPlatoonController::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
-    int leaderId = platoonPositions_.front();
-    PlatoonVehicleInfo leaderVehicleInfo = membersInfo_.at(leaderId);
+    int platoonSize = mecPlatooningControllerApp_->getPlatoonPositions()->size();
 
     CommandList* cmdList = new CommandList();
 
-    // if adjustPosition flag is true, update all the position to the most recent timestamp
-    if(mecPlatooningControllerApp_->getAdjustPositionFlag())
+    if(platoonSize > 0)
     {
-        adjustPositions();
-    }
+        int leaderId = mecPlatooningControllerApp_->getPlatoonPositions()->front();
+        PlatoonVehicleInfo leaderVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(leaderId);
 
-
-    // loop through the vehicles following their order in the platoon
-    std::list<int>::iterator it = platoonPositions_.begin();
-    for (; it != platoonPositions_.end(); ++it)
-    {
-        int mecAppId = *it;
-        PlatoonVehicleInfo vehicleInfo = membersInfo_.at(mecAppId);
-
-        EV << "RajamaniPlatoonController::control() - Computing new command for MEC app " << mecAppId << " - vehicle info[" << vehicleInfo << "]" << endl;
-
-        double speed = vehicleInfo.getSpeed();
-        double newAcceleration = 0.0;
-        inet::L3Address precedingVehicleAddress = L3Address();
-        if (mecAppId == leaderId)
+        // if adjustPosition flag is true, update all the position to the most recent timestamp
+        if(mecPlatooningControllerApp_->getAdjustPositionFlag())
         {
-            newAcceleration = computeLeaderAcceleration(speed);
-            //membersInfo_.at(mecAppId).setAcceleration(newAcceleration);
-
-        }
-        else
-        {
-            // find previous vehicle
-            std::list<int>::iterator precIt = it;
-            precIt--;
-
-            int precedingVehicleId = *precIt;
-            PlatoonVehicleInfo precedingVehicleInfo = membersInfo_.at(precedingVehicleId);
-
-            double distanceToPreceding = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());
-            double leaderAcceleration = cmdList->at(leaderId).acceleration;
-            double leaderSpeed = leaderVehicleInfo.getSpeed();
-            double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration;
-            double precedingSpeed = precedingVehicleInfo.getSpeed();
-
-            newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
-            //membersInfo_.at(mecAppId).setAcceleration(newAcceleration);
-            precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
+            mecPlatooningControllerApp_->adjustPositions();
         }
 
-        // TODO compute new acceleration
-        (*cmdList)[mecAppId] = {newAcceleration, precedingVehicleAddress};
+        // loop through the vehicles following their order in the platoon
+        std::list<int>::iterator it = mecPlatooningControllerApp_->getPlatoonPositions()->begin();
+        for (; it != mecPlatooningControllerApp_->getPlatoonPositions()->end(); ++it)
+        {
+            int mecAppId = *it;
+            PlatoonVehicleInfo vehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId);
 
-        EV << "RajamaniPlatoonController::control() - New acceleration value for " << mecAppId << " [" << newAcceleration << "]" << endl;
+            EV << "RajamaniPlatoonController::control() - Computing new command for MEC app " << mecAppId << " - vehicle info[" << vehicleInfo << "]" << endl;
+
+            double speed = vehicleInfo.getSpeed();
+            double newAcceleration = 0.0;
+            inet::L3Address precedingVehicleAddress = L3Address();
+            if (mecAppId == leaderId)
+            {
+                newAcceleration = computeLeaderAcceleration(speed);
+                //mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId).setAcceleration(newAcceleration);
+
+            }
+            else
+            {
+                // find previous vehicle
+                std::list<int>::iterator precIt = it;
+                precIt--;
+
+                int precedingVehicleId = *precIt;
+                PlatoonVehicleInfo precedingVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(precedingVehicleId);
+
+                double distanceToPreceding = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());
+                double leaderAcceleration = cmdList->at(leaderId).acceleration;
+                double leaderSpeed = leaderVehicleInfo.getSpeed();
+                double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration;
+                double precedingSpeed = precedingVehicleInfo.getSpeed();
+
+                newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
+                //mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId).setAcceleration(newAcceleration);
+                precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
+            }
+
+            // TODO compute new acceleration
+            (*cmdList)[mecAppId] = {newAcceleration, precedingVehicleAddress, false};
+
+            EV << "RajamaniPlatoonController::control() - New acceleration value for " << mecAppId << " [" << newAcceleration << "]" << endl;
+        }
     }
+
+    // TODO
+    // suppose the maneuvringVehicle_ can join only at the back of the platoon
+    if(isLateral_)
+    {
+        if(mecPlatooningControllerApp_->getManoeuvringVehicle() != nullptr && mecPlatooningControllerApp_->getState() == MANOEUVRE)
+        {
+            double speed = mecPlatooningControllerApp_->getManoeuvringVehicle()->getSpeed();
+            double newAcceleration = 0.0;
+            inet::L3Address precedingVehicleAddress = L3Address();
+            bool endManouvre = false;
+            if(mecPlatooningControllerApp_->getPlatoonPositions()->size() == 0) //is leader
+            {
+                newAcceleration = computeLeaderAcceleration(speed);
+                endManouvre = true;
+                // add to the platooning structures
+
+            }
+            else
+            {
+                int precedingVehicleId = mecPlatooningControllerApp_->getPlatoonPositions()->back();
+                PlatoonVehicleInfo precedingVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(precedingVehicleId);
+                int leaderId = mecPlatooningControllerApp_->getPlatoonPositions()->front();
+                PlatoonVehicleInfo leaderVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(leaderId);
+
+                double distanceToPreceding = mecPlatooningControllerApp_->getManoeuvringVehicle()->getPosition().distance(precedingVehicleInfo.getPosition());
+                double leaderAcceleration = cmdList->at(leaderId).acceleration;
+                double leaderSpeed = leaderVehicleInfo.getSpeed();
+                double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration;
+                double precedingSpeed = precedingVehicleInfo.getSpeed();
+
+                newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
+                //mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId).setAcceleration(newAcceleration);
+                precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
+                if(distanceToPreceding <= targetSpacing_ + 1) endManouvre = true;
+            }
+            int mecAppId = mecPlatooningControllerApp_->getManoeuvringVehicle()->getMecAppId();
+            (*cmdList)[mecAppId] = {newAcceleration, precedingVehicleAddress, endManouvre};
+
+            //if it the first car
+        }
+    }
+
     return cmdList;
 }
 
