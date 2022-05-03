@@ -235,18 +235,6 @@ void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
         controlHeartbeats();
 
     }
-    if (strcmp(msg->getName(), "PlatooningTimer") == 0)
-    {
-        PlatooningTimer* timer = check_and_cast<PlatooningTimer*>(msg);
-
-        switch(timer->getType())
-        {
-            case PLATOON_CONTROL_TIMER:
-            {
-            }
-            default: throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage - unrecognized timer type %d", timer->getType());
-        }
-    }
 }
 
 void MECPlatooningProducerApp::controlHeartbeats()

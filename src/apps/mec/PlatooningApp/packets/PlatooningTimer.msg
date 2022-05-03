@@ -13,14 +13,16 @@ packet PlatooningTimer
 {
    int controllerId; 
    int type; 
+   double period;		
 }
 
+// TODO remove them
 packet ControlTimer extends PlatooningTimer
 {
-    double period;   
+      
 }
 
 packet UpdatePositionTimer extends PlatooningTimer
 {
-    double period;   
+    
 }

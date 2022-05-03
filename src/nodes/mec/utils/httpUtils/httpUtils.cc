@@ -41,7 +41,7 @@ namespace Http {
         Packet *packet = new Packet("Packet");
         packet->insertAtBack(chunkPayload);
         socket->send(packet);
-        EV <<"Http Utils - sendPacket" << endl;
+        // EV <<"Http Utils - sendPacket" << endl;
     }
 
 
@@ -59,7 +59,7 @@ namespace Http {
         std::vector<std::string> lines = lte::utils::splitString(data, "\r\n");
         std::vector<std::string>::iterator it = lines.begin();
         std::vector<std::string> line;
-        EV << "httpUtils::parseHeader - Header: " << data << endl;
+        // EV << "httpUtils::parseHeader - Header: " << data << endl;
         //std::cout << "httpUtils::parseHeader - Header: " << data << std::endl;
 
         // Request-Line: Method SP Request-URI SP HTTP-Version CRLF
@@ -77,7 +77,7 @@ namespace Http {
         // if the first word is not HTTP/1.1 nor HTTP/2 (NOTE: assuming the HTTP is correct ---> it is a request)
         if(!checkHttpVersion(line[0]))
         {
-            EV << "httpUtils::parseHeader - It is a request" << endl;
+            // EV << "httpUtils::parseHeader - It is a request" << endl;
             // It is a request
             HttpRequestMessage* httpRequest = new HttpRequestMessage();
             // request line is: VERB uri HTTPversion
@@ -98,20 +98,20 @@ namespace Http {
                if(uriParams.size() == 2)
                {
                    // debug
-                   EV << "httpUtils::parseHeader - There are parameters" << endl;
+                   // EV << "httpUtils::parseHeader - There are parameters" << endl;
                    httpRequest->setUri(uriParams[0].c_str());
                    httpRequest->setParameters(uriParams[1].c_str());
                }
                else if(uriParams.size() == 1)
                {
                    // debug
-                   EV << "httpUtils::parseHeader - There are not parameters" << endl;
+                   // EV << "httpUtils::parseHeader - There are not parameters" << endl;
                    httpRequest->setUri(uriParams[0].c_str());
                }
                else
                {
                    //debug
-                   EV << "httpUtils::parseHeader - Parameters error" << endl;
+                   // EV << "httpUtils::parseHeader - Parameters error" << endl;
                    httpRequest->setState(BAD_REQ_URI);
                    return httpRequest;
                }
@@ -136,28 +136,28 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length") == 0 )
                     {
-                        EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                         httpRequest->setContentLength(std::stoi(line[1]));
                         httpRequest->setRemainingDataToRecv(std::stoi(line[1]));
                     }
                     else if (line[0].compare("Content-Type") == 0)
                     {
-                        EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                         httpRequest->setContentType(line[1].c_str());
                     }
                     else if (line[0].compare("Host")== 0)
                     {
-                        EV << "httpUtils::parseHeader - Host: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Host: " << line[1] << endl;
                         httpRequest->setHost(line[1].c_str());
                     }
                     else if (line[0].compare("Connection")== 0)
                     {
-                        EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                         httpRequest->setConnection(line[1].c_str());
                     }
                     else
                     {
-                        EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
+                        // EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
                         httpRequest->setHeaderField(line[0], line[1]);
                     }
                 }
@@ -174,12 +174,12 @@ namespace Http {
         // its a response
         else
         {
-            EV << "httUtils::parseHeader - It is a response" << endl;
+            // EV << "httUtils::parseHeader - It is a response" << endl;
             HttpResponseMessage* httpResponse = new HttpResponseMessage();
             httpResponse->setType(RESPONSE);
 
             if(line.size() < 3 || line.size() > 5 ){
-                EV << "httUtils::parseHeader - BAD_RES_LINE" << endl;
+                // EV << "httUtils::parseHeader - BAD_RES_LINE" << endl;
                 httpResponse->setState(BAD_RES_LINE);
                 return httpResponse;
            }
@@ -187,7 +187,7 @@ namespace Http {
             // response line is: HTTPversion code reason
             if(!checkHttpVersion(line[0]))
             {
-                EV << "httUtils::parseHeader - BAD_HTTP" << endl;
+                // EV << "httUtils::parseHeader - BAD_HTTP" << endl;
                 httpResponse->setState(BAD_HTTP);
                 return httpResponse;
             }
@@ -205,7 +205,7 @@ namespace Http {
             }
 
             httpResponse->setStatus(reason.c_str());
-            EV << "httUtils::parseHeader - code " <<  httpResponse->getCode() << endl;
+            // EV << "httUtils::parseHeader - code " <<  httpResponse->getCode() << endl;
 
             // read for headers
             for(++it; it != lines.end(); ++it) {
@@ -214,23 +214,23 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length")== 0)
                     {
-                        EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                         httpResponse->setContentLength(std::stoi(line[1]));
                         httpResponse->setRemainingDataToRecv(std::stoi(line[1]));
                     }
                     else if (line[0].compare("Content-Type")== 0)
                     {
-                        EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                         httpResponse->setContentType(line[1].c_str());
                     }
                     else if (line[0].compare("Connection")== 0)
                     {
-                        EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
+                        // EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                         httpResponse->setConnection(line[1].c_str());
                     }
                     else
                     {
-                        EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
+                        // EV << "httpUtils::parseHeader - Header: " << line[1] << ": "<< line[0] << endl;
                         httpResponse->setHeaderField(line[0], line[1]);
                     }
                 }else
@@ -275,12 +275,12 @@ namespace Http {
 //        int remainingData;
         if(*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg())
         {
-           EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
+           // EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
            Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
            switch (res)
            {
                case (Http::COMPLETE_NO_DATA):
-                   EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                   // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                    return true;
                    break;
                case (Http::COMPLETE_DATA):
@@ -303,14 +303,14 @@ namespace Http {
         std::string temp;
         if(storedData->length() > 0)
         {
-           EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
+           // EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
            temp = packet;
            packet = *storedData + temp;
 
         }
 
         while ((pos = packet.find(delimiter)) != std::string::npos) {
-           EV << "MecAppBase::parseReceivedMsgn - new HTTP message"<< endl;
+           // EV << "MecAppBase::parseReceivedMsgn - new HTTP message"<< endl;
            header = packet.substr(0, pos);
            packet.erase(0, pos+delimiter.length()); //remove header
 //           HttpBaseMessage* newHttpMessage = Http::parseHeader(header);
@@ -321,7 +321,7 @@ namespace Http {
            switch (res)
            {
                case (Http::COMPLETE_NO_DATA):
-                   EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
+                   // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                    return true;
                    break;
                case (Http::COMPLETE_DATA):
@@ -340,7 +340,7 @@ namespace Http {
         */
         if(packet.length() != 0)
         {
-            EV << "MecAppBase::parseReceivedMsgn - stored data: " << packet << endl;
+            // EV << "MecAppBase::parseReceivedMsgn - stored data: " << packet << endl;
            *storedData = packet;
           return false;
         }
@@ -466,34 +466,34 @@ namespace Http {
         int remainingLength = httpMessage->getRemainingDataToRecv();
         if(remainingLength == 0 && len == 0)
         {
-            EV << "httpUtils::addBodyChunk - no body" << endl;
+            // EV << "httpUtils::addBodyChunk - no body" << endl;
             return;
         }
-        EV << "httpUtils - addBodyChunk: data length: "<< len << "B. Remaining bytes: "<< remainingLength<< endl;
+        // EV << "httpUtils - addBodyChunk: data length: "<< len << "B. Remaining bytes: "<< remainingLength<< endl;
 
         if(httpMessage->getType() == RESPONSE)
         {
-            EV << "httpUtils::addBodyChunk - RESPONSE "<< endl;
+            // EV << "httpUtils::addBodyChunk - RESPONSE "<< endl;
             HttpResponseMessage* resp = dynamic_cast<HttpResponseMessage*>(httpMessage);
             resp->addBodyChunk(data->substr(0, remainingLength));
 
         }
         else if(httpMessage->getType() == REQUEST)
         {
-            EV << "httpUtils::addBodyChunk - REQUEST "<< endl;
+            // EV << "httpUtils::addBodyChunk - REQUEST "<< endl;
             HttpRequestMessage* resp = dynamic_cast<HttpRequestMessage*>(httpMessage);
             resp->addBodyChunk(data->substr(0, remainingLength));
         }
 
         data->erase(0, remainingLength);
         httpMessage->setRemainingDataToRecv(remainingLength - (len - data->length()));
-        EV << "httpUtils - addBodyChunk: Remaining bytes: "<< httpMessage->getRemainingDataToRecv()<< endl;
+        // EV << "httpUtils - addBodyChunk: Remaining bytes: "<< httpMessage->getRemainingDataToRecv()<< endl;
 
     }
 
     void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, const char* body)
     {
-        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
 
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
@@ -512,7 +512,7 @@ namespace Http {
     }
     void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
     {
-        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
 
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
@@ -535,7 +535,7 @@ namespace Http {
     }
     void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
     {
-        EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpResponse: code: " << code << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpResponsePacket");
         auto resPkt = inet::makeShared<HttpResponseMessage>();
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
@@ -565,7 +565,7 @@ namespace Http {
 
     void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, const char* uri, const char* parameters, const char* body)
     {
-        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
@@ -591,7 +591,7 @@ namespace Http {
     }
     void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, std::pair<std::string, std::string>& header, const char* uri, const char* parameters, const char* body)
     {
-        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
@@ -618,7 +618,7 @@ namespace Http {
     }
     void sendHttpRequest(inet::TcpSocket *socket, const char* method, const char* host, std::map<std::string, std::string>& headers, const char* uri, const char* parameters, const char* body)
     {
-        EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
+        // EV << "httpUtils - sendHttpRequest: method: " << method << " to: " << socket->getRemoteAddress() << ":" << socket->getRemotePort() << endl;
         inet::Packet* packet = new inet::Packet("HttpRequestPacket");
         auto reqPkt = inet::makeShared<HttpRequestMessage>();
         //        resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);

@@ -49,7 +49,7 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 		
 		// to create controllers
 		string transitionalController = "";
-		string longitudinalController = "Safe";
+		string longitudinalController = "Rajamani";
 		double controlPeriod @unit(s)= 0.100s; 
 		double updatePositionPeriod @unit(s) = 0.070s; 
 		bool adjustPosition = false;
