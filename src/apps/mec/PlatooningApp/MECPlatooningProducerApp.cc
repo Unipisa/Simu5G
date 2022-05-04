@@ -731,7 +731,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
 int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
 {
     int index = nextControllerIndex_++;
-
+    Coord dir = direction;
     // TODO
     /*
      * Instantiate a new MECApp controller App.
@@ -790,9 +790,11 @@ int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
         confMsg->setControllerId(index);
         confMsg->setHeartbeatPeriod(par("heartbeatPeriod").doubleValue());
         confMsg->setLongitudinalController(par("longitudinalController").stringValue());
-        confMsg->setTraversalController(par("transitionalController").stringValue());
-        confMsg->setControlPeriod(par("controlPeriod").doubleValue());
-        confMsg->setUpdatePositionPeriod(par("updatePositionPeriod").doubleValue());
+        confMsg->setLateralController(par("lateralController").stringValue());
+        confMsg->setLateralControlPeriod(par("lateralControlPeriod").doubleValue());
+        confMsg->setLateralUpdatePositionPeriod(par("lateralUpdatePositionPeriod").doubleValue());
+        confMsg->setLongitudinalControlPeriod(par("longitudinalControlPeriod").doubleValue());
+        confMsg->setLongitudinalUpdatePositionPeriod(par("longitudinalUpdatePositionPeriod").doubleValue());
         confMsg->setAdjustPosition(par("adjustPosition").boolValue());
         confMsg->setSendBulk(par("sendBulk").boolValue());
 

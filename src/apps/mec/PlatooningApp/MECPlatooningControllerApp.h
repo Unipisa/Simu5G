@@ -116,7 +116,7 @@ protected:
     // reference to the class running the platoon selection algorithm
     PlatoonSelectionBase* platoonSelection_;
     PlatoonControllerBase* longitudinalController_;
-    PlatoonControllerBase* transitionalController_;
+    PlatoonControllerBase* lateralController_;
 
     PlatooningTimer* controlTimer_;
     PlatooningTimer* updatePositionTimer_;

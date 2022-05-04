@@ -158,10 +158,12 @@ class PlatooningConfigureControllerPacket extends PlatooningAppPacket
     Coord direction;
     int controllerId;
     
-    string traversalController;
+    string lateralController;
     string longitudinalController;
-    double controlPeriod; 
-	double updatePositionPeriod; 
+    double lateralControlPeriod; 
+	double lateralUpdatePositionPeriod; 
+	double longitudinalControlPeriod; 
+	double longitudinalUpdatePositionPeriod; 
 	double heartbeatPeriod;
 	bool adjustPosition = false;
 	bool sendBulk = true;

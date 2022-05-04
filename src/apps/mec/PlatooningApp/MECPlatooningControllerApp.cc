@@ -53,7 +53,7 @@ MECPlatooningControllerApp::~MECPlatooningControllerApp()
 {
     delete platoonSelection_;
     delete longitudinalController_;
-    delete transitionalController_;
+    delete lateralController_;
     delete maneuvringVehicle_;
 //    delete maneuvringVehicleJoinMsg_;
     while(!joinRequests_.isEmpty())
@@ -495,28 +495,44 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage * msg)
     controllerId_ = confMsg->getControllerId();
 
     // instantiate controllers
-    double controlPeriod = confMsg->getControlPeriod();
-    double updatePositionPeriod = confMsg->getUpdatePositionPeriod();
+    controlPerdiodLongitudinal_ = confMsg->getLongitudinalControlPeriod();;
+    controlPerdiodLateral_ = confMsg->getLateralControlPeriod();;
+
+    updatePositionTimerLongitudinal_ = confMsg->getLongitudinalUpdatePositionPeriod();
+    updatePositionTimerLateral_ = confMsg->getLateralUpdatePositionPeriod();
+
 
     adjustPosition_  = confMsg->getAdjustPosition();
     sendBulk_ = confMsg->getSendBulk();
 
     if(strcmp( confMsg->getLongitudinalController() , "Rajamani") == 0 )
     {
-        longitudinalController_ =   new RajamaniPlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod);
+        longitudinalController_ =   new RajamaniPlatoonController(this, controllerId_, controlPerdiodLongitudinal_, updatePositionTimerLongitudinal_);
+        longitudinalController_->setDirection(confMsg->getDirection());
     }
     else if(strcmp( confMsg->getLongitudinalController(), "Safe") == 0 )
-        longitudinalController_ =   new SafePlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod);
+    {
+        longitudinalController_ =   new SafePlatoonController(this, controllerId_, controlPerdiodLongitudinal_, updatePositionTimerLongitudinal_);
+        longitudinalController_->setDirection(confMsg->getDirection());
+    }
+    else
+    {
+        throw cRuntimeError("MECPlatooningControllerApp::handleControllerConfiguration - Longitudinal controller %s does not exists!", confMsg->getLongitudinalController());
+    }
 
-    longitudinalController_->setDirection(confMsg->getDirection());
 
-    transitionalController_ = new RajamaniPlatoonController(this, controllerId_, controlPeriod, updatePositionPeriod, true);
 
-    controlPerdiodLongitudinal_ = controlPeriod;
-    controlPerdiodLateral_ = controlPeriod;
+    if(strcmp( confMsg->getLateralController() , "Rajamani") == 0 )
+    {
+        lateralController_ = new RajamaniPlatoonController(this, controllerId_, controlPerdiodLateral_, updatePositionTimerLateral_, true);
+        lateralController_->setDirection(confMsg->getDirection());
+    }
+    else
+    {
+        throw cRuntimeError("MECPlatooningControllerApp::handleControllerConfiguration - Lateral controller %s does not exists!", confMsg->getLongitudinalController());
+    }
 
-    updatePositionTimerLongitudinal_ = updatePositionPeriod;
-    updatePositionTimerLateral_ = updatePositionPeriod;
+
 
     isConfigured_ = true;
 
@@ -642,8 +658,9 @@ void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool 
         maneuvringVehicle_ = nullptr;
         if(membersInfo_.size() > 0)
         {
-            switchState(CRUISE); // no other vehicles are waiting, switch to cruise
             EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - No other vehicles are waiting, switch to cruise" << endl;
+            switchState(CRUISE); // no other vehicles are waiting, switch to cruise
+
         }
         else
         {
@@ -1096,7 +1113,7 @@ void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrl
 {
     EV << "MECPlatooningControllerApp::handleControlTimer - Control platoon" << endl;
 
-    const CommandList* cmdList = transitionalController_->controlPlatoon();
+    const CommandList* cmdList = lateralController_->controlPlatoon();
 
     // TODO the function might end here, the controller will provide the commands as soon as it will be finished
 

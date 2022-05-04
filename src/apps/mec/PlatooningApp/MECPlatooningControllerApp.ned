@@ -40,6 +40,11 @@ simple MECPlatooningControllerApp like IMECApp
         int mp1Port = default(10021);
         
         double minimumDistanceForManoeuvre @unit(m) = default(150m);
+
+//        double lateralLontrolPeriod @unit(s) = 0.100s; 
+//		double lateralUpdatePositionPeriod @unit(s) = 0.070s; 
+//		double longitudinalLontrolPeriod @unit(s) = 0.100s; 
+//		double longitudinalUpdatePositionPeriod @unit(s) = 0.070s; 
        
 		 //resource required info
         double requiredRam @unit("B");
