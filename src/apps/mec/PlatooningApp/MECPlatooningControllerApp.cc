@@ -93,30 +93,6 @@ void MECPlatooningControllerApp::initialize(int stage)
 
       // retrieve global PlatoonProducerApp endpoints
 
-////   cModule* vi = this->getParentModule();
-//   cModule* localProducerAppModule = this->getModuleByPath("^.bgApp[0]");
-//   MECPlatooningProducerApp* localProducerApp = check_and_cast<MECPlatooningProducerApp *>(localProducerAppModule);
-//
-//   cValueArray *producerAppEndpoints = check_and_cast<cValueArray *>(localProducerApp->par("federatedProducerApps").objectValue());
-//   for(int i = 0; i < producerAppEndpoints->size(); ++i)
-//   {
-//       cValueMap *entry = check_and_cast<cValueMap *>(producerAppEndpoints->get(i).objectValue());
-//       ProducerAppInfo producerAppinfo;
-//       producerAppinfo.port = entry->get("port");
-//       producerAppinfo.address = L3AddressResolver().resolve(entry->get("address").stringValue());
-//
-//       producerAppinfo.locationServicePort = entry->get("locationServicePort");
-//       producerAppinfo.locationServiceAddress = L3AddressResolver().resolve(entry->get("locationServiceAddress").stringValue());
-//       producerAppinfo.locationServiceSocket = addNewSocket();
-//
-//       int id = entry->get("id");
-//
-//       // TODO create socket
-//       producerAppEndpoint_[id] = producerAppinfo;
-//
-//       EV <<"MECPlatooningControllerApp::initialize - id: " << id <<" address: "  << producerAppinfo.address.str() <<" port " << producerAppinfo.port << endl;
-//   }
-
     mp1Socket_ = addNewSocket();
 
 //    // Add local producerApp
@@ -737,21 +713,7 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
 
     consumerAppEndpoint_[consumerAppId] = info;
 
-    // check if the car is near enough to be managed
-
-    /*
-     * TODO
-     *
-     * check there is already one car in MANEUVRING POSITION and in case queue this request and
-     * notify the consumer app. for now th enotification is not implemented
-     *
-     * If the controller is not in MANEUVRING check if the car can be inserted:
-     *  - if it is near enough
-     *  - its speed
-     *
-     *
-     *  Once the maneuver ends add the car to platoon
-     */
+    EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - Join request arrived from MECPlatooningConsumerApp with id [" << consumerAppId << "] associated to UE [" << carIpAddress.str() << "]" << endl;
 
     if(state_ == INACTIVE_CONTROLLER || state_ == CRUISE)
     {

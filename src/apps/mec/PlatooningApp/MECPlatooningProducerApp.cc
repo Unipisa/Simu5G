@@ -431,42 +431,49 @@ void MECPlatooningProducerApp::handleDiscoverPlatoonRequest(cMessage *msg)
      * other producer apps in the federation.
      *
      */
-
-    if(currentPlatoonRequestTimer_->isScheduled())
+    if(producerAppEndpoint_.size() > 1)
     {
-        EV << "MECPlatooningProducerApp::handleDiscoverPlatoonRequest - A request for retrieve all the available platoons is already issued. Wait for the response" << endl;
-        consumerAppRequests_.insert(msg);
-        return;
+        if(currentPlatoonRequestTimer_->isScheduled())
+        {
+            EV << "MECPlatooningProducerApp::handleDiscoverPlatoonRequest - A request for retrieve all the available platoons is already issued. Wait for the response" << endl;
+            consumerAppRequests_.insert(msg);
+            return;
+        }
+        else
+        {
+            EV << "MECPlatooningProducerApp::handleDiscoverPlatoonRequest - New request issued to all the producer apps. Wait for the response" << endl;
+            for(auto &prodApp: producerAppEndpoint_)
+            {
+                if(prodApp.first == producerAppId_)
+                    continue; // do not auto send this message
+                // create msg and send
+                inet::Packet* availablePlatoonPacket = new Packet ("PlatooningAvailablePlatoonsRequestPacket");
+                auto availablePlatoonReq = inet::makeShared<PlatooningAvailablePlatoonsPacket>();
+                availablePlatoonReq->setType(AVAILABLE_PLATOONS_REQUEST);
+                availablePlatoonReq->setProducerAppId(producerAppId_);
+                availablePlatoonReq->setRequestId(requestCounter_);
+
+                int chunkLen = 2*sizeof(int) + 1;
+                availablePlatoonReq->setChunkLength(inet::B(chunkLen));
+
+                availablePlatoonPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+                availablePlatoonPacket->insertAtBack(availablePlatoonReq);
+
+                platooningProducerAppsSocket_.sendTo(availablePlatoonPacket, prodApp.second.address , prodApp.second.port);
+            }
+            consumerAppRequests_.insert(msg);
+            currentPlatoonRequestTimer_->setRequestId(requestCounter_);
+            currentPlatoonRequestTimer_->setExpectedResponses(producerAppEndpoint_.size() - 1);
+            currentPlatoonRequestTimer_->setReceivedResponses(0);
+
+            requestCounter_++;
+
+            scheduleAt(simTime() + currentPlatoonRequestTimer_->getPeriod(), currentPlatoonRequestTimer_);
+        }
     }
     else
     {
-        scheduleAt(simTime() + currentPlatoonRequestTimer_->getPeriod(), currentPlatoonRequestTimer_);
-        EV << "MECPlatooningProducerApp::handleDiscoverPlatoonRequest - New request issued to all the producer apps. Wait for the response" << endl;
-        for(auto &prodApp: producerAppEndpoint_)
-        {
-            if(prodApp.first == producerAppId_)
-                continue; // do not auto send this message
-            // create msg and send
-            inet::Packet* availablePlatoonPacket = new Packet ("PlatooningAvailablePlatoonsRequestPacket");
-            auto availablePlatoonReq = inet::makeShared<PlatooningAvailablePlatoonsPacket>();
-            availablePlatoonReq->setType(AVAILABLE_PLATOONS_REQUEST);
-            availablePlatoonReq->setProducerAppId(producerAppId_);
-            availablePlatoonReq->setRequestId(requestCounter_);
-
-            int chunkLen = 2*sizeof(int) + 1;
-            availablePlatoonReq->setChunkLength(inet::B(chunkLen));
-
-            availablePlatoonPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-            availablePlatoonPacket->insertAtBack(availablePlatoonReq);
-
-            platooningProducerAppsSocket_.sendTo(availablePlatoonPacket, prodApp.second.address , prodApp.second.port);
-        }
-        consumerAppRequests_.insert(msg);
-        currentPlatoonRequestTimer_->setRequestId(requestCounter_);
-        currentPlatoonRequestTimer_->setExpectedResponses(producerAppEndpoint_.size() - 1);
-        currentPlatoonRequestTimer_->setReceivedResponses(0);
-
-        requestCounter_++;
+        handlePendingJoinRequest(msg);
     }
 }
 
