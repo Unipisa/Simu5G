@@ -570,7 +570,19 @@ void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool 
         int consumerAppId = req->getConsumerAppId();
         int producerAppId = req->getProducerAppId();
         L3Address carIpAddress = req->getUeAddress();
-        inet::Coord position = req->getLastPosition();
+
+        // if the finalizeJoinPlatoonRequest is called for the maneuvring vehicle,
+        // i.e msg == maneuvringVehicleJoinMsg_, the position must be the last one received during
+        // the maneouvre!
+        inet::Coord position;
+        if(msg != maneuvringVehicleJoinMsg_)
+        {
+            position = req->getLastPosition();
+        }
+        else
+        {
+            position = maneuvringVehicle_->getPosition();
+        }
 
         addMember(consumerAppId, carIpAddress, position, producerAppId);
 
@@ -721,7 +733,7 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
         PlatoonVehicleInfo* lastCar = getLastPlatoonCar();
         if(lastCar != nullptr && position.distance(lastCar->getPosition()) > minimumDistanceForManoeuvre_)
         {
-            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << "meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
+            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << " meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
             EV << "last " << position.distance(lastCar->getPosition()) << endl;
             EV << "leader" <<position.distance(getPlatoonLeader()->getPosition()) <<  endl;
             finalizeJoinPlatoonRequest(msg, false);
@@ -1110,6 +1122,7 @@ void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrl
 
             //send to the relative consumer App
             platooningConsumerAppsSocket_.sendTo(pkt, consumerApp->second.address , consumerApp->second.port);
+            EV << "MECPlatooningControllerApp::handleLateralControllerTimer - send command to MECPlatoonConsumerApp [" << mecAppId << "]" << endl;
         }
         delete cmdList;
     }

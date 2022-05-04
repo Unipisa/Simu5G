@@ -133,10 +133,16 @@ const CommandList* RajamaniPlatoonController::controlPlatoon()
                 newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
                 //mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId).setAcceleration(newAcceleration);
                 precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
-                if(distanceToPreceding <= targetSpacing_ + 1) endManouvre = true;
+                if(distanceToPreceding <= targetSpacing_ + 1)
+                {
+                    EV << "DISTANCE: " << distanceToPreceding << endl;
+                    endManouvre = true;
+                }
             }
+
             int mecAppId = mecPlatooningControllerApp_->getManoeuvringVehicle()->getMecAppId();
             (*cmdList)[mecAppId] = {newAcceleration, precedingVehicleAddress, endManouvre};
+            EV << "RajamaniPlatoonController::control() - New acceleration value for the maneuvring vehicle " << mecAppId << " [" << newAcceleration << "]" << endl;
 
             //if it the first car
         }
