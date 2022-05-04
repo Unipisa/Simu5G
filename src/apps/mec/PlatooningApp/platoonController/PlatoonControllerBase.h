@@ -49,6 +49,12 @@ class PlatoonControllerBase
     // reference to the MEC Platooning App
     MECPlatooningControllerApp* mecPlatooningControllerApp_;
 
+    // info about platoon members. The key is the ID of their MEC apps
+    PlatoonMembersInfo* membersInfo_;
+
+    // store the id of the vehicles sorted according to their position in the platoon
+    std::list<int>* platoonPositions_;
+
     // platoon controller identifier within a PlatoonProducerApp
     int index_;
 

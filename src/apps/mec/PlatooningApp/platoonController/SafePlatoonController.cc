@@ -30,17 +30,17 @@ const CommandList* SafePlatoonController::controlPlatoon()
 {
     EV << "SafePlatoonController::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
-    int leaderId = mecPlatooningControllerApp_->getPlatoonPositions()->front();
-    PlatoonVehicleInfo leaderVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(leaderId);
+    int leaderId = platoonPositions_->front();
+    PlatoonVehicleInfo leaderVehicleInfo = membersInfo_->at(leaderId);
 
     CommandList* cmdList = new CommandList();
 
     // loop through the vehicles following their order in the platoon
-    std::list<int>::iterator it = mecPlatooningControllerApp_->getPlatoonPositions()->begin();
-    for (; it != mecPlatooningControllerApp_->getPlatoonPositions()->end(); ++it)
+    std::list<int>::iterator it = platoonPositions_->begin();
+    for (; it != platoonPositions_->end(); ++it)
     {
         int mecAppId = *it;
-        PlatoonVehicleInfo vehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(mecAppId);
+        PlatoonVehicleInfo vehicleInfo = membersInfo_->at(mecAppId);
         EV << "SafePlatoonController::control() - Computing new command for MEC app " << mecAppId << " - vehicle info[" << vehicleInfo << "]" << endl;
 
         double newAcceleration = 0.0;
@@ -56,7 +56,7 @@ const CommandList* SafePlatoonController::controlPlatoon()
             precIt--;
 
             int precedingVehicleId = *precIt;
-            PlatoonVehicleInfo precedingVehicleInfo = mecPlatooningControllerApp_->getMemberInfo()->at(precedingVehicleId);
+            PlatoonVehicleInfo precedingVehicleInfo = membersInfo_->at(precedingVehicleId);
 
             //Collision-free Longitudinal distance controller: inputs
             double distanceToLeading = vehicleInfo.getPosition().distance(precedingVehicleInfo.getPosition());

@@ -19,6 +19,9 @@ PlatoonControllerBase::PlatoonControllerBase(MECPlatooningControllerApp* mecPlat
     controlPeriod_ = controlPeriod;
     updatePositionPeriod_ = updatePositionPeriod;
 
+    platoonPositions_ = mecPlatooningControllerApp_->getPlatoonPositions();
+    membersInfo_ = mecPlatooningControllerApp_->getMemberInfo();
+
     // TODO make these parametric
     minAcceleration_ = -5.0;
     maxAcceleration_ = 1.5;
