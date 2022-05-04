@@ -162,6 +162,7 @@ class PlatooningConfigureControllerPacket extends PlatooningAppPacket
     string longitudinalController;
     double controlPeriod; 
 	double updatePositionPeriod; 
+	double heartbeatPeriod;
 	bool adjustPosition = false;
 	bool sendBulk = true;
    				

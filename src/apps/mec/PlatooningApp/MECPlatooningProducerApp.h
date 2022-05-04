@@ -159,12 +159,10 @@ class MECPlatooningProducerApp : public MecAppBase
     // @brief handler to request for associate a specific platoon
     void handleAssociatePlatoonRequest(cMessage* msg);
 
-
     // From MECPlatooningProducerApps
 
     // @brief handler for the notification of a new platoon from a PlatooningProducerApp
     void handleAvailablePlatoonsRequest(cMessage* msg);
-
 
     // ############ Receiver side ############
 
@@ -172,7 +170,6 @@ class MECPlatooningProducerApp : public MecAppBase
 
     // @brief handler for the notification of a new platoon from a PlatooningProducerApp
     void handleAvailablePlatoonsResponse(cMessage* msg);
-
 
     // @brief handler for configuration response from MECPlatooningControllerApp
     void handleControllerConfigurationResponse(cMessage* msg);
@@ -186,6 +183,7 @@ class MECPlatooningProducerApp : public MecAppBase
 
     // @brief controls all the MECPlatooningControllerApps to check the last hb received.
     // If it is too old, remove the controller from the structure
+    // TODO implement
     void controlHeartbeats();
 
     /* TCPSocket::CallbackInterface callback methods */
@@ -194,10 +192,6 @@ class MECPlatooningProducerApp : public MecAppBase
   public:
     MECPlatooningProducerApp();
     virtual ~MECPlatooningProducerApp();
-
-
-    bool getAdjustPositionFlag() { return adjustPosition_; }
-
 };
 
 #endif

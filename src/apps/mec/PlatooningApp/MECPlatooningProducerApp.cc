@@ -199,10 +199,6 @@ void MECPlatooningProducerApp::handleMessage(cMessage *msg)
             {
                 handleControllerNotification(msg);
             }
-            else if(platooningPkt->getType() == HEARTBEAT)
-            {
-                handleHeartbeat(msg);
-            }
             else if (platooningPkt->getType() == CONF_CONTROLLER_RESPONSE)
             {
                 handleControllerConfigurationResponse(msg);
@@ -318,14 +314,6 @@ void MECPlatooningProducerApp::handleServiceMessage(int connId)
 
 // From MECPlatooningControlleApp
 
-void MECPlatooningProducerApp::handleHeartbeat(cMessage *msg)
-{
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto heartbeatMsg= packet->removeAtFront<PlatooningAddMemberPacket>();
-
-
-}
-
 void MECPlatooningProducerApp::handleControllerNotification(cMessage* msg)
 {
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
@@ -351,10 +339,12 @@ void MECPlatooningProducerApp::handleControllerNotification(cMessage* msg)
             handleLeaveMemberNotification(msg);
         }
         else if (controllerNotification->getNotificationType() == NEW_ORDER)
-            EV << "MECPlatooningProducerApp::handleControllerNotification: The platoon with id "<< controllerNotification->getControllerId() << "changes the cars order" << endl;
+            EV << "MECPlatooningProducerApp::handleControllerNotification: The platoon with id "<< controllerNotification->getControllerId() << " changes the cars order" << endl;
         else if (controllerNotification->getNotificationType() == HEARTBEAT)
-            EV << "MECPlatooningProducerApp::handleControllerNotification: Heartbeat received from controller with id "<< controllerNotification->getControllerId() << "changes the cars order" << endl;
-
+        {
+            EV << "MECPlatooningProducerApp::handleControllerNotification: Heartbeat received from controller with id "<< controllerNotification->getControllerId() << ". Update timestamps and vehicles" << endl;
+            handleHeartbeat(msg);
+        }
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
 
@@ -364,7 +354,6 @@ void MECPlatooningProducerApp::handleControllerNotification(cMessage* msg)
     delete packet;
     return;
 
-
 }
 
 void MECPlatooningProducerApp::handleNewMemberNotification(cMessage* msg)
@@ -373,9 +362,15 @@ void MECPlatooningProducerApp::handleNewMemberNotification(cMessage* msg)
     auto controllerNotification = packet->peekAtFront<PlatooningControllerNotificationPacket>();
 
     auto platoon = platoonControllers_.find(controllerNotification->getControllerId());
-    platoon->second->vehicles = controllerNotification->getVehiclesOrder();
-    platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
-
+    if(platoon != platoonControllers_.end())
+    {
+        platoon->second->vehicles = controllerNotification->getVehiclesOrder();
+        platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+    }
+    else
+    {
+        EV << "MECPlatooningProducerApp::handleNewMemberNotification - Controller with id [" << controllerNotification->getControllerId() << "] not found!" << endl;
+    }
     return;
 }
 
@@ -412,6 +407,24 @@ void MECPlatooningProducerApp::handleLeaveMemberNotification(cMessage* msg)
 
     }
 
+    return;
+}
+
+void MECPlatooningProducerApp::handleHeartbeat(cMessage *msg)
+{
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto controllerNotification = packet->peekAtFront<PlatooningControllerNotificationPacket>();
+
+    auto platoon = platoonControllers_.find(controllerNotification->getControllerId());
+    if(platoon != platoonControllers_.end())
+    {
+        platoon->second->vehicles = controllerNotification->getVehiclesOrder();
+        platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+    }
+    else
+    {
+        EV << "MECPlatooningProducerApp::handleHeartbeat - Controller with id [" << controllerNotification->getControllerId() << "] not found!" << endl;
+    }
     return;
 }
 
@@ -775,7 +788,7 @@ int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
         confMsg->setDirection(direction);
         confMsg->setProducerAppId(producerAppId_);
         confMsg->setControllerId(index);
-
+        confMsg->setHeartbeatPeriod(par("heartbeatPeriod").doubleValue());
         confMsg->setLongitudinalController(par("longitudinalController").stringValue());
         confMsg->setTraversalController(par("transitionalController").stringValue());
         confMsg->setControlPeriod(par("controlPeriod").doubleValue());

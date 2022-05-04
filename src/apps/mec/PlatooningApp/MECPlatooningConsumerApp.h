@@ -63,11 +63,8 @@ class MECPlatooningConsumerApp : public MecAppBase
     inet::L3Address platooningControllerAddress_;
     int platooningControllerPort_;
 
-
-
     HttpBaseMessage* serviceHttpMessage;
     HttpBaseMessage* mp1HttpMessage;
-
 
     // coordinates of the last position retrieved
     double lastXposition;
@@ -76,7 +73,6 @@ class MECPlatooningConsumerApp : public MecAppBase
 
     inet::Coord direction_;
     inet::Coord lastPosition_;
-
 
     // when joined a platoon, stores the index of the controller
     // -1 means that this MEC app does not belong to any platoon
@@ -142,8 +138,9 @@ class MECPlatooningConsumerApp : public MecAppBase
     void handleLeavePlatoonResponse(cMessage* msg);
     // @brief handler for message containing the new command from the controller
     void handlePlatoonCommand(cMessage* msg);
-
+    // @brief handler for message containing the manoeuvre notifications
     void handleManoeuvreNotification(cMessage* msg);
+    // @brief handler for message containing the queued join request notifications
     void handleQueuedJoinNotification(cMessage* msg);
 
     /* TCPSocket::CallbackInterface callback methods */

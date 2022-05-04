@@ -57,6 +57,9 @@ protected:
 
     ControllerState state_;
 
+    double heartbeatPeriod_;
+    cMessage* heartbeatMsg_;
+
     // info about platoon members. The key is the ID of their MEC apps
     PlatoonMembersInfo membersInfo_;
 
@@ -143,26 +146,23 @@ protected:
 
     // From MECPlatooningProducerApps
 
+    // @brief handler for configure notifications from MECPlatooningProducerApp.
+    // it configures all the controller parameter and allows the controller to handle
+    // requests from the MECPlatooningConsumeApps
     void handleControllerConfiguration(cMessage* msg);
 
     // From MECPlatooningConsumerApps
-
-    // @brief handler for registration request from a MEC platooning app
-    void handleRegistrationRequest(cMessage* msg);
     // @brief handler for request to join a platoon from the UE
     void handleJoinPlatoonRequest(cMessage* msg, bool fromQueue = false);
 
     //@brief it sends a response about a JOIN request
     void sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg);
 
-    void sendManoeuvreNotification(cMessage* msg);
-    void sendQueuedJoinNotification(cMessage* msg);
-
     // @brief handler for request to leave a platoon from the UE
     void handleLeavePlatoonRequest(cMessage* msg);
     // @brief handler for the notification of a new platoon from a PlatooningProducerApp
 
-    //------ handlers for inter producerApps communication ------//
+    //------ handlers for inter-producerApps communication ------//
     //@brief handler for request to add a new member in a platoon
     bool addMember(int consumerAppId, L3Address& carIpAddress ,Coord& position, int producerAppId);
 
@@ -171,10 +171,18 @@ protected:
     // @brief handler for remove a PlatooningConsumerApp to a local platoon
     bool removePlatoonMember(int mecAppId);
 
+    // @brief method to finalize a join request. It add the member to the platoon structure
+    // and pops a pending join request, if present.
+    // Note: only one join request at a time can be managed
     void finalizeJoinPlatoonRequest(cMessage* msg, bool success);
 
     // @brief add a new member to the platoon
     bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
+
+    //@brief this method sends the manoeuvre notification to the MECPlatoonConsumerApp
+    void sendManoeuvreNotification(cMessage* msg);
+    //@brief this method sends the queued join request notification to the MECPlatoonConsumerApp
+    void sendQueuedJoinNotification(cMessage* msg);
 
     // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
     void updatePlatoonPositions(std::vector<UEInfo>*);
@@ -186,9 +194,17 @@ protected:
     // @brief used by a controller to stop a  timer
     void stopTimer(PlatooningTimerType timerType);
 
-    // @brief handler called when a ControlTimer expires
+    // @brief handler called when the longitudinal ControlTimer expires
     void handleLongitudinalControllerTimer(ControlTimer* ctrlTimer);
+    // @brief handler called when the lateral ControlTimer expires
     void handleLateralControllerTimer(ControlTimer* ctrlTimer);
+
+    // @brief this method periodically sends a heartbeat to the producer app
+    void sendHeartbeatNotification();
+
+    // @brief before manoeuvring a car related to a pending request, a new check of its position is needed.
+    // This method checks if the position of the pending car became too far to star a manoeuvre action.
+    void checkWaitingCarPosition();
 
     // @brief handler called when an UpdatePositionTimer expires
     void handleUpdatePositionTimer(UpdatePositionTimer* posTimer);
