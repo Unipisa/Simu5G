@@ -2,7 +2,7 @@ ifconfig:
 
 # interface to the external client
    
-name: wlan
+name: cellular
     inet_addr: 10.0.0.1
     Mask: 255.255.255.0
     MTU: 1500
@@ -12,7 +12,7 @@ ifconfigend.
 
 route:
 #Destination     Gateway          Genmask          Flags  Metric  Iface
-0.0.0.0          *                0.0.0.0          G      0       wlan
+0.0.0.0          *                0.0.0.0          G      0       cellular
 
 routeend.
 

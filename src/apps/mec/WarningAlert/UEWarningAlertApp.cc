@@ -123,7 +123,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
 
         inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
-        int port = packet->getTag<L4PortInd>()->getSrcPort();
+        // int port = packet->getTag<L4PortInd>()->getSrcPort();
 
         /*
          * From Device app

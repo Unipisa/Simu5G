@@ -552,7 +552,7 @@ void VirtualisationManager::ackMEAppPacket(inet::Packet* packet, const char* typ
         }
 
         destAddress_ = meAppMap[key].ueAddress;
-        int destUePort = meAppMap[key].uePort;
+        // int destUePort = meAppMap[key].uePort;
 
         //checking if the UE is in the network & sending by socket
         MacNodeId destId = binder_->getMacNodeId(destAddress_.toIpv4());

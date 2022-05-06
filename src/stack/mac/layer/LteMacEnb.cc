@@ -379,7 +379,7 @@ void LteMacEnb::macSduRequest()
         for (it = cit->second.begin(); it != cit->second.end(); it++)
         {   // loop on cids
             MacCid destCid = it->first.first;
-            Codeword cw = it->first.second;
+            // Codeword cw = it->first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
             // for each band, count the number of bytes allocated for this ue (dovrebbe essere per cid)

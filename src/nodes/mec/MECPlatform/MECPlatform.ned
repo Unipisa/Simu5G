@@ -75,15 +75,34 @@ module MECPlatform
             @display("p=61.344,74.976;is=s");
         }
 
-		//# old mec services NO ETSI MEC compliant
-        omnetService[numOmnetServices]: <> like IMEService {
-            @display("p=237.25,81.9,row");
+        //# layer submodules (must be ordered from lower to upper layers)
+        
+        //# link layer 
+        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
+            parameters:
+                @display("p=373.92,521.52,row,150");
         }
 
-
-		//# app layer 
-        mecService[numMecServices]: <> like IApp {
-            @display("p=551.04,73.8,row,140");
+        // ethernet interface used for communicating with external applications in emulation mode
+        extEth[numExtEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=549.81,530.13,row,150;q=txQueue");
+        }
+        
+        // ethernet interface used for communicating with interal MEC applications in the virtualization infrastructure
+        mp1Eth: <default("EthernetInterface")> like IEthernetInterface {
+            parameters:
+                @display("p=739.23,521.52,row,150;q=txQueue");
+        }
+        
+        //# network layer
+        ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
+            parameters:
+                @display("p=389.91,375.15;q=queue");
+        }
+        ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
+            parameters:
+                @display("p=709.71,375.15;q=queue");
         }
 
         //# transport layer 
@@ -96,32 +115,14 @@ module MECPlatform
                 @display("p=676.5,225.09");
         }
 
-        //# network layer
-        ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
-            parameters:
-                @display("p=389.91,375.15;q=queue");
-        }
-        ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
-            parameters:
-                @display("p=709.71,375.15;q=queue");
+		//# app layer 
+        mecService[numMecServices]: <> like IApp {
+            @display("p=551.04,73.8,row,140");
         }
 
-        //# link layer 
-        lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
-            parameters:
-                @display("p=373.92,521.52,row,150");
-        }
-
-        // ethernet interface used for communicating with external applications in emulation mode
-        extEth[numExtEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
-            parameters:
-                @display("p=549.81,530.13,row,150;q=txQueue");
-        }
-
-         // ethernet interface used for communicating with interal MEC applications in the virtualization infrastructure
-        mp1Eth: <default("EthernetInterface")> like IEthernetInterface {
-            parameters:
-                @display("p=739.23,521.52,row,150;q=txQueue");
+		//# old mec services NO ETSI MEC compliant
+        omnetService[numOmnetServices]: <> like IMEService {
+            @display("p=237.25,81.9,row");
         }
 
 

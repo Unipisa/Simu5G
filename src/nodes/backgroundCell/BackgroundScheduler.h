@@ -88,9 +88,9 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     simsignal_t bgAvgServedBlocksUl_;
 
   protected:
-    virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL+2; }
-    virtual void handleMessage(omnetpp::cMessage *msg);
+    virtual void initialize(int stage) override;
+    virtual int numInitStages() const override { return inet::INITSTAGE_LOCAL+2; }
+    virtual void handleMessage(omnetpp::cMessage *msg) override;
 
   public:
 

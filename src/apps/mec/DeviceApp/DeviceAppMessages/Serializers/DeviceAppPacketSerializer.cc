@@ -65,7 +65,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
 //            throw cRuntimeError("%d, %d, %d", remainders, sdata.size(), ackPk->getChunkLength());
             if (remainders < 0)
-                throw cRuntimeError("DeviceApp - START_ACK_CODE length = %d smaller than required %d bytes. Data: %s [%d]",
+                throw cRuntimeError("DeviceApp - START_ACK_CODE length = %d smaller than required %d bytes. Data: %s [%lu]",
                         (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get(), sdata.c_str(), sdata.size());
             stream.writeByteRepeatedly('?', remainders);
         }

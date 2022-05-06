@@ -247,7 +247,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
 
     char* meModuleName = (char*)msg->getMEModuleName();
 
-    int ueAppPort  = msg->getSourcePort();
+    // int ueAppPort  = msg->getSourcePort();
 
     //retrieve UE App ID
     int ueAppID = msg->getUeAppID();

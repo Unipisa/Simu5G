@@ -201,9 +201,9 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
 
          MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(newMecApp.mecpm);
 
-         double reqRam    = desc.getVirtualResources().ram;
-         double reqDisk   = desc.getVirtualResources().disk;
-         double reqCpu = desc.getVirtualResources().cpu;
+         // double reqRam    = desc.getVirtualResources().ram;
+         // double reqDisk   = desc.getVirtualResources().disk;
+         // double reqCpu = desc.getVirtualResources().cpu;
 
 
          /*

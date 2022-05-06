@@ -261,7 +261,7 @@ namespace Http {
             return INCOMPLETE_DATA; // this should not happen
         else
         {
-            throw cRuntimeError("httpUtils parseTcpData - something went wrong: data length: %d and remaining data to receive: %d", data->length(),httpMessage->getRemainingDataToRecv() );
+            throw cRuntimeError("httpUtils parseTcpData - something went wrong: data length: %lu and remaining data to receive: %d", data->length(),httpMessage->getRemainingDataToRecv() );
         }
     }
 
@@ -405,7 +405,7 @@ namespace Http {
             *currentHttpMessage = Http::parseHeader(header);
 
             Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
-            double time;
+            // double time;
             switch (res)
             {
             case (Http::COMPLETE_NO_DATA):

@@ -69,7 +69,7 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
     val["link"]["href"] = resourceURL;
     val["link"]["rel"] = subscriptionType_;
 
-    std::vector<TerminalLocation>::const_iterator it = terminalLocations.begin();
+    // std::vector<TerminalLocation>::const_iterator it = terminalLocations.begin();
     std::vector<TerminalLocation> terminalLoc = circleEvent->getTerminalLocations();
 
     for(auto it : terminalLoc)
@@ -383,7 +383,7 @@ bool CircleNotificationSubscription::findUe(MacNodeId nodeId)
 {
     std::map<MacCellId, CellInfo*>::const_iterator  eit = eNodeBs_.begin();
     std::map<MacNodeId, inet::Coord>::const_iterator pit;
-    const std::map<MacNodeId, inet::Coord>* uePositionList;
+    // const std::map<MacNodeId, inet::Coord>* uePositionList;
     for(; eit != eNodeBs_.end() ; ++eit){
         inet::Coord uePos = eit->second->getUePosition(nodeId);
        if(uePos != inet::Coord::ZERO)

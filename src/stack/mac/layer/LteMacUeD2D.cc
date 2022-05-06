@@ -998,7 +998,7 @@ UserTxParams* LteMacUeD2D::getPreconfiguredTxParams()
     if (cqi < 0 || cqi > 15)
     {
         delete txParams;
-        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %s is not a valid value. Aborting", cqi);
+        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %hu is not a valid value. Aborting", cqi);
     }
     txParams->writeCqi(std::vector<Cqi>(1,cqi));
 

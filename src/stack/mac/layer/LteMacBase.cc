@@ -563,5 +563,5 @@ double LteMacBase::getHarqErrorRate(Direction dir)
         return (double)totalHarqErrorRateDlSum_/totalHarqErrorRateDlCount_;
     if (dir == UL)
         return (double)totalHarqErrorRateUlSum_/totalHarqErrorRateUlCount_;
-
+    throw cRuntimeError("LteMacBase::getHarqErrorRate - unhandled direction %d", dir);
 }

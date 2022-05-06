@@ -56,7 +56,7 @@ module Upf extends NetworkLayerNodeBase
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
                 @display("p=881.7925,79.5475");
-                ownerType = nodeType;
+                ownerType = parent.nodeType;
         }
         gtp_user: GtpUser {
             parameters:

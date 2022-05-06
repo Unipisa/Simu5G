@@ -49,13 +49,16 @@ module eNodeB
         @figure[linkLayer](type=rectangle; pos=250,456; size=1000,130; fillColor=#0000ff; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
         @figure[linkLayer.title](type=text; pos=1245,461; anchor=ne; text="link layer");
         @figure[submodules];
+        @statistic[posX](source="xCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
+        @statistic[posY](source="yCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
+            
 
         //# Node specs
         string nodeType = default("ENODEB");        // DO NOT CHANGE
         string gateway = default("pgw");
-        int masterId = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity 
-        int macNodeId = default(0); // TODO: this is not a real parameter
-        int macCellId = default(0);  // TODO: this is not a real parameter
+        int masterId @mutable = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity 
+        int macNodeId @mutable = default(0); // TODO: this is not a real parameter
+        int macCellId @mutable = default(0);  // TODO: this is not a real parameter
         double txPower @unit(mw) = default(100mw);
         string nicType = default("LteNicEnb");
 
@@ -121,7 +124,7 @@ module eNodeB
         cellularNic: <nicType> like ICellularNic {
             parameters:
                 @display("p=433.54,520.4525");
-                nodeType = nodeType;
+                nodeType = parent.nodeType;
         }
 
         pppIf: PppInterface {
@@ -202,12 +205,12 @@ module eNodeB
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
                 @display("p=1172.36,372.88");
-                ownerType = nodeType;
+                ownerType = parent.nodeType;
         }
         gtpUser: GtpUser {
             parameters:
                 @display("p=1041.22,372.88");
-                ipOutInterface = "wlan";       // FIXME: we should use a different name, eg. "cellular" for the LteNic
+                ipOutInterface = "cellular";
         }
 
         gtpUserX2: GtpUserX2 {

@@ -26,7 +26,7 @@ E.g.:
 UEs that need to transmit/receive data to/from a multicast group must join an IP multicast group.
 To do this, configure the "demo.xml" file.
 E.g.:
-    <multicast-group hosts="ueD2D[*]" interfaces="wlan" address="224.0.0.10"/>
+    <multicast-group hosts="ueD2D[*]" interfaces="cellular" address="224.0.0.10"/>
     
 === Sending data to a multicast group ===
 Set the above multicast IP address as destination address of senders' application

@@ -89,9 +89,9 @@ void MultihopD2D::initialize(int stage)
 
         // for multicast support
         inet::IInterfaceTable *ift = inet::getModuleFromPar< inet::IInterfaceTable >(par("interfaceTableModule"), this);
-        NetworkInterface *ie = ift->findInterfaceByName("wlan");
+        NetworkInterface *ie = ift->findInterfaceByName(par("interfaceName").stringValue());
         if (!ie)
-            throw cRuntimeError("Wrong multicastInterface setting: no interface named wlan");
+            throw cRuntimeError("Wrong multicastInterface setting: no interface found");
         inet::MulticastGroupList mgl = ift->collectMulticastGroups();
         socket.joinLocalMulticastGroups(mgl);
         socket.setMulticastOutputInterface(ie->getInterfaceId());

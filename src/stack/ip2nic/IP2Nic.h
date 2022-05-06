@@ -31,9 +31,6 @@ typedef std::pair<inet::Ipv4Address, inet::Ipv4Address> AddressPair;
  */
 class IP2Nic : public omnetpp::cSimpleModule
 {
-    omnetpp::cGate *stackGateOut_;       // gate connecting IP2Nic module to cellular stack
-    omnetpp::cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
-
     RanNodeType nodeType_;      // node type: can be ENODEB, GNODEB, UE
 
     // reference to the binder
@@ -48,9 +45,6 @@ class IP2Nic : public omnetpp::cSimpleModule
     MacNodeId masterId_;
     // NR MAC node id of this node's master (if enabled)
     MacNodeId nrMasterId_;
-
-    // corresponding entry for our interface
-    inet::NetworkInterface* networkIf;
 
     /*
      * Handover support
@@ -130,6 +124,13 @@ class IP2Nic : public omnetpp::cSimpleModule
     virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }
     virtual void handleMessage(omnetpp::cMessage *msg) override;
     virtual void finish() override;
+
+    omnetpp::cGate *stackGateOut_;       // gate connecting IP2Nic module to cellular stack
+    omnetpp::cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
+
+    // corresponding entry for our interface
+    inet::NetworkInterface* networkIf;
+
   public:
 
     /*

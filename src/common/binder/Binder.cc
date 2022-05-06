@@ -578,9 +578,11 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
 
 const std::vector<std::vector<UeAllocationInfo> >* Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
 {
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end())
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()){
         return NULL;
-    return &(ulTransmissionMap_[carrierFreq][t]);
+    }
+
+    return &(ulTransmissionMap_[carrierFreq].at(t));
 }
 
 void Binder::registerX2Port(X2NodeId nodeId, int port)

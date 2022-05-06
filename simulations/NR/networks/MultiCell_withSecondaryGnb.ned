@@ -10,13 +10,13 @@
 // 
 package simu5g.simulations.NR.networks;
 
-import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.eNodeB;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
@@ -43,8 +43,8 @@ network MultiCell_withSecondaryGnb
         routingRecorder: RoutingTableRecorder {
             @display("p=106.128,131.856;is=s");
         }
-        configurator: Ipv4NetworkConfigurator {
-            @display("p=106.128,237.984");
+        configurator: CellularNetworkConfigurator {
+            @display("p=50.993748,172.88126");
         }
         binder: Binder {
             @display("p=106.128,334.464;is=s");
