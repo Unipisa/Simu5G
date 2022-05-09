@@ -106,7 +106,10 @@ class PlatoonControllerBase
     inet::Coord getDirection() { return direction_; }
 
     // @brief run the global platoon controller
-    virtual const CommandList* controlPlatoon() = 0;
+    virtual CommandList* controlPlatoon() = 0;
+    virtual CommandList* controlJoinManoeuvrePlatoon() = 0;
+    virtual CommandList* controlLeaveManoeuvrePlatoon() = 0;
+
 
     void setTargetSpeed(double speed) { targetSpeed_ = speed; }
     double getTargetSpeed() { return targetSpeed_; }

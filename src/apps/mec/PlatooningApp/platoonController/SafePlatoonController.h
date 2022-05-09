@@ -47,7 +47,9 @@ protected:
     double computeMemberAcceleration(double distanceToLeader, double leaderSpeed, double followerSpeed);
 
     // @brief run the global platoon controller
-    virtual const CommandList* controlPlatoon();
+    virtual CommandList* controlPlatoon();
+    virtual CommandList* controlJoinManoeuvrePlatoon(){ return nullptr; }
+    virtual CommandList* controlLeaveManoeuvrePlatoon(){return nullptr; }
 
   public:
     SafePlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0);

@@ -49,6 +49,7 @@ class MECPlatooningConsumerApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
+
     // endpoint for contacting the Location Service
     // this is obtained by sending a GET request to the Service Registry as soon as
     // the connection with the latter has been established
@@ -141,7 +142,7 @@ class MECPlatooningConsumerApp : public MecAppBase
     // @brief handler for message containing the manoeuvre notifications
     void handleManoeuvreNotification(cMessage* msg);
     // @brief handler for message containing the queued join request notifications
-    void handleQueuedJoinNotification(cMessage* msg);
+    void handleQueuedNotification(cMessage* msg);
 
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;

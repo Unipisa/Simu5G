@@ -26,7 +26,7 @@ SafePlatoonController::~SafePlatoonController()
     EV << "SafePlatoonController::~SafePlatoonController - Destructor called" << endl;
 }
 
-const CommandList* SafePlatoonController::controlPlatoon()
+CommandList* SafePlatoonController::controlPlatoon()
 {
     EV << "SafePlatoonController::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
@@ -66,9 +66,10 @@ const CommandList* SafePlatoonController::controlPlatoon()
             newAcceleration = computeMemberAcceleration(distanceToLeading, leadingSpeed, followerSpeed);
             precedingVehicleAddress = precedingVehicleInfo.getUeAddress();
         }
-
-        // TODO compute new acceleration
-        (*cmdList)[mecAppId] =  {newAcceleration, precedingVehicleAddress};
+        Coord acceleration = Coord(0.0, 0.0, 0.0);
+        if(direction_.x != 0) acceleration.x = newAcceleration;
+        else if(direction_.y != 0) acceleration.y = newAcceleration;
+        (*cmdList)[mecAppId] =  {acceleration, precedingVehicleAddress};
 
         EV << "SafePlatoonController::control() - New acceleration value for " << mecAppId << " [" << newAcceleration << "]" << endl;
     }

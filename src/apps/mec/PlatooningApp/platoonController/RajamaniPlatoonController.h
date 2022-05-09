@@ -51,7 +51,9 @@ protected:
     double computeMemberAcceleration(double speed, double leaderAcceleration, double precedingAcceleration, double leaderSpeed, double precedingSpeed, double distanceToPreceding);
 
     // @brief run the global platoon controller
-    virtual const CommandList* controlPlatoon();
+    virtual CommandList* controlPlatoon();
+    virtual CommandList* controlJoinManoeuvrePlatoon();
+    virtual CommandList* controlLeaveManoeuvrePlatoon();
 
   public:
     RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod = 1.0, double updatePositionPeriod = 1.0, bool isLateral = false);

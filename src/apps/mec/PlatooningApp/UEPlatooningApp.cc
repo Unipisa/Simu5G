@@ -155,10 +155,8 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
         else if(!strcmp(msg->getName(), "sinusoidalMsg"))
         {
             double factor = 3 * cos (180*simTime().dbl() * 3.14 /180);
-            EV << "ACC: " <<factor << endl;
             mobility->setAcceleration(factor);
             emit(accelerationSignal_, mobility->getMaxAcceleration());
-            EV << "ACC: " << mobility->getMaxAcceleration() << endl;
             scheduleAt(simTime()+sinusoidalPeriod_, sinusoidalMsg_);
         }
         else
@@ -202,10 +200,10 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
                 recvLeavePlatoonResponse(msg);
             else if(mePkt->getType() == PLATOON_CMD)
                 recvPlatoonCommand(msg);
-            else if (mePkt->getType() == MANOEUVRE_NOTIFICATION)  // from mec provider app
+            else if (mePkt->getType() == JOIN_MANOEUVRE_NOTIFICATION || mePkt->getType() == LEAVE_MANOEUVRE_NOTIFICATION )  // from mec provider app
                 recvManoeuvreNotification(msg);
-            else if (mePkt->getType() == QUEUED_JOIN_NOTIFICATION)  // from mec provider app
-                recvQueuedJoinNotification(msg);
+            else if (mePkt->getType() == QUEUED_JOIN_NOTIFICATION || mePkt->getType() == QUEUED_LEAVE_NOTIFICATION )  // from mec provider app
+                recvQueuedNotification(msg);
 
             else
                 throw cRuntimeError("UEPlatooningApp::handleMessage - \tFATAL! Error, PlatooningAppPacket type %d not recognized", mePkt->getType());
@@ -349,32 +347,20 @@ void UEPlatooningApp::sendLeavePlatoonRequest()
     EV << "UEPlatooningApp::sendLeavePlatoonRequest() - Leave request sent to the MEC app" << endl;
 }
 
-void UEPlatooningApp::recvQueuedJoinNotification(cMessage* msg)
+void UEPlatooningApp::recvQueuedNotification(cMessage* msg)
 {
     EV << "UEPlatooningApp::recvQueuedJoinNotification() - Queued Join notification from the MEC app" << endl;
 
     // handle response to a previous join request from the MEC application
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto joinResp = packet->peekAtFront<PlatooningQueuedJoinNotificationPacket>();
+    auto notification = packet->peekAtFront<PlatooningNotificationPacket>();
 
-    bool resp = joinResp->getResponse();
+    status_ = (notification->getType() == QUEUED_JOIN_NOTIFICATION) ? QUEUED_JOIN : QUEUED_LEAVE;
+    //updating runtime color of the icon
+    ue->getDisplayString().setTagArg("i",1, notification->getColor());
 
-    // TODO store some local information about the platoon (is this needed? the UE may be unaware of the platoon)
-    if (resp)
-    {
-        status_ = QUEUED_JOIN;
-
-        //updating runtime color of the icon
-        ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
-
-        EV << "UEPlatooningApp::recvQueuedJoinNotification() -  Queued Join notification accepted, platoon index " << joinResp->getControllerId() << endl;
-    }
-    else
-    {
-        EV << "UEPlatooningApp::recvQueuedJoinNotification() - Queued Join notification rejected" << endl;
-
-    }
+    EV << "UEPlatooningApp::recvQueuedJoinNotification() -  Queued notification: " << (notification->getType() == QUEUED_JOIN_NOTIFICATION ? "QUEUED_JOIN_NOTIFICATION" : "QUEUED_LEAVE_NOTIFICATION") << "received " << endl;
 }
 
 
@@ -385,25 +371,13 @@ void UEPlatooningApp::recvManoeuvreNotification(cMessage* msg)
     // handle response to a previous join request from the MEC application
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto joinResp = packet->peekAtFront<PlatooningManoeuvreNotificationPacket>();
+    auto notification = packet->peekAtFront<PlatooningNotificationPacket>();
 
-    bool resp = joinResp->getResponse();
+    status_ = (notification->getType() == JOIN_MANOEUVRE_NOTIFICATION) ? MANOEUVRE_TO_JOIN_PLATOON : MANOEUVRE_TO_LEAVE_PLATOON;
+    //updating runtime color of the icon
+    ue->getDisplayString().setTagArg("i",1, notification->getColor());
 
-    // TODO store some local information about the platoon (is this needed? the UE may be unaware of the platoon)
-    if (resp)
-    {
-        status_ = MANOEUVRE_TO_PLATOON;
-
-        //updating runtime color of the icon
-        ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
-
-        EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manouevre notification accepted, platoon index " << joinResp->getControllerId() << endl;
-    }
-    else
-    {
-        EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manouevre notification rejected" << endl;
-
-    }
+    EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manoeuvre notification: " << (notification->getType() == JOIN_MANOEUVRE_NOTIFICATION ? "MANOEUVRE_TO_JOIN_PLATOON" : "MANOEUVRE_TO_LEAVE_PLATOON") << "received " << endl;
 }
 
 void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
@@ -453,6 +427,14 @@ void UEPlatooningApp::recvLeavePlatoonResponse(cMessage* msg)
     {
         status_ = NOT_JOINED;
 
+        /* Stop changing line, if any
+        * Note: for now it is sopposed that the car con only move along x or y straight lines, not along diagonals
+        *
+        */
+        Coord dir = mobility->getDirection();
+        Coord velocity = dir.multiplyElementwise(mobility->getCurrentVelocity());
+        mobility->setAcceleration(Coord(0.,0.,0.));
+        mobility->setVelocity(velocity);
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, "white");
         emit(lifeCycleEventSignal_, simTime());
@@ -505,7 +487,7 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
     // obtain command from the controller and apply it to the mobility module
 //    if(!par("sinusoidal").boolValue())
 //    {
-    double newAcceleration = cmd->getNewAcceleration();
+    inet::Coord newAcceleration = cmd->getNewAcceleration();
     mobility->setAcceleration(newAcceleration);
     EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
 //    }

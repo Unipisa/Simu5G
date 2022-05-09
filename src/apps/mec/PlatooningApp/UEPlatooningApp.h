@@ -105,7 +105,7 @@ class UEPlatooningApp: public cSimpleModule
     void recvJoinPlatoonResponse(cMessage* msg);
     void recvLeavePlatoonResponse(cMessage* msg);
     void recvManoeuvreNotification(cMessage* msg);
-    void recvQueuedJoinNotification(cMessage* msg);
+    void recvQueuedNotification(cMessage* msg);
     void recvPlatoonCommand(cMessage* msg);
 };
 

@@ -62,4 +62,13 @@ void LinearAccelerationMobility::setAcceleration(double newAcceleration)
     lastAcceleration = direction * acceleration;
 }
 
+void LinearAccelerationMobility::setAcceleration(Coord newAcceleration)
+{
+    acceleration = newAcceleration.length();
+    lastAcceleration = newAcceleration;
+}
 
+void LinearAccelerationMobility::setVelocity(Coord newVelocity)
+{
+    lastVelocity = newVelocity;
+}

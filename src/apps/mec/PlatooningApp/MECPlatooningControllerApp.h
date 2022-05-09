@@ -56,6 +56,8 @@ protected:
     inet::Coord direction_;
 
     ControllerState state_;
+    ManoeuvreType manoeuvreType_;
+
 
     double heartbeatPeriod_;
     cMessage* heartbeatMsg_;
@@ -63,13 +65,21 @@ protected:
     // info about platoon members. The key is the ID of their MEC apps
     PlatoonMembersInfo membersInfo_;
 
-    PlatoonVehicleInfo* maneuvringVehicle_; // one at a time
-    cMessage* maneuvringVehicleJoinMsg_;
+    PlatoonVehicleInfo* joiningVehicle_; // one at a time
+    cMessage* joiningVehicleJoinMsg_;
+
+    PlatoonVehicleInfo* leavingVehicle_; // one at a time
+    cMessage* leavingVehicleJoinMsg_;
+
+
+
 
     // store the id of the vehicles sorted according to their position in the platoon
     std::list<int> platoonPositions_;
 
     cQueue joinRequests_; // cMessage requests;
+    cQueue leaveRequests_; // cMessage requests;
+
 
     double minimumDistanceForManoeuvre_;
 
@@ -159,7 +169,7 @@ protected:
     void sendJoinPlatoonResponse(bool success, int platoonIndex, cMessage* msg);
 
     // @brief handler for request to leave a platoon from the UE
-    void handleLeavePlatoonRequest(cMessage* msg);
+    void handleLeavePlatoonRequest(cMessage* msg, bool fromQueue = false);
     // @brief handler for the notification of a new platoon from a PlatooningProducerApp
 
     //------ handlers for inter-producerApps communication ------//
@@ -176,13 +186,18 @@ protected:
     // Note: only one join request at a time can be managed
     void finalizeJoinPlatoonRequest(cMessage* msg, bool success);
 
+    void finalizeLeavePlatoonRequest(cMessage* msg, bool success);
+
+
     // @brief add a new member to the platoon
     bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
 
-    //@brief this method sends the manoeuvre notification to the MECPlatoonConsumerApp
-    void sendManoeuvreNotification(cMessage* msg);
+    //@brief this method sends a notification to the MECPlatoonConsumerApp (MANOUVRE, QUEUED_JOIN, QUEUED_LEAVE)
+    void sendNotification(cMessage* msg, PlatooningPacketType notification);
     //@brief this method sends the queued join request notification to the MECPlatoonConsumerApp
     void sendQueuedJoinNotification(cMessage* msg);
+    //@brief this method sends the queued leave request notification to the MECPlatoonConsumerApp
+    void sendQueuedLeaveNotification(cMessage* msg);
 
     // @brief invoked by the mecPlatooningProviderApp to update the location of the UEs of a platoon
     void updatePlatoonPositions(std::vector<UEInfo>*);
@@ -224,7 +239,8 @@ protected:
 
     // info about platoon members. The key is the ID of their MEC apps
     PlatoonMembersInfo* getMemberInfo(){ return &membersInfo_;}
-    PlatoonVehicleInfo* getManoeuvringVehicle(){ return maneuvringVehicle_;} // one at a time
+    PlatoonVehicleInfo* getJoiningVehicle(){ return joiningVehicle_;} // one at a time
+    PlatoonVehicleInfo* getLeavingVehicle(){ return leavingVehicle_;} // one at a time
     std::vector<PlatoonVehicleInfo> getPlatoonMembers();
     ControllerState getState() const { return state_;}
 
@@ -232,7 +248,7 @@ protected:
     PlatoonVehicleInfo* getLastPlatoonCar();
 
 
-    void switchState(ControllerState state);
+    void switchState(ControllerState state, ManoeuvreType manoeuvreType = NO_MANOEUVRE);
 
     // store the id of the vehicles sorted according to their position in the platoon
     std::list<int>* getPlatoonPositions(){return &platoonPositions_;}

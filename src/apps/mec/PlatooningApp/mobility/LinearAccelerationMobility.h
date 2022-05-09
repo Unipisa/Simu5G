@@ -41,9 +41,14 @@ class LinearAccelerationMobility : public LinearMobility
     virtual Coord getDirection() { return direction; }
     /** @brief Update the acceleration value*/
     virtual void setAcceleration(double newAcceleration);
+    /** @brief Update the vector acceleration value*/
+    virtual void setAcceleration(Coord newAcceleration);
+    /** @brief Update the vector velocity value*/
+    virtual void setVelocity(Coord newVelocity);
+
     /** @brief Get the absolute value of the acceleration */
     virtual double getMaxAcceleration() const { return acceleration; }
-
+    virtual const Coord& getCurrentAcceleration() override { return lastAcceleration; }
 };
 
 #endif

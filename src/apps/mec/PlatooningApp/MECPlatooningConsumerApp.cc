@@ -22,6 +22,7 @@
 
 #include <fstream>
 
+
 Define_Module(MECPlatooningConsumerApp);
 
 using namespace inet;
@@ -86,6 +87,9 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
     if (!msg->isSelfMessage())
     {
         auto pk = check_and_cast<Packet *>(msg);
+        EV <<  "NNN " << pk->getName() << endl;
+
+        pk->isReceptionEnd();
         auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
 
         if(ueAppSocket.belongsToSocket(msg))
@@ -113,10 +117,10 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
 
             else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
                 handlePlatoonCommand(msg);
-            else if (platooningPkt->getType() == MANOEUVRE_NOTIFICATION)  // from mec provider app
+            else if (platooningPkt->getType() == JOIN_MANOEUVRE_NOTIFICATION || platooningPkt->getType() == LEAVE_MANOEUVRE_NOTIFICATION)  // from mec provider app
                 handleManoeuvreNotification(msg);
-            else if (platooningPkt->getType() == QUEUED_JOIN_NOTIFICATION)  // from mec provider app
-                handleQueuedJoinNotification(msg);
+            else if (platooningPkt->getType() == QUEUED_JOIN_NOTIFICATION || platooningPkt->getType() == QUEUED_LEAVE_NOTIFICATION)  // from mec provider app
+                handleQueuedNotification(msg);
 
             return;
         }
@@ -384,7 +388,7 @@ void MECPlatooningConsumerApp::handleLeavePlatoonRequest(cMessage* msg)
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->removeAtFront<PlatooningLeavePacket>();
 
-    EV << "MECPlatooningConsumerApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningProviderApp" << endl;
+    EV << "MECPlatooningConsumerApp::handleLeavePlatoonRequest - Forward leave request to the MECPlatooningControllerApp" << endl;
 
     // TODO get latest UE position (from the Location Service) and add it to the message for the provider app
 
@@ -432,7 +436,7 @@ void MECPlatooningConsumerApp::handleManoeuvreNotification(cMessage* msg)
     // forward to client
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto manNotification = packet->removeAtFront<PlatooningManoeuvreNotificationPacket>();
+    auto manNotification = packet->removeAtFront<PlatooningNotificationPacket>();
 
     EV << "MECPlatooningConsumerApp::handleManoeuvreNotification - Forward manoeuvre notification to the UE" << endl;
 
@@ -449,14 +453,14 @@ void MECPlatooningConsumerApp::handleManoeuvreNotification(cMessage* msg)
     delete packet;
 }
 
-void MECPlatooningConsumerApp::handleQueuedJoinNotification(cMessage* msg)
+void MECPlatooningConsumerApp::handleQueuedNotification(cMessage* msg)
 {
     // forward to client
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto qJoinNotification = packet->removeAtFront<PlatooningQueuedJoinNotificationPacket>();
+    auto qJoinNotification = packet->removeAtFront<PlatooningNotificationPacket>();
 
-    EV << "MECPlatooningConsumerApp::handleQueuedJoinNotification - Forward queued join notification to the UE" << endl;
+    EV << "MECPlatooningConsumerApp::handleQueuedNotification - Forward queued notification to the UE" << endl;
 
     // if response is True, start to require UE location from Location service (if established)
     // test
