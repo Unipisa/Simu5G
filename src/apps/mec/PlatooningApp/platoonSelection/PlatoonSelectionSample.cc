@@ -58,14 +58,6 @@ PlatoonIndex PlatoonSelectionSample::findBestPlatoon(const int localProducerApp,
     }
     else
     {
-        for(const auto& p : globalControllers )
-        {
-            EV << "producerApp: " << p.first << endl;
-            for(const auto& pp: p.second)
-            {
-                EV << "platoon index: " << pp.first << endl;
-            }
-        }
 
         auto it = globalControllers.find(0); //producerApp 0
         if(it == globalControllers.end())

@@ -22,7 +22,7 @@ class MECPlatooningProducerApp;
 class PlatoonControllerBase;
 
 typedef std::map<int, PlatoonControllerStatus*> ControllerMap;
-typedef std::map<int, std::map<int, PlatoonControllerStatus *> > GlobalAvailablePlatoons;
+typedef std::map<int, const ControllerMap* > GlobalAvailablePlatoons;
 
 
 /*
