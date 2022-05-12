@@ -24,8 +24,8 @@
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 
-using namespace std;
-using namespace omnetpp;
+typedef std::map<int , int> InstructionsPerMsgTypeMap;
+
 
 class MECPlatooningConsumerApp : public MecAppBase
 {
@@ -33,6 +33,8 @@ class MECPlatooningConsumerApp : public MecAppBase
     PlatooningConsumerAppState state_;
 
     int mecPlatoonProducerAppId_;
+
+    InstructionsPerMsgTypeMap msgType2instructions_;
 
     // UDP socket to communicate with the UeApp
     inet::UdpSocket ueAppSocket;
@@ -82,9 +84,11 @@ class MECPlatooningConsumerApp : public MecAppBase
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
+    virtual void handleProcessedMessage(cMessage *msg) override;
     virtual void finish() override;
     virtual void handleSelfMessage(cMessage *msg) override;
+
+    virtual double scheduleNextMsg(cMessage* msg) override;
 
     // @brief handler for data received from the service registry
     virtual void handleMp1Message(int connId) override;
@@ -96,12 +100,6 @@ class MECPlatooningConsumerApp : public MecAppBase
     // @brief multiplexer for data received from a Client app
     virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
-//    virtual void modifySubscription();
-//    virtual void sendSubscription();
-//    virtual void sendDeleteSubscription();
-
-    // @brief sends a GET request to the Location Service to retrieve the location of the UE
-    void requestLocation();
 
     // From MECPlatooningProducerApp
 

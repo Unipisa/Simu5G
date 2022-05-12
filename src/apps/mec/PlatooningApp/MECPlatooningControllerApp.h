@@ -22,15 +22,11 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "apps/mec/PlatooningApp/PlatooningUtils.h"
 #include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningTimer_m.h"
+#include "apps/mec/PlatooningApp/packets/PlatooningTimers_m.h"
 #include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionBase.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 #include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
-
-
-using namespace std;
-using namespace omnetpp;
 
 class PlatoonControllerBase;
 class PlatoonSelectionBase;
@@ -42,7 +38,9 @@ typedef std::map<int, AppEndpoint> ProducerAppMap;
 typedef std::map<int, PlatooningTimer*> PlatooningTimerMap;
 typedef std::map<int, CommandInfo> CommandList;
 typedef std::map<int, PlatoonVehicleInfo> PlatoonMembersInfo;
-typedef std::map<int, std::map<int, PlatoonControllerStatus *> > GlobalAvailablePlatoons;
+typedef std::map<int, const ControllerMap*> GlobalAvailablePlatoons;
+typedef std::map< int, int> InstructionsPerMsgTypeMap;
+
 
 class MECPlatooningControllerApp : public MecAppBase
 {
@@ -58,6 +56,7 @@ protected:
     ControllerState state_;
     ManoeuvreType manoeuvreType_;
 
+    InstructionsPerMsgTypeMap msgType2instructions_;
 
     double heartbeatPeriod_;
     cMessage* heartbeatMsg_;
@@ -70,8 +69,6 @@ protected:
 
     PlatoonVehicleInfo* leavingVehicle_; // one at a time
     cMessage* leavingVehicleJoinMsg_;
-
-
 
 
     // store the id of the vehicles sorted according to their position in the platoon
@@ -141,11 +138,13 @@ protected:
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
+    virtual void handleProcessedMessage(cMessage *msg) override;
     virtual void finish() override;
     virtual void handleSelfMessage(cMessage *msg) override;
     virtual void handleHttpMessage(int connId) override;
     virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
+
+    virtual double scheduleNextMsg(cMessage* msg) override;
 
     // @brief handler for data received from the service registry
     virtual void handleMp1Message(int connId) override;

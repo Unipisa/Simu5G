@@ -80,16 +80,19 @@ void MECPlatooningConsumerApp::initialize(int stage)
     // connect with the service registry
 //    EV << "MECPlatooningConsumerApp::initialize - Initialize connection with the service registry via Mp1" << endl;
 //    connect(&mp1Socket_, mp1Address, mp1Port);
+
+    // fill the map with the number of instructions base on the msg type
+    msgType2instructions_[JOIN_REQUEST] = 25;
+    msgType2instructions_[JOIN_RESPONSE] = 30;
+    msgType2instructions_[PLATOON_CMD] = 10;
 }
 
-void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
+void MECPlatooningConsumerApp::handleProcessedMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
         auto pk = check_and_cast<Packet *>(msg);
-        EV <<  "NNN " << pk->getName() << endl;
 
-        pk->isReceptionEnd();
         auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
 
         if(ueAppSocket.belongsToSocket(msg))
@@ -111,10 +114,8 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
         {
             if (platooningPkt->getType() == JOIN_RESPONSE)  // from mec provider app
                 handleJoinPlatoonResponse(msg);
-
             else if (platooningPkt->getType() == LEAVE_RESPONSE) // from mec provider app
                 handleLeavePlatoonResponse(msg);
-
             else if (platooningPkt->getType() == PLATOON_CMD)  // from mec provider app
                 handlePlatoonCommand(msg);
             else if (platooningPkt->getType() == JOIN_MANOEUVRE_NOTIFICATION || platooningPkt->getType() == LEAVE_MANOEUVRE_NOTIFICATION)  // from mec provider app
@@ -125,7 +126,7 @@ void MECPlatooningConsumerApp::handleMessage(cMessage *msg)
             return;
         }
     }
-    MecAppBase::handleMessage(msg);
+    MecAppBase::handleProcessedMessage(msg);
 }
 
 void MECPlatooningConsumerApp::finish()
@@ -417,10 +418,6 @@ void MECPlatooningConsumerApp::handleJoinPlatoonResponse(cMessage* msg)
 
     EV << "MECPlatooningConsumerApp::handleJoinPlatoonResponse - Forward join response to the UE" << endl;
 
-    // if response is True, start to require UE location from Location service (if established)
-    // test
-    //requestLocation();
-
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(joinResp);
     fwPacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
@@ -439,10 +436,6 @@ void MECPlatooningConsumerApp::handleManoeuvreNotification(cMessage* msg)
     auto manNotification = packet->removeAtFront<PlatooningNotificationPacket>();
 
     EV << "MECPlatooningConsumerApp::handleManoeuvreNotification - Forward manoeuvre notification to the UE" << endl;
-
-    // if response is True, start to require UE location from Location service (if established)
-    // test
-    //requestLocation();
 
     inet::Packet* fwPacket = new Packet (packet->getName());
     fwPacket->insertAtFront(manNotification);
@@ -513,122 +506,26 @@ void MECPlatooningConsumerApp::handlePlatoonCommand(cMessage* msg)
     delete packet;
 }
 
-//void MECPlatooningConsumerApp::modifySubscription()
-//{
-//    std::string body = "{  \"circleNotificationSubscription\": {"
-//                       "\"callbackReference\" : {"
-//                        "\"callbackData\":\"1234\","
-//                        "\"notifyURL\":\"example.com/notification/1234\"},"
-//                       "\"checkImmediate\": \"false\","
-//                        "\"address\": \"" + ueAppAddress.str()+ "\","
-//                        "\"clientCorrelator\": \"null\","
-//                        "\"enteringLeavingCriteria\": \"Leaving\","
-//                        "\"frequency\": 5,"
-//                        "\"radius\": " + std::to_string(radius) + ","
-//                        "\"trackingAccuracy\": 10,"
-//                        "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
-//                        "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
-//                        "}"
-//                        "}\r\n";
-//    std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-//    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-//    Http::sendPutRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
-//}
-//
-//void MECPlatooningConsumerApp::sendSubscription()
-//{
-//    std::string body = "{  \"circleNotificationSubscription\": {"
-//                           "\"callbackReference\" : {"
-//                            "\"callbackData\":\"1234\","
-//                            "\"notifyURL\":\"example.com/notification/1234\"},"
-//                           "\"checkImmediate\": \"false\","
-//                            "\"address\": \"" + ueAppAddress.str()+ "\","
-//                            "\"clientCorrelator\": \"null\","
-//                            "\"enteringLeavingCriteria\": \"Entering\","
-//                            "\"frequency\": 5,"
-//                            "\"radius\": " + std::to_string(radius) + ","
-//                            "\"trackingAccuracy\": 10,"
-//                            "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
-//                            "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
-//                            "}"
-//                            "}\r\n";
-//    std::string uri = "/example/location/v2/subscriptions/area/circle";
-//    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-//
-//    if(par("logger").boolValue())
-//    {
-//        ofstream myfile;
-//        myfile.open ("example.txt", ios::app);
-//        if(myfile.is_open())
-//        {
-//            myfile <<"["<< NOW << "] MEWarningAlertApp - Sent POST circleNotificationSubscription the Location Service \n";
-//            myfile.close();
-//        }
-//    }
-//
-//    Http::sendPostRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
-//}
-//
-//void MECPlatooningConsumerApp::sendDeleteSubscription()
-//{
-//    std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-//    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-//    Http::sendDeleteRequest(&serviceSocket_, host.c_str(), uri.c_str());
-//}
 
 void MECPlatooningConsumerApp::established(int connId)
 {
-//    if(connId == mp1Socket_.getSocketId())
-//    {
-//        EV << "MECPlatooningConsumerApp::established - Mp1Socket"<< endl;
-//
-//        // once the connection with the Service Registry has been established, obtain the
-//        // endPoint (address+port) of the Location Service
-//        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-//        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
-//
-//        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
-//    }
-//    else if (connId == serviceSocket_.getSocketId())
-//    {
-//        EV << "MECPlatooningConsumerApp::established - serviceSocket"<< endl;
-//
-//        //sendGETRequest
-//
-//
-//        // here, the connection with the Location Service has been established
-//        // TODO how to distinguish the service in case this app uses more than one MEC service?
-//    }
-//    else
-//    {
-//        throw cRuntimeError("MECPlatooningConsumerApp::socketEstablished - Socket %d not recognized", connId);
-//    }
 }
 
-void MECPlatooningConsumerApp::requestLocation()
+double MECPlatooningConsumerApp::scheduleNextMsg(cMessage* msg)
 {
-//    //check if the ueAppAddress is specified
-//    if(ueAppAddress.isUnspecified())
-//    {
-//        EV << "MECPlatooningConsumerApp::requestLocation(): The IP address of the UE is unknown" << endl;
-//        return;
-//    }
-//
-//    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
-//    {
-//        EV << "MECPlatooningConsumerApp::requestLocation(): send request to the Location Service" << endl;
-//        std::stringstream uri;
-//        uri << "/example/location/v2/queries/users?address=acr:" << ueAppAddress.str();
-//        std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-//        Http::sendGetRequest(&serviceSocket_, host.c_str(), uri.str().c_str());
-//    }
-//    else
-//    {
-//        EV << "MECPlatooningConsumerApp::requestLocation(): Location Service not connected" << endl;
-//    }
+    if(!msg->isPacket() || strcmp(msg->getName(), "data") == 0)
+        return MecAppBase::scheduleNextMsg(msg);
+
+    int numberOfInstructions;
+    auto pk = check_and_cast<Packet *>(msg);
+    auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
+
+    if(msgType2instructions_.find(platooningPkt->getType()) != msgType2instructions_.end())
+        numberOfInstructions = msgType2instructions_[platooningPkt->getType()];
+    else
+        numberOfInstructions = 20;
+
+    double processingTime = vim->calculateProcessingTime(mecAppId, numberOfInstructions);
+
+    return processingTime;
 }
-
-
-
-
-

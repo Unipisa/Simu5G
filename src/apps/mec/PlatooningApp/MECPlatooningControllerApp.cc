@@ -14,7 +14,7 @@
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/PlatooningApp/packets/CurrentPlatoonRequestTimer_m.h"
+#include "apps/mec/PlatooningApp/packets/PlatooningTimers_m.h"
 #include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
 
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
@@ -63,6 +63,12 @@ MECPlatooningControllerApp::~MECPlatooningControllerApp()
     {
         delete joinRequests_.pop();
     }
+
+    while(!leaveRequests_.isEmpty())
+    {
+        delete leaveRequests_.pop();
+    }
+
     cancelAndDelete(heartbeatMsg_);
 }
 
@@ -110,9 +116,15 @@ void MECPlatooningControllerApp::initialize(int stage)
 //    producerAppEndpoint_[mecAppId] = localProducerAppInfo;
 
    connect(mp1Socket_, mp1Address, mp1Port);
+
+
+   // fill the map with the number of instructions base on the msg type
+   msgType2instructions_[JOIN_REQUEST] = 25;
+   msgType2instructions_[JOIN_RESPONSE] = 30;
+   msgType2instructions_[PLATOON_CMD] = 10;
 }
 
-void MECPlatooningControllerApp::handleMessage(cMessage *msg)
+void MECPlatooningControllerApp::handleProcessedMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
@@ -169,7 +181,7 @@ void MECPlatooningControllerApp::handleMessage(cMessage *msg)
         }
 
     }
-    MecAppBase::handleMessage(msg);
+    MecAppBase::handleProcessedMessage(msg);
 }
 
 void MECPlatooningControllerApp::finish()
@@ -180,6 +192,24 @@ void MECPlatooningControllerApp::finish()
     {
 
     }
+}
+
+double MECPlatooningControllerApp::scheduleNextMsg(cMessage* msg)
+{
+    if(!msg->isPacket() || strcmp(msg->getName(), "data") == 0)
+        return MecAppBase::scheduleNextMsg(msg);
+
+    int numberOfInstructions;
+    auto pk = check_and_cast<Packet *>(msg);
+    auto platooningPkt = pk->peekAtFront<PlatooningAppPacket>();
+
+    if(msgType2instructions_.find(platooningPkt->getType()) != msgType2instructions_.end())
+        numberOfInstructions = msgType2instructions_[platooningPkt->getType()];
+    else
+        return MecAppBase::scheduleNextMsg(msg);
+
+    double processingTime = vim->calculateProcessingTime(mecAppId, numberOfInstructions);
+    return processingTime;
 }
 
 void MECPlatooningControllerApp::handleSelfMessage(cMessage *msg)
@@ -362,7 +392,7 @@ void MECPlatooningControllerApp::handleServiceMessage(int connId)
         if(rspMsg->getCode() == 200) // in response to a successful GET request
         {
             nlohmann::json jsonBody;
-            EV << "MECPlatooningControllerApp::handleServiceMessage - response 200 " << endl;
+            EV << "MECPlatooningControllerApp::handleServiceMessage - response 200 from Socket with Id ["<< connId <<"]" << endl;
 
 //            received_++;
 
@@ -628,13 +658,13 @@ void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool 
 
         platooningProducerAppSocket_.sendTo(pkt, platooningProducerAppEndpoint_.address, platooningProducerAppEndpoint_.port);
 
-        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] added to platoon" << endl;
+        EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] added to platoon" << endl;
     }
 
     else
     {
         req->setColor("red");
-        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] not added to platoon" << endl;
+        EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "] not added to platoon" << endl;
 
     }
 
@@ -644,10 +674,10 @@ void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool 
     responsePacket->insertAtBack(req);
     // TODO look for endpoint in the structure?
     platooningConsumerAppsSocket_.sendTo(responsePacket, consumerAppAddress, consumerAppPort);
-    EV << "MECPlatooningControllerApp::sendJoinPlatoonRequest - Join response sent to MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << endl;
+    EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - Join response sent to MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "]"<< endl;
 
     if(!joinRequests_.isEmpty() && state_ != MANOEUVRE){
-        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - Process next join request" << endl;
+        EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - Process next join request" << endl;
         cMessage* newJoin = check_and_cast<cMessage*>(joinRequests_.pop());
         joiningVehicleJoinMsg_ = nullptr;
         delete joiningVehicle_;
@@ -748,12 +778,14 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
 
     if(state_ == INACTIVE_CONTROLLER || state_ == CRUISE)
     {
-
         if(fromQueue && state_ == CRUISE) // the request was a pending one and there is at least a car in the platoon
         {
             string address = "acr:";
             address += carIpAddress.str();
             sendGetRequest(producerAppId, address);
+
+            switchState(MANOEUVRE, CHECK_POSITION);
+            sendNotification(msg, JOIN_MANOEUVRE_NOTIFICATION);
 
             EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: ASK REQUEST" << endl;
             if(joiningVehicle_ != nullptr)
@@ -774,7 +806,6 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
             info.producerAppId = producerAppId; //for now, after the join it will be set
 
             consumerAppEndpoint_[consumerAppId] = info;
-
         }
 
         else
@@ -813,7 +844,6 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
         {
             EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << "meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
             finalizeJoinPlatoonRequest(msg, false);
-            return;
         }
         else
         {
@@ -916,7 +946,7 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg, bool f
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto leaveReq = packet->peekAtFront<PlatooningLeavePacket>();
     L3Address mecAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
-    int mecAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+    //int mecAppPort = packet->getTag<L4PortInd>()->getSrcPort();
 
     int mecAppId = leaveReq->getConsumerAppId();
 //    int controllerIndex = leaveReq->getControllerId();
@@ -1248,6 +1278,8 @@ void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrl
         cmdList = lateralController_->controlJoinManoeuvrePlatoon();
     else if(manoeuvreType_ == LEAVE_MANOUVRE)
         cmdList = lateralController_->controlLeaveManoeuvrePlatoon();
+    else if(manoeuvreType_ == CHECK_POSITION)
+        cmdList = lateralController_->controlPlatoon();
     else
         throw cRuntimeError("MECPlatooningControllerApp::handleLateralControllerTimer - handleLateralControllerTimer called without being in a manoeuvre state!");
     // TODO the function might end here, the controller will provide the commands as soon as it will be finished
@@ -1366,7 +1398,9 @@ void MECPlatooningControllerApp::requirePlatoonLocations(int producerAppId, cons
     auto producerApp = producerAppEndpoint_.find(producerAppId);
     if(producerApp == producerAppEndpoint_.end())
     {
-        throw cRuntimeError("MECPlatooningControllerApp::sendGetRequest(): producerAppId %d not found", producerAppId);
+//        throw cRuntimeError("MECPlatooningControllerApp::requirePlatoonLocations(): producerAppId %d not found", producerAppId);
+        EV << "MECPlatooningControllerApp::requirePlatoonLocations(): MecPlatooningProducerApp with ID not present, yet" << endl;
+        return;
     }
     // get the Address of the UEs
     std::stringstream ueAddresses;
@@ -1409,7 +1443,9 @@ void MECPlatooningControllerApp::sendGetRequest(int producerAppId, const std::st
     auto producerApp = producerAppEndpoint_.find(producerAppId);
     if(producerApp == producerAppEndpoint_.end())
     {
-        throw cRuntimeError("MECPlatooningControllerApp::sendGetRequest(): producerAppId %d not found", producerAppId);
+//        throw cRuntimeError("MECPlatooningControllerApp::sendGetRequest(): producerAppId %d not found", producerAppId);
+        EV << "MECPlatooningControllerApp::sendGetRequest(): MecPlatooningProducerApp with ID not present, yet" << endl;
+        return;
     }
 
     TcpSocket *sock = producerApp->second.locationServiceSocket;
@@ -1573,7 +1609,7 @@ void MECPlatooningControllerApp::updatePlatoonPositions(std::vector<UEInfo>* ues
         if(mit  == membersInfo_.end())
         {
             // check the manuevring
-            if(state_ == MANOEUVRE && joiningVehicle_ != nullptr)
+            if(manoeuvreType_ == JOIN_MANOUVRE && joiningVehicle_ != nullptr)
             {
                 EV << "PlatoonControllerBase::updatePlatoonPositions - Updating maneuvring vehicle " << endl;
                 joiningVehicle_->setPosition(it->position);
@@ -1581,7 +1617,7 @@ void MECPlatooningControllerApp::updatePlatoonPositions(std::vector<UEInfo>* ues
                 joiningVehicle_->setTimestamp(it->timestamp);
 
             }
-            else if(state_ == CRUISE && joiningVehicle_ != nullptr)
+            else if(manoeuvreType_ == CHECK_POSITION && joiningVehicle_ != nullptr)
             {
                 // is the case where the pending car is waiting for being inserted in the manoeuvre
                 // because its position is not known
@@ -1609,6 +1645,7 @@ void MECPlatooningControllerApp::checkWaitingCarPosition()
     if(lastCar != nullptr && joiningVehicle_->getPosition().distance(lastCar->getPosition()) > minimumDistanceForManoeuvre_)
     {
         EV << "MECPlatooningControllerApp::checkWaitingCarPosition - The car relative to queue join request is " <<  joiningVehicle_->getPosition().distance(lastCar->getPosition()) << " meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << joiningVehicle_->getMecAppId() << "] is rejected!" << endl;
+        switchState(CRUISE);
         finalizeJoinPlatoonRequest(joiningVehicleJoinMsg_, false);
     }
     else
