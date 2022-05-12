@@ -55,24 +55,6 @@ MecAppBase::~MecAppBase()
        // removeSocket(tcpSock);
     }
     // it calls delete, too
-
-    // delete all the messages
-    for(auto &sock : sockets_.getMap())
-    {
-        TcpSocket* tcpSock = (TcpSocket*)sock.second;
-        HttpMessageStatus* msgStatus = (HttpMessageStatus *) tcpSock->getUserData();
-        std::cout << "Deleting httpMessages in socket with sockId " << tcpSock->getSocketId() << std::endl;
-        while(!msgStatus->httpMessageQueue.isEmpty())
-        {
-            std::cout << "Deleting httpMessages message" << std::endl;
-            delete msgStatus->httpMessageQueue.pop();
-        }
-        if(msgStatus->currentMessage != nullptr )
-            delete msgStatus->currentMessage;
-
-    }
-
-    // it calls delete, too
     sockets_.deleteSockets();
 
     cancelAndDelete(processMessage_);
