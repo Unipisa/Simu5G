@@ -380,6 +380,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
     }
     else
     {
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp - A MecApp with id ["<< ueAppID << "] is already present!" << endl;
         MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
         instanceInfo->status = false;
         return instanceInfo;
