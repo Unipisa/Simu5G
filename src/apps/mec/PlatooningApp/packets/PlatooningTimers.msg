@@ -9,6 +9,19 @@
 // and cannot be removed from it.
 //
 
+import inet.networklayer.common.L3Address;
+import apps.mec.PlatooningApp.packets.PlatooningPacket;
+
+//cplusplus {{
+//    #include "inet/common/geometry/common/Coord.h"
+//    using namespace inet;
+//}};
+//
+//class Coord {
+//    @existingClass;
+//}
+
+
 packet PlatooningTimer
 {
    int controllerId; 
@@ -25,4 +38,22 @@ packet ControlTimer extends PlatooningTimer
 packet UpdatePositionTimer extends PlatooningTimer
 {
     
+}
+
+
+packet CurrentPlatoonRequestTimer {
+    double period;
+    int expectedResponses;
+    int receivedResponses;
+	int pendingResponses;
+    int requestId;
+}
+
+
+packet MecAppInstantiationTimer
+{
+    Coord direction;
+    int controllerId;
+    inet::L3Address consumerAppAddress;
+    int consumerAppPort;
 }
