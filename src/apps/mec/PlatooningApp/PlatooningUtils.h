@@ -69,7 +69,10 @@ typedef enum
     JOIN_MANOEUVRE_NOTIFICATION = 22,
     LEAVE_MANOEUVRE_NOTIFICATION = 23,
     QUEUED_JOIN_NOTIFICATION = 24,
-    QUEUED_LEAVE_NOTIFICATION = 25
+    QUEUED_LEAVE_NOTIFICATION = 25,
+
+    CONTROLLER_INSTANTIATION_REQUEST = 26,
+    CONTROLLER_INSTANTIATION_RESPONSE = 27
 } PlatooningPacketType;
 
 typedef enum
@@ -126,7 +129,8 @@ typedef enum
 {
     NO_MANOEUVRE = 0,
     JOIN_MANOUVRE = 1,
-    LEAVE_MANOUVRE = 2
+    LEAVE_MANOUVRE = 2,
+    CHECK_POSITION = 3
 } ManoeuvreType;
 
 //typedef struct
@@ -170,15 +174,21 @@ typedef struct
 } ProducerAppInfo;
 
 
+/*
+ * TODO
+ * This struct is becoming big, think about transform it in a class
+ */
 typedef struct
 {
     int controllerId;
     AppEndpoint controllerEndpoint;
     inet::Coord direction;
     std::vector<PlatoonVehicleInfo> vehicles;
+    std::map<int, ConsumerAppInfo> associatedConsumerApps;
     cModule * pointerToMECPlatooningControllerApp;
     simtime_t lastHeartBeat;
     int mecAppId;
+    bool isInstantiated;
 } PlatoonControllerStatus;
 
 typedef struct

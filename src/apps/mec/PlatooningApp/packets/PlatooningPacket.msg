@@ -124,7 +124,7 @@ class PlatooningAvailablePlatoonsPacket extends PlatooningAppPacket
 {
     int requestId;
     
-	Platoons platoons;
+	const Platoons* platoons;
 }
 
 
@@ -198,6 +198,22 @@ class PlatooningControllerNotificationPacket extends PlatooningAppPacket
    
     Vehicles vehiclesOrder;
  	simtime_t heartbeatTimeStamp;
+ 	
+ 	// used in case of new member notifications
+ 	inet::L3Address consumerAddress;
+    int consumerPort;
+ 	
+}
+
+class PlatooningControllerInstantiationNotificationPacket extends PlatooningAppPacket
+{
+    // request
+    int controllerId;
+    
+    // response
+  	inet::L3Address controllerAddress;
+    int controllerPort; 
+    int result;
 }
 
 

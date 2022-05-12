@@ -55,8 +55,8 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 		double longitudinalControlPeriod @unit(s) = 0.100s; 
 		double longitudinalUpdatePositionPeriod @unit(s) = 0.070s; 
 		
-		double heartbeatPeriod @unit(s) = 1s;
-		
+		double heartbeatPeriod @unit(s) = default(1s);
+		double mecAppInstantiationTime @unit(s) = default(0.5s);
 		bool adjustPosition = false;
 		bool sendBulk = true;
 		

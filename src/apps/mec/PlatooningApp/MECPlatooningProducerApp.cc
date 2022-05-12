@@ -14,10 +14,6 @@
 #include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/PlatooningApp/packets/CurrentPlatoonRequestTimer_m.h"
-#include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
-
-
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
@@ -59,6 +55,18 @@ void MECPlatooningProducerApp::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
+    /*
+     * I am a background MEC App, so the MEC Orchestrator is not used.
+     * I call myself the VIM to register the mec app
+     */
+    if(vim != nullptr)
+    {
+        bool res = vim->registerMecApp(mecAppId, requiredRam, requiredDisk, requiredCpu);
+        if(res  == false)
+            throw cRuntimeError("MECPlatooningProducerApp::initialize - The Mec App cannot by instantiated!");
+    }
+    mecPlatoonControllerAppIdCounter_ = mecAppId + 1;
+
     // create a new selection algorithm
     // TODO read from parameter
     platoonSelection_ = new PlatoonSelectionSample();
@@ -88,6 +96,7 @@ void MECPlatooningProducerApp::initialize(int stage)
 
     updatesDifferences_ = registerSignal("updateDiffs");
 
+    mecAppInstantiationTime_ = par("mecAppInstantiationTime").doubleValue();
 
     EV << "MECPlatooningProducerApp::initialize - MEC application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
@@ -135,7 +144,70 @@ void MECPlatooningProducerApp::initialize(int stage)
    connect(mp1Socket_, mp1Address, mp1Port);
 }
 
-void MECPlatooningProducerApp::handleMessage(cMessage *msg)
+void MECPlatooningProducerApp::finish()
+{
+    MecAppBase::finish();
+    EV << "MECPlatooningProducerApp::finish()" << endl;
+    if(gate("socketOut")->isConnected())
+    {
+
+    }
+}
+
+void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
+{
+    if(strcmp(msg->getName(), "HeartbeatTimer") == 0)
+    {
+        controlHeartbeats();
+    }
+    else if(strcmp(msg->getName(), "MecAppInstantiationTimer") == 0)
+    {
+        MecAppInstantiationTimer *timer = check_and_cast<MecAppInstantiationTimer*>(msg);
+        int controllerId = timer->getControllerId();
+        Coord direction = timer->getDirection();
+
+        auto controller = platoonControllers_.find(controllerId);
+           if(controller == platoonControllers_.end())
+               throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage - Controller with id [%d] not found!", controllerId);
+
+        MecAppInstanceInfo* appInfo = instantiateLocalPlatoon(direction, controllerId);
+        // response
+        L3Address address = appInfo->endPoint.addr;
+        int port = appInfo->endPoint.port;
+        bool result = appInfo->status;
+
+        if(result)
+        {
+            EV << "MECPlatooningProducerApp::handleSelfMessage - MecPlatoonControllerApp for controller with id [" << controllerId << "] has been instantiated" << endl;
+            controller->second->isInstantiated = true;
+            controller->second->controllerEndpoint.address = address;
+            controller->second->controllerEndpoint.port = port;
+            controller->second->mecAppId = appInfo->instanceIntegerId;
+            controller->second->pointerToMECPlatooningControllerApp = appInfo->module;
+         }
+        else
+        {
+            EV << "MECPlatooningProducerApp::handleSelfMessage - MecPlatooninControllerApp for controller with id [" << controllerId << "] has not been instantiated!" << endl;
+            platoonControllers_.erase(controller);
+        }
+
+        /**
+         * For all the pending request, respond to the one related to the controller id
+         */
+
+        auto pendingReqs = instantiatingControllersQueue_.find(controllerId);
+        if(pendingReqs == instantiatingControllersQueue_.end())
+            throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
+
+        int socketPort = port +(int)mecHost->par("maxMECApps") + 1;
+        for(auto& req : pendingReqs->second)
+            finalizeJoinRequest(req, result, address, socketPort, controllerId);
+        delete appInfo;
+        delete msg;
+    }
+}
+
+void MECPlatooningProducerApp::handleProcessedMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage())
     {
@@ -183,6 +255,14 @@ void MECPlatooningProducerApp::handleMessage(cMessage *msg)
             {
                 handleAvailablePlatoonsResponse(msg);
             }
+            else if (platooningPkt->getType() == CONTROLLER_INSTANTIATION_REQUEST)
+            {
+                handleInstantiationNotificationRequest(msg);
+            }
+            else if (platooningPkt->getType() == CONTROLLER_INSTANTIATION_RESPONSE)
+            {
+                handleInstantiationNotificationResponse(msg);
+            }
             else
             {
                 throw cRuntimeError("MECPlatooningProducerApp::handleMessage - packet from platoonProviderApp not recognized");
@@ -211,30 +291,8 @@ void MECPlatooningProducerApp::handleMessage(cMessage *msg)
         }
 
     }
-    MecAppBase::handleMessage(msg);
+    MecAppBase::handleProcessedMessage(msg);
 }
-
-void MECPlatooningProducerApp::finish()
-{
-    MecAppBase::finish();
-    EV << "MECPlatooningProducerApp::finish()" << endl;
-    if(gate("socketOut")->isConnected())
-    {
-
-    }
-}
-
-void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
-{
-    if(strcmp(msg->getName(), "HeartbeatTimer") == 0)
-    {
-        controlHeartbeats();
-
-    }
-}
-
-void MECPlatooningProducerApp::controlHeartbeats()
-{}
 
 void MECPlatooningProducerApp::handleHttpMessage(int connId)
 {
@@ -345,6 +403,7 @@ void MECPlatooningProducerApp::handleControllerNotification(cMessage* msg)
             EV << "MECPlatooningProducerApp::handleControllerNotification: Heartbeat received from controller with id "<< controllerNotification->getControllerId() << ". Update timestamps and vehicles" << endl;
             handleHeartbeat(msg);
         }
+
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
 
@@ -366,6 +425,12 @@ void MECPlatooningProducerApp::handleNewMemberNotification(cMessage* msg)
     {
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+
+        int consumerAppId =  controllerNotification->getConsumerAppId();
+        auto address = controllerNotification->getConsumerAddress();
+        int port = controllerNotification->getConsumerPort();
+        platoon->second->associatedConsumerApps[consumerAppId] = {address, port, -1};
+        EV << "MECPlatooningProducerApp::handleLeaveMemberNotification - MecPlatooningConsumerApp with id ["<< consumerAppId << "] added to the controller with id [" << controllerNotification->getControllerId() << "]" << endl;
     }
     else
     {
@@ -380,8 +445,20 @@ void MECPlatooningProducerApp::handleLeaveMemberNotification(cMessage* msg)
     auto controllerNotification = packet->peekAtFront<PlatooningControllerNotificationPacket>();
 
     auto platoon = platoonControllers_.find(controllerNotification->getControllerId());
-    platoon->second->vehicles = controllerNotification->getVehiclesOrder();
-    platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+
+    if(platoon != platoonControllers_.end())
+    {
+        platoon->second->vehicles = controllerNotification->getVehiclesOrder();
+        platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+        int consumerAppId =  controllerNotification->getConsumerAppId();
+        platoon->second->associatedConsumerApps.erase(consumerAppId);
+        EV << "MECPlatooningProducerApp::handleLeaveMemberNotification - MecPlatooningConsumerApp with id ["<< consumerAppId << "] removed from the controller with id [" << controllerNotification->getControllerId() << "]" << endl;
+    }
+    else
+    {
+        EV << "MECPlatooningProducerApp::handleNewMemberNotification - Controller with id [" << controllerNotification->getControllerId() << "] not found!" << endl;
+    }
+
 
     if(platoon->second->vehicles.size() == 0)
     {
@@ -500,6 +577,12 @@ void MECPlatooningProducerApp::handleDiscoverAndAssociatePlatoonRequest(cMessage
      * to the consumer app
      *
      */
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    L3Address consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+//    int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+//    auto req = packet->removeAtFront<PlatooningAppPacket>();
+//
+//    int consumerAppId = req->getConsumerAppId();
 
     handleDiscoverPlatoonRequest(msg);
 
@@ -507,13 +590,18 @@ void MECPlatooningProducerApp::handleDiscoverAndAssociatePlatoonRequest(cMessage
 
 void MECPlatooningProducerApp::handleAssociatePlatoonRequest(cMessage * msg)
 {
-
     /*
      * This function return the end point of a specific controller requested by the consumer app.
      * It checks if the request is achievable
      * */
-
-    }
+//    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+//    L3Address consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+//    int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+//    auto req = packet->removeAtFront<PlatooningAppPacket>();
+//
+//    int consumerAppId = req->getConsumerAppId();
+// TODO FINISH
+}
 
 
 // From MECPlatooningProducerApp
@@ -527,24 +615,16 @@ void MECPlatooningProducerApp::handleAvailablePlatoonsRequest(cMessage *msg)
     auto req = packet->removeAtFront<PlatooningAvailablePlatoonsPacket>();
 //    int appProducerId = req->getProducerAppId();
 
-//    nlohmann::json jsonPlatoons;
-
-    std::map<int, PlatoonControllerStatus *> platoons;
-    for(const auto& platoon : platoonControllers_)
-    {
-        // TODO imlement this
-        platoons[platoon.first] = platoon.second;
-    }
-    EV << " platoon size: " << platoons.size() << endl;
     req->setType(AVAILABLE_PLATOONS_RESPONSE);
-    req->setPlatoons(platoons);
+    req->setPlatoons(&platoonControllers_);
     req->setProducerAppId(producerAppId_);
 
-    int chunkLen = sizeof(int) + 1 + sizeof(platoons) ;
+    int chunkLen = sizeof(int) + 1 + sizeof(platoonControllers_.size()) ;
     req->setChunkLength(inet::B(chunkLen));
     inet::Packet* responsePacket = new Packet (packet->getName());
     responsePacket->insertAtBack(req);
     responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
     platooningProducerAppsSocket_.sendTo(responsePacket, producerAppAddress, producerAppPort);
 
     delete packet;
@@ -579,7 +659,7 @@ void MECPlatooningProducerApp::handleAvailablePlatoonsResponse(cMessage *msg)
 
     //TODO too many copies?
     auto platoons = response->getPlatoons();
-    if(platoons.size() != 0)
+    if(platoons->size() != 0)
        currentAvailablePlatoons_[appProducerId] = platoons;
 
     if(recvResponses + 1 == currentPlatoonRequestTimer_->getExpectedResponses())
@@ -600,6 +680,90 @@ void MECPlatooningProducerApp::handleAvailablePlatoonsResponse(cMessage *msg)
         currentPlatoonRequestTimer_->setRequestId(0);
         currentAvailablePlatoons_.clear();
     }
+
+    delete packet;
+}
+
+void MECPlatooningProducerApp::handleInstantiationNotificationRequest(cMessage *msg)
+{
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto request = packet->removeAtFront<PlatooningControllerInstantiationNotificationPacket>();
+
+    int controllerId = request->getControllerId();
+    auto controller = platoonControllers_.find(controllerId);
+    if(controller == platoonControllers_.end())
+    {
+        EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - platoon controller with id [" << controllerId <<  "] not present." << endl;
+        request->setType(CONTROLLER_INSTANTIATION_RESPONSE);
+        request->setResult(false);
+
+        inet::Packet* pkt = new inet::Packet("PlatooningControllerInstantiationNotificationPacket");
+
+        pkt->insertAtBack(request);
+        pkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+        auto address = packet->getTag<L3AddressInd>()->getSrcAddress();
+        int port  = packet->getTag<L4PortInd>()->getSrcPort();
+
+        platooningProducerAppsSocket_.sendTo(pkt, address, port);
+
+        delete packet;
+    }
+    else
+    {
+        // if it is already instantiated, send the response
+        if(controller->second->isInstantiated)
+        {
+            request->setType(CONTROLLER_INSTANTIATION_RESPONSE);
+            request->setResult(true);
+            request->setControllerAddress(controller->second->controllerEndpoint.address);
+            request->setControllerPort(controller->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1);
+
+            inet::Packet* pkt = new inet::Packet("PlatooningControllerInstantiationNotificationPacket");
+
+            pkt->insertAtBack(request);
+            pkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+            auto address = packet->getTag<L3AddressInd>()->getSrcAddress();
+            int port  = packet->getTag<L4PortInd>()->getSrcPort();
+
+            platooningProducerAppsSocket_.sendTo(pkt, address, port);
+
+            EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - platoon controller with id [" << controllerId <<  "] has been instantiated."<<
+                    " Send response to the MecPlatooningProducerApp with id [" << request->getProducerAppId() << "]"<< endl;
+            delete packet;
+        }
+        else
+        {
+         // the controller is still under instantiation
+            EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - platoon controller with id [" << controllerId <<  "] is still under instantiation."<<
+                   " Wait for its completion"<< endl;
+            packet->insertAtBack(request); // it has been removed at the begin of this method
+            instantiatingControllersQueue_[controllerId].push_back(msg);
+        }
+    }
+
+}
+
+void MECPlatooningProducerApp::handleInstantiationNotificationResponse(cMessage *msg)
+{
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto request = packet->removeAtFront<PlatooningControllerInstantiationNotificationPacket>();
+
+    int controllerId = request->getControllerId();
+
+    /**
+     * For all the pending request, respond to the one related to the controller id
+     */
+
+    auto pendingReqs = instantiatingControllersQueue_.find(controllerId);
+    if(pendingReqs == instantiatingControllersQueue_.end())
+        throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
+
+    int socketPort = request->getControllerPort();
+    auto address = request->getControllerAddress();
+    for(auto& req : pendingReqs->second)
+        finalizeJoinRequest(req, request->getResult(), address, socketPort, controllerId);
 
     delete packet;
 }
@@ -625,7 +789,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
 
     else if(request->getType() == DISCOVER_ASSOCIATE_PLATOON_REQUEST)
     {
-        auto discoverAssociateMsg = packet->removeAtFront<PlatooningDiscoverAndAssociatePlatoonPacket>();
+        auto discoverAssociateMsg = packet->peekAtFront<PlatooningDiscoverAndAssociatePlatoonPacket>();
         Coord position = discoverAssociateMsg->getLastPosition();
         Coord direction = discoverAssociateMsg->getDirection();
 
@@ -634,7 +798,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
 
         // vars for the response message
         bool success = false;
-        L3Address controllerAddress;
+        L3Address controllerAddress = L3Address();
         int controllerPort = -1;
         int platoonId = -1;
 
@@ -647,18 +811,29 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
             if(index.platoonIndex == -1)
             {
                 // Instantiate a new platoon controller
-                int newPlatoonIndex = instantiateLocalPlatoon(direction);
-                if(newPlatoonIndex >= 0)
-                {
-                    platoonController = platoonControllers_.find(newPlatoonIndex);
-                    if(platoonController != platoonControllers_.end())
-                    {
-                       success = true;
-                       controllerAddress = platoonController->second->controllerEndpoint.address;
-                       controllerPort = platoonController->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1;
-                       platoonId = newPlatoonIndex;
-                    }
-                }
+                int index = nextControllerIndex_++;
+                // add the new controller to the structure
+                PlatoonControllerStatus* newController = new PlatoonControllerStatus;
+                newController->controllerId = index;
+//                newController->controllerEndpoint.address = appInfo->endPoint.addr;
+//                newController->controllerEndpoint.port = appInfo->endPoint.port;
+                newController->direction = direction;
+//                newController->pointerToMECPlatooningControllerApp = appInfo->module;
+//                newController->mecAppId  = appInfo->instanceIntegerId;
+                newController->isInstantiated = false;
+                platoonControllers_[index] = newController;
+
+                packet->insertAtBack(discoverAssociateMsg);
+
+                instantiatingControllersQueue_[index].push_back(msg);
+
+                MecAppInstantiationTimer* timer = new MecAppInstantiationTimer("MecAppInstantiationTimer");
+                timer->setDirection(direction);
+                timer->setControllerId(index);
+
+                scheduleAt(simTime() + mecAppInstantiationTime_, timer);
+                EV << "MECPlatooningProducerApp::handlePendingJoinRequest - A MecPlatoonControllerApp for controller with id [" << index << "] will be instantiated." << endl;
+                return;
 
             }
             else
@@ -667,52 +842,68 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
                 platoonController = platoonControllers_.find(index.platoonIndex);
                 if(platoonController != platoonControllers_.end())
                 {
-                    success = true;
-                    controllerAddress = platoonController->second->controllerEndpoint.address;
-                    controllerPort = platoonController->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1;
-                    platoonId = index.platoonIndex;
+                    if(platoonController->second->isInstantiated)
+                    {
+                        success = true;
+                        controllerAddress = platoonController->second->controllerEndpoint.address;
+                        controllerPort = platoonController->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1;
+                        platoonId = index.platoonIndex;
+                    }
+                    else
+                    {
+                        EV << "MECPlatooningProducerApp::handlePendingJoinRequest - The controller with id [" << index.platoonIndex << "] is in instantiation phase. Wait for its completion." << endl;
+                        // the controller is being instantiated, put the request in the queue
+                        instantiatingControllersQueue_[index.platoonIndex].push_back(msg);
+                        return;
+                    }
                 }
-
             }
         }
         else
         {
-            // find the producer app
+            // find the federated producer app
             auto remoteControllersList = currentAvailablePlatoons_.find(index.producerApp);
-            auto controller = remoteControllersList->second.find(index.platoonIndex);
-            if(controller != remoteControllersList->second.end())
+            auto controller = remoteControllersList->second->find(index.platoonIndex);
+            if(controller != remoteControllersList->second->end())
             {
-                success = true;
-                controllerAddress = controller->second->controllerEndpoint.address;
-                controllerPort = controller->second->controllerEndpoint.port + + (int)mecHost->par("maxMECApps") + 1;
-                platoonId = index.platoonIndex;
+                if(controller->second->isInstantiated)
+                {
+                    success = true;
+                    controllerAddress = controller->second->controllerEndpoint.address;
+                    controllerPort = controller->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1;
+                    platoonId = index.platoonIndex;
+                }
+                else
+                {
+                    EV << "MECPlatooningProducerApp::handlePendingJoinRequest - The MecPlatoonControllerApp for controller with id [" << index.platoonIndex << "] will be instantiated on the MEC system of MecPlatooningProducerApp with id [" << index.producerApp << "]." <<
+                           " Instantiation notification sent."<< endl;
+                    instantiatingControllersQueue_[index.platoonIndex].push_back(msg);
+
+                    // ask the producer app to notify the completion of the controller instantiation
+                    inet::Packet* packet = new Packet("PlatooningControllerInstantiationNotificationPacket");
+                    auto notification = inet::makeShared<PlatooningControllerInstantiationNotificationPacket>();
+                    notification->setType(CONTROLLER_INSTANTIATION_REQUEST);
+                    notification->setConsumerAppId(request->getConsumerAppId());
+                    notification->setControllerId(index.platoonIndex);
+                    notification->setChunkLength(B(20));
+
+                    packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+                    packet->insertAtBack(notification);
+
+                    auto producerApp =  producerAppEndpoint_.find(index.producerApp);
+
+                    platooningProducerAppsSocket_.sendTo(packet, producerApp->second.address, producerApp->second.port);
+                    return;
+                }
             }
             else
             {
+                EV << "MECPlatooningProducerApp::handlePendingJoinRequest - Controller with id [" << index.platoonIndex << "] not found in the federated MecPlatooningProducerApp with id [" << index.producerApp << "]" << endl;
                 success = false;
             }
-
         }
 
-        discoverAssociateMsg->setType(DISCOVER_ASSOCIATE_PLATOON_RESPONSE);
-        discoverAssociateMsg->setResult(success);
-        discoverAssociateMsg->setProducerAppId(producerAppId_);
-        discoverAssociateMsg->setControllerId(platoonId);
-        discoverAssociateMsg->setControllerAddress(controllerAddress);
-        discoverAssociateMsg->setControllerPort(controllerPort);
-        discoverAssociateMsg->setChunkLength(B(20));
-
-        // send the response to the consumer app
-        inet::Packet* responsePacket = new Packet("PlatooningAssociatedPlatoonPacket");
-
-        responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-        responsePacket->insertAtBack(discoverAssociateMsg);
-
-        L3Address address = packet->getTag<L3AddressInd>()->getSrcAddress();
-        int port = packet->getTag<L4PortInd>()->getSrcPort();
-
-        platooningConsumerAppsSocket_.sendTo(responsePacket, address, port);
-
+        finalizeJoinRequest(msg, success, controllerAddress, controllerPort, platoonId);
     }
     else if(request->getType() == ASSOCIATE_PLATOON_REQUEST)
     {
@@ -723,14 +914,89 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
     {
         throw cRuntimeError("MECPlatooningProducerApp::handlePendingJoinRequest - PlatooningAppPacket type %d not valid in this function.", request->getType());
     }
-
-    delete packet; // delete  join packet, it is not useful anymore
     return;
 }
 
-int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
+void MECPlatooningProducerApp::finalizeJoinRequest(cMessage* msg, bool result, L3Address& address, int port, int controllerId)
 {
-    int index = nextControllerIndex_++;
+    EV << "MECPlatooningProducerApp::finalizeJoinRequest - result: " << result << endl;
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    auto baseMsg = packet->peekAtFront<PlatooningAppPacket>();
+
+    // send the response to the consumer app
+    inet::Packet* responsePacket = new Packet("PlatooningAssociatedPlatoonPacket");
+
+    if(baseMsg->getType() == ASSOCIATE_PLATOON_REQUEST)
+    {
+        auto assMsg = packet->removeAtFront<PlatooningAssociatePlatoonPacket>();
+        assMsg->setType(ASSOCIATE_PLATOON_RESPONSE);
+        assMsg->setResult(result);
+        if(result){
+            assMsg->setProducerAppId(producerAppId_);
+            assMsg->setControllerId(controllerId);
+            assMsg->setControllerAddress(address);
+            assMsg->setControllerPort(port);
+        }
+
+        assMsg->setChunkLength(B(20));
+        responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        responsePacket->insertAtBack(assMsg);
+    }
+
+    else if(baseMsg->getType() == DISCOVER_ASSOCIATE_PLATOON_REQUEST)
+    {
+        auto discAndAssMsg = packet->removeAtFront<PlatooningDiscoverAndAssociatePlatoonPacket>();
+        discAndAssMsg->setType(DISCOVER_ASSOCIATE_PLATOON_RESPONSE);
+        discAndAssMsg->setResult(result);
+        if(result){
+            discAndAssMsg->setProducerAppId(producerAppId_);
+            discAndAssMsg->setControllerId(controllerId);
+            discAndAssMsg->setControllerAddress(address);
+            discAndAssMsg->setControllerPort(port);
+        }
+
+        discAndAssMsg->setChunkLength(B(20));
+        responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        responsePacket->insertAtBack(discAndAssMsg);
+    }
+
+    else if(baseMsg->getType() == CONTROLLER_INSTANTIATION_REQUEST)
+    {
+        auto notification = packet->removeAtFront<PlatooningControllerInstantiationNotificationPacket>();
+        notification->setType(CONTROLLER_INSTANTIATION_RESPONSE);
+        notification->setResult(result);
+        if(result){
+            notification->setControllerId(controllerId);
+            notification->setControllerAddress(address);
+            notification->setControllerPort(port);
+        }
+
+        notification->setChunkLength(B(20));
+        responsePacket->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+        responsePacket->insertAtBack(notification);
+
+        // this must be sent to the producer app
+        auto producerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+        int producerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+
+       EV << "MECPlatooningProducerApp::finalizeJoinRequest - sending CONTROLLER_INSTANTIATION_RESPONSE to producerApp with id [" << baseMsg->getProducerAppId() << "]"  << endl;
+
+       platooningProducerAppsSocket_.sendTo(responsePacket, producerAppAddress, producerAppPort);
+       delete packet;
+       return;
+    }
+    auto consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+    int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
+
+    EV << "MECPlatooningProducerApp::finalizeJoinRequest - sending "<< result << " response to MecConsumerApp with id [" << baseMsg->getConsumerAppId() << "]"  << endl;
+
+    platooningConsumerAppsSocket_.sendTo(responsePacket, consumerAppAddress, consumerAppPort);
+
+    delete packet;
+}
+
+MecAppInstanceInfo* MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction, int index)
+{
     Coord dir = direction;
     // TODO
     /*
@@ -757,7 +1023,7 @@ int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
     stringstream moduleType;
     moduleType << path << contName;
 
-    createAppMsg->setUeAppID(mecAppId);
+    createAppMsg->setUeAppID(mecPlatoonControllerAppIdCounter_++);
     createAppMsg->setMEModuleName(contName.c_str());
     createAppMsg->setMEModuleType(moduleType.str().c_str()); //path
 
@@ -772,7 +1038,6 @@ int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
     if(!appInfo->status)
     {
         EV << "MECPlatooningProducerApp::manageLocalPlatoon - something went wrong during MEC app instantiation"<< endl;
-        return -1;
     }
 
     else
@@ -798,28 +1063,23 @@ int MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& direction)
         confMsg->setAdjustPosition(par("adjustPosition").boolValue());
         confMsg->setSendBulk(par("sendBulk").boolValue());
 
-
         confMsg->setChunkLength(inet::B( 2*sizeof(double) + 2*sizeof(int) + 20 ));
         confMsg->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         pkt->insertAtBack(confMsg);
 
         platooningControllerAppsSocket_.sendTo(pkt, appInfo->endPoint.addr, appInfo->endPoint.port);
-
-        // add the new controller to the structure
-        PlatoonControllerStatus* newController = new PlatoonControllerStatus;
-        newController->controllerId = index;
-        newController->controllerEndpoint.address = appInfo->endPoint.addr;
-        newController->controllerEndpoint.port = appInfo->endPoint.port;
-        newController->direction = direction;
-        newController->pointerToMECPlatooningControllerApp = appInfo->module;
-        newController->mecAppId  = appInfo->instanceIntegerId
-                ;
-
-        platoonControllers_[index] = newController;
-        return index;
     }
-
+    return appInfo;
 }
+
+void MECPlatooningProducerApp::controlHeartbeats()
+{
+    /*
+     *
+     * TODO this method check how long is the last heartbeat from a controller.
+     * If timestamp is too old, remove the controller and notify all the associate consumer apps
+     */
+    }
 
 void MECPlatooningProducerApp::established(int connId)
 {
