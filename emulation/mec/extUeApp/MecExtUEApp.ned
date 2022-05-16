@@ -9,21 +9,17 @@
 
 package simu5g.emulation.mec.extUeApp;
 
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
+import inet.node.inet.Router;
 import inet.node.ethernet.Eth10G;
 import simu5g.world.radio.LteChannelControl;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.Upf;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
 import simu5g.nodes.mec.MECHost;
-
-import inet.node.inet.Router;
-
-import inet.visualizer.canvas.integrated.IntegratedCanvasVisualizer;
-
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
 import simu5g.nodes.mec.UALCMP.UALCMP;
 
@@ -41,13 +37,11 @@ network MecExtUEApp
         @display("bgb=805.92,499.56");
 
     submodules:
-//  		visualizer: IntegratedCanvasVisualizer {
-//            @display("p=72.54,425.19598");
-//        }
+
         routingRecorder: RoutingTableRecorder {
             @display("p=690,104.88;is=s");
         }
-        configurator: CellularNetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=556.1875,34.3825");
         }
         channelControl: LteChannelControl {
@@ -94,13 +88,10 @@ network MecExtUEApp
 
         router.pppg++ <--> Eth10G <--> upf.filterGate; 
 
-	//#	mec
+	    //#	mec
         mecHost1.ppp++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> ualcmp.ppp++;
 
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
-
-        
-
 }

@@ -46,7 +46,7 @@ void LteMacEnbD2D::initialize(int stage)
         if (rlcUmType.compare("LteRlcUm") != 0 || !rlcD2dCapable)
             throw cRuntimeError("LteMacEnbD2D::initialize - %s module found, must be LteRlcUmD2D. Aborting", rlcUmType.c_str());
     }
-    else if (stage == INITSTAGE_LOCAL + 1)
+    else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
         Cqi d2dCqi = par("d2dCqi");

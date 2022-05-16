@@ -61,7 +61,7 @@ void ChannelAccess::initialize(int stage)
             hostModule->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         }
     }
-    else if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
+    else if (stage == inet::INITSTAGE_SINGLE_MOBILITY)
     {
         if (!positionUpdateArrived && hostModule->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this))
         {

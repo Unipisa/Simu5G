@@ -52,6 +52,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
         @class(::inet::NetworkInterface);
         @display("i=block/ifcard;bgb=704,443;bgl=3");
+        bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 

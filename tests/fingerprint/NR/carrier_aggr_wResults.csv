@@ -1,5 +1,5 @@
 # workingdir,                            args,                                                  simtimelimit,    fingerprint
-/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCell-CBR-DL -r 0,       5s,              2fc1-c693/s,PASS,
-/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCell-CBR-UL -r 0,       5s,              ff94-5106/s,PASS,
-/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCell-CBR-DL -r 0,       5s,              7ce4-fd73/s,PASS,
-/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCell-CBR-UL -r 0,       5s,              4c8c-04a9/s,PASS,
+/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCell-CBR-DL -r 0,       5s,              eb50-fff9/s,PASS,
+/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCell-CBR-UL -r 0,       5s,              8ef9-ea0f/s,PASS,
+/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCell-CBR-DL -r 0,       5s,              e206-3d38/s,PASS,
+/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCell-CBR-UL -r 0,       5s,              3756-3331/s,PASS,

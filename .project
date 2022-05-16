@@ -3,7 +3,7 @@
 	<name>simu5G</name>
 	<comment></comment>
 	<projects>
-		<project>inet4.3</project>
+		<project>inet4.4</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

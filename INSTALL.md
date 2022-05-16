@@ -8,8 +8,8 @@ Prerequisites
 -------------
 
 You should have a 
-- working OMNeT++ (v6.0pre10 or v6.0pre11) installation. (Download from http://omnetpp.org)
-- working INET-Framework (v4.3.2) installation. (Download from http://inet.omnetpp.org)
+- working OMNeT++ v6.0 installation. (Download from http://omnetpp.org)
+- working INET-Framework (v4.4.0) installation. (Download from http://inet.omnetpp.org)
 
 Make sure your OMNeT++ installation works OK (e.g. try running the samples)
 and it is in the path (to test, try the command "which nedtool"). On
@@ -27,7 +27,7 @@ Building Simu5G from the IDE
 1. Extract the downloaded Simu5G tarball next to the INET directory
    (i.e. into your workspace directory, if you are using the IDE).
 
-2. Start the IDE, and ensure that the 'inet4.3' project is open and correctly built.
+2. Start the IDE, and ensure that the 'inet4.4' project is open and correctly built.
 
 3. Import the project using: File | Import | General | Existing projects into Workspace.
    Then select the workspace dir as the root directory, and be sure NOT to check the

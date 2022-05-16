@@ -11,13 +11,13 @@
 
 package simu5g.emulation.extserver;
 
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.common.CellularNetworkConfigurator;
 import simu5g.nodes.Upf;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
@@ -40,7 +40,7 @@ network ExtServerExample
         routingRecorder: RoutingTableRecorder {
             @display("p=73.38125,130.59375;is=s");
         }
-        configurator: CellularNetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=73.38125,72.1375");
         }
         channelControl: LteChannelControl {
