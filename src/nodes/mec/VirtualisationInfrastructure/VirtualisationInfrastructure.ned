@@ -11,6 +11,8 @@
 
 package simu5g.nodes.mec.VirtualisationInfrastructure;
 
+import inet.common.MessageDispatcher;
+import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
@@ -20,16 +22,9 @@ import inet.applications.contract.IApp;
 import inet.transportlayer.udp.Udp;
 import inet.transportlayer.tcp.Tcp;
 
-import inet.common.MessageDispatcher;
-import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationManager;
-
-import inet.linklayer.contract.IEthernetInterface;
-
-
 // 
 //# VirtualisationInfrastructure
 //
-
 module VirtualisationInfrastructure
 {
     parameters:
@@ -72,30 +67,17 @@ module VirtualisationInfrastructure
             @display("p=61.344,74.976;is=s");
         }
 
-//        // TODO: should not include a routing table
-//        // routing table
-//        routingTable: <routingTableType> like IRoutingTable if routingTableType != "" {
-//            parameters:
-//                @display("p=61.344,124.96;is=s");
-//        }
-
-
-//		bgApp[numBGMecApp]: <> like IApp {
-//            @display("p=551.04,73.8,row,140");
-//        }
-
         //#
         //# ppp modules
         //#
         pppIf[sizeof(ppp)]: PppInterface {
             @display("p=550,508");
         }
-
-
-   	  	//# ethernet interface used for communicating with the MEC service in the MEC platform
-        eth: <default("EthernetInterface")> like IEthernetInterface {
+ 
+        //# interface to the MEC services in the MEC platform
+        pppMecPlatform: PppInterface {
             parameters:
-                @display("p=720,508,row,150;q=txQueue");
+                @display("p=720,508,row,150");
         }
 
         //# ethernet interface used for communicating with external applications in emulation mode
@@ -120,11 +102,6 @@ module VirtualisationInfrastructure
         //#
         //# Transport layer modules and corresponding application modules
         //#
-		// =============== UDP ============== //
-//        virtualisationManager: VirtualisationManager {
-//            @display("p=657,74,row");
-//        }
-
         udp: Udp {
             @display("p=459,217");
         }
@@ -158,11 +135,8 @@ module VirtualisationInfrastructure
         }
 
         //# 
-        //# VirtualisationManager to transport layer connections
-        //#        
-//        virtualisationManager.socketOut --> at.in++;
-//        virtualisationManager.socketIn <-- at.out++;
-
+        //# App layer to transport layer connections
+        //#
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;
 
@@ -186,6 +160,9 @@ module VirtualisationInfrastructure
         ipv4.transportIn <-- tn.out++ if hasIpv4;
         ipv4.transportOut --> tn.in++ if hasIpv4;
 
+        //# 
+        //# Network layer to link layer connections
+        //#
         ipv6.ifIn <-- nl.out++ if hasIpv6;
         ipv6.ifOut --> nl.in++ if hasIpv6;
 
@@ -203,8 +180,7 @@ module VirtualisationInfrastructure
             extEth[i].upperLayerIn <-- nl.out++;
         }
 
-        eth.upperLayerOut --> nl.in++;
-        eth.upperLayerIn <-- nl.out++;
-        eth.phys <--> mePlatform;
-
+        pppMecPlatform.upperLayerOut --> nl.in++;
+        pppMecPlatform.upperLayerIn <-- nl.out++;
+        pppMecPlatform.phys <--> mePlatform;
 }

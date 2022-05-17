@@ -103,7 +103,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     bool found = false;
     for(int i = 0 ; i < interfaceSize ; ++i)
     {
-        if(strcmp("mp1Eth", platformInterfaceTable->getInterface(i)->getInterfaceName()) == 0)
+        if(strcmp("mp1Ppp", platformInterfaceTable->getInterface(i)->getInterfaceName()) == 0)
         {
             mp1Address_ = platformInterfaceTable->getInterface(i)->getIpv4Address();
             mp1Port_ = par("mp1Port");
@@ -113,7 +113,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     if(found == false)
         throw cRuntimeError("VirtualisationInfrastructureManager::initialize - interface for mecPlatform not found!!\n"
-                "has its name [mp1Eth] been changed?");
+                "has its name [mp1Ppp] been changed?");
 
 
     // retrieving all available ME Services loaded

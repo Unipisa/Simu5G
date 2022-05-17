@@ -14,6 +14,7 @@ package simu5g.nodes.mec.MECPlatform;
 
 import inet.common.MessageDispatcher;
 import inet.linklayer.contract.ILoopbackInterface;
+import inet.linklayer.ppp.PppInterface;
 import inet.transportlayer.contract.ITcp;
 import inet.transportlayer.contract.IUdp;
 import inet.linklayer.contract.IEthernetInterface;
@@ -89,10 +90,10 @@ module MECPlatform
                 @display("p=549.81,530.13,row,150;q=txQueue");
         }
         
-        // ethernet interface used for communicating with interal MEC applications in the virtualization infrastructure
-        mp1Eth: <default("EthernetInterface")> like IEthernetInterface {
+        // interface to MEC applications in the virtualization infrastructure
+        mp1Ppp: PppInterface {
             parameters:
-                @display("p=739.23,521.52,row,150;q=txQueue");
+                @display("p=739.23,521.52,row,150");
         }
         
         //# network layer
@@ -202,8 +203,8 @@ module MECPlatform
             lo[i].upperLayerOut --> nl.in++;
         }
 
-        mp1Eth.upperLayerOut --> nl.in++;
-        mp1Eth.upperLayerIn <-- nl.out++;
-        mp1Eth.phys <--> virtInfr;
+        mp1Ppp.upperLayerOut --> nl.in++;
+        mp1Ppp.upperLayerIn <-- nl.out++;
+        mp1Ppp.phys <--> virtInfr;
 
 }
