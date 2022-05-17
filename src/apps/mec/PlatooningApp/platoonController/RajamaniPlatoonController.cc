@@ -12,6 +12,21 @@
 #include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
 #include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
 
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <linux/perf_event.h>
+#include <linux/hw_breakpoint.h>
+#include <asm/unistd.h>
+#include <errno.h>
+#include <stdint.h>
+#include <inttypes.h>
+
+
 RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod, bool isLateral)
     : PlatoonControllerBase(mecPlatooningControllerApp, index, controlPeriod, updatePositionPeriod)
 {
@@ -39,6 +54,27 @@ RajamaniPlatoonController::~RajamaniPlatoonController()
 CommandList* RajamaniPlatoonController::controlPlatoon()
 {
     EV << "RajamaniPlatoonController::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
+
+
+    struct perf_event_attr pea;
+    int fd;
+    long long count;
+
+    memset(&pea, 0, sizeof(struct perf_event_attr));
+    pea.type = PERF_TYPE_HARDWARE;
+    pea.size = sizeof(struct perf_event_attr);
+    pea.config = PERF_COUNT_HW_INSTRUCTIONS;
+    pea.disabled = 1;
+    pea.exclude_kernel = 1;
+    pea.exclude_hv = 1;
+    pea.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID;
+    fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
+    if (fd == -1) {
+       throw cRuntimeError("PERF non funziona");
+    }
+
+    ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+    ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 
     int platoonSize = platoonPositions_->size();
 
@@ -103,57 +139,63 @@ CommandList* RajamaniPlatoonController::controlPlatoon()
         }
     }
 
-    // TODO
-    // suppose the maneuvringVehicle_ can join only at the back of the platoon
-    if(isLateral_)
-    {
-        if(mecPlatooningControllerApp_->getJoiningVehicle() != nullptr && mecPlatooningControllerApp_->getState() == MANOEUVRE)
-        {
-            double speed = mecPlatooningControllerApp_->getJoiningVehicle()->getSpeed();
-            double newAcceleration = 0.0;
-            inet::L3Address precedingVehicleAddress = L3Address();
-            bool endManouvre = false;
-            if(platoonPositions_->size() == 0) //is leader
-            {
-                newAcceleration = computeLeaderAcceleration(speed);
-                endManouvre = true;
-                // add to the platooning structures
+//    // TODO
+//    // suppose the maneuvringVehicle_ can join only at the back of the platoon
+//    if(isLateral_)
+//    {
+//        if(mecPlatooningControllerApp_->getJoiningVehicle() != nullptr && mecPlatooningControllerApp_->getState() == MANOEUVRE)
+//        {
+//            double speed = mecPlatooningControllerApp_->getJoiningVehicle()->getSpeed();
+//            double newAcceleration = 0.0;
+//            inet::L3Address precedingVehicleAddress = L3Address();
+//            bool endManouvre = false;
+//            if(platoonPositions_->size() == 0) //is leader
+//            {
+//                newAcceleration = computeLeaderAcceleration(speed);
+//                endManouvre = true;
+//                // add to the platooning structures
+//
+//            }
+//            else
+//            {
+//                int precedingVehicleId = platoonPositions_->back();
+//                PlatoonVehicleInfo* precedingVehicleInfo = mecPlatooningControllerApp_->getLastPlatoonCar();
+//                int leaderId = platoonPositions_->front();
+//                PlatoonVehicleInfo* leaderVehicleInfo = mecPlatooningControllerApp_->getPlatoonLeader();
+//
+//                double distanceToPreceding = mecPlatooningControllerApp_->getJoiningVehicle()->getPosition().distance(precedingVehicleInfo->getPosition());
+//                double leaderAcceleration = cmdList->at(leaderId).acceleration.length();
+//                double leaderSpeed = leaderVehicleInfo->getSpeed();
+//                double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration.length();
+//                double precedingSpeed = precedingVehicleInfo->getSpeed();
+//
+//                newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
+//                //membersInfo_->at(mecAppId).setAcceleration(newAcceleration);
+//                precedingVehicleAddress = precedingVehicleInfo->getUeAddress();
+//                if(distanceToPreceding <= targetSpacing_ + 1)
+//                {
+//                    EV << "DISTANCE: " << distanceToPreceding << endl;
+//                    endManouvre = true;
+//                }
+//            }
+//
+//            int mecAppId = mecPlatooningControllerApp_->getJoiningVehicle()->getMecAppId();
+//            Coord acceleration = Coord(0.0, 0.0, 0.0);
+//            if(direction_.x != 0) acceleration.x = newAcceleration;
+//            else if(direction_.y != 0) acceleration.y = newAcceleration;
+//
+//            (*cmdList)[mecAppId] = {acceleration, precedingVehicleAddress, endManouvre};
+//            EV << "RajamaniPlatoonController::control() - New acceleration value for the maneuvring vehicle " << mecAppId << " [" << newAcceleration << "]" << endl;
+//
+//            //if it the first car
+//        }
+//    }
 
-            }
-            else
-            {
-                int precedingVehicleId = platoonPositions_->back();
-                PlatoonVehicleInfo* precedingVehicleInfo = mecPlatooningControllerApp_->getLastPlatoonCar();
-                int leaderId = platoonPositions_->front();
-                PlatoonVehicleInfo* leaderVehicleInfo = mecPlatooningControllerApp_->getPlatoonLeader();
+    ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+    read(fd, &count, sizeof(count));
+    close(fd);
 
-                double distanceToPreceding = mecPlatooningControllerApp_->getJoiningVehicle()->getPosition().distance(precedingVehicleInfo->getPosition());
-                double leaderAcceleration = cmdList->at(leaderId).acceleration.length();
-                double leaderSpeed = leaderVehicleInfo->getSpeed();
-                double precedingAcceleration = cmdList->at(precedingVehicleId).acceleration.length();
-                double precedingSpeed = precedingVehicleInfo->getSpeed();
-
-                newAcceleration = computeMemberAcceleration(speed, leaderAcceleration, precedingAcceleration, leaderSpeed, precedingSpeed, distanceToPreceding);
-                //membersInfo_->at(mecAppId).setAcceleration(newAcceleration);
-                precedingVehicleAddress = precedingVehicleInfo->getUeAddress();
-                if(distanceToPreceding <= targetSpacing_ + 1)
-                {
-                    EV << "DISTANCE: " << distanceToPreceding << endl;
-                    endManouvre = true;
-                }
-            }
-
-            int mecAppId = mecPlatooningControllerApp_->getJoiningVehicle()->getMecAppId();
-            Coord acceleration = Coord(0.0, 0.0, 0.0);
-            if(direction_.x != 0) acceleration.x = newAcceleration;
-            else if(direction_.y != 0) acceleration.y = newAcceleration;
-
-            (*cmdList)[mecAppId] = {acceleration, precedingVehicleAddress, endManouvre};
-            EV << "RajamaniPlatoonController::control() - New acceleration value for the maneuvring vehicle " << mecAppId << " [" << newAcceleration << "]" << endl;
-
-            //if it the first car
-        }
-    }
+    EV << "Used " << count << " instructions" << endl;
 
     return cmdList;
 }
