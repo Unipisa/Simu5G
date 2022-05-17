@@ -53,8 +53,8 @@ void LtePhyUe::initialize(int stage)
         else
             minRssi_ = par("minRssi").doubleValue();
 
-        currentMasterRssi_ = 0;
-        candidateMasterRssi_ = 0;
+        currentMasterRssi_ = -999.0;
+        candidateMasterRssi_ = -999.0;
         hysteresisTh_ = 0;
         hysteresisFactor_ = 10;
         handoverDelta_ = 0.00001;
@@ -165,7 +165,11 @@ void LtePhyUe::initialize(int stage)
                 double cellTxPower = cellPhy->getTxPwr();
                 Coord cellPos = cellPhy->getCoord();
 
-                // TODO need to check if the eNodeB uses the same carrier frequency as the UE
+                // check whether the BS supports the carrier frequency used by the UE
+                double ueCarrierFrequency = primaryChannelModel_->getCarrierFrequency();
+                LteChannelModel* cellChannelModel = cellPhy->getChannelModel(ueCarrierFrequency);
+                if (cellChannelModel == nullptr)
+                    continue;
 
                 // build a control info
                 cInfo->setSourceId(cellId);
@@ -174,7 +178,7 @@ void LtePhyUe::initialize(int stage)
                 cInfo->setFrameType(BROADCASTPKT);
                 cInfo->setDirection(DL);
 
-                // get RSSI from the eNB
+                // get RSSI from the BS
                 std::vector<double>::iterator it;
                 double rssi = 0;
                 std::vector<double> rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
@@ -182,7 +186,7 @@ void LtePhyUe::initialize(int stage)
                     rssi += *it;
                 rssi /= rssiV.size();   // compute the mean over all RBs
 
-                EV << "LtePhyUe::initialize - RSSI from eNodeB " << cellId << ": " << rssi << " dB (current candidate eNodeB " << candidateMasterId_ << ": " << candidateMasterRssi_ << " dB" << endl;
+                EV << "LtePhyUe::initialize - RSSI from cell " << cellId << ": " << rssi << " dB (current candidate cell " << candidateMasterId_ << ": " << candidateMasterRssi_ << " dB)" << endl;
 
                 if (rssi > candidateMasterRssi_)
                 {

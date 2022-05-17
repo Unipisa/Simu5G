@@ -174,7 +174,7 @@ class LtePhyBase : public ChannelAccess
         }
 
         if (channelModel_.find(carrierFreq) == channelModel_.end())
-            return NULL;
+            return nullptr;
 
         return channelModel_[carrierFreq];
     }
