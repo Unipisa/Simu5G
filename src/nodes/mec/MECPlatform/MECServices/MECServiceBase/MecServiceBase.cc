@@ -396,14 +396,14 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
 
     /*
      * If the loadGenerator flag is active, it means that arriving FG requests
-     * needs to wait the serving of other requests (i.e. background requests (BG)).
-     * Our implementation supposes BG requests arrive exponentially, but you can
+     * needs to wait until other requests (i.e. background requests (BG)) have been served.
+     * Our implementation assumes BG requests arrive exponentially, but you can
      * manage the load generation as you prefer.
      *
      * When the FG request queue is empty, upon a FG arrive the number of requests
      * already in the system is calculated supposing a M/M/1 system with service mu.
      */
-    if(loadGenerator_ && !currentRequestMessageServed_->isBackgroundRequest())
+    if(loadGenerator_ && currentRequestMessageServed_ != nullptr && !currentRequestMessageServed_->isBackgroundRequest())
     {
         int numOfBGReqs;
 
