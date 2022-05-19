@@ -56,25 +56,25 @@ CommandList* RajamaniPlatoonController::controlPlatoon()
     EV << "RajamaniPlatoonController::controlPlatoon - calculating new acceleration values for all platoon members" << endl;
 
 
-    struct perf_event_attr pea;
-    int fd;
-    long long count;
-
-    memset(&pea, 0, sizeof(struct perf_event_attr));
-    pea.type = PERF_TYPE_HARDWARE;
-    pea.size = sizeof(struct perf_event_attr);
-    pea.config = PERF_COUNT_HW_INSTRUCTIONS;
-    pea.disabled = 1;
-    pea.exclude_kernel = 1;
-    pea.exclude_hv = 1;
-    pea.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID;
-    fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
-    if (fd == -1) {
-       throw cRuntimeError("PERF non funziona");
-    }
-
-    ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-    ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+//    struct perf_event_attr pea;
+//    int fd;
+//    long long count;
+//
+//    memset(&pea, 0, sizeof(struct perf_event_attr));
+//    pea.type = PERF_TYPE_HARDWARE;
+//    pea.size = sizeof(struct perf_event_attr);
+//    pea.config = PERF_COUNT_HW_INSTRUCTIONS;
+//    pea.disabled = 1;
+//    pea.exclude_kernel = 1;
+//    pea.exclude_hv = 1;
+//    pea.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID;
+//    fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
+//    if (fd == -1) {
+//       throw cRuntimeError("PERF non funziona");
+//    }
+//
+//    ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+//    ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 
     int platoonSize = platoonPositions_->size();
 
@@ -191,11 +191,11 @@ CommandList* RajamaniPlatoonController::controlPlatoon()
 //        }
 //    }
 
-    ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-    read(fd, &count, sizeof(count));
-    close(fd);
+//    ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+//    read(fd, &count, sizeof(count));
+//    close(fd);
 
-    EV << "Used " << count << " instructions" << endl;
+//    EV << "Used " << count << " instructions" << endl;
 
     return cmdList;
 }
@@ -274,6 +274,7 @@ CommandList* RajamaniPlatoonController::controlLeaveManoeuvrePlatoon()
 
    if(mecPlatooningControllerApp_->getLeavingVehicle() != nullptr && mecPlatooningControllerApp_->getState() == MANOEUVRE)
    {
+       EV << "RajamaniPlatoonController::controlLeaveManoeuvrePlatoon - controlling the leaving vehicle" << endl;
        PlatoonVehicleInfo* leavingVehicle = mecPlatooningControllerApp_->getLeavingVehicle();
        if(leavingVehicle->getMecAppId() == platoonPositions_->front()) // leader
        {

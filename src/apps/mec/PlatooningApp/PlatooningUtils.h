@@ -104,7 +104,6 @@ typedef enum {
     MANOEUVRE_TO_LEAVE_PLATOON,
     QUEUED_JOIN,
     QUEUED_LEAVE,
-
 } UePlatoonStatus;
 
 
@@ -115,7 +114,6 @@ typedef enum
 
     PLATOON_LATERAL_CONTROL_TIMER = 2,
     PLATOON_LATERAL_UPDATE_POSITION_TIMER = 3,
-
 } PlatooningTimerType;
 
 typedef enum
@@ -159,6 +157,8 @@ typedef struct
     inet::L3Address address;
     int port;
     int producerAppId;
+    UePlatoonStatus status;
+
 } ConsumerAppInfo;
 
 typedef struct
@@ -184,6 +184,7 @@ typedef struct
     AppEndpoint controllerEndpoint;
     inet::Coord direction;
     std::vector<PlatoonVehicleInfo> vehicles;
+    int queuedJoinRequests;
     std::map<int, ConsumerAppInfo> associatedConsumerApps;
     cModule * pointerToMECPlatooningControllerApp;
     simtime_t lastHeartBeat;

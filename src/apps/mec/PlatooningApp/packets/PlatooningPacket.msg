@@ -194,9 +194,13 @@ class PlatooningControllerNotificationPacket extends PlatooningAppPacket
 {
     int notificationType;
     
+    int state;
+    
     int controllerId; 
    
     Vehicles vehiclesOrder;
+    int queuedJoinRequests;
+    
  	simtime_t heartbeatTimeStamp;
  	
  	// used in case of new member notifications

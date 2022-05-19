@@ -424,6 +424,7 @@ void MECPlatooningProducerApp::handleNewMemberNotification(cMessage* msg)
     if(platoon != platoonControllers_.end())
     {
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
+        platoon->second->queuedJoinRequests = controllerNotification->getQueuedJoinRequests();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
 
         int consumerAppId =  controllerNotification->getConsumerAppId();
@@ -449,6 +450,7 @@ void MECPlatooningProducerApp::handleLeaveMemberNotification(cMessage* msg)
     if(platoon != platoonControllers_.end())
     {
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
+        platoon->second->queuedJoinRequests = controllerNotification->getQueuedJoinRequests();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
         int consumerAppId =  controllerNotification->getConsumerAppId();
         platoon->second->associatedConsumerApps.erase(consumerAppId);
@@ -460,7 +462,7 @@ void MECPlatooningProducerApp::handleLeaveMemberNotification(cMessage* msg)
     }
 
 
-    if(platoon->second->vehicles.size() == 0)
+    if(platoon->second->vehicles.size() == 0 && platoon->second->queuedJoinRequests == 0)
     {
         EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: The platoon managed by the controller with Id ["<< controllerNotification->getControllerId() << "] is empty, remove it from the list." << endl;
         DeleteAppMessage* deleteAppMsg = new DeleteAppMessage();
@@ -497,6 +499,33 @@ void MECPlatooningProducerApp::handleHeartbeat(cMessage *msg)
     {
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
+        platoon->second->queuedJoinRequests = controllerNotification->getQueuedJoinRequests();
+
+
+        if(platoon->second->vehicles.size() == 0 && platoon->second->queuedJoinRequests == 0)
+        {
+            EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: The platoon managed by the controller with Id ["<< controllerNotification->getControllerId() << "] is empty, remove it from the list." << endl;
+            DeleteAppMessage* deleteAppMsg = new DeleteAppMessage();
+            deleteAppMsg->setUeAppID(platoon->second->mecAppId);
+            // get MEC platform manager and require mec app instantiation
+            cModule* mecPlatformManagerModule = this->getModuleByPath("^.mecPlatformManager");
+            MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(mecPlatformManagerModule);
+            bool success  = mecpm->terminateMEApp(deleteAppMsg);
+
+            if(success)
+            {
+                EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: Controller with Id ["<< controllerNotification->getControllerId() << "] successfully removed" << endl;
+                delete platoon->second;
+                platoonControllers_.erase(platoon);
+            }
+            else
+            {
+                EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: Controller with Id ["<< controllerNotification->getControllerId() << "] not removed. Some error occurred" << endl;
+
+            }
+
+        }
+
     }
     else
     {
