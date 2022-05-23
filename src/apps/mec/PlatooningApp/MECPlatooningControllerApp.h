@@ -54,6 +54,8 @@ protected:
     inet::Coord direction_;
 
     ControllerState state_;
+    ControllerState oldState_;
+
     ManoeuvreType manoeuvreType_;
 
     InstructionsPerMsgTypeMap msgType2instructions_;
@@ -188,6 +190,9 @@ protected:
     void finalizeLeavePlatoonRequest(cMessage* msg, bool success);
 
 
+    void checkNextRequest();
+
+
     // @brief add a new member to the platoon
     bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
 
@@ -245,7 +250,6 @@ protected:
 
     PlatoonVehicleInfo* getPlatoonLeader();
     PlatoonVehicleInfo* getLastPlatoonCar();
-
 
     void switchState(ControllerState state, ManoeuvreType manoeuvreType = NO_MANOEUVRE);
 

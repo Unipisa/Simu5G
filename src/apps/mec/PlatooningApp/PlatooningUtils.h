@@ -121,6 +121,7 @@ typedef enum
     INACTIVE_CONTROLLER = 0,
     CRUISE = 1,
     MANOEUVRE = 2,
+    CHECK_NEXT_STATE = 3
 } ControllerState;
 
 typedef enum

@@ -681,39 +681,13 @@ void MECPlatooningControllerApp::finalizeJoinPlatoonRequest(cMessage* msg, bool 
     platooningConsumerAppsSocket_.sendTo(responsePacket, consumerAppAddress, consumerAppPort);
     EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - Join response sent to MECPlatooningConsumerApp with id [" << req->getConsumerAppId() << "]"<< endl;
 
-    if(!joinRequests_.isEmpty() && state_ != MANOEUVRE){
-        EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - Process next join request" << endl;
-        cMessage* newJoin = check_and_cast<cMessage*>(joinRequests_.pop());
-        joiningVehicleJoinMsg_ = nullptr;
-        delete joiningVehicle_;
-        joiningVehicle_ = nullptr;
-        handleJoinPlatoonRequest(newJoin, true);
-    }
-    else if(joinRequests_.isEmpty() && state_ != MANOEUVRE)
-    {
-        joiningVehicleJoinMsg_ = nullptr;
-        delete joiningVehicle_;
-        joiningVehicle_ = nullptr;
-        if(membersInfo_.size() > 0)
-        {
-            EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - No other vehicles are waiting, switch to cruise" << endl;
-            switchState(CRUISE); // no other vehicles are waiting, switch to cruise
-
-        }
-        else
-        {
-            EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - No other vehicles are waiting and the platoon is empty, switch to inactive" << endl;
-            switchState(INACTIVE_CONTROLLER);
-            // TODO sendo notification to the producer
-        }
-    }
 
     delete packet; // delete join request
 }
 
-void MECPlatooningControllerApp::switchState(ControllerState state, ManoeuvreType manoeuvreType)
+void MECPlatooningControllerApp::switchState(ControllerState nextState, ManoeuvreType manoeuvreType)
 {
-    EV << "MECPlatooningControllerApp::switchState" << endl;
+    EV << "MECPlatooningControllerApp::switchState- current state: " << state_ << " next state " << nextState << " old state " << oldState_ << endl;
 
     if(controlTimer_ == nullptr)
     {
@@ -724,7 +698,10 @@ void MECPlatooningControllerApp::switchState(ControllerState state, ManoeuvreTyp
         updatePositionTimer_ = new UpdatePositionTimer("PlatooningTimer");
     }
 
-    if(state == CRUISE){
+    if(state_ == CHECK_NEXT_STATE)
+        state_ = oldState_;
+
+    if(nextState == CRUISE && state_ != CRUISE){
         EV << "MECPlatooningControllerApp::switchState - CRUISE " << endl;
         controlTimer_->setType(PLATOON_LONGITUDINAL_CONTROL_TIMER);
         controlTimer_->setPeriod(controlPerdiodLongitudinal_); // it starts with the lateral period.
@@ -733,12 +710,9 @@ void MECPlatooningControllerApp::switchState(ControllerState state, ManoeuvreTyp
         updatePositionTimer_->setType(PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER);
         updatePositionTimer_->setPeriod(updatePositionTimerLongitudinal_); // it starts with the lateral period.
         startTimer(updatePositionTimer_, updatePositionTimerLongitudinal_); // TODO check timing
-
-        state_ = CRUISE;
-        manoeuvreType_ = NO_MANOEUVRE;
     }
 
-    else if(state == MANOEUVRE)
+    else if(nextState == MANOEUVRE  && state_ != MANOEUVRE)
     {
         EV << "MECPlatooningControllerApp::switchState - MANOEUVRE " << endl;
         controlTimer_->setType(PLATOON_LATERAL_CONTROL_TIMER);
@@ -748,20 +722,24 @@ void MECPlatooningControllerApp::switchState(ControllerState state, ManoeuvreTyp
         updatePositionTimer_->setType(PLATOON_LATERAL_UPDATE_POSITION_TIMER);
         updatePositionTimer_->setPeriod(updatePositionTimerLateral_); // it starts with the lateral period.
         startTimer(updatePositionTimer_, updatePositionTimerLateral_); // TODO check timing
-
-        state_ = MANOEUVRE;
-        manoeuvreType_ = manoeuvreType;
     }
 
-    else if(state  == INACTIVE_CONTROLLER)
+    else if(nextState  == INACTIVE_CONTROLLER)
     {
+        stopTimer(nextState == CRUISE ? PLATOON_LONGITUDINAL_CONTROL_TIMER : PLATOON_LATERAL_CONTROL_TIMER);
+        stopTimer(nextState == CRUISE ? PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER : PLATOON_LATERAL_UPDATE_POSITION_TIMER);
+    }
+    else if(nextState == CHECK_NEXT_STATE)
+    {
+//        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_CONTROL_TIMER : PLATOON_LATERAL_CONTROL_TIMER);
+//        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER : PLATOON_LATERAL_UPDATE_POSITION_TIMER);
 
-        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_CONTROL_TIMER : PLATOON_LATERAL_CONTROL_TIMER);
-        stopTimer(state == CRUISE ? PLATOON_LONGITUDINAL_UPDATE_POSITION_TIMER : PLATOON_LATERAL_UPDATE_POSITION_TIMER);
-        state_ = INACTIVE_CONTROLLER;
-        manoeuvreType_ = NO_MANOEUVRE;
     }
 
+    if(state_ != CHECK_NEXT_STATE)
+        oldState_ = state_;
+    state_ = nextState;
+    manoeuvreType_ = manoeuvreType;
 }
 
 void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fromQueue)
@@ -781,68 +759,71 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
 
     EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - Join request arrived from MECPlatooningConsumerApp with id [" << consumerAppId << "] associated to UE [" << carIpAddress.str() << "]" << endl;
 
-    if(state_ == INACTIVE_CONTROLLER || state_ == CRUISE)
+
+    if(state_ == CRUISE || (state_ == CHECK_NEXT_STATE && membersInfo_.size() > 0))
     {
-        if(fromQueue && state_ == CRUISE) // the request was a pending one and there is at least a car in the platoon
+        string address = "acr:";
+        address += carIpAddress.str();
+        sendGetRequest(producerAppId, address);
+
+        sendNotification(msg, JOIN_MANOEUVRE_NOTIFICATION);
+
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: ASK REQUEST" << endl;
+        if(joiningVehicle_ != nullptr)
         {
-            string address = "acr:";
-            address += carIpAddress.str();
-            sendGetRequest(producerAppId, address);
-
-            switchState(MANOEUVRE, CHECK_POSITION);
-            sendNotification(msg, JOIN_MANOEUVRE_NOTIFICATION);
-
-            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: ASK REQUEST" << endl;
-            if(joiningVehicle_ != nullptr)
-            {
-                throw cRuntimeError("MECPlatooningControllerApp::handleJoinPlatoonRequest(): Error, joiningVehicle_ is not null!");
-            }
-
-            joiningVehicle_ = new PlatoonVehicleInfo();
-            joiningVehicle_->setPosition(position);
-            joiningVehicle_->setUeAddress(carIpAddress);
-            joiningVehicle_->setMecAppId(consumerAppId);
-            joiningVehicle_->setProducerAppId(producerAppId);
-            joiningVehicleJoinMsg_ = msg;
-
-            ConsumerAppInfo info;
-            info.address = consumerAppAddress;
-            info.port = consumerAppPort;
-            info.producerAppId = producerAppId; //for now, after the join it will be set
-            info.status = MANOEUVRE_TO_JOIN_PLATOON;
-            consumerAppEndpoint_[consumerAppId] = info;
+            throw cRuntimeError("MECPlatooningControllerApp::handleJoinPlatoonRequest(): Error, joiningVehicle_ is not null!");
         }
 
-        else
-        {
-            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: switching to state MANOEUVRE" << endl;
-            if(joiningVehicle_ != nullptr)
-            {
-                throw cRuntimeError("MECPlatooningControllerApp::handleJoinPlatoonRequest(): Error, joiningVehicle_ is not null!");
-            }
+        joiningVehicle_ = new PlatoonVehicleInfo();
+        joiningVehicle_->setPosition(position);
+        joiningVehicle_->setUeAddress(carIpAddress);
+        joiningVehicle_->setMecAppId(consumerAppId);
+        joiningVehicle_->setProducerAppId(producerAppId);
+        joiningVehicleJoinMsg_ = msg;
 
-            joiningVehicle_ = new PlatoonVehicleInfo();
-            joiningVehicle_->setPosition(position);
-            joiningVehicle_->setUeAddress(carIpAddress);
-            joiningVehicle_->setMecAppId(consumerAppId);
-            joiningVehicle_->setProducerAppId(producerAppId);
-            joiningVehicleJoinMsg_ = msg;
+        ConsumerAppInfo info;
+        info.address = consumerAppAddress;
+        info.port = consumerAppPort;
+        info.producerAppId = producerAppId; //for now, after the join it will be set
+        info.status = MANOEUVRE_TO_JOIN_PLATOON;
+        consumerAppEndpoint_[consumerAppId] = info;
 
-            ConsumerAppInfo info;
-            info.address = consumerAppAddress;
-            info.port = consumerAppPort;
-            info.producerAppId = producerAppId; //for now, after the join it will be set
-            info.status = MANOEUVRE_TO_JOIN_PLATOON;
+        switchState(MANOEUVRE, CHECK_POSITION);
 
-            consumerAppEndpoint_[consumerAppId] = info;
-
-            // START MANOUVRING
-            switchState(MANOEUVRE, JOIN_MANOUVRE);
-            sendNotification(msg, JOIN_MANOEUVRE_NOTIFICATION);
-        }
     }
-    else
+
+    else if (state_ == INACTIVE_CONTROLLER || (state_== CHECK_NEXT_STATE && membersInfo_.size() == 0))
     {
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: switching to state MANOEUVRE" << endl;
+        if(joiningVehicle_ != nullptr)
+        {
+            throw cRuntimeError("MECPlatooningControllerApp::handleJoinPlatoonRequest(): Error, joiningVehicle_ is not null!");
+        }
+
+        joiningVehicle_ = new PlatoonVehicleInfo();
+        joiningVehicle_->setPosition(position);
+        joiningVehicle_->setUeAddress(carIpAddress);
+        joiningVehicle_->setMecAppId(consumerAppId);
+        joiningVehicle_->setProducerAppId(producerAppId);
+        joiningVehicleJoinMsg_ = msg;
+
+        ConsumerAppInfo info;
+        info.address = consumerAppAddress;
+        info.port = consumerAppPort;
+        info.producerAppId = producerAppId; //for now, after the join it will be set
+        info.status = MANOEUVRE_TO_JOIN_PLATOON;
+
+        consumerAppEndpoint_[consumerAppId] = info;
+
+        // START MANOUVRING
+        switchState(MANOEUVRE, JOIN_MANOUVRE);
+        sendNotification(msg, JOIN_MANOEUVRE_NOTIFICATION);
+    }
+
+    else if (state_ == MANOEUVRE)
+    {
+        EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: The Controller is in MANOEUVRE state. The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is queued up" << endl;
+
         // it is already in MANOEUVRE, queue
         // suppose all checks are ok, add the car to the platoon
         PlatoonVehicleInfo* lastCar = getLastPlatoonCar();
@@ -851,10 +832,9 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
             EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest - The car relative to queue join request is " << position.distance(lastCar->getPosition()) << "meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is rejected!" << endl;
             finalizeJoinPlatoonRequest(msg, false);
         }
+
         else
         {
-            EV << "MECPlatooningControllerApp::handleJoinPlatoonRequest: Another car is currently the platoon. The request from MECPlatoonConsumerApp with id [" << consumerAppId << "] is queued up" << endl;
-
             ConsumerAppInfo info;
             info.address = consumerAppAddress;
             info.port = consumerAppPort;
@@ -865,6 +845,7 @@ void MECPlatooningControllerApp::handleJoinPlatoonRequest(cMessage* msg, bool fr
             sendNotification(msg, QUEUED_JOIN_NOTIFICATION);
         }
     }
+
 }
 
 void MECPlatooningControllerApp::sendNotification(cMessage* msg, PlatooningPacketType type)
@@ -979,7 +960,65 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg, bool f
 //
 //    }
 //    else
-    if (consApp->second.status == QUEUED_JOIN)
+    if(consApp->second.status == JOINED || (consApp->second.status == QUEUED_LEAVE && fromQueue))
+    {
+        // QUEUED_LEAVE is marked the first time a leaveReq arrives, but when it is popped form the queue must be handled correctly
+        if(state_ == CRUISE || (state_ == CHECK_NEXT_STATE))
+        {
+            EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - car with MecConsumerApp id [" << mecAppId << " ] is selected for the leaving manoeuvre" << endl;
+            leavingVehicle_ = &membersInfo_.at(mecAppId);
+            leavingVehicleJoinMsg_ = msg;
+            consApp->second.status = MANOEUVRE_TO_LEAVE_PLATOON;
+            switchState(MANOEUVRE, LEAVE_MANOUVRE);
+            sendNotification(msg, LEAVE_MANOEUVRE_NOTIFICATION);
+        }
+        else if(state_ == MANOEUVRE)
+        {
+            if(manoeuvreType_ == JOIN_MANOUVRE || manoeuvreType_ == CHECK_POSITION )
+            {
+                EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - car with MecConsumerApp id [" << mecAppId << " ] is selected for the leaving manoeuvre.\n" <<
+                      "The current joining car is halted." << endl;
+                // TODO inform the joining vehicle to stop?
+                leavingVehicle_ = &membersInfo_.at(mecAppId);
+                leavingVehicleJoinMsg_ = msg;
+                manoeuvreType_ = LEAVE_MANOUVRE;
+
+                int joinMecAppId = joiningVehicle_->getMecAppId();
+
+                auto joinConsApp = consumerAppEndpoint_.find(joinMecAppId);
+                joinConsApp->second.status = QUEUED_JOIN;
+
+                consApp->second.status = MANOEUVRE_TO_LEAVE_PLATOON;
+                sendNotification(msg, LEAVE_MANOEUVRE_NOTIFICATION);
+                sendNotification(joiningVehicleJoinMsg_, QUEUED_JOIN_NOTIFICATION);
+                switchState(MANOEUVRE, LEAVE_MANOUVRE);
+                // Put join request in the join request queue
+                /*
+                 * The message has the initial position info. They are not used from now on, since
+                 * from now on, the next handle join method will ask the service, maybe
+                 */
+                if(joinRequests_.isEmpty())
+                    joinRequests_.insert(joiningVehicleJoinMsg_);
+                else
+                    joinRequests_.insertBefore(joinRequests_.front(), joiningVehicleJoinMsg_);
+
+                // TODO should I delete joiningVehicleJoinMsg_ structure?
+                delete joiningVehicle_;
+                joiningVehicle_ = nullptr;
+                joiningVehicleJoinMsg_  = nullptr;
+            }
+            else if(manoeuvreType_ == LEAVE_MANOUVRE)
+            {
+                EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - An other car with MecPlatoonConsumerApp id [" << leavingVehicle_->getMecAppId() << "] is currently doing a leave manouvre. The car with MecConsumerApp id [" << mecAppId << " ] is queued.\n" << endl;
+                leaveRequests_.insert(msg);
+                consApp->second.status = QUEUED_LEAVE;
+                sendNotification(msg, QUEUED_LEAVE_NOTIFICATION);
+            }
+
+        }
+    }
+
+    else if (consApp->second.status == QUEUED_JOIN)
     {
         EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - The MecPlatoonConsumerApp with id [" << mecAppId  << "] is in QUEUED_JOIN state"<< endl;
         // search in the joinRequests_ queue and remove
@@ -995,10 +1034,11 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg, bool f
                 EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - Leave request from a MecPlatoonConsumerApp with id [" << mecAppId << "] that was waiting for join the platoon. Removed" << endl;
                 joinRequests_.remove(joinMsg);
                 finalizeLeavePlatoonRequest(msg, true);
+                break;
             }
         }
     }
-    else if(consApp->second.status == QUEUED_LEAVE && !fromQueue)
+    else if(consApp->second.status == QUEUED_LEAVE)
     {
         EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - Leave request from a MecPlatoonConsumerApp with id [" << mecAppId << "] is already in QUEUED_LEAVE state."<< endl;
         delete msg;
@@ -1012,8 +1052,9 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg, bool f
         delete joiningVehicleJoinMsg_;
         joiningVehicle_ = nullptr;
         joiningVehicleJoinMsg_  = nullptr;
-        switchState(CRUISE);
         finalizeLeavePlatoonRequest(msg, true);
+
+        checkNextRequest();
     }
     else if(consApp->second.status == MANOEUVRE_TO_LEAVE_PLATOON)
     {
@@ -1021,62 +1062,10 @@ void MECPlatooningControllerApp::handleLeavePlatoonRequest(cMessage* msg, bool f
         delete msg;
         return;
     }
-    else if(consApp->second.status == JOINED || consApp->second.status == QUEUED_LEAVE && fromQueue )
-    {
-        EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - The MecPlatoonConsumerApp with id [" << mecAppId  << "] is in JOINED state"<< endl;
-
-        if(state_ == CRUISE)
-        {
-            EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - car with MecConsumerApp id [" << mecAppId << " ] is selected for the leaving manoeuvre" << endl;
-            leavingVehicle_ = &membersInfo_.at(mecAppId);
-            leavingVehicleJoinMsg_ = msg;
-            consApp->second.status = MANOEUVRE_TO_LEAVE_PLATOON;
-            switchState(MANOEUVRE, LEAVE_MANOUVRE);
-            sendNotification(msg, LEAVE_MANOEUVRE_NOTIFICATION);
-        }
-        else //is manouvre
-       {
-           if(manoeuvreType_ == JOIN_MANOUVRE ||manoeuvreType_ == CHECK_POSITION )
-           {
-               EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - car with MecConsumerApp id [" << mecAppId << " ] is selected for the leaving manoeuvre.\n" <<
-                     "The current joining car is halted." << endl;
-               // TODO inform the joining vehicle to stop?
-               leavingVehicle_ = &membersInfo_.at(mecAppId);
-               leavingVehicleJoinMsg_ = msg;
-               manoeuvreType_ = LEAVE_MANOUVRE;
-               consApp->second.status = MANOEUVRE_TO_LEAVE_PLATOON;
-               sendNotification(msg, LEAVE_MANOEUVRE_NOTIFICATION);
-               sendNotification(joiningVehicleJoinMsg_, QUEUED_JOIN_NOTIFICATION);
-               switchState(MANOEUVRE, LEAVE_MANOUVRE);
-               // Put join request in the join request queue
-               /*
-                * The message has the initial position info. They are not used from now on, since
-                * from now on, the next handle join method will ask the service, maybe
-                */
-               if(joinRequests_.isEmpty())
-                   joinRequests_.insert(joiningVehicleJoinMsg_);
-               else
-                   joinRequests_.insertBefore(joinRequests_.front(), joiningVehicleJoinMsg_);
-
-               // TODO should I delete joiningVehicleJoinMsg_ structure?
-               delete joiningVehicle_;
-               joiningVehicle_ = nullptr;
-               joiningVehicleJoinMsg_  = nullptr;
-           }
-           else if (manoeuvreType_ == LEAVE_MANOUVRE)
-           {
-               EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - An other car with MecPlatoonConsumerApp id [" << leavingVehicle_->getMecAppId() << "] is currently doing a leave manouvre. The car with MecConsumerApp id [" << mecAppId << " ] is queued.\n" << endl;
-               leaveRequests_.insert(msg);
-               consApp->second.status = QUEUED_LEAVE;
-               sendNotification(msg, QUEUED_LEAVE_NOTIFICATION);
-           }
-       }
-    }
-//
     else
     {
 
-        EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - statis of MecConsumerApp with id [" << mecAppId << "] not recognized. " << endl;
+        EV << "MECPlatooningControllerApp::handleLeavePlatoonRequest - status of MecConsumerApp with id [" << mecAppId << "] not recognized. " << endl;
         finalizeLeavePlatoonRequest(msg, false);
     }
 }
@@ -1137,23 +1126,30 @@ void MECPlatooningControllerApp::finalizeLeavePlatoonRequest(cMessage* msg, bool
     platooningConsumerAppsSocket_.sendTo(responsePacket, mecAppAddress, mecAppPort);
     EV << "MECPlatooningControllerApp::finalizeLeavePlatoonRequest - Leave response sent to the UE" << endl;
 
+    delete packet; // delete join request
+}
+
+
+
+void MECPlatooningControllerApp::checkNextRequest()
+{
+    switchState(CHECK_NEXT_STATE);
+    // se il mio stato è manouvre
     // check for other leave requests, or join requests
-    if(!leaveRequests_.isEmpty() && state_ != MANOEUVRE){
+    if(!leaveRequests_.isEmpty()){
         EV << "MECPlatooningControllerApp::finalizeLeavePlatoonRequest - Process next leave request" << endl;
         cMessage* newJoin = check_and_cast<cMessage*>(leaveRequests_.pop());
         leavingVehicleJoinMsg_ = nullptr;
-//        delete leavingVehicle_;
         leavingVehicle_ = nullptr;
         handleLeavePlatoonRequest(newJoin, true);
     }
-    else if(leaveRequests_.isEmpty() && state_ != MANOEUVRE)
+    else if(leaveRequests_.isEmpty())
     {
         leavingVehicleJoinMsg_ = nullptr;
-//        delete leavingVehicle_;
         leavingVehicle_ = nullptr;
 
         // check for joinRequests
-        if(!joinRequests_.isEmpty() && state_ != MANOEUVRE){
+        if(!joinRequests_.isEmpty()){
             EV << "MECPlatooningControllerApp::finalizeLeavePlatoonRequest - Process next join request" << endl;
             cMessage* newJoin = check_and_cast<cMessage*>(joinRequests_.pop());
             joiningVehicleJoinMsg_ = nullptr;
@@ -1161,7 +1157,7 @@ void MECPlatooningControllerApp::finalizeLeavePlatoonRequest(cMessage* msg, bool
             joiningVehicle_ = nullptr;
             handleJoinPlatoonRequest(newJoin, true);
         }
-        else if(joinRequests_.isEmpty() && state_ != MANOEUVRE)
+        else if(joinRequests_.isEmpty())
         {
             joiningVehicleJoinMsg_ = nullptr;
             delete joiningVehicle_;
@@ -1170,7 +1166,6 @@ void MECPlatooningControllerApp::finalizeLeavePlatoonRequest(cMessage* msg, bool
             {
                 EV << "MECPlatooningControllerApp::finalizeJoinPlatoonRequest - No other vehicles are waiting, switch to cruise" << endl;
                 switchState(CRUISE); // no other vehicles are waiting, switch to cruise
-
             }
             else
             {
@@ -1179,23 +1174,8 @@ void MECPlatooningControllerApp::finalizeLeavePlatoonRequest(cMessage* msg, bool
                 // TODO sendo notification to the producer
             }
         }
-//
-//        if(membersInfo_.size() > 0)
-//        {
-//            EV << "MECPlatooningControllerApp::finalizeLeavePlatoonRequest - No other vehicles are waiting, switch to cruise" << endl;
-//            switchState(CRUISE); // no other vehicles are waiting, switch to cruise
-//
-//        }
-//        else
-//        {
-//            EV << "MECPlatooningControllerApp::finalizeLeavePlatoonRequest - No other vehicles are waiting and the platoon is empty, switch to inactive" << endl;
-//            switchState(INACTIVE_CONTROLLER);
-//            // TODO sendo notification to the producer
-//        }
     }
-
-    delete packet; // delete join request
-    }
+}
 
 bool MECPlatooningControllerApp::removePlatoonMember(int mecAppId)
 {
@@ -1229,7 +1209,6 @@ bool MECPlatooningControllerApp::removePlatoonMember(int mecAppId)
     EV << "PlatoonControllerBase::removePlatoonMember - Member [" << mecAppId << "] removed from platoon " << endl;
     return true;
 }
-
 
 void MECPlatooningControllerApp::startTimer(cMessage* msg, double timeOffset)
 {
@@ -1273,7 +1252,7 @@ void MECPlatooningControllerApp::stopTimer(PlatooningTimerType timerType)
         if (controlTimer_ == nullptr)
             throw cRuntimeError("MECPlatooningControllerApp::stopTimer - no active ControlTimer");
         if(!controlTimer_->isScheduled())
-            cancelAndDelete(controlTimer_);
+            cancelEvent(controlTimer_);
         EV << "MECPlatooningControllerApp::stopTimer - ControlTimer for controller " << controllerId_ << "has been stopped" << endl;
     }
     else if (timerType == PLATOON_LATERAL_UPDATE_POSITION_TIMER || timerType == PLATOON_LONGITUDINAL_CONTROL_TIMER)
@@ -1281,7 +1260,7 @@ void MECPlatooningControllerApp::stopTimer(PlatooningTimerType timerType)
         if (updatePositionTimer_ == nullptr)
             throw cRuntimeError("MECPlatooningControllerApp::stopTimer - no active UpdatePositionTimer");
         if(!updatePositionTimer_->isScheduled())
-            cancelAndDelete(updatePositionTimer_);
+            cancelEvent(updatePositionTimer_);
         EV << "MECPlatooningControllerApp::stopTimer - UpdatePositionTimer for controller " << controllerId_ << "has been stopped" << endl;
     }
     else
@@ -1395,8 +1374,9 @@ void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrl
                     if(joiningVehicle_ != nullptr && joiningVehicle_->getMecAppId() == mecAppId)
                     {
                         EV << "MECPlatooningControllerApp::handleControlTimer - is the joining maneuvering vehicle" << endl;
-                        switchState(CRUISE);
                         finalizeJoinPlatoonRequest(joiningVehicleJoinMsg_, it->second.isManouveringEnded);
+
+                        checkNextRequest();
                     }
                 }
                 else
@@ -1404,9 +1384,8 @@ void MECPlatooningControllerApp::handleLateralControllerTimer(ControlTimer* ctrl
                     if(leavingVehicle_ != nullptr && leavingVehicle_->getMecAppId() == mecAppId)
                     {
                         EV << "MECPlatooningControllerApp::handleControlTimer - is the leaving maneuvering vehicle" << endl;
-                        switchState(CRUISE);
                         finalizeLeavePlatoonRequest(leavingVehicleJoinMsg_, it->second.isManouveringEnded);
-
+                        checkNextRequest();
                     }
                 }
             }
@@ -1509,7 +1488,6 @@ void MECPlatooningControllerApp::requirePlatoonLocations(int producerAppId, cons
 
 void MECPlatooningControllerApp::sendGetRequest(int producerAppId, const std::string& ues)
 {
-
     auto producerApp = producerAppEndpoint_.find(producerAppId);
     if(producerApp == producerAppEndpoint_.end())
     {
@@ -1715,8 +1693,8 @@ void MECPlatooningControllerApp::checkWaitingCarPosition()
     if(lastCar != nullptr && joiningVehicle_->getPosition().distance(lastCar->getPosition()) > minimumDistanceForManoeuvre_)
     {
         EV << "MECPlatooningControllerApp::checkWaitingCarPosition - The car relative to queue join request is " <<  joiningVehicle_->getPosition().distance(lastCar->getPosition()) << " meters  far from the platoon!! The request from MECPlatoonConsumerApp with id [" << joiningVehicle_->getMecAppId() << "] is rejected!" << endl;
-        switchState(CRUISE);
         finalizeJoinPlatoonRequest(joiningVehicleJoinMsg_, false);
+        checkNextRequest();
     }
     else
     {
