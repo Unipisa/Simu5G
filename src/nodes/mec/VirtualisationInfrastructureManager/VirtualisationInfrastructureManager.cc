@@ -45,7 +45,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     maxRam = mecHost->par("maxRam").doubleValue();
     maxDisk = mecHost->par("maxDisk").doubleValue();
-    maxCPU = mecHost->par("maxCpuSpeed").doubleValue()*pow(10,6);
+    maxCPU = mecHost->par("maxCpuSpeed").doubleValue() *  pow(10,6);
 
     allocatedRam = 0.0;
     allocatedDisk = 0.0;
@@ -152,9 +152,9 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
 //        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
 //        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppL3Address: " << ueAppAddress.str() << endl;
 
-        double ram = msg->getRequiredRam();
-        double disk = msg->getRequiredDisk();
-        double cpu = msg->getRequiredCpu();
+        double ram = msg->getRequiredRam() * pow(10,6);
+        double disk = msg->getRequiredDisk() * pow(10,6);
+        double cpu = msg->getRequiredCpu() * pow(10,6);
 
         if(isAllocable(ram, disk, cpu))
             allocateResources(ram, disk, cpu);
@@ -239,9 +239,9 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
 //        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
 //        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppL3Address: " << ueAppAddress.str() << endl;
 
-        double ram = msg->getRequiredRam();
-        double disk = msg->getRequiredDisk();
-        double cpu = msg->getRequiredCpu();
+        double ram = msg->getRequiredRam() * pow(10,6);
+        double disk = msg->getRequiredDisk() * pow(10,6);
+        double cpu = msg->getRequiredCpu() * pow(10,6);
 
         if(isAllocable(ram, disk, cpu))
             allocateResources(ram, disk, cpu);
@@ -490,7 +490,7 @@ EV << "VirtualisationInfrastructureManager::findService " << serviceName << endl
     return it - meServices.begin();
 }
 
-bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam, int reqDisk, double reqCpu)
+bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam, int reqDisk, int reqCpu)
 {
     EV << "VirtualisationInfrastructureManager::registerMecApp - RAM: " << reqRam << " CPU: " << reqCpu << " disk: "<< reqDisk<< endl;
     printResources();
@@ -511,13 +511,13 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
         appEntry.resources.cpu = cpu;
         mecAppMap.insert({ueAppID, appEntry});
 
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
-        allocateResources(reqRam, reqDisk, reqCpu);
+        EV << "VirtualisationInfrastructureManager::registerMecApp - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::registerMecApp - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
+        allocateResources(reqRam, reqDisk, cpu);
         return true;
     }
     else{
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources NOT AVAILABLE for independent MecApp with module id " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::registerMecApp - resources NOT AVAILABLE for independent MecApp with module id " << ueAppID  << endl;
         return false;
     }
 }
@@ -526,8 +526,8 @@ bool VirtualisationInfrastructureManager::deRegisterMecApp(int ueAppID)
 {
     if(!mecAppMap.empty() || mecAppMap.find(ueAppID) != mecAppMap.end())
     {
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources DEALLOCATED for MecApp with UEAppId " << ueAppID  << endl;
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
+        EV << "VirtualisationInfrastructureManager::deRegisterMecApp - resources DEALLOCATED for MecApp with UEAppId " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::deRegisterMecApp - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
         deallocateResources(mecAppMap[ueAppID].resources.ram, mecAppMap[ueAppID].resources.disk, mecAppMap[ueAppID].resources.cpu);
         //erasing map entry
         mecAppMap.erase(ueAppID);
@@ -535,7 +535,7 @@ bool VirtualisationInfrastructureManager::deRegisterMecApp(int ueAppID)
     }
     else
     {
-        EV << "VirtualisationInfrastructureManager::handleMEAppResources - NO ALLOCATION FOUND for MecApp with UEAppId id " << ueAppID  << endl;
+        EV << "VirtualisationInfrastructureManager::deRegisterMecApp - NO ALLOCATION FOUND for MecApp with UEAppId id " << ueAppID  << endl;
         return false;
     }
 }
@@ -550,7 +550,7 @@ double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID,
         double time;
         if(scheduling == FAIR_SHARING)
         {
-            double currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
+            double currentSpeed = ueApp->second.resources.cpu *(maxCPU /allocatedCPU);
             time = numOfInstructions/currentSpeed;
         }
         else

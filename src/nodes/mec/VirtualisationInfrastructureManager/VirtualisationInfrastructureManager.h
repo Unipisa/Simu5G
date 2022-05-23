@@ -168,7 +168,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
          * @param reqRam, reqDisk, reqCpu - computation resources needed by the MEC app
          * @return boolean result of the operation
          */
-        bool registerMecApp(int mecAppID, int reqRam, int reqDisk, double reqCpu);
+        bool registerMecApp(int mecAppID, int reqRam, int reqDisk, int reqCpu);
         bool deRegisterMecApp(int mecAppID);
         // ******************************************************************
 

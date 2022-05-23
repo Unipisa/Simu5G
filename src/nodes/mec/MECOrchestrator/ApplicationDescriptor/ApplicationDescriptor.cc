@@ -27,9 +27,9 @@ ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
     appProvider_ = jsonFile["appProvider"];
     appInfoName_ = jsonFile["appInfoName"];
     appDescription_ = jsonFile["appDescription"];
-    virtualResourceDescritor_.cpu  = jsonFile["virtualComputeDescriptor"]["virtualCpu"];
-    virtualResourceDescritor_.disk = pow(10,6) * double(jsonFile["virtualComputeDescriptor"]["virtualDisk"]);   // this quantity is in MB
-    virtualResourceDescritor_.ram  = pow(10,6) * double(jsonFile["virtualComputeDescriptor"]["virtualMemory"]); // this quantity is in MB
+    virtualResourceDescritor_.cpu  = double(jsonFile["virtualComputeDescriptor"]["virtualCpu"]); // this quantity is in MIPS (MillionIPS)
+    virtualResourceDescritor_.disk = double(jsonFile["virtualComputeDescriptor"]["virtualDisk"]);   // this quantity is in MB
+    virtualResourceDescritor_.ram  = double(jsonFile["virtualComputeDescriptor"]["virtualMemory"]); // this quantity is in MB
 
     if(jsonFile.contains("appServiceRequired"))
     {
