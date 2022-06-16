@@ -1,29 +1,23 @@
-In this example the network consists of one UE connected to one gNB, one UPF, 
-one NAT router and a MEC system composed of a MEC host. 
-Both the UE app and the MEC app run outside the simulator. 
-The former injects (and receives) packets through the ExtLowerEthernetInterface module of the UE.
-The external MEC app, instead, communicates with the simulator via the ExtLowerEthernetInterface module
-of the virtualisation infrastructure of the MEC host, as if it were actually deployed on the MEC host.
+In this example the network consists of one UE connected to one gNB and a MEC system composed of a MEC host. 
+The UE app run outside the simulator. The UE injects (and receives) packets through the ExtLowerEthernetInterface
+module of the UE.
+
+We configure the following scenario:
+
+   +++++++++++++++++++++++++     +++++++++++++++++++++++++ 
+   +     Namespace ns1     +     +         Simu5G        +
+   +                       +     +                       +
+   +  Ue App         [veth1]<--->[sim-veth1]             +
+   +            192.168.3.2+     +                       +
+   +                       +     +                       + 
+   +++++++++++++++++++++++++     +++++++++++++++++++++++++
 
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
+The Ue App contacts the DeviceApp within the simulation. The DeviceApp contacts the UALCMP to 
+obtain the IP address/port of the simulated MEC App. Then, the ClientApp subscribes to information from
+the MEC Location Service. The MEC App sends notifications to the ClientApp when the UE enters/leaves a 
+specific geographical zone.
 
-*** NOTE ***
-In order to run an emulation where both the endpoints of a connection are real applications,
-the UE application (e.g. on the UE) needs to use the IP address of the NAT router within the
-simulation as destination address. Such NAT router element will perform Network Address 
-Translation (NAT), according to the rules specified with the corresponding parameter in the 
-INI file. 
-For example, if the client IP address is 192.168.3.2, while the MEC app 
-IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
-   
-    *.router.ipv4.natTable.config = xml("<config> \
-                                            <entry type='prerouting' \
-                                            packetDataFilter='*Ipv4Header and destAddress=~10.0.2.1' \
-                                            srcAddress='192.168.2.1' destAddress='192.168.2.2'/> \
-                                            <entry type='prerouting' \
-                                            packetDataFilter='*Ipv4Header and destAddress=~192.168.2.1' \
-                                            srcAddress='10.0.2.1' destAddress='192.168.3.2'/> \
-                                         </config>")
  
 === HOW TO BUILD AND RUN ===
 
@@ -49,7 +43,23 @@ IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
 	$ make makefiles
 	$ make 
 	 	
+	 	 	
+4) Setup the environment by typing:
+
+    ./setup.sh	 
 	 	
-4) Run the simulation by launching either ./run_wSocket.sh
+
+5) Run the simulation by typing:
+
+    ./run.sh
+   
+6) Launch the UE App:
+
+    (in a new terminal window) sudo ip netns exec ns1 python3 UeApp.py
+    
+     
+7) Clean the environment by typing:
+
+    ./teardown.sh  
 
 ============================

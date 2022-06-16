@@ -2,33 +2,27 @@ ExtClientServer Emulation example
 ---------------------------------
 
 In this example the network consists of one UE connected to one gNB, one UPF, 
-one NAT router, one router, one external (real) server and one external (real) client.
+one router, one external (real) server and one external (real) client.
 
 The external client application (i.e. associated to the UE in the emulation) sends 10MB 
 using TCP to the external server application, traversing the emulated 5G network.
 
-Packets sent needs to be smaller than the MTU of the veth interface (1500 byte by default)
-
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
- 
-*** NOTE ***
-In order to run an emulation where both the endpoints of a connection are real applications,
-the client application (i.e. associated to the UE) must use the IP address of the NAT router 
-within the emulation as destination address. Such NAT router will perform Network Address 
-Translation (NAT), according to the rules specified with the corresponding parameter in the 
-INI file. 
-For example, if the client IP address is 192.168.3.2, while the server
-IP address is 192.168.2.2, the NAT rules on the simulated NAT router are set as:
-   
-    *.router.ipv4.natTable.config = xml("<config> \
-                                            <entry type='prerouting' \
-                                            packetDataFilter='*Ipv4Header and destAddress=~10.0.2.1' \
-                                            srcAddress='192.168.2.1' destAddress='192.168.2.2'/> \
-                                            <entry type='prerouting' \
-                                            packetDataFilter='*Ipv4Header and destAddress=~192.168.2.1' \
-                                            srcAddress='10.0.2.1' destAddress='192.168.3.2'/> \
-                                         </config>")
- 
+
+Communication between the simulator and the host OS is realized using namespaces linked
+together via virtual ethernet (veth) interfaces. 
+In particular, we configure the following scenario:
+
++++++++++++++++++++++++++     +++++++++++++++++++++++++     +++++++++++++++++++++++++
++     Namespace ns1     +     +         Simu5G        +     +     Namespace ns2     +
++                       +     +                       +     +                       +
++  Client App     [veth1]<--->[sim-veth1]   [sim-veth2]<--->[veth2]     Server App  +
++            192.168.2.2+     +                       +     +192.168.3.2            +
++                       +     +                       +     +                       +
++++++++++++++++++++++++++     +++++++++++++++++++++++++     +++++++++++++++++++++++++
+
+Packets sent needs to be smaller than the MTU of the veth interface (1500 bytes by default)
+
  
 How to build and run the emulation 
 ----------------------------------
@@ -54,22 +48,30 @@ How to build and run the emulation
 3) Compile Simu5G from the command line by running (in the root Simu5G folder):
     
     $ . setenv
-	$ make makefiles
-	$ make MODE=release 
+    $ make makefiles
+    $ make MODE=release 
 	 	
+
+4) Setup the environment by typing:
+
+    ./setup.sh	 
 	 	
-4) Run the external server, e.g. use "Iperf" with the following command:
+5) Run the external server for the uplink traffic, e.g. use "Iperf" with the following command (type
+   "man iperf" for options description):
   	    
-  	iperf -s -P 1 -i 1 -p 10021
+  	(in a new terminal window) sudo ip netns exec ns1 iperf -s -P 1 -i 1 -p 10021
+  	
+6) Run the simulation by typing:
 
-5) Run the emulation by launching either
-     
-    ./run_wSocket.sh 
-    
-        or 
-    
-    ./run_wTun.sh 
-
-6) Run the external client, e.g. use "Iperf" with the following command:
+    ./run.sh
+   
+7) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command (type
+   "man iperf" for options description):
   	    
-  	iperf -c 10.0.2.1 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m
+  	(in a new terminal window) sudo ip netns exec ns2 iperf -c 192.168.2.2 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m
+   
+        
+8) Clean the environment by typing:
+
+    ./teardown.sh
+    

@@ -10,7 +10,7 @@
     "virtualMemory":10
     },
 "emulatedMecApplication" :{
-    "ipAddress": "10.0.2.1",
+    "ipAddress": "192.168.2.2",
     "port": 4022
     }
 }

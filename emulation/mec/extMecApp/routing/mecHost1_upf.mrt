@@ -1,0 +1,28 @@
+ifconfig:
+
+# interface to the virtualization infrastructure
+name: pppIf
+    inet_addr: 10.0.5.1
+    Mask: 255.255.255.0
+    MTU: 1500
+    POINTTOPOINT MULTICAST
+
+# interface to the iUpf
+name: ppp0
+    inet_addr: 10.0.4.2
+    Mask: 255.255.255.0
+    MTU: 1500
+    POINTTOPOINT MULTICAST
+
+
+ifconfigend.
+
+route:
+
+#Destination     Gateway          Genmask          Flags  Metric  Iface
+192.168.2.0      *                255.255.255.0    H      0       pppIf
+10.0.6.0         *                255.255.255.0    H      0       pppIf
+0.0.0.0          *                0.0.0.0          G      0       ppp0
+
+routeend.
+

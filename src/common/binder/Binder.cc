@@ -428,6 +428,11 @@ MacNodeId Binder::getMasterNode(MacNodeId slaveId)
     return secondaryNodeToMasterNode_[slaveId];
 }
 
+void Binder::registerMecHost(const inet::L3Address& mecHostAddress)
+{
+    mecHostAddress_.insert(mecHostAddress);
+}
+
 void Binder::registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, const inet::L3Address& gtpAddress)
 {
     mecHostToUpfAddress_[mecHostAddress] = gtpAddress;
@@ -435,7 +440,7 @@ void Binder::registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, co
 
 bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
 {
-    if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
+    if (mecHostAddress_.find(mecHostAddress) == mecHostAddress_.end())
         return false;
     return true;
 }

@@ -630,10 +630,10 @@ void MecServiceBase::removeSubscritions(int connId)
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
         if (it->second->getSocketConnId() == connId) {
-            std::cout << "Remove subscription with id = " << it->second->getSubscriptionId();
+            EV << "Remove subscription with id = " << it->second->getSubscriptionId();
             delete it->second;
             subscriptions_.erase(it++);
-            std::cout << " list length: " << subscriptions_.size() << std::endl;
+            EV << " list length: " << subscriptions_.size() << std::endl;
         } else {
            ++it;
         }

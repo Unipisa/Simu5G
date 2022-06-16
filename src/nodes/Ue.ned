@@ -17,6 +17,7 @@ import inet.common.packet.recorder.PcapRecorder;
 import inet.mobility.contract.IMobility;
 import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.ILoopbackInterface;
+import inet.linklayer.ethernet.contract.IEthernetLayer;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
 import inet.networklayer.contract.IRoutingTable;
@@ -37,7 +38,7 @@ module Ue
 {
     parameters:
         @networkNode();
-        @display("i=device/pocketpc;bgb=860,600");
+        @display("i=device/pocketpc;bgb=858.888,659.568");
         @figure[applicationLayer](type=rectangle; pos=250,6; size=600,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
         @figure[applicationLayer.title](type=text; pos=845,11; anchor=ne; text="application layer");
         @figure[transportLayer](type=rectangle; pos=250,156; size=600,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
@@ -86,7 +87,7 @@ module Ue
         //# Num of PcapRecorders
         int numPcapRecorders = default(0); // no of PcapRecorders
 
-        bool hasRNISupport = default(false); 
+        bool hasRNISupport = default(false);
 
     gates:
         input radioIn @directIn;     // connection to master
@@ -98,25 +99,30 @@ module Ue
         mobility: <default("")> like IMobility if typename != "" {
             @display("p=127.368004,172.26001;is=s");
         }
-        
+
         //# layer submodules (must be ordered from lower to upper layers)
-               
+
         //# link layer 
         lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
             parameters:
-                @display("p=524.272,521.856,row,150");
+                @display("p=503.736,589.50397,row,150");
         }
         cellularNic: <nicType> like ICellularNic {
             nodeType = parent.nodeType;
-            @display("p=374.47998,523.06396");
+            @display("p=355.152,589.50397");
         }
-        
+
         //# ethernet interface used for communicating with external applications in emulation mode
         eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=693.39197,521.856,row,150;q=txQueue");
+                @display("p=674.06396,589.50397,row,150;q=txQueue");
         }
-        
+        encap: <default("EthernetEncapsulation")> like IEthernetLayer if typename != "" {
+            parameters:
+                registerProtocol = true;
+                @display("p=674.06396,496.488");
+        }
+
         //# network layer
         ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
             parameters:
@@ -140,7 +146,7 @@ module Ue
             parameters:
                 @display("p=675,226");
         }
-        
+
         //# app layer 
         app[numApps]: <> like IApp {
             @display("p=374.47998,72.479996,row,140");
@@ -168,7 +174,7 @@ module Ue
 
         //# UeStatsCollector - for MEC
         ueCollector: UeStatsCollector if hasRNISupport {
-            @display("p=171.536,445.75198;is=s");
+            @display("p=126.84,588.296;is=s");
         }
 
     connections allowunconnected:
@@ -225,11 +231,13 @@ module Ue
 
         cellularNic.upperLayerOut --> nl.in++;
         cellularNic.upperLayerIn <-- nl.out++;
-        
+
         for i=0..numEthInterfaces-1 {
-            eth[i].upperLayerOut --> nl.in++;
-            eth[i].upperLayerIn <-- nl.out++;
+            encap.lowerLayerOut --> eth[i].upperLayerIn;
+            encap.lowerLayerIn <-- eth[i].upperLayerOut;
         }
+        encap.upperLayerOut --> nl.in++ if numEthInterfaces != 0;
+        encap.upperLayerIn <-- nl.out++ if numEthInterfaces != 0;
 
         for i=0..numLoInterfaces-1 {
             nl.out++ --> lo[i].upperLayerIn;
@@ -239,5 +247,5 @@ module Ue
         //#
         //# Connections between LTE/NR NIC and the radio medium
         //#
-        cellularNic.radioIn <-- radioIn;        
+        cellularNic.radioIn <-- radioIn;
 }

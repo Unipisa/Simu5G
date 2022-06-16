@@ -5,7 +5,7 @@ from struct import *
 code = 1
 length = 23
 
-devAppAddressPort   = ("192.168.4.1", 4500)
+devAppAddressPort   = ("192.168.3.1", 4500)
 bufferSize  = 50
 
 
@@ -42,7 +42,7 @@ start_msg = start_msg + str.encode(coords)
  
 UDPClientSocket.sendto(start_msg, (ip, int(port)))
  
-print("Message to mec application sent")
+print("Message to mec application sent to {} {}".format(ip, int(port)))
  
 while(True):
     msgFromServer = UDPClientSocket.recvfrom(bufferSize) 

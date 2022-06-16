@@ -156,7 +156,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
     {
         EV << "MecOrchestrator::startMECApp - Application package with AppDId["<< contAppMsg->getAppDId() << "] not onboarded." << endl;
         sendCreateAppContextAck(false, contAppMsg->getRequestId());
-//        throw cRuntimeError("MecOrchestrator::startMECApp - Application package with AppDId[%s] not onboarded", contAppMsg->getAppDId());
     }
 
     const ApplicationDescriptor& desc = it->second;
@@ -226,6 +225,11 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
              appInfo->instanceId = "emulated_" + desc.getAppName();
              newMecApp.isEmulated = true;
 
+             // register the address of the MEC app to the Binder, so as the GTP knows the endpoint (UPF_MEC) where to forward packets to
+             cModule* vi = newMecApp.mecHost->getSubmodule("virtualisationInfrastructure");
+             inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(vi->getFullPath().c_str());
+             inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(newMecApp.mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
+             binder_->registerMecHostUpfAddress(appInfo->endPoint.addr, gtpAddress);
          }
          else
          {
@@ -309,7 +313,6 @@ void MecOrchestrator::stopMECApp(UALCMPMessage* msg){
      if(meAppMap[contextId].isEmulated)
      {
          isTerminated =  mecpm->terminateEmulatedMEApp(deleteAppMsg);
-         std::cout << "terminateEmulatedMEApp with result: " << isTerminated << std::endl;
      }
      else
      {
@@ -495,16 +498,17 @@ void MecOrchestrator::onboardApplicationPackages()
     if(this->hasPar("mecApplicationPackageList") && strcmp(par("mecApplicationPackageList").stringValue(), "")){
 
         char* token = strtok ( (char*) par("mecApplicationPackageList").stringValue(), ", ");            // split by commas
-
         while (token != NULL)
         {
             int len = strlen(token);
-            char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
+            char* buf = new char[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
+            //char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
             strcpy(buf,"ApplicationDescriptors/");
             strcat(buf,token);
             strcat(buf,".json");
             onboardApplicationPackage(buf);
             token = strtok (NULL, ", ");
+            delete[] buf;
         }
     }
     else{

@@ -13,6 +13,7 @@ package simu5g.nodes.mec.VirtualisationInfrastructure;
 
 import inet.common.MessageDispatcher;
 import inet.linklayer.contract.IEthernetInterface;
+import inet.linklayer.ethernet.contract.IEthernetLayer;
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
 import inet.networklayer.ipv4.Ipv4RoutingTable;
@@ -71,21 +72,25 @@ module VirtualisationInfrastructure
         //# ppp modules
         //#
         pppIf[sizeof(ppp)]: PppInterface {
-            @display("p=550,508");
+            @display("p=548.37,660.075");
         }
- 
+
         //# interface to the MEC services in the MEC platform
         pppMecPlatform: PppInterface {
             parameters:
-                @display("p=720,508,row,150");
+                @display("p=761.625,660.075,row,150");
         }
 
         //# ethernet interface used for communicating with external applications in emulation mode
         extEth[numExtEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=302,508,row,150;q=txQueue");
+                @display("p=326.6525,660.075,row,150;q=txQueue");
         }
-
+        encap: <default("EthernetEncapsulation")> like IEthernetLayer if typename != "" {
+            parameters:
+                registerProtocol = true;
+                @display("p=326.6525,511.135");
+        }
 
         //#
         //# Network layer module
@@ -176,9 +181,11 @@ module VirtualisationInfrastructure
         }
 
         for i=0..numExtEthInterfaces-1 {
-            extEth[i].upperLayerOut --> nl.in++;
-            extEth[i].upperLayerIn <-- nl.out++;
+            encap.lowerLayerOut --> extEth[i].upperLayerIn;
+            encap.lowerLayerIn <-- extEth[i].upperLayerOut;
         }
+        encap.upperLayerOut --> nl.in++ if numExtEthInterfaces != 0;
+        encap.upperLayerIn <-- nl.out++ if numExtEthInterfaces != 0;
 
         pppMecPlatform.upperLayerOut --> nl.in++;
         pppMecPlatform.upperLayerIn <-- nl.out++;

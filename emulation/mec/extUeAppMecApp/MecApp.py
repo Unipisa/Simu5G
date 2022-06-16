@@ -40,9 +40,9 @@ print(msg)
 x, y, r = data.decode("utf-8").split(",")
 
 #
-# NOTE. since between UE and MEC app is present the NAT router, the MEC app is able to
-# to know the real address of the UE app only if it is present in the START message.
-# To test this simple scenario a static solution has been used, i.e. I know the address of the UE (10.0.0.1)
+# NOTE. The MEC app is able to know the real address of the UE app only if it is present in the START message.
+# To test this simple scenario a static solution has been used, i.e. I know the address of the UE within the 
+# simulation (i.e., 10.0.0.1)
 ueAddress = "10.0.0.1"
 body =  "{  \"circleNotificationSubscription\": {"\
         "\"callbackReference\" : {"\
@@ -73,7 +73,7 @@ body =  "{  \"circleNotificationSubscription\": {"\
 
 # Use static address of the MEC service, the above method does not works (Response type error on successive instructions
 # It is possible, however, to manually connect to the service registry and retrieve the endpoint
-locationAddress = "10.0.5.2"
+locationAddress = "10.0.6.2"
 locationPort = 10020
 
 pload = "POST /example/location/v2/subscriptions/area/circle HTTP/1.1\r\n"\

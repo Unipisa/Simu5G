@@ -33,10 +33,10 @@ network ExtClientServer_bgCells
 {
     parameters:
         @display("i=block/network2;bgb=796,554.7125;bgi=background/pisa");
-        
+
         // number of BG cells
-        int numBgCells = default(0);  
-    
+        int numBgCells = default(0);
+
     submodules:
         routingRecorder: RoutingTableRecorder {
             @display("p=73.38125,130.59375;is=s");
@@ -56,11 +56,8 @@ network ExtClientServer_bgCells
         router: Router {
             @display("p=223.875,175.36874;i=device/smallrouter");
         }
-        natRouter: Router {
-            @display("p=345.96,175.21199;i=device/smallrouter");
-        }
         upf: Upf {
-            @display("p=460.1875,174.125;is=l");
+            @display("p=460.1875,174.125");
         }
         gnb: gNodeB {
             @display("p=671.625,174.125;is=vl");
@@ -69,11 +66,10 @@ network ExtClientServer_bgCells
             @display("p=670.716,440.81998;is=vl");
         }
         ue: NRUe {
-            @display("p=620.496,309.132");
+            @display("p=670.716,309.132");
         }
 
     connections allowunconnected:
-        router.pppg++ <--> Eth10G <--> natRouter.pppg++;
-        natRouter.pppg++ <--> Eth10G <--> upf.filterGate;
+        router.pppg++ <--> Eth10G <--> upf.filterGate;
         upf.pppg++ <--> Eth10G <--> gnb.ppp;
 }

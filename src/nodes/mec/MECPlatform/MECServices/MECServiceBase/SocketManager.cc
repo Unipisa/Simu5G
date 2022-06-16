@@ -105,7 +105,7 @@ void SocketManager::established(){
 
 void SocketManager::peerClosed()
 {
-    std::cout<<"Closed connection from: " << sock->getRemoteAddress()<< std::endl;
+    EV <<"Closed connection from: " << sock->getRemoteAddress()<< std::endl;
     sock->setState(inet::TcpSocket::PEER_CLOSED);
     service->removeSubscritions(sock->getSocketId()); // if any
 
@@ -124,7 +124,7 @@ void SocketManager::peerClosed()
 
 void SocketManager::closed()
 {
-    std::cout <<"Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
+    EV <<"Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
     sock->setState(inet::TcpSocket::CLOSED);
     service->removeSubscritions(sock->getSocketId());
     service->closeConnection(this);
@@ -132,7 +132,7 @@ void SocketManager::closed()
 
 void SocketManager::failure(int code)
 {
-    std::cout <<"Socket of: " << sock->getRemoteAddress() << " failed. Code: " << code << std::endl;
+    EV <<"Socket of: " << sock->getRemoteAddress() << " failed. Code: " << code << std::endl;
     service->removeSubscritions(sock->getSocketId());
     service->removeConnection(this);
 }

@@ -56,7 +56,7 @@ network ExtServerExample
             @display("p=223.875,175.36874;i=device/smallrouter");
         }
         upf: Upf {
-            @display("p=460.1875,174.125;is=l");
+            @display("p=460.1875,174.125");
         }
         gnb: gNodeB {
             @display("p=671.625,174.125;is=vl");

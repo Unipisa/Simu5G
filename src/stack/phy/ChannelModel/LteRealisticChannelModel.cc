@@ -141,8 +141,8 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
    double attenuation = computePathLoss(sqrDistance, dbp, los);
 
    //    Applying shadowing only if it is enabled by configuration
-   //    log-normal shadowing
-   if (shadowing_)
+      //    log-normal shadowing (not available for background UEs)
+      if (nodeId < BGUE_MIN_ID && shadowing_)
        attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
 
    // update current user position
@@ -189,8 +189,8 @@ double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction 
    double attenuation = computePathLoss(sqrDistance, dbp, los);
 
    //    Applying shadowing only if it is enabled by configuration
-   //    log-normal shadowing
-   if (shadowing_)
+   //    log-normal shadowing (not available for background UEs)
+   if (nodeId < BGUE_MIN_ID && shadowing_)
        attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
 
    // update current user position
@@ -209,6 +209,9 @@ double LteRealisticChannelModel::computeShadowing(double sqrDistance, MacNodeId 
         actualShadowingMap = obtainShadowingMap(nodeId);
     else
         actualShadowingMap = &lastComputedSF_;
+
+    if (actualShadowingMap == nullptr)
+        throw cRuntimeError("LteRealisticChannelModel::computeShadowing - actualShadowingMap not found (nullptr)");
 
     double mean = 0;
     double dbp = 0.0;
@@ -2786,51 +2789,51 @@ double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId n
    if(!enable_extCell_los_)
       los = false;
    double dbp = 0;
-   double attenuation = computePathLoss(dist, dbp, los);
+   double attenuation = LteRealisticChannelModel::computePathLoss(dist, dbp, los);
 
-   //TODO Apply shadowing to each interfering extCell signal
-
-   //    Applying shadowing only if it is enabled by configuration
-   //    log-normal shadowing
-   if (shadowing_)
-   {
-       // double mean = 0;
-
-       //        Get std deviation according to los/nlos and selected scenario
-
-       //        double stdDev = getStdDev(dist < dbp, nodeId);
-       // double time = 0;
-       // double space = 0;
-       double att;
-       //
-       //
-       //        //If the shadowing attenuation has been computed at least one time for this user
-       //        // and the distance traveled by the UE is greated than correlation distance
-       //        if ((NOW - lastComputedSF_.at(nodeId).first).dbl() * speed > correlationDistance_)
-       //        {
-       //            //get the temporal mark of the last computed shadowing attenuation
-       //            time = (NOW - lastComputedSF_.at(nodeId).first).dbl();
-       //
-       //            //compute the traveled distance
-       //            space = time * speed;
-       //
-       //            //Compute shadowing with a EAW (Exponential Average Window) (step1)
-       //            double a = exp(-0.5 * (space / correlationDistance_));
-       //
-       //            //Get last shadowing attenuation computed
-       //            double old = lastComputedSF_.at(nodeId).second;
-       //
-       //            //Compute shadowing with a EAW (Exponential Average Window) (step2)
-       //            att = a * old + sqrt(1 - pow(a, 2)) * normal(getEnvir()->getRNG(0), mean, stdDev);
-       //        }
-       //         if the distance traveled by the UE is smaller than correlation distance shadowing attenuation remain the same
-       //        else
-       {
-           att = lastComputedSF_.at(nodeId).second;
-       }
-       EV << "(" << att << ")";
-       attenuation += att;
-   }
+//   //TODO Apply shadowing to each interfering extCell signal
+//
+//   //    Applying shadowing only if it is enabled by configuration
+//   //    log-normal shadowing
+//   if (shadowing_)
+//   {
+//       // double mean = 0;
+//
+//       //        Get std deviation according to los/nlos and selected scenario
+//
+//       //        double stdDev = getStdDev(dist < dbp, nodeId);
+//       // double time = 0;
+//       // double space = 0;
+//       double att;
+//       //
+//       //
+//       //        //If the shadowing attenuation has been computed at least one time for this user
+//       //        // and the distance traveled by the UE is greated than correlation distance
+//       //        if ((NOW - lastComputedSF_.at(nodeId).first).dbl() * speed > correlationDistance_)
+//       //        {
+//       //            //get the temporal mark of the last computed shadowing attenuation
+//       //            time = (NOW - lastComputedSF_.at(nodeId).first).dbl();
+//       //
+//       //            //compute the traveled distance
+//       //            space = time * speed;
+//       //
+//       //            //Compute shadowing with a EAW (Exponential Average Window) (step1)
+//       //            double a = exp(-0.5 * (space / correlationDistance_));
+//       //
+//       //            //Get last shadowing attenuation computed
+//       //            double old = lastComputedSF_.at(nodeId).second;
+//       //
+//       //            //Compute shadowing with a EAW (Exponential Average Window) (step2)
+//       //            att = a * old + sqrt(1 - pow(a, 2)) * normal(getEnvir()->getRNG(0), mean, stdDev);
+//       //        }
+//       //         if the distance traveled by the UE is smaller than correlation distance shadowing attenuation remain the same
+//       //        else
+//       {
+//           att = lastComputedSF_.at(nodeId).second;
+//       }
+//       EV << "(" << att << ")";
+//       attenuation += att;
+//   }
 
    return attenuation;
 }

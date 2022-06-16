@@ -8,8 +8,17 @@ The external server sends 10MB to ue1 using TCP (in the downlink), whereas
 ue2 sends 10MB to the external server using TCP (in the uplink).
 
 IP addresses and routing tables are set up by using mrt files (see "routing" folder).
- 
- 
+   
+  
++++++++++++++++++++++++++     +++++++++++++++++++++++++ 
++     Namespace ns1     +     +         Simu5G        +
++                       +     +                       +
++  Server App     [veth1]<--->[sim-veth1]             +
++            192.168.2.2+     +                       + 
++                       +     +                       +
++++++++++++++++++++++++++     +++++++++++++++++++++++++
+  
+
 How to build and run the emulation 
 ----------------------------------
 
@@ -37,20 +46,29 @@ How to build and run the emulation
 	$ make makefiles
 	$ make MODE=release 
 	 	
-4) Run the external server for the uplink traffic, e.g. use "Iperf" with the following command (type
+4) Setup the environment by typing:
+
+    ./setup.sh	 
+	 	
+5) Run the external server for the uplink traffic, e.g. use "Iperf" with the following command (type
    "man iperf" for options description):
   	    
-  	iperf -s -P 1 -i 1 -p 10021
+  	(in a new terminal window) sudo ip netns exec ns1 iperf -s -P 1 -i 1 -p 10021
+  	
+6) Run the simulation by typing:
 
-5) Run the emulation by launching either
-     
-    ./run_wSocket.sh 
-    
-        or 
-    
-    ./run_wTun.sh 
-
-6) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command(type
+    ./run.sh
+   
+7) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command (type
    "man iperf" for options description):
   	    
-  	iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m
+  	(in a new terminal window) sudo ip netns exec ns1 iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m
+   
+        
+8) Clean the environment by typing:
+
+    ./teardown.sh
+ 
+
+
+  	    

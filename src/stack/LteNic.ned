@@ -35,6 +35,7 @@ import simu5g.stack.packetFlowManager.PacketFlowManager;
 //
 moduleinterface ICellularNic extends IWirelessInterface
 {
+    @display("i=block/ifcard");
     string nodeType;
         //bool d2dCapable;            // inherit the value from the parent module
     gates:

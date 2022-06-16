@@ -46,7 +46,7 @@ module BackgroundCell
         // traffic generator for the background UEs within the BackgroundCell
         bgTrafficGenerator: BackgroundTrafficGenerator {
             @display("p=347,38,row");
-            bgTrafficManagerType = bgTrafficManagerType;
+            bgTrafficManagerType = parent.bgTrafficManagerType;
         }
 }
 
