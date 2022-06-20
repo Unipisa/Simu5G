@@ -50,19 +50,19 @@ How to build and run the emulation
 
     ./setup.sh	 
 	 	
-5) Run the external server for the uplink traffic, e.g. use "Iperf" with the following command (type
+5) Run the external server for the uplink traffic, e.g. use "iperf" with the following command (type
    "man iperf" for options description):
   	    
-  	(in a new terminal window) sudo ip netns exec ns1 iperf -s -P 1 -i 1 -p 10021
+  	(in a new terminal window) sudo ip netns exec ns1 iperf -s -p 10021 -i 1
   	
 6) Run the simulation by typing:
 
     ./run.sh
    
-7) Run the external server for the downlink traffic, e.g. use "Iperf" with the following command (type
+7) Run the external server for the downlink traffic, e.g. use "iperf" with the following command (type
    "man iperf" for options description):
   	    
-  	(in a new terminal window) sudo ip netns exec ns1 iperf -c 10.0.0.1 -P 1 -i 1 -m -p 10021 -M 536.0B -n 10.0M -f m
+  	(in a new terminal window) sudo ip netns exec ns1 iperf -c 10.0.0.1 -p 10021 -i 1 -M 536.0B -n 10.0M
    
         
 8) Clean the environment by typing:

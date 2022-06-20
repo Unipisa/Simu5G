@@ -1,9 +1,7 @@
-In this example the network consists of one (real) UEs connected to one gNB.
+In this example the network consists of one (real) UE connected to a (real) server.
+The emulated 5G network includes a variable number of background cells. The latter produces interference
+that affects the latency of packets exchanged between the (real) endpoints of the communication.
 
-The UE runs a(n external) application that sends periodic 1000-byte packets 
-to a(n external) receiver application.
-
-IP addresses and routing tables are set up by using mrt files (see "routing_files" folder).
  
 Communication between the simulator and the host OS is realized using namespaces linked
 together via virtual ethernet (veth) interfaces. 
@@ -17,6 +15,10 @@ In particular, we configure the following scenario:
 +                       +     +                       +     +                       +
 +++++++++++++++++++++++++     +++++++++++++++++++++++++     +++++++++++++++++++++++++
 
+The client (at the UE side) pings the server (@192.168.3.2) to measure the RTT of the communication. 
+Such RTT increases with the interference, hence with the number of background cells in the 
+emulated network.
+IP addresses and routing tables are set up by using mrt files (see "routing_files" folder).
 
  
 === HOW TO BUILD AND RUN ===
@@ -48,13 +50,8 @@ In particular, we configure the following scenario:
 
     ./setup.sh	 
 	 	
-	 	
-5) Run the receiver application, e.g. by typing the command:
-  	    
-  	(in a new terminal window) sudo ip netns exec ns1 ./emulation_receiver -p udp
-  	
-  	
-6) Run the simulation by typing:
+ 	
+5) Run the simulation by typing:
 
    ./run.sh -r <RUN_NUMBER>
     
@@ -63,19 +60,12 @@ In particular, we configure the following scenario:
          RUN_NUMBER=2 --> 9 background cells
  
    
-7) Run the sender application, e.g. by typing the command:
+6) Run the sender application, e.g. by typing the command:
  
-    (in a new terminal window) sudo ip netns exec ns2 ./emulation_sender -h 192.168.2.2 -p udp -s 1000 -t 1 -d 60 -o test
-    
-   where -h option specifies the address of the NAT router
-         -p specifies the L4 protocol
-         -s is the size of application messages
-         -t is the sending interval
-         -d is the total duration of the application
-         -o specifies the output subfolder in folder "stats"  
+    (in a new terminal window) sudo ip netns exec ns1 ping 192.168.3.2
           
         
-8) Clean the environment by typing:
+7) Clean the environment by typing:
 
     ./teardown.sh
    
