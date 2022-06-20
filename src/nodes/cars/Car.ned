@@ -43,7 +43,7 @@ module Car extends Ue
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         
         ipv4.configurator.typename = "HostAutoConfigurator";
-        ipv4.configurator.interfaces = "cellular";
+        ipv4.configurator.interfaces = "cellular lo0";
 }
 
 
@@ -63,5 +63,5 @@ module NRCar extends NRUe
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
         
         ipv4.configurator.typename = "HostAutoConfigurator";
-        ipv4.configurator.interfaces = "cellular";
+        ipv4.configurator.interfaces = "cellular lo0";
 }
