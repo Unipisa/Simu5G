@@ -70,6 +70,7 @@ ui/com.simulte.configeditor/bin/
 
 /emulation/*/results*/
 /emulation/*/plots*/
+/emulation/*/stats*/test*/
 
 vim files
 *.swp

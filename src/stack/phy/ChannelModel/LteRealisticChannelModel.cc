@@ -2694,9 +2694,11 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
            // compute and linearize received power
            recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
            recvPwr = dBmToLinear(recvPwrDBm);
+           EV << " recvPwr[" << recvPwr << "]\t";
 
            unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
-           EV << " - shared bands [" << numBands << "]" << endl;
+           EV << " - shared bands [" << numBands << "]\t";
+           EV << " - interfering bands[";
 
            // add interference in those bands where the ext cell is active
            for (unsigned int i = 0; i < numBands; i++)
@@ -2714,9 +2716,11 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                // if the ext cell is active, add interference
                if (occ > 0)
                {
+                   EV << i << ",";
                    (*interference)[i] += recvPwr;
                }
            }
+           EV << "]" << endl;
        }
        else // dir == UL
        {
