@@ -121,10 +121,6 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     auto git = schedulingGrant_.begin();
     for (; git != schedulingGrant_.end(); ++git)
     {
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
-            continue;
-
         if (git->second != nullptr && git->second->getDirection() == UL && emptyScheduleList_)
         {
             if (bsrTriggered_ || bsrD2DMulticastTriggered_)
@@ -208,10 +204,6 @@ void LteMacUeD2D::macPduMake(MacCid cid)
         {
             double carrierFreq = cit->first;
             Packet * macPkt = nullptr;
-
-            // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-                continue;
 
             LteMacScheduleList::const_iterator it;
             for (it = cit->second->begin(); it != cit->second->end(); it++)
@@ -321,61 +313,58 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-        std::map<double, MacPduList>::iterator lit;
-        for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
+    std::map<double, MacPduList>::iterator lit;
+    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
+    {
+        double carrierFreq = lit->first;
+
+        if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
         {
-            double carrierFreq = lit->first;
-            // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-                continue;
+            HarqTxBuffers newHarqTxBuffers;
+            harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
+        }
+        HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-            if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
+        MacPduList::iterator pit;
+        for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
+        {
+            MacNodeId destId = pit->first.first;
+            Codeword cw = pit->first.second;
+
+            // Check if the HarqTx buffer already exists for the destId
+            // Get a reference for the destId TXBuffer
+            LteHarqBufferTx* txBuf;
+            HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
+            if ( hit != harqTxBuffers.end() )
             {
-                HarqTxBuffers newHarqTxBuffers;
-                harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
+                // The tx buffer already exists
+                txBuf = hit->second;
             }
-            HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
-
-            MacPduList::iterator pit;
-            for (pit = lit->second.begin(); pit != lit->second.end(); pit++)
+            else
             {
-                MacNodeId destId = pit->first.first;
-                Codeword cw = pit->first.second;
+                // The tx buffer does not exist yet for this mac node id, create one
+                LteHarqBufferTx* hb;
+                // FIXME: hb is never deleted
+                auto info = pit->second->getTag<UserControlInfo>();
 
-                // Check if the HarqTx buffer already exists for the destId
-                // Get a reference for the destId TXBuffer
-                LteHarqBufferTx* txBuf;
-                HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
-                if ( hit != harqTxBuffers.end() )
-                {
-                    // The tx buffer already exists
-                    txBuf = hit->second;
+                if (info->getDirection() == UL) {
+                    hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
                 }
-                else
-                {
-                    // The tx buffer does not exist yet for this mac node id, create one
-                    LteHarqBufferTx* hb;
-                    // FIXME: hb is never deleted
-                    auto info = pit->second->getTag<UserControlInfo>();
-
-                    if (info->getDirection() == UL) {
-                        hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
-                    }
-                    else { // D2D or D2D_MULTI
-                        hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
-                    }
-                    harqTxBuffers[destId] = hb;
-                    txBuf = hb;
+                else { // D2D or D2D_MULTI
+                    hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
                 }
+                harqTxBuffers[destId] = hb;
+                txBuf = hb;
+            }
 
-                // search for an empty unit within current harq process
-                UnitList txList = txBuf->getEmptyUnits(currentHarq_);
-                EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
+            // search for an empty unit within current harq process
+            UnitList txList = txBuf->getEmptyUnits(currentHarq_);
+            EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
-                //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
-                auto macPkt = pit->second;
+            //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
+            auto macPkt = pit->second;
 
-                /* BSR related operations
+            /* BSR related operations
 
             // according to the TS 36.321 v8.7.0, when there are uplink resources assigned to the UE, a BSR
             // has to be send even if there is no data in the user's queues. In few words, a BSR is always
@@ -693,9 +682,6 @@ void LteMacUeD2D::handleSelfMessage()
     std::map<double, HarqRxBuffers>::iterator met = harqRxBuffers_.end();
     for (; mit != met; mit++)
     {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
-            continue;
-
         HarqRxBuffers::iterator hit = mit->second.begin();
         HarqRxBuffers::iterator het = mit->second.end();
 
@@ -722,9 +708,6 @@ void LteMacUeD2D::handleSelfMessage()
     auto get = schedulingGrant_.end();
     for (; git != get; ++git)
     {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
-            continue;
-
         if (git->second != nullptr)
             noSchedulingGrants = false;
     }
@@ -802,26 +785,6 @@ void LteMacUeD2D::handleSelfMessage()
             // the eNb will receive the first pdu in 2 TTI, thus initializing acid to 0
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
-//        EV << "\t " << schedulingGrant_ << endl;
-
-//        //! \TEST  Grant Synchronization check
-//        if (!(schedulingGrant_->getPeriodic()))
-//        {
-//            if ( false /* TODO currentHarq!=grant_->getAcid()*/)
-//            {
-//                EV << NOW << "FATAL! Ue " << nodeId_ << " Current Process is " << (int)currentHarq << " while Stored grant refers to acid " << /*(int)grant_->getAcid() << */  ". Aborting.   " << endl;
-//                abort();
-//            }
-//        }
-
-        // TODO check if current grant is "NEW TRANSMISSION" or "RETRANSMIT" (periodic grants shall always be "newtx"
-//        if ( false/*!grant_->isNewTx() && harqQueue_->rtx(currentHarq) */)
-//        {
-        //        if ( LteDebug:r:trace("LteMacUeD2D::newSubFrame") )
-        //            fprintf (stderr,"%.9f UE: [%d] Triggering retransmission for acid %d\n",NOW,nodeId_,currentHarq);
-        //        // triggering retransmission --- nothing to do here, really!
-//        } else {
-        // buffer drop should occour here.
 
         EV << NOW << " LteMacUeD2D::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
 
@@ -833,10 +796,6 @@ void LteMacUeD2D::handleSelfMessage()
         for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit)
         {
             double carrierFrequency = mtit->first;
-
-            // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
-                continue;
 
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
@@ -887,10 +846,6 @@ void LteMacUeD2D::handleSelfMessage()
             for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit)
             {
                 double carrierFrequency = sit->first;
-
-                // skip if this is not the turn of this carrier
-                if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
-                    continue;
 
                 LteSchedulerUeUl* carrierLcgScheduler = sit->second;
 
@@ -956,9 +911,6 @@ void LteMacUeD2D::handleSelfMessage()
     // purge from corrupted PDUs all Rx H-HARQ buffers
     for (mit = harqRxBuffers_.begin(); mit != met; mit++)
     {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
-            continue;
-
         HarqRxBuffers::iterator hit = mit->second.begin();
         HarqRxBuffers::iterator het = mit->second.end();
         for (hit= mit->second.begin(); hit != het; ++hit)
@@ -976,9 +928,6 @@ void LteMacUeD2D::handleSelfMessage()
         // update current harq process id
         currentHarq_ = (currentHarq_+1) % harqProcesses_;
     }
-
-    decreaseNumerologyPeriodCounter();
-
     EV << "--- END UE MAIN LOOP ---" << endl;
 }
 

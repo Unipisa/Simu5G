@@ -13,6 +13,7 @@
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/packet/LteSchedulingGrant.h"
+#include "stack/mac/packet/LteMacSduRequest.h"
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
 #include "inet/common/TimeTag_m.h"
 
@@ -265,6 +266,78 @@ void NRMacUe::handleSelfMessage()
 
     EV << "--- END UE MAIN LOOP ---" << endl;
 }
+
+int NRMacUe::macSduRequest()
+{
+    EV << "----- START NRMacUe::macSduRequest -----\n";
+    int numRequestedSdus = 0;
+
+    // get the number of granted bytes for each codeword
+    std::vector<unsigned int> allocatedBytes;
+
+    auto git = schedulingGrant_.begin();
+    for (; git != schedulingGrant_.end(); ++git)
+    {
+        // skip if this is not the turn of this carrier
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
+            continue;
+
+        if (git->second == NULL)
+            continue;
+
+        for (int cw=0; cw<git->second->getGrantedCwBytesArraySize(); cw++)
+            allocatedBytes.push_back(git->second->getGrantedCwBytes(cw));
+    }
+
+    // Ask for a MAC sdu for each scheduled user on each codeword
+    std::map<double, LteMacScheduleList*>::iterator cit = scheduleList_.begin();
+    for (; cit != scheduleList_.end(); ++cit)
+    {
+        // skip if this is not the turn of this carrier
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(cit->first)) > 0)
+            continue;
+
+        LteMacScheduleList::const_iterator it;
+        for (it = cit->second->begin(); it != cit->second->end(); it++)
+        {
+            MacCid destCid = it->first.first;
+            Codeword cw = it->first.second;
+            MacNodeId destId = MacCidToNodeId(destCid);
+
+            std::pair<MacCid,Codeword> key(destCid, cw);
+            LteMacScheduleList* scheduledBytesList = lcgScheduler_[cit->first]->getScheduledBytesList();
+            LteMacScheduleList::const_iterator bit = scheduledBytesList->find(key);
+
+            // consume bytes on this codeword
+            if (bit == scheduledBytesList->end())
+                throw cRuntimeError("NRMacUe::macSduRequest - cannot find entry in scheduledBytesList");
+            else
+            {
+                allocatedBytes[cw] -= bit->second;
+
+                EV << NOW <<" NRMacUe::macSduRequest - cid[" << destCid << "] - sdu size[" << bit->second << "B] - " << allocatedBytes[cw] << " bytes left on codeword " << cw << endl;
+
+                // send the request message to the upper layer
+                // TODO: Replace by tag
+                auto pkt = new Packet("LteMacSduRequest");
+                auto macSduRequest = makeShared<LteMacSduRequest>();
+                macSduRequest->setChunkLength(b(1)); // TODO: should be 0
+                macSduRequest->setUeId(destId);
+                macSduRequest->setLcid(MacCidToLcid(destCid));
+                macSduRequest->setSduSize(bit->second);
+                pkt->insertAtFront(macSduRequest);
+                *(pkt->addTag<FlowControlInfo>()) = connDesc_[destCid];
+                sendUpperPackets(pkt);
+
+                numRequestedSdus++;
+            }
+        }
+    }
+
+    EV << "------ END NRMacUe::macSduRequest ------\n";
+    return numRequestedSdus;
+}
+
 
 void NRMacUe::macPduMake(MacCid cid)
 {

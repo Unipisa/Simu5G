@@ -26,6 +26,13 @@ class NRMacUe : public LteMacUeD2D
     virtual void handleSelfMessage();
 
     /**
+     * macSduRequest() sends a message to the RLC layer
+     * requesting MAC SDUs (one for each CID),
+     * according to the Schedule List.
+     */
+    virtual int macSduRequest();
+
+    /**
      * macPduMake() creates MAC PDUs (one for each CID)
      * by extracting SDUs from Real Mac Buffers according
      * to the Schedule List.

@@ -235,26 +235,37 @@ void LteMacUe::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_LAST)
     {
-        /* Start TTI tick */
-        // the period is equal to the minimum period according to the numerologies used by the carriers in this node
-        ttiTick_ = new cMessage("ttiTick_");
-        ttiTick_->setSchedulingPriority(1);                                              // TTI TICK after other messages
-        ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(binder_->getUeMaxNumerologyIndex(nodeId_));
-        scheduleAt(NOW + ttiPeriod_, ttiTick_);
 
-        const std::set<NumerologyIndex>* numerologyIndexSet = binder_->getUeNumerologyIndex(nodeId_);
-        if (numerologyIndexSet != NULL)
+        /* Start TTI tick */
+        ttiTick_ = new cMessage("ttiTick_");
+        ttiTick_->setSchedulingPriority(1);    // TTI TICK after other messages
+
+        if (!isNrUe(nodeId_))
         {
-            std::set<NumerologyIndex>::const_iterator it = numerologyIndexSet->begin();
-            for ( ; it != numerologyIndexSet->end(); ++it)
+            // if this MAC layer refers to the LTE side of the UE, then the TTI is equal to 1ms
+            ttiPeriod_ = TTI;
+        }
+        else
+        {
+            // otherwise, the period is equal to the minimum period according to the numerologies used by the carriers in this NR node
+            ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(binder_->getUeMaxNumerologyIndex(nodeId_));
+
+            // for each numerology available in this UE, set the corresponding timers
+            const std::set<NumerologyIndex>* numerologyIndexSet = binder_->getUeNumerologyIndex(nodeId_);
+            if (numerologyIndexSet != NULL)
             {
-                // set periodicity for this carrier according to its numerology
-                NumerologyPeriodCounter info;
-                info.max = 1 << (binder_->getUeMaxNumerologyIndex(nodeId_) - *it); // 2^(maxNumerologyIndex - numerologyIndex)
-                info.current = info.max - 1;
-                numerologyPeriodCounter_[*it] = info;
+                std::set<NumerologyIndex>::const_iterator it = numerologyIndexSet->begin();
+                for ( ; it != numerologyIndexSet->end(); ++it)
+                {
+                    // set periodicity for this carrier according to its numerology
+                    NumerologyPeriodCounter info;
+                    info.max = 1 << (binder_->getUeMaxNumerologyIndex(nodeId_) - *it); // 2^(maxNumerologyIndex - numerologyIndex)
+                    info.current = info.max - 1;
+                    numerologyPeriodCounter_[*it] = info;
+                }
             }
         }
+        scheduleAt(NOW + ttiPeriod_, ttiTick_);
     }
 }
 
@@ -283,10 +294,6 @@ int LteMacUe::macSduRequest()
     auto git = schedulingGrant_.begin();
     for (; git != schedulingGrant_.end(); ++git)
     {
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
-            continue;
-
         if (git->second == NULL)
             continue;
 
@@ -298,10 +305,6 @@ int LteMacUe::macSduRequest()
     std::map<double, LteMacScheduleList*>::iterator cit = scheduleList_.begin();
     for (; cit != scheduleList_.end(); ++cit)
     {
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(cit->first)) > 0)
-            continue;
-
         LteMacScheduleList::const_iterator it;
         for (it = cit->second->begin(); it != cit->second->end(); it++)
         {
@@ -479,10 +482,6 @@ void LteMacUe::macPduMake(MacCid cid)
         double carrierFreq = cit->first;
         Packet *macPkt = nullptr;
 
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-            continue;
-
         LteMacScheduleList::const_iterator it;
         for (it = cit->second->begin(); it != cit->second->end(); it++)
         {
@@ -564,9 +563,6 @@ void LteMacUe::macPduMake(MacCid cid)
     for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit)
     {
         double carrierFreq = lit->first;
-        // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
-            continue;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end())
         {
@@ -574,8 +570,6 @@ void LteMacUe::macPduMake(MacCid cid)
             harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
-
-
 
         for (MacPduList::iterator pit = lit->second.begin(); pit != lit->second.end(); pit++)
         {
@@ -788,9 +782,6 @@ void LteMacUe::handleSelfMessage()
 
         for (; hit != het; ++hit)
         {
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
-                 continue;
-
             pduList=hit->second->extractCorrectPdus();
             while (! pduList.empty())
             {
@@ -812,9 +803,6 @@ void LteMacUe::handleSelfMessage()
     auto get = schedulingGrant_.end();
     for (; git != get; ++git)
     {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
-            continue;
-
         if (git->second != nullptr)
         {
             noSchedulingGrants = false;
@@ -899,10 +887,6 @@ void LteMacUe::handleSelfMessage()
         {
             double carrierFrequency = mtit->first;
 
-            // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
-                continue;
-
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
                 continue;
@@ -937,10 +921,6 @@ void LteMacUe::handleSelfMessage()
             for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit)
             {
                 double carrierFrequency = sit->first;
-
-                // skip if this is not the turn of this carrier
-                if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
-                    continue;
 
                 // skip if no grant is configured for this carrier
                 if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
@@ -1184,10 +1164,6 @@ void LteMacUe::flushHarqBuffers()
     std::map<double, HarqTxBuffers>::iterator mtit;
     for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit)
     {
-//        // skip if this is not the turn of this carrier
-//        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mtit->first)) > 0)
-//            continue;
-
         HarqTxBuffers::iterator it2;
         for(it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++)
             it2->second->sendSelectedDown();
@@ -1199,7 +1175,6 @@ void LteMacUe::flushHarqBuffers()
     {
         if (git->second != nullptr && !(git->second->getPeriodic()))
         {
-//            delete git->second;
             git->second=nullptr;
         }
     }
