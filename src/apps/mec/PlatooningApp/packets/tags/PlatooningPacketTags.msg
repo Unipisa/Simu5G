@@ -18,4 +18,5 @@ namespace inet;
 class PrecedingVehicleTag extends TagBase
 {
 	L3Address ueAddress; // UE address of the preceding vehicle (usef to find the module Id)
+	double calculatedDistance; // The distance between two cars seen by the controller
 }

@@ -25,6 +25,8 @@ import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
 import simu5g.nodes.backgroundCell.BackgroundCell;
 import simu5g.world.radio.LteChannelControl;
+import inet.node.inet.StandardHost;
+
 
 // MultiOperator
 //
@@ -43,42 +45,42 @@ network MultiOperator
         int numUe_B = default(1);
         int numBgCells = default(0);
         bool enableMecOperatorB = default(true);
-        @display("i=block/network2;bgb=2050.9824,801.22876");//;bgi=background/pisa_large");
-        
-        int linkLength @unit(m) = default(1m); // it is in ms!!!!
+        @display("i=block/network2;bgb=1912.7875,795.925");//;bgi=background/pisa_large");
+
+        int linkLength @unit(m) = default(0m); // it is in ms!!!!
     submodules:
         channelControl: LteChannelControl {
-            @display("p=50,25;is=s");
+            @display("p=192.5625,51.350002;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=50,75;is=s");
+            @display("p=192.5625,102.700005;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50,125;is=s");
+            @display("p=192.5625,151.4825;is=s");
         }
         binder: Binder {
-            @display("p=50,175;is=s");
+            @display("p=192.5625,202.8325;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=192.5625,284.9925;is=s");
         }
         router2: Router {
-            @display("p=874.6237,73.395");
+            @display("p=1160.51,74.457504");
         }
         router1: Router {
-            @display("p=623.8575,73.395");
+            @display("p=908.895,74.457504");
         }
         upf_A: Upf {
-            @display("p=625,173.29375");
+            @display("p=911.4625,174.59");
         }
         upf_B: Upf {
-            @display("p=875,173.29375");
+            @display("p=1160.51,174.59");
         }
         iUpf_A: Upf {
-            @display("p=623.8575,281.3475");
+            @display("p=908.895,282.42502");
         }
         iUpf_B: Upf {
-            @display("p=874.6237,281.3475");
+            @display("p=1160.51,282.42502");
         }
         gnb_A1: gNodeB {
             @display("p=274.365,454.54498;is=vl");
@@ -116,23 +118,24 @@ network MultiOperator
 
         //# MEC modules
         mecHost_A: MECHost {
-            @display("p=273.1925,281.3475");
+            @display("p=559.715,282.42502");
         }
         mecHost_B: MECHost if enableMecOperatorB {
-            @display("p=1245.6763,281.3475");
+            @display("p=1532.7975,282.42502");
         }
         mecOrchestrator_A: MecOrchestrator {
-            @display("p=273.1925,73.395");
+            @display("p=559.715,74.457504");
         }
         mecOrchestrator_B: MecOrchestrator if enableMecOperatorB {
-            @display("p=1245.6763,73.395");
+            @display("p=1532.7975,74.457504");
         }
         ualcmp_A: UALCMP {
-            @display("p=489.3,73.395");
+            @display("p=775.385,74.457504");
         }
         ualcmp_B: UALCMP if enableMecOperatorB {
-            @display("p=1027.53,73.395");
+            @display("p=1311.9926,74.457504");
         }
+
 
     connections:
 
@@ -143,7 +146,7 @@ network MultiOperator
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A2.ppp;
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A3.ppp;
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A4.ppp;
-        
+
 
         upf_B.pppg++ <--> Eth10G {  length = 300m; } <--> iUpf_B.pppg++;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> mecHost_B.pppENB++ if enableMecOperatorB;
@@ -151,8 +154,8 @@ network MultiOperator
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B2.ppp;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B3.ppp;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B4.ppp;
-        
-        
+
+
 
         //# MEC-related connections
         router1.pppg++ <--> Eth10G {  length = 300m; } <--> upf_A.filterGate;
@@ -169,11 +172,11 @@ network MultiOperator
         gnb_A1.x2++ <--> Eth10G {  length = 500m; } <--> gnb_A2.x2++;
         gnb_A2.x2++ <--> Eth10G {  length = 500m; } <--> gnb_A3.x2++;
         gnb_A3.x2++ <--> Eth10G {  length = 500m; } <--> gnb_A4.x2++;
-        
+
         gnb_B1.x2++ <--> Eth10G {  length = 500m; } <--> gnb_B2.x2++;
         gnb_B2.x2++ <--> Eth10G {  length = 500m; } <--> gnb_B3.x2++;
         gnb_B3.x2++ <--> Eth10G {  length = 500m; } <--> gnb_B4.x2++;
 
         //# Routers connection
-        router1.pppg++ <-->  Eth10G {  length = linkLength*2e5; }  <--> router2.pppg++;
+        router1.pppg++ <--> Eth10G {  length = linkLength*2e5; } <--> router2.pppg++;
 }
