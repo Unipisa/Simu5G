@@ -24,7 +24,7 @@ simple MECPlatooningConsumerApp like IMECApp, IApp
   			
         int packetSize = default(10);
         string interfaceTableModule = default("");
-        
+        int mecAppIndex;
         int mecAppId;
         int localUePort;
         int localPlatooningProviderPort = default(5700);

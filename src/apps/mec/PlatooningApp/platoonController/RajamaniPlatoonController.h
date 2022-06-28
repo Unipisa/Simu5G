@@ -46,6 +46,7 @@ protected:
 
     // compute the acceleration for the platoon leader
     double computeLeaderAcceleration(double leaderSpeed);
+    double computeLeaderAcceleration(inet::L3Address address);
 
     // compute the acceleration for a platoon member
     double computeMemberAcceleration(double speed, double leaderAcceleration, double precedingAcceleration, double leaderSpeed, double precedingSpeed, double distanceToPreceding);

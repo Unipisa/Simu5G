@@ -80,7 +80,8 @@ typedef enum
     NEW_MEMBER = 0,
     REMOVED_MEMBER = 1,
     NEW_ORDER= 2,
-    HEARTBEAT = 3
+    HEARTBEAT = 3,
+    STOPPED = 4
 } ControllerNotificationType;
 
 
@@ -204,6 +205,7 @@ typedef struct
     inet::Coord acceleration;
     inet::L3Address address;
     bool isManouveringEnded;
+    double calculatedDistance;
 } CommandInfo;
 
 

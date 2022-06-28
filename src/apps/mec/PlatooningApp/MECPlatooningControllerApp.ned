@@ -27,7 +27,7 @@ simple MECPlatooningControllerApp like IMECApp
         	  			
         int packetSize = default(10);
         string interfaceTableModule = default("");
-        
+        int mecAppIndex;
         int mecAppId;
         int localUePort;
         

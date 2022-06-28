@@ -137,6 +137,8 @@ protected:
     double updatePositionTimerLongitudinal_;
     double updatePositionTimerLateral_;
 
+    double offset_;
+
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
@@ -175,7 +177,7 @@ protected:
 
     //------ handlers for inter-producerApps communication ------//
     //@brief handler for request to add a new member in a platoon
-    bool addMember(int consumerAppId, L3Address& carIpAddress ,Coord& position, int producerAppId);
+    bool addMember(int consumerAppId, int producerAppId,  L3Address& carIpAddress , Coord& position, double speed = 0.);
 
     // @brief handler for add a PlatooningConsumerApp to a local platoon
     void handleAddMember(cMessage* msg);
@@ -194,7 +196,7 @@ protected:
 
 
     // @brief add a new member to the platoon
-    bool addPlatoonMember(int mecAppId, int producerAppId, inet::Coord position, inet::L3Address);
+    bool addPlatoonMember(int mecAppId, int producerAppId, inet::L3Address, inet::Coord position, double speed = 0.);
 
     //@brief this method sends a notification to the MECPlatoonConsumerApp (MANOUVRE, QUEUED_JOIN, QUEUED_LEAVE)
     void sendNotification(cMessage* msg, PlatooningPacketType notification);
@@ -211,7 +213,7 @@ protected:
     // @brief used by a controller to set a timer
     void startTimer(cMessage* msg, double timeOffset);
     // @brief used by a controller to stop a  timer
-    void stopTimer(PlatooningTimerType timerType);
+    void stopTimer(PlatooningTimer* timer);
 
     // @brief handler called when the longitudinal ControlTimer expires
     void handleLongitudinalControllerTimer(ControlTimer* ctrlTimer);
@@ -220,6 +222,8 @@ protected:
 
     // @brief this method periodically sends a heartbeat to the producer app
     void sendHeartbeatNotification();
+
+    void sendProducerAppNotification(ControllerNotificationType notification);
 
     // @brief before manoeuvring a car related to a pending request, a new check of its position is needed.
     // This method checks if the position of the pending car became too far to star a manoeuvre action.
@@ -235,6 +239,9 @@ protected:
 
     /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;
+    virtual void socketClosed(inet::TcpSocket *socket) override;
+
+
 
   public:
     MECPlatooningControllerApp();

@@ -59,11 +59,11 @@ void MECPlatooningConsumerApp::initialize(int stage)
     // TODO add a new socket to handle communication with the provider app
     localPlatooningProviderPort = par("localPlatooningProviderPort");
     platooningProviderAppSocket.setOutputGate(gate("socketOut"));
-    platooningProviderAppSocket.bind(localPlatooningProviderPort+this->getIndex()); // base+index vector;
+    platooningProviderAppSocket.bind(localPlatooningProviderPort + mecAppIndex_); // base+index;
 
     localPlatooningControllerPort = par("localPlatooningControllerPort");
     platooningControllerAppSocket.setOutputGate(gate("socketOut"));
-    platooningControllerAppSocket.bind(localPlatooningControllerPort+this->getIndex()); // base+index vector;
+    platooningControllerAppSocket.bind(localPlatooningControllerPort + mecAppIndex_ ); // base+index
 
     EV << "MECPlatooningConsumerApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 

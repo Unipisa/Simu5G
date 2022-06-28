@@ -58,12 +58,12 @@ PlatoonIndex PlatoonSelectionSample::findBestPlatoon(const int localProducerApp,
     }
     else
     {
-
-        auto it = globalControllers.find(0); //producerApp 0
+        auto it = globalControllers.begin();
         if(it == globalControllers.end())
             throw cRuntimeError("PlatoonSelectionSample::findBestPlatoon- ERROR");
+
         platIndex.producerApp = it->first;
-        platIndex.platoonIndex = 1000;
+        platIndex.platoonIndex = it->second->begin()->first;
         EV << "PlatoonSelectionSample::findBestPlatoon - selected global platoon with index " << platIndex.platoonIndex << endl;
     }
 
