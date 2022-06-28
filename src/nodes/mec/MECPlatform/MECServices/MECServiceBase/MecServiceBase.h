@@ -48,8 +48,8 @@
  */
 
 
-#define REQUEST_RNG 0
-#define SUBSCRIPTION_RNG 1
+#define REQUEST_RNG 0 // bind to the LOGICAL rng
+#define SUBSCRIPTION_RNG 1 // bind to the LOGICAL rng
 
 typedef std::map<std::string, std::string> reqMap;
 
@@ -217,8 +217,8 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }
         virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
         virtual void socketEstablished(inet::TcpSocket *socket) override {}
-        virtual void socketPeerClosed(inet::TcpSocket *socket) override {}
-        virtual void socketClosed(inet::TcpSocket *socket) override;
+        virtual void socketPeerClosed(inet::TcpSocket *socket) override {};
+        virtual void socketClosed(inet::TcpSocket *socket) override {};
         virtual void socketFailure(inet::TcpSocket *socket, int code) override {}
         virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
         virtual void socketDeleted(inet::TcpSocket *socket) override {}
@@ -271,7 +271,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
          */
         virtual void removeConnection(SocketManager *connection);
 
-        virtual void closeConnection(SocketManager *connection);
+        virtual void closedConnection(SocketManager *connection);
 
 
 //        virtual Http::DataType getDataType(std::string& packet_);

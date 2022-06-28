@@ -43,6 +43,9 @@ MecServiceBase::MecServiceBase()
     currentSubscriptionServed_ = nullptr;
     lastFGRequestArrived_ = 0;
     loadGenerator_ = false;
+    requestService_ = nullptr;
+    subscriptionService_ = nullptr;
+    currentSubscriptionServed_ = nullptr;
     rho_ = 0;
 }
 
@@ -268,19 +271,24 @@ void MecServiceBase::socketAvailable(inet::TcpSocket *socket, inet::TcpAvailable
     socket->accept(availableInfo->getNewSocketId());
 }
 
-void MecServiceBase::socketClosed(inet::TcpSocket *socket)
-{
-//    if (operationalState == State::STOPPING_OPERATION && threadSet.empty() && !serverSocket.isOpen())
-//        startActiveOperationExtraTimeOrFinish(par("stopOperationExtraTime"));
-}
-
 bool MecServiceBase::manageRequest()
 {
-    EV_INFO <<" MecServiceBase::manageRequest" << endl;
   //  EV << "MecServiceBase::manageRequest - start manageRequest" << endl;
-    inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(currentRequestMessageServed_->getSockId()));
+
+    if(currentRequestMessageServed_ == nullptr)
+        throw cRuntimeError("MecServiceBase::manageRequest() - currentRequestMessageServed_ is null!");
+
+    auto sockets = socketMap.getMap();
+    inet::TcpSocket *socket = nullptr;
+    for(auto& sock : sockets)
+    {
+      if(sock.first == currentRequestMessageServed_->getSockId())
+          socket = check_and_cast_nullable<inet::TcpSocket *>(sock.second);
+    }
+
     if(socket)
     {
+        EV_INFO <<" MecServiceBase::manageRequest" << endl;
         /*
          * Manage backgroundRequest
          */
@@ -309,6 +317,7 @@ bool MecServiceBase::manageRequest()
     }
     else // socket has been closed or some error occurred, discard request
     {
+        EV_INFO <<" MecServiceBase::manageRequest - socket not present. Discarding packets" << endl;
         // I should schedule immediately a new request execution
         if(currentRequestMessageServed_ != nullptr)
         {
@@ -353,12 +362,14 @@ void MecServiceBase::scheduleNextEvent(bool now)
         }
 
         if(now)
-            scheduleAt(simTime() + 0 , subscriptionService_);
+            scheduleAt(simTime() + 0 , requestService_);
         else
         {
             //calculate the serviceTime base on the type | parameters
             double serviceTime = calculateRequestServiceTime(); //must be >0
+            currentRequestMessageServed_->setResponseTime(serviceTime);
             EV <<"MecServiceBase::scheduleNextEvent- request service time: "<< serviceTime << endl;
+
             scheduleAt(simTime() + serviceTime , requestService_);
         }
     }
@@ -556,24 +567,22 @@ void MecServiceBase::getConnectedBaseStations(){
 }
 
 
-void MecServiceBase::closeConnection(SocketManager * connection)
+void MecServiceBase::closedConnection(SocketManager * connection)
 {
-        EV << "MecServiceBase::closeConnection"<<endl;
+    EV << "MecServiceBase::closedConnection"<<endl;
     // remove socket
-       socketMap.removeSocket(connection->getSocket());
-       threadSet.erase(connection);
-       socketClosed(connection->getSocket());
-       // remove thread object
-       connection->deleteModule();
+    socketMap.removeSocket(connection->getSocket());
+    threadSet.erase(connection);
+    // remove thread object
+    connection->deleteModule();
 }
 
 void MecServiceBase::removeConnection(SocketManager *connection)
 {
     EV << "MecServiceBase::removeConnection"<<endl;
+    socketMap.removeSocket(connection->getSocket());
     // remove socket
-    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
-    sock->close();
-    delete sock;
+//    delete sock;
     // remove thread object
     threadSet.erase(connection);
     connection->deleteModule();

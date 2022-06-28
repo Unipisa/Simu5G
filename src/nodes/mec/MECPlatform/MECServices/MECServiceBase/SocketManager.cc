@@ -101,29 +101,24 @@ void SocketManager::established(){
 
 void SocketManager::peerClosed()
 {
-    EV <<"Closed connection from: " << sock->getRemoteAddress()<< std::endl;
-    sock->setState(inet::TcpSocket::PEER_CLOSED);
+    std::cout<<"SocketManager::peerClosed - Closed connection from: " << sock->getRemoteAddress()<< std::endl;
+    EV << "SocketManager::peerClosed() - Closed connection from: " << sock->getRemoteAddress()<< std::endl;
+//    sock->setState(inet::TcpSocket::PEER_CLOSED);
     service->removeSubscritions(sock->getSocketId()); // if any
 
-    //service->removeConnection(this); //sock->close(); // it crashes when mec app is deleted  with ->deleteModule FIXME
-
-    // FIXME resolve this comments
-//    EV << "MeServiceBase::removeConnection"<<endl;
-//    // remove socket
-//    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
-//    sock->close();
-//    delete sock;
-//    // remove thread object
-//    threadSet.erase(connection);
-//    connection->deleteModule();
+    // close the connection (if not already closed)
+    if (sock->getState() == inet::TcpSocket::PEER_CLOSED) {
+        EV << "SocketManager::socketPeerClose - remote TCP closed, closing here as well. Connection id is " << sock->getSocketId() << endl;
+        sock->close(); // Call the close method to properly dispose of the socket.
+    }
 }
 
 void SocketManager::closed()
 {
-    EV <<"Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
+    std::cout <<"SocketManager::closed - Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
     sock->setState(inet::TcpSocket::CLOSED);
     service->removeSubscritions(sock->getSocketId());
-    service->closeConnection(this);
+    service->closedConnection(this);
 }
 
 void SocketManager::failure(int code)

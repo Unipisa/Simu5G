@@ -43,6 +43,45 @@ DeviceApp::~DeviceApp()
 }
 
 
+void DeviceApp::initialize(int stage){
+
+    if(stage != inet::INITSTAGE_APPLICATION_LAYER)
+        return;
+    localPort = par("localPort");
+
+    ueAppSocket_.setOutputGate(gate("socketOut"));
+    UALCMPSocket_.setOutputGate(gate("socketOut"));
+
+    ueAppSocket_.bind(localPort); // bind ueSocket to listen on local port
+    UALCMPSocket_.bind(8740); // bind ueSocket to listen on local port
+
+
+    ueAppSocket_.setCallback(this);
+
+    UALCMPSocket_.setCallback(this);
+
+    const char *lcmAddress = par("UALCMPAddress").stringValue();
+    UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
+    EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
+    UALCMPPort = par("UALCMPPort");
+
+    processedUALCMPMessage = new cMessage("processedUALCMPMessage");
+
+//    appProvider = par("appProvider").stringValue();
+    appPackageSource = par("appPackageSource").stringValue();
+
+    appState = IDLE;
+
+    /* directly connect to the LCM proxy
+    * instead of waiting for a requeste from the UE, it is
+    * easier to manage
+    */
+
+    cMessage *msg = new cMessage("connect");
+    scheduleAt(simTime()+0.5 , msg);
+}
+
+
 void DeviceApp::handleUALCMPMessage()
 {
     EV << "DeviceApp::handleUALCMPMessage: " <<  UALCMPMessage->getBody() << endl;
@@ -56,6 +95,7 @@ void DeviceApp::handleUALCMPMessage()
             case START:
             {
                 EV << "DeviceApp::handleUALCMPMessage - START" << endl;
+
                 if(response->getCode() == 200) // Successful response of the get
                 {
                     nlohmann::json jsonResponseBody = nlohmann::json::parse(response->getBody());
@@ -294,44 +334,6 @@ void DeviceApp::handleSelfMessage(cMessage *msg){
             delete UALCMPMessage;
         UALCMPMessage = nullptr;
     }
-}
-
-void DeviceApp::initialize(int stage){
-
-    if(stage != inet::INITSTAGE_APPLICATION_LAYER)
-        return;
-    localPort = par("localPort");
-
-    ueAppSocket_.setOutputGate(gate("socketOut"));
-    UALCMPSocket_.setOutputGate(gate("socketOut"));
-
-    ueAppSocket_.bind(localPort); // bind ueSocket to listen on local port
-    UALCMPSocket_.bind(8740); // bind ueSocket to listen on local port
-
-
-    ueAppSocket_.setCallback(this);
-
-    UALCMPSocket_.setCallback(this);
-
-    const char *lcmAddress = par("UALCMPAddress").stringValue();
-    UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
-    EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
-    UALCMPPort = par("UALCMPPort");
-
-    processedUALCMPMessage = new cMessage("processedUALCMPMessage");
-
-//    appProvider = par("appProvider").stringValue();
-    appPackageSource = par("appPackageSource").stringValue();
-
-    appState = IDLE;
-
-    /* directly connect to the LCM proxy
-    * instead of waiting for a requeste from the UE, it is
-    * easier to manage
-    */
-
-    cMessage *msg = new cMessage("connect");
-    scheduleAt(simTime()+0.0 , msg);
 }
 
 void DeviceApp::handleMessage(omnetpp::cMessage *msg)

@@ -214,7 +214,7 @@ namespace Http {
                 {
                     if(line[0].compare("Content-Length")== 0)
                     {
-                        // EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
+                        EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                         httpResponse->setContentLength(std::stoi(line[1]));
                         httpResponse->setRemainingDataToRecv(std::stoi(line[1]));
                     }
@@ -505,14 +505,21 @@ namespace Http {
             resPkt->setBody(body);
             resPkt->setContentLength(strlen(body));
         }
+
+        EV << "sendHttpResponse - sent " << B(resPkt->getPayload().size()) << " bytes" << endl;
         resPkt->setChunkLength(B(resPkt->getPayload().size()));
         resPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         resPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
         packet->insertAtBack(resPkt);
         packet->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
-
-        socket->send(packet);
+        if(socket->getState() == inet::TcpSocket::CONNECTED)
+            socket->send(packet);
+        else
+        {
+            EV << "sendHttpResponse - socket with id " << socket->getSocketId() << " is not connected" << endl;
+            delete packet;
+        }
     }
     void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::pair<std::string, std::string>& header, const char* body)
     {
@@ -536,7 +543,14 @@ namespace Http {
 
         packet->insertAtBack(resPkt);
         packet->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
-        socket->send(packet);
+
+        if(socket->getState() == inet::TcpSocket::CONNECTED)
+            socket->send(packet);
+        else
+        {
+            EV << "sendHttpResponse - socket with id " << socket->getSocketId() << " is not connected" << endl;
+            delete packet;
+        }
     }
     void sendHttpResponse(inet::TcpSocket *socket, int code, const char* reason, std::map<std::string, std::string>& headers, const char* body)
     {
@@ -565,7 +579,13 @@ namespace Http {
         packet->insertAtBack(resPkt);
         packet->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);
 
-        socket->send(packet);
+        if(socket->getState() == inet::TcpSocket::CONNECTED)
+            socket->send(packet);
+        else
+        {
+            EV << "sendHttpResponse - socket with id " << socket->getSocketId() << " is not connected" << endl;
+            delete packet;
+        }
 
     }
 
@@ -578,15 +598,18 @@ namespace Http {
         reqPkt->setMethod(method);
         reqPkt->setUri(uri);
         reqPkt->setHost(host);
+
         if(body != nullptr)
         {
             reqPkt->setBody(body);
             reqPkt->setContentLength(strlen(body));
         }
+
         if(parameters != nullptr)
         {
             reqPkt->setParameters(parameters);
         }
+
         reqPkt->setChunkLength(B(reqPkt->getPayload().size())); // TODO get size more efficiently
         reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         reqPkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&Protocol::http);

@@ -26,6 +26,9 @@ ServiceRegistry::ServiceRegistry() {
     mecServices_.clear();
     uuidBase = "123e4567-e89b-12d3-a456-4266141"; // last 5 digits are missing and used to create uniquely id in a quicker way
     servIdCounter = 10000; // incremented every new service and concatenate it to the uuidBase
+
+    mePlatform = nullptr;
+    meHost_ =  nullptr;
 }
 
 ServiceRegistry::~ServiceRegistry() {

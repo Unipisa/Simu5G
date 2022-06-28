@@ -41,7 +41,7 @@
 
 Define_Module(UALCMPApp);
 
-UALCMPApp::UALCMPApp()
+UALCMPApp::UALCMPApp(): MecServiceBase()
 {
     baseUriQueries_ = "/example/dev_app/v1";
     baseUriSubscriptions_ = baseUriQueries_;
@@ -63,6 +63,7 @@ void UALCMPApp::initialize(int stage)
         serviceName_ = par("serviceName").stringValue();
 
         requestServiceTime_ = par("requestServiceTime");
+        std::cout << simTime() << " UALCMPApp::initialize par(requestServiceTime) " << loadGenerator_ << std::endl;
         requestService_ = new cMessage("serveRequest");
         requestQueueSize_ = par("requestQueueSize");
 
@@ -225,6 +226,7 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
 void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     EV << "UALCMPApp::handleGETRequest" << endl;
+//    std::cout<< simTime() << " UALCMPApp::handleGETRequest id " << getId() << " RE SERV TIME" << currentRequestMessageServed->getResponseTime()  << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription

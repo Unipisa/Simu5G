@@ -77,7 +77,6 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
 //        std::string appProvider; not used
         std::string appPackageSource;
 
-
         virtual void initialize(int stage) override;
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void handleMessage(omnetpp::cMessage *msg) override;

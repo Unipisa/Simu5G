@@ -66,7 +66,6 @@ class LocationService: public MecServiceBase
 
     virtual ~LocationService();
 
-
 };
 
 

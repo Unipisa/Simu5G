@@ -27,7 +27,7 @@
 Define_Module(LocationService);
 
 
-LocationService::LocationService(){
+LocationService::LocationService() : MecServiceBase(){
     baseUriQueries_ = "/example/location/v2/queries";
     baseUriSubscriptions_ = "/example/location/v2/subscriptions";
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
@@ -37,6 +37,9 @@ LocationService::LocationService(){
     supportedQueryParams_.insert("latitude");
     supportedQueryParams_.insert("longitude");
     supportedQueryParams_.insert("zone");
+
+    LocationSubscriptionEvent_ = nullptr;
+    subscriptionTimer_ = nullptr;
 
     // supportedQueryParams_s_.insert("ue_ipv6_address");
 }
