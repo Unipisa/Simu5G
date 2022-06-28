@@ -59,13 +59,17 @@ simple UEPlatooningApp like IApp
         @signal[acceleration];
         @statistic[acceleration](title="Vehicle acceleration"; unit="double"; source="acceleration"; record=stats, mean, vector);    
         @signal[precedingVehicleDistance];
-        @statistic[precedingVehicleDistance](title="Vehicle distance"; unit="double"; source="precedingVehicleDistance"; record=stats, mean, vector);    
+        @statistic[precedingVehicleDistance](title="Vehicle distance"; unit="double"; source="precedingVehicleDistance"; record=stats, mean, vector);
+        
+        @signal[calculatedPrecedingVehicleDistance];
+        @statistic[calculatedPrecedingVehicleDistance](title="Vehicle distance"; unit="double"; source="calculatedPrecedingVehicleDistance"; record=stats, mean, vector);
+            
+        @signal[gapDistance];
+        @statistic[gapDistance](title="Vehicle distance"; unit="double"; source="gapDistance"; record=stats, mean, vector);
+            
         @signal[lifeCycleEvents];
         @statistic[lifeCycleEvents](title="Platooning events"; unit="s"; source="lifeCycleEvents"; interpolationmode="none"; record=stats, mean, vector);    
-
-        
-            
-                    
+              
     gates:
         output socketOut;
         input socketIn;

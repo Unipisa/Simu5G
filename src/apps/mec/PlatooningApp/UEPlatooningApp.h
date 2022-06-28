@@ -76,6 +76,9 @@ class UEPlatooningApp: public cSimpleModule
     simsignal_t speedSignal_;
     simsignal_t accelerationSignal_;
     simsignal_t interdistanceSignal_;
+    simsignal_t gapDistance_;
+    simsignal_t calculatedDistance_; // distance calculated by the controller (used for performance evaluation)
+
     simsignal_t lifeCycleEventSignal_;
     simsignal_t cmdlatency_;
 

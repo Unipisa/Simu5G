@@ -109,18 +109,22 @@ void UEPlatooningApp::initialize(int stage)
     speedSignal_ = registerSignal("speed");
     accelerationSignal_ = registerSignal("acceleration");
     interdistanceSignal_ = registerSignal("precedingVehicleDistance");
+
+    gapDistance_ = registerSignal("gapDistance");;
+    calculatedDistance_ = registerSignal("calculatedPrecedingVehicleDistance");
+
     lifeCycleEventSignal_ = registerSignal("lifeCycleEvents");
     cmdlatency_ = registerSignal("cmdLatency");
 
     statsMsg_ = new cMessage("statsMsg");
     statsPeriod_ = 0.2;
-    //scheduleAt(simTime() + statsPeriod_, statsMsg_);
+//    scheduleAt(simTime() + statsPeriod_, statsMsg_);
 
     // sinusoidalPattern
     if(par("sinusoidal").boolValue())
     {
         sinusoidalMsg_ = new cMessage("sinusoidalMsg");
-        sinusoidalPeriod_ = 0.100;
+        sinusoidalPeriod_ = 0.157;
         scheduleAt(simTime()+sinusoidalPeriod_, sinusoidalMsg_);
     }
     mobility->setAcceleration(0.0);
@@ -154,9 +158,11 @@ void UEPlatooningApp::handleMessage(cMessage *msg)
         }
         else if(!strcmp(msg->getName(), "sinusoidalMsg"))
         {
-            double factor = 3 * cos (180*simTime().dbl() * 3.14 /180);
+            double factor = 4.4 * cos(simTime().dbl() * 3.14); // speed = 25 + 1.4 sin(3.14rad/s*s)
+//            mobility->setVelocity(inet::Coord(1.4 * sin(simTime().dbl() * 3.14), 0, 0));
             mobility->setAcceleration(factor);
             emit(accelerationSignal_, mobility->getMaxAcceleration());
+//            emit(speedSignal_, mobility->getCurrentVelocity().x);
             scheduleAt(simTime()+sinusoidalPeriod_, sinusoidalMsg_);
         }
         else
@@ -261,7 +267,6 @@ void UEPlatooningApp::sendStopMECPlatooningApp()
 void UEPlatooningApp::handleAckStartMECPlatooningApp(cMessage* msg)
 {
     EV << "UEPlatooningApp::handleAckStartMECPlatooningApp - Received Start ACK packet" << endl;
-
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
@@ -350,7 +355,6 @@ void UEPlatooningApp::sendLeavePlatoonRequest()
 void UEPlatooningApp::recvQueuedNotification(cMessage* msg)
 {
     EV << "UEPlatooningApp::recvQueuedJoinNotification() - Queued Join notification from the MEC app" << endl;
-
     // handle response to a previous join request from the MEC application
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
@@ -361,13 +365,13 @@ void UEPlatooningApp::recvQueuedNotification(cMessage* msg)
     ue->getDisplayString().setTagArg("i",1, notification->getColor());
 
     EV << "UEPlatooningApp::recvQueuedJoinNotification() -  Queued notification: " << (notification->getType() == QUEUED_JOIN_NOTIFICATION ? "QUEUED_JOIN_NOTIFICATION" : "QUEUED_LEAVE_NOTIFICATION") << "received " << endl;
+    emit(lifeCycleEventSignal_, simTime());
 }
 
 
 void UEPlatooningApp::recvManoeuvreNotification(cMessage* msg)
 {
     EV << "UEPlatooningApp::recvManoeuvreNotification() - Manouevre notification from the MEC app" << endl;
-
     // handle response to a previous join request from the MEC application
 
     inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
@@ -378,6 +382,7 @@ void UEPlatooningApp::recvManoeuvreNotification(cMessage* msg)
     ue->getDisplayString().setTagArg("i",1, notification->getColor());
 
     EV << "UEPlatooningApp::recvManoeuvreNotification() -  Manoeuvre notification: " << (notification->getType() == JOIN_MANOEUVRE_NOTIFICATION ? "MANOEUVRE_TO_JOIN_PLATOON" : "MANOEUVRE_TO_LEAVE_PLATOON") << "received " << endl;
+    emit(lifeCycleEventSignal_, simTime());
 }
 
 void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
@@ -395,7 +400,7 @@ void UEPlatooningApp::recvJoinPlatoonResponse(cMessage* msg)
     if (resp)
     {
         status_ = JOINED;
-        emit(lifeCycleEventSignal_, simTime());
+        emit(lifeCycleEventSignal_, simTime());;
 
         //updating runtime color of the icon
         ue->getDisplayString().setTagArg("i",1, joinResp->getColor());
@@ -469,6 +474,7 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
         {
            // I am the new leader
             precedingVehicleModule_ = nullptr;
+            EV << "UEPlatooningApp::recvPlatoonCommand - I am the leader [" << precUeAddress.str()  << "]" << endl;
         }
         else
         {
@@ -478,6 +484,8 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
                 throw cRuntimeError("UEPlatooningApp::recvPlatoonCommand(): car module id for IP address %s not found!", precUeAddress.str().c_str());
             }
             precedingVehicleModule_ = check_and_cast<LinearAccelerationMobility*>(tmpModule->getSubmodule("mobility"));
+            precedingVehicleAddress_ = precUeAddress;
+            EV << "UEPlatooningApp::recvPlatoonCommand - the car in front of me is [" << precUeAddress.str()  << "]" << endl;
         }
 
     }
@@ -485,17 +493,22 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
     EV << "UEPlatooningApp::recvPlatoonCommand - Received " << cmd->getType() << " type PlatooningPacket"<< endl;
 
     // obtain command from the controller and apply it to the mobility module
-//    if(!par("sinusoidal").boolValue())
-//    {
-    inet::Coord newAcceleration = cmd->getNewAcceleration();
-    mobility->setAcceleration(newAcceleration);
-    EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
-//    }
+    if(!par("sinusoidal").boolValue())
+    {
+        inet::Coord newAcceleration = cmd->getNewAcceleration();
+        mobility->setAcceleration(newAcceleration.x);
+        EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
+    }
 
     if(precedingVehicleModule_ != nullptr)
     {
         double distancePrecedingVehicle = mobility->getCurrentPosition().distance(precedingVehicleModule_->getCurrentPosition());
+        double calcDist = cmd->getTag<PrecedingVehicleTag>()->getCalculatedDistance();
+        EV << "UEPlatooningApp::recvPlatoonCommand(): emit distance "<<  distancePrecedingVehicle << endl;
         emit(interdistanceSignal_, distancePrecedingVehicle);
+        emit(calculatedDistance_, calcDist);
+        emit(gapDistance_, distancePrecedingVehicle - calcDist);
+
     }
     emit(cmdlatency_, simTime()-creationTime);
 
