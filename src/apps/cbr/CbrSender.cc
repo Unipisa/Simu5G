@@ -146,5 +146,5 @@ void CbrSender::sendCbrPacket()
 void CbrSender::finish()
 {
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit( cbrGeneratedThroughtputSignal_, txBytes_ / elapsedTime );
+    emit( cbrGeneratedThroughtputSignal_, txBytes_ / elapsedTime.dbl() );
 }

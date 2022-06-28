@@ -81,7 +81,7 @@ void CbrReceiver::finish()
     emit(cbrFrameLossSignal_,lossRate);
 
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit( cbrReceivedThroughtput_, recvBytes_ / elapsedTime );
+    emit( cbrReceivedThroughtput_, recvBytes_ / elapsedTime.dbl() );
 }
 
 
