@@ -353,6 +353,9 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
     else
         actualShadowingMap = &lastComputedSF_;
 
+    if (actualShadowingMap == nullptr)
+        throw cRuntimeError("NRChannelModel_3GPP38_901::computeShadowing - actualShadowingMap not found (nullptr)");
+
     double mean = 0;
     double dbp = 0.0;
     //Get std deviation according to los/nlos and selected scenario
@@ -383,7 +386,6 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
     else if ((NOW - actualShadowingMap->at(nodeId).first).dbl() * speed
             > correlationDistance_)
     {
-
         //get the temporal mark of the last computed shadowing attenuation
         time = (NOW - actualShadowingMap->at(nodeId).first).dbl();
 
@@ -394,7 +396,7 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
         double a = exp(-0.5 * (space / correlationDistance_));
 
         //Get last shadowing attenuation computed
-        double old = lastComputedSF_.at(nodeId).second;
+        double old = actualShadowingMap->at(nodeId).second;
 
         //Compute shadowing with a EAW (Exponential Average Window) (step2)
         att = a * old + sqrt(1 - pow(a, 2)) * normal(mean, stdDev);

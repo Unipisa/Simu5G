@@ -33,6 +33,7 @@ void LtePhyEnbD2D::initialize(int stage)
 void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame, Packet* pktAux)
 {
     EV << NOW << " LtePhyEnbD2D::requestFeedback " << endl;
+
     LteFeedbackDoubleVector fb;
 
     // select the correct channel model according to the carrier freq
@@ -104,7 +105,6 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame,
             //Prepare  parameters for next loop iteration - in order to compute SNR in DL
             lteinfo->setTxPower(txPower_);
             lteinfo->setDirection(DL);
-
             //Get snr for DL direction
             if (channelModel != NULL)
                 snr = channelModel->getSINR(frame, lteinfo);

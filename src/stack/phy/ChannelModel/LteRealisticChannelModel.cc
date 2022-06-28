@@ -141,8 +141,8 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
    double attenuation = computePathLoss(sqrDistance, dbp, los);
 
    //    Applying shadowing only if it is enabled by configuration
-      //    log-normal shadowing (not available for background UEs)
-      if (nodeId < BGUE_MIN_ID && shadowing_)
+   //    log-normal shadowing (not available for background UEs)
+   if (nodeId < BGUE_MIN_ID && shadowing_)
        attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
 
    // update current user position
@@ -603,6 +603,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        // else, antenna is omni-directional
    }
    //=============== END ANGOLAR ATTENUATION =================
+
 
    std::vector<double> snrVector;
    snrVector.resize(numBands_, 0.0);
@@ -2896,7 +2897,6 @@ LteRealisticChannelModel::ShadowFadingMap* LteRealisticChannelModel::obtainShado
     // get the associated channel and get a reference to its shadowing Map
     LteRealisticChannelModel * re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
     ShadowFadingMap* j = re->getShadowingMap();
-
     return j;
 }
 
