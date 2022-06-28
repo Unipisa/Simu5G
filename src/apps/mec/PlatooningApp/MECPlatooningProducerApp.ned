@@ -25,6 +25,7 @@ simple MECPlatooningProducerApp like IMECApp, IApp
         int packetSize = default(10);
         string interfaceTableModule = default("");
         
+        int mecAppIndex;
         int mecAppId;
         int producerAppId;
         int localUePort = default(5900);
@@ -51,14 +52,15 @@ simple MECPlatooningProducerApp like IMECApp, IApp
 		string lateralController = "Rajamani";
 		string longitudinalController = "Rajamani";
 		double lateralControlPeriod @unit(s) = 0.100s; 
-		double lateralUpdatePositionPeriod @unit(s) = 0.070s; 
+		double lateralUpdatePositionPeriod @unit(s) = 0.100s; 
 		double longitudinalControlPeriod @unit(s) = 0.100s; 
-		double longitudinalUpdatePositionPeriod @unit(s) = 0.070s; 
+		double longitudinalUpdatePositionPeriod @unit(s) = 0.100s; 
+		double offset @unit(s) = 0.030s;
 		
 		double heartbeatPeriod @unit(s) = default(1s);
 		double mecAppInstantiationTime @unit(s) = default(0.5s);
-		bool adjustPosition = false;
-		bool sendBulk = true;
+		bool adjustPosition = default(false);
+		bool sendBulk = default(true);
 		
 		@signal[updateDiffs];
         @statistic[updateDiffs](title="difference LS response times"; unit="ms"; source="updateDiffs"; record=mean, stats, vector); 

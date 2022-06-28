@@ -44,11 +44,10 @@ class MECPlatooningProducerApp : public MecAppBase
 
     int producerAppId_;
 
-    std::map<int, std::vector<cMessage*>> instantiatingControllersQueue_;
-    double mecAppInstantiationTime_;
+    std::map<int, std::vector<int>> instantiatingControllersQueue_; // key controllerId value producerAppId
+    std::map<int, std::vector<cMessage*>> instantiatingPendingControllersQueue_;
 
-    inet::TcpSocket *mp1Socket_;
-    inet::TcpSocket *serviceSocket_;
+    double mecAppInstantiationTime_;
 
     inet::UdpSocket platooningProducerAppsSocket_; // socket used to communicate with other MecProduderApps
     int platooningProducerAppsPort_;

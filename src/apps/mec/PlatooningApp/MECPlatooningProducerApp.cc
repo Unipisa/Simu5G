@@ -90,6 +90,7 @@ void MECPlatooningProducerApp::initialize(int stage)
 
 
     adjustPosition_  = par("adjustPosition").boolValue();
+    EV << "ADJ" << adjustPosition_ << endl;
     sendBulk_ = par("sendBulk").boolValue();
 
     received_ = 0;
@@ -129,7 +130,7 @@ void MECPlatooningProducerApp::initialize(int stage)
     currentPlatoonRequestTimer_ = new CurrentPlatoonRequestTimer();
     currentPlatoonRequestTimer_->setPeriod(retrievePlatoonsInfoDuration_);
 
-    mp1Socket_ = addNewSocket();
+//    mp1Socket_ = addNewSocket();
 
     // Add local producerApp
     ProducerAppInfo localProducerAppInfo;
@@ -141,7 +142,7 @@ void MECPlatooningProducerApp::initialize(int stage)
     localProducerAppInfo.locationServiceSocket = addNewSocket();
     producerAppEndpoint_[producerAppId_] = localProducerAppInfo;
 
-   connect(mp1Socket_, mp1Address, mp1Port);
+//   connect(mp1Socket_, mp1Address, mp1Port);
 }
 
 void MECPlatooningProducerApp::finish()
@@ -195,13 +196,47 @@ void MECPlatooningProducerApp::handleSelfMessage(cMessage *msg)
          * For all the pending request, respond to the one related to the controller id
          */
 
-        auto pendingReqs = instantiatingControllersQueue_.find(controllerId);
-        if(pendingReqs == instantiatingControllersQueue_.end())
-            throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
+        auto pendingReqs = instantiatingPendingControllersQueue_.find(controllerId);
+        if(pendingReqs == instantiatingPendingControllersQueue_.end())
+            throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingPendingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
 
         int socketPort = port +(int)mecHost->par("maxMECApps") + 1;
         for(auto& req : pendingReqs->second)
             finalizeJoinRequest(req, result, address, socketPort, controllerId);
+
+        instantiatingPendingControllersQueue_.erase(controllerId);
+
+
+        // send the notification CONTROLLER_INSTANTIATION_RESPONSE to the producer apps waiting for the instantiation
+
+        auto pendingNots = instantiatingControllersQueue_.find(controllerId);
+
+        if(pendingNots != instantiatingControllersQueue_.end())
+        {
+            for(int prodApp : pendingNots->second)
+            {
+                inet::Packet* packet = new Packet("PlatooningControllerInstantiationNotificationPacket");
+                auto notification = inet::makeShared<PlatooningControllerInstantiationNotificationPacket>();
+                notification->setType(CONTROLLER_INSTANTIATION_RESPONSE);
+                notification->setControllerId(controllerId);
+                notification->setResult(true);
+                notification->setControllerAddress(controller->second->controllerEndpoint.address);
+                notification->setControllerPort(controller->second->controllerEndpoint.port + (int)mecHost->par("maxMECApps") + 1);
+                notification->setChunkLength(inet::B(10));
+
+                packet->insertAtBack(notification);
+                packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+                auto address = producerAppEndpoint_[prodApp].address;
+                int port  = producerAppEndpoint_[prodApp].port;
+                EV << "MECPlatooningProducerApp::MecAppInstantiationTimer - platoon controller with id [" << controllerId <<  "] has been instantiated."<<
+                " Send response to the MecPlatooningProducerApp with id [" << prodApp << "]"<< endl;
+                platooningProducerAppsSocket_.sendTo(packet, address, port);
+            }
+
+            instantiatingControllersQueue_.erase(controllerId);
+        }
+
         delete appInfo;
         delete msg;
     }
@@ -296,74 +331,10 @@ void MECPlatooningProducerApp::handleProcessedMessage(cMessage *msg)
 
 void MECPlatooningProducerApp::handleHttpMessage(int connId)
 {
-    if (connId == mp1Socket_->getSocketId())
-    {
-        handleMp1Message(connId);
-    }
-    else// if (connId == serviceSocket_->getSocketId())
-    {
-        handleServiceMessage(connId);
-    }
-//    else
-//    {
-//        throw cRuntimeError("Socket with connId [%d] is not present in thi application!", connId);
-//    }
 }
 
 void MECPlatooningProducerApp::handleMp1Message(int connId)
 {
-    // for now I only have just one Service Registry
-    HttpMessageStatus* msgStatus = (HttpMessageStatus*)mp1Socket_->getUserData();
-    mp1HttpMessage = (HttpBaseMessage*)msgStatus->httpMessageQueue.front();
-    EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
-
-      try
-      {
-          nlohmann::json jsonBody = nlohmann::json::parse(mp1HttpMessage->getBody()); // get the JSON structure
-          if(!jsonBody.empty())
-          {
-              jsonBody = jsonBody[0];
-              std::string serName = jsonBody["serName"];
-              if(serName.compare("LocationService") == 0)
-              {
-                  if(jsonBody.contains("transportInfo"))
-                  {
-                      nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
-                      EV << "address: " << endPoint["host"] << " port: " <<  endPoint["port"] << endl;
-                      std::string address = endPoint["host"];
-                      locationServiceAddress_ = L3AddressResolver().resolve(address.c_str());;
-                      locationServicePort_ = endPoint["port"];
-
-                      // once we obtained the endpoint of the Location Service, establish a connection with it
-                      auto localProducerApp = producerAppEndpoint_.find(producerAppId_);
-                      localProducerApp->second.locationServiceAddress = locationServiceAddress_;
-                      localProducerApp->second.locationServicePort = locationServicePort_;
-
-//                      connect(localProducerApp->second.locationServiceSocket , locationServiceAddress_, locationServicePort_);
-                      // connect to all the federated location services
-                      for(auto const& producerApp : producerAppEndpoint_)
-                      {
-                          EV << "MECPlatooningProducerApp::handleMp1Message(): connecting to Location Service of producer app with ID: "<< producerApp.first <<
-                                 " through socket with connId: " <<  producerApp.second.locationServiceSocket-> getSocketId() << endl;
-                          connect(producerApp.second.locationServiceSocket, producerApp.second.locationServiceAddress, producerApp.second.locationServicePort );
-                      }
-
-                  }
-              }
-              else
-              {
-                  EV << "MECPlatooningApp::handleMp1Message - LocationService not found"<< endl;
-                  locationServiceAddress_ = L3Address();
-              }
-          }
-
-      }
-      catch(nlohmann::detail::parse_error e)
-      {
-          EV <<  e.what() << std::endl;
-          // body is not correctly formatted in JSON, manage it
-          return;
-      }
 }
 
 void MECPlatooningProducerApp::handleServiceMessage(int connId)
@@ -394,15 +365,41 @@ void MECPlatooningProducerApp::handleControllerNotification(cMessage* msg)
         else if (controllerNotification->getNotificationType() == REMOVED_MEMBER)
         {
             EV << "MECPlatooningProducerApp::handleControllerNotification: A new member with MECPlatoonConsumerApp [" << controllerNotification->getConsumerAppId() <<"] has been removed from platoon with id "<< controllerNotification->getControllerId() << endl;
-            handleLeaveMemberNotification(msg);
+            //handleLeaveMemberNotification(msg);
         }
         else if (controllerNotification->getNotificationType() == NEW_ORDER)
             EV << "MECPlatooningProducerApp::handleControllerNotification: The platoon with id "<< controllerNotification->getControllerId() << " changes the cars order" << endl;
         else if (controllerNotification->getNotificationType() == HEARTBEAT)
         {
             EV << "MECPlatooningProducerApp::handleControllerNotification: Heartbeat received from controller with id "<< controllerNotification->getControllerId() << ". Update timestamps and vehicles" << endl;
-            handleHeartbeat(msg);
+//            handleHeartbeat(msg);
         }
+
+        else if (controllerNotification->getNotificationType() == STOPPED)
+        {
+            EV << "MECPlatooningProducerApp::handleControllerNotification: stopped notification received from controller with id "<< controllerNotification->getControllerId() << ". Update timestamps and vehicles" << endl;
+            DeleteAppMessage* deleteAppMsg = new DeleteAppMessage();
+            deleteAppMsg->setUeAppID(platoon->second->mecAppId);
+            // get MEC platform manager and require mec app instantiation
+            cModule* mecPlatformManagerModule = this->getModuleByPath("^.mecPlatformManager");
+            MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(mecPlatformManagerModule);
+            bool success  = mecpm->terminateMEApp(deleteAppMsg);
+
+            if(success)
+            {
+                EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: Controller with Id ["<< controllerNotification->getControllerId() << "] successfully removed" << endl;
+                delete platoon->second;
+                platoonControllers_.erase(platoon);
+            }
+            else
+            {
+                EV << "MECPlatooningProducerApp::handleLeaveMemberNotification: Controller with Id ["<< controllerNotification->getControllerId() << "] not removed. Some error occurred" << endl;
+
+            }
+        }
+
+
+
 
         platoon->second->vehicles = controllerNotification->getVehiclesOrder();
         platoon->second->lastHeartBeat = controllerNotification->getHeartbeatTimeStamp();
@@ -736,7 +733,6 @@ void MECPlatooningProducerApp::handleInstantiationNotificationRequest(cMessage *
 
         platooningProducerAppsSocket_.sendTo(pkt, address, port);
 
-        delete packet;
     }
     else
     {
@@ -760,7 +756,6 @@ void MECPlatooningProducerApp::handleInstantiationNotificationRequest(cMessage *
 
             EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - platoon controller with id [" << controllerId <<  "] has been instantiated."<<
                     " Send response to the MecPlatooningProducerApp with id [" << request->getProducerAppId() << "]"<< endl;
-            delete packet;
         }
         else
         {
@@ -768,10 +763,15 @@ void MECPlatooningProducerApp::handleInstantiationNotificationRequest(cMessage *
             EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - platoon controller with id [" << controllerId <<  "] is still under instantiation."<<
                    " Wait for its completion"<< endl;
             packet->insertAtBack(request); // it has been removed at the begin of this method
-            instantiatingControllersQueue_[controllerId].push_back(msg);
+            if(instantiatingControllersQueue_.find(controllerId) == instantiatingControllersQueue_.end())
+                instantiatingControllersQueue_[controllerId].push_back(request->getProducerAppId());
+            else
+            {
+                EV << "MECPlatooningProducerApp::handleInstantiationNotificationRequest - An instantiation notification for controller with Id [" << controllerId << "] is already present" << endl;
+            }
         }
     }
-
+    delete packet;
 }
 
 void MECPlatooningProducerApp::handleInstantiationNotificationResponse(cMessage *msg)
@@ -785,12 +785,13 @@ void MECPlatooningProducerApp::handleInstantiationNotificationResponse(cMessage 
      * For all the pending request, respond to the one related to the controller id
      */
 
-    auto pendingReqs = instantiatingControllersQueue_.find(controllerId);
-    if(pendingReqs == instantiatingControllersQueue_.end())
-        throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
+    auto pendingReqs = instantiatingPendingControllersQueue_.find(controllerId);
+    if(pendingReqs == instantiatingPendingControllersQueue_.end())
+        throw cRuntimeError("MECPlatooningProducerApp::handleSelfMessage: instantiatingPendingControllersQueue_ has not requests associated to controller with id [%d]", controllerId);
 
     int socketPort = request->getControllerPort();
     auto address = request->getControllerAddress();
+    EV << "MECPlatooningProducerApp::handleInstantiationNotificationResponse - Instantiation of controller with id[" << controllerId << "] on producer App with id [" << request->getProducerAppId() <<  "] arrived" << endl;
     for(auto& req : pendingReqs->second)
         finalizeJoinRequest(req, request->getResult(), address, socketPort, controllerId);
 
@@ -854,7 +855,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
 
                 packet->insertAtBack(discoverAssociateMsg);
 
-                instantiatingControllersQueue_[index].push_back(msg);
+                instantiatingPendingControllersQueue_[index].push_back(msg);
 
                 MecAppInstantiationTimer* timer = new MecAppInstantiationTimer("MecAppInstantiationTimer");
                 timer->setDirection(direction);
@@ -882,7 +883,7 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
                     {
                         EV << "MECPlatooningProducerApp::handlePendingJoinRequest - The controller with id [" << index.platoonIndex << "] is in instantiation phase. Wait for its completion." << endl;
                         // the controller is being instantiated, put the request in the queue
-                        instantiatingControllersQueue_[index.platoonIndex].push_back(msg);
+                        instantiatingPendingControllersQueue_[index.platoonIndex].push_back(msg);
                         return;
                     }
                 }
@@ -904,24 +905,35 @@ void MECPlatooningProducerApp::handlePendingJoinRequest(cMessage* msg)
                 }
                 else
                 {
-                    EV << "MECPlatooningProducerApp::handlePendingJoinRequest - The MecPlatoonControllerApp for controller with id [" << index.platoonIndex << "] will be instantiated on the MEC system of MecPlatooningProducerApp with id [" << index.producerApp << "]." <<
-                           " Instantiation notification sent."<< endl;
-                    instantiatingControllersQueue_[index.platoonIndex].push_back(msg);
+                    EV << "MECPlatooningProducerApp::handlePendingJoinRequest - The MecPlatoonControllerApp for controller with id [" << index.platoonIndex << "] will be instantiated on the MEC system of MecPlatooningProducerApp with id [" << index.producerApp << "].";
 
-                    // ask the producer app to notify the completion of the controller instantiation
-                    inet::Packet* packet = new Packet("PlatooningControllerInstantiationNotificationPacket");
-                    auto notification = inet::makeShared<PlatooningControllerInstantiationNotificationPacket>();
-                    notification->setType(CONTROLLER_INSTANTIATION_REQUEST);
-                    notification->setConsumerAppId(request->getConsumerAppId());
-                    notification->setControllerId(index.platoonIndex);
-                    notification->setChunkLength(B(20));
+                    if(instantiatingControllersQueue_.find(index.platoonIndex) == instantiatingControllersQueue_.end())
+                    {
+                        EV << " Instantiation notification sent."<< endl;
 
-                    packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-                    packet->insertAtBack(notification);
+                        // ask the producer app to notify the completion of the controller instantiation
+                        inet::Packet* packet = new Packet("PlatooningControllerInstantiationNotificationPacket");
+                        auto notification = inet::makeShared<PlatooningControllerInstantiationNotificationPacket>();
+                        notification->setType(CONTROLLER_INSTANTIATION_REQUEST);
+                        notification->setConsumerAppId(request->getConsumerAppId());
+                        notification->setProducerAppId(producerAppId_);
 
-                    auto producerApp =  producerAppEndpoint_.find(index.producerApp);
+                        notification->setControllerId(index.platoonIndex);
+                        notification->setChunkLength(B(20));
 
-                    platooningProducerAppsSocket_.sendTo(packet, producerApp->second.address, producerApp->second.port);
+                        packet->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+                        packet->insertAtBack(notification);
+
+                        auto producerApp =  producerAppEndpoint_.find(index.producerApp);
+
+                        platooningProducerAppsSocket_.sendTo(packet, producerApp->second.address, producerApp->second.port);
+
+                    }
+                   else
+                   {
+                       EV << " Instantiation notification already sent."<< endl;
+                   }
+                    instantiatingPendingControllersQueue_[index.platoonIndex].push_back(msg);
                     return;
                 }
             }
@@ -1014,6 +1026,7 @@ void MECPlatooningProducerApp::finalizeJoinRequest(cMessage* msg, bool result, L
        delete packet;
        return;
     }
+
     auto consumerAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
     int consumerAppPort = packet->getTag<L4PortInd>()->getSrcPort();
 
@@ -1089,6 +1102,7 @@ MecAppInstanceInfo* MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& dir
         confMsg->setLateralUpdatePositionPeriod(par("lateralUpdatePositionPeriod").doubleValue());
         confMsg->setLongitudinalControlPeriod(par("longitudinalControlPeriod").doubleValue());
         confMsg->setLongitudinalUpdatePositionPeriod(par("longitudinalUpdatePositionPeriod").doubleValue());
+        confMsg->setOffset(par("offset").doubleValue());
         confMsg->setAdjustPosition(par("adjustPosition").boolValue());
         confMsg->setSendBulk(par("sendBulk").boolValue());
 
@@ -1108,32 +1122,10 @@ void MECPlatooningProducerApp::controlHeartbeats()
      * TODO this method check how long is the last heartbeat from a controller.
      * If timestamp is too old, remove the controller and notify all the associate consumer apps
      */
-    }
+}
 
 void MECPlatooningProducerApp::established(int connId)
 {
-    EV <<"MECPlatooningProducerApp::established - connId ["<< connId << "]" << endl;
-
-
-    if(connId == mp1Socket_->getSocketId())
-    {
-        EV << "MECPlatooningProducerApp::established - Mp1Socket"<< endl;
-
-        // once the connection with the Service Registry has been established, obtain the
-        // endPoint (address+port) of the Location Service
-        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-        std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
-
-        Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
-    }
-//    else if (connId == serviceSocket_->getSocketId())
-//    {
-//        EV << "MECPlatooningProducerApp::established - conection Id: "<< connId << endl;
-//    }
-//    else
-//    {
-//        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
-//    }
 }
 
 
