@@ -347,7 +347,7 @@ void UEPlatooningApp::sendLeavePlatoonRequest()
     leaveReq->setChunkLength(inet::B(leaveRequestPacketSize_));
     leaveReq->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(leaveReq);
-
+    emit(lifeCycleEventSignal_, simTime());
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
     EV << "UEPlatooningApp::sendLeavePlatoonRequest() - Leave request sent to the MEC app" << endl;
 }

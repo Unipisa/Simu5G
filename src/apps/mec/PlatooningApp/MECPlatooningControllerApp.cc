@@ -39,7 +39,6 @@ using namespace omnetpp;
 MECPlatooningControllerApp::MECPlatooningControllerApp() :
         MecAppBase()
 {
-    platoonSelection_ = nullptr;
     isConfigured_ = false;
     updatePositionTimer_ = nullptr;
     controlTimer_ = nullptr;
@@ -60,7 +59,6 @@ MECPlatooningControllerApp::MECPlatooningControllerApp() :
 MECPlatooningControllerApp::~MECPlatooningControllerApp()
 {
     std::cout << "MECPlatooningControllerApp::~MECPlatooningControllerApp()" << std::endl;
-    delete platoonSelection_;
     delete longitudinalController_;
     delete lateralController_;
     if (joiningVehicle_ != nullptr)
@@ -91,10 +89,6 @@ void MECPlatooningControllerApp::initialize(int stage)
     // avoid multiple initializations
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
-
-    // create a new selection algorithm
-    // TODO read from parameter
-    platoonSelection_ = new PlatoonSelectionSample();
 
     // set UDP Sockets
     platooningProducerAppPort_ = par("localUePort");

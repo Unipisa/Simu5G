@@ -29,7 +29,6 @@
 #include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
 
 class PlatoonControllerBase;
-class PlatoonSelectionBase;
 class CurrentPlatoonRequestTimer;
 class PlatoonVehicleInfo;
 
@@ -123,7 +122,6 @@ protected:
 
 
     // reference to the class running the platoon selection algorithm
-    PlatoonSelectionBase* platoonSelection_;
     PlatoonControllerBase* longitudinalController_;
     PlatoonControllerBase* lateralController_;
 
