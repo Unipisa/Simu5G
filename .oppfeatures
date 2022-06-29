@@ -7,7 +7,7 @@
   requires = ""
   labels = ""
   nedPackages = "simu5g.nodes.cars
-                 simu5g.simulations.cars
+                 simu5g.simulations.LTE.cars
                  simu5g.simulations.NR.cars"
   extraSourceFolders = ""
   compileFlags = ""
