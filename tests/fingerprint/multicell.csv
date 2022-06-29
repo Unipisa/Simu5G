@@ -1,3 +1,0 @@
-# workingdir,                        args,                                     simtimelimit,    fingerprint
-/simulations/multicell/,              -f omnetpp.ini -c VoIP -r 0,              5s,              3765-a502/tplx, PASS,
-/simulations/multicell/,              -f omnetpp.ini -c InterferenceTest -r 0,    5s,            e706-bda0/tplx, PASS,

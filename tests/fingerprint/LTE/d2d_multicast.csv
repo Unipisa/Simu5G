@@ -1,0 +1,4 @@
+# workingdir,                        args,                                          simtimelimit,    fingerprint
+/simulations/LTE/d2d_multicast/,              -f omnetpp.ini -c D2DMulticast-1to2 -r 0,            5s,         3f44-a320/tplx, PASS,
+/simulations/LTE/d2d_multicast/,              -f omnetpp.ini -c D2DMulticast-1toM -r 0,            5s,         890c-e5e4/tplx, PASS,
+

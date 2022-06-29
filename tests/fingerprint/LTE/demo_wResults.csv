@@ -1,0 +1,13 @@
+# workingdir,                        args,                                     simtimelimit,    fingerprint
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              bdad-be36/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              f315-46bd/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              21e4-a0b9/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              eab3-21d0/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              fa96-e8fd/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-UL -r 0,            5s,              2a34-c2bb/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,            5s,              a948-2bd8/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,            5s,              c5bf-ac7e/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,            5s,              5b6d-a59b/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,    5s,              f1fa-f080/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,    5s,              de53-4491/s, PASS,
+

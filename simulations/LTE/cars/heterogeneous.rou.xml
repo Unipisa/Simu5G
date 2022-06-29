@@ -16,5 +16,4 @@
   <vehicle id="5" type="car" route="3" depart="25"/>
   <vehicle id="6" type="car" route="3" depart="30"/>
   <vehicle id="7" type="car" route="3" depart="35"/>
-  
 </routes>

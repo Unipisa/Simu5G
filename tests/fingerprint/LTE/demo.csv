@@ -1,0 +1,14 @@
+# workingdir,                        args,                                     simtimelimit,    fingerprint
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VideoStreaming -r 0,    5s,              9277-de9f/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c MixedTraffic -r 0,      5s,              0af2-67a7/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP -r 0,              5s,              d9af-a09d/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP_DL-UL -r 0,        5s,              1b48-6b15/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP-DL -r 0,           5s,              a601-e310/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c VoIP-UL -r 0,           5s,              9d85-24c9/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-UL -r 0,            5s,              1d09-6b21/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,            5s,              b9c2-4a46/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,            5s,              ff0b-b399/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,            5s,              b192-1883/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,    5s,              1cfc-5432/tplx, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,    5s,              2eb1-3fd3/tplx, PASS,
+

@@ -8,7 +8,7 @@
 // The above files and the present reference are part of the software itself, 
 // and cannot be removed from it.
 //
-package simu5g.simulations.NR.cars;
+package simu5g.simulations.LTE.cars;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -19,10 +19,11 @@ import inet.node.ethernet.Eth10G;
 
 import simu5g.world.radio.LteChannelControl;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.Upf;
+import simu5g.nodes.PgwStandard;
 import simu5g.common.binder.Binder;
-import simu5g.nodes.NR.gNodeB;
-import simu5g.nodes.cars.NRCar;
+import simu5g.nodes.eNodeB;
+import simu5g.nodes.Ue;
+import simu5g.nodes.cars.Car;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 
@@ -41,7 +42,6 @@ network Highway
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50,125");
-            config = xmldoc("demo.xml");
         }
 
         //# Veins manager module
@@ -65,25 +65,25 @@ network Highway
         router: Router {
             @display("p=561,135;i=device/smallrouter");
         }
-        upf: Upf {
-            @display("p=462,136");
+        pgw: PgwStandard {
+            @display("p=462,136;is=l");
         }
-        gNodeB1: gNodeB {
+        eNodeB1: eNodeB {
             @display("p=156,136;is=vl");
         }
-        gNodeB2: gNodeB {
+        eNodeB2: eNodeB {
             @display("p=391,313;is=vl");
         }
         //# submodule vector to store all cars - will be filled dynamically during simulations
-        car[0]: NRCar;
+        car[0]: Car;
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> upf.filterGate;
-        upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        upf.pppg++ <--> Eth10G <--> gNodeB2.ppp;
+        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        pgw.pppg++ <--> Eth10G <--> eNodeB1.ppp;
+        pgw.pppg++ <--> Eth10G <--> eNodeB2.ppp;
 
         //# X2 connections
-        gNodeB1.x2++ <--> Eth10G <--> gNodeB2.x2++;
+        eNodeB1.x2++ <--> Eth10G <--> eNodeB2.x2++;
 }
 

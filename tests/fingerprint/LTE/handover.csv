@@ -1,0 +1,9 @@
+# workingdir,                            args,                                          simtimelimit,    fingerprint
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c Handover-General -r 0,      5s,              0baf-34ea/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c VoIP-DL -r 0,               5s,              e2e4-9aff/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c VoIP-UL -r 0,               5s,              ef42-7635/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c VoIP-DL_UL -r 0,            5s,              821f-53c1/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c VoIP-D2D -r 0,              5s,              1627-367f/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c FileTransfer-DL_UL -r 0,    5s,              4348-0693/tplx, PASS,
+/simulations/LTE/test_handover/,              -f omnetpp.ini -c FileTransfer-D2D -r 0,      5s,              3948-6093/tplx, PASS,
+
