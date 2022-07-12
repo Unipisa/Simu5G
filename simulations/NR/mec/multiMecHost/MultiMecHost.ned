@@ -55,8 +55,11 @@ network MultiMecHost
         upf: Upf {
             @display("p=499.59,131.04");
         }
-        iUpf: Upf {
-            @display("p=499.59,247.06499");
+        iUpf1: Upf {
+            @display("p=389.025,247.06499");
+        }
+        iUpf2: Upf {
+            @display("p=603.33,247.06499");
         }
         gnb1: gNodeB {
             @display("p=249.795,395.85;is=vl");
@@ -88,18 +91,19 @@ network MultiMecHost
     connections:
 
         //# 5G Core Network connections
-        upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
-        iUpf.pppg++ <--> Eth10G <--> gnb1.ppp;
-        iUpf.pppg++ <--> Eth10G <--> gnb2.ppp;
+        upf.pppg++ <--> Eth10G <--> iUpf1.pppg++;
+        upf.pppg++ <--> Eth10G <--> iUpf2.pppg++;
+        iUpf1.pppg++ <--> Eth10G <--> gnb1.ppp;
+        iUpf2.pppg++ <--> Eth10G <--> gnb2.ppp;
 
         //# MEC-related connections
         ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
-        mecHost1.pppENB++ <--> Eth10G <--> iUpf.pppg++;
-        mecHost2.pppENB++ <--> Eth10G <--> iUpf.pppg++;
-        mecHost1.pppENB++ <--> Eth10G <--> gnb1.pppMEHost;
-        mecHost2.pppENB++ <--> Eth10G <--> gnb2.pppMEHost;
+        mecHost1.pppENB++ <--> Eth10G <--> iUpf1.pppg++;
+        mecHost2.pppENB++ <--> Eth10G <--> iUpf2.pppg++;
+//        mecHost1.pppENB++ <--> Eth10G <--> gnb1.pppMEHost;
+//        mecHost2.pppENB++ <--> Eth10G <--> gnb2.pppMEHost;
 
         //# X2 connections
         gnb1.x2++ <--> Eth10G <--> gnb2.x2++;

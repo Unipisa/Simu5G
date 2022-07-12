@@ -32,9 +32,7 @@ class ServiceRegistry: public MecServiceBase
 {
 private:
     // key serviceName
-    std::set<std::string> omnetServices_;
     std::vector<ServiceInfo> mecServices_;
-    //LteBinder (oracle module)
 
     //parent modules
     omnetpp::cModule* mePlatform;
@@ -42,7 +40,7 @@ private:
 
     /* 
     * To be ETSI compliant. Each MEC service has a uuid. This implementation does not 
-    * take into account this informatiom, i.e. service discovery is only available via
+    * take into account this information, i.e. service discovery is only available via
     * service name. It is used only in the responses.
     * uuidBase is fixed at 123e4567-e89b-12d3-a456-4266141, with the  last5 digits 
     * used to create uniquely id in a quicker way through the servIdCounter
@@ -67,7 +65,6 @@ public:
     * Service registry runs. It use mainly used by the MEC
     */
     const std::vector<ServiceInfo>* getAvailableMecServices() const;
-    const std::set<std::string>* getAvailableOmnetServices() const;
 
 protected:
 

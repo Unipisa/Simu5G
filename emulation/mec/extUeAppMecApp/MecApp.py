@@ -73,7 +73,7 @@ body =  "{  \"circleNotificationSubscription\": {"\
 
 # Use static address of the MEC service, the above method does not works (Response type error on successive instructions
 # It is possible, however, to manually connect to the service registry and retrieve the endpoint
-locationAddress = "10.0.6.2"
+locationAddress = "10.0.5.2"
 locationPort = 10020
 
 pload = "POST /example/location/v2/subscriptions/area/circle HTTP/1.1\r\n"\

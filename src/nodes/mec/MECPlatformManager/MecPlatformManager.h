@@ -66,7 +66,6 @@ class MecPlatformManager : public cSimpleModule
         bool terminateEmulatedMEApp(DeleteAppMessage*);
 
         const std::vector<ServiceInfo>* getAvailableMecServices() const;
-        const std::set<std::string>* getAvailableOmnetServices() const;
 
         /*
          * method called by the MEC service to notify its presence to the MEC system

@@ -105,5 +105,7 @@ module MECHost
             bgApp[i].socketOut --> virtualisationInfrastructure.meBGAppIn[i];
         }
 
-        virtualisationInfrastructure.mePlatform <--> Eth10G <--> mecPlatform.virtInfr;
+        for i=0..mecPlatform.numMecServices {
+            virtualisationInfrastructure.mecPlatform++ <--> mecPlatform.virtInfr++;
+        }
 }

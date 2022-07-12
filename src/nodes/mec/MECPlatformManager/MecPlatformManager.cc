@@ -90,16 +90,6 @@ const std::vector<ServiceInfo>* MecPlatformManager::getAvailableMecServices() co
     }
 }
 
-const std::set<std::string>* MecPlatformManager::getAvailableOmnetServices() const
-{
-    if(serviceRegistry == nullptr)
-        return nullptr;
-    else
-    {
-       return serviceRegistry->getAvailableOmnetServices();
-    }
-}
-
 void MecPlatformManager::registerMecService(ServiceDescriptor& serviceDescriptor) const
 {
     if(mecOrchestrator != nullptr)

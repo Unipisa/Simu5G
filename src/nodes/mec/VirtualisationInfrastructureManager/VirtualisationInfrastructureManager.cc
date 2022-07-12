@@ -83,47 +83,11 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     virtualisationInfr->setGateSize("meAppOut", maxMECApps);
     virtualisationInfr->setGateSize("meAppIn", maxMECApps);
-    //VirtualisationInfrastructure internal gate connections with VirtualisationInfrastructureManager
-//        for(int index = 0; index < maxMECApps; index++)
-//        {
-//            this->gate("meAppOut", index)->connectTo(virtualisationInfr->gate("meAppOut", index));
-//            virtualisationInfr->gate("meAppIn", index)->connectTo(this->gate("meAppIn", index));
-//        }
 
     mecPlatform = mecHost->getSubmodule("mecPlatform");
-    //setting  gate sizes for MEPlatform
-    if(mecPlatform->gateSize("meAppOut") == 0 || mecPlatform->gateSize("meAppIn") == 0)
-    {
-        mecPlatform->setGateSize("meAppOut", maxMECApps);
-        mecPlatform->setGateSize("meAppIn", maxMECApps);
-    }
 
-    inet::InterfaceTable* platformInterfaceTable = check_and_cast<inet::InterfaceTable*>(mecPlatform->getSubmodule("interfaceTable"));
-
-    int interfaceSize = platformInterfaceTable->getNumInterfaces();
-    bool found = false;
-    for(int i = 0 ; i < interfaceSize ; ++i)
-    {
-        if(strcmp("mp1Ppp", platformInterfaceTable->getInterface(i)->getInterfaceName()) == 0)
-        {
-            mp1Address_ = platformInterfaceTable->getInterface(i)->getIpv4Address();
-            mp1Port_ = par("mp1Port");
-            found = true;
-        }
-    }
-
-    if(found == false)
-        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - interface for mecPlatform not found!!\n"
-                "has its name [mp1Ppp] been changed?");
-
-
-    // retrieving all available ME Services loaded
-    numServices = mecPlatform->par("numOmnetServices");
-    for(int i=0; i<numServices; i++)
-    {
-        meServices.push_back(mecPlatform->getSubmodule("omnetService", i));
-        EV << "VirtualisationInfrastructureManager::initialize - Available meServices["<<i<<"] " << meServices.at(i)->getClassName() << endl;
-    }
+    mp1Address_ = mecHostAddress.toIpv4();
+    mp1Port_ = par("mp1Port");
 
     //------------------------------------
     //retrieve the set of free gates

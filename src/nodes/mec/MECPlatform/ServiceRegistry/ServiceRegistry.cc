@@ -57,7 +57,7 @@ void ServiceRegistry::initialize(int stage)
     }
 
 
-    EV << "MeServiceBase::initialize" << endl;
+    EV << "ServiceRegistry::initialize" << endl;
 
     serviceName_ = par("serviceName").stringValue();
 
@@ -75,17 +75,6 @@ void ServiceRegistry::initialize(int stage)
     subscriptions_.clear();
 
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
-
-
-    // read omnetServices_ names (used by the orchestrator to choose the mec host
-    // retrieving all available ME Services loaded
-   int numServices = mePlatform->par("numOmnetServices");
-   for(int i=0; i<numServices; i++)
-   {
-       cModule* service = mePlatform->getSubmodule("omnetService", i);
-       omnetServices_.insert(service->par("serviceName").stringValue());
-       EV << "ServiceRegistry::initialize - omnetServiceName " << service->par("serviceName").stringValue() << endl;
-   }
 }
 
 
@@ -95,8 +84,6 @@ void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
-    inet::L3Address localAdd(inet::L3AddressResolver().resolve(localAddress));
-    EV << "Local Address resolved: "<< localAdd << endl;
 
     // e.g. 1.2.3.4:5050
     std::stringstream hostStream;
@@ -105,7 +92,6 @@ void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
 
     serverSocket.setOutputGate(gate("socketOut"));
     serverSocket.setCallback(this);
-    //serverSocket.bind(localAddress[0] ? L3Address(localAddress) : L3Address(), localPort);
     serverSocket.bind(inet::L3Address(), localPort); // bind socket for any address
 
     serverSocket.listen();
@@ -247,11 +233,6 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 const std::vector<ServiceInfo>* ServiceRegistry::getAvailableMecServices() const
 {
     return &mecServices_;
-}
-
-const std::set<std::string>* ServiceRegistry::getAvailableOmnetServices() const
-{
-    return &omnetServices_;
 }
 
 
