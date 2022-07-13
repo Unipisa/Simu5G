@@ -32,7 +32,7 @@ network SingleCell_Standalone
     parameters:
         int numUe = default(1);
         int numBgCells = default(0);
-        @display("i=block/network2;bgb=826,558;bgi=background/pisa");
+        @display("i=block/network2;bgb=1000,1000;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
