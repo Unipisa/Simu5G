@@ -18,6 +18,7 @@ import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfras
 import simu5g.nodes.Upf;
 import inet.node.ethernet.Eth10G;
 import inet.applications.contract.IApp;
+
 // 
 //# MEHost module
 //
@@ -37,16 +38,18 @@ module MECHost
         double maxCpuSpeed = default(300000); 	 // CPU's clock speed in Million Instruction per Seconds (MIPS)
 
         int numBGMecApp = default(0);
-        //#connections
-        string eNBList = default("");
+        
+        //# List of Base Stations associated to the MEC host
+        // This is a string of comma-separated values
+        string bsList = default("");
 
     gates:
 
 		//to local radio networks
-        inout pppENB[];
+        inout ppp[];
 
         //to external networks (internet)
-        inout ppp[];
+        inout pppIf[];
 
     submodules:
 
@@ -84,15 +87,15 @@ module MECHost
 
     connections allowunconnected:
 
-        for i=0..sizeof(pppENB)-1 {
-            pppENB++ <--> upf_mec.pppg++;
+        for i=0..sizeof(ppp)-1 {
+            ppp++ <--> upf_mec.pppg++;
         }
 
-        for i=0..sizeof(ppp)-1 {
+        for i=0..sizeof(pppIf)-1 {
             //#
             //# external connection to external networks
             //#
-            virtualisationInfrastructure.ppp++ <--> ppp++;
+            virtualisationInfrastructure.ppp++ <--> pppIf++;
         }
 
         //#

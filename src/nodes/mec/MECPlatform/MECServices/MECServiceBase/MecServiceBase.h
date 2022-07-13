@@ -159,9 +159,9 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         virtual void refreshDisplay() const override;
 
         /*
-         * This method finds all the eNodeB connected to the Mec Host hosting the service
+         * This method finds all the BSs connected to the Mec Host hosting the service
          */
-        virtual void getConnectedEnodeB();
+        virtual void getConnectedBaseStations();
 
         /*
          * This method call the handle method according to the HTTP verb

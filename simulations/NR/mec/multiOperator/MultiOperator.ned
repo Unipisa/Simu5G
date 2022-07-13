@@ -8,6 +8,7 @@
 // The above files and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
+
 package simu5g.simulations.NR.mec.multiOperator;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
@@ -125,13 +126,13 @@ network MultiOperator
 
         //# 5G Core Network connections
         upf_A.pppg++ <--> Eth10G <--> iUpf_A.pppg++;
-        iUpf_A.pppg++ <--> Eth10G <--> mecHost_A.pppENB++;
+        iUpf_A.pppg++ <--> Eth10G <--> mecHost_A.ppp++;
         iUpf_A.pppg++ <--> Eth10G <--> gnb_A1.ppp;
         iUpf_A.pppg++ <--> Eth10G <--> gnb_A2.ppp;
         iUpf_A.pppg++ <--> Eth10G <--> gnb_A3.ppp;
 
         upf_B.pppg++ <--> Eth10G <--> iUpf_B.pppg++;
-        iUpf_B.pppg++ <--> Eth10G <--> mecHost_B.pppENB++ if enableMecOperatorB;
+        iUpf_B.pppg++ <--> Eth10G <--> mecHost_B.ppp++ if enableMecOperatorB;
         iUpf_B.pppg++ <--> Eth10G <--> gnb_B1.ppp;
         iUpf_B.pppg++ <--> Eth10G <--> gnb_B2.ppp;
         iUpf_B.pppg++ <--> Eth10G <--> gnb_B3.ppp;

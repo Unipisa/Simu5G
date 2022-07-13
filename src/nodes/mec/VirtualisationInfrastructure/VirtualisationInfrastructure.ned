@@ -53,7 +53,7 @@ module VirtualisationInfrastructure
 
     gates:
 
-        inout ppp[];				// connection with GtpEndpoint and local/externa networks
+        inout ppp[];				// connection with GtpEndpoint and local/external networks
 
         output meBGAppOut[numBGMecApp];			// connection to the ME App input gate
         input meBGAppIn[numBGMecApp];			// connection to the ME App output gate

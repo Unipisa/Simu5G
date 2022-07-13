@@ -8,6 +8,7 @@
 // The above files and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
+
 package simu5g.simulations.NR.mec.RNIDelay;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
@@ -99,10 +100,10 @@ network MultiCell
         gNodeB2.x2++ <--> Eth10G <--> gNodeB3.x2++;
 
 
-        //        //#	mec
-        //        // direct connection between gNodeB1 and mecHost
-        mecHost.pppENB++ <--> Eth10G <--> gNodeB1.pppMEHost;
-        mecHost.pppENB++ <--> Eth10G <--> gNodeB2.pppMEHost;
-        mecHost.pppENB++ <--> Eth10G <--> gNodeB3.pppMEHost;
+        //#	mec
+        //# direct connection between gNodeBs and mecHost
+        mecHost.ppp++ <--> Eth10G <--> gNodeB1.pppMEHost;
+        mecHost.ppp++ <--> Eth10G <--> gNodeB2.pppMEHost;
+        mecHost.ppp++ <--> Eth10G <--> gNodeB3.pppMEHost;
 
 }

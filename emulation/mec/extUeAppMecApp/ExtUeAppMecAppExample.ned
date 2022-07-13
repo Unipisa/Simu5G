@@ -85,7 +85,7 @@ network ExtUeAppMecAppExample
         iUpf.pppg++ <--> Eth10G <--> upf.pppg++;
 
 	    //#	mec
-        mecHost1.pppENB++ <--> Eth10G <--> iUpf.pppg++;
+        mecHost1.ppp++ <--> Eth10G <--> iUpf.pppg++;
         upf.filterGate <--> Eth10G <--> ualcmp.ppp++;
 
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;

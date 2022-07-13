@@ -100,10 +100,8 @@ network MultiMecHost
         ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
-        mecHost1.pppENB++ <--> Eth10G <--> iUpf1.pppg++;
-        mecHost2.pppENB++ <--> Eth10G <--> iUpf2.pppg++;
-//        mecHost1.pppENB++ <--> Eth10G <--> gnb1.pppMEHost;
-//        mecHost2.pppENB++ <--> Eth10G <--> gnb2.pppMEHost;
+        mecHost1.ppp++ <--> Eth10G <--> iUpf1.pppg++;
+        mecHost2.ppp++ <--> Eth10G <--> iUpf2.pppg++;
 
         //# X2 connections
         gnb1.x2++ <--> Eth10G <--> gnb2.x2++;

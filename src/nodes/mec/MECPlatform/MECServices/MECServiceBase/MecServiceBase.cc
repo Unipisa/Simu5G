@@ -110,8 +110,8 @@ void MecServiceBase::initialize(int stage)
             mecPlatformManager_ = check_and_cast<MecPlatformManager*>(module);
         }
 
-        // get the gnb connected to the mehost
-        getConnectedEnodeB();
+        // get the BSs connected to the mec host
+        getConnectedBaseStations();
     }
     inet::ApplicationBase::initialize(stage);
 }
@@ -535,17 +535,17 @@ void MecServiceBase::refreshDisplay() const
     return;
 }
 
-void MecServiceBase::getConnectedEnodeB(){
+void MecServiceBase::getConnectedBaseStations(){
 
-    EV <<"MecServiceBase::getConnectedEnodeB" << endl;
+    EV <<"MecServiceBase::getConnectedBaseStations" << endl;
 
-    //getting the list of mec hosts associated to this mec system from parameter
-    if(meHost_->hasPar("eNBList") && strcmp(meHost_->par("eNBList").stringValue(), "")){
+    //getting the list of BS associated to this mec system from NED
+    if(meHost_->hasPar("bsList") && strcmp(meHost_->par("bsList").stringValue(), "")){
 
-       char* token = strtok ( (char*)meHost_->par("eNBList").stringValue(), ", ");            // split by commas
+       char* token = strtok ( (char*)meHost_->par("bsList").stringValue(), ", ");            // split by commas
        while (token != NULL)
        {
-           EV <<"MecServiceBase::getConnectedEnodeB " << token << endl;
+           EV <<"MecServiceBase::getConnectedBaseStations " << token << endl;
            cModule *bsModule = getSimulation()->getModuleByPath(token);
            EV << "add2: " << bsModule << endl;
            eNodeB_.insert(bsModule);

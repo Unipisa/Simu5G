@@ -1,9 +1,11 @@
 //
-//                           Simu5G
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
-// "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself,
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
 
@@ -19,10 +21,8 @@ import simu5g.nodes.Upf;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
 import simu5g.nodes.mec.MECHost;
-
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
 import simu5g.nodes.mec.UALCMP.UALCMP;
-
 
 
 network singleMecHost
@@ -88,5 +88,5 @@ network singleMecHost
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
 
-        mecHost.pppENB++ <--> Eth10G <--> iUpf.pppg++;
+        mecHost.ppp++ <--> Eth10G <--> iUpf.pppg++;
 }
