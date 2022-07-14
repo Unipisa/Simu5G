@@ -496,7 +496,7 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
     if(!par("sinusoidal").boolValue())
     {
         inet::Coord newAcceleration = cmd->getNewAcceleration();
-        mobility->setAcceleration(newAcceleration.x);
+        mobility->setAcceleration(newAcceleration);
         EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
     }
 
