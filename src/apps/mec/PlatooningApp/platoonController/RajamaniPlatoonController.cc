@@ -13,19 +13,19 @@
 #include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
 #include "apps/mec/PlatooningApp/mobility/LinearAccelerationMobility.h"
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <linux/perf_event.h>
-#include <linux/hw_breakpoint.h>
-#include <asm/unistd.h>
-#include <errno.h>
-#include <stdint.h>
-#include <inttypes.h>
+//
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <unistd.h>
+//#include <sys/syscall.h>
+//#include <string.h>
+//#include <sys/ioctl.h>
+//#include <linux/perf_event.h>
+//#include <linux/hw_breakpoint.h>
+//#include <asm/unistd.h>
+//#include <errno.h>
+//#include <stdint.h>
+//#include <inttypes.h>
 
 
 RajamaniPlatoonController::RajamaniPlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod, bool isLateral)
@@ -107,8 +107,8 @@ CommandList* RajamaniPlatoonController::controlPlatoon()
             inet::L3Address precedingVehicleAddress = L3Address();
             if (mecAppId == leaderId)
             {
-//                newAcceleration = computeLeaderAcceleration(vehicleInfo.getUeAddress());
-                newAcceleration = computeLeaderAcceleration(speed);
+                newAcceleration = computeLeaderAcceleration(vehicleInfo.getUeAddress());
+//                newAcceleration = computeLeaderAcceleration(speed);
 
                 //membersInfo_->at(mecAppId).setAcceleration(newAcceleration);
 
@@ -169,7 +169,8 @@ CommandList* RajamaniPlatoonController::controlJoinManoeuvrePlatoon()
         if(platoonPositions_->size() == 0) //is leader
         {
             EV << "RajamaniPlatoonController::controlJoinManoeuvrePlatoon - The platoon is empty. The joining vehicle is the new leader" << endl;
-            newAcceleration = computeLeaderAcceleration(speed);
+//            newAcceleration = computeLeaderAcceleration(speed);
+            newAcceleration = computeLeaderAcceleration(mecPlatooningControllerApp_->getJoiningVehicle()->getUeAddress());
             endManouvre = true;
 
             // add to the platooning structures

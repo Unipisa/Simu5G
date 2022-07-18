@@ -24,7 +24,7 @@ PlatoonControllerBase::PlatoonControllerBase(MECPlatooningControllerApp* mecPlat
 
     // TODO make these parametric
     minAcceleration_ = -5.0;
-    maxAcceleration_ = 1.5;//1.5;
+    maxAcceleration_ = 5; //1.5;//1.5;
 
     targetSpeed_ = 25;
 }
