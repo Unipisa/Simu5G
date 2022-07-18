@@ -132,6 +132,14 @@ void NRMacUe::handleSelfMessage()
 
          bool retx = false;
 
+         if(!firstTx)
+         {
+             EV << "\t currentHarq_ counter initialized " << endl;
+             firstTx=true;
+             // the gNb will receive the first pdu in 2 TTI, thus initializing acid to 0
+             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
+         }
+
          HarqTxBuffers::iterator it2;
          LteHarqBufferTx * currHarq;
          std::map<double, HarqTxBuffers>::iterator mtit;
@@ -261,6 +269,13 @@ void NRMacUe::handleSelfMessage()
         }
     }
     //======================== END DEBUG ==========================
+
+    // update current harq process id, if needed
+    if (requestedSdus_ == 0)
+    {
+        EV << NOW << " NRMacUe::handleSelfMessage - incrementing counter for HARQ processes " << (unsigned int)currentHarq_ << " --> " << (currentHarq_+1)%harqProcesses_ << endl;
+        currentHarq_ = (currentHarq_+1) % harqProcesses_;
+    }
 
     decreaseNumerologyPeriodCounter();
 
@@ -593,8 +608,8 @@ void NRMacUe::macPduMake(MacCid cid)
             }
 
             // search for an empty unit within the first available process
-            UnitList txList = txBuf->firstAvailable();
-            EV << "NRMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "]" << endl;
+            UnitList txList = txBuf->getEmptyUnits(currentHarq_);
+            EV << "NRMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
             //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
             auto macPkt = pit->second;
