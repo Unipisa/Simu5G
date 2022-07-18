@@ -219,25 +219,6 @@ enum CoreNodeType
     UPF_MEC = 5;      // MEC
 };
 
-//  Subframe type 
-enum LteSubFrameType
-{
-    NORMAL_FRAME_TYPE  = 0;
-    MBSFN = 1;
-    PAGING = 2;
-    BROADCAST = 3;
-    SYNCRO = 4;
-    ABS = 5;
-    UNKNOWN_FRAME_TYPE = 6;
-};
-
-
-enum X2MsgType
-{
-    ABS_INFO  = 0;
-    ABS_STATUS_INFO = 1;
-};
-
 
 // Types of BSR  * TODO add LONG/TRUNCATED BSR  
 enum BsrType

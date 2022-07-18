@@ -97,18 +97,6 @@ class LteScheduler
     /// Cid List
     typedef std::list<MacCid> CidList;
 
-    /**
-     * Grant type per class of service.
-     * FIXED has size, URGENT has max size, FITALL always has 4294967295U size.
-     */
-    std::map<LteTrafficClass, GrantType> grantTypeMap_;
-
-    /**
-     * Grant size per class of service.
-     * FIXED has size, URGENT has max size, FITALL always has 4294967295U size.
-     */
-    std::map<LteTrafficClass, int> grantSizeMap_;
-
     //! numerology index of the component carrier it has to schedule
     unsigned int numerologyIndex_;
 
@@ -222,15 +210,6 @@ class LteScheduler
      * used by scheduling modules
      */
     void buildCarrierActiveConnectionSet();
-
-  private:
-
-    /**
-     * Utility function.
-     * Initializes grantType_ and grantSize_ maps using mac NED parameters.
-     * Note: mac_ amd direction_ should be initialized.
-     */
-    void initializeGrants();
 
 };
 

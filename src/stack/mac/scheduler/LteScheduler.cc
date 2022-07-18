@@ -20,7 +20,6 @@ void LteScheduler::setEnbScheduler(LteSchedulerEnb* eNbScheduler)
     eNbScheduler_ = eNbScheduler;
     direction_ = eNbScheduler_->direction_;
     mac_ = eNbScheduler_->mac_;
-    initializeGrants();
 }
 
 void LteScheduler::setCarrierFrequency(double carrierFrequency)
@@ -221,37 +220,5 @@ void LteScheduler::buildCarrierActiveConnectionSet()
     {
         if (carrierUeSet.find(MacCidToNodeId(*it)) != carrierUeSet.end())
             carrierActiveConnectionSet_.insert(*it);
-    }
-}
-
-void LteScheduler::initializeGrants()
-{
-    if (direction_ == DL)
-    {
-        grantTypeMap_[CONVERSATIONAL] = aToGrantType(mac_->par("grantTypeConversationalDl"));
-        grantTypeMap_[STREAMING] = aToGrantType(mac_->par("grantTypeStreamingDl"));
-        grantTypeMap_[INTERACTIVE] = aToGrantType(mac_->par("grantTypeInteractiveDl"));
-        grantTypeMap_[BACKGROUND] = aToGrantType(mac_->par("grantTypeBackgroundDl"));
-
-        grantSizeMap_[CONVERSATIONAL] = mac_->par("grantSizeConversationalDl");
-        grantSizeMap_[STREAMING] = mac_->par("grantSizeStreamingDl");
-        grantSizeMap_[INTERACTIVE] = mac_->par("grantSizeInteractiveDl");
-        grantSizeMap_[BACKGROUND] = mac_->par("grantSizeBackgroundDl");
-    }
-    else if (direction_ == UL)
-    {
-        grantTypeMap_[CONVERSATIONAL] = aToGrantType(mac_->par("grantTypeConversationalUl"));
-        grantTypeMap_[STREAMING] = aToGrantType(mac_->par("grantTypeStreamingUl"));
-        grantTypeMap_[INTERACTIVE] = aToGrantType(mac_->par("grantTypeInteractiveUl"));
-        grantTypeMap_[BACKGROUND] = aToGrantType(mac_->par("grantTypeBackgroundUl"));
-
-        grantSizeMap_[CONVERSATIONAL] = mac_->par("grantSizeConversationalUl");
-        grantSizeMap_[STREAMING] = mac_->par("grantSizeStreamingUl");
-        grantSizeMap_[INTERACTIVE] = mac_->par("grantSizeInteractiveUl");
-        grantSizeMap_[BACKGROUND] = mac_->par("grantSizeBackgroundUl");
-    }
-    else
-    {
-        throw cRuntimeError("Unknown direction %d", direction_);
     }
 }

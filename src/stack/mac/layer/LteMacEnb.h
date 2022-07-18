@@ -44,22 +44,7 @@ class LteMacEnb : public LteMacBase
     /// reference to the background traffic manager
     std::map<double, BackgroundTrafficManager*> bgTrafficManager_;
 
-    /**
-     * Variable used for Downlink energy consumption computation
-     */
     /*******************************************************************************************/
-
-    // Current subframe type
-    LteSubFrameType currentSubFrameType_;
-    //frame index in the mbsfn pattern
-    int frameIndex_;
-
-    /*******************************************************************************************/
-    // Resource Elements per Rb
-    std::vector<double> rePerRb_;
-
-    // Resource Elements per Rb - MBSFN frames
-    std::vector<double> rePerRbMbsfn_;
 
     /// Buffer for the BSRs
     LteMacBufferMap bsrbuf_;
@@ -221,95 +206,6 @@ class LteMacEnb : public LteMacBase
      * @par dir link direction
      */
     SchedDiscipline getSchedDiscipline(Direction dir);
-
-    //! Lte Advanced Scheduler support
-
-    /*
-     * Getter for allocation RBs
-     * @par dir link direction
-     */
-    unsigned int getAllocationRbs(Direction dir);
-
-    /*
-     * Getter for deadline
-     * @par tClass traffic class
-     * @par dir link direction
-     */
-
-    double getLteAdeadline(LteTrafficClass tClass, Direction dir);
-
-    /*
-     * Getter for slack-term
-     * @par tClass traffic class
-     * @par dir link direction
-     */
-
-    double getLteAslackTerm(LteTrafficClass tClass, Direction dir);
-
-    /*
-     * Getter for maximum urgent burst size
-     * @par tClass traffic class
-     * @par dir link direction
-     */
-    int getLteAmaxUrgentBurst(LteTrafficClass tClass, Direction dir);
-
-    /*
-     * Getter for maximum fairness burst size
-     * @par tClass traffic class
-     * @par dir link direction
-     */
-    int getLteAmaxFairnessBurst(LteTrafficClass tClass, Direction dir);
-
-    /*
-     * Getter for fairness history size
-     * @par dir link direction
-     */
-    int getLteAhistorySize(Direction dir);
-    /*
-     * Getter for fairness TTI threshold
-     * @par dir link direction
-     */
-    int getLteAgainHistoryTh(LteTrafficClass tClass, Direction dir);
-
-    // Power Model Parameters
-    /* minimum depleted power (W)
-     * @par dir link direction
-     */
-    double getZeroLevel(Direction dir, LteSubFrameType type);
-    /* idle state depleted power (W)
-     * @par dir link direction
-     */
-    double getIdleLevel(Direction dir, LteSubFrameType type);
-    /* per-block depletion unit (W)
-     * @par dir link direction
-     */
-    double getPowerUnit(Direction dir, LteSubFrameType type);
-    /* maximumum depletable power (W)
-     * @par dir link direction
-     */
-    double getMaxPower(Direction dir, LteSubFrameType type);
-
-    /* getter for the flag that enable PF legacy in LTEA scheduler
-     *  @par dir link direction
-     */
-    bool getPfTmsAwareFlag(Direction dir);
-
-    /*
-     * getter for current sub-frame type.
-     * It sould be NORMAL_FRAME_TYPE, MBSFN, SYNCRO
-     * BROADCAST, PAGING and ABS
-     * It is used in order to compute the energy consumption
-     */
-    LteSubFrameType getCurrentSubFrameType() const
-    {
-        return currentSubFrameType_;
-    }
-
-    /*
-     * Update the number of allocatedRb in last tti
-     * @par number of resource block
-     */
-    void allocatedRB(unsigned int rb);
 
     /*
      * Return the current active set (active connections)

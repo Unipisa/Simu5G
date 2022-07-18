@@ -363,44 +363,6 @@ const RanNodeTable nodetypes[] = {
     ELEM(UNKNOWN_NODE_TYPE)
 };
 
-
-struct LteSubFrameTypeTable
-{
-    LteSubFrameType type;
-    std::string typeName;
-};
-
-const LteSubFrameTypeTable subFrametypes[] = {
-    ELEM(NORMAL_FRAME_TYPE),
-    ELEM(MBSFN),
-    ELEM(PAGING),
-    ELEM(BROADCAST),
-    ELEM(SYNCRO),
-    ELEM(ABS),
-    ELEM(UNKNOWN_FRAME_TYPE)
-};
-
-//|--------------------------------------------------|
-//|----------------- ABS Management -----------------|
-//|--------------------------------------------------|
-//********* See 3GPP TS 36.423 for more info *********
-const int ABS_WIN = 40;
-typedef std::bitset<ABS_WIN> AbsBitset;
-
-/*
- * ABS_INFO         macro->micro
- * ABS_STATUS_INFO    micro->macro
- *
- * these are the names from standard, so it's not my fault if they are stupid.
- */
-
-// Abs Status Information structure
-struct AbsStatusInfoMsg
-{
-    double absStatus;
-    AbsBitset usableAbsInfo;
-};
-
 //|--------------------------------------------------|
 
 /*****************
@@ -701,8 +663,6 @@ MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid);
 MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info);        // get the CID from the packet control info
 MacNodeId MacCidToNodeId(MacCid cid);
 LogicalCid MacCidToLcid(MacCid cid);
-GrantType aToGrantType(std::string a);
-const std::string grantTypeToA(GrantType gType);
 Binder* getBinder();
 CellInfo* getCellInfo(MacNodeId nodeId);
 omnetpp::cModule* getPhyByMacNodeId(MacNodeId nodeId);
@@ -712,8 +672,6 @@ omnetpp::cModule* getPdcpByMacNodeId(MacNodeId nodeId);
 LteMacBase* getMacUe(MacNodeId nodeId);
 FeedbackGeneratorType getFeedbackGeneratorType(std::string s);
 const std::string fbGeneratorTypeToA(FeedbackGeneratorType type);
-LteSubFrameType aToSubFrameType(std::string s);
-const std::string SubFrameTypeToA(const LteSubFrameType r);
 const std::string DeploymentScenarioToA(DeploymentScenario type);
 DeploymentScenario aToDeploymentScenario(std::string s);
 bool isMulticastConnection(LteControlInfo* lteInfo);

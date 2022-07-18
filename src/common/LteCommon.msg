@@ -41,20 +41,6 @@ struct LteNodeTable
     @toString(.str());
 }
 
-struct LteSubFrameTypeTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct AbsStatusInfoMsg
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
 struct BandLimit
 {
     @existingClass;

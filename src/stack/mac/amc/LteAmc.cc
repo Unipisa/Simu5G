@@ -73,7 +73,6 @@ void LteAmc::printParameters()
     EV << "FBHB capacity UL: " << fbhbCapacityUl_ << endl;
     EV << "PmiWeight: " << pmiComputationWeight_ << endl;
     EV << "CqiWeight: " << cqiComputationWeight_ << endl;
-    EV << "kCqi: " << kCqi_ << endl;
     EV << "DL MCS scale: " << mcsScaleDl_ << endl;
     EV << "UL MCS scale: " << mcsScaleUl_ << endl;
     EV << "Confidence LB: " << lb_ << endl;
@@ -237,7 +236,6 @@ LteAmc& LteAmc::operator=(const LteAmc& other)
     mcsScaleD2D_ = other.mcsScaleD2D_;
     numAntennas_ = other.numAntennas_;
     remoteSet_ = other.remoteSet_;
-    kCqi_ = other.kCqi_;
     dlConnectedUe_ = other.dlConnectedUe_;
     ulConnectedUe_ = other.ulConnectedUe_;
     d2dConnectedUe_ = other.d2dConnectedUe_;
@@ -295,7 +293,6 @@ void LteAmc::initialize()
     fbhbCapacityD2D_ = mac_->par("fbhbCapacityD2D");
     pmiComputationWeight_ = mac_->par("pmiWeight");
     cqiComputationWeight_ = mac_->par("cqiWeight");
-    kCqi_ = mac_->par("kCqi");
     pilot_ = getAmcPilot(mac_->par("amcMode"));
     allocationType_ = getRbAllocationType(mac_->par("rbAllocationType").stringValue());
     lb_ = mac_->par("summaryLowerBound");

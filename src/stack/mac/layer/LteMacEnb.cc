@@ -54,9 +54,7 @@ LteMacEnb::LteMacEnb() :
     enbSchedulerUl_ = nullptr;
     numAntennas_ = 0;
     bsrbuf_.clear();
-    currentSubFrameType_ = NORMAL_FRAME_TYPE;
     nodeType_ = ENODEB;
-    frameIndex_ = 0;
     scheduleListDl_ = nullptr;
 }
 
@@ -107,101 +105,6 @@ SchedDiscipline LteMacEnb::getSchedDiscipline(Direction dir)
     }
 }
 
-double LteMacEnb::getLteAdeadline(LteTrafficClass tClass, Direction dir)
-{
-    std::string a("lteAdeadline");
-    a.append(lteTrafficClassToA(tClass));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-double LteMacEnb::getLteAslackTerm(LteTrafficClass tClass, Direction dir)
-{
-    std::string a("lteAslackTerm");
-    a.append(lteTrafficClassToA(tClass));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-int LteMacEnb::getLteAmaxUrgentBurst(LteTrafficClass tClass, Direction dir)
-{
-    std::string a("lteAmaxUrgentBurst");
-    a.append(lteTrafficClassToA(tClass));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-int LteMacEnb::getLteAmaxFairnessBurst(LteTrafficClass tClass, Direction dir)
-{
-    std::string a("lteAmaxFairnessBurst");
-    a.append(lteTrafficClassToA(tClass));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-int LteMacEnb::getLteAhistorySize(Direction dir)
-{
-    std::string a("lteAhistorySize");
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-int LteMacEnb::getLteAgainHistoryTh(LteTrafficClass tClass, Direction dir)
-{
-    std::string a("lteAgainHistoryTh");
-    a.append(lteTrafficClassToA(tClass));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-double LteMacEnb::getZeroLevel(Direction dir, LteSubFrameType type)
-{
-    std::string a("zeroLevel");
-    a.append(SubFrameTypeToA(type));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-double LteMacEnb::getIdleLevel(Direction dir, LteSubFrameType type)
-{
-    std::string a("idleLevel");
-    a.append(SubFrameTypeToA(type));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-double LteMacEnb::getPowerUnit(Direction dir, LteSubFrameType type)
-{
-    std::string a("powerUnit");
-    a.append(SubFrameTypeToA(type));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-double LteMacEnb::getMaxPower(Direction dir, LteSubFrameType type)
-{
-    std::string a("maxPower");
-    a.append(SubFrameTypeToA(type));
-    a.append(dirToA(dir));
-    return par(a.c_str());
-}
-
-unsigned int LteMacEnb::getAllocationRbs(Direction dir)
-{
-    if (dir == DL)
-    {
-        return par("lteAallocationRbsDl");
-    }
-    else
-        return par("lteAallocationRbsUl");
-}
-
-bool LteMacEnb::getPfTmsAwareFlag(Direction dir)
-{
-    if (dir == DL)
-        return par("pfTmsAwareDL");
-    else
-        return par("pfTmsAwareUL");
-}
-
 void LteMacEnb::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
@@ -248,9 +151,6 @@ void LteMacEnb::initialize(int stage)
 
         /* Get number of antennas */
         numAntennas_ = getNumAntennas();
-
-        //Initialize the current sub frame type with the first subframe of the MBSFN pattern
-        currentSubFrameType_ = NORMAL_FRAME_TYPE;
 
         eNodeBCount = par("eNodeBCount");
         WATCH(numAntennas_);

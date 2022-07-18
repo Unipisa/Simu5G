@@ -64,7 +64,6 @@ class LteAmc
     double mcsScaleD2D_;
     int numAntennas_;
     RemoteSet remoteSet_;
-    Cqi kCqi_;
     ConnectedUesMap dlConnectedUe_;
     ConnectedUesMap ulConnectedUe_;
     ConnectedUesMap d2dConnectedUe_;
@@ -131,11 +130,6 @@ class LteAmc
     const RemoteSet *getAntennaSet()
     {
         return &remoteSet_;
-    }
-
-    Cqi getKCqi()
-    {
-        return kCqi_;
     }
 
 

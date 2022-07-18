@@ -296,30 +296,6 @@ LtePhyFrameType aToPhyFrameType(std::string s)
     return UNKNOWN_TYPE;
 }
 
-LteSubFrameType aToSubFrameType(std::string s)
-{
-    int i = 0;
-    while (subFrametypes[i].type != UNKNOWN_FRAME_TYPE)
-    {
-        if (subFrametypes[i].typeName == s)
-            return subFrametypes[i].type;
-        i++;
-    }
-    return UNKNOWN_FRAME_TYPE;
-}
-
-const std::string SubFrameTypeToA(const LteSubFrameType r)
-{
-    int i = 0;
-    while (subFrametypes[i].type != UNKNOWN_FRAME_TYPE)
-    {
-        if (subFrametypes[i].type == r)
-            return subFrametypes[i].typeName;
-        i++;
-    }
-    return "UNKNOWN_FRAME_TYPE";
-}
-
 const std::string nodeTypeToA(const RanNodeType t)
 {
     int i = 0;
@@ -413,33 +389,6 @@ const std::string planeToA(Plane p)
             return "MU_MIMO_PLANE";
         default:
             return "UNKNOWN PLANE";
-    }
-}
-
-GrantType aToGrantType(std::string a)
-{
-    if (a == "FITALL") 
-        return FITALL;
-    else if (a == "FIXED" ) 
-        return FIXED_;
-    else if (a == "URGENT") 
-        return URGENT;
-    else 
-        return UNKNOWN_GRANT_TYPE;
-}
-
-const std::string grantTypeToA(GrantType gType)
-{
-    switch (gType)
-    {
-        case FITALL:
-            return "FITALL";
-        case FIXED_:
-            return "FIXED";
-        case URGENT:
-            return "URGENT";
-        default:
-            return "UNKNOWN_GRANT_TYPE";
     }
 }
 
