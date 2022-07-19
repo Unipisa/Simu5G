@@ -125,6 +125,9 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
    if (twoDimDistance < 10)
        twoDimDistance = 10;
 
+   if (threeDimDistance < 10)
+       threeDimDistance = 10;
+
    if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
        throw cRuntimeError("Error urban macrocell path loss model is valid for d<5000m only");
 

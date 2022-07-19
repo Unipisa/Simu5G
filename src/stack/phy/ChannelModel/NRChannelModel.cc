@@ -224,6 +224,9 @@ double NRChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
    if (twoDimDistance < 10)
        twoDimDistance = 10;
 
+   if (threeDimDistance < 10)
+       threeDimDistance = 10;
+
    if (twoDimDistance > 5000){
        if(tolerateMaxDistViolation_)
            return ATT_MAXDISTVIOLATED;
