@@ -113,8 +113,8 @@ Advanced features
 - X2-based handover
 - CoMP Coordinated Scheduling support
 - Device-to-device communications
-- Support for vehicular mobility (integration with Veins 5.1)
-- ETSI-compliant model of Multi-access Edge Computing (MEC) Hosts
+- Support for vehicular mobility (integration with Veins 5.2)
+- ETSI-compliant model of Multi-access Edge Computing (MEC) systems
 
 
 Applications
