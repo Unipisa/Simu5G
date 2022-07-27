@@ -140,13 +140,12 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         * @param pdcpSno pdcp sequence number
         * @bool ack pdcp pdcp arrived flag
         */
-
-        virtual void removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack);
+        void removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack);
 
         /*
          * This method creates a pdcpStatus structure when a pdcpSdu arrives at the PDCP layer.
          */
-        virtual void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
+        void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
 
         virtual void initialize(int stage) override;
 

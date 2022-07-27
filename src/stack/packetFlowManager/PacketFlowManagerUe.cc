@@ -137,8 +137,6 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 
     unsigned int pdcpSno = lteInfo->getSequenceNumber();
     int64_t  pdcpSize = pdcpPkt->getByteLength();
-    int headerSize = lteInfo->getHeaderSize();
-    MacNodeId nodeId = lteInfo->getSourceId();
     simtime_t arrivalTime = simTime();
 
     ConnectionMap::iterator cit = connectionMap_.find(lcid);
@@ -235,13 +233,10 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
 //        LteRlcSdu* rlcSdu;
 //        FlowControlInfo* lteInfo;
         FramingInfo fi = rlcPdu->getFramingInfo();
-        unsigned numSdu = rlcPdu->getNumSdu();
         const RlcSduList* rlcSduList = rlcPdu->getRlcSduList();
         const RlcSduListSizes* rlcSduSizes = rlcPdu->getRlcSduSizes();
         auto lit = rlcSduList->begin();
         auto sit = rlcSduSizes->begin();
-        LteRlcSdu* rlcSdu;
-        FlowControlInfo* lteInfo;
 
         for (; lit != rlcSduList->end(); ++lit, ++sit){
             auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();

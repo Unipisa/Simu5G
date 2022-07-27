@@ -44,23 +44,22 @@ class LtePdcpRrcUe;
 class PacketFlowManagerUe : public PacketFlowManagerBase
 {
 
-        /*
-        * The node can have different active connections (lcid) at the same time, hence we need to
-        * maintain the status for each of them
-        */
-        typedef struct {
-            MacNodeId nodeId_; // dest node of this lcid
-            std::map<unsigned int, PdcpStatus> pdcpStatus_; // a pdcp pdu can be fragmented in many rlc that could be sent and ack in different time (this prevent early remove on ack)
-            std::map<unsigned int, SequenceNumberSet> rlcPdusPerSdu_;  // for each RLC SDU, stores the RLC PDUs where the former was fragmented
-            std::map<unsigned int, SequenceNumberSet> rlcSdusPerPdu_;  // for each RLC PDU, stores the included RLC SDUs
-            std::map<unsigned int, SequenceNumberSet> macSdusPerPdu_;  // for each MAC PDU, stores the included MAC SDUs (should be a 1:1 association)
-            std::vector<unsigned int> macPduPerProcess_;               // for each HARQ process, stores the included MAC PDU
-        } StatusDescriptor;
+    /*
+    * The node can have different active connections (lcid) at the same time, hence we need to
+    * maintain the status for each of them
+    */
+    typedef struct {
+        MacNodeId nodeId_; // dest node of this lcid
+        std::map<unsigned int, PdcpStatus> pdcpStatus_; // a pdcp pdu can be fragmented in many rlc that could be sent and ack in different time (this prevent early remove on ack)
+        std::map<unsigned int, SequenceNumberSet> rlcPdusPerSdu_;  // for each RLC SDU, stores the RLC PDUs where the former was fragmented
+        std::map<unsigned int, SequenceNumberSet> rlcSdusPerPdu_;  // for each RLC PDU, stores the included RLC SDUs
+        std::map<unsigned int, SequenceNumberSet> macSdusPerPdu_;  // for each MAC PDU, stores the included MAC SDUs (should be a 1:1 association)
+        std::vector<unsigned int> macPduPerProcess_;               // for each HARQ process, stores the included MAC PDU
+    } StatusDescriptor;
 
-        typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
-        ConnectionMap connectionMap_; // lcid to the corresponding StatusDescriptor
+    typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
+    ConnectionMap connectionMap_; // lcid to the corresponding StatusDescriptor
 
-    LtePdcpRrcUe *pdcp_;
     Delay pdcpDelay;
 
     //debug vars to be deleted
@@ -72,8 +71,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     protected:
 
     virtual void initialize(int stage) override;
-    virtual void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
-    virtual void removePdcpBurst(StatusDescriptor* desc, PdcpStatus& pdcpStatus,  unsigned int pdcpSno, bool ack) {};
+    void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
 
 
 //    bool hasFragments(LogicalCid lcid, unsigned int pdcp);

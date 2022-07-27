@@ -41,11 +41,6 @@ void PacketFlowManagerBase::initialize(int stage)
     }
 }
 
-
-void PacketFlowManagerBase::initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int headerSize, simtime_t& arrivalTime){}
-void PacketFlowManagerBase::removePdcpBurst(StatusDescriptor* desc, PdcpStatus& pdcpStatus,  unsigned int pdcpSno, bool ack){}
-void PacketFlowManagerBase::removePdcpBurstRLC(StatusDescriptor* desc, unsigned int rlcSno, bool ack) {}
-
 void PacketFlowManagerBase::resetDiscardCounter()
 {
     pktDiscardCounterTotal_ = {0,0};

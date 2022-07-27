@@ -154,7 +154,6 @@ void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet* pdcpPkt)
 
     unsigned int pdcpSno = lteInfo->getSequenceNumber();
     int64_t  pduSize = pdcpPkt->getByteLength();
-    int headerSize = lteInfo->getHeaderSize();
     MacNodeId nodeId = lteInfo->getDestId();
     simtime_t entryTime = simTime();
  ////
@@ -218,7 +217,6 @@ void PacketFlowManagerEnb::receivedPdcpSdu(inet::Packet* pdcpPkt)
      * update packetLossRate UL
      */
     unsigned int sno = lteInfo->getSequenceNumber();
-    LogicalCid lcid = lteInfo->getLcid();
     std::map<LogicalCid, PacketLoss>::iterator cit = packetLossRate_.find(nodeId);
     if (cit == packetLossRate_.end())
     {
@@ -261,13 +259,10 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
              throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d. Aborting",pfmType.c_str(),  rlcSno, lcid);
 
          FramingInfo fi = rlcPdu->getFramingInfo();
-         unsigned numSdu = rlcPdu->getNumSdu();
          const RlcSduList* rlcSduList = rlcPdu->getRlcSduList();
          const RlcSduListSizes* rlcSduSizes = rlcPdu->getRlcSduSizes();
          auto lit = rlcSduList->begin();
          auto sit = rlcSduSizes->begin();
-         LteRlcSdu* rlcSdu;
-         FlowControlInfo* lteInfo;
 
          // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
          if(status == START)
@@ -336,7 +331,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
          }
 
          std::map<BurstId, BurstStatus>::iterator bsit;
-         int i = 0;
          int rlcSduSize = 0;
          for (; lit != rlcSduList->end(); ++lit, ++sit)
          {
@@ -1072,7 +1066,7 @@ uint64_t PacketFlowManagerEnb::getDataVolume(MacNodeId nodeId, Direction dir)
     else if(dir == UL)
         return node->second.ulBits;
     else
-       throw cRuntimeError("%s::getDataVolume - Wrong direction");
+       throw cRuntimeError("PacketFlowManagerEnb::getDataVolume - Wrong direction");
 }
 
 void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId, Direction dir)
@@ -1085,7 +1079,7 @@ void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId, Direction dir)
     else if(dir == UL)
        node->second.ulBits = 0;
     else
-      throw cRuntimeError("%s::getDataVolume - Wrong direction");
+      throw cRuntimeError("PacketFlowManagerEnb::getDataVolume - Wrong direction");
 }
 
 void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId)
