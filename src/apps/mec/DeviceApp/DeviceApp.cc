@@ -419,7 +419,6 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
         }
         nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         packet->insertAtBack(nack);
-        throw cRuntimeError("LCM proxy not connected");
         ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 
         return;
