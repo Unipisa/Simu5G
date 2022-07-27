@@ -25,7 +25,7 @@ namespace inet {
 /**
  * Converts between ApplicationPacket and binary (network byte order) application packet.
  */
-class INET_API HttpResponseMessageSerializer : public FieldsChunkSerializer
+class HttpResponseMessageSerializer : public FieldsChunkSerializer
 {
   protected:
     virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;

@@ -35,7 +35,7 @@ namespace inet {
  * 1 STOP
  * 2 ALERT
  */
-class INET_API WarningAlertPacketSerializer : public FieldsChunkSerializer
+class WarningAlertPacketSerializer : public FieldsChunkSerializer
 {
   protected:
     virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
