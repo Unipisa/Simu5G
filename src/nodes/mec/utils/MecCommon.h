@@ -29,33 +29,31 @@ enum RlcBurstStatus
     START, STOP, ACTIVE, INACTIVE
 };
 
-typedef struct
-{
+struct Delay {
     unsigned int pktCount = 0;
     omnetpp::simtime_t time = 0;
-} Delay;
+};
 
-typedef struct
-{
+struct Throughput {
     unsigned int pktSizeCount = 0;
     omnetpp::simtime_t time = 0;
-} Throughput;
+};
 
-typedef struct {
+struct DiscardedPkts {
     unsigned int discarded = 0;
     unsigned int total = 0;
-} DiscardedPkts;
+};
 
-typedef struct {
+struct DataVolume {
     uint64_t ulBits = 0;
     uint64_t dlBits = 0;
-} DataVolume;
+};
 
-typedef struct {
+struct SockAddr {
     inet::L3Address addr;
     int port;
     std::string str() const { return addr.str() + ":" + std::to_string(port);}
-} SockAddr;
+};
 
 
 /*
@@ -63,7 +61,7 @@ typedef struct {
  * attribute according to the ETSI standard:
  * ETSI GS MEC 011 V2.2.1 (2020-12) - 8.1.2.2 Type: ServiceInfo
  */
-typedef struct {
+struct ServiceDescriptor {
     std::string mecHostname;
     std::string name;
     std::string version;
@@ -85,15 +83,15 @@ typedef struct {
     inet::L3Address addr;
     int port;
     std::string str() const { return addr.str() + ":" + std::to_string(port);}
-} ServiceDescriptor;
+};
 
 
 
-typedef struct {
+struct ResourceDescriptor {
     double ram;
     double disk;
     double cpu;
-} ResourceDescriptor;
+};
 
 
 

@@ -56,7 +56,7 @@ namespace Http {
      * ProblemDetailBase provides a basic usage of the ProblemDetail structure
      */
 
-    typedef struct
+    struct ProblemDetailBase
     {
         std::string type;
         std::string title;
@@ -73,7 +73,7 @@ namespace Http {
             return problemDetails;
         }
 
-    } ProblemDetailBase;
+    };
 
 
     /**************************** HTTP MESSAGE PARSING ******************************

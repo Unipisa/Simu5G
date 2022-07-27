@@ -63,7 +63,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
             bool isComplited;
         } BurstStatus;
 
-        typedef struct
+        struct PacketLoss
         {
             int lastPdpcSno;
             int totalLossPdcp;
@@ -85,7 +85,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
                 totalPdcpArrived = 0;
                 totalPdcpSno = 0;
             }
-        } PacketLoss;
+        };
 
 
         /*
