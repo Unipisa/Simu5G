@@ -118,14 +118,11 @@ void ChannelAccess::sendToChannel(AirFrame *msg)
 
 void ChannelAccess::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
-    // this is a HACK to prevent the e/gNB to change its position when the background UEs change theirs
-    // this would happen because the background UEs' mobility module is a submodule of the e/gNB
-    // FIXME fix it so this is independent from the module name
-    if ( (strcmp(hostModule->getName(), "enb") == 0) && (strcmp(source->getParentModule()->getFullName(), "enb") != 0) )
-        return;
-
-    if ( (strcmp(hostModule->getName(), "gnb") == 0) && (strcmp(source->getParentModule()->getFullName(), "gnb") != 0) )
-        return;
+    // since background UEs and their mobility modules are submodules of the e/gNB, a mobilityStateChangedSignal
+    // intended for a background UE would be intercepted by the e/gNB too, making it change its position.
+    // To prevent this issue, we need to check if the source of the signal is the same as the module receiving it
+    if ( (strcmp(hostModule->getFullName(), source->getParentModule()->getFullName()) != 0) )
+            return;
 
     if (signalID == inet::IMobility::mobilityStateChangedSignal)
     {
