@@ -5,7 +5,7 @@ tests: tests_lte tests_NR tests_mec
 	@echo "All tests done."
 
 tests_lte: all
-	@cd src && $(MAKE) && cd ../tests/fingerprint && ./fingerprints
+	@cd src && $(MAKE) && cd ../tests/fingerprint/LTE && ./fingerprints
 
 tests_NR: all
 	@cd src && $(MAKE) && cd ../tests/fingerprint/NR && ./fingerprints
