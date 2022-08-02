@@ -74,26 +74,22 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
     }
     // ########################
 
-    bool res = Http::parseReceivedMsg(packet, &bufferedData, &currentHttpMessage);
+    bool res = Http::parseReceivedMsg(sock->getSocketId(), packet, httpMessageQueue, &bufferedData, &currentHttpMessage);
+
     if(res)
     {
-        currentHttpMessage->setSockId(sock->getSocketId());
-        if(currentHttpMessage->getType() == REQUEST)
+//        currentHttpMessage->setSockId(sock->getSocketId());
+        while(!httpMessageQueue.isEmpty())
         {
+            // TODO handle response in service!!
             service->emitRequestQueueLength();
-            currentHttpMessage->setArrivalTime(simTime());
-            service->newRequest(check_and_cast<HttpRequestMessage*>(currentHttpMessage));
+            HttpBaseMessage* msg =  (HttpBaseMessage*)httpMessageQueue.pop();
+            msg->setArrivalTime(simTime());
+            if(msg->getType() == REQUEST)
+                service->newRequest(check_and_cast<HttpRequestMessage*>(msg));
+            else
+                delete msg;
         }
-        else
-        {
-            delete currentHttpMessage;
-        }
-
-        if(currentHttpMessage != nullptr)
-        {
-          currentHttpMessage = nullptr;
-        }
-
     }
     delete msg;
     return;

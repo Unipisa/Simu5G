@@ -33,6 +33,7 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
     MecServiceBase *service;
     inet::TcpSocket *sock;    // ptr into socketMap managed by TCPSrvHostApp
     HttpBaseMessage* currentHttpMessage;
+    cQueue httpMessageQueue;
     std::string bufferedData;
 
     // internal: inet::TcpSocket::CallbackInterface methods

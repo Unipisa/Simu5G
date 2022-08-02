@@ -59,6 +59,11 @@ class MECWarningAlertApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
+    inet::TcpSocket* serviceSocket_;
+    inet::TcpSocket* mp1Socket_;
+
+    HttpBaseMessage* mp1HttpMessage;
+    HttpBaseMessage* serviceHttpMessage;
 
     int size_;
     std::string subId;
@@ -72,13 +77,13 @@ class MECWarningAlertApp : public MecAppBase
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
-        virtual void handleMessage(cMessage *msg) override;
-
         virtual void finish() override;
 
-        virtual void handleServiceMessage() override;
-        virtual void handleMp1Message() override;
+        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
 
+        virtual void handleHttpMessage(int connId) override;
+        virtual void handleServiceMessage(int connId) override;
+        virtual void handleMp1Message(int connId) override;
         virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
         virtual void modifySubscription();

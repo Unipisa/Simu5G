@@ -27,7 +27,7 @@ MecRequestBackgroundGeneratorApp::~MecRequestBackgroundGeneratorApp()
     cancelAndDelete(sendBurst);
 }
 
-void MecRequestBackgroundGeneratorApp::handleServiceMessage()
+void MecRequestBackgroundGeneratorApp::handleServiceMessage(int connId)
 {
     EV << "payload: " <<  serviceHttpMessage->getBody() << endl;
     if(burstFlag)
@@ -37,24 +37,24 @@ void MecRequestBackgroundGeneratorApp::handleServiceMessage()
 
 void MecRequestBackgroundGeneratorApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
+    if(connId == mp1Socket_->getSocketId())
         {
             EV << "MecRequestBackgroundGeneratorApp::established - Mp1Socket"<< endl;
             // get endPoint of the required service
             const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-            std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+            std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
 
-            Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+            Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
             return;
         }
-        else if (connId == serviceSocket_.getSocketId())
+        else if (connId == serviceSocket_->getSocketId())
         {
             EV << "MecRequestBackgroundGeneratorApp::established - serviceSocket"<< endl;
             scheduleAt(simTime() + 5, burstTimer);
         }
         else
         {
-            throw cRuntimeError("MecRequestBackgroundGeneratorApp::socketEstablished - Socket %d not recognized", connId);
+            throw cRuntimeError("MecRequestBackgroundGeneratorApp::socketEstablished - Socket %s not recognized", connId);
         }
 }
 
@@ -81,14 +81,14 @@ void MecRequestBackgroundGeneratorApp::handleSelfMessage(cMessage *msg){
     else if(strcmp(msg->getName(), "connectMp1") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&mp1Socket_, mp1Address, mp1Port);
+        connect(mp1Socket_, mp1Address, mp1Port);
         delete msg;
     }
 
     else if(strcmp(msg->getName(), "connectService") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&serviceSocket_, serviceAddress, servicePort);
+        connect(serviceSocket_, serviceAddress, servicePort);
     }
     else
     {
@@ -97,7 +97,7 @@ void MecRequestBackgroundGeneratorApp::handleSelfMessage(cMessage *msg){
     }
 }
 
-void MecRequestBackgroundGeneratorApp::handleMp1Message()
+void MecRequestBackgroundGeneratorApp::handleMp1Message(int connId)
 {
 //    throw cRuntimeError("QUiI");
     EV << "MEWarningAlertApp_rest::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
@@ -118,7 +118,8 @@ void MecRequestBackgroundGeneratorApp::handleMp1Message()
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());;
                     servicePort = endPoint["port"];
-                    connect(&serviceSocket_, serviceAddress, servicePort);
+                    serviceSocket_ = addNewSocket();
+                    connect(serviceSocket_, serviceAddress, servicePort);
                 }
 
             }
@@ -159,6 +160,8 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage){
             {
                 EV << "MecRequestBackgroundGeneratorApp::initialize - MecRequestBackgroundGeneratorApp ["<< mecAppId <<"] does not allocate MEC host resources" << endl;
             }
+
+            mp1Socket_ = addNewSocket();
             cMessage *m = new cMessage("connectMp1");
             sendBurst = new cMessage("sendBurst");
             burstPeriod = new cMessage("burstPeriod");
@@ -175,7 +178,7 @@ void MecRequestBackgroundGeneratorApp::sendBulkRequest(){
     int numRequests = truncnormal(numberOfApplications_, 20, 2);
     std::string payload = "BulkRequest: " + std::to_string(numRequests+1);
 
-    Http::sendPacket(payload.c_str(), &serviceSocket_);
+    Http::sendPacket(payload.c_str(), serviceSocket_);
 
     EV << "MecRequestBackgroundGeneratorApp: " << numRequests << " requests to the server"<<endl;
 }
