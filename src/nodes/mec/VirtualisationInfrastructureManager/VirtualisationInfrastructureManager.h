@@ -183,19 +183,6 @@ class VirtualisationInfrastructureManager : public cSimpleModule
                     cpu  < maxCPU - allocatedCPU);
         }
 
-    protected:
-
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-
-        // OMNeT++-like MEC service management
-        //finding the MEC Service requested by UE App among the MEC Services available on the MEC Host
-        //return: the index of service (in mePlatform.udpService) or SERVICE_NOT_AVAILABLE or NO_SERVICE
-        int findService(const char* serviceName);
-
-        //------------------------------------
-
         /*
          * This method returns the available resources of the MEC host
          * @return ResourceDescriptor with the available ram, disk and CPU
@@ -211,6 +198,18 @@ class VirtualisationInfrastructureManager : public cSimpleModule
             EV << "VirtualisationInfrastructureManager::printResources - allocated CPU: " << allocatedCPU << " / " << maxCPU << endl;
         }
 
+    protected:
+
+        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+        void initialize(int stage);
+        virtual void handleMessage(cMessage *msg);
+
+        // OMNeT++-like MEC service management
+        //finding the MEC Service requested by UE App among the MEC Services available on the MEC Host
+        //return: the index of service (in mePlatform.udpService) or SERVICE_NOT_AVAILABLE or NO_SERVICE
+        int findService(const char* serviceName);
+
+        //------------------------------------
 
         void allocateResources(double ram, double disk, double cpu){
             allocatedRam += ram;
@@ -225,6 +224,8 @@ class VirtualisationInfrastructureManager : public cSimpleModule
             allocatedCPU -= cpu;
             printResources();
         }
+
+        void reserveResourcesBGApps();
 };
 
 #endif

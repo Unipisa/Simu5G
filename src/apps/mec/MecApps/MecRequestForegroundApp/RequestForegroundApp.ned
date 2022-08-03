@@ -31,7 +31,7 @@ simple MecRequestForegroundApp like IMECApp, IApp
         
         int packetSize = default(10);
         string interfaceTableModule = default("");
-        
+        int mecAppIndex = default(0);
         int mecAppId = default(0); // it will be override by getId() in initialize
         int localUePort = default(0); // not used in MecRequestBackgroundGeneratorApp
         

@@ -29,8 +29,21 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp(){
     cancelAndDelete(burstTimer);
 }
 
-void MecRequestBackgroundApp::handleServiceMessage()
+MecRequestBackgroundApp::MecRequestBackgroundApp()
 {
+    burstTimer = nullptr;
+    burstPeriod = nullptr;
+    sendBurst = nullptr;
+    serviceSocket_ = nullptr;
+    mp1Socket_ = nullptr;
+    mp1HttpMessage = nullptr;
+    serviceHttpMessage = nullptr;
+}
+
+void MecRequestBackgroundApp::handleServiceMessage(int connId)
+{
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) serviceSocket_->getUserData();
+    serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "payload: " <<  serviceHttpMessage->getBody() << endl;
 //    if(burstFlag)
 //    scheduleAt(simTime() + exponential(lambda, 2));
@@ -42,7 +55,8 @@ void MecRequestBackgroundApp::initialize(int stage){
     if(stage != inet::INITSTAGE_APPLICATION_LAYER)
            return;
     MecAppBase::initialize(stage);
-    cMessage *m = new cMessage("connectService");
+    mp1Socket_ = addNewSocket();
+    cMessage *m = new cMessage("connectMp1");
     sendBurst = new cMessage("sendBurst");
     burstPeriod = new cMessage("burstPeriod");
     burstTimer = new cMessage("burstTimer");
@@ -62,7 +76,7 @@ void MecRequestBackgroundApp::sendRequest(){
      *
      */
     std::string payload = "BulkRequest: 1";// + std::to_string(numberOfApplications_);
-    Http::sendPacket(payload.c_str(), &serviceSocket_);
+    Http::sendPacket(payload.c_str(), serviceSocket_);
     EV << "sent 1 request to the server"<<endl;
 }
 
@@ -70,17 +84,17 @@ void MecRequestBackgroundApp::sendRequest(){
 
 void MecRequestBackgroundApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
+    if(connId == mp1Socket_->getSocketId())
         {
             EV << "MecRequestBackgroundApp::established - Mp1Socket"<< endl;
             // get endPoint of the required service
             const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-            std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+            std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
 
-            Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+            Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
             return;
         }
-        else if (connId == serviceSocket_.getSocketId())
+        else if (connId == serviceSocket_->getSocketId())
         {
             EV << "MecRequestBackgroundApp::established - serviceSocket"<< endl;
             scheduleAt(simTime() + exponential(lambda, 2), burstTimer);
@@ -100,13 +114,13 @@ void MecRequestBackgroundApp::handleSelfMessage(cMessage *msg){
     else if(strcmp(msg->getName(), "connectMp1") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&mp1Socket_, mp1Address, mp1Port);
+        connect(mp1Socket_, mp1Address, mp1Port);
     }
     else if(strcmp(msg->getName(), "connectService") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-//        connect(&serviceSocket_, serviceAddress, servicePort);
-        connect(&serviceSocket_, mp1Address, mp1Port);
+//        connect(serviceSocket_, serviceAddress, servicePort);
+        connect(serviceSocket_, mp1Address, mp1Port);
         delete msg;
     }
     else
@@ -116,9 +130,21 @@ void MecRequestBackgroundApp::handleSelfMessage(cMessage *msg){
     }
 }
 
-void MecRequestBackgroundApp::handleMp1Message()
+
+void MecRequestBackgroundApp::handleHttpMessage(int connId)
 {
-//    throw cRuntimeError("QUiI");
+    if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
+        handleMp1Message(connId);
+    }
+    else
+    {
+        handleServiceMessage(connId);
+    }
+}
+void MecRequestBackgroundApp::handleMp1Message(int connId)
+{
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) mp1Socket_->getUserData();
+    mp1HttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "MecRequestBackgroundApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try
@@ -137,7 +163,8 @@ void MecRequestBackgroundApp::handleMp1Message()
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());;
                     servicePort = endPoint["port"];
-                    connect(&serviceSocket_, serviceAddress, servicePort);
+                    serviceSocket_ = addNewSocket();
+                    connect(serviceSocket_, serviceAddress, servicePort);
                 }
 
             }

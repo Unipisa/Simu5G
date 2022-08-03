@@ -68,27 +68,30 @@ void MECWarningAlertApp::initialize(int stage)
     //testing
     EV << "MECWarningAlertApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
+    mp1Socket_ = addNewSocket();
+
+
     // connect with the service registry
     cMessage *msg = new cMessage("connectMp1");
     scheduleAt(simTime() + 0, msg);
 
 }
 
-void MECWarningAlertApp::handleMessage(cMessage *msg)
-{
-//        MecAppBase::handleMessage(msg);
-    if (!msg->isSelfMessage())
-    {
-        if(ueSocket.belongsToSocket(msg))
-        {
-            handleUeMessage(msg);
-            delete msg;
-            return;
-        }
-    }
-    MecAppBase::handleMessage(msg);
-
-}
+//void MECWarningAlertApp::handleMessage(cMessage *msg)
+//{
+////        MecAppBase::handleMessage(msg);
+//    if (!msg->isSelfMessage())
+//    {
+//        if(ueSocket.belongsToSocket(msg))
+//        {
+//            handleUeMessage(msg);
+//            delete msg;
+//            return;
+//        }
+//    }
+//    MecAppBase::handleMessage(msg);
+//
+//}
 
 void MECWarningAlertApp::finish(){
     MecAppBase::finish();
@@ -165,8 +168,8 @@ void MECWarningAlertApp::modifySubscription()
                         "}"
                         "}\r\n";
     std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-    Http::sendPutRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
+    std::string host = serviceSocket_->getRemoteAddress().str()+":"+std::to_string(serviceSocket_->getRemotePort());
+    Http::sendPutRequest(serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
 }
 
 void MECWarningAlertApp::sendSubscription()
@@ -187,7 +190,7 @@ void MECWarningAlertApp::sendSubscription()
                             "}"
                             "}\r\n";
     std::string uri = "/example/location/v2/subscriptions/area/circle";
-    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+    std::string host = serviceSocket_->getRemoteAddress().str()+":"+std::to_string(serviceSocket_->getRemotePort());
 
     if(par("logger").boolValue())
     {
@@ -200,29 +203,29 @@ void MECWarningAlertApp::sendSubscription()
         }
     }
 
-    Http::sendPostRequest(&serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
+    Http::sendPostRequest(serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
 }
 
 void MECWarningAlertApp::sendDeleteSubscription()
 {
     std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
-    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
-    Http::sendDeleteRequest(&serviceSocket_, host.c_str(), uri.c_str());
+    std::string host = serviceSocket_->getRemoteAddress().str()+":"+std::to_string(serviceSocket_->getRemotePort());
+    Http::sendDeleteRequest(serviceSocket_, host.c_str(), uri.c_str());
 }
 
 void MECWarningAlertApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
+    if(connId == mp1Socket_->getSocketId())
     {
         EV << "MECWarningAlertApp::established - Mp1Socket"<< endl;
         // get endPoint of the required service
         const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-        std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+        std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
 
-        Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+        Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
         return;
     }
-    else if (connId == serviceSocket_.getSocketId())
+    else if (connId == serviceSocket_->getSocketId())
     {
         EV << "MECWarningAlertApp::established - serviceSocket"<< endl;
         // the connectService message is scheduled after a start mec app from the UE app, so I can
@@ -242,8 +245,23 @@ void MECWarningAlertApp::established(int connId)
     }
 }
 
-void MECWarningAlertApp::handleMp1Message()
+
+void MECWarningAlertApp::handleHttpMessage(int connId)
 {
+    if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
+        handleMp1Message(connId);
+    }
+    else
+    {
+        handleServiceMessage(connId);
+    }
+}
+
+void MECWarningAlertApp::handleMp1Message(int connId)
+{
+    // for now I only have just one Service Registry
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) mp1Socket_->getUserData();
+    mp1HttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "MECWarningAlertApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try
@@ -260,8 +278,9 @@ void MECWarningAlertApp::handleMp1Message()
                     nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
                     EV << "address: " << endPoint["host"] << " port: " <<  endPoint["port"] << endl;
                     std::string address = endPoint["host"];
-                    serviceAddress = L3AddressResolver().resolve(address.c_str());;
+                    serviceAddress = L3AddressResolver().resolve(address.c_str());
                     servicePort = endPoint["port"];
+                    serviceSocket_ = addNewSocket();
                 }
             }
             else
@@ -281,13 +300,16 @@ void MECWarningAlertApp::handleMp1Message()
 
 }
 
-void MECWarningAlertApp::handleServiceMessage()
+void MECWarningAlertApp::handleServiceMessage(int connId)
 {
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) serviceSocket_->getUserData();
+    serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
+
     if(serviceHttpMessage->getType() == REQUEST)
     {
-        Http::send204Response(&serviceSocket_); // send back 204 no content
+        Http::send204Response(serviceSocket_); // send back 204 no content
         nlohmann::json jsonBody;
-        EV << "MEClusterizeService::handleTcpMsg - REQUEST " << serviceHttpMessage->getBody()<< endl;
+        EV << "MECWarningAlertApp::handleTcpMsg - REQUEST " << serviceHttpMessage->getBody()<< endl;
         try
         {
            jsonBody = nlohmann::json::parse(serviceHttpMessage->getBody()); // get the JSON structure
@@ -309,7 +331,7 @@ void MECWarningAlertApp::handleServiceMessage()
 
                 if(criteria == "Entering")
                 {
-                    EV << "MEClusterizeService::handleTcpMsg - Ue is Entered in the danger zone "<< endl;
+                    EV << "MECWarningAlertApp::handleTcpMsg - Ue is Entered in the danger zone "<< endl;
                     alert->setDanger(true);
 
                     if(par("logger").boolValue())
@@ -329,7 +351,7 @@ void MECWarningAlertApp::handleServiceMessage()
                 }
                 else if (criteria == "Leaving")
                 {
-                    EV << "MEClusterizeService::handleTcpMsg - Ue left from the danger zone "<< endl;
+                    EV << "MECWarningAlertApp::handleTcpMsg - Ue left from the danger zone "<< endl;
                     alert->setDanger(false);
                     if(par("logger").boolValue())
                     {
@@ -362,15 +384,15 @@ void MECWarningAlertApp::handleServiceMessage()
 
         if(rspMsg->getCode() == 204) // in response to a DELETE
         {
-            EV << "MEClusterizeService::handleTcpMsg - response 204, removing circle" << rspMsg->getBody()<< endl;
-             serviceSocket_.close();
+            EV << "MECWarningAlertApp::handleTcpMsg - response 204, removing circle" << rspMsg->getBody()<< endl;
+             serviceSocket_->close();
              getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
 
         }
         else if(rspMsg->getCode() == 201) // in response to a POST
         {
             nlohmann::json jsonBody;
-            EV << "MEClusterizeService::handleTcpMsg - response 201 " << rspMsg->getBody()<< endl;
+            EV << "MECWarningAlertApp::handleTcpMsg - response 201 " << rspMsg->getBody()<< endl;
             try
             {
                jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
@@ -412,21 +434,21 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
     if(strcmp(msg->getName(), "connectMp1") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&mp1Socket_, mp1Address, mp1Port);
+        connect(mp1Socket_, mp1Address, mp1Port);
     }
 
     else if(strcmp(msg->getName(), "connectService") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        if(!serviceAddress.isUnspecified() && serviceSocket_.getState() != inet::TcpSocket::CONNECTED)
+        if(!serviceAddress.isUnspecified() && serviceSocket_->getState() != inet::TcpSocket::CONNECTED)
         {
-            connect(&serviceSocket_, serviceAddress, servicePort);
+            connect(serviceSocket_, serviceAddress, servicePort);
         }
         else
         {
             if(serviceAddress.isUnspecified())
                 EV << "MECWarningAlertApp::handleSelfMessage - service IP address is  unspecified (maybe response from the service registry is arriving)" << endl;
-            else if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
+            else if(serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
                 EV << "MECWarningAlertApp::handleSelfMessage - service socket is already connected" << endl;
             auto nack = inet::makeShared<WarningAppPacket>();
             // the connectService message is scheduled after a start mec app from the UE app, so I can
@@ -443,3 +465,17 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
 
     delete msg;
 }
+
+void MECWarningAlertApp::handleProcessedMessage(cMessage *msg)
+{
+    if (!msg->isSelfMessage()) {
+        if(ueSocket.belongsToSocket(msg))
+       {
+           handleUeMessage(msg);
+           delete msg;
+           return;
+       }
+    }
+    MecAppBase::handleProcessedMessage(msg);
+}
+

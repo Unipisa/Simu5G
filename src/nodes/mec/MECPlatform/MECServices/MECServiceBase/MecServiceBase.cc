@@ -403,7 +403,7 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
      * When the FG request queue is empty, upon a FG arrive the number of requests
      * already in the system is calculated supposing a M/M/1 system with service mu.
      */
-    if(loadGenerator_ && currentRequestMessageServed_ != nullptr && !currentRequestMessageServed_->isBackgroundRequest())
+    if(loadGenerator_)
     {
         int numOfBGReqs;
 
@@ -421,19 +421,18 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
             // debug
             EV << "MecServiceBase::newRequest - number of BG requests between this and the last FG request: " << numOfBGReqs << endl;
         }
-        double responseTime = erlang_k(numOfBGReqs+1, requestServiceTime_, REQUEST_RNG);
-        double sunOfresponseTimes = 0;
+
+        double sumOfresponseTimes = 0;
         for(int i = 0 ; i < numOfBGReqs+1; ++i)
         {
-            sunOfresponseTimes += exponential(requestServiceTime_, REQUEST_RNG);
+            sumOfresponseTimes += exponential(requestServiceTime_, REQUEST_RNG);
         }
 
-        EV << "MecServiceBase::newRequest - FG request service time is (sunOfresponseTimes): " << sunOfresponseTimes << endl;
-        EV << "MecServiceBase::newRequest - FG request service time is: " << responseTime << endl;
+        EV << "MecServiceBase::newRequest - FG request service time is (sumOfresponseTimes): " << sumOfresponseTimes << endl;
 
-        msg->setResponseTime(sunOfresponseTimes);
+        msg->setResponseTime(sumOfresponseTimes);
         lastFGRequestArrived_ = simTime();
-        emit(requestQueueSizeSignal_, numOfBGReqs+1);
+        emit(requestQueueSizeSignal_, numOfBGReqs);
     }
 
     requests_.insert(msg);

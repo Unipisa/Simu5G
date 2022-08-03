@@ -11,7 +11,6 @@
 
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
 
-
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
@@ -24,6 +23,12 @@
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 
+
+#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecServiceSelectionBased.h"
+#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/AvailableResourcesSelectionBased.h"
+#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecHostSelectionBased.h"
+
+
 //emulation debug
 #include <iostream>
 
@@ -33,6 +38,7 @@ MecOrchestrator::MecOrchestrator()
 {
     meAppMap.clear();
     mecApplicationDescriptors_.clear();
+    mecHostSelectionPolicy_ = nullptr;
 }
 
 void MecOrchestrator::initialize(int stage)
@@ -44,6 +50,15 @@ void MecOrchestrator::initialize(int stage)
     EV << "MecOrchestrator::initialize - stage " << stage << endl;
 
     binder_ = getBinder();
+
+    if(!strcmp(par("selectionPolicy"), "MecServiceBased"))
+        mecHostSelectionPolicy_ = new MecServiceSelectionBased(this);
+    else if(!strcmp(par("selectionPolicy"), "AvailableResourcesBased"))
+        mecHostSelectionPolicy_ = new AvailableResourcesSelectionBased(this);
+    else if(!strcmp(par("selectionPolicy"), "MecHostBased"))
+            mecHostSelectionPolicy_ = new MecHostSelectionBased(this, par("mecHostIndex"));
+    else
+        throw cRuntimeError("MecOrchestrator::initialize - Selection policy %s not present!" , par("selectionPolicy").stringValue());
 
     onboardingTime = par("onboardingTime").doubleValue();
     instantiationTime = par("instantiationTime").doubleValue();
@@ -156,11 +171,12 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
     {
         EV << "MecOrchestrator::startMECApp - Application package with AppDId["<< contAppMsg->getAppDId() << "] not onboarded." << endl;
         sendCreateAppContextAck(false, contAppMsg->getRequestId());
+//        throw cRuntimeError("MecOrchestrator::startMECApp - Application package with AppDId[%s] not onboarded", contAppMsg->getAppDId());
     }
 
     const ApplicationDescriptor& desc = it->second;
 
-    cModule* bestHost = findBestMecHost(desc);
+    cModule* bestHost = mecHostSelectionPolicy_->findBestMecHost(desc);
 
     if(bestHost != nullptr)
     {
@@ -200,11 +216,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
 
          MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(newMecApp.mecpm);
 
-         // double reqRam    = desc.getVirtualResources().ram;
-         // double reqDisk   = desc.getVirtualResources().disk;
-         // double reqCpu = desc.getVirtualResources().cpu;
-
-
          /*
           * If the application descriptor refers to a simulated mec app, the system eventually instances the mec app object.
           * If the application descriptor refers to a mec application running outside the simulator, i.e emulation mode,
@@ -225,9 +236,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
              appInfo->instanceId = "emulated_" + desc.getAppName();
              newMecApp.isEmulated = true;
 
-             // register the address of the MEC app to the Binder, so as the GTP knows the endpoint (UPF_MEC) where to forward packets to
-             inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(newMecApp.mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
-             binder_->registerMecHostUpfAddress(appInfo->endPoint.addr, gtpAddress);
          }
          else
          {
@@ -311,6 +319,7 @@ void MecOrchestrator::stopMECApp(UALCMPMessage* msg){
      if(meAppMap[contextId].isEmulated)
      {
          isTerminated =  mecpm->terminateEmulatedMEApp(deleteAppMsg);
+         std::cout << "terminateEmulatedMEApp with result: " << isTerminated << std::endl;
      }
      else
      {
@@ -439,8 +448,9 @@ void MecOrchestrator::getConnectedMecHosts()
 {
     //getting the list of mec hosts associated to this mec system from parameter
     if(this->hasPar("mecHostList") && strcmp(par("mecHostList").stringValue(), "")){
+        std::string mecHostList = par("mecHostList").stdstringValue();
         EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< par("mecHostList").stringValue() << endl;
-        char* token = strtok ( (char*) par("mecHostList").stringValue(), ", ");            // split by commas
+        char* token = strtok ( (char*)mecHostList.c_str(), ", ");            // split by commas
 
         while (token != NULL)
         {
@@ -496,17 +506,16 @@ void MecOrchestrator::onboardApplicationPackages()
     if(this->hasPar("mecApplicationPackageList") && strcmp(par("mecApplicationPackageList").stringValue(), "")){
 
         char* token = strtok ( (char*) par("mecApplicationPackageList").stringValue(), ", ");            // split by commas
+
         while (token != NULL)
         {
             int len = strlen(token);
-            char* buf = new char[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
-            //char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
+            char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
             strcpy(buf,"ApplicationDescriptors/");
             strcat(buf,token);
             strcat(buf,".json");
             onboardApplicationPackage(buf);
             token = strtok (NULL, ", ");
-            delete[] buf;
         }
     }
     else{

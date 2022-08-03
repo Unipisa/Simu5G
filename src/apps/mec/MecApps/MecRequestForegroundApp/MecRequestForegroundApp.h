@@ -24,13 +24,21 @@ protected:
      cMessage *sendFGRequest;
      double lambda;
 
+     inet::TcpSocket* serviceSocket_;
+     inet::TcpSocket* mp1Socket_;
+
+     HttpBaseMessage* mp1HttpMessage;
+     HttpBaseMessage* serviceHttpMessage;
+
      virtual void handleSelfMessage(cMessage *msg) override;
 
      virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
      virtual void initialize(int stage) override;
 
-     virtual void handleServiceMessage() override;
-     virtual void handleMp1Message() override;
+
+     virtual void handleHttpMessage(int connId) override;
+     virtual void handleServiceMessage(int connId) override;
+     virtual void handleMp1Message(int connId) override;
 
      virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
 

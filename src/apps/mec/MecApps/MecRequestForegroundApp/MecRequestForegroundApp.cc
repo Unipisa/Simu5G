@@ -27,12 +27,25 @@ MecRequestForegroundApp::~MecRequestForegroundApp(){
     cancelAndDelete(sendFGRequest);
 }
 
+void MecRequestForegroundApp::initialize(int stage){
+    MecAppBase::initialize(stage);
+    if(stage == inet::INITSTAGE_APPLICATION_LAYER)
+    {
+            mp1Socket_ = addNewSocket();
+            cMessage *m = new cMessage("connectMp1");
+            mecAppId = getId();
+            scheduleAt(simTime() + 0, m);
+            sendFGRequest = new cMessage("sendFGRequest");
+            lambda = par("lambda").doubleValue();
+    }
+}
 
-void MecRequestForegroundApp::handleServiceMessage()
+void MecRequestForegroundApp::handleServiceMessage(int connId)
 {
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) serviceSocket_->getUserData();
+    serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "payload: " <<  serviceHttpMessage->getBody() << endl;
     scheduleAt(simTime() + 0.500, sendFGRequest);
-
 }
 
 void MecRequestForegroundApp::handleSelfMessage(cMessage *msg){
@@ -45,14 +58,8 @@ void MecRequestForegroundApp::handleSelfMessage(cMessage *msg){
     else if(strcmp(msg->getName(), "connectMp1") == 0)
     {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&mp1Socket_, mp1Address, mp1Port);
+        connect(mp1Socket_, mp1Address, mp1Port);
         delete msg;
-    }
-
-    else if(strcmp(msg->getName(), "connectService") == 0)
-    {
-        EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        connect(&serviceSocket_, serviceAddress, servicePort);
     }
     else
     {
@@ -63,17 +70,17 @@ void MecRequestForegroundApp::handleSelfMessage(cMessage *msg){
 
 void MecRequestForegroundApp::established(int connId)
 {
-    if(connId == mp1Socket_.getSocketId())
+    if(connId == mp1Socket_->getSocketId())
         {
             EV << "MecRequestBackgroundApp::established - Mp1Socket"<< endl;
             // get endPoint of the required service
             const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
-            std::string host = mp1Socket_.getRemoteAddress().str()+":"+std::to_string(mp1Socket_.getRemotePort());
+            std::string host = mp1Socket_->getRemoteAddress().str()+":"+std::to_string(mp1Socket_->getRemotePort());
 
-            Http::sendGetRequest(&mp1Socket_, host.c_str(), uri);
+            Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
             return;
         }
-        else if (connId == serviceSocket_.getSocketId())
+        else if (connId == serviceSocket_->getSocketId())
         {
             EV << "MecRequestBackgroundApp::established - serviceSocket"<< endl;
             scheduleAt(simTime() + 0, sendFGRequest);
@@ -88,9 +95,10 @@ void MecRequestForegroundApp::established(int connId)
 
 
 
-void MecRequestForegroundApp::handleMp1Message()
+void MecRequestForegroundApp::handleMp1Message(int connId)
 {
-//    throw cRuntimeError("QUiI");
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) mp1Socket_->getUserData();
+    mp1HttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "MecRequestBackgroundApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try
@@ -109,9 +117,9 @@ void MecRequestForegroundApp::handleMp1Message()
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());;
                     servicePort = endPoint["port"];
-                    connect(&serviceSocket_, serviceAddress, servicePort);
+                    serviceSocket_ = addNewSocket();
+                    connect(serviceSocket_, serviceAddress, servicePort);
                 }
-
             }
         }
 
@@ -126,23 +134,22 @@ void MecRequestForegroundApp::handleMp1Message()
 }
 
 
-void MecRequestForegroundApp::initialize(int stage){
-    MecAppBase::initialize(stage);
-    if(stage == inet::INITSTAGE_APPLICATION_LAYER)
+void MecRequestForegroundApp::handleHttpMessage(int connId)
+{
+    if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
+        handleMp1Message(connId);
+    }
+    else
     {
-            cMessage *m = new cMessage("connectMp1");
-            mecAppId = getId();
-            scheduleAt(simTime() + 0, m);
-            sendFGRequest = new cMessage("sendFGRequest");
-            lambda = par("lambda").doubleValue();
+        handleServiceMessage(connId);
     }
 }
 
 void MecRequestForegroundApp::sendRequest(){
     const char *uri = "/example/location/v2/queries/users";
-    std::string host = serviceSocket_.getRemoteAddress().str()+":"+std::to_string(serviceSocket_.getRemotePort());
+    std::string host = serviceSocket_->getRemoteAddress().str()+":"+std::to_string(serviceSocket_->getRemotePort());
 
-    Http::sendGetRequest(&serviceSocket_, host.c_str(), uri);
+    Http::sendGetRequest(serviceSocket_, host.c_str(), uri);
     return;
 }
 

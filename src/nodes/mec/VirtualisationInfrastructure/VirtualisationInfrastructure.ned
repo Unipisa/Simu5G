@@ -48,15 +48,15 @@ module VirtualisationInfrastructure
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default("^.ipv4.routingTable");
 
-        int numBGMecApp = default(0);
+        int numIndependentMecApp = default(0);
         int numExtEthInterfaces = default(0);
 
     gates:
 
         inout ppp[];				// connection with GtpEndpoint and local/external networks
 
-        output meBGAppOut[numBGMecApp];			// connection to the ME App input gate
-        input meBGAppIn[numBGMecApp];			// connection to the ME App output gate
+        output independentMecAppOut[numIndependentMecApp];			// connection to the ME App input gate
+        input independentMecAppIn[numIndependentMecApp];			// connection to the ME App output gate
 
         output meAppOut[];			// connection to the ME App input gate
         input meAppIn[];			// connection to the ME App output gate
@@ -134,9 +134,9 @@ module VirtualisationInfrastructure
     connections allowunconnected:
 
 
-        for i=0..numBGMecApp-1 {
-            at.out++ --> meBGAppOut++;
-            at.in++ <-- meBGAppIn++;
+        for i=0..numIndependentMecApp -1 {
+            at.out++ --> independentMecAppOut++;
+            at.in++ <-- independentMecAppIn++;
         }
 
         for i=0..sizeof(mecPlatform)-1 {

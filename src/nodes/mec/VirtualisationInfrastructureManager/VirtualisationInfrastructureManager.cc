@@ -45,7 +45,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     maxRam = mecHost->par("maxRam").doubleValue();
     maxDisk = mecHost->par("maxDisk").doubleValue();
-    maxCPU = mecHost->par("maxCpuSpeed").doubleValue();
+    maxCPU = mecHost->par("maxCpuSpeed").doubleValue()*pow(10,6);
 
     allocatedRam = 0.0;
     allocatedDisk = 0.0;
@@ -120,6 +120,9 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 //        }
     }
     mecAppPortCounter = 4001;
+
+    //reserve resources of the bgApps!
+    reserveResourcesBGApps();
 }
 
 void VirtualisationInfrastructureManager::handleMessage(cMessage *msg)
@@ -255,7 +258,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
         cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
         cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
         std::stringstream appName;
-        appName << meModuleName << "[" <<  msg->getContextId() << "]";
+        appName << meModuleName << "\n" << module->getId();
         module->setName(appName.str().c_str());
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
         //creating the mecAppMap map entry
@@ -283,6 +286,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
 
 
         //initialize IMECApp Parameters
+        module->par("mecAppIndex") = index;
         module->par("mecAppId") = ueAppID;
         module->par("requiredRam") = ram;
         module->par("requiredDisk") = disk;
@@ -494,7 +498,8 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
         appEntry.ueAppID = ueAppID;
         appEntry.resources.ram = reqRam;
         appEntry.resources.disk = reqDisk;
-        appEntry.resources.cpu = reqCpu;
+        double cpu = (double)reqCpu * pow(10,6);
+        appEntry.resources.cpu = cpu;
         mecAppMap.insert({ueAppID, appEntry});
 
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
@@ -564,7 +569,22 @@ ResourceDescriptor VirtualisationInfrastructureManager::getAvailableResources() 
     return avRes;
 }
 
+void VirtualisationInfrastructureManager::reserveResourcesBGApps()
+{
+    int numMecApps = mecHost->par("numBGMecApp");
+    EV << "VirtualisationInfrastructureManager::reserveResourcesBGApps - reserving resources for "<< numMecApps << " BG apps..." << endl;
 
+    for(int i = 0 ; i < numMecApps ; ++i)
+    {
+        cModule* bgApp = mecHost->getSubmodule("bgApp", i);
+        if(bgApp == nullptr)
+            throw cRuntimeError("VirtualisationInfrastructureManager::reserveResourcesBGApps - Background Mec App bgApp[%d] not found!", i);
+        double ram = bgApp->par("ram");
+        double disk = bgApp->par("disk");
+        double cpu = bgApp->par("cpu");
+        registerMecApp(bgApp->getId(), ram, disk, cpu);
+    }
+}
 
 
 
