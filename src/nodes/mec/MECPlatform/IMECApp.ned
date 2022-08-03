@@ -17,6 +17,7 @@ moduleinterface IMECApp
     parameters:
         @display("i=block/app");
         int mecAppId;
+        int mecAppIndex;
         
         string mp1Address;
         int mp1Port;

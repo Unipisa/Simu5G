@@ -16,11 +16,13 @@
 #include <omnetpp.h>
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
+#include "inet/transportlayer/contract/udp/UdpSocket.h"
+#include "inet/common/socket/SocketMap.h"
+
+
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
@@ -37,29 +39,42 @@
  */
 
 class VirtualisationInfrastructureManager;
+class ProcessingTimeMessage;
 class ServiceRegistry;
+
+typedef struct
+{
+    HttpBaseMessage *currentMessage = nullptr;
+    std::string bufferedData;
+    cQueue httpMessageQueue;
+    ProcessingTimeMessage* processMsgTimer;
+} HttpMessageStatus;
 
 class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
+    /* TCP sockets are dynamically create by the user according to her needs
+    * the HttpBaseMessage* will be linked to the userData variable in TCPSocket class
+    * The base implementation already provides on socket to the ServiceRegistry and one socket to a MEC service
+    * key is the name of the socket, just to std::string,. E.g. LocServiceSocket, RNISSocket
+    * NOTE: remember to delete the HttpBaseMessage* pointer!
+    */
+    inet::SocketMap sockets_;
 
-    inet::TcpSocket serviceSocket_;
-    inet::TcpSocket mp1Socket_;
+    cQueue packetQueue_;
+    cMessage* currentProcessedMsg_;
+    cMessage* processMessage_;;
 
+    // endpoint for contacting the Service Registry
     inet::L3Address mp1Address;
     int mp1Port;
+
     inet::L3Address serviceAddress;
     int servicePort;
 
     // FIXME not used, yet. These structures are supposed to be used
     omnetpp::cQueue serviceHttpMessages_;
     omnetpp::cQueue mp1HttpMessages_;
-
-    HttpBaseMessage* serviceHttpMessage;
-    HttpBaseMessage* mp1HttpMessage;
-
-
-    std::string bufferedData;
 
     VirtualisationInfrastructureManager* vim;
 
@@ -71,13 +86,11 @@ class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICall
     ServiceRegistry * serviceRegistry;
 
     int mecAppId;
+    int mecAppIndex_;
     double requiredRam;
     double requiredDisk;
     double requiredCpu;
 
-
-    omnetpp::cMessage* processedServiceResponse;
-    omnetpp::cMessage* processedMp1Response;
 
 
 protected:
@@ -87,13 +100,21 @@ protected:
     virtual void finish() override;
 
     /* Method to be implemented for real MEC apps */
+    virtual void handleProcessedMessage(omnetpp::cMessage *msg);
     virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
-    virtual void handleServiceMessage() = 0;
-    virtual void handleMp1Message() = 0;
+    virtual void handleServiceMessage(int connId) = 0;
+    virtual void handleMp1Message(int connId) = 0;
+    virtual void handleHttpMessage(int connId) = 0;
     virtual void handleUeMessage(omnetpp::cMessage *msg) = 0;
     virtual void established(int connId) = 0;
 
+    virtual double scheduleNextMsg(cMessage* msg);
+
+    virtual inet::TcpSocket* addNewSocket();
+
     virtual void connect(inet::TcpSocket* socket, const inet::L3Address& address, const int port);
+
+    virtual void removeSocket(inet::TcpSocket* tcpSock);
 
     /* inet::TcpSocket::CallbackInterface callback methods */
     virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;
