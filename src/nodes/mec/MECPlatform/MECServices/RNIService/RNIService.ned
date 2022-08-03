@@ -35,7 +35,7 @@ simple RNIService like IMECService, IApp
     	int numBGApps = default(0); // used only if loadGenerator is true
     	
     	        
-        string serverThreadClass = default("simu5g.nodes.mec.MEPlatform.MeServices.MeServiceBase.SocketManager");
+        string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
         
 		string serviceName = default("RNIService");
        	string serviceVersion = default("v2");
@@ -57,6 +57,8 @@ simple RNIService like IMECService, IApp
         @display("i=block/app");
         @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
+        @signal[responseTime];
+        @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
 
     gates:
         input socketIn @labels(TcpCommand/up);
