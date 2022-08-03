@@ -40,6 +40,8 @@ UERequestApp::~UERequestApp()
 {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
+    cancelAndDelete(unBlockingMsg_);
+    cancelAndDelete(sendRequest_);
 }
 
 void UERequestApp::initialize(int stage)
@@ -255,6 +257,7 @@ void UERequestApp::handleAckStopMECRequestApp(cMessage* msg)
 
 void UERequestApp::sendRequest()
 {
+    EV << "UERequestApp::sendRequest()" << endl;
     inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_REQUEST);

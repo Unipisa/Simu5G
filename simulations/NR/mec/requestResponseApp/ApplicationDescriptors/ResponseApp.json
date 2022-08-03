@@ -1,0 +1,21 @@
+{
+"appDid" : "RESPONSEMECAPP",
+"appName" : "MECResponseApp",
+"appProvider" : "simu5g.apps.mec.MecRequestResponseApp.MECResponseApp",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 10,
+    "virtualCpu" : 500,
+    "virtualMemory":10
+    },
+"appServiceRequired": [
+    {
+        "ServiceDependency" :{
+            "serName" : "RNIService",
+            "version" : "v1",
+            "serCategory": "Network"
+        }
+    }
+]
+}

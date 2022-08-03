@@ -77,6 +77,7 @@ void MECResponseApp::handleProcessedMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage()) {
         if (ueAppSocket_.belongsToSocket(msg)) {
+            EV << "MECResponseApp::handleProcessedMessage: received message from UE" << endl;
             inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
             auto req = packet->peekAtFront<RequestResponseAppPacket>();
             if(req->getType() == UEAPP_REQUEST)
@@ -116,6 +117,7 @@ void MECResponseApp::handleSelfMessage(cMessage *msg)
 
 void MECResponseApp::handleRequest(cMessage* msg)
 {
+    EV << "MECResponseApp::handleRequest" << endl;
     // this method pretends to perform some computation after having
     //.request some info to the RNI
     if(currentRequestfMsg_  != nullptr)
@@ -130,6 +132,7 @@ void MECResponseApp::handleRequest(cMessage* msg)
 
 void MECResponseApp::handleStopRequest(cMessage* msg)
 {
+    EV << "MECResponseApp::handleStopRequest" << endl;
     serviceSocket_->close();
 }
 void MECResponseApp::sendResponse()
