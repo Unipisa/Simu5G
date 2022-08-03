@@ -27,6 +27,8 @@ simple MecOrchestrator
 {
     parameters:
         @display("i=device/mainframe;bgb=1006.50995,692.76");
+        string selectionPolicy = default("MecServiceBased"); // available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"
+       	int mecHostIndex = default(0); // to be used with the MecHostBased policybased
 	    string mecHostList = default("");
 	    string mecApplicationPackageList = default("");
 	    
