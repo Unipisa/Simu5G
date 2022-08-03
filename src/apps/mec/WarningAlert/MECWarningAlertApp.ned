@@ -38,6 +38,7 @@ simple MECWarningAlertApp like IMECApp, IApp
         int packetSize = default(10);
         string interfaceTableModule = default("");
         
+        int mecAppIndex;
         int mecAppId;
         int localUePort;
         

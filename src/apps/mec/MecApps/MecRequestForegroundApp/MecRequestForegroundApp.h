@@ -36,7 +36,7 @@ protected:
      virtual void initialize(int stage) override;
 
 
-     virtual void handleHttpMessage(int connId) override {}
+     virtual void handleHttpMessage(int connId) override;
      virtual void handleServiceMessage(int connId) override;
      virtual void handleMp1Message(int connId) override;
 

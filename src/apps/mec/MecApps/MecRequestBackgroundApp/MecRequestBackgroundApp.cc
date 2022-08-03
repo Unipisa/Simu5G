@@ -29,8 +29,21 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp(){
     cancelAndDelete(burstTimer);
 }
 
+MecRequestBackgroundApp::MecRequestBackgroundApp()
+{
+    burstTimer = nullptr;
+    burstPeriod = nullptr;
+    sendBurst = nullptr;
+    serviceSocket_ = nullptr;
+    mp1Socket_ = nullptr;
+    mp1HttpMessage = nullptr;
+    serviceHttpMessage = nullptr;
+}
+
 void MecRequestBackgroundApp::handleServiceMessage(int connId)
 {
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) serviceSocket_->getUserData();
+    serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "payload: " <<  serviceHttpMessage->getBody() << endl;
 //    if(burstFlag)
 //    scheduleAt(simTime() + exponential(lambda, 2));
@@ -43,7 +56,7 @@ void MecRequestBackgroundApp::initialize(int stage){
            return;
     MecAppBase::initialize(stage);
     mp1Socket_ = addNewSocket();
-    cMessage *m = new cMessage("connectService");
+    cMessage *m = new cMessage("connectMp1");
     sendBurst = new cMessage("sendBurst");
     burstPeriod = new cMessage("burstPeriod");
     burstTimer = new cMessage("burstTimer");
@@ -117,9 +130,21 @@ void MecRequestBackgroundApp::handleSelfMessage(cMessage *msg){
     }
 }
 
+
+void MecRequestBackgroundApp::handleHttpMessage(int connId)
+{
+    if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
+        handleMp1Message(connId);
+    }
+    else
+    {
+        handleServiceMessage(connId);
+    }
+}
 void MecRequestBackgroundApp::handleMp1Message(int connId)
 {
-//    throw cRuntimeError("QUiI");
+    HttpMessageStatus *msgStatus = (HttpMessageStatus*) mp1Socket_->getUserData();
+    mp1HttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "MecRequestBackgroundApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try
