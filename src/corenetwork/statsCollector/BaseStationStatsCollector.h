@@ -64,8 +64,11 @@ class BaseStationStatsCollector: public cSimpleModule
         L2MeasBase dl_nongbr_pdr_cell;
         L2MeasBase ul_nongbr_pdr_cell;
 
-        // TODO insert signals for oMNeT++ statistics
-
+        // statistics
+        omnetpp::simsignal_t dl_total_prb_;
+        omnetpp::simsignal_t ul_total_prb_;
+        omnetpp::simsignal_t num_ue_dl_nongbr_;
+        omnetpp::simsignal_t num_ue_ul_nongbr_;
 
         /*
          * timers:

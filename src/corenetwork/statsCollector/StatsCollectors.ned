@@ -45,6 +45,17 @@ module BaseStationStatsCollector like StatsCollector
 
         @display("i=block/cogwheel");
         @class("BaseStationStatsCollector");
+        @signal[DlTotalPRB];
+        @statistic[DlTotalPRB](title="Downlink total number of PRBs"; unit=""; source="DlTotalPRB"; record=vector);
+
+        @signal[UlTotalPRB];
+        @statistic[UlTotalPRB](title="Uplink total number of PRBs"; unit=""; source="UlTotalPRB"; record=vector);
+
+        @signal[ActiveUsersDl];
+        @statistic[ActiveUsersDl](title="Number of active users (downlink)"; unit=""; source="ActiveUsersDl"; record=vector);
+
+        @signal[ActiveUsersUl];
+        @statistic[ActiveUsersUl](title="Number of active users (uplink)"; unit=""; source="ActiveUsersUl"; record=vector);
 }
 
 module GNodeBStatsCollector extends BaseStationStatsCollector
