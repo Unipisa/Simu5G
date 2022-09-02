@@ -8,6 +8,7 @@
 // The above files and the present reference are part of the software itself, 
 // and cannot be removed from it.
 // 
+
 package simu5g.simulations.NR.videostreaming_dataset_generator;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
@@ -23,7 +24,7 @@ import simu5g.nodes.mec.MECHost;
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
 import simu5g.nodes.mec.UALCMP.UALCMP;
 import simu5g.nodes.backgroundCell.BackgroundCell;
-//import simu5g.nodes.trafficLight.TrafficLight;
+import simu5g.mobility.trafficLightMobility.TrafficLight;
 import simu5g.world.radio.LteChannelControl;
 
 //
@@ -34,7 +35,7 @@ network UrbanNetwork
     parameters:
         int numUe = default(1);
         int numBgCells = default(0);
-        @display("i=block/network2;bgb=3538.7122,3322.424");
+        @display("i=block/network2;bgb=2824.5417,2497.0586");
     submodules:
 
         channelControl: LteChannelControl {
@@ -44,34 +45,34 @@ network UrbanNetwork
             @display("p=114.647995,82.052;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=115.771996,143.872");
+            @display("p=115.771996,143.872;is=s");
         }
         binder: Binder {
-            @display("p=115.771996,276.504;is=s");
+            @display("p=115.0551,242.22125;is=s");
         }
         carrierAggregation: CarrierAggregation {
             @display("p=114.647995,337.19998;is=s");
         }
 
-//        //# traffic lights
-//        trafficLight1: TrafficLight {
-//            @display("p=312.644,2867.0122");
-//        }
-//        trafficLight2: TrafficLight {
-//            @display("p=1430.18,3033.312");
-//        }
-//        trafficLight3: TrafficLight {
-//            @display("p=2354.808,2906.924");
-//        }
-//        trafficLight4: TrafficLight {
-//            @display("p=818.19604,3079.8762");
-//        }
-//        trafficLight5: TrafficLight {
-//            @display("p=1849.2561,2906.924");
-//        }
-//        trafficLight6: TrafficLight {
-//            @display("p=2760.58,2733.9722");
-//        }
+        //# traffic lights
+        tl1: TrafficLight {
+            @display("p=496.34155,2026.3016");
+        }
+        tl2: TrafficLight {
+            @display("p=997.80005,2026.3016");
+        }
+        tl3: TrafficLight {
+            @display("p=1499.2585,2026.3016");
+        }
+        tl4: TrafficLight {
+            @display("p=496.34155,2026.3016");
+        }
+        tl5: TrafficLight {
+            @display("p=997.80005,2026.3016");
+        }
+        tl6: TrafficLight {
+            @display("p=1499.2585,2026.3016");
+        }
 
         //# CN modules
 
@@ -106,11 +107,11 @@ network UrbanNetwork
         }
 
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=1775.5724,2246.3293;is=l");
+            @display("p=2118.4062,1499.2585;is=l");
         }
 
         ue[numUe]: NRUe {
-            @display("p=496.34155,2026.3016");
+            @display("p=199.56001,2026.3016");
         }
 
     connections:
