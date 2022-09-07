@@ -35,7 +35,7 @@ network UrbanNetwork
     parameters:
         int numUe = default(1);
         int numBgCells = default(0);
-        @display("i=block/network2;bgb=2824.5417,2497.0586");
+        @display("i=block/network2;bgb=2000,2000;bgi=intersections");
     submodules:
 
         channelControl: LteChannelControl {
@@ -77,21 +77,21 @@ network UrbanNetwork
         //# CN modules
 
         upf: Upf {
-            @display("p=997.80005,199.56001");
+            @display("p=997.80005,1050");
         }
         iUpf: Upf {
-            @display("p=997.80005,772.6554");
+            @display("p=997.80005,1200");
         }
 
         //# MEC modules
         mecHost: MECHost {
-            @display("p=1744.8708,772.6554");
+            @display("p=1150,1200");
         }
         mecOrchestrator: MecOrchestrator {
-            @display("p=2353.7847,199.56001");
+            @display("p=1300,1050");
         }
         ualcmp: UALCMP {
-            @display("p=1744.8708,199.56001");
+            @display("p=1150,1050");
         }
 
         //# RAN modules
@@ -107,7 +107,7 @@ network UrbanNetwork
         }
 
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=2118.4062,1499.2585;is=l");
+            @display("p=1971.0754,1498.744;is=l");
         }
 
         ue[numUe]: NRUe {
