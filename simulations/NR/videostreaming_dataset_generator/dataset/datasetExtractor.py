@@ -39,7 +39,6 @@ def toString(arr):
 def cleanRow(row):
     row['module'] = isolateNode(row['module'])
     row['statistic'] = renameStatistic(row['statistic'])
-    row['network_parameters'] = renameNetParams(row['network_parameters'])
     return row
 
 fileName = sys.argv[1]
@@ -66,8 +65,6 @@ parameters.rename(columns={'attrvalue': 'network_parameters'}, inplace=True)
 newDataset = dataset.merge(parameters, on='run')
 # shift column 'Name' to first position
 first_column = newDataset.pop('network_parameters')
-# insert column using insert(position,column_name, first_column) function
-newDataset.insert(1, 'network_parameters', first_column)
 
 # newDataset['values']=newDataset['values'].map(list)
 # newDataset['timestamps']=newDataset['timestamps'].map(list)
