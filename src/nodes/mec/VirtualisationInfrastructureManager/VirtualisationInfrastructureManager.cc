@@ -79,7 +79,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     // register MEC addresses to the Binder
     inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(virtualisationInfr->getFullPath().c_str());
-    inet::L3Address mecPlatformAddress = inet::L3AddressResolver().resolve(mecPlatform->getFullPath().c_str());
     inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
     binder_->registerMecHostUpfAddress(mecHostAddress, gtpAddress);
     binder_->registerMecHost(mecHostAddress);

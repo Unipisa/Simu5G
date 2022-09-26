@@ -474,7 +474,7 @@ void MECPlatooningControllerApp::handleControllerConfiguration(cMessage *msg)
     direction_ = confMsg->getDirection();
 
     //   cModule* vi = this->getParentModule();
-    cModule *localProducerAppModule = this->getModuleByPath("^.bgApp[0]");
+    cModule *localProducerAppModule = this->getModuleByPath("^.independentMecApp[0]");
     MECPlatooningProducerApp *localProducerApp = check_and_cast<MECPlatooningProducerApp*>(localProducerAppModule);
 
     cValueArray *producerAppEndpoints = check_and_cast<cValueArray*>(localProducerApp->par("federatedProducerApps").objectValue());

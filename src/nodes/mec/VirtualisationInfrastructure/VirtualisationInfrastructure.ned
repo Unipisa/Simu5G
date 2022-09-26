@@ -194,10 +194,6 @@ module VirtualisationInfrastructure
         encap.upperLayerOut --> nl.in++ if numExtEthInterfaces != 0;
         encap.upperLayerIn <-- nl.out++ if numExtEthInterfaces != 0;
 
-        eth.upperLayerOut --> nl.in++;
-        eth.upperLayerIn <-- nl.out++;
-        eth.phys <--> mePlatform;
-
         for i=0..numLoInterfaces-1 {
             nl.out++ --> lo[i].upperLayerIn;
             lo[i].upperLayerOut --> nl.in++;

@@ -141,7 +141,7 @@ network MultiOperator
 
         //# 5G Core Network connections
         upf_A.pppg++ <--> Eth10G {  length = 300m; } <--> iUpf_A.pppg++;
-        iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> mecHost_A.pppENB++;
+        iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> mecHost_A.ppp++;
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A1.ppp;
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A2.ppp;
         iUpf_A.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_A3.ppp;
@@ -149,7 +149,7 @@ network MultiOperator
 
 
         upf_B.pppg++ <--> Eth10G {  length = 300m; } <--> iUpf_B.pppg++;
-        iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> mecHost_B.pppENB++ if enableMecOperatorB;
+        iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> mecHost_B.ppp++ if enableMecOperatorB;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B1.ppp;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B2.ppp;
         iUpf_B.pppg++ <--> Eth10G {  length = 300m; } <--> gnb_B3.ppp;
@@ -178,5 +178,5 @@ network MultiOperator
         gnb_B3.x2++ <--> Eth10G {  length = 500m; } <--> gnb_B4.x2++;
 
         //# Routers connection
-        router1.pppg++ <--> Eth10G {  length = linkLength*2e5; } <--> router2.pppg++;
+        router1.pppg++ <--> Eth10G {  length = parent.linkLength*2e5; } <--> router2.pppg++;
 }

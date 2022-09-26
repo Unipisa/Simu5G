@@ -550,10 +550,10 @@ void MecServiceBase::getConnectedBaseStations(){
     EV <<"MecServiceBase::getConnectedBaseStations" << endl;
 
     //getting the list of mec hosts associated to this mec system from parameter
-    if(meHost_->hasPar("eNBList") && strcmp(meHost_->par("eNBList").stringValue(), "")){
-        std::string enbList = meHost_->par("eNBList").stdstringValue();
-        EV <<"MecServiceBase::getConnectedEnodeB list " << (char*)meHost_->par("eNBList").stringValue() << endl;
-        char* token = strtok ((char*)enbList.c_str() , ", ");            // split by commas
+    if(meHost_->hasPar("bsList") && strcmp(meHost_->par("bsList").stringValue(), "")){
+        std::string bsList = meHost_->par("bsList").stdstringValue();
+        EV <<"MecServiceBase::getConnectedEnodeB list " << (char*)meHost_->par("bsList").stringValue() << endl;
+        char* token = strtok ((char*)bsList.c_str() , ", ");            // split by commas
         while (token != NULL)
         {
             EV <<"MecServiceBase::getConnectedEnodeB " << token << endl;

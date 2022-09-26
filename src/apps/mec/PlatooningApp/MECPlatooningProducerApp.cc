@@ -117,7 +117,7 @@ void MECPlatooningProducerApp::initialize(int stage)
 
        producerAppinfo.locationServicePort = entry->get("locationServicePort");
        producerAppinfo.locationServiceAddress = L3AddressResolver().resolve(entry->get("locationServiceAddress").stringValue());
-       producerAppinfo.locationServiceSocket = addNewSocket();
+//       producerAppinfo.locationServiceSocket = addNewSocket();
 
        int id = entry->get("id");
 
@@ -139,7 +139,7 @@ void MECPlatooningProducerApp::initialize(int stage)
 
     localProducerAppInfo.locationServicePort = -1;    // set with service registry
     localProducerAppInfo.locationServiceAddress = L3Address(); // set with service registry
-    localProducerAppInfo.locationServiceSocket = addNewSocket();
+//    localProducerAppInfo.locationServiceSocket = addNewSocket();
     producerAppEndpoint_[producerAppId_] = localProducerAppInfo;
 
 //   connect(mp1Socket_, mp1Address, mp1Port);

@@ -43,7 +43,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="apps/mec/WarningAlert|apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -91,7 +91,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="apps/mec/WarningAlert|apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -128,7 +128,7 @@
 						<toolChain id="org.omnetpp.cdt.msvc.toolchain.debug.1768837818" name="Microsoft Visual C++ for OMNeT++" unusedChildren=""/>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="apps/mec/WarningAlert|apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="apps/mec/MecApps/MecRequestBackgroundGeneratorApp|apps/mec/MecApps/MecRequestForegroundApp|apps/mec/MecApps/MecRequestBackgroundApp|corenetwork/nodes/cars" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
