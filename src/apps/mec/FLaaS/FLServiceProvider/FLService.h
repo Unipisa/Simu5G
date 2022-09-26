@@ -25,6 +25,7 @@ class FLService
         FLTrainingMode trainingMode_;
         bool isActive_;
         Endpoint flControllerEndpoint_;
+        double currentAccuracy_;
 
         /*
          * TODO
@@ -43,6 +44,7 @@ class FLService
         std::string getFlServiceId() {return flServiceId_;}
         std::string getFLCategory() {return category_;}
         std::string getFLTrainingModeStr();
+        double getFLCurrentModelAccuracy();
         FLTrainingMode getFLTrainingMode() {return trainingMode_;}
 
         bool isFlServiceActive() {return isActive_;}
@@ -57,6 +59,7 @@ class FLService
         void setFlControllerEndpoint (inet::L3Address& addr, int port) {flControllerEndpoint_.addr = addr; flControllerEndpoint_.port = port;}
         void setFlCategory(std::string& category) {category_ = category;}
         void setFLTrainingMode(FLTrainingMode mode) {trainingMode_ = mode;}
+        void setFLCurrentModelAccuracy(double accuracy) {currentAccuracy_ = accuracy;}
 };
 
 
