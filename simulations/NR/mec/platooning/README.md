@@ -3,4 +3,4 @@ Each MNO has its own MEC system, including a single MEC host. A MEC federation a
 manage platoons having cars connected to different MNOs. All the cars will be associated to the same Controller App to form a single platoon.
 In the .ini file there is a short comment over each configuration.
 
-The modules involved in this scenario (Plaas framework modules) can be found in the src/apps/mec/PlatooningApp ([link](https://github.com/giovanninardini/Simu5G/tree/Plaas_framework/src/apps/mec/PlatooningApp)) folder.
+The modules involved in this scenario (Plaas framework modules) can be found in the src/apps/mec/Plaas_framework ([link](https://github.com/giovanninardini/Simu5G/tree/Plaas_framework/src/apps/mec/Plaas_framework)) folder.
