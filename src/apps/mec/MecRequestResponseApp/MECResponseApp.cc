@@ -178,7 +178,7 @@ void MECResponseApp::handleMp1Message(int connId)
     // for now I only have just one Service Registry
     HttpMessageStatus *msgStatus = (HttpMessageStatus*) mp1Socket_->getUserData();
     mp1HttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
-    EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
+    EV << "MECResponseApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try {
         nlohmann::json jsonBody = nlohmann::json::parse(mp1HttpMessage->getBody()); // get the JSON structure
@@ -197,7 +197,7 @@ void MECResponseApp::handleMp1Message(int connId)
                 }
             }
             else {
-                EV << "MECPlatooningApp::handleMp1Message - RNIService not found" << endl;
+                EV << "MECResponseApp::handleMp1Message - RNIService not found" << endl;
                 serviceAddress_ = L3Address();
             }
         }

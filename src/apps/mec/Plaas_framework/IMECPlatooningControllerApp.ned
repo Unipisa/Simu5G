@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.apps.mec.PlatooningApp;
+package simu5g.apps.mec.Plaas_framework;
 
 
 import inet.applications.contract.IApp;

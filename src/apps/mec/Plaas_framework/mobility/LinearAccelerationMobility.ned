@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.apps.mec.PlatooningApp.mobility;
+package simu5g.apps.mec.Plaas_framework.mobility;
 
 import inet.mobility.single.LinearMobility;
 

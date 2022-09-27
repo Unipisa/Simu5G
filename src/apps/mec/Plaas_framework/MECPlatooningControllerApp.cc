@@ -9,17 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
-#include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
-#include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
-#include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
+#include "../Plaas_framework/MECPlatooningControllerApp.h"
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningTimers_m.h"
-#include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
-
-#include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
-#include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
-
+#include "apps/mec/Plaas_framework/platoonController/SafePlatoonController.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
@@ -30,6 +23,13 @@
 #include "inet/transportlayer/common/L4PortTag_m.h"
 
 #include <fstream>
+#include "../Plaas_framework/packets/PlatooningTimers_m.h"
+#include "../Plaas_framework/packets/tags/PlatooningPacketTags_m.h"
+#include "../Plaas_framework/platoonController/RajamaniPlatoonController.h"
+#include "../Plaas_framework/platoonController/RajamaniPlatoonController.h"
+#include "../Plaas_framework/platoonController/SafePlatoonController.h"
+#include "../Plaas_framework/platoonController/SafePlatoonController.h"
+#include "../Plaas_framework/platoonSelection/PlatoonSelectionSample.h"
 
 Define_Module(MECPlatooningControllerApp);
 //Register_Class(MECPlatooningControllerApp);

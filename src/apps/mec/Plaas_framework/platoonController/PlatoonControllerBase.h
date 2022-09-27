@@ -14,9 +14,9 @@
 
 #include "omnetpp.h"
 
-#include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
-#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
+#include "../../Plaas_framework/MECPlatooningProducerApp.h"
+#include "../../Plaas_framework/platoonController/PlatoonVehicleInfo.h"
+#include "../../Plaas_framework/PlatooningUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
 using namespace std;

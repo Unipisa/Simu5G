@@ -13,11 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package simu5g.apps.mec.PlatooningApp;
+package simu5g.apps.mec.Plaas_framework;
 
 import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
-import simu5g.apps.mec.PlatooningApp.IMECPlatooningControllerApp;
+import simu5g.apps.mec.Plaas_framework.IMECPlatooningControllerApp;
 
 // This MEC App handles the platoon discovery requests from the Consumer Apps 
 // by identifying the platoon the latter may request to join.

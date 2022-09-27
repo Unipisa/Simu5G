@@ -13,7 +13,8 @@
 #define __SAFE_PLATOON_CONTROLLER_H_
 
 #include "omnetpp.h"
-#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
+
+#include "../../Plaas_framework/platoonController/PlatoonControllerBase.h"
 
 using namespace std;
 using namespace omnetpp;

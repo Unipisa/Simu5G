@@ -9,9 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
-#include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
-#include "apps/mec/PlatooningApp/mobility/LinearAccelerationMobility.h"
+#include "../../Plaas_framework/platoonController/RajamaniPlatoonController.h"
+
+#include "../../Plaas_framework/mobility/LinearAccelerationMobility.h"
+#include "../../Plaas_framework/MECPlatooningControllerApp.h"
 
 //
 //#include <stdlib.h>

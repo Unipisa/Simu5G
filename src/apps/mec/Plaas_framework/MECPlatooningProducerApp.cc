@@ -9,10 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
-#include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
-#include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
-#include "apps/mec/PlatooningApp/platoonController/RajamaniPlatoonController.h"
+#include "../Plaas_framework/MECPlatooningProducerApp.h"
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
@@ -27,6 +25,9 @@
 
 
 #include <fstream>
+#include "../Plaas_framework/platoonController/RajamaniPlatoonController.h"
+#include "../Plaas_framework/platoonController/SafePlatoonController.h"
+#include "../Plaas_framework/platoonSelection/PlatoonSelectionSample.h"
 
 Define_Module(MECPlatooningProducerApp);
 
@@ -1060,7 +1061,7 @@ MecAppInstanceInfo* MECPlatooningProducerApp::instantiateLocalPlatoon(Coord& dir
 
 //    const char* controllerName = par("controllerName"); // It must be in the form of MECPlatooningControllerRajamani;
     string contName = string("MECPlatooningControllerApp");
-    string path = string("simu5g.apps.mec.PlatooningApp.");
+    string path = string("simu5g.apps.mec.Plaas_framework.");
 
     stringstream moduleType;
     moduleType << path << contName;

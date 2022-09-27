@@ -12,7 +12,7 @@
 #ifndef __PLATOONSELECTIONSAMPLE_H_
 #define __PLATOONSELECTIONSAMPLE_H_
 
-#include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionBase.h"
+#include "../../Plaas_framework/platoonSelection/PlatoonSelectionBase.h"
 
 using namespace std;
 using namespace omnetpp;

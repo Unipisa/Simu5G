@@ -13,7 +13,8 @@
 #define __PLATOONSELECTIONBASE_H_
 
 #include "omnetpp.h"
-#include "apps/mec/PlatooningApp/MECPlatooningProducerApp.h"
+
+#include "../../Plaas_framework/MECPlatooningProducerApp.h"
 
 using namespace std;
 using namespace omnetpp;

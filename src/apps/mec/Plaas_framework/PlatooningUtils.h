@@ -3,12 +3,12 @@
 
 #include <queue>
 
+#include "../Plaas_framework/platoonController/PlatoonVehicleInfo.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 
 
-#include "apps/mec/PlatooningApp/platoonController/PlatoonVehicleInfo.h"
 
 //#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 

@@ -12,6 +12,8 @@
 #ifndef __UEPLATOONINGAPP_H_
 #define __UEPLATOONINGAPP_H_
 
+#include "../Plaas_framework/mobility/LinearAccelerationMobility.h"
+#include "../Plaas_framework/packets/PlatooningPacket_m.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
@@ -24,8 +26,6 @@
 #include "inet/mobility/contract/IMobility.h"
 
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/mobility/LinearAccelerationMobility.h"
 
 using namespace omnetpp;
 

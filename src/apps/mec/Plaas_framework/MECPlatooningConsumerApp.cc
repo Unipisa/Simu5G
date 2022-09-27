@@ -9,7 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/MECPlatooningConsumerApp.h"
+#include "../Plaas_framework/MECPlatooningConsumerApp.h"
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"

@@ -9,7 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/mobility/LinearAccelerationMobility.h"
+#include "../../Plaas_framework/mobility/LinearAccelerationMobility.h"
+
 #include "inet/common/INETMath.h"
 
 

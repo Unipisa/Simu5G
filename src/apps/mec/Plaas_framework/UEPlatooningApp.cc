@@ -9,14 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/UEPlatooningApp.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
+#include "../Plaas_framework/UEPlatooningApp.h"
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/PlatooningApp/packets/tags/PlatooningPacketTags_m.h"
-
-
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
 #include "inet/networklayer/common/L3AddressTag_m.h"
@@ -25,6 +21,9 @@
 #include <fstream>
 
 #include <math.h>
+#include "../Plaas_framework/packets/PlatooningPacket_m.h"
+#include "../Plaas_framework/packets/tags/PlatooningPacketTags_m.h"
+#include "../Plaas_framework/PlatooningUtils.h"
 
 using namespace inet;
 using namespace std;

@@ -1,7 +1,7 @@
 {
 "appDid" : "PLATOONMECAPP",
 "appName" : "MECPlatooningConsumerApp",
-"appProvider" : "simu5g.apps.mec.PlatooningApp.MECPlatooningConsumerApp",
+"appProvider" : "simu5g.apps.mec.Plaas_framework.MECPlatooningConsumerApp",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{

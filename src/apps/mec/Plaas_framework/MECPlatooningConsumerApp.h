@@ -14,13 +14,12 @@
 
 #include "omnetpp.h"
 
+#include "../Plaas_framework/packets/PlatooningPacket_m.h"
+#include "../Plaas_framework/PlatooningUtils.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 #include "apps/mec/MecApps/MecAppBase.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
-
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 

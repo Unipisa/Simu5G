@@ -16,15 +16,15 @@
 
 #include <queue>
 
+#include "../Plaas_framework/packets/PlatooningPacket_m.h"
+#include "../Plaas_framework/packets/PlatooningTimers_m.h"
+#include "../Plaas_framework/platoonController/PlatoonControllerBase.h"
+#include "../Plaas_framework/platoonSelection/PlatoonSelectionBase.h"
+#include "../Plaas_framework/PlatooningUtils.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
 #include "apps/mec/MecApps/MecAppBase.h"
-#include "apps/mec/PlatooningApp/PlatooningUtils.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningPacket_m.h"
-#include "apps/mec/PlatooningApp/packets/PlatooningTimers_m.h"
-#include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionBase.h"
-#include "apps/mec/PlatooningApp/platoonController/PlatoonControllerBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 class PlatoonControllerBase;

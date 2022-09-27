@@ -16,8 +16,6 @@ The framework is composed of 4 components:
 The control algorithms running in the MEC Controller App and the platoon selection algorithm can be implemented by inheriting the *PlatoonControllerBase* and *PlatoonSelectionBase* classes, respectively.
 
 Some configurations of a scenario are already provided and can be found in the simulations/NR/mec/platooning ([link](https://github.com/giovanninardini/Simu5G/tree/Plaas_framework/simulations/NR/mec/platooning)) folder.
-We simulate a scenario where group of seven cars moves along the road in a straight line. The motorway is served by two Mobile Network Operators (A and B), each one having four gNodeBs co-located. Three cars, named A[\*], belong to MNO A, whereas the other four, B[\*], belong to MNO B.
-Each MNO has its own MEC system, including a single MEC host. A MEC federation allows the communication between the two MEC systems, so that platooning controllers can
-manage platoons having cars connected to different MNOs. All the cars will be associated to the same Controller App to form a single platoon.
+
 
 

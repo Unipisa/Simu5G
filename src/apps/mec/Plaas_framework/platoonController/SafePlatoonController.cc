@@ -9,8 +9,9 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/platoonController/SafePlatoonController.h"
-#include "apps/mec/PlatooningApp/MECPlatooningControllerApp.h"
+#include "../../Plaas_framework/platoonController/SafePlatoonController.h"
+
+#include "../../Plaas_framework/MECPlatooningControllerApp.h"
 
 
 SafePlatoonController::SafePlatoonController(MECPlatooningControllerApp* mecPlatooningControllerApp, int index, double controlPeriod, double updatePositionPeriod)

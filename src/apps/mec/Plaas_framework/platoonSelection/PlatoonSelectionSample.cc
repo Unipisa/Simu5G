@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/PlatooningApp/platoonSelection/PlatoonSelectionSample.h"
+#include "../../Plaas_framework/platoonSelection/PlatoonSelectionSample.h"
 
 PlatoonSelectionSample::PlatoonSelectionSample()
 {
