@@ -15,7 +15,8 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 //
-//  This is a MEC app that ... TBC
+// This MEC App handles the platoon discovery requests from the Consumer Apps by 
+// identifying the platoon the latter may request to join.
 //
 simple MECPlatooningProducerApp like IMECApp, IApp
 {
@@ -36,33 +37,33 @@ simple MECPlatooningProducerApp like IMECApp, IApp
         string mp1Address = default("");
         int mp1Port = default(10021);
         
-		 //resource required info
+	//resource required info
         double requiredRam @unit("B");
         double requiredDisk @unit("B");
         double requiredCpu;
 
-		// IApp parameters
-		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
+	// IApp parameters
+	int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 	
-		object federatedProducerApps = default([]);
+	object federatedProducerApps = default([]);
+	
+	// to create controllers
+	string lateralController = "Rajamani";
+	string longitudinalController = "Rajamani";
+	double lateralControlPeriod @unit(s) = 0.100s; 
+	double lateralUpdatePositionPeriod @unit(s) = 0.100s; 
+	double longitudinalControlPeriod @unit(s) = 0.100s; 
+	double longitudinalUpdatePositionPeriod @unit(s) = 0.100s; 
+	double offset @unit(s) = 0.030s;
+	
+	double heartbeatPeriod @unit(s) = default(1s);
+	double mecAppInstantiationTime @unit(s) = default(0.5s);
+	bool adjustPosition = default(false);
+	bool sendBulk = default(true);
 		
-		// to create controllers
-		string lateralController = "Rajamani";
-		string longitudinalController = "Rajamani";
-		double lateralControlPeriod @unit(s) = 0.100s; 
-		double lateralUpdatePositionPeriod @unit(s) = 0.100s; 
-		double longitudinalControlPeriod @unit(s) = 0.100s; 
-		double longitudinalUpdatePositionPeriod @unit(s) = 0.100s; 
-		double offset @unit(s) = 0.030s;
-		
-		double heartbeatPeriod @unit(s) = default(1s);
-		double mecAppInstantiationTime @unit(s) = default(0.5s);
-		bool adjustPosition = default(false);
-		bool sendBulk = default(true);
-		
-		@signal[updateDiffs];
+	@signal[updateDiffs];
         @statistic[updateDiffs](title="difference LS response times"; unit="ms"; source="updateDiffs"; record=mean, stats, vector); 
     gates:
 	  input mePlatformIn;

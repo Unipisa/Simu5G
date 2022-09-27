@@ -19,6 +19,9 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 import simu5g.apps.mec.PlatooningApp.IMECPlatooningControllerApp;
 
+// This MEC App handles the platoon discovery requests from the Consumer Apps 
+// by identifying the platoon the latter may request to join.
+
 simple MECPlatooningControllerApp like IMECApp
 {
     parameters:
@@ -42,9 +45,9 @@ simple MECPlatooningControllerApp like IMECApp
         double minimumDistanceForManoeuvre @unit(m) = default(150m);
 
 //        double lateralLontrolPeriod @unit(s) = 0.100s; 
-//		double lateralUpdatePositionPeriod @unit(s) = 0.070s; 
-//		double longitudinalLontrolPeriod @unit(s) = 0.100s; 
-//		double longitudinalUpdatePositionPeriod @unit(s) = 0.070s; 
+//	  double lateralUpdatePositionPeriod @unit(s) = 0.070s; 
+//	  double longitudinalLontrolPeriod @unit(s) = 0.100s; 
+//	  double longitudinalUpdatePositionPeriod @unit(s) = 0.070s; 
        
 		 //resource required info
         double requiredRam @unit("B");

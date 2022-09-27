@@ -15,8 +15,10 @@ package simu5g.apps.mec.PlatooningApp;
 import inet.applications.contract.IApp;
 
 //
-//  This is a UE app that asks to a Device App to obtain the endpoint of a MECPlatooningApp.
-//  After a successful response, it ... TBC
+// This is a UE app that asks to a Device App to obtain the endpoint of a MEC Consumer App.
+// It runs on the vehicles and interacts with the PlaaS framework running on the MEC, by sending 
+// requests join or leave a platoon and receiving accelaration values from the 
+// Platoon Controller App to maintain the desired inter-vehicle distance and speed.
 //
 simple UEPlatooningApp like IApp
 {

@@ -15,7 +15,9 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 //
-//  This is a MEC app that ... TBC
+//  This is MEC App is the digital twin of the UE app on the MEC, and interacts with the 
+//  Producer App and, when associated to a platoon, with the Controller App. 
+//  It forward commands (i.e. acceleration) from the MEC Controller App to the UE platooning app.
 //
 simple MECPlatooningConsumerApp like IMECApp, IApp
 {
