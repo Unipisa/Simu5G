@@ -24,12 +24,14 @@
 #include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
+// REST resources
+#include "apps/mec/FLaaS/FLServiceProvider/resources/FLServiceInfo.h"
 
 Define_Module(FLServiceProvider);
 
 
 FLServiceProvider::FLServiceProvider(){
-    baseUriQueries_ = "/example/location/v2/queries";
+    baseUriQueries_ = "/example/flaas/v1/queries";
     baseUriSubscriptions_ = "/example/location/v2/subscriptions";
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     subscriptionId_ = 0;
@@ -119,35 +121,53 @@ void FLServiceProvider::handleGETRequest(const HttpRequestMessage *currentReques
 {
     EV_INFO << "FLServiceProvider::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
-//    std::cout << uri << std::endl;
-//    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
-//    // uri must be in form example/v2/location/queries/resource
-//    std::size_t lastPart = splittedUri[0].find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case resourceType would be empty and the baseUri == uri
-//    // by the way the next if statement solves this problem
-//    std::string baseUri = splittedUri[0].substr(0,lastPart);
-//    std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_+"/users") == 0 ) //queries
+    if(uri.compare(baseUriQueries_+"/availableServices") == 0 ) //queries
+    {
+        std::string params = currentRequestMessageServed->getParameters();
+        if(!params.empty())
+        {
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+
+            // parameters can be trainMode or category
+            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator end = queryParameters.end();
+            std::vector<std::string> param;
+            std::vector<std::string> splittedParam;
+
+            // for now it only possible to have ONE parameters
+            for(; it != end; ++it){
+                if(it->rfind("trainMode", 0) == 0) // accessPointId=par1,par2
+                {
+                    EV <<"FLServiceProvider::handleGETReques - parameters: " << endl;
+                    param = lte::utils::splitString(*it, "=");
+                    if(params.size()!= 2) //must be param=values
+                    {
+                       Http::send400Response(socket);
+                       return;
+                    }
+
+                    //check param = SYNC ASYN or BOTH
+
+                    FLServiceInfo flServiceListResource = FLServiceInfo(&flServiceList);
+                    Http::send200Response(socket, flServiceListResource.toJsonUe(ues).dump(0).c_str());
+
+
+                }
+            }
+        }
+    }
+    else if (uri.compare(baseUriQueries_+"/activeProcesses") == 0) // return the list of the subscriptions
     {
     }
-    else if (uri.compare(baseSubscriptionLocation_) == 0) // return the list of the subscriptions
+    else if (uri.compare(baseUriQueries_+"/controllerEndpoint") == 0) // return the list of the subscriptions
     {
-        // TODO implement list of subscriptions
-        Http::send404Response(socket);
     }
     else // not found
     {
         Http::send404Response(socket);
     }
-
 }
 
 void FLServiceProvider::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)

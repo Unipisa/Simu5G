@@ -20,6 +20,7 @@ class FLService
     private:
         std::string name_;
         std::string flServiceId_;
+        std::string flProcessId_;
         std::string description_;
         std::string category_;
         FLTrainingMode trainingMode_;
@@ -42,6 +43,7 @@ class FLService
         std::string getFlServiceName() {return name_;}
         std::string getFlServiceDescription() {return description_;}
         std::string getFlServiceId() {return flServiceId_;}
+        std::string getFlProcessId() {return flProcessId_;}
         std::string getFLCategory() {return category_;}
         std::string getFLTrainingModeStr();
         double getFLCurrentModelAccuracy();
@@ -54,6 +56,7 @@ class FLService
         void setFlServiceName(std::string& name) {name_ = name;}
         void setFlServiceDescription(std::string& description) {description_ = description;}
         void setFlServiceId(std::string& serviceId) {flServiceId_ = serviceId;}
+        void setFlProcessId(std::string& processId) {flProcessId_ = processId;}
         void setFlServiceActive(bool active) {isActive_ = active;}
         void setFlControllerEndpoint (Endpoint endpoint) {flControllerEndpoint_ = endpoint;}
         void setFlControllerEndpoint (inet::L3Address& addr, int port) {flControllerEndpoint_.addr = addr; flControllerEndpoint_.port = port;}

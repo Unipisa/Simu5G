@@ -50,6 +50,7 @@ nlohmann::ordered_json FLProcessInfo::toJson() const
         }
     }
     //TODO check is array is empty
+    flProcessList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
     flProcessList["FLServiceList"] = serviceArray;
     return flProcessList;
 }
@@ -61,7 +62,7 @@ nlohmann::ordered_json FLProcessInfo::toJson(std::set<std::string>& serviceIds) 
 
     nlohmann::ordered_json serviceArray;
     nlohmann::ordered_json val ;
-    nlohmann::ordered_json flServiceList;
+    nlohmann::ordered_json flProcessList;
 
     auto it = serviceIds.begin();
     for(; it != serviceIds.end(); ++it)
@@ -81,8 +82,9 @@ nlohmann::ordered_json FLProcessInfo::toJson(std::set<std::string>& serviceIds) 
     }
 
     //TODO check is array is empty
-    flServiceList["FLServiceList"] = serviceArray;
-    return flServiceList;
+    flProcessList["timestamp"] = omnetpp::simTime().dbl();
+    flProcessList["FLServiceList"] = serviceArray;
+    return flProcessList;
 }
 
 nlohmann::ordered_json FLProcessInfo::toJson(FLTrainingMode mode) const
@@ -92,7 +94,7 @@ nlohmann::ordered_json FLProcessInfo::toJson(FLTrainingMode mode) const
 
         nlohmann::ordered_json serviceArray;
         nlohmann::ordered_json val ;
-        nlohmann::ordered_json flServiceList;
+        nlohmann::ordered_json flProcessList;
 
         auto it = flServices_->begin();
         for(; it != flServices_->end(); ++it)
@@ -109,8 +111,9 @@ nlohmann::ordered_json FLProcessInfo::toJson(FLTrainingMode mode) const
             }
         }
         //TODO check is array is empty
-        flServiceList["FLServiceList"] = serviceArray;
-        return flServiceList;
+        flProcessList["timestamp"] = omnetpp::simTime().dbl();
+        flProcessList["FLServiceList"] = serviceArray;
+        return flProcessList;
 }
 
 

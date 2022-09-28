@@ -10,25 +10,23 @@
 //
 
 
-#ifndef APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_FLCONTROLLERINFO_H_
-#define APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_FLCONTROLLERINFO_H_
+#ifndef APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_ENDPOINTINFO_H_
+#define APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_ENDPOINTINFO_H_
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
 
-class FLControllerInfo : public AttributeBase
+class EndpointInfo : public AttributeBase
 {
     public:
-        FLControllerInfo();
-        FLControllerInfo(FLService* flService);
+        EndpointInfo();
+        EndpointInfo(FLService* flService);
 
-        virtual ~FLControllerInfo();
+        virtual ~EndpointInfo();
         nlohmann::ordered_json toJson() const override;
 
     private:
         FLService* flService_;
 };
 
-
-
-#endif /* APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_FLCONTROLLERINFO_H_ */
+#endif /* APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_ENDPOINTINFO_H_ */

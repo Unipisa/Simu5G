@@ -75,6 +75,7 @@ nlohmann::ordered_json FLServiceInfo::toJson(std::set<std::string>& serviceIds) 
     }
 
     //TODO check is array is empty
+    flServiceList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
     flServiceList["FLServiceList"] = serviceArray;
     return flServiceList;
 }
@@ -91,7 +92,7 @@ nlohmann::ordered_json FLServiceInfo::toJson(FLTrainingMode mode) const
         auto it = flServices_->begin();
         for(; it != flServices_->end(); ++it)
         {
-            if(it->second.getFLTrainingMode() == mode)
+            if(it->second.getFLTrainingMode() == mode || mode == BOTH)
             {
                 nlohmann::ordered_json service;
                 service["name"] = it->second.getFlServiceName();
@@ -103,8 +104,25 @@ nlohmann::ordered_json FLServiceInfo::toJson(FLTrainingMode mode) const
             }
         }
         //TODO check is array is empty
+        flServiceList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
         flServiceList["FLServiceList"] = serviceArray;
         return flServiceList;
+}
+
+nlohmann::ordered_json FLServiceInfo::toJson(std::string& mode) const
+{
+    if(mode.compare("SYNCHRONUS") == 0)
+    {
+        return toJson(SYNCHRONOUS);
+    }
+    else if(mode.compare("ASYNCHRONUS") == 0)
+    {
+        return toJson(ASYNCHRONOUS);
+    }
+    else if(mode.compare("BOTH") == 0)
+    {
+        return toJson(BOTH);
+    }
 }
 
 
