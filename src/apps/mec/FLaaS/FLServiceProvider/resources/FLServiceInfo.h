@@ -25,9 +25,7 @@ class FLServiceInfo : public AttributeBase
         nlohmann::ordered_json toJson() const override;
         nlohmann::ordered_json toJson(std::set<std::string>& serviceIds) const;
         nlohmann::ordered_json toJson(FLTrainingMode mode) const;
-        nlohmann::ordered_json toJson(std::string& mode) const;
-
-
+        nlohmann::ordered_json toJson(std::string& category) const;
     private:
         std::map<std::string, FLService>* flServices_;
 };

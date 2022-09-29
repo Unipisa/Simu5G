@@ -15,34 +15,33 @@
 
 FLProcessInfo::FLProcessInfo()
 {
-    flServices_ = nullptr;
+    flprocesses_ = nullptr;
 }
 
-FLProcessInfo::FLProcessInfo(std::map<std::string, FLService>* flServices, std::set<std::string>* activeServices)
+FLProcessInfo::FLProcessInfo(std::map<std::string, FLProcess>* flprocesses)
 {
-    flServices_ = flServices;
-    flActiveServices_ = activeServices;
+    flprocesses_ = flprocesses;
 }
 
 
 nlohmann::ordered_json FLProcessInfo::toJson() const
 {
-    if(flServices_ == nullptr || flActiveServices_== nullptr)
-        throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flServices_ is null!");
+    if(flprocesses_ == nullptr)
+        throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flprocesses_ is null!");
 
     nlohmann::ordered_json serviceArray;
     nlohmann::ordered_json val ;
     nlohmann::ordered_json flProcessList;
 
-    auto service = flServices_->begin();
-    for(; service != flServices_->end(); ++service)
+    auto service = flprocesses_->begin();
+    for(; service != flprocesses_->end(); ++service)
     {
-        if(service->second.isFlServiceActive())
+        if(service->second.isFLProcessActive())
         {
             nlohmann::ordered_json serviceJson;
-            serviceJson["name"] = service->second.getFlServiceName();
-            serviceJson["id"] = service->second.getFlServiceId();
-            serviceJson["description"] = service->second.getFlServiceDescription();
+            serviceJson["name"] = service->second.getFLProcessName();
+            serviceJson["processId"] = service->second.getFLProcessId();
+            serviceJson["serviceId"] = service->second.getFLServiceId();
             serviceJson["category"] = service->second.getFLCategory();
             serviceJson["FLTrainingMode"] = service->second.getFLTrainingModeStr();
             serviceJson["currentAccuracy"] = service->second.getFLCurrentModelAccuracy();
@@ -51,14 +50,14 @@ nlohmann::ordered_json FLProcessInfo::toJson() const
     }
     //TODO check is array is empty
     flProcessList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
-    flProcessList["FLServiceList"] = serviceArray;
+    flProcessList["flProcessList"] = serviceArray;
     return flProcessList;
 }
 
 nlohmann::ordered_json FLProcessInfo::toJson(std::set<std::string>& serviceIds) const
 {
-    if(flServices_ == nullptr)
-        throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flServices_ is null!");
+    if(flprocesses_ == nullptr)
+        throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flprocesses_ is null!");
 
     nlohmann::ordered_json serviceArray;
     nlohmann::ordered_json val ;
@@ -67,13 +66,13 @@ nlohmann::ordered_json FLProcessInfo::toJson(std::set<std::string>& serviceIds) 
     auto it = serviceIds.begin();
     for(; it != serviceIds.end(); ++it)
     {
-        auto service = flServices_->find(*it);
-        if(service != flServices_->end() && service->second.isFlServiceActive())
+        auto service = flprocesses_->find(*it);
+        if(service != flprocesses_->end() && service->second.isFLProcessActive())
         {
             nlohmann::ordered_json serviceJson;
-            serviceJson["name"] = service->second.getFlServiceName();
-            serviceJson["id"] = service->second.getFlServiceId();
-            serviceJson["description"] = service->second.getFlServiceDescription();
+            serviceJson["name"] = service->second.getFLProcessName();
+            serviceJson["processId"] = service->second.getFLProcessId();
+            serviceJson["serviceId"] = service->second.getFLServiceId();
             serviceJson["category"] = service->second.getFLCategory();
             serviceJson["FLTrainingMode"] = service->second.getFLTrainingModeStr();
             serviceJson["currentAccuracy"] = service->second.getFLCurrentModelAccuracy();
@@ -83,28 +82,28 @@ nlohmann::ordered_json FLProcessInfo::toJson(std::set<std::string>& serviceIds) 
 
     //TODO check is array is empty
     flProcessList["timestamp"] = omnetpp::simTime().dbl();
-    flProcessList["FLServiceList"] = serviceArray;
+    flProcessList["flProcessList"] = serviceArray;
     return flProcessList;
 }
 
 nlohmann::ordered_json FLProcessInfo::toJson(FLTrainingMode mode) const
 {
-    if(flServices_ == nullptr)
-            throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flServices_ is null!");
+    if(flprocesses_ == nullptr)
+            throw omnetpp::cRuntimeError("FLProcessInfo::toJson - flprocesses_ is null!");
 
         nlohmann::ordered_json serviceArray;
         nlohmann::ordered_json val ;
         nlohmann::ordered_json flProcessList;
 
-        auto it = flServices_->begin();
-        for(; it != flServices_->end(); ++it)
+        auto it = flprocesses_->begin();
+        for(; it != flprocesses_->end(); ++it)
         {
-            if(it->second.getFLTrainingMode() == mode && it->second.isFlServiceActive())
+            if(it->second.getFLTrainingMode() == mode && it->second.isFLProcessActive())
             {
                 nlohmann::ordered_json service;
-                service["name"] = it->second.getFlServiceName();
-                service["id"] = it->second.getFlServiceId();
-                service["description"] = it->second.getFlServiceDescription();
+                service["name"] = it->second.getFLProcessName();
+                service["processId"] = it->second.getFLProcessId();
+                service["serviceId"] = it->second.getFLServiceId();
                 service["category"] = it->second.getFLCategory();
                 service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
                 serviceArray.push_back(service);
@@ -112,7 +111,36 @@ nlohmann::ordered_json FLProcessInfo::toJson(FLTrainingMode mode) const
         }
         //TODO check is array is empty
         flProcessList["timestamp"] = omnetpp::simTime().dbl();
-        flProcessList["FLServiceList"] = serviceArray;
+        flProcessList["flProcessList"] = serviceArray;
+        return flProcessList;
+}
+
+nlohmann::ordered_json FLProcessInfo::toJson(std::string& category) const
+{
+    if(flprocesses_ == nullptr)
+            throw omnetpp::cRuntimeError("FLServiceInfo::toJson - flprocesses_ is null!");
+
+        nlohmann::ordered_json serviceArray;
+        nlohmann::ordered_json val ;
+        nlohmann::ordered_json flProcessList;
+
+        auto it = flprocesses_->begin();
+        for(; it != flprocesses_->end(); ++it)
+        {
+            if(it->second.getFLCategory().compare(category) == 0 && it->second.isFLProcessActive())
+            {
+                nlohmann::ordered_json service;
+                service["name"] = it->second.getFLProcessName();
+                service["processId"] = it->second.getFLProcessId();
+                service["serviceId"] = it->second.getFLServiceId();
+                service["category"] = it->second.getFLCategory();
+                service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
+                serviceArray.push_back(service);
+            }
+        }
+        //TODO check is array is empty
+        flProcessList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
+        flProcessList["flProcessList"] = serviceArray;
         return flProcessList;
 }
 

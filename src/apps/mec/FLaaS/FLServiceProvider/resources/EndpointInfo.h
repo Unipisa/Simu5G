@@ -14,19 +14,19 @@
 #define APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_ENDPOINTINFO_H_
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
+#include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
 
 class EndpointInfo : public AttributeBase
 {
     public:
         EndpointInfo();
-        EndpointInfo(FLService* flService);
+        EndpointInfo(FLProcess* flService);
 
         virtual ~EndpointInfo();
         nlohmann::ordered_json toJson() const override;
 
     private:
-        FLService* flService_;
+        FLProcess* flProcess_;
 };
 
 #endif /* APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_ENDPOINTINFO_H_ */

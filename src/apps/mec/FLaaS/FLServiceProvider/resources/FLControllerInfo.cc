@@ -14,24 +14,24 @@
 
 FLControllerInfo::FLControllerInfo()
 {
-    flService_ = nullptr;
+    flProcess_ = nullptr;
 }
 
-FLControllerInfo::FLControllerInfo(FLService* flService)
+FLControllerInfo::FLControllerInfo(FLProcess* flProcess)
 {
-    flService_ = flService;
+    flProcess_ = flProcess;
 }
 
 
 nlohmann::ordered_json FLControllerInfo::toJson() const
 {
-    if(flService_ == nullptr)
-           throw omnetpp::cRuntimeError("EndpointInfo::toJson - flService_ is null!");
+    if(flProcess_ == nullptr)
+           throw omnetpp::cRuntimeError("EndpointInfo::toJson - flProcess_ is null!");
 
     nlohmann::ordered_json controllerInfo;
 
-    controllerInfo["FLProcessId"] = flService_->getFlProcessId();
-    Endpoint ep = flService_->getFLControllerEndpoint();
+    controllerInfo["FLProcessId"] = flProcess_->getFLProcessId();
+    Endpoint ep = flProcess_->getFLControllerEndpoint();
     controllerInfo["timestamp"] = omnetpp::simTime().dbl();
     controllerInfo["address"]["host"] = ep.addr.str();
     controllerInfo["address"]["port"] = ep.port;

@@ -14,21 +14,23 @@
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
+#include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
+
 
 
 class FLProcessInfo : public AttributeBase
 {
     public:
         FLProcessInfo();
-        FLProcessInfo(std::map<std::string, FLService>* flServices, std::set<std::string>* activeServices);
+        FLProcessInfo(std::map<std::string, FLProcess>* flProcesses);
         virtual ~FLProcessInfo();
         nlohmann::ordered_json toJson() const override;
         nlohmann::ordered_json toJson(std::set<std::string>& serviceIds) const;
         nlohmann::ordered_json toJson(FLTrainingMode mode) const;
+        nlohmann::ordered_json toJson(std::string& category) const;
 
     private:
-        std::map<std::string, FLService>* flServices_;
-        std::set<std::string>* flActiveServices_;
+        std::map<std::string, FLProcess>* flprocesses_;
 };
 
 

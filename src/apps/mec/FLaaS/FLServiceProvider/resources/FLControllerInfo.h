@@ -14,19 +14,19 @@
 #define APPS_MEC_FLAAS_FLSERVICEPROVIDER_RESOURCES_FLCONTROLLERINFO_H_
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
+#include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
 
 class FLControllerInfo : public AttributeBase
 {
     public:
         FLControllerInfo();
-        FLControllerInfo(FLService* flService);
+        FLControllerInfo(FLProcess* flProcess);
 
         virtual ~FLControllerInfo();
         nlohmann::ordered_json toJson() const override;
 
     private:
-        FLService* flService_;
+        FLProcess* flProcess_;
 };
 
 

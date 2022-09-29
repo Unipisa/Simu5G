@@ -1,0 +1,8 @@
+{
+"name" : "QoE estimation",
+"serviceId" : "QOE1",
+"description" : "Federated Learning for Xplainable Artificial Intelligence (XAI)",
+"category" : "QOE",
+"training mode" : "SYNCHRONOUS",
+"controller URI" : "simu5g.apps.mec.FLaaS.FEDXAIController",
+}

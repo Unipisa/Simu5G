@@ -37,9 +37,9 @@ nlohmann::ordered_json FLServiceInfo::toJson() const
     for(; it != flServices_->end(); ++it)
     {
         nlohmann::ordered_json service;
-        service["name"] = it->second.getFlServiceName();
-        service["id"] = it->second.getFlServiceId();
-        service["description"] = it->second.getFlServiceDescription();
+        service["name"] = it->second.getFLServiceName();
+        service["id"] = it->second.getFLServiceId();
+        service["description"] = it->second.getFLServiceDescription();
         service["category"] = it->second.getFLCategory();
         service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
         serviceArray.push_back(service);
@@ -65,9 +65,9 @@ nlohmann::ordered_json FLServiceInfo::toJson(std::set<std::string>& serviceIds) 
         if(service != flServices_->end())
         {
             nlohmann::ordered_json serviceJson;
-            serviceJson["name"] = service->second.getFlServiceName();
-            serviceJson["id"] = service->second.getFlServiceId();
-            serviceJson["description"] = service->second.getFlServiceDescription();
+            serviceJson["name"] = service->second.getFLServiceName();
+            serviceJson["id"] = service->second.getFLServiceId();
+            serviceJson["description"] = service->second.getFLServiceDescription();
             serviceJson["category"] = service->second.getFLCategory();
             serviceJson["FLTrainingMode"] = service->second.getFLTrainingModeStr();
             serviceArray.push_back(serviceJson);
@@ -95,9 +95,9 @@ nlohmann::ordered_json FLServiceInfo::toJson(FLTrainingMode mode) const
             if(it->second.getFLTrainingMode() == mode || mode == BOTH)
             {
                 nlohmann::ordered_json service;
-                service["name"] = it->second.getFlServiceName();
-                service["id"] = it->second.getFlServiceId();
-                service["description"] = it->second.getFlServiceDescription();
+                service["name"] = it->second.getFLServiceName();
+                service["id"] = it->second.getFLServiceId();
+                service["description"] = it->second.getFLServiceDescription();
                 service["category"] = it->second.getFLCategory();
                 service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
                 serviceArray.push_back(service);
@@ -109,21 +109,50 @@ nlohmann::ordered_json FLServiceInfo::toJson(FLTrainingMode mode) const
         return flServiceList;
 }
 
-nlohmann::ordered_json FLServiceInfo::toJson(std::string& mode) const
+nlohmann::ordered_json FLServiceInfo::toJson(std::string& category) const
 {
-    if(mode.compare("SYNCHRONUS") == 0)
-    {
-        return toJson(SYNCHRONOUS);
-    }
-    else if(mode.compare("ASYNCHRONUS") == 0)
-    {
-        return toJson(ASYNCHRONOUS);
-    }
-    else if(mode.compare("BOTH") == 0)
-    {
-        return toJson(BOTH);
-    }
+    if(flServices_ == nullptr)
+            throw omnetpp::cRuntimeError("FLServiceInfo::toJson - flServices_ is null!");
+
+        nlohmann::ordered_json serviceArray;
+        nlohmann::ordered_json val ;
+        nlohmann::ordered_json flServiceList;
+
+        auto it = flServices_->begin();
+        for(; it != flServices_->end(); ++it)
+        {
+            if(it->second.getFLCategory().compare(category) == 0)
+            {
+                nlohmann::ordered_json service;
+                service["name"] = it->second.getFLServiceName();
+                service["id"] = it->second.getFLServiceId();
+                service["description"] = it->second.getFLServiceDescription();
+                service["category"] = it->second.getFLCategory();
+                service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
+                serviceArray.push_back(service);
+            }
+        }
+        //TODO check is array is empty
+        flServiceList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
+        flServiceList["FLServiceList"] = serviceArray;
+        return flServiceList;
 }
+
+//nlohmann::ordered_json FLServiceInfo::toJson(std::string& mode) const
+//{
+//    if(mode.compare("SYNCHRONUS") == 0)
+//    {
+//        return toJson(SYNCHRONOUS);
+//    }
+//    else if(mode.compare("ASYNCHRONUS") == 0)
+//    {
+//        return toJson(ASYNCHRONOUS);
+//    }
+//    else if(mode.compare("BOTH") == 0)
+//    {
+//        return toJson(BOTH);
+//    }
+//}
 
 
 

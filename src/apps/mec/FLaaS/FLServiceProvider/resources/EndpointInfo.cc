@@ -14,23 +14,23 @@
 
 EndpointInfo::EndpointInfo()
 {
-    flService_ = nullptr;
+    flProcess_ = nullptr;
 }
 
-EndpointInfo::EndpointInfo(FLService* flService)
+EndpointInfo::EndpointInfo(FLProcess* flProcess)
 {
-    flService_ = flService;
+    flProcess_ = flProcess;
 }
 
 
 nlohmann::ordered_json EndpointInfo::toJson() const
 {
-    if(flService_ == nullptr)
-           throw omnetpp::cRuntimeError("EndpointInfo::toJson - flService_ is null!");
+    if(flProcess_ == nullptr)
+           throw omnetpp::cRuntimeError("EndpointInfo::toJson - flProcess_ is null!");
 
     nlohmann::ordered_json address;
 
-    Endpoint ep = flService_->getFLControllerEndpoint();
+    Endpoint ep = flProcess_->getFLControllerEndpoint();
     address["address"]["host"] = ep.addr.str();
     address["address"]["port"] = ep.port;
 
