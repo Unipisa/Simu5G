@@ -14,6 +14,9 @@
 
 //#include "apps/mec/FLaaS/FLServiceProvider/resources/" #if needed
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
+#include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
+
 
 /**
  * FL Service Provider
@@ -28,8 +31,9 @@ class AperiodicSubscriptionTimer;
 class FLServiceProvider: public MecServiceBase
 {
   private:
+    std::map<std::string, FLService> flServices_;
+    std::map<std::string, FLProcess> flProcesses_;
 
-    
     /*
     * This timer is used to check aperiodic subscriptions, i.e. every period subscription
     * states are checked. For example, in the circle notification subscriptions, the timer is used
@@ -50,6 +54,14 @@ class FLServiceProvider: public MecServiceBase
     virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
     virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
     virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+
+    virtual double calculateRequestServiceTime() override;
+
+
+    // utils
+    void onboardFLServices();
+    const FLService& onboardFLService(const char* fileName);
+
 
     /*
      * This method is called for every element in the subscriptions_ queue.

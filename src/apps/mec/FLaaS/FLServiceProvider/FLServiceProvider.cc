@@ -26,32 +26,30 @@
 
 // REST resources
 #include "apps/mec/FLaaS/FLServiceProvider/resources/FLServiceInfo.h"
+#include "apps/mec/FLaaS/FLServiceProvider/resources/FLProcessInfo.h"
+
 
 Define_Module(FLServiceProvider);
 
 
 FLServiceProvider::FLServiceProvider(){
-    baseUriQueries_ = "/example/flaas/v1/queries";
+    baseUriQueries_ = "/example/flaas/v1/";
     baseUriSubscriptions_ = "/example/location/v2/subscriptions";
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     subscriptionId_ = 0;
     subscriptions_.clear();
-    supportedQueryParams_.insert("address");
-    supportedQueryParams_.insert("latitude");
-    supportedQueryParams_.insert("longitude");
-    supportedQueryParams_.insert("zone");
-
-    // supportedQueryParams_s_.insert("ue_ipv6_address");
 }
 
 void FLServiceProvider::initialize(int stage)
 {
     MecServiceBase::initialize(stage);
-
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         EV << "Host: " << host_+baseUriQueries_ << endl;
+//        subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer", 0.1);
 
-        subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer", 0.1);
+        // onboard FLservices at initialization time
+        onboardFLServices();
+
     }
 }
 
@@ -112,7 +110,6 @@ void FLServiceProvider::handleMessage(cMessage *msg)
                 scheduleAt(simTime()+subTimer->getPeriod(), msg);
             return;
         }
-
     }
     MecServiceBase::handleMessage(msg);
 }
@@ -123,7 +120,7 @@ void FLServiceProvider::handleGETRequest(const HttpRequestMessage *currentReques
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_+"/availableServices") == 0 ) //queries
+    if(uri.compare(baseUriQueries_+"/queries/availableServices") == 0 ) //queries
     {
         std::string params = currentRequestMessageServed->getParameters();
         if(!params.empty())
@@ -140,29 +137,167 @@ void FLServiceProvider::handleGETRequest(const HttpRequestMessage *currentReques
             for(; it != end; ++it){
                 if(it->rfind("trainMode", 0) == 0) // accessPointId=par1,par2
                 {
-                    EV <<"FLServiceProvider::handleGETReques - parameters: " << endl;
+                    EV <<"FLServiceProvider::handleGETReques - parameters: trainMode " << endl;
                     param = lte::utils::splitString(*it, "=");
-                    if(params.size()!= 2) //must be param=values
+                    if(param.size()!= 2) //must be param=values
                     {
                        Http::send400Response(socket);
                        return;
                     }
 
                     //check param = SYNC ASYN or BOTH
-
-                    FLServiceInfo flServiceListResource = FLServiceInfo(&flServiceList);
-                    Http::send200Response(socket, flServiceListResource.toJsonUe(ues).dump(0).c_str());
-
-
+                    if(isTrainingMode(param[1]))
+                    {
+                        FLServiceInfo flServiceListResource = FLServiceInfo(&flServices_);
+                        Http::send200Response(socket, flServiceListResource.toJson(toTrainingMode(param[1])).dump(0).c_str());
+                    }
+                    else
+                    {
+                        Http::send404Response(socket);
+                        return;
+                    }
+                }
+                else if(it->rfind("category", 0) == 0) // accessPointId=par1,par2
+                {
+                    EV <<"FLServiceProvider::handleGETReques - parameters: category " << endl;
+                    param = lte::utils::splitString(*it, "=");
+                    if(param.size()!= 2) //must be param=values
+                    {
+                       Http::send400Response(socket);
+                       return;
+                    }
+                    FLServiceInfo flServiceListResource = FLServiceInfo(&flServices_);
+                    Http::send200Response(socket, flServiceListResource.toJson(param[1]).dump(0).c_str());
+                }
+                else
+                {
+                    Http::send404Response(socket);
+                    return;
                 }
             }
         }
+        else
+        {
+            FLServiceInfo flServiceListResource = FLServiceInfo(&flServices_);
+            Http::send200Response(socket, flServiceListResource.toJson().dump(0).c_str());
+        }
     }
-    else if (uri.compare(baseUriQueries_+"/activeProcesses") == 0) // return the list of the subscriptions
+    else if (uri.compare(baseUriQueries_+"/queries/activeProcesses") == 0) // return the list of the subscriptions
     {
+        std::string params = currentRequestMessageServed->getParameters();
+        if(!params.empty())
+        {
+           std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+
+           // parameters can be trainMode or category
+           std::vector<std::string>::iterator it  = queryParameters.begin();
+           std::vector<std::string>::iterator end = queryParameters.end();
+           std::vector<std::string> param;
+           std::vector<std::string> splittedParam;
+
+           // for now it only possible to have ONE parameters
+           for(; it != end; ++it){
+               if(it->rfind("trainMode", 0) == 0) // accessPointId=par1,par2
+               {
+                   EV <<"FLServiceProvider::handleGETReques - parameters: trainMode " << endl;
+                   param = lte::utils::splitString(*it, "=");
+                   if(param.size()!= 2) //must be param=values
+                   {
+                      Http::send400Response(socket);
+                      return;
+                   }
+
+                   //check param = SYNC ASYN or BOTH
+                   if(isTrainingMode(param[1]))
+                   {
+                       FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
+                       Http::send200Response(socket, flProcessListResource.toJson(toTrainingMode(param[1])).dump(0).c_str());
+                   }
+                   else
+                   {
+                       Http::send404Response(socket);
+                       return;
+                   }
+               }
+               else if(it->rfind("category", 0) == 0) // accessPointId=par1,par2
+               {
+                   EV <<"FLServiceProvider::handleGETReques - parameters: category " << endl;
+                   param = lte::utils::splitString(*it, "=");
+                   if(param.size()!= 2) //must be param=values
+                   {
+                      Http::send400Response(socket);
+                      return;
+                   }
+                   FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
+                   Http::send200Response(socket, flProcessListResource.toJson(param[1]).dump(0).c_str());
+               }
+               else
+               {
+                   Http::send404Response(socket);
+                   return;
+               }
+           }
+        }
+        else
+        {
+            FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
+            Http::send200Response(socket, flProcessListResource.toJson().dump(0).c_str());
+        }
+
     }
-    else if (uri.compare(baseUriQueries_+"/controllerEndpoint") == 0) // return the list of the subscriptions
+    else if (uri.compare(baseUriQueries_+"/queries/controllerEndpoint") == 0) // return the list of the subscriptions
     {
+        std::string params = currentRequestMessageServed->getParameters();
+        if(!params.empty())
+        {
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+
+            // parameters can be trainMode or category
+            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator end = queryParameters.end();
+            std::vector<std::string> param;
+            std::vector<std::string> splittedParam;
+            for(; it != end; ++it){
+                if(it->rfind("processId", 0) == 0) // controllerId=par1
+                {
+                    EV <<"FLServiceProvider::handleGETReques - parameters: processId" << endl;
+                    param = lte::utils::splitString(*it, "=");
+                    if(param.size()!= 2) //must be param=values
+                    {
+                        Http::send400Response(socket);
+                        return;
+                    }
+
+                    // check if the ID is present
+                    bool found = false;
+                    for(const auto& process : flProcesses_)
+                    {
+                        if(process.second.isFLProcessActive() && process.second.getFLProcessId().compare(param[1]))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    //check param = SYNC ASYN or BOTH
+                    if(found)
+                    {
+                        FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
+                        Http::send200Response(socket, flProcessListResource.toJson(toTrainingMode(param[1])).dump(0).c_str());
+                    }
+                    else
+                    {
+                        Http::send404Response(socket);
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Http::send404Response(socket);
+            return;
+        }
+
     }
     else // not found
     {
@@ -176,30 +311,62 @@ void FLServiceProvider::handlePOSTRequest(const HttpRequestMessage *currentReque
     std::string uri = currentRequestMessageServed->getUri();
     std::string body = currentRequestMessageServed->getBody();
 
-//    // uri must be in form example/location/v2/subscriptions/sub_type
-//    // or
-//    // example/location/v2/subscriptions/type/sub_type () e.g /area/circle
-//    std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "FLServiceProvider::handlePOSTRequest - incorrect URI" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case subscriptionType would be empty and the baseUri == uri
-//    // by the way the next if statement solves this problem
-//    std::string baseUri = uri.substr(0,lastPart);
-//    std::string subscriptionType =  uri.substr(lastPart+1);
-//
-//    EV << "FLServiceProvider::handlePOSTRequest - baseuri: "<< baseUri << endl;
+//    // uri must be in form example/flaas/v1/operations/res
 
-    // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(uri.compare(baseUriSubscriptions_+"/area/circle") == 0)
+    EV << "FLServiceProvider::handlePOSTRequest - baseuri: "<< uri << endl;
+
+    if(uri.compare(baseUriQueries_+"/operations/addFLService") == 0)
     {
 
+        nlohmann::json jsonBody;
+        try
+        {
+            jsonBody = nlohmann::json::parse(body); // get the JSON structure
+        }
+        catch(nlohmann::detail::parse_error e)
+        {
+            std::cout << "FLServiceProvider::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
+            // body is not correctly formatted in JSON, manage it
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        std::string name = jsonBody["name"];
+        std::string flServiceId = jsonBody["serviceId"];
+        std::string description = jsonBody["description"];
+        std::string category = jsonBody["category"];
+
+        std::string trainingMode = jsonBody["training mode"];
+        FLTrainingMode trainingMode_enum ;
+        if(isTrainingMode(trainingMode))
+            trainingMode_enum = toTrainingMode(trainingMode);
+        else
+        {
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        std::string flControllerUri = jsonBody["controller URI"];
+
+        FLService newFLService(name, flServiceId, description, category, trainingMode_enum);
+
+        if(flServices_.find(newFLService.getFLServiceId()) != flServices_.end())
+        {
+            EV << "FLServiceProvider::handlePOSTRequest- FL service with serviceId [" << newFLService.getFLServiceId() << "] already present" << endl;
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+        else
+        {
+            EV << "FLServiceProvider::handlePOSTRequest- nre FL service with serviceId [" << newFLService.getFLServiceId() << "] added!" << endl;
+            flServices_[newFLService.getFLServiceId()] = newFLService;
+            std::string resourceUrl = baseUriSubscriptions_+"/operations/addFLService/" + newFLService.getFLServiceId();
+            jsonBody["resourceURL"] = resourceUrl;
+            std::pair<std::string, std::string> locationHeader("Location: ", resourceUrl);
+            Http::send201Response(socket, jsonBody.dump(2).c_str(), locationHeader);
+        }
     }
-    else
+    else if(uri.compare(baseUriSubscriptions_+"/operations/startFLProcess") == 0)
     {
         Http::send404Response(socket); //resource not found
     }
@@ -220,34 +387,18 @@ void FLServiceProvider::handleDELETERequest(const HttpRequestMessage *currentReq
     // example/location/v2/subscriptions/type/sub_type/subId
     std::string uri = currentRequestMessageServed->getUri();
     std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "1" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
 
-    // find_last_of does not take in to account if the uri has a last /
-    // in this case subscriptionType would be empty and the baseUri == uri
-    // by the way the next if statement solve this problem
     std::string baseUri = uri.substr(0,lastPart);
-    std::string ssubId =  uri.substr(lastPart+1);
+    std::string flService =  uri.substr(lastPart+1);
 
     EV << "baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(baseUri.compare(baseUriSubscriptions_+"/area/circle") == 0)
+    if(baseUri.compare(baseUriQueries_+"/operations/deleteFLService") == 0)
     {
-        int subId = std::stoi(ssubId);
-        Subscriptions::iterator it = subscriptions_.find(subId);
-        if(it != subscriptions_.end())
+        if(flServices_.find(flService) != flServices_.end())
         {
-            // CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
-            subscriptionTimer_->removeSubId(subId);
-            if(subscriptionTimer_->getSubIdSetSize() == 0 && subscriptionTimer_->isScheduled())
-                cancelEvent(subscriptionTimer_);
-            delete it->second;
-            subscriptions_.erase(it);
+            flServices_.erase(flService);
             Http::send204Response(socket);
         }
         else
@@ -273,5 +424,65 @@ return;
 }
 
 
+void FLServiceProvider::onboardFLServices()
+{
+    //getting the list of mec hosts associated to this mec system from parameter
+    if(this->hasPar("flServicesList") && strcmp(par("flServicesList").stringValue(), "")){
+        std::string flServiceList = par("flServicesList").stdstringValue();
+        char* token = strtok((char*)flServiceList.c_str() , ", "); // split by commas
+        while (token != NULL)
+        {
+            int len = strlen(token);
+            char buf[len+strlen(".json")+strlen("FLServices/")+1];
+            strcpy(buf,"FLServices/");
+            strcat(buf,token);
+            strcat(buf,".json");
+            onboardFLService(buf);
+            token = strtok (NULL, ", ");
+        }
+    }
+    else{
+        EV << "FLServiceProvider::onboardFLServices - No flServicesList found" << endl;
+    }
+}
 
+const FLService& FLServiceProvider::onboardFLService(const char* fileName)
+{
+    EV <<"FLServiceProvider::onboardFLService - onboarding FLService: "<< fileName << endl;
+    FLService flService(fileName);
+    if(flServices_.find(flService.getFLServiceId()) != flServices_.end())
+    {
+        EV << "FLServiceProvider::onboardFLService - FLService with name ["<< fileName << "] is already present.\n" << endl;
+    //        throw cRuntimeError("FLServiceProvider::onboardFLService - FLService with name [%s] is already present.\n"
+    //                            "Duplicate FLServiceId or FLService already onboarded?", fileName);
+    }
+    else
+    {
+        flServices_[flService.getFLServiceId()] = flService; // add to the FLServices
+    }
+
+    return flServices_[flService.getFLServiceId()];
+}
+
+double FLServiceProvider::calculateRequestServiceTime()
+{
+    EV << "FLServiceProvider::calculateRequestServiceTime" << endl;
+    if(std::strcmp(currentRequestMessageServed_->getMethod(),"POST") == 0)
+    {
+        std::string uri = currentRequestMessageServed_->getUri();
+        if(uri.compare(baseUriSubscriptions_+"/operations/addFLService") == 0)
+        {
+            EV << "FLServiceProvider::calculateRequestServiceTime - addFLService" << endl;
+            return 1.; // time to instantiate MEC apps
+        }
+        else
+        {
+            return MecServiceBase::calculateRequestServiceTime();
+        }
+    }
+    else
+    {
+        return MecServiceBase::calculateRequestServiceTime();
+    }
+}
 
