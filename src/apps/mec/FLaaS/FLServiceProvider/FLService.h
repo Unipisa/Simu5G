@@ -24,9 +24,11 @@ class FLService
         std::string category_;
         FLTrainingMode trainingMode_;
         std::string flControllerUri_;
+        int flServiceIdNumeric_; // variable used internally the framework to differentiate different services
+        static int staticFlServiceIdNumeric_;
 
     public:
-        FLService() {};
+        FLService();
         FLService(const char* fileName); // read the FLservice from file from file
         FLService(std::string& name, std::string& flServiceId, std::string description, std::string& category,  FLTrainingMode trainingMode);
 
@@ -35,6 +37,7 @@ class FLService
         std::string getFLServiceDescription() const {return description_;}
         std::string getFLServiceId() const {return flServiceId_;}
         std::string getFLControllerUri() const {return flControllerUri_;}
+        int getFLServiceIdNumeric() const {return flServiceIdNumeric_;}
 
 //        std::string getFLProcessId() {return flProcessId_;}
         std::string getFLCategory()const {return category_;}

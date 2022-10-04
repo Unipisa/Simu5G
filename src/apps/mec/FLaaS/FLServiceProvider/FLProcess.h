@@ -26,10 +26,11 @@ class FLProcess
         bool isActive_;
         Endpoint flControllerEndpoint_;
         double currentAccuracy_;
+        int mecAppId_;
 
     public:
         FLProcess() {};
-        FLProcess(std::string& name, std::string& flProcessId, std::string& flServiceId, std::string& category,  FLTrainingMode traininigMode);
+        FLProcess(const std::string& name, const std::string& flProcessId, const std::string& flServiceId, const std::string& category, const FLTrainingMode traininigMode, const int mecAppId);
 
         // getters
         std::string getFLProcessName() const {return name_;}

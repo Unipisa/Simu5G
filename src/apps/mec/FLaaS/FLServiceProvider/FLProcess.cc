@@ -12,13 +12,14 @@
 
 #include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
 
-FLProcess::FLProcess(std::string& name, std::string& flProcessId, std::string& flServiceId, std::string& category,  FLTrainingMode traininigMode)
+FLProcess::FLProcess(const std::string& name, const std::string& flProcessId, const std::string& flServiceId, const std::string& category, const FLTrainingMode traininigMode, const int mecAppId)
 {
     name_ = name;
     flServiceId_ = flServiceId;
     flProcessId_ = flProcessId;
     category_ = category;
     trainingMode_ = traininigMode;
+    mecAppId_ = mecAppId;
 }
 
 std::string FLProcess::getFLTrainingModeStr()

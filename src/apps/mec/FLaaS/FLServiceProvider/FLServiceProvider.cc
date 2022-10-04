@@ -24,9 +24,13 @@
 #include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
+#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+
 // REST resources
 #include "apps/mec/FLaaS/FLServiceProvider/resources/FLServiceInfo.h"
 #include "apps/mec/FLaaS/FLServiceProvider/resources/FLProcessInfo.h"
+
+#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 
 
 Define_Module(FLServiceProvider);
@@ -50,34 +54,6 @@ void FLServiceProvider::initialize(int stage)
         // onboard FLservices at initialization time
         onboardFLServices();
 
-    }
-}
-
-bool FLServiceProvider::manageSubscription()
-{
-    int subId = currentSubscriptionServed_->getSubId();
-    if(subscriptions_.find(subId) != subscriptions_.end())
-    {
-        EV << "FLServiceProvider::manageSubscription() - subscription with id: " << subId << " found" << endl;
-        SubscriptionBase * sub = subscriptions_[subId]; //upcasting (getSubscriptionType is in Subscriptionbase)
-        sub->sendNotification(currentSubscriptionServed_);
-        if(currentSubscriptionServed_!= nullptr)
-            delete currentSubscriptionServed_;
-        currentSubscriptionServed_ = nullptr;
-        return true;
-    }
-
-    else{
-        EV << "FLServiceProvider::manageSubscription() - subscription with id: " << subId << " not found. Removing from subscriptionTimer.." << endl;
-        // the subscription has been deleted, e.g. due to closing socket
-        // remove subId from AperiodicSubscription timer
-        subscriptionTimer_->removeSubId(subId);
-        if(subscriptionTimer_->getSubIdSetSize() == 0)
-            cancelEvent(subscriptionTimer_);
-        if(currentSubscriptionServed_!= nullptr)
-                delete currentSubscriptionServed_;
-        currentSubscriptionServed_ = nullptr;
-        return false;
     }
 }
 
@@ -368,6 +344,69 @@ void FLServiceProvider::handlePOSTRequest(const HttpRequestMessage *currentReque
     }
     else if(uri.compare(baseUriSubscriptions_+"/operations/startFLProcess") == 0)
     {
+        // in the body there is the Service Id of the service the entity wants to start
+        nlohmann::json jsonBody;
+        try
+        {
+            jsonBody = nlohmann::json::parse(body); // get the JSON structure
+        }
+        catch(nlohmann::detail::parse_error e)
+        {
+            std::cout << "FLServiceProvider::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
+            // body is not correctly formatted in JSON, manage it
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        std::string flServiceId = jsonBody["serviceId"];
+        std::string trainingMode = jsonBody["training mode"];
+        FLTrainingMode trainingMode_enum ;
+        if(isTrainingMode(trainingMode))
+            trainingMode_enum = toTrainingMode(trainingMode);
+        else
+        {
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        // check if the service is present
+        auto service = flServices_.find(flServiceId);
+        if(service == flServices_.end())
+        {
+            Http::send400Response(socket); // bad body JSON
+        }
+        else
+        {
+            //instantiate the controller
+            MecAppInstanceInfo * appInfo = instantiateFLController(service->second);
+            // response
+            inet::L3Address address = appInfo->endPoint.addr;
+            int port = appInfo->endPoint.port;
+            bool result = appInfo->status;
+
+            if(result)
+            {
+                EV << "FLServiceProvider::handlePOSTRequest - FLControllerApp for FL service with id [" << flServiceId << "] has been instantiated" << endl;
+                FLProcess flProcess = FLProcess(service->second.getFLServiceName(),service->second.getFLServiceId() ,service->second.getFLServiceId(), service->second.getFLCategory(), service->second.getFLTrainingMode(),  service->second.getFLServiceIdNumeric());
+                flProcesses_[flProcess.getFLProcessId()] = flProcess;
+
+                FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
+                Http::send201Response(socket, flProcessListResource.toJsonFLProcess(flProcess.getFLProcessId(), true).dump(0).c_str());
+
+
+             }
+            else
+            {
+                EV << "FLServiceProvider::handlePOSTRequest - FLControllerApp for FL service with id [" << flServiceId << "]  has not been instantiated!" << endl;
+                Http::send204Response(socket); // bad body JSON
+            }
+
+            delete appInfo;
+        }
+
+
+
+
         Http::send404Response(socket); //resource not found
     }
 }
@@ -470,9 +509,9 @@ double FLServiceProvider::calculateRequestServiceTime()
     if(std::strcmp(currentRequestMessageServed_->getMethod(),"POST") == 0)
     {
         std::string uri = currentRequestMessageServed_->getUri();
-        if(uri.compare(baseUriSubscriptions_+"/operations/addFLService") == 0)
+        if(uri.compare(baseUriSubscriptions_+"/operations/starFLProcess") == 0)
         {
-            EV << "FLServiceProvider::calculateRequestServiceTime - addFLService" << endl;
+            EV << "FLServiceProvider::calculateRequestServiceTime - starFLProcess" << endl;
             return 1.; // time to instantiate MEC apps
         }
         else
@@ -485,4 +524,61 @@ double FLServiceProvider::calculateRequestServiceTime()
         return MecServiceBase::calculateRequestServiceTime();
     }
 }
+
+
+MecAppInstanceInfo* FLServiceProvider::instantiateFLController(const FLService& flService)
+{
+    // TODO
+    /*
+     * Instantiate a new MECApp controller App.
+     * Use the MEC to instantiate it. save the endpoint
+     * store all in the structure.
+     *
+     * NOTE:
+     * MECPlatooningController apps are instantiated in the same MEC host where
+     * the MECPlatooningProducer app runs.
+     */
+
+    // get MEC platform manager and require mec app instantiation
+    cModule* mecPlatformManagerModule = this->getModuleByPath("^.mecPlatformManager");
+    MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(mecPlatformManagerModule);
+
+    MecAppInstanceInfo* appInfo = nullptr;
+    CreateAppMessage * createAppMsg = new CreateAppMessage();
+
+//    const char* controllerName = par("controllerName"); // It must be in the form of MECPlatooningControllerRajamani;
+    std::string contName = flService.getFLControllerUri();
+
+    createAppMsg->setUeAppID(flService.getFLServiceIdNumeric()); // TODO choose id
+    createAppMsg->setMEModuleName(flService.getFLServiceName().c_str());
+    createAppMsg->setMEModuleType(contName.c_str()); //path
+
+    createAppMsg->setRequiredCpu(5000.);
+    createAppMsg->setRequiredRam(10.);
+    createAppMsg->setRequiredDisk(10.);
+    createAppMsg->setRequiredService("NULL"); // insert OMNeT like services, NULL if not
+    createAppMsg->setContextId(flService.getFLServiceIdNumeric());
+
+    appInfo = mecpm->instantiateMEApp(createAppMsg);
+
+    if(!appInfo->status)
+    {
+        EV << "FLServiceProvider::instantiateFLController - something went wrong during MEC app instantiation"<< endl;
+    }
+
+    else
+    {
+        // TODO send configuration?
+    }
+    return appInfo;
+}
+
+
+
+
+
+
+
+
+
 

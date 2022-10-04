@@ -16,6 +16,12 @@
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
 
+FLService::FLService()
+{
+    flServiceIdNumeric_ = staticFlServiceIdNumeric_++;
+}
+
+
 FLService::FLService(const char* fileName)
 {
     // read a JSON file

@@ -27,7 +27,9 @@ class FLProcessInfo : public AttributeBase
         nlohmann::ordered_json toJson() const override;
         nlohmann::ordered_json toJson(std::set<std::string>& serviceIds) const;
         nlohmann::ordered_json toJson(FLTrainingMode mode) const;
-        nlohmann::ordered_json toJson(std::string& category) const;
+        nlohmann::ordered_json toJson(const std::string& category) const;
+        nlohmann::ordered_json toJsonFLProcess(const std::string& flProcessId, bool controllerEndpoint = false) const;
+
 
     private:
         std::map<std::string, FLProcess>* flprocesses_;

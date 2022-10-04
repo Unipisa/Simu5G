@@ -35,7 +35,7 @@ nlohmann::ordered_json FLControllerInfo::toJson() const
     controllerInfo["timestamp"] = omnetpp::simTime().dbl();
     controllerInfo["address"]["host"] = ep.addr.str();
     controllerInfo["address"]["port"] = ep.port;
-    controllerInfo["token"] = "null";
+//    controllerInfo["token"] = "null";
 
     return controllerInfo;
 }

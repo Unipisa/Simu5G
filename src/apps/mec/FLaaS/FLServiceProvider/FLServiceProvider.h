@@ -16,6 +16,7 @@
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "apps/mec/FLaaS/FLServiceProvider/FLService.h"
 #include "apps/mec/FLaaS/FLServiceProvider/FLProcess.h"
+#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
 
 /**
@@ -61,6 +62,7 @@ class FLServiceProvider: public MecServiceBase
     // utils
     void onboardFLServices();
     const FLService& onboardFLService(const char* fileName);
+    MecAppInstanceInfo* instantiateFLController(const FLService& flService);
 
 
     /*
