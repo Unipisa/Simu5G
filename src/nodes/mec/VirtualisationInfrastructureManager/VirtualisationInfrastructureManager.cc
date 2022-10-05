@@ -258,7 +258,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
         cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
         cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
         std::stringstream appName;
-        appName << meModuleName << "\n" << module->getId();
+        appName << meModuleName << "_" << module->getId();
         module->setName(appName.str().c_str());
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
         //creating the mecAppMap map entry
@@ -303,6 +303,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
 
         instanceInfo->endPoint.addr = mecAppRemoteAddress_;
         instanceInfo->endPoint.port = mecAppPortCounter;
+        instanceInfo->module = module;
 
         EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo->endPoint.port << endl;
 
@@ -374,6 +375,7 @@ MecAppInstanceInfo* VirtualisationInfrastructureManager::instantiateMEApp(Create
     {
         MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
         instanceInfo->status = false;
+        instanceInfo->module = nullptr;
         return instanceInfo;
     }
 }
