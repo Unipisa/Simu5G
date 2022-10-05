@@ -17,14 +17,28 @@
 
 enum FLTrainingMode
 {
-    SYNCHRONOUS, ASYNCHRONOUS, BOTH
+    SYNCHRONOUS, ASYNCHRONOUS, BOTH, ONE_SHOT
 };
 
-struct Endpoint {
+typedef struct  {
     inet::L3Address addr;
     int port;
     std::string str() const { return addr.str() + ":" + std::to_string(port);}
-};
+}Endpoint;
+
+
+typedef struct
+{
+    omnetpp::simtime_t timestamp;
+    int dimension;
+}MLModel;
+
+
+typedef struct
+{
+    Endpoint endPoint;
+    // TODO add struct for storing info for selection algs
+}LocalLearner;
 
 
 bool isTrainingMode(std::string& trainingMode);

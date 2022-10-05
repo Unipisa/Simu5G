@@ -25,12 +25,13 @@
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
+
 
 // REST resources
 #include "apps/mec/FLaaS/FLServiceProvider/resources/FLServiceInfo.h"
 #include "apps/mec/FLaaS/FLServiceProvider/resources/FLProcessInfo.h"
 
-#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 
 
 Define_Module(FLServiceProvider);
@@ -38,7 +39,7 @@ Define_Module(FLServiceProvider);
 
 FLServiceProvider::FLServiceProvider(){
     baseUriQueries_ = "/example/flaas/v1/";
-    baseUriSubscriptions_ = "/example/location/v2/subscriptions";
+    baseUriSubscriptions_ = "/example/flaas/v1/subscriptions";
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     subscriptionId_ = 0;
     subscriptions_.clear();
@@ -382,12 +383,13 @@ void FLServiceProvider::handlePOSTRequest(const HttpRequestMessage *currentReque
             // response
             inet::L3Address address = appInfo->endPoint.addr;
             int port = appInfo->endPoint.port;
+
             bool result = appInfo->status;
 
             if(result)
             {
                 EV << "FLServiceProvider::handlePOSTRequest - FLControllerApp for FL service with id [" << flServiceId << "] has been instantiated" << endl;
-                FLProcess flProcess = FLProcess(service->second.getFLServiceName(),service->second.getFLServiceId() ,service->second.getFLServiceId(), service->second.getFLCategory(), service->second.getFLTrainingMode(),  service->second.getFLServiceIdNumeric());
+                FLProcess flProcess = FLProcess(service->second.getFLServiceName(), appInfo->instanceId ,service->second.getFLServiceId(), service->second.getFLCategory(), service->second.getFLTrainingMode(),  service->second.getFLServiceIdNumeric());
                 flProcesses_[flProcess.getFLProcessId()] = flProcess;
 
                 FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);

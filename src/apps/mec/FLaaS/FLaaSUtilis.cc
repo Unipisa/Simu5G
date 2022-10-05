@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/FLaaS/FLServiceProvider/FLaaSUtils.h"
+#include "apps/mec/FLaaS/FLaaSUtils.h"
 
 bool isTrainingMode(std::string& trainMode)
 {
@@ -19,6 +19,9 @@ bool isTrainingMode(std::string& trainMode)
         return true;
     else if(trainMode.compare("BOTH") == 0)
         return true;
+    else if(trainMode.compare("ONE_SHOT") == 0)
+            return true;
+
     else
         return false;
 }
@@ -30,6 +33,9 @@ FLTrainingMode toTrainingMode(std::string& trainingMode)
         return SYNCHRONOUS;
     else if(trainingMode.compare("ASYNCHRONOUS") == 0)
         return ASYNCHRONOUS;
-    else
+    else if(trainingMode.compare("BOTH") == 0)
         return BOTH;
+    else
+        return ONE_SHOT;
 }
+

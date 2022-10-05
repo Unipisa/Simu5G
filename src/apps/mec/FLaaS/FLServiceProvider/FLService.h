@@ -13,7 +13,7 @@
 #define APPS_MEC_FLAAS_FLSERVICEPROVIDER_FLSERVICE_H_
 
 #include "inet/networklayer/common/L3Address.h"
-#include "apps/mec/FLaaS/FLServiceProvider/FLaaSUtils.h"
+#include "apps/mec/FLaaS/FLaaSUtils.h"
 
 class FLService
 {
