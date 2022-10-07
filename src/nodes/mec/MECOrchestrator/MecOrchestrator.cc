@@ -236,6 +236,9 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
              appInfo->instanceId = "emulated_" + desc.getAppName();
              newMecApp.isEmulated = true;
 
+             // register the address of the MEC app to the Binder, so as the GTP knows the endpoint (UPF_MEC) where to forward packets to
+             inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(newMecApp.mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
+             binder_->registerMecHostUpfAddress(appInfo->endPoint.addr, gtpAddress);
          }
          else
          {
