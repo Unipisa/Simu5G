@@ -27,9 +27,10 @@ simple MECResponseApp like IMECApp, IApp
         int mecAppIndex;
         int mecAppId;
         int localUePort;
-        
+       
         int minInstructions = default(9000000);
         int maxInstructions = default(11000000);
+
         
         
         string mp1Address = default("");

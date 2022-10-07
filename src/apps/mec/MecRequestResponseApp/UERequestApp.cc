@@ -42,6 +42,7 @@ UERequestApp::~UERequestApp()
     cancelAndDelete(selfStop_);
     cancelAndDelete(unBlockingMsg_);
     cancelAndDelete(sendRequest_);
+
 }
 
 void UERequestApp::initialize(int stage)
@@ -51,7 +52,6 @@ void UERequestApp::initialize(int stage)
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
-
 
     sno_ = 0;
 
@@ -65,6 +65,10 @@ void UERequestApp::initialize(int stage)
     char* deviceAppAddressStr = (char*)par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceAppAddressStr);
 
+
+    rt_stats_.setName("response_time_vector");
+
+
     //binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
@@ -73,13 +77,18 @@ void UERequestApp::initialize(int stage)
     if (tos != -1)
         socket.setTos(tos);
 
+    //retrieving car cModule
+    ue = this->getParentModule();
+
     mecAppName = par("mecAppName").stringValue();
 
     //initializing the auto-scheduling messages
     selfStart_ = new cMessage("selfStart");
     selfStop_ = new cMessage("selfStop");
     sendRequest_ = new cMessage("sendRequest");
+
     unBlockingMsg_ = new cMessage("unBlockingMsg");
+
 
     //starting UERequestApp
     simtime_t startTime = par("startTime");
@@ -91,10 +100,10 @@ void UERequestApp::initialize(int stage)
 
     // register signals for stats
     processingTime_ = registerSignal("processingTime");
-    serviceResponseTime_ = registerSignal("serviceResponseTime");
-    upLinkTime_ = registerSignal("upLinkTime");
-    downLinkTime_ = registerSignal("downLinkTime");
-    responseTime_ = registerSignal("responseTime");
+//    serviceResponseTime_ = registerSignal("serviceResponseTime");
+//    upLinkTime_ = registerSignal("upLinkTime");
+//    downLinkTime_ = registerSignal("downLinkTime");
+//    responseTime_ = registerSignal("responseTime");
 
 
 }
@@ -109,7 +118,7 @@ void UERequestApp::handleMessage(cMessage *msg)
             sendStartMECRequestApp();
         else if(!strcmp(msg->getName(), "selfStop"))
             sendStopApp();
-        else if(!strcmp(msg->getName(), "sendRequest") || !strcmp(msg->getName(), "unBlockingMsg"))
+        else if(!strcmp(msg->getName(), "sendRequest"))
             sendRequest();
         else
             throw cRuntimeError("UERequestApp::handleMessage - \tWARNING: Unrecognized self message");
@@ -229,14 +238,12 @@ void UERequestApp::handleAckStartMECRequestApp(cMessage* msg)
     else
     {
         EV << "UERequestApp::handleAckStartMECRequestApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
+
         simtime_t startTime = par("startTime");
         EV << "UERequestApp::initialize - starting sendStartMEWarningAlertApp() in " << startTime << " seconds " << endl;
         if(!selfStart_->isScheduled())
             scheduleAt(simTime() + startTime, selfStart_);
     }
-
-
-
     delete packet;
 }
 
@@ -252,6 +259,7 @@ void UERequestApp::handleAckStopMECRequestApp(cMessage* msg)
         EV << "Reason: "<< pkt->getReason() << endl;
 
     cancelEvent(selfStop_);
+    delete packet;
 }
 
 
@@ -261,7 +269,9 @@ void UERequestApp::sendRequest()
     inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_REQUEST);
+
     req->setSno(sno_++);
+
     req->setRequestSentTimestamp(simTime());
     req->setChunkLength(inet::B(requestPacketSize_));
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
@@ -270,6 +280,7 @@ void UERequestApp::sendRequest()
     start_ = simTime();
 
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
+
 
 //    if(!unBlockingMsg_->isScheduled())
        /// scheduleAfter(1, unBlockingMsg_);
@@ -283,10 +294,13 @@ void UERequestApp::handleStopApp(cMessage* msg)
     auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
     sendStopMECRequestApp();
+
+    delete packet;
 }
 
 void UERequestApp::sendStopApp()
 {
+    EV <<"UERequestApp::sendStopApp()" << endl;
     inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_STOP );
@@ -295,7 +309,11 @@ void UERequestApp::sendStopApp()
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(req);
 
-//    start_ = simTime();
+
+    if(sendRequest_->isScheduled())
+    {
+        cancelEvent(sendRequest_);
+    }
 
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
 
@@ -309,6 +327,7 @@ void UERequestApp::recvResponse(cMessage* msg)
 
     simtime_t upLinkDelay = res->getRequestArrivedTimestamp() - res->getRequestSentTimestamp();
     simtime_t downLinkDelay = simTime()- res->getResponseSentTimestamp();
+
     simtime_t respTime = simTime()- res->getRequestSentTimestamp();
 
     EV << "UERequestApp::recvResponse - message with sno [" << res->getSno() << "] " <<
@@ -316,21 +335,27 @@ void UERequestApp::recvResponse(cMessage* msg)
             "downLinkDelay [" << downLinkDelay << "ms]\t" <<
             "processingTime [" << res->getProcessingTime() << "ms]\t" <<
             "serviceResponseTime [" << res->getServiceResponseTime() << "ms]\t" <<
+
             "responseTime [" << respTime << "ms]" << endl;
 
-    //emit stats
-    emit(upLinkTime_, upLinkDelay);
-    emit(downLinkTime_, downLinkDelay);
-    emit(processingTime_, res->getProcessingTime());
-    emit(serviceResponseTime_, res->getServiceResponseTime());
-    emit(responseTime_, respTime);
 
-    delete packet;
+    //emit stats
+//    emit(upLinkTime_, upLinkDelay);
+//    emit(downLinkTime_, downLinkDelay);
+    emit(processingTime_, res->getProcessingTime());
+//    emit(serviceResponseTime_, res->getServiceResponseTime());
+//    emit(responseTime_, respTime);
+
 
     if(unBlockingMsg_->isScheduled())
         cancelEvent(unBlockingMsg_);
     if(!sendRequest_->isScheduled())
         scheduleAt(simTime() + requestPeriod_, sendRequest_);
+
+    rt_stats_.record(respTime);
+
+    delete packet;
+
 }
 
 

@@ -24,6 +24,10 @@
 
 #include "common/binder/Binder.h"
 
+//inet mobility
+#include "inet/common/geometry/common/Coord.h"
+#include "inet/common/geometry/common/EulerAngles.h"
+#include "inet/mobility/contract/IMobility.h"
 
 using namespace omnetpp;
 
@@ -32,7 +36,9 @@ class UERequestApp: public cSimpleModule
     //communication to device app and mec app
     inet::UdpSocket socket;
 
+
     unsigned int sno_;
+
     int requestPacketSize_;
     double requestPeriod_;
 
@@ -51,13 +57,19 @@ class UERequestApp: public cSimpleModule
 
     std::string mecAppName;
 
+    // mobility information
+    cModule* ue;
+    inet::Coord position;
 
     //scheduling
     cMessage *selfStart_;
     cMessage *selfStop_;
     cMessage *sendRequest_;
+
     cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
 
+    //Output vector for wp6
+    omnetpp::cOutVector rt_stats_;
 
     // signals for statistics
     simsignal_t processingTime_;

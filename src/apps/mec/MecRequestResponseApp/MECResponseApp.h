@@ -24,8 +24,10 @@
 
 #define UEAPP_REQUEST 0
 #define MECAPP_RESPONSE 1
+
 #define UEAPP_STOP 2
 #define UEAPP_ACK_STOP 3
+
 
 class MECResponseApp : public MecAppBase
 {
@@ -54,6 +56,9 @@ protected:
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
+
+    omnetpp::cOutVector rt_stats_mec;
+
     // endpoint for contacting the Location Service
     // this is obtained by sending a GET request to the Service Registry as soon as
     // the connection with the latter has been established
@@ -78,8 +83,10 @@ protected:
     virtual void handleServiceMessage(int connId) override;
 
     virtual void handleRequest(cMessage* msg);
+
     virtual void handleStopRequest(cMessage* msg);
     virtual void sendStopAck();
+
     virtual void sendResponse();
 
     virtual void doComputation();

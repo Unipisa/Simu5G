@@ -197,7 +197,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
                     packet->insertAtBack(nack);
-                    throw cRuntimeError("LCM proxy responded 500");
+//                    throw cRuntimeError("LCM proxy responded 500");
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 
                     appState = IDLE;

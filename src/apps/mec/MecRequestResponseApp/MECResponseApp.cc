@@ -66,25 +66,24 @@ void MECResponseApp::initialize(int stage)
     minInstructions_ = par("minInstructions");
     maxInstructions_ = par("maxInstructions");
 
+    rt_stats_mec.setName("processingTime");
+
     // connect with the service registry
     EV << "MECResponseApp::initialize - Initialize connection with the Service Registry via Mp1" << endl;
-    mp1Socket_ = addNewSocket();
-
-    connect(mp1Socket_, mp1Address, mp1Port);
+//    mp1Socket_ = addNewSocket();
+//    connect(mp1Socket_, mp1Address, mp1Port);
 }
 
 void MECResponseApp::handleProcessedMessage(cMessage *msg)
 {
     if (!msg->isSelfMessage()) {
         if (ueAppSocket_.belongsToSocket(msg)) {
-            EV << "MECResponseApp::handleProcessedMessage: received message from UE" << endl;
             inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
             auto req = packet->peekAtFront<RequestResponseAppPacket>();
             if(req->getType() == UEAPP_REQUEST)
                 handleRequest(msg);
             else if(req->getType() == UEAPP_STOP)
                 handleStopRequest(msg);
-
             else
                 throw cRuntimeError("MECResponseApp::handleProcessedMessage - Type not recognized!");
             return;
@@ -117,7 +116,6 @@ void MECResponseApp::handleSelfMessage(cMessage *msg)
 
 void MECResponseApp::handleRequest(cMessage* msg)
 {
-    EV << "MECResponseApp::handleRequest" << endl;
     // this method pretends to perform some computation after having
     //.request some info to the RNI
     if(currentRequestfMsg_  != nullptr)
@@ -125,18 +123,41 @@ void MECResponseApp::handleRequest(cMessage* msg)
 
     msgArrived_ = simTime();
     currentRequestfMsg_ = msg;
-    sendGetRequest();
+
+    // vars used if a MEC services is queried
     getRequestSent_ = simTime();
+    getRequestArrived_ = simTime();
+
+    doComputation();
 }
 
 
 void MECResponseApp::handleStopRequest(cMessage* msg)
 {
     EV << "MECResponseApp::handleStopRequest" << endl;
-    serviceSocket_->close();
+
+    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    ueAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
+    ueAppPort  = packet->getTag<L4PortInd>()->getSrcPort();
+
+    auto req = packet->removeAtFront<RequestResponseAppPacket>();
+    req->setType(UEAPP_ACK_STOP);
+    req->setChunkLength(B(packetSize_));
+    inet::Packet* pkt = new inet::Packet("ResponseAppPacket");
+    pkt->insertAtBack(req);
+
+    ueAppSocket_.sendTo(pkt, ueAppAddress, ueAppPort);
+
+    if(serviceSocket_ != nullptr)
+        serviceSocket_->close();
+    delete msg;
 }
+
+
 void MECResponseApp::sendResponse()
 {
+    EV << "MECResponseApp::sendResponse" << endl;
+
     inet::Packet* packet = check_and_cast<inet::Packet*>(currentRequestfMsg_);
     ueAppAddress = packet->getTag<L3AddressInd>()->getSrcAddress();
     ueAppPort  = packet->getTag<L4PortInd>()->getSrcPort();
@@ -242,8 +263,12 @@ void MECResponseApp::handleServiceMessage(int connId)
 
 void MECResponseApp::doComputation()
 {
-    processingTime_ = vim->calculateProcessingTime(mecAppId, uniform(minInstructions_, maxInstructions_));
+//    processingTime_ = vim->calculateProcessingTime(mecAppId, uniform(minInstructions_, maxInstructions_));
+    processingTime_ = vim->calculateProcessingTime(mecAppId, 10000000);
+
     EV << "time " << processingTime_ << endl;
+    rt_stats_mec.record(processingTime_);
+
     scheduleAt(simTime()+ processingTime_, processingTimer_);
 }
 
@@ -253,7 +278,7 @@ void MECResponseApp::sendGetRequest()
     if (serviceSocket_->getState() == inet::TcpSocket::CONNECTED) {
         EV << "MECResponseApp::sendGetRequest(): send request to the Location Service" << endl;
         std::stringstream uri;
-        uri << "/example/rni/v2/queries/layer2_meas"; //TODO filter the request to get less data
+        uri << "/example/location/v2/queries/users?address=" << ueAppAddress.str(); //TODO filter the request to get less data
         EV << "MECResponseApp::requestLocation(): uri: " << uri.str() << endl;
         std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
         Http::sendGetRequest(serviceSocket_, host.c_str(), uri.str().c_str());
@@ -272,7 +297,7 @@ void MECResponseApp::established(int connId)
 
         // once the connection with the Service Registry has been established, obtain the
         // endPoint (address+port) of the Location Service
-        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=RNIService";
+        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=LocationService";
         std::string host = mp1Socket_->getRemoteAddress().str() + ":" + std::to_string(mp1Socket_->getRemotePort());
 
         Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
@@ -294,7 +319,6 @@ void MECResponseApp::socketClosed(inet::TcpSocket *sock)
         removeSocket(sock);
         sendStopAck();
     }
-
 }
 
 void MECResponseApp::sendStopAck()
@@ -307,3 +331,4 @@ void MECResponseApp::sendStopAck()
 
     ueAppSocket_.sendTo(pkt, ueAppAddress, ueAppPort);
 }
+

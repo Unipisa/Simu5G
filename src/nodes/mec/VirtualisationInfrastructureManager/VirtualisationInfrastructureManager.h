@@ -48,6 +48,7 @@ struct MecAppInstanceInfo
     bool status;
     std::string instanceId;
     SockAddr endPoint;
+    cModule* module;
 };
 
 // used to calculate processing time needed to execute a number of instructions
@@ -164,9 +165,10 @@ class VirtualisationInfrastructureManager : public cSimpleModule
          *
          * @param mecAppID to identify the MEC app
          * @param reqRam, reqDisk, reqCpu - computation resources needed by the MEC app
+         * @param admControl - flag to do admission controll. If false, the app will be directly instantiated
          * @return boolean result of the operation
          */
-        bool registerMecApp(int mecAppID, int reqRam, int reqDisk, double reqCpu);
+        bool registerMecApp(int mecAppID, int reqRam, int reqDisk, int reqCpu, bool admControl = true);
         bool deRegisterMecApp(int mecAppID);
         // ******************************************************************
 
@@ -189,10 +191,12 @@ class VirtualisationInfrastructureManager : public cSimpleModule
          */
         ResourceDescriptor getAvailableResources() const ;
 
-        /*
-         * utility
-         */
+
+        int getCurrentMecApps() { return currentMEApps;}
+        int getGetMaxMecApps() { return maxMECApps;}
+
         void printResources(){
+            EV << "VirtualisationInfrastructureManager::printResources - allocated MEC apps: " << currentMEApps << " / " << maxMECApps << endl;
             EV << "VirtualisationInfrastructureManager::printResources - allocated Ram: " << allocatedRam << " / " << maxRam << endl;
             EV << "VirtualisationInfrastructureManager::printResources - allocated Disk: " << allocatedDisk << " / " << maxDisk << endl;
             EV << "VirtualisationInfrastructureManager::printResources - allocated CPU: " << allocatedCPU << " / " << maxCPU << endl;
@@ -212,6 +216,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
         //------------------------------------
 
         void allocateResources(double ram, double disk, double cpu){
+            currentMEApps++;
             allocatedRam += ram;
             allocatedDisk += disk;
             allocatedCPU += cpu;
@@ -219,6 +224,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
         }
 
         void deallocateResources(double ram, double disk, double cpu){
+            currentMEApps--;
             allocatedRam -= ram;
             allocatedDisk -= disk;
             allocatedCPU -= cpu;
