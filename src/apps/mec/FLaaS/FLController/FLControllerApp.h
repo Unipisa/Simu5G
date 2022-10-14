@@ -23,6 +23,7 @@
 #include "apps/mec/FLaaS/FLaaSUtils.h"
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "apps/mec/FLaaS/FLController/LocalManagerStatus.h"
 
 //#include "apps/mec/MecApps/MecAppBase.h"
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
@@ -31,12 +32,12 @@
 using namespace std;
 using namespace omnetpp;
 
+typedef std::map<int, AvailableLearner> AvailableLearnersMap;
 class MecAppInstanceInfo;
 
 
 class FLControllerApp : public MecServiceBase
 {
-
     int size_;
     std::string subId;
 
@@ -46,7 +47,8 @@ class FLControllerApp : public MecServiceBase
     cModule* computationEngineModule_;
 
     std::vector<MLModel> modelHistory_;
-    std::vector<LocalLearner> learners_;
+    int learnersId_;
+    std::map<int, LocalManagerStatus> learners_;
 
     //TODO think about subscriptions
 
@@ -72,6 +74,7 @@ class FLControllerApp : public MecServiceBase
        FLControllerApp();
        virtual ~FLControllerApp();
 
+       AvailableLearnersMap* getLearnersEndpoint(int minLearners);
 };
 
 

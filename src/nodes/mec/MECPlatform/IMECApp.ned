@@ -24,7 +24,6 @@ moduleinterface IMECApp
         
         int localUePort;
         
-	
 		//resource required infos
         double requiredRam @unit("B");
         double requiredDisk @unit("B");

@@ -20,6 +20,12 @@ enum FLTrainingMode
     SYNCHRONOUS, ASYNCHRONOUS, BOTH, ONE_SHOT
 };
 
+enum MsgType
+{
+    START_ROUND, START_ROUND_ACK, TRAIN_GLOBAL_MODEL, TRAINED_MODEL
+};
+
+
 typedef struct  {
     inet::L3Address addr;
     int port;
@@ -36,9 +42,10 @@ typedef struct
 
 typedef struct
 {
-    Endpoint endPoint;
-    // TODO add struct for storing info for selection algs
-}LocalLearner;
+    int id;
+    Endpoint endpoint;
+} AvailableLearner;
+
 
 
 bool isTrainingMode(std::string& trainingMode);

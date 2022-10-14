@@ -13,9 +13,11 @@
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "apps/mec/FLaaS/FLComputationEngine/FLComputationEngine.h"
+
+#include "common/utils/utils.h"
 
 Define_Module(FLControllerApp);
-
 
 FLControllerApp::FLControllerApp()
 {
@@ -25,6 +27,7 @@ FLControllerApp::FLControllerApp()
     subscriptions_.clear();
     instantiationMsg_ = nullptr;
     computationEngineModule_ = nullptr;
+    learnersId_ = 0;
 }
 
 
@@ -70,8 +73,11 @@ void FLControllerApp::handleMessageWhenUp(omnetpp::cMessage *msg)
         if(appInfo->status)
         {
             computationEngineModule_ = appInfo->module;
-            computationEngineModule_->par("controllerModuleName") = getFullPath() ;
+            FLComputationEngineApp* app = check_and_cast<FLComputationEngineApp*>(appInfo->module);
+            app->setFLControllerPointer(this);
+//            computationEngineModule_->par("controllerModuleName") = getFullPath();
         }
+        delete appInfo;
 
     }
     else
@@ -125,7 +131,7 @@ void FLControllerApp::handleGETRequest(const HttpRequestMessage *currentRequestM
             for(; it != end; ++it){
                 if(it->rfind("lastTimestamp", 0) == 0) // accessPointId=par1,par2
                 {
-                    EV <<"FLServiceProvider::handleGETReques - parameters: lastTimestamp " << endl;
+                    EV <<"FLControllerApp::handleGETReques - parameters: lastTimestamp " << endl;
                     param = lte::utils::splitString(*it, "=");
                     if(param.size()!= 2) //must be param=values
                     {
@@ -135,7 +141,7 @@ void FLControllerApp::handleGETRequest(const HttpRequestMessage *currentRequestM
 
                     // get last model inserted
                     const auto model = modelHistory_.back();
-                    if(model.timestamp == atoi(param[1]))
+                    if(model.timestamp == std::atoi(param[1].c_str()))
                     {
                         Http::send200Response(socket, "");
                     }
@@ -162,6 +168,87 @@ void FLControllerApp::handleGETRequest(const HttpRequestMessage *currentRequestM
 
     }
 
+}
+void FLControllerApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
+{
+    EV << "FLControllerApp::handlePOSTRequest" << endl;
+    std::string uri = currentRequestMessageServed->getUri();
+    std::string body = currentRequestMessageServed->getBody();
+
+//    // uri must be in form example/flaas/v1/operations/res
+
+    EV << "FLControllerApp::handlePOSTRequest - baseuri: "<< uri << endl;
+
+    if(uri.compare(baseUriQueries_+"/operations/trainModel") == 0)
+    {
+
+        // TODO decide the stuff to include. e.g. battery level, device type
+        nlohmann::json jsonBody;
+        try
+        {
+            jsonBody = nlohmann::json::parse(body); // get the JSON structure
+        }
+        catch(nlohmann::detail::parse_error e)
+        {
+            std::cout << "FLControllerApp::handlePOSTRequest" << e.what() << "\n" << body << std::endl;
+            // body is not correctly formatted in JSON, manage it
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+
+        Endpoint learnerEndpoint;
+        std::string ipAddress = jsonBody["learnerIpAddress"];
+        learnerEndpoint.addr = inet::L3Address(ipAddress.c_str());
+        learnerEndpoint.port = jsonBody["learnerPort"];
+
+
+        inet::L3Address ip = socket->getRemoteAddress();
+        int port = socket->getRemotePort();
+        Endpoint endpoint = {ip, port};
+
+        LocalManagerStatus newLocalManager(learnersId_++, endpoint, learnerEndpoint);
+
+        // TODO make a decision based on information. For now it is always yes
+        bool decision =  true;
+
+
+        if(!decision)
+        {
+            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().str() << "] can not be inserted in the training set " << endl;
+            Http::send400Response(socket); // bad body JSON
+            return;
+        }
+        else
+        {
+            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().str() << "] inserted in the training set " << endl;
+            learners_[newLocalManager.getLocalManagerId()] = newLocalManager;
+            std::string resourceUrl = baseUriSubscriptions_+"/operations/trainModel/" + std::to_string(newLocalManager.getLocalManagerId());
+            jsonBody["resourceURL"] = resourceUrl;
+            std::pair<std::string, std::string> locationHeader("Location: ", resourceUrl);
+            Http::send201Response(socket, jsonBody.dump(2).c_str(), locationHeader);
+        }
+    }
+    else
+    {
+        Http::send404Response(socket); //resource not found
+    }
+}
+
+
+AvailableLearnersMap* FLControllerApp::getLearnersEndpoint(int minLearners) {
+    ASSERT(minLearners > 0);
+    AvailableLearnersMap *learanersList = new AvailableLearnersMap();
+    auto learnersIt =  learners_.begin();
+    int i = 0;
+    while (i < minLearners || learnersIt != learners_.end())
+    {
+        int id = learnersIt->second.getLocalManagerId();
+        Endpoint ep = learnersIt->second.getLearnerEndpoint();
+        AvailableLearner  learner = {id, ep};
+        (*learanersList)[id] = learner;
+    }
+
+    return learanersList;
 }
 
 
