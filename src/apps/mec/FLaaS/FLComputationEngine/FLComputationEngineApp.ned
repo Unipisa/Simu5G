@@ -42,7 +42,7 @@ simple FLComputationEngineApp like IMECApp, IApp
         double modelAggregationDuration;
         int localModelTreshold;
         int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, ONE_SHOT) = default(1);
-        int modelDimension @unit("B");
+        double modelDimension @unit("B");
         string controllerModuleName;
         int minLearners;
         double repeatTime;

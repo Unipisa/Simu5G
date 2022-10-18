@@ -36,7 +36,7 @@ typedef struct  {
 typedef struct
 {
     omnetpp::simtime_t timestamp;
-    int dimension;
+    double dimension;
 }MLModel;
 
 

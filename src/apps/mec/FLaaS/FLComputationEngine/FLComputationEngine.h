@@ -28,6 +28,17 @@ typedef struct
     int roundId;
 } PendingLearner;
 
+typedef struct
+{
+    int id;
+    double modelSize;
+    bool responded;
+} LearnerStatus;
+
+
+
+typedef std::map<int, LearnerStatus> CurrentLearnerMap;
+
 class FLComputationEngineApp : public MecAppBase
 {
     //UDP socket to communicate with the UeApp
@@ -53,10 +64,12 @@ class FLComputationEngineApp : public MecAppBase
 
     int localModelTreshold_;
     FLTrainingMode trainingMode_;
-    inet::B modelDimension_;
+    double modelDimension_;
     FLControllerApp* flControllerApp_;
     int roundId_;
+    bool inARound_;
     int minLearners_;
+    CurrentLearnerMap currentLearners_;
 
     inet::TcpSocket* serviceSocket_;
     inet::TcpSocket* mp1Socket_;
@@ -89,15 +102,15 @@ class FLComputationEngineApp : public MecAppBase
 
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool) override;
 
-
         virtual void modifySubscription();
         virtual void sendSubscription();
         virtual void sendDeleteSubscription();
 
 
         virtual inet::TcpSocket* addNewSocket() override;
-
-
+        void sendStartRoungMessage(int learnerId);
+        void sendModelToTrain(int learnerId);
+        bool allModelsRetrieved();
 
 
 

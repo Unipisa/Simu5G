@@ -19,20 +19,20 @@ import inet.common.packet.chunk.Chunk;
 
 class FLaasPacket extends inet::FieldsChunk {
     int type;
-
+    int roundId;
+    int learnerId;
 }
 
 class FLaasStartRoundPacket extends FLaasPacket {
-    int roundId;
-    bool response;
-    double roundDuration;
+        double roundDuration;
+        bool response;
 }
 
 class FLaaSGlobalModelPacket extends FLaasPacket {
-    int roundId;
     double timeRemaining;
+    double modelSize;
 }
 
 class FLaaSTrainedModelPacket extends FLaasPacket {
-    int roundId;
+    double modelSize;
 }

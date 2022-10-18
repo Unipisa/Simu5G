@@ -251,6 +251,13 @@ AvailableLearnersMap* FLControllerApp::getLearnersEndpoint(int minLearners) {
     return learanersList;
 }
 
+AvailableLearnersMap* FLControllerApp::getLearnersEndpointExcept(const std::set<int>& learnersIds)
+{
+    // todo write
+    AvailableLearnersMap *learanersList = new AvailableLearnersMap();
+    return learanersList;
+}
+
 
 MecAppInstanceInfo* FLControllerApp::instantiateFLComputationEngine()
 {
@@ -291,6 +298,10 @@ MecAppInstanceInfo* FLControllerApp::instantiateFLComputationEngine()
     return appInfo;
 }
 
+void FLControllerApp::updateGlobalModel(MLModel& model)
+{
+    modelHistory_.push_back(model);
+}
 
 
 

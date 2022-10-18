@@ -23,6 +23,7 @@ FLComputationEngineApp::FLComputationEngineApp()
     startRoundMsg_ = nullptr;
     stopRoundMsg_ = nullptr;
     aggregationMsg_ = nullptr;
+    inARound_ = false;
 }
 
 
@@ -36,7 +37,6 @@ void FLComputationEngineApp::initialize(int stage)
 
     //retrieving parameters
     size_ = par("packetSize");
-
     localUePort = par("localUePort");
 
     //testing
@@ -47,12 +47,13 @@ void FLComputationEngineApp::initialize(int stage)
     localModelTreshold_ = par("localModelTreshold");
     int tm =  par("trainingMode");
     trainingMode_ = FLTrainingMode(tm);
-    modelDimension_ = inet::B(par("modelDimension"));
+    modelDimension_ = par("modelDimension");
     minLearners_ = par("minLearners");
     repeatTime_ = par("repeatTime").doubleValue();
 
     // schedule first round
     startRoundMsg_ = new cMessage("startRoundMsg");
+    stopRoundMsg_ = new cMessage("stopRoundMsg");
 }
 
 
@@ -72,20 +73,16 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
         else
         {
             // send start round a tutti i learners. but check if they are already connected to the engine
+            inARound_ = true;
             auto it = avLearners->begin();
             int id = it->first;
             if(learnerId2socketId_.find(id) != learnerId2socketId_.end())
             {
                 // send message if connected
-                inet::Packet* packet = new inet::Packet("startRoundPacket");
-                auto start = inet::makeShared<FLaasStartRoundPacket>();
-                start->setRoundId(roundId_);
-                start->setRoundDuration(roundDuration_);
-                start->setChunkLength(inet::B(12));
-                packet->insertAtBack(start);
-                int socketId = learnerId2socketId_[id];
-                auto socket = sockets_.getSocketById(socketId);
-                socket->send(packet);
+                sendStartRoungMessage(id);
+                // add the leraner to the current learner. this is also used to check if the received ACK comes from a choosen learners
+                LearnerStatus newLear = {id, 0., false};
+                currentLearners_[id] = newLear;
             }
             else
             {
@@ -95,14 +92,56 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
                 Endpoint ep = it->second.endpoint;
                 connect(newSocket, ep.addr, ep.port);
             }
+            EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - Stop round " << roundId_ << " in " << roundDuration_ << " seconds" << endl;
+            scheduleAfter(roundDuration_, stopRoundMsg_);
+
         }
-
-
-
     }
     else if(msg->isName("stopRoundMsg"))
     {
+        //calculate aggregation time base on the number of model received
+        int count = 0;
+        for(auto& learnerStatus : currentLearners_)
+        {
+            if(learnerStatus.second.modelSize > 0)
+                count++;
+        }
 
+        if (count < minLearners_)
+        {
+            EV << "FLComputationEngineApp::handleSelfMessage - stopRoundMsg - Too few learners sent theri local model, aggregation will not be  done" << endl;
+            scheduleAfter(repeatTime_, startRoundMsg_);
+        }
+
+        else
+        {
+            double aggregationTime = modelAggregationDuration_ * count;
+            aggregationMsg_ = new cMessage("aggregationMsg");
+            scheduleAfter(aggregationTime, aggregationMsg_);
+            EV << "FLComputationEngineApp::handleSelfMessage - stopRoundMsg - Start aggregating the global model. Finishing in " << aggregationTime << " seconds" << endl;
+        }
+        currentLearners_.clear();
+        roundId_++;
+        inARound_ = false;
+    }
+    else if(msg->isName("aggregationMsg"))
+    {
+        delete msg;
+        double accuracy = uniform(0,1);
+        EV << "FLComputationEngineApp::handleSelfMessage - aggregationMsg - Aggregation of the global model completed. The accuracy is " << accuracy << "%" << endl;
+        // TODO do something
+        // start a new round
+        EV << "FLComputationEngineApp::handleSelfMessage - aggregationMsg - Starting new round with id " << roundId_ <<" in " << repeatTime_ << "s" << endl;
+        if(trainingMode_ == ONE_SHOT)
+        {
+            EV << "FLComputationEngineApp::handleSelfMessage - aggregationMsg - The training mode is ONE_SHOT, no other rounds will be scheduled" << endl;
+        }
+        else
+        {
+            scheduleAfter(repeatTime_, startRoundMsg_);
+        }
+        MLModel newModel = {simTime(),modelDimension_};
+        flControllerApp_->updateGlobalModel(newModel);
     }
 }
 
@@ -111,13 +150,49 @@ void FLComputationEngineApp::established(int connId)
     if(pendingSocketId2Learners_.find(connId) != pendingSocketId2Learners_.end())
     {
         int round = pendingSocketId2Learners_[connId].roundId;
-        if(round == roundId_)
+        int learnerId = pendingSocketId2Learners_[connId].id;
+        if(round == roundId_ && inARound_)
         {
+            learnerId2socketId_[learnerId] = connId;
+            sendStartRoungMessage(learnerId);
             //send start
         }
 
     }
 }
+
+void FLComputationEngineApp::sendStartRoungMessage(int learnerId)
+{
+    inet::Packet* packet = new inet::Packet("startRoundPacket");
+    auto start = inet::makeShared<FLaasStartRoundPacket>();
+    start->setRoundId(roundId_);
+    start->setLearnerId(learnerId);
+    start->setRoundDuration(roundDuration_); // TODO put the remaining duration
+    start->setChunkLength(inet::B(12));
+    packet->insertAtBack(start);
+    int socketId = learnerId2socketId_.at(learnerId);
+    auto socket = sockets_.getSocketById(socketId);
+    socket->send(packet);
+    EV << "FLComputationEngineApp::sendStartRoungMessage: sent start round message to learner with id " << learnerId<< endl;
+}
+
+void FLComputationEngineApp::sendModelToTrain(int learnerId)
+{
+    inet::Packet* packet = new inet::Packet("modelToTrainPacket");
+    auto model = inet::makeShared<FLaaSGlobalModelPacket>();
+    model->setRoundId(roundId_);
+    model->setLearnerId(learnerId);
+    model->setTimeRemaining(roundDuration_); // TODO put the remaining duration
+    model->setModelSize(modelDimension_);
+    model->setChunkLength(inet::B(modelDimension_));
+    packet->insertAtBack(model);
+    int socketId = learnerId2socketId_.at(learnerId);
+    auto socket = sockets_.getSocketById(socketId);
+    socket->send(packet);
+    EV << "FLComputationEngineApp::sendModelToTrain: model sent to learner with id " << learnerId<< endl;
+}
+
+
 inet::TcpSocket* FLComputationEngineApp::addNewSocket()
 {
     inet::TcpSocket* newSocket = new inet::TcpSocket();
@@ -141,19 +216,88 @@ void FLComputationEngineApp::handleMessage(cMessage *msg)
     }
 }
 
-
+//sapendo che questa app non avrà contatti con i MEC service posso rifarla da 0!
 void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool)
 {
     auto pkt = msg->peekAtFront<FLaasPacket>();
     if(pkt->getType() == START_ROUND_ACK)
     {
         auto startRoundPkt = msg->removeAtFront<FLaasStartRoundPacket>();
+        int roundId = startRoundPkt->getRoundId();
+        int learnerId = startRoundPkt->getLearnerId();
+        if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse())
+        {
+            if(currentLearners_.find(learnerId) != currentLearners_.end())
+            {
+                currentLearners_[learnerId].responded = true;
+                sendModelToTrain(learnerId);
+            }
+            else
+            {
+                EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
+            }
+        }
+        else
+        {
+            EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " will be not involved in the training for this round" << endl;
+            EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "], response [" << startRoundPkt->getResponse() << "]"<< endl;
+            if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse() == false)
+            {
+                currentLearners_.erase(learnerId);
+                // peek a new learner from the the available ones and send start message to it
+                std::set<int> currentLearners;
+//                for(auto const& l: currentLearners_)
+//                {
+//                    currentLearners.insert(l.first);
+//                }
+//                flControllerApp_->getLearnersEndpointExcept(currentLearners);
+            }
+        }
     }
     else if(pkt->getType() == TRAINED_MODEL)
     {
         auto trainedModel = msg->removeAtFront<FLaaSTrainedModelPacket>();
+        int roundId = trainedModel->getRoundId();
+        int learnerId = trainedModel->getLearnerId();
+        if(inARound_ && roundId == roundId_)
+        {
+            if(currentLearners_.find(learnerId) != currentLearners_.end())
+            {
+                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
+                currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
+            }
+            else
+            {
+                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
+            }
+            //check all learners response and stop the round earlier
+            if(allModelsRetrieved())
+            {
+                // stop stopRoundMessage and schedule now
+                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - All local models received from the learners!" << endl;
+                if(stopRoundMsg_->isScheduled())
+                {
+                    cancelEvent(stopRoundMsg_);
+                    scheduleAfter(0, stopRoundMsg_);
+                }
+            }
+        }
+        else
+        {
+            EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " sent Model after round end or relative to a different round.. discarding" << endl;
+            EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "]" << endl;
+        }
     }
-
-    //sapendo che questa app non avrà contatti con il Location service posso rifarla da 0!
+    delete msg;
 }
 
+bool FLComputationEngineApp::allModelsRetrieved()
+{
+    for(const auto& learn : currentLearners_)
+    {
+        if(!learn.second.modelSize > 0){
+            return false;
+        }
+    }
+    return true;
+}

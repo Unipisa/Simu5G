@@ -75,6 +75,9 @@ class FLControllerApp : public MecServiceBase
        virtual ~FLControllerApp();
 
        AvailableLearnersMap* getLearnersEndpoint(int minLearners);
+       AvailableLearnersMap* getLearnersEndpointExcept(const std::set<int>& learnersIds);
+       void updateGlobalModel(MLModel& model);
+
 };
 
 
