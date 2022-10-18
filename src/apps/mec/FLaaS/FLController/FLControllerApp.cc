@@ -11,10 +11,9 @@
 
 #include "apps/mec/FLaaS/FLController/FLControllerApp.h"
 
+#include "../FLComputationEngine/FLComputationEngineApp.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
-#include "apps/mec/FLaaS/FLComputationEngine/FLComputationEngine.h"
-
 #include "common/utils/utils.h"
 
 Define_Module(FLControllerApp);

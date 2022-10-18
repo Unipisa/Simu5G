@@ -5,10 +5,10 @@
  *      Author: alessandro
  */
 
-#include "apps/mec/FLaaS/FLComputationEngine/FLComputationEngine.h"
 #include "apps/mec/FLaaS/FLController/FLControllerApp.h"
 
 #include "apps/mec/FLaaS/packets/FLaasMsgs_m.h"
+#include "FLComputationEngineApp.h"
 
 Define_Module(FLComputationEngineApp);
 

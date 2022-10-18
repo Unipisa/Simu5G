@@ -196,7 +196,7 @@ void FLServiceProvider::handleGETRequest(const HttpRequestMessage *currentReques
                        return;
                    }
                }
-               else if(it->rfind("category", 0) == 0) // accessPointId=par1,par2
+               else if(it->rfind("category", 0) == 0) // category=xai
                {
                    EV <<"FLServiceProvider::handleGETReques - parameters: category " << endl;
                    param = lte::utils::splitString(*it, "=");
@@ -259,7 +259,7 @@ void FLServiceProvider::handleGETRequest(const HttpRequestMessage *currentReques
                     if(found)
                     {
                         FLProcessInfo flProcessListResource = FLProcessInfo(&flProcesses_);
-                        Http::send200Response(socket, flProcessListResource.toJson(toTrainingMode(param[1])).dump(0).c_str());
+                        Http::send200Response(socket, flProcessListResource.toJsonFLProcess(param[1], true).dump(0).c_str());
                     }
                     else
                     {

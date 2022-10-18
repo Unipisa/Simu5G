@@ -146,39 +146,34 @@ nlohmann::ordered_json FLProcessInfo::toJson(const std::string& category) const
 }
 
 
-
 nlohmann::ordered_json FLProcessInfo::toJsonFLProcess(const std::string& flProcessId, bool controllerEndpoint) const
 {
     if(flprocesses_ == nullptr)
             throw omnetpp::cRuntimeError("FLServiceInfo::toJsonFlProcess - flprocesses_ is null!");
 
-        nlohmann::ordered_json serviceArray;
-        nlohmann::ordered_json val ;
-        nlohmann::ordered_json flProcessList;
-
-        auto it = flprocesses_->begin();
-        for(; it != flprocesses_->end(); ++it)
+    nlohmann::ordered_json process;
+    auto it = flprocesses_->begin();
+    for(; it != flprocesses_->end(); ++it)
+    {
+        if(it->second.getFLProcessId().compare(flProcessId) == 0 && it->second.isFLProcessActive())
         {
-            if(it->second.getFLProcessId().compare(flProcessId) == 0 && it->second.isFLProcessActive())
+            nlohmann::ordered_json process;
+            process["name"] = it->second.getFLProcessName();
+            process["processId"] = it->second.getFLProcessId();
+            process["serviceId"] = it->second.getFLServiceId();
+            process["category"] = it->second.getFLCategory();
+            process["FLTrainingMode"] = it->second.getFLTrainingModeStr();
+            if(controllerEndpoint)
             {
-                nlohmann::ordered_json service;
-                service["name"] = it->second.getFLProcessName();
-                service["processId"] = it->second.getFLProcessId();
-                service["serviceId"] = it->second.getFLServiceId();
-                service["category"] = it->second.getFLCategory();
-                service["FLTrainingMode"] = it->second.getFLTrainingModeStr();
-                if(controllerEndpoint)
-                {
-                   FLControllerInfo flController(&(it->second));
-                   service["FLController"] = flController.toJson();
-                }
-                serviceArray.push_back(service);
+               FLControllerInfo flController(&(it->second));
+               process["FLControllerEndpoint"] = flController.toJson();
             }
+            //TODO check is array is empty
+            process["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
+            break;
         }
-        //TODO check is array is empty
-        flProcessList["timestamp"] = omnetpp::simTime().dbl(); //TODO define nice timestamp
-        flProcessList["flProcessList"] = serviceArray;
-        return flProcessList;
+    }
+    return process;
 }
 
 
