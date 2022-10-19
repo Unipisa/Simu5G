@@ -1,0 +1,14 @@
+<config>
+    <!-- Assign to the cellular interface of all eNodeBs and UEs one address of type 10.x.x.x, since dynamic-created UEs will be assigned one such address -->
+    <interface hosts="eNodeB*" names="cellular" address="10.x.x.x" netmask="255.0.0.0"/>
+    <interface hosts="car*" names="cellular" address="10.x.x.x" netmask="255.0.0.0"/>
+    <interface hosts="ue*" names="cellular" address="10.x.x.x" netmask="255.0.0.0"/>
+    
+    
+    <!-- Assign 192.168.x.x addresses to all other interfaces -->
+    <interface hosts="**" address="192.168.x.x" netmask="255.255.255.0"/>
+    
+
+    <!-- all D2D-capable UEs participate in the multicast group --> 
+    <multicast-group hosts="car*" interfaces="cellular" address="224.0.0.10"/>
+</config>
