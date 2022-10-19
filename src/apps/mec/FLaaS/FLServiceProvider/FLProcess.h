@@ -38,7 +38,7 @@ class FLProcess
         std::string getFLProcessId() const {return flProcessId_;}
         std::string getFLCategory() const {return category_;}
         std::string getFLTrainingModeStr();
-        double getFLCurrentModelAccuracy();
+        double getFLCurrentModelAccuracy() const {return currentAccuracy_;}
         FLTrainingMode getFLTrainingMode() const {return trainingMode_;}
 
         bool isFLProcessActive() const {return isActive_;}

@@ -35,6 +35,8 @@ class MecFLLocalManagerApp : public MecAppBase
 
         Endpoint flControllerEndpoint_;
         Endpoint flSericeProviderEndpoint_;
+        Endpoint flLearnerEndpoint_;
+
 
         HttpBaseMessage* mp1HttpMessage;
         HttpBaseMessage* serviceHttpMessage; //for FLsp
@@ -54,20 +56,22 @@ class MecFLLocalManagerApp : public MecAppBase
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
-        virtual void finish() override;
+        virtual void finish() override {};
 
-        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
+//        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
 
         virtual void handleHttpMessage(int connId) override;
         virtual void handleServiceMessage(int connId) override;
         virtual void handleMp1Message(int connId) override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+        virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+//
+//        virtual void modifySubscription();
+//        virtual void sendSubscription();
+//        virtual void sendDeleteSubscription();
 
-        virtual void modifySubscription();
-        virtual void sendSubscription();
-        virtual void sendDeleteSubscription();
+        virtual void handleSelfMessage(cMessage *msg) override {};
 
-        virtual void handleSelfMessage(cMessage *msg) override;
+        MecAppInstanceInfo* instantiateFLLearner();
 
 
 //        /* TCPSocket::CallbackInterface callback methods */
@@ -75,7 +79,7 @@ class MecFLLocalManagerApp : public MecAppBase
 
     public:
        MecFLLocalManagerApp();
-       virtual ~MecFLLocalManagerApp();
+       virtual ~MecFLLocalManagerApp() {};
 
     };
 

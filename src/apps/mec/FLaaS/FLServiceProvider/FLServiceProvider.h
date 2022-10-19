@@ -65,10 +65,6 @@ class FLServiceProvider: public MecServiceBase
     MecAppInstanceInfo* instantiateFLController(const FLService& flService);
 
 
-    /*
-     * This method is called for every element in the subscriptions_ queue.
-     */
-    virtual bool manageSubscription() override;
 
     virtual ~FLServiceProvider();
 

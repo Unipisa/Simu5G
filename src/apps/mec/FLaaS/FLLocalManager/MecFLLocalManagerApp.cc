@@ -6,6 +6,9 @@
  */
 
 #include "MecFLLocalManagerApp.h"
+#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "common/utils/utils.h"
 
 Define_Module(MecFLLocalManagerApp);
 
@@ -15,6 +18,7 @@ MecFLLocalManagerApp::MecFLLocalManagerApp()
     serviceSocket_ = nullptr;
     mp1Socket_ = nullptr;
     flControllerSocket_ = nullptr;
+    learnerApp_ = nullptr;
 }
 
 
@@ -31,11 +35,29 @@ void MecFLLocalManagerApp::initialize(int stage)
 
     learner_ = par("hasLearner").boolValue();
 
-    if(learner_)
-    {
-        //instantiate learner App
-        // save it end point necessary for the FL comp engine
-    }
+//    if(learner_)
+//    {
+//        //instantiate learner App
+//        // save it end point necessary for the FL comp engine
+//
+//        //check where instantiate it
+//        if(par("onMecHost").boolValue())
+//        {
+//            MecAppInstanceInfo* appInfo = instantiateFLLearner();
+//            if(!appInfo->status)
+//            {
+//                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
+//            }
+//            else
+//            {
+//                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
+//                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
+//                flLearnerEndpoint_.port = appInfo->endPoint.port;
+//                learnerApp_ = appInfo->module;
+//            }
+//
+//        }
+//    }
 
     fLServiceName_ = par("fLServiceName").str();
 
@@ -91,8 +113,8 @@ void MecFLLocalManagerApp::established(int connId)
         EV << "MECPlatooningControllerApp::request active processes: uri: " << uri.str() << endl;
         std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
         nlohmann::json jsonBody;
-        jsonBody["learnerAddress"]  = 3;
-        jsonBody["learnerPort"] = 5;
+        jsonBody["learnerAddress"]  = flLearnerEndpoint_.addr.str();
+        jsonBody["learnerPort"] = flLearnerEndpoint_.port;
 
         Http::sendPostRequest(serviceSocket_, jsonBody.dump(0).c_str(), host.c_str(), uri.str().c_str());
         state_ = REQ_TRAIN;
@@ -202,7 +224,7 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
                 {
                 // connect to controller to post the training mode
                     nlohmann::json controllerEndpoint = jsonBody["FLControllerEndpoint"];
-                    inet::L3Address add = inet::L3Address(controllerEndpoint["address"]["host"]);
+                    inet::L3Address add = inet::L3Address(std::string(controllerEndpoint["address"]["host"]));
                     int port = controllerEndpoint["address"]["port"];
                     flControllerEndpoint_ = {add, port};
                     flControllerSocket_ = addNewSocket();
@@ -224,6 +246,10 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
             }
 
         }
+        else if(rspMsg->getCode() == 201)
+        {
+            // response of a post
+        }
 
         // some error occured, show the HTTP code for now
         else {
@@ -237,6 +263,44 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
     }
 }
 
+
+MecAppInstanceInfo* MecFLLocalManagerApp::instantiateFLLearner()
+{
+    // get MEC platform manager and require mec app instantiation
+    cModule* mecPlatformManagerModule = this->getModuleByPath("^.mecPlatformManager");
+    MecPlatformManager* mecpm = check_and_cast<MecPlatformManager*>(mecPlatformManagerModule);
+
+    MecAppInstanceInfo* appInfo = nullptr;
+    CreateAppMessage * createAppMsg = new CreateAppMessage();
+
+    std::string contName = par("FLLearner"); // is the path!
+
+    //get the name of the app
+    std::string appName = contName.substr(contName.rfind(".")+1, contName.length());
+
+    createAppMsg->setUeAppID(par("localUePort")); // TODO choose id
+    createAppMsg->setMEModuleName(appName.c_str());
+    createAppMsg->setMEModuleType(contName.c_str()); //path
+
+    createAppMsg->setRequiredCpu(5000.);
+    createAppMsg->setRequiredRam(10.);
+    createAppMsg->setRequiredDisk(10.);
+    createAppMsg->setRequiredService("NULL"); // insert OMNeT like services, NULL if not
+
+    appInfo = mecpm->instantiateMEApp(createAppMsg);
+
+    if(!appInfo->status)
+    {
+        EV << "FLControllerApp::instantiateFLComputationEngine - something went wrong during MEC app instantiation"<< endl;
+    }
+
+    else
+    {
+        EV << "FLControllerApp::instantiateFLComputationEngine - succesfull MEC app instantiation"<< endl;
+    }
+
+    return appInfo;
+}
 
 
 

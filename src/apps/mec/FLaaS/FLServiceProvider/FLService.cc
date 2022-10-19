@@ -15,6 +15,7 @@
 #include <string>
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
+int FLService::staticFlServiceIdNumeric_ = 0;
 
 FLService::FLService()
 {

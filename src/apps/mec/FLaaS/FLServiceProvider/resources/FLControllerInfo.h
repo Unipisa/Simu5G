@@ -22,7 +22,7 @@ class FLControllerInfo : public AttributeBase
         FLControllerInfo();
         FLControllerInfo(FLProcess* flProcess);
 
-        virtual ~FLControllerInfo();
+        virtual ~FLControllerInfo(){};
         nlohmann::ordered_json toJson() const override;
 
     private:

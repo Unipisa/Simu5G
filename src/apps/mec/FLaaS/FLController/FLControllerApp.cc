@@ -29,6 +29,10 @@ FLControllerApp::FLControllerApp()
     learnersId_ = 0;
 }
 
+FLControllerApp::~FLControllerApp()
+{
+    cancelAndDelete(instantiationMsg_);
+}
 
 void FLControllerApp::initialize(int stage)
 {

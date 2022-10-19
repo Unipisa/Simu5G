@@ -10,6 +10,9 @@
 #include "apps/mec/FLaaS/packets/FLaasMsgs_m.h"
 #include "FLComputationEngineApp.h"
 
+
+#include "inet/common/packet/ChunkQueue.h"
+
 Define_Module(FLComputationEngineApp);
 
 FLComputationEngineApp::FLComputationEngineApp()
@@ -26,6 +29,12 @@ FLComputationEngineApp::FLComputationEngineApp()
     inARound_ = false;
 }
 
+FLComputationEngineApp::~FLComputationEngineApp()
+{
+    cancelAndDelete(aggregationMsg_);
+    cancelAndDelete(stopRoundMsg_);
+    cancelAndDelete(startRoundMsg_);
+}
 
 void FLComputationEngineApp::initialize(int stage)
 {
@@ -198,7 +207,9 @@ inet::TcpSocket* FLComputationEngineApp::addNewSocket()
     inet::TcpSocket* newSocket = new inet::TcpSocket();
     newSocket->setOutputGate(gate("socketOut"));
     newSocket->setCallback(this);
+    newSocket->setUserData(new inet::ChunkQueue());
     sockets_.addSocket(newSocket);
+
     EV << "FLComputationEngineApp::addNewSocket(): added socket with ID: " << newSocket->getSocketId() << endl;
     return newSocket;
 }
@@ -219,75 +230,82 @@ void FLComputationEngineApp::handleMessage(cMessage *msg)
 //sapendo che questa app non avrà contatti con i MEC service posso rifarla da 0!
 void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool)
 {
-    auto pkt = msg->peekAtFront<FLaasPacket>();
-    if(pkt->getType() == START_ROUND_ACK)
-    {
-        auto startRoundPkt = msg->removeAtFront<FLaasStartRoundPacket>();
-        int roundId = startRoundPkt->getRoundId();
-        int learnerId = startRoundPkt->getLearnerId();
-        if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse())
+    auto queue = (inet::ChunkQueue*)socket->getUserData();
+    auto chunk = msg->peekDataAt(inet::B(0), msg->getTotalLength());
+    queue->push(chunk);
+
+    while (queue->has<FLaasPacket>(inet::b(-1))) {
+        auto pkt = queue->pop<FLaasPacket>(inet::b(-1));
+        if(pkt->getType() == START_ROUND_ACK)
         {
-            if(currentLearners_.find(learnerId) != currentLearners_.end())
+            auto startRoundPkt = msg->removeAtFront<FLaasStartRoundPacket>();
+            int roundId = startRoundPkt->getRoundId();
+            int learnerId = startRoundPkt->getLearnerId();
+            if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse())
             {
-                currentLearners_[learnerId].responded = true;
-                sendModelToTrain(learnerId);
-            }
-            else
-            {
-                EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
-            }
-        }
-        else
-        {
-            EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " will be not involved in the training for this round" << endl;
-            EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "], response [" << startRoundPkt->getResponse() << "]"<< endl;
-            if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse() == false)
-            {
-                currentLearners_.erase(learnerId);
-                // peek a new learner from the the available ones and send start message to it
-                std::set<int> currentLearners;
-//                for(auto const& l: currentLearners_)
-//                {
-//                    currentLearners.insert(l.first);
-//                }
-//                flControllerApp_->getLearnersEndpointExcept(currentLearners);
-            }
-        }
-    }
-    else if(pkt->getType() == TRAINED_MODEL)
-    {
-        auto trainedModel = msg->removeAtFront<FLaaSTrainedModelPacket>();
-        int roundId = trainedModel->getRoundId();
-        int learnerId = trainedModel->getLearnerId();
-        if(inARound_ && roundId == roundId_)
-        {
-            if(currentLearners_.find(learnerId) != currentLearners_.end())
-            {
-                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
-                currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
-            }
-            else
-            {
-                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
-            }
-            //check all learners response and stop the round earlier
-            if(allModelsRetrieved())
-            {
-                // stop stopRoundMessage and schedule now
-                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - All local models received from the learners!" << endl;
-                if(stopRoundMsg_->isScheduled())
+                if(currentLearners_.find(learnerId) != currentLearners_.end())
                 {
-                    cancelEvent(stopRoundMsg_);
-                    scheduleAfter(0, stopRoundMsg_);
+                    currentLearners_[learnerId].responded = true;
+                    sendModelToTrain(learnerId);
+                }
+                else
+                {
+                    EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
+                }
+            }
+            else
+            {
+                EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - Learner with id "<< learnerId << " will be not involved in the training for this round" << endl;
+                EV << "FLComputationEngineApp::socketDataArrived - START_ROUND_ACK - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "], response [" << startRoundPkt->getResponse() << "]"<< endl;
+                if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse() == false)
+                {
+                    currentLearners_.erase(learnerId);
+                    // peek a new learner from the the available ones and send start message to it
+                    std::set<int> currentLearners;
+    //                for(auto const& l: currentLearners_)
+    //                {
+    //                    currentLearners.insert(l.first);
+    //                }
+    //                flControllerApp_->getLearnersEndpointExcept(currentLearners);
                 }
             }
         }
-        else
+        else if(pkt->getType() == TRAINED_MODEL)
         {
-            EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " sent Model after round end or relative to a different round.. discarding" << endl;
-            EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "]" << endl;
+            auto trainedModel = msg->removeAtFront<FLaaSTrainedModelPacket>();
+            int roundId = trainedModel->getRoundId();
+            int learnerId = trainedModel->getLearnerId();
+            if(inARound_ && roundId == roundId_)
+            {
+                if(currentLearners_.find(learnerId) != currentLearners_.end())
+                {
+                    EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
+                    currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
+                }
+                else
+                {
+                    EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " not present in the currentLearners_ structure" << endl;
+                }
+                //check all learners response and stop the round earlier
+                if(allModelsRetrieved())
+                {
+                    // stop stopRoundMessage and schedule now
+                    EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - All local models received from the learners!" << endl;
+                    if(stopRoundMsg_->isScheduled())
+                    {
+                        cancelEvent(stopRoundMsg_);
+                        scheduleAfter(0, stopRoundMsg_);
+                    }
+                }
+            }
+            else
+            {
+                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " sent Model after round end or relative to a different round.. discarding" << endl;
+                EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - inARound var ["<< inARound_ << "], roundId_ ["<< roundId_<< "], roundMsg ["<< roundId<< "]" << endl;
+            }
         }
-    }
+
+        }
     delete msg;
 }
 
@@ -295,7 +313,7 @@ bool FLComputationEngineApp::allModelsRetrieved()
 {
     for(const auto& learn : currentLearners_)
     {
-        if(!learn.second.modelSize > 0){
+        if(learn.second.modelSize > 0){
             return false;
         }
     }

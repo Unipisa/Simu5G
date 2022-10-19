@@ -54,7 +54,7 @@ class FLControllerApp : public MecServiceBase
 
     protected:
         virtual void initialize(int stage) override;
-        virtual void finish() override;
+        virtual void finish() override {};
 
         virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
         void handleStartOperation(inet::LifecycleOperation *operation) override;
@@ -64,9 +64,9 @@ class FLControllerApp : public MecServiceBase
         // POST the instantiation of a MEC app
         virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
         // PUT not implemented, yet
-        virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
+        virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override {};
         // DELETE a MEC app previously instantiated
-        virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+        virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override {};
 
         MecAppInstanceInfo* instantiateFLComputationEngine();
 

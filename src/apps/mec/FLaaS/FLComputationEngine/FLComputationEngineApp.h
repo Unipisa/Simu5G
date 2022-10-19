@@ -80,31 +80,25 @@ class FLComputationEngineApp : public MecAppBase
     int size_;
     std::string subId;
 
-    // circle danger zone
-    cOvalFigure * circle;
-    double centerPositionX;
-    double centerPositionY;
-    double radius;
-
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
-        virtual void finish() override;
+        virtual void finish() override {};
 
-        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
+//        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
 
-        virtual void handleHttpMessage(int connId) override;
-        virtual void handleServiceMessage(int connId) override;
-        virtual void handleMp1Message(int connId) override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+        virtual void handleHttpMessage(int connId) override {};
+        virtual void handleServiceMessage(int connId) override {};
+        virtual void handleMp1Message(int connId) override {};
+        virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
         virtual void handleMessage(omnetpp::cMessage *msg) override;
         virtual void handleSelfMessage(cMessage *msg) override;
 
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool) override;
 
-        virtual void modifySubscription();
-        virtual void sendSubscription();
-        virtual void sendDeleteSubscription();
+//        virtual void modifySubscription();
+//        virtual void sendSubscription();
+//        virtual void sendDeleteSubscription();
 
 
         virtual inet::TcpSocket* addNewSocket() override;

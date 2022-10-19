@@ -22,7 +22,7 @@ class EndpointInfo : public AttributeBase
         EndpointInfo();
         EndpointInfo(FLProcess* flService);
 
-        virtual ~EndpointInfo();
+        virtual ~EndpointInfo() {};
         nlohmann::ordered_json toJson() const override;
 
     private:

@@ -23,7 +23,7 @@ class FLProcessInfo : public AttributeBase
     public:
         FLProcessInfo();
         FLProcessInfo(std::map<std::string, FLProcess>* flProcesses);
-        virtual ~FLProcessInfo();
+        virtual ~FLProcessInfo(){};
         nlohmann::ordered_json toJson() const override;
         nlohmann::ordered_json toJson(std::set<std::string>& serviceIds) const;
         nlohmann::ordered_json toJson(FLTrainingMode mode) const;
