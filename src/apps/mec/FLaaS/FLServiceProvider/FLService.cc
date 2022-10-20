@@ -45,6 +45,7 @@ FLService::FLService(const char* fileName)
         throw omnetpp::cRuntimeError("FLService::FLService - training mode %s not correct!", trainingMode.c_str());
     flControllerUri_ = jsonFile["controller URI"];
 //    this->printApplicationDescriptor();
+
 }
 
 FLService::FLService(std::string& name, std::string& flServiceId, std::string description, std::string& category,  FLTrainingMode traininigMode)

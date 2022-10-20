@@ -20,6 +20,7 @@ FLProcess::FLProcess(const std::string& name, const std::string& flProcessId, co
     category_ = category;
     trainingMode_ = traininigMode;
     mecAppId_ = mecAppId;
+    isActive_ = true;
 }
 
 std::string FLProcess::getFLTrainingModeStr()

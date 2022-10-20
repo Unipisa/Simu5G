@@ -157,7 +157,6 @@ nlohmann::ordered_json FLProcessInfo::toJsonFLProcess(const std::string& flProce
     {
         if(it->second.getFLProcessId().compare(flProcessId) == 0 && it->second.isFLProcessActive())
         {
-            nlohmann::ordered_json process;
             process["name"] = it->second.getFLProcessName();
             process["processId"] = it->second.getFLProcessId();
             process["serviceId"] = it->second.getFLServiceId();

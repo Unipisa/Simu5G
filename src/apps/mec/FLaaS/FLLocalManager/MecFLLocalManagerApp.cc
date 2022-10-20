@@ -35,31 +35,31 @@ void MecFLLocalManagerApp::initialize(int stage)
 
     learner_ = par("hasLearner").boolValue();
 
-//    if(learner_)
-//    {
-//        //instantiate learner App
-//        // save it end point necessary for the FL comp engine
-//
-//        //check where instantiate it
-//        if(par("onMecHost").boolValue())
-//        {
-//            MecAppInstanceInfo* appInfo = instantiateFLLearner();
-//            if(!appInfo->status)
-//            {
-//                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
-//            }
-//            else
-//            {
-//                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
-//                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
-//                flLearnerEndpoint_.port = appInfo->endPoint.port;
-//                learnerApp_ = appInfo->module;
-//            }
-//
-//        }
-//    }
+    if(learner_)
+    {
+        //instantiate learner App
+        // save it end point necessary for the FL comp engine
 
-    fLServiceName_ = par("fLServiceName").str();
+        //check where instantiate it
+        if(par("onMecHost").boolValue())
+        {
+            MecAppInstanceInfo* appInfo = instantiateFLLearner();
+            if(!appInfo->status)
+            {
+                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
+            }
+            else
+            {
+                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
+                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
+                flLearnerEndpoint_.port = appInfo->endPoint.port;
+                learnerApp_ = appInfo->module;
+            }
+
+        }
+    }
+
+    fLServiceName_ = par("fLServiceName").stdstringValue();
 
     ueAppPort = par("localUePort");
     ueSocket.setOutputGate(gate("socketOut"));
@@ -80,7 +80,7 @@ void MecFLLocalManagerApp::initialize(int stage)
 
 void MecFLLocalManagerApp::established(int connId)
 {
-    EV << "MECPlatooningControllerApp::established - connId [" << connId << "]" << endl;
+    EV << "MecFLLocalManagerApp::established - connId [" << connId << "]" << endl;
 
     if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
         EV << "MecFLLocalManagerApp::established - Mp1Socket" << endl;
@@ -94,11 +94,11 @@ void MecFLLocalManagerApp::established(int connId)
     }
     else if (serviceSocket_ != nullptr && connId == serviceSocket_->getSocketId())
     {
-        EV << "MECPlatooningControllerApp::established - conection Id: "<< connId << endl;
+        EV << "MecFLLocalManagerApp::established - conection Id: "<< connId << endl;
         // request the list of the active processes with category XAI
         std::stringstream uri;
         uri << "/example/flaas/v1/queries/activeProcesses";
-        EV << "MECPlatooningControllerApp::request active processes: uri: " << uri.str() << endl;
+        EV << "MecFLLocalManagerApp::request active processes: uri: " << uri.str() << endl;
         std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
         Http::sendGetRequest(serviceSocket_, host.c_str(), uri.str().c_str());
         state_ = REQ_PROCESS;
@@ -106,17 +106,22 @@ void MecFLLocalManagerApp::established(int connId)
     else if (flControllerSocket_ != nullptr && connId == flControllerSocket_->getSocketId())
     {
         // request to be in a training
-        EV << "MECPlatooningControllerApp::established - conection Id: "<< connId << endl;
+        EV << "MecFLLocalManagerApp::established - conection Id: "<< connId << endl;
+        if(!learner_)
+            return;
         // request the list of the active processes with category XAI
         std::stringstream uri;
         uri << "/example/flController/operations/trainModel";
-        EV << "MECPlatooningControllerApp::request active processes: uri: " << uri.str() << endl;
-        std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
+        EV << "MecFLLocalManagerApp::request active processes: uri: " << uri.str() << endl;
+        std::string host = flControllerSocket_->getRemoteAddress().str() + ":" + std::to_string(flControllerSocket_->getRemotePort());
         nlohmann::json jsonBody;
+        jsonBody["learnerId"] = learnerApp_->getId();
+        jsonBody["lmId"] = learnerApp_->getId();
+
         jsonBody["learnerAddress"]  = flLearnerEndpoint_.addr.str();
         jsonBody["learnerPort"] = flLearnerEndpoint_.port;
 
-        Http::sendPostRequest(serviceSocket_, jsonBody.dump(0).c_str(), host.c_str(), uri.str().c_str());
+        Http::sendPostRequest(flControllerSocket_, jsonBody.dump(0).c_str(), host.c_str(), uri.str().c_str());
         state_ = REQ_TRAIN;
     }
 
@@ -178,7 +183,21 @@ void MecFLLocalManagerApp::handleMp1Message(int connId)
 void MecFLLocalManagerApp::handleServiceMessage(int connId)
 {
     // for now I only have just one Service Registry
-    HttpMessageStatus *msgStatus = (HttpMessageStatus*) serviceSocket_->getUserData();
+    HttpMessageStatus *msgStatus;
+
+    if(serviceSocket_ != nullptr && connId == serviceSocket_->getSocketId())
+    {
+        msgStatus= (HttpMessageStatus*) serviceSocket_->getUserData();
+    }
+    else if (flControllerSocket_ != nullptr && connId == flControllerSocket_->getSocketId())
+    {
+        msgStatus= (HttpMessageStatus*) flControllerSocket_->getUserData();
+    }
+    else
+    {
+        EV << "MecFLLocalManagerApp::handleServiceMessage - No socket with connid [" << connId << "] is present!" << endl;
+    }
+
     serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
     EV << "MECPlatooningApp::handleServiceMessage - payload: " << serviceHttpMessage->getBody() << endl;
 
@@ -187,7 +206,7 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
         if (rspMsg->getCode() == 200) // in response to a successful GET request
         {
             nlohmann::json jsonBody;
-            EV << "MECPlatooningControllerApp::handleServiceMessage - response 200 from Socket with Id [" << connId << "]" << endl;
+            EV << "MecFLLocalManagerApp::handleServiceMessage - response 200 from Socket with Id [" << connId << "]" << endl;
 
 //            received_++;
 
@@ -196,13 +215,15 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
                 //based on the state of the manager parse the response differently
                 if(state_ == REQ_PROCESS)
                 {
+                    EV << "state_ == REQ_PROCESS" << endl;
                 // then ask for the controllers ep
                     bool found = false;
                     nlohmann::json flProcessList = jsonBody["flProcessList"];
                     for(int i = 0; i < flProcessList.size(); ++i)
                     {
                         nlohmann::json process = flProcessList.at(i);
-                        if(process["name"] == fLServiceName_)
+                        std::string name =  process["name"];
+                        if(name.compare(fLServiceName_) == 0)
                         {
                             flProcessId_ = process["processId"];
                             found = true;
@@ -214,17 +235,19 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
                         // request controller endpoint
                         std::stringstream uri;
                         uri << "/example/flaas/v1/queries/controllerEndpoint?processId=" << flProcessId_ << endl;
-                        EV << "MECPlatooningControllerApp::request process endpoint!: uri: " << uri.str() << endl;
+                        EV << "MecFLLocalManagerApp::request process endpoint!: uri: " << uri.str() << endl;
                         std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
                         Http::sendGetRequest(serviceSocket_, host.c_str(), uri.str().c_str());
-                        state_ = REQ_CONTRLLER;
+                        state_ = REQ_CONTROLLER;
                     }
                 }
-                else if (state_ == REQ_CONTRLLER)
+                else if (state_ == REQ_CONTROLLER)
                 {
+                    EV << "state_ == REQ_CONTRLLER" << endl;
                 // connect to controller to post the training mode
                     nlohmann::json controllerEndpoint = jsonBody["FLControllerEndpoint"];
-                    inet::L3Address add = inet::L3Address(std::string(controllerEndpoint["address"]["host"]));
+                    std::string addr = controllerEndpoint["address"]["host"];
+                    inet::L3Address add = inet::L3Address(addr.c_str());
                     int port = controllerEndpoint["address"]["port"];
                     flControllerEndpoint_ = {add, port};
                     flControllerSocket_ = addNewSocket();
@@ -234,10 +257,6 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
                 {
                     // this should not happen
                 }
-
-
-
-
             }
             catch (nlohmann::detail::parse_error e) {
                 EV << e.what() << endl;
@@ -249,17 +268,34 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
         else if(rspMsg->getCode() == 201)
         {
             // response of a post
+            nlohmann::json jsonBody;
+            EV << "MecFLLocalManagerApp::handleServiceMessage - response 200 from Socket with Id [" << connId << "]" << endl;
+
+//            received_++;
+
+            try {
+                jsonBody = nlohmann::json::parse(rspMsg->getBody()); // get the JSON structure
+                            //based on the state of the manager parse the response differently
+                resourceUrl_ =  jsonBody["resourceURL"];
+            EV << "MecFLLocalManagerApp::handleServiceMessage - response with HTTP code: "<< rspMsg->getCode() << " url: " << resourceUrl_ << endl;
+            }
+            catch (nlohmann::detail::parse_error e) {
+                EV << e.what() << endl;
+                // body is not correctly formatted in JSON, manage it
+                return;
+            }
+
         }
 
         // some error occured, show the HTTP code for now
         else {
-            EV << "MECPlatooningControllerApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
+            EV << "MecFLLocalManagerApp::handleServiceMessage - response with HTTP code:  " << rspMsg->getCode() << endl;
         }
     }
     // it is a request. It should not arrive, for now (think about sub-not)
     else {
         HttpRequestMessage *reqMsg = dynamic_cast<HttpRequestMessage*>(serviceHttpMessage);
-        EV << "MECPlatooningControllerApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded" << endl;
+        EV << "MecFLLocalManagerApp::handleServiceMessage - response with HTTP code:  " << reqMsg->getMethod() << " discarded" << endl;
     }
 }
 

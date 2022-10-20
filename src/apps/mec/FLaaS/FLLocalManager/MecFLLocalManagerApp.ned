@@ -19,7 +19,7 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 
-simple FLLocalManagerApp like IMECApp, IApp
+simple MecFLLocalManagerApp like IMECApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");
@@ -27,7 +27,12 @@ simple FLLocalManagerApp like IMECApp, IApp
         int packetSize = default(10);
         string interfaceTableModule = default("");
 
-		string FLServiceName;
+		string fLServiceName = "QoE_estimation";
+		string FLLearner = "simu5g.apps.mec.FLaaS.FLLearner.MecFLLearnerApp";
+		
+		bool hasLearner = default(true);
+		bool onMecHost = default(true);
+	
         
         int mecAppIndex;
         int mecAppId;

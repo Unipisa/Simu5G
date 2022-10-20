@@ -200,7 +200,7 @@ void MecAppBase::handleMessage(cMessage *msg)
 
 double MecAppBase::scheduleNextMsg(cMessage* msg)
 {
-    double processingTime = vim->calculateProcessingTime(mecAppId, 20);// int(uniform(200, 400))); this cause machines to invert orders!
+    double processingTime = vim->calculateProcessingTime(mecAppId, 20);
     return processingTime;
 }
 
@@ -220,6 +220,7 @@ void MecAppBase::handleProcessedMessage(cMessage *msg)
         }
         else
         {
+            EV << "MecAppBase::handleProcessedMessage(): socket is null" << endl;
             delete msg;
         }
     }

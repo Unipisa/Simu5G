@@ -1,0 +1,12 @@
+{
+"appDid" : "FLLM",
+"appName" : "MecFLLocalManagerApp",
+"appProvider" : "simu5g.apps.mec.FLaaS.FLLocalManager.MecFLLocalManagerApp",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 10,
+    "virtualCpu" : 1500,
+    "virtualMemory":10
+    }
+}

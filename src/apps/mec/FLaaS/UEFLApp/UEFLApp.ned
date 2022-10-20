@@ -37,7 +37,7 @@ simple UEFLApp like IApp
         double startTime @unit("s") = default(0s); 
         double stopTime @unit("s") = default(120s);
                 
-        string mecAppName = default("FLLocalManafer");
+        string mecAppName = default("MecFLLocalManagerApp");
         
         string interfaceTableModule;         
              

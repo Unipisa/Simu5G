@@ -13,53 +13,51 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package simu5g.apps.mec.FLaaS.FLComputationEngine;
+package simu5g.apps.mec.FLaaS.FLLearner;
 
 import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
-//import simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.IMECService;
 
-// TODO describe it
 
-simple FLComputationEngineApp like IMECApp, IApp
+simple MecFLLearnerApp like IMECApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");
   			
-  		// IMECApp parameters
         int packetSize = default(10);
         string interfaceTableModule = default("");
+        
+        double trainingDuration @unit("s") = default(2s);
+        double localModelSize @unit("B") = default(70kB);
+        
+        
         
         int mecAppIndex;
         int mecAppId;
         int localUePort;
         
+        string localAddress = default("");
+        int localPort = default(9000);
+        
+        
         string mp1Address = default("");
         int mp1Port = default(10021);
-        
-        
-        double roundDuration @unit("s") = default(20s);
-        double modelAggregationDuration @unit("s") = default(5s);
-        int minLearners = 1;
-        int localModelTreshold = int(minLearners*0.75);
-        int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, ONE_SHOT) = default(1);
-        double modelDimension @unit("B") = default(240kB);
-        string controllerModuleName = "";
-        double repeatTime @unit("s") = default(1s); 
         
 		 //resource required info
         double requiredRam @unit("B");
         double requiredDisk @unit("B");
         double requiredCpu;
-        
-        double instantiationTime @unit("s") = 1s;
-        
+
 		// IApp parameters
 		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 		
-    gates:  
+    gates:
+	  input mePlatformIn;
+	  output mePlatformOut;
+	  
 	  input socketIn;
-	  output socketOut;               
+	  output socketOut;
+                
 }

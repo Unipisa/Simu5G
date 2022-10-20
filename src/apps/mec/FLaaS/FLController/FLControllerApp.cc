@@ -20,7 +20,7 @@ Define_Module(FLControllerApp);
 
 FLControllerApp::FLControllerApp()
 {
-    baseUriQueries_ = "/example/flController/";
+    baseUriQueries_ = "/example/flController";
     baseUriSubscriptions_ = baseUriQueries_;
     subscriptionId_ = 0;
     subscriptions_.clear();
@@ -39,8 +39,8 @@ void FLControllerApp::initialize(int stage)
     EV << "FLControllerApp::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        EV << "MecServiceBase::initialize" << endl;
-        serviceName_ = par("serviceName").stringValue();
+        EV << "FLControllerApp::initialize" << endl;
+//        serviceName_ = par("serviceName").stringValue();
 
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
@@ -113,7 +113,7 @@ void FLControllerApp::handleStartOperation(inet::LifecycleOperation *operation)
 
 void FLControllerApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
-    EV << "UALCMPApp::handleGETRequest" << endl;
+    EV << "FLControllerApp::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
@@ -180,7 +180,7 @@ void FLControllerApp::handlePOSTRequest(const HttpRequestMessage *currentRequest
 
 //    // uri must be in form example/flaas/v1/operations/res
 
-    EV << "FLControllerApp::handlePOSTRequest - baseuri: "<< uri << endl;
+    EV << "FLControllerApp::handlePOSTRequest - baseuri: "<< uri << "body: " << body << endl;
 
     if(uri.compare(baseUriQueries_+"/operations/trainModel") == 0)
     {
@@ -199,17 +199,21 @@ void FLControllerApp::handlePOSTRequest(const HttpRequestMessage *currentRequest
             return;
         }
 
+        int lerarnedId = jsonBody["learnerId"];
+        int lmId = jsonBody["lmId"];
+
         Endpoint learnerEndpoint;
-        std::string ipAddress = jsonBody["learnerIpAddress"];
+        std::string ipAddress = jsonBody["learnerAddress"];
         learnerEndpoint.addr = inet::L3Address(ipAddress.c_str());
         learnerEndpoint.port = jsonBody["learnerPort"];
+
 
 
         inet::L3Address ip = socket->getRemoteAddress();
         int port = socket->getRemotePort();
         Endpoint endpoint = {ip, port};
 
-        LocalManagerStatus newLocalManager(learnersId_++, endpoint, learnerEndpoint);
+        LocalManagerStatus newLocalManager(lmId, lerarnedId, endpoint, learnerEndpoint);
 
         // TODO make a decision based on information. For now it is always yes
         bool decision =  true;
@@ -243,12 +247,14 @@ AvailableLearnersMap* FLControllerApp::getLearnersEndpoint(int minLearners) {
     AvailableLearnersMap *learanersList = new AvailableLearnersMap();
     auto learnersIt =  learners_.begin();
     int i = 0;
-    while (i < minLearners || learnersIt != learners_.end())
+    while (i < minLearners && learnersIt != learners_.end())
     {
         int id = learnersIt->second.getLocalManagerId();
         Endpoint ep = learnersIt->second.getLearnerEndpoint();
         AvailableLearner  learner = {id, ep};
         (*learanersList)[id] = learner;
+        i++;
+        learnersIt++;
     }
 
     return learanersList;

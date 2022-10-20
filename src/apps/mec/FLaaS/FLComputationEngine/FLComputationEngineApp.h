@@ -91,7 +91,7 @@ class FLComputationEngineApp : public MecAppBase
         virtual void handleServiceMessage(int connId) override {};
         virtual void handleMp1Message(int connId) override {};
         virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
-        virtual void handleMessage(omnetpp::cMessage *msg) override;
+//        virtual void handleMessage(omnetpp::cMessage *msg) override;
         virtual void handleSelfMessage(cMessage *msg) override;
 
         virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool) override;
@@ -102,7 +102,7 @@ class FLComputationEngineApp : public MecAppBase
 
 
         virtual inet::TcpSocket* addNewSocket() override;
-        void sendStartRoungMessage(int learnerId);
+        void sendStartRoundMessage(int learnerId);
         void sendModelToTrain(int learnerId);
         bool allModelsRetrieved();
 

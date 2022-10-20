@@ -44,18 +44,20 @@ simple FLControllerApp like IMECApp, IApp
         
         double instantiationTime @unit("s") = 1s;
         
+        string FLComputationEngineApp = "simu5g.apps.mec.FLaaS.FLComputationEngine.FLComputationEngineApp";
+        
         // IMECService parameters
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
-        string localAddress = default("^.virtualisationInfrastructure"); // local address; may be left empty ("")
+        string localAddress = default("mecHost.virtualisationInfrastructure"); // local address; may be left empty ("")
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
         
         bool loadGenerator = default(false);
     	double betaa  = default(0);  // used only if loadGenerator is true
     	int numBGApps = default(0); // used only if loadGenerator is true
         
-        double requestServiceTime  @unit(s) = default(1ms);
-        double subscriptionServiceTime @unit(s) = default(1ms);
+        double requestServiceTime  @unit(s) = default(0.1ms);
+        double subscriptionServiceTime @unit(s) = default(0.1ms);
         
         string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
                 

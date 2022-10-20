@@ -63,6 +63,8 @@ void FLComputationEngineApp::initialize(int stage)
     // schedule first round
     startRoundMsg_ = new cMessage("startRoundMsg");
     stopRoundMsg_ = new cMessage("stopRoundMsg");
+
+    scheduleAfter(repeatTime_, startRoundMsg_);
 }
 
 
@@ -88,7 +90,7 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
             if(learnerId2socketId_.find(id) != learnerId2socketId_.end())
             {
                 // send message if connected
-                sendStartRoungMessage(id);
+                sendStartRoundMessage(id);
                 // add the leraner to the current learner. this is also used to check if the received ACK comes from a choosen learners
                 LearnerStatus newLear = {id, 0., false};
                 currentLearners_[id] = newLear;
@@ -105,6 +107,7 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
             scheduleAfter(roundDuration_, stopRoundMsg_);
 
         }
+        delete avLearners;
     }
     else if(msg->isName("stopRoundMsg"))
     {
@@ -118,7 +121,7 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
 
         if (count < minLearners_)
         {
-            EV << "FLComputationEngineApp::handleSelfMessage - stopRoundMsg - Too few learners sent theri local model, aggregation will not be  done" << endl;
+            EV << "FLComputationEngineApp::handleSelfMessage - stopRoundMsg - Too few learners sent their local model, aggregation will not be done" << endl;
             scheduleAfter(repeatTime_, startRoundMsg_);
         }
 
@@ -163,17 +166,21 @@ void FLComputationEngineApp::established(int connId)
         if(round == roundId_ && inARound_)
         {
             learnerId2socketId_[learnerId] = connId;
-            sendStartRoungMessage(learnerId);
+            sendStartRoundMessage(learnerId);
+            // add the leraner to the current learner. this is also used to check if the received ACK comes from a choosen learners
+            LearnerStatus newLear = {learnerId, 0., false};
+            currentLearners_[learnerId] = newLear;
             //send start
         }
 
     }
 }
 
-void FLComputationEngineApp::sendStartRoungMessage(int learnerId)
+void FLComputationEngineApp::sendStartRoundMessage(int learnerId)
 {
     inet::Packet* packet = new inet::Packet("startRoundPacket");
     auto start = inet::makeShared<FLaasStartRoundPacket>();
+    start->setType(START_ROUND);
     start->setRoundId(roundId_);
     start->setLearnerId(learnerId);
     start->setRoundDuration(roundDuration_); // TODO put the remaining duration
@@ -182,13 +189,14 @@ void FLComputationEngineApp::sendStartRoungMessage(int learnerId)
     int socketId = learnerId2socketId_.at(learnerId);
     auto socket = sockets_.getSocketById(socketId);
     socket->send(packet);
-    EV << "FLComputationEngineApp::sendStartRoungMessage: sent start round message to learner with id " << learnerId<< endl;
+    EV << "FLComputationEngineApp::sendStartRoundMessage: sent start round message to learner with id " << learnerId<< endl;
 }
 
 void FLComputationEngineApp::sendModelToTrain(int learnerId)
 {
     inet::Packet* packet = new inet::Packet("modelToTrainPacket");
     auto model = inet::makeShared<FLaaSGlobalModelPacket>();
+    model->setType(TRAIN_GLOBAL_MODEL);
     model->setRoundId(roundId_);
     model->setLearnerId(learnerId);
     model->setTimeRemaining(roundDuration_); // TODO put the remaining duration
@@ -215,17 +223,18 @@ inet::TcpSocket* FLComputationEngineApp::addNewSocket()
 }
 
 
-void FLComputationEngineApp::handleMessage(cMessage *msg)
-{
-    if (learnerSocket_.belongsToSocket(msg))
-    {
-        // TODO implement callback to create a new socket! ID should not be necesary
-        learnerSocket_.processMessage(msg);
-    }
-    else {
-        MecAppBase::handleMessage(msg);
-    }
-}
+//void FLComputationEngineApp::handleMessage(cMessage *msg)
+//{
+//
+//    if (learnerSocket_.belongsToSocket(msg))
+//    {
+//        // TODO implement callback to create a new socket! ID should not be necesary
+//        learnerSocket_.processMessage(msg);
+//    }
+//    else {
+//        MecAppBase::handleMessage(msg);
+//    }
+//}
 
 //sapendo che questa app non avrà contatti con i MEC service posso rifarla da 0!
 void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool)
@@ -233,12 +242,14 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
     auto queue = (inet::ChunkQueue*)socket->getUserData();
     auto chunk = msg->peekDataAt(inet::B(0), msg->getTotalLength());
     queue->push(chunk);
+    EV <<"Message queue size: " << queue->getLength() << endl;
+
 
     while (queue->has<FLaasPacket>(inet::b(-1))) {
-        auto pkt = queue->pop<FLaasPacket>(inet::b(-1));
+        auto pkt = queue->peek<FLaasPacket>(inet::b(-1));
         if(pkt->getType() == START_ROUND_ACK)
         {
-            auto startRoundPkt = msg->removeAtFront<FLaasStartRoundPacket>();
+            auto startRoundPkt = queue->pop<FLaasStartRoundPacket>(inet::b(-1));
             int roundId = startRoundPkt->getRoundId();
             int learnerId = startRoundPkt->getLearnerId();
             if(inARound_ && roundId == roundId_ && startRoundPkt->getResponse())
@@ -272,7 +283,7 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
         }
         else if(pkt->getType() == TRAINED_MODEL)
         {
-            auto trainedModel = msg->removeAtFront<FLaaSTrainedModelPacket>();
+            auto trainedModel = queue->pop<FLaaSTrainedModelPacket>(inet::b(-1));
             int roundId = trainedModel->getRoundId();
             int learnerId = trainedModel->getLearnerId();
             if(inARound_ && roundId == roundId_)
@@ -281,6 +292,8 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
                 {
                     EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
                     currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
+                    currentLearners_[learnerId].responded = trainedModel->getModelSize();
+
                 }
                 else
                 {
@@ -313,7 +326,7 @@ bool FLComputationEngineApp::allModelsRetrieved()
 {
     for(const auto& learn : currentLearners_)
     {
-        if(learn.second.modelSize > 0){
+        if(learn.second.modelSize == 0.){
             return false;
         }
     }

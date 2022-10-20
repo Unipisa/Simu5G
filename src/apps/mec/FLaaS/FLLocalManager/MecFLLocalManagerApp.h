@@ -16,7 +16,7 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "apps/mec/FLaaS/FLaaSUtils.h"
 
-typedef enum {REQ_PROCESS, REQ_CONTRLLER, REQ_TRAIN, IDLE} LMState;
+typedef enum {REQ_PROCESS, REQ_CONTROLLER, REQ_TRAIN, IDLE} LMState;
 
 class MecFLLocalManagerApp : public MecAppBase
 {
@@ -49,6 +49,7 @@ class MecFLLocalManagerApp : public MecAppBase
 
         int size_;
         std::string subId;
+        std:: string resourceUrl_;
 
         cModule* learnerApp_;
 

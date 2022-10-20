@@ -56,6 +56,10 @@ simple FLServiceProvider like IMECService, IApp
         string scopeOfLocality = default("MEC_HOST");
         bool consumedLocalOnly =  default(true);   
         
+        
+        
+        string flServicesList = default("");
+        
         @display("i=block/app");
         @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
