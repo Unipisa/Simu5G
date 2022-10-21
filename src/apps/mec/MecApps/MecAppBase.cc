@@ -48,12 +48,12 @@ MecAppBase::~MecAppBase()
     }
 
     // delete all the messages
-    for(auto &sock : sockets_.getMap())
-    {
-
-        TcpSocket* tcpSock = (TcpSocket*)sock.second;
-       // removeSocket(tcpSock);
-    }
+//    for(auto &sock : sockets_.getMap())
+//    {
+//
+//       TcpSocket* tcpSock = (TcpSocket*)sock.second;
+//       // removeSocket(tcpSock);
+//    }
     // it calls delete, too
     sockets_.deleteSockets();
 
@@ -62,7 +62,6 @@ MecAppBase::~MecAppBase()
 
 void MecAppBase::initialize(int stage)
 {
-
     if(stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
@@ -179,9 +178,9 @@ void MecAppBase::handleMessage(cMessage *msg)
         {
             packetQueue_.insert(msg);
             double processingTime;
-            if(strcmp(msg->getFullName(), "data") == 0)
-                processingTime = MecAppBase::scheduleNextMsg(msg);
-            else
+//            if(strcmp(msg->getFullName(), "data") == 0)
+//                processingTime = MecAppBase::scheduleNextMsg(msg);
+//            else
                processingTime = scheduleNextMsg(msg);
             EV <<"MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
             scheduleAt(simTime() + processingTime, processMessage_);
@@ -200,7 +199,11 @@ void MecAppBase::handleMessage(cMessage *msg)
 
 double MecAppBase::scheduleNextMsg(cMessage* msg)
 {
-    double processingTime = vim->calculateProcessingTime(mecAppId, 20);
+    double processingTime = 0.;
+    if(vim != nullptr)
+    {
+        processingTime = vim->calculateProcessingTime(mecAppId, 20);
+    }
     return processingTime;
 }
 

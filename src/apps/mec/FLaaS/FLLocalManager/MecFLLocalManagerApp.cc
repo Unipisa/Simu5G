@@ -21,8 +21,6 @@ MecFLLocalManagerApp::MecFLLocalManagerApp()
     learnerApp_ = nullptr;
 }
 
-
-
 void MecFLLocalManagerApp::initialize(int stage)
 {
     MecAppBase::initialize(stage);
@@ -33,31 +31,31 @@ void MecFLLocalManagerApp::initialize(int stage)
 
     EV << "MecFLLocalManagerApp::initialize - MEC application " << getClassName() << " with mecAppId[" << mecAppId << "] has started!" << endl;
 
-    learner_ = par("hasLearner").boolValue();
-
-    if(learner_)
-    {
-        //instantiate learner App
-        // save it end point necessary for the FL comp engine
-
-        //check where instantiate it
-        if(par("onMecHost").boolValue())
-        {
-            MecAppInstanceInfo* appInfo = instantiateFLLearner();
-            if(!appInfo->status)
-            {
-                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
-            }
-            else
-            {
-                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
-                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
-                flLearnerEndpoint_.port = appInfo->endPoint.port;
-                learnerApp_ = appInfo->module;
-            }
-
-        }
-    }
+//    learner_ = par("hasLearner").boolValue();
+//
+//    if(learner_)
+//    {
+//        //instantiate learner App
+//        // save it end point necessary for the FL comp engine
+//
+//        //check where instantiate it
+//        if(par("onMecHost").boolValue())
+//        {
+//            MecAppInstanceInfo* appInfo = instantiateFLLearner();
+//            if(!appInfo->status)
+//            {
+//                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
+//            }
+//            else
+//            {
+//                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
+//                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
+//                flLearnerEndpoint_.port = appInfo->endPoint.port;
+//                learnerApp_ = appInfo->module;
+//            }
+//
+//        }
+//    }
 
     fLServiceName_ = par("fLServiceName").stdstringValue();
 
@@ -72,10 +70,75 @@ void MecFLLocalManagerApp::initialize(int stage)
 
     mp1Socket_ = addNewSocket();
 
-    connect(mp1Socket_, mp1Address, mp1Port);
+    //connect(mp1Socket_, mp1Address, mp1Port);
 
     state_ = IDLE;
     // fill the map with the number of instructions base on the msg type
+}
+
+void MecFLLocalManagerApp::handleMessage(cMessage *msg)
+{
+    if(!msg->isSelfMessage())
+    {
+        if(ueSocket.belongsToSocket(msg))
+        {
+            handleUeMessage(msg);
+            return;
+        }
+    }
+    MecAppBase::handleMessage(msg);
+}
+
+void MecFLLocalManagerApp::handleUeMessage(cMessage *msg)
+{
+    auto pkt = check_and_cast<inet::Packet*>(msg);
+    auto flaasPacket = pkt->peekAtFront<FLaasPacket>();
+
+    if(flaasPacket->getType() == LEARNER_DEPLOYMENT)
+    {
+        auto learnerDep = pkt->removeAtFront<LearnerDeploymentPacket>();
+        EV << "MecFLLocalManagerApp::handleUeMessage - ML Learner instantiated on UE!!" <<learnerDep->getDeploymentPosition() << endl;
+        if(learnerDep->getDeploymentPosition() == 0) //ON_UE
+        {
+            MecAppInstanceInfo* appInfo = instantiateFLLearnerOnUe(learnerDep);
+            if(!appInfo->status)
+            {
+                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::handleUeMessage - cannot instantiate LM learner!");
+            }
+            else
+            {
+                EV << "MecFLLocalManagerApp::handleUeMessage - ML Learner instantiated on UE!!" << endl;
+                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
+                flLearnerEndpoint_.port = appInfo->endPoint.port;
+                learnerApp_ = appInfo->module;
+            }
+
+        }
+        else
+        {
+            MecAppInstanceInfo* appInfo = instantiateFLLearner();
+            if(!appInfo->status)
+            {
+                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::handleUeMessage - cannot instantiate LM learner!");
+            }
+            else
+            {
+                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
+                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
+                flLearnerEndpoint_.port = appInfo->endPoint.port;
+                learnerApp_ = appInfo->module;
+            }
+        }
+        connect(mp1Socket_, mp1Address, mp1Port);
+    }
+    else if(flaasPacket->getType() == DATA_MSG)
+    {
+        EV << "MecFLLocalManagerApp::handleUeMessage - DATA_MSG!" << endl;
+        auto dataMsg = pkt->removeAtFront<DataForTrainingPacket>();
+        arrivedBytes_ += dataMsg->getDimension();
+    }
+
+    delete msg;
 }
 
 void MecFLLocalManagerApp::established(int connId)
@@ -94,7 +157,7 @@ void MecFLLocalManagerApp::established(int connId)
     }
     else if (serviceSocket_ != nullptr && connId == serviceSocket_->getSocketId())
     {
-        EV << "MecFLLocalManagerApp::established - conection Id: "<< connId << endl;
+        EV << "MecFLLocalManagerApp::established - serviceSocket_" << endl;
         // request the list of the active processes with category XAI
         std::stringstream uri;
         uri << "/example/flaas/v1/queries/activeProcesses";
@@ -106,9 +169,9 @@ void MecFLLocalManagerApp::established(int connId)
     else if (flControllerSocket_ != nullptr && connId == flControllerSocket_->getSocketId())
     {
         // request to be in a training
-        EV << "MecFLLocalManagerApp::established - conection Id: "<< connId << endl;
-        if(!learner_)
-            return;
+        EV << "MecFLLocalManagerApp::established -flControllerSocket_ " << endl;
+//        if(!learner_)
+//            return;
         // request the list of the active processes with category XAI
         std::stringstream uri;
         uri << "/example/flController/operations/trainModel";
@@ -125,12 +188,11 @@ void MecFLLocalManagerApp::established(int connId)
         state_ = REQ_TRAIN;
     }
 
-//    else
-//    {
-//        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
-//    }
+    else
+    {
+        throw cRuntimeError("MecAppBase::socketEstablished - Socket %d not recognized", connId);
+    }
 }
-
 
 void MecFLLocalManagerApp::handleHttpMessage(int connId)
 {
@@ -183,7 +245,7 @@ void MecFLLocalManagerApp::handleMp1Message(int connId)
 void MecFLLocalManagerApp::handleServiceMessage(int connId)
 {
     // for now I only have just one Service Registry
-    HttpMessageStatus *msgStatus;
+    HttpMessageStatus *msgStatus = nullptr;
 
     if(serviceSocket_ != nullptr && connId == serviceSocket_->getSocketId())
     {
@@ -196,6 +258,7 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
     else
     {
         EV << "MecFLLocalManagerApp::handleServiceMessage - No socket with connid [" << connId << "] is present!" << endl;
+        return;
     }
 
     serviceHttpMessage = (HttpBaseMessage*) msgStatus->httpMessageQueue.front();
@@ -299,6 +362,72 @@ void MecFLLocalManagerApp::handleServiceMessage(int connId)
     }
 }
 
+MecAppInstanceInfo* MecFLLocalManagerApp::instantiateFLLearnerOnUe(inet::Ptr<LearnerDeploymentPacket> learnerDep)
+{
+    std::string ueModuleName = learnerDep->getUeModuleName();
+    cModule* ueModule = getModuleByPath(ueModuleName.c_str());
+
+    cModuleType *moduleType = cModuleType::get(learnerDep->getLearnerModuleName());         //MEAPP module package (i.e. path!)
+//    std::string learnerModuleName = learnerDep->getLearnerModuleName()
+//    std::string meModuleName = std::string(learnerDep->getLearnerModuleName()).substr(__pos, __n)
+
+    cModule *module = moduleType->create("learnerApp", ueModule);       //MEAPP module-name & its Parent Module
+    std::stringstream appName;
+    appName << "learnerApp_" << module->getId();
+    module->setName(appName.str().c_str());
+    EV << "MecFLLocalManagerApp::instantiateFLLearnerOnUe - meModuleName: " << appName.str() << endl;
+
+//    displaying ME App dynamically created (after 70 they will overlap..)
+    std::stringstream display;
+    display << "p=" << 300 << "," << 50 << ";is=vs";
+    module->setDisplayString(display.str().c_str());
+
+    //initialize IMECApp Parameters THEY ARE NOT NEED HERE
+    module->par("mecAppIndex") = 0;
+    module->par("mecAppId") = 0;
+    module->par("requiredRam") = 0.;
+    module->par("requiredDisk") = 0.;
+    module->par("requiredCpu") = 0.;
+    module->par("localUePort") = learnerDep->getPort();
+    module->par("mp1Address") = "";
+    module->par("mp1Port") = 0;
+    module->par("parentModule") = "UE";
+
+    module->finalizeParameters();
+
+    MecAppInstanceInfo* instanceInfo = new MecAppInstanceInfo();
+
+    instanceInfo->status = true;
+    instanceInfo->instanceId = appName.str();
+    instanceInfo->endPoint.addr = inet::L3Address(inet::L3AddressResolver().resolve(learnerDep->getIpAddress(), inet::L3AddressResolver::ADDR_IPv4).toIpv4());
+    instanceInfo->endPoint.port = learnerDep->getPort();
+    instanceInfo->module = module;
+
+
+
+    EV << "VirtualisationInfrastructureManager::instantiateMEApp port"<< instanceInfo->endPoint.port << endl;
+
+
+    //connecting VirtualisationInfrastructure gates to the MEApp gates
+
+    // add gates to the 'at' layer and connect them to the virtualisationInfr gates
+    cModule *at = ueModule->getSubmodule("at");
+    if(at == nullptr)
+        throw cRuntimeError("at module, i.e. message dispatcher for SAP between application and transport layer non found");
+
+
+    cGate* newAtInGate = at->getOrCreateFirstUnconnectedGate("in", 0, false, true);
+    cGate* newAtOutGate = at->getOrCreateFirstUnconnectedGate("out", 0, false, true);
+
+    newAtOutGate->connectTo(module->gate("socketIn"));
+    module->gate("socketOut")->connectTo(newAtInGate);
+
+    module->buildInside();
+    module->scheduleStart(simTime());
+    module->callInitialize();
+
+    return instanceInfo;
+}
 
 MecAppInstanceInfo* MecFLLocalManagerApp::instantiateFLLearner()
 {
@@ -327,12 +456,12 @@ MecAppInstanceInfo* MecFLLocalManagerApp::instantiateFLLearner()
 
     if(!appInfo->status)
     {
-        EV << "FLControllerApp::instantiateFLComputationEngine - something went wrong during MEC app instantiation"<< endl;
+        EV << "FLControllerApp::instantiateFLLearner - something went wrong during MEC app instantiation"<< endl;
     }
 
     else
     {
-        EV << "FLControllerApp::instantiateFLComputationEngine - succesfull MEC app instantiation"<< endl;
+        EV << "FLControllerApp::instantiateFLLearner - successful MEC app instantiation"<< endl;
     }
 
     return appInfo;

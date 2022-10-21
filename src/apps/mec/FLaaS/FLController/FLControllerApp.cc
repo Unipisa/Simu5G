@@ -221,13 +221,13 @@ void FLControllerApp::handlePOSTRequest(const HttpRequestMessage *currentRequest
 
         if(!decision)
         {
-            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().str() << "] can not be inserted in the training set " << endl;
+            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().addr << ":" << newLocalManager.getLocalManagerEndpoint().port <<  "] can not be inserted in the training set " << endl;
             Http::send400Response(socket); // bad body JSON
             return;
         }
         else
         {
-            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().str() << "] inserted in the training set " << endl;
+            EV << "FLControllerApp::handlePOSTRequest- The Local Manager [" << newLocalManager.getLocalManagerEndpoint().addr << ":" << newLocalManager.getLocalManagerEndpoint().port << "] inserted in the training set " << endl;
             learners_[newLocalManager.getLocalManagerId()] = newLocalManager;
             std::string resourceUrl = baseUriSubscriptions_+"/operations/trainModel/" + std::to_string(newLocalManager.getLocalManagerId());
             jsonBody["resourceURL"] = resourceUrl;

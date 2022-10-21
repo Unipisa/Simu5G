@@ -29,11 +29,18 @@ MecFLLearnerApp::~MecFLLearnerApp()
 
 void MecFLLearnerApp::initialize(int stage)
 {
-    MecAppBase::initialize(stage);
-
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
+
+    std::string parentModule = par("parentModule").stdstringValue();
+
+    // do not initialize mec hosr stuf if learner is in UE!
+    // only processMessage_ is important
+    if(parentModule.compare("MEC_HOST") == 0)
+        MecAppBase::initialize(stage);
+    else
+        processMessage_ = new cMessage("processedMessage");
 
     //retrieving parameters
     size_ = par("packetSize");
@@ -55,6 +62,8 @@ void MecFLLearnerApp::initialize(int stage)
     listeningSocket_.setCallback(this);
     listeningSocket_.bind(localUePort);
     listeningSocket_.listen();
+
+    localModelTrainingSignal_ = registerSignal("localModelTraining");
 }
 
 
@@ -132,15 +141,14 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
     queue->push(chunk);
     EV <<"Message queue size: " << queue->getLength() << endl;
 
-
     while (queue->has<FLaasPacket>(inet::b(-1))) {
         auto pkt = queue->peek<FLaasPacket>(inet::b(-1));
         if(pkt->getType() == START_ROUND)
         {
-            EV << "MecFLLearnerApp::socketDataArrived - START_ROUND" << endl;
             auto startRoundPkt = queue->pop<FLaasStartRoundPacket>(inet::b(-1));
-//            auto startRoundPkt = msg->removeAtFront<FLaasStartRoundPacket>();
             roundId_ = startRoundPkt->getRoundId();
+            EV << "MecFLLearnerApp::socketDataArrived - START_ROUND round id " << roundId_ << endl;
+
             int learnerId = startRoundPkt->getLearnerId();
             inet::Packet* resp = new inet::Packet("FLaasStartRoundPacket");
             auto startRoundResPkt = inet::makeShared<FLaasStartRoundPacket>();
@@ -150,6 +158,8 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
             startRoundResPkt->setLearnerId(learnerId);
             startRoundResPkt->setResponse(true);
             startRoundResPkt->setChunkLength(startRoundPkt->getChunkLength());
+            startRoundResPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
 
             resp->insertAtFront(startRoundResPkt);
             flComputationEnginesocket_->send(resp);
@@ -167,13 +177,10 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
         }
         else if(pkt->getType() == TRAIN_GLOBAL_MODEL)
         {
-            EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL" << endl;
-//            auto trainedModel = msg->removeAtFront<FLaaSGlobalModelPacket>();
-//            auto trainedModel = check_and_cast<FLaaSGlobalModelPacket*>(pkt);
             auto trainedModel = queue->pop<FLaaSGlobalModelPacket>(inet::b(-1));
             recvGlobalModelToTrain();
             int roundId = trainedModel->getRoundId();
-            if(trainingDurationMsg_->isScheduled())
+            if(trainingDurationMsg_->isScheduled() || roundId_ != roundId)
             {
                 // todo what to do?
                 throw cRuntimeError("MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL - Round [%d] is currently training. Arrived message with roundId [%d]", roundId_, roundId);
@@ -181,6 +188,9 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
             }
             // scheudle training
             scheduleAfter(trainingDuration, trainingDurationMsg_);
+            emit(localModelTrainingSignal_, roundId);
+            EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL round id " << roundId << endl;
+
         }
     }
     delete msg;
@@ -195,12 +205,24 @@ void MecFLLearnerApp::sendTrainedLocalModel()
     model->setModelSize(localModelSize_);
     model->setLearnerId(getId());
     model->setChunkLength(inet::B(localModelSize_));
+    model->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
     pkt->insertAtBack(model);
     flComputationEnginesocket_->send(pkt);
+
+    emit(localModelTrainingSignal_, roundId_);
 }
 bool MecFLLearnerApp::recvGlobalModelToTrain()
 {
-return true;
+    return true;
+}
+
+double MecFLLearnerApp::scheduleNextMsg(cMessage* msg)
+{
+//    if(vim != nullptr)
+//        MecAppBase::scheduleNextMsg(msg);
+//    else
+        return 0.;
 }
 
 

@@ -13,8 +13,6 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-
-
 import inet.common.packet.chunk.Chunk;
 
 class FLaasPacket extends inet::FieldsChunk {
@@ -36,3 +34,19 @@ class FLaaSGlobalModelPacket extends FLaasPacket {
 class FLaaSTrainedModelPacket extends FLaasPacket {
     double modelSize;
 }
+
+class LearnerDeploymentPacket extends FLaasPacket {
+    int deploymentPosition;
+    string ueModuleName;
+    string learnerModuleName;
+    string ipAddress; 
+    int port;
+}
+
+class DataForTrainingPacket extends FLaasPacket { 
+    int dimension;
+}
+
+
+
+

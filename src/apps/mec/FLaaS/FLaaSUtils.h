@@ -14,6 +14,8 @@
 
 #include <string>
 #include "inet/networklayer/common/L3Address.h"
+#include "inet/common/TimeTag_m.h"
+
 
 enum FLTrainingMode
 {
@@ -22,14 +24,14 @@ enum FLTrainingMode
 
 enum MsgType
 {
-    START_ROUND, START_ROUND_ACK, TRAIN_GLOBAL_MODEL, TRAINED_MODEL
+    START_ROUND, START_ROUND_ACK, TRAIN_GLOBAL_MODEL, TRAINED_MODEL, LEARNER_DEPLOYMENT, DATA_MSG
 };
 
 
 typedef struct  {
     inet::L3Address addr;
     int port;
-    std::string str() const { return addr.str() + ":" + std::to_string(port);}
+//    std::string str() const { return addr.str() + ":" + std::to_string(port);}
 }Endpoint;
 
 

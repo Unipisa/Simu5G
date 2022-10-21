@@ -10,7 +10,6 @@
 #include "apps/mec/FLaaS/packets/FLaasMsgs_m.h"
 #include "FLComputationEngineApp.h"
 
-
 #include "inet/common/packet/ChunkQueue.h"
 
 Define_Module(FLComputationEngineApp);
@@ -65,6 +64,10 @@ void FLComputationEngineApp::initialize(int stage)
     stopRoundMsg_ = new cMessage("stopRoundMsg");
 
     scheduleAfter(repeatTime_, startRoundMsg_);
+
+
+    roundLifeCycleSignal_ = registerSignal("roundLifeCycle");
+    learnerLifeCycleSignal_ = registerSignal("learnerLifeCycle");
 }
 
 
@@ -74,7 +77,6 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
     {
         // ask the controller for a list
         AvailableLearnersMap *avLearners = flControllerApp_->getLearnersEndpoint(minLearners_);
-        bool starRound = false;
         if(avLearners->size() < minLearners_)
         {
             EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - No enough learners available to star a new round. Trying again in " << repeatTime_ << " seconds" << endl;
@@ -86,25 +88,33 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
             // send start round a tutti i learners. but check if they are already connected to the engine
             inARound_ = true;
             auto it = avLearners->begin();
-            int id = it->first;
-            if(learnerId2socketId_.find(id) != learnerId2socketId_.end())
+            for(; it != avLearners->end() ; ++it)
             {
-                // send message if connected
-                sendStartRoundMessage(id);
-                // add the leraner to the current learner. this is also used to check if the received ACK comes from a choosen learners
-                LearnerStatus newLear = {id, 0., false};
-                currentLearners_[id] = newLear;
+
+                int id = it->first;
+                if(learnerId2socketId_.find(id) != learnerId2socketId_.end())
+                {
+                    // send message if connected
+                    sendStartRoundMessage(id);
+                    // add the leraner to the current learner. this is also used to check if the received ACK comes from a choosen learners
+                    LearnerStatus newLear = {id, 0., false};
+                    currentLearners_[id] = newLear;
+                }
+                else
+                {
+                    EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - Learner with id [" << id << "] not yet connected. Start msg will be sent after the connection" << endl;
+                    auto newSocket = addNewSocket();
+                    pendingSocketId2Learners_[newSocket->getSocketId()] = {id, roundId_};
+                    Endpoint ep = it->second.endpoint;
+                    connect(newSocket, ep.addr, ep.port);
+                }
             }
-            else
-            {
-                EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - Learner not yet connected. Start msg will be sent after the connection" << endl;
-                auto newSocket = addNewSocket();
-                pendingSocketId2Learners_[newSocket->getSocketId()] = {id, roundId_};
-                Endpoint ep = it->second.endpoint;
-                connect(newSocket, ep.addr, ep.port);
-            }
+
+
             EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - Stop round " << roundId_ << " in " << roundDuration_ << " seconds" << endl;
             scheduleAfter(roundDuration_, stopRoundMsg_);
+
+            emit(roundLifeCycleSignal_, roundId_);
 
         }
         delete avLearners;
@@ -132,6 +142,7 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
             scheduleAfter(aggregationTime, aggregationMsg_);
             EV << "FLComputationEngineApp::handleSelfMessage - stopRoundMsg - Start aggregating the global model. Finishing in " << aggregationTime << " seconds" << endl;
         }
+        emit(roundLifeCycleSignal_, roundId_);
         currentLearners_.clear();
         roundId_++;
         inARound_ = false;
@@ -185,6 +196,8 @@ void FLComputationEngineApp::sendStartRoundMessage(int learnerId)
     start->setLearnerId(learnerId);
     start->setRoundDuration(roundDuration_); // TODO put the remaining duration
     start->setChunkLength(inet::B(12));
+    start->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
     packet->insertAtBack(start);
     int socketId = learnerId2socketId_.at(learnerId);
     auto socket = sockets_.getSocketById(socketId);
@@ -202,11 +215,14 @@ void FLComputationEngineApp::sendModelToTrain(int learnerId)
     model->setTimeRemaining(roundDuration_); // TODO put the remaining duration
     model->setModelSize(modelDimension_);
     model->setChunkLength(inet::B(modelDimension_));
+    model->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
     packet->insertAtBack(model);
     int socketId = learnerId2socketId_.at(learnerId);
     auto socket = sockets_.getSocketById(socketId);
     socket->send(packet);
     EV << "FLComputationEngineApp::sendModelToTrain: model sent to learner with id " << learnerId<< endl;
+    emit(learnerLifeCycleSignal_, learnerId);
 }
 
 
@@ -272,7 +288,7 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
                 {
                     currentLearners_.erase(learnerId);
                     // peek a new learner from the the available ones and send start message to it
-                    std::set<int> currentLearners;
+//                    std::set<int> currentLearners;
     //                for(auto const& l: currentLearners_)
     //                {
     //                    currentLearners.insert(l.first);
@@ -293,7 +309,7 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
                     EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
                     currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
                     currentLearners_[learnerId].responded = trainedModel->getModelSize();
-
+                    emit(learnerLifeCycleSignal_, learnerId);
                 }
                 else
                 {
@@ -332,3 +348,6 @@ bool FLComputationEngineApp::allModelsRetrieved()
     }
     return true;
 }
+
+double FLComputationEngineApp::scheduleNextMsg(cMessage* msg) {return 0.;}
+

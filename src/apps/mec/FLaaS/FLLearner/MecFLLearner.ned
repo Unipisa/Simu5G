@@ -27,10 +27,10 @@ simple MecFLLearnerApp like IMECApp, IApp
         int packetSize = default(10);
         string interfaceTableModule = default("");
         
-        double trainingDuration @unit("s") = default(2s);
-        double localModelSize @unit("B") = default(70kB);
-        
-        
+//        volatile double trainingDuration @unit("s") = uniform(6s, 9s);
+		double trainingDuration @unit("s") = 4s;
+        volatile double localModelSize @unit("B") = uniform(70kB, 80kB);
+        string parentModule = default("MEC_HOST");
         
         int mecAppIndex;
         int mecAppId;
@@ -52,6 +52,9 @@ simple MecFLLearnerApp like IMECApp, IApp
 		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        
+        @signal[localModelTraining];
+        @statistic[localModelTraining](title="Local model training duration"; unit=""; source="localModelTraining"; record=vector; interpolationmode=none;);
 		
     gates:
 	  input mePlatformIn;

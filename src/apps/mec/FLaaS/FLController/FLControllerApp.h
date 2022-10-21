@@ -33,7 +33,7 @@ using namespace std;
 using namespace omnetpp;
 
 typedef std::map<int, AvailableLearner> AvailableLearnersMap;
-class MecAppInstanceInfo;
+struct MecAppInstanceInfo;
 
 
 class FLControllerApp : public MecServiceBase

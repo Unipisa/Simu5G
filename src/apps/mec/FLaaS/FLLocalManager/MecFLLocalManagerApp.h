@@ -11,12 +11,15 @@
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
-
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 #include "apps/mec/MecApps/MecAppBase.h"
+
 #include "apps/mec/FLaaS/FLaaSUtils.h"
+#include "apps/mec/FLaaS/packets/FLaasMsgs_m.h"
+
 
 typedef enum {REQ_PROCESS, REQ_CONTROLLER, REQ_TRAIN, IDLE} LMState;
+
 
 class MecFLLocalManagerApp : public MecAppBase
 {
@@ -53,6 +56,8 @@ class MecFLLocalManagerApp : public MecAppBase
 
         cModule* learnerApp_;
 
+        double arrivedBytes_;
+
 
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -64,16 +69,19 @@ class MecFLLocalManagerApp : public MecAppBase
         virtual void handleHttpMessage(int connId) override;
         virtual void handleServiceMessage(int connId) override;
         virtual void handleMp1Message(int connId) override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 //
 //        virtual void modifySubscription();
 //        virtual void sendSubscription();
 //        virtual void sendDeleteSubscription();
 
         virtual void handleSelfMessage(cMessage *msg) override {};
+        virtual void handleMessage(cMessage *msg) override;
+
 
         MecAppInstanceInfo* instantiateFLLearner();
-
+        // N.D MecAppInstanceInfo is used just for commodity, the app will be instantiated on the UE!
+        MecAppInstanceInfo* instantiateFLLearnerOnUe(inet::Ptr<LearnerDeploymentPacket> learnerDep);
 
 //        /* TCPSocket::CallbackInterface callback methods */
        virtual void established(int connId) override;

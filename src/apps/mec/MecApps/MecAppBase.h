@@ -42,7 +42,7 @@ class VirtualisationInfrastructureManager;
 class ProcessingTimeMessage;
 class ServiceRegistry;
 
-typedef struct
+typedef struct HttpMsgStatus
 {
     HttpBaseMessage *currentMessage = nullptr;
     std::string bufferedData;

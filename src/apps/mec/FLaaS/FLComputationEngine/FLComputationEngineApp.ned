@@ -38,9 +38,9 @@ simple FLComputationEngineApp like IMECApp, IApp
         int mp1Port = default(10021);
         
         
-        double roundDuration @unit("s") = default(20s);
-        double modelAggregationDuration @unit("s") = default(5s);
-        int minLearners = 1;
+        volatile double roundDuration @unit("s") = uniform(60s, 90s);
+        volatile double modelAggregationDuration @unit("s") = uniform(1s, 2s);
+        int minLearners = 2;
         int localModelTreshold = int(minLearners*0.75);
         int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, ONE_SHOT) = default(1);
         double modelDimension @unit("B") = default(240kB);
@@ -58,6 +58,14 @@ simple FLComputationEngineApp like IMECApp, IApp
 		int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
+        
+        // stats
+        @signal[roundLifeCycle];
+        @statistic[roundLifeCycle](title="Round LifeCycle"; unit=""; source="roundLifeCycle"; record=vector; interpolationmode=none;); 
+        @signal[learnerLifeCycle];
+        @statistic[learnerLifeCycle](title="Learner LifeCycle"; unit=""; source="learnerLifeCycle"; record=vector; interpolationmode=none;); 
+        
+        
 		
     gates:  
 	  input socketIn;

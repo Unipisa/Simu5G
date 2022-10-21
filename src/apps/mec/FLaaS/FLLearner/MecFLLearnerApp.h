@@ -39,6 +39,8 @@ class MecFLLearnerApp : public MecAppBase
 
     int size_;
 
+    simsignal_t localModelTrainingSignal_;
+
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
@@ -52,6 +54,8 @@ class MecFLLearnerApp : public MecAppBase
         virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
         virtual void handleMessage(omnetpp::cMessage *msg) override;
         virtual void handleSelfMessage(cMessage *msg) override;
+
+        virtual double scheduleNextMsg(cMessage* msg) override;
 
 
 //        virtual void modifySubscription();

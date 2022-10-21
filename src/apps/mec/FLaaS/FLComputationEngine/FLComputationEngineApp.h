@@ -80,6 +80,10 @@ class FLComputationEngineApp : public MecAppBase
     int size_;
     std::string subId;
 
+    simsignal_t roundLifeCycleSignal_;
+    simsignal_t learnerLifeCycleSignal_;
+
+
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage) override;
@@ -99,6 +103,8 @@ class FLComputationEngineApp : public MecAppBase
 //        virtual void modifySubscription();
 //        virtual void sendSubscription();
 //        virtual void sendDeleteSubscription();
+
+        virtual double scheduleNextMsg(cMessage* msg) override;
 
 
         virtual inet::TcpSocket* addNewSocket() override;
