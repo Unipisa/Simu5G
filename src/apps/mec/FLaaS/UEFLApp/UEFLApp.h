@@ -27,18 +27,14 @@
 
 using namespace omnetpp;
 
+enum  Deployment {ON_UE, ON_MEC_HOST};
+
 class UEFLApp: public cSimpleModule
 {
     //communication to device app and mec app
     inet::UdpSocket socket;
 
-    unsigned int sno_;
-    int requestPacketSize_;
-    double requestPeriod_;
-
-    simtime_t start_;
-    simtime_t end_;
-
+    Deployment deployment_;
 
     // DeviceApp info
     int localPort_;
@@ -51,20 +47,13 @@ class UEFLApp: public cSimpleModule
 
     std::string mecAppName;
 
-
     //scheduling
+    double dataPeriod_;
+    cMessage *sendDataMsg_;
+
     cMessage *selfStart_;
     cMessage *selfStop_;
     cMessage *sendRequest_;
-    cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
-
-
-    // signals for statistics
-    simsignal_t processingTime_;
-    simsignal_t serviceResponseTime_;
-    simsignal_t upLinkTime_;
-    simsignal_t downLinkTime_;
-    simsignal_t responseTime_;
 
   public:
     ~UEFLApp();
@@ -89,7 +78,7 @@ class UEFLApp: public cSimpleModule
     void handleAckStopMECRequestApp(cMessage* msg);
 
     // --- Functions to interact with the MECPlatooningApp --- //
-    void sendRequest();
+    void sendDataMsg();
     void recvResponse(cMessage* msg);
 
 };

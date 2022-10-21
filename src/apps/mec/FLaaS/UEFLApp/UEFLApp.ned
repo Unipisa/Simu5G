@@ -32,12 +32,19 @@ simple UEFLApp like IApp
         
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
         
-        //autoscheduling infos
-        double period @unit("s") = default(0.2s);
+        // send data to learner id deployed on mec host
+        double dataPeriod @unit("s") = default(1s);
+        volatile double dataDimension @unit("B") = uniform(60B, 90B);
+        
+        
         double startTime @unit("s") = default(0s); 
         double stopTime @unit("s") = default(120s);
                 
         string mecAppName = default("MecFLLocalManagerApp");
+        
+        int learnerDeployment @enum(UE, MEC_HOST) = default(0);
+        string learnerModuleName = "simu5g.apps.mec.FLaaS.FLLearner.MecFLLearnerApp";
+        int learnerPort = default(5000);
         
         string interfaceTableModule;         
              

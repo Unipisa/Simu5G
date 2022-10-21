@@ -14,12 +14,14 @@
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 
-#include "apps/mec/MecRequestResponseApp/packets/RequestResponsePacket_m.h"
-
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
 #include "inet/networklayer/common/L3AddressTag_m.h"
 #include "inet/transportlayer/common/L4PortTag_m.h"
+
+#include "apps/mec/FLaaS/packets/FLaasMsgs_m.h"
+#include "apps/mec/FLaaS/FLaaSUtils.h"
+
 
 #include <fstream>
 
@@ -32,16 +34,19 @@ Define_Module(UEFLApp);
 
 UEFLApp::UEFLApp()
 {
+    sendDataMsg_ = nullptr;
     selfStart_ = nullptr;
     selfStop_ = nullptr;
+
+
 }
 
 UEFLApp::~UEFLApp()
 {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
-    cancelAndDelete(unBlockingMsg_);
-    cancelAndDelete(sendRequest_);
+    cancelAndDelete(sendDataMsg_);
+
 }
 
 void UEFLApp::initialize(int stage)
@@ -51,13 +56,6 @@ void UEFLApp::initialize(int stage)
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
-
-
-    sno_ = 0;
-
-    //retrieve parameters
-    requestPacketSize_ = par("requestPacketSize");
-    requestPeriod_ = par("period");
 
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
@@ -78,8 +76,8 @@ void UEFLApp::initialize(int stage)
     //initializing the auto-scheduling messages
     selfStart_ = new cMessage("selfStart");
     selfStop_ = new cMessage("selfStop");
-    sendRequest_ = new cMessage("sendRequest");
-    unBlockingMsg_ = new cMessage("unBlockingMsg");
+    sendDataMsg_ = new cMessage("sendDataMsg");
+    dataPeriod_ = par("dataPeriod");
 
     //starting UEFLApp
     simtime_t startTime = par("startTime");
@@ -89,12 +87,8 @@ void UEFLApp::initialize(int stage)
     //testing
     EV << "UEFLApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
 
-    // register signals for stats
-    processingTime_ = registerSignal("processingTime");
-    serviceResponseTime_ = registerSignal("serviceResponseTime");
-    upLinkTime_ = registerSignal("upLinkTime");
-    downLinkTime_ = registerSignal("downLinkTime");
-    responseTime_ = registerSignal("responseTime");
+    int dep = par("learnerDeployment");
+    deployment_ = (dep == 0)? ON_UE : ON_MEC_HOST;
 
 
 }
@@ -109,8 +103,8 @@ void UEFLApp::handleMessage(cMessage *msg)
             sendStartMECRequestApp();
         else if(!strcmp(msg->getName(), "selfStop"))
             sendStopApp();
-        else if(!strcmp(msg->getName(), "sendRequest") || !strcmp(msg->getName(), "unBlockingMsg"))
-            sendRequest();
+        else if(!strcmp(msg->getName(), "sendDataMsg"))
+            sendDataMsg();
         else
             throw cRuntimeError("UEFLApp::handleMessage - \tWARNING: Unrecognized self message");
     }
@@ -141,16 +135,7 @@ void UEFLApp::handleMessage(cMessage *msg)
         // From MEC application
         else
         {
-            auto mePkt = packet->peekAtFront<RequestResponseAppPacket>();
-            if (mePkt == 0)
-                throw cRuntimeError("UEFLApp::handleMessage - \tFATAL! Error when casting to RequestAppPacket");
 
-            if(mePkt->getType() == MECAPP_RESPONSE)
-                recvResponse(msg);
-            else if(mePkt->getType() == UEAPP_ACK_STOP)
-                handleStopApp(msg);
-            else
-                throw cRuntimeError("UEFLApp::handleMessage - \tFATAL! Error, RequestAppPacket type %d not recognized", mePkt->getType());
         }
     }
 }
@@ -223,8 +208,32 @@ void UEFLApp::handleAckStartMECRequestApp(cMessage* msg)
             scheduleAt(simTime() + stopTime, selfStop_);
             EV << "UEFLApp::handleAckStartMECRequestApp - Starting sendStopMECRequestApp() in " << stopTime << " seconds " << endl;
         }
-        //send the first reuqest to the MEC app
-//        sendRequest();
+        // send where to deploy the learner
+        inet::Packet* pkt = new inet::Packet("LearnerDeploymentPacket");
+        auto learnerMsg = inet::makeShared<LearnerDeploymentPacket>();
+        if(deployment_ == ON_UE)
+        {
+            learnerMsg->setDeploymentPosition(ON_UE);
+            learnerMsg->setUeModuleName(getParentModule()->getFullPath().c_str());
+            learnerMsg->setIpAddress(getParentModule()->getFullName());
+            learnerMsg->setLearnerModuleName(par("learnerModuleName"));
+            learnerMsg->setPort(par("learnerPort"));
+            learnerMsg->setChunkLength(inet::B(20));
+        }
+        else
+        {
+            learnerMsg->setDeploymentPosition(ON_MEC_HOST);
+            learnerMsg->setChunkLength(inet::B(4));
+
+            //start sending data for the training
+            scheduleAfter(dataPeriod_, sendDataMsg_);
+        }
+        learnerMsg->setType(LEARNER_DEPLOYMENT);
+        learnerMsg->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+        pkt->insertAtBack(learnerMsg);
+        socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
+        EV << "UEFLApp::handleAckStartMECRequestApp - Sent deployment message to LM local manger" << endl;
     }
     else
     {
@@ -255,82 +264,38 @@ void UEFLApp::handleAckStopMECRequestApp(cMessage* msg)
 }
 
 
-void UEFLApp::sendRequest()
+void UEFLApp::sendDataMsg()
 {
-    EV << "UEFLApp::sendRequest()" << endl;
-    inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
-    auto req = inet::makeShared<RequestResponseAppPacket>();
-    req->setType(UEAPP_REQUEST);
-    req->setSno(sno_++);
-    req->setRequestSentTimestamp(simTime());
-    req->setChunkLength(inet::B(requestPacketSize_));
+    EV << "UEFLApp::sendDataMsg()" << endl;
+    inet::Packet* pkt = new inet::Packet("DataForTrainingPacket");
+    auto req = inet::makeShared<DataForTrainingPacket>();
+    req->setType(DATA_MSG);
+    double dimension = par("dataDimension");
+    req->setDimension(dimension);
+    req->setChunkLength(inet::B(dimension));
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(req);
-
-    start_ = simTime();
-
     socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
+    scheduleAfter(dataPeriod_, sendDataMsg_);
 
-//    if(!unBlockingMsg_->isScheduled())
-       /// scheduleAfter(1, unBlockingMsg_);
 }
 
 
 void UEFLApp::handleStopApp(cMessage* msg)
 {
-    EV << "UEFLApp::handleStopApp" << endl;
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
-    sendStopMECRequestApp();
 }
 
 void UEFLApp::sendStopApp()
 {
-    inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
-    auto req = inet::makeShared<RequestResponseAppPacket>();
-    req->setType(UEAPP_STOP );
-    req->setRequestSentTimestamp(simTime());
-    req->setChunkLength(inet::B(requestPacketSize_));
-    req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
-    pkt->insertAtBack(req);
 
-//    start_ = simTime();
-
-    socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
 
 }
 
 void UEFLApp::recvResponse(cMessage* msg)
 {
     EV << "UEFLApp::recvResponse" << endl;
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
-    auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
-    simtime_t upLinkDelay = res->getRequestArrivedTimestamp() - res->getRequestSentTimestamp();
-    simtime_t downLinkDelay = simTime()- res->getResponseSentTimestamp();
-    simtime_t respTime = simTime()- res->getRequestSentTimestamp();
-
-    EV << "UEFLApp::recvResponse - message with sno [" << res->getSno() << "] " <<
-            "upLinkDelay [" << upLinkDelay << "ms]\t" <<
-            "downLinkDelay [" << downLinkDelay << "ms]\t" <<
-            "processingTime [" << res->getProcessingTime() << "ms]\t" <<
-            "serviceResponseTime [" << res->getServiceResponseTime() << "ms]\t" <<
-            "responseTime [" << respTime << "ms]" << endl;
-
-    //emit stats
-    emit(upLinkTime_, upLinkDelay);
-    emit(downLinkTime_, downLinkDelay);
-    emit(processingTime_, res->getProcessingTime());
-    emit(serviceResponseTime_, res->getServiceResponseTime());
-    emit(responseTime_, respTime);
-
-    delete packet;
-
-    if(unBlockingMsg_->isScheduled())
-        cancelEvent(unBlockingMsg_);
-    if(!sendRequest_->isScheduled())
-        scheduleAt(simTime() + requestPeriod_, sendRequest_);
 }
 
 
