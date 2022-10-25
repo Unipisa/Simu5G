@@ -53,8 +53,15 @@ simple MecFLLearnerApp like IMECApp, IApp
         int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
         
-        @signal[localModelTraining];
-        @statistic[localModelTraining](title="Local model training duration"; unit=""; source="localModelTraining"; record=vector; interpolationmode=none;);
+        @signal[flaas_startRoundSignal];
+        @statistic[flaas_startRoundSignal](title="startRoundSignal"; unit=""; source="flaas_startRoundSignal"; record=vector; interpolationmode=none;);
+        @signal[flaas_recvGlobalModelSignal];
+        @statistic[flaas_recvGlobalModelSignal](title="flaas_recvGlobalModelSignal"; unit=""; source="flaas_recvGlobalModelSignal"; record=vector; interpolationmode=none;);
+        @signal[flaas_sendLocalModelSignal];
+        @statistic[flaas_sendLocalModelSignal](title="flaas_sendLocalModelSignal"; unit=""; source="flaas_sendLocalModelSignal"; record=vector; interpolationmode=none;);
+        
+
+        
 		
     gates:
 	  input mePlatformIn;

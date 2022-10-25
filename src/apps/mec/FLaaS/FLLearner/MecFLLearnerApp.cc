@@ -63,7 +63,9 @@ void MecFLLearnerApp::initialize(int stage)
     listeningSocket_.bind(localUePort);
     listeningSocket_.listen();
 
-    localModelTrainingSignal_ = registerSignal("localModelTraining");
+    flaas_startRoundSignal_ = registerSignal("flaas_startRoundSignal");
+    flaas_recvGlobalModelSignal_ = registerSignal("flaas_recvGlobalModelSignal");
+    flaas_sendLocalModelSignal_ = registerSignal("flaas_sendLocalModelSignal");
 }
 
 
@@ -173,6 +175,8 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
             {
                 cancelEvent(trainingDurationMsg_);
             }
+            emit(flaas_startRoundSignal_, learnerId);
+
 
         }
         else if(pkt->getType() == TRAIN_GLOBAL_MODEL)
@@ -188,7 +192,7 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
             }
             // scheudle training
             scheduleAfter(trainingDuration, trainingDurationMsg_);
-            emit(localModelTrainingSignal_, roundId);
+            emit(flaas_recvGlobalModelSignal_, trainedModel->getLearnerId());
             EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL round id " << roundId << endl;
 
         }
@@ -210,7 +214,7 @@ void MecFLLearnerApp::sendTrainedLocalModel()
     pkt->insertAtBack(model);
     flComputationEnginesocket_->send(pkt);
 
-    emit(localModelTrainingSignal_, roundId_);
+    emit(flaas_sendLocalModelSignal_, model->getLearnerId());
 }
 bool MecFLLearnerApp::recvGlobalModelToTrain()
 {

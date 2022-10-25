@@ -39,7 +39,10 @@ class MecFLLearnerApp : public MecAppBase
 
     int size_;
 
-    simsignal_t localModelTrainingSignal_;
+    simsignal_t flaas_startRoundSignal_;
+    simsignal_t flaas_recvGlobalModelSignal_;
+    simsignal_t flaas_sendLocalModelSignal_;
+
 
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

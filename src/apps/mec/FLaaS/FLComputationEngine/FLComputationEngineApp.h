@@ -81,8 +81,10 @@ class FLComputationEngineApp : public MecAppBase
     std::string subId;
 
     simsignal_t roundLifeCycleSignal_;
-    simsignal_t learnerLifeCycleSignal_;
 
+    simsignal_t flaas_startRoundSignal_;
+    simsignal_t flaas_sentGlobalModelSignal_;
+    simsignal_t flaas_recvLocalModelSignal_;
 
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

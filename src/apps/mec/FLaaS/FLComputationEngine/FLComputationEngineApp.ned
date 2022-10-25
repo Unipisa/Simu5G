@@ -25,7 +25,8 @@ simple FLComputationEngineApp like IMECApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");
-  			
+  		@dynamic(true);
+  		
   		// IMECApp parameters
         int packetSize = default(10);
         string interfaceTableModule = default("");
@@ -37,12 +38,11 @@ simple FLComputationEngineApp like IMECApp, IApp
         string mp1Address = default("");
         int mp1Port = default(10021);
         
-        
         volatile double roundDuration @unit("s") = uniform(60s, 90s);
         volatile double modelAggregationDuration @unit("s") = uniform(1s, 2s);
-        int minLearners = 2;
+        int minLearners;// = 2;
         int localModelTreshold = int(minLearners*0.75);
-        int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, ONE_SHOT) = default(1);
+        int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, BOTH, ONE_SHOT) = default(3);
         double modelDimension @unit("B") = default(240kB);
         string controllerModuleName = "";
         double repeatTime @unit("s") = default(1s); 
@@ -60,11 +60,16 @@ simple FLComputationEngineApp like IMECApp, IApp
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
         
         // stats
-        @signal[roundLifeCycle];
-        @statistic[roundLifeCycle](title="Round LifeCycle"; unit=""; source="roundLifeCycle"; record=vector; interpolationmode=none;); 
-        @signal[learnerLifeCycle];
-        @statistic[learnerLifeCycle](title="Learner LifeCycle"; unit=""; source="learnerLifeCycle"; record=vector; interpolationmode=none;); 
+        @signal[flaas_roundLifeCycle];
+        @statistic[flaas_roundLifeCycle](title="Round LifeCycle"; unit=""; source="flaas_roundLifeCycle"; record=vector; interpolationmode=none;); 
         
+		@signal[flaas_startRoundSignal];
+        @statistic[flaas_startRoundSignal](title="startRoundSignal"; unit=""; source="flaas_startRoundSignal"; record=vector; interpolationmode=none;);
+        @signal[flaas_sentGlobalModelSignal];
+        @statistic[flaas_sentGlobalModelSignal](title="flaas_sentGlobalModelSignal"; unit=""; source="flaas_sentGlobalModelSignal"; record=vector; interpolationmode=none;);
+        @signal[flaas_recvLocalModelSignal];
+        @statistic[flaas_recvLocalModelSignal](title="flaas_recvLocalModelSignal"; unit=""; source="flaas_recvLocalModelSignal"; record=vector; interpolationmode=none;);
+		
         
 		
     gates:  

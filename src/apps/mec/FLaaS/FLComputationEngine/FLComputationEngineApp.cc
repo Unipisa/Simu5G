@@ -66,9 +66,10 @@ void FLComputationEngineApp::initialize(int stage)
     scheduleAfter(repeatTime_, startRoundMsg_);
 
 
-    roundLifeCycleSignal_ = registerSignal("roundLifeCycle");
-    learnerLifeCycleSignal_ = registerSignal("learnerLifeCycle");
-}
+    roundLifeCycleSignal_ = registerSignal("flaas_roundLifeCycle");
+    flaas_startRoundSignal_ = registerSignal("flaas_startRoundSignal");
+    flaas_sentGlobalModelSignal_ = registerSignal("flaas_sentGlobalModelSignal");
+    flaas_recvLocalModelSignal_ = registerSignal("flaas_recvLocalModelSignal");}
 
 
 void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
@@ -202,6 +203,8 @@ void FLComputationEngineApp::sendStartRoundMessage(int learnerId)
     int socketId = learnerId2socketId_.at(learnerId);
     auto socket = sockets_.getSocketById(socketId);
     socket->send(packet);
+    emit(flaas_startRoundSignal_, learnerId);
+
     EV << "FLComputationEngineApp::sendStartRoundMessage: sent start round message to learner with id " << learnerId<< endl;
 }
 
@@ -222,7 +225,7 @@ void FLComputationEngineApp::sendModelToTrain(int learnerId)
     auto socket = sockets_.getSocketById(socketId);
     socket->send(packet);
     EV << "FLComputationEngineApp::sendModelToTrain: model sent to learner with id " << learnerId<< endl;
-    emit(learnerLifeCycleSignal_, learnerId);
+    emit(flaas_sentGlobalModelSignal_, learnerId);
 }
 
 
@@ -309,7 +312,7 @@ void FLComputationEngineApp::socketDataArrived(inet::TcpSocket *socket, inet::Pa
                     EV << "FLComputationEngineApp::socketDataArrived - TRAINED_MODEL - Learner with id "<< learnerId << " returned its localModel of " << trainedModel->getModelSize() << "B" << endl;
                     currentLearners_[learnerId].modelSize = trainedModel->getModelSize();
                     currentLearners_[learnerId].responded = trainedModel->getModelSize();
-                    emit(learnerLifeCycleSignal_, learnerId);
+                    emit(flaas_recvLocalModelSignal_, learnerId);
                 }
                 else
                 {
