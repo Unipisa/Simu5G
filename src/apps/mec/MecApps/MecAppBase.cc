@@ -52,7 +52,8 @@ MecAppBase::~MecAppBase()
 //    {
 //
 //       TcpSocket* tcpSock = (TcpSocket*)sock.second;
-//       // removeSocket(tcpSock);
+////       HttpMessageStatus* msgStatus = (HttpMessageStatus *)tcpSock->getUserData();
+//        removeSocket(tcpSock);
 //    }
     // it calls delete, too
     sockets_.deleteSockets();
@@ -309,19 +310,25 @@ TcpSocket* MecAppBase::addNewSocket()
 void MecAppBase::removeSocket(inet::TcpSocket* tcpSock)
 {
     HttpMessageStatus* msgStatus = (HttpMessageStatus *) tcpSock->getUserData();
-    std::cout << "Deleting httpMessages in socket with sockId " << tcpSock->getSocketId() << std::endl;
-    while(!msgStatus->httpMessageQueue.isEmpty())
+//    std::cout << "Deleting httpMessages in socket with sockId " << tcpSock->getSocketId() << std::endl;
+    if(msgStatus != nullptr)
     {
-        std::cout << "Deleting httpMessages message" << std::endl;
-        delete msgStatus->httpMessageQueue.pop();
+//        while(!msgStatus->httpMessageQueue.isEmpty())
+//        {
+//            std::cout << "Deleting httpMessages message" << std::endl;
+//            delete msgStatus->httpMessageQueue.pop();
+//        }
+//        if(msgStatus->currentMessage != nullptr )
+//            delete msgStatus->currentMessage;
+//        if(msgStatus->processMsgTimer != nullptr)
+//        {
+//            std::cout << "proc mes" << msgStatus->processMsgTimer;
+//            delete msgStatus->processMsgTimer;
+//            cancelAndDelete(msgStatus->processMsgTimer);
+//        }
+//        delete msgStatus;
+//        delete sockets_.removeSocket(tcpSock);
     }
-    if(msgStatus->currentMessage != nullptr )
-        delete msgStatus->currentMessage;
-    if(msgStatus->processMsgTimer != nullptr)
-    {
-        cancelAndDelete(msgStatus->processMsgTimer);
-    }
-    delete sockets_.removeSocket(tcpSock);
 }
 
 void MecAppBase::finish()

@@ -127,7 +127,6 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         omnetpp::simsignal_t requestQueueSizeSignal_;
         omnetpp::simsignal_t responseTimeSignal_;
 
-
         /*
          * This method is called for every request in the requests_ queue.
          * It check if the receiver is still connected and in case manages the request

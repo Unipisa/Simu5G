@@ -75,6 +75,10 @@ void ServiceRegistry::initialize(int stage)
     subscriptions_.clear();
 
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
+
+    requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+    responseTimeSignal_ = registerSignal("responseTime");
+
 }
 
 
