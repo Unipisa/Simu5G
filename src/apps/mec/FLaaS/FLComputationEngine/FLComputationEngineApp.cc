@@ -30,7 +30,6 @@ FLComputationEngineApp::FLComputationEngineApp()
 
 FLComputationEngineApp::~FLComputationEngineApp()
 {
-    cancelAndDelete(aggregationMsg_);
     cancelAndDelete(stopRoundMsg_);
     cancelAndDelete(startRoundMsg_);
 }
@@ -55,6 +54,7 @@ void FLComputationEngineApp::initialize(int stage)
     localModelTreshold_ = par("localModelTreshold");
     int tm =  par("trainingMode");
     trainingMode_ = FLTrainingMode(tm);
+    EV << "dd" << trainingMode_ << endl;
     modelDimension_ = par("modelDimension");
     minLearners_ = par("minLearners");
     repeatTime_ = par("repeatTime").doubleValue();
@@ -64,7 +64,6 @@ void FLComputationEngineApp::initialize(int stage)
     stopRoundMsg_ = new cMessage("stopRoundMsg");
 
     scheduleAfter(repeatTime_, startRoundMsg_);
-
 
     roundLifeCycleSignal_ = registerSignal("flaas_roundLifeCycle");
     flaas_startRoundSignal_ = registerSignal("flaas_startRoundSignal");
@@ -80,7 +79,7 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
         AvailableLearnersMap *avLearners = flControllerApp_->getLearnersEndpoint(minLearners_);
         if(avLearners->size() < minLearners_)
         {
-            EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - No enough learners available to star a new round. Trying again in " << repeatTime_ << " seconds" << endl;
+            EV << "FLComputationEngineApp::handleSelfMessage - startRoundMsg - No enough learners available to star a new round. Requested: " <<minLearners_ << " selected: " <<avLearners->size() << ". Trying again in " << repeatTime_ << " seconds" << endl;
             scheduleAfter(repeatTime_, startRoundMsg_);
             return;
         }
@@ -151,8 +150,6 @@ void FLComputationEngineApp::handleSelfMessage(cMessage *msg)
     else if(msg->isName("aggregationMsg"))
     {
         delete msg;
-        double accuracy = uniform(0,1);
-        EV << "FLComputationEngineApp::handleSelfMessage - aggregationMsg - Aggregation of the global model completed. The accuracy is " << accuracy << "%" << endl;
         // TODO do something
         // start a new round
         EV << "FLComputationEngineApp::handleSelfMessage - aggregationMsg - Starting new round with id " << roundId_ <<" in " << repeatTime_ << "s" << endl;

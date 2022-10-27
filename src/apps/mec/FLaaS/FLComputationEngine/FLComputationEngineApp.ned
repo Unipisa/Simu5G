@@ -38,8 +38,11 @@ simple FLComputationEngineApp like IMECApp, IApp
         string mp1Address = default("");
         int mp1Port = default(10021);
         
-        volatile double roundDuration @unit("s") = uniform(60s, 90s);
-        volatile double modelAggregationDuration @unit("s") = uniform(1s, 2s);
+        volatile double roundDuration @unit("s") = default(uniform(60s, 90s, 3));
+        volatile double modelAggregationDuration @unit("s") = default(uniform(1s, 2s, 3));
+//        double roundDuration @unit("s") = uniform(60s, 90s);
+//        double modelAggregationDuration @unit("s") = uniform(1s, 2s);
+
         int minLearners;// = 2;
         int localModelTreshold = int(minLearners*0.75);
         int trainingMode @enum(SYNCHRONOUS, ASYNCHRONOUS, BOTH, ONE_SHOT) = default(3);

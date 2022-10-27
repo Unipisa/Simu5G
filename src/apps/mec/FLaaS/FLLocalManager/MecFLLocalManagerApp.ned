@@ -30,8 +30,8 @@ simple MecFLLocalManagerApp like IMECApp, IApp
 		string fLServiceName = "QoE_estimation";
 		string FLLearner = "simu5g.apps.mec.FLaaS.FLLearner.MecFLLearnerApp";
 		
-		bool hasLearner = default(true);
-		bool onMecHost = default(true);
+//		bool hasLearner = default(true);
+//		bool onMecHost = default(true);
 	
         
         int mecAppIndex;

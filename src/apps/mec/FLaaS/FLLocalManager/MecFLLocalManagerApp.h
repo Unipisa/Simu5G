@@ -88,7 +88,7 @@ class MecFLLocalManagerApp : public MecAppBase
 
     public:
        MecFLLocalManagerApp();
-       virtual ~MecFLLocalManagerApp() {};
+       virtual ~MecFLLocalManagerApp();
 
     };
 

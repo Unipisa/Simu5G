@@ -34,6 +34,8 @@ class MecFLLearnerApp : public MecAppBase
 
 
     double trainingDuration;
+    double shortPeriodProbality;
+
     cMessage* trainingDurationMsg_;
     cMessage* endRoundMsg_;
 

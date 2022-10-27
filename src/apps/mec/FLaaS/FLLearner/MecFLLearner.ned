@@ -28,9 +28,12 @@ simple MecFLLearnerApp like IMECApp, IApp
         string interfaceTableModule = default("");
         
 //        volatile double trainingDuration @unit("s") = uniform(6s, 9s);
-		double trainingDuration @unit("s") = 4s;
-        volatile double localModelSize @unit("B") = uniform(70kB, 80kB);
+		volatile double trainingDuration @unit("s") = default(uniform(50s, 60s, 3));
+        volatile double localModelSize @unit("B") = uniform(70kB, 80kB, 3);
         string parentModule = default("MEC_HOST");
+        int shortTraininagProbabilty = default(bernoulli(0.90));
+        volatile double shortTrainingDuration @unit("s") = default(exponential(50s, 3));
+        volatile double longTrainingDuration @unit("s") = default(exponential(80s, 3));
         
         int mecAppIndex;
         int mecAppId;

@@ -25,6 +25,7 @@ MecFLLearnerApp::~MecFLLearnerApp()
 {
     cancelAndDelete(trainingDurationMsg_);
     cancelAndDelete(endRoundMsg_);
+
 }
 
 void MecFLLearnerApp::initialize(int stage)
@@ -51,7 +52,7 @@ void MecFLLearnerApp::initialize(int stage)
     //testing
     EV << "MecFLLearnerApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
 
-    trainingDuration = par("trainingDuration");
+
 
 
     trainingDurationMsg_ = new cMessage("trainingDurationMsg");
@@ -191,9 +192,15 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
 
             }
             // scheudle training
+            trainingDuration = par("trainingDuration");
+            int bernulli = par("shortTraininagProbabilty");
+            if(bernulli == 1)
+                trainingDuration = par("shortTrainingDuration");
+            else
+                trainingDuration = par("longTrainingDuration");
             scheduleAfter(trainingDuration, trainingDurationMsg_);
             emit(flaas_recvGlobalModelSignal_, trainedModel->getLearnerId());
-            EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL round id " << roundId << endl;
+            EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL round id " << roundId << " will end in " << trainingDuration<< " seconds" << endl;
 
         }
     }

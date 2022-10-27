@@ -21,6 +21,25 @@ MecFLLocalManagerApp::MecFLLocalManagerApp()
     learnerApp_ = nullptr;
 }
 
+
+MecFLLocalManagerApp::~MecFLLocalManagerApp()
+{
+    HttpMessageStatus* msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
+    cancelAndDelete((cMessage*)msgStatus->processMsgTimer);
+    delete msgStatus;
+    HttpMessageStatus* msgStatus1 = (HttpMessageStatus *)flControllerSocket_->getUserData();
+        cancelAndDelete((cMessage*)msgStatus1->processMsgTimer);
+        delete msgStatus1;
+
+        HttpMessageStatus* msgStatus2 = (HttpMessageStatus *)serviceSocket_->getUserData();
+            cancelAndDelete((cMessage*)msgStatus2->processMsgTimer);
+            delete msgStatus2;
+
+
+
+}
+
+
 void MecFLLocalManagerApp::initialize(int stage)
 {
     MecAppBase::initialize(stage);
@@ -30,32 +49,6 @@ void MecFLLocalManagerApp::initialize(int stage)
         return;
 
     EV << "MecFLLocalManagerApp::initialize - MEC application " << getClassName() << " with mecAppId[" << mecAppId << "] has started!" << endl;
-
-//    learner_ = par("hasLearner").boolValue();
-//
-//    if(learner_)
-//    {
-//        //instantiate learner App
-//        // save it end point necessary for the FL comp engine
-//
-//        //check where instantiate it
-//        if(par("onMecHost").boolValue())
-//        {
-//            MecAppInstanceInfo* appInfo = instantiateFLLearner();
-//            if(!appInfo->status)
-//            {
-//                throw omnetpp::cRuntimeError("MecFLLocalManagerApp::initialize - cannot instantiate LM learner!");
-//            }
-//            else
-//            {
-//                EV << "MecFLLocalManagerApp::initialize - ML Learner instantiated!!" << endl;
-//                flLearnerEndpoint_.addr = appInfo->endPoint.addr;
-//                flLearnerEndpoint_.port = appInfo->endPoint.port;
-//                learnerApp_ = appInfo->module;
-//            }
-//
-//        }
-//    }
 
     fLServiceName_ = par("fLServiceName").stdstringValue();
 
