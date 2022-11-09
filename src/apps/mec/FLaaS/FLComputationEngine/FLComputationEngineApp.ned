@@ -73,6 +73,19 @@ simple FLComputationEngineApp like IMECApp, IApp
         @signal[flaas_recvLocalModelSignal];
         @statistic[flaas_recvLocalModelSignal](title="flaas_recvLocalModelSignal"; unit=""; source="flaas_recvLocalModelSignal"; record=vector; interpolationmode=none;);
 		
+		@signal[flaas_ulTimeSignal];
+        @statistic[flaas_ulTimeSignal](title="flaas_ulTimeSignal"; unit=""; source="flaas_ulTimeSignal"; record=mean,vector; interpolationmode=none;);
+		@signal[flaas_dlTimeSignal];
+        @statistic[flaas_dlTimeSignal](title="flaas_dlTimeSignal"; unit=""; source="flaas_dlTimeSignal"; record=mean,vector; interpolationmode=none;);
+		@signal[flaas_trainingTimeSignal];
+        @statistic[flaas_trainingTimeSignal](title="flaas_trainingTimeSignal"; unit=""; source="flaas_trainingTimeSignal"; record=mean,vector; interpolationmode=none;);
+		
+		
+		@signal[flaas_trainingDurationSignal];
+        @statistic[flaas_trainingDurationSignal](title="flaas_trainingDurationSignal"; unit=""; source="flaas_trainingDurationSignal"; record=mean,vector; interpolationmode=none;);
+		@signal[flaas_trainingDurationSignal_connection];
+        @statistic[flaas_trainingDurationSignal_connection](title="flaas_trainingDurationSignal_connection"; unit=""; source="flaas_trainingDurationSignal_connection"; record=mean,vector; interpolationmode=none;);
+		
         
 		
     gates:  

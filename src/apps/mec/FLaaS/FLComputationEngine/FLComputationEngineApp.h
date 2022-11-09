@@ -33,6 +33,7 @@ typedef struct
     int id;
     double modelSize;
     bool responded;
+    simtime_t modelSent;
 } LearnerStatus;
 
 
@@ -77,6 +78,8 @@ class FLComputationEngineApp : public MecAppBase
     HttpBaseMessage* mp1HttpMessage;
     HttpBaseMessage* serviceHttpMessage;
 
+    simtime_t roundStart_;
+
     int size_;
     std::string subId;
 
@@ -85,6 +88,14 @@ class FLComputationEngineApp : public MecAppBase
     simsignal_t flaas_startRoundSignal_;
     simsignal_t flaas_sentGlobalModelSignal_;
     simsignal_t flaas_recvLocalModelSignal_;
+
+    simsignal_t flaas_ulTimeSignal;
+    simsignal_t flaas_dlTimeSignal;
+    simsignal_t flaas_trainingTimeSignal;
+    simsignal_t flaas_trainingDurationSignal;
+    simsignal_t flaas_trainingDurationConnectionSignal;
+
+
 
     protected:
         virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

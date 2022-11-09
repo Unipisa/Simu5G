@@ -19,6 +19,10 @@ class FLaasPacket extends inet::FieldsChunk {
     int type;
     int roundId;
     int learnerId;
+    
+    simtime_t ulTime;
+    simtime_t dlTime;
+    simtime_t localTraining;
 }
 
 class FLaasStartRoundPacket extends FLaasPacket {

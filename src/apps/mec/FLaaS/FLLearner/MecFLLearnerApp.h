@@ -41,6 +41,8 @@ class MecFLLearnerApp : public MecAppBase
 
     int size_;
 
+    simtime_t modelArriving_;
+
     simsignal_t flaas_startRoundSignal_;
     simsignal_t flaas_recvGlobalModelSignal_;
     simsignal_t flaas_sendLocalModelSignal_;

@@ -25,7 +25,6 @@ MecFLLearnerApp::~MecFLLearnerApp()
 {
     cancelAndDelete(trainingDurationMsg_);
     cancelAndDelete(endRoundMsg_);
-
 }
 
 void MecFLLearnerApp::initialize(int stage)
@@ -51,9 +50,6 @@ void MecFLLearnerApp::initialize(int stage)
 
     //testing
     EV << "MecFLLearnerApp::initialize - Mec application "<< getClassName() << " with mecAppId["<< mecAppId << "] has started!" << endl;
-
-
-
 
     trainingDurationMsg_ = new cMessage("trainingDurationMsg");
     endRoundMsg_ = new cMessage("endRoundMsg");
@@ -169,7 +165,7 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
 
             // schedule timeout if I am slow
             double endRound = startRoundPkt->getRoundDuration();
-            scheduleAfter(endRound, endRoundMsg_);
+           // scheduleAfter(endRound, endRoundMsg_);
 
             //stop current training
             if(trainingDurationMsg_->isScheduled())
@@ -199,6 +195,8 @@ void MecFLLearnerApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *m
             else
                 trainingDuration = par("longTrainingDuration");
             scheduleAfter(trainingDuration, trainingDurationMsg_);
+
+            modelArriving_ = simTime() - trainedModel->getDlTime();
             emit(flaas_recvGlobalModelSignal_, trainedModel->getLearnerId());
             EV << "MecFLLearnerApp::socketDataArrived - TRAIN_GLOBAL_MODEL round id " << roundId << " will end in " << trainingDuration<< " seconds" << endl;
 
@@ -217,6 +215,10 @@ void MecFLLearnerApp::sendTrainedLocalModel()
     model->setLearnerId(getId());
     model->setChunkLength(inet::B(localModelSize_));
     model->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
+
+    model->setDlTime(modelArriving_);
+    model->setUlTime(simTime());
+    model->setLocalTraining(trainingDuration);
 
     pkt->insertAtBack(model);
     flComputationEnginesocket_->send(pkt);

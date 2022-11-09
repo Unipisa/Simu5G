@@ -34,7 +34,7 @@ simple UEFLApp like IApp
         
         // send data to learner id deployed on mec host
         double dataPeriod @unit("s") = default(1s);
-        volatile double dataDimension @unit("B") = uniform(60B, 90B);
+        volatile double dataDimension @unit("B") = uniform(104B, 120B);
         
         
         double startTime @unit("s") = default(0s); 

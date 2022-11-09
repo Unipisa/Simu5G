@@ -436,7 +436,7 @@ MecAppInstanceInfo* MecFLLocalManagerApp::instantiateFLLearner()
     //get the name of the app
     std::string appName = contName.substr(contName.rfind(".")+1, contName.length());
 
-    createAppMsg->setUeAppID(par("localUePort")); // TODO choose id
+    createAppMsg->setUeAppID(getId()); // TODO choose id
     createAppMsg->setMEModuleName(appName.c_str());
     createAppMsg->setMEModuleType(contName.c_str()); //path
 
