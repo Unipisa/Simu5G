@@ -95,7 +95,7 @@ void BackgroundTrafficManager::initialize(int stage)
 
         if (!getAncestorPar("enablePeriodicCqiUpdate"))
         {
-            if (getAncestorPar("useAvgInterference"))
+            if (hasPar("useAvgInterference") && getAncestorPar("useAvgInterference"))
             {
                 initializeAvgInterferenceComputation();
                 info->init = true;
