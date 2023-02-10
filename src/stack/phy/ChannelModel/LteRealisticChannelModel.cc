@@ -33,6 +33,8 @@ Define_Module(LteRealisticChannelModel);
 
 simsignal_t LteRealisticChannelModel::rcvdSinrDl_ = registerSignal("rcvdSinrDl");
 simsignal_t LteRealisticChannelModel::rcvdSinrUl_ = registerSignal("rcvdSinrUl");
+simsignal_t LteRealisticChannelModel::rcvdSinrD2D_ = registerSignal("rcvdSinrD2D");
+
 simsignal_t LteRealisticChannelModel::measuredSinrDl_ = registerSignal("measuredSinrDl");
 simsignal_t LteRealisticChannelModel::measuredSinrUl_ = registerSignal("measuredSinrUl");
 
@@ -2154,9 +2156,8 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo* 
       << " - CQI[" << cqi << "]- random error extracted[" << er << "]" << endl;
 
    // emit SINR statistic
-   // TODO use a rcvdSinrD2D statistic
    if (collectSinrStatistics_ && usedRBs > 0)
-       emit(rcvdSinrUl_, sumSnr / usedRBs);
+       emit(rcvdSinrD2D_, sumSnr / usedRBs);
 
    if (er <= totalPer)
    {
