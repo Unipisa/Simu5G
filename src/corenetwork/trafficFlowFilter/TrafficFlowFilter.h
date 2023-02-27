@@ -68,6 +68,8 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
 
     // functions for managing filter tables
     TrafficFlowTemplateId findTrafficFlow(inet::L3Address srcAddress, inet::L3Address destAddress);
+
+    virtual void finish() override;
 };
 
 #endif

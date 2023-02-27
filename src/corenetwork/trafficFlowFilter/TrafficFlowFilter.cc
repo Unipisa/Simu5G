@@ -34,7 +34,9 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
     if (ownerType_ == PGW || ownerType_ == UPF)
     {
-        gateway_ = getParentModule()->getFullName();
+    	// Modified from getFullName() to getFullPath() to fix the usage in compound modules
+    	std::string tmpName = getParentModule()->getFullPath();
+    	gateway_ = strcpy(new char[tmpName.length() + 1], tmpName.c_str());
     }
     else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
     {
@@ -214,5 +216,11 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     EV << "Forward packet to BS " << destMaster << endl;
     return destMaster;
+}
+
+void TrafficFlowFilter::finish() {
+	 if (ownerType_ == PGW || ownerType_ == UPF) {
+		 delete gateway_;
+	 }
 }
 
