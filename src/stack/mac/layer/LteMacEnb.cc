@@ -191,7 +191,9 @@ void LteMacEnb::initialize(int stage)
 
         // register the pairs <id,name> and <id, module> to the binder
         cModule* module = getParentModule()->getParentModule();
-        const char* moduleName = getParentModule()->getParentModule()->getFullName();
+        // Modified from getFullName() to getFullPath() to fix the usage in compound modules
+        std::string tmpName = getParentModule()->getParentModule()->getFullPath();
+        const char* moduleName = strcpy(new char[tmpName.length() + 1], tmpName.c_str());
         binder_->registerName(nodeId_, moduleName);
         binder_->registerModule(nodeId_, module);
 

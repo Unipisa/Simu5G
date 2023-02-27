@@ -269,7 +269,8 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)
             const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
-            if (strcmp(this->getParentModule()->getFullName(), destGw) == 0)
+            // Modified to make it work when used into compound modules
+            if (strcmp(this->getParentModule()->getFullPath().c_str(), destGw) == 0)
             {
                 // the destination is a Base Station under the same core network as this PGW/UPF,
                 // tunnel the packet toward that BS
