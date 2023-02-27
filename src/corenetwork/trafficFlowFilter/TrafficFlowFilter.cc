@@ -220,7 +220,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
 void TrafficFlowFilter::finish() {
 	 if (ownerType_ == PGW || ownerType_ == UPF) {
-		 delete gateway_;
+		 delete[] gateway_;
 	 }
 }
 
