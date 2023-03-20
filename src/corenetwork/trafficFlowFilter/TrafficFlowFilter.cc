@@ -162,6 +162,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     }
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
+    destId = (destId != 0) ? destId : binder_->getNrMacNodeId(destAddress.toIpv4());
     if (destId == 0)
     {
         EV << "TrafficFlowFilter::findTrafficFlow - destination "<< destAddress.str() << " is not a UE. ";
