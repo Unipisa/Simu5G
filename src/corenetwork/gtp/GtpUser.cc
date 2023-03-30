@@ -50,8 +50,8 @@ void GtpUser::initialize(int stage)
 
         if (connectedBS || ownerType_ == UPF_MEC)
         {
-            const char* gateway = getAncestorPar("gateway").stringValue();
-            gwAddress_ = L3AddressResolver().resolve(gateway);
+            std::string gateway = binder_->getNetworkName() + "." + getAncestorPar("gateway").stdstringValue();
+            gwAddress_ = L3AddressResolver().resolve(gateway.c_str());
         }
     }
 
@@ -268,10 +268,10 @@ void GtpUser::handleFromUdp(Packet * pkt)
             MacNodeId destMaster = binder_->getNextHop(destId);
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)
-            const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
-            // Modified to make it work when used into compound modules
-            if (strcmp(this->getParentModule()->getFullPath().c_str(), destGw) == 0)
+            std::string gwFullPath = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
+            if (this->getParentModule()->getFullPath().compare(gwFullPath) == 0)
             {
+
                 // the destination is a Base Station under the same core network as this PGW/UPF,
                 // tunnel the packet toward that BS
                 const char* symbolicName = binder_->getModuleNameByMacNodeId(destMaster);

@@ -266,7 +266,10 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
 void Binder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
+    {
         phyPisaData.setBlerShift(par("blerShift"));
+        networkName_ = std::string(getSystemModule()->getName());
+    }
 
     if (stage == inet::INITSTAGE_LAST)
     {

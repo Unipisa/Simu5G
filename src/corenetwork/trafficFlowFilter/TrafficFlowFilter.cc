@@ -34,13 +34,13 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
     if (ownerType_ == PGW || ownerType_ == UPF)
     {
-    	// Modified from getFullName() to getFullPath() to fix the usage in compound modules
-    	std::string tmpName = getParentModule()->getFullPath();
-    	gateway_ = strcpy(new char[tmpName.length() + 1], tmpName.c_str());
+        std::string gwFullPath = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
+        gateway_ = strcpy(new char[gwFullPath.length() + 1], gwFullPath.c_str());
     }
     else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
     {
-        gateway_ = getAncestorPar("gateway").stringValue();
+        std::string gwFullPath = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
+        gateway_ = strcpy(new char[gwFullPath.length() + 1], gwFullPath.c_str());
     }
 
     // mec
@@ -145,8 +145,8 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     if (binder_->isMecHost(destAddress))
     {
         // check if the destination belongs to another core network (for multi-operator scenarios)
-        const char* destGw = (inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stringValue();
-        if (strcmp(gateway_, destGw) != 0)
+        std::string destGw = binder_->getNetworkName() + "." + (inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stdstringValue();
+        if (strcmp(gateway_, destGw.c_str()) != 0)
         {
             // the destination is a MEC host under a different core network, send the packet to the gateway
             return -1;
@@ -207,8 +207,8 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     // MEC host or PGW/UPF
 
     // check if the destination belongs to another core network (for multi-operator scenarios)
-    const char* destGw = binder_->getModuleByMacNodeId(destMaster)->par("gateway");
-    if (strcmp(gateway_, destGw) != 0)
+    std::string destGw = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
+    if (strcmp(gateway_,destGw.c_str()) != 0)
     {
         // the destination is a Base Station under a different core network, send the packet to the gateway
         EV << "Forward packet to the gateway" << endl;

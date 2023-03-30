@@ -34,6 +34,10 @@ class UeStatsCollector;
 class Binder : public omnetpp::cSimpleModule
 {
   private:
+
+    // name of the system (top-level) module
+    std::string networkName_;
+
     typedef std::map<MacNodeId, std::map<MacNodeId, bool> > DeployedUesMap;
 
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
@@ -182,6 +186,11 @@ class Binder : public omnetpp::cSimpleModule
         for (auto it = ueList_.begin(); it != ueList_.end(); ++it)
             delete (*it);
         ueList_.clear();
+    }
+
+    std::string& getNetworkName()
+    {
+        return networkName_;
     }
 
     /**
