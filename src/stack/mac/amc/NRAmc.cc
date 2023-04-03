@@ -137,38 +137,6 @@ unsigned int NRAmc::computeCodewordTbs(UserTxParams* info, Codeword cw, Directio
  *      Scheduler interface functions      *
  *******************************************/
 
-unsigned int NRAmc::computeReqRbs(MacNodeId id, Band b, Codeword cw, unsigned int bytes, const Direction dir, double carrierFrequency)
-{
-    EV << NOW << " NRAmc::computeReqRbs Node " << id << ", Band " << b << ", Codeword " << cw << ", direction " << dirToA(dir) << endl;
-
-    if(bytes == 0)
-    {
-        // DEBUG
-        EV << NOW << " NRAmc::computeReqRbs Occupation: 0 bytes\n";
-        EV << NOW << " NRAmc::computeReqRbs Number of RBs: 0\n";
-
-        return 0;
-    }
-
-    // Acquiring current user scheduling information
-    UserTxParams info = computeTxParams(id, dir,carrierFrequency);
-
-    unsigned int bits = bytes * 8;
-    unsigned int numRe = getResourceElements(1, getSymbolsPerSlot(carrierFrequency, dir));
-
-     // Computing RB occupation
-    unsigned int j = 0;
-    for(j = 0; j < 110; ++j)   // TODO check number of blocks
-        if(computeCodewordTbs(&info, cw, dir, numRe) >= bits)
-            break;
-
-    // DEBUG
-    EV << NOW << " NRAmc::computeReqRbs Occupation: " << bytes << " bytes , CQI : " << info.readCqiVector().at(cw) << " \n";
-    EV << NOW << " NRAmc::computeReqRbs Number of RBs: " << j+1 << "\n";
-
-    return j+1;
-}
-
 unsigned int NRAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
     if (blocks == 0)

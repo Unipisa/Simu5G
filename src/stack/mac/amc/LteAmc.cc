@@ -665,42 +665,6 @@ const UserTxParams& LteAmc::computeTxParams(MacNodeId id, const Direction dir, d
  *      Scheduler interface functions      *
  *******************************************/
 
-unsigned int LteAmc::computeReqRbs(MacNodeId id, Band b, Codeword cw, unsigned int bytes, const Direction dir, double carrierFrequency)
-{
-    EV << NOW << " LteAmc::getRbs Node " << id << ", Band " << b << ", Codeword " << cw << ", direction " << dirToA(dir) << endl;
-
-    if(bytes == 0)
-    {
-        // DEBUG
-        EV << NOW << " LteAmc::getRbs Occupation: 0 bytes\n";
-        EV << NOW << " LteAmc::getRbs Number of RBs: 0\n";
-
-        return 0;
-    }
-
-    // Loading TBS vectors
-    const unsigned int* tbsVect;// it is a row of the itbs matrix
-    UserTxParams info = computeTxParams(id, dir,carrierFrequency);
-    unsigned char layers = info.getLayers().at(cw);
-
-    LteMod mod = info.getCwModulation(cw);
-    unsigned int iTbs = getItbsPerCqi(info.readCqiVector().at(cw), dir);
-    unsigned int i = (mod == _QPSK ? 0 : (mod == _16QAM ? 9 : (mod == _64QAM ? 15 : 0)));
-    tbsVect = itbs2tbs(mod, info.readTxMode(), layers, iTbs-i);
-
-    // Computing RB occupation
-    unsigned int j;
-    for(j = 0; j < 110; ++j)
-    if(tbsVect[j] >= bytes*8)
-    break;
-
-    // DEBUG
-    EV << NOW << " LteAmc::getRbs Occupation: " << bytes << " bytes , CQI : " << info.readCqiVector().at(cw) << " \n";
-    EV << NOW << " LteAmc::getRbs Number of RBs: " << j+1 << "\n";
-
-    return j+1;
-}
-
 unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
     if (blocks > 110)    // Safety check to avoid segmentation fault

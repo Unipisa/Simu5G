@@ -445,8 +445,8 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
             }
             else // if limit is expressed in blocks, limit value must be passed to availableBytes function
             {
-                bandAvailableBytes = availableBytes(nodeId, antenna, b, cw, dir, carrierFrequency, (limitBl) ? limit : -1); // available space (in bytes)
                 bandAvailableBlocks = allocator_->availableBlocks(nodeId, antenna, b);
+                bandAvailableBytes = (bandAvailableBlocks == 0) ? 0 : availableBytes(nodeId, antenna, b, cw, dir, carrierFrequency, (limitBl) ? limit : -1); // available space (in bytes)
             }
 
             // if no allocation can be performed, notify to skip the band on next processing (if any)
@@ -480,7 +480,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
             EV << "LteSchedulerEnb::grant Available Bytes: " << bandAvailableBytes << " available blocks " << bandAvailableBlocks << endl;
 
             unsigned int uBytes = (bandAvailableBytes > queueLength) ? queueLength : bandAvailableBytes;
-            unsigned int uBlocks = mac_->getAmc()->computeReqRbs(nodeId, b, cw, uBytes, dir,carrierFrequency);
+            unsigned int uBlocks = 1;
 
             // allocate resources on this band
             if(allocatedCws == 0)
@@ -490,7 +490,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
                 // add allocated blocks for this codeword
                 cwAllocatedBlocks += uBlocks;
                 totalAllocatedBlocks += uBlocks;
-                cwAllocatedBytes+=uBytes;
+                cwAllocatedBytes += uBytes;
             }
 
             // update limit

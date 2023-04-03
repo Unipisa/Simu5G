@@ -205,7 +205,7 @@ LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
             // limit eventually allocated blocks on other codeword to limit for current cw
             //b1 = (limitBl ? (b1>limit?limit:b1) : b1);
-            available = mac_->getAmc()->computeBytesOnNRbs(nodeId, b, remappedCw, b1, direction_,carrierFrequency);
+            available = (b1 == 0) ? 0 :  mac_->getAmc()->computeBytesOnNRbs(nodeId, b, remappedCw, b1, direction_,carrierFrequency);
         }
         else
             available = availableBytes(nodeId, antenna, b, remappedCw, direction_, carrierFrequency, (limitBl) ? limit : -1);    // available space
@@ -232,9 +232,9 @@ LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
         if (allocatedCw == 0)
         {
-            unsigned int blocks = mac_->getAmc()->computeReqRbs(nodeId, b, remappedCw, allocation, direction_,carrierFrequency);
+            unsigned int blocks = 1;
 
-            EV << NOW << "LteSchedulerEnbDl::rtxAcid Assigned blocks: " << blocks << "  blocks" << endl;
+            EV << NOW << "LteSchedulerEnbDl::rtxAcid Assigned blocks: " << blocks << endl;
 
             // assign only on the first codeword
             assignedBlocks.push_back(blocks);

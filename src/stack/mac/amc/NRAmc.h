@@ -43,12 +43,8 @@ class NRAmc : public LteAmc
 
     NRMCSelem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 
-    virtual unsigned int computeReqRbs(MacNodeId id, Band b, Codeword cw, unsigned int bytes, const Direction dir, double carrierFrequency);
     virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
     virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
-//    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-//    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
-
     virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
 
 //    // multiband version of the above function. It returns the number of bytes that can fit in the given "blocks" of the given "band"

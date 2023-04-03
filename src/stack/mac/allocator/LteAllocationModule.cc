@@ -267,24 +267,17 @@ unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const 
 {
     Plane plane = getOFDMPlane(nodeId);
 
-    unsigned int blocksPerBand = (totalRbsMatrix_[plane][antenna]) / bands_;
     // blocks allocated in the current band
     unsigned int allocatedBlocks = allocatedRbsPerBand_[plane][antenna][band].allocated_;
 
-    if (blocksPerBand >= allocatedBlocks)
+    if (allocatedBlocks == 0)
     {
-        // DEBUG
-        EV << NOW << " LteAllocator::availableBlocks " << dirToA(dir_) << " - Band " << band <<
-        " has " << blocksPerBand - allocatedBlocks <<
-        " blocks available [total " << blocksPerBand << ", allocated " << allocatedBlocks << "]" << endl;
+        EV << NOW << " LteAllocator::availableBlocks " << dirToA(dir_) << " - Band " << band << " has 1 block available" << endl;
+        return 1;
+    }
 
-        return (blocksPerBand - allocatedBlocks);
-    }
-    else
-    {
-        // no space available on current antenna.
-        return 0;
-    }
+    // no space available on current antenna.
+    return 0;
 }
 
 unsigned int LteAllocationModule::getAllocatedBlocks(Plane plane, const Remote antenna, const Band band)
@@ -348,7 +341,7 @@ bool LteAllocationModule::addBlocks(const Remote antenna, const Band band, const
     int availableBlocksOnBand = availableBlocks(nodeId, antenna, band);
 
     // Check if the band can satisfy the request
-    if ((availableBlocksOnBand - (int) blocks) < 0)
+    if (availableBlocksOnBand == 0)
     {
         EV << NOW << " LteAllocator::addBlocks " << dirToA(dir_) << " - Node " << nodeId <<
         ", not enough space on band " << band << ": requested " << blocks <<
