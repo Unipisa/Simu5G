@@ -823,6 +823,8 @@ double PacketFlowManagerEnb::getDiscardedPktPerUe(MacNodeId id)
 
 double PacketFlowManagerEnb::getDiscardedPkt()
 {
+    if (pktDiscardCounterTotal_.total == 0)
+        return 0.0;
     return ((double)pktDiscardCounterTotal_.discarded * 1000000)/pktDiscardCounterTotal_.total;
 }
 

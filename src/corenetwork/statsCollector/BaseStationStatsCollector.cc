@@ -80,10 +80,7 @@ void BaseStationStatsCollector::initialize(int stage){
             EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
             packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
         }
-        else
-        {
-            EV << "NON CI STA" << endl;
-        }
+
         cellInfo_ = check_and_cast<CellInfo *>(getParentModule()->getSubmodule("cellInfo"));
         ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
 
@@ -336,7 +333,10 @@ void BaseStationStatsCollector::add_ul_nongbr_pdr_cell()
         pair.total += temp.total;
     }
 
-    pdr = ((double)pair.discarded * 1000000)/ pair.total;
+    if (pair.total == 0)
+        pdr = 0.0;
+    else
+        pdr = ((double)pair.discarded * 1000000)/ pair.total;
     ul_nongbr_pdr_cell.addValue((int)pdr);
 }
 
