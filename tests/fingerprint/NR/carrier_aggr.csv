@@ -2,4 +2,4 @@
 /simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCarrier-CBR-DL -r 0,       5s,              712b-da7d/tplx,PASS,
 /simulations/NR/test_multiCarrier,        -f omnetpp.ini -c SingleCarrier-CBR-UL -r 0,       5s,              0bc2-31f5/tplx,PASS,
 /simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCarrier-CBR-DL -r 0,        5s,              c13e-9dbb/tplx,PASS,
-/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,        5s,              3d4f-fcbd/tplx,PASS,
+/simulations/NR/test_multiCarrier,        -f omnetpp.ini -c MultiCarrier-CBR-UL -r 0,        5s,              f39a-2d9e/tplx,PASS,
