@@ -405,7 +405,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
         EV << "LteSchedulerEnb::grant @@@@@ CODEWORD " << cw << " @@@@@" << endl;
 
         queueLength += MAC_HEADER + RLC_HEADER_UM;  // TODO RLC may be either UM or AM
-        toServe = queueLength;
+        toServe = (queueLength <= bytes) ? queueLength : bytes; // do not serve more bytes than the maximum number of bytes requested
         EV << "LteSchedulerEnb::scheduleGrant bytes to be allocated: " << toServe << endl;
 
         unsigned int cwAllocatedBytes = 0;  // per codeword allocated bytes
@@ -479,7 +479,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
 
             EV << "LteSchedulerEnb::grant Available Bytes: " << bandAvailableBytes << " available blocks " << bandAvailableBlocks << endl;
 
-            unsigned int uBytes = (bandAvailableBytes > queueLength) ? queueLength : bandAvailableBytes;
+            unsigned int uBytes = (bandAvailableBytes > toServe) ? toServe : bandAvailableBytes;
             unsigned int uBlocks = 1;
 
             // allocate resources on this band
@@ -504,11 +504,13 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
 
             // update the counter of bytes to be served
             toServe = (uBytes > toServe) ? 0 : toServe - uBytes;
+            queueLength = (uBytes > toServe) ? 0 : queueLength - uBytes;
             if (toServe == 0)
             {
                 // all bytes booked, go to allocation
                 stop = true;
-                active = false;
+                if (queueLength == 0)  // the connection has also terminated the buffer
+                    active = false;
                 break;
             }
             // continue allocating (if there are available bands)

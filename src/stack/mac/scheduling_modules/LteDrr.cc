@@ -53,7 +53,12 @@ void LteDrr::prepareSchedule()
         }
 
         // Update the deficit counter.
-        desc.deficit_ += desc.quantum_;
+        if (desc.addQuantum_)
+        {
+            desc.deficit_ += desc.quantum_;
+            desc.addQuantum_ = false;
+        }
+
         // Clear the flags passed to the grant() function.
         terminateFlag = false;
         activeFlag = true;
@@ -61,8 +66,8 @@ void LteDrr::prepareSchedule()
         // Try to schedule as many PDUs as possible (or fragments thereof).
         unsigned int scheduled = requestGrant (cid, desc.deficit_, terminateFlag, activeFlag, eligibleFlag);
 
-        if (desc.deficit_ - scheduled < 0)
-            throw cRuntimeError("LteDrr::execSchedule CID:%d unexpected deficit value of %d", cid, desc.deficit_);
+        if (desc.deficit_ < scheduled)
+            throw cRuntimeError("LteDrr::execSchedule CID:%d unexpected deficit value of %d [scheduled=%d]", cid, desc.deficit_, scheduled);
 
         // Update the deficit counter.
         desc.deficit_ -= scheduled;
@@ -82,6 +87,7 @@ void LteDrr::prepareSchedule()
             carrierActiveConnectionSet_.erase(cid);
             desc.deficit_ = 0;       // reset the deficit to zero
             desc.active_ = false;   // set this descriptor as inactive
+            desc.addQuantum_ = true;
 
             // If scheduling is going to stop and the current queue has not
             // been served entirely, then the RR pointer should NOT move to
@@ -97,10 +103,14 @@ void LteDrr::prepareSchedule()
 
             // Otherwise, move the round-robin pointer to the next element.
         }
-        else
+        else if (desc.deficit_ == 0)
         {
+            desc.addQuantum_ = true;
             activeTempList_.move();
         }
+        // else
+        //     this connection still has to consume its deficit (e.g., because space has ended)
+        //     so the pointer is not moved
 
         // Terminate scheduling, if the grant function specified so.
         if (terminateFlag)

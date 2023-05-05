@@ -29,6 +29,8 @@ class LteDrr : public LteScheduler
         unsigned int quantum_;
         //! Deficit, in bytes.
         unsigned int deficit_;
+        //! Flag indicating whether the connection consumed all the previous quantum and need another one
+        bool addQuantum_;
         //! True if this descriptor is in the active list.
         bool active_;
         //! True if this connection is eligible for service.
@@ -39,6 +41,7 @@ class LteDrr : public LteScheduler
         {
             quantum_ = 0;
             deficit_ = 0;
+            addQuantum_ = true;
             active_ = false;
             eligible_ = false;
         }
