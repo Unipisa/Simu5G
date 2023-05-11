@@ -172,7 +172,7 @@ typedef struct
     int locationServicePort;
     // FIFO queue with the platoon index id of the pending requests
     std::queue<int> controllerPendingRequests;
-    simtime_t lastResponse = 0;
+    omnetpp::simtime_t lastResponse;
 } ProducerAppInfo;
 
 

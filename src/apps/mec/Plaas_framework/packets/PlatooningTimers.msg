@@ -10,7 +10,7 @@
 //
 
 import inet.networklayer.common.L3Address;
-import apps.mec.PlatooningApp.packets.PlatooningPacket;
+import apps.mec.Plaas_framework.packets.PlatooningPacket;
 
 //cplusplus {{
 //    #include "inet/common/geometry/common/Coord.h"
