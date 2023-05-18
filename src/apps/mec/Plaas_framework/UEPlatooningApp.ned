@@ -53,6 +53,10 @@ simple UEPlatooningApp like IApp
         
         string interfaceTableModule;
         
+        bool boundAcceleration = default(false);
+        double maxAcceleration = default(5);
+        double minAcceleration = default(-5);
+        
         // stats
         @signal[cmdLatency];
         @statistic[cmdLatency](title="cmdLatency"; unit="s"; source="cmdLatency"; record=stats, mean, vector); 

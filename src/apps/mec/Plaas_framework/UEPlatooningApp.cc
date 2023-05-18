@@ -495,6 +495,15 @@ void UEPlatooningApp::recvPlatoonCommand(cMessage* msg)
     if(!par("sinusoidal").boolValue())
     {
         inet::Coord newAcceleration = cmd->getNewAcceleration();
+
+        if (par("boundAcceleration").boolValue())  // NOTE this only works when cars travel along the x-axis!
+        {
+            if (newAcceleration.x > par("maxAcceleration").doubleValue())
+                newAcceleration.x = par("maxAcceleration").doubleValue();
+            else if (newAcceleration.x < par("minAcceleration").doubleValue())
+                newAcceleration.x = par("minAcceleration").doubleValue();
+        }
+
         mobility->setAcceleration(newAcceleration);
         EV << "UEPlatooningApp::recvPlatoonCommand - New acceleration value set to " << newAcceleration << " m/(s^2)"<< endl;
     }
