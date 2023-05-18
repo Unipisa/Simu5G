@@ -1211,7 +1211,7 @@ void MECPlatooningControllerApp::handleLongitudinalControllerTimer(ControlTimer 
             cmd->setType(PLATOON_CMD);
             cmd->setConsumerAppId(mecAppId); // used in case of it is sent to an other produceApp
             cmd->setNewAcceleration(newAcceleration);
-            cmd->setChunkLength(inet::B(sizeof(double) + sizeof(int) + 1));
+            cmd->setChunkLength(inet::B((sizeof(double) + sizeof(int) + 1) * par("packetSizeMultiplyFactor").intValue()));
             cmd->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
             cmd->addTagIfAbsent<inet::PrecedingVehicleTag>()->setUeAddress(precUeAddress);
             cmd->addTagIfAbsent<inet::PrecedingVehicleTag>()->setCalculatedDistance(distance);

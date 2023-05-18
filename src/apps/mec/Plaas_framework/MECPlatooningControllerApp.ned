@@ -28,7 +28,8 @@ simple MECPlatooningControllerApp like IMECApp
         @display("i=block/app;is=s");
 //        @class("MECPlatooningControllerApp");
         	  			
-        int packetSize = default(10);
+        int packetSizeMultiplyFactor = default(1);
+        
         string interfaceTableModule = default("");
         int mecAppIndex;
         int mecAppId;
