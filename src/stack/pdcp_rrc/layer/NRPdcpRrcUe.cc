@@ -69,8 +69,9 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     setTrafficInformation(pkt, lteInfo);
 
-    // select the correct nodeId
+    // select the correct nodeId for the source
     MacNodeId nodeId = (lteInfo->getUseNR()) ? nrNodeId_ : nodeId_;
+    lteInfo->setSourceId(nodeId);
 
     // get destination info
     Ipv4Address destAddr = Ipv4Address(lteInfo->getDstAddr());
@@ -165,28 +166,28 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
 }
 
 
-LteTxPdcpEntity* NRPdcpRrcUe::getTxEntity(MacCid lcid)
+LteTxPdcpEntity* NRPdcpRrcUe::getTxEntity(MacCid cid)
 {
     // Find entity for this LCID
-    PdcpTxEntities::iterator it = txEntities_.find(lcid);
+    PdcpTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end())
     {
         // Not found: create
         std::stringstream buf;
-        buf << "NRTxPdcpEntity Lcid: " << lcid;
+        buf << "NRTxPdcpEntity Cid: " << cid;
         cModuleType* moduleType = cModuleType::get("simu5g.stack.pdcp_rrc.NRTxPdcpEntity");
         NRTxPdcpEntity* txEnt = check_and_cast<NRTxPdcpEntity*>(moduleType->createScheduleInit(buf.str().c_str(), this));
 
-        txEntities_[lcid] = txEnt;    // Add to entities map
+        txEntities_[cid] = txEnt;    // Add to entities map
 
-        EV << "NRPdcpRrcUe::getEntity - Added new PdcpEntity for Lcid: " << lcid << "\n";
+        EV << "NRPdcpRrcUe::getEntity - Added new PdcpEntity for Cid: " << cid << "\n";
 
         return txEnt;
     }
     else
     {
         // Found
-        EV << "NRPdcpRrcUe::getEntity - Using old PdcpEntity for Lcid: " << lcid << "\n";
+        EV << "NRPdcpRrcUe::getEntity - Using old PdcpEntity for Cid: " << cid << "\n";
 
         return it->second;
     }
