@@ -173,7 +173,8 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     // Add the created BSR to the PDU List
                     if( macPktBsr != nullptr )
                     {
-                        LteChannelModel* channelModel = phy_->getChannelModel();
+                        // select channel model for given carrier frequency
+                        LteChannelModel* channelModel = phy_->getChannelModel(carrierFreq);
                         if (channelModel == NULL)
                             throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
@@ -486,7 +487,7 @@ void LteMacUeD2D::handleMessage(cMessage* msg)
     if (incoming == down_[IN_GATE])
     {
         auto userInfo = pkt->getTag<UserControlInfo>();
-        
+
         if (userInfo->getFrameType() == D2DMODESWITCHPKT)
         {
             EV << "LteMacUeD2D::handleMessage - Received packet " << pkt->getName() <<
@@ -617,7 +618,7 @@ void LteMacUeD2D::checkRAC()
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
         pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(RACPKT);
- 
+
         auto racReq = makeShared<LteRac>();
 
         pkt->insertAtFront(racReq);
