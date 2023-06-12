@@ -351,7 +351,11 @@ void LtePhyUe::handoverHandler(LteAirFrame* frame, UserControlInfo* lteInfo)
                 if (candidateMasterId_ == masterId_)  // trigger detachment
                 {
                     candidateMasterId_ = 0;
-                    candidateMasterRssi_ = 0;
+                    currentMasterRssi_ = -999.0;
+                    candidateMasterRssi_ = -999.0; // set candidate rssi very bad we currently do not have any.
+                                                   // this ensures that each candidate with is at least as 'bad'
+                                                   // as the minRssi_ has a change.
+
                     hysteresisTh_ = updateHysteresisTh(0);
                     binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
 
