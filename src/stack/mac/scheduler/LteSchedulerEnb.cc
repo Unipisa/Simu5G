@@ -881,7 +881,7 @@ void LteSchedulerEnb::backlog(MacCid cid)
     if(cid == 1)
         return;
 
-    EV << NOW << "LteSchedulerEnb::backlog CID notified " << cid << endl;
+    EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
     activeConnectionSet_.insert(cid);
 
     std::vector<LteScheduler*>::iterator it = scheduler_.begin();

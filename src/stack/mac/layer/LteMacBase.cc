@@ -76,7 +76,7 @@ void LteMacBase::sendUpperPackets(cPacket* pkt)
 
 void LteMacBase::sendLowerPackets(cPacket* pkt)
 {
-    EV << NOW << "LteMacBase::sendLowerPackets, Sending packet " << pkt->getName() << " on port MAC_to_PHY\n";
+    EV << NOW << " LteMacBase::sendLowerPackets, Sending packet " << pkt->getName() << " on port MAC_to_PHY\n";
     // Send message
     updateUserTxParam(pkt);
     send(pkt,down_[OUT_GATE]);
@@ -133,7 +133,7 @@ void LteMacBase::fromPhy(cPacket *pktAux)
 
         // H-ARQ feedback, send it to TX buffer of source
         HarqTxBuffers::iterator htit = harqTxBuffers_[carrierFreq].find(src);
-        EV << NOW << "Mac::fromPhy: node " << nodeId_ << " Received HARQ Feedback pkt" << endl;
+        EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received HARQ Feedback pkt" << endl;
         if (htit == harqTxBuffers_[carrierFreq].end())
         {
             // if a feedback arrives, a tx buffer must exists (unless it is an handover scenario
@@ -152,19 +152,19 @@ void LteMacBase::fromPhy(cPacket *pktAux)
     else if (userInfo->getFrameType() == FEEDBACKPKT)
     {
         //Feedback pkt
-        EV << NOW << "Mac::fromPhy: node " << nodeId_ << " Received feedback pkt" << endl;
+        EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received feedback pkt" << endl;
         macHandleFeedbackPkt(pkt);
     }
     else if (userInfo->getFrameType()==GRANTPKT)
     {
         //Scheduling Grant
-        EV << NOW << "Mac::fromPhy: node " << nodeId_ << " Received Scheduling Grant pkt" << endl;
+        EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received Scheduling Grant pkt" << endl;
         macHandleGrant(pkt);
     }
     else if(userInfo->getFrameType() == DATAPKT)
     {
         // data packet: insert in proper rx buffer
-        EV << NOW << "Mac::fromPhy: node " << nodeId_ << " Received DATA packet" << endl;
+        EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received DATA packet" << endl;
 
         auto pduAux = pkt->peekAtFront<LteMacPdu>();
         auto pdu = pkt;
@@ -196,7 +196,7 @@ void LteMacBase::fromPhy(cPacket *pktAux)
     }
     else if (userInfo->getFrameType() == RACPKT)
     {
-        EV << NOW << "Mac::fromPhy: node " << nodeId_ << " Received RAC packet" << endl;
+        EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received RAC packet" << endl;
         macHandleRac(pkt);
     }
     else
