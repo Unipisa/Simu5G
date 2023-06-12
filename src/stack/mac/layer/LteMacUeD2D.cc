@@ -106,7 +106,7 @@ Packet* LteMacUeD2D::makeBsr(int size){
     macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(UL);
 
     bsrTriggered_ = false;
-    EV << "LteMacUeD2D::makeBsr() - BSR with size " << size << "created" << endl;
+    EV << "LteMacUeD2D::makeBsr() - BSR with size " << size << " bytes created" << endl;
     return macPkt;
 }
 
@@ -179,7 +179,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         else
                             macPduList_[channelModel->getCarrierFrequency()][ std::pair<MacNodeId, Codeword>( getMacCellId(), 0) ] = macPktBsr;
                         bsrAlreadyMade = true;
-                        EV << "LteMacUeD2D::macPduMake - BSR D2D created with size " << sizeBsr << "created" << endl;
+                        EV << "LteMacUeD2D::macPduMake - BSR D2D created with size " << sizeBsr << " bytes created" << endl;
                     }
 
                     bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevent the UE to send an unnecessary RAC request
