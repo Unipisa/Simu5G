@@ -202,16 +202,6 @@ class LteScheduler
     virtual void updateSchedulingInfo()
     {
     }
-
-  protected:
-
-    /*
-     * prepare the set of active connections on this carrier
-     * used by scheduling modules
-     */
-    void buildCarrierActiveConnectionSet();
-
-
 };
 
 #endif // _LTE_LTESCHEDULER_H_

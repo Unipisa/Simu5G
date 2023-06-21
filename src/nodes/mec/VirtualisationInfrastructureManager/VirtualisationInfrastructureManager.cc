@@ -504,7 +504,7 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
 
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources ALLOCATED for independent MecApp with module id " << ueAppID  << endl;
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram <<" disk: "<< mecAppMap[ueAppID].resources.disk <<" cpu: "<< mecAppMap[ueAppID].resources.cpu << endl;
-        allocateResources(reqRam, reqDisk, reqCpu);
+        allocateResources(reqRam, reqDisk, cpu);
         return true;
     }
     else{
