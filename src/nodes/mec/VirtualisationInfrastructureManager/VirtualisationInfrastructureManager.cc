@@ -45,7 +45,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     maxRam = mecHost->par("maxRam").doubleValue();
     maxDisk = mecHost->par("maxDisk").doubleValue();
-    maxCPU = mecHost->par("maxCpuSpeed").doubleValue()*pow(10,6);
+    maxCPU = mecHost->par("maxCpuSpeed").doubleValue();
 
     allocatedRam = 0.0;
     allocatedDisk = 0.0;
@@ -498,7 +498,7 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
         appEntry.ueAppID = ueAppID;
         appEntry.resources.ram = reqRam;
         appEntry.resources.disk = reqDisk;
-        double cpu = (double)reqCpu * pow(10,6);
+        double cpu = (double)reqCpu ;
         appEntry.resources.cpu = cpu;
         mecAppMap.insert({ueAppID, appEntry});
 
@@ -539,17 +539,20 @@ double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID,
     if(ueApp != mecAppMap.end())
     {
         double time;
+        double currentSpeed;
         if(scheduling == FAIR_SHARING)
         {
-            double currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
-            time = numOfInstructions/currentSpeed;
+            currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
+            time = numOfInstructions/(pow(10,6)*currentSpeed);
         }
         else
         {
-            double currentSpeed = ueApp->second.resources.cpu;
-            time = numOfInstructions/currentSpeed;
+            currentSpeed = ueApp->second.resources.cpu;
+            time = numOfInstructions/(pow(10,6)*currentSpeed);
         }
-        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - calculated time: " << time << endl;
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - number of instructions: " << numOfInstructions << endl;
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - currentSpeed (MIPS): " << currentSpeed << endl;
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - calculated time: " << time << "s"<< endl;
 
         return time;
     }
