@@ -85,9 +85,9 @@ module NRNicUe extends LteNicUeD2D
  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-//        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
-//            @display("p=197,299");
-//        }
+        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+            @display("p=197,299");
+        }
 
     connections:
 

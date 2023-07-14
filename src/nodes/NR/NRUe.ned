@@ -33,9 +33,9 @@ module NRUe extends Ue
 
     submodules:
         //# UeStatsCollector - for MEC
-//        NRueCollector: NRueStatsCollector if hasRNISupport {
-//            @display("p=73.687996,445.75198;is=s");
-//        }
+        NRueCollector: NRueStatsCollector if hasRNISupport {
+            @display("p=127.296,506.53198;is=s");
+        }
 
     connections allowunconnected:
 
