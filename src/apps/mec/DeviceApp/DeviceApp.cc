@@ -184,7 +184,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     //connection info
                     nack->setResult(false);
-                    nack->setReason("LCM proxy responded 500");
+                    nack->setReason(response->getPayload().c_str());
                     if(strlen(nack->getReason()))
                     {
                        nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
@@ -197,7 +197,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
                     packet->insertAtBack(nack);
-                    throw cRuntimeError("LCM proxy responded 500");
+                    //throw cRuntimeError("LCM proxy responded 500");
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 
                     appState = IDLE;
