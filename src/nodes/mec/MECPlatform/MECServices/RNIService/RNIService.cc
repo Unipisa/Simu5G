@@ -118,17 +118,8 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
                     splittedParams = lte::utils::splitString(params[1], ",");
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
-                    for(; pit != pend; ++pit){
-                        std::vector<std::string> address = lte::utils::splitString((*pit), ":");
-                        if(address.size()!= 2) //must be param=acr:values
-                        {
-                            Http::send400Response(socket);
-                            return;
-                        }
-                       //manage ipv4 address without any macnode id
-                        //or do the conversion inside Location..
-                       ues.push_back(inet::Ipv4Address(address[1].c_str()));
-                    }
+                    for(; pit != pend; ++pit)
+                       ues.push_back(inet::Ipv4Address((*pit).c_str()));
                 }
                 else // bad parameters
                 {

@@ -22,7 +22,7 @@ class BaseStationStatsCollector;
 class Binder;
 
 /*
-* This class is responsable to retrieve the L2 measures and create the JSON body
+* This class is responsible to retrieve the L2 measures and create the JSON body
 * response. It maintains the list of all the eNB/gNBs associated with the MEC host
 * where the RNIS is running and keeps the pointers to the s.*
 */
