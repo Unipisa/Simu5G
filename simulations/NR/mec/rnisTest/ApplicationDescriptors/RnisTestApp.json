@@ -1,0 +1,21 @@
+{
+"appDid" : "MECRNISTESTAPP",
+"appName" : "MecRnisTestApp",
+"appProvider" : "simu5g.apps.mec.RnisTestApp.MecRnisTestApp",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 10,
+    "virtualCpu" : 1500,
+    "virtualMemory":10
+    },
+"appServiceRequired": [
+    {
+        "ServiceDependency" :{
+            "serName" : "RNIService",
+            "version" : "v2",
+            "serCategory": "RNI"
+        }
+    }
+]
+}

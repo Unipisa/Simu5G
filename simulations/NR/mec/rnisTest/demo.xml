@@ -1,0 +1,6 @@
+<config>
+   
+    <!-- Assign 192.168.x.x addresses to all other interfaces -->
+    <interface hosts="**" address="192.168.x.x" netmask="255.255.255.0"/>  
+
+</config>
