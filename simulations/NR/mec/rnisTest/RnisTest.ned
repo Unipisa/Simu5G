@@ -30,11 +30,7 @@ network RnisTest
     parameters:
         @display("i=block/network2;bgb=811.0225,507.6475;bgi=background/pisa");
 
-        int numUes = default(0);
-
-        double playgroundSizeX @unit(m); // x size of the area the nodes are in (in meters)
-        double playgroundSizeY @unit(m); // y size of the area the nodes are in (in meters)
-        double playgroundSizeZ @unit(m); // z size of the area the nodes are in (in meters)
+        int numUes = default(1);
 
     submodules:
 
