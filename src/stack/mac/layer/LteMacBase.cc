@@ -443,7 +443,6 @@ void LteMacBase::initialize(int stage)
         sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
         sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
-        measuredItbs_ = registerSignal("measuredItbs");
         WATCH(queueSize_);
         WATCH(nodeId_);
         WATCH_MAP(mbuf_);

@@ -705,8 +705,6 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
         EV << NOW << " LteAmc::blocks2bits i: " << i << "\n";
         EV << NOW << " LteAmc::blocks2bits CQI: " << info.readCqiVector().at(cw) << "\n";
 
-        mac_->emitItbs(iTbs);
-
         const unsigned int* tbsVect = itbs2tbs(mod, info.readTxMode(), layers.at(cw), iTbs-i);
         bits += tbsVect[blocks-1];
     }

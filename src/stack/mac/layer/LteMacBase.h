@@ -69,7 +69,6 @@ class LteMacBase : public omnetpp::cSimpleModule
     ::omnetpp::simsignal_t receivedPacketFromLowerLayer;
     ::omnetpp::simsignal_t sentPacketToUpperLayer;
     ::omnetpp::simsignal_t sentPacketToLowerLayer;
-    ::omnetpp::simsignal_t measuredItbs_;
 
     /*
      * Data Structures
@@ -285,11 +284,6 @@ class LteMacBase : public omnetpp::cSimpleModule
     RanNodeType getNodeType()
     {
         return nodeType_;
-    }
-
-    void emitItbs( unsigned int iTbs )
-    {
-        emit( measuredItbs_ , iTbs );
     }
 
     virtual bool isD2DCapable()
