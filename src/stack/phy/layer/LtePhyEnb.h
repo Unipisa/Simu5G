@@ -50,6 +50,8 @@ class LtePhyEnb : public LtePhyBase
     LteFeedbackComputation* getFeedbackComputationFromName(std::string name, ParameterMap& params);
     void initializeFeedbackComputation();
 
+    virtual void emitDistanceFromMaster() {}
+
   public:
     LtePhyEnb();
     virtual ~LtePhyEnb();

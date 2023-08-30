@@ -121,9 +121,6 @@ simple LteRealisticChannelModel extends LteChannelModel
     @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
     @signal[measuredSinrUl];
     @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
-    
-    @signal[distance];
-    @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
 }
 
 // NRChannelModel_3GPP38_901

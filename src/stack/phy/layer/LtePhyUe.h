@@ -26,6 +26,12 @@ class LtePhyUe : public LtePhyBase
     /** Master MacNodeId */
     MacNodeId masterId_;
 
+    /** Reference to master node's mobility module */
+    IMobility* masterMobility_;
+
+    /** Statistic for distance from serving cell */
+    omnetpp::simsignal_t distance_;
+
     /** Statistic for serving cell */
     omnetpp::simsignal_t servingCell_;
 
@@ -120,6 +126,7 @@ class LtePhyUe : public LtePhyBase
 
     virtual void handleUpperMessage(omnetpp::cMessage* msg) override;
 
+    virtual void emitMobilityStats() override;
 
     /**
      * Utility function to update the hysteresis threshold using hysteresisFactor_.

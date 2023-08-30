@@ -62,6 +62,7 @@ void LtePhyUe::initialize(int stage)
         dasRssiThreshold_ = 1.0e-5;
         das_ = new DasFilter(this, binder_, nullptr, dasRssiThreshold_);
 
+        distance_ = registerSignal("distance");
         servingCell_ = registerSignal("servingCell");
         averageCqiDl_ = registerSignal("averageCqiDl");
         averageCqiUl_ = registerSignal("averageCqiUl");
@@ -218,6 +219,14 @@ void LtePhyUe::initialize(int stage)
 
         das_->setMasterRuSet(masterId_);
         emit(servingCell_, (long)masterId_);
+
+        if (masterId_ == 0)
+            masterMobility_ = nullptr;
+        else
+        {
+            cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
+            masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
+        }
     }
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
     {
@@ -450,6 +459,21 @@ void LtePhyUe::doHandover()
     mac_->doHandover(candidateMasterId_);  // do MAC operations for handover
     currentMasterRssi_ = candidateMasterRssi_;
     hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
+
+    // update NED parameter
+    if (isNr_)
+        getAncestorPar("nrMasterId").setIntValue(masterId_);
+    else
+        getAncestorPar("masterId").setIntValue(masterId_);
+
+    // update reference to master node's mobility module
+    if (masterId_ == 0)
+        masterMobility_ = nullptr;
+    else
+    {
+        cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
+        masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
+    }
 
     // update cellInfo
     if (masterId_ != 0)
@@ -690,6 +714,21 @@ void LtePhyUe::handleUpperMessage(cMessage* msg)
 
     LtePhyBase::handleUpperMessage(msg);
 }
+
+void LtePhyUe::emitMobilityStats()
+{
+    // emit serving cell id
+    emit(servingCell_, (long)masterId_);
+
+    if (masterMobility_)
+    {
+        // emit distance from current serving cell
+        inet::Coord masterPos = masterMobility_->getCurrentPosition();
+        double distance = getRadioPosition().distance(masterPos);
+        emit(distance_, distance);
+    }
+}
+
 
 double LtePhyUe::updateHysteresisTh(double v)
 {

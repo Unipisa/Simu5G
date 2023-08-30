@@ -88,7 +88,7 @@ module Ue
         int numPcapRecorders = default(0); // no of PcapRecorders
 
         bool hasRNISupport = default(false);
-
+        
     gates:
         input radioIn @directIn;     // connection to master
 

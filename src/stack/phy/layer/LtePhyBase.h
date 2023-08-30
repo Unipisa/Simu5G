@@ -248,6 +248,13 @@ class LtePhyBase : public ChannelAccess
      */
     virtual void sendUnicast(LteAirFrame *airFrame);
 
+    /**
+     * @brief Called when a mobilityStateChanged signal is received.
+     *
+     * Emit statistics related to the serving cell
+     */
+    virtual void emitMobilityStats() override {}
+
   protected:
 
     /**

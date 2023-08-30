@@ -132,5 +132,8 @@ void ChannelAccess::receiveSignal(cComponent *source, simsignal_t signalID, cObj
 
         if (myRadioRef)
             cc->setRadioPosition(myRadioRef, radioPos);
+
+        // emit serving cell and the distance from it
+        this->emitMobilityStats();
     }
 }

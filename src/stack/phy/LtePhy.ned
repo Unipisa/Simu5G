@@ -46,7 +46,7 @@ simple LtePhyBase like LtePhy {
         // TODO move to LtePhyUeD2D module
         bool enableMulticastD2DRangeCheck = default(false);
         double multicastD2DRange @unit(m) = default(1000m);
-             
+                      
     gates:
         input upperGateIn;       // from upper layer
         output upperGateOut;    // to upper layer
@@ -66,8 +66,11 @@ simple LtePhyUe extends LtePhyBase {
          // configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)
          double minRssi @unit("dB")= default(-99.0dB);
          
+         @signal[distance];
+         @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
+      
          @signal[servingCell];
-         @statistic[servingCell](title="ID of the serving eNodeB for the UE"; unit=""; source="servingCell"; record=vector);
+         @statistic[servingCell](title="ID of the serving cell for the UE"; unit=""; source="servingCell"; record=vector);
          
          //# CQI statistics
          @signal[averageCqiDl];

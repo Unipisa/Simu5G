@@ -44,9 +44,6 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
        computeLosProbability(twoDimDistance, nodeId);
    }
 
-   if(dir == DL)
-       emit(distance_,twoDimDistance);
-
    //compute attenuation based on selected scenario and based on LOS or NLOS
    bool los = losMap_[nodeId];
    double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);

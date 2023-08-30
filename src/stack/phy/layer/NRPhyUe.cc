@@ -406,6 +406,19 @@ void NRPhyUe::doHandover()
     currentMasterRssi_ = candidateMasterRssi_;
     hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
 
+    // update NED parameter
+    if (isNr_)
+        getAncestorPar("nrMasterId").setIntValue(masterId_);
+    else
+        getAncestorPar("masterId").setIntValue(masterId_);
+
+    if (masterId_ == 0)
+        masterMobility_ = nullptr;
+    else
+    {
+        cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
+        masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
+    }
     // update cellInfo
     if (masterId_ != 0)
         cellInfo_->detachUser(nodeId_);
