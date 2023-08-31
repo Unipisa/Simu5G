@@ -351,7 +351,7 @@ void LtePdcpRrcBase::initialize(int stage)
         if(headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED &&
                 headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE)
         {
-            throw cRuntimeError("Size of compressed header must not be less than %li", MIN_COMPRESSED_HEADER_SIZE.get());
+            throw cRuntimeError("Size of compressed header must not be less than %lli", MIN_COMPRESSED_HEADER_SIZE.get());
         }
 
         nodeId_ = getAncestorPar("macNodeId");

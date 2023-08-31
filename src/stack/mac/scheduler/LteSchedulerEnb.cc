@@ -711,7 +711,6 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
         EV << "LteSchedulerEnb::scheduleGrantBackground bytes to be allocated: " << toServe << endl;
 
         unsigned int cwAllocatedBytes = 0;  // per codeword allocated bytes
-        unsigned int cwAllocatedBlocks = 0; // used by uplink only, for signaling cw blocks usage to schedule list
         std::map<Band, unsigned int> allocatedRbMapEntry;
 
         unsigned int allocatedCws = 0;
@@ -794,7 +793,6 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
                 // mark here allocation
                 allocator_->addBlocks(antenna,b,bgUeId,uBlocks,uBytes);
                 // add allocated blocks for this codeword
-                cwAllocatedBlocks += uBlocks;
                 totalAllocatedBlocks += uBlocks;
                 cwAllocatedBytes+=uBytes;
 
@@ -1064,7 +1062,6 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
         allocator_->getAllocatedBlocksBegin();
 
     double allocatedBlocks = 0;
-    unsigned int plane = 0;
     unsigned int antenna = 0;
 
     std::vector<unsigned int>::const_iterator antennaIt = planeIt->begin();
@@ -1083,8 +1080,6 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     }
 
     utilization_ /= (((double) (antenna)) * ((double) resourceBlocks_));
-
-    plane++;
 
     if (direction_ == DL)
         mac_->emit(avgServedBlocksDl_, allocatedBlocks);
