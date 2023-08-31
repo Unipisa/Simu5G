@@ -53,7 +53,7 @@ backups
 /simulations/*/*/*/results*/
 /simulations/*/scenario*/
 /simulations/*/eval*/
-/simulations/*/.cmdenv-log
+*.cmdenv-log
 *.rt
 *.elog
 
