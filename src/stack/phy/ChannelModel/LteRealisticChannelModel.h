@@ -163,13 +163,6 @@ protected:
   static omnetpp::simsignal_t measuredSinrDl_;
   static omnetpp::simsignal_t measuredSinrUl_;
 
-  // rsrq from log file
-  bool useRsrqFromLog_;
-  int rsrqShift_;
-  double rsrqScale_;
-  int oldTime_;
-  int oldRsrq_;
-
 public:
   virtual void initialize(int stage);
 

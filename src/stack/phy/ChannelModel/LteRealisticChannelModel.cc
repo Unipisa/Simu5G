@@ -96,12 +96,6 @@ void LteRealisticChannelModel::initialize(int stage)
         binder_ = getBinder();
         //clear jakes fading map structure
         jakesFadingMap_.clear();
-
-        useRsrqFromLog_ = par("useRsrqFromLog").boolValue();
-        rsrqShift_ = par("rsrqShift");
-        rsrqScale_ = par("rsrqScale");
-        oldTime_ = -1;
-        oldRsrq_ = 0;
     }
 }
 
@@ -406,36 +400,6 @@ double LteRealisticChannelModel::computeAngolarAttenuation(double hAngle, double
 
 std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-   if (useRsrqFromLog_)
-   {
-       int time = -1, rsrq = oldRsrq_;
-       double currentTime = simTime().dbl();
-       if (currentTime > oldTime_+1)
-       {
-           std::ifstream file;
-
-           // open the rsrq file
-           file.clear();
-           file.open("rsrqFile.dat");
-
-           file >> time;
-           file >> rsrq;
-
-           file.close();
-
-           oldTime_ = simTime().dbl();
-           oldRsrq_ = rsrq;
-
-           std::cout << "LteRealisticChannelModel::getSINR - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
-       }
-
-       double sinr = rsrqScale_ * (rsrq + rsrqShift_);
-       std::vector<double> snrVector;
-       snrVector.resize(numBands_, sinr);
-
-       return snrVector;
-   }
-
    //get tx power
    double recvPower = lteInfo->getTxPower(); // dBm
 
@@ -754,36 +718,6 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
 std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-   if (useRsrqFromLog_)
-   {
-       int time = -1, rsrq = oldRsrq_;
-       double currentTime = simTime().dbl();
-       if (currentTime > oldTime_+1)
-       {
-           std::ifstream file;
-
-           // open the rsrq file
-           file.clear();
-           file.open("rsrqFile.dat");
-
-           file >> time;
-           file >> rsrq;
-
-           file.close();
-
-           oldTime_ = simTime().dbl();
-           oldRsrq_ = rsrq;
-
-           std::cout << "LteRealisticChannelModel::getRSRP - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
-       }
-
-       double sinr = rsrqScale_ * (rsrq + rsrqShift_);
-       std::vector<double> snrVector;
-       snrVector.resize(numBands_, sinr);
-
-       return snrVector;
-   }
-
    //get tx power
    double recvPower = lteInfo->getTxPower(); // dBm
 
