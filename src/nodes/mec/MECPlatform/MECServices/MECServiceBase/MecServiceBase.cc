@@ -9,26 +9,23 @@
 // and cannot be removed from it.
 //
 
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/common/ModuleAccess.h"
-#include "inet/common/lifecycle/NodeStatus.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
 #include <time.h>
-#include "common/utils/utils.h"
+
+#include "inet/networklayer/common/L3AddressResolver.h"
+#include "inet/common/ModuleAccess.h"
+#include "inet/common/lifecycle/NodeStatus.h"
 
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
-
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-
-#include "nodes/mec/utils/httpUtils/json.hpp"
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/SocketManager.h"
-
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
+#include "nodes/mec/utils/httpUtils/json.hpp"
 
 
 using namespace omnetpp;

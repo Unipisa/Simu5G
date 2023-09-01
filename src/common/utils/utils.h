@@ -22,16 +22,15 @@
 #endif // ifdef _WIN32
 
 
-namespace lte{
+namespace simu5g{
+
 namespace utils {
 
-
 std::vector<std::string> splitString(const std::string& str, std::string delim);
-std::string getPacketPayload(omnetpp::cMessage *msg);
-//inet::RawPacket* createUDPPacket(const std::string& payload);
 
 } // namespace utils
-} // namespace lte
+
+} // namespace simu5g
 
 
 #endif // ifndef __INET_HTTPUTILS_H

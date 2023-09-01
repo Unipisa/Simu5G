@@ -234,7 +234,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
        //look for query parameters
         if(!params.empty())
         {
-            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
+            std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
             * supported paramater:
             * - appName
@@ -251,13 +251,13 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
                 if(it->rfind("appName", 0) == 0) // cell_id=par1,par2
                 {
                     EV <<"UALCMPApp::handleGETRequest - parameters: " << endl;
-                    params = lte::utils::splitString(*it, "=");
+                    params = simu5g::utils::splitString(*it, "=");
                     if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for(; pit != pend; ++pit){

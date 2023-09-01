@@ -2,7 +2,8 @@
 
 #include "common/utils/utils.h"
 
-namespace lte{
+namespace simu5g{
+
 namespace utils {
 
     std::vector<std::string> splitString(const std::string& str, std::string delim){
@@ -23,25 +24,6 @@ namespace utils {
             splitted.push_back(str.substr(last, next-last)); // last token
         return splitted;
     }
-
-    std::string getPacketPayload(omnetpp::cMessage *msg){
-//        inet::RawPacket *request = check_and_cast<inet::RawPacket *>(msg);
-//        if (request == 0) throw cRuntimeError("UEWarningAlertApp_rest::handleMessage - \tFATAL! Error when casting to MEAppPacket");
-//        int pktSize = request->getByteLength();
-//        std::string packet(request->getByteArray().getDataPtr(), pktSize);
-
-        std::string packet("ciaso");
-              return packet;
-    }
-
-//    inet::RawPacket* createUDPPacket(const std::string& payload){
-//       inet::RawPacket *pck  = new inet::RawPacket("udpPacket");
-//       pck->setDataFromBuffer(payload.c_str(), payload.size());
-//       pck->setByteLength(payload.size());
-//       return pck;
-//    }
-
-
 }
 }
 

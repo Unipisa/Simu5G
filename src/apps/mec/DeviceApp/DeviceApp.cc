@@ -13,7 +13,6 @@
 #include "apps/mec/DeviceApp/DeviceApp.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
-#include "common/utils/utils.h"
 #include <string>
 #include "DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
