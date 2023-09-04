@@ -136,14 +136,6 @@ void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
     pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
     EV << "LteRlcUm : Sending packet " << pktAux->getName() << " to port UM_Sap_down$o\n";
     send(pktAux, down_[OUT_GATE]);
-
-    auto  lteInfo = pkt->getTag<FlowControlInfo>();
-
-    if (lteInfo->getDirection()==DL)
-        emit(rlcPacketLossDl, 0.0);
-    else
-        emit(rlcPacketLossUl, 0.0);
-
     emit(sentPacketToLowerLayer, pkt);
 }
 
@@ -153,16 +145,7 @@ void LteRlcUm::dropBufferOverflow(cPacket *pktAux)
     take(pktAux);                                                    // Take ownership
 
     EV << "LteRlcUm : Dropping packet " << pktAux->getName() << " (queue full) \n";
-
-    auto pkt = check_and_cast<inet::Packet *> (pktAux);
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
-
-   if (lteInfo->getDirection()==DL)
-       emit(rlcPacketLossDl, 1.0);
-   else
-       emit(rlcPacketLossUl, 1.0);
-
-   delete pkt;
+    delete pktAux;
 }
 
 void LteRlcUm::handleUpperMessage(cPacket *pktAux)
