@@ -21,6 +21,7 @@
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/mac/layer/LteMacBase.h"
 #include "nodes/mec/utils/MecCommon.h"
+#include "stack/sdap/utils/QosHandler.h"
 
 class UmTxEntity;
 class UmRxEntity;
@@ -119,10 +120,13 @@ class LteRlcUm : public omnetpp::cSimpleModule
     double getUeThroughput(MacNodeId nodeId);
     void resetThroughputStats(MacNodeId nodeId);
 
-
+    virtual QosHandler * getQosHandler(){
+            Enter_Method_Silent();
+            return qosHandler;
+        }
 
   protected:
-
+    QosHandler *qosHandler;
     omnetpp::cGate* up_[2];
     omnetpp::cGate* down_[2];
 

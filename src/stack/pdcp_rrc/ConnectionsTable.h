@@ -64,7 +64,9 @@ class ConnectionsTable
      */
     LogicalCid find_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService, uint16_t dir);
 
-    /**
+   LogicalCid find_entry(uint32_t srcAddr, uint32_t dstAddr,
+        uint16_t srcPort, uint16_t dstPort, uint16_t dir, unsigned char msgCat);
+/**
      * create_entry() adds a new entry to the table
      *
      * @param srcAddr part of 4-tuple
@@ -74,6 +76,8 @@ class ConnectionsTable
      */
     void create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService, LogicalCid lcid);
 
+void create_entry(uint32_t srcAddr, uint32_t dstAddr,
+        uint16_t srcPort, uint16_t dstPort, uint16_t dir, LogicalCid lcid, unsigned char msgCat);
     /**
      * create_entry() adds a new entry to the table
      *
@@ -84,7 +88,21 @@ class ConnectionsTable
      * @param LCID connection id to insert
      */
     void create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService, uint16_t dir, LogicalCid lcid);
-
+    void erase_entry(uint32_t nodeAddress);
+    struct entry_
+        {
+            uint32_t srcAddr_;
+            uint32_t dstAddr_;
+            uint16_t typeOfService_;
+            uint16_t dir_;
+        uint16_t srcPort_;
+            uint16_t dstPort_;
+        unsigned char msgCat;
+            LogicalCid lcid_;
+        };
+    std::vector<entry_>& getEntries() {
+            return entries_;
+        }
   private:
     /**
      * hash_func() calculates the hash function used
@@ -122,16 +140,10 @@ class ConnectionsTable
      * all fields of the 4-tuple and the
      * associated LCID (Logical Connection ID).
      */
-    struct entry_
-    {
-        uint32_t srcAddr_;
-        uint32_t dstAddr_;
-        uint16_t typeOfService_;
-        uint16_t dir_;
-        LogicalCid lcid_;
-    };
+
     /// Hash table of size TABLE_SIZE
     entry_ ht_[TABLE_SIZE];
+    std::vector<entry_> entries_;
 };
 
 #endif

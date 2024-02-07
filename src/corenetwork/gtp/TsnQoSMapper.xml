@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<PCP id="1">
+		<!-- 5QI 83 -->
+		<delayPar delay="0.001"/>
+		<errorRatePar per="0.0001"/>
+		<dataratePar datarate="100000000"/>
+	</PCP>
+	<PCP id="2">
+		<!-- 5QI 84 -->
+		<delayPar delay="0.003"/>
+		<errorRatePar per="0.0001"/>
+		<dataratePar datarate="100000000"/>
+	</PCP>
+</root>

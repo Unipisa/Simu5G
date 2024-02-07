@@ -17,7 +17,7 @@
 #include "stack/mac/amc/LteAmc.h"
 #include "common/LteCommon.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
-
+#include "stack/sdap/utils/QosHandler.h"
 class MacBsr;
 class LteSchedulerEnbDl;
 class LteSchedulerEnbUl;
@@ -27,6 +27,7 @@ class LteHarqProcessRx;
 class LteMacEnb : public LteMacBase
 {
   protected:
+    QosHandler *qosHandler;
     /// Local CellInfo
     CellInfo *cellInfo_;
 
@@ -257,6 +258,11 @@ class LteMacEnb : public LteMacBase
     * @par direction
     */
     int getActiveUesNumber(Direction dir);
+
+    virtual QosHandler* getQosHandler() {
+            return qosHandler;
+        }
+
 
 };
 

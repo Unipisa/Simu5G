@@ -16,6 +16,9 @@
 #include <inet/common/packet/printer/PacketPrinter.h>
 #include <inet/common/socket/SocketTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
+#include "inet/linklayer/ieee8021q/Ieee8021qTagHeader_m.h"
+#include "inet/linklayer/common/PcpTag_m.h"
+#include "stack/sdap/utils/TsnFiveGTranslator.h"
 
 Define_Module(GtpUser);
 
@@ -33,14 +36,15 @@ void GtpUser::initialize(int stage)
 
     // get reference to the binder
     binder_ = getBinder();
+    //qosHandler
 
-    // transport layer access
     socket_.setOutputGate(gate("socketOut"));
     socket_.bind(localPort_);
 
     tunnelPeerPort_ = par("tunnelPeerPort");
 
     ownerType_ = selectOwnerType(getAncestorPar("nodeType"));
+
 
     // find the address of the core network gateway
     if (ownerType_ != PGW && ownerType_ != UPF)
@@ -61,6 +65,29 @@ void GtpUser::initialize(int stage)
         myMacNodeID = 0;
 
     ie_ = detectInterface();
+    if(getParentModule()->findSubmodule("qosHandlerUPF")!= -1)
+        {
+            try{
+                EV << "GtpUser::initialize - QosHandlerUPF present" << endl;
+               qosHandler = check_and_cast<QosHandlerUPF *> (getParentModule()->getSubmodule("qosHandlerUPF"));
+            }
+            catch (...){
+                //EV << "LtePdcpRrcBase::initialize - QosHandlerGNB present" << endl;
+            }
+
+        }
+    if(getParentModule()->findSubmodule("qosHandlerGnb")!= -1)
+            {
+                try{
+                    EV << "GtpUser::initialize - qosHandlergNB present" << endl;
+                    qosHandler = check_and_cast<QosHandlerGNB*>(getParentModule()->getSubmodule("qosHandlerGnb"));
+                }
+                catch (...){
+                    //EV << "LtePdcpRrcBase::initialize - QosHandlerGNB present" << endl;
+                }
+
+            }
+
 }
 
 NetworkInterface* GtpUser::detectInterface()
@@ -88,6 +115,8 @@ CoreNodeType GtpUser::selectOwnerType(const char * type)
     else if(strcmp(type,"PGW") == 0)
         return PGW;
     else if(strcmp(type,"UPF") == 0)
+        return UPF;
+    else if(strcmp(type,"Nwtt3") == 0)
         return UPF;
     else if(strcmp(type, "UPF_MEC") == 0)
         return UPF_MEC;
@@ -141,6 +170,18 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
      *    4b) the UE is inside another network
      *        --> tunnel the packet towards the CN gateway
      */
+    //TSN Handling
+    auto convertedQfi = 0;
+    if (getSimulation()->getSystemModule()->hasPar("tsnEnabled")) {
+        std::string name = datagram->getName();
+        //qosHandler->getQfi(name);
+         convertedQfi = qosHandler->getFlowQfi(name);
+        //convertedQfi = binder_->getGlobalDataModule()->convertPcpToQfi(datagram);
+    }
+    else{
+         convertedQfi = -1;
+    }
+
 
     auto tftInfo = datagram->removeTag<TftControlInfo>();
     TrafficFlowTemplateId flowId = tftInfo->getTft();
@@ -170,6 +211,11 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
         // create a new GtpUserMessage and encapsulate the datagram within the GtpUserMessage
         auto header = makeShared<GtpUserMsg>();
         header->setTeid(0);
+
+        //TSN
+        if (getSimulation()->getSystemModule()->hasPar("tsnEnabled")) {
+            header->setQfi(convertedQfi);
+        }
         header->setChunkLength(B(8));
         auto gtpPacket = new Packet(datagram->getName());
         gtpPacket->insertAtFront(header);
@@ -195,6 +241,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet * datagram)
         }
         else  // send to a BS
         {
+            EV<<"Flowww Id is"<<flowId<<endl;
             // check if the destination is within the same core network
 
 
@@ -231,18 +278,34 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
     EV << "GtpUser::handleFromUdp - Decapsulating and forwarding to the correct destination" << endl;
 
+
+
+
     // re-create the original IP datagram and send it to the local network
     auto originalPacket = new Packet (pkt->getName());
     auto gtpUserMsg = pkt->popAtFront<GtpUserMsg>();
+    auto qfi = gtpUserMsg->getQfi();
+    //binder_->setCurrentPacketQfi(gtpUserMsg->getQfi());
+    /*
+    //TSN Handling
+        auto tsnHeader = makeShared<Ieee8021qTagEpdHeader>();
+         int pcp = convertQfiToPcp(originalPacket);
+         tsnHeader->setPcp(pcp);
+         originalPacket->addTagIfAbsent<PcpInd>()->setPcp(pcp);
+         originalPacket->insertAtFront(tsnHeader);
+         */
     originalPacket->insertAtBack(pkt->peekData());
     originalPacket->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
     // remove any pending socket indications
     auto sockInd = pkt->removeTagIfPresent<SocketInd>();
 
-    delete pkt;
+    //delete pkt;
 
     const auto& hdr = originalPacket->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = hdr->getDestAddress();
+
+
+
 
     if (isBaseStation(ownerType_))
     {
@@ -252,12 +315,14 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
         EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
         // local delivery
+        delete pkt;
         send(originalPacket,"pppGate");
     }
     else if(ownerType_== UPF_MEC )
     {
         // we are on the MEC, local delivery
         EV << "GtpUser::handleFromUdp - Datagram local delivery to " << destAddr.str() << endl;
+        delete pkt;
         send(originalPacket,"pppGate");
     }
     else if (ownerType_== PGW || ownerType_ == UPF)
@@ -293,12 +358,75 @@ void GtpUser::handleFromUdp(Packet * pkt)
                 // create a new GtpUserMessage
                 EV << "GtpUser::handleFromUdp - Tunneling datagram to " << tunnelPeerAddress.str() << ", final destination[" << destAddr.str() << "]" << endl;
                 socket_.sendTo(gtpMsg, tunnelPeerAddress, tunnelPeerPort_);
+                delete pkt;
                 return;
             }
         }
 
         // destination is outside the radio network
+        int convertedPcp;
+        if (getSimulation()->getSystemModule()->hasPar("tsnEnabled")) {
+                convertedPcp = binder_->getGlobalDataModule()->convertFiveqiToPcp(originalPacket);
+            }
+            else{
+                convertedPcp = -1;
+            }
+
         EV << "GtpUser::handleFromUdp - Sending datagram outside the radio network, destination[" << destAddr.str() << "]" << endl;
+        delete pkt;
         send(originalPacket,"pppGate");
     }
 }
+
+/*
+int GtpUser::convertQfiToPcp(Packet *datagram){
+    EV<<"Packets name is"<<datagram->getName()<<endl;
+        std::string packetName = datagram->getName();
+        size_t found = -1;
+        for (const auto& pair:qosChecker.qfiToPcp){
+            found = packetName.find(pair.first);
+            //EV<<"pair.first is"<<pair.first<<endl;
+            if (found != std::string::npos){
+                //EV<<"Substring found at position"<<found<<std::endl;
+                return pair.second;
+            }
+            else{
+                //EV<<"Substring not found"<<std::endl;
+            }
+        }
+        return -1;
+
+}
+
+void GtpUser::getQoSMapParametersFromXml(){
+    //Traverses the XML document and gets the delay/per/datarate values based on the PCP
+
+    cXMLElement* root = par("pcpQfiProfile");
+    std::string pcpval = "1";
+    cXMLElement* xmlInfo = root->
+                  getFirstChildWithAttribute("PCP", "id", pcpval.c_str());
+    std::string xmlDelayInfo = xmlInfo->
+                    getFirstChildWithAttribute("delayPar", "delay", 0)->
+                    getAttribute("delay");
+   std::string xmlPerInfo = xmlInfo->
+                getFirstChildWithAttribute("errorRatePar", "per", 0)->
+                getAttribute("per");
+   std::string xmlDatarateInfo = xmlInfo->
+                getFirstChildWithAttribute("dataratePar", "datarate", 0)->
+                getAttribute("datarate");
+   // Prints out the Values
+    EV << "PCPValue: "<< 1 << endl;
+    EV << "XMLInfo: " << " Delay: " << xmlDelayInfo << endl;
+    EV << "XMLInfo: " << " PER: " << xmlPerInfo << endl;
+    EV << "XMLInfo: " << " Datarate: " << xmlDatarateInfo << endl;
+    /*
+    xml  = parsim::cXMLUtils::parseFile("tsnQosMapper.xml");
+    if (xml == NULL){
+        EV <<"Failed to read QoS mapper XML file"<<endl;
+    }
+    else{
+        EV<<"Qos mapper XML file loading failed"<<endl;
+    }
+
+}
+*/

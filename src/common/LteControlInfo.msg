@@ -61,6 +61,15 @@ class LteControlInfo extends inet::TagBase {
 
     unsigned short application enum(ApplicationType);    // Application Type
     unsigned short traffic enum(LteTrafficClass);        // Lte Traffic Type
+    
+    //# 5QI information
+    unsigned int cid;
+    unsigned short qfi;
+    unsigned short radioBearerId;
+    
+    unsigned int bytesize; 
+    unsigned int numberOfPacketsInQueue;
+    unsigned int bytesizeOfOnePacket;  
 
     //# RLC Control Information
 
@@ -71,7 +80,7 @@ class LteControlInfo extends inet::TagBase {
     uint16 lcid;                                        // Logical Connection Identifier
     int32 multicastGroupId = -1;                        // Identifier for a multicast group (it is in range [0:[2^28)-1] ) 
                                                         // For unicast communications, this field is -1
-      
+    bool containsSeveralCids = false;
                                                           
 }
 
@@ -95,6 +104,8 @@ class FlowControlInfo extends LteControlInfo {
     unsigned int sequenceNumber;                          // packet sequence number
     int headerSize;                                       // IP + Transport header size (used by pdcp ROHC)
     bool useNR = false;									  // flag for sending this packet using NR
+	 uint16 srcPort;                                          // source port
+    uint16 dstPort;                                       // destination port
 }
 
 //

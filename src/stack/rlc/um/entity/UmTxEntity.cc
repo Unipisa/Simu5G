@@ -75,6 +75,7 @@ void UmTxEntity::initialize()
             }
         }
     }
+
     burstStatus_ = INACTIVE;
 
 }
@@ -113,8 +114,40 @@ void UmTxEntity::rlcPduMake(int pduLength)
     while (!sduQueue_.isEmpty() && pduLength > 0)
     {
         // detach data from the SDU buffer
-        auto pkt = check_and_cast<inet::Packet *>(sduQueue_.front());
+        cPacket* pktDel = sduQueue_.front();
+        auto pkt = check_and_cast<inet::Packet *>(pktDel);
+        //auto pkt = check_and_cast<inet::Packet *>(sduQueue_.front());
         auto rlcSdu = pkt->peekAtFront<LteRlcSdu>();
+        auto chunk = pkt->peekAtFront<Chunk>();
+        //LteRlcSdu rlcSduDel = check_and_cast<LteRlcSdu>(pktDel);
+        auto rlcSduDel = dynamicPtrCast<const LteRlcSdu>(chunk);
+
+        if (getSimulation()->getSystemModule()->par("useQosModel").boolValue() && getSimulation()->getSystemModule()->par("packetDropEnabled").boolValue()){
+            //check the delay budget of that packet
+            //get corresponding delay budget
+            LteRlcUm* lteRlc = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("um"));
+            unsigned short qfi  = flowControlInfo_->getQfi();
+            unsigned short _5qi = lteRlc->getQosHandler()->get5Qi(qfi);
+            double pdb = lteRlc->getQosHandler()->getPdb(_5qi);
+
+            while (sduQueue_.getLength() > 1){
+                double delay = NOW.dbl() - pkt->getCreationTime().dbl();
+                if (delay > pdb){
+                    //drop packet
+                    sduQueue_.pop();
+                    delete &rlcSduDel;
+                    pkt = check_and_cast<inet::Packet *>(sduQueue_.front());
+                    rlcSdu = check_and_cast<LteRlcSdu*>(pkt);
+                }
+                else {
+                    break;
+                }
+            }
+
+
+        }
+
+
         unsigned int sduSequenceNumber = rlcSdu->getSnoMainPacket();
         int sduLength = rlcSdu->getLengthMainPacket(); // length without the SDU header
 

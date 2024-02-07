@@ -18,12 +18,35 @@
 
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
+#include <inet/networklayer/configurator/ipv4/Ipv4NetworkConfigurator.h>
+#include "inet/common/XMLUtils.h"
+
 
 using namespace std;
 using namespace inet;
 
 Define_Module(Binder);
 
+void Binder::registerUeConnectedEthernetDevices(){
+
+    globalData = check_and_cast<GlobalData*>(getSimulation()->getModuleByPath("globalData"));
+    auto ueEthInterfaceMapping = globalData->getUeEthInterfaceMapping();
+    for (auto& item: ueEthInterfaceMapping){
+        Ipv4Address ipAddress(item.second.ipAddress.c_str());
+        ueEthernetConnectedDevices.push_back(ipAddress);
+        if (item.second.connectedUeIpAddress!= ""){
+            Ipv4Address ip(item.second.connectedUeIpAddress.c_str());
+            this->ipAddressOfTheUeToWhichTsnRadioLinkIsConnected = ip;
+        }
+    }
+
+}
+std::vector<inet::Ipv4Address> Binder::getUeConnectedEthernetDevices(){
+    return ueEthernetConnectedDevices;
+}
+GlobalData* Binder::getGlobalDataModule(){
+    return this->globalData;
+}
 void Binder::registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     CarrierInfoMap::iterator it = componentCarriers_.find(carrierFrequency);
@@ -271,12 +294,70 @@ void Binder::initialize(int stage)
         networkName_ = std::string(getSystemModule()->getName());
     }
 
+        const char *stringValue;
+        qosChar = NRQosCharacteristics::getNRQosCharacteristics();
+
+        vector<int> qiValue;
+        vector<string> resourceType;
+        vector<int> priorityLevel;
+        vector<double> packetDelayBudgetNR; //in s
+        vector<double> packetErrorRate;
+        vector<int> maxDataBurstVolume; //in bytes
+        vector<int> defAveragingWindow; //in s
+
+        stringValue = par("qiValue");
+        qiValue = cStringTokenizer(stringValue).asIntVector();
+        short sizeQiValue = qiValue.size();
+
+        stringValue = par("resourceType");
+        resourceType = cStringTokenizer(stringValue).asVector();
+        short sizeResourceType = resourceType.size();
+        ASSERT(sizeQiValue == sizeResourceType);
+
+        stringValue = par("priorityLevel");
+        priorityLevel = cStringTokenizer(stringValue).asIntVector();
+        short sizePriorityLevel = priorityLevel.size();
+        ASSERT(sizeResourceType == sizePriorityLevel);
+
+        stringValue = par("packetDelayBudgetNR");
+        packetDelayBudgetNR = cStringTokenizer(stringValue).asDoubleVector();
+        short sizePacketDelayBudgetNR = packetDelayBudgetNR.size();
+        ASSERT(sizePriorityLevel == sizePacketDelayBudgetNR);
+
+        stringValue = par("packetErrorRate");
+        packetErrorRate = cStringTokenizer(stringValue).asDoubleVector();
+        short sizePacketErrorRate = packetErrorRate.size();
+        ASSERT(sizePacketDelayBudgetNR == sizePacketErrorRate);
+
+        stringValue = par("maxDataBurstVolume");
+        maxDataBurstVolume = cStringTokenizer(stringValue).asIntVector();
+        short sizeMaxDataBurstVolume = maxDataBurstVolume.size();
+        ASSERT(sizePacketErrorRate == sizeMaxDataBurstVolume);
+
+        stringValue = par("defAveragingWindow");
+        defAveragingWindow = cStringTokenizer(stringValue).asIntVector();
+        short sizeDefAveragingWindow = qiValue.size();
+        ASSERT(sizeMaxDataBurstVolume == sizeDefAveragingWindow);
+
+
+        //load the values into the values map
+        for (short i = 0; i < sizeDefAveragingWindow; i++) {
+            qosChar->getValues()[qiValue[i]] = QosCharacteristic(convertStringToResourceType(resourceType[i]), priorityLevel[i], packetDelayBudgetNR[i], packetErrorRate[i], maxDataBurstVolume[i],
+                    defAveragingWindow[i]);
+        }
+
+    }
+
+
+
     if (stage == inet::INITSTAGE_LAST)
     {
         maxDataRatePerRb_ = par("maxDataRatePerRb");
 
         // if avg interference enabled, compute CQIs
         computeAverageCqiForBackgroundUes();
+        registerUeConnectedEthernetDevices();
+        readTsnFiveGTrafficXml();
     }
 
 }
@@ -1351,4 +1432,34 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     }
 }
 
+int Binder::getCurrentPacketQfi(){
+    return this->currentPacketQfi;
+}
+void Binder::setCurrentPacketQfi(int qfi){
+    this->currentPacketQfi = qfi;
+}
+void Binder::readTsnFiveGTrafficXml(){
+    //if (getSimulation()->getSystemModule()->hasPar("tsnFiveGtrafficMappingXml")){
+        //const char* fileName = par("tsnFiveGtrafficMappinXml").stringValue();
+    /*
+    cXMLElement* xml = getSimulation()->getSystemModule()->par("tsnFiveGtrafficMappingXml");
+        cXMLElementList children = xml->getChildren();
+
+        //for (cXMLElement * node = xml->getFirstChild(); node; node = node->getNextSibling()){
+          //  std::string val = node->getTagName();
+        //}
+        for (cXMLElementList::const_iterator it = children.begin(); it!=children.end();++it){
+            cXMLElement *element = *it;
+            //const char *pcp = element->getChild->getTagName('pcp');
+            const char *tag = element->getTagName();
+        }
+        //get the route element
+        //cXMLElement* root = xml->getFirstChildElement();
+        //for (cXMLElement* elem = root->getFirstChildElement(); elem != nullptr; elem = elem->getNextSiblingElement()){
+           // const char*name = elem->getTagName();
+
+        //}
+        delete xml;
+    //}*/
+}
 

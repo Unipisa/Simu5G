@@ -750,7 +750,19 @@ bool LteMacEnb::bufferizePacket(cPacket* pktAux)
 
     // obtain the cid from the packet informations
     MacCid cid = ctrlInfoToMacCid(lteInfo);
-
+    if (qosHandler->getQosInfo().find(cid) == qosHandler->getQosInfo().end()){
+        qosHandler->getQosInfo()[cid].appType = static_cast<ApplicationType>(lteInfo->getApplication());
+        qosHandler->getQosInfo()[cid].destNodeId = lteInfo->getDestId();
+        qosHandler->getQosInfo()[cid].lcid = lteInfo->getLcid();
+        qosHandler->getQosInfo()[cid].dir = DL;
+        qosHandler->getQosInfo()[cid].qfi = lteInfo->getQfi();
+        qosHandler->getQosInfo()[cid].cid = cid;
+        qosHandler->getQosInfo()[cid].radioBearerId = lteInfo->getRadioBearerId();
+        qosHandler->getQosInfo()[cid].senderNodeId = lteInfo->getSourceId();
+        qosHandler->getQosInfo()[cid].trafficClass = (LteTrafficClass) lteInfo->getTraffic();
+        qosHandler->getQosInfo()[cid].rlcType = lteInfo->getRlcType();
+        qosHandler->getQosInfo()[cid].containsSeveralCids = lteInfo->getContainsSeveralCids();
+    }
     // this packet is used to signal the arrival of new data in the RLC buffers
     if (checkIfHeaderType<LteRlcPduNewData>(pkt))
     {

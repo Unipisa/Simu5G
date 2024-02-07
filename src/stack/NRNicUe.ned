@@ -19,6 +19,28 @@ import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.packetFlowManager.PacketFlowManager;
+import simu5g.stack.sdap.utils.*;
+//
+// e/gNodeB with NR stack
+//
+module NRNicEnb extends LteNicEnbD2D
+{
+    parameters:
+        LtePdcpRrcType = default("NRPdcpRrcEnb");
+        LteMacType = default("NRMacGnb");
+        LteChannelModelType = default("NRChannelModel_3GPP38_901");
+        @display("bgb=694,443");
+        PacketFlowManagerType = default("NRPacketFlowManagerGnb");
+         string qosHandlerType = "QosHandlerGNB";
+     submodules:
+         
+             //sdap
+        qosHandlerGnb: <qosHandlerType> like IQosHandler {
+
+            @display("p=186,200");
+        }
+
+}
 
 //
 // UE with LTE+NR stack
@@ -41,10 +63,16 @@ module NRNicUe extends LteNicUeD2D
         											// LtePhy is of type NRPhyUe so that it is
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
-
+		string qosHandlerType = "QosHandlerUE";	
         @display("bgb=694,443");
 
     submodules:
+        //sdap
+        qosHandlerUe: <qosHandlerType> like IQosHandler {
+
+            @display("p=186,200");
+        }
+        
         // RLC Layer
         nrRlc: LteRlc {
             @display("p=466,226");

@@ -56,7 +56,7 @@ struct SortedDesc
  */
 class LteScheduler
 {
-  protected:
+public:
 
     /// MAC module, used to get parameters from NED
     LteMacEnb *mac_;
@@ -104,7 +104,7 @@ class LteScheduler
     unsigned int maxSchedulingPeriodCounter_;
     unsigned int currentSchedulingPeriodCounter_;
 
-  public:
+
 
     /**
      * Default constructor.

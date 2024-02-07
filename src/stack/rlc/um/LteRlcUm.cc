@@ -300,6 +300,29 @@ void LteRlcUm::initialize(int stage)
         WATCH_MAP(txEntities_);
         WATCH_MAP(rxEntities_);
     }
+    if(getParentModule()->getParentModule()->findSubmodule("qosHandlerGnb")!= -1)
+    {
+        EV << "LteRlcUm::initialize - QosHandlerGNB present" << endl;
+        try{
+           qosHandler = check_and_cast<QosHandlerGNB *> (getParentModule()->getParentModule()->getSubmodule("qosHandlerGnb"));
+        }
+        catch(...){
+            //EV << "LtePdcpRrcBase::initialize - QosHandlerUE present" << endl;
+        }
+
+    }
+    if(getParentModule()->getParentModule()->findSubmodule("qosHandlerUe")!= -1)
+    {
+        try{
+            EV << "LteRlcUm::initialize - QosHandlerUE present" << endl;
+           qosHandler = check_and_cast<QosHandlerUE *> (getParentModule()->getParentModule()->getSubmodule("qosHandlerUe"));
+        }
+        catch (...){
+            //EV << "LtePdcpRrcBase::initialize - QosHandlerGNB present" << endl;
+        }
+
+    }
+   // qosHandler = check_and_cast<QosHandler *>(getParentModule()->getParentModule()->getSubmodule("qosHandlerGnb"));
 }
 
 void LteRlcUm::handleMessage(cMessage* msg)
