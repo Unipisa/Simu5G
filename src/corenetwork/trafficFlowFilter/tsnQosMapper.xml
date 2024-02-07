@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrafficTypes>
+  <TrafficType>
+    <PCP>1</PCP>
+    <PacketSize>64</PacketSize>
+    <Delay>10</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>2</PCP>
+    <PacketSize>128</PacketSize>
+    <Delay>20</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>3</PCP>
+    <PacketSize>256</PacketSize>
+    <Delay>30</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>4</PCP>
+    <PacketSize>512</PacketSize>
+    <Delay>40</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>5</PCP>
+    <PacketSize>1024</PacketSize>
+    <Delay>50</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>6</PCP>
+    <PacketSize>2048</PacketSize>
+    <Delay>60</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>7</PCP>
+    <PacketSize>4096</PacketSize>
+    <Delay>70</Delay>
+  </TrafficType>
+  <TrafficType>
+    <PCP>8</PCP>
+    <PacketSize>8192</PacketSize>
+    <Delay>80</Delay>
+  </TrafficType>
+</TrafficTypes>

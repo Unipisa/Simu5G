@@ -50,7 +50,7 @@ enum GateDirection
 /// Lte Traffic Classes
 enum LteTrafficClass
 {
-    CONVERSATIONAL = 0; STREAMING =1;  INTERACTIVE = 2; BACKGROUND = 3; UNKNOWN_TRAFFIC_TYPE = 4;
+    CONVERSATIONAL = 0; STREAMING =1;  INTERACTIVE = 2; BACKGROUND = 3; HIGH_PRIORITY_TSN = 4; UNKNOWN_TRAFFIC_TYPE = 5;
 };
 
 /// Scheduler grant type
@@ -92,7 +92,9 @@ enum ApplicationType
     FTP = 4;
     GAMING = 5;
     FULLBUFFER = 6;
-    UNKNOWN_APP = 7;
+    NETWORK_CONTROL = 7;
+    UNKNOWN_APP = 8;
+    
 };
 
 
@@ -109,7 +111,9 @@ enum SchedDiscipline
     MAXCI_OPT_MB = 4;
     MAXCI_COMP = 5;
     ALLOCATOR_BESTFIT = 6;
-    UNKNOWN_DISCIPLINE = 7;
+    DQOS = 7;
+    UNKNOWN_DISCIPLINE = 8;
+    
 };
 
 // specifies how the final CQI will be computed from the multiband ones

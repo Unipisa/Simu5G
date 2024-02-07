@@ -20,7 +20,8 @@
 #include "stack/pdcp_rrc/layer/entity/LteTxPdcpEntity.h"
 #include "stack/pdcp_rrc/layer/entity/LteRxPdcpEntity.h"
 #include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
-
+#include "stack/sdap/sdap.h"
+#include "stack/sdap/utils/QosHandler.h"
 class LteTxPdcpEntity;
 class LteRxPdcpEntity;
 
@@ -67,6 +68,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     /**
      * Initializes the connection table
      */
+
     LtePdcpRrcBase();
 
     /**
@@ -79,6 +81,8 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      */
     virtual void deleteEntities(MacNodeId nodeId) {}
 
+    Sdap sdap;
+    QosHandler * qosHandler;
   protected:
 
     /**

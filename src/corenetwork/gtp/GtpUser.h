@@ -22,7 +22,9 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "common/binder/Binder.h"
 #include <inet/linklayer/common/InterfaceTag_m.h>
-
+#include "common/binder/GlobalData.h"
+#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/sdap/utils/QosHandler.h"
 /**
  * GtpUser is used for building data tunnels between GTP peers.
  * GtpUser can receive two kind of packets:
@@ -54,6 +56,8 @@ class GtpUser : public omnetpp::cSimpleModule
 
     inet::NetworkInterface* ie_;
 
+    QosHandler *qosHandler;
+
   protected:
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -68,6 +72,8 @@ class GtpUser : public omnetpp::cSimpleModule
 
     // detect outgoing interface name (CellularNic)
     inet::NetworkInterface *detectInterface();
+
+    //void getQoSMapParametersFromXml();
 };
 
 #endif

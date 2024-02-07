@@ -28,7 +28,7 @@ import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.corenetwork.statsCollector.StatsCollector; 
-
+import simu5g.stack.sdap.utils.*;
 // 
 // eNodeB Module
 // 
@@ -91,6 +91,7 @@ module eNodeB
         //# Plmn params (used by RNI Service in EnodeBStatsCollector)
         string mcc = default("001"); // Test network
         string mnc = default("01");  // Test network
+        string qosHandlerType = "QosHandlerGNB";
 
     gates:
         inout ppp @loose;         // connection to the Core Network
@@ -101,6 +102,10 @@ module eNodeB
         inout pppMEHost @loose;		// connection to the GtpEndpoint module inside MEHost
 
     submodules:
+        qosHandlerGnb: <qosHandlerType> like IQosHandler {
+
+            @display("p=186,200");
+        }
         interfaceTable: InterfaceTable {
             parameters:
                 @display("p=110.43,158.4875;is=s");

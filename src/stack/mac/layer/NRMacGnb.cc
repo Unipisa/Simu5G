@@ -24,9 +24,10 @@ NRMacGnb::~NRMacGnb()
 }
 
 void NRMacGnb::initialize(int stage)
-{
+{   LteMacEnbD2D::initialize(stage);
     if (stage == inet::INITSTAGE_LINK_LAYER)
     {
+        qosHandler = check_and_cast<QosHandlerGNB*>(getParentModule()->getSubmodule("qosHandlerGnb"));
         /* Create and initialize NR MAC Uplink scheduler */
         if (enbSchedulerUl_ == NULL)
         {
@@ -34,6 +35,36 @@ void NRMacGnb::initialize(int stage)
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this);
         }
+       //enbSchedulerDl_ = check_and_cast<LteSchedulerEnbDl*>(new LteSchedulerEnbDl());
+        //enbSchedulerDl_->initialize(DL, this);
     }
-    LteMacEnbD2D::initialize(stage);
+
 }
+void NRMacGnb::handleMessage(cMessage *msg) {
+
+    //std::cout << "NRMacGnbRealistic::handleMessage start at " << simTime().dbl() << std::endl;
+
+    if (strcmp(msg->getName(), "RRC") == 0) {
+        cGate *incoming = msg->getArrivalGate();
+        if (incoming == up_[IN_GATE]) {
+            //from pdcp to mac
+            send(msg, gate("lowerLayer$o"));
+        } else if (incoming == down_[IN_GATE]) {
+            //from mac to pdcp
+            send(msg, gate("upperLayer$o"));
+        }
+    }
+
+    if (msg->isSelfMessage()) {
+        if (strcmp(msg->getName(), "flushHarqMsg") == 0) {
+            flushHarqBuffers();
+            delete msg;
+            return;
+        }
+    }
+
+    LteMacBase::handleMessage(msg);
+
+    //std::cout << "NRMacGnbRealistic::handleMessage end at " << simTime().dbl() << std::endl;
+}
+

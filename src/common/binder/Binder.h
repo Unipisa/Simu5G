@@ -14,7 +14,7 @@
 
 #include <omnetpp.h>
 #include <string>
-
+#include <vector>
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 #include <inet/networklayer/common/L3Address.h>
 #include "common/LteCommon.h"
@@ -22,8 +22,11 @@
 #include "nodes/ExtCell.h"
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "common/NrCommon.h"
+#include "GlobalData.h"
 
 class UeStatsCollector;
+class NRQosCharacteristics;
 
 /**
  * The Binder module has one instance in the whole network.
@@ -139,6 +142,14 @@ class Binder : public omnetpp::cSimpleModule
     // store the id of the UEs that are performing handover
     std::set<MacNodeId> ueHandoverTriggered_;
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> > handoverTriggered_;
+
+    //Store the ip of the devices connected to the UE over ethernet gate
+    std::vector<inet::Ipv4Address>ueEthernetConnectedDevices;
+    int currentPacketQfi;
+    GlobalData *globalData;
+    inet::Ipv4Address ipAddressOfTheUeToWhichTsnRadioLinkIsConnected;
+
+    std::vector<int> qfiQueueFromGtp;
   protected:
     virtual void initialize(int stages) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -146,8 +157,9 @@ class Binder : public omnetpp::cSimpleModule
     {
     }
     virtual void finish() override;
-
+    NRQosCharacteristics *qosChar;
   public:
+
     Binder()
     {
         macNodeIdCounter_[0] = ENB_MIN_ID;
@@ -183,7 +195,14 @@ class Binder : public omnetpp::cSimpleModule
             delete (*it);
         ueList_.clear();
     }
-
+    /**
+     * Adds UE Connected Ethernet Devices
+     */
+    void registerUeConnectedEthernetDevices();
+    /**
+     * Gets UE Connected Ethernet Devices
+     */
+    std::vector<inet::Ipv4Address> getUeConnectedEthernetDevices();
     /**
      * Registers a carrier to the global Binder module
      */
@@ -627,6 +646,20 @@ class Binder : public omnetpp::cSimpleModule
 
     RanNodeType getBaseStationTypeById(MacNodeId);
 
+    int getCurrentPacketQfi();
+    void setCurrentPacketQfi(int qfi);
+
+    void readTsnFiveGTrafficXml();
+    inet::Ipv4Address getIpAddressOfTheUeToWhichTsnRadioLinkIsConnected(){
+        return this->ipAddressOfTheUeToWhichTsnRadioLinkIsConnected;
+    }
+    GlobalData* getGlobalDataModule();
+    int popValueFromQfiQueueFromGtp(){
+        return qfiQueueFromGtp.back();
+    }
+    void pushValueToQfiQueueFromGtp(int val){
+        this->qfiQueueFromGtp.push_back(val);
+    }
 
 };
 

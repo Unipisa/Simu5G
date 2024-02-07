@@ -20,6 +20,7 @@
 #include "stack/mac/scheduling_modules/LteMaxCiOptMB.h"
 #include "stack/mac/scheduling_modules/LteMaxCiComp.h"
 #include "stack/mac/scheduling_modules/LteAllocatorBestFit.h"
+#include "stack/mac/scheduling_modules/DQos.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/phy/layer/LtePhyBase.h"
@@ -1023,7 +1024,7 @@ void LteSchedulerEnb::storeScListId(double carrierFrequency,std::pair<unsigned i
 LteScheduler* LteSchedulerEnb::getScheduler(SchedDiscipline discipline)
 {
     EV << "Creating LteScheduler " << schedDisciplineToA(discipline) << endl;
-
+    auto val = discipline;
     switch(discipline)
     {
         case DRR:
@@ -1040,6 +1041,8 @@ LteScheduler* LteSchedulerEnb::getScheduler(SchedDiscipline discipline)
         return new LteMaxCiComp();
         case ALLOCATOR_BESTFIT:
         return new LteAllocatorBestFit();
+        case DQOS:
+        return new DQos();
 
         default:
         throw cRuntimeError("LteScheduler not recognized");

@@ -78,7 +78,10 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
      */
 
     LogicalCid mylcid;
-    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF)
+    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(),
+                lteInfo->getSrcPort(), lteInfo->getDstPort(),
+                lteInfo->getDirection(), lteInfo->getApplication())) == 0xFFFF)
+    //if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF)
     {
         // LCID not found
 
@@ -87,7 +90,29 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
 
         EV << "NRPdcpRrcEnb : Connection not found, new CID created with LCID " << mylcid << "\n";
 
-        ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+        ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(),
+                        lteInfo->getSrcPort(), lteInfo->getDstPort(),
+                        lteInfo->getDirection(), mylcid, lteInfo->getApplication());
+        //ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+
+        unsigned int key = idToMacCid(lteInfo->getDestId(), mylcid);
+        if (qosHandler->getQosInfo().find(key) == qosHandler->getQosInfo().end()){
+            QosInfo qosinfo(DL);
+            qosinfo.destNodeId = lteInfo->getDestId();
+            qosinfo.destAddress = Ipv4Address(lteInfo->getDstAddr());
+            qosinfo.appType = (ApplicationType) lteInfo->getApplication();
+            qosinfo.qfi = lteInfo->getQfi();
+            qosinfo.rlcType = lteInfo->getRlcType();
+            qosinfo.radioBearerId = lteInfo->getRadioBearerId();
+            qosinfo.senderAddress = Ipv4Address(lteInfo->getSrcAddr());
+            qosinfo.senderNodeId = lteInfo->getSourceId();
+            qosinfo.lcid = mylcid;
+            qosinfo.cid = key;
+            qosinfo.trafficClass = (LteTrafficClass) lteInfo->getTraffic();
+            qosHandler->insertQosInfo(key, qosinfo);
+
+        }
+
     }
 
     // assign LCID

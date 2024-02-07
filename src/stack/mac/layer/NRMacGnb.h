@@ -13,6 +13,7 @@
 #define _NRMACGNB_H_
 
 #include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 class NRMacGnb : public LteMacEnbD2D
 {
@@ -29,6 +30,11 @@ class NRMacGnb : public LteMacEnbD2D
      */
     virtual void initialize(int stage);
 
+    virtual void handleMessage(inet::cMessage* msg);
+
+    //virtual bool bufferizePacket(inet::cPacket* pkt);
+
+    //virtual void handleUpperMessage(cPacket* pkt);
 };
 
 #endif

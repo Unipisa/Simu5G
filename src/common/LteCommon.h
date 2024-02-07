@@ -183,6 +183,7 @@ const SchedDisciplineTable disciplines[] = {
     ELEM(MAXCI_OPT_MB),
     ELEM(MAXCI_COMP),
     ELEM(ALLOCATOR_BESTFIT),
+    ELEM(DQOS),
     ELEM(UNKNOWN_DISCIPLINE)
 };
 
@@ -645,6 +646,7 @@ const std::string nodeTypeToA(const RanNodeType t);
 RanNodeType aToNodeType(std::string name);
 RanNodeType getNodeTypeById(MacNodeId id);
 bool isBaseStation(CoreNodeType nodeType);
+bool isUpf(CoreNodeType nodeType);
 bool isNrUe(MacNodeId id);
 FeedbackType getFeedbackType(std::string s);
 RbAllocationType getRbAllocationType(std::string s);

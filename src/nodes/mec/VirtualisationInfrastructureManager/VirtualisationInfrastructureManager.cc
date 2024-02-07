@@ -81,6 +81,8 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     binder_->registerMecHostUpfAddress(mecHostAddress, gtpAddress);
     binder_->registerMecHost(mecHostAddress);
 
+
+
     virtualisationInfr->setGateSize("meAppOut", maxMECApps);
     virtualisationInfr->setGateSize("meAppIn", maxMECApps);
 

@@ -220,6 +220,7 @@ bool LteMacBase::bufferizePacket(cPacket* pktAux)
     PacketInfo vpkt(pkt->getByteLength(), pkt->getTimestamp());
 
     LteMacBuffers::iterator it = mbuf_.find(cid);
+
     if (it == mbuf_.end())
     {
         // Queue not found for this cid: create

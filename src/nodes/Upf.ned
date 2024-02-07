@@ -16,7 +16,7 @@ import inet.transportlayer.udp.Udp;
 import inet.node.base.NetworkLayerNodeBase;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
-
+import simu5g.stack.sdap.utils.*;
 //
 // Implements a simple model of the 5GC UPF
 //
@@ -38,6 +38,7 @@ module Upf extends NetworkLayerNodeBase
         string nodeType = default("UPF");   // do NOT change!
         forwarding = default(true);
         multicastForwarding = default(false);
+        string qosHandlerType = "QosHandlerUPF";
 
     gates:
         // this gate is used for the UPF connected to the external data network
@@ -45,6 +46,10 @@ module Upf extends NetworkLayerNodeBase
         inout filterGate @loose @labels(PppFrame-conn);
 
     submodules:
+        qosHandlerUPF: <qosHandlerType> like IQosHandler {
+
+            @display("p=186,200");
+        }
         pppIf: PppInterface {
             parameters:
                 @display("p=1150,525");
