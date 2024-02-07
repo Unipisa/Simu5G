@@ -109,7 +109,7 @@ public:
 		return tmp;
 	}
 
-    virtual int numInitStages() const {
+    virtual int numInitStages() const override {
         return 2;
     }
 
