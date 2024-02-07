@@ -14,7 +14,7 @@
 #include "common/binder/Binder.h"
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include "common/binder/GlobalData.h"
-#include <map>;
+#include <map>
 
 using namespace omnetpp;
 
