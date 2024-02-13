@@ -118,8 +118,9 @@ void LteMaxCiComp::prepareSchedule()
             // for each logical band
             for (;it!=et;++it)
             {
-                availableBlocks += eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, availableBlocks, direction_,carrierFrequency_);
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+                availableBlocks += blocks;
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, direction_,carrierFrequency_);
             }
         }
 

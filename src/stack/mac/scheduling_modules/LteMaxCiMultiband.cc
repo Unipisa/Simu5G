@@ -66,9 +66,10 @@ void LteMaxCiMultiband::prepareSchedule()
         // compute the number of bytes that can be fitted into each BAND
         for( ; band < vect.size() ; ++band )
         {
-            availableBlocks = eNbScheduler_->readAvailableRbs(nodeId,MACRO,band);
-            availableBytes_MB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs_MB(nodeId,band, availableBlocks, direction_,carrierFrequency_);
-            availableBytes = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,band, availableBlocks, direction_,carrierFrequency_);
+            unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,MACRO,band);
+            availableBlocks += blocks;
+            availableBytes_MB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs_MB(nodeId,band, blocks, direction_,carrierFrequency_);
+            availableBytes = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,band, blocks, direction_,carrierFrequency_);
 
             totAvailableBlocks   += availableBlocks;
             totAvailableBytes_MB += availableBytes_MB;

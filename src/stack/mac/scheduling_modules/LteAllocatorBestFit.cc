@@ -206,8 +206,9 @@ void LteAllocatorBestFit::prepareSchedule()
             // For each logical band
             for (;it!=et;++it)
             {
-                availableBlocks += eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, availableBlocks, dir,carrierFrequency_);
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+                availableBlocks += blocks;
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, dir,carrierFrequency_);
             }
         }
 
