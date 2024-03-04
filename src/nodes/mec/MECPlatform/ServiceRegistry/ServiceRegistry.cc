@@ -60,6 +60,9 @@ void ServiceRegistry::initialize(int stage)
 
     serviceName_ = par("serviceName").stringValue();
 
+    requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+    responseTimeSignal_ = registerSignal("responseTime");
+
     requestServiceTime_ = par("requestServiceTime");
     requestService_ = new cMessage("serveRequest");
     requestQueueSize_ = par("requestQueueSize");

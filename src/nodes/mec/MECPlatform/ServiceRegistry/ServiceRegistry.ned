@@ -41,7 +41,11 @@ simple ServiceRegistry like IApp
         int destPort = default(4000);
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
-                
+        @signal[requestQueueSize];
+        @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
+        @signal[responseTime];
+        @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
+        
     gates:
         output socketOut;
         input socketIn;
