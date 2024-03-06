@@ -7,7 +7,7 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 package simu5g.stack.phy.ChannelModel;
 
@@ -19,7 +19,7 @@ package simu5g.stack.phy.ChannelModel;
 //     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
 // TODO implements Urban Macro only
-// 
+//
 simple NRChannelModel_3GPP38_901 extends NRChannelModel
 {
     parameters:

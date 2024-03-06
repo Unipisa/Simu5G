@@ -29,7 +29,7 @@ import simu5g.nodes.ExtCell;
 //
 // One simulated UE receives data from a real server, and one simulated
 // UE sends data to a real server
-// 
+//
 //
 network ExtServerExample
 {

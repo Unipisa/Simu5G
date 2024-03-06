@@ -10,9 +10,9 @@
 //
 
 package simu5g.corenetwork.statsCollector;
-// 
-// This is the statistic collector of an eNodeB. It stores all the attributes of the RNI 
-// service Layer2Meaurements resource. The RNI service will call its methods in order to 
+//
+// This is the statistic collector of an eNodeB. It stores all the attributes of the RNI
+// service Layer2Meaurements resource. The RNI service will call its methods in order to
 // responds to requests
 
 //
@@ -24,7 +24,7 @@ module BaseStationStatsCollector like StatsCollector
 
         bool movingAverage = default(false);
 
-        // used to calculate l2meas as averages 
+        // used to calculate l2meas as averages
         int prbUsagePeriods = default(15);
         int dataVolumePeriods = default(15);
         int activeUserPeriods = default(15); //10*100ms = 1s

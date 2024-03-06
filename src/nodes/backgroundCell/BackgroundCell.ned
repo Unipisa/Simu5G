@@ -14,12 +14,12 @@ package simu5g.nodes.backgroundCell;
 import inet.mobility.static.StationaryMobility;
 import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
 
-// 
+//
 // BackgroundCell Module
 //
 // This background cell implements only one carrier.
 // If you want to simulate multiple carriers, deploy multiple background cells in the same position
-// and change carrierFrequency parameter  
+// and change carrierFrequency parameter
 module BackgroundCell
 {
     parameters:

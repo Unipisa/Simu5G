@@ -28,7 +28,7 @@ import simu5g.world.radio.LteChannelControl;
 //
 // One real UE receives data from a real server
 // The network includes a configurable number of background cells
-// 
+//
 network ExtClientServer_bgCells
 {
     parameters:

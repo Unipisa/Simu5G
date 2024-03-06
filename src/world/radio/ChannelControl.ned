@@ -13,7 +13,7 @@ package simu5g.world.radio;
 
 //
 // ~ChannelControl has exactly one instance in every network model that
-// contains mobile nodes. 
+// contains mobile nodes.
 //
 simple ChannelControl
 {

@@ -20,10 +20,10 @@ simple BackgroundCellChannelModel
         @display("i=block/control");
         @class("BackgroundCellChannelModel");
 
-        // Enable/disable shadowing        
+        // Enable/disable shadowing
         bool shadowing = default(true);
 
-        // Pathloss scenario from ITU -->   
+        // Pathloss scenario from ITU -->
         string scenario = default("URBAN_MACROCELL");
 
         // eNodeB height -->
@@ -58,17 +58,17 @@ simple BackgroundCellChannelModel
         bool dynamic_los = default(false);
         // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss -->
         bool fixed_los = default(false);
-        // Enable/disable fading -->  
+        // Enable/disable fading -->
         bool fading = default(true);
-        // Fading type (JAKES or RAYGHLEY) -->  
+        // Fading type (JAKES or RAYGHLEY) -->
         string fading_type = default("JAKES");
-        // If jakes fading this parameter specify the number of path (tap channel) -->  
+        // If jakes fading this parameter specify the number of path (tap channel) -->
         int fading_paths = default(6);
         double delay_rms = default(363e-9);
 
-        // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->  
+        // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->
         bool bgCell_interference = default(true);
-        // if true, enables the inter-cell interference computation for DL connections -->  
+        // if true, enables the inter-cell interference computation for DL connections -->
         bool downlink_interference = default(true);
         // if true, enables the interference computation for UL connections -->
         bool uplink_interference = default(true);

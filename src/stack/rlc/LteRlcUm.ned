@@ -1,13 +1,13 @@
-// 
+//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 
 package simu5g.stack.rlc;
@@ -48,7 +48,7 @@ simple LteRlcUm like ILteRlcUm
         @signal[rlcCellPacketLossUl];
         @statistic[rlcCellPacketLossUl](title="rlc Cell Packet Loss"; unit=""; source="rlcCellPacketLossUl"; record=mean);
 
-        //# PDU-level statistics                 
+        //# PDU-level statistics
         @signal[rlcPduDelayDl];
         @statistic[rlcPduDelayDl](title="Delay at the rlc layer UL"; unit="s"; source="rlcPduDelayDl"; record=mean,vector);
         @signal[rlcPduThroughputDl];
@@ -72,9 +72,9 @@ simple LteRlcUm like ILteRlcUm
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
 
     gates:
-        //# 
+        //#
         //# Gates connecting RLC and UM
-        //# 
+        //#
         inout UM_Sap_up;    // Gate to PDCP
         inout UM_Sap_down;    // Gate to RLC Mux
 }

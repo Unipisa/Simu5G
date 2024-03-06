@@ -1,11 +1,11 @@
-// 
+//
 //                           Simu5G
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". This license can be also found at http://www.ltesimulator.com/
-// The above file and the present reference are part of the software itself, 
+// The above file and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 
 package simu5g.nodes;
@@ -29,9 +29,9 @@ import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.corenetwork.statsCollector.StatsCollector;
 
-// 
+//
 // eNodeB Module
-// 
+//
 // Module for eNodeB functionalities
 //
 module eNodeB
@@ -56,7 +56,7 @@ module eNodeB
         //# Node specs
         string nodeType = default("ENODEB");        // DO NOT CHANGE
         string gateway = default("pgw");
-        int masterId @mutable = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity 
+        int masterId @mutable = default(0);  // ID of the master eNodeB. Used in case of Dual Connectivity
         int macNodeId @mutable = default(0); // TODO: this is not a real parameter
         int macCellId @mutable = default(0);  // TODO: this is not a real parameter
         double txPower @unit(mw) = default(100mw);
@@ -71,7 +71,7 @@ module eNodeB
         *.multicastForwarding = false;
 
         //# Apps
-        int numApps = default(0);     // no of apps. 
+        int numApps = default(0);     // no of apps.
         int numX2Apps = default(0);   // no of X2 apps. Specify the app types in INI file with x2App[0..1].typename="X2AppClient" syntax
 
         //# Transport layer
@@ -79,7 +79,7 @@ module eNodeB
         bool hasTcp = default(firstAvailableOrEmpty("Tcp", "TcpLwip", "TcpNsc") != "");
         bool hasSctp = true;
 
-        //# MEC support	
+        //# MEC support
         string mecHost = default("");		// symbolic name of the connected MEHost in the Network
 
         //# @author Alessandro Noferi
@@ -138,7 +138,7 @@ module eNodeB
         }
 
         //#
-        //# Mec interface	
+        //# Mec interface
         //#
         pppMEHostIf: PppInterface {
             @display("p=657.28,519.82");
@@ -199,9 +199,9 @@ module eNodeB
                 @display("p=750,446;b=1000,5,,,,1");
         }
 
-        //# 
+        //#
         //# Modules for connecting to the core network and X2
-        //# 
+        //#
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
                 @display("p=1172.36,372.88");
@@ -222,19 +222,19 @@ module eNodeB
 
         //#
         //# LTE stack to PHY and network layer
-        //#        
+        //#
         cellularNic.radioIn <-- radioIn;
 
         //#
         //# Ppp interface to network layer connections
-        //#    
+        //#
         pppIf.phys <--> ppp;
         pppIf.upperLayerOut --> nl.in++;
         pppIf.upperLayerIn <-- nl.out++;
 
         //#
         //# X2 interface to network layer connections
-        //#    
+        //#
         for i=0..sizeof(x2)-1 {
             x2ppp[i].phys <--> x2[i];
             x2ppp[i].upperLayerOut --> tn.in++;
@@ -243,7 +243,7 @@ module eNodeB
 
         //#
         //# Connections to the core network
-        //#  
+        //#
         nl.in++ <-- gtpUser.pppGate;
         trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
         trafficFlowFilter.internetFilterGateIn <-- nl.out++;
@@ -256,7 +256,7 @@ module eNodeB
         gtpUserX2.socketOut --> at.in++;
         gtpUserX2.socketIn <-- at.out++;
 
-        //# X2 apps connections        
+        //# X2 apps connections
         for i=0..numX2Apps-1 {
             x2App[i].sctpOut[0] --> at.in++;
             x2App[i].sctpIn[0] <-- at.out++;
@@ -266,7 +266,7 @@ module eNodeB
             x2App[i].x2ManagerOut --> cellularNic.x2$i++;
         }
 
-		//# 
+		//#
 		//# Apps to transport layer connections
 		//#
         for i=0..numApps-1 {
@@ -283,7 +283,7 @@ module eNodeB
         at.out++ --> sctp.appIn if hasSctp;
         at.in++ <-- sctp.appOut if hasSctp;
 
-        //# 
+        //#
         //# Transport layer to network layer connections
         //#
         udp.ipOut --> tn.in++ if hasUdp;
@@ -317,7 +317,7 @@ module eNodeB
         cellularNic.upperLayerOut --> nl.in++;
 
         //#
-        //# MEC support	
+        //# MEC support
         //#
         pppMEHostIf.upperLayerIn <-- nl.out++;
         pppMEHostIf.upperLayerOut --> nl.in++;

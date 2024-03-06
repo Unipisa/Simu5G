@@ -1,18 +1,18 @@
-// 
+//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 
 package simu5g.stack.mac;
 
-// 
+//
 // Base module for the MAC layer of LTE Stack.
 //
 simple LteMacBase like LteMac
@@ -99,16 +99,16 @@ simple LteMacBase like LteMac
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
 
     gates:
-        //# 
+        //#
         //# Gates connecting RLC and MAC Layers
-        //# 
+        //#
 
         input RLC_to_MAC;    // RLC to MAC
         output MAC_to_RLC;    // MAC to RLC
 
-        //# 
+        //#
         //# Gates connecting MAC and PHY Layers
-        //# 
+        //#
 
         input PHY_to_MAC;    // PHY to MAC
         output MAC_to_PHY;    // MAC to PHY

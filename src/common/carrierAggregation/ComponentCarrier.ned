@@ -28,7 +28,7 @@ simple ComponentCarrier
 
     // TDD slot format index
     // values in the range [0,61], according to 3GPP TS38.213
-    // THIS IS TO BE DONE 
+    // THIS IS TO BE DONE
 //    int tddSlotFormatIndex = default(-1); // -1 stands for FDD
 
         bool useTdd = default(false);

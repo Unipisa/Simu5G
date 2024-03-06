@@ -29,7 +29,7 @@ simple BackgroundScheduler
         // transmission angle
         double txAngle = default(0);
 
-        // flag to indicate whether this is a NR base station 
+        // flag to indicate whether this is a NR base station
         bool isNr = default(false);
 
         // operating carrier

@@ -12,7 +12,7 @@
 
 package simu5g.stack.pdcp_rrc;
 
-// 
+//
 // Receive Entity of NR PDCP
 //
 simple LteRxPdcpEntity

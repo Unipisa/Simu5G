@@ -20,7 +20,7 @@ import simu5g.nodes.Upf;
 import inet.node.ethernet.Eth10G;
 import inet.applications.contract.IApp;
 
-// 
+//
 //# MEHost module
 //
 module MECHost

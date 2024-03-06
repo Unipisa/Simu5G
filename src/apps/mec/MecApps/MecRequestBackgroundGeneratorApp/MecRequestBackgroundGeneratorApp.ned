@@ -16,8 +16,8 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 //
-// 
-// 
+//
+//
 
 simple MecRequestBackgroundGeneratorApp like IMECApp, IApp
 {

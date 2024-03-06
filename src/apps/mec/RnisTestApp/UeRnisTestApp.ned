@@ -17,11 +17,11 @@ import inet.applications.contract.IApp;
 
 //
 // This UE app asks the Device App to instantiate a MecRnisTestApp.
-// After the MEC app has been initialized, the UE app requests the MEC app to 
+// After the MEC app has been initialized, the UE app requests the MEC app to
 // periodically query the RNI Service.
 // When the UE app received the requested info from the MEC app, it just outputs
 // that in the Qtenv log (set the logger parameter to dump the output to a file).
-// If the period is set to 0, then only one query is requested. 
+// If the period is set to 0, then only one query is requested.
 //
 simple UeRnisTestApp like IApp
 {

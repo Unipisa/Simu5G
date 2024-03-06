@@ -17,7 +17,7 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 //
 // This app simulates a MEC app that sends GET requests to the Location Service
-// every 500ms. It used when the user wants to evaluate MEC host related statistics, 
+// every 500ms. It used when the user wants to evaluate MEC host related statistics,
 // without the need of using UEs to instantiate MEC apps through the MEC orchestrator.
 // It has been used, for instance, to evaluate the loadgenerator model of the MEC service
 // to see the execution time differences.

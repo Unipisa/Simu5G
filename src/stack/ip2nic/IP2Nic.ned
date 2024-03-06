@@ -17,8 +17,8 @@ import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
 // It has a slightly different behavior in the UE rather than in the BS
 // It basically:
 // - Registers itself as an interface for being accessible from upper layers (e.g. IP Layer)
-// - In the downstream direction adds control information to IP packets (5-tuple). Moreover in the BS 
-//   module it adds the destination id to the control information, in order to send packets to the correct UE  
+// - In the downstream direction adds control information to IP packets (5-tuple). Moreover in the BS
+//   module it adds the destination id to the control information, in order to send packets to the correct UE
 //
 simple IP2Nic like INetworkLayer2CellularNic
 {
@@ -30,7 +30,7 @@ simple IP2Nic like INetworkLayer2CellularNic
         @display("i=block/layer");
     gates:
         // connection to network layer.
-        // These gate names are recognized by the network layer (same as the ones in the INetworkInterface interface) 
+        // These gate names are recognized by the network layer (same as the ones in the INetworkInterface interface)
         input upperLayerIn;
         output upperLayerOut;
 

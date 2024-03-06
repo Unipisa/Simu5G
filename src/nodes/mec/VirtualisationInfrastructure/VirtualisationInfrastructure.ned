@@ -24,7 +24,7 @@ import inet.applications.contract.IApp;
 import inet.transportlayer.udp.Udp;
 import inet.transportlayer.tcp.Tcp;
 
-//# 
+//#
 //# VirtualisationInfrastructure
 //#
 module VirtualisationInfrastructure
@@ -144,7 +144,7 @@ module VirtualisationInfrastructure
             at.in++ <-- mecPlatform$i[i];
         }
 
-        //# 
+        //#
         //# App layer to transport layer connections
         //#
         at.out++ --> udp.appIn;
@@ -154,7 +154,7 @@ module VirtualisationInfrastructure
         at.in++ <-- tcp.appOut;
 
 
-        //# 
+        //#
         //# Transport layer to network layer connections
         //#
         udp.ipOut --> tn.in++;
@@ -170,7 +170,7 @@ module VirtualisationInfrastructure
         ipv4.transportIn <-- tn.out++ if hasIpv4;
         ipv4.transportOut --> tn.in++ if hasIpv4;
 
-        //# 
+        //#
         //# Network layer to link layer connections
         //#
         ipv6.ifIn <-- nl.out++ if hasIpv6;

@@ -13,14 +13,14 @@ package simu5g.nodes.mec.UALCMP;
 
 import inet.applications.contract.IApp;
 
-// 
-// This module implements (part of) the mx2 reference point a device app uses to 
+//
+// This module implements (part of) the mx2 reference point a device app uses to
 // request lyfecycle operations of a MEC app (i.e. instantation, termination, relocation).
-// This API follows the ETSI MEC specification of ETSI GS MEC 016 V2.2.1 (2020-04) and in 
+// This API follows the ETSI MEC specification of ETSI GS MEC 016 V2.2.1 (2020-04) and in
 // particular:
 //   - GET /app_list Retrieve available application information.
 //   - POST /app_contexts For requesting the creation of a new application context.
-//   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context 
+//   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 

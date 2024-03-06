@@ -18,7 +18,7 @@ simple GtpUser
 {
     parameters:
         string interfaceTableModule;            // path to the InterfaceTable module
-        string ipOutInterface = default("");    // optional: manual specification of outgoing interface for received IP 
+        string ipOutInterface = default("");    // optional: manual specification of outgoing interface for received IP
         int localPort = default(31);
         int tunnelPeerPort = default(31);
         bool filter = default(true);

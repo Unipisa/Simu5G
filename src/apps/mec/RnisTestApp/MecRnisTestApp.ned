@@ -15,9 +15,9 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
 
 //
-// This is a simple MEC app that connects to the Radio Network Information 
-// Service and periodically requests L2 Measurements from it. 
-// The response obtained from the RNIS is just sent back to the UE app. 
+// This is a simple MEC app that connects to the Radio Network Information
+// Service and periodically requests L2 Measurements from it.
+// The response obtained from the RNIS is just sent back to the UE app.
 //
 simple MecRnisTestApp like IMECApp, IApp
 {

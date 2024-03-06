@@ -17,8 +17,8 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMEService;
 import simu5g.nodes.mec.MECPlatform.ServiceRegistry.ServiceRegistry;
 
-//# 
-//# MEC platform compuond module representing the MEC platform entity 
+//#
+//# MEC platform compuond module representing the MEC platform entity
 //# of the ETSI MEC architecture described in ETSI GS MEC 003
 //#
 

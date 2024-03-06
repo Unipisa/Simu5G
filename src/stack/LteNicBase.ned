@@ -1,13 +1,13 @@
-// 
+//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 
 package simu5g.stack;
@@ -30,7 +30,7 @@ import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
 import simu5g.x2.LteX2Manager;
 
 import simu5g.stack.packetFlowManager.PacketFlowManager;
-// 
+//
 // Base module for the LTE Stack.
 //
 module LteNicBase extends NetworkInterface like ICellularNic
@@ -42,7 +42,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
-        string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
+        string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D"
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
 
         string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
@@ -117,8 +117,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         ip2nic.stackNic <--> pdcpRrc.DataPort;
 
         //#
-        //# Internal LTE Stack Connections 
-        //# 
+        //# Internal LTE Stack Connections
+        //#
 
         EUTRAN_RRC_Sap <--> pdcpRrc.EUTRAN_RRC_Sap;
 

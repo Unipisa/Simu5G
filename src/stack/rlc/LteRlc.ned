@@ -1,38 +1,38 @@
-// 
+//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 
 package simu5g.stack.rlc;
 
-// 
+//
 // Compound module for the RLC layer of LTE Stack.
 //
 module LteRlc
 {
     parameters:
         @display("i=block/transport");
-        string LteRlcUmType = default("LteRlcUm");                   // One of: "LteRlcUm", "LteRlcUmD2D"      
+        string LteRlcUmType = default("LteRlcUm");                   // One of: "LteRlcUm", "LteRlcUmD2D"
         bool d2dCapable;                                             // inherit the value from the parent module
         string umType = d2dCapable ? "LteRlcUmD2D" : LteRlcUmType;
 
     gates:
-        //# 
+        //#
         //# Gates connecting PDCP/RRC and RLC Layers
-        //# 
+        //#
 
         inout TM_Sap;    // Transparent Mode SAP
         inout UM_Sap;    // Unacknowledged Mode SAP
         inout AM_Sap;    // Acknowledged Mode SAP
 
-        //# 
+        //#
         //# Gates connecting RLC and MAC Layers
         //#
 
@@ -45,7 +45,7 @@ module LteRlc
             @display("p=100,100;");
         }
 
-        // UM Module        
+        // UM Module
         um: <umType> like ILteRlcUm {
             @display("p=200,100;");
         }
@@ -70,7 +70,7 @@ module LteRlc
         am.AM_Sap_up <--> AM_Sap;
 
         //#
-        //# Connections from TM/UM/AM 
+        //# Connections from TM/UM/AM
         //# modules to the RLC Mux
         //#
         tm.TM_Sap_down <--> mux.TM_Sap;

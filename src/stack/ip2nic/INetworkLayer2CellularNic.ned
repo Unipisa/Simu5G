@@ -22,7 +22,7 @@ moduleinterface INetworkLayer2CellularNic
         @display("i=block/layer");
     gates:
         // connection to network layer.
-        // These gate names are recognized by the network layer (same as the ones in the INetworkInterface interface) 
+        // These gate names are recognized by the network layer (same as the ones in the INetworkInterface interface)
         input upperLayerIn;
         output upperLayerOut;
 

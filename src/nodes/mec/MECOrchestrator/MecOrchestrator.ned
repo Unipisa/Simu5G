@@ -11,9 +11,9 @@
 
 package simu5g.nodes.mec.MECOrchestrator;
 
-// 
+//
 // This module implements the MEC orchestrator of a MEC system.
-// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations 
+// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations
 // of the standard by using OMNeT++ features.
 // Communications with the LCM proxy occur via connections, while the MEC hosts associated with
 // the MEC system (and the MEC orchestrator) are managed with the mecHostList parameter.
@@ -21,7 +21,7 @@ package simu5g.nodes.mec.MECOrchestrator;
 //   - MEC app instantiation
 //   - MEC app termination
 //   - MEC app run-time onboarding
-// 
+//
 
 simple MecOrchestrator
 {
@@ -32,7 +32,7 @@ simple MecOrchestrator
         string mecHostList = default("");
         string mecApplicationPackageList = default("");
 
-        // times to simulate lifecycle operations 
+        // times to simulate lifecycle operations
         double onboardingTime @unit(s) = default(50ms);
         double instantiationTime @unit(s) = default(50ms);
         double terminationTime @unit(s) = default(50ms);

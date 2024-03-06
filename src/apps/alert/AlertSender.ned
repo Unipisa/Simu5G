@@ -1,13 +1,13 @@
-// 
+//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// 
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
-// The above files and the present reference are part of the software itself, 
+// The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 package simu5g.apps.alert;
 
@@ -22,7 +22,7 @@ simple AlertSender like IApp
         int packetSize = default(10);
         volatile double period @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
-        double stopTime @unit("s") = default(0s); // 0 means "never stops" 
+        double stopTime @unit("s") = default(0s); // 0 means "never stops"
         string interfaceTableModule;
         string multicastInterface = default("cellular");  // if not empty, set the multicast output interface option on the socket (interface name expected)
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value

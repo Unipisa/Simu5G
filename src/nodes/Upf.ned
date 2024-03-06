@@ -22,7 +22,7 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 //
 // The core network can contain multiple UPFs: see example in "simulations/NR/standalone"
 // UPF not connected to an external Data Network are intermediate UPFs. In the current version, intermediate UPFs just act
-// like IP routers. 
+// like IP routers.
 // UPFs connected to an external Data Network take care of (de)tunneling packets according to GTP
 //
 module Upf extends NetworkLayerNodeBase
@@ -41,7 +41,7 @@ module Upf extends NetworkLayerNodeBase
 
     gates:
         // this gate is used for the UPF connected to the external data network
-        // it must be left unconnected for intermediate UPFs 
+        // it must be left unconnected for intermediate UPFs
         inout filterGate @loose @labels(PppFrame-conn);
 
     submodules:
