@@ -29,7 +29,7 @@ import org.car2x.veins.base.modules.*;
 // 
 // Car Module
 //
-module Car extends Ue
+module NRCar extends NRUe
 {
     parameters:
 
@@ -40,10 +40,7 @@ module Car extends Ue
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
-        *.interfaceTableModule = default(absPath(".interfaceTable"));
 
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular lo0";
 }
-
-

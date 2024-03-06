@@ -12,12 +12,6 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
-moduleinterface IBackgroundTrafficManager 
-{
-    parameters:
-        @display("i=block/control");
-}
-
 // BackgroundTrafficManager
 //
 // This is the traffic manager for background UEs within a
@@ -28,5 +22,5 @@ simple BackgroundTrafficManager like IBackgroundTrafficManager
     parameters:
         @display("i=block/control");
         @class("BackgroundTrafficManager");
-}    
-   
+}
+

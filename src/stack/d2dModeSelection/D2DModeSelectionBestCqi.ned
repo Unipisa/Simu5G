@@ -9,25 +9,15 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.mac;
-import simu5g.stack.mac.LteMac;
+package simu5g.stack.d2dModeSelection;
 
-
-// 
-// NR MAC module of the gNB
 //
-simple NRMacGnb extends LteMacEnbD2D {
-     parameters:
-         @class("NRMacGnb");
-         amcType = default("NRAmc");
-
-}
-
+// D2DModeSelectionBestCqi module
 // 
-// NR MAC module of the UE
+// For each D2D pair, selects the mode having the best CQI
 //
-simple NRMacUe  extends LteMacUeD2D {
-     parameters:
-         @class("NRMacUe");
-
+simple D2DModeSelectionBestCqi extends D2DModeSelectionBase
+{
+    parameters:
+        @class("D2DModeSelectionBestCqi");
 }

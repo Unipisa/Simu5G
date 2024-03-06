@@ -31,20 +31,6 @@ import simu5g.x2.LteX2Manager;
 
 import simu5g.stack.packetFlowManager.PacketFlowManager;
 // 
-// Interface for the 3GPP Stack.
-//
-moduleinterface ICellularNic extends IWirelessInterface
-{
-    @display("i=block/ifcard");
-    string nodeType;
-        //bool d2dCapable;            // inherit the value from the parent module
-    gates:
-        inout EUTRAN_RRC_Sap;   // Control of RRC Layer
-        inout x2[] @loose;     // optional x2 manager
-        input nrRadioIn @loose;        // for NR support
-}
-
-// 
 // Base module for the LTE Stack.
 //
 module LteNicBase extends NetworkInterface like ICellularNic
@@ -58,7 +44,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
-        
+
         string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
         bool hasRNISupport = default(false);
 
@@ -157,115 +143,3 @@ module LteNicBase extends NetworkInterface like ICellularNic
         upperLayerIn --> {  delay = parent.processingDelayIn; } --> ip2nic.upperLayerIn;
 }
 
-//
-// User Equipment of LTE stack
-//
-module LteNicUe extends LteNicBase
-{
-    parameters:
-        LtePdcpRrcType = default("LtePdcpRrcUe");
-        LteMacType = default("LteMacUe");
-        LtePhyType = default("LtePhyUe");
-        PacketFlowManagerType = default("PacketFlowManagerUe");
-        d2dCapable = default(false);          // DO NOT CHANGE
-
-    submodules:
-        // Feedback generator submodule
-        dlFbGen: LteDlFeedbackGenerator {
-            @display("p=50,50;is=s");
-        }
-}
-
-//
-// D2D-capable User Equipment of LTE stack
-//
-module LteNicUeD2D extends LteNicUe
-{
-    parameters:
-        LtePdcpRrcType = default("LtePdcpRrcUeD2D");
-        LteMacType = default("LteMacUeD2D");
-        LtePhyType = default("LtePhyUeD2D");
-        PacketFlowManagerType = default("PacketFlowManagerUe");
-
-        d2dCapable = default(true);             // DO NOT CHANGE
-        bool d2dInitialMode = default(false);
-        @display("bgb=704,443");
-}
-
-//
-// eNodeB of LTE stack
-//
-module LteNicEnb extends LteNicBase
-{
-    parameters:
-        LtePdcpRrcType = default("LtePdcpRrcEnb");
-        LteMacType = default("LteMacEnb");
-        LtePhyType = default("LtePhyEnb");
-        PacketFlowManagerType = default("PacketFlowManagerEnb");
-        d2dCapable = default(false);          // DO NOT CHANGE
-        bool compEnabled = default(false);
-        string LteCompManagerType = default("LteCompManagerProportional");
-
-    submodules:
-        //#
-        //# X2 manager
-        //#       
-        x2Manager: LteX2Manager {
-            @display("p=623,226,row");
-        }
-
-        //#
-        //# Modules exploiting X2 interface
-        //#
-        compManager: <LteCompManagerType> like LteCompManager if compEnabled {
-            @display("p=493,314,row");
-        }
-        handoverManager: LteHandoverManager {
-            @display("p=493,226,row");
-        }
-        dualConnectivityManager: DualConnectivityManager if dualConnectivityEnabled {
-            @display("p=493,141,row");
-        }
-        bgTrafficGenerator[numCarriers]: BackgroundTrafficGenerator {
-            @display("p=100,307,row");
-        }
-
-    connections:
-        //# connections between X2 Manager and its users
-        compManager.x2ManagerIn <-- x2Manager.dataPort$o++ if compEnabled;
-        compManager.x2ManagerOut --> x2Manager.dataPort$i++ if compEnabled;
-        handoverManager.x2ManagerIn <-- x2Manager.dataPort$o++;
-        handoverManager.x2ManagerOut --> x2Manager.dataPort$i++;
-        dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPort$o++ if dualConnectivityEnabled;
-        dualConnectivityManager.x2ManagerOut --> x2Manager.dataPort$i++ if dualConnectivityEnabled;
-
-        if ( sizeof(x2) > 0 ) {
-            //# connections between X2 Manager and GTP (for handover)
-            x2$i[0] --> x2Manager.x2Gtp$i;
-            x2$o[0] <-- x2Manager.x2Gtp$o;
-        }
-        //# connections between X2 Manager and the outer world
-        for i=1..sizeof(x2)-1 {
-            x2$i[i] --> x2Manager.x2$i++;
-            x2$o[i] <-- x2Manager.x2$o++;
-        }
-}
-
-//
-// eNodeB of LTE stack with support for D2D-capable UEs
-//
-module LteNicEnbD2D extends LteNicEnb
-{
-    parameters:
-        LtePdcpRrcType = default("LtePdcpRrcEnbD2D");
-        LteMacType = default("LteMacEnbD2D");
-        LtePhyType = default("LtePhyEnbD2D");
-        PacketFlowManagerType = default("PacketFlowManagerEnb");
-        d2dCapable = default(true);   // DO NOT CHANGE
-        string d2dModeSelectionType = default("D2DModeSelectionBase");
-
-    submodules:
-        d2dModeSelection: <d2dModeSelectionType> like D2DModeSelection {
-            @display("p=623,314,row");
-        }
-}

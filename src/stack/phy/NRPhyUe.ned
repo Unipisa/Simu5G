@@ -9,14 +9,18 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
 
+package simu5g.stack.phy;
+import simu5g.stack.phy.LtePhy;
+
+
+// 
+// NR Phy module of PHY Layer
 //
-// Interface for D2D Mode Selection module
-//
-moduleinterface D2DModeSelection
+simple NRPhyUe extends LtePhyUeD2D
 {
     parameters:
-        @display("i=block/cogwheel");
+        @class("NRPhyUe");
+
 }
 

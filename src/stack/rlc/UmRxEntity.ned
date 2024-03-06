@@ -9,14 +9,18 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
 
+package simu5g.stack.rlc;
+
+// 
+// Receive Entity of RLC UM
 //
-// Interface for D2D Mode Selection module
-//
-moduleinterface D2DModeSelection
+simple UmRxEntity
 {
     parameters:
-        @display("i=block/cogwheel");
+        @dynamic(true);
+        @display("i=block/segm");
+        double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
+        int rxWindowSize = default(16);
 }
 

@@ -9,14 +9,19 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
 
+package simu5g.stack.rlc;
+
+// 
+// UM Module for the RLC layer of LTE Stack.
 //
-// Interface for D2D Mode Selection module
-//
-moduleinterface D2DModeSelection
+moduleinterface ILteRlcUm
 {
     parameters:
-        @display("i=block/cogwheel");
+        int queueSize @unit(B);
+        bool mapAllLcidsToSingleBearer;
+    gates:
+        inout UM_Sap_up;    // Gate to PDCP
+        inout UM_Sap_down;    // Gate to RLC Mux
 }
 

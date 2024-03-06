@@ -11,15 +11,13 @@
 
 
 package simu5g.stack.phy;
-import simu5g.stack.phy.LtePhy;
-
 
 // 
-// NR Phy module of PHY Layer
+// eNodeB LtePhy module of PHY Layer with support for D2D
 //
-simple NRPhyUe extends LtePhyUeD2D {
-     parameters:
-         @class("NRPhyUe");
-
+simple LtePhyEnbD2D extends LtePhyEnb
+{
+    parameters:
+        @class("LtePhyEnbD2D");
+        bool enableD2DCqiReporting = default(true);
 }
-

@@ -21,19 +21,6 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.packetFlowManager.PacketFlowManager;
 
 //
-// e/gNodeB with NR stack
-//
-module NRNicEnb extends LteNicEnbD2D
-{
-    parameters:
-        LtePdcpRrcType = default("NRPdcpRrcEnb");
-        LteMacType = default("NRMacGnb");
-        LteChannelModelType = default("NRChannelModel_3GPP38_901");
-        @display("bgb=694,443");
-        PacketFlowManagerType = default("NRPacketFlowManagerGnb");
-}
-
-//
 // UE with LTE+NR stack
 //
 module NRNicUe extends LteNicUeD2D
@@ -44,9 +31,9 @@ module NRNicUe extends LteNicUeD2D
         string NRChannelModelType = default("NRChannelModel_3GPP38_901");
 
         PacketFlowManagerType = default("PacketFlowManagerUe");
-        
+
         string NRPacketFlowManagerType = default("NRPacketFlowManagerUe");
-      
+
         int numNRCarriers = default(1);
 
         LtePdcpRrcType = default("NRPdcpRrcUe");

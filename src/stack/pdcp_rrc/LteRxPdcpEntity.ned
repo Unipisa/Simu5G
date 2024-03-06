@@ -7,18 +7,17 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
+//
+
+
+package simu5g.stack.pdcp_rrc;
+
 // 
-
-package simu5g.stack.phy.ChannelModel;
-
-
-simple LteChannelModel like LteChannelModelInterface
+// Receive Entity of NR PDCP
+//
+simple LteRxPdcpEntity
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        @dynamic(true);
+        @display("i=block/segm");
 }
-

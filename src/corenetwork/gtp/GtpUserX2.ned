@@ -7,18 +7,25 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
-package simu5g.stack.phy.ChannelModel;
+package simu5g.corenetwork.gtp;
 
-
-simple LteChannelModel like LteChannelModelInterface
+//
+// Implements a simplified version of the GTP-U protocol for tunneling packets over X2 (for handover)
+//
+simple GtpUserX2
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
+        int localPort = default(32);
+        int tunnelPeerPort = default(32);
 
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        @display("i=block/tunnel");
+
+    gates:
+        output socketOut;
+        input socketIn;
+
+        output lteStackOut;
+        input lteStackIn;
 }
-

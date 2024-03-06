@@ -13,22 +13,14 @@ package simu5g.stack.handoverManager;
 
 import simu5g.x2.X2User;
 
-//
-// Interface for the Handover Manager
-//
-moduleinterface ILteHandoverManager extends X2User {
-    parameters:
-        @display("i=block/cogwheel");
-}
-
 simple LteHandoverManager like ILteHandoverManager
 {
     parameters:
         @display("i=block/cogwheel");
         @class("LteHandoverManager");
-        
+
         bool losslessHandover = default(false);
-        
+
     gates:
         //# connections to the X2 Manager
         input x2ManagerIn;

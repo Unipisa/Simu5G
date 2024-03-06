@@ -12,11 +12,16 @@
 package simu5g.stack.d2dModeSelection;
 
 //
-// Interface for D2D Mode Selection module
+// Base module for the D2D Mode Selection
 //
-moduleinterface D2DModeSelection
+// Extends this module for implementing new mode selection policies.
+// It runs periodically the mode selection algorithm and, for flows 
+// that must be switched, sends a notification to the transmitting 
+// endpoint of those flows
+//
+simple D2DModeSelectionBase like D2DModeSelection
 {
     parameters:
-        @display("i=block/cogwheel");
+        double modeSelectionPeriod @unit(s) = default(1s);
 }
 

@@ -14,14 +14,6 @@ package simu5g.stack.dualConnectivityManager;
 import simu5g.x2.X2User;
 
 //
-// Interface for the Dual Connectivity Manager
-//
-moduleinterface IDualConnectivityManager extends X2User {
-    parameters:
-        @display("i=block/cogwheel");
-}
-
-//
 // This module is responsible for bridging packets between PDCP layers
 // of two e/gNodeBs when dual connectivity is employed
 //
@@ -30,7 +22,7 @@ simple DualConnectivityManager like IDualConnectivityManager
     parameters:
         @display("i=block/cogwheel");
         @class("DualConnectivityManager");
-               
+
     gates:
         //# connections to the X2 Manager
         input x2ManagerIn;

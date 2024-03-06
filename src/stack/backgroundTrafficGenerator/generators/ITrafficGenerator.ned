@@ -7,18 +7,15 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
-package simu5g.stack.phy.ChannelModel;
+package simu5g.stack.backgroundTrafficGenerator.generators;
 
+import inet.mobility.contract.IMobility;
 
-simple LteChannelModel like LteChannelModelInterface
+moduleinterface ITrafficGenerator
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        @display("i=block/source");
 }
 

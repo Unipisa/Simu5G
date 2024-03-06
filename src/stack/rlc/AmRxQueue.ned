@@ -9,14 +9,24 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
 
+package simu5g.stack.rlc;
+
+// 
+// Receive Buffer of RLC AM
 //
-// Interface for D2D Mode Selection module
-//
-moduleinterface D2DModeSelection
+simple AmRxQueue
 {
     parameters:
-        @display("i=block/cogwheel");
+        @dynamic(true);
+        @display("i=block/segm");
+        int rxWindowSize = default(200);
+        double ackReportInterval @unit(s) = 0.10s;
+        double statusReportInterval @unit(s) = 0.20s;
+        double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
 }
+
+//
+// Entities for the RLC module
+//
 

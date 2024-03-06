@@ -12,13 +12,8 @@
 package simu5g.stack.phy.ChannelModel;
 
 
-simple LteChannelModel like LteChannelModelInterface
+moduleinterface LteChannelModelInterface
 {
-    parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+    @display("i=block/classifier2");
 }
 

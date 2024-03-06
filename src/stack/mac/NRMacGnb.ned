@@ -9,14 +9,18 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
+package simu5g.stack.mac;
+import simu5g.stack.mac.LteMac;
 
+
+// 
+// NR MAC module of the gNB
 //
-// Interface for D2D Mode Selection module
-//
-moduleinterface D2DModeSelection
+simple NRMacGnb extends LteMacEnbD2D
 {
     parameters:
-        @display("i=block/cogwheel");
+        @class("NRMacGnb");
+        amcType = default("NRAmc");
+
 }
 

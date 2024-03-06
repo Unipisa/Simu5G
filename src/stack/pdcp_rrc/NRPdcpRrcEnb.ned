@@ -7,18 +7,21 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
-
-package simu5g.stack.phy.ChannelModel;
+//
 
 
-simple LteChannelModel like LteChannelModelInterface
+package simu5g.stack.pdcp_rrc;
+
+import simu5g.stack.pdcp_rrc.LtePdcpRrcEnbD2D;
+
+
+//
+// gNodeB PDCP/RRC layer of NR stack
+//
+simple NRPdcpRrcEnb extends LtePdcpRrcEnbD2D
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        @class("NRPdcpRrcEnb");
 }
+
 

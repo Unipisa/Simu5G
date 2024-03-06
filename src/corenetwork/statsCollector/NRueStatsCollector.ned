@@ -7,18 +7,28 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
+//
+
+package simu5g.corenetwork.statsCollector;
 // 
+// This is the statistic collector of an eNodeB. It stores all the attributes of the RNI 
+// service Layer2Meaurements resource. The RNI service will call its methods in order to 
+// responds to requests
 
-package simu5g.stack.phy.ChannelModel;
+//
 
-
-simple LteChannelModel like LteChannelModelInterface
+module NRueStatsCollector extends UeStatsCollector
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        collectorType = default("NRueStatsCollector");
 }
+
+
+
+
+
+
+
+
+
 

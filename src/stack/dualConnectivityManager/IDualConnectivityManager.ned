@@ -9,12 +9,14 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
+package simu5g.stack.dualConnectivityManager;
+
+import simu5g.x2.X2User;
 
 //
-// Interface for D2D Mode Selection module
+// Interface for the Dual Connectivity Manager
 //
-moduleinterface D2DModeSelection
+moduleinterface IDualConnectivityManager extends X2User
 {
     parameters:
         @display("i=block/cogwheel");

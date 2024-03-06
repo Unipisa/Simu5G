@@ -12,13 +12,15 @@
 package simu5g.stack.phy.ChannelModel;
 
 
-simple LteChannelModel like LteChannelModelInterface
+// NRChannelModel_3GPP38_901
+//
+// This channel model implements path loss, LOS probability and shadowing according to
+// the following specifications:
+//     3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
+//
+simple NRChannelModel extends LteRealisticChannelModel
 {
     parameters:
-        @display("i=block/classifier2");
-        @class("LteChannelModel");
-
-        // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        @class("NRChannelModel");
 }
 

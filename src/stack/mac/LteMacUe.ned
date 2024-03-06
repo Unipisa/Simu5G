@@ -9,14 +9,15 @@
 // and cannot be removed from it.
 // 
 
-package simu5g.stack.d2dModeSelection;
+
+package simu5g.stack.mac;
 
 //
-// Interface for D2D Mode Selection module
+// User Equipment MAC layer of LTE stack
 //
-moduleinterface D2DModeSelection
+simple LteMacUe extends LteMacBase
 {
     parameters:
-        @display("i=block/cogwheel");
+        @class("LteMacUe");
 }
 
