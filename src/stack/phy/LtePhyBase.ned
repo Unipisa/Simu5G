@@ -23,7 +23,7 @@ simple LtePhyBase like LtePhy
         double eNodeBTxPower = default(46);
         double microTxPower = default(30);
         string txDirection = default("OMNI");
-        double txAngle = default(0);
+        double txAngle @unit(deg) = default(0deg);
 
         bool dynamicCellAssociation = default(false);
 

@@ -31,7 +31,7 @@ simple ExtCell
         string txDirection = default("OMNI");
 
         // transmission angle
-        double txAngle = default(0);
+        double txAngle @unit(deg) = default(0deg);
 
         // operating carrier
         double carrierFrequency @unit(GHz) = default(2GHz);

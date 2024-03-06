@@ -27,7 +27,7 @@ simple BackgroundScheduler
         string txDirection = default("OMNI");
 
         // transmission angle
-        double txAngle = default(0);
+        double txAngle @unit(deg) = default(0deg);
 
         // flag to indicate whether this is a NR base station
         bool isNr = default(false);
