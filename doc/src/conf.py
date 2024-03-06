@@ -261,6 +261,7 @@ latex_elements = {
 latex_documents = [
     ('users-guide/index', 'simu5g-users-guide.tex', "Simu5G User's Guide", '', 'manual', False),
     ('showcases/index', 'simu5g-showcases.tex', "Simu5G Showcases", '', 'manual', False),
+    ('tutorials/index', 'simu5g-tutorials.tex', "Simu5G Tutorial", '', 'manual', False),
 ]
 
 
