@@ -1,17 +1,55 @@
 # ignore generated files
-src/**/*_m.h
-src/**/*_m.cc
+doc/src/showcases
+doc/src/_build
 src/Makefile
-src/Makefile.vc
+*_m.h
+*_m.cc
+*_sm.h
+*_sm.cc
+.oppfeaturestate
+.nedexclusions
+.pydevproject
+.pydevproject
+.vscode/*
+precompiled_*.h.*
+**/__pycache__
+
+# output and result files
+.settings/
+.ccls-cache/
 /doc/doxy/
 /doc/neddoc/
+/examples/*/results/
+/examples/*/*/results/
+/examples/*/*/*/results/
+/examples/*/cache/
+/examples/*/*/cache/
+/tutorials/*/cache/
+/tutorials/*/data/
+/tests/*/work/
+/tests/*/*/work/
+/tests/*/results*/
+/tests/fingerprint/SelfDoc.xml
+*.log
+*.sim
+*.pyc
 *.pcap
 *.sca
 *.vec
 *.vci
-*.anf
-*.qtenvrc
-.settings/
+*.aux
+*.bbl
+*.blg
+*.idx
+*.toc
+*.pdf
+*.ilg
+*.ind
+*.mk
+*.synctex.gz
+.buildlog*
+compile_commands.json
+
 err/
 src/err
 
@@ -28,17 +66,27 @@ out/
 *.pdb
 *.idb
 *.manifest
+.qtenv.ini
+.qtenvrc
 .tkenvrc
 .tkenvlog
+.cmdenv-log
+netanim-trace.txt
 *.out
-.computed
 
 # ignore backup and temp files
+*.UPDATED
+*.FAILED
+*.ERROR
 *.bak
 backups
 *~
 *.log
 
+xxx
+/tmp/
+/.computed/
+*.DS_Store
 
 *.FAILED
 *.UPDATED
