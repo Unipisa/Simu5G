@@ -111,7 +111,7 @@ std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::
 
 //    std::cout << "BackgroundCellChannelModel::getSinr - attenuation " << attenuation << " antennaGainTx-Rx " << antennaGainTx << " " << antennaGainRx << " cableLoss " << cableLoss_ << endl;
 
-    //=============== ANGOLAR ATTENUATION =================
+    //=============== ANGULAR ATTENUATION =================
     if (dir == DL && bgScheduler->getTxDirection() == ANISOTROPIC)
     {
 
@@ -130,11 +130,11 @@ std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::
         double verticalAngle = computeVerticalAngle(bgBsPos, bgUePos);
 
         // compute attenuation due to sectorial tx
-        double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+        double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-        recvPower -= angolarAtt;
+        recvPower -= angularAtt;
     }
-    //=============== END ANGOLAR ATTENUATION =================
+    //=============== END ANGULAR ATTENUATION =================
 
 
 
@@ -720,22 +720,22 @@ double BackgroundCellChannelModel::getTwoDimDistance(inet::Coord a, inet::Coord 
     return a.distance(b);
 }
 
-double BackgroundCellChannelModel::computeAngolarAttenuation(double hAngle, double vAngle)
+double BackgroundCellChannelModel::computeAngularAttenuation(double hAngle, double vAngle)
 {
    // in this implementation, vertical angle is not considered
 
-   double angolarAtt;
-   double angolarAttMin = 25;
-   // compute attenuation due to angolar position
+   double angularAtt;
+   double angularAttMin = 25;
+   // compute attenuation due to angular position
    // see TR 36.814 V9.0.0 for more details
-   angolarAtt = 12 * pow(hAngle / 70.0, 2);
+   angularAtt = 12 * pow(hAngle / 70.0, 2);
 
-   //  EV << "\t angolarAtt[" << angolarAtt << "]" << endl;
-   // max value for angolar attenuation is 25 dB
-   if (angolarAtt > angolarAttMin)
-       angolarAtt = angolarAttMin;
+   //  EV << "\t angularAtt[" << angularAtt << "]" << endl;
+   // max value for angular attenuation is 25 dB
+   if (angularAtt > angularAttMin)
+       angularAtt = angularAttMin;
 
-   return angolarAtt;
+   return angularAtt;
 }
 
 double BackgroundCellChannelModel::rayleighFading(MacNodeId id, unsigned int band)
@@ -868,7 +868,7 @@ double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::C
     //sub cable loss
     recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-    //=============== ANGOLAR ATTENUATION =================
+    //=============== ANGULAR ATTENUATION =================
     if (dir == DL && bgScheduler->getTxDirection() == ANISOTROPIC)
     {
         // get tx angle
@@ -886,13 +886,13 @@ double BackgroundCellChannelModel::getReceivedPower_bgUe(double txPower, inet::C
         double verticalAngle = computeVerticalAngle(txPos, rxPos);
 
         // compute attenuation due to sectorial tx
-        double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+        double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-        recvPower -= angolarAtt;
+        recvPower -= angularAtt;
     }
-    //=============== END ANGOLAR ATTENUATION =================
+    //=============== END ANGULAR ATTENUATION =================
 
-    //============ END PATH LOSS + ANGOLAR ATTENUATION ===============
+    //============ END PATH LOSS + ANGULAR ATTENUATION ===============
 
     return recvPower;
 }
@@ -954,8 +954,8 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
 
        EV << "BsId [" << id << "] - attenuation [" << att << "]";
 
-       //=============== ANGOLAR ATTENUATION =================
-       double angolarAtt = 0;
+       //=============== ANGULAR ATTENUATION =================
+       double angularAtt = 0;
        if ((*it)->txDirection == ANISOTROPIC)
        {
            //get tx angle
@@ -972,14 +972,14 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
            double verticalAngle = computeVerticalAngle(bsPos, bgUePos);
 
            // compute attenuation due to sectorial tx
-           angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-           EV << "angolar attenuation [" << angolarAtt << "]";
+           EV << "angular attenuation [" << angularAtt << "]";
        }
        // else, antenna is omni-directional
-       //=============== END ANGOLAR ATTENUATION =================
+       //=============== END ANGULAR ATTENUATION =================
 
-       txPwr = (*it)->txPwr - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+       txPwr = (*it)->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 
 
        numBands = std::min(numBands, interfChanModel->getNumBands());
@@ -1075,7 +1075,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
    recvPwr, // watt
    recvPwrDBm, // dBm
    att, // dBm
-   angolarAtt; // dBm
+   angularAtt; // dBm
 
    //compute distance for each cell
    while (it != list->end())
@@ -1108,10 +1108,10 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
 
            txPwr = (*it)->getTxPower();
 
-           //=============== ANGOLAR ATTENUATION =================
+           //=============== ANGULAR ATTENUATION =================
            if ((*it)->getTxDirection() == OMNI)
            {
-               angolarAtt = 0;
+               angularAtt = 0;
            }
            else
            {
@@ -1127,13 +1127,13 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                double verticalAngle = computeVerticalAngle(c, bgUeCoord);
 
                // compute attenuation due to sectorial tx
-               angolarAtt = computeAngolarAttenuation(recvAngle, verticalAngle);
+               angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
            }
-           //=============== END ANGOLAR ATTENUATION =================
+           //=============== END ANGULAR ATTENUATION =================
 
            // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
            // compute and linearize received power
-           recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+           recvPwrDBm = txPwr - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
            recvPwr = dBmToLinear(recvPwrDBm);
 
            numBands = std::min(numBands, (*it)->getNumBands());
@@ -1159,7 +1159,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
 
            double antennaGainBgUe = antennaGainUe_;  // TODO get this from the bgUe
 
-           angolarAtt = 0;  // we assume OMNI directional UEs
+           angularAtt = 0;  // we assume OMNI directional UEs
 
            numBands = std::min(numBands, (*it)->getNumBands());
 
@@ -1188,7 +1188,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                    double dbp = 0;
                    att = computePathLoss(dist, dbp, los);
 
-                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
+                   recvPwrDBm = txPwr - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
                    recvPwr = dBmToLinear(recvPwrDBm);
 
                    (*interference)[i] += recvPwr;

@@ -7,7 +7,7 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 #include "stack/phy/ChannelModel/NRChannelModel.h"
 
@@ -68,24 +68,24 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
    return attenuation;
 }
 
-double NRChannelModel::computeAngolarAttenuation(double hAngle, double vAngle) {
+double NRChannelModel::computeAngularAttenuation(double hAngle, double vAngle) {
 
     // --- compute horizontal pattern attenuation --- //
-    double angolarAttMin = 30;
+    double angularAttMin = 30;
 
-    // compute attenuation due to horizontal angolar position
-    double hAngolarAtt = 12 * pow(hAngle / 65.0, 2);
-    if (hAngolarAtt > angolarAttMin)
-        hAngolarAtt = angolarAttMin;
+    // compute attenuation due to horizontal angular position
+    double hAngularAtt = 12 * pow(hAngle / 65.0, 2);
+    if (hAngularAtt > angularAttMin)
+        hAngularAtt = angularAttMin;
 
     // --- compute vertical pattern attenuation --- //
     double vTilt = 90;
-    double vAngolarAtt = 12 * pow( (vAngle - vTilt) / 65.0, 2);
-    if (vAngolarAtt > angolarAttMin)
-        vAngolarAtt = angolarAttMin;
+    double vAngularAtt = 12 * pow( (vAngle - vTilt) / 65.0, 2);
+    if (vAngularAtt > angularAttMin)
+        vAngularAtt = angularAttMin;
 
-    double angolarAtt = hAngolarAtt + vAngolarAtt;
-    return (angolarAtt < angolarAttMin) ? angolarAtt : angolarAttMin;
+    double angularAtt = hAngularAtt + vAngularAtt;
+    return (angularAtt < angularAttMin) ? angularAtt : angularAttMin;
 }
 
 void NRChannelModel::computeLosProbability(double d, MacNodeId nodeId)
@@ -351,7 +351,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
    recvPwr, // watt
    recvPwrDBm, // dBm
    att, // dBm
-   angolarAtt; // dBm
+   angularAtt; // dBm
 
    std::vector<double> fadingAttenuation;
 
@@ -371,10 +371,10 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
        // compute attenuation according to some path loss model
        att = computeExtCellPathLoss(threeDimDist, twoDimDist, nodeId);
 
-       //=============== ANGOLAR ATTENUATION =================
+       //=============== ANGULAR ATTENUATION =================
        if ((*it)->getTxDirection() == OMNI)
        {
-           angolarAtt = 0;
+           angularAtt = 0;
        }
        else
        {
@@ -390,13 +390,13 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
            double verticalAngle = computeVerticalAngle(c, coord);
 
            // compute attenuation due to sectorial tx
-           angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
        }
-       //=============== END ANGOLAR ATTENUATION =================
+       //=============== END ANGULAR ATTENUATION =================
 
        // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
        // compute and linearize received power
-       recvPwrDBm = (*it)->getTxPower() - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+       recvPwrDBm = (*it)->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
        recvPwr = dBmToLinear(recvPwrDBm);
 
        int numBands = std::min(numBands_, (*it)->getNumBands());

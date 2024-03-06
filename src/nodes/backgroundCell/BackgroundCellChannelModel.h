@@ -246,7 +246,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     double computeAngle(inet::Coord center, inet::Coord point);
     double computeVerticalAngle(inet::Coord center, inet::Coord point);
     double getTwoDimDistance(inet::Coord a, inet::Coord b);
-    double computeAngolarAttenuation(double hAngle, double vAngle);
+    double computeAngularAttenuation(double hAngle, double vAngle);
 
     bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);
     bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);

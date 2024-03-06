@@ -204,7 +204,7 @@ public:
   *
   * @param angle angle
   */
-  virtual double computeAngolarAttenuation(double hAngle, double vAngle = 0);
+  virtual double computeAngularAttenuation(double hAngle, double vAngle = 0);
 
   /*
    * Compute shadowing

@@ -7,7 +7,7 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 #include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
@@ -382,22 +382,22 @@ double LteRealisticChannelModel::computeVerticalAngle(Coord center, Coord point)
     return 90 + arccos;
 }
 
-double LteRealisticChannelModel::computeAngolarAttenuation(double hAngle, double vAngle) {
+double LteRealisticChannelModel::computeAngularAttenuation(double hAngle, double vAngle) {
 
    // in this implementation, vertical angle is not considered
 
-   double angolarAtt;
-   double angolarAttMin = 25;
-   // compute attenuation due to angolar position
+   double angularAtt;
+   double angularAttMin = 25;
+   // compute attenuation due to angular position
    // see TR 36.814 V9.0.0 for more details
-   angolarAtt = 12 * pow(hAngle / 70.0, 2);
+   angularAtt = 12 * pow(hAngle / 70.0, 2);
 
-   //  EV << "\t angolarAtt[" << angolarAtt << "]" << endl;
-   // max value for angolar attenuation is 25 dB
-   if (angolarAtt > angolarAttMin)
-       angolarAtt = angolarAttMin;
+   //  EV << "\t angularAtt[" << angularAtt << "]" << endl;
+   // max value for angular attenuation is 25 dB
+   if (angularAtt > angularAttMin)
+       angularAtt = angularAttMin;
 
-   return angolarAtt;
+   return angularAtt;
 }
 
 std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
@@ -532,7 +532,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    //sub cable loss
    recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-   //=============== ANGOLAR ATTENUATION =================
+   //=============== ANGULAR ATTENUATION =================
    if (dir == DL)
    {
        //get tx angle
@@ -558,13 +558,13 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
            double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
 
            // compute attenuation due to sectorial tx
-           double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-           recvPower -= angolarAtt;
+           recvPower -= angularAtt;
        }
        // else, antenna is omni-directional
    }
-   //=============== END ANGOLAR ATTENUATION =================
+   //=============== END ANGULAR ATTENUATION =================
 
 
    std::vector<double> snrVector;
@@ -850,7 +850,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
    //sub cable loss
    recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-   //=============== ANGOLAR ATTENUATION =================
+   //=============== ANGULAR ATTENUATION =================
    if (dir == DL)
    {
        //get tx angle
@@ -876,13 +876,13 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
            double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
 
            // compute attenuation due to sectorial tx
-           double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-           recvPower -= angolarAtt;
+           recvPower -= angularAtt;
        }
        // else, antenna is omni-directional
    }
-   //=============== END ANGOLAR ATTENUATION =================
+   //=============== END ANGULAR ATTENUATION =================
 
    std::vector<double> rsrpVector;
    rsrpVector.resize(numBands_, 0.0);
@@ -1014,7 +1014,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    //sub cable loss
    recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-   // ANGOLAR ATTENUATION
+   // ANGULAR ATTENUATION
    if (dir == DL)
    {
        //get tx angle
@@ -1040,9 +1040,9 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
            double verticalAngle = computeVerticalAngle(enbCoord, ueCoord);
 
            // compute attenuation due to sectorial tx
-           double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-           recvPower -= angolarAtt;
+           recvPower -= angularAtt;
        }
        // else, antenna is omni-directional
    }
@@ -1198,7 +1198,7 @@ double LteRealisticChannelModel::getReceivedPower_bgUe(double txPower, inet::Coo
     //sub cable loss
     recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-    // ANGOLAR ATTENUATION
+    // ANGULAR ATTENUATION
     if (dir == DL)
     {
         //get tx angle
@@ -1222,13 +1222,13 @@ double LteRealisticChannelModel::getReceivedPower_bgUe(double txPower, inet::Coo
             double verticalAngle = computeVerticalAngle(txPos, rxPos);
 
             // compute attenuation due to sectorial tx
-            double angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+            double angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-            recvPower -= angolarAtt;
+            recvPower -= angularAtt;
         }
         // else, antenna is omni-directional
     }
-    //============ END PATH LOSS + ANGOLAR ATTENUATION ===============
+    //============ END PATH LOSS + ANGULAR ATTENUATION ===============
 
     return recvPower;
 }
@@ -2488,7 +2488,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
    recvPwr, // watt
    recvPwrDBm, // dBm
    att, // dBm
-   angolarAtt; // dBm
+   angularAtt; // dBm
 
    //compute distance for each cell
    while (it != list.end())
@@ -2505,10 +2505,10 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
        // compute attenuation according to some path loss model
        att = computeExtCellPathLoss(dist, nodeId);
 
-       //=============== ANGOLAR ATTENUATION =================
+       //=============== ANGULAR ATTENUATION =================
        if ((*it)->getTxDirection() == OMNI)
        {
-           angolarAtt = 0;
+           angularAtt = 0;
        }
        else
        {
@@ -2524,13 +2524,13 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
            double verticalAngle = computeVerticalAngle(c, coord);
 
            // compute attenuation due to sectorial tx
-           angolarAtt = computeAngolarAttenuation(recvAngle, verticalAngle);
+           angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
        }
-       //=============== END ANGOLAR ATTENUATION =================
+       //=============== END ANGULAR ATTENUATION =================
 
        // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
        // compute and linearize received power
-       recvPwrDBm = (*it)->getTxPower() - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+       recvPwrDBm = (*it)->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
        recvPwr = dBmToLinear(recvPwrDBm);
 
        unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
@@ -2576,7 +2576,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
    recvPwr, // watt
    recvPwrDBm, // dBm
    att, // dBm
-   angolarAtt; // dBm
+   angularAtt; // dBm
 
    //compute distance for each cell
    while (it != list->end())
@@ -2599,10 +2599,10 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 
            txPwr = (*it)->getTxPower();
 
-           //=============== ANGOLAR ATTENUATION =================
+           //=============== ANGULAR ATTENUATION =================
            if ((*it)->getTxDirection() == OMNI)
            {
-               angolarAtt = 0;
+               angularAtt = 0;
            }
            else
            {
@@ -2618,13 +2618,13 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                double verticalAngle = computeVerticalAngle(c, ueCoord);
 
                // compute attenuation due to sectorial tx
-               angolarAtt = computeAngolarAttenuation(recvAngle, verticalAngle);
+               angularAtt = computeAngularAttenuation(recvAngle, verticalAngle);
            }
-           //=============== END ANGOLAR ATTENUATION =================
+           //=============== END ANGULAR ATTENUATION =================
 
            // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
            // compute and linearize received power
-           recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+           recvPwrDBm = txPwr - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
            recvPwr = dBmToLinear(recvPwrDBm);
            EV << " recvPwr[" << recvPwr << "]\t";
 
@@ -2662,7 +2662,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 
            double antennaGainBgUe = antennaGainUe_;  // TODO get this from the bgUe
 
-           angolarAtt = 0;  // we assume OMNI directional UEs
+           angularAtt = 0;  // we assume OMNI directional UEs
 
            unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
            EV << " - shared bands [" << numBands << "]" << endl;
@@ -2700,7 +2700,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                    // compute attenuation according to some path loss model
                    att = computeExtCellPathLoss(dist, nodeId);
 
-                   recvPwrDBm = txPwr - att - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
+                   recvPwrDBm = txPwr - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainBgUe;
                    recvPwr = dBmToLinear(recvPwrDBm);
 
                    (*interference)[i] += recvPwr;
@@ -2890,8 +2890,8 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
        att = interfChanModel->getAttenuation(ueId,UL,coord,isCqi);
        EV << "EnbId [" << id << "] - attenuation [" << att << "]";
 
-       //=============== ANGOLAR ATTENUATION =================
-       double angolarAtt = 0;
+       //=============== ANGULAR ATTENUATION =================
+       double angularAtt = 0;
        if ((*it)->txDirection == ANISOTROPIC)
        {
            //get tx angle
@@ -2908,14 +2908,14 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
            double verticalAngle = computeVerticalAngle(interfChanModel->phy_->getCoord(), coord);
 
            // compute attenuation due to sectorial tx
-           angolarAtt = computeAngolarAttenuation(recvAngle,verticalAngle);
+           angularAtt = computeAngularAttenuation(recvAngle,verticalAngle);
 
-           EV << "angolar attenuation [" << angolarAtt << "]";
+           EV << "angular attenuation [" << angularAtt << "]";
        }
        // else, antenna is omni-directional
-       //=============== END ANGOLAR ATTENUATION =================
+       //=============== END ANGULAR ATTENUATION =================
 
-       txPwr = (*it)->txPwr - angolarAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+       txPwr = (*it)->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 
        unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
        EV << " - shared bands [" << numBands << "]" << endl;

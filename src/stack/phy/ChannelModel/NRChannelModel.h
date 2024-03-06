@@ -34,7 +34,7 @@ public:
     *
     * @param angle angle
     */
-    virtual double computeAngolarAttenuation(double hAngle, double vAngle);
+    virtual double computeAngularAttenuation(double hAngle, double vAngle);
 
     /*
      * Compute LOS probability (taken from TR 36.873)
