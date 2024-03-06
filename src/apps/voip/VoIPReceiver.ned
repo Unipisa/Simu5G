@@ -26,7 +26,7 @@ simple VoIPReceiver like IApp
         int dim_buffer = default(20);
         double sampling_time @unit("s") = default(0.02s);
 
-		@signal[voIPFrameLoss];
+        @signal[voIPFrameLoss];
         @statistic[voIPFrameLoss](title="VoIP Frame Loss"; unit="ratio"; source="voIPFrameLoss"; record=mean);
         @signal[voIPFrameDelay];
         @statistic[voIPFrameDelay](title="VoIP Frame Delay"; unit="s"; source="voIPFrameDelay"; record=mean,vector);

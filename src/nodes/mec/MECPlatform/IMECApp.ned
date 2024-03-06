@@ -18,13 +18,13 @@ moduleinterface IMECApp
         @display("i=block/app");
         int mecAppId;
         int mecAppIndex;
-        
+
         string mp1Address;
         int mp1Port;
-        
+
         int localUePort;
-        
-	
+
+
 		//resource required infos
         double requiredRam @unit("B");
         double requiredDisk @unit("B");

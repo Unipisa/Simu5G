@@ -24,10 +24,10 @@ simple VirtualisationInfrastructureManager
 {
     parameters:
         @display("i=block/control");
-        
+
         int mp1Port = default(10021);
         string scheduling = default("segregation");
-        
+
     gates:
         input virtualisationManagerIn;
         output virtualisationManagerOut;

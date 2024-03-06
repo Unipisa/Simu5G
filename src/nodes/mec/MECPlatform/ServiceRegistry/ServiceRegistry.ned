@@ -22,22 +22,22 @@ import inet.applications.contract.IApp;
 
 simple ServiceRegistry like IApp
 {
-        parameters:
+    parameters:
         @display("i=block/source");
         @class("ServiceRegistry");
-        
+
         string serviceName = default("ServiceRegistry");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
-        
-        double requestServiceTime  @unit(s) = default(15us);
+
+        double requestServiceTime @unit(s) = default(15us);
         double subscriptionServiceTime @unit(s) = default(20us);
-        
+
         string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
-        
+
         int destPort = default(4000);
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
@@ -45,7 +45,7 @@ simple ServiceRegistry like IApp
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
         @signal[responseTime];
         @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
-        
+
     gates:
         output socketOut;
         input socketIn;

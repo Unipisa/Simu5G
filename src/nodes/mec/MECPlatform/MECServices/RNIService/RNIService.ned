@@ -26,34 +26,34 @@ simple RNIService like IMECService, IApp
         string localAddress = default(""); // local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
-        
+
         double requestServiceTime @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
-        
+
         bool loadGenerator = default(false);
-    	double betaa = default(0);  // used only if loadGenerator is true
-    	int numBGApps = default(0); // used only if loadGenerator is true
-    	
-    	        
+        double betaa = default(0);  // used only if loadGenerator is true
+        int numBGApps = default(0); // used only if loadGenerator is true
+
+
         string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
-        
-		string serviceName = default("RNIService");
-       	string serviceVersion = default("v2");
-       	string serviceSerialize = default("JSON");
-       	
-       	string transportId = default("RNIAPI");
-       	string transportName = default("RNIAPI");
-       	string transportType = default("REST_HTTP");
-       	string transportProtocol = default("HTTP");
-    
-    	string catId = default("");
-    	string catName = default("RNI");
-    	string catUri = default("");
-    	string catVersion = default("v2");	
-    	
-    	string scopeOfLocality = default("MEC_HOST");
-    	bool consumedLocalOnly = default(true);        
-        
+
+        string serviceName = default("RNIService");
+        string serviceVersion = default("v2");
+        string serviceSerialize = default("JSON");
+
+        string transportId = default("RNIAPI");
+        string transportName = default("RNIAPI");
+        string transportType = default("REST_HTTP");
+        string transportProtocol = default("HTTP");
+
+        string catId = default("");
+        string catName = default("RNI");
+        string catUri = default("");
+        string catVersion = default("v2");
+
+        string scopeOfLocality = default("MEC_HOST");
+        bool consumedLocalOnly = default(true);
+
         @display("i=block/app");
         @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);

@@ -21,10 +21,10 @@ import inet.mobility.single.LinearMobility;
 simple TrafficLightMobility extends LinearMobility
 {
     parameters:
-        
+
         @class(TrafficLightMobility);
 
-		int initialRoadIndex = default(0);
+        int initialRoadIndex = default(0);
         string trafficLightsList = default("");
         bool enableTurns = default(false);
 }

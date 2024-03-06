@@ -18,7 +18,7 @@ module TrafficLight
     parameters:
         @display("i=misc/node2_s;bgb=200,100");
         bool bidirectional = default(false);
-        
+
     submodules:
         mobility: StationaryMobility {
             parameters:

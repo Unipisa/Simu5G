@@ -23,7 +23,7 @@ simple X2AppServer extends SctpServer
     parameters:
         @class("X2AppServer");
 
-    gates:    
-        input x2ManagerIn @labels(X2Msg);       
+    gates:
+        input x2ManagerIn @labels(X2Msg);
 }
 

@@ -23,40 +23,40 @@ simple LocationService like IMECService, IApp
         string localAddress = default(""); // local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
-        double LocationSubscriptionPeriod @unit(s)= default(1s);
-        
+        double LocationSubscriptionPeriod @unit(s) = default(1s);
+
         bool loadGenerator = default(false);
-    	double betaa  = default(0);  // used only if loadGenerator is true
-    	int numBGApps = default(0); // used only if loadGenerator is true
-        
-        double requestServiceTime  @unit(s) = default(0.5us);
+        double betaa = default(0);  // used only if loadGenerator is true
+        int numBGApps = default(0); // used only if loadGenerator is true
+
+        double requestServiceTime @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
-        
+
         string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
-                
-		string serviceName = default("LocationService");
-       	string serviceVersion = default("v2");
-       	string serviceSerialize = default("JSON");
-       	
-       	string transportId = default("LocAPI");
-       	string transportName = default("LocAPI");
-       	string transportType = default("REST_HTTP");
-       	string transportProtocol = default("HTTP");
-    
-    	string catId = default("");
-    	string catName = default("Location");
-    	string catUri = default("");
-    	string catVersion = default("v2");	
-        
+
+        string serviceName = default("LocationService");
+        string serviceVersion = default("v2");
+        string serviceSerialize = default("JSON");
+
+        string transportId = default("LocAPI");
+        string transportName = default("LocAPI");
+        string transportType = default("REST_HTTP");
+        string transportProtocol = default("HTTP");
+
+        string catId = default("");
+        string catName = default("Location");
+        string catUri = default("");
+        string catVersion = default("v2");
+
         string scopeOfLocality = default("MEC_HOST");
-        bool consumedLocalOnly =  default(true);   
-        
+        bool consumedLocalOnly = default(true);
+
         @display("i=block/app");
         @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
         @signal[responseTime];
         @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
-        
+
 
     gates:
         input socketIn @labels(TcpCommand/up);

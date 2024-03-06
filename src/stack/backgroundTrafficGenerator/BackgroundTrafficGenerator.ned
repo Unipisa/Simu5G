@@ -22,7 +22,7 @@ module BackgroundTrafficGenerator
         bool enablePeriodicCqiUpdate = default(true);
         bool useProbabilisticCqi = default(false);
         bool computeAvgInterference = default(false);
-        
+
     submodules:
         bgUE[numBgUes]: BackgroundUe {
             @display("p=77,118");

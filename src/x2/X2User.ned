@@ -14,7 +14,8 @@ package simu5g.x2;
 //
 // Interface X2 User modules
 //
-moduleinterface X2User {
+moduleinterface X2User
+{
     parameters:
         @display("i=block/cogwheel");
     gates:

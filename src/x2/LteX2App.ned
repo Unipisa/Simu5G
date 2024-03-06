@@ -46,7 +46,7 @@ module LteX2App
         server: X2AppServer {
             @display("i=block/app;p=163,76");
         }
-        
+
     connections:
 
         //# client connections

@@ -29,8 +29,8 @@ module PgwStandard extends NetworkLayerNodeBase
         @figure[transportLayer](type=rectangle; pos=250,156; size=1000,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
         @figure[transportLayer.title](type=text; pos=1245,161; anchor=ne; text="transport layer");
         @figure[submodules];
-            
-        string nodeType = "PGW"; 
+
+        string nodeType = "PGW";
 
         forwarding = default(true);
         multicastForwarding = default(false);
@@ -67,7 +67,7 @@ module PgwStandard extends NetworkLayerNodeBase
         }
 
     connections:
-        
+
         gtp_user.socketOut --> at.in++;
         gtp_user.socketIn <-- at.out++;
 
@@ -75,7 +75,7 @@ module PgwStandard extends NetworkLayerNodeBase
         pppIf.upperLayerIn <-- gtp_user.pppGate;
 
         trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
-        
+
         // at dispatcher to transport layer connections
         at.out++ --> udp.appIn;
         at.in++ <-- udp.appOut;

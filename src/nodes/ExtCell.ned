@@ -23,25 +23,25 @@ simple ExtCell
         double position_x @unit("m") = default(0m);
         double position_y @unit("m") = default(0m);
         double position_z @unit("m") = default(0m);
-        
+
         // transmission power
         double txPower = default(46);
-        		
+
         // transmission direction
         string txDirection = default("OMNI");
-        
+
         // transmission angle
         double txAngle = default(0);
-        
+
         // operating carrier
         double carrierFrequency @unit(GHz) = default(2GHz);
-        
+
         // carrier bandwidth
         int numBands = default(6);
-        
+
         // --- ALLOCATION MANAGEMENT --- //
         string bandAllocationType = default("FULL_ALLOC");
-        double bandUtilization = default(0.5);    
+        double bandUtilization = default(0.5);
         int startingOffset = default(0);
         // ----------------------------- //
 }

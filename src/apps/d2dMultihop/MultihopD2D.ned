@@ -45,23 +45,23 @@ simple MultihopD2D like IApp
         int localPort = default(3000);
         int destPort = default(3000);
         string destAddress = default("0.0.0.0");
-        string interfaceName = default("cellular"); 
+        string interfaceName = default("cellular");
         int msgSize = default(40);
-        double maxBroadcastRadius  @unit(m) = default(-1m);
-        int ttl = default(3);        
+        double maxBroadcastRadius @unit(m) = default(-1m);
+        int ttl = default(3);
         double maxTransmissionDelay @unit("s") = default(0.01s);
         double selfishProbability = default(0.0);  // probability that the app does not relay the received message  
-           
+
         //# Trickle suppression mechanism parameters
         bool trickle = default(false);
         double I @unit("s") = default(0.01s);
         int k = default(3);
-        
+
         //# Network Layer specs
         string interfaceTableModule = default(absPath(".interfaceTable"));
-        
+
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-        
+
         //# Statistics
         @signal[d2dMultihopGeneratedMsg];
         @statistic[d2dMultihopGeneratedMsg](title="Number of locally generated packets"; unit=""; source="d2dMultihopGeneratedMsg"; record=sum,vector);
@@ -74,7 +74,7 @@ simple MultihopD2D like IApp
 
         @signal[d2dMultihopTrickleSuppressedMsg];
         @statistic[d2dMultihopTrickleSuppressedMsg](title="Number of suppressed packets by the Trickle suppression mechanism"; unit=""; source="d2dMultihopTrickleSuppressedMsg"; record=sum,vector);
-        
+
         @display("i=block/source");
     gates:
         output socketOut;

@@ -20,46 +20,46 @@ import inet.applications.contract.IApp;
 //
 simple UERequestApp like IApp
 {
-    parameters:       
-         @display("i=block/source");    
-        
+    parameters:
+        @display("i=block/source");
+
         //connection infos
         int localPort = default(4000);
         int deviceAppPort = default(4000); // ipAddress of the DeviceApp
         string deviceAppAddress; // port of the DeviceApp
-                
+
         int requestPacketSize = default(10);
-        
+
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-        
+
         //autoscheduling infos
         double period @unit("s") = default(0.2s);
-        double startTime @unit("s") = default(0s); 
+        double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);
-                
-        string mecAppName = default("MecResponseApp");
-        
-        string interfaceTableModule;
-        
-        // stats
-                     
-        @signal[responseTime];
-        @statistic[responseTime](title="responseTime"; unit="s"; source="responseTime"; record=stats, mean, vector); 
-             
-        @signal[processingTime];
-        @statistic[processingTime](title="processingTime"; unit="s"; source="processingTime"; record=stats, mean, vector); 
-       
-        @signal[serviceResponseTime];
-        @statistic[serviceResponseTime](title="serviceResponseTime"; unit="s"; source="serviceResponseTime"; record=stats, mean, vector); 
-        
-        @signal[upLinkTime];
-        @statistic[upLinkTime](title="upLinkTime"; unit="s"; source="upLinkTime"; record=stats, mean, vector); 
-        
-        @signal[downLinkTime];
-        @statistic[downLinkTime](title="downLinkTime"; unit="s"; source="downLinkTime"; record=stats, mean, vector); 
 
-              
-             
+        string mecAppName = default("MecResponseApp");
+
+        string interfaceTableModule;
+
+        // stats
+
+        @signal[responseTime];
+        @statistic[responseTime](title="responseTime"; unit="s"; source="responseTime"; record=stats,mean,vector);
+
+        @signal[processingTime];
+        @statistic[processingTime](title="processingTime"; unit="s"; source="processingTime"; record=stats,mean,vector);
+
+        @signal[serviceResponseTime];
+        @statistic[serviceResponseTime](title="serviceResponseTime"; unit="s"; source="serviceResponseTime"; record=stats,mean,vector);
+
+        @signal[upLinkTime];
+        @statistic[upLinkTime](title="upLinkTime"; unit="s"; source="upLinkTime"; record=stats,mean,vector);
+
+        @signal[downLinkTime];
+        @statistic[downLinkTime](title="downLinkTime"; unit="s"; source="downLinkTime"; record=stats,mean,vector);
+
+
+
     gates:
         output socketOut;
         input socketIn;

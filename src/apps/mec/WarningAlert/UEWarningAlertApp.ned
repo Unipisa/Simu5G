@@ -32,33 +32,33 @@ import inet.applications.contract.IApp;
 
 simple UEWarningAlertApp like IApp
 {
-    parameters:       
-         @display("i=block/source");    
-        
+    parameters:
+        @display("i=block/source");
+
         //connection infos
         int localPort = default(4000);
         int deviceAppPort = default(4000); // ipAddress of the DeviceApp
         string deviceAppAddress; // port of the DeviceApp
-                
+
         int packetSize = default(10);
-        
+
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-        
+
         //autoscheduling infos
         double period @unit("s") = default(1s);
-        double startTime @unit("s") = default(0s); 
+        double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);
-        
+
         string mecAppName = default("MECWarningAlertApp"); // but could be MEWarningAlertApp_rest_External
-        
+
         double positionX = default(210);
         double positionY = default(260);
         double positionZ = default(0);
-        double radius= default(60);
-        
+        double radius = default(60);
+
         bool logger = default(false);
         string interfaceTableModule;
-                    
+
     gates:
         output socketOut;
         input socketIn;

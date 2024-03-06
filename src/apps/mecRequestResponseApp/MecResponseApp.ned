@@ -18,14 +18,14 @@ simple MecResponseApp like IApp
 {
     parameters:
         @display("i=block/app;is=s");
-        
+
         int localPort = default(5000);
         double coreNetworkDelay @unit("s") = default(0.1s);
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-        
+
         @signal[recvRequestSno];
-        @statistic[recvRequestSno](title="Received Sequence number"; unit=""; source="recvRequestSno"; record=vector); 
-          
+        @statistic[recvRequestSno](title="Received Sequence number"; unit=""; source="recvRequestSno"; record=vector);
+
     gates:
         output socketOut;
         input socketIn;

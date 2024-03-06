@@ -19,18 +19,18 @@ package simu5g.apps.d2dMultihop.eventGenerator;
 // selecting a node) and notifies a MultihopD2D application 
 // via direct method call
 //
-simple EventGenerator 
+simple EventGenerator
 {
-    parameters:      
+    parameters:
         double startTime @unit(s) = default(0.1s);
         volatile double eventPeriod @unit(s) = default(1s);
         bool singleEventSource = default(true);
-        
+
         bool forceStartingCoord = default(false);
         double startingCoordX @unit(m) = default(-1.0m);
         double startingCoordY @unit(m) = default(-1.0m);
-        
+
         int startingUe = default(0);
-        
+
         @display("i=block/cogwheel");
 }

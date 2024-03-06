@@ -29,12 +29,12 @@ simple CbrReceiver like IApp
         @statistic[cbrFrameLoss](title="Cbr Frame Loss"; unit="ratio"; source="cbrFrameLossSignal"; record=mean);
         @statistic[cbrReceivedThroughtput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughtputSignal"; record=timeavg,mean,sum);
         @statistic[cbrReceivedBytes](title="Bytes received at the application level"; unit="Bps"; source="cbrReceivedBytesSignal"; record=timeavg,mean,vector,sum);
-        
-        
-        
+
+
+
         @signal[cbrRcvdPkt];
         @statistic[cbrRcvdPkt](title="Received packet ID"; unit=""; source="cbrRcvdPkt"; record=vector);
-        
+
         @display("i=block/source");
     gates:
         output socketOut;

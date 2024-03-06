@@ -18,10 +18,10 @@ simple DeviceApp like IApp
 {
     string UALCMPAddress = default(""); // may be left empty ("")
     int UALCMPPort = default(-1); // port number to listen on
-    
+
     string appProvider = default("");
-    string appPackageSource =  default("");
-    
+    string appPackageSource = default("");
+
     string localAddress = default(""); // may be left empty ("")
     int localPort = default(-1); // port number to listen on
     string connectAddress = default("");  // server address (may be symbolic)
@@ -39,5 +39,5 @@ simple DeviceApp like IApp
     gates:
         input socketIn @labels(TcpCommand/up);
         output socketOut @labels(TcpCommand/down);
-    
+
 }

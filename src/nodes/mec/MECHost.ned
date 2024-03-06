@@ -40,7 +40,7 @@ module MECHost
 
         int numBGMecApp = default(0);
         int numIndependentMecApp = default(0);
-        
+
         //# List of Base Stations associated to the MEC host
         // This is a string of comma-separated values
         string bsList = default("");
@@ -85,7 +85,7 @@ module MECHost
         bgApp[numBGMecApp]: BackgroundApp {
             @display("p=865.94995,326.3,row,140");
         }
-        
+
         independentMecApp[numIndependentMecApp]: <> like IApp {
             @display("p=371.47998,156.875,row,140");
         }

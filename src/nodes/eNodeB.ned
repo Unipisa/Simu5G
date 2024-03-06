@@ -27,7 +27,7 @@ import simu5g.common.cellInfo.CellInfo;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
-import simu5g.corenetwork.statsCollector.StatsCollector; 
+import simu5g.corenetwork.statsCollector.StatsCollector;
 
 // 
 // eNodeB Module
@@ -51,7 +51,7 @@ module eNodeB
         @figure[submodules];
         @statistic[posX](source="xCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
         @statistic[posY](source="yCoord(mobilityPos(mobilityStateChanged))"; record=vector?);
-            
+
 
         //# Node specs
         string nodeType = default("ENODEB");        // DO NOT CHANGE
@@ -81,11 +81,11 @@ module eNodeB
 
         //# MEC support	
         string mecHost = default("");		// symbolic name of the connected MEHost in the Network
-     
+
         //# @author Alessandro Noferi
-       	string StatsCollectorType = default("BaseStationStatsCollector"); 
+        string StatsCollectorType = default("BaseStationStatsCollector");
         bool hasRNISupport = default(false);
-        
+
         //# use it in case of emulation
         string extMeAppsAddress = default(""); // Address of the external MeApp IP/mask
         //# Plmn params (used by RNI Service in EnodeBStatsCollector)
@@ -113,10 +113,10 @@ module eNodeB
             parameters:
                 @display("p=110.43,244.3775;is=s");
         }
-        
+
         collector: <StatsCollectorType> like StatsCollector if hasRNISupport {
-    		@display("p=50,275;is=s");
-		}
+            @display("p=50,275;is=s");
+        }
 
         //#
         //# cellularNic modules
@@ -198,7 +198,7 @@ module eNodeB
             parameters:
                 @display("p=750,446;b=1000,5,,,,1");
         }
-                
+
         //# 
         //# Modules for connecting to the core network and X2
         //# 

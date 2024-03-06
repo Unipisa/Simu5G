@@ -20,5 +20,5 @@ simple TrafficFlowFilter
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;
-        output gtpUserGateOut;    
+        output gtpUserGateOut;
 }

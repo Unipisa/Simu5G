@@ -15,7 +15,7 @@ import simu5g.world.radio.ChannelControl;
 
 simple LteChannelControl extends ChannelControl
 {
-    parameters:       
+    parameters:
         @display("i=misc/sun");
         @labels(node);
         @class(LteChannelControl);

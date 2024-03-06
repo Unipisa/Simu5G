@@ -20,7 +20,7 @@ package simu5g.common.binder;
 // for control-plane functionalities.
 // There must be one (and one only) instance of the module in the network
 //
-simple Binder 
+simple Binder
 {
     parameters:
         int blerShift = default(0);

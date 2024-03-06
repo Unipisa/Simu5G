@@ -20,48 +20,48 @@ package simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase;
 // TCPSocket::CallbackInterface It must be subclassed and only the methods relative to the requests management 
 // (e.g handleGETrequest) have to be implemented.
 
-moduleinterface IMECService 
+moduleinterface IMECService
 {
     parameters:
         @display("i=block/app");
         int requestQueueSize;
-       	int subscriptionQueueSize;
-       	
-       	string serviceName;
-       	string serviceVersion;
-       	string serviceSerialize;
-       	
-       	string transportId;
-       	string transportName;
-       	string transportType;
-       	string transportProtocol;
-    
-    	string catId;
-    	string catName;
-    	string catUri;
-    	string catVersion;	
-    	
-    	string scopeOfLocality;
-    	bool consumedLocalOnly;
-    	
-    	bool loadGenerator;
-    	double betaa;
-    	int numBGApps;
+        int subscriptionQueueSize;
+
+        string serviceName;
+        string serviceVersion;
+        string serviceSerialize;
+
+        string transportId;
+        string transportName;
+        string transportType;
+        string transportProtocol;
+
+        string catId;
+        string catName;
+        string catUri;
+        string catVersion;
+
+        string scopeOfLocality;
+        bool consumedLocalOnly;
+
+        bool loadGenerator;
+        double betaa;
+        int numBGApps;
 
 
-		string localAddress; // local address; may be left empty ("")
+        string localAddress; // local address; may be left empty ("")
         int localPort;     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream"); // bytestream for emulation
-        
+
         double requestServiceTime;
         double subscriptionServiceTime @unit(s);
         string serverThreadClass;
 
-		@signal[requestQueueSize];
+        @signal[requestQueueSize];
         @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
         @signal[responseTime];
         @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
-        
+
 }
 
 
