@@ -22,8 +22,6 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 // It has been used, for instance, to evaluate the loadgenerator model of the MEC service
 // to see the execution time differences.
 //
-
-
 simple MecRequestForegroundApp like IMECApp, IApp
 {
     parameters:

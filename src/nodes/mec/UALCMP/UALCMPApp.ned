@@ -23,8 +23,7 @@ import inet.applications.contract.IApp;
 //   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
-
-
+//
 simple UALCMPApp like IApp
 {
     parameters:

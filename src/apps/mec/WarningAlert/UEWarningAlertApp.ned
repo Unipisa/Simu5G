@@ -28,8 +28,6 @@ import inet.applications.contract.IApp;
  //  3) wait for danger events
  //  4) send delete MEC app to the Device App
  //
-
-
 simple UEWarningAlertApp like IApp
 {
     parameters:

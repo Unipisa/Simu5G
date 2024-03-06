@@ -19,7 +19,6 @@ package simu5g.nodes.mec.VirtualisationInfrastructureManager;
 //	From  ETSI GS MEC 003, it is responsable for allocating, managing and releasing virtualised
 //  resources of the virtualisation infrastructure;
 //
-
 simple VirtualisationInfrastructureManager
 {
     parameters:

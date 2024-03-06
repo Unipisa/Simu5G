@@ -28,8 +28,6 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 //  4) send the alert event to the UE app
 //  5) (optional) receive stop from the UE app
 //
-
-
 simple MECWarningAlertApp like IMECApp, IApp
 {
     parameters:

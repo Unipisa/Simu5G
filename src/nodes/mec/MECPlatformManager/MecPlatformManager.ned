@@ -17,7 +17,7 @@ package simu5g.nodes.mec.MECPlatformManager;
 // passtrhough between the MEC orchestrator and the MEC host modules
 //
 // The mecOrchestrator module is used to link the MECPM with the MEC orchestrator
-
+//
 simple MecPlatformManager
 {
     parameters:

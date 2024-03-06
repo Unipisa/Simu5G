@@ -18,7 +18,6 @@ import inet.applications.contract.IApp;
 //
 // This is a UE app that asks to a Device App to instantiate the MECRTVideoStreamingReceiver.
 //
-
 simple RTVideoStreamingSender like IApp
 {
     parameters:

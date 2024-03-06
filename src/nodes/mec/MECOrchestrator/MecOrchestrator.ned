@@ -22,7 +22,6 @@ package simu5g.nodes.mec.MECOrchestrator;
 //   - MEC app termination
 //   - MEC app run-time onboarding
 //
-
 simple MecOrchestrator
 {
     parameters:
