@@ -21,7 +21,7 @@ simple BackgroundScheduler
         @class("BackgroundScheduler");
 
         // transmission power
-        double txPower = default(46);
+        double txPower @unit(dBm) = default(46dBm);
 
         // transmission direction
         string txDirection = default("OMNI");

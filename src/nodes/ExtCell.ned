@@ -25,7 +25,7 @@ simple ExtCell
         double position_z @unit("m") = default(0m);
 
         // transmission power
-        double txPower = default(46);
+        double txPower @unit(dBm) = default(46dBm);
 
         // transmission direction
         string txDirection = default("OMNI");
