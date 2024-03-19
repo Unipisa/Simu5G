@@ -121,6 +121,12 @@ void BaseStationStatsCollector::initialize(int stage){
             scheduleAt(NOW + tPutPeriod_,tPut_);
         }
     }
+
+    // statistics
+    dl_total_prb_ = registerSignal("DlTotalPRB");
+    ul_total_prb_ = registerSignal("UlTotalPRB");
+    num_ue_dl_nongbr_ = registerSignal("ActiveUsersDl");
+    num_ue_ul_nongbr_ = registerSignal("ActiveUsersUl");
 }
 
 
@@ -290,6 +296,7 @@ void BaseStationStatsCollector::add_dl_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(DL);
     EV << collectorType_ << "::add_dl_total_prb_usage_cell " << prb_usage << "%"<< endl;
+    emit(dl_total_prb_, prb_usage);
     dl_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
@@ -297,6 +304,7 @@ void BaseStationStatsCollector::add_ul_total_prb_usage_cell()
 {
     double prb_usage = mac_->getUtilization(UL);
     EV << collectorType_ << "::add_ul_total_prb_usage_cell " << prb_usage << "%"<< endl;
+    emit(ul_total_prb_, prb_usage);
     ul_total_prb_usage_cell.addValue((int)prb_usage);
 }
 
@@ -304,6 +312,7 @@ void BaseStationStatsCollector::add_number_of_active_ue_dl_nongbr_cell()
 {
     int users = mac_->getActiveUesNumber(DL);
     EV << collectorType_ << "::add_number_of_active_ue_dl_nongbr_cell " << users << endl;
+    emit(num_ue_dl_nongbr_, users);
     number_of_active_ue_dl_nongbr_cell.addValue(users);
 }
 
@@ -311,6 +320,7 @@ void BaseStationStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
 {
     int users = mac_->getActiveUesNumber(UL);
     EV << collectorType_ << "::add_number_of_active_ue_ul_nongbr_cell " << users << endl;
+    emit(num_ue_ul_nongbr_, users);
     number_of_active_ue_ul_nongbr_cell.addValue(users);
 }
 
