@@ -157,7 +157,7 @@ html_baseurl = 'https://simu5g.org'
 
 extensions.append("sphinx_immaterial")
 html_theme = "sphinx_immaterial"
-html_css_files = ['custom.css',]
+html_css_files = ['sphinx-omnetpp.css',]
 
 # material theme options (see theme.conf for more information)
 html_theme_options = {

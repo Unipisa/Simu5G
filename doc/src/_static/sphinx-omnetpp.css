@@ -1,0 +1,77 @@
+/* 'literal and doxytag reference' roles */
+.reference-cpp, .reference-ned, .reference-ini, .reference-msg {
+    font-size: 0.95rem;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 2px;
+    padding-right: 2px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    text-decoration: none;
+    font-family: monospace;
+}
+
+/* color code highlighter backgrounds */
+.highlight code { border-radius: 0.2rem; box-shadow: var(--md-shadow-z2) !important }
+.highlight-cpp code { background-color: #e6f3ff; border-left: 4px solid darkblue }
+.highlight-ini code { background-color: #fef5d6; border-left: 4px solid darkorange }
+.highlight-ned code { background-color: #eeffe4; border-left: 4px solid darkgreen }
+.highlight-msg code { background-color: #fcf5ff; border-left: 4px solid purple }
+
+/* uncomment to highlight unresolved links with red background - for development only */
+/*
+span.reference-cpp, span.reference-ned, span.reference-ini, span.reference-msg, span.reference-fp {
+   background: rgba(255, 0, 0, 0.2);
+}
+*/
+
+/* color code inline literals */
+code.literal-cpp, .reference-cpp { color: darkblue; }
+code.literal-ini, .reference-ini { color: darkorange; }
+code.literal-ned, .reference-ned { color: darkgreen; }
+code.literal-msg, .reference-msg { color: purple; }
+code.protocol { font-style: italic; }
+
+.menuselection, .guilabel { font-style: italic; font-weight: bold; }
+
+/* disable the extra bordering of compound keys */
+.kbd.compound {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    font-size: 100%;
+}
+
+/* sphinx-immaterial customizations ****************************************/
+
+figure img {
+    border-radius: 0.2rem;
+    box-shadow: var(--md-shadow-z2);
+}
+/* custom hero image */
+.md-hero__inner {
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.md-hero__inner p {
+    margin-block-end: 0;
+}
+
+.md-hero__inner::before {
+    content: ""; /* Necessary for the pseudo-element to work */
+    display: block; /* Treat the pseudo-element like a block-level element */
+    width: 400px; /* Width of the image */
+    height: 100px; /* Height of the image */
+    background-image: url('logo.png'); /* Path to your image */
+    background-size: cover; /* Ensure the image covers the pseudo-element */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+}
+
+/* doxygen / doxygen-awsome customizations ********************************/
+
+/* Hide project name and document title from doxyspinx generated content. */
+div.doxygen-content div.header, div.doxygen-content div#top {
+    display: none;
+}
