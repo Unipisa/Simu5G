@@ -96,6 +96,8 @@ figure img {
     background-image: url('logo.png'); /* Path to your image */
     background-size: cover; /* Ensure the image covers the pseudo-element */
     background-repeat: no-repeat; /* Prevent the image from repeating */
+    border-radius: 0.2rem;
+    box-shadow: var(--md-shadow-z3);
 }
 
 /* doxygen / doxygen-awsome customizations ********************************/
