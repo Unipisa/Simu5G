@@ -86,7 +86,7 @@ language = "en"
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
 exclude_patterns = [
-  '_build', '_deploy', 'Thumbs.db', '.DS_Store', '**/_docs', 'global.rst',
+  '_build', '_deploy', 'Thumbs.db', '.DS_Store', '**/_docs',
   '_static', '_themes', '_templates', '.venv', 'images'
 #  'simulations/**'
 #  'showcases/**',
@@ -335,7 +335,7 @@ doxylink = {
 }
 
 # -- Extension configuration -------------------------------------------------
-rst_prolog = open('global.rst', 'r').read()
+rst_prolog = open('_templates/prolog.inc', 'r').read()
 
 # whether to show TODO items
 todo_include_todos = False

@@ -1,3 +1,13 @@
+.. Global RST definitions.
+
+.. Special roles.
+
+.. role:: latex(raw)
+   :format: latex
+
+.. role:: html(raw)
+   :format: html
+
 .. role:: protocol
    :class: protocol
 
@@ -9,6 +19,9 @@
 
 .. role:: cpp(code)
    :class: literal-cpp
+
+.. role:: ned(code)
+   :class: literal-ned
 
 .. role:: gate(code)
    :class: literal-ned
