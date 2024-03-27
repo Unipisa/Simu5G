@@ -1,3 +1,32 @@
+:root {
+    --opp-cpp-hue: 220; /* blue */
+    --opp-ini-hue: 30;  /* orange */
+    --opp-ned-hue: 140; /* green */
+    --opp-msg-hue: 300; /* purple */
+}
+
+:root,[data-md-color-scheme=default] {
+    --opp-cpp-color: hsla(var(--opp-cpp-hue), 100%, 40%, 1);
+    --opp-cpp-background-color: hsla(var(--opp-cpp-hue), 100%, 95%, 1);
+    --opp-ini-color: hsla(var(--opp-ini-hue), 100%, 50%, 1);
+    --opp-ini-background-color: hsla(var(--opp-ini-hue), 100%, 95%, 1);;
+    --opp-ned-color: hsla(var(--opp-ned-hue), 100%, 30%, 1);
+    --opp-ned-background-color: hsla(var(--opp-ned-hue), 100%, 95%, 1);
+    --opp-msg-color: hsla(var(--opp-msg-hue), 100%, 30%, 1);
+    --opp-msg-background-color: hsla(var(--opp-msg-hue), 100%, 95%, 1);
+}
+
+:root,[data-md-color-scheme=slate] {
+    --opp-cpp-color: hsla(var(--opp-cpp-hue), 100%, 40%, 1);
+    --opp-cpp-background-color: hsla(var(--opp-cpp-hue), 50%, 20%, 1);
+    --opp-ini-color: hsla(var(--opp-ini-hue), 100%, 50%, 1);
+    --opp-ini-background-color: hsla(var(--opp-ini-hue), 20%, 20%, 1);;
+    --opp-ned-color: hsla(var(--opp-ned-hue), 100%, 30%, 1);
+    --opp-ned-background-color: hsla(var(--opp-ned-hue), 20%, 20%, 1);
+    --opp-msg-color: hsla(var(--opp-msg-hue), 100%, 30%, 1);
+    --opp-msg-background-color: hsla(var(--opp-msg-hue), 20%, 20%, 1);
+}
+
 /* 'literal and doxytag reference' roles */
 .reference-cpp, .reference-ned, .reference-ini, .reference-msg {
     font-size: 0.95rem;
@@ -13,10 +42,10 @@
 
 /* color code highlighter backgrounds */
 .highlight code { border-radius: 0.2rem; box-shadow: var(--md-shadow-z2) !important }
-.highlight-cpp code { background-color: #e6f3ff; border-left: 4px solid darkblue }
-.highlight-ini code { background-color: #fef5d6; border-left: 4px solid darkorange }
-.highlight-ned code { background-color: #eeffe4; border-left: 4px solid darkgreen }
-.highlight-msg code { background-color: #fcf5ff; border-left: 4px solid purple }
+.highlight-cpp code { background-color: var(--opp-cpp-background-color); border-left: 4px solid var(--opp-cpp-color) }
+.highlight-ini code { background-color: var(--opp-ini-background-color); border-left: 4px solid var(--opp-ini-color) }
+.highlight-ned code { background-color: var(--opp-ned-background-color); border-left: 4px solid var(--opp-ned-color) }
+.highlight-msg code { background-color: var(--opp-msg-background-color); border-left: 4px solid var(--opp-msg-color) }
 
 /* uncomment to highlight unresolved links with red background - for development only */
 /*
@@ -26,10 +55,10 @@ span.reference-cpp, span.reference-ned, span.reference-ini, span.reference-msg, 
 */
 
 /* color code inline literals */
-code.literal-cpp, .reference-cpp { color: darkblue; }
-code.literal-ini, .reference-ini { color: darkorange; }
-code.literal-ned, .reference-ned { color: darkgreen; }
-code.literal-msg, .reference-msg { color: purple; }
+code.literal-cpp, .reference-cpp { color: var(--opp-cpp-color); }
+code.literal-ini, .reference-ini { color: var(--opp-ini-color); }
+code.literal-ned, .reference-ned { color: var(--opp-ned-color); }
+code.literal-msg, .reference-msg { color: var(--opp-msg-color); }
 code.protocol { font-style: italic; }
 
 .menuselection, .guilabel { font-style: italic; font-weight: bold; }
