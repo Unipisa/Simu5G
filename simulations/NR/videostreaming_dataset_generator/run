@@ -1,6 +1,0 @@
-#!/bin/sh
-# make sure you run '. setenv' in the Simu5G root directory before running this script
- 
-# this command launches the whole simulations batch, using 3 processes in paraller
-# (you may change this value according to your needs by setting the -j option) 
-opp_runall -j3 simu5g -u Cmdenv -c UrbanNetwork --cmdenv-redirect-output=false $*

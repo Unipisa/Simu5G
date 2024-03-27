@@ -60,7 +60,7 @@ void LteHandoverManager::handleX2Message(cPacket* pkt)
 {
     inet::Packet* datagram = check_and_cast<inet::Packet*>(pkt);
 
-    auto x2msg = datagram->removeAtFront<LteX2Message>();
+    auto x2msg = datagram->popAtFront<LteX2Message>();
     datagram->removeTagIfPresent<X2ControlInfoTag>();
 
     X2NodeId sourceId = x2msg->getSourceId();
@@ -71,10 +71,12 @@ void LteHandoverManager::handleX2Message(cPacket* pkt)
     }
     else   // X2_HANDOVER_CONTROL_MSG
     {
-        X2HandoverCommandIE* hoCommandIe = check_and_cast<X2HandoverCommandIE*>(x2msg->popIe());
-        receiveHandoverCommand(hoCommandIe->getUeId(), x2msg->getSourceId(), hoCommandIe->isStartHandover());
+        X2HandoverControlMsg* hoCommandMsg = check_and_cast<X2HandoverControlMsg*>(x2msg->dup());
+        X2HandoverCommandIE* hoCommandIe = check_and_cast<X2HandoverCommandIE*>(hoCommandMsg->popIe());
+        receiveHandoverCommand(hoCommandIe->getUeId(), hoCommandMsg->getSourceId(), hoCommandIe->isStartHandover());
 
         delete hoCommandIe;
+        // delete hoCommandMsg;
         delete pkt;
     }
 }

@@ -26,8 +26,6 @@ LtePhyUe::LtePhyUe()
     handoverTrigger_ = nullptr;
     cqiDlSum_ = cqiUlSum_ = 0;
     cqiDlCount_ = cqiUlCount_ = 0;
-    masterMobility_ = nullptr;
-    masterId_ = 0;
 }
 
 LtePhyUe::~LtePhyUe()
@@ -64,7 +62,6 @@ void LtePhyUe::initialize(int stage)
         dasRssiThreshold_ = 1.0e-5;
         das_ = new DasFilter(this, binder_, nullptr, dasRssiThreshold_);
 
-        distance_ = registerSignal("distance");
         servingCell_ = registerSignal("servingCell");
         averageCqiDl_ = registerSignal("averageCqiDl");
         averageCqiUl_ = registerSignal("averageCqiUl");
@@ -221,14 +218,6 @@ void LtePhyUe::initialize(int stage)
 
         das_->setMasterRuSet(masterId_);
         emit(servingCell_, (long)masterId_);
-
-        if (masterId_ == 0)
-            masterMobility_ = nullptr;
-        else
-        {
-            cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
-            masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
-        }
     }
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
     {
@@ -351,11 +340,7 @@ void LtePhyUe::handoverHandler(LteAirFrame* frame, UserControlInfo* lteInfo)
                 if (candidateMasterId_ == masterId_)  // trigger detachment
                 {
                     candidateMasterId_ = 0;
-                    currentMasterRssi_ = -999.0;
-                    candidateMasterRssi_ = -999.0; // set candidate rssi very bad we currently do not have any.
-                                                   // this ensures that each candidate with is at least as 'bad'
-                                                   // as the minRssi_ has a change.
-
+                    candidateMasterRssi_ = 0;
                     hysteresisTh_ = updateHysteresisTh(0);
                     binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
 
@@ -465,21 +450,6 @@ void LtePhyUe::doHandover()
     mac_->doHandover(candidateMasterId_);  // do MAC operations for handover
     currentMasterRssi_ = candidateMasterRssi_;
     hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
-
-    // update NED parameter
-    if (isNr_)
-        getAncestorPar("nrMasterId").setIntValue(masterId_);
-    else
-        getAncestorPar("masterId").setIntValue(masterId_);
-
-    // update reference to master node's mobility module
-    if (masterId_ == 0)
-        masterMobility_ = nullptr;
-    else
-    {
-        cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
-        masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
-    }
 
     // update cellInfo
     if (masterId_ != 0)
@@ -720,21 +690,6 @@ void LtePhyUe::handleUpperMessage(cMessage* msg)
 
     LtePhyBase::handleUpperMessage(msg);
 }
-
-void LtePhyUe::emitMobilityStats()
-{
-    // emit serving cell id
-    emit(servingCell_, (long)masterId_);
-
-    if (masterMobility_)
-    {
-        // emit distance from current serving cell
-        inet::Coord masterPos = masterMobility_->getCurrentPosition();
-        double distance = getRadioPosition().distance(masterPos);
-        emit(distance_, distance);
-    }
-}
-
 
 double LtePhyUe::updateHysteresisTh(double v)
 {

@@ -9,18 +9,19 @@
 // and cannot be removed from it.
 //
 
+#include "nodes/mec/MECPlatform/MECServices/LocationService/LocationService.h"
+#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
+#include "inet/networklayer/common/L3AddressResolver.h"
+#include "inet/transportlayer/contract/tcp/TcpSocket.h"
+//#include "inet/transportlayer/contract/tcp/TcpCommand_m.h"
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
-
-#include "nodes/mec/MECPlatform/MECServices/LocationService/LocationService.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer.h"
+//#include "apps/mec/MECServices/packets/HttpResponsePacket.h"
 #include "common/utils/utils.h"
+
 
 
 Define_Module(LocationService);
@@ -123,7 +124,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
     EV_INFO << "LocationService::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 //    std::cout << uri << std::endl;
-//    std::vector<std::string> splittedUri = simu5g::utils::splitString(uri, "?");
+//    std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
 //    // uri must be in form example/v2/location/queries/resource
 //    std::size_t lastPart = splittedUri[0].find_last_of("/");
 //    if(lastPart == std::string::npos)
@@ -144,7 +145,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
         //look for query parameters
         if(!params.empty())
         {
-            std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
             /*
             * supported paramater:
             * - ue_ipv4_address
@@ -162,13 +163,13 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
                 if(it->rfind("accessPointId", 0) == 0) // accessPointId=par1,par2
                 {
                     EV <<"LocationService::handleGETReques - parameters: " << endl;
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = lte::utils::splitString(*it, "=");
                     if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for(; pit != pend; ++pit){
@@ -178,12 +179,12 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
                 }
                 else if(it->rfind("address", 0) == 0)
                 {
-                    params = simu5g::utils::splitString(*it, "=");
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    params = lte::utils::splitString(*it, "=");
+                    splittedParams = lte::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for(; pit != pend; ++pit){
-                        std::vector<std::string> address = simu5g::utils::splitString((*pit), ":");
+                        std::vector<std::string> address = lte::utils::splitString((*pit), ":");
                         if(address.size()!= 2) //must be param=acr:values
                         {
                             Http::send400Response(socket);

@@ -44,6 +44,8 @@ module Car extends Ue
         
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular lo0";
+        
+        
 }
 
 
@@ -65,3 +67,9 @@ module NRCar extends NRUe
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular lo0";
 }
+
+
+
+
+
+

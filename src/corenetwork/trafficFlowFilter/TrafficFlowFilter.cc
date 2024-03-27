@@ -35,17 +35,13 @@ void TrafficFlowFilter::initialize(int stage)
     if (ownerType_ == PGW || ownerType_ == UPF)
     {
         std::string gwFullPath = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
-        gateway_ = new char[gwFullPath.length() + 1];
-        strcpy(gateway_, gwFullPath.c_str());
+        gateway_ = strcpy(new char[gwFullPath.length() + 1], gwFullPath.c_str());
     }
     else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
     {
         std::string gwFullPath = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
-        gateway_ = new char[gwFullPath.length() + 1];
-        strcpy(gateway_, gwFullPath.c_str());
+        gateway_ = strcpy(new char[gwFullPath.length() + 1], gwFullPath.c_str());
     }
-    else
-        gateway_ = nullptr;
 
     // mec
     if(isBaseStation(ownerType_))
@@ -223,9 +219,9 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     return destMaster;
 }
 
-void TrafficFlowFilter::finish()
-{
-    if (gateway_ != nullptr)
-        delete[] gateway_;
+void TrafficFlowFilter::finish() {
+	 if (ownerType_ == PGW || ownerType_ == UPF) {
+		 delete[] gateway_;
+	 }
 }
 

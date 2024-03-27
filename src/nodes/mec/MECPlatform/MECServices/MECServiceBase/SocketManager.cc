@@ -41,7 +41,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
     if(packet.rfind("BulkRequest", 0) == 0)
     {
         EV << "Bulk Request ";
-        std::string size = simu5g::utils::splitString(packet, ": ")[1];
+        std::string size = lte::utils::splitString(packet, ": ")[1];
         int requests = std::stoi(size);
         if(requests < 0)
           throw cRuntimeError("Number of request must be non negative");

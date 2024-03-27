@@ -51,7 +51,7 @@ void RNIService::initialize(int stage)
 void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)
 {
     std::string uri = currentRequestMessageServed->getUri();
-    // std::vector<std::string> splittedUri = simu5g::utils::splitString(uri, "?");
+    // std::vector<std::string> splittedUri = lte::utils::splitString(uri, "?");
     // // uri must be in form example/v1/rni/queries/resource
     // std::size_t lastPart = splittedUri[0].find_last_of("/");
     // if(lastPart == std::string::npos)
@@ -72,7 +72,7 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
         //look for query parameters
         if(!params.empty())
         {
-            std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
+            std::vector<std::string> queryParameters = lte::utils::splitString(params, "&");
             /*
             * supported paramater:
             * - cell_id
@@ -93,13 +93,13 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
             for(; it != end; ++it){
                 if(it->rfind("cell_id", 0) == 0) // cell_id=par1,par2
                 {
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = lte::utils::splitString(*it, "=");
                     if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ",");
+                    splittedParams = lte::utils::splitString(params[1], ",");
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for(; pit != pend; ++pit){
@@ -109,17 +109,26 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
                 else if(it->rfind("ue_ipv4_address", 0) == 0)
                 {
                     // TO DO manage acr:10.12
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = lte::utils::splitString(*it, "=");
                     if(params.size()!= 2) //must be param=values
                     {
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ",");
+                    splittedParams = lte::utils::splitString(params[1], ",");
                     std::vector<std::string>::iterator pit  = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
-                    for(; pit != pend; ++pit)
-                       ues.push_back(inet::Ipv4Address((*pit).c_str()));
+                    for(; pit != pend; ++pit){
+                        std::vector<std::string> address = lte::utils::splitString((*pit), ":");
+                        if(address.size()!= 2) //must be param=acr:values
+                        {
+                            Http::send400Response(socket);
+                            return;
+                        }
+                       //manage ipv4 address without any macnode id
+                        //or do the conversion inside Location..
+                       ues.push_back(inet::Ipv4Address(address[1].c_str()));
+                    }
                 }
                 else // bad parameters
                 {

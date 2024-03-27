@@ -266,13 +266,15 @@ void UEWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage* msg)
             scheduleAt(simTime() + stopTime, selfStop_);
             EV << "UEWarningAlertApp::handleAckStartMEWarningAlertApp - Starting sendStopMEWarningAlertApp() in " << stopTime << " seconds " << endl;
         }
-        sendMessageToMECApp();
-        scheduleAt(simTime() + period_, selfMecAppStart_);
     }
     else
     {
         EV << "UEWarningAlertApp::handleAckStartMEWarningAlertApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
     }
+
+    sendMessageToMECApp();
+    scheduleAt(simTime() + period_, selfMecAppStart_);
+
 }
 
 void UEWarningAlertApp::sendMessageToMECApp(){

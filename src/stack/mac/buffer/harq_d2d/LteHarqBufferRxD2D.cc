@@ -20,10 +20,10 @@
 
 using namespace omnetpp;
 
-LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacNodeId srcId, bool isMulticast)
+LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacNodeId nodeId, bool isMulticast)
 {
     macOwner_ = owner;
-    srcId_ = srcId;
+    nodeId_ = nodeId;
     initMacUe();
     numHarqProcesses_ = num;
     processes_.resize(numHarqProcesses_);
@@ -41,7 +41,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacN
     {
         nodeB_ = macOwner_;
         macDelay_ = macOwner_->registerSignal("macDelayUl");
-        macThroughput_ = getMacByMacNodeId(srcId_)->registerSignal("macThroughputUl");
+        macThroughput_ = getMacByMacNodeId(nodeId_)->registerSignal("macThroughputUl");
         macCellThroughput_ = macOwner_->registerSignal("macCellThroughputUl");
         macThroughputD2D_ = 0;
         macDelayD2D_ = 0;
@@ -50,15 +50,15 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacN
     else // this is a UE
     {
         nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
+        macThroughput_ = macOwner_->registerSignal("macThroughputDl");
         macCellThroughput_ = nodeB_->registerSignal("macCellThroughputDl");
-        macThroughput_ = macUe_registerSignal("macThroughputDl");
-        macDelay_ = macUe_registerSignal("macDelayDl");
+        macDelay_ = macOwner_->registerSignal("macDelayDl");
 
         // if D2D is enabled, register also D2D statistics
         if (macOwner_->isD2DCapable())
         {
-            macThroughputD2D_ = macUe_registerSignal("macThroughputD2D");
-            macDelayD2D_ = macUe_registerSignal("macDelayD2D");
+            macThroughputD2D_ = check_and_cast<LteMacUeD2D*>(macOwner_)->registerSignal("macThroughputD2D");
+            macDelayD2D_ = check_and_cast<LteMacUeD2D*>(macOwner_)->registerSignal("macDelayD2D");
             macCellThroughputD2D_ = check_and_cast<LteMacEnbD2D*>(nodeB_)->registerSignal("macCellThroughputD2D");
         }
         else
@@ -154,9 +154,13 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 
                 // emit delay statistic
                 if (info->getDirection() == D2D)
-                    macUe_emit(macDelayD2D_, (NOW - temp->getCreationTime()).dbl());
+                {
+                    check_and_cast<LteMacUeD2D*>(macOwner_)->emit(macDelayD2D_, (NOW - temp->getCreationTime()).dbl());
+                }
                 else
+                {
                     macUe_emit(macDelay_, (NOW - temp->getCreationTime()).dbl());
+                }
 
                 // Calculate Throughput by sending the number of bits for this packet
                 totalRcvdBytes_ += size;
@@ -164,22 +168,33 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
 
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
-                if (den > 0)
+                double tputSample = (double)totalRcvdBytes_ / den;
+                double cellTputSample = (double)totalCellRcvdBytes_ / den;
+
+                // emit throughput statistics
+                if (info->getDirection() == D2D)
                 {
-                    double tputSample = (double)totalRcvdBytes_ / den;
-                    double cellTputSample = (double)totalCellRcvdBytes_ / den;
-
-                    // emit throughput statistics
-                    if (info->getDirection() == D2D)
-                    {
+                    if (den > 0)
                         check_and_cast<LteMacEnbD2D*>(nodeB_)->emit(macCellThroughputD2D_, cellTputSample);
-                        macUe_emit(macThroughputD2D_, tputSample);
-
-                    }
-                    else
-                    {
+                    if (den > 0)
+                        check_and_cast<LteMacUeD2D*>(macOwner_)->emit(macThroughputD2D_, tputSample);
+                }
+                else
+                {
+                    if (den > 0)
                         nodeB_->emit(macCellThroughput_, cellTputSample);
-                        macUe_emit(macThroughput_, tputSample);
+
+                    if (den > 0)
+                    {
+                        if (info->getDirection() == DL)
+                        {
+                            macOwner_->emit(macThroughput_, tputSample);
+                        }
+                        else  // UL
+                        {
+                            macUe_emit(macThroughput_, tputSample);
+                        }
+                        macUe_emit(macDelay_, (NOW - temp->getCreationTime()).dbl());
                     }
                 }
 

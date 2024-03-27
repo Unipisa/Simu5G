@@ -160,9 +160,54 @@ protected:
   // statistics
   static omnetpp::simsignal_t rcvdSinrDl_;
   static omnetpp::simsignal_t rcvdSinrUl_;
-  static omnetpp::simsignal_t rcvdSinrD2D_;
   static omnetpp::simsignal_t measuredSinrDl_;
   static omnetpp::simsignal_t measuredSinrUl_;
+  static omnetpp::simsignal_t distance_;
+
+
+
+
+  static omnetpp::simsignal_t rcvdPWRDl_;
+  static omnetpp::simsignal_t rcvdPWRUl_;
+
+
+  static omnetpp::simsignal_t recvPowerDl_ ;
+  static omnetpp::simsignal_t antennaGainTxDl_ ;
+  static omnetpp::simsignal_t antennaGainRxDl_ ;
+  static omnetpp::simsignal_t noiseFigureDl_ ;
+  static omnetpp::simsignal_t cableLossDl_ ;
+  static omnetpp::simsignal_t attenuationDl_ ;
+  static omnetpp::simsignal_t speed_ ;
+  static omnetpp::simsignal_t thermalNoiseDl_;
+  static omnetpp::simsignal_t fadingAttenuationDl_ ;
+  static omnetpp::simsignal_t recvPowerTxDl_ ;
+
+  static omnetpp::simsignal_t recvPowerUl_;
+  static omnetpp::simsignal_t antennaGainTxUl_ ;
+  static omnetpp::simsignal_t antennaGainRxUl_ ;
+  static omnetpp::simsignal_t noiseFigureUl_ ;
+  static omnetpp::simsignal_t cableLossUl_;
+  static omnetpp::simsignal_t attenuationUl_ ;
+  static omnetpp::simsignal_t thermalNoiseUl_ ;
+  static omnetpp::simsignal_t fadingAttenuationUl_ ;
+  static omnetpp::simsignal_t recvPowerTxUl_ ;
+
+
+  static omnetpp::simsignal_t attenuationPathLossUl_ ;
+  static omnetpp::simsignal_t attenuationShadowingUl_ ;
+
+  static omnetpp::simsignal_t attenuationPathLossDl_ ;
+  static omnetpp::simsignal_t attenuationShadowingDl_ ;
+
+
+  double attenuationPathLoss;
+  double attenuationShadowing;
+  // rsrq from log file
+  bool useRsrqFromLog_;
+  int rsrqShift_;
+  double rsrqScale_;
+  int oldTime_;
+  int oldRsrq_;
 
 public:
   virtual void initialize(int stage);

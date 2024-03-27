@@ -467,8 +467,7 @@ void LteAmc::pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double ca
     // DEBUG
     EV << "Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
-//    fb.print(0,id,dir,"LteAmc::pushFeedback");
-    fb.print(cellId_,id,dir,"LteAmc::pushFeedback");
+    fb.print(0,id,dir,"LteAmc::pushFeedback");
 }
 
 void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, double carrierFrequency)
@@ -706,6 +705,8 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
         EV << NOW << " LteAmc::blocks2bits i: " << i << "\n";
         EV << NOW << " LteAmc::blocks2bits CQI: " << info.readCqiVector().at(cw) << "\n";
 
+        mac_->emitItbs(iTbs);
+
         const unsigned int* tbsVect = itbs2tbs(mod, info.readTxMode(), layers.at(cw), iTbs-i);
         bits += tbsVect[blocks-1];
     }
@@ -784,7 +785,7 @@ unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsig
 
     // DEBUG
     EV << NOW << " LteAmc::blocks2bytes Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bits Available space: " << bits << "\n";
+    EV << NOW << " LteAmc::blocks2bytes Available space: " << bits << "\n";
     EV << NOW << " LteAmc::blocks2bytes Available space: " << bytes << "\n";
 
     return bytes;

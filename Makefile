@@ -22,7 +22,7 @@ cleanall: checkmakefiles
 	@rm -f src/Makefile
 
 makefiles:
-	@cd src && opp_makemake --make-so -f --deep -o simu5g -O out -KINET_PROJ=../../inet4.5 -DINET_IMPORT -I. -I$$\(INET_PROJ\)/src -L$$\(INET_PROJ\)/src -lINET$$\(D\)
+	@cd src && opp_makemake --make-so -f --deep -o simu5g -O out -KINET_PROJ=../../inet -KVEINS_PROJ=../../veins -KVEINS_INET_PROJ=../../veins_inet -DINET_IMPORT -DVEINS_IMPORT -DVEINS_INET_IMPORT -I. -I$$\(INET_PROJ\)/src -I$$\(VEINS_PROJ\)/src -I. -I$$\(VEINS_INET_PROJ\)/src -L$$\(INET_PROJ\)/src -L$$\(VEINS_PROJ\)/src -L$$\(VEINS_INET_PROJ\)/src -lINET$$\(D\) -lveins$$\(D\) -lveins_inet$$\(D\)
 
 checkmakefiles:
 	@if [ ! -f src/Makefile ]; then \

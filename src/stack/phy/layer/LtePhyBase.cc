@@ -59,7 +59,7 @@ void LtePhyBase::initialize(int stage)
 
 void LtePhyBase::handleMessage(cMessage* msg)
 {
-    EV << "LtePhyBase::handleMessage - new message received" << endl;
+    EV << " LtePhyBase::handleMessage - new message received" << endl;
 
     if (msg->isSelfMessage())
     {
@@ -117,7 +117,7 @@ LteAirFrame *LtePhyBase::createHandoverMessage()
 
 void LtePhyBase::handleUpperMessage(cMessage* msg)
 {
-     EV << "LtePhy: message from stack" << endl;
+    EV << "LtePhy: message from stack" << endl;
 
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->removeTag<UserControlInfo>();

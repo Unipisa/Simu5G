@@ -14,6 +14,7 @@ package simu5g.nodes.NR;
 
 import simu5g.nodes.Ue;
 import simu5g.stack.NRNicUe;
+import org.car2x.veins.base.modules.*;
 
 import simu5g.corenetwork.statsCollector.NRueStatsCollector;
 // 
@@ -33,11 +34,39 @@ module NRUe extends Ue
 
     submodules:
         //# UeStatsCollector - for MEC
-        NRueCollector: NRueStatsCollector if hasRNISupport {
-            @display("p=127.296,506.53198;is=s");
-        }
+//        NRueCollector: NRueStatsCollector if hasRNISupport {
+//            @display("p=73.687996,445.75198;is=s");
+//        }
 
     connections allowunconnected:
 
         cellularNic.nrRadioIn <-- nrRadioIn;
+}
+
+
+module NRCarTrackable extends NRUe
+{
+    parameters:
+
+        @display("i=device/car");
+        string veinsmobilityType = default("org.car2x.veins.modules.mobility.traci.TraCIMobility"); //type of the mobility module
+
+        //# Mobility
+        mobility.typename = default("VeinsInetMobility");
+        veinsmobility.typename = default("VeinsInetMobility");
+        //# Network Layer specs
+        *.routingTableModule = default(absPath(".ipv4.routingTable"));
+
+        ipv4.configurator.typename = "HostAutoConfigurator";
+        ipv4.configurator.interfaces = "cellular lo0";
+
+
+
+    submodules:
+
+        veinsmobility: <veinsmobilityType> like org.car2x.veins.base.modules.IMobility {
+            parameters:
+                @display("p=137.90399,71.604;i=block/cogwheel");
+        }
+
 }

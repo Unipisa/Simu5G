@@ -50,13 +50,6 @@ class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
     /** Finds the channelControl module in the network */
     IChannelControl *getChannelControl();
 
-    /**
-     * @brief Called when a mobilityStateChanged signal is received.
-     *
-     * Make the PHY layer emit statistics related to the serving cell
-     */
-    virtual void emitMobilityStats() {}
-
   protected:
     /** Sends a message to all radios in range */
     virtual void sendToChannel(AirFrame *msg);

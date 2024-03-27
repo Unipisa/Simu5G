@@ -13,6 +13,39 @@
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
+
+#include <iostream>
+#include <iomanip>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+
+
+
+
+
+
+
+#define FMT_HEADER_ONLY
+#include <fstream>
+
+
+#include "spdlog/spdlog.h"  // logging library
+#include "spdlog/sinks/basic_file_sink.h"
+#include <ctime>
+#include <fmt/format.h>
+
+#include <iostream>
+#include <iomanip>
+#include <random>
+#include <string>
+#include <map>
+#include <iostream>
+#include <random>
+using namespace std;
+
+
+
+
 Define_Module(VirtualisationInfrastructureManager);
 
 VirtualisationInfrastructureManager::VirtualisationInfrastructureManager()
@@ -51,6 +84,20 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     allocatedDisk = 0.0;
     allocatedCPU = 0.0;
     printResources();
+
+
+       // csv_filename = fmt::format("logs/MEC.csv");
+    //ofstream myfile;
+   
+    ////myfile.open (csv_filename, ios::app);
+    //std::ifstream file(csv_filename);
+     //   if ( file.peek() == std::ifstream::traits_type::eof()) {
+    //  if(myfile.is_open())
+     // {
+     //     myfile << "timestamp,currentSPEED,ProcessingTime,packenbInstructions" << endl;
+     //     myfile.close();
+     // }
+      //  }
 
     const char *schedulingMode = par("scheduling").stringValue();
     if(strcmp(schedulingMode, "segregation") == 0)
@@ -544,6 +591,49 @@ double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID,
         {
             currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
             time = numOfInstructions/(pow(10,6)*currentSpeed);
+
+                ///ofstream myfile;
+                //myfile.open (csv_filename, ios::app);
+                //if(myfile.is_open())
+                 //   {
+                  //      //myfile << "timestamp,currentSPEED,ProcessingTime,packenbInstructions" << endl;
+                   //     myfile  << simTime() << ","  <<currentSpeed<< ","<< time << "," << numOfInstructions << endl;
+                    //    myfile.close();
+
+                  //  }
+
+        }
+        else
+        {
+            currentSpeed = ueApp->second.resources.cpu;
+            time = numOfInstructions/(pow(10,6)*currentSpeed);
+        }
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - number of instructions: " << numOfInstructions << endl;
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - currentSpeed (MIPS): " << currentSpeed << endl;
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - calculated time: " << time << "s"<< endl;
+
+        return time;
+    }
+    else
+    {
+        EV << "VirtualisationInfrastructureManager::calculateProcessingTime - ZERO " << endl;
+        return 0;
+    }
+}
+
+double VirtualisationInfrastructureManager::calculateProcessingTime(int ueAppID, double numOfInstructions)
+{
+    ASSERT(numOfInstructions >= 0);
+
+    auto ueApp = mecAppMap.find(ueAppID);
+    if(ueApp != mecAppMap.end())
+    {
+        double time;
+        double currentSpeed;
+        if(scheduling == FAIR_SHARING)
+        {
+            currentSpeed = ueApp->second.resources.cpu *(maxCPU/allocatedCPU);
+            time = numOfInstructions/(pow(10,6)*currentSpeed);
         }
         else
         {
@@ -588,6 +678,3 @@ void VirtualisationInfrastructureManager::reserveResourcesBGApps()
         registerMecApp(bgApp->getId(), ram, disk, cpu);
     }
 }
-
-
-

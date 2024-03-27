@@ -38,9 +38,7 @@ class Binder;
 class LteHarqProcessRx
 {
   protected:
-    /// contained pdus
-    //std::vector<LteMacPdu *> pdu_;
-    std::vector<inet::Packet *> pdu_;
+
 
     /// current status for each codeword
     std::vector<RxHarqPduStatus> status_;
@@ -69,6 +67,9 @@ class LteHarqProcessRx
     unsigned short harqFbEvaluationTimer_;
 
   public:
+    /// contained pdus
+    //std::vector<LteMacPdu *> pdu_;
+    std::vector<inet::Packet *> pdu_;
 
     /**
      * Constructor.

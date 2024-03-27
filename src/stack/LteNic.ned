@@ -58,7 +58,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string routingTableModule;
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D" 
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
-        
+
         string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
         bool hasRNISupport = default(false);
 

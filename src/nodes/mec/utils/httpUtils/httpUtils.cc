@@ -56,7 +56,7 @@ namespace Http {
 
     HttpBaseMessage* parseHeader(const std::string& data)
     {
-        std::vector<std::string> lines = simu5g::utils::splitString(data, "\r\n");
+        std::vector<std::string> lines = lte::utils::splitString(data, "\r\n");
         std::vector<std::string>::iterator it = lines.begin();
         std::vector<std::string> line;
         EV << "httpUtils::parseHeader - Header: " << data << endl;
@@ -64,7 +64,7 @@ namespace Http {
         // Request-Line: Method SP Request-URI SP HTTP-Version CRLF
         // Status-Line: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
 
-        line = simu5g::utils::splitString(*it, " ");
+        line = lte::utils::splitString(*it, " ");
 
         /* it may be a request or a response, so the first line is different
          *
@@ -130,7 +130,7 @@ namespace Http {
 
             // read for headers
             for(++it; it != lines.end(); ++it) {
-                line = simu5g::utils::splitString(*it, ": ");
+                line = lte::utils::splitString(*it, ": ");
                 if(line.size() == 2)
                 {
                     if(line[0].compare("Content-Length") == 0 )
@@ -208,7 +208,7 @@ namespace Http {
 
             // read for headers
             for(++it; it != lines.end(); ++it) {
-                line = simu5g::utils::splitString(*it, ": ");
+                line = lte::utils::splitString(*it, ": ");
                 if(line.size() == 2)
                 {
                     if(line[0].compare("Content-Length")== 0)

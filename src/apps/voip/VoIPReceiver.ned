@@ -35,7 +35,7 @@ simple VoIPReceiver like IApp
         @signal[voIPPlayoutLoss];
         @statistic[voIPPlayoutLoss](title="VoIP Playout Loss"; unit="ratio"; source="voIPPlayoutLoss"; record=mean);
         @signal[voIPJitter];
-        @statistic[voIPJitter](title="VoIP Jitter"; unit="s"; source="voIPJitter"; record=mean);
+        @statistic[voIPJitter](title="VoIP Playout Loss"; unit="s"; source="voIPJitter"; record=mean);
         @signal[voIPMos];
         @statistic[voIPMos](title="VoIP Mos Signal"; unit="MOS"; source="voIPMos"; record=mean);
         @signal[voIPTaildropLoss];

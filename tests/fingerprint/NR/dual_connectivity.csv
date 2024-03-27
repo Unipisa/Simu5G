@@ -6,4 +6,4 @@
 /simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterPlusSecondary-DL -r 0,  5s,        5556-0e95/tplx,PASS,
 /simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterPlusSecondary-UL -r 0,  5s,        8861-2f85/tplx,PASS,
 /simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SplitBearer-DL -r 0,    5s,              e776-3cce/tplx,PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SplitBearer-UL -r 0,    5s,              e19e-d053/tplx,PASS,
+/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SplitBearer-UL -r 0,    5s,              5eaa-da45/tplx,PASS,

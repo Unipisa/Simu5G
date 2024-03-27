@@ -7,13 +7,16 @@
 // and cannot be removed from it.
 //
 
-#include <string>
 #include "apps/mec/MecApps/MecRequestBackgroundGeneratorApp/MecRequestBackgroundGeneratorApp.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "common/utils/utils.h"
+#include <string>
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "inet/common/TimeTag_m.h"
+
 #include "inet/common/packet/chunk/BytesChunk.h"
+
 
 using namespace inet;
 Define_Module(MecRequestBackgroundGeneratorApp);

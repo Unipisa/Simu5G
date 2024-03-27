@@ -21,10 +21,10 @@ unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 using namespace omnetpp;
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
-    MacNodeId srcId)
+    MacNodeId nodeId)
 {
     macOwner_ = owner;
-    srcId_ = srcId;
+    nodeId_ = nodeId;
     initMacUe();
     numHarqProcesses_ = num;
     processes_.resize(numHarqProcesses_);
@@ -40,16 +40,16 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
     {
         nodeB_ = macOwner_;
+        macDelay_ = macUe_->registerSignal("macDelayUl");
+        macThroughput_ = getMacByMacNodeId(nodeId_)->registerSignal("macThroughputUl");
         macCellThroughput_ = macOwner_->registerSignal("macCellThroughputUl");
-        macDelay_ = macUe_registerSignal("macDelayUl");
-        macThroughput_ = macUe_registerSignal("macThroughputUl");
     }
     else // this is a UE
     {
-        nodeB_ = getMacByMacNodeId(macUe_->getMacCellId());
+        nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
+        macThroughput_ = macOwner_->registerSignal("macThroughputDl");
         macCellThroughput_ = nodeB_->registerSignal("macCellThroughputDl");
-        macThroughput_ = macUe_registerSignal("macThroughputDl");
-        macDelay_ = macUe_registerSignal("macDelayDl");
+        macDelay_ = macOwner_->registerSignal("macDelayDl");
     }
 }
 
@@ -142,23 +142,32 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 unsigned int size = pktTemp->getByteLength();
 
                 // emit delay statistic
-                macUe_emit(macDelay_, (NOW - pktTemp->getCreationTime()).dbl());
+                macUe_->emit(macDelay_, (NOW - pktTemp->getCreationTime()).dbl());
 
                 // Calculate Throughput by sending the number of bits for this packet
                 totalCellRcvdBytes_ += size;
                 totalRcvdBytes_ += size;
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
+                double tputSample = (double)totalRcvdBytes_ / den;
+                double cellTputSample = (double)totalCellRcvdBytes_ / den;
+
                 // emit throughput statistics
                 if (den > 0)
-                {
-                    double tputSample = (double)totalRcvdBytes_ / den;
-                    double cellTputSample = (double)totalCellRcvdBytes_ / den;
-
                     nodeB_->emit(macCellThroughput_, cellTputSample);
-                    macUe_emit(macThroughput_, tputSample);
-                }
 
+                if (den > 0)
+                {
+                    if (uInfo->getDirection() == DL)
+                    {
+                        macOwner_->emit(macThroughput_, tputSample);
+                    }
+                    else  // UL
+                    {
+                        macUe_emit(macThroughput_, tputSample);
+                    }
+
+                }
                 macOwner_->dropObj(pktTemp);
                 ret.push_back(pktTemp);
                 acid = i;
@@ -167,7 +176,12 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                    << " ) extracted from process " << (int) acid
                    << "to be sent upper" << endl;
             }
-        }
+            else {
+                auto pkt__ = processes_[i]->pdu_.at(cw);
+
+                }
+            }
+
     }
 
     return ret;

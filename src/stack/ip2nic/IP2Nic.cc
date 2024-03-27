@@ -32,6 +32,14 @@
 #include "common/binder/Binder.h"
 #include "common/cellInfo/CellInfo.h"
 
+
+#include "../../apps/PingPong/packets/PingPongPacket_Types.h"
+#include "../../apps/PingPong/packets/PingPongPacket_m.h"
+
+
+#include <fmt/format.h>
+
+
 using namespace std;
 using namespace inet;
 using namespace omnetpp;
@@ -40,6 +48,11 @@ Define_Module(IP2Nic);
 
 void IP2Nic::initialize(int stage)
 {
+
+
+    auto timestamp = std::time(nullptr);
+
+
     if (stage == inet::INITSTAGE_LOCAL)
     {
         stackGateOut_ = gate("stackNic$o");
@@ -126,11 +139,13 @@ void IP2Nic::initialize(int stage)
 
 void IP2Nic::handleMessage(cMessage *msg)
 {
+
     if( nodeType_ == ENODEB || nodeType_ == GNODEB)
     {
         // message from IP Layer: send to stack
         if (msg->getArrivalGate()->isName("upperLayerIn"))
         {
+            auto pkt= check_and_cast<Packet *>(msg);
             auto ipDatagram = check_and_cast<Packet *>(msg);
             fromIpBs(ipDatagram);
         }
@@ -140,6 +155,8 @@ void IP2Nic::handleMessage(cMessage *msg)
             auto pkt = check_and_cast<Packet *>(msg);
             pkt->removeTagIfPresent<SocketInd>();
     		removeAllSimu5GTags(pkt);
+
+
             
             toIpBs(pkt);
         }
@@ -159,6 +176,10 @@ void IP2Nic::handleMessage(cMessage *msg)
 
             auto ipDatagram = check_and_cast<Packet *>(msg);
             EV << "LteIp: message from transport: send to stack" << endl;
+
+            auto pkt= ipDatagram;
+
+
             fromIpUe(ipDatagram);
         }
         else if(msg->getArrivalGate()->isName("stackNic$i"))
@@ -168,6 +189,7 @@ void IP2Nic::handleMessage(cMessage *msg)
             auto pkt = check_and_cast<Packet *>(msg);
             pkt->removeTagIfPresent<SocketInd>();
     		removeAllSimu5GTags(pkt);
+
     		toIpUe(pkt);
         }
         else

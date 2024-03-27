@@ -366,7 +366,6 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
     EV << "MecOrchestrator::sendCreateAppContextAck - result: "<< result << " reqSno: " << requestSno << " contextId: " << contextId << endl;
     CreateContextAppAckMessage *ack = new CreateContextAppAckMessage();
     ack->setType(ACK_CREATE_CONTEXT_APP);
-
     if(result)
     {
         if(meAppMap.empty() || meAppMap.find(contextId) == meAppMap.end())
@@ -390,7 +389,6 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
     }
     else
     {
-        ack->setRequestId(requestSno);
         ack->setSuccess(false);
     }
     send(ack, "toUALCMP");

@@ -44,15 +44,21 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
        computeLosProbability(twoDimDistance, nodeId);
    }
 
+   if(dir == DL)
+       emit(distance_,twoDimDistance);
+
    //compute attenuation based on selected scenario and based on LOS or NLOS
    bool los = losMap_[nodeId];
    double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
-
+   attenuationPathLoss = attenuation;
    //    Applying shadowing only if it is enabled by configuration
    //    log-normal shadowing (not available for background UEs)
    if (nodeId < BGUE_MIN_ID && shadowing_)
-       attenuation += computeShadowing(twoDimDistance, nodeId, speed, cqiDl);
-
+   {
+      double sh = computeShadowing(twoDimDistance, nodeId, speed, cqiDl);
+      attenuation += sh;
+      attenuationShadowing = sh ;
+   }
    // update current user position
 
    //if sender is a eNodeB

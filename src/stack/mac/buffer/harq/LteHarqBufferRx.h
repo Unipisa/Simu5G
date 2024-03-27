@@ -38,8 +38,8 @@ class LteHarqBufferRx
     /// number of contained H-ARQ processes
     unsigned int numHarqProcesses_;
 
-    /// id of the source node for which this buffer has been created
-    MacNodeId srcId_;
+    MacNodeId nodeId_; // UE nodeId for which this buffer has been created
+
 
     /// processes vector
     std::vector<LteHarqProcessRx *> processes_;
@@ -58,13 +58,13 @@ class LteHarqBufferRx
     omnetpp::cModule* nodeB_;
 
   private:
-    // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
+    // LteMacBase* for source with nodeId.
     // Only access via methods. This can be NULL if node is removed from simulation
     LteMacBase *macUe_;
 
   public:
     LteHarqBufferRx() {}
-    LteHarqBufferRx(unsigned int num, LteMacBase *owner, MacNodeId srcId);
+    LteHarqBufferRx(unsigned int num, LteMacBase *owner, MacNodeId nodeId);
 
     /**
      * Insertion of a new pdu coming from phy layer into
@@ -150,24 +150,10 @@ class LteHarqBufferRx
      */
     virtual void sendFeedback();
 
-
-    /**
-     *  Only register signals from macUe_ if the node still exists.
-     *  It is possible that the source node (e.g., a UE) left the simulation but the
-     *  packets form the node still reside in the simulation.
-     */
-    virtual omnetpp::simsignal_t macUe_registerSignal(const char* signal)
-    {
-        if (macUe_){
-            return macUe_->registerSignal(signal);
-        }
-        return 0;
-    }
-
     /**
      *  Only emit signals from macUe_ if the node still exists.
-     *  It is possible that the source node (e.g., a UE) left the simulation but the
-     *  packets form the node still reside in the simulation.
+     *  It is possible that the UE left the simulation but the
+     *  Packets form the node still reside in the simulation.
      */
     virtual void macUe_emit(omnetpp::simsignal_t signal, double val)
     {
@@ -176,16 +162,8 @@ class LteHarqBufferRx
         }
     }
 
-    /**
-     * macSource_ is a private member, so derived classes need this member function to
-     * initialize it. macSource_ being a private member forces one to use the macSource_emit
-     * function to emit statistics (hence, checking against nullptr)
-     */
     void initMacUe(){
-        if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(srcId_));
-        else
-            macUe_ = macOwner_;
+        macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(nodeId_));
     }
 
 

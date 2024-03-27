@@ -12,7 +12,9 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/MecCommon.h"
-#include "apps/mec/MecApps/packets/ProcessingTimeMessage_m.h"
+#include  "apps/mec/MecApps/packets/ProcessingTimeMessage_m.h"
+
+#include "common/utils/utils.h"
 
 #include "inet/common/ProtocolTag_m.h"
 #include "inet/common/ProtocolGroup.h"
@@ -132,6 +134,8 @@ void MecAppBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
     {
+
+
         if(strcmp(msg->getName(), "processedMessage") == 0)
         {
             handleProcessedMessage((cMessage*)packetQueue_.pop());

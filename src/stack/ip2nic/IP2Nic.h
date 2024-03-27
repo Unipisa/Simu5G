@@ -31,6 +31,14 @@ typedef std::pair<inet::Ipv4Address, inet::Ipv4Address> AddressPair;
  */
 class IP2Nic : public omnetpp::cSimpleModule
 {
+    std::string csv_filename_gnb_uplayer;
+    std::string csv_filename_ue_uplayer;
+
+    std::string csv_filename_gnb_sn;
+
+    std::string csv_filename_ue_sn;
+
+
     RanNodeType nodeType_;      // node type: can be ENODEB, GNODEB, UE
 
     // reference to the binder

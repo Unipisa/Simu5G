@@ -71,6 +71,11 @@ backups
 /emulation/*/plots*/
 /emulation/*/stats*/test*/
 
+#ignore logs 
+/simulations/*/logs/
+/simulations/*/*/logs/
+/simulations/*/*/*/logs/
+
 vim files
 *.swp
 *.swo

@@ -13,6 +13,7 @@
 #include "apps/mec/DeviceApp/DeviceApp.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
+#include "common/utils/utils.h"
 #include <string>
 #include "DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
@@ -183,7 +184,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     //connection info
                     nack->setResult(false);
-                    nack->setReason(response->getPayload().c_str());
+                    nack->setReason("LCM proxy responded 500");
                     if(strlen(nack->getReason()))
                     {
                        nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
@@ -196,6 +197,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     inet::Packet* packet = new inet::Packet("DeviceAppStartAckPacket");
                     packet->insertAtBack(nack);
+                    // To comment ?? but why ???
                     //throw cRuntimeError("LCM proxy responded 500");
                     ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
 

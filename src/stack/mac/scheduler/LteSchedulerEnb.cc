@@ -24,7 +24,24 @@
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <map>
+#include <fmt/format.h>
+#include "spdlog/spdlog.h"  // logging library
+#include "spdlog/sinks/basic_file_sink.h"
+#include <ctime>
+#include <fmt/format.h>
+#include <filesystem>
+
+
+#include <sys/stat.h>
+
+#include <vector>
+using namespace std;
 using namespace omnetpp;
+
 
 LteSchedulerEnb::LteSchedulerEnb()
 {
@@ -95,6 +112,69 @@ LteSchedulerEnb::~LteSchedulerEnb()
 
 void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
 {
+    // Logs 
+    //auto maxCpuSpeed_ = par("maxCpuSpeed");
+    //auto App_name_ = par("name").stringValue();      
+    //auto log_identifier = to_string(maxCpuSpeed_)+"and"+App_name_;
+
+    auto ev = getSimulation()->getActiveEnvir();
+    auto currentRun = ev->getConfigEx()->getActiveRunNumber();
+
+    auto log_level = "low";
+    if (log_level=="high"){
+
+            auto log_identifier = "logs/"+to_string(currentRun)+"/"; 
+    if (mkdir(log_identifier.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0) {
+        std::cout << "aaaaaaaaaa Directory created successfully.\n";
+    } else {
+        std::cerr << "aaaaaaaaa Error creating directory\n";
+    }
+    csv_filename_avgServedBlocksDl_ = fmt::format("{}/avgServedBlocksDl_.csv",log_identifier);
+    csv_filename_avgServedBlocksUl_ = fmt::format("{}/avgServedBlocksUl_.csv",log_identifier);
+    csv_filename_test = fmt::format("{}/test.csv",log_identifier);
+    
+    
+
+
+        // List of CSV filenames
+    std::vector<std::string> filenames = {csv_filename_avgServedBlocksDl_, csv_filename_avgServedBlocksUl_};
+
+    // Header row for each file
+    std::string headerRow = "timestamp,avgServedBlocksDl,runNumber" ;
+
+    // Iterate through each filename and write the header if missing
+    for (const auto& filename : filenames) {
+        std::cout << "aaaaaaaaaa enterring loop.\n";
+        // Open the CSV file in append mode. Create if nnot exist
+        std::ofstream csvFile(filename, std::ios::out | std::ios::app);
+
+        // Check if the file is open
+        if (!csvFile.is_open()) {
+            std::cerr << "Error opening file " << filename << "!" << std::endl;
+            // error code??
+        }
+        std::cout << "aaaaaaaaaa Check if the file is empty.\n";
+
+        // Check if the file is empty
+        csvFile.seekp(0, std::ios::end);
+        if (csvFile.tellp() == 0) {
+            // If the file is empty, write the header (first row)
+            std::cout << "aaaaaaaaaa writting headers.\n";
+
+            csvFile << headerRow << std::endl;
+        }
+
+        // Close the file
+        csvFile.close();}
+        std::cout << "aaaaaaaaaa Should be ok.\n";
+
+
+
+    }
+
+
+
+
     direction_ = dir;
     mac_ = mac;
 
@@ -133,6 +213,15 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
     // Initialize statistics
     avgServedBlocksDl_ = mac_->registerSignal("avgServedBlocksDl");
     avgServedBlocksUl_ = mac_->registerSignal("avgServedBlocksUl");
+
+
+
+
+
+   
+
+
+
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
@@ -711,6 +800,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
         EV << "LteSchedulerEnb::scheduleGrantBackground bytes to be allocated: " << toServe << endl;
 
         unsigned int cwAllocatedBytes = 0;  // per codeword allocated bytes
+        unsigned int cwAllocatedBlocks = 0; // used by uplink only, for signaling cw blocks usage to schedule list
         std::map<Band, unsigned int> allocatedRbMapEntry;
 
         unsigned int allocatedCws = 0;
@@ -793,6 +883,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
                 // mark here allocation
                 allocator_->addBlocks(antenna,b,bgUeId,uBlocks,uBytes);
                 // add allocated blocks for this codeword
+                cwAllocatedBlocks += uBlocks;
                 totalAllocatedBlocks += uBlocks;
                 cwAllocatedBytes+=uBytes;
 
@@ -881,7 +972,7 @@ void LteSchedulerEnb::backlog(MacCid cid)
     if(cid == 1)
         return;
 
-    EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
+    EV << NOW << "LteSchedulerEnb::backlog CID notified " << cid << endl;
     activeConnectionSet_.insert(cid);
 
     std::vector<LteScheduler*>::iterator it = scheduler_.begin();
@@ -1051,8 +1142,19 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
 {
     if (sleep)
     {
-        if (direction_ == DL)
+        if (direction_ == DL){
             mac_->emit(avgServedBlocksDl_, (long)0);
+
+                //auto ev_ = getSimulation()->getActiveEnvir();
+                //auto runNumber = ev_->getConfigEx()->getActiveRunNumber();
+                //ofstream myfile;
+                //myfile.open (csv_filename_avgServedBlocksDl_, ios::app);
+                //if(myfile.is_open()) 
+                //    {
+                 //   myfile  << simTime() << ","  <<(long)0<< "," << runNumber << endl;
+                 //   myfile.close();
+                  //  }
+        }
         return;
     }
     // Get a reference to the begin and the end of the map which stores the blocks allocated
@@ -1062,6 +1164,7 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
         allocator_->getAllocatedBlocksBegin();
 
     double allocatedBlocks = 0;
+    unsigned int plane = 0;
     unsigned int antenna = 0;
 
     std::vector<unsigned int>::const_iterator antennaIt = planeIt->begin();
@@ -1081,10 +1184,47 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
 
     utilization_ /= (((double) (antenna)) * ((double) resourceBlocks_));
 
-    if (direction_ == DL)
+    plane++;
+
+    if (direction_ == DL){
         mac_->emit(avgServedBlocksDl_, allocatedBlocks);
-    else if (direction_ == UL)
+        std::ifstream file(csv_filename_avgServedBlocksDl_);
+        if (file) {
+                            if (allocatedBlocks != 0.0) {
+                        auto ev_ = getSimulation()->getActiveEnvir();
+                        auto runNumber = ev_->getConfigEx()->getActiveRunNumber();
+                        ofstream myfile;
+                        myfile.open (csv_filename_avgServedBlocksDl_, ios::app);
+                        if(myfile.is_open()) {
+                            myfile  << simTime() << ","  <<allocatedBlocks<< "," << runNumber << endl;
+                            myfile.close();
+                            }
+                    } 
+
+        }
+
+
+                
+    }
+
+    else if (direction_ == UL){
         mac_->emit(avgServedBlocksUl_, allocatedBlocks);
+
+
+        std::ifstream file(csv_filename_avgServedBlocksDl_);
+        if (file) {
+                    if (allocatedBlocks != 0.0) {
+                auto ev_ = getSimulation()->getActiveEnvir();
+                auto runNumber = ev_->getConfigEx()->getActiveRunNumber();
+                ofstream myfile;
+                myfile.open (csv_filename_avgServedBlocksUl_, ios::app);
+                if(myfile.is_open()){
+                    // myfile << "timestamp,avgServedBlocksUl,runNumber" << endl;
+                    myfile  << simTime() << ","  <<allocatedBlocks<< ","<< runNumber << endl;
+                    myfile.close();
+                }
+            }}
+    }
     else
         throw cRuntimeError("LteSchedulerEnb::resourceBlockStatistics(): Unrecognized direction %d", direction_);
 }

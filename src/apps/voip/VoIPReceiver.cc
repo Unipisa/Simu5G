@@ -105,13 +105,9 @@ void VoIPReceiver::handleMessage(cMessage *msg)
         emit(voIPReceivedThroughput_, tputSample );
     }
 
-    // emit frame delay
-    simtime_t arrivalTime = simTime();
-    double sample = SIMTIME_DBL(arrivalTime - voipHeader->getPayloadTimestamp());
-    emit(voIPFrameDelaySignal_, sample);
 
     auto packetToBeQueued = voipHeader->dup();
-    packetToBeQueued->setArrivalTime(arrivalTime);
+    packetToBeQueued->setArrivalTime(simTime());
     mPacketsList_.push_back(packetToBeQueued);
 
     delete pPacket;
@@ -157,6 +153,9 @@ void VoIPReceiver::playout(bool finish)
     while (!mPacketsList_.empty())
     {
         pPacket = mPacketsList_.front();
+
+        sample = SIMTIME_DBL(pPacket->getArrivalTime() - pPacket->getPayloadTimestamp());
+        emit(voIPFrameDelaySignal_, sample);
 
         unsigned int IDframe = pPacket->getIDframe();
 

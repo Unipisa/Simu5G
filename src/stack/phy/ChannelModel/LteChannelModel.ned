@@ -116,13 +116,96 @@ simple LteRealisticChannelModel extends LteChannelModel
     @statistic[rcvdSinrDl](title="SINR measured at packet reception, DL"; unit="dB"; source="rcvdSinrDl"; record=mean,vector);
     @signal[rcvdSinrUl];
     @statistic[rcvdSinrUl](title="SINR measured at packet reception, UL"; unit="dB"; source="rcvdSinrUl"; record=mean,vector);
-    @signal[rcvdSinrD2D];
-    @statistic[rcvdSinrD2D](title="SINR measured at packet reception, D2D"; unit="dB"; source="rcvdSinrD2D"; record=mean,vector);
     
     @signal[measuredSinrDl];
     @statistic[measuredSinrDl](title="SINR measured at feedback computation, DL"; unit="dB"; source="measuredSinrDl"; record=mean,vector);
     @signal[measuredSinrUl];
     @statistic[measuredSinrUl](title="SINR measured at feedback computation, UL"; unit="dB"; source="measuredSinrUl"; record=mean,vector);
+    
+    @signal[distance];
+    @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
+
+
+
+   @signal[rcvdPWRDl];
+   @statistic[rcvdPWRDl](title="Signal power measured at packet reception, DL"; unit="dB"; source="rcvdPWRDl"; record=mean,vector);
+    
+   @signal[rcvdPWRUl];
+   @statistic[rcvdPWRUl](title="Signal power measured at packet reception, UL"; unit="dB"; source="rcvdPWRUl"; record=mean,vector);
+    
+
+
+
+   @signal[recvPowerDl];
+   @statistic[recvPowerDl](title="recvPowerDl"; unit="dB"; source="recvPowerDl"; record=vector);
+   
+   @signal[antennaGainTxDl];
+   @statistic[antennaGainTxDl](title="antennaGainTxDl"; unit="dB"; source="antennaGainTxDl"; record=vector);
+      
+   @signal[antennaGainRxDl];
+   @statistic[antennaGainRxDl](title="antennaGainRxDl"; unit="dB"; source="antennaGainRxDl"; record=vector);
+    
+   @signal[noiseFigureDl];
+   @statistic[noiseFigureDl](title="noiseFigureDl"; unit="dB"; source="noiseFigureDl"; record=vector);
+      
+   @signal[cableLossDl];
+   @statistic[cableLossDl](title="cableLossDl"; unit="dB"; source="cableLossDl"; record=vector);
+   
+   @signal[attenuationDl];
+   @statistic[attenuationDl](title="attenuationDl"; unit="dB"; source="attenuationDl"; record=vector);
+   
+   @signal[speed];
+   @statistic[speed](title="speed"; unit="dB"; source="speed"; record=vector);
+   
+   @signal[thermalNoiseDl];
+   @statistic[thermalNoiseDl](title="thermalNoiseDl"; unit="dB"; source="thermalNoiseDl"; record=vector);
+   
+   @signal[fadingAttenuationDl];
+   @statistic[fadingAttenuationDl](title="fadingAttenuationDl"; unit="dB"; source="fadingAttenuationDl"; record=vector);
+   
+   @signal[recvPowerTxDl];
+   @statistic[recvPowerTxDl](title="recvPowerTxDl"; unit="dB"; source="recvPowerTxDl"; record=vector);
+      
+      
+      @signal[recvPowerUl];
+   @statistic[recvPowerUl](title="recvPowerUl"; unit="dB"; source="recvPowerUl"; record=vector);
+   
+   @signal[antennaGainTxUl];
+   @statistic[antennaGainTxUl](title="antennaGainTxUl"; unit="dB"; source="antennaGainTxUl"; record=vector);
+   
+   @signal[antennaGainRxUl];
+   @statistic[antennaGainRxUl](title="antennaGainRxUl"; unit="dB"; source="antennaGainRxUl"; record=vector);
+   
+   @signal[noiseFigureUl];
+   @statistic[noiseFigureUl](title="noiseFigureUl"; unit="dB"; source="noiseFigureUl"; record=vector);
+  
+   @signal[cableLossUl];
+   @statistic[cableLossUl](title="cableLossUl"; unit="dB"; source="cableLossUl"; record=vector);
+   
+   @signal[attenuationUl];
+   @statistic[attenuationUl](title="attenuationUl"; unit="dB"; source="attenuationUl"; record=vector);
+      
+   @signal[thermalNoiseUl];
+   @statistic[thermalNoiseUl](title="thermalNoiseUl"; unit="dB"; source="thermalNoiseUl"; record=vector);
+      
+   @signal[fadingAttenuationUl];
+   @statistic[fadingAttenuationUl](title="fadingAttenuationUl"; unit="dB"; source="fadingAttenuationUl"; record=vector);
+   
+   
+   @signal[recvPowerTxUl];
+   @statistic[recvPowerTxUl](title="recvPowerTxUl"; unit="dB"; source="recvPowerTxUl"; record=vector);
+
+
+     @signal[attenuationPathLossDl];
+   @statistic[attenuationPathLossDl](title="attenuationPathLossDl"; unit="dB"; source="attenuationPathLossDl"; record=vector);
+     @signal[attenuationShadowingDl];
+   @statistic[attenuationShadowingDl](title="attenuationShadowingDl"; unit="dB"; source="attenuationShadowingDl"; record=vector);
+
+     @signal[attenuationPathLossUl];
+   @statistic[attenuationPathLossUl](title="attenuationPathLossUl"; unit="dB"; source="attenuationPathLossUl"; record=vector);
+     @signal[attenuationShadowingUl];
+   @statistic[attenuationShadowingUl](title="attenuationShadowingUl"; unit="dB"; source="attenuationShadowingUl"; record=vector);
+
 }
 
 // NRChannelModel_3GPP38_901

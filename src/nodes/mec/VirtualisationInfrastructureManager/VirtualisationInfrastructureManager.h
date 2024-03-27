@@ -69,6 +69,7 @@ class DeleteAppMessage;
 class VirtualisationInfrastructureManager : public cSimpleModule
 {
     friend class MecOrchestrator; // Friend Class
+    std::string csv_filename;
 
     //------------------------------------
     // SIMULTE Binder module
@@ -154,6 +155,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
          *
          */
         virtual double calculateProcessingTime(int  mecAppID, int numOfInstructions);
+        virtual double calculateProcessingTime(int  mecAppID, double numOfInstructions);
 
         /*
          * Methods called by MEC apps deployed through INI and not by UEs. Such MEC apps
@@ -193,9 +195,9 @@ class VirtualisationInfrastructureManager : public cSimpleModule
          * utility
          */
         void printResources(){
-            EV << "VirtualisationInfrastructureManager::printResources - allocated Ram (B): " << allocatedRam  << " / " << maxRam << endl;
-            EV << "VirtualisationInfrastructureManager::printResources - allocated Disk (B): " << allocatedDisk << " / " << maxDisk << endl;
-            EV << "VirtualisationInfrastructureManager::printResources - allocated CPU (MIPS): " << allocatedCPU << " / " << maxCPU << endl;
+            EV << "VirtualisationInfrastructureManager::printResources - allocated Ram: " << allocatedRam << " / " << maxRam << endl;
+            EV << "VirtualisationInfrastructureManager::printResources - allocated Disk: " << allocatedDisk << " / " << maxDisk << endl;
+            EV << "VirtualisationInfrastructureManager::printResources - allocated CPU: " << allocatedCPU << " / " << maxCPU << endl;
         }
 
     protected:

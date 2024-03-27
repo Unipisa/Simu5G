@@ -1,0 +1,23 @@
+{
+"appDid" : "PPMECAPP",
+"appName" : "",
+"appProvider" : "simu5g.apps.PingPong.MECPingPongApp",
+"appInfoName" : "appInfoName_",
+"appDescription" : "appDescription_",
+"virtualComputeDescriptor" :{
+    "virtualDisk": 500,
+    "virtualCpu" : 10000,
+    "virtualMemory":100
+    },
+"appServiceRequired": [
+    {
+       "ServiceDependency" :{
+            "serName" : "LocationService",
+            "version" : "v2",
+            "serCategory": "Location"
+        }
+    }
+],
+
+"omnetppServiceRequired": "PPPingPongService"
+}

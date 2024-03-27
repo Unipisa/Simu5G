@@ -33,10 +33,44 @@ Define_Module(LteRealisticChannelModel);
 
 simsignal_t LteRealisticChannelModel::rcvdSinrDl_ = registerSignal("rcvdSinrDl");
 simsignal_t LteRealisticChannelModel::rcvdSinrUl_ = registerSignal("rcvdSinrUl");
-simsignal_t LteRealisticChannelModel::rcvdSinrD2D_ = registerSignal("rcvdSinrD2D");
-
 simsignal_t LteRealisticChannelModel::measuredSinrDl_ = registerSignal("measuredSinrDl");
 simsignal_t LteRealisticChannelModel::measuredSinrUl_ = registerSignal("measuredSinrUl");
+simsignal_t LteRealisticChannelModel::distance_ = registerSignal("distance");
+
+
+
+simsignal_t LteRealisticChannelModel::rcvdPWRDl_ = registerSignal("rcvdPWRDl");
+simsignal_t LteRealisticChannelModel::rcvdPWRUl_ = registerSignal("rcvdPWRUl");
+
+simsignal_t LteRealisticChannelModel::recvPowerDl_ = registerSignal("recvPowerDl");
+simsignal_t LteRealisticChannelModel::antennaGainTxDl_ = registerSignal("antennaGainTxDl");
+simsignal_t LteRealisticChannelModel::antennaGainRxDl_ = registerSignal("antennaGainRxDl");
+simsignal_t LteRealisticChannelModel::noiseFigureDl_ = registerSignal("noiseFigureDl");
+simsignal_t LteRealisticChannelModel::cableLossDl_ = registerSignal("cableLossDl");
+simsignal_t LteRealisticChannelModel::attenuationDl_ = registerSignal("attenuationDl");
+simsignal_t LteRealisticChannelModel::speed_ = registerSignal("speed");
+simsignal_t LteRealisticChannelModel::thermalNoiseDl_ = registerSignal("thermalNoiseDl");
+simsignal_t LteRealisticChannelModel::fadingAttenuationDl_ = registerSignal("fadingAttenuationDl");
+simsignal_t LteRealisticChannelModel::recvPowerTxDl_ = registerSignal("recvPowerTxDl");
+
+simsignal_t LteRealisticChannelModel::recvPowerUl_ = registerSignal("recvPowerUl");
+simsignal_t LteRealisticChannelModel::antennaGainTxUl_ = registerSignal("antennaGainTxUl");
+simsignal_t LteRealisticChannelModel::antennaGainRxUl_ = registerSignal("antennaGainRxUl");
+simsignal_t LteRealisticChannelModel::noiseFigureUl_ = registerSignal("noiseFigureUl");
+simsignal_t LteRealisticChannelModel::cableLossUl_ = registerSignal("cableLossUl");
+simsignal_t LteRealisticChannelModel::attenuationUl_ = registerSignal("attenuationUl");
+simsignal_t LteRealisticChannelModel::thermalNoiseUl_ = registerSignal("thermalNoiseUl");
+simsignal_t LteRealisticChannelModel::fadingAttenuationUl_ = registerSignal("fadingAttenuationUl");
+simsignal_t LteRealisticChannelModel::recvPowerTxUl_ = registerSignal("recvPowerTxUl");
+
+
+simsignal_t LteRealisticChannelModel::attenuationPathLossUl_ = registerSignal("attenuationPathLossUl");
+simsignal_t LteRealisticChannelModel::attenuationShadowingUl_ = registerSignal("attenuationShadowingUl");
+
+simsignal_t LteRealisticChannelModel::attenuationPathLossDl_ = registerSignal("attenuationPathLossDl");
+simsignal_t LteRealisticChannelModel::attenuationShadowingDl_ = registerSignal("attenuationShadowingDl");
+
+
 
 void LteRealisticChannelModel::initialize(int stage)
 {
@@ -98,6 +132,12 @@ void LteRealisticChannelModel::initialize(int stage)
         binder_ = getBinder();
         //clear jakes fading map structure
         jakesFadingMap_.clear();
+
+        useRsrqFromLog_ = par("useRsrqFromLog").boolValue();
+        rsrqShift_ = par("rsrqShift");
+        rsrqScale_ = par("rsrqScale");
+        oldTime_ = -1;
+        oldRsrq_ = 0;
     }
 }
 
@@ -127,15 +167,24 @@ double LteRealisticChannelModel::getAttenuation(MacNodeId nodeId, Direction dir,
        computeLosProbability(sqrDistance, nodeId);
    }
 
+   if(dir == DL)
+       emit(distance_,sqrDistance);
+
    //compute attenuation based on selected scenario and based on LOS or NLOS
    bool los = losMap_[nodeId];
    double dbp = 0;
    double attenuation = computePathLoss(sqrDistance, dbp, los);
 
+
+
    //    Applying shadowing only if it is enabled by configuration
    //    log-normal shadowing (not available for background UEs)
    if (nodeId < BGUE_MIN_ID && shadowing_)
-       attenuation += computeShadowing(sqrDistance, nodeId, speed, cqiDl);
+       {
+       double sh = computeShadowing(sqrDistance, nodeId, speed, cqiDl);
+       attenuation += sh;
+       attenuationShadowing = sh ;
+       }
 
    // update current user position
 
@@ -402,9 +451,42 @@ double LteRealisticChannelModel::computeAngolarAttenuation(double hAngle, double
 
 std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
+   if (useRsrqFromLog_)
+   {
+       int time = -1, rsrq = oldRsrq_;
+       double currentTime = simTime().dbl();
+       if (currentTime > oldTime_+1)
+       {
+           std::ifstream file;
+
+           // open the rsrq file
+           file.clear();
+           file.open("rsrqFile.dat");
+
+           file >> time;
+           file >> rsrq;
+
+           file.close();
+
+           oldTime_ = simTime().dbl();
+           oldRsrq_ = rsrq;
+
+           std::cout << "LteRealisticChannelModel::getSINR - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
+       }
+
+       double sinr = rsrqScale_ * (rsrq + rsrqShift_);
+       std::vector<double> snrVector;
+       snrVector.resize(numBands_, sinr);
+
+       return snrVector;
+   }
+
    //get tx power
    double recvPower = lteInfo->getTxPower(); // dBm
 
+
+
+   double recvPowerTx_ = recvPower;
    //Get the Resource Blocks used to transmit this packet
    RbMap rbmap = lteInfo->getGrantedBlocks();
 
@@ -532,6 +614,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    //sub cable loss
    recvPower -= cableLoss_; // (dBm-dB)=dBm
 
+
    //=============== ANGOLAR ATTENUATION =================
    if (dir == DL)
    {
@@ -575,7 +658,8 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    // if the phy layer is localized we can assume that for each logical band we have different fading attenuation
    // if the phy layer is distributed the number of logical band should be set to 1
    double fadingAttenuation = 0;
-
+   double finalRecvPower_ = 0;
+   double totalFadingAttenuation = 0;
    // for each logical band
    // FIXME compute fading only for used RBs
    for (unsigned int i = 0; i < numBands_; i++)
@@ -593,7 +677,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        }
        // add fading contribution to the received pwr
        double finalRecvPower = recvPower + fadingAttenuation; // (dBm+dB)=dBm
-
+       totalFadingAttenuation+=fadingAttenuation;
        //if txmode is multi user the tx power is dived by the number of paired user
        // in db divede by 2 means -3db
        if (lteInfo->getTxMode() == MULTI_USER)
@@ -614,7 +698,10 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
           << " fading attenuation " << fadingAttenuation << endl;
 
        snrVector[i] = finalRecvPower;
+
    }
+   finalRecvPower_ = recvPower+totalFadingAttenuation;
+
    //============ END PATH LOSS + SHADOWING + FADING ===============
 
    /*
@@ -675,6 +762,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    double sumSnr = 0.0;
    int usedRBs = 0;
    // add interference for each band
+   double totalBgCellInterference_ = 0;
+   double totalExtCellInterference_ = 0;
+   double totalMultiCellInterference_ = 0;
    for (unsigned int i = 0; i < numBands_; i++)
    {
        // if we are decoding a data transmission and this RB has not been used, skip it
@@ -684,7 +774,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
        //               (      mW              +          mW            +  mW  +        mW            )
        den = linearToDBm(bgCellInterference[i] + extCellInterference[i] + totN + multiCellInterference[i]);
-
+        totalBgCellInterference_ += 0;
+        totalExtCellInterference_ += 0;
+        totalMultiCellInterference_ += 0;
        EV << "\t bgCell[" << bgCellInterference[i] << "] - ext[" << extCellInterference[i] << "] - multi[" << multiCellInterference[i] << "] - recvPwr["
           << dBmToLinear(snrVector[i]) << "] - sinr[" << snrVector[i]-den << "]\n";
 
@@ -701,12 +793,45 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        // we are on the BS, so we need to retrieve the channel model of the sender
        // XXX I know, there might be a faster way...
        LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
+       ueChannelModel->emit(speed_, speed);
 
        if (dir == DL) // we are on the UE
+           {
            ueChannelModel->emit(measuredSinrDl_, sumSnr / usedRBs);
+           ueChannelModel->emit(rcvdPWRDl_, finalRecvPower_);
+           ueChannelModel->emit(recvPowerDl_,recvPower ); //power ind from RB
+           ueChannelModel->emit(antennaGainTxDl_,antennaGainTx );
+           ueChannelModel->emit(antennaGainRxDl_,antennaGainRx );
+           ueChannelModel->emit(noiseFigureDl_,noiseFigure );
+           ueChannelModel->emit(cableLossDl_,cableLoss_ );
+           ueChannelModel->emit(attenuationDl_,attenuation );
+           ueChannelModel->emit(thermalNoiseDl_,thermalNoise_ );
+           ueChannelModel->emit(fadingAttenuationDl_, totalFadingAttenuation);
+           ueChannelModel->emit(recvPowerTxDl_,recvPowerTx_ );
+           ueChannelModel->emit(attenuationPathLossDl_,attenuationPathLoss );
+           ueChannelModel->emit(attenuationShadowingDl_, attenuationShadowing);
+           }
        else
+           {
            ueChannelModel->emit(measuredSinrUl_, sumSnr / usedRBs);
+           ueChannelModel->emit(rcvdPWRUl_, finalRecvPower_);
+           ueChannelModel->emit(recvPowerUl_,recvPower );//power ind from RB
+           ueChannelModel->emit(antennaGainTxUl_,antennaGainTx );
+           ueChannelModel->emit(antennaGainRxUl_,antennaGainRx );
+           ueChannelModel->emit(noiseFigureUl_,noiseFigure );
+           ueChannelModel->emit(cableLossUl_,cableLoss_ );
+           ueChannelModel->emit(attenuationUl_,attenuation );
+           ueChannelModel->emit(thermalNoiseUl_,thermalNoise_ );
+           ueChannelModel->emit(fadingAttenuationUl_, totalFadingAttenuation);
+           ueChannelModel->emit(recvPowerTxUl_,recvPowerTx_ );
+           ueChannelModel->emit(attenuationPathLossUl_,attenuationPathLoss );
+           ueChannelModel->emit(attenuationShadowingUl_, attenuationShadowing);
+           }
+
    }
+
+
+
 
    //if sender is an eNodeB
    if (dir == DL)
@@ -720,6 +845,36 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
 
 std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
+   if (useRsrqFromLog_)
+   {
+       int time = -1, rsrq = oldRsrq_;
+       double currentTime = simTime().dbl();
+       if (currentTime > oldTime_+1)
+       {
+           std::ifstream file;
+
+           // open the rsrq file
+           file.clear();
+           file.open("rsrqFile.dat");
+
+           file >> time;
+           file >> rsrq;
+
+           file.close();
+
+           oldTime_ = simTime().dbl();
+           oldRsrq_ = rsrq;
+
+           std::cout << "LteRealisticChannelModel::getRSRP - time["<<time<<"] rsrq["<<rsrq<<"]" << endl;
+       }
+
+       double sinr = rsrqScale_ * (rsrq + rsrqShift_);
+       std::vector<double> snrVector;
+       snrVector.resize(numBands_, sinr);
+
+       return snrVector;
+   }
+
    //get tx power
    double recvPower = lteInfo->getTxPower(); // dBm
 
@@ -1945,6 +2100,7 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteI
 
            int snr = snrV[jt->first];//XXX because jt->first is a Band (=unsigned short)
            if (snr < binder_->phyPisaData.minSnr())
+               //here and
                return false;
            else if (snr > binder_->phyPisaData.maxSnr())
                bler = 0;
@@ -1999,6 +2155,7 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteI
                << ") -> do not receive." << endl;
 
        // Signal too weak, we can't receive it
+       // ... and here
        return false;
    }
    // Signal is strong enough, receive this Signal
@@ -2156,8 +2313,9 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo* 
       << " - CQI[" << cqi << "]- random error extracted[" << er << "]" << endl;
 
    // emit SINR statistic
+   // TODO use a rcvdSinrD2D statistic
    if (collectSinrStatistics_ && usedRBs > 0)
-       emit(rcvdSinrD2D_, sumSnr / usedRBs);
+       emit(rcvdSinrUl_, sumSnr / usedRBs);
 
    if (er <= totalPer)
    {

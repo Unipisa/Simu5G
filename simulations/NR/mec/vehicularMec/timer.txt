@@ -1,0 +1,11 @@
+Execution time for  cars was 13806 seconds.
+Execution time for  cars was 13807 seconds.
+Execution time for  cars was 13807 seconds.
+Execution time for  cars was 13807 seconds.
+Execution time for  cars was 13807 seconds.
+Execution time for  cars was 6 seconds.
+Execution time for  cars was 0 seconds.
+Execution time for  cars was 0 seconds.
+Execution time for  cars was 0 seconds.
+Execution time for  cars was 0 seconds.
+Execution time for  cars was 0 seconds.

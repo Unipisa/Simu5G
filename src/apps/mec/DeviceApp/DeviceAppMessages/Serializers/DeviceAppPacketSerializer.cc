@@ -12,6 +12,7 @@
 #include "apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
 
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include <string>
 
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"

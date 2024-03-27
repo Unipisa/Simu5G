@@ -16,6 +16,9 @@
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "stack/mac/allocator/LteAllocatorUtils.h"
 
+using namespace std;
+using namespace omnetpp;
+
 /// forward declarations
 class LteScheduler;
 class LteAllocationModule;
@@ -116,6 +119,13 @@ class LteSchedulerEnb
 
     // @author Alessandro Noferi
     double utilization_; // it records the utilization in the last TTI
+   
+    //logs
+    std::string csv_filename_avgServedBlocksDl_;
+    std::string csv_filename_avgServedBlocksUl_;
+    std::string csv_filename_test; 
+    int row =0 ;
+
 
   public:
 

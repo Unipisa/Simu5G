@@ -112,7 +112,9 @@ simple LteMacBase like LteMac {
         @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
-        
+        @signal[measuredItbs];
+        @statistic[measuredItbs](title="TBS index"; unit=""; source="measuredItbs"; record=mean,vector);
+
     gates:
         //# 
         //# Gates connecting RLC and MAC Layers
@@ -234,11 +236,15 @@ simple LteMacEnb extends LteMacBase {
         string pilotMode = default("ROBUST_CQI"); // one of MIN_CQI, MAX_CQI, AVG_CQI, ROBUST_CQI
         
         //#
-        //# Statistics related to resource blocks occupancy
+        //# Statistics for Lte Scheduler Enb
+        @signal[cellBlocksUtilizationDl];
+        @statistic[cellBlocksUtilizationDl](title="Cell Blocks Utilization Dl"; unit="blocks"; source="cellBlocksUtilizationDl"; record=mean);
+        @signal[cellBlocksUtilizationUl];
+        @statistic[cellBlocksUtilizationUl](title="Cell Blocks Utilization Ul"; unit="blocks"; source="cellBlocksUtilizationUl"; record=mean);
         @signal[avgServedBlocksDl];
-        @statistic[avgServedBlocksDl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksDl"; record=mean,vector);
+        @statistic[avgServedBlocksDl](title="Avg Served Blocks Dl"; unit="blocks"; source="avgServedBlocksDl"; record=mean,vector);
         @signal[avgServedBlocksUl];
-        @statistic[avgServedBlocksUl](title="Average number of allocated Resource Blocks in the Dl"; unit="blocks"; source="avgServedBlocksUl"; record=mean,vector);
+        @statistic[avgServedBlocksUl](title="Avg Served Blocks Ul"; unit="blocks"; source="avgServedBlocksUl"; record=mean,vector);
 }    
 
 //
