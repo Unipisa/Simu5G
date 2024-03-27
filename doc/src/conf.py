@@ -49,12 +49,12 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.graphviz',
     'sphinx.ext.imgconverter',
-    #'sphinx.ext.autodoc',
-    #'sphinx.ext.autosummary',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     #'sphinxcontrib.images',
-    #'tools.doxylink',
+    'tools.doxylink',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -64,12 +64,12 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 source_suffix = [ '.rst',
-# '.md',
+  '.md',
 ]
 
 # Source parsers
 source_parsers = {
-#   '.md': 'recommonmark.parser.CommonMarkParser',
+   '.md': 'recommonmark.parser.CommonMarkParser',
 }
 
 # The root toctree document.
@@ -85,9 +85,10 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', '_deploy', 'Thumbs.db', '.DS_Store', '**/_docs', 'global.rst',
-#  'users-guide/**',
-#  'developers-guide/**',
+exclude_patterns = [
+  '_build', '_deploy', 'Thumbs.db', '.DS_Store', '**/_docs', 'global.rst',
+  '_static', '_themes', '_templates', '.venv', 'images'
+#  'simulations/**'
 #  'showcases/**',
 #  'tutorials/**',
 ]
@@ -110,13 +111,7 @@ add_module_names = False # Remove namespaces from class/method signatures
 # To exclude a module, use autodoc_mock_imports. Note this may increase build time, a lot.
 # (Also, when installing on readthedocs.org, we omit installing Tensorflow and
 # Tensorflow Probability so mock them here instead.)
-autodoc_mock_imports = [
-#    'inet.sphinx',
-#    'inet.repl',
-#    'inet.documentation',
-#    'inet.project',
-#    'inet.scave'
-]
+autodoc_mock_imports = []
 
 # To exclude a class, function, method or attribute, use autodoc-skip-member. (Note this can also
 # be used in reverse, ie. to re-include a particular member that has been excluded.)
@@ -157,6 +152,8 @@ napoleon_attr_annotations = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #html_theme_path = ['_themes']
+
+html_baseurl = 'https://simu5g.org'
 
 extensions.append("sphinx_immaterial")
 html_theme = "sphinx_immaterial"
@@ -289,8 +286,6 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('users-guide/index', 'simu5g-users-guide.tex', "Simu5G User's Guide", '', 'manual', False),
-    ('showcases/index', 'simu5g-showcases.tex', "Simu5G Showcases", '', 'manual', False),
-    ('tutorials/index', 'simu5g-tutorials.tex', "Simu5G Tutorial", '', 'manual', False),
 ]
 
 
@@ -371,7 +366,7 @@ def opp_preprocess(app, docname, source):
 # inline_highlight_respect_highlight = False
 
 # Highlight also normal literals like :code:`literal`
-# inline_highlight_literals = False
+inline_highlight_literals = True
 
 # ###########################################################################
 # The name of the Pygments (syntax highlighting) style to use.
@@ -524,9 +519,9 @@ from pygments.token import Keyword, Name, Comment, String, Error, \
      Number, Operator, Generic, Whitespace
 
 class FpStyle(Style):
-	default_style = "default"
-	style = {
-		Text:	'#ffffff'
+        default_style = "default"
+        style = {
+                Text: '#ffffff'
 }
 
 class FingerprintLexer(RegexLexer):
@@ -540,9 +535,9 @@ class FingerprintLexer(RegexLexer):
             #(r'.*: ', Text),
             #(r'PASS', Keyword),
             #(r'FAILED', String),
-	    (r'(.* : )(PASS)?(FAILED)?(ERROR)?',
+            (r'(.* : )(PASS)?(FAILED)?(ERROR)?',
              bygroups(Name.Entity, Name.Builtin, String, String)),
-	    (r'.*?\n', Name.Entity),
+            (r'.*?\n', Name.Entity),
         ],
     }
 
@@ -558,7 +553,6 @@ lexers['fp'] = FingerprintLexer(startinline=True)
 # -- setup the customizations
 import tools.video
 import tools.audio
-import opptheme
 
 def setup(app):
     app.connect("source-read", opp_preprocess)
@@ -567,5 +561,4 @@ def setup(app):
     app.add_directive('video', tools.video.Video)
     app.add_directive('video_noloop', tools.video.Video_noloop)
     app.add_directive('audio', tools.audio.Audio)
-    app.add_directive('card', opptheme.CardDirective)
     app.connect("autodoc-skip-member", autodoc_skip_member_callback) # Entry point to autodoc-skip-member
