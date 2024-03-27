@@ -120,10 +120,14 @@ UniPi team:
 
 .. toctree::
    :hidden:
+   :glob:
+   :caption: Showcases
 
-   showcases/index
+   showcases/*/standalone/doc/index
 
 .. toctree::
    :hidden:
+   :glob:
+   :caption: Tutorials
 
-   tutorials/index
+   tutorials/*/doc/index

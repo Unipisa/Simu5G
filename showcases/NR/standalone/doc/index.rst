@@ -6,11 +6,12 @@ Goal
 
 The goal of this showcase is to demonstrate a standalone 5G network deployment
 using the Simu5G framework. It aims to highlight the interactions between
-network elements such as the gNodeB and the User Equipment (UE) in a 5G NR
+network elements such as the *gNodeB* and the *User Equipment (UE)* in a *5G NR*
 environment, and how traffic flows between these elements.
 
-| Simu5G version: ``1.2.2``
-| Source files location: `simu5g/showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`__
+.. versionadded:: 1.2.2
+
+| Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`_
 
 Model
 -----
@@ -34,21 +35,21 @@ Configuration
 The simulation is configured via the provided INI file, with the following key settings:
 
 - **Simulation Time**: The simulation runs for a total of 20 seconds.
-- **Number of UEs**: Configured to have a single UE by default.
+- **Number of UEs**: Configured to have a single *UE* by default.
 - **Mobility**: UEs are confined within a 1000m x 1000m area.
-- **Transmission Power**: Configured for both the gNodeB and UE, with default values set to 40 and 26 respectively.
-- **IPv4 Configuration**: Managed by the `Ipv4NetworkConfigurator` with settings provided in `demo.xml`.
+- **Transmission Power**: Configured for both the *gNodeB* and *UE*, with default values set to 40 and 26 respectively.
+- **IPv4 Configuration**: Managed by the :ned:`Ipv4NetworkConfigurator` with settings provided in :file:`demo.xml`.
 
 Two traffic configurations are included:
 
-- **VoIP-DL**: Simulates Voice-over-IP traffic from the server to the UE.
-- **VoIP-UL**: Simulates Voice-over-IP traffic from the UE to the server.
+- :ini:`VoIP-DL`: Simulates Voice-over-IP traffic from the server to the *UE*.
+- :ini:`VoIP-UL`: Simulates Voice-over-IP traffic from the *UE* to the server.
 
 Results
 -------
 
-The simulation generates scalar and vector results captured in `*.sca` and
-`*.vec` files, respectively. Key metrics to observe include:
+The simulation generates scalar and vector results captured in :file:`*.sca` and
+:file:`*.vec` files, respectively. Key metrics to observe include:
 
 - **End-to-end delay**: Measures the latency experienced by VoIP packets.
 - **Throughput**: Assesses the network's capacity to handle data traffic.
@@ -61,11 +62,11 @@ Conclusion
 ----------
 
 This showcase provides a comprehensive overview of a standalone 5G network's
-operation using the Simu5G framework, focusing on the key interactions and
+operation using the *Simu5G* framework, focusing on the key interactions and
 performance metrics essential for evaluating the network's capabilities.
 
 Sources: :download:`omnetpp.ini <../omnetpp.ini>`,
-         :download:`SingleCell_Standalone.ned <../../../../../simulations/NR/networks/SingleCell_Standalone.ned>`
+:download:`SingleCell_Standalone.ned <../../../../simulations/NR/networks/SingleCell_Standalone.ned>`
 
 Discussion
 ----------
