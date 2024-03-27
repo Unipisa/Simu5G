@@ -1,5 +1,4 @@
 # ignore generated files
-doc/src/showcases
 doc/src/_build
 src/Makefile
 *_m.h
