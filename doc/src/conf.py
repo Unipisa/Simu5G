@@ -149,11 +149,12 @@ napoleon_attr_annotations = True
 
 # -- Options for HTML output -------------------------------------------------
 
+# base URL (also used to generate CNAME file by the ghpages extension)
+html_baseurl = 'https://simu5g.org'
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme_path = ['_themes']
-
-html_baseurl = 'https://simu5g.org'
+html_theme_path = ['_themes']
 
 extensions.append("sphinx_immaterial")
 html_theme = "sphinx_immaterial"
