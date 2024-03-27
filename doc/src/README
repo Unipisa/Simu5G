@@ -1,22 +1,20 @@
-INET Framework Documentation
-============================
+Simu5G Framework Documentation
+==============================
 
 Building the documentation website
 ----------------------------------
 
-The INET documentation is built with the Sphinx tool (sphinx-doc.org).
-A docker image is provided at: https://github.com/omnetpp/dockerfiles/tree/master/docker-sphinx
+The Simu5G documentation is built with the Sphinx tool (sphinx-doc.org).
+A pipenv environment is set up automatically containing all the necessary python packages.
 
-- Use './docker-make server' to run a local web server to preview the documentation.
-- Use './docker-make html' or 'docker-make pdf' to build the documentation.
-- Use './docker-make clean all' to build both the html and pdf version from scratch.
-- Use 'make deploy' to create a new commit with the new version in the _deploy folder
-  and then you can 'git push' it manually.
+To build the documentation, you have to install `pipenv` first:
+$ sudo apt install pipenv
 
-Alternatively, you can install sphinx locally,
+After that, you can use the following targets (dependencies will be installed
+automatically on the first use)
 
-  sudo apt install sphinx dvipng texlive-binaries texlive-latex-recommended texlive-pictures texlive-latex-extra
-  python3 -m pip install --user -U Sphinx sphinxcontrib-images sphinxcontrib-doxylink sphinx-autobuild
+- Use 'make server' to run a local web server to preview the documentation at
+  http://localhost:8000/
+- Use 'make html' or 'make pdf' to build the documentation.
+- Use 'make clean all' to build both the html and pdf version from scratch.
 
-and then use 'make' directly (instead of the docker) with the above targets. Don't forget to add ~/.local/bin 
-to your path to be able to access the sphinx tools.
