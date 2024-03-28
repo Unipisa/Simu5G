@@ -235,6 +235,10 @@ html_theme_options = {
         },
     ],
     # END: social icons
+    "analytics": {
+        "provider": "google",
+        "property": "G-Y7V8D2PMQ8"
+    }
 }
 
 # end html_theme_options
