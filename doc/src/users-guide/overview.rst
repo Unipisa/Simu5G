@@ -6,7 +6,7 @@ Features
 
 Simu5G is a 5G New Radio (NR) simulator based on the well-known
 `SimuLTE <https://simulte.omnetpp.org/>`__ library, developed by
-the same :doc:`research group <contacts>` and widely used by
+the same :doc:`research group <../contacts>` and widely used by
 industry and academia. Simu5G is based on the OMNeT++
 simulation framework, and provides a collection of models with
 well-defined interfaces, which can be instantiated and
@@ -35,7 +35,7 @@ allocation and management schemes in 5G networks, e.g.
 selecting which UEs to target, using which modulation scheme,
 etc., taking into account inter-cell interference coordination,
 carrier selection, energy efficiency and so on. Moreover,
-Simu5G can be run in :doc:`real-time emulation <users-guide/emulation>`
+Simu5G can be run in :doc:`real-time emulation <emulation>`
 mode, enabling interaction with real devices, thanks to
 OMNeT++'s real-time scheduling of events and INET's capability
 to exchange IP packets between local applications or network
@@ -46,7 +46,7 @@ live networked applications having an emulated 5G network in
 the middle, using the same codebase for both simulations and
 live prototyping.
 
-Simu5G also includes a :doc:`model of ETSI MEC <users-guide/MEC>`,
+Simu5G also includes a :doc:`model of ETSI MEC <mec>`,
 complete with models of MEC orchestrator, MEC platforms, MEC
 hosts and MEC services. In the latter, interfaces towards
 application endpoints (MEC app and Device app) are ETSI

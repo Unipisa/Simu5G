@@ -11,7 +11,7 @@ environment, and how traffic flows between these elements.
 
 .. versionadded:: 1.2.2
 
-| Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`_
+| Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`__
 
 Model
 -----

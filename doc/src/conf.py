@@ -148,6 +148,9 @@ napoleon_type_aliases = None
 napoleon_attr_annotations = True
 
 # -- Options for HTML output -------------------------------------------------
+# disable page source generation
+html_copy_source = False
+html_show_source_link = False
 
 # base URL (also used to generate CNAME file by the ghpages extension)
 html_baseurl = 'https://simu5g.org'
@@ -159,6 +162,8 @@ html_theme_path = ['_themes']
 extensions.append("sphinx_immaterial")
 html_theme = "sphinx_immaterial"
 html_css_files = ['sphinx-omnetpp.css',]
+html_logo = '_static/hero-banner.png'
+html_title = 'Simu5G: Simulator for 5G New Radio Networks'
 
 # material theme options (see theme.conf for more information)
 html_theme_options = {
@@ -171,22 +176,25 @@ html_theme_options = {
     "repo_url": "https://github.com/Unipisa/Simu5G",
     "repo_name": "Simu5G",
     # "edit_uri": "blob/site/doc/src",
-    "globaltoc_collapse": True,
+    "globaltoc_collapse": False,
+    "toc_title_is_page_title": True,
     "features": [
-        #"navigation.expand",
-        "navigation.tabs",
-        #"toc.integrate",
-        #"navigation.sections",
+        "announce.dismiss",
+        #"content.code.annotate",
+        "content.tabs.link",
+        #"header.autohide",
+        "navigation.expand",
         "navigation.instant",
-        # "header.autohide",
+        "navigation.sections",
+        "navigation.tabs",
+        #"navigation.tabs.sticky",
         "navigation.top",
-        "navigation.tracking",
+        #"navigation.tracking",
         "search.highlight",
         "search.share",
+        #"toc.integrate",
         "toc.follow",
         "toc.sticky",
-        "content.tabs.link",
-        "announce.dismiss",
     ],
     "palette": [
         {
@@ -220,7 +228,6 @@ html_theme_options = {
         },
     ],
     # END: version_dropdown
-    "toc_title_is_page_title": True,
     # BEGIN: social icons
     "social": [
         {

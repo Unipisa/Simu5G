@@ -1,3 +1,5 @@
+:hide-footer:
+
 Frequently Asked Questions
 ==========================
 
@@ -50,7 +52,7 @@ Frequently Asked Questions
    Yes and yes. More to the point, you can also run 5G
    simulations with ENDC deployments (i.e., a 4G eNB acting as a
    master and a 5G gNB acting as a slave). See the
-   :doc:`description <description>` page.
+   :doc:`users-guide/overview` page.
 
 .. question:: What hardware is required to run Simu5G as an emulator?
 

@@ -1,3 +1,4 @@
+:hide-footer:
 
 Contacts
 ========

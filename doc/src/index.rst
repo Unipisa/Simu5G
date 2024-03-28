@@ -1,4 +1,42 @@
-:hero: 5G New Radio User Plane Simulation Model for INET & OMNeT++
+:hide-navigation:
+:hide-footer:
+
+.. toctree::
+   :caption: Home
+   :hidden:
+
+   self
+
+.. toctree::
+   :caption: Documentation
+   :hidden:
+
+   doc
+
+.. toctree::
+   :hidden:
+
+   install
+
+.. toctree::
+   :caption: FAQ
+   :hidden:
+
+   faq
+
+.. toctree::
+   :hidden:
+
+   related
+
+.. toctree::
+   :hidden:
+
+   contacts
+
+.. image:: _static/hero-banner.png 
+   :width: 700px
+   :align: center
 
 Simu5G: Simulator for 5G New Radio Networks
 ===========================================
@@ -46,6 +84,7 @@ Main Features
 
 .. figure:: images/capabilities.png
    :align: center
+   :width: 800px
 
 +-----------------------+-----------------------+--------------------------+
 | **User Terminals:**   | **g-NodeB:**          | **Network emulation:**   |
@@ -73,7 +112,7 @@ Main Features
 |                       | facilitate            |                          |
 |                       | cross-layer analysis. |                          |
 +-----------------------+-----------------------+--------------------------+
-| :doc:`ETSI MEC <users-guide/MEC>`:                                       |
+| :doc:`ETSI MEC <users-guide/mec>`:                                       |
 |                                                                          |
 | Model of both MEC system-level and host-level entities:                  |
 | UALCMP, MEC                                                              |
@@ -102,32 +141,3 @@ UniPi team:
    (`webpage <http://docenti.ing.unipi.it/a.virdis>`__)
 
 
-.. toctree::
-   :caption: Home
-   :hidden:
-
-   Introduction <self>
-   description
-   install
-   faq
-   related
-   contacts
-
-.. toctree::
-   :hidden:
-
-   users-guide/index
-
-.. toctree::
-   :hidden:
-   :glob:
-   :caption: Showcases
-
-   showcases/*/standalone/doc/index
-
-.. toctree::
-   :hidden:
-   :glob:
-   :caption: Tutorials
-
-   tutorials/*/doc/index

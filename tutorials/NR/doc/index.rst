@@ -9,7 +9,7 @@ hints about the basic configurations of 5G NR networks.
 
 .. versionadded:: 1.2.2
 
-Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`_
+Source files location: `showcases/NR/standalone <https://github.com/Unipisa/Simu5G/tree/master/showcases/NR/standalone>`__
 
 
 Introduction

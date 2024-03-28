@@ -1,3 +1,5 @@
+:hide-footer:
+
 Publications
 ============
 
@@ -76,7 +78,6 @@ Simu5G.
    2016
 
 Related Publications
---------------------
 
 *(list in continuous updating)*
 

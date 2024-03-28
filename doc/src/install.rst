@@ -1,7 +1,7 @@
-:tocdepth: 2
+:hide-footer:
 
-Install Guide
-=============
+Installation
+============
 
 Prerequisites
 -------------
