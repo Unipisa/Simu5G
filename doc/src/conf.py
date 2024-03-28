@@ -165,6 +165,11 @@ html_css_files = ['sphinx-omnetpp.css',]
 html_logo = '_static/hero-banner.png'
 html_title = 'Simu5G: Simulator for 5G New Radio Networks'
 
+# When building on github, we can use links without the .html suffix as github correctly displays those pages without the .html suffix
+# During development, we need to use the .html suffix as local development does not work without it
+if os.getenv("GITHUB_ACTIONS") == "true":
+    html_link_suffix = '' 
+
 # material theme options (see theme.conf for more information)
 html_theme_options = {
     "icon": {
