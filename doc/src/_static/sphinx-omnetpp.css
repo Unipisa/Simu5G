@@ -93,7 +93,7 @@ figure img {
     display: block; /* Treat the pseudo-element like a block-level element */
     width: 400px; /* Width of the image */
     height: 100px; /* Height of the image */
-    background-image: url('logo.png'); /* Path to your image */
+    background-image: url('hero-banner.png'); /* Path to your image */
     background-size: cover; /* Ensure the image covers the pseudo-element */
     background-repeat: no-repeat; /* Prevent the image from repeating */
     border-radius: 0.2rem;
