@@ -28,7 +28,7 @@ simple UERequestApp like IApp
         int deviceAppPort = default(4000); // ipAddress of the DeviceApp
         string deviceAppAddress; // port of the DeviceApp
 
-        int requestPacketSize = default(10);
+        int requestPacketSize @unit(B) = default(10B);
 
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 

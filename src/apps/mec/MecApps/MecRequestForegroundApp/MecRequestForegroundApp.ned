@@ -27,7 +27,7 @@ simple MecRequestForegroundApp like IMECApp, IApp
     parameters:
         bool allocateHostResources = default(false);
 
-        int packetSize = default(10);
+        int packetSize @unit(B) = default(10B);
         string interfaceTableModule = default("");
         int mecAppIndex = default(0);
         int mecAppId = default(0); // it will be override by getId() in initialize

@@ -20,11 +20,11 @@ simple VoIPSender like IApp
         int localPort = default(-1);
         int destPort = default(3000);
         string destAddress;
-        int PacketSize = default(40);
-        double shape_talk = default(0.824);
-        double scale_talk = default(1.423);
-        double shape_sil = default(1.089);
-        double scale_sil = default(0.899);
+        int PacketSize @unit(B) = default(40B);
+        double shape_talk @unit(s) = default(0.824s); // params for Weibull distribution
+        double scale_talk @unit(s) = default(1.423s);
+        double shape_sil @unit(s) = default(1.089s);
+        double scale_sil @unit(s) = default(0.899s);
         bool is_talk = default(true);
         double sampling_time @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
