@@ -24,18 +24,18 @@ simple LteRealisticChannelModel extends LteChannelModel
         string scenario = default("URBAN_MACROCELL");
 
         // eNodeB height -->
-        double nodeb_height = default(25);
+        double nodeb_height @unit(m) = default(25m);
         // Building height -->
-        double building_height = default(20);
+        double building_height @unit(m) = default(20m);
         // determines if the UE is inside a building
         bool inside_building = default(false);
 
-        double street_wide = default(20);
-        double ue_height = default(1.5);
+        double street_wide @unit(m) = default(20m);
+        double ue_height @unit(m) = default(1.5m);
         bool tolerateMaxDistViolation = default(false);
         bool useTorus = default(false);
 
-        double correlation_distance = default(50);
+        double correlation_distance @unit(m) = default(50m);
 
         // Target bler used to compute feedback -->
         double targetBler = default(0.01);
@@ -48,19 +48,19 @@ simple LteRealisticChannelModel extends LteChannelModel
         double lambdaRatioTh = default(20);
 
         // Antenna Gain of UE -->
-        double antennaGainUe = default(0);
+        double antennaGainUe @unit(dBi) = default(0dBi);
         // Antenna Gain of eNodeB -->
-        double antennGainEnB = default(18);
+        double antennGainEnB @unit(dBi) = default(18dBi);
         // Antenna Gain of Micro node -->
-        double antennGainMicro = default(5);
+        double antennGainMicro @unit(dBi) = default(5dBi);
         // Thermal Noise for 10 MHz of Bandwidth -->
-        double thermalNoise = default(-104.5);
+        double thermalNoise @unit(dBm) = default(-104.5dBm);
         // Ue noise figure -->
-        double ue_noise_figure = default(7);
+        double ue_noise_figure @unit(dBm) = default(7dBm);
         // eNodeB noise figure -->
-        double bs_noise_figure = default(5);
+        double bs_noise_figure @unit(dBm) = default(5dBm);
         // Cable Loss -->
-        double cable_loss = default(2);
+        double cable_loss @unit(dB) = default(2dB);
 
         // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation -->
         bool dynamic_los = default(false);
@@ -69,11 +69,11 @@ simple LteRealisticChannelModel extends LteChannelModel
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYGHLEY) -->
-        string fading_type = default("JAKES");
+        string fading_type = default("JAKES"); // TODO @enum
         // If jakes fading this parameter specify the number of path (tap channel) -->
         int fading_paths = default(6);
 
-        double delay_rms = default(363e-9);
+        double delay_rms @unit(s) = default(363ns);
 
         // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->
         bool bgCell_interference = default(true);

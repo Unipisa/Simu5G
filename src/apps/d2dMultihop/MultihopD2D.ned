@@ -46,7 +46,7 @@ simple MultihopD2D like IApp
         int destPort = default(3000);
         string destAddress = default("0.0.0.0");
         string interfaceName = default("cellular");
-        int msgSize = default(40);
+        int msgSize @unit(B) = default(40B);
         double maxBroadcastRadius @unit(m) = default(-1m);
         int ttl = default(3);
         double maxTransmissionDelay @unit("s") = default(0.01s);

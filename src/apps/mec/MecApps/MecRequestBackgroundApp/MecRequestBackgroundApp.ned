@@ -21,7 +21,7 @@ simple MecRequestBackgroundApp like IMECApp, IApp
         int numberOfApplications = default(1);
         bool allocateHostResources = default(false);
 
-        int packetSize = default(10);
+        int packetSize @unit(B) = default(10B);
         string interfaceTableModule = default("");
 
         int mecAppIndex = default(0);

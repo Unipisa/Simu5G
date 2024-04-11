@@ -23,7 +23,7 @@ simple VoIPReceiver like IApp
         int emodel_A_ = default(5);
         double emodel_Ro_ = default(93.2);
         double playout_delay @unit("s") = default(0s);
-        int dim_buffer = default(20);
+        int dim_buffer @unit(pk) = default(20pk); // in the number of packets
         double sampling_time @unit("s") = default(0.02s);
 
         @signal[voIPFrameLoss];

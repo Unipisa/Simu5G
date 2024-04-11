@@ -38,7 +38,7 @@ simple UEWarningAlertApp like IApp
         int deviceAppPort = default(4000); // ipAddress of the DeviceApp
         string deviceAppAddress; // port of the DeviceApp
 
-        int packetSize = default(10);
+        int packetSize @unit(B) = default(10B);
 
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
@@ -49,10 +49,10 @@ simple UEWarningAlertApp like IApp
 
         string mecAppName = default("MECWarningAlertApp"); // but could be MEWarningAlertApp_rest_External
 
-        double positionX = default(210);
-        double positionY = default(260);
-        double positionZ = default(0);
-        double radius = default(60);
+        double positionX @unit(m) = default(210m);
+        double positionY @unit(m) = default(260m);
+        double positionZ @unit(m) = default(0m);
+        double radius @unit(m) = default(60m);
 
         bool logger = default(false);
         string interfaceTableModule;
