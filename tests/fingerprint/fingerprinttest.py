@@ -16,7 +16,7 @@
 # Authors: Andras Varga, Zoltan Bojthe
 #
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from typing import List
 import argparse
 import copy
 import csv
@@ -28,38 +28,144 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import unittest
 from io import StringIO
 
-# FIXME this is a hard coded path!!! must be specified from command line or dicovered automatically
+oppErrorCodeMax = 10
 rootDir = os.path.abspath(".")  # the working directory in the CSV file is relative to this dir
-cpuTimeLimit = "300s"
+cpuTimeLimit = "600s"
 logFile = "test.out"
 extraOppRunArgs = ""
 debug=False
 release=False
 exitCode = 0
+writeOutfile = True
+useColors = sys.stdout.isatty()
+
+defaultFingerprintCalculator = 'inet::FingerprintCalculator'
+
+txtPASS = "PASS"
+txtPASS_unexpected = "PASS (unexpected)"
+txtFAILED = "FAILED"
+txtFAILED_expected = "FAILED (expected)"
+txtERROR = "ERROR"
+txtERROR_expected = "ERROR (expected)"
+
+if useColors:
+    txtPASS = '\033[0;32m' + "PASS" + "\033[0;0m"     # GREEN
+    txtPASS_unexpected = '\033[0;32m' + "PASS" + "\033[0;0m" + " " + "\033[1;31m" + "(unexpected)" + "\033[0;0m"     # GREEN + RED
+    txtFAILED = "\033[1;33m" + "FAILED" + "\033[0;0m"    # YELLOW
+    txtFAILED_expected = "\033[2;32m" + "FAILED (expected)" + "\033[0;0m"    # DARK GREEN
+    txtERROR = "\033[1;31m" + "ERROR" + "\033[0;0m"      # RED
+    txtERROR_expected = "\033[2;32m" + "ERROR (expected)" + "\033[0;0m"    # DARK GREEN
+
+fpExtraArgs = {
+    "~tND": { "'--**.crcMode=\"computed\"'",
+              "'--**.fcsMode=\"computed\"'"
+            },
+    "tyf" : { "--cmdenv-fake-gui=true",
+              "--cmdenv-fake-gui-before-event-probability=0.1",
+              "--cmdenv-fake-gui-after-event-probability=0.1",
+              "--cmdenv-fake-gui-on-hold-probability=0.1",
+              "--cmdenv-fake-gui-on-hold-numsteps=3",
+              "--cmdenv-fake-gui-on-simtime-probability=0.1",
+              "--cmdenv-fake-gui-on-simtime-numsteps=3",
+              "'--**.fadeOutMode=\"animationTime\"'",
+              "'--**.signalAnimationSpeedChangeTimeMode=\"animationTime\"'"
+            }
+}
+
+
+def formatFingerprintGroupForCsv(fingerprintGroup : List[List[str]]):
+    """
+    Formatting the fingerprint group for csv file.
+    Example fingerprintGroup: [ ['1234-5678/tplx', ['2345-6789/tplx']], ['0123-abcd/tl', '2345-6789/tl']]
+    """
+    return ';'.join(' '.join(sorted(x)) for x in fingerprintGroup)
+
+
+def formatFingerprintGroupForOmnetpp(fingerprintGroup : List[List[str]]) -> str :
+    """ formatting the fingerprint group for omnetpp command line argument """
+    return ', '.join(' '.join(sorted(x)) for x in fingerprintGroup)
+
+
+def parseFingerprintGroupFromCsv(str : str) -> List[List[str]] :
+    return list(list(x.split(' ')) for x in str.split(';'))
+
+
+def parseFingerprintGroupFromOmnetpp(str : str) -> List[List[str]] :
+    return list(list(x.split(' ')) for x in str.split(', '))
+
+
+def filterFingerprintGroup(fingerprintGroup : List[List[str]], includedFingerprintTypes : List[str], excludedFingerprintTypes : List[str]) -> List[List[str]]:
+    """ returns filtered out fingerprint group"""
+    if includedFingerprintTypes:
+        l1 = list()
+        for i in range(len(fingerprintGroup)):
+            s = list(filter(lambda x : x.split('/', 1)[1] in includedFingerprintTypes, fingerprintGroup[i]))
+            if s:
+                l1.append(s)
+    else:
+        l1 = fingerprintGroup
+
+    if excludedFingerprintTypes:
+        l2 = list()
+        for i in range(len(l1)):
+            s = list(filter(lambda x : x.split('/', 1)[1] not in excludedFingerprintTypes, l1[i]))
+            if s:
+                l2.append(s)
+    else:
+        l2 = l1
+
+    return l2
+
+
+def mergeFingerprintListIntoGroup(fingerprintGroup : List[List[str]], fingerprintList : List[str]):
+    for i in range(len(fingerprintList)):
+        if i >= len(fingerprintGroup):
+            fingerprintGroup.append(list())
+        s = list(filter(lambda x : x not in fingerprintGroup[i], fingerprintList[i]))
+        if s:
+            fingerprintGroup[i].extend(s)
+        #mFp[i].append(otherFp[i])  # TODO filter to unique
+
+
+def diffFpGroups(actualFpGroup: List[List[str]], expectedFpGroup: List[List[str]]):
+    actFp = actualFpGroup.copy()
+    expFp = expectedFpGroup.copy()
+    for act in actualFpGroup:
+        for exp in expectedFpGroup:
+            if len(set(exp) & set(act)) > 0:
+                actFp.remove(act)
+                expFp.remove(exp)
+#    actFp = [fp for fp in actualFpGroup if all(fp_elem not in expectedFpGroup for fp_elem in fp)]
+#    expFp = [fp for fp in expectedFpGroup if all(fp_elem not in actualFpGroup for fp_elem in fp)]
+    return (actFp, expFp)
+
 
 class FingerprintTestCaseGenerator():
     fileToSimulationsMap = {}
-    def generateFromCSV(self, csvFileList, filterRegexList, excludeFilterRegexList, repeat):
+    def generateFromCSV(self, csvFileList, fpFilterList, excludeFpFilterList, filterRegexList, excludeFilterRegexList, repeat):
         testcases = []
         for csvFile in csvFileList:
             simulations = self.parseSimulationsTable(csvFile)
             self.fileToSimulationsMap[csvFile] = simulations
-            testcases.extend(self.generateFromDictList(simulations, filterRegexList, excludeFilterRegexList, repeat))
+            testcases.extend(self.generateFromDictList(simulations, fpFilterList, excludeFpFilterList, filterRegexList, excludeFilterRegexList, repeat))
         return testcases
 
-    def generateFromDictList(self, simulations, filterRegexList, excludeFilterRegexList, repeat):
+    def generateFromDictList(self, simulations, fpFilterList, excludeFpFilterList, filterRegexList, excludeFilterRegexList, repeat):
         class StoreFingerprintCallback:
             def __init__(self, simulation):
                 self.simulation = simulation
+
             def __call__(self, fingerprint):
                 self.simulation['computedFingerprint'] = fingerprint
 
         class StoreExitcodeCallback:
             def __init__(self, simulation):
                 self.simulation = simulation
+
             def __call__(self, exitcode):
                 self.simulation['exitcode'] = exitcode
 
@@ -68,8 +174,22 @@ class FingerprintTestCaseGenerator():
             title = simulation['wd'] + " " + simulation['args'] + " " + simulation['tags']
             if not filterRegexList or ['x' for regex in filterRegexList if re.search(regex, title)]: # if any regex matches title
                 if not excludeFilterRegexList or not ['x' for regex in excludeFilterRegexList if re.search(regex, title)]: # if NO exclude-regex matches title
-                    testcases.append(FingerprintTestCase(title, simulation['file'], simulation['wd'], simulation['args'],
-                            simulation['simtimelimit'], simulation['fingerprint'], simulation['expectedResult'], StoreFingerprintCallback(simulation), StoreExitcodeCallback(simulation), repeat))
+                    fingerprints = parseFingerprintGroupFromCsv(simulation['fingerprint'])
+                    if len(fpFilterList) > 0 or len(excludeFpFilterList) > 0:
+                        fingerprints = filterFingerprintGroup(fingerprints, fpFilterList, excludeFpFilterList)
+                    if len(fingerprints):
+                        fpArg = set()
+                        fpSet = set()
+                        for fps in fingerprints:
+                            for fp in fps:
+                                fpKey = re.sub(r'[a-fA-F0-9]{4}-[a-fA-F0-9]{4}/', '', fp)
+                                fpSet.add(fpKey)
+                        for fps in fpSet:
+                            if (fps in fpExtraArgs):
+                                fpArg = fpArg.union(fpExtraArgs[fps])
+                        simulation['expectedFingerprint'] = fingerprints
+                        testcases.append(FingerprintTestCase(title, simulation['file'], simulation['wd'], simulation['args'], " ".join(fpArg),
+                                simulation['simtimelimit'], fingerprints, simulation['expectedResult'], StoreFingerprintCallback(simulation), StoreExitcodeCallback(simulation), repeat))
         return testcases
 
     def commentRemover(self, csvData):
@@ -87,8 +207,16 @@ class FingerprintTestCaseGenerator():
                 pass        # empty line
             elif len(fields) == 6:
                 if fields[4] in ['PASS', 'FAIL', 'ERROR']:
-                    simulations.append({'file': csvFile, 'line' : csvReader.line_num,
-                            'wd': fields[0], 'args': fields[1], 'simtimelimit': fields[2], 'fingerprint': fields[3], 'expectedResult': fields[4], 'tags': fields[5]})
+                    simulations.append({
+                            'file': csvFile,
+                            'line' : csvReader.line_num,
+                            'wd': fields[0],
+                            'args': fields[1],
+                            'simtimelimit': fields[2],
+                            'fingerprint': fields[3],
+                            'expectedResult': fields[4],
+                            'tags': fields[5]
+                            })
                 else:
                     raise Exception(csvFile + " Line " + str(csvReader.line_num) + ": the 5th item must contain one of 'PASS', 'FAIL', 'ERROR'" + ": " + '"' + '", "'.join(fields) + '"')
             else:
@@ -141,30 +269,30 @@ class FingerprintTestCaseGenerator():
         containsComputedFingerprint = False
         for simulation in simulations:
             if 'computedFingerprint' in simulation:
-                oldFingerprint = simulation['fingerprint']
+                oldFingerprint = simulation['expectedFingerprint']
                 newFingerprint = simulation['computedFingerprint']
-                oldFpList = oldFingerprint.split(' ')
-                if '/' in newFingerprint:
-                    # keep old omnetpp4 fp
-                    keepFpList = [elem for elem in oldFpList if not '/' in elem]
-                    if keepFpList:
-                        newFingerprint = ' '.join(keepFpList) + ' ' + newFingerprint
-                else:
-                    # keep all old omnetpp5 fp
-                    keepFpList = [elem for elem in oldFpList if '/' in elem]
-                    if keepFpList:
-                        newFingerprint = newFingerprint + ' ' + ' '.join(keepFpList)
 
-                if ',' in newFingerprint:
-                    newFingerprint = '"' + newFingerprint + '"'
                 containsComputedFingerprint = True
                 line = simulation['line']
-                pattern = "\\b" + oldFingerprint + "\\b"
-                (newLine, cnt) = re.subn(pattern, newFingerprint, lines[line])
-                if (cnt == 1):
+
+                if len(oldFingerprint) == len(newFingerprint):
+                    newLine = lines[line]
+                    errFlag = False
+                    for i in range(len(oldFingerprint)):
+                        if len(set(oldFingerprint[i]) & set(newFingerprint[i])) == 0:
+                            oldFpStr = ' '.join(oldFingerprint[i])
+                            newFpStr = ' '.join(newFingerprint[i])
+                            patternStr = "\\b" + oldFpStr + "\\b"
+                            pattern = re.compile(patternStr)
+                            #print("INFO: replace fingerprint '%s' to '%s' at '%s' line %d:\n     %s" % (oldFpStr, newFpStr, csvFile, line, newLine))
+                            (newLine, cnt) = pattern.subn(newFpStr, newLine)
+                            if (cnt != 1):
+                                errFlag = True
+                                print("ERROR: Cannot replace fingerprint '%s' to '%s' at '%s' line %d (cnt: %d):\n     %s" % (oldFpStr, newFpStr, csvFile, line, cnt, lines[line]))
                     lines[line] = newLine
                 else:
-                    print("ERROR: Cannot replace fingerprint '%s' to '%s' at '%s' line %d:\n     %s" % (oldFingerprint, newFingerprint, csvFile, line, lines[line]))
+                    print("ERROR: Cannot replace fingerprint '%s' to '%s' at '%s' line %d:\n     %s" % (formatFingerprintGroupForCsv(oldFingerprint), formatFingerprintGroupForCsv(newFingerprint), csvFile, line, lines[line]))
+
         return ''.join(lines) if containsComputedFingerprint else None
 
     def formatFailedSimulationsTable(self, csvFile, simulations):
@@ -177,7 +305,7 @@ class FingerprintTestCaseGenerator():
         containsFailures = False
         for simulation in simulations:
             if 'computedFingerprint' in simulation:
-                oldFingerprint = simulation['fingerprint']
+                oldFingerprint = simulation['expectedFingerprint']
                 newFingerprint = simulation['computedFingerprint']
                 if oldFingerprint != newFingerprint:
                     if not containsFailures:
@@ -240,35 +368,51 @@ class SimulationTestCase(unittest.TestCase):
                  + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
         FILE.close()
 
-        FILE = open(resultdir + "/test.out", "w")
-        FILE.write("------------------------------------------------------\n"
-                 + "Running: " + title + "\n\n"
-                 + "$ cd " + workingdir + "\n"
-                 + "$ " + command + "\n\n"
-                 + out.strip() + "\n\n"
-                 + "Exit code: " + str(exitcode) + "\n"
-                 + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
-        FILE.close()
+        if (writeOutfile):
+            FILE = open(resultdir + "/test.out", "w")
+            FILE.write("------------------------------------------------------\n"
+                     + "Running: " + title + "\n\n"
+                     + "$ cd " + workingdir + "\n"
+                     + "$ " + command + "\n\n"
+                     + out.strip() + "\n\n"
+                     + "Exit code: " + str(exitcode) + "\n"
+                     + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
+            FILE.close()
 
         result = SimulationResult(command, workingdir, exitcode, elapsedTime=elapsedTime)
 
         # process error messages
         errorLines = re.findall("<!>.*", out, re.M)
         errorMsg = ""
+        fp = '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}/[a-zA-Z0~]+'
+        fps = fp + '(?: '+fp+')*'
+        fpsl = fps + '(?:, '+fps+')*'
+        pattern = 'calculated: (' + fpsl + '), expected: (' + fpsl + ')( -- during finalization)?$'
+        isFingerprintPass = False
+        isFingerprintFail = False
+        wasError = False
+        result.exitcode = 0
+
         for err in errorLines:
             err = err.strip()
             if re.search("Fingerprint", err):
-                if re.search("successfully", err):
+                if re.search("Fingerprint successfully", err):
+                    isFingerprintPass = True
                     result.isFingerprintOK = True
                 else:
-                    m = re.search("(computed|calculated): ([-a-zA-Z0-9]+(/[a-zA-Z0]+)?)", err)
+                    m = re.search(pattern, err)
                     if m:
-                        result.isFingerprintOK = False
-                        result.computedFingerprint = m.group(2)
+                        isFingerprintFail = True
+                        result.computedFingerprint = parseFingerprintGroupFromOmnetpp(m.group(1))
+                        result.expectedFingerprint = parseFingerprintGroupFromOmnetpp(m.group(2))
+                        # TODO only the last failed run's fingerprints stored
                     else:
-                        raise Exception("Cannot parse fingerprint-related error message: " + err)
+                        raise Exception("Cannot parse fingerprint-related error message: " + err + "\nPattern: >>>"+pattern+'<<<')
+            elif re.search("Simulation time limit reached", err):
+                pass
             else:
                 errorMsg += "\n" + err
+                wasError = True
                 if re.search("CPU time limit reached", err):
                     result.cpuTimeLimitReached = True
                 m = re.search(r"at t=([0-9]*(\.[0-9]+)?)s, event #([0-9]+)", err)
@@ -276,7 +420,29 @@ class SimulationTestCase(unittest.TestCase):
                     result.simulatedTime = float(m.group(1))
                     result.numEvents = int(m.group(3))
 
-        result.errormsg = errorMsg.strip()
+        if exitcode > oppErrorCodeMax: # smallest system error code
+            wasError = True
+            errorMsg += "\nExit code: " + str(exitcode)
+#            try:
+#                errorMsg += " " + os.strerror(exitcode-128)
+#            except ValueError:
+#                pass    # do nothing
+
+        if wasError:
+            result.exitcode = exitcode
+        elif result.cpuTimeLimitReached:
+            result.exitcode = 1
+        elif isFingerprintFail and isFingerprintPass:
+            result.isFingerprintOK = False
+            errorMsg += "\nFound PASSED and FAILED fingerprint results, too."
+        elif isFingerprintFail:
+            result.isFingerprintOK = False
+        elif isFingerprintPass:
+            result.isFingerprintOK = True
+        else:
+            pass
+
+        result.errorMsg = errorMsg.strip()
         return result
 
     def runProgram(self, command, workingdir, resultdir):
@@ -290,12 +456,13 @@ class SimulationTestCase(unittest.TestCase):
 
 
 class FingerprintTestCase(SimulationTestCase):
-    def __init__(self, title, csvFile, wd, cmdLine, simtimelimit, fingerprint, expectedResult, storeFingerprintCallback, storeExitcodeCallback, repeat):
+    def __init__(self, title, csvFile, wd, cmdLine, extraFpArg, simtimelimit, fingerprint, expectedResult, storeFingerprintCallback, storeExitcodeCallback, repeat):
         SimulationTestCase.__init__(self)
         self.title = title
         self.csvFile = csvFile
         self.wd = wd
         self.cmdLine = cmdLine
+        self.extraFpArg = extraFpArg
         self.simtimelimit = simtimelimit
         self.fingerprint = fingerprint
         self.expectedResult = expectedResult
@@ -321,24 +488,26 @@ class FingerprintTestCase(SimulationTestCase):
         # Otherwise, assume the first word as the name of the executable.
         (exeName, progArgs) = (executable, self.cmdLine) if (self.cmdLine.startswith("-")) else self.cmdLine.split(None, 1)
 
-        command = (exeName + "_dbg" if debug else exeName + "_release" if release else exeName) + " -u Cmdenv " + progArgs + \
+        command = (exeName + "_dbg" if debug else exeName + "_release" if release else exeName) + " -u Cmdenv " + progArgs + ' ' + self.extraFpArg + \
             _iif(self.simtimelimit != "", " --sim-time-limit=" + self.simtimelimit, "") + \
-            " \"--fingerprint=" + self.fingerprint + "\" --cpu-time-limit=" + cpuTimeLimit + \
+            " \"--fingerprint=" + formatFingerprintGroupForOmnetpp(self.fingerprint) + "\" --cpu-time-limit=" + cpuTimeLimit + \
             " --vector-recording=false --scalar-recording=true" + \
             " --result-dir=" + resultdir + \
             " " + extraOppRunArgs
 
         # print("COMMAND: " + command + '\n')
         anyFingerprintBad = False
-        computedFingerprints = set()
+        computedFingerprints = list()
         for rep in range(self.repeat):
+            curFp = list()
             result = self.runSimulation(self.title, command, workingdir, resultdir)
 
             # process the result
-            # note: fingerprint mismatch is technically NOT an error in 4.2 or before! (exitcode==0)
+            # note: fingerprint mismatch is technically NOT an error in omnetpp 6.0 or before! (exitcode==0)
+            # note: fingerprint mismatch is an error in omnetpp 6.1 or after! (exitcode==1)
             self.storeExitcodeCallback(result.exitcode)
             if result.exitcode != 0:
-                raise Exception("runtime error with exitcode="+str(result.exitcode)+": " + result.errormsg)
+                raise Exception("runtime error with exitcode="+str(result.exitcode)+": " + result.errorMsg)
             elif result.cpuTimeLimitReached:
                 raise Exception("cpu time limit exceeded")
             elif result.simulatedTime == 0 and self.simtimelimit != '0s':
@@ -346,16 +515,19 @@ class FingerprintTestCase(SimulationTestCase):
             elif result.isFingerprintOK is None:
                 raise Exception("other")
             elif result.isFingerprintOK == False:
-                computedFingerprints.add(result.computedFingerprint)
+                curFp = result.computedFingerprint
                 anyFingerprintBad = True
             else:
                 # fingerprint OK:
-                computedFingerprints.add(self.fingerprint)
-#                pass
+                curFp = self.fingerprint
+
+            if len(curFp):
+                mergeFingerprintListIntoGroup(computedFingerprints, curFp)
 
         if anyFingerprintBad:
-            self.storeFingerprintCallback(",".join(computedFingerprints))
-            assert False, "some fingerprint mismatch; actual " + " '" + ",".join(computedFingerprints) +"'"
+            self.storeFingerprintCallback(computedFingerprints)
+            (afp, efp) = diffFpGroups(computedFingerprints, self.fingerprint)
+            assert False, "some fingerprint mismatch: actual '" + formatFingerprintGroupForCsv(afp) + "', expected: '" + formatFingerprintGroupForCsv(efp) + "'"
 
     def __str__(self):
         return self.title
@@ -493,7 +665,7 @@ class SimulationTextTestResult(ThreadedTestResult):
     def startTest(self, test):
         super(SimulationTextTestResult, self).startTest(test)
         if self.showAll:
-            self.stream.write(""+self.getDescription(test))  # NOTE: the empty "" string is needed here for python2/3 compatibility (unicode vs. str) - can be removed if only python3 is used
+            self.stream.write(self.getDescription(test))
             self.stream.write(" ... ")
             self.stream.flush()
 
@@ -501,7 +673,7 @@ class SimulationTextTestResult(ThreadedTestResult):
         super(SimulationTextTestResult, self).addSuccess(test)
         if test.expectedResult == 'PASS':
             if self.showAll:
-                self.stream.write(": PASS\n")
+                self.stream.write(": " + txtPASS + "\n")
             elif self.dots:
                 self.stream.write('.')
                 self.stream.flush()
@@ -514,9 +686,13 @@ class SimulationTextTestResult(ThreadedTestResult):
         else:
             super(SimulationTextTestResult, self).addError(test, err)
             errmsg = err[1]
+
+            # for complete error msg (e.g. error in python code):
+            # errmsg = traceback.format_exception(err[0], err[1], err[2])
+
             self.errors[-1] = (test, errmsg)  # super class method inserts stack trace; we don't need that, so overwrite it
             if self.showAll:
-                self.stream.write(": ERROR (should be %s): %s\n" % (test.expectedResult, errmsg))
+                self.stream.write(": " + txtERROR + " (should be %s): %s\n" % (test.expectedResult, errmsg))
             elif self.dots:
                 self.stream.write('E')
                 self.stream.flush()
@@ -528,7 +704,7 @@ class SimulationTextTestResult(ThreadedTestResult):
         self._mirrorOutput = True
         self.expectedErrors[-1] = (test, err[1])  # super class method inserts stack trace; we don't need that, so overwrite it
         if self.showAll:
-            self.stream.write(": ERROR (expected)\n")
+            self.stream.write(": " + txtERROR_expected + "\n")
         elif self.dots:
             self.stream.write('e')
             self.stream.flush()
@@ -542,7 +718,7 @@ class SimulationTextTestResult(ThreadedTestResult):
             errmsg = err[1]
             self.failures[-1] = (test, errmsg)  # super class method inserts stack trace; we don't need that, so overwrite it
             if self.showAll:
-                self.stream.write(": FAIL (should be %s): %s\n" % (test.expectedResult, errmsg))
+                self.stream.write(": " + txtFAILED + " (should be %s): %s\n" % (test.expectedResult, errmsg))
             elif self.dots:
                 self.stream.write('F')
                 self.stream.flush()
@@ -562,7 +738,7 @@ class SimulationTextTestResult(ThreadedTestResult):
         super(SimulationTextTestResult, self).addExpectedFailure(test, err)
         self.expectedFailures[-1] = (test, err[1])  # super class method inserts stack trace; we don't need that, so overwrite it
         if self.showAll:
-            self.stream.write(":FAIL (expected)\n")
+            self.stream.write(": " + txtFAILED_expected + "\n")
         elif self.dots:
             self.stream.write("x")
             self.stream.flush()
@@ -571,7 +747,7 @@ class SimulationTextTestResult(ThreadedTestResult):
         super(SimulationTextTestResult, self).addUnexpectedSuccess(test)
         self.unexpectedSuccesses[-1] = (test)  # super class method inserts stack trace; we don't need that, so overwrite it
         if self.showAll:
-            self.stream.write(": PASS (unexpected)\n")
+            self.stream.write(": " + txtPASS_unexpected + "\n")
         elif self.dots:
             self.stream.write("u")
             self.stream.flush()
@@ -616,23 +792,35 @@ if __name__ == "__main__":
         defaultNumThreads = defaultNumThreads - 1
     parser = argparse.ArgumentParser(description='Run the fingerprint tests specified in the input files.')
     parser.add_argument('testspecfiles', nargs='*', metavar='testspecfile', help='CSV files that contain the tests to run (default: *.csv). Expected CSV file columns: working directory, command to run, simulation time limit, expected fingerprint, expected result, tags. The command column may contain only options without a program name (i.e. it starts with - ). In this case the --executable option can be used to specify a program name.')
+    parser.add_argument('-f', '--fpfilter', default=list(), action='append', metavar='ingredient', help='fingerprint ingredient filter (expected values after the "/" character)')
+    parser.add_argument('-F', '--excludefpfilter', default=list(), action='append', metavar='ingredient', help='fingerprint ingredient excluding filter (excluded values after the "/" character)')
     parser.add_argument('-m', '--match', action='append', metavar='regex', help='Line filter: a line (more precisely, workingdir+SPACE+args) must match any of the regular expressions in order for that test case to be run')
     parser.add_argument('-x', '--exclude', action='append', metavar='regex', help='Negative line filter: a line (more precisely, workingdir+SPACE+args) must NOT match any of the regular expressions in order for that test case to be run')
     parser.add_argument('-t', '--threads', type=int, default=defaultNumThreads, help='number of parallel threads (default: number of CPUs, currently '+str(defaultNumThreads)+')')
     parser.add_argument('-r', '--repeat', type=int, default=1, help='number of repeating each test (default: 1)')
-    parser.add_argument('-e', '--executable', help='Determines which binary to execute (e.g. opp_run_dbg, opp_run_release) if the command column in the CSV file does not specify one.')
+    parser.add_argument('-e', '--executable', default='inet', help='Determines which binary to execute (e.g. opp_run_dbg, opp_run_release) if the command column in the CSV file does not specify one.')
     parser.add_argument('-C', '--directory', help='Change to DIRECTORY before executing the tests. Working dirs in the CSV files are relative to this.')
     parser.add_argument('-d', '--debug', action='store_true', help='Run debug executables: use the debug version of the executable (appends _dbg to the executable name)')
     parser.add_argument('-s', '--release', action='store_true', help='Run release executables: use the release version of the executable (appends _release to the executable name)')
+    parser.add_argument('-q', '--disable_outfile', dest='writeOutfile', action='store_false', help='disable the writing standard output of simulations to result directory')
+    parser.add_argument('-c', '--calculator', default=defaultFingerprintCalculator, help='Set the fingerprintcalculator-class. Empty value means the original OmNET++ fingerprint calculator')
     parser.add_argument('-a', '--oppargs', action='append', metavar='oppargs', nargs=argparse.REMAINDER, help='extra opp_run arguments until the end of the line')
+    parser.add_argument('-n', type=int, default=1, help='Split the selected test cases into n sets, and only run one of these sets')
+    parser.add_argument('-i', type=int, default=0, help='Which set of test cases to run [0..n-1]')
+    parser.add_argument('-l', '--logfile', default = "fingerprinttest.out", metavar='filename', help='name of the logfile')
     args = parser.parse_args()
 
-    if os.path.isfile(logFile):
-        FILE = open(logFile, "w")
-        FILE.close()
+    logFile = args.logfile
+
+    # create / reset logFile
+    FILE = open(logFile, "w")
+    FILE.close()
 
     if not args.testspecfiles:
         args.testspecfiles = glob.glob('*.csv')
+
+    if args.calculator:
+        extraOppRunArgs += " --fingerprintcalculator-class=" + args.calculator
 
     if args.oppargs:
         for oppArgList in args.oppargs:
@@ -646,9 +834,13 @@ if __name__ == "__main__":
         rootDir = os.path.abspath(args.directory)
 
     debug = args.debug
+    release = args.release
+    writeOutfile = args.writeOutfile
 
     generator = FingerprintTestCaseGenerator()
-    testcases = generator.generateFromCSV(args.testspecfiles, args.match, args.exclude, args.repeat)
+    testcases = generator.generateFromCSV(args.testspecfiles, args.fpfilter, args.excludefpfilter, args.match, args.exclude, args.repeat)
+
+    testcases = testcases[args.i::args.n]
 
     testSuite = ThreadedTestSuite()
     testSuite.addTests(testcases)
