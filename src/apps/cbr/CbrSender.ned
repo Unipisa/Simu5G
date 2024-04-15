@@ -20,7 +20,7 @@ simple CbrSender like IApp
         int localPort = default(-1);
         int destPort = default(3000);
         string destAddress;
-        int PacketSize @unit(B) = default(40B);
+        int packetSize @unit(B) = default(40B);
         double sampling_time @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
         double finishTime @unit("s") = default(0s);
