@@ -13,14 +13,10 @@ import common.LteCommon;
 
 namespace simu5g;
 
-cplusplus {{
-    enum TTimerType
-    {
-       TTSIMPLE, TTMULTI
-    };
-}};
-
-enum TTimerType;
+enum TTimerType {
+    TTSIMPLE = 0;
+    TTMULTI = 1;
+};
 
 packet TTimerMsg
 {
