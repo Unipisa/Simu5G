@@ -55,7 +55,7 @@ void VoIPSender::initialize(int stage)
     nframesTmp_ = 0;
     iDframe_ = 0;
     timestamp_ = 0;
-    size_ = par("PacketSize");
+    size_ = par("packetSize");
     sampling_time = par("sampling_time");
     selfSender_ = new cMessage("selfSender");
     localPort_ = par("localPort");
