@@ -1,4 +1,0 @@
-#!/bin/sh
-TEST_ROOT="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-export SIMU5G_ROOT=$TEST_ROOT/../../..
-./lte_fingerprinttest -C ../../.. -e ../../../bin/simu5g $*
