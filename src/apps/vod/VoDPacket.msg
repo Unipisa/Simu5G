@@ -18,11 +18,11 @@ namespace simu5g;
 // Packet used by the video-on-demand application (~VoDUDPServer, ~VoDUDPClient)
 //
 class VoDPacket extends inet::FieldsChunk {
-   int frameSeqNum;
-   int frameLength;
-   // temporal scalability layer
-   int tid;
-   // SNR scalability layer
-   int qid;
+    int frameSeqNum;
+    int frameLength;
+    // temporal scalability layer
+    int tid;
+    // SNR scalability layer
+    int qid;
     simtime_t payloadTimestamp;
 }

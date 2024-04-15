@@ -31,7 +31,6 @@ class RnisTestAppPacket extends MECPacket
 {
 }
 
-
 class RnisTestAppStartPacket extends RnisTestAppPacket
 {       
     double period;   // determines the RNIS querying period
@@ -45,4 +44,3 @@ class RnisTestAppInfoPacket extends RnisTestAppPacket
 {       
     nlohmann::json l2meas;
 }
-

@@ -272,6 +272,3 @@ enum EnbType
     // micro eNb
     MICRO_ENB = 1;
 };
-
-
-

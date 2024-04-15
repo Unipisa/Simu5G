@@ -38,7 +38,6 @@ class DeviceAppStartPacket extends DeviceAppPacket
 	string appPackageSource;
 }
 
-
 class DeviceAppStopPacket extends DeviceAppPacket
 {
     string contextId;
@@ -58,7 +57,3 @@ class DeviceAppStopAckPacket extends DeviceAppPacket
     bool result;
     string reason;
 }
-
-
-
-

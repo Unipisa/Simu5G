@@ -31,8 +31,3 @@ class RequestResponseAppPacket extends inet::FieldsChunk
     simtime_t serviceResponseTime;
     simtime_t responseSentTimestamp;        
 }
-
-
-
-
-

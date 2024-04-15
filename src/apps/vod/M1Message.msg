@@ -14,7 +14,7 @@ import inet.networklayer.common.L3Address;
 namespace simu5g;
 
 message M1Message {
-        inet::L3Address clientAddr;   // client address
-        int clientPort;           // client UDP port
-        long numPkSent;           // number of packets sent
+    inet::L3Address clientAddr;   // client address
+    int clientPort;           // client UDP port
+    long numPkSent;           // number of packets sent
 }

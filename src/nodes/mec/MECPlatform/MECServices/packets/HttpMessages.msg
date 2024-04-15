@@ -34,7 +34,6 @@ enum HttpRequestState {
     BAD_REQ_URI		= 9;
 };
 
-
 enum HttpResponseStatus { 
 	OK 					= 0;	// 200
     CREATED 			= 1;    // 201
@@ -50,12 +49,9 @@ enum HttpResponseStatus {
     SERV_UNAV 			= 11;    //503
   };
 
-    
-
 //
 // Base class for HTTP messages
 //
-
 class HttpBaseMessage extends inet::FieldsChunk
 {
     int sockId;								 // socket Id used to retrieve the tcp socket objects from the map
@@ -70,7 +66,6 @@ class HttpBaseMessage extends inet::FieldsChunk
     string connection = "keep-alive";		 // Connection  header
     simtime_t arrivalTime = 0;					 //  Point in time when the messagge arrives (used by the Service to calculate response time)
 }
-
 
 ////
 // Message class for HTTP requests
@@ -92,5 +87,3 @@ class HttpResponseMessage_m extends HttpBaseMessage
     int code;	// e.g. 200 
     string status; 	// e.g. OK
 }
-
-
