@@ -9,6 +9,14 @@
 // and cannot be removed from it.
 //
 
+import inet.common.INETDefs;
+import inet.common.packet.chunk.Chunk;
+
+cplusplus {{
+   using namespace inet;
+}};
+
+namespace simu5g;
 
 //
 // This is the RObust Header Compression PDU
@@ -18,16 +26,6 @@
 // is added an allows to restore the compressed headers to their full size when
 // decompressing.
 //
-
-import inet.common.INETDefs;
-import inet.common.packet.chunk.Chunk;
-
-namespace simu5g;
-
-cplusplus {{
-   using namespace inet;
-}};
-
 class LteRohcPdu extends inet::FieldsChunk
 {
     inet::B origSizeTransportHeader;

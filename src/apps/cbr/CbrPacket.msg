@@ -9,15 +9,14 @@
 // and cannot be removed from it.
 //
 
-//
-// Packet used by the ~VoPSender and ~VoIPReceiver modules.
-//
-
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
+//
+// Packet used by the ~VoPSender and ~VoIPReceiver modules.
+//
 class CbrPacket extends inet::FieldsChunk {
     unsigned int nframes;
     unsigned int IDframe;

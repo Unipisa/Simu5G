@@ -9,16 +9,16 @@
 // and cannot be removed from it.
 //
 
-//
-// This is the X2 message flowing through X2 interface.
-// It contains a vector of Information Elements (see LteX2Message.h),
-// the total length of the message and the type of the message
-//
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
+//
+// This is the X2 message flowing through X2 interface.
+// It contains a vector of Information Elements (see LteX2Message.h),
+// the total length of the message and the type of the message
+//
 class LteX2Message extends inet::FieldsChunk
 {
     @customize(true);

@@ -13,15 +13,16 @@ import inet.common.INETDefs;
 import inet.common.packet.Packet;
 import inet.common.packet.chunk.Chunk;
 
-//
-// This is the MAC message flowing through LTE stack.
-//
 cplusplus {{
    using namespace inet;
 }};
 
 namespace simu5g;
 
+ 
+//
+// This is the MAC message flowing through LTE stack.
+//
 class LteMacPdu extends inet::FieldsChunk
 {
     @customize(true);

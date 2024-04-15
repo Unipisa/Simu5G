@@ -9,15 +9,13 @@
 // and cannot be removed from it.
 //
 
-
-//
-// This is the PDCP message flowing through LTE stack.
-//
-
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
+//
+// This is the PDCP message flowing through LTE stack.
+//
 class LtePdcpPdu extends inet::FieldsChunk
 {
     chunkLength = inet::B(1); // TODO: size 0

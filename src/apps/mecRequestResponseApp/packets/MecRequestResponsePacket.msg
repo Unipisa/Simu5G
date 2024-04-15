@@ -9,16 +9,14 @@
 // and cannot be removed from it.
 //
 
-
-//
-// Packet used by the ~MecRequestRequestPacket and ~MecRequestResponsePacket modules.
-//
-
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
+//
+// Packet used by the ~MecRequestRequestPacket and ~MecRequestResponsePacket modules.
+//
 class MecRequestResponsePacket extends inet::FieldsChunk 
 {
     unsigned int sno;

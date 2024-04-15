@@ -9,15 +9,14 @@
 // and cannot be removed from it.
 //
 
-//
-// Packet used by the video-on-demand application (~VoDUDPServer, ~VoDUDPClient)
-//
-
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
+//
+// Packet used by the video-on-demand application (~VoDUDPServer, ~VoDUDPClient)
+//
 class VoDPacket extends inet::FieldsChunk {
    int frameSeqNum;
    int frameLength;
