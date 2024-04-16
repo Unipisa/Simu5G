@@ -49,7 +49,7 @@ struct HttpMessageStatus
     HttpBaseMessage *currentMessage = nullptr;
     std::string bufferedData;
     cQueue httpMessageQueue;
-    ProcessingTimeMessage* processMsgTimer;
+    ProcessingTimeMessage* processMsgTimer = nullptr;
 };
 
 class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
