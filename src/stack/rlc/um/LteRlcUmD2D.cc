@@ -115,8 +115,8 @@ void LteRlcUmD2D::resumeDownstreamInPackets(MacNodeId peerId)
     if (peerId == 0 || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return;
 
-    std::set<UmTxEntity*>::iterator it = perPeerTxEntities_.at(peerId).begin();
-    std::set<UmTxEntity*>::iterator et = perPeerTxEntities_.at(peerId).end();
+    auto it = perPeerTxEntities_.at(peerId).begin();
+    auto et = perPeerTxEntities_.at(peerId).end();
     for (; it != et; ++it)
     {
         if ((*it)->isHoldingDownstreamInPackets())
@@ -131,8 +131,8 @@ bool LteRlcUmD2D::isEmptyingTxBuffer(MacNodeId peerId)
     if (peerId == 0 || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return false;
 
-    std::set<UmTxEntity*>::iterator it = perPeerTxEntities_.at(peerId).begin();
-    std::set<UmTxEntity*>::iterator et = perPeerTxEntities_.at(peerId).end();
+    auto it = perPeerTxEntities_.at(peerId).begin();
+    auto et = perPeerTxEntities_.at(peerId).end();
     for (; it != et; ++it)
     {
         if ((*it)->isEmptyingBuffer())

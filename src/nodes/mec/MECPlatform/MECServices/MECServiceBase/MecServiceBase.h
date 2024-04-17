@@ -28,6 +28,7 @@
 #include "nodes/mec/utils/MecCommon.h"
 
 #include "common/binder/Binder.h"
+#include "common/utils/utils.h"
 
 /**
  *
@@ -69,7 +70,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         std::string serviceName_;
         inet::TcpSocket serverSocket; // Used to listen incoming connections
         inet::SocketMap socketMap; // Stores the connections
-        typedef std::set<SocketManager *> ThreadSet;
+        typedef std::set<SocketManager *, simu5g::utils::cModule_LessId> ThreadSet;
         ThreadSet threadSet;
         std::string host_;
         Binder* binder_;
@@ -105,7 +106,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         typedef std::map<unsigned int, SubscriptionBase*> Subscriptions;
         Subscriptions subscriptions_; //list of all active subscriptions
 
-        std::set<omnetpp::cModule*> eNodeB_;     //eNodeBs connected to the ME Host
+        std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
 
         int requestQueueSize_;
 

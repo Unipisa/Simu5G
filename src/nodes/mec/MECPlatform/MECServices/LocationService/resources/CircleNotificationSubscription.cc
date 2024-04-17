@@ -25,14 +25,14 @@ CircleNotificationSubscription::CircleNotificationSubscription()
  lastNotification = 0;
 }
 
-CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<cModule*>& eNodeBs):
+CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs):
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
     binder = getBinder();
     baseResLocation_+= "area/circle";
     firstNotificationSent = false;
 };
 
-CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<cModule*>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot):
+CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot):
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
     binder = getBinder();
     baseResLocation_+= "area/circle";

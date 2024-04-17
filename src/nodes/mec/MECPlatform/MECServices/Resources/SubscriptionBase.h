@@ -12,6 +12,7 @@
 #ifndef APPS_MEC_MESERVICES_RESOURCES_SUBSCRIPTIONBASE_H_
 #define APPS_MEC_MESERVICES_RESOURCES_SUBSCRIPTIONBASE_H_
 
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
@@ -19,19 +20,18 @@
 #include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
-
 class LteCellInfo;
 
 class SubscriptionBase
 {
     public:
         SubscriptionBase();
-        SubscriptionBase(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
+        SubscriptionBase(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
         virtual ~SubscriptionBase();
 
 //        nlohmann::ordered_json toJson() const override;
 
-        void addEnodeB(std::set<omnetpp::cModule*>& eNodeBs);
+        void addEnodeB(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
         void addEnodeB(omnetpp::cModule* eNodeB);
 
 //        virtual nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const = 0;

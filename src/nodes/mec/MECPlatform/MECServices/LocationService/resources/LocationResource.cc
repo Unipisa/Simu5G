@@ -21,18 +21,18 @@ LocationResource::LocationResource() {
     binder_ = nullptr;
 }
 
-LocationResource::LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs, Binder *binder) {
+LocationResource::LocationResource(std::string& baseUri, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs, Binder *binder) {
     binder_ = binder;
     baseUri_ = baseUri;
-	std::set<cModule*>::iterator it = eNodeBs.begin();
+	auto it = eNodeBs.begin();
 	for(; it != eNodeBs.end() ; ++it){
 	    CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
 		eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
 	}
 }
 
-void LocationResource::addEnodeB(std::set<cModule*>& eNodeBs) {
-    std::set<cModule*>::iterator it = eNodeBs.begin();
+void LocationResource::addEnodeB(std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs) {
+    auto it = eNodeBs.begin();
         for(; it != eNodeBs.end() ; ++it){
             CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
             eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));

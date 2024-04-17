@@ -16,6 +16,7 @@
 #include <set>
 #include <map>
 
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 #include "common/binder/Binder.h"
 #include "inet/networklayer/contract/ipv4/Ipv4Address.h"
@@ -34,12 +35,12 @@ class LocationResource : public AttributeBase
 		 * and creates a CellInfo object
 		*/
         LocationResource();
-		LocationResource(std::string& baseUri, std::set<cModule*>& eNodeBs,  Binder* binder);
+		LocationResource(std::string& baseUri, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs,  Binder* binder);
 		virtual ~LocationResource();
 
 		nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::set<cModule*>& eNodeBs);
+		void addEnodeB(std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
 		void addEnodeB(cModule* eNodeB);
 		void addBinder(Binder* binder);
 		void setBaseUri(const std::string& baseUri);

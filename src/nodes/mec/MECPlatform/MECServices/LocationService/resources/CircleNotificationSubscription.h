@@ -18,14 +18,15 @@
 #include <set>
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
+#include "common/utils/utils.h"
 
 class LteBinder;
 class CircleNotificationSubscription : public SubscriptionBase
 {
     public:
         CircleNotificationSubscription();
-        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
-        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
+        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
+        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
         virtual ~CircleNotificationSubscription();
 
 //        nlohmann::ordered_json toJson() const override;

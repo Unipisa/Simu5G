@@ -28,6 +28,13 @@ namespace utils {
 
 std::vector<std::string> splitString(const std::string& str, std::string delim);
 
+class cModule_LessId
+{
+  public:
+    bool operator()(const omnetpp::cModule *left, const omnetpp::cModule *right) const;
+};
+
+
 } // namespace utils
 
 } // namespace simu5g
