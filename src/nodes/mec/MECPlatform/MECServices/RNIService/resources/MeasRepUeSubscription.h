@@ -12,6 +12,7 @@
 #ifndef APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_MEASREPUESUBSCRIPTION_H_
 #define APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_MEASREPUESUBSCRIPTION_H_
 
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/AssociateId.h"
@@ -29,7 +30,7 @@ class MeasRepUeSubscription : public SubscriptionBase
 
     public:
         MeasRepUeSubscription();
-        MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<omnetpp::cModule*>& eNodeBs);
+        MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
         virtual ~MeasRepUeSubscription();
         virtual bool fromJson(const nlohmann::ordered_json& json) override;
         virtual void sendSubscriptionResponse() override;

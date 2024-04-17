@@ -12,6 +12,7 @@
 #ifndef _L2MEAS_H_
 #define _L2MEAS_H_
 
+#include "common/utils/utils.h"
 #include "common/LteCommon.h"
 #include <vector>
 #include <map>
@@ -32,12 +33,12 @@ class L2Meas : public AttributeBase
 {
 	public:
         L2Meas();
-		L2Meas(std::set<omnetpp::cModule*>& eNodeBs);
+		L2Meas(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
 		virtual ~L2Meas();
 
 		nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::set<omnetpp::cModule*>& eNodeBs);
+		void addEnodeB(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
 		void addEnodeB(omnetpp::cModule* eNodeB);
 
 		nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
