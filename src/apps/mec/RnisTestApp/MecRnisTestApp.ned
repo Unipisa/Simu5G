@@ -24,8 +24,6 @@ simple MecRnisTestApp like IMECApp, IApp
     parameters:
         @display("i=block/app;is=s");
 
-        string interfaceTableModule = default("");
-
         int mecAppIndex;
         int mecAppId;
         int localUePort;

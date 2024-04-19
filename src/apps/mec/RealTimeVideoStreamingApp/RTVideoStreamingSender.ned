@@ -47,7 +47,6 @@ simple RTVideoStreamingSender like IApp
         bool sendAllOnOneTime = true;
 
         bool logger = default(false);
-        string interfaceTableModule;
 
         @signal[positionX](type=double);
         @statistic[positionX](title="UE positionX"; source=positionX; record=vector);

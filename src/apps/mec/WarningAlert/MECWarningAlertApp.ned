@@ -34,7 +34,6 @@ simple MECWarningAlertApp like IMECApp, IApp
         @display("i=block/app;is=s");
 
         int packetSize @unit(B) = default(10B);
-        string interfaceTableModule = default("");
 
         int mecAppIndex;
         int mecAppId;

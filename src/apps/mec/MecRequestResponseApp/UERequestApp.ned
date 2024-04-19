@@ -39,8 +39,6 @@ simple UERequestApp like IApp
 
         string mecAppName = default("MecResponseApp");
 
-        string interfaceTableModule;
-
         // stats
 
         @signal[responseTime];

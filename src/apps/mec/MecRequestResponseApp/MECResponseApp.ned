@@ -23,7 +23,6 @@ simple MECResponseApp like IMECApp, IApp
         @display("i=block/app;is=s");
 
         int responsePacketSize @unit(B) = default(50B);
-        string interfaceTableModule = default("");
         int mecAppIndex;
         int mecAppId;
         int localUePort;
