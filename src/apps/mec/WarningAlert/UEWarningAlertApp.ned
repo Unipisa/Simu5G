@@ -55,7 +55,6 @@ simple UEWarningAlertApp like IApp
         double radius @unit(m) = default(60m);
 
         bool logger = default(false);
-        string interfaceTableModule;
 
     gates:
         output socketOut;

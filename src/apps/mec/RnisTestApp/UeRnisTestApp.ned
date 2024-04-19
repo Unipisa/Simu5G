@@ -45,7 +45,6 @@ simple UeRnisTestApp like IApp
         string mecAppName = default("MecRnisTestApp");
 
         bool logger = default(false);
-        string interfaceTableModule;
 
     gates:
         output socketOut;
