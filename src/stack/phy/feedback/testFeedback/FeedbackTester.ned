@@ -18,4 +18,5 @@ package simu5g.stack.phy.feedback.testFeedback;
 simple FeedbackTester
 {
     double interval @unit(s) = default(1ms);
+    string feedbackGeneratorModule = default("lteDlFbGenerator");
 }
