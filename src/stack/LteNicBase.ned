@@ -53,6 +53,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         int numCarriers = default(1);
 
         string address @mutable = default("auto");
+        *.interfaceTableModule = default(absPath(this.interfaceTableModule));
+        *.routingTableModule = default(absPath(this.routingTableModule));
 
     gates:
         //#
@@ -70,8 +72,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         // bridge between radio nic and network layer
         ip2nic: <default("IP2Nic")> like INetworkLayer2CellularNic {
             nodeType = parent.nodeType;
-            interfaceTableModule = parent.interfaceTableModule;
-            routingTableModule = parent.routingTableModule;
             @display("p=362,67");
         }
         // PDCP-RRC Layer
@@ -85,7 +85,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
         // MAC Layer
         mac: <LteMacType> like LteMac {
-            interfaceTableModule = parent.interfaceTableModule;
             @display("p=363,314");
         }
         // LtePhy submodule
