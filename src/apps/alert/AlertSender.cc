@@ -45,7 +45,7 @@ void AlertSender::initialize(int stage)
 
     selfSender_ = new cMessage("selfSender");
 
-    size_ = par("packetSize");
+    size_ = B(par("packetSize"));
     localPort_ = par("localPort");
     destPort_ = par("destPort");
     destAddress_ = inet::L3AddressResolver().resolve(par("destAddress").stringValue());
@@ -107,7 +107,7 @@ void AlertSender::sendAlertPacket()
     auto alert = makeShared<AlertPacket>();
     alert->setSno(nextSno_);
     alert->setPayloadTimestamp(simTime());
-    alert->setChunkLength(B(size_));
+    alert->setChunkLength(size_);
     alert->addTag<CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(alert);
