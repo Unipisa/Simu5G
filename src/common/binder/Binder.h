@@ -44,7 +44,7 @@ class Binder : public omnetpp::cSimpleModule
 
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
-    std::map<MacNodeId, char*> macNodeIdToModuleName_;
+    std::map<MacNodeId, std::string> macNodeIdToModuleName_;
     std::map<MacNodeId, cModule*> macNodeIdToModuleRef_;
     std::map<MacNodeId, LteMacBase*> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
@@ -181,9 +181,6 @@ class Binder : public omnetpp::cSimpleModule
             delete bgTrafficManagerList_.back();
             bgTrafficManagerList_.pop_back();
         }
-
-        for (auto it = macNodeIdToModuleName_.begin(); it != macNodeIdToModuleName_.end(); ++it)
-            delete[] it->second;
 
         for (auto it = ueList_.begin(); it != ueList_.end(); ++it)
             delete (*it);
@@ -466,7 +463,7 @@ class Binder : public omnetpp::cSimpleModule
     /**
      * Associates the given MAC node ID to the name of the module
      */
-    void registerName(MacNodeId nodeId, const char* moduleName);
+    void registerName(MacNodeId nodeId, std::string moduleName);
     /**
      * Returns the module name for the given MAC node ID
      */

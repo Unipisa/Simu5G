@@ -457,11 +457,9 @@ const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostA
     return mecHostToUpfAddress_[mecHostAddress];
 }
 
-void Binder::registerName(MacNodeId nodeId, const char* moduleName)
+void Binder::registerName(MacNodeId nodeId, std::string moduleName)
 {
-    int len = strlen(moduleName);
-    macNodeIdToModuleName_[nodeId] = new char[len+1];
-    strcpy(macNodeIdToModuleName_[nodeId], moduleName);
+    macNodeIdToModuleName_[nodeId] = moduleName;
 }
 
 void Binder::registerModule(MacNodeId nodeId, cModule* module)
@@ -473,7 +471,7 @@ const char* Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleName_.find(nodeId) == macNodeIdToModuleName_.end())
         throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID not found");
-    return macNodeIdToModuleName_[nodeId];
+    return macNodeIdToModuleName_[nodeId].c_str();
 }
 
 
