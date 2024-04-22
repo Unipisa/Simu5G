@@ -40,7 +40,7 @@ void MecRequestApp::initialize(int stage)
     period_ = par("period");
     localPort_ = par("localPort");
     destPort_ = par("destPort");
-    sourceSymbolicAddress_ = (char*)getParentModule()->getFullName();
+    sourceSymbolicAddress_ = (char*)getContainingNode(this)->getFullName();
     const char* destSimbolicAddress = (char*)par("destAddress").stringValue();
     destAddress_ = inet::L3AddressResolver().resolve(destSimbolicAddress);
 

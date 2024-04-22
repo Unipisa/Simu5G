@@ -54,12 +54,15 @@ void UEWarningAlertApp::initialize(int stage)
 
     log = par("logger").boolValue();
 
+    //retrieving car cModule
+    ue = getContainingNode(this);
+
     //retrieve parameters
     size_ = par("packetSize");
     period_ = par("period");
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    sourceSimbolicAddress = (char*)getParentModule()->getFullName();
+    sourceSimbolicAddress = (char*)ue->getFullName();
     deviceSimbolicAppAddress_ = (char*)par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress_);
 
@@ -70,9 +73,6 @@ void UEWarningAlertApp::initialize(int stage)
     int tos = par("tos");
     if (tos != -1)
         socket.setTos(tos);
-
-    //retrieving car cModule
-    ue = this->getParentModule();
 
     //retrieving mobility module
     mobility.reference(this, "mobilityModule", true);

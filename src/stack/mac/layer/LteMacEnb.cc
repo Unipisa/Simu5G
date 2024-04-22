@@ -12,6 +12,8 @@
 #include <string>
 
 #include "inet/common/TimeTag_m.h"
+#include <inet/common/ModuleAccess.h>
+
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacEnb.h"
 #include "stack/mac/layer/LteMacUe.h"
@@ -178,24 +180,21 @@ void LteMacEnb::initialize(int stage)
         else
             throw cRuntimeError("LteMacEnb::initialize - Unknown Pilot Mode %s \n" , modeString.c_str());
 
+        cModule* hostModule = getContainingNode(this);
+
         /* Insert EnbInfo in the Binder */
         EnbInfo* info = new EnbInfo();
         info->id = nodeId_;            // local mac ID
         info->nodeType = nodeType_;    // eNB or gNB
         info->type = MACRO_ENB;        // eNb Type
         info->init = false;            // flag for phy initialization
-        info->eNodeB = this->getParentModule()->getParentModule();  // reference to the eNodeB module
+        info->eNodeB = hostModule;  // reference to the eNodeB module
         binder_->addEnbInfo(info);
 
         // register the pairs <id,name> and <id, module> to the binder
-        cModule* module = getParentModule()->getParentModule();
         // Modified from getFullName() to getFullPath() to fix the usage in compound modules
-        std::string tmpName = getParentModule()->getParentModule()->getFullPath();
-        char* moduleName = new char[tmpName.length() + 1];
-        strcpy(moduleName, tmpName.c_str());
-        binder_->registerName(nodeId_, moduleName);
-        binder_->registerModule(nodeId_, module);
-        delete[] moduleName;
+        binder_->registerName(nodeId_, hostModule->getFullPath());
+        binder_->registerModule(nodeId_, hostModule);
 
         // get the reference to the PHY layer
         phy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("phy"));

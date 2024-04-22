@@ -71,10 +71,13 @@ void RTVideoStreamingSender::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
+    //retrieving car cModule
+    ue = getContainingNode(this);
+
     // UE app <--> Device App info
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    sourceSimbolicAddress = (char*)getParentModule()->getFullName();
+    sourceSimbolicAddress = (char*)ue->getFullName();
     deviceSimbolicAppAddress_ = (char*)par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress_);
 
@@ -86,9 +89,6 @@ void RTVideoStreamingSender::initialize(int stage)
     int tos = par("tos");
     if (tos != -1)
         socket.setTos(tos);
-
-    //retrieving car cModule
-    ue = this->getParentModule();
 
     //retrieving mobility module
     mobility.reference(this, "mobilityModule", true);
