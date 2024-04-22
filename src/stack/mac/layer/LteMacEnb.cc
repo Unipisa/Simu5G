@@ -11,8 +11,8 @@
 
 #include <string>
 
-#include "inet/common/TimeTag_m.h"
 #include <inet/common/ModuleAccess.h>
+#include <inet/common/TimeTag_m.h>
 
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacEnb.h"
