@@ -210,12 +210,6 @@ void MultihopD2D::handleRcvdPacket(cMessage* msg)
     EV << "MultihopD2D::handleRcvdPacket - Received packet from lower layer" << endl;
 
     Packet* pPacket = check_and_cast<Packet*>(msg);
-
-    if (pPacket == nullptr)
-    {
-        throw cRuntimeError("MultihopD2D::handleMessage - FATAL! Error when casting to inet packet");
-    }
-
     auto mhop = pPacket->peekAtFront<MultihopD2DPacket>();
     pPacket->removeControlInfo();
 
