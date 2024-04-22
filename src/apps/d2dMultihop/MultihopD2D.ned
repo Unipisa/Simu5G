@@ -51,6 +51,8 @@ simple MultihopD2D like IApp
         int ttl = default(3);
         double maxTransmissionDelay @unit("s") = default(0.01s);
         double selfishProbability = default(0.0);  // probability that the app does not relay the received message
+        string eventGeneratorModule = default("eventGenerator");
+        string multihopD2DStatisticsModule = default("d2dMultihopStatistics");
 
         //# Trickle suppression mechanism parameters
         bool trickle = default(false);
@@ -59,6 +61,8 @@ simple MultihopD2D like IApp
 
         //# Network Layer specs
         string interfaceTableModule = default(absPath(".interfaceTable"));
+        string lteMacModule = default("^.cellularNic.mac");
+        string ltePhyModule = default("^.cellularNic.phy");
 
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 

@@ -14,6 +14,7 @@
 
 #include <string.h>
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "apps/d2dMultihop/MultihopD2DPacket_m.h"
@@ -64,8 +65,8 @@ protected:
 
     omnetpp::cMessage *selfSender_;
 
-    EventGenerator* eventGen_;          // reference to the eventGenerator
-    LtePhyBase* ltePhy_;                // reference to the LtePhy
+    ModuleRefByPar<EventGenerator> eventGen_;          // reference to the eventGenerator
+    ModuleRefByPar<LtePhyBase> ltePhy_;                // reference to the LtePhy
     MacNodeId lteNodeId_;               // LTE Node Id
     MacNodeId lteCellId_;               // LTE Cell Id
 
@@ -77,7 +78,7 @@ protected:
     omnetpp::simsignal_t d2dMultihopTrickleSuppressedMsg_;
 
     // reference to the statistics manager
-    MultihopD2DStatistics* stat_;
+    ModuleRefByPar<MultihopD2DStatistics> stat_;
 
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage);

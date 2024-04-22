@@ -32,8 +32,8 @@ uint16_t MultihopD2D::numMultihopD2DApps = 0;
 MultihopD2D::MultihopD2D()
 {
     senderAppId_ = numMultihopD2DApps++;
-    selfSender_ = nullptr;
     localMsgId_ = 0;
+    selfSender_ = nullptr;
 }
 
 MultihopD2D::~MultihopD2D()
@@ -102,13 +102,13 @@ void MultihopD2D::initialize(int stage)
         selfSender_ = new cMessage("selfSender", KIND_SELF_SENDER);
 
         // get references to LTE entities
-        ltePhy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("phy"));
-        LteMacBase* mac = check_and_cast<LteMacBase*>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"));
+        ltePhy_.reference(this, "ltePhyModule", true);
+        LteMacBase* mac = getModuleFromPar<LteMacBase>(par("lteMacModule"), this);
         lteNodeId_ = mac->getMacNodeId();
         lteCellId_ = mac->getMacCellId();
 
         // register to the event generator
-        eventGen_ = check_and_cast<EventGenerator*>(getModuleByPath("eventGenerator"));
+        eventGen_.reference(this, "eventGeneratorModule", true);
         eventGen_->registerNode(this, lteNodeId_);
 
         // local statistics
@@ -120,7 +120,7 @@ void MultihopD2D::initialize(int stage)
             d2dMultihopTrickleSuppressedMsg_ = registerSignal("d2dMultihopTrickleSuppressedMsg");
 
         // global statistics recorder
-        stat_ = check_and_cast<MultihopD2DStatistics*>(getModuleByPath("d2dMultihopStatistics"));
+        stat_.reference(this, "multihopD2DStatisticsModule", true);
     }
 }
 
@@ -149,7 +149,7 @@ void MultihopD2D::handleMessage(cMessage *msg)
         if (!strcmp(msg->getName(), "MultihopD2DPacket"))
             handleRcvdPacket(msg);
         else
-            throw cRuntimeError("Unrecognized incoming message");
+            throw cRuntimeError("Unrecognized  message");
     }
 }
 
