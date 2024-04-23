@@ -1137,13 +1137,11 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
      */
     if(dir == DL){
 
-        LteMacBuffers::const_iterator it = mbuf_.begin();
-        LteMacBuffers::const_iterator end   =  mbuf_.end();
 
         // from macCid to NodeId
-        for (; it != end ; ++it){
-            if(it->second->getQueueLength() != 0)
-                activeUeSet.insert(MacCidToNodeId(it->first)); // active users in MAC
+        for (auto& item : mbuf_) {
+            if(item.second->getQueueLength() != 0)
+                activeUeSet.insert(MacCidToNodeId(item.first)); // active users in MAC
         }
 
         std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
@@ -1174,16 +1172,12 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
     else if (dir == UL)
     {
         // extract pdus from all harqrxbuffers and pass them to unmaker
-        auto mit = harqRxBuffers_.begin();
-        auto met = harqRxBuffers_.end();
-        for (; mit != met; mit++)
+        for (const auto& mit : harqRxBuffers_)
         {
-            auto hit = mit->second.begin();
-            auto het = mit->second.end();
-            for (; hit != het; hit++)
+            for (const auto& elem : mit.second)
             {
-                if(hit->second->isHarqBufferActive()){
-                    activeUeSet.insert(hit->first); // active users in HARQ
+                if(elem.second->isHarqBufferActive()){
+                    activeUeSet.insert(elem.first); // active users in HARQ
                 }
 
             }
@@ -1198,11 +1192,9 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             rlcUm = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("rlc")->getSubmodule("um"));
             std::set<MacNodeId> activeRlcUe;
             rlcUm->activeUeUL(&activeRlcUe);
-            std::set<MacNodeId>::iterator rit =  activeRlcUe.begin();
-            std::set<MacNodeId>::iterator endrit =  activeRlcUe.end();
-            for(; rit != endrit ; ++rit)
+            for(auto ue : activeRlcUe)
             {
-                activeUeSet.insert(*rit); // active users in RLC
+                activeUeSet.insert(ue); // active users in RLC
             }
         }
 

@@ -47,9 +47,9 @@ ChannelControl::ChannelControl()
 
 ChannelControl::~ChannelControl()
 {
-    for (unsigned int i = 0; i < transmissions.size(); i++)
-        for (TransmissionList::iterator it = transmissions[i].begin(); it != transmissions[i].end(); it++)
-            delete *it;
+    for (auto& channelTransmission : transmissions)
+        for (auto airFrame : channelTransmission)
+            delete airFrame;
 }
 
 /**

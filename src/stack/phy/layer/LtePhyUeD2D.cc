@@ -620,10 +620,9 @@ void LtePhyUeD2D::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVe
     lastFeedback_ = NOW;
 
     // send one feedback packet for each carrier
-    std::map<double, LteChannelModel*>::iterator cit = channelModel_.begin();
-    for (; cit != channelModel_.end(); ++cit)
+    for (auto& cm : channelModel_)
     {
-        double carrierFrequency = cit->first;
+        double carrierFrequency = cm.first;
         LteAirFrame* carrierFrame = frame->dup();
         UserControlInfo* carrierInfo = uinfo->dup();
         carrierInfo->setCarrierFrequency(carrierFrequency);

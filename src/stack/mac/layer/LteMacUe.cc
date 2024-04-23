@@ -228,11 +228,10 @@ void LteMacUe::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_TRANSPORT_LAYER)
     {
-        const std::map<double, LteChannelModel*>* channelModels = phy_->getChannelModels();
-        std::map<double, LteChannelModel*>::const_iterator it = channelModels->begin();
-        for (; it != channelModels->end(); ++it)
+        const auto *channelModels = phy_->getChannelModels();
+        for (const auto& cm : *channelModels)
         {
-            lcgScheduler_[it->first] = new LteSchedulerUeUl(this, it->first);
+            lcgScheduler_[cm.first] = new LteSchedulerUeUl(this, cm.first);
         }
     }
     else if (stage == inet::INITSTAGE_LAST)

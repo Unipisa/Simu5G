@@ -172,19 +172,14 @@ class Binder : public omnetpp::cSimpleModule
 
     virtual ~Binder()
     {
-        while(enbList_.size() > 0){
-            delete enbList_.back();
-            enbList_.pop_back();
-        }
+        for (auto enb : enbList_)
+            delete enb;
 
-        while(bgTrafficManagerList_.size() > 0){
-            delete bgTrafficManagerList_.back();
-            bgTrafficManagerList_.pop_back();
-        }
+        for (auto bg : bgTrafficManagerList_)
+            delete bg;
 
-        for (auto it = ueList_.begin(); it != ueList_.end(); ++it)
-            delete (*it);
-        ueList_.clear();
+        for (auto ue : ueList_)
+            delete ue;
     }
 
     std::string& getNetworkName()

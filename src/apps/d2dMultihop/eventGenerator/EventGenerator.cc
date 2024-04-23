@@ -78,10 +78,8 @@ void EventGenerator::notifyEvent()
 
         // find all UEs within a 20m-radius
         std::vector<MacNodeId> tmp;
-        std::set<MacNodeId>::iterator it = lteNodeIdSet_.begin();
-        for (; it != lteNodeIdSet_.end(); ++it)
+        for (MacNodeId nodeId : lteNodeIdSet_)
         {
-            MacNodeId nodeId = *it;
             if (r + UE_MIN_ID != nodeId)
             {
                 LtePhyBase* phy = lteNodePhy_[nodeId];
@@ -123,10 +121,8 @@ void EventGenerator::computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNod
         // get references to all UEs in the cell
         // they are useful later to retrieve UE positions
         std::map<MacNodeId, inet::Coord> uePos;
-        std::set<MacNodeId>::iterator it = lteNodeIdSet_.begin();
-        for (; it != lteNodeIdSet_.end(); ++it)
+        for (MacNodeId nodeId : lteNodeIdSet_)
         {
-            MacNodeId nodeId = *it;
             LtePhyBase* uePhy = lteNodePhy_[nodeId];
             uePos[nodeId] = uePhy->getCoord();
         }
@@ -135,13 +131,12 @@ void EventGenerator::computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNod
         inet::Coord srcCoord = uePos[sourceId];
 
         // compute the distance for each UE
-        std::map<MacNodeId, inet::Coord>::iterator mit = uePos.begin();
-        for (; mit != uePos.end(); ++mit)
+        for (auto& mit : uePos)
         {
-            if (mit->second.distance(srcCoord) < maxBroadcastRadius)
+            if (mit.second.distance(srcCoord) < maxBroadcastRadius)
             {
-                EV << " - " << mit->first << endl;
-                targetSet.insert(mit->first);
+                EV << " - " << mit.first << endl;
+                targetSet.insert(mit.first);
             }
         }
     }
@@ -156,8 +151,7 @@ void EventGenerator::registerNode(MultihopD2D* app, MacNodeId lteNodeId)
 
 void EventGenerator::unregisterNode(MultihopD2D* app, MacNodeId lteNodeId)
 {
-    std::vector<MultihopD2D*>::iterator it = appVector_.begin();
-    for (; it != appVector_.end(); ++it)
+    for (auto it = appVector_.begin(); it != appVector_.end(); ++it)
     {
         if (*it == app) // compare pointers
         {
@@ -166,7 +160,7 @@ void EventGenerator::unregisterNode(MultihopD2D* app, MacNodeId lteNodeId)
         }
     }
 
-    std::set<MacNodeId>::iterator sit = lteNodeIdSet_.find(lteNodeId);
+    auto sit = lteNodeIdSet_.find(lteNodeId);
     if (sit != lteNodeIdSet_.end())
         lteNodeIdSet_.erase(sit);
 }
