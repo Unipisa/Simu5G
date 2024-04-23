@@ -50,7 +50,6 @@ using namespace omnetpp;
 LteMacEnb::LteMacEnb() :
     LteMacBase()
 {
-    cellInfo_ = nullptr;
     amc_ = nullptr;
     enbSchedulerDl_ = nullptr;
     enbSchedulerUl_ = nullptr;
@@ -79,12 +78,7 @@ LteMacEnb::~LteMacEnb()
 CellInfo* LteMacEnb::getCellInfo()
 {
     // Get local cellInfo
-    if (cellInfo_ != nullptr)
-        return cellInfo_;
-
-    return check_and_cast<CellInfo*>(getParentModule()-> // Stack
-    getParentModule()-> // Enb
-    getSubmodule("cellInfo")); // cellInfo
+    return cellInfo_.get();
 }
 
 int LteMacEnb::getNumAntennas()
@@ -148,8 +142,7 @@ void LteMacEnb::initialize(int stage)
 
         cellId_ = nodeId_;
 
-        // TODO: read NED parameters, when will be present
-        cellInfo_ = getCellInfo();
+        cellInfo_.reference(this, "cellInfoModule", true);
 
         /* Get number of antennas */
         numAntennas_ = getNumAntennas();

@@ -68,6 +68,7 @@ module eNodeB
         *.routingTableModule = default("^.ipv4.routingTable");
         *.forwarding = true;
         *.multicastForwarding = false;
+        **.cellInfoModule = default(absPath(".cellInfo"));
 
         //# Apps
         int numApps = default(0);     // no of apps.

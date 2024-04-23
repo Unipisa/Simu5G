@@ -12,6 +12,8 @@
 #ifndef _LTE_LTEMACENB_H_
 #define _LTE_LTEMACENB_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/cellInfo/CellInfo.h"
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/amc/LteAmc.h"
@@ -30,7 +32,7 @@ class LteMacEnb : public LteMacBase
 {
   protected:
     /// Local CellInfo
-    CellInfo *cellInfo_;
+    inet::ModuleRefByPar<CellInfo> cellInfo_;
 
     /// Lte AMC module
     LteAmc *amc_;
