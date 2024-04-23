@@ -1189,7 +1189,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         cModule *rlc = getParentModule()->getSubmodule("rlc");
         if(rlc->findSubmodule("um") != -1)
         {
-            rlcUm = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("rlc")->getSubmodule("um"));
+            rlcUm = check_and_cast<LteRlcUm *>(rlc->getSubmodule("um"));
             std::set<MacNodeId> activeRlcUe;
             rlcUm->activeUeUL(&activeRlcUe);
             for(auto ue : activeRlcUe)
