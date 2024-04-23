@@ -1151,7 +1151,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         std::map<double, HarqTxBuffers>::const_iterator end1 = harqBuffers->end();
 
         for(; it1 != end1 ; ++it1){
-            HarqTxBuffers harqBuffer = it1->second;
+            const HarqTxBuffers& harqBuffer = it1->second;
             HarqTxBuffers::const_iterator itHarq = harqBuffer.begin();
             HarqTxBuffers::const_iterator endHarq = harqBuffer.end();
             for(; itHarq != endHarq ; ++itHarq){
