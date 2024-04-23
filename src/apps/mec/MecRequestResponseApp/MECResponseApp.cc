@@ -29,7 +29,6 @@ namespace simu5g {
 
 Define_Module(MECResponseApp);
 
-
 using namespace inet;
 using namespace omnetpp;
 
@@ -100,7 +99,6 @@ void MECResponseApp::finish()
     MecAppBase::finish();
     EV << "MECResponseApp::finish()" << endl;
     if (gate("socketOut")->isConnected()) {
-
     }
 }
 
@@ -130,7 +128,6 @@ void MECResponseApp::handleRequest(cMessage* msg)
     sendGetRequest();
     getRequestSent_ = simTime();
 }
-
 
 void MECResponseApp::handleStopRequest(cMessage* msg)
 {
@@ -206,7 +203,6 @@ void MECResponseApp::handleMp1Message(int connId)
 
         //close service registry socket
         mp1Socket_->close();
-
     }
     catch (nlohmann::detail::parse_error e) {
         EV << e.what() << std::endl;
@@ -279,7 +275,6 @@ void MECResponseApp::established(int connId)
 
         Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
     }
-
 }
 
 void MECResponseApp::socketClosed(inet::TcpSocket *sock)
@@ -296,7 +291,6 @@ void MECResponseApp::socketClosed(inet::TcpSocket *sock)
         removeSocket(sock);
         sendStopAck();
     }
-
 }
 
 void MECResponseApp::sendStopAck()

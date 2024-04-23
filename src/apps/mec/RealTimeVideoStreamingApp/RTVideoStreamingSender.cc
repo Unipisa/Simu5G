@@ -107,7 +107,6 @@ void RTVideoStreamingSender::initialize(int stage)
 
     sendAllOnOneTime_ = par("sendAllOnOneTime").boolValue();
 
-
     //initializing the auto-scheduling messages
     selfRTVideoStreamingAppStart_ = new cMessage("selfRTVideoStreamingAppStart", KIND_SELF_RT_VIDEO_STREAMING_APP_START);
     selfRTVideoStreamingAppStop_ = new cMessage("selfRTVideoStreamingAppAppStop", KIND_SELF_RT_VIDEO_STREAMING_APP_STOP);
@@ -123,7 +122,6 @@ void RTVideoStreamingSender::initialize(int stage)
     //starting RTVideoStreamingSender
     simtime_t startTime = par("startTime");
 
-
     EV << "RTVideoStreamingSender::initialize - starting sendStartMECApp() in " << startTime << " seconds " << endl;
     scheduleAt(simTime() + startTime, selfMecAppStart_);
 
@@ -131,7 +129,6 @@ void RTVideoStreamingSender::initialize(int stage)
     EV << "RTVideoStreamingSender::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str()  <<"]"<< endl;
     EV << "RTVideoStreamingSender::initialize - destAddress: " << deviceSimbolicAppAddress_ << " [" << deviceAppAddress_.str()  <<"]"<< endl;
     EV << "RTVideoStreamingSender::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
-
 
     mobilityUpdateInterval_ = 1.0;
 
@@ -210,7 +207,6 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
             {
                 handleAckStartMECApp(msg);
             }
-
             else if(!strcmp(mePkt->getType(), ACK_STOP_MECAPP))
             {
                 handleAckStopMECApp(msg);
@@ -275,8 +271,8 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
 
 void RTVideoStreamingSender::finish()
 {
-
 }
+
 /*
  * -----------------------------------------------Sender Side------------------------------------------
  */
@@ -481,7 +477,6 @@ void RTVideoStreamingSender::sendMessage(){
                    EV <<"num of frags " << numberOfFragments << endl;
                    EV << "sliced data "<< slicedDataSize << endl;
                    first = false;
-
                }
 
                if (bytesRemaining > maxDataSize) {
@@ -565,7 +560,6 @@ void RTVideoStreamingSender::sendMessage(){
             socket.sendTo(packet, mecAppAddress_ , mecAppPort_);
             scheduleAfter(1.0 / (_framesPerSecond * (fragFrameStatus_.numberOfFragments)), _nextFrame);
        }
-
     }
     else
     {
@@ -617,8 +611,6 @@ void RTVideoStreamingSender::sendMessage(){
     }
 }
 
-
-
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
@@ -653,7 +645,6 @@ void RTVideoStreamingSender::handleAckStartMECApp(cMessage* msg)
 
 void RTVideoStreamingSender::handleInfoMECApp(cMessage* msg)
 {
-
 }
 
 void RTVideoStreamingSender::handleAckStopMECApp(cMessage* msg)
@@ -742,7 +733,6 @@ void RTVideoStreamingSender::openFileStream()
     if (!_inputFileStream)
         throw cRuntimeError("Error opening data file '%s'", fileName);
 }
-
 
 void RTVideoStreamingSender::initializeVideoStream()
 {
