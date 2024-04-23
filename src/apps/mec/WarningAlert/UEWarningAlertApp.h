@@ -72,6 +72,12 @@ class UEWarningAlertApp: public cSimpleModule
     inet::Coord position;
 
     //scheduling
+    enum MsgKind {
+        KIND_SELF_START = 1000,
+        KIND_SELF_STOP,
+        KIND_SELF_MEC_APP_START,
+    };
+
     cMessage *selfStart_;
     cMessage *selfStop_;
 

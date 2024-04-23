@@ -87,9 +87,9 @@ void UEWarningAlertApp::initialize(int stage)
     mecAppName = par("mecAppName").stringValue();
 
     //initializing the auto-scheduling messages
-    selfStart_ = new cMessage("selfStart");
-    selfStop_ = new cMessage("selfStop");
-    selfMecAppStart_ = new cMessage("selfMecAppStart");
+    selfStart_ = new cMessage("selfStart", KIND_SELF_START);
+    selfStop_ = new cMessage("selfStop", KIND_SELF_STOP);
+    selfMecAppStart_ = new cMessage("selfMecAppStart", KIND_SELF_MEC_APP_START);
 
     //starting UEWarningAlertApp
     simtime_t startTime = par("startTime");
@@ -108,17 +108,20 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
     // Sender Side
     if (msg->isSelfMessage())
     {
-        if(!strcmp(msg->getName(), "selfStart"))   sendStartMEWarningAlertApp();
-
-        else if(!strcmp(msg->getName(), "selfStop"))    sendStopMEWarningAlertApp();
-
-        else if(!strcmp(msg->getName(), "selfMecAppStart"))
-        {
-            sendMessageToMECApp();
-            scheduleAt(simTime() + period_, selfMecAppStart_);
+        switch (msg->getKind()) {
+            case KIND_SELF_START:
+                sendStartMEWarningAlertApp();
+                break;
+            case KIND_SELF_STOP:
+                sendStopMEWarningAlertApp();
+                break;
+            case KIND_SELF_MEC_APP_START:
+                sendMessageToMECApp();
+                scheduleAt(simTime() + period_, selfMecAppStart_);
+                break;
+            default:
+                throw cRuntimeError("UEWarningAlertApp::handleMessage - \tWARNING: Unrecognized self message");
         }
-
-        else    throw cRuntimeError("UEWarningAlertApp::handleMessage - \tWARNING: Unrecognized self message");
     }
     // Receiver Side
     else{

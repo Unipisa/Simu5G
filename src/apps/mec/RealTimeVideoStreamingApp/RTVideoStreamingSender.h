@@ -71,6 +71,17 @@ class RTVideoStreamingSender: public cSimpleModule
     std::string mecAppName;
 
     //scheduling
+    enum MsgKind {
+        KIND_SELF_RT_VIDEO_STREAMING_APP_START = 1000,
+        KIND_SELF_RT_VIDEO_STREAMING_APP_STOP,
+        KIND_SELF_MEC_APP_START,
+        KIND_SELF_MEC_APP_STOP,
+        KIND_SELF_SESSION_START,
+        KIND_SELF_SESSION_STOP,
+        KIND_SELF_NEXT_FRAME,
+        KIND_SELF_MOBILITY_STATS,
+    };
+
     cMessage *selfRTVideoStreamingAppStart_;
     cMessage *selfRTVideoStreamingAppStop_;
 

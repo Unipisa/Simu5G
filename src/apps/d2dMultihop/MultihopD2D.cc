@@ -99,7 +99,7 @@ void MultihopD2D::initialize(int stage)
         socket.setMulticastOutputInterface(ie->getInterfaceId());
         // -------------------- //
 
-        selfSender_ = new cMessage("selfSender");
+        selfSender_ = new cMessage("selfSender", KIND_SELF_SENDER);
 
         // get references to LTE entities
         ltePhy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("phy"));
@@ -128,21 +128,28 @@ void MultihopD2D::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
     {
-        if (!strcmp(msg->getName(), "selfSender"))
-            sendPacket();
-        else if (!strcmp(msg->getName(), "MultihopD2DPacket"))
-            relayPacket(msg);
-        else if (!strcmp(msg->getName(), "trickleTimer"))
-            handleTrickleTimer(msg);
-        else
-            throw cRuntimeError("Unrecognized self message");
+        switch (msg->getKind())
+        {
+            case KIND_SELF_SENDER:
+                sendPacket();
+                break;
+            case KIND_RELAY:
+                msg->setKind(0);
+                relayPacket(msg);
+                break;
+            case KIND_TRICKLE_TIMER:
+                handleTrickleTimer(msg);
+                break;
+            default:
+                throw cRuntimeError("Unrecognized self message");
+        }
     }
     else
     {
         if (!strcmp(msg->getName(), "MultihopD2DPacket"))
             handleRcvdPacket(msg);
         else
-            throw cRuntimeError("Unrecognized self message");
+            throw cRuntimeError("Unrecognized incoming message");
     }
 }
 
@@ -278,7 +285,7 @@ void MultihopD2D::handleRcvdPacket(cMessage* msg)
             if (trickleEnabled_)
             {
                 // start Trickle interval timer
-                TrickleTimerMsg* timer = new TrickleTimerMsg("trickleTimer");
+                TrickleTimerMsg* timer = new TrickleTimerMsg("trickleTimer", KIND_TRICKLE_TIMER);
                 timer->setMsgid(msgId);
 
                 simtime_t t = uniform(I_/2 , I_);
@@ -296,6 +303,7 @@ void MultihopD2D::handleRcvdPacket(cMessage* msg)
                     offset = uniform(0,maxTransmissionDelay_);
 
                 offset = round(SIMTIME_DBL(offset)*1000)/1000;
+                pPacket->setKind(KIND_RELAY);
                 scheduleAt(simTime() + offset, pPacket);
                 EV << "MultihopD2D::handleRcvdPacket - will relay the message in " << offset << "s" << endl;
             }

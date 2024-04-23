@@ -78,10 +78,10 @@ void UERequestApp::initialize(int stage)
     mecAppName = par("mecAppName").stringValue();
 
     //initializing the auto-scheduling messages
-    selfStart_ = new cMessage("selfStart");
-    selfStop_ = new cMessage("selfStop");
-    sendRequest_ = new cMessage("sendRequest");
-    unBlockingMsg_ = new cMessage("unBlockingMsg");
+    selfStart_ = new cMessage("selfStart", KIND_SELF_START);
+    selfStop_ = new cMessage("selfStop", KIND_SELF_STOP);
+    sendRequest_ = new cMessage("sendRequest", KIND_SEND_REQUEST);
+    unBlockingMsg_ = new cMessage("unBlockingMsg", KIND_UN_BLOCKING_MSG);
 
     //starting UERequestApp
     simtime_t startTime = par("startTime");
@@ -107,14 +107,21 @@ void UERequestApp::handleMessage(cMessage *msg)
     // Sender Side
     if (msg->isSelfMessage())
     {
-        if(!strcmp(msg->getName(), "selfStart"))
-            sendStartMECRequestApp();
-        else if(!strcmp(msg->getName(), "selfStop"))
-            sendStopApp();
-        else if(!strcmp(msg->getName(), "sendRequest") || !strcmp(msg->getName(), "unBlockingMsg"))
-            sendRequest();
-        else
-            throw cRuntimeError("UERequestApp::handleMessage - \tWARNING: Unrecognized self message");
+        switch (msg->getKind())
+        {
+            case KIND_SELF_START:
+                sendStartMECRequestApp();
+                break;
+            case KIND_SELF_STOP:
+                sendStopApp();
+                break;
+            case KIND_SEND_REQUEST:
+            case KIND_UN_BLOCKING_MSG:
+                sendRequest();
+                break;
+            default:
+                throw cRuntimeError("UERequestApp::handleMessage - \tWARNING: Unrecognized self message");
+        }
     }
     // Receiver Side
     else

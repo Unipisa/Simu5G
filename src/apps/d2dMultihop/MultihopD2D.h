@@ -31,6 +31,11 @@ class MultihopD2D : public omnetpp::cSimpleModule
     static uint16_t numMultihopD2DApps;  // counter of apps (used for assigning the ids)
 
 protected:
+    enum {
+        KIND_SELF_SENDER = 1000,
+        KIND_RELAY,
+        KIND_TRICKLE_TIMER
+    };
     uint16_t senderAppId_;             // unique identifier of the application within the network
     uint16_t localMsgId_;              // least-significant bits for the identifier of the next message
     int msgSize_;

@@ -54,6 +54,12 @@ class UERequestApp: public cSimpleModule
 
 
     //scheduling
+    enum MsgKind {
+        KIND_SELF_START = 1000,
+        KIND_SELF_STOP,
+        KIND_SEND_REQUEST,
+        KIND_UN_BLOCKING_MSG
+    };
     cMessage *selfStart_;
     cMessage *selfStop_;
     cMessage *sendRequest_;

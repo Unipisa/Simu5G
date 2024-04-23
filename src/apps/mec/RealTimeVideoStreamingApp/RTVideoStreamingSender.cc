@@ -116,16 +116,16 @@ void RTVideoStreamingSender::initialize(int stage)
 
 
     //initializing the auto-scheduling messages
-    selfRTVideoStreamingAppStart_ = new cMessage("selfRTVideoStreamingAppStart");
-    selfRTVideoStreamingAppStop_ = new cMessage("selfRTVideoStreamingAppAppStop");
+    selfRTVideoStreamingAppStart_ = new cMessage("selfRTVideoStreamingAppStart", KIND_SELF_RT_VIDEO_STREAMING_APP_START);
+    selfRTVideoStreamingAppStop_ = new cMessage("selfRTVideoStreamingAppAppStop", KIND_SELF_RT_VIDEO_STREAMING_APP_STOP);
 
-    selfMecAppStart_ = new cMessage("selfMecAppStart");
-    selfMecAppStop_ = new cMessage("selfMecAppStop");
+    selfMecAppStart_ = new cMessage("selfMecAppStart", KIND_SELF_MEC_APP_START);
+    selfMecAppStop_ = new cMessage("selfMecAppStop", KIND_SELF_MEC_APP_STOP);
 
-    selfSessionStart_ = new cMessage("selfSessionStart");
-    selfSessionStop_ = new cMessage("selfSessionStop");
+    selfSessionStart_ = new cMessage("selfSessionStart", KIND_SELF_SESSION_START);
+    selfSessionStop_ = new cMessage("selfSessionStop", KIND_SELF_SESSION_STOP);
 
-    _nextFrame = new cMessage("nextFrame");
+    _nextFrame = new cMessage("nextFrame", KIND_SELF_NEXT_FRAME);
 
     //starting RTVideoStreamingSender
     simtime_t startTime = par("startTime");
@@ -146,7 +146,7 @@ void RTVideoStreamingSender::initialize(int stage)
     positionSignalX = registerSignal("positionX");
     positionSignalY = registerSignal("positionY");
     positionSignalZ = registerSignal("positionZ");
-    mobilityStats_ = new cMessage("mobilityStats");
+    mobilityStats_ = new cMessage("mobilityStats", KIND_SELF_MOBILITY_STATS);
     scheduleAfter(mobilityUpdateInterval_, mobilityStats_);
 }
 
@@ -156,7 +156,9 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
     // Sender Side
     if (msg->isSelfMessage())
     {
-        if(strcmp(msg->getName(), "mobilityStats") == 0)
+        switch (msg->getKind())
+        {
+        case KIND_SELF_MOBILITY_STATS:
         {
             Coord position = mobility->getCurrentPosition();
             Coord velocity = mobility->getCurrentVelocity();
@@ -168,36 +170,32 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
             scheduleAfter(mobilityUpdateInterval_, mobilityStats_);
             return;
         }
-        if(!strcmp(msg->getName(), "selfMecAppStart"))
-        {
+        break;
+        case KIND_SELF_MEC_APP_START:
             sendStartMECApp();
-        }
-        else if(!strcmp(msg->getName(), "selfMecAppStop"))
-        {
+            break;
+        case KIND_SELF_MEC_APP_STOP:
             sendStopMECApp();
-        }
-        else if(!strcmp(msg->getName(), "selfRTVideoStreamingAppStop"))
-        {
+            break;
+        case KIND_SELF_RT_VIDEO_STREAMING_APP_STOP:
             sendStopMessage();
             scheduleAt(simTime() + lifeCyclePeriod_, selfRTVideoStreamingAppStop_);
-        }
-        else if(!strcmp(msg->getName(), "selfSessionStart"))
-        {
+            break;
+        case KIND_SELF_SESSION_START:
             sendSessionStartMessage();
             // reschedule for pks losses
             scheduleAt(simTime() + lifeCyclePeriod_, selfSessionStart_);
-        }
-        else if(!strcmp(msg->getName(), "selfSessionStop"))
-        {
+            break;
+        case KIND_SELF_SESSION_STOP:
             sendSessionStopMessage();
             scheduleAt(simTime() + lifeCyclePeriod_, selfSessionStop_);
-
-        }
-        else if(!strcmp(msg->getName(), "nextFrame"))
-        {
+            break;
+        case KIND_SELF_NEXT_FRAME:
             sendMessage();
+            break;
+        default:
+            throw cRuntimeError("RTVideoStreamingSender::handleMessage - \tWARNING: Unrecognized self message");
         }
-        else    throw cRuntimeError("RTVideoStreamingSender::handleMessage - \tWARNING: Unrecognized self message");
     }
     // Receiver Side
     else{

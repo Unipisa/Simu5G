@@ -74,9 +74,9 @@ void UeRnisTestApp::initialize(int stage)
     mecAppName = par("mecAppName").stringValue();
 
     //initializing the auto-scheduling messages
-    selfStart_ = new cMessage("selfStart");
-    selfStop_ = new cMessage("selfStop");
-    selfMecAppStart_ = new cMessage("selfMecAppStart");
+    selfStart_ = new cMessage("selfStart", KIND_SELF_START);
+    selfStop_ = new cMessage("selfStop", KIND_SELF_STOP);
+    selfMecAppStart_ = new cMessage("selfMecAppStart", KIND_SELF_MEC_APP_START);
 
     //starting UeRnisTestApp
     simtime_t startTime = par("startTime");
@@ -95,17 +95,21 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
     // Sender Side
     if (msg->isSelfMessage())
     {
-        if(!strcmp(msg->getName(), "selfStart"))   sendStartMecApp();
-
-        else if(!strcmp(msg->getName(), "selfStop"))    sendStopMecApp();
-
-        else if(!strcmp(msg->getName(), "selfMecAppStart"))
+        switch (msg->getKind())
         {
-            sendMessageToMecApp();
-            scheduleAt(simTime() + period_, selfMecAppStart_);
+            case KIND_SELF_START:
+                sendStartMecApp();
+                break;
+            case KIND_SELF_STOP:
+                sendStopMecApp();
+                break;
+            case KIND_SELF_MEC_APP_START:
+                sendMessageToMecApp();
+                scheduleAt(simTime() + period_, selfMecAppStart_);
+                break;
+            default:
+                throw cRuntimeError("UeRnisTestApp::handleMessage - \tWARNING: Unrecognized self message");
         }
-
-        else    throw cRuntimeError("UeRnisTestApp::handleMessage - \tWARNING: Unrecognized self message");
     }
     // Receiver Side
     else{
