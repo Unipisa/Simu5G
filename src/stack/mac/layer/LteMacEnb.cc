@@ -164,8 +164,10 @@ void LteMacEnb::initialize(int stage)
         std::string amcType = par("amcType").stdstringValue();
         if (amcType.compare("NRAmc") == 0)
             amc_ = new NRAmc(this, binder_, cellInfo_, numAntennas_);
-        else
+        else if (amcType.compare("LteAmc") == 0)
             amc_ = new LteAmc(this, binder_, cellInfo_, numAntennas_);
+        else
+            throw cRuntimeError("The amcType '%s' not recognized", amcType.c_str());
 
         std::string modeString = par("pilotMode").stdstringValue();
 
