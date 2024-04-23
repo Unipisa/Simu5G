@@ -53,14 +53,15 @@ void MecOrchestrator::initialize(int stage)
 
     binder_ = getBinder();
 
-    if(!strcmp(par("selectionPolicy"), "MecServiceBased"))
+    const char *selectionPolicyPar = par("selectionPolicy");
+    if(!strcmp(selectionPolicyPar, "MecServiceBased"))
         mecHostSelectionPolicy_ = new MecServiceSelectionBased(this);
-    else if(!strcmp(par("selectionPolicy"), "AvailableResourcesBased"))
+    else if(!strcmp(selectionPolicyPar, "AvailableResourcesBased"))
         mecHostSelectionPolicy_ = new AvailableResourcesSelectionBased(this);
-    else if(!strcmp(par("selectionPolicy"), "MecHostBased"))
-            mecHostSelectionPolicy_ = new MecHostSelectionBased(this, par("mecHostIndex"));
+    else if(!strcmp(selectionPolicyPar, "MecHostBased"))
+        mecHostSelectionPolicy_ = new MecHostSelectionBased(this, par("mecHostIndex"));
     else
-        throw cRuntimeError("MecOrchestrator::initialize - Selection policy %s not present!" , par("selectionPolicy").stringValue());
+        throw cRuntimeError("MecOrchestrator::initialize - Selection policy '%s' not present!", selectionPolicyPar);
 
     onboardingTime = par("onboardingTime").doubleValue();
     instantiationTime = par("instantiationTime").doubleValue();
