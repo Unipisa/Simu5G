@@ -11,8 +11,7 @@
 
 package simu5g.apps.mec.MecApps.MecRequestForegroundApp;
 
-import inet.applications.contract.IApp;
-import simu5g.nodes.mec.MECPlatform.IMECApp;
+import simu5g.apps.mec.MecApps.MecAppBase;
 
 
 //
@@ -22,24 +21,13 @@ import simu5g.nodes.mec.MECPlatform.IMECApp;
 // It has been used, for instance, to evaluate the loadgenerator model of the MEC service
 // to see the execution time differences.
 //
-simple MecRequestForegroundApp like IMECApp, IApp
+simple MecRequestForegroundApp extends MecAppBase
 {
     parameters:
+        @class(MecRequestForegroundApp);
         bool allocateHostResources = default(false);
 
         int packetSize @unit(B) = default(10B);
-        int mecAppIndex = default(0);
-        int mecAppId = default(0); // it will be override by getId() in initialize
-        int localUePort = default(0); // not used in MecRequestBackgroundGeneratorApp
-
-        string mp1Address = default("");
-        int mp1Port = default(10021);
-
-		 //resource required info
-        double requiredRam @unit("B") = default(10MB);
-        double requiredDisk @unit("B") = default(100MB);
-        double requiredCpu = default(15000);
-
         double lambda @unit(s) = default(10ms);
 
         // IApp parameters
@@ -48,12 +36,4 @@ simple MecRequestForegroundApp like IMECApp, IApp
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         bool logger = default(false);
-
-    gates:
-        input socketIn @labels(TcpCommand/up);
-        output socketOut @labels(TcpCommand/down);
-
-        input mePlatformIn;
-        output mePlatformOut;
-
 }

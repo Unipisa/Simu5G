@@ -11,30 +11,24 @@
 
 package simu5g.apps.mec.RnisTestApp;
 
-import inet.applications.contract.IApp;
-import simu5g.nodes.mec.MECPlatform.IMECApp;
+import simu5g.apps.mec.MecApps.MecAppBase;
+
 
 //
 // This is a simple MEC app that connects to the Radio Network Information
 // Service and periodically requests L2 Measurements from it.
 // The response obtained from the RNIS is just sent back to the UE app.
 //
-simple MecRnisTestApp like IMECApp, IApp
+simple MecRnisTestApp extends MecAppBase
 {
     parameters:
+        @class(MecRnisTestApp);
         @display("i=block/app;is=s");
 
-        int mecAppIndex;
-        int mecAppId;
-        int localUePort;
-
-        string mp1Address = default("");
-        int mp1Port = default(10021);
-
-		// Resource required info
-        double requiredRam @unit("B") = default(10MB);
-        double requiredDisk @unit("B") = default(1MB);
-        double requiredCpu = default(100);
+        // Resource required info
+        requiredRam = default(10MB);
+        requiredDisk = default(1MB);
+        requiredCpu = default(100);
 
         // IApp parameters
         int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
@@ -42,13 +36,4 @@ simple MecRnisTestApp like IMECApp, IApp
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         bool logger = default(false);
-
-    gates:
-        input mePlatformIn;
-        output mePlatformOut;
-
-        input socketIn;
-        output socketOut;
-
 }
-
