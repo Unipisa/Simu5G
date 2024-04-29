@@ -17,6 +17,7 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
+#include "inet/common/ModuleRefByPar.h"
 #include "inet/common/socket/SocketMap.h"
 
 
@@ -78,14 +79,13 @@ class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICall
     omnetpp::cQueue serviceHttpMessages_;
     omnetpp::cQueue mp1HttpMessages_;
 
-    VirtualisationInfrastructureManager* vim;
+    inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
 
     omnetpp::cMessage *sendTimer;
 
-    //references to MeHost module
-    omnetpp::cModule* mecHost;
-    omnetpp::cModule* mecPlatform;
-    ServiceRegistry * serviceRegistry;
+    //references to modules
+    inet::ModuleRefByPar<omnetpp::cModule> mecPlatform;
+    inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
     int mecAppId;
     int mecAppIndex_;

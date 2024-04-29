@@ -26,11 +26,7 @@ using namespace inet;
 
 MecAppBase::MecAppBase()
 {
-    mecHost = nullptr;
-    mecPlatform = nullptr;;
-    serviceRegistry = nullptr;
     sendTimer = nullptr;
-    vim = nullptr;
     processMessage_ = nullptr;
     currentProcessedMsg_ = nullptr;
 }
@@ -79,11 +75,10 @@ void MecAppBase::initialize(int stage)
     requiredDisk = par("requiredDisk").doubleValue();
     requiredCpu = par("requiredCpu").doubleValue();
 
-    vim = check_and_cast<VirtualisationInfrastructureManager*>(getParentModule()->getSubmodule("vim"));
-    mecHost = getParentModule();
-    mecPlatform = mecHost->getSubmodule("mecPlatform");
+    vim.reference(this, "vimModule", true);
+    mecPlatform.reference(this, "mecPlatformModule", true);
 
-    serviceRegistry = check_and_cast<ServiceRegistry *>(mecPlatform->getSubmodule("serviceRegistry"));
+    serviceRegistry.reference(this, "serviceRegistryModule", true);
 
     processMessage_ = new cMessage("processedMessage");
 }

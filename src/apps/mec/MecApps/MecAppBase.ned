@@ -30,6 +30,11 @@ simple MecAppBase like IMECApp, IApp
 
         int localUePort;
 
+        // modules:
+        string vimModule = default("^.vim");
+        string mecPlatformModule = default("^.mecPlatform");
+        string serviceRegistryModule = default("^.mecPlatform.serviceRegistry");
+
         //resource required info
         double requiredRam @unit("B");
         double requiredDisk @unit("B");
@@ -42,3 +47,4 @@ simple MecAppBase like IMECApp, IApp
         input socketIn @labels(TcpCommand/up);
         output socketOut @labels(TcpCommand/down);
 }
+
