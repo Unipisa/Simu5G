@@ -17,6 +17,9 @@ simple BackgroundCellChannelModel
         @display("i=block/control");
         @class("BackgroundCellChannelModel");
 
+        // modules
+        string binderModule = default("binder");
+
         // Enable/disable shadowing
         bool shadowing = default(true);
 

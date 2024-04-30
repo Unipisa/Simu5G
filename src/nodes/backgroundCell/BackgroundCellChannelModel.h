@@ -13,6 +13,9 @@
 #define __BACKGROUNDCELLCHANNELMODEL_H_
 
 #include <omnetpp.h>
+
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
@@ -61,7 +64,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     double thermalNoise_;
 
     //pointer to Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     //Cable loss
     double cableLoss_;

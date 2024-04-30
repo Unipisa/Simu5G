@@ -65,7 +65,7 @@ void BackgroundCellChannelModel::initialize(int stage)
         enableUplinkInterference_ = par("uplink_interference");
 
         //get binder
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
     }
 
 }
