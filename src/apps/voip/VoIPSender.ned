@@ -25,7 +25,7 @@ simple VoIPSender like IApp
         double scale_talk @unit(s) = default(1.423s);
         double shape_sil @unit(s) = default(1.089s);
         double scale_sil @unit(s) = default(0.899s);
-        bool is_talk = default(true);
+        bool is_talk = default(true); // whether transmission starts with talk or silence
         double sampling_time @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
         bool silences = default(true);

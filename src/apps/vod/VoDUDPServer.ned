@@ -21,7 +21,7 @@ simple VoDUDPServer like IApp
         int localPort; // port to listen on
         string vod_trace_file;
         int fps = default(25);
-        string traceType = default("SVC");
+        string traceType = default("SVC");  // "Scalable Video Coding" (from MPEG4?) -- only format implemented
 
         // clients parameters
         string destAddresses;
