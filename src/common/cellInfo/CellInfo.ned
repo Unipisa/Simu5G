@@ -87,4 +87,6 @@ simple CellInfo
 
         // number of preferred bands to use (meaningful only in PREFERRED mode)
         int numPreferredBands = default(1);
+
+        string binderModule = default("binder");
 }

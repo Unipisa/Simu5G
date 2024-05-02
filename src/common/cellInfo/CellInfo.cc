@@ -24,19 +24,16 @@ CellInfo::CellInfo()
     nodeX_ = 0;
     nodeY_ = 0;
     nodeZ_ = 0;
-    binder_ = nullptr;
     mcsScaleDl_ = 0;
     mcsScaleUl_ = 0;
     numRus_ = 0;
     ruSet_ = new RemoteAntennaSet();
-    binder_ = getBinder();
     numBands_ = 0;
     maxNumerologyIndex_ = 0;
 }
 
 CellInfo::~CellInfo()
 {
-    binder_ = nullptr;
     delete ruSet_;
 }
 
@@ -59,6 +56,7 @@ void CellInfo::initialize(int stage)
         rbPilotUl_ = par("rbPilotUl");
         signalDl_ = par("signalDl");
         signalUl_ = par("signalUl");
+        binder_.reference(this, "binderModule", true);
     }
     if (stage == inet::INITSTAGE_LOCAL+1)
     {

@@ -13,7 +13,10 @@
 #define _CELLINFO_H_
 
 #include <omnetpp.h>
+
+#include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
+
 #include "stack/phy/das/RemoteAntennaSet.h"
 #include "common/binder/Binder.h"
 #include "common/LteCommon.h"
@@ -30,7 +33,8 @@ class CellInfo : public omnetpp::cSimpleModule
 {
   private:
     /// reference to the global module binder
-    Binder *binder_;
+    inet::ModuleRefByPar<Binder> binder_;
+
     /// Remote Antennas for eNB
     RemoteAntennaSet *ruSet_;
 
