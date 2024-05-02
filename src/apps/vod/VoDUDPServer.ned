@@ -12,7 +12,9 @@
 package simu5g.apps.vod;
 import inet.applications.contract.IApp;
 
-
+//
+// Video on demand app
+//
 simple VoDUDPServer like IApp
 {
     parameters:
