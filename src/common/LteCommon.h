@@ -585,14 +585,14 @@ typedef std::vector<BackgroundScheduler*> BackgroundSchedulerList;
 
 typedef std::vector<std::vector<std::vector<double> > > BlerCurves;
 
-typedef struct {
+struct SlotFormat {
     bool tdd;
     unsigned int numDlSymbols;
     unsigned int numUlSymbols;
     unsigned int numFlexSymbols;
-} SlotFormat;
+};
 
-typedef struct {
+struct CarrierInfo {
     double carrierFrequency;
     unsigned int numBands;
     unsigned int firstBand;
@@ -600,7 +600,7 @@ typedef struct {
     BandLimitVector bandLimit;
     NumerologyIndex numerologyIndex;
     SlotFormat slotFormat;
-} CarrierInfo;
+};
 typedef std::map<double, CarrierInfo> CarrierInfoMap;
 
 

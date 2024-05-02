@@ -25,12 +25,11 @@ class D2DModeSelectionBase : public omnetpp::cSimpleModule
 protected:
 
     typedef std::pair<MacNodeId, MacNodeId> FlowId;
-    typedef struct
-    {
+    struct FlowModeInfo {
         FlowId flow;
         LteD2DMode oldMode;
         LteD2DMode newMode;
-    } FlowModeInfo;
+    };
     typedef std::list<FlowModeInfo> SwitchList;
     SwitchList switchList_;  // a list of pairs of nodeIds, where the first node represents the transmitter
                              // of the flow, whereas the second node represents the receiver

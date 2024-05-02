@@ -23,12 +23,11 @@ using namespace omnetpp;
 class L2MeasSubscription : public SubscriptionBase
 {
 
-    typedef struct
-    {
+    struct FilterCriteriaL2Meas {
         std::string appIstanceId;
         AssociateId associteId_;
         Ecgi ecgi;
-    }FilterCriteriaL2Meas;
+    };
 
     public:
         L2MeasSubscription();

@@ -42,13 +42,13 @@ class VirtualisationInfrastructureManager;
 class ProcessingTimeMessage;
 class ServiceRegistry;
 
-typedef struct
+struct HttpMessageStatus
 {
     HttpBaseMessage *currentMessage = nullptr;
     std::string bufferedData;
     cQueue httpMessageQueue;
     ProcessingTimeMessage* processMsgTimer;
-} HttpMessageStatus;
+};
 
 class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
 {

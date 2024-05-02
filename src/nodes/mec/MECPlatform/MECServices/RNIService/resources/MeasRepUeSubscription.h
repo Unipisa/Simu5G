@@ -21,12 +21,11 @@
 class MeasRepUeSubscription : public SubscriptionBase
 {
 
-    typedef struct
-    {
+    struct FilterCriteriaAssocTri {
         std::string appIstanceId;
         AssociateId associteId_;
         Ecgi ecgi;
-    }FilterCriteriaAssocTri;
+    };
 
     public:
         MeasRepUeSubscription();
