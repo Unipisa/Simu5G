@@ -77,7 +77,7 @@ void TrafficFlowFilter::initialize(int stage)
         if(isBaseStation(ownerType_) && !meHost.empty())
         {
             std::stringstream meHostName;
-            meHostName << meHost.c_str() << ".virtualisationInfrastructure";
+            meHostName << meHost << ".virtualisationInfrastructure";
             meHost = meHostName.str();
             meHostAddress = inet::L3AddressResolver().resolve(meHost.c_str());
 

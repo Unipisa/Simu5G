@@ -560,8 +560,8 @@ void LteMaxCiOptMB::launchProblem()
     FILE* fp = popen("cplex -c","w");
     if (fp != NULL)
     {
-        cmd << "\"set logfile *\" \"read " << problemFile_.c_str() << " lp\" \"optimize\" ";
-        cmd << "\"write " << solutionFile_.c_str() << "\" \"y\" ";
+        cmd << "\"set logfile *\" \"read " << problemFile_ << " lp\" \"optimize\" ";
+        cmd << "\"write " << solutionFile_ << "\" \"y\" ";
         cmd << " > /dev/null" << endl;
         fprintf(fp, "%s", cmd.str().c_str());
 

@@ -66,7 +66,7 @@ void PacketFlowManagerUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
     newDesc.macPduPerProcess_.resize(harqProcesses_, 0);
 
     connectionMap_[lcid] = newDesc;
-    EV_FATAL << NOW << "node id "<< nodeId << " " << pfmType.c_str() <<"::initLcid - initialized lcid " << lcid << endl;
+    EV_FATAL << NOW << "node id "<< nodeId << " " << pfmType <<"::initLcid - initialized lcid " << lcid << endl;
 }
 
 void PacketFlowManagerUe::clearLcid(LogicalCid lcid)
@@ -75,7 +75,7 @@ void PacketFlowManagerUe::clearLcid(LogicalCid lcid)
     if (it == connectionMap_.end())
     {
         // this may occur after a handover, when data structures are cleared
-        EV_FATAL << NOW << " " << pfmType.c_str() <<"::clearLcid - Logical CID " << lcid << " not present." << endl;
+        EV_FATAL << NOW << " " << pfmType <<"::clearLcid - Logical CID " << lcid << " not present." << endl;
         return;
     }
 
@@ -88,13 +88,13 @@ void PacketFlowManagerUe::clearLcid(LogicalCid lcid)
         for (int i=0; i<harqProcesses_; i++)
             desc->macPduPerProcess_[i] = 0;
 
-    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::clearLcid - cleared data structures for lcid " << lcid << endl;
+    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::clearLcid - cleared data structures for lcid " << lcid << endl;
 }
 
 void PacketFlowManagerUe::clearAllLcid()
 {
     connectionMap_.clear();
-    EV_FATAL << NOW << " " << pfmType.c_str() <<"::clearAllLcid - cleared data structures for all lcids "<< endl;
+    EV_FATAL << NOW << " " << pfmType <<"::clearAllLcid - cleared data structures for all lcids "<< endl;
 }
 
 void PacketFlowManagerUe::clearStats()
@@ -126,7 +126,7 @@ void PacketFlowManagerUe::initPdcpStatus(StatusDescriptor* desc, unsigned int pd
 
 void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 {
-    EV << pfmType.c_str() <<"::insertPdcpSdu"<< endl;
+    EV << pfmType <<"::insertPdcpSdu"<< endl;
 //    // Control Information
 //    auto pkt = check_and_cast<inet::Packet *> (pktAux);
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
@@ -144,7 +144,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
        if (cit == connectionMap_.end())
        {
            // this may occur after a handover, when data structures are cleared
-           // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
+           // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
            throw cRuntimeError("%s::insertPdcpSdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
            return;
        }
@@ -155,7 +155,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
        initPdcpStatus(desc, pdcpSno, pdcpSize, arrivalTime);
        pktDiscardCounterTotal_.total += 1;
 
-       EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 <<" " << pfmType.c_str() <<"::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno<<" added. Logicl cid " << lcid << endl;
+       EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 <<" " << pfmType <<"::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno<<" added. Logicl cid " << lcid << endl;
 
 
 }
@@ -167,7 +167,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 //    if (cit == connectionMap_.end())
 //    {
 //        // this may occur after a handover, when data structures are cleared
-//        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
+//        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
 //        throw cRuntimeError("%s::insertRlcPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
 //        return;
 //    }
@@ -176,7 +176,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 //    StatusDescriptor* desc = &cit->second;
 //    if (desc->rlcSdusPerPdu_.find(rlcSno) != desc->rlcSdusPerPdu_.end())
 //        throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d. Aborting", pfmType.c_str(), rlcSno, lcid);
-//    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - Logical CID " << lcid << endl;
+//    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << endl;
 //    SequenceNumberSet::iterator sit = pdcpSnoSet.begin();
 //    for (; sit != pdcpSnoSet.end(); ++sit)
 //    {
@@ -203,7 +203,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet* pdcpPkt)
 //            pit->second.hasArrivedAll = true;
 //        }
 //
-//        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - lcid[" << lcid << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
+//        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - lcid[" << lcid << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
 //    }
 //}
 
@@ -213,7 +213,7 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
         if (cit == connectionMap_.end())
         {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
+            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::insertRlcPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
             return;
         }
@@ -225,7 +225,7 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
 
         if (desc->rlcSdusPerPdu_.find(rlcSno) != desc->rlcSdusPerPdu_.end())
             throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d. Aborting", pfmType.c_str(), rlcSno, lcid);
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertRlcPdu - Logical CID " << lcid << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertRlcPdu - Logical CID " << lcid << endl;
 
 //        FramingInfo fi = rlcPdu->getFramingInfo();
 //
@@ -247,7 +247,7 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
             unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
             unsigned int pdcpPduLength = *(sit);
 
-            EV << pfmType.c_str() <<"::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << "bytes" <<  endl;
+            EV << pfmType <<"::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << "bytes" <<  endl;
 
             // store the RLC SDUs (PDCP PDUs) included in the RLC PDU
             desc->rlcSdusPerPdu_[rlcSno].insert(pdcpSno);
@@ -278,7 +278,7 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
                 pit->second.hasArrivedAll = true;
             }
 
-            EV_FATAL << NOW  << " " << pfmType.c_str() <<"::insertRlcPdu - lcid[" << lcid << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
+            EV_FATAL << NOW  << " " << pfmType <<"::insertRlcPdu - lcid[" << lcid << "], insert PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
         }
         EV << "size:"<< desc->rlcSdusPerPdu_[rlcSno].size()<< endl;
 }
@@ -290,7 +290,7 @@ void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bo
     if (cit == connectionMap_.end())
     {
         // this may occur after a handover, when data structures are cleared
-        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::discardRlcPdu - Logical CID " << lcid << " not present." << endl;
+        // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::discardRlcPdu - Logical CID " << lcid << " not present." << endl;
         throw cRuntimeError("%s::discardRlcPdu - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
         return;
     }
@@ -342,7 +342,7 @@ void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bo
 
         if(rit->second.empty() && pit->second.hasArrivedAll && !pit->second.discardedAtMac && !pit->second.sentOverTheAir)
         {
-            EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::discardRlcPdu - lcid[" << lcid << "], discarded PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
+            EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::discardRlcPdu - lcid[" << lcid << "], discarded PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
             pktDiscardCounterTotal_.discarded += 1;
         }
         // if the pdcp was entire and the set of rlc is empty, discard it
@@ -376,7 +376,7 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         if (cit == connectionMap_.end())
         {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertMacPdu - Logical CID " << lcid << " not present." << endl;
+            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertMacPdu - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::insertMacPdu - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
             return;
         }
@@ -414,7 +414,7 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
 
         // store the MAC SDUs (RLC PDUs) included in the MAC PDU
         desc->macSdusPerPdu_[macPduId].insert(rlcSno);
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::insertMacPdu - lcid[" << lcid << "], insert RLC PDU " << rlcSno << " in MAC PDU " << macPduId << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertMacPdu - lcid[" << lcid << "], insert RLC PDU " << rlcSno << " in MAC PDU " << macPduId << endl;
 
 
         // set the pdcp pdus related to thi RLC as sent over the air since this method is called after the MAC ID
@@ -460,8 +460,8 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         // get the descriptor for this connection
         StatusDescriptor* desc = &cit->second;
 
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - MAC PDU "<< macPduId << " of lcid " << lcid << " arrived." << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - MAC PDU "<< macPduId << " of lcid " << lcid << " arrived." << endl;
 
         // === STEP 1 ==================================================== //
         // === recover the set of RLC PDU SN from the above MAC PDU ID === //
@@ -471,7 +471,7 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
         if (macPduId == 0)
         {
-            EV << NOW << " " << pfmType.c_str() <<"::insertMacPdu - The process does not contain entire SDUs" << endl;
+            EV << NOW << " " << pfmType <<"::insertMacPdu - The process does not contain entire SDUs" << endl;
             return;
         }
 
@@ -499,7 +499,7 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         // for each RLC PDU
         unsigned int rlcPduSno = *it;
 
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - --> RLC PDU [" << rlcPduSno << "], which contains:" << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - --> RLC PDU [" << rlcPduSno << "], which contains:" << endl;
 
         std::map<unsigned int, SequenceNumberSet>::iterator nit = desc->rlcSdusPerPdu_.find(rlcPduSno);
         if (nit == desc->rlcSdusPerPdu_.end())
@@ -520,7 +520,7 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
             // for each RLC SDU (PDCP PDU), get the set of RLC PDUs where it is included
             unsigned int pdcpPduSno = *jt;
 
-            EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "]" << endl;
+            EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "]" << endl;
 
             std::map<unsigned int, SequenceNumberSet>::iterator oit = desc->rlcPdusPerSdu_.find(pdcpPduSno);
             if (oit == desc->rlcPdusPerSdu_.end())
@@ -550,13 +550,13 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                 if(pit->second.hasArrivedAll && !pit->second.discardedAtRlc && !pit->second.discardedAtMac)
                 { // the whole current pdcp seqNum has been received
-                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "] has been completely sent, remove from PDCP buffer" << endl;
+                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "] has been completely sent, remove from PDCP buffer" << endl;
 
                     double time = (simTime() - pit->second.entryTime).dbl();
                     pdcpDelay.time += time;
                     pdcpDelay.pktCount += 1;
 
-                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
+                    EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::macPduArrived - PDCP PDU "<< pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s"<< endl;
 
     //                        ii.record(pdcpPduSno);
                     // update next sno
@@ -598,7 +598,7 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
         if (cit == connectionMap_.end())
         {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
+            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::discardMacPdu - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
             return;
         }
@@ -606,8 +606,8 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
         // get the descriptor for this connection
         StatusDescriptor* desc = &cit->second;
 
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::discardMacPdu - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
-        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType.c_str() <<"::discardMacPdu - MAC PDU "<< macPduId << " of lcid " << lcid << " arrived." << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::discardMacPdu - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
+        EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::discardMacPdu - MAC PDU "<< macPduId << " of lcid " << lcid << " arrived." << endl;
 
         // === STEP 1 ==================================================== //
         // === recover the set of RLC PDU SN from the above MAC PDU ID === //
@@ -616,7 +616,7 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
 
         if (macPduId == 0)
         {
-            EV << NOW << " " << pfmType.c_str() <<"::discardMacPdu - The process does not contain entire SDUs" << endl;
+            EV << NOW << " " << pfmType <<"::discardMacPdu - The process does not contain entire SDUs" << endl;
             return;
         }
 
@@ -662,7 +662,7 @@ double PacketFlowManagerUe::getDelayStats()
 {
     if(pdcpDelay.pktCount == 0)
         return 0;
-    EV_FATAL << NOW << " " << pfmType.c_str() <<"::getDelayStats- Delay Stats total time: "<< pdcpDelay.time.dbl()*1000 << " pckcount: " <<pdcpDelay.pktCount   << endl;
+    EV_FATAL << NOW << " " << pfmType <<"::getDelayStats- Delay Stats total time: "<< pdcpDelay.time.dbl()*1000 << " pckcount: " <<pdcpDelay.pktCount   << endl;
 
     return (pdcpDelay.time.dbl()*1000)/pdcpDelay.pktCount;
 }
@@ -679,7 +679,7 @@ void PacketFlowManagerUe::insertHarqProcess(LogicalCid lcid, unsigned int harqPr
 //    if (cit == connectionMap_.end())
 //    {
 //        // this may occur after a handover, when data structures are cleared
-//        EV << NOW << " " << pfmType.c_str() <<"::insertHarqProcess - Logical CID " << lcid << " not present." << endl;
+//        EV << NOW << " " << pfmType <<"::insertHarqProcess - Logical CID " << lcid << " not present." << endl;
 //        return;
 //    }
 //
@@ -692,7 +692,7 @@ void PacketFlowManagerUe::insertHarqProcess(LogicalCid lcid, unsigned int harqPr
 //    {
 //        // store the MAC PDU ID included into the given HARQ process
 //        desc->macPduPerProcess_[harqProcId] = macPduId;
-//        EV << NOW << " " << pfmType.c_str() <<"::insertMacPdu - lcid[" << lcid << "], insert MAC PDU " << macPduId << " in HARQ PROCESS " << harqProcId << endl;
+//        EV << NOW << " " << pfmType <<"::insertMacPdu - lcid[" << lcid << "], insert MAC PDU " << macPduId << " in HARQ PROCESS " << harqProcId << endl;
 //    }
 }
 
