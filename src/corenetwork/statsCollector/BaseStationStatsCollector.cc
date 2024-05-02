@@ -54,7 +54,7 @@ void BaseStationStatsCollector::initialize(int stage){
         EV << collectorType_ << "::initialize stage: "<< stage << endl;
         collectorType_ = par("collectorType").stringValue();
         std::string nodeType =  getAncestorPar("nodeType").stringValue();
-        nodeType_ = nodeType.compare("ENODEB") == 0? ENODEB: GNODEB;
+        nodeType_ = nodeType == "ENODEB" ? ENODEB: GNODEB;
         EV << collectorType_ << "::initialize node type: "<< nodeType << endl;
     }
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER)

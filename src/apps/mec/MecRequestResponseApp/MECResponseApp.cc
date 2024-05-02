@@ -187,7 +187,7 @@ void MECResponseApp::handleMp1Message(int connId)
         if (!jsonBody.empty()) {
             jsonBody = jsonBody[0];
             std::string serName = jsonBody["serName"];
-            if (serName.compare("RNIService") == 0) {
+            if (serName == "RNIService") {
                 if (jsonBody.contains("transportInfo")) {
                     nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
                     EV << "address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;

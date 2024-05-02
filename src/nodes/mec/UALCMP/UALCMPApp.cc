@@ -230,7 +230,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_+"/app_list") == 0 ) //queries
+    if(uri == (baseUriQueries_ + "/app_list")) //queries
     {
         std::string params = currentRequestMessageServed->getParameters();
        //look for query parameters
@@ -318,7 +318,7 @@ void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessag
     EV << "UALCMPApp::handlePOSTRequest - uri: "<< uri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(uri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
+    if(uri == (baseUriSubscriptions_ + "/app_contexts"))
     {
         nlohmann::json jsonBody;
         try
@@ -382,7 +382,7 @@ void UALCMPApp::handleDELETERequest(const HttpRequestMessage *currentRequestMess
     std::string baseUri = uri.substr(0,lastPart); // uri
     std::string contextId =  uri.substr(lastPart+1); // contextId
 
-    if(baseUri.compare(baseUriSubscriptions_+"/app_contexts") == 0)
+    if(baseUri == (baseUriSubscriptions_ + "/app_contexts"))
     {
         DeleteContextAppMessage * deleteContext = new DeleteContextAppMessage();
         deleteContext->setRequestId(requestSno);

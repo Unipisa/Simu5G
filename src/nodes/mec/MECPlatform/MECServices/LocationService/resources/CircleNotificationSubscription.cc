@@ -165,7 +165,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     if(jsonBody.contains("checkImmediate"))
     {
         std::string check = jsonBody["checkImmediate"];
-        checkImmediate = check.compare("true") == 0 ? true : false;
+        checkImmediate = (check == "true");
     }
     else
     {
@@ -233,11 +233,11 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     if(jsonBody.contains("enteringLeavingCriteria"))
     {
         std::string criteria = jsonBody["enteringLeavingCriteria"];
-        if(criteria.compare("Entering") == 0)
+        if(criteria == "Entering")
         {
             actionCriteria = LocationUtils::Entering;
         }
-        else if(criteria.compare("Leaving") == 0)
+        else if(criteria == "Leaving")
         {
             actionCriteria = LocationUtils::Leaving;
         }

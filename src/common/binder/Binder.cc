@@ -1340,9 +1340,9 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     if(module->hasPar("nodeType"))
     {
         nodeType = module->par("nodeType").stdstringValue();
-        if(nodeType.compare("ENODEB") == 0)
+        if(nodeType == "ENODEB")
             return ENODEB;
-        else if(nodeType.compare("GNODEB") == 0)
+        else if(nodeType == "GNODEB")
             return GNODEB;
         else
             return UNKNOWN_NODE_TYPE;

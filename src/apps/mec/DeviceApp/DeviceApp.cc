@@ -66,7 +66,7 @@ void DeviceApp::handleUALCMPMessage()
                     for(int i = 0; i< size ; ++i)
                     {
                         nlohmann::json appInfo = jsonResponseBody["appList"];
-                        if(appName.compare(appInfo.at(i)["appName"]) == 0)
+                        if(appName == appInfo.at(i)["appName"])
                         {
                             jsonRequestBody["associateDevAppId"] = std::to_string(getId());
                             jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];// "WAMECAPP_External"; //startPk->getMecAppDId()

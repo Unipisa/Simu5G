@@ -50,9 +50,9 @@ void LteMacUeD2D::initialize(int stage)
         cModule* rlc = getParentModule()->getSubmodule("rlc");
         std::string rlcUmType = rlc->par("LteRlcUmType").stdstringValue();
         bool rlcD2dCapable = rlc->par("d2dCapable").boolValue();
-        if (rlcUmType.compare("LteRlcUm") != 0 || !rlcD2dCapable)
+        if (rlcUmType != "LteRlcUm" || !rlcD2dCapable)
             throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LteRlcUmD2D. Aborting", rlcUmType.c_str());
-        if (pdcpType.compare("LtePdcpRrcUeD2D") != 0 && pdcpType.compare("NRPdcpRrcUe") != 0 )
+        if (pdcpType != "LtePdcpRrcUeD2D" && pdcpType != "NRPdcpRrcUe")
             throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpRrcUeD2D or NRPdcpRrcUe. Aborting", pdcpType.c_str());
 
         rcvdD2DModeSwitchNotification_ = registerSignal("rcvdD2DModeSwitchNotification");

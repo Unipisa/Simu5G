@@ -138,7 +138,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
          * set the check to provide multi UE to one mec application scenario.
          * For now the scenario is one to one, since the device application ID is used
          */
-        if(contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId.compare(contAppMsg->getAppDId()) == 0)
+        if(contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId == contAppMsg->getAppDId())
         {
             //        meAppMap[ueAppID].lastAckStartSeqNum = pkt->getSno();
             //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
@@ -436,7 +436,7 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         auto it = mecServices->begin();
         for(; it != mecServices->end() ; ++it)
         {
-            if(serviceName.compare(it->getName()) == 0)
+            if(serviceName == it->getName())
             {
                bestHost = mecHost;
                break;
@@ -535,7 +535,7 @@ const ApplicationDescriptor* MecOrchestrator::getApplicationDescriptorByAppName(
 {
     for(const auto& appDesc : mecApplicationDescriptors_)
     {
-        if(appDesc.second.getAppName().compare(appName) == 0)
+        if(appDesc.second.getAppName() == appName)
             return &(appDesc.second);
 
     }

@@ -53,7 +53,7 @@ void VoDUDPServer::initialize(int stage)
     if (!inputFileName.empty())
     {
         // Check whether string is empty
-        if (traceType.compare("SVC") != 0)
+        if (traceType != "SVC")
             throw cRuntimeError("VoDUDPServer::initialize - only SVC trace is currently available. Abort.");
 
         infile.open(inputFileName.c_str(), ios::in);

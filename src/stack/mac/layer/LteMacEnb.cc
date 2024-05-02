@@ -162,9 +162,9 @@ void LteMacEnb::initialize(int stage)
     {
         /* Create and initialize AMC module */
         std::string amcType = par("amcType").stdstringValue();
-        if (amcType.compare("NRAmc") == 0)
+        if (amcType == "NRAmc")
             amc_ = new NRAmc(this, binder_, cellInfo_, numAntennas_);
-        else if (amcType.compare("LteAmc") == 0)
+        else if (amcType == "LteAmc")
             amc_ = new LteAmc(this, binder_, cellInfo_, numAntennas_);
         else
             throw cRuntimeError("The amcType '%s' not recognized", amcType.c_str());

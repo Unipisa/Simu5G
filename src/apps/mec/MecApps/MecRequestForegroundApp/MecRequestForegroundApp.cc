@@ -107,7 +107,7 @@ void MecRequestForegroundApp::handleMp1Message(int connId)
         {
             jsonBody = jsonBody[0];
             std::string serName = jsonBody["serName"];
-            if(serName.compare("LocationService") == 0)
+            if(serName == "LocationService")
             {
                 if(jsonBody.contains("transportInfo"))
                 {

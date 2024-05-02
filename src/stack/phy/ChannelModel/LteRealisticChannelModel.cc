@@ -76,9 +76,9 @@ void LteRealisticChannelModel::initialize(int stage)
 
         fading_ = par("fading");
         std::string fType = par("fading_type");
-        if (fType.compare("JAKES") == 0)
+        if (fType == "JAKES")
             fadingType_ = JAKES;
-        else if (fType.compare("RAYLEIGH") == 0)
+        else if (fType == "RAYLEIGH")
             fadingType_ = RAYLEIGH;
         else
             fadingType_ = JAKES;

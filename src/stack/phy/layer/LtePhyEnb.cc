@@ -77,7 +77,7 @@ void LtePhyEnb::initialize(int stage)
 
         // set TX direction
         std::string txDir = par("txDirection");
-        if (txDir.compare(txDirections[OMNI].txDirectionName)==0)
+        if (txDir == txDirections[OMNI].txDirectionName)
         {
             txDirection_ = OMNI;
         }

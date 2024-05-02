@@ -33,7 +33,7 @@ void ExtCell::initialize(int stage)
 
         // set TX direction
         std::string txDir = par("txDirection");
-        if (txDir.compare(txDirections[OMNI].txDirectionName)==0)
+        if (txDir == txDirections[OMNI].txDirectionName)
         {
             txDirection_ = OMNI;
         }
@@ -58,11 +58,11 @@ void ExtCell::initialize(int stage)
 
          // get allocation type
          std::string allocationType = par("bandAllocationType").stdstringValue();
-         if (allocationType.compare("CONTIGUOUS_ALLOC") == 0)
+         if (allocationType == "CONTIGUOUS_ALLOC")
          {
              allocationType_ = CONTIGUOUS_ALLOC;
          }
-         else if (allocationType.compare("RANDOM_ALLOC") == 0)
+         else if (allocationType == "RANDOM_ALLOC")
          {
              allocationType_ = RANDOM_ALLOC;
          }

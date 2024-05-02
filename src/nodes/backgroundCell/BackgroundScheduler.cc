@@ -25,7 +25,7 @@ void BackgroundScheduler::initialize(int stage)
         txPower_ = par("txPower");
 
         std::string txDir = par("txDirection");
-        if (txDir.compare(txDirections[OMNI].txDirectionName)==0)
+        if (txDir == txDirections[OMNI].txDirectionName)
         {
             txDirection_ = OMNI;
             txAngle_ = 0;

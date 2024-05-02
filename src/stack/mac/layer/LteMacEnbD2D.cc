@@ -44,7 +44,7 @@ void LteMacEnbD2D::initialize(int stage)
         cModule* rlc = getParentModule()->getSubmodule("rlc");
         std::string rlcUmType = rlc->par("LteRlcUmType").stdstringValue();
         bool rlcD2dCapable = rlc->par("d2dCapable").boolValue();
-        if (rlcUmType.compare("LteRlcUm") != 0 || !rlcD2dCapable)
+        if (rlcUmType != "LteRlcUm" || !rlcD2dCapable)
             throw cRuntimeError("LteMacEnbD2D::initialize - %s module found, must be LteRlcUmD2D. Aborting", rlcUmType.c_str());
     }
     else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT)

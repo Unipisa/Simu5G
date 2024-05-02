@@ -48,11 +48,11 @@ namespace Http {
 
     bool checkHttpVersion(std::string& httpVersion){
         // HTTP/1.1 or HTTP/2
-        return (httpVersion.compare("HTTP/1.1") == 0 || httpVersion.compare("HTTP/2") == 0);
+        return (httpVersion == "HTTP/1.1" || httpVersion == "HTTP/2");
     }
 
     bool checkHttpRequestMethod(const std::string& method){
-        return (method.compare("GET") == 0 || method.compare("POST") == 0 || method.compare("PUT") == 0 || method.compare("DELETE") == 0);
+        return (method == "GET" || method == "POST" || method == "PUT" || method == "DELETE");
     }
 
     HttpBaseMessage* parseHeader(const std::string& data)
@@ -134,23 +134,23 @@ namespace Http {
                 line = simu5g::utils::splitString(*it, ": ");
                 if(line.size() == 2)
                 {
-                    if(line[0].compare("Content-Length") == 0 )
+                    if(line[0] == "Content-Length")
                     {
                         EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
                         httpRequest->setContentLength(std::stoi(line[1]));
                         httpRequest->setRemainingDataToRecv(std::stoi(line[1]));
                     }
-                    else if (line[0].compare("Content-Type") == 0)
+                    else if (line[0] == "Content-Type")
                     {
                         EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
                         httpRequest->setContentType(line[1].c_str());
                     }
-                    else if (line[0].compare("Host")== 0)
+                    else if (line[0] == "Host")
                     {
                         EV << "httpUtili::parseHeader - Host: " << line[1] << endl;
                         httpRequest->setHost(line[1].c_str());
                     }
-                    else if (line[0].compare("Connection")== 0)
+                    else if (line[0] == "Connection")
                     {
                         EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
                         httpRequest->setConnection(line[1].c_str());
@@ -212,18 +212,18 @@ namespace Http {
                 line = simu5g::utils::splitString(*it, ": ");
                 if(line.size() == 2)
                 {
-                    if(line[0].compare("Content-Length")== 0)
+                    if(line[0] == "Content-Length")
                     {
                         EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
                         httpResponse->setContentLength(std::stoi(line[1]));
                         httpResponse->setRemainingDataToRecv(std::stoi(line[1]));
                     }
-                    else if (line[0].compare("Content-Type")== 0)
+                    else if (line[0] == "Content-Type")
                     {
                         EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
                         httpResponse->setContentType(line[1].c_str());
                     }
-                    else if (line[0].compare("Connection")== 0)
+                    else if (line[0] == "Connection")
                     {
                         EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
                         httpResponse->setConnection(line[1].c_str());

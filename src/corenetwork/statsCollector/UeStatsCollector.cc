@@ -57,7 +57,7 @@ void UeStatsCollector::initialize(int stage)
 
         if(isNr_) // the UE has both the Nics
         {
-            if(collectorType_.compare("NRueStatsCollector") == 0) // collector relative to the NR side of the Ue Nic
+            if(collectorType_ == "NRueStatsCollector") // collector relative to the NR side of the Ue Nic
             {
                 if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("nrPacketFlowManager") != -1)
                 {
@@ -69,7 +69,7 @@ void UeStatsCollector::initialize(int stage)
                     throw cRuntimeError("%s::initialize - NRUe does not have NRpacketFlowManager. This should not happen", collectorType_.c_str());
                 }
             }
-            else if(collectorType_.compare("ueStatsCollector") == 0)
+            else if(collectorType_ == "ueStatsCollector")
             {
                 if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
                 {

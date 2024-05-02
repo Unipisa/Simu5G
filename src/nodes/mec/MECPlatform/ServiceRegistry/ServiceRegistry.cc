@@ -106,7 +106,7 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_+"/services") == 0 ) //queries
+    if(uri == (baseUriQueries_ + "/services")) //queries
     {
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
@@ -168,7 +168,7 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
             {
                 for(const auto& serv : mecServices_)
                 {
-                    if(serv.getName().compare(sName) == 0)
+                    if(serv.getName() == sName)
                         jsonResBody.push_back(serv.toJson());
                 }
             }
@@ -203,7 +203,7 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 
     for(const auto& serv : mecServices_)
     {
-        if(serv.getName().compare(servDesc.name) == 0 && serv.getMecHost().compare(servDesc.mecHostname) == 0)
+        if(serv.getName() == servDesc.name && serv.getMecHost() == servDesc.mecHostname)
         {
             throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
         }

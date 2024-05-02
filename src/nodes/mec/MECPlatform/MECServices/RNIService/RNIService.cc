@@ -68,7 +68,7 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
     // std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_ + "/layer2_meas") == 0 ) //queries
+    if(uri == (baseUriQueries_ + "/layer2_meas")) //queries
     {
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
@@ -157,7 +157,7 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
         }
     }
 
-    else if (uri.compare(baseUriSubscriptions_) == 0) //subs
+    else if (uri == baseUriSubscriptions_) //subs
     {
         // TODO implement subscription?
         Http::send404Response(socket);

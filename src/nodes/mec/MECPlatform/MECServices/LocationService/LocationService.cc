@@ -139,7 +139,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
 //    std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
-    if(uri.compare(baseUriQueries_+"/users") == 0 ) //queries
+    if(uri == baseUriQueries_+"/users") //queries
     {
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
@@ -232,7 +232,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
             return;
         }
     }
-    else if (uri.compare(baseSubscriptionLocation_) == 0) // return the list of the subscriptions
+    else if (uri == baseSubscriptionLocation_) // return the list of the subscriptions
     {
         // TODO implement list of subscriptions
         Http::send404Response(socket);
@@ -269,7 +269,7 @@ void LocationService::handlePOSTRequest(const HttpRequestMessage *currentRequest
 //    EV << "LocationService::handlePOSTRequest - baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(uri.compare(baseUriSubscriptions_+"/area/circle") == 0)
+    if(uri == (baseUriSubscriptions_ + "/area/circle"))
     {
         nlohmann::json jsonBody;
         try
@@ -349,7 +349,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
     EV << "LocationService::handlePUTRequest - baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(baseUri.compare(baseUriSubscriptions_+"/area/circle") == 0)
+    if(baseUri == (baseUriSubscriptions_ + "/area/circle"))
     {
        Subscriptions::iterator it = subscriptions_.find(subId);
        if(it != subscriptions_.end())
@@ -421,7 +421,7 @@ void LocationService::handleDELETERequest(const HttpRequestMessage *currentReque
     EV << "baseuri: "<< baseUri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
-    if(baseUri.compare(baseUriSubscriptions_+"/area/circle") == 0)
+    if(baseUri == (baseUriSubscriptions_ + "/area/circle"))
     {
         int subId = std::stoi(ssubId);
         Subscriptions::iterator it = subscriptions_.find(subId);

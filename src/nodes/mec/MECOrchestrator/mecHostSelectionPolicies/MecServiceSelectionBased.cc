@@ -56,7 +56,7 @@ cModule* MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
        auto it = mecServices->begin();
        for(; it != mecServices->end() ; ++it)
        {
-           if(serviceName.compare(it->getName()) == 0 && it->getMecHost().compare(bestHost->getName()) == 0)
+           if(serviceName == it->getName() && it->getMecHost() == bestHost->getName())
            {
               EV << "MecServiceSelectionBased::findBestMecHost - The temporary Mec Host has the MEC service "<< it->getName() << " required by the Mec App. It has been chosen as the best one"<< endl;
               bestHost = mecHost;
