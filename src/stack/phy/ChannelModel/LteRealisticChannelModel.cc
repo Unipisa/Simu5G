@@ -80,7 +80,7 @@ void LteRealisticChannelModel::initialize(int stage)
         else if (fType == "RAYLEIGH")
             fadingType_ = RAYLEIGH;
         else
-            fadingType_ = JAKES;
+            throw cRuntimeError("Unrecognized value in 'fading_type' parameter: \"%s\"", fType.c_str());
 
         fadingPaths_ = par("fading_paths");
         enableBackgroundCellInterference_ = par("bgCell_interference");
