@@ -518,7 +518,9 @@ void LteMaxCiOptMB::readSolution()
 
         // read UE id and Band ID
         ue = line.substr(pos+5,4);
+        int ueId = atoi(ue.c_str());
         band = line.substr(pos+10,1);
+        int bandId = atoi(band.c_str());
 
         // read the value
         pos = line.find("value=");
@@ -530,13 +532,13 @@ void LteMaxCiOptMB::readSolution()
 //        cout  << NOW << " LteMaxCiOptMB::readSolution - Ue[" << ue<<"] - band[" << band<<"] - value[" << value << "]" << endl;
         limit = (value.find('1')!=string::npos)? -1 : -2;
         bandLimit.limit_.push_back(limit);
-        bandLimit.band_  = atoi(band.c_str());
-        schedulingDecision_[atoi(ue.c_str())].push_back(bandLimit);
+        bandLimit.band_  = bandId;
+        schedulingDecision_[ueId].push_back(bandLimit);
 
         if(limit==-1)
         {
-            usableBands_[atoi(ue.c_str())].push_back(bandLimit.band_);
-            EV << " LteMaxCiOptMB::readSolution - Adding usable band[" << bandLimit.band_ << "] for UE[" <<  atoi(ue.c_str()) << "]" << endl;
+            usableBands_[ueId].push_back(bandLimit.band_);
+            EV << " LteMaxCiOptMB::readSolution - Adding usable band[" << bandLimit.band_ << "] for UE[" <<  ueId << "]" << endl;
         }
 
     }
