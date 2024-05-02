@@ -81,7 +81,7 @@ void VoDUDPClient::finish()
     int numPktPerFrame = par("numPktPerFrame");
     int numFrame = par("numFrame");
 
-    if ((!strcmp(startMetrics.c_str(), "on")))
+    if (startMetrics == "on")
     {
         stringstream ss, nf, pb, npktf;
         ss << getId();

@@ -52,7 +52,7 @@ void UeStatsCollector::initialize(int stage)
          * since they are splitted, too.
          */
 
-        bool isNr_ = (strcmp(getAncestorPar("nicType").stdstringValue().c_str(),"NRNicUe") == 0) ? true : false;
+        bool isNr_ = (getAncestorPar("nicType").stdstringValue() == "NRNicUe") ? true : false;
 
 
         if(isNr_) // the UE has both the Nics

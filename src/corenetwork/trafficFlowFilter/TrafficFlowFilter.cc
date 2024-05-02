@@ -59,7 +59,7 @@ void TrafficFlowFilter::initialize(int stage)
         // obtain the IP address of externel MEC applications (if any)
 
         std::string extAddress = getAncestorPar("extMeAppsAddress").stringValue();
-        if(strcmp(extAddress.c_str(), "") != 0)
+        if(!extAddress.empty())
         {
             std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();
             if(extAdd.size() != 2){
@@ -74,7 +74,7 @@ void TrafficFlowFilter::initialize(int stage)
     if(getParentModule()->hasPar("mecHost")){
 
         meHost = getParentModule()->par("mecHost").stringValue();
-        if(isBaseStation(ownerType_) &&  strcmp(meHost.c_str(), ""))
+        if(isBaseStation(ownerType_) && !meHost.empty())
         {
             std::stringstream meHostName;
             meHostName << meHost.c_str() << ".virtualisationInfrastructure";

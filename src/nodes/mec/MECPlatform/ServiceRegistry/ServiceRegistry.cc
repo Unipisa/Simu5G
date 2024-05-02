@@ -220,7 +220,7 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
     std::string serInstanceId = uuidBase + std::to_string(servIdCounter++);
 
 
-    bool isLocal = (strcmp(meHost->getName(), servDesc.mecHostname.c_str()) == 0) ? true : false;
+    bool isLocal = (servDesc.mecHostname == meHost->getName()) ? true : false;
 
 
 

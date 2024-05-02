@@ -37,7 +37,7 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
     auto devAppPacket = staticPtrCast<const WarningAppPacket>(chunk);
     std::string  ss = devAppPacket->getType();
 
-    if(strcmp(ss.c_str(), START_WARNING) == 0)
+    if(ss == START_WARNING)
     {
         auto startPk = staticPtrCast<const WarningStartPacket>(chunk);
         stream.writeByte((uint8_t) 0);
@@ -57,7 +57,7 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
             throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(startPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), STOP_WARNING) == 0)
+    else if(ss == STOP_WARNING)
     {
         auto stopPk = staticPtrCast<const WarningStopPacket>(chunk);
         stream.writeByte((uint8_t) 1); // CODE
@@ -68,7 +68,7 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
             throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(stopPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), WARNING_ALERT) == 0)
+    else if(ss == WARNING_ALERT)
     {
         auto alertPk = staticPtrCast<const WarningAlertPacket>(chunk);
         stream.writeByte((uint8_t) 2);
@@ -88,7 +88,7 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
             throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(alertPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), START_ACK) == 0)
+    else if(ss == START_ACK)
     {
         auto alertPk = staticPtrCast<const WarningAlertPacket>(chunk);
         stream.writeByte((uint8_t) 3);
@@ -97,7 +97,7 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
             throw cRuntimeError("Warning application packet length = %d smaller than required %d bytes", (int)B(alertPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), START_NACK) == 0)
+    else if(ss == START_NACK)
         {
             auto alertPk = staticPtrCast<const WarningAlertPacket>(chunk);
             stream.writeByte((uint8_t) 4);

@@ -60,7 +60,7 @@ void LtePhyEnb::initialize(int stage)
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));
             das_ = new DasFilter(this, binder_, cellInfo_->getRemoteAntennaSet(), 0);
         }
-        isNr_ = (strcmp(getAncestorPar("nicType").stdstringValue().c_str(),"NRNicEnb") == 0) ? true : false;
+        isNr_ = (getAncestorPar("nicType").stdstringValue() == "NRNicEnb");
 
         nodeType_ = (isNr_) ? GNODEB : ENODEB;
         WATCH(nodeType_);

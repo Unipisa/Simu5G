@@ -34,7 +34,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
     auto devAppPacket = staticPtrCast<const DeviceAppPacket>(chunk);
     std::string  ss = devAppPacket->getType();
 //
-    if(strcmp(ss.c_str(), START_MECAPP) == 0)
+    if(ss == START_MECAPP)
     {
         auto startPk = staticPtrCast<const DeviceAppStartPacket>(chunk);
         stream.writeByte((uint8_t) START_MECAPP_CODE);
@@ -48,7 +48,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             throw cRuntimeError("DeviceApp - START_MECAPP_CODE length = %d smaller than required %d bytes", (int)B(startPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), ACK_START_MECAPP) == 0)
+    else if(ss == ACK_START_MECAPP)
     {
 
         auto ackPk = staticPtrCast<const DeviceAppStartAckPacket>(chunk);
@@ -81,7 +81,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             stream.writeByteRepeatedly('?', remainders);
         }
     }
-    else if(strcmp(ss.c_str(), STOP_MECAPP) == 0)
+    else if(ss == STOP_MECAPP)
     {
         auto stopPk = staticPtrCast<const DeviceAppStopPacket>(chunk);
         stream.writeByte((uint8_t) STOP_MECAPP_CODE);
@@ -95,7 +95,7 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             throw cRuntimeError("DeviceApp - STOP_MECAPP_CODE length = %d smaller than required %d bytes", (int)B(stopPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
         stream.writeByteRepeatedly('?', remainders);
     }
-    else if(strcmp(ss.c_str(), ACK_STOP_MECAPP) == 0)
+    else if(ss == ACK_STOP_MECAPP)
     {
         auto ackPk = staticPtrCast<const DeviceAppStopAckPacket>(chunk);
         if(ackPk->getResult() == true)
