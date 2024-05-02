@@ -23,4 +23,5 @@ simple BackgroundCellTrafficManager extends BackgroundTrafficManager like IBackg
     parameters:
         @display("i=block/control");
         @class("BackgroundCellTrafficManager");
+        string bgSchedulerModule = default("^.^.bgScheduler");
 }

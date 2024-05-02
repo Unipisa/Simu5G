@@ -40,7 +40,7 @@ void BackgroundCellTrafficManager::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
-        bgScheduler_ = check_and_cast<BackgroundScheduler*>(getParentModule()->getParentModule()->getSubmodule("bgScheduler"));
+        bgScheduler_.reference(this, "bgSchedulerModule", true);
 
         if (bgScheduler_->isNr())
             bgAmc_ = new BackgroundCellAmcNr();

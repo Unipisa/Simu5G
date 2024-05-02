@@ -12,6 +12,8 @@
 #ifndef BACKGROUNDCELLTRAFFICMANAGER_H_
 #define BACKGROUNDCELLTRAFFICMANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "nodes/backgroundCell/BackgroundCellAmc.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
@@ -28,7 +30,7 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManager
   protected:
 
     // reference to background scheduler
-    BackgroundScheduler* bgScheduler_;
+    inet::ModuleRefByPar<BackgroundScheduler> bgScheduler_;
 
     // reference to class AMC for this cell
     BackgroundCellAmc* bgAmc_;
