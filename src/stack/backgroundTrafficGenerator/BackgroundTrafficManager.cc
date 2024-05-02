@@ -60,6 +60,7 @@ void BackgroundTrafficManager::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         numBgUEs_ = getAncestorPar("numBgUes");
+        binder_.reference(this, "binderModule", true);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
@@ -67,12 +68,12 @@ void BackgroundTrafficManager::initialize(int stage)
         for (int i=0; i < numBgUEs_; i++)
             bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
 
-        phyPisaData_ = &(getBinder()->phyPisaData);
+        phyPisaData_ = &(binder_->phyPisaData);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
     {
         // get the reference to the MAC layer
-        mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
+        mac_.reference(this, "macModule", true);// = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
@@ -104,7 +105,7 @@ void BackgroundTrafficManager::initialize(int stage)
             }
         }
 
-        getBinder()->addBgTrafficManagerInfo(info);
+        binder_->addBgTrafficManagerInfo(info);
     }
 }
 

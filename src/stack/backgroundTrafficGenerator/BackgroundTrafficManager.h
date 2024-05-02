@@ -12,9 +12,12 @@
 #ifndef BACKGROUNDTRAFFICMANAGER_H_
 #define BACKGROUNDTRAFFICMANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "common/blerCurves/PhyPisaData.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 namespace simu5g {
 
@@ -47,8 +50,11 @@ class BackgroundTrafficManager : public cSimpleModule
     // indexes of the backlogged bg UEs waiting for RAC+BSR handshake
     std::list<int> waitingForRac_;
 
+    // reference to binder module
+    inet::ModuleRefByPar<Binder> binder_;
+
     // references to the MAC and PHY layer of the e/gNodeB
-    LteMacEnb* mac_;
+    inet::ModuleRefByPar<LteMacEnb> mac_;
 
     //pointer to pisadata
     PhyPisaData* phyPisaData_;

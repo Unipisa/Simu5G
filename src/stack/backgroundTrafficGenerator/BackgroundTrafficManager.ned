@@ -22,5 +22,7 @@ simple BackgroundTrafficManager like IBackgroundTrafficManager
     parameters:
         @display("i=block/control");
         @class("BackgroundTrafficManager");
+        string binderModule = default("binder");
+        string macModule = default("^.^.mac");
 }
 
