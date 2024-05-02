@@ -153,12 +153,7 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
 
     RanNodeType nodeType;
     std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
-    if (strcmp(nodeTypePar.c_str(), "ENODEB") == 0 || strcmp(nodeTypePar.c_str(), "GNODEB") == 0)
-        nodeType = ENODEB;
-    else if (strcmp(nodeTypePar.c_str(), "GNODEB") == 0)
-        nodeType = GNODEB;
-    else
-        nodeType = UE;
+    nodeType = static_cast<RanNodeType>(omnetpp::cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE

@@ -77,16 +77,11 @@ void LtePhyEnb::initialize(int stage)
 
         // set TX direction
         std::string txDir = par("txDirection");
-        if (txDir == txDirections[OMNI].txDirectionName)
-        {
-            txDirection_ = OMNI;
-        }
-        else   // ANISOTROPIC
-        {
-            txDirection_ = ANISOTROPIC;
-
-            // set TX angle
-            txAngle_ = par("txAngle");
+        txDirection_ = static_cast<TxDirectionType>(omnetpp::cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
+        switch (txDirection_) {
+            case OMNI: txAngle_ = 0.0; break;
+            case ANISOTROPIC: txAngle_ = par("txAngle"); break;
+            default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
         }
 
         bdcUpdateInterval_ = cellInfo_->par("broadcastMessageInterval");

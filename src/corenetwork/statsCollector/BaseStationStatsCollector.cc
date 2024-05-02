@@ -53,8 +53,8 @@ void BaseStationStatsCollector::initialize(int stage){
     {
         EV << collectorType_ << "::initialize stage: "<< stage << endl;
         collectorType_ = par("collectorType").stringValue();
-        std::string nodeType =  getAncestorPar("nodeType").stringValue();
-        nodeType_ = nodeType == "ENODEB" ? ENODEB: GNODEB;
+        std::string nodeType =  getAncestorPar("nodeType").stdstringValue();
+        nodeType_ = static_cast<RanNodeType>(omnetpp::cEnum::get("simu5g::RanNodeType")->lookup(nodeType.c_str()));
         EV << collectorType_ << "::initialize node type: "<< nodeType << endl;
     }
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER)

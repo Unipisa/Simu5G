@@ -429,7 +429,7 @@ void LteMacBase::initialize(int stage)
             if(getParentModule()->findSubmodule("packetFlowManager") != -1)
             {
                 RanNodeType nt = getNodeType();
-                const char *cnt = (nt == UE)? "UE": (nt == ENODEB)? "ENODEB": "GNODEB";
+                const char *cnt = omnetpp::cEnum::get("simu5g::RanNodeType")->getStringFor(nt);
                 EV << "LteMacBase::initialize - MAC layer, nodeType: "<< cnt  << endl;
                 packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("packetFlowManager"));
             }
