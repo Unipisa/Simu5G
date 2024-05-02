@@ -25,7 +25,7 @@ simple VirtualisationInfrastructureManager
         @display("i=block/control");
 
         int mp1Port = default(10021);
-        string scheduling = default("segregation");
+        string scheduling @enum(segregation,fair) = default("segregation");
 
     gates:
         input virtualisationManagerIn;

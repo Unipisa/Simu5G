@@ -21,7 +21,7 @@ simple LteRealisticChannelModel extends LteChannelModel
         bool shadowing = default(true);
 
         // Pathloss scenario from ITU -->
-        string scenario = default("URBAN_MACROCELL");
+        string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOW_SCENARIO) = default("URBAN_MACROCELL");
 
         // eNodeB height -->
         double nodeb_height @unit(m) = default(25m);
@@ -69,7 +69,7 @@ simple LteRealisticChannelModel extends LteChannelModel
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYGHLEY) -->
-        string fading_type = default("JAKES"); // TODO @enum
+        string fading_type @enum(RAYLEIGH,JAKES) = default("JAKES");
         // If jakes fading this parameter specify the number of path (tap channel) -->
         int fading_paths = default(6);
 

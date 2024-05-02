@@ -24,7 +24,7 @@ simple BackgroundScheduler
         double txPower @unit(dBm) = default(46dBm);
 
         // transmission direction
-        string txDirection = default("OMNI");
+        string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
 
         // transmission angle
         double txAngle @unit(deg) = default(0deg);

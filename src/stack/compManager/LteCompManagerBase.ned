@@ -19,7 +19,7 @@ simple LteCompManagerBase like LteCompManager
         @display("i=block/cogwheel");
         @class("LteCompManagerBase");
 
-        string compNodeType = default("COMP_CLIENT");          // one of COMP_CLIENT, COMP_CLIENT_COORDINATOR, COMP_COORDINATOR
+        string compNodeType @enum(COMP_CLIENT,COMP_CLIENT_COORDINATOR,COMP_COORDINATOR) = default("COMP_CLIENT");
         int coordinatorId;							           // id of the coordinator node
         string clientList = default("");                       // list of ids of client nodes, separated by blank spaces
         double coordinationPeriod @unit(s) = default(0.001s);

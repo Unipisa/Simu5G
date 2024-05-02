@@ -23,10 +23,10 @@ simple LteDlFeedbackGenerator
         @display("i=block/cogwheel");
 
         // can be ALLBANDS, PREFERRED, WIDEBAND
-        string feedbackType = default("ALLBANDS");
+        string feedbackType @enum(ALLBANDS,PREFERRED,WIDEBAND) = default("ALLBANDS");
 
         // resource allocation type ("distributed" or "localized")
-        string rbAllocationType = default("localized");
+        string rbAllocationType @enum(distributed,localized) = default("localized");
 
         // period for Periodic feedback in TTI
         int fbPeriod @unit(tti) = default(6tti); 
@@ -40,16 +40,16 @@ simple LteDlFeedbackGenerator
         // initial txMode (see LteCommon.h)
         //     SINGLE_ANTENNA_PORT0,SINGLE_ANTENNA_PORT5,TRANSMIT_DIVERSITY,OL_SPATIAL_MULTIPLEXING,
         // CL_SPATIAL_MULTIPLEXING,MULTI_USER,
-        string initialTxMode = default("SINGLE_ANTENNA_PORT0");
+        string initialTxMode @enum(SINGLE_ANTENNA_PORT0,SINGLE_ANTENNA_PORT5,TRANSMIT_DIVERSITY,OL_SPATIAL_MULTIPLEXING,CL_SPATIAL_MULTIPLEXING,MULTI_USER) = default("SINGLE_ANTENNA_PORT0");
 
         //Feedback Computation (warning, this should be compatible with
         // analogue model and Decider
 //        xml feedbackComputation;
 
-        //Type of generator: ideal, real, das_aware
-        //ideal: feedback generator reports feedback for each txmode and for each rus
-        //real: feedback generator reports feedback only for the last txmode used but for each rus
-        //das_aware: feedback generator reports feedback only for the last txmode used and only for rus in Antenna set
-        string feedbackGeneratorType = default("IDEAL");
+        //Type of generator: IDEAL, REAL, DAS_AWARE
+        // IDEAL: feedback generator reports feedback for each txmode and for each rus
+        // REAL: feedback generator reports feedback only for the last txmode used but for each rus
+        // DAS_AWARE: feedback generator reports feedback only for the last txmode used and only for rus in Antenna set
+        string feedbackGeneratorType @enum(IDEAL,REAL,DAS_AWARE) = default("IDEAL");
 }
 

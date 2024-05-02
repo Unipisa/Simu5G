@@ -24,7 +24,7 @@ simple BackgroundCellChannelModel
         bool shadowing = default(true);
 
         // Pathloss scenario from ITU -->
-        string scenario = default("URBAN_MACROCELL");
+        string scenario @enum(INDOOR_HOTSPOT,URBAN_MICROCELL,URBAN_MACROCELL,RURAL_MACROCELL,SUBURBAN_MACROCELL,UNKNOW_SCENARIO) = default("URBAN_MACROCELL");
 
         // eNodeB height -->
         double nodeb_height @unit(m) = default(25m);
@@ -60,8 +60,8 @@ simple BackgroundCellChannelModel
         bool fixed_los = default(false);
         // Enable/disable fading -->
         bool fading = default(true);
-        // Fading type (JAKES or RAYGHLEY) -->
-        string fading_type = default("JAKES");
+        // Fading type (JAKES or RAYLEIGH) -->
+        string fading_type @enum(RAYLEIGH,JAKES) = default("JAKES");
         // If jakes fading this parameter specify the number of path (tap channel) -->
         int fading_paths = default(6);
         double delay_rms @unit(s) = default(363ns);

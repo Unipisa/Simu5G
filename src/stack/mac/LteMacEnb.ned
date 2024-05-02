@@ -28,16 +28,16 @@ simple LteMacEnb extends LteMacBase
         //#
 
         // AMC Type:  "LteAmc", "NRAmc"
-        string amcType = default("LteAmc");
+        string amcType @enum(LteAmc,NRAmc) = default("LteAmc");
 
         // AMC Mode:  "auto", "piloted", "multi", "das", "D2D"
-        string amcMode = default("AUTO");
+        string amcMode @enum(AUTO,D2D) = default("AUTO");
 
         //Min disance used to pair two MuMimo UE
         int muMimoMinDistance = default(50);
 
         // resource allocation type ("distributed" or "localized")
-        string rbAllocationType = default("localized");
+        string rbAllocationType @enum(distributed,localized) = default("localized");
 
         // summary feedback confidence function lower bound
         double summaryLowerBound @unit(s) = default(5ms);
@@ -67,13 +67,13 @@ simple LteMacEnb extends LteMacBase
         //# eNb Scheduler Parameters
         //#
         // Scheduling discipline. See LteCommon.h for discipline meaning.
-        string schedulingDisciplineDl = default("MAXCI");
-        string schedulingDisciplineUl = default("MAXCI");
+        string schedulingDisciplineDl @enum(DRR,PF,MAXCI,MAXCI_MB,MAXCI_OPT_MB,MAXCI_COMP,ALLOCATOR_BESTFIT) = default("MAXCI");
+        string schedulingDisciplineUl @enum(DRR,PF,MAXCI,MAXCI_MB,MAXCI_OPT_MB,MAXCI_COMP,ALLOCATOR_BESTFIT) = default("MAXCI");
 
         // Proportional Fair parameters
         double pfAlpha = default(0.95);
 
-        string pilotMode = default("ROBUST_CQI"); // one of MIN_CQI, MAX_CQI, AVG_CQI, ROBUST_CQI
+        string pilotMode @enum(IN_CQI,MAX_CQI,AVG_CQI,MEDIAN_CQI,ROBUST_CQI) = default("ROBUST_CQI");
 
         //#
         //# Statistics related to resource blocks occupancy
