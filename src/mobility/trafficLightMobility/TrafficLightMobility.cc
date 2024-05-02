@@ -175,7 +175,7 @@ void TrafficLightMobility::move()
 
 void TrafficLightMobility::getTrafficLights()
 {
-    if(this->hasPar("trafficLightsList") && strcmp(par("trafficLightsList").stringValue(), "")){
+    if(this->hasPar("trafficLightsList") && !par("trafficLightsList").isEmptyString()){
         std::string trafficLightsList = par("trafficLightsList").stdstringValue();
         EV <<"TrafficLightMobility::getTrafficLights - trafficLightsList: "<< par("trafficLightsList").stringValue() << endl;
         char* token = strtok ( (char*)trafficLightsList.c_str(), ", ");            // split by commas

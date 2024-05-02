@@ -537,7 +537,7 @@ void MecServiceBase::getConnectedBaseStations(){
     EV <<"MecServiceBase::getConnectedBaseStations" << endl;
 
     //getting the list of BS associated to this mec system from NED
-    if(meHost_->hasPar("bsList") && strcmp(meHost_->par("bsList").stringValue(), "")){
+    if(meHost_->hasPar("bsList") && !meHost_->par("bsList").isEmptyString()){
 
        char* token = strtok ( (char*)meHost_->par("bsList").stringValue(), ", ");            // split by commas
        while (token != NULL)

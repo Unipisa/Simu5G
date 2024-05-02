@@ -454,7 +454,7 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
 void MecOrchestrator::getConnectedMecHosts()
 {
     //getting the list of mec hosts associated to this mec system from parameter
-    if(this->hasPar("mecHostList") && strcmp(par("mecHostList").stringValue(), "")){
+    if(this->hasPar("mecHostList") && !par("mecHostList").isEmptyString()){
         std::string mecHostList = par("mecHostList").stdstringValue();
         EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< par("mecHostList").stringValue() << endl;
         char* token = strtok ( (char*)mecHostList.c_str(), ", ");            // split by commas
@@ -510,7 +510,7 @@ void MecOrchestrator::registerMecService(ServiceDescriptor& serviceDescriptor) c
 void MecOrchestrator::onboardApplicationPackages()
 {
     //getting the list of mec hosts associated to this mec system from parameter
-    if(this->hasPar("mecApplicationPackageList") && strcmp(par("mecApplicationPackageList").stringValue(), "")){
+    if(this->hasPar("mecApplicationPackageList") && !par("mecApplicationPackageList").isEmptyString()){
 
         char* token = strtok ( (char*) par("mecApplicationPackageList").stringValue(), ", ");            // split by commas
 
