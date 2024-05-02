@@ -146,10 +146,10 @@ class LteMacBase : public omnetpp::cSimpleModule
     PacketFlowManagerBase * packetFlowManager_;
 
     // support to different numerologies
-    typedef struct {
+    struct NumerologyPeriodCounter {
         unsigned int max;
         unsigned int current;
-    } NumerologyPeriodCounter;
+    };
     std::map<NumerologyIndex, NumerologyPeriodCounter> numerologyPeriodCounter_;
 
     unsigned int getNumerologyPeriodCounter(NumerologyIndex index) { return numerologyPeriodCounter_[index].current; }

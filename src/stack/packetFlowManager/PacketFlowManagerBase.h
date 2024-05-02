@@ -53,15 +53,14 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
          * this structure maintains the state of a PDCP
          * used to calculate L2Meas of RNI service
          */
-        typedef struct
-        {
+        struct PdcpStatus {
             bool hasArrivedAll;
             bool discardedAtRlc;
             bool discardedAtMac;
             bool sentOverTheAir;
             unsigned int pdcpSduSize;
             omnetpp::simtime_t entryTime;
-        } PdcpStatus;
+        };
 
         DiscardedPkts pktDiscardCounterTotal_; // total discarded packets counter of the node
 

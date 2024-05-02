@@ -30,8 +30,7 @@
 
 using namespace omnetpp;
 
-typedef struct
-{
+struct FragmentedFrameStatus {
     int frameNumber;
     int frameSize;
     int remainingFragments;
@@ -42,8 +41,7 @@ typedef struct
 
     int remainingFrameBytes;
     int remainingFramesSlices;
-
-} FragmentedFrameStatus;
+};
 
 
 /**

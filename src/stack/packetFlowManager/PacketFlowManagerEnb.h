@@ -48,23 +48,19 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 {
     protected:
 
-        typedef struct
-        {
+        struct Grant {
            unsigned int grantId;
            simtime_t sendTimestamp;
+        };
 
-        }Grant;
-
-        typedef struct
-        {
+        struct BurstStatus {
             std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
             simtime_t startBurstTransmission; // instant of the first trasmission of the burst
             unsigned int burstSize; // PDCP sdu size of the burst
             bool isComplited;
-        } BurstStatus;
+        };
 
-        struct PacketLoss
-        {
+        struct PacketLoss {
             int lastPdpcSno;
             int totalLossPdcp;
             unsigned int totalPdcpArrived;
@@ -92,8 +88,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         * The node can have different active connections (lcid) at the same time, hence we need to
         * maintain the status for each of them
         */
-        typedef struct
-        {
+        struct StatusDescriptor {
             MacNodeId nodeId_; // dest node of this lcid
             bool burstState_; // control variable that controls one burst active at a time
             BurstId burstId_; // separates the bursts
@@ -103,7 +98,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
             std::map<unsigned int, SequenceNumberSet> rlcSdusPerPdu_;  // for each RLC PDU, stores the included RLC SDUs
             std::map<unsigned int, SequenceNumberSet> macSdusPerPdu_;  // for each MAC PDU, stores the included MAC SDUs (should be a 1:1 association)
             //std::vector<unsigned int> macPduPerProcess_;               // for each HARQ process, stores the included MAC PDU
-        } StatusDescriptor;
+        };
 
         typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
         ConnectionMap connectionMap_; // lcid to the corresponding StatusDescriptor

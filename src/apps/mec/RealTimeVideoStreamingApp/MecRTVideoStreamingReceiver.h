@@ -28,15 +28,14 @@
 class MecRTVideoStreamingReceiver : public MecAppBase
 {
 
-    typedef struct
-    {
+    struct ReceivingFrameStatus {
         int frameNumber; // i.e. segment sequence number
         int frameSize;
         int currentSize;
         int numberOfFragments;
         int numberOfFragmentsReceived;
         double playoutTime;
-    } ReceivingFrameStatus;
+    };
 
 //    double playoutDelay_;
 //
