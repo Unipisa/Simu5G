@@ -58,7 +58,7 @@ void UERequestApp::initialize(int stage)
     sno_ = 0;
 
     //retrieve parameters
-    requestPacketSize_ = par("requestPacketSize");
+    requestPacketSize_ = B(par("requestPacketSize"));
     requestPeriod_ = par("period");
 
     localPort_ = par("localPort");
@@ -272,7 +272,7 @@ void UERequestApp::sendRequest()
     req->setType(UEAPP_REQUEST);
     req->setSno(sno_++);
     req->setRequestSentTimestamp(simTime());
-    req->setChunkLength(inet::B(requestPacketSize_));
+    req->setChunkLength(requestPacketSize_);
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(req);
 
@@ -300,7 +300,7 @@ void UERequestApp::sendStopApp()
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_STOP );
     req->setRequestSentTimestamp(simTime());
-    req->setChunkLength(inet::B(requestPacketSize_));
+    req->setChunkLength(requestPacketSize_);
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(req);
 

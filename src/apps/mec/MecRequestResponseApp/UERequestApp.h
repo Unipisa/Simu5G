@@ -34,7 +34,7 @@ class UERequestApp: public cSimpleModule
     inet::UdpSocket socket;
 
     unsigned int sno_;
-    int requestPacketSize_;
+    inet::B requestPacketSize_;
     double requestPeriod_;
 
     simtime_t start_;
