@@ -40,9 +40,6 @@ simple LteMacEnb extends LteMacBase
         // AMC Mode:  "auto", "piloted", "multi", "das", "D2D"
         string amcMode @enum(AUTO,D2D) = default("AUTO");
 
-        //Min disance used to pair two MuMimo UE
-        int muMimoMinDistance = default(50);
-
         // resource allocation type ("distributed" or "localized")
         string rbAllocationType @enum(distributed,localized) = default("localized");
 

@@ -26,7 +26,6 @@ simple ChannelControl
         double alpha = default(2); // path loss coefficient
         double carrierFrequency @unit("Hz") = default(2.4GHz); // base carrier frequency of all the channels (in Hz)
         int numChannels = default(1); // number of radio channels (frequencies)
-        string propagationModel @enum("FreeSpaceModel","TwoRayGroundModel","RiceModel","RayleighModel","NakagamiModel","LogNormalShadowingModel") = default("FreeSpaceModel");
         @display("i=misc/sun");
         @labels(node);
 }

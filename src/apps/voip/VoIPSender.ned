@@ -33,7 +33,6 @@ simple VoIPSender like IApp
         bool is_talk = default(true); // whether transmission starts with talk or silence
         double sampling_time @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
-        bool silences = default(true);
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 
         @signal[voIPGeneratedThroughput];

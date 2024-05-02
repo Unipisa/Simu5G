@@ -33,7 +33,6 @@ moduleinterface ILteMac
 {
     parameters:
         @display("i=block/mac");
-        string interfaceTableModule;
 
     gates:
         input RLC_to_MAC;    // RLC to MAC

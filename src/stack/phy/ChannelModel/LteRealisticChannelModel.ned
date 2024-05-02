@@ -97,11 +97,6 @@ simple LteRealisticChannelModel extends LteChannelModel
 
         bool enable_extCell_los = default(true);
 
-        // read channel information from log file
-        bool useRsrqFromLog = default(false);
-        int rsrqShift = default(22);
-        double rsrqScale = default(1.0);
-
         // collection of SINR statistics can be disabled because it might be quite time-consuming
         bool collectSinrStatistics = default(true);
 

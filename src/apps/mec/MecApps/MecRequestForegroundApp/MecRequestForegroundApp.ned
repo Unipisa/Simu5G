@@ -27,8 +27,5 @@ simple MecRequestForegroundApp extends MecAppBase
 {
     parameters:
         @class(MecRequestForegroundApp);
-        bool allocateHostResources = default(false);
-
-        int packetSize @unit(B) = default(10B);
         double lambda @unit(s) = default(10ms);
 }

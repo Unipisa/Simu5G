@@ -30,8 +30,6 @@ simple MecRequestBackgroundGeneratorApp extends MecAppBase
         int numberOfApplications;
         bool allocateHostResources = default(false);
 
-        int packetSize @unit(B) = default(10B);
-
         //resource required info
         requiredRam = default(10MB);
         requiredDisk = default(100MB);

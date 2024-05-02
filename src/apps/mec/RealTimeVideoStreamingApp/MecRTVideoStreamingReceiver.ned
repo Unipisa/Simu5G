@@ -25,9 +25,6 @@ simple MecRTVideoStreamingReceiver extends MecAppBase
     parameters:
         @class(MecRTVideoStreamingReceiver);
         @display("i=block/app;is=s");
-
         int packetSize @unit(B) = default(10B);
-
-        double discardPercentage = 0.8;
         double initialPlayoutDelay @unit(s) = 150ms;
 }

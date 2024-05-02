@@ -24,7 +24,7 @@ simple VoIPReceiver like IApp
 {
     parameters:
         int localPort = default(3000);
-        int emodel_Ie_ = default(5);
+        int emodel_Ie_ = default(5);  // TODO from some ITU standard, figure it out
         int emodel_Bpl_ = default(10);
         int emodel_A_ = default(5);
         double emodel_Ro_ = default(93.2);

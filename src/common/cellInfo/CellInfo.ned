@@ -41,12 +41,6 @@ simple CellInfo
         // The maximum Y-coordinate of the area constraint, unconstrained by default
         double constraintAreaMaxY @unit(m) = default(1m/0); 
 
-        // Speed used in CircleMobility and ConstSpeedMobility modules
-        double speed @unit(mps) = default(0mps);
-
-        // Position update interval for CircleMobility and ConstSpeedMobility
-        double positionUpdateInterval @unit(s) = default(0.001s);
-
         // Interval for sending broadcast messages (used for handover or DAS)
         double broadcastMessageInterval @unit(s) = default(1s);
 

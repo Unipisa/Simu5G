@@ -25,7 +25,6 @@ simple LteMacBase like ILteMac
     parameters:
         @display("i=block/mac");
         string binderModule = default("binder");
-        string interfaceTableModule;
         string packetFlowManagerModule = default("^.packetFlowManager"); // TODO or nrPacketFlowManager
 
         //# Mac Queues
