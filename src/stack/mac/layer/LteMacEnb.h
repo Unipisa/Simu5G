@@ -194,7 +194,7 @@ class LteMacEnb : public LteMacBase
     virtual BackgroundTrafficManager* getBackgroundTrafficManager(double carrierFrequency)
     {
         if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
-            throw cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
+            throw omnetpp::cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
         return bgTrafficManager_[carrierFrequency];
     }
 
