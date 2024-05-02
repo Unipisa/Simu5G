@@ -28,7 +28,7 @@ simple ExtCell
         double txPower @unit(dBm) = default(46dBm);
 
         // transmission direction
-        string txDirection = default("OMNI");
+        string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
 
         // transmission angle
         double txAngle @unit(deg) = default(0deg);
@@ -40,7 +40,7 @@ simple ExtCell
         int numBands = default(6);
 
         // --- ALLOCATION MANAGEMENT --- //
-        string bandAllocationType = default("FULL_ALLOC");
+        string bandAllocationType @enum(FULL_ALLOC,RANDOM_ALLOC,CONTIGUOUS_ALLOC) = default("FULL_ALLOC");
         double bandUtilization = default(0.5);
         int startingOffset = default(0);
         // ----------------------------- //

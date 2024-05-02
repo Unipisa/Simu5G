@@ -22,7 +22,7 @@ simple LtePhyBase like LtePhy
         double ueTxPower @unit(dBm) = default(26dBm);
         double eNodeBTxPower @unit(dBm) = default(46dBm);
         double microTxPower @unit(dBm) = default(30dBm);
-        string txDirection = default("OMNI");
+        string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
         double txAngle @unit(deg) = default(0deg);
 
         bool dynamicCellAssociation = default(false);

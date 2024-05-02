@@ -16,7 +16,7 @@ simple TrafficFlowFilter
     parameters:
         @display("i=block/filter");
 
-        string ownerType; // must be one between ENODEB or GW
+        string ownerType @enum(ENODEB,GNODEB,PGW,UPF,UPF_MEC); // must be one between ENODEB,GNODEB,PGW,UPF,UPF_MEC
         bool fastForwarding = default(true);
     gates:
         input internetFilterGateIn;
