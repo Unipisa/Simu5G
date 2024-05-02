@@ -38,7 +38,7 @@ protected:
     };
     uint16_t senderAppId_;             // unique identifier of the application within the network
     uint16_t localMsgId_;              // least-significant bits for the identifier of the next message
-    int msgSize_;
+    inet::B msgSize_;
 
     double selfishProbability_;         // if = 0, the node is always collaborative
     int ttl_;                           // if < 0, do not use hops to limit the flooding

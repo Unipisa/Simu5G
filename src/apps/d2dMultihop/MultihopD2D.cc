@@ -61,9 +61,9 @@ void MultihopD2D::initialize(int stage)
         destPort_ = par("destPort");
         destAddress_ = L3AddressResolver().resolve(par("destAddress").stringValue());
 
-        msgSize_ = par("msgSize");
+        msgSize_ = B(par("msgSize"));
 
-        if(B(msgSize_) < D2D_MULTIHOP_HEADER_LENGTH){
+        if(msgSize_ < D2D_MULTIHOP_HEADER_LENGTH){
             throw cRuntimeError("MultihopD2D::init - FATAL! Total message size cannot be less than D2D_MULTIHOP_HEADER_LENGTH");
         }
 
@@ -176,7 +176,7 @@ void MultihopD2D::sendPacket()
 
     // create data corresponding to the desired multi-hop message size
     // (msgSize_ is the size of the MultihopD2D message including the MultihopD2D header)
-    auto data = makeShared<ByteCountChunk>(B(msgSize_) - D2D_MULTIHOP_HEADER_LENGTH);
+    auto data = makeShared<ByteCountChunk>(msgSize_ - D2D_MULTIHOP_HEADER_LENGTH);
 
     // create new packet containing the data
     Packet* packet = new inet::Packet("MultihopD2DPacket", data);
@@ -186,7 +186,7 @@ void MultihopD2D::sendPacket()
     mhop->setMsgid(msgId);
     mhop->setSrcId(lteNodeId_);
     mhop->setPayloadTimestamp(simTime());
-    mhop->setPayloadSize(msgSize_);
+    mhop->setPayloadSize(B(msgSize_).get());
     mhop->setTtl(ttl_-1);
     mhop->setHops(1);                // first hop
     mhop->setLastHopSenderId(lteNodeId_);
