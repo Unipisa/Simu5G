@@ -456,7 +456,7 @@ void MecOrchestrator::getConnectedMecHosts()
     //getting the list of mec hosts associated to this mec system from parameter
     if(this->hasPar("mecHostList") && !par("mecHostList").isEmptyString()){
         std::string mecHostList = par("mecHostList").stdstringValue();
-        EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< par("mecHostList").stringValue() << endl;
+        EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< mecHostList << endl;
         char* token = strtok ( (char*)mecHostList.c_str(), ", ");            // split by commas
 
         while (token != NULL)
