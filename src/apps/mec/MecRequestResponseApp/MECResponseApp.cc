@@ -61,7 +61,7 @@ void MECResponseApp::initialize(int stage)
     ueAppSocket_.setOutputGate(gate("socketOut"));
     ueAppSocket_.bind(localUePort_);
 
-    packetSize_ = par("responsePacketSize");
+    packetSize_ = B(par("responsePacketSize"));
 
     processingTimer_  = new cMessage("computeMsg");
 
@@ -149,7 +149,7 @@ void MECResponseApp::sendResponse()
     req->setServiceResponseTime(getRequestArrived_ - getRequestSent_);
     req->setResponseSentTimestamp(simTime());
     req->setProcessingTime(processingTime_);
-    req->setChunkLength(B(packetSize_));
+    req->setChunkLength(packetSize_);
     inet::Packet* pkt = new inet::Packet("ResponseAppPacket");
     pkt->insertAtBack(req);
 
@@ -304,7 +304,7 @@ void MECResponseApp::sendStopAck()
     inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_ACK_STOP);;
-    req->setChunkLength(B(packetSize_));
+    req->setChunkLength(packetSize_);
     pkt->insertAtBack(req);
 
     ueAppSocket_.sendTo(pkt, ueAppAddress, ueAppPort);

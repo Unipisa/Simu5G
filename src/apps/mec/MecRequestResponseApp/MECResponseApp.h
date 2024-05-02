@@ -47,7 +47,7 @@ protected:
     simtime_t getRequestArrived_;
     double processingTime_;
 
-    int packetSize_;
+    inet::B packetSize_;
 
     int minInstructions_;
     int maxInstructions_;
