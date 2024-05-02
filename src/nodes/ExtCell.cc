@@ -66,10 +66,12 @@ void ExtCell::initialize(int stage)
          {
              allocationType_ = RANDOM_ALLOC;
          }
-         else
+         else if (allocationType == "FULL_ALLOC")
          {
              allocationType_ = FULL_ALLOC;
          }
+         else
+             throw omnetpp::cRuntimeError("Unrecognized bandAllocationType: '%s'", allocationType.c_str());
 
          // get the allocation parameters
          if (allocationType_ == FULL_ALLOC)
