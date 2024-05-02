@@ -12,16 +12,16 @@
 #ifndef _BINDER_H_
 #define _BINDER_H_
 
-#include <omnetpp.h>
 #include <string>
+
+#include <omnetpp.h>
 
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 #include <inet/networklayer/common/L3Address.h>
+
 #include "common/LteCommon.h"
 #include "common/blerCurves/PhyPisaData.h"
 #include "nodes/ExtCell.h"
-#include "stack/mac/layer/LteMacBase.h"
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 namespace simu5g {
 

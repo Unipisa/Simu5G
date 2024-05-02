@@ -13,16 +13,12 @@
 #define BACKGROUNDCELLTRAFFICMANAGER_H_
 
 #include "common/LteCommon.h"
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "nodes/backgroundCell/BackgroundCellAmc.h"
+#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
-
-class TrafficGeneratorBase;
-class LteMacEnb;
-class LteChannelModel;
-class BackgroundCellAmc;
 
 //
 // BackgroundCellTrafficManager

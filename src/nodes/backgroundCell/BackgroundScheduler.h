@@ -12,10 +12,12 @@
 #ifndef __BACKGROUNDSCHEDULER_H_
 #define __BACKGROUNDSCHEDULER_H_
 
-#include <omnetpp.h>
+#include <inet/common/INETDefs.h>
+
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 #include "nodes/backgroundCell/BackgroundCellChannelModel.h"
+#include "nodes/ExtCell.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 #include "stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 

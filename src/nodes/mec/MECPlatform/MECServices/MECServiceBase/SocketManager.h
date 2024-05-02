@@ -12,10 +12,10 @@
 #ifndef __SOCKETMANAGER_H
 #define __SOCKETMANAGER_H
 
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "inet/common/INETDefs.h"
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
+#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 
 namespace simu5g {
