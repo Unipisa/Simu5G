@@ -82,6 +82,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         rlc: LteRlc {
             @display("p=362,226");
             d2dCapable = parent.d2dCapable;
+            *.macModule = "^.^.mac";
         }
         // MAC Layer
         mac: <LteMacType> like LteMac {

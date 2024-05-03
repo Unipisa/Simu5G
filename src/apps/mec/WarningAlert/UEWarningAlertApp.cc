@@ -75,14 +75,7 @@ void UEWarningAlertApp::initialize(int stage)
     ue = this->getParentModule();
 
     //retrieving mobility module
-    cModule *temp = getParentModule()->getSubmodule("mobility");
-    if(temp != NULL){
-        mobility = check_and_cast<inet::IMobility*>(temp);
-    }
-    else {
-        EV << "UEWarningAlertApp::initialize - \tWARNING: Mobility module NOT FOUND!" << endl;
-        throw cRuntimeError("UEWarningAlertApp::initialize - \tWARNING: Mobility module NOT FOUND!");
-    }
+    mobility.reference(this, "mobilityModule", true);
 
     mecAppName = par("mecAppName").stringValue();
 

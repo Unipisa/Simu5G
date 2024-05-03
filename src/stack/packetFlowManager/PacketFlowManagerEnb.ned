@@ -15,7 +15,7 @@ simple PacketFlowManagerEnb like PacketFlowManager
 {
     @class("PacketFlowManagerEnb");
 
+    string macModule = default("^.mac");
     string pfmType = default("PacketFlowManagerEnb");
-
 }
 

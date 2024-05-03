@@ -13,6 +13,9 @@
 #define _LTE_ENOBSTATSCOLLECTOR_H_
 
 #include <omnetpp.h>
+
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
 #include <map>
@@ -49,12 +52,12 @@ class BaseStationStatsCollector: public cSimpleModule
         mec::Ecgi ecgi_;
 
         // LTE NIC layers
-        LtePdcpRrcEnb *pdcp_;
-        LteMacEnb     *mac_;
-        LteRlcUm      *rlc_;
-        PacketFlowManagerEnb *packetFlowManager_;
+        inet::ModuleRefByPar<LtePdcpRrcEnb> pdcp_;
+        inet::ModuleRefByPar<LteMacEnb> mac_;
+        inet::ModuleRefByPar<LteRlcUm> rlc_;
+        inet::ModuleRefByPar<PacketFlowManagerEnb> packetFlowManager_;
 
-        CellInfo *cellInfo_;
+        inet::ModuleRefByPar<CellInfo> cellInfo_;
 
         UeStatsCollectorMap ueCollectors_;
 

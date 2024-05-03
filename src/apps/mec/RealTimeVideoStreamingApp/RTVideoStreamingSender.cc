@@ -91,14 +91,7 @@ void RTVideoStreamingSender::initialize(int stage)
     ue = this->getParentModule();
 
     //retrieving mobility module
-    cModule *temp = getParentModule()->getSubmodule("mobility");
-    if(temp != nullptr){
-        mobility = check_and_cast<inet::IMobility*>(temp);
-    }
-    else {
-        EV << "RTVideoStreamingSender::initialize - \tWARNING: Mobility module NOT FOUND!" << endl;
-        throw cRuntimeError("RTVideoStreamingSender::initialize - \tWARNING: Mobility module NOT FOUND!");
-    }
+    mobility.reference(this, "mobilityModule", true);
 
     mecAppName = par("mecAppName").stringValue();
 

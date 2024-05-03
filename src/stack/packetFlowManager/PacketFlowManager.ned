@@ -13,6 +13,7 @@ package simu5g.stack.packetFlowManager;
 
 moduleinterface PacketFlowManager
 {
+    string macModule;
     string pfmType;
 }
 

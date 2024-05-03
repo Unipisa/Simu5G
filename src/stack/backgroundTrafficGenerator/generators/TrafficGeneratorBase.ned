@@ -17,6 +17,8 @@ simple TrafficGeneratorBase like ITrafficGenerator
         @display("i=block/source");
         @class("TrafficGeneratorBase");
 
+        string backgroundTrafficManagerModule = default("^.^.manager");
+
         double startTimeDl @unit("s") = default(-1s);
         double startTimeUl @unit("s") = default(-1s);
 

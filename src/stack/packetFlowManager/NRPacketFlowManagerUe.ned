@@ -15,6 +15,7 @@ simple NRPacketFlowManagerUe like PacketFlowManager
 {
     @class("PacketFlowManagerUe");
 
+    string macModule = default("^.mac");
     string pfmType = default("NRPacketFlowManagerUe");
 }
 

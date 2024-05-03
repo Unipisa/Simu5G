@@ -73,7 +73,7 @@ void BackgroundTrafficManager::initialize(int stage)
     if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
     {
         // get the reference to the MAC layer
-        mac_.reference(this, "macModule", true);// = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("mac"));
+        mac_.reference(this, "macModule", true);
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {

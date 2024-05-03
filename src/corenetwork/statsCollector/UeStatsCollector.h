@@ -13,6 +13,8 @@
 #define _LTE_UESTATSCOLLECTOR_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
@@ -44,9 +46,9 @@ class UeStatsCollector: public cSimpleModule
         mec::AssociateId associateId_;
 
         // LTE Nic layers
-//        LtePdcpRrcUe *pdcp_;
-        LteMacBase     *mac_;
-        PacketFlowManagerUe *packetFlowManager_;
+//        inet::ModuleRefByPar<LtePdcpRrcUe> pdcp_;
+        inet::ModuleRefByPar<LteMacBase>     mac_;
+        inet::ModuleRefByPar<PacketFlowManagerUe> packetFlowManager_;
 
         // packet delay
         L2MeasBase ul_nongbr_delay_ue;

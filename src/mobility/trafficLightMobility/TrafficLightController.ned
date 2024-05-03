@@ -15,6 +15,7 @@ simple TrafficLightController
 {
     @class(TrafficLightController);
 
+    string mobilityModule;
     double greenPeriod @unit(s) = default(1s);
     double yellowPeriod @unit(s) = default(1s);
     double redPeriod @unit(s) = default(1s);

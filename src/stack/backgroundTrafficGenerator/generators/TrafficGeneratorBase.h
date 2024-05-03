@@ -12,6 +12,8 @@
 #ifndef TRAFFICGENERATORBASE_H_
 #define TRAFFICGENERATORBASE_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "inet/mobility/contract/IMobility.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
@@ -30,7 +32,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
   protected:
 
     // reference to the traffic manager
-    BackgroundTrafficManager* bgTrafficManager_;
+    inet::ModuleRefByPar<BackgroundTrafficManager> bgTrafficManager_;
 
     // index of the bg UE within the vector of bg UEs
     int bgUeIndex_;

@@ -22,11 +22,6 @@ namespace simu5g {
 Define_Module(BaseStationStatsCollector);
 BaseStationStatsCollector::BaseStationStatsCollector()
 {
-    pdcp_ = nullptr;
-    rlc_ = nullptr;
-    mac_ = nullptr;
-    packetFlowManager_ = nullptr;
-
     prbUsage_ = nullptr;
     activeUsers_ = nullptr;;
     discardRate_ = nullptr;;
@@ -64,26 +59,18 @@ void BaseStationStatsCollector::initialize(int stage){
         ecgi_.plmn.mcc = getAncestorPar("mcc").stdstringValue();
         ecgi_.plmn.mnc = getAncestorPar("mnc").stdstringValue();
 
-        mac_ = check_and_cast<LteMacEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"));
-        pdcp_ = check_and_cast<LtePdcpRrcEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("pdcpRrc"));
+        mac_.reference(this, "macModule", true);
+        pdcp_.reference(this, "pdcpRrcModule", true);
 
-        cModule *rlc = getParentModule()->getSubmodule("cellularNic")->getSubmodule("rlc");
-        if(rlc->findSubmodule("um") != -1)
-        {
-            rlc_ = check_and_cast<LteRlcUm *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule("um"));
-        }
-        else
+        rlc_.reference(this, "rlcUmModule", false);
+        if(!rlc_)
         {
             throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode", collectorType_.c_str() );
         }
 
-        if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
-        {
-            EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
-            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
-        }
+        packetFlowManager_.reference(this, "packetFlowManagerModule", true);
+        cellInfo_.reference(this, "cellInfoModule", true);
 
-        cellInfo_ = check_and_cast<CellInfo *>(getParentModule()->getSubmodule("cellInfo"));
         ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
 
         dl_total_prb_usage_cell.init("dl_total_prb_usage_cell", par("prbUsagePeriods"), par("movingAverage"));

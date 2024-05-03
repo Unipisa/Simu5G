@@ -21,10 +21,6 @@ Define_Module(UeStatsCollector);
 
 UeStatsCollector::UeStatsCollector()
 {
-//    pdcp_ = nullptr;
-    mac_ = nullptr;
-    packetFlowManager_ = nullptr;
-
 }
 
 void UeStatsCollector::initialize(int stage)
@@ -39,8 +35,8 @@ void UeStatsCollector::initialize(int stage)
         Binder* binder = getBinder();
 
 
-        mac_ = check_and_cast<LteMacBase *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"));
-//        pdcp_ = check_and_cast<LtePdcpRrcUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("pdcpRrc"));
+        mac_.reference(this, "macModule", true);
+//        pdcp_.reference(this, "pdcpRrcModule", true);
 
         associateId_.value = binder->getIPv4Address(mac_->getMacNodeId()).str(); // UE_IPV4_ADDRESS
         associateId_.type = "1"; // UE_IPV4_ADDRESS
@@ -54,40 +50,7 @@ void UeStatsCollector::initialize(int stage)
 
         bool isNr_ = (getAncestorPar("nicType").stdstringValue() == "NRNicUe") ? true : false;
 
-
-        if(isNr_) // the UE has both the Nics
-        {
-            if(collectorType_ == "NRueStatsCollector") // collector relative to the NR side of the Ue Nic
-            {
-                if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("nrPacketFlowManager") != -1)
-                {
-                    EV << collectorType_ << "::initialize - NRpacketFlowManager reference" << endl;
-                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("nrPacketFlowManager"));
-                }
-                else
-                {
-                    throw cRuntimeError("%s::initialize - NRUe does not have NRpacketFlowManager. This should not happen", collectorType_.c_str());
-                }
-            }
-            else if(collectorType_ == "ueStatsCollector")
-            {
-                if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
-                {
-                    EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
-                    packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
-                }
-                else
-                {
-                    throw cRuntimeError("%s::initialize - Ue does not have packetFlowManager. This should not happen", collectorType_.c_str());
-                }
-            }
-
-        }
-        else // it is ueStatsCollector with only LteNic
-        {
-            if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
-                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("packetFlowManager"));
-        }
+        packetFlowManager_.reference(this, "packetFlowManagerModule", isNr_);
 
         handover_ = false;
 

@@ -12,6 +12,7 @@
 #ifndef __MECREQUESTAPP_H_
 #define __MECREQUESTAPP_H_
 
+#include <inet/common/ModuleRefByPar.h>
 #include "apps/mecRequestResponseApp/packets/MigrationTimer_m.h"
 #include "apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -32,7 +33,7 @@ class MecRequestApp : public cSimpleModule
     char* sourceSymbolicAddress_;
     inet::L3Address destAddress_;
 
-    NRPhyUe* nrPhy_;
+    inet::ModuleRefByPar<NRPhyUe> nrPhy_;
 
     unsigned int sno_;
     unsigned int bsId_;

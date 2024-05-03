@@ -60,10 +60,10 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     Binder* binder_;
 
     // reference to the background traffic manager - one per carrier
-    BackgroundTrafficManager* bgTrafficManager_;
+    inet::ModuleRefByPar<BackgroundTrafficManager> bgTrafficManager_;
 
     // reference to the channel model for this background base station
-    BackgroundCellChannelModel* bgChannelModel_;
+    inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;
 
     // TTI self message
     omnetpp::cMessage* ttiTick_;

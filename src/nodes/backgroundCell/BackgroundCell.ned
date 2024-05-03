@@ -41,6 +41,7 @@ module BackgroundCell
         // perform the scheduling for the BackgroundCell
         bgScheduler: BackgroundScheduler {
             @display("p=222,38,row");
+            trafficManagerModule = "^.bgTrafficGenerator.manager";
         }
 
         // traffic generator for the background UEs within the BackgroundCell

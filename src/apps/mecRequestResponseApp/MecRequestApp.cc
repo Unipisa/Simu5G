@@ -54,7 +54,7 @@ void MecRequestApp::initialize(int stage)
         socket.setTos(tos);
 
     sno_ = 0;
-    nrPhy_ = check_and_cast<NRPhyUe*>(getParentModule()->getSubmodule("cellularNic")->getSubmodule("nrPhy"));
+    nrPhy_.reference(this, "phyModule", true);
     bsId_ = nrPhy_->getMasterId();
     appId_ = par("appId");
 

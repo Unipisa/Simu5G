@@ -14,6 +14,8 @@
 #define __MECPLATFORMMANAGER_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
@@ -36,10 +38,10 @@ class MecOrchestrator;
 class MecPlatformManager : public cSimpleModule
 {
     protected:
+        inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator;
+        inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
+        inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
-        MecOrchestrator* mecOrchestrator;
-        VirtualisationInfrastructureManager* vim;
-        ServiceRegistry* serviceRegistry;
     public:
         MecPlatformManager();
 

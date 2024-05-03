@@ -18,6 +18,7 @@ simple MecRequestApp like IApp
     parameters:
         @display("i=block/source");
 
+        string phyModule = default("^.cellularNic.nrPhy");
         int localPort = default(4000);
         int destPort = default(4000);
         string destAddress;

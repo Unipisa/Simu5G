@@ -33,6 +33,8 @@ simple UEWarningAlertApp like IApp
     parameters:
         @display("i=block/source");
 
+        string mobilityModule;
+
         //connection infos
         int localPort = default(4000);
         int deviceAppPort = default(4000); // ipAddress of the DeviceApp

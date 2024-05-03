@@ -15,6 +15,7 @@ simple PacketFlowManagerUe like PacketFlowManager
 {
     @class("PacketFlowManagerUe");
 
+    string macModule = default("^.mac");
     string pfmType = default("PacketFlowManagerUe");
 }
 

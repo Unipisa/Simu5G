@@ -53,7 +53,7 @@ void TrafficGeneratorBase::initialize(int stage)
         rtxDelay_[DL] = par("rtxDelayDl");
         rtxDelay_[UL] = par("rtxDelayUl");
 
-        bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getParentModule()->getSubmodule("manager"));
+        bgTrafficManager_.reference(this, "backgroundTrafficManagerModule", true);
 
         if (startTime_[DL] >= 0.0)
         {

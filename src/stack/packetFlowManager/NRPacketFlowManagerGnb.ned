@@ -15,5 +15,6 @@ simple NRPacketFlowManagerGnb like PacketFlowManager
 {
     @class("PacketFlowManagerEnb");
 
+    string macModule = default("^.mac");
     string pfmType = default("NRPacketFlowManagerGnb");
 }

@@ -17,6 +17,8 @@ simple BackgroundScheduler
         @display("i=block/control");
         @class("BackgroundScheduler");
 
+        string trafficManagerModule;
+
         // transmission power
         double txPower @unit(dBm) = default(46dBm);
 

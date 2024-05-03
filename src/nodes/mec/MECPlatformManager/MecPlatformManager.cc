@@ -20,9 +20,6 @@ Define_Module(MecPlatformManager);
 
 MecPlatformManager::MecPlatformManager()
 {
-    vim = nullptr;
-    serviceRegistry = nullptr;
-    mecOrchestrator = nullptr;
 }
 
 void MecPlatformManager::initialize(int stage)
@@ -32,21 +29,13 @@ void MecPlatformManager::initialize(int stage)
     // avoid multiple initializations
     if (stage!=inet::INITSTAGE_LOCAL)
         return;
-    vim = check_and_cast<VirtualisationInfrastructureManager*>(getParentModule()->getSubmodule("vim"));
-    cModule* mecPlatform = getParentModule()->getSubmodule("mecPlatform");
-    if(mecPlatform->findSubmodule("serviceRegistry") != -1)
-    {
-        serviceRegistry = check_and_cast<ServiceRegistry*>(mecPlatform->getSubmodule("serviceRegistry"));
-    }
+    vim.reference(this, "vimModule", true);
+    serviceRegistry.reference(this, "serviceRegistryModule", false);
 
-    const char * mecOrche = par("mecOrchestrator").stringValue();
-    cModule* module = getSimulation()->findModuleByPath(mecOrche);
-
-    if(module != nullptr)
-        mecOrchestrator = check_and_cast<MecOrchestrator*>(module);
-    else
+    mecOrchestrator.reference(this, "mecOrchestrator", false);
+    if(!mecOrchestrator)
     {
-        EV << "MecPlatformManager::initialize - Mec Orchestrator ["<< mecOrche << "] not found" << endl;
+        EV << "MecPlatformManager::initialize - Mec Orchestrator ["<< par("mecOrchestrator").str() << "] not found" << endl;
     }
 }
 

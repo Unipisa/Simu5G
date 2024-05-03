@@ -10,6 +10,9 @@
 //
 
 #include "PacketFlowManagerBase.h"
+
+#include <inet/common/ModuleAccess.h>
+
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 #include "stack/rlc/LteRlcDefs.h"
@@ -35,7 +38,7 @@ void PacketFlowManagerBase::initialize(int stage)
 {
     if (stage == 1)
     {
-        LteMacBase *mac= check_and_cast<LteMacBase *>(getParentModule()->getSubmodule("mac"));
+        LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
         nodeType_ = mac->getNodeType();
         harqProcesses_ = (nodeType_ == UE) ? UE_TX_HARQ_PROCESSES : ENB_TX_HARQ_PROCESSES;
         pfmType = par("pfmType").stringValue();

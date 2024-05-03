@@ -21,14 +21,5 @@ module NRueStatsCollector extends UeStatsCollector
 {
     parameters:
         collectorType = default("NRueStatsCollector");
+        packetFlowManagerModule = default("^.cellularNic.nrPacketFlowManager");
 }
-
-
-
-
-
-
-
-
-
-

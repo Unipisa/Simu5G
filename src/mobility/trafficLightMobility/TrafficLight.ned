@@ -27,5 +27,6 @@ module TrafficLight
         trafficLightController: TrafficLightController {
             parameters:
                 @display("p=48,52;is=s");
+                mobilityModule = default("^.mobility");
         }
 }

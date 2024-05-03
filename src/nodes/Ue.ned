@@ -69,6 +69,7 @@ module Ue
         bool hasIpv6 = default(false);
         *.interfaceTableModule = default(absPath(".interfaceTable"));
         *.routingTableModule = default("^.ipv4.routingTable");
+        *.mobilityModule = default(absPath(".mobility"));
 
         //# External Ethernet interfaces
         int numEthInterfaces = default(0);

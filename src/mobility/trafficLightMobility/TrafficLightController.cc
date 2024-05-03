@@ -29,7 +29,6 @@ TrafficLightController::TrafficLightController()
 {
     line_ = nullptr;
     stateMsg_ = nullptr;
-    mobility_ = nullptr;
     queuedCars_[0].clear();
     queuedCars_[1].clear();
 }
@@ -58,7 +57,7 @@ void TrafficLightController::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    mobility_ = check_and_cast<inet::StationaryMobility*>(getParentModule()->getSubmodule("mobility"));
+    mobility_.reference(this, "mobilityModule", true);
 
     heading_ = inet::deg(fmod(mobility_->par("initialHeading").doubleValue(), 360));
     inet::rad elevation = inet::deg(fmod(mobility_->par("initialElevation").doubleValue(), 360));

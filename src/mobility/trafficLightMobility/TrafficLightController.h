@@ -19,6 +19,8 @@
 
 #include <string.h>
 #include <omnetpp.h>
+
+#include <inet/common/ModuleRefByPar.h>
 #include "inet/common/geometry/common/Coord.h"
 #include "inet/common/geometry/common/Quaternion.h"
 #include "inet/mobility/static/StationaryMobility.h"
@@ -34,7 +36,7 @@ typedef enum
 
 class TrafficLightController : public omnetpp::cSimpleModule {
     protected:
-        inet::StationaryMobility* mobility_;   // reference to the mobility module of the traffic light
+        inet::ModuleRefByPar<inet::StationaryMobility> mobility_;   // reference to the mobility module of the traffic light
         double areaWidth_;
         inet::deg heading_;
 

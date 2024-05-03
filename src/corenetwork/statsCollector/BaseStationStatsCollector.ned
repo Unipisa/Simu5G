@@ -22,6 +22,12 @@ module BaseStationStatsCollector like StatsCollector
     parameters:
         string collectorType = default("eNBStatsCollector");
 
+        string macModule = default("^.cellularNic.mac");
+        string pdcpRrcModule = default("^.cellularNic.pdcpRrc");
+        string cellInfoModule = default("^.cellinfo");
+        string rlcUmModule = default("^.cellularNic.rlc.um");
+        string packetFlowManagerModule = default("^.cellularNic.packetFlowManager");
+
         bool movingAverage = default(false);
 
         // used to calculate l2meas as averages

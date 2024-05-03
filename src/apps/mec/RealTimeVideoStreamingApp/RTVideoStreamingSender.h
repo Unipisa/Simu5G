@@ -12,6 +12,7 @@
 #ifndef APPS_MEC_RTVIDEOSTREAMINGSENDER_H_
 #define APPS_MEC_RTVIDEOSTREAMINGSENDER_H_
 
+#include <inet/common/ModuleRefByPar.h>
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
@@ -125,7 +126,7 @@ class RTVideoStreamingSender: public cSimpleModule
 
     // mobility informations
     cModule* ue;
-    inet::IMobility *mobility;
+    inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
     omnetpp::cMessage *mobilityStats_;
 

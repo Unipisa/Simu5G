@@ -66,10 +66,10 @@ void BackgroundScheduler::initialize(int stage)
          // add this cell to the binder
          id_ = binder_->addBackgroundScheduler(this, carrierFrequency_);
 
-         bgTrafficManager_ = check_and_cast<BackgroundTrafficManager*>(getParentModule()->getSubmodule("bgTrafficGenerator")->getSubmodule("manager"));
+         bgTrafficManager_.reference(this, "trafficManagerModule", true);
          bgTrafficManager_->setCarrierFrequency(carrierFrequency_);
 
-         bgChannelModel_ = check_and_cast<BackgroundCellChannelModel*>(getParentModule()->getSubmodule("bgChannelModel"));
+         bgChannelModel_.reference(this, "channelModelModule", true);
          bgChannelModel_->setCarrierFrequency(carrierFrequency_);
     }
 }

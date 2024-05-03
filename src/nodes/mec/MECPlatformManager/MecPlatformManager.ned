@@ -22,6 +22,8 @@ simple MecPlatformManager
 {
     parameters:
         string mecOrchestrator;
+        string serviceRegistryModule = default("^.mecPlatform.serviceRegistry");
+        string vimModule = default("^.vim");
         @display("i=block/control");
 
 }
