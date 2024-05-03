@@ -38,13 +38,7 @@ MecAppBase::MecAppBase()
 MecAppBase::~MecAppBase()
 {
     std::cout << "MecAppBase::~MecAppBase()" << std::endl;
-    if(sendTimer != nullptr)
-    {
-        if(sendTimer->isSelfMessage())
-            cancelAndDelete(sendTimer);
-        else
-            delete sendTimer;
-    }
+    cancelAndDelete(sendTimer);
 
     sockets_.deleteSockets();
 
