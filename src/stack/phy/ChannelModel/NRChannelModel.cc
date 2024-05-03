@@ -431,9 +431,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId)
 {
    // double movement = .0;
-   double speed = .0;
-
-   speed = computeSpeed(nodeId, phy_->getCoord());
+   computeSpeed(nodeId, phy_->getCoord());
 
    //    EV << "LteRealisticChannelModel::computeExtCellPathLoss:" << scenario_ << "-" << shadowing_ << "\n";
 
