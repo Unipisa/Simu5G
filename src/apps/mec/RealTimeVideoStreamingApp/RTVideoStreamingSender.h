@@ -79,10 +79,7 @@ class RTVideoStreamingSender: public cSimpleModule
     cMessage* selfSessionStart_;
     cMessage* selfSessionStop_;
 
-    bool stop_;
-
     inet::UdpSocket videoStreamSocket_;
-    int port;
 
     const char* fileName;
     /**
@@ -90,21 +87,8 @@ class RTVideoStreamingSender: public cSimpleModule
      */
     std::ifstream _inputFileStream;
 
-    bool pendingStartRequest;
-    bool moduleCreated;
-
     int mtu_;
     cMessage* _nextFrame;
-
-    /**
-     * duration of each session
-     */
-    double sessionDuration_;
-
-    /**
-     * period between sessions
-     */
-    double periodBetweenSession_;
 
     /**
      * The initial delay of the mpeg video.

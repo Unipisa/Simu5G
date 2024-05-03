@@ -1036,7 +1036,6 @@ void LteMacEnb::macHandleFeedbackPkt(cPacket *pktAux)
 
     for (it = fbMapDl.begin(); it != fbMapDl.end(); ++it)
     {
-        unsigned int i = 0;
         for (jt = it->begin(); jt != it->end(); ++jt)
         {
             //            TxMode rx=(TxMode)i;
@@ -1044,7 +1043,6 @@ void LteMacEnb::macHandleFeedbackPkt(cPacket *pktAux)
             {
                 amc_->pushFeedback(id, DL, (*jt), lteInfo->getCarrierFrequency());
             }
-            i++;
         }
     }
     for (it = fbMapUl.begin(); it != fbMapUl.end(); ++it)

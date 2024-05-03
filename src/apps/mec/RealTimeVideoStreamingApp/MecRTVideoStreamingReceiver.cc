@@ -144,9 +144,7 @@ void MecRTVideoStreamingReceiver::handleSelfMessage(cMessage *msg)
 {
     if(strcmp(msg->getName(), "displayFrame") == 0)
     {
-      double percentage = 0.0;
-
-      percentage = playoutFrame();
+        playoutFrame();
 
 //      if(percentage >= correctFrameThreshold && isFirstFrame)
 //      {

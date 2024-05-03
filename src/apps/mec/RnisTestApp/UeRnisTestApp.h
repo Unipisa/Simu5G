@@ -38,7 +38,6 @@ class UeRnisTestApp: public cSimpleModule
     //communication to device app and mec app
     inet::UdpSocket socket;
 
-    int size_;
     simtime_t period_;
     int localPort_;
     int deviceAppPort_;
