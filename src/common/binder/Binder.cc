@@ -29,7 +29,7 @@ Define_Module(Binder);
 
 void Binder::registerUeConnectedEthernetDevices(){
 
-    globalData = check_and_cast<GlobalData*>(getSimulation()->getModuleByPath("globalData"));
+    globalData = check_and_cast<GlobalData*>(getSimulation()->findModuleByPath("globalData"));
     auto ueEthInterfaceMapping = globalData->getUeEthInterfaceMapping();
     for (auto& item: ueEthInterfaceMapping){
         Ipv4Address ipAddress(item.second.ipAddress.c_str());
@@ -292,7 +292,6 @@ void Binder::initialize(int stage)
     {
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = std::string(getSystemModule()->getName());
-    }
 
         const char *stringValue;
         qosChar = NRQosCharacteristics::getNRQosCharacteristics();
@@ -346,14 +345,11 @@ void Binder::initialize(int stage)
                     defAveragingWindow[i]);
         }
 
-    }
-
-
-
-    if (stage == inet::INITSTAGE_LAST)
-    {
         maxDataRatePerRb_ = par("maxDataRatePerRb");
 
+    }
+    if (stage == inet::INITSTAGE_LAST)
+    {
         // if avg interference enabled, compute CQIs
         computeAverageCqiForBackgroundUes();
         registerUeConnectedEthernetDevices();

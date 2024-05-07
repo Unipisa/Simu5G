@@ -34,7 +34,7 @@ void QosHandlerUE::initialize(int stage) {
     if (stage == 0) {
         nodeType = UE;
         initQfiParams();
-        globalData = check_and_cast<GlobalData*>(getSimulation()->getModuleByPath("globalData"));
+        globalData = check_and_cast<GlobalData*>(getSimulation()->findModuleByPath("globalData"));
 
     }
 
@@ -52,7 +52,7 @@ void QosHandlerGNB::initialize(int stage) {
     if (stage == 0) {
         nodeType = GNODEB;
         initQfiParams();
-        globalData = check_and_cast<GlobalData*>(getSimulation()->getModuleByPath("globalData"));
+        globalData = check_and_cast<GlobalData*>(getSimulation()->findModuleByPath("globalData"));
 
     }
 }
@@ -68,7 +68,7 @@ void QosHandlerUPF::initialize(int stage) {
     if (stage == 0) {
         nodeType = UNKNOWN_NODE_TYPE;
         initQfiParams();
-        globalData = check_and_cast<GlobalData*>(getSimulation()->getModuleByPath("globalData"));
+        globalData = check_and_cast<GlobalData*>(getSimulation()->findModuleByPath("globalData"));
 
     }
 }
