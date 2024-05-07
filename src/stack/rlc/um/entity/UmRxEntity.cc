@@ -757,40 +757,40 @@ void UmRxEntity::initialize()
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
     {
-        rlcCellPacketLoss_ = parent->registerSignal("rlcCellPacketLossUl");
-        rlcPacketLoss_ = parent->registerSignal("rlcPacketLossUl");
-        rlcPduPacketLoss_ = parent->registerSignal("rlcPduPacketLossUl");
-        rlcDelay_ = parent->registerSignal("rlcDelayUl");
-        rlcThroughput_ = parent->registerSignal("rlcThroughputUl");
-        rlcPduDelay_ = parent->registerSignal("rlcPduDelayUl");
-        rlcPduThroughput_ = parent->registerSignal("rlcPduThroughputUl");
-        rlcCellThroughput_ = parent->registerSignal("rlcCellThroughputUl");
-        rlcPacketLossTotal_ = parent->registerSignal("rlcPacketLossTotal");
+        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossUl");
+        rlcPacketLoss_ = registerSignal("rlcPacketLossUl");
+        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossUl");
+        rlcDelay_ = registerSignal("rlcDelayUl");
+        rlcThroughput_ = registerSignal("rlcThroughputUl");
+        rlcPduDelay_ = registerSignal("rlcPduDelayUl");
+        rlcPduThroughput_ = registerSignal("rlcPduThroughputUl");
+        rlcCellThroughput_ = registerSignal("rlcCellThroughputUl");
+        rlcPacketLossTotal_ = registerSignal("rlcPacketLossTotal");
     }
     else // UE
     {
-        rlcPacketLoss_ = parent->registerSignal("rlcPacketLossDl");
-        rlcPduPacketLoss_ = parent->registerSignal("rlcPduPacketLossDl");
-        rlcDelay_ = parent->registerSignal("rlcDelayDl");
-        rlcThroughput_ = parent->registerSignal("rlcThroughputDl");
-        rlcPduDelay_ = parent->registerSignal("rlcPduDelayDl");
-        rlcPduThroughput_ = parent->registerSignal("rlcPduThroughputDl");
+        rlcPacketLoss_ = registerSignal("rlcPacketLossDl");
+        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossDl");
+        rlcDelay_ = registerSignal("rlcDelayDl");
+        rlcThroughput_ = registerSignal("rlcThroughputDl");
+        rlcPduDelay_ = registerSignal("rlcPduDelayDl");
+        rlcPduThroughput_ = registerSignal("rlcPduThroughputDl");
 
-        rlcCellThroughput_ = nodeB_->registerSignal("rlcCellThroughputDl");
-        rlcCellPacketLoss_ = nodeB_->registerSignal("rlcCellPacketLossDl");
+        rlcCellThroughput_ = registerSignal("rlcCellThroughputDl");
+        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossDl");
     }
 
     if (mac->isD2DCapable())
     {
-        rlcPacketLossD2D_ = parent->registerSignal("rlcPacketLossD2D");
-        rlcPduPacketLossD2D_ = parent->registerSignal("rlcPduPacketLossD2D");
-        rlcDelayD2D_ = parent->registerSignal("rlcDelayD2D");
-        rlcThroughputD2D_ = parent->registerSignal("rlcThroughputD2D");
-        rlcPduDelayD2D_ = parent->registerSignal("rlcPduDelayD2D");
-        rlcPduThroughputD2D_ = parent->registerSignal("rlcPduThroughputD2D");
+        rlcPacketLossD2D_ = registerSignal("rlcPacketLossD2D");
+        rlcPduPacketLossD2D_ = registerSignal("rlcPduPacketLossD2D");
+        rlcDelayD2D_ = registerSignal("rlcDelayD2D");
+        rlcThroughputD2D_ = registerSignal("rlcThroughputD2D");
+        rlcPduDelayD2D_ = registerSignal("rlcPduDelayD2D");
+        rlcPduThroughputD2D_ = registerSignal("rlcPduThroughputD2D");
     }
 
-    rlcPacketLossTotal_ = parent->registerSignal("rlcPacketLossTotal");
+    rlcPacketLossTotal_ = registerSignal("rlcPacketLossTotal");
 
     // store the node id of the owner module (useful for statistics)
     ownerNodeId_ = mac->getMacNodeId();

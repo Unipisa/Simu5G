@@ -34,28 +34,28 @@ LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
     {
         nodeB_ = macOwner_;
-        macPacketLoss_ = dstMac_->registerSignal("macPacketLossDl");
-        macCellPacketLoss_ = macOwner_->registerSignal("macCellPacketLossDl");
-        harqErrorRate_ = dstMac_->registerSignal("harqErrorRateDl");
-        harqErrorRate_1_ = dstMac_->registerSignal("harqErrorRate_1st_Dl");
-        harqErrorRate_2_ = dstMac_->registerSignal("harqErrorRate_2nd_Dl");
-        harqErrorRate_3_ = dstMac_->registerSignal("harqErrorRate_3rd_Dl");
-        harqErrorRate_4_ = dstMac_->registerSignal("harqErrorRate_4th_Dl");
-        harqTxAttempts_ = macOwner->registerSignal("harqTxAttemptsDl");
+        macPacketLoss_ = omnetpp::cComponent::registerSignal("macPacketLossDl");
+        macCellPacketLoss_ = omnetpp::cComponent::registerSignal("macCellPacketLossDl");
+        harqErrorRate_ = omnetpp::cComponent::registerSignal("harqErrorRateDl");
+        harqErrorRate_1_ = omnetpp::cComponent::registerSignal("harqErrorRate_1st_Dl");
+        harqErrorRate_2_ = omnetpp::cComponent::registerSignal("harqErrorRate_2nd_Dl");
+        harqErrorRate_3_ = omnetpp::cComponent::registerSignal("harqErrorRate_3rd_Dl");
+        harqErrorRate_4_ = omnetpp::cComponent::registerSignal("harqErrorRate_4th_Dl");
+        harqTxAttempts_ = omnetpp::cComponent::registerSignal("harqTxAttemptsDl");
     }
     else  // UE
     {
         nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
         if (dstMac_ == nodeB_)  // UL
         {
-            macPacketLoss_ = macOwner_->registerSignal("macPacketLossUl");
-            macCellPacketLoss_ = nodeB_->registerSignal("macCellPacketLossUl");
-            harqErrorRate_ = macOwner_->registerSignal("harqErrorRateUl");
-            harqErrorRate_1_ = macOwner_->registerSignal("harqErrorRate_1st_Ul");
-            harqErrorRate_2_ = macOwner_->registerSignal("harqErrorRate_2nd_Ul");
-            harqErrorRate_3_ = macOwner_->registerSignal("harqErrorRate_3rd_Ul");
-            harqErrorRate_4_ = macOwner_->registerSignal("harqErrorRate_4th_Ul");
-            harqTxAttempts_ = macOwner->registerSignal("harqTxAttemptsUl");
+            macPacketLoss_ = omnetpp::cComponent::registerSignal("macPacketLossUl");
+            macCellPacketLoss_ = omnetpp::cComponent::registerSignal("macCellPacketLossUl");
+            harqErrorRate_ = omnetpp::cComponent::registerSignal("harqErrorRateUl");
+            harqErrorRate_1_ = omnetpp::cComponent::registerSignal("harqErrorRate_1st_Ul");
+            harqErrorRate_2_ = omnetpp::cComponent::registerSignal("harqErrorRate_2nd_Ul");
+            harqErrorRate_3_ = omnetpp::cComponent::registerSignal("harqErrorRate_3rd_Ul");
+            harqErrorRate_4_ = omnetpp::cComponent::registerSignal("harqErrorRate_4th_Ul");
+            harqTxAttempts_ = omnetpp::cComponent::registerSignal("harqTxAttemptsUl");
         }
         else
         {

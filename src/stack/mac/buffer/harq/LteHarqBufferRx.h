@@ -161,7 +161,7 @@ class LteHarqBufferRx
     virtual omnetpp::simsignal_t macUe_registerSignal(const char* signal)
     {
         if (macUe_){
-            return macUe_->registerSignal(signal);
+            return omnetpp::cComponent::registerSignal(signal);
         }
         return 0;
     }
