@@ -20,6 +20,8 @@ simple UmRxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        string lteRlcUmModule = default("^.um");
+        string macModule = default("^.^.mac");  // TODO set to "^.^.nrMac" when parent module name is "nrRlc"
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
         int rxWindowSize = default(16);
 }

@@ -49,6 +49,7 @@ module NRNicUe extends LteNicUeD2D
         nrRlc: LteRlc {
             @display("p=466,226");
             d2dCapable = parent.d2dCapable;
+            *.macModule = "^.^.nrMac";
         }
         // MAC Layer
         nrMac: <NRMacType> like LteMac {

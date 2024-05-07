@@ -740,17 +740,11 @@ void UmRxEntity::initialize()
     totalRcvdBytes_ = 0;
     totalPduRcvdBytes_ = 0;
 
-    cModule* parent = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
-    rlc_ = check_and_cast<LteRlcUm*>(parent);
+    rlc_.reference(this, "lteRlcUmModule", true);
+
     //statistics
 
-    // TODO find a more elegant way
-    LteMacBase* mac;
-    if (strcmp(getParentModule()->getFullName(),"nrRlc") == 0)
-        mac = check_and_cast<LteMacBase*>(getParentModule()->getParentModule()->getSubmodule("nrMac"));
-    else
-        mac = check_and_cast<LteMacBase*>(getParentModule()->getParentModule()->getSubmodule("mac"));
-
+    LteMacBase* mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
     nodeB_ = getRlcByMacNodeId(mac->getMacCellId(), UM);
 
     resetFlag_ = false;

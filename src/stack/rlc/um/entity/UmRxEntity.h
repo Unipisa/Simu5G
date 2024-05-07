@@ -13,6 +13,8 @@
 #define _LTE_UMRXENTITY_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/rlc/um/LteRlcUm.h"
 #include "common/timer/TTimer.h"
 #include "common/LteControlInfo.h"
@@ -102,7 +104,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
     // Node id of the owner module
     MacNodeId ownerNodeId_;
 
-    LteRlcUm *rlc_;
+    inet::ModuleRefByPar<LteRlcUm> rlc_;
 
     /*
      * Flow-related info.
