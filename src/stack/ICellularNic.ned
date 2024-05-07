@@ -20,8 +20,9 @@ import inet.linklayer.contract.IWirelessInterface;
 //
 moduleinterface ICellularNic extends IWirelessInterface
 {
-    @display("i=block/ifcard");
-    string nodeType;
+    parameters:
+        @display("i=block/ifcard");
+        string nodeType;
         //bool d2dCapable;            // inherit the value from the parent module
         @networkInterface;
     gates:

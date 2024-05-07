@@ -40,7 +40,7 @@ simple BackgroundCellChannelModel
         double correlation_distance @unit(m) = default(50m);
 
         // Antenna Gain of UE --> wrt an isotropic antenna
-        double antennaGainUe @unit(dBi) = default(0dBi);  
+        double antennaGainUe @unit(dBi) = default(0dBi);
         // Antenna Gain of eNodeB -->
         double antennGainEnB @unit(dBi) = default(18dBi);
         // Antenna Gain of Micro node -->
