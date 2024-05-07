@@ -96,6 +96,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     static double getCqiFromTable(double snr);
 
     virtual double getTtiPeriod() = 0;
+    virtual bool isSetBgTrafficManagerInfoInit() = 0;
 
     // define functions for interactions with the NIC
 

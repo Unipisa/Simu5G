@@ -33,12 +33,7 @@ BackgroundCellTrafficManager::~BackgroundCellTrafficManager()
 
 void BackgroundCellTrafficManager::initialize(int stage)
 {
-    cSimpleModule::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
-        numBgUEs_ = par("numBgUes");
-        binder_.reference(this, "binderModule", true);   // TODO from BackgroundTrafficManager::initialize(stage);
-    }
+    BackgroundTrafficManagerBase::initialize(stage);
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
         bgScheduler_.reference(this, "bgSchedulerModule", true);
@@ -47,34 +42,17 @@ void BackgroundCellTrafficManager::initialize(int stage)
             bgAmc_ = new BackgroundCellAmcNr(binder_);
         else
             bgAmc_ = new BackgroundCellAmc(binder_);
-
-        phyPisaData_ = &(binder_->phyPisaData);
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
         bsTxPower_ = bgScheduler_->getTxPower();
         bsCoord_ = bgScheduler_->getPosition();
-
-        // create vector of BackgroundUEs
-        for (int i=0; i < numBgUEs_; i++)
-            bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
-
-        BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
-        info->init = false;
-        info->bgTrafficManager = this;
-        info->carrierFrequency = carrierFrequency_;
-        info->allocatedRbsDl = 0.0;
-        info->allocatedRbsUl = 0.0;
-        info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
-
-        if (par("enablePeriodicCqiUpdate").boolValue() && par("computeAvgInterference").boolValue())
-        {
-            initializeAvgInterferenceComputation();
-            info->init = true;
-        }
-
-        binder_->addBgTrafficManagerInfo(info);
     }
+}
+
+bool BackgroundCellTrafficManager::isSetBgTrafficManagerInfoInit()
+{
+    return par("enablePeriodicCqiUpdate").boolValue() && par("computeAvgInterference").boolValue();
 }
 
 unsigned int BackgroundCellTrafficManager::getNumBands()

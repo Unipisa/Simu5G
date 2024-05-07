@@ -37,6 +37,7 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
 
   protected:
     virtual double getTtiPeriod();
+    virtual bool isSetBgTrafficManagerInfoInit();
 
   public:
     BackgroundCellTrafficManager();

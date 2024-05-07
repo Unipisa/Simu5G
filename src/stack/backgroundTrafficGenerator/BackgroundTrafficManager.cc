@@ -43,6 +43,11 @@ void BackgroundTrafficManager::initialize(int stage)
     }
 }
 
+bool BackgroundTrafficManager::isSetBgTrafficManagerInfoInit()
+{
+    return !par("enablePeriodicCqiUpdate").boolValue() && par("computeAvgInterference").boolValue();
+}
+
 unsigned int BackgroundTrafficManager::getNumBands()
 {
     return channelModel_->getNumBands();

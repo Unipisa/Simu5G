@@ -46,6 +46,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
     virtual void initialize(int stage);
 
     virtual double getTtiPeriod();
+    virtual bool isSetBgTrafficManagerInfoInit();
 
   public:
     BackgroundTrafficManager();

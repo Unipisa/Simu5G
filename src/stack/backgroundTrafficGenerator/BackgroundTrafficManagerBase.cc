@@ -79,7 +79,7 @@ void BackgroundTrafficManagerBase::initialize(int stage)
         info->allocatedRbsUl = 0.0;
         info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
 
-        if (!par("enablePeriodicCqiUpdate").boolValue() && par("computeAvgInterference").boolValue())
+        if (isSetBgTrafficManagerInfoInit())
         {
             initializeAvgInterferenceComputation();
             info->init = true;
