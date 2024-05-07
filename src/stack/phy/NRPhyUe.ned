@@ -11,9 +11,6 @@
 
 
 package simu5g.stack.phy;
-import simu5g.stack.phy.LtePhy;
-
-
 //
 // NR Phy module of PHY Layer
 //

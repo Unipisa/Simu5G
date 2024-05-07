@@ -10,20 +10,13 @@
 //
 
 package simu5g.nodes.mec.UALCMP;
-import simu5g.nodes.mec.UALCMP.UALCMPApp;
-import inet.linklayer.ppp.PppInterface;
-import inet.networklayer.common.InterfaceTable;
-import inet.networklayer.ipv4.Ipv4RoutingTable;
-import inet.networklayer.contract.IRoutingTable;
-import inet.networklayer.contract.INetworkLayer;
-import inet.applications.contract.IApp;
-import inet.transportlayer.udp.Udp;
-import inet.transportlayer.tcp.Tcp;
 import inet.common.MessageDispatcher;
 import inet.linklayer.contract.IEthernetInterface;
-import inet.applications.contract.IApp;
-import inet.node.ethernet.Eth10G;
+import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
+import inet.networklayer.contract.INetworkLayer;
+import inet.transportlayer.tcp.Tcp;
+import inet.transportlayer.udp.Udp;
 
 
 module UALCMP
@@ -174,8 +167,4 @@ module UALCMP
             extEth[i].upperLayerOut --> nl.in++;
             extEth[i].upperLayerIn <-- nl.out++;
         }
-
-
-
-
 }

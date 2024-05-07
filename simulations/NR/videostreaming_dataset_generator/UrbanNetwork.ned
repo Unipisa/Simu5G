@@ -14,18 +14,18 @@ package simu5g.simulations.NR.videostreaming_dataset_generator;
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
-import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.Upf;
-import simu5g.nodes.NR.gNodeB;
+import simu5g.mobility.trafficLightMobility.TrafficLight;
 import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.gNodeB;
+import simu5g.nodes.Upf;
+import simu5g.nodes.backgroundCell.BackgroundCell;
 import simu5g.nodes.mec.MECHost;
 import simu5g.nodes.mec.MECOrchestrator.MecOrchestrator;
 import simu5g.nodes.mec.UALCMP.UALCMP;
-import simu5g.nodes.backgroundCell.BackgroundCell;
-import simu5g.mobility.trafficLightMobility.TrafficLight;
 import simu5g.world.radio.LteChannelControl;
+
 
 //
 // UrbanNetwork

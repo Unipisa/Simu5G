@@ -11,8 +11,6 @@
 
 package simu5g.stack.compManager;
 
-import simu5g.x2.X2User;
-
 simple LteCompManagerBase like LteCompManager
 {
     parameters:

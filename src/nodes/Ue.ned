@@ -13,23 +13,20 @@
 package simu5g.nodes;
 
 import inet.applications.contract.IApp;
+import inet.common.MessageDispatcher;
 import inet.common.packet.recorder.PcapRecorder;
-import inet.mobility.contract.IMobility;
 import inet.linklayer.contract.IEthernetInterface;
 import inet.linklayer.contract.ILoopbackInterface;
 import inet.linklayer.ethernet.contract.IEthernetLayer;
+import inet.mobility.contract.IMobility;
 import inet.networklayer.common.InterfaceTable;
-import inet.networklayer.ipv4.Ipv4RoutingTable;
-import inet.networklayer.contract.IRoutingTable;
 import inet.networklayer.contract.INetworkLayer;
-import inet.common.packet.recorder.PcapRecorder;
+import inet.transportlayer.contract.ISctp;
 import inet.transportlayer.contract.ITcp;
 import inet.transportlayer.contract.IUdp;
-import inet.transportlayer.contract.ISctp;
-import inet.common.MessageDispatcher;
+import simu5g.corenetwork.statsCollector.UeStatsCollector;
 import simu5g.stack.ICellularNic;
 
-import simu5g.corenetwork.statsCollector.UeStatsCollector;
 
 //
 // User Equipment Module

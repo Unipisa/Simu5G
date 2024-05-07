@@ -11,8 +11,6 @@
 
 package simu5g.stack.handoverManager;
 
-import simu5g.x2.X2User;
-
 simple LteHandoverManager like ILteHandoverManager
 {
     parameters:

@@ -10,24 +10,23 @@
 
 package simu5g.nodes;
 
+import inet.applications.contract.IApp;
+import inet.common.MessageDispatcher;
 import inet.linklayer.ppp.PppInterface;
 import inet.mobility.static.StationaryMobility;
 import inet.networklayer.common.InterfaceTable;
-import inet.networklayer.ipv4.Ipv4RoutingTable;
-import inet.networklayer.contract.IRoutingTable;
 import inet.networklayer.contract.INetworkLayer;
-import inet.applications.contract.IApp;
-import inet.transportlayer.udp.Udp;
-import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.sctp.Sctp;
-import inet.common.MessageDispatcher;
-import simu5g.x2.LteX2App;
-import simu5g.stack.ICellularNic;
+import inet.transportlayer.tcp.Tcp;
+import inet.transportlayer.udp.Udp;
 import simu5g.common.cellInfo.CellInfo;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
-import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.corenetwork.statsCollector.StatsCollector;
+import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
+import simu5g.stack.ICellularNic;
+import simu5g.x2.LteX2App;
+
 
 //
 // eNodeB Module

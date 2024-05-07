@@ -11,8 +11,6 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
-import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficManager;
-
 module BackgroundTrafficGenerator
 {
     parameters:

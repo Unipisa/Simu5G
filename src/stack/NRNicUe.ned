@@ -12,13 +12,13 @@
 
 package simu5g.stack;
 
-import simu5g.stack.LteNicEnb;
-import simu5g.stack.phy.LtePhy;
 import simu5g.stack.mac.LteMac;
-import simu5g.stack.rlc.LteRlc;
-import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
-import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.packetFlowManager.PacketFlowManager;
+import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
+import simu5g.stack.phy.LtePhy;
+import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
+import simu5g.stack.rlc.LteRlc;
+
 
 //
 // UE with LTE+NR stack

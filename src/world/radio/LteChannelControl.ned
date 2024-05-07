@@ -11,8 +11,6 @@
 
 package simu5g.world.radio;
 
-import simu5g.world.radio.ChannelControl;
-
 simple LteChannelControl extends ChannelControl
 {
     parameters:

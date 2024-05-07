@@ -13,9 +13,8 @@
 package simu5g.nodes.mec.MECPlatform;
 
 import inet.applications.contract.IApp;
-
-import simu5g.nodes.mec.MECPlatform.IMEService;
 import simu5g.nodes.mec.MECPlatform.ServiceRegistry.ServiceRegistry;
+
 
 //
 // MEC platform compuond module representing the MEC platform entity

@@ -12,10 +12,10 @@
 
 package simu5g.nodes.NR;
 
-import simu5g.nodes.Ue;
-import simu5g.stack.NRNicUe;
-
 import simu5g.corenetwork.statsCollector.NRueStatsCollector;
+import simu5g.nodes.Ue;
+
+
 //
 // User Equipment Module
 //

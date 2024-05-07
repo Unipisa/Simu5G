@@ -17,9 +17,9 @@ import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.Upf;
-import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.gNodeB;
+import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
 import simu5g.world.radio.LteChannelControl;
 

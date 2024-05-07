@@ -10,9 +10,6 @@
 //
 
 package simu5g.stack.mac;
-import simu5g.stack.mac.LteMac;
-
-
 //
 // NR MAC module of the UE
 //

@@ -12,7 +12,7 @@
 
 package simu5g.stack.phy.feedback.testFeedback;
 
-import simu5g.stack.phy.feedback.*;
+import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 
 
 network TestFeedback

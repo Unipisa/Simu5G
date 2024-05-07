@@ -11,8 +11,6 @@
 
 package simu5g.stack.dualConnectivityManager;
 
-import simu5g.x2.X2User;
-
 //
 // This module is responsible for bridging packets between PDCP layers
 // of two e/gNodeBs when dual connectivity is employed

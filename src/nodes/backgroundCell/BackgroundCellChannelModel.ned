@@ -11,9 +11,6 @@
 
 package simu5g.nodes.backgroundCell;
 
-import inet.mobility.static.StationaryMobility;
-import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
-
 simple BackgroundCellChannelModel
 {
     parameters:

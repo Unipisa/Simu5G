@@ -17,12 +17,10 @@ import inet.linklayer.contract.ILoopbackInterface;
 import inet.linklayer.ethernet.contract.IEthernetLayer;
 import inet.linklayer.ppp.PppInterface;
 import inet.networklayer.common.InterfaceTable;
-import inet.networklayer.ipv4.Ipv4RoutingTable;
-import inet.networklayer.contract.IRoutingTable;
 import inet.networklayer.contract.INetworkLayer;
-import inet.applications.contract.IApp;
-import inet.transportlayer.udp.Udp;
 import inet.transportlayer.tcp.Tcp;
+import inet.transportlayer.udp.Udp;
+
 
 //#
 //# VirtualisationInfrastructure
@@ -132,7 +130,6 @@ module VirtualisationInfrastructure
         }
 
     connections allowunconnected:
-
 
         for i=0..numIndependentMecApp -1 {
             at.out++ --> independentMecAppOut++;

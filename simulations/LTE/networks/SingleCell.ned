@@ -13,14 +13,13 @@ package simu5g.simulations.LTE.networks;
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
-import inet.node.ethernet.Eth10M;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.PgwStandard;
 import simu5g.nodes.Ue;
 import simu5g.nodes.eNodeB;
-import simu5g.nodes.PgwStandard;
 import simu5g.world.radio.LteChannelControl;
 
 

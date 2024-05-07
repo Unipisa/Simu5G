@@ -15,15 +15,15 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import simu5g.world.radio.ChannelControl;
-import simu5g.common.binder.Binder;
-import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.Ue;
-import simu5g.nodes.eNodeB;
-import simu5g.nodes.PgwStandard;
-import simu5g.world.radio.LteChannelControl;
 import simu5g.apps.d2dMultihop.eventGenerator.EventGenerator;
 import simu5g.apps.d2dMultihop.statistics.MultihopD2DStatistics;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.PgwStandard;
+import simu5g.nodes.Ue;
+import simu5g.nodes.eNodeB;
+import simu5g.world.radio.LteChannelControl;
+
 
 network MultiCell_D2DMultihop
 {

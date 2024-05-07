@@ -11,8 +11,6 @@
 
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
-import inet.mobility.contract.IMobility;
-
 simple TrafficGeneratorCbr extends TrafficGeneratorBase
 {
     parameters:

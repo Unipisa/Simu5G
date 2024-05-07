@@ -12,9 +12,6 @@
 
 package simu5g.stack.pdcp_rrc;
 
-import simu5g.stack.pdcp_rrc.LtePdcpRrcEnbD2D;
-
-
 //
 // Receive Entity of NR PDCP
 //

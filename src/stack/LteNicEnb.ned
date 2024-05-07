@@ -12,24 +12,13 @@
 
 package simu5g.stack;
 
-import inet.linklayer.contract.IWirelessInterface;
-import inet.networklayer.common.NetworkInterface;
-import simu5g.stack.phy.LtePhy;
-import simu5g.stack.mac.LteMac;
-import simu5g.stack.pdcp_rrc.LtePdcpRrc;
-import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
-import simu5g.stack.rlc.LteRlc;
-import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
-import simu5g.stack.ip2nic.IP2Nic;
 import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.LteCompManager;
-import simu5g.stack.d2dModeSelection.D2DModeSelection;
-import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
-import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
+import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.x2.LteX2Manager;
 
-import simu5g.stack.packetFlowManager.PacketFlowManager;
+
 //
 // eNodeB of LTE stack
 //

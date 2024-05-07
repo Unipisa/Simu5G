@@ -10,8 +10,6 @@
 //
 package simu5g.stack.ip2nic;
 
-import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
-
 //
 // IP2Nic module performs as a bridge between the IP network layer and the LTE/NR protocol stack
 // It has a slightly different behavior in the UE rather than in the BS
