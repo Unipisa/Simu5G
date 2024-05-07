@@ -103,18 +103,18 @@ void MecRTVideoStreamingReceiver::handleUeMessage(omnetpp::cMessage *msg)
     {
         ueAppModule_ = L3AddressResolver().findHostWithAddress(ueAppAddress)->getSubmodule("app",1);
 
-        e2eDelaySegment_ = ueAppModule_->registerSignal("rtVideoStreamingEnd2endDelaySegment");
-        segmentSize_ = ueAppModule_->registerSignal("rtVideoStreamingSegmentPacketSize");
-        frameSize_ = ueAppModule_->registerSignal("rtVideoStreamingFrameSize");
-        playoutBufferLength_ = ueAppModule_->registerSignal("rtVideoStreamingPlayoutBufferLength");
-        playoutDelayTime_ = ueAppModule_->registerSignal("rtVideoStreamingPlayoutDelay");
-        playoutDelayTimeAll_ = ueAppModule_->registerSignal("rtVideoStreamingPlayoutDelayAll");
-        segmentLoss_ = ueAppModule_->registerSignal("rtVideoStreamingSegmentLoss");
-        interArrTime_ = ueAppModule_->registerSignal("rtVideoStreamingInterArrivalTimeSegment");
-        frameDisplayed_ = ueAppModule_->registerSignal("rtVideoStreamingFramesDisplayed");
+        e2eDelaySegment_ = registerSignal("rtVideoStreamingEnd2endDelaySegment");
+        segmentSize_ = registerSignal("rtVideoStreamingSegmentPacketSize");
+        frameSize_ = registerSignal("rtVideoStreamingFrameSize");
+        playoutBufferLength_ = registerSignal("rtVideoStreamingPlayoutBufferLength");
+        playoutDelayTime_ = registerSignal("rtVideoStreamingPlayoutDelay");
+        playoutDelayTimeAll_ = registerSignal("rtVideoStreamingPlayoutDelayAll");
+        segmentLoss_ = registerSignal("rtVideoStreamingSegmentLoss");
+        interArrTime_ = registerSignal("rtVideoStreamingInterArrivalTimeSegment");
+        frameDisplayed_ = registerSignal("rtVideoStreamingFramesDisplayed");
 
-        startSession_ = ueAppModule_->registerSignal("rtVideoStreamingStartSession");
-        stopSession_ = ueAppModule_->registerSignal("rtVideoStreamingStopSession");
+        startSession_ = registerSignal("rtVideoStreamingStartSession");
+        stopSession_ = registerSignal("rtVideoStreamingStopSession");
     }
 
     auto mecPk = pk->peekAtFront<RealTimeVideoStreamingAppPacket>();

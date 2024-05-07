@@ -133,8 +133,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
     initializeAllocator();
 
     // Initialize statistics
-    avgServedBlocksDl_ = mac_->registerSignal("avgServedBlocksDl");
-    avgServedBlocksUl_ = mac_->registerSignal("avgServedBlocksUl");
+    avgServedBlocksDl_ = omnetpp::cComponent::registerSignal("avgServedBlocksDl");
+    avgServedBlocksUl_ = omnetpp::cComponent::registerSignal("avgServedBlocksUl");
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)

@@ -60,26 +60,25 @@ void AmRxQueue::initialize()
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
     {
-        rlcCellPacketLoss_ = lteRlc_->registerSignal("rlcCellPacketLossUl");
-        rlcPacketLoss_ = lteRlc_->registerSignal("rlcPacketLossUl");
-        rlcPduPacketLoss_ = lteRlc_->registerSignal("rlcPduPacketLossUl");
-        rlcDelay_ = lteRlc_->registerSignal("rlcDelayUl");
-        rlcThroughput_ = lteRlc_->registerSignal("rlcThroughputUl");
-        rlcPduDelay_ = lteRlc_->registerSignal("rlcPduDelayUl");
-        rlcPduThroughput_ = lteRlc_->registerSignal("rlcPduThroughputUl");
-        rlcCellThroughput_ = lteRlc_->registerSignal("rlcCellThroughputUl");
+        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossUl");
+        rlcPacketLoss_ = registerSignal("rlcPacketLossUl");
+        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossUl");
+        rlcDelay_ = registerSignal("rlcDelayUl");
+        rlcThroughput_ = registerSignal("rlcThroughputUl");
+        rlcPduDelay_ = registerSignal("rlcPduDelayUl");
+        rlcPduThroughput_ = registerSignal("rlcPduThroughputUl");
+        rlcCellThroughput_ = registerSignal("rlcCellThroughputUl");
     }
     else
     {
-        cModule* nodeB = getRlcByMacNodeId(mac->getMacCellId(), UM);
-        rlcPacketLoss_ = lteRlc_->registerSignal("rlcPacketLossDl");
-        rlcPduPacketLoss_ = lteRlc_->registerSignal("rlcPduPacketLossDl");
-        rlcDelay_ = lteRlc_->registerSignal("rlcDelayDl");
-        rlcThroughput_ = lteRlc_->registerSignal("rlcThroughputDl");
-        rlcPduDelay_ = lteRlc_->registerSignal("rlcPduDelayDl");
-        rlcPduThroughput_ = lteRlc_->registerSignal("rlcPduThroughputDl");
-        rlcCellThroughput_ = nodeB->registerSignal("rlcCellThroughputDl");
-        rlcCellPacketLoss_ = nodeB->registerSignal("rlcCellPacketLossDl");
+        rlcPacketLoss_ = registerSignal("rlcPacketLossDl");
+        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossDl");
+        rlcDelay_ = registerSignal("rlcDelayDl");
+        rlcThroughput_ = registerSignal("rlcThroughputDl");
+        rlcPduDelay_ = registerSignal("rlcPduDelayDl");
+        rlcPduThroughput_ = registerSignal("rlcPduThroughputDl");
+        rlcCellThroughput_ = registerSignal("rlcCellThroughputDl");
+        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossDl");
     }
 }
 
