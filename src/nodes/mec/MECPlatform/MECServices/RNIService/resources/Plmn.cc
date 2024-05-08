@@ -11,6 +11,8 @@
 
 #include "../../RNIService/resources/Plmn.h"
 
+namespace simu5g {
+
 Plmn::Plmn()
 {
     // test mcc and mnc
@@ -56,4 +58,5 @@ nlohmann::ordered_json Plmn::toJson() const
 
 }
 
+} //namespace
 

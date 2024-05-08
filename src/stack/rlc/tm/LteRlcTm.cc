@@ -14,6 +14,8 @@
 #include "stack/rlc/tm/LteRlcTm.h"
 #include "stack/mac/packet/LteMacSduRequest.h"
 
+namespace simu5g {
+
 Define_Module(LteRlcTm);
 
 using namespace omnetpp;
@@ -143,3 +145,6 @@ void LteRlcTm::handleMessage(cMessage* msg)
     }
     return;
 }
+
+} //namespace
+

@@ -11,6 +11,8 @@
 
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
 
+namespace simu5g {
+
 LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb* macOwner)
 {
     numUnits_ = numUnits;
@@ -53,3 +55,6 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
         }
     }
 }
+
+} //namespace
+

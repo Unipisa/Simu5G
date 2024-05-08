@@ -37,6 +37,8 @@
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
 
+namespace simu5g {
+
 Define_Module(LteMacEnb);
 
 using namespace omnetpp;
@@ -1227,4 +1229,6 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
     return activeUeSet.size();
 
 }
+
+} //namespace
 

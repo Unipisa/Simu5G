@@ -18,6 +18,8 @@
 #include "stack/handoverManager/X2HandoverCommandIE.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 Register_Serializer(LteX2Message, LteX2MsgSerializer);
@@ -161,4 +163,6 @@ std::vector<CompRbStatus> LteX2MsgSerializer::deserializeStatusMap(inet::MemoryI
         map[i] = (CompRbStatus) stream.readByte();
     return map;
 }
+
+} //namespace
 

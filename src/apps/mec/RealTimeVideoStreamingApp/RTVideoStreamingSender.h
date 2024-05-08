@@ -27,6 +27,7 @@
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -169,5 +170,6 @@ class RTVideoStreamingSender: public cSimpleModule
         void initializeVideoStream();
 };
 
+} //namespace
 
 #endif /* APPS_MEC_RTVIDEOSTREAMINGSENDER_H_ */

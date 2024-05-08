@@ -20,6 +20,8 @@
 #include "stack/compManager/X2CompRequestIE.h"
 #include "stack/compManager/X2CompReplyIE.h"
 
+namespace simu5g {
+
 typedef enum {
     COMP_CLIENT,
     COMP_CLIENT_COORDINATOR,
@@ -92,5 +94,7 @@ public:
     virtual void initialize() override;
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 };
+
+} //namespace
 
 #endif /* LTE_LTECOMPMANAGERBASE_H_ */

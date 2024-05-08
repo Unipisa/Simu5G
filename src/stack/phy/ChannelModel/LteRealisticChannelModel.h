@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 
+namespace simu5g {
+
 class Binder;
 
 class LteRealisticChannelModel : public LteChannelModel
@@ -454,5 +456,7 @@ protected:
    */
   ShadowFadingMap* obtainShadowingMap(MacNodeId id);
 };
+
+} //namespace
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_ */

@@ -21,6 +21,8 @@
 #include "stack/phy/layer/LtePhyBase.h"
 #include "stack/phy/layer/LtePhyEnb.h"
 
+namespace simu5g {
+
 class LtePhyBase;
 class LtePhyEnb;
 
@@ -154,5 +156,7 @@ class DasFilter
     /// Pointer to the Nic
     LtePhyBase* ltePhy_;
 };
+
+} //namespace
 
 #endif

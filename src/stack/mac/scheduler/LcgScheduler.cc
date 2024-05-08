@@ -12,6 +12,8 @@
 #include "stack/mac/scheduler/LcgScheduler.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LcgScheduler::LcgScheduler(LteMacUe* mac)
@@ -414,3 +416,6 @@ ScheduleList& LcgScheduler::getScheduledBytesList()
 {
     return scheduledBytesList_;
 }
+
+} //namespace
+

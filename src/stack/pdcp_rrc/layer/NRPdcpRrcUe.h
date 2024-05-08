@@ -16,6 +16,8 @@
 
 #include "stack/pdcp_rrc/layer/LtePdcpRrcUeD2D.h"
 
+namespace simu5g {
+
 /**
  * @class NRPdcpRrcUe
  * @brief PDCP Layer
@@ -90,5 +92,7 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
 
     virtual void deleteEntities(MacNodeId nodeId);
 };
+
+} //namespace
 
 #endif

@@ -11,6 +11,8 @@
 
 #include "stack/pdcp_rrc/layer/entity/NRTxPdcpEntity.h"
 
+namespace simu5g {
+
 Define_Module(NRTxPdcpEntity);
 
 NRTxPdcpEntity::NRTxPdcpEntity()
@@ -82,3 +84,6 @@ void NRTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 NRTxPdcpEntity::~NRTxPdcpEntity()
 {
 }
+
+} //namespace
+

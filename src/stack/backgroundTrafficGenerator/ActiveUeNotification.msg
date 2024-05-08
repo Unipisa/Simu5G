@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+namespace simu5g;
+
 message ActiveUeNotification 
 {
     // index of the bg UE that has active backlog in the UL 

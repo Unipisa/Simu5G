@@ -15,7 +15,7 @@
 #include "stack/phy/packet/AirFrame_m.h"
 #include "world/radio/LteChannelControl.h"
 
-
+namespace simu5g {
 
 Define_Module(LteChannelControl);
 
@@ -89,3 +89,6 @@ void LteChannelControl::sendToChannel(RadioRef srcRadio, AirFrame *airFrame)
     // the original frame can be deleted
     delete airFrame;
 }
+
+} //namespace
+

@@ -16,7 +16,8 @@
 
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-namespace inet {
+
+namespace simu5g {
 
 Register_Serializer(DeviceAppPacket, DeviceAppMessageSerializer);
 Register_Serializer(DeviceAppStartAckPacket, DeviceAppMessageSerializer);
@@ -205,5 +206,5 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
 
 }
 
-} // namespace inet
+} //namespace
 

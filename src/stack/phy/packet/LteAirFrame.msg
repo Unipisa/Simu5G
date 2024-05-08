@@ -11,6 +11,8 @@
 
 import stack.phy.packet.AirFrame;
 
+namespace simu5g;
+
 //
 // This is LteAirFrame.
 //

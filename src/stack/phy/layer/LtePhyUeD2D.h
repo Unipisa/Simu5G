@@ -14,6 +14,8 @@
 
 #include "stack/phy/layer/LtePhyUe.h"
 
+namespace simu5g {
+
 class LtePhyUeD2D : public LtePhyUe
 {
   protected:
@@ -57,5 +59,7 @@ class LtePhyUeD2D : public LtePhyUe
         return txPower_;
     }
 };
+
+} //namespace
 
 #endif  /* _LTE_AIRPHYUED2D_H_ */

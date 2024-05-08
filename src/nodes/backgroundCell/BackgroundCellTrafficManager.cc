@@ -18,6 +18,8 @@
 #include "stack/phy/layer/LtePhyEnb.h"
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 
+namespace simu5g {
+
 Define_Module(BackgroundCellTrafficManager);
 
 double BackgroundCellTrafficManager::nrCqiTable[16] = {
@@ -182,3 +184,6 @@ double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet:
     BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
     return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgScheduler_);
 }
+
+} //namespace
+

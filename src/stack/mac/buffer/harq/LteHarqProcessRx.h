@@ -16,6 +16,8 @@
 
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 typedef std::pair<unsigned char, RxHarqPduStatus> RxUnitStatus;
 typedef std::vector<std::vector<RxUnitStatus> > RxBufferStatus;
 
@@ -183,5 +185,7 @@ class LteHarqProcessRx
 
   protected:
 };
+
+} //namespace
 
 #endif

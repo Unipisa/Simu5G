@@ -20,6 +20,8 @@
 #include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
 #include "inet/common/packet/Packet.h"
 
+namespace simu5g {
+
 class AmRxQueue : public omnetpp::cSimpleModule
 {
   protected:
@@ -131,5 +133,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
     //! Defragment received frame
     inet::Packet *defragmentFrames(std::deque<inet::Packet *> &fragmentFrames);
 };
+
+} //namespace
 
 #endif

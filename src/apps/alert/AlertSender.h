@@ -19,6 +19,8 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "apps/alert/AlertPacket_m.h"
 
+namespace simu5g {
+
 class AlertSender : public omnetpp::cSimpleModule
 {
     inet::UdpSocket socket;
@@ -53,6 +55,8 @@ class AlertSender : public omnetpp::cSimpleModule
     // utility: show current statistics above the icon
     virtual void refreshDisplay() const override;
 };
+
+} //namespace
 
 #endif
 

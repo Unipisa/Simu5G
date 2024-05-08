@@ -11,6 +11,8 @@
 
 #include "stack/mac/buffer/LteMacBuffer.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteMacBuffer::LteMacBuffer()
@@ -143,4 +145,6 @@ std::ostream& operator << (std::ostream &stream, const LteMacBuffer* queue)
         " Processed: " << queue->getProcessed();
     return stream;
 }
+
+} //namespace
 

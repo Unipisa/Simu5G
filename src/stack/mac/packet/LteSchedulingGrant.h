@@ -13,6 +13,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/amc/UserTxParams.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class UserTxParams;
@@ -155,3 +157,5 @@ private:
     }
 
 };
+
+} //namespace

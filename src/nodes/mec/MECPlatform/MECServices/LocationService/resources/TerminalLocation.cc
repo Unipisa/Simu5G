@@ -12,6 +12,7 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
 
+namespace simu5g {
 
 TerminalLocation::TerminalLocation(){};
 TerminalLocation::TerminalLocation(const std::string& address, const std::string& locationRetreivalStatus, const CurrentLocation& currentLocation):
@@ -31,5 +32,5 @@ nlohmann::ordered_json TerminalLocation::toJson() const
     return val;
 }
 
-
+} //namespace
 

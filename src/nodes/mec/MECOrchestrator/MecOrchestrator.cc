@@ -32,6 +32,8 @@
 //emulation debug
 #include <iostream>
 
+namespace simu5g {
+
 Define_Module(MecOrchestrator);
 
 MecOrchestrator::MecOrchestrator()
@@ -541,4 +543,5 @@ const ApplicationDescriptor* MecOrchestrator::getApplicationDescriptorByAppName(
     return nullptr;
 }
 
+} //namespace
 

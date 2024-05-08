@@ -14,6 +14,7 @@
 #include "EventNotification.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
 
+namespace simu5g {
 
 class CircleNotificationEvent: public EventNotification {
     public:
@@ -29,5 +30,7 @@ class CircleNotificationEvent: public EventNotification {
         std::vector<TerminalLocation> terminalLocations_;
 
 };
+
+} //namespace
 
 #endif /* NODES_MEC_MEPLATFORM_EVENTNOTIFICATION_CIRCLENOTIFICATIONEVENT_H_ */

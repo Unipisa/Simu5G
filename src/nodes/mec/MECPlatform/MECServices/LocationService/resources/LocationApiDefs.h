@@ -17,7 +17,7 @@
 #include "inet/mobility/base/MovingMobilityBase.h"
 #include "inet/mobility/contract/IMobility.h"
 
-
+namespace simu5g {
 
 namespace LocationUtils{
 
@@ -35,6 +35,6 @@ namespace LocationUtils{
 
 }
 
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONAPIDEFS_H_ */

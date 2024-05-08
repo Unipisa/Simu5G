@@ -14,6 +14,8 @@
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/mac/packet/LteMacSduRequest.h"
 
+namespace simu5g {
+
 Define_Module(LteRlcUm);
 
 using namespace omnetpp;
@@ -375,4 +377,5 @@ void LteRlcUm::resetThroughputStats(MacNodeId nodeId)
     }
 }
 
+} //namespace
 

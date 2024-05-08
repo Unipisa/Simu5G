@@ -15,6 +15,8 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 
+namespace simu5g {
+
 /*
  *  From RESTful Network APIforTerminal Location
  *  section 5.2.2.3
@@ -54,6 +56,6 @@ class SubscriptioNotification : public AttributeBase
 
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_SUBSCRIPTIONNOTIFICATION_H_ */

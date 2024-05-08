@@ -14,6 +14,8 @@
 
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
+namespace simu5g {
+
 //
 // TrafficGeneratorCbr
 //
@@ -45,5 +47,7 @@ class TrafficGeneratorCbr : public TrafficGeneratorBase
     virtual double getAvgLoad(Direction dir) override;
 
 };
+
+} //namespace
 
 #endif

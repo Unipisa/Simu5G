@@ -15,6 +15,8 @@
 #include "inet/common/ModuleAccess.h"
 #include "stack/packetFlowManager/PacketFlowManagerUe.h"
 
+namespace simu5g {
+
 Define_Module(UeStatsCollector);
 
 UeStatsCollector::UeStatsCollector()
@@ -224,4 +226,5 @@ void UeStatsCollector::resetStats()
     dl_nongbr_data_volume_ue.reset();
 }
 
+} //namespace
 

@@ -16,6 +16,8 @@
 #include "inet/common/packet/Packet.h"
 #include "stack/rlc/packet/LteRlcPdu_m.h"
 
+namespace simu5g {
+
 /**
  * @class LteMacQueue
  * @brief Queue for MAC SDU packets
@@ -144,5 +146,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
     /// Size of queue
     int queueSize_;
 };
+
+} //namespace
 
 #endif

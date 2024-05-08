@@ -22,6 +22,8 @@
 #include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
 #include "inet/common/packet/Packet.h"
 
+namespace simu5g {
+
 /*
  * RLC AM Mode Transmission Entity
  *
@@ -226,5 +228,7 @@ class AmTxQueue : public cSimpleModule
 
     std::deque<Packet *> * fragmentFrame(Packet *frame, std::deque<int>& windowsIndex, RlcFragDesc rlcFragDesc);
 };
+
+} //namespace
 
 #endif

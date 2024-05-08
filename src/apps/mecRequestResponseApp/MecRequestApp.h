@@ -19,6 +19,8 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "stack/phy/layer/NRPhyUe.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class MecRequestApp : public cSimpleModule
@@ -59,5 +61,7 @@ class MecRequestApp : public cSimpleModule
         void sendRequest();
         void recvResponse(cMessage* msg);
 };
+
+} //namespace
 
 #endif

@@ -27,6 +27,7 @@
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -635,4 +636,6 @@ void MecServiceBase::removeSubscritions(int connId)
         }
     }
 }
+
+} //namespace
 

@@ -18,6 +18,8 @@
 #include "stack/mac/scheduling_modules/LteMaxCiOptMB.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace omnetpp;
 
@@ -617,3 +619,6 @@ void LteMaxCiOptMB::commitSchedule()
 {
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
+
+} //namespace
+

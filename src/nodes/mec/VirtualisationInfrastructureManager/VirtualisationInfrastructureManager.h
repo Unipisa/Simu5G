@@ -22,6 +22,8 @@
 
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 //###########################################################################
 //data structures and values
 
@@ -227,5 +229,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
         void reserveResourcesBGApps();
 };
+
+} //namespace
 
 #endif

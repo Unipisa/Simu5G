@@ -13,6 +13,8 @@
 #include "x2/packet/LteX2MsgSerializer.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -40,3 +42,6 @@ X2CompMsg& X2CompMsg::operator=(const X2CompMsg& other)
 X2CompMsg* X2CompMsg::dup() const { return new X2CompMsg(*this); }
 
 X2CompMsg::~X2CompMsg() { }
+
+} //namespace
+

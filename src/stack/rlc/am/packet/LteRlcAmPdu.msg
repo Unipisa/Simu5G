@@ -12,6 +12,8 @@
 import  stack.rlc.LteRlcDefs;
 import  stack.rlc.packet.LteRlcPdu;
 
+namespace simu5g;
+
 // Rlc Am Control fields for AM control PDUs
 //class LteRlcAmControlInfo
 //{

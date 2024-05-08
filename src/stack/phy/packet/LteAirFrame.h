@@ -18,6 +18,8 @@
 #include "common/LteControlInfo.h"
 #include "stack/phy/packet/LteAirFrame_m.h"
 
+namespace simu5g {
+
 class LteAirFrame : public LteAirFrame_Base
 {
   protected:
@@ -59,5 +61,7 @@ class LteAirFrame : public LteAirFrame_Base
 };
 
 Register_Class(LteAirFrame);
+
+} //namespace
 
 #endif

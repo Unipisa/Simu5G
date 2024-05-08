@@ -16,6 +16,8 @@
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/packet/LteMacPdu.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqProcessRxD2D::LteHarqProcessRxD2D(unsigned char acid, LteMacBase *owner)
@@ -33,7 +35,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
         throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
 
     Packet *pkt = nullptr;
-    
+
     auto pduInfo = (pdu_.at(cw)->getTag<UserControlInfo>());
     auto pdu = pdu_.at(cw)->peekAtFront<LteMacPdu>();
 
@@ -134,3 +136,6 @@ Packet* LteHarqProcessRxD2D::createFeedbackMirror(Codeword cw)
     }
     return pkt;
 }
+
+} //namespace
+

@@ -19,6 +19,7 @@ import nodes.mec.MECPlatform.MECPackets;
 //}}
 //import lte.nodes.mec.MEPlatform.MECPackets.MECPacket;
 
+namespace simu5g;
 
 class DeviceAppPacket extends MECPacket {
 //    unsigned int sno;

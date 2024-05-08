@@ -11,6 +11,8 @@
 
 #include "CircleNotificationEvent.h"
 
+namespace simu5g {
+
 CircleNotificationEvent::CircleNotificationEvent() {
     // TODO Auto-generated constructor stub
 
@@ -28,4 +30,6 @@ const std::vector<TerminalLocation>& CircleNotificationEvent::getTerminalLocatio
 CircleNotificationEvent::~CircleNotificationEvent() {
     // TODO Auto-generated destructor stub
 }
+
+} //namespace
 

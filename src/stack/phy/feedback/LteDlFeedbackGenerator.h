@@ -22,6 +22,8 @@
 #include "common/timer/TTimerMsg_m.h"
 #include "stack/phy/feedback/LteFeedbackComputation.h"
 
+namespace simu5g {
+
 class DasFilter;
 /**
  * @class LteDlFeedbackGenerator
@@ -141,5 +143,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
      */
     void handleHandover(MacCellId newEnbId);
 };
+
+} //namespace
 
 #endif

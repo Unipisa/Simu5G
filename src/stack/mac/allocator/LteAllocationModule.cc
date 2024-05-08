@@ -12,6 +12,8 @@
 #include "stack/mac/allocator/LteAllocationModule.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -439,3 +441,6 @@ LteAllocationModule::rbOccupation(const MacNodeId nodeId, RbMap& rbMap)
     }
     return blocks;
 }
+
+} //namespace
+

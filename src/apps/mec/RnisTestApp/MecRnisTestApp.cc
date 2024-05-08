@@ -27,6 +27,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 Define_Module(MecRnisTestApp);
 
 using namespace inet;
@@ -415,4 +417,6 @@ void MecRnisTestApp::handleProcessedMessage(cMessage *msg)
     }
     MecAppBase::handleProcessedMessage(msg);
 }
+
+} //namespace
 

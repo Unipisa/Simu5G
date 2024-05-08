@@ -17,6 +17,8 @@
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
 #include "x2/LteX2Manager.h"
 
+namespace simu5g {
+
 Define_Module(LteX2Manager);
 
 
@@ -172,3 +174,6 @@ void LteX2Manager::fromX2(Packet* pkt)
     EV << "LteX2Manager::fromX2 - send X2MSG to LTE stack" << endl;
     send(pkt, outGate);
 }
+
+} //namespace
+

@@ -16,6 +16,7 @@
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
 
 typedef std::set<unsigned int> SequenceNumberSet;
 typedef unsigned int BurstId;
@@ -24,7 +25,7 @@ typedef unsigned int BurstId;
  * This module is responsible for keeping trace of all PDCP SDUs.
  * A PDCP SDU is encapsulated in the following packets while it is going down
  * through the LTE NIC layers:
- * 
+ *
  * PDCP SDU
  * some operations
  * PDCP PDU
@@ -35,11 +36,11 @@ typedef unsigned int BurstId;
  * MAC PDU (aka TB)
  *
  * Each PDCP has its own seq number, managed by the corresponding LCID
- * 
+ *
  * The main functions of this module are:
  *  - detect PDCP SDU discarded (no part transmitted)
  *  - calculate the delay time of a pkt, from PDCP SDU to last Harq ACK of the
- *    corresponding seq number.  
+ *    corresponding seq number.
  */
 
 class LteRlcUmDataPdu;
@@ -102,9 +103,9 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         // reset structures for all connections
         virtual void clearAllLcid() = 0;
 
-        /* 
+        /*
         * This method insert a new pdcp seqnum and the corresponding entry time
-        * @param lcid 
+        * @param lcid
         * @param pdcpSno sequence number of the pdcp pdu
         * @param entryTime the time the packet enters PDCP layer
         *
@@ -121,19 +122,19 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
 
         virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
 
-        /* 
+        /*
         * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it
-        * @param lcid 
+        * @param lcid
         * @param macPdu packet pointer
-        */  
+        */
         virtual void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
 
         /*
         * This method checks if the HARQ acSequenceNumberSetk relative to a macPduId acknowledges an ENTIRE
-        * pdcp sdu 
+        * pdcp sdu
         * @param lcid
-        * @param macPduId Omnet id of the mac pdu 
+        * @param macPduId Omnet id of the mac pdu
         */
         virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) = 0;
 
@@ -177,4 +178,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         virtual void finish();
 
 };
+
+} //namespace
+
 #endif

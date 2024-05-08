@@ -14,6 +14,7 @@
 #include "nodes/backgroundCell/BackgroundCellAmc.h"
 #include "stack/mac/amc/LteMcs.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 BackgroundCellAmc::~BackgroundCellAmc()
@@ -125,3 +126,6 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     // Return the iTbs found.
     return iTbs;
 }
+
+} //namespace
+

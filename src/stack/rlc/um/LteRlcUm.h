@@ -22,6 +22,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 class UmTxEntity;
 class UmRxEntity;
 
@@ -235,5 +237,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
 
 
 };
+
+} //namespace
 
 #endif

@@ -13,6 +13,8 @@
 #include "stack/handoverManager/X2HandoverCommandIE.h"
 #include "inet/common/ProtocolTag_m.h"
 
+namespace simu5g {
+
 Define_Module(LteHandoverManager);
 
 using namespace inet;
@@ -151,4 +153,6 @@ void LteHandoverManager::receiveDataFromSourceEnb(Packet* datagram, MacNodeId so
     // send data to IP2Nic for transmission
     ip2nic_->receiveTunneledPacketOnHandover(datagram, sourceEnb);
 }
+
+} //namespace
 

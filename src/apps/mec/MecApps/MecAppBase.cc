@@ -18,6 +18,7 @@
 #include "inet/common/ProtocolGroup.h"
 #include "inet/common/Protocol.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 using namespace inet;
@@ -319,7 +320,5 @@ void MecAppBase::finish()
 //        mp1Socket_.close();
 }
 
-
-
-
+} //namespace
 

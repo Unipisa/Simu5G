@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+namespace simu5g;
+
 message UALCMPMessage {
     string type; // UALCMPMessage messageType (appListReq, appListRes, create, delete)
     int connectionId; // Placeholder to retrieve the correct devApp socket

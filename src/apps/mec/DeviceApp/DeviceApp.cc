@@ -25,6 +25,7 @@
 #include "nodes/mec/utils/httpUtils/json.hpp"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 
+namespace simu5g {
 
 using namespace inet;
 using namespace omnetpp;
@@ -559,3 +560,6 @@ void DeviceApp::finish()
     if(UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED)
         UALCMPSocket_.close();
 }
+
+} //namespace
+

@@ -13,6 +13,8 @@
 #include "apps/vod/VoDUDPClient.h"
 #include <fcntl.h>
 
+namespace simu5g {
+
 using namespace std;
 using namespace inet;
 
@@ -182,3 +184,6 @@ void VoDUDPClient::receiveStream(VoDPacket *msg)
 
     delete msg;
 }
+
+} //namespace
+

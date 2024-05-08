@@ -13,6 +13,8 @@
 
 #include "stack/mac/amc/UserTxParams.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 void UserTxParams::print(const char* s) const {
@@ -59,3 +61,6 @@ void UserTxParams::print(const char* s) const {
         throw omnetpp::cRuntimeError("Exception in UserTxParams::print(): %s", e.what());
     }
 }
+
+} //namespace
+

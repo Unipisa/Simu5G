@@ -17,6 +17,7 @@ cplusplus {{
 const inet::B D2D_MULTIHOP_HEADER_LENGTH = inet::B(8);
 }}
 
+namespace simu5g;
 
 //
 // MultihopD2DPacket

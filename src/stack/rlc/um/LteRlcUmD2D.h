@@ -15,6 +15,8 @@
 #include "common/utils/utils.h"
 #include "stack/rlc/um/LteRlcUm.h"
 
+namespace simu5g {
+
 /**
  * @class LteRlcUmD2D
  * @brief UM Module
@@ -78,5 +80,7 @@ class LteRlcUmD2D : public LteRlcUm
 
     std::map<MacNodeId, std::set<UmTxEntity*, simu5g::utils::cModule_LessId> > perPeerTxEntities_;
 };
+
+} //namespace
 
 #endif

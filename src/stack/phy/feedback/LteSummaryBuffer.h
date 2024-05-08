@@ -16,6 +16,8 @@
 #include "stack/phy/feedback/LteSummaryBuffer.h"
 #include "stack/phy/feedback/LteFeedback.h"
 
+namespace simu5g {
+
 class LteSummaryBuffer
 {
   protected:
@@ -58,6 +60,6 @@ class LteSummaryBuffer
     }
 };
 
-
+} //namespace
 
 #endif /* STACK_PHY_FEEDBACK_LTESUMMARYBUFFER_H_ */

@@ -32,6 +32,8 @@
 #include "common/binder/Binder.h"
 #include "common/cellInfo/CellInfo.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace inet;
 using namespace omnetpp;
@@ -140,7 +142,7 @@ void IP2Nic::handleMessage(cMessage *msg)
             auto pkt = check_and_cast<Packet *>(msg);
             pkt->removeTagIfPresent<SocketInd>();
     		removeAllSimu5GTags(pkt);
-            
+
             toIpBs(pkt);
         }
         else
@@ -395,7 +397,7 @@ void IP2Nic::registerInterface()
     networkIf->setBroadcast(false);
     networkIf->setMulticast(true);
     networkIf->setLoopback(false);
-    
+
     // generate a link-layer address to be used as interface token for IPv6
     InterfaceToken token(0, getSimulation()->getUniqueNumber(), 64);
     networkIf->setInterfaceToken(token);
@@ -690,3 +692,6 @@ void IP2Nic::finish()
         binder_->unregisterNode(nrNodeId_);
     }
 }
+
+} //namespace
+

@@ -14,6 +14,8 @@
 
 #include "stack/mac/amc/AmcPilot.h"
 
+namespace simu5g {
+
 /**
  * @class AmcPilotAuto
  * @brief AMC auto pilot
@@ -69,5 +71,7 @@ class AmcPilotAuto : public AmcPilot
     // returns a vector with one CQI for each band ( for the given user )
     std::vector<Cqi>  getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency);
 };
+
+} //namespace
 
 #endif

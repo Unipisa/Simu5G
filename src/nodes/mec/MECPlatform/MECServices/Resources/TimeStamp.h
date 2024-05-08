@@ -16,6 +16,7 @@
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
+namespace simu5g {
 
 class  TimeStamp: public AttributeBase
 {
@@ -31,7 +32,7 @@ class  TimeStamp: public AttributeBase
     public:
         TimeStamp();
         TimeStamp(bool valid);
-        
+
         virtual ~TimeStamp();
 
 
@@ -39,7 +40,7 @@ class  TimeStamp: public AttributeBase
         void setValid(bool valid);
 
         nlohmann::ordered_json toJson() const override;
-       
+
         /// <summary>
         /// The seconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC
         /// </summary>
@@ -51,8 +52,10 @@ class  TimeStamp: public AttributeBase
         /// </summary>
         int32_t getNanoSeconds() const;
         void setNanoSeconds(int32_t value);
-    
+
 
 };
+
+} //namespace
 
 #endif /* _TIMESTAMP_H_ */

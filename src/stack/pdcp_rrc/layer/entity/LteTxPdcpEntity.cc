@@ -12,6 +12,8 @@
 #include "inet/common/ProtocolTag_m.h"
 #include "stack/pdcp_rrc/layer/entity/LteTxPdcpEntity.h"
 
+namespace simu5g {
+
 Define_Module(LteTxPdcpEntity);
 
 LteTxPdcpEntity::LteTxPdcpEntity()
@@ -88,3 +90,6 @@ void LteTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 LteTxPdcpEntity::~LteTxPdcpEntity()
 {
 }
+
+} //namespace
+

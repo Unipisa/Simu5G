@@ -14,6 +14,7 @@
 
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
+namespace simu5g {
 
 /**
  * Converts between GtpUserMsg and binary (network byte order) packet.
@@ -27,5 +28,7 @@ class GtpUserMsgSerializer : public inet::FieldsChunkSerializer
   public:
     GtpUserMsgSerializer() : FieldsChunkSerializer() {}
 };
+
+} //namespace
 
 #endif // ifndef __INET_GTPUSERMSGSERIALIZER_H

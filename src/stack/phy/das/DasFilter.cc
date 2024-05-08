@@ -11,6 +11,8 @@
 
 #include "stack/phy/das/DasFilter.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 DasFilter::DasFilter(LtePhyBase* ltePhy, Binder* binder,
@@ -107,3 +109,6 @@ std::ostream &operator << (std::ostream &stream, const DasFilter* das)
     stream << das->getRemoteAntennaSet() << endl;
     return stream;
 }
+
+} //namespace
+

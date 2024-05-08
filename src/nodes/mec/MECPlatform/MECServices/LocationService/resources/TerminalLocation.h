@@ -15,6 +15,7 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
 
+namespace simu5g {
 
 /*
  *  From RESTful Network APIforTerminal Location
@@ -44,5 +45,6 @@ class TerminalLocation : public AttributeBase
         nlohmann::ordered_json toJson() const;
 };
 
+} //namespace
 
 #endif /* APPS_MEC_MECSERVICES_LOCATIONSERVICE_RESOURCES_TERMINALLOCATION_H_ */

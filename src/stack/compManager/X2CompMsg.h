@@ -16,6 +16,8 @@
 #include "x2/packet/LteX2MsgSerializer.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 /**
  * @class X2CompMsg
  *
@@ -37,6 +39,8 @@ class X2CompMsg : public LteX2Message
 
     virtual ~X2CompMsg();
 };
+
+} //namespace
 
 #endif
 

@@ -17,6 +17,7 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/User.h"
 
+namespace simu5g {
 
 class UserInfo : public AttributeBase
 {
@@ -45,6 +46,6 @@ class UserInfo : public AttributeBase
         LocationInfo locationInfo_;
 };
 
-
+} //namespace
 
 #endif /* CORENETWORK_NODES_MEC_MEPLATFORM_MESERVICES_LOCATIONSERVICE_RESOURCES_USERINFO_H_ */

@@ -12,6 +12,7 @@
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 
+namespace simu5g {
 
 ServiceInfo::ServiceInfo(const std::string& serInstanceId, const std::string& serName, const CategoryRef& serCat, const std::string& version,
                 const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local):
@@ -46,4 +47,5 @@ nlohmann::ordered_json ServiceInfo::toJson() const
     return val;
 }
 
+} //namespace
 

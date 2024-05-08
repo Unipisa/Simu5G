@@ -14,6 +14,8 @@
 
 #include "stack/compManager/X2CompRequestIE.h"
 
+namespace simu5g {
+
 //
 // X2CompProportionalRequestIE
 //
@@ -55,5 +57,7 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
     unsigned int getNumBlocks() { return numBlocks_; }
 
 };
+
+} //namespace
 
 #endif

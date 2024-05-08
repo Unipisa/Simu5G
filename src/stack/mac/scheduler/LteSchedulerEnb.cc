@@ -24,6 +24,8 @@
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteSchedulerEnb::LteSchedulerEnb()
@@ -1111,4 +1113,5 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
     }
 }
 
+} //namespace
 

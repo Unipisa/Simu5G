@@ -20,6 +20,8 @@
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
 #include "common/utils/utils.h"
 
+namespace simu5g {
+
 class LteBinder;
 class CircleNotificationSubscription : public SubscriptionBase
 {
@@ -84,6 +86,6 @@ class CircleNotificationSubscription : public SubscriptionBase
 
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_ */

@@ -15,6 +15,8 @@
 #include "stack/mac/buffer/harq/LteHarqProcessTx.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
 
+namespace simu5g {
+
 /**
  * Container of H-ARQ units.
  * An H-ARQ process contains the units with id (acid + totalNumberOfProcesses * cw[i]), for each i.
@@ -39,5 +41,7 @@ class LteHarqProcessTxD2D : public LteHarqProcessTx
     virtual Packet *extractPdu(Codeword cw);
     virtual ~LteHarqProcessTxD2D();
 };
+
+} //namespace
 
 #endif

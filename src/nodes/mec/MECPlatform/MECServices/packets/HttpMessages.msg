@@ -12,6 +12,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 enum HttpMsgType
 {
     REQUEST  = 0;

@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/EndPointInfo.h"
 
+namespace simu5g {
+
 EndPointInfo::EndPointInfo(const std::string& host, int port)
 {
     host_ = host;
@@ -25,5 +27,5 @@ nlohmann::ordered_json EndPointInfo::toJson() const
     return val;
 }
 
-
+} //namespace
 

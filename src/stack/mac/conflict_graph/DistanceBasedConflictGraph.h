@@ -14,6 +14,8 @@
 
 #include "stack/mac/conflict_graph/ConflictGraph.h"
 
+namespace simu5g {
+
 class DistanceBasedConflictGraph : public ConflictGraph
 {
     // path loss-based thresholds (used by default)
@@ -43,6 +45,8 @@ public:
     // set distance thresholds
     void setThresholds(double d2dInterferenceRadius = -1.0, double d2dMultiTransmissionRadius = -1.0, double d2dMultiInterferenceRadius = -1.0);
 };
+
+} //namespace
 
 #endif	/* DISTANCEBASEDCONFLICTGRAPH_H */
 

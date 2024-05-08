@@ -2,6 +2,7 @@
 
 #include "inet/common/INETDefs.h"
 
+namespace simu5g {
 
 HttpRequestMessage::HttpRequestMessage(const char *name, short kind)
 {
@@ -74,4 +75,5 @@ void HttpRequestMessage::copy(const HttpRequestMessage& other)
     this->headerFields_ = other.headerFields_;
 }
 
+} //namespace
 

@@ -15,6 +15,8 @@
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 
+namespace simu5g {
+
 class MecOrchestrator;
 
 class SelectionPolicyBase
@@ -29,5 +31,7 @@ class SelectionPolicyBase
     SelectionPolicyBase(MecOrchestrator* mecOrchestrator){mecOrchestrator_ = mecOrchestrator;}
     virtual ~SelectionPolicyBase() {}
 };
+
+} //namespace
 
 #endif /* NODES_MEC_MECORCHESTRATOR_SELECTIONPOLICYBASE_H_ */

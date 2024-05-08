@@ -21,6 +21,7 @@
 
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 
+namespace simu5g {
 
 Define_Module(LteMacUeD2D);
 
@@ -1202,3 +1203,6 @@ void LteMacUeD2D::doHandover(MacNodeId targetEnb)
     }
     LteMacUe::doHandover(targetEnb);
 }
+
+} //namespace
+

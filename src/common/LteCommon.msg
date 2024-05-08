@@ -13,6 +13,8 @@ cplusplus {{
 #include "common/LteCommon.h"
 }}
 
+namespace simu5g;
+
 struct Lambda
 {
     @existingClass;

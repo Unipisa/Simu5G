@@ -18,6 +18,8 @@
 #include <map>
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "common/cellInfo/CellInfo.h"
+
+namespace simu5g {
 using namespace inet;
 
 /**
@@ -53,7 +55,7 @@ class BaseStationStatsCollector: public cSimpleModule
         PacketFlowManagerEnb *packetFlowManager_;
 
         CellInfo *cellInfo_;
-        
+
         UeStatsCollectorMap ueCollectors_;
 
         // L2 Measures per EnodeB
@@ -225,5 +227,7 @@ class BaseStationStatsCollector: public cSimpleModule
         virtual void handleMessage(cMessage *msg) override;
 
 };
+
+} //namespace
 
 #endif //_LTE_ENOBSTATSCOLLECTOR_H_

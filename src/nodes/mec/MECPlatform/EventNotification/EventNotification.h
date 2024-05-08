@@ -13,7 +13,7 @@
 
 #include <string>
 
-
+namespace simu5g {
 
 class EventNotification {
 public:
@@ -32,5 +32,7 @@ protected:
     std::string type_; // type of the subscription to cast to the correct notification Event
     int subId_; // subscription Id
 };
+
+} //namespace
 
 #endif /* NODES_MEC_MEPLATFORM_EVENTNOTIFICATION_EVENTNOTIFICATION_H_ */

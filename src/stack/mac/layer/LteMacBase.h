@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 
+namespace simu5g {
+
 class LteHarqBufferTx;
 class LteHarqBufferRx;
 class Binder;
@@ -428,5 +430,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     /// Lower Layer Handler
     virtual void fromPhy(omnetpp::cPacket *pkt);
 };
+
+} //namespace
 
 #endif

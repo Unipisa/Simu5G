@@ -16,6 +16,8 @@
 
 import nodes.mec.MECPlatform.MECPackets;
 
+namespace simu5g;
+
 class WarningAppPacket extends MECPacket
 {}
 

@@ -23,6 +23,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 Define_Module(MecRTVideoStreamingReceiver);
 
 using namespace inet;
@@ -429,4 +431,5 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
 
 }
 
+} //namespace
 

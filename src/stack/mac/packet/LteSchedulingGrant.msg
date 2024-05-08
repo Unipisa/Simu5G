@@ -11,6 +11,9 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
+
+namespace simu5g;
+
 //
 // TODO generated message class
 //

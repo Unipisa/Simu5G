@@ -13,6 +13,7 @@
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
+namespace simu5g {
 
 MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator* mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator)
 {
@@ -36,4 +37,6 @@ cModule* MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& app
     }
     return bestHost;
 }
+
+} //namespace
 

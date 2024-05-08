@@ -19,8 +19,9 @@
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 #include <map>
 
+namespace simu5g {
 
-// This module aims to provide essential functionalities of the Service Registry entity of 
+// This module aims to provide essential functionalities of the Service Registry entity of
 // the MEC architecture (ETSI GS MEC 003).
 // Service discovery is available via REST api, according to the ETSI GS MEC 011
 // Each Service Registry maintains the MEC service end point of each MEC service in the
@@ -38,11 +39,11 @@ private:
     omnetpp::cModule* mePlatform;
     omnetpp::cModule* meHost;
 
-    /* 
-    * To be ETSI compliant. Each MEC service has a uuid. This implementation does not 
+    /*
+    * To be ETSI compliant. Each MEC service has a uuid. This implementation does not
     * take into account this information, i.e. service discovery is only available via
     * service name. It is used only in the responses.
-    * uuidBase is fixed at 123e4567-e89b-12d3-a456-4266141, with the  last5 digits 
+    * uuidBase is fixed at 123e4567-e89b-12d3-a456-4266141, with the  last5 digits
     * used to create uniquely id in a quicker way through the servIdCounter
     */
     std::string uuidBase;
@@ -54,7 +55,7 @@ public:
     /*
     * This method is used to register the presence of a MEC service in the MEC system.
     * It is called cascading from the MEC orchestrator upon MEC service initialization
-    * 
+    *
     * @param servDesc MEC service descriptor with ETSI compliant information
     */
     void registerMecService(const ServiceDescriptor& servDesc);
@@ -82,5 +83,7 @@ protected:
 
 
 };
+
+} //namespace
 
 #endif /* NODES_MEC_MECPLATFORM_SERVICEREGISTRY_H_ */

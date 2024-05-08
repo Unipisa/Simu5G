@@ -16,6 +16,7 @@
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
 
 /**
  * Implements the X2AppServer simple module. See the NED file for more info.
@@ -31,6 +32,8 @@ class X2AppServer : public inet::SctpServer
         void handleTimer(omnetpp::cMessage *msg);
         void generateAndSend(inet::Packet* pkt);
 };
+
+} //namespace
 
 #endif
 

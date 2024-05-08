@@ -15,6 +15,8 @@
 #include <list>
 #include <assert.h>
 
+namespace simu5g {
+
 //! Circular list of elements.
 template<typename T>
 class CircularList
@@ -225,5 +227,7 @@ class CircularList
         ++size_;
     }
 };
+
+} //namespace
 
 #endif // _LTE_CIRCULAR_H_

@@ -17,6 +17,8 @@
 #include "common/LteControlInfo.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
+namespace simu5g {
+
 class LtePdcpRrcBase;
 class LtePdcpPdu;
 
@@ -56,5 +58,7 @@ class LteTxPdcpEntity : public cSimpleModule
     // create a PDCP PDU from the IP datagram
     void handlePacketFromUpperLayer(Packet* pkt);
 };
+
+} //namespace
 
 #endif

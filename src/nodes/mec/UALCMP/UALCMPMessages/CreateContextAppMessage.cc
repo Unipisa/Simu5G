@@ -12,11 +12,13 @@
 
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
 
-CreateContextAppMessage::CreateContextAppMessage(const char *name, short kind) : ::CreateContextApp(name, kind)
+namespace simu5g {
+
+CreateContextAppMessage::CreateContextAppMessage(const char *name, short kind) : CreateContextApp(name, kind)
 {
 }
 
-CreateContextAppMessage::CreateContextAppMessage(const CreateContextAppMessage& other) : ::CreateContextApp(other)
+CreateContextAppMessage::CreateContextAppMessage(const CreateContextAppMessage& other) : CreateContextApp(other)
 {
     copy(other);
 }
@@ -28,7 +30,7 @@ CreateContextAppMessage::~CreateContextAppMessage()
 CreateContextAppMessage& CreateContextAppMessage::operator=(const CreateContextAppMessage& other)
 {
     if (this == &other) return *this;
-    ::CreateContextApp::operator=(other);
+    CreateContextApp::operator=(other);
     copy(other);
     return *this;
 }
@@ -51,4 +53,6 @@ void CreateContextAppMessage::setAppContext(nlohmann::json& appContext)
 {
     this->appContext = appContext;
 }
+
+} //namespace
 

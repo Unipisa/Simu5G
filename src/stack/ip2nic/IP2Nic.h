@@ -20,6 +20,7 @@
 #include "common/binder/Binder.h"
 #include "stack/ip2nic/SplitBearersTable.h"
 
+namespace simu5g {
 
 class LteHandoverManager;
 
@@ -151,5 +152,7 @@ class IP2Nic : public omnetpp::cSimpleModule
 
     virtual ~IP2Nic();
 };
+
+} //namespace
 
 #endif

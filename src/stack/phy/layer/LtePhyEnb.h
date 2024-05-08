@@ -14,6 +14,8 @@
 
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 class DasFilter;
 class LteFeedbackPkt;
 
@@ -57,5 +59,7 @@ class LtePhyEnb : public LtePhyBase
     virtual ~LtePhyEnb();
 
 };
+
+} //namespace
 
 #endif  /* _LTE_AIRPHYENB_H_ */

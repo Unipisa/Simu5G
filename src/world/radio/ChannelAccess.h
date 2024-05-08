@@ -21,6 +21,8 @@
 #include "world/radio/IChannelControl.h"
 #include "common/features.h"
 
+namespace simu5g {
+
 // Forward declarations
 class AirFrame;
 
@@ -69,5 +71,7 @@ class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::INITSTAGE_PHYSICAL_LAYER + 1; }
 };
+
+} //namespace
 
 #endif

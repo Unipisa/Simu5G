@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "stack/rlc/LteRlcDefs.h"
 
+namespace simu5g {
+
 /**
  * @class LteRlcTm
  * @brief TM Module
@@ -107,5 +109,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
     inet::simsignal_t rlcPacketLossDl;
     inet::simsignal_t rlcPacketLossUl;
 };
+
+} //namespace
 
 #endif

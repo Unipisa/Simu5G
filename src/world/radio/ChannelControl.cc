@@ -21,6 +21,8 @@
 #include "world/radio/ChannelControl.h"
 #include "stack/phy/packet/AirFrame_m.h"
 
+namespace simu5g {
+
 Define_Module(ChannelControl);
 
 using namespace omnetpp;
@@ -317,3 +319,6 @@ void ChannelControl::sendToChannel(RadioRef srcRadio, AirFrame *airFrame)
     // register transmission
     addOngoingTransmission(srcRadio, airFrame);
 }
+
+} //namespace
+

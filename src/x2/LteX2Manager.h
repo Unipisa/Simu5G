@@ -20,6 +20,8 @@
 #include "x2/X2AppClient.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 class LteX2Manager : public omnetpp::cSimpleModule {
 
     // X2 identifier
@@ -45,5 +47,7 @@ protected:
     virtual void fromX2(inet::Packet* pkt);
 
 };
+
+} //namespace
 
 #endif /* LTE_LTEX2MANAGER_H_ */

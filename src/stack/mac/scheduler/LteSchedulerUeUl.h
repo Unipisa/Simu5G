@@ -14,6 +14,8 @@
 
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class LteMacUe;
 class LcgScheduler;
 
@@ -71,5 +73,7 @@ class LteSchedulerUeUl
      */
     ~LteSchedulerUeUl();
 };
+
+} //namespace
 
 #endif // _LTE_LTE_SCHEDULER_UE_UL_H_

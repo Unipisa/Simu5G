@@ -16,6 +16,8 @@
 #include "stack/dualConnectivityManager/DualConnectivityManager.h"
 #include "common/timer/TTimer.h"
 
+namespace simu5g {
+
 class LtePdcpRrcBase;
 
 /*
@@ -99,5 +101,7 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
 
     virtual bool isEmpty() const {return sduBuffer_.size() == 0;}
 };
+
+} //namespace
 
 #endif

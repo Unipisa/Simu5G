@@ -25,7 +25,7 @@
 #include <string>
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 
-
+namespace simu5g {
 
 /**
  * in HTTPRequestPacket_Base
@@ -76,5 +76,7 @@ class HttpRequestMessage : public HttpRequestMessage_m
         bool isLastBackgroundRequest_;
 
 };
+
+} //namespace
 
 #endif //_HTTREQUESTMESSAGE_H_

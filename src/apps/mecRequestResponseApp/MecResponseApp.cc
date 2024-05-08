@@ -11,6 +11,8 @@
 
 #include "apps/mecRequestResponseApp/MecResponseApp.h"
 
+namespace simu5g {
+
 simsignal_t MecResponseApp::recvRequestSno_ = registerSignal("recvRequestSno");
 
 Define_Module(MecResponseApp);
@@ -105,4 +107,5 @@ void MecResponseApp::sendResponse(cMessage* msg)
     socket.sendTo(packet, inet::L3AddressResolver().resolve(reqSourceAddress), reqSourcePort);
 }
 
+} //namespace
 

@@ -26,6 +26,8 @@
 #include "inet/networklayer/contract/ipv4/Ipv4Address.h"
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+
+namespace simu5g {
 Define_Module(RNIService);
 
 
@@ -185,8 +187,5 @@ RNIService::~RNIService(){
 
 }
 
-
-
-
-
+} //namespace
 

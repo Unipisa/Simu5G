@@ -13,6 +13,8 @@
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -135,3 +137,6 @@ std::ostream &operator << (std::ostream &stream, const LteMacQueue* queue)
         " Size: " << queue->getQueueSize();
     return stream;
 }
+
+} //namespace
+

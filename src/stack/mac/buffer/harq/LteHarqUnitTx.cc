@@ -13,6 +13,8 @@
 #include "stack/mac/layer/LteMacEnb.h"
 #include <omnetpp.h>
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
@@ -338,3 +340,6 @@ void LteHarqUnitTx::resetUnit()
     status_ = TXHARQ_PDU_EMPTY;
     pduLength_ = 0;
 }
+
+} //namespace
+

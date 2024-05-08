@@ -11,6 +11,8 @@
 
 #include "apps/burst/BurstReceiver.h"
 
+namespace simu5g {
+
 Define_Module(BurstReceiver);
 
 void BurstReceiver::initialize(int stage)
@@ -62,4 +64,5 @@ void BurstReceiver::handleMessage(cMessage *msg)
     delete msg;
 }
 
+} //namespace
 

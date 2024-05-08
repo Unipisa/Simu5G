@@ -18,6 +18,8 @@
 #include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "stack/mac/conflict_graph/ConflictGraph.h"
 
+namespace simu5g {
+
 typedef std::pair<MacNodeId, MacNodeId> D2DPair;
 typedef std::map<D2DPair, LteHarqBufferMirrorD2D*> HarqBuffersMirrorD2D;
 class ConflictGraph;
@@ -148,5 +150,7 @@ class LteMacEnbD2D : public LteMacEnb
         return preconfiguredTxParams_;
     }
 };
+
+} //namespace
 
 #endif

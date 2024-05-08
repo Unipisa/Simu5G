@@ -11,6 +11,8 @@
 
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 
+namespace simu5g {
+
 void LteRlcDataPdu::setPduSequenceNumber(unsigned int sno)
 {
     pduSequenceNumber_ = sno;
@@ -30,3 +32,6 @@ FramingInfo LteRlcDataPdu::getFramingInfo() const
 {
     return fi_;
 }
+
+} //namespace
+

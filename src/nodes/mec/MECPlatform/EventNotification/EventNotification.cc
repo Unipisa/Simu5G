@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
+namespace simu5g {
+
 EventNotification::EventNotification() {
     // TODO Auto-generated constructor stub
 
@@ -48,4 +50,6 @@ void EventNotification::setType(const std::string& type)
 EventNotification::~EventNotification() {
     // TODO Auto-generated destructor stub
 }
+
+} //namespace
 

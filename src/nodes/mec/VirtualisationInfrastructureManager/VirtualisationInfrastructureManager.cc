@@ -13,6 +13,8 @@
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
+namespace simu5g {
+
 Define_Module(VirtualisationInfrastructureManager);
 
 VirtualisationInfrastructureManager::VirtualisationInfrastructureManager()
@@ -589,5 +591,5 @@ void VirtualisationInfrastructureManager::reserveResourcesBGApps()
     }
 }
 
-
+} //namespace
 

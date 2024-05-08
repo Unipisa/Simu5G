@@ -17,6 +17,8 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
+namespace simu5g {
+
 class CurrentLocation : public AttributeBase
 {
     protected:
@@ -33,6 +35,6 @@ class CurrentLocation : public AttributeBase
         nlohmann::ordered_json toJson() const;
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CURRENTLOCATION_H_ */

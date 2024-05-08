@@ -21,6 +21,8 @@
 #include "../../RNIService/resources/Ecgi.h"
 #include "AssociateId.h"
 
+namespace simu5g {
+
 class UeStatsCollector;
 
 class CellUEInfo : public AttributeBase {
@@ -30,7 +32,7 @@ class CellUEInfo : public AttributeBase {
     Ecgi ecgi_;
 
   /**
-   * 
+   *
    * or std::map<ipv4, cellUeInfo>
    * I prefer the pointer to the list of users in the cell to manage better
 //   * new/deleted users without the need of take care of them here
@@ -53,11 +55,6 @@ public:
 
 };
 
-
-
-
-
-
-
+} //namespace
 
 #endif

@@ -20,7 +20,9 @@
 
 #include <iostream> // used to debug in emulation
 
-namespace inet {
+namespace simu5g {
+
+using namespace inet;
 
 Register_Serializer(WarningAppPacket, WarningAlertPacketSerializer);
 Register_Serializer(WarningStartPacket, WarningAlertPacketSerializer);
@@ -220,5 +222,4 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
 
 }
 
-} // namespace inet
-
+} //namespace

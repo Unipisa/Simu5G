@@ -17,6 +17,7 @@
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 Register_Class(SocketManager);
@@ -132,3 +133,6 @@ void SocketManager::failure(int code)
     service->removeSubscritions(sock->getSocketId());
     service->removeConnection(this);
 }
+
+} //namespace
+

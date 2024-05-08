@@ -17,6 +17,8 @@
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/packet/LteMacPdu.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqProcessRx::LteHarqProcessRx(unsigned char acid, LteMacBase *owner)
@@ -155,7 +157,7 @@ Packet* LteHarqProcessRx::extractPdu(Codeword cw)
     auto pdu = pkt->peekAtFront<LteMacPdu>();
     pdu_.at(cw) = nullptr;
     resetCodeword(cw);
-    
+
     return pkt;
 }
 
@@ -263,4 +265,6 @@ bool LteHarqProcessRx::isHarqProcessActive()
     }
     return false;
 }
+
+} //namespace
 

@@ -22,6 +22,8 @@
 
 #include "apps/voip/VoipPacket_m.h"
 
+namespace simu5g {
+
 class VoIPReceiver : public omnetpp::cSimpleModule
 {
     inet::UdpSocket socket;
@@ -65,6 +67,8 @@ class VoIPReceiver : public omnetpp::cSimpleModule
     double eModel(omnetpp::simtime_t delay, double loss);
     void playout(bool finish);
 };
+
+} //namespace
 
 #endif
 

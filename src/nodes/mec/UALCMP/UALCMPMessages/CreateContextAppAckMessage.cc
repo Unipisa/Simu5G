@@ -11,11 +11,13 @@
 
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 
-CreateContextAppAckMessage::CreateContextAppAckMessage(const char *name, short kind) : ::CreateContextAppAck(name, kind)
+namespace simu5g {
+
+CreateContextAppAckMessage::CreateContextAppAckMessage(const char *name, short kind) : CreateContextAppAck(name, kind)
 {
 }
 
-CreateContextAppAckMessage::CreateContextAppAckMessage(const CreateContextAppAckMessage& other) : ::CreateContextAppAck(other)
+CreateContextAppAckMessage::CreateContextAppAckMessage(const CreateContextAppAckMessage& other) : CreateContextAppAck(other)
 {
     copy(other);
 }
@@ -27,7 +29,7 @@ CreateContextAppAckMessage::~CreateContextAppAckMessage()
 CreateContextAppAckMessage& CreateContextAppAckMessage::operator=(const CreateContextAppAckMessage& other)
 {
     if (this == &other) return *this;
-    ::CreateContextAppAck::operator=(other);
+    CreateContextAppAck::operator=(other);
     copy(other);
     return *this;
 }
@@ -52,6 +54,5 @@ void CreateContextAppAckMessage::setAppContext(nlohmann::json& appContext)
     this->appContext = appContext;
 }
 
-
-
+} //namespace
 

@@ -16,6 +16,8 @@
 #include "stack/mac/layer/LteMacEnbD2D.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqBufferTxD2D.h"
 
+namespace simu5g {
+
 class LteSchedulingGrant;
 class LteSchedulerUeUl;
 class Binder;
@@ -105,5 +107,7 @@ class LteMacUeD2D : public LteMacUe
     }
     virtual void doHandover(MacNodeId targetEnb) override;
 };
+
+} //namespace
 
 #endif

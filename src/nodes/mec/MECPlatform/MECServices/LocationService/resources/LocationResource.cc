@@ -17,6 +17,8 @@
 
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 LocationResource::LocationResource() {
     binder_ = nullptr;
 }
@@ -231,8 +233,5 @@ nlohmann::ordered_json LocationResource::toJson(std::vector<MacCellId>& cellsID,
     return val;
 }
 
-
-
-
-
+} //namespace
 

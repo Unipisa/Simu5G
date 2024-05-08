@@ -15,6 +15,8 @@
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
+namespace simu5g {
+
 class MecOrchestrator;
 class CreateContextAppMessage;
 class UALCMPMessage;
@@ -93,6 +95,8 @@ class UALCMPApp: public MecServiceBase
 
 
 };
+
+} //namespace
 
 #endif //_UALCMPAPP_H
 

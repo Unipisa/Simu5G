@@ -16,6 +16,7 @@
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessRxD2D.h"
 
+namespace simu5g {
 
 class LteHarqProcessRxD2D;
 
@@ -66,5 +67,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
 
     virtual ~LteHarqBufferRxD2D();
 };
+
+} //namespace
 
 #endif

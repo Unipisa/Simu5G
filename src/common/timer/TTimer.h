@@ -15,6 +15,8 @@
 #include "common/timer/TTimerMsg_m.h"
 #include "common/timer/TMultiTimerMsg_m.h"
 
+namespace simu5g {
+
 //using namespace omnetpp;
 
 //! Generic timer interface
@@ -252,5 +254,7 @@ class TMultiTimer : public omnetpp::cObject
     //! Reverse list iterator type
     typedef std::map<const unsigned int, const Event_it>::iterator iterator_r;
 };
+
+} //namespace
 
 #endif

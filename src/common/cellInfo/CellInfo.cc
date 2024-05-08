@@ -13,6 +13,8 @@
 #include "world/radio/ChannelControl.h"
 #include "world/radio/ChannelAccess.h"
 
+namespace simu5g {
+
 using namespace std;
 
 Define_Module(CellInfo);
@@ -375,3 +377,6 @@ SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl
     }
     return sf;
 }
+
+} //namespace
+

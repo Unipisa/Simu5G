@@ -11,6 +11,8 @@
 
 #include "AperiodicSubscriptionTimer.h"
 
+namespace simu5g {
+
 AperiodicSubscriptionTimer::AperiodicSubscriptionTimer() {
     // TODO Auto-generated constructor stub
 }
@@ -25,4 +27,6 @@ AperiodicSubscriptionTimer::AperiodicSubscriptionTimer(const char *name): Aperio
 AperiodicSubscriptionTimer::~AperiodicSubscriptionTimer() {
     // TODO Auto-generated destructor stub
 }
+
+} //namespace
 

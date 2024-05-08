@@ -16,6 +16,8 @@
 
 #include "stack/mac/amc/LteMcs.h"
 
+namespace simu5g {
+
 class BackgroundCellAmc
 {
   protected:
@@ -56,5 +58,7 @@ class BackgroundCellAmc
      */
     unsigned int bytesGain(Cqi cqi, unsigned int layers, unsigned int bytes, Direction dir);
 };
+
+} //namespace
 
 #endif

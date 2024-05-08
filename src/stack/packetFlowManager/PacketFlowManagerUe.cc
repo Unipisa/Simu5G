@@ -20,6 +20,7 @@
 
 #include <sstream>
 
+namespace simu5g {
 
 Define_Module(PacketFlowManagerUe);
 
@@ -699,3 +700,6 @@ void PacketFlowManagerUe::insertHarqProcess(LogicalCid lcid, unsigned int harqPr
 void PacketFlowManagerUe::finish()
 {
 }
+
+} //namespace
+

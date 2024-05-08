@@ -16,6 +16,7 @@
 
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(LtePdcpRrcEnbD2D);
 
@@ -32,7 +33,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
     // Control Information
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    
+
     setTrafficInformation(pkt, lteInfo);
 
     // get source info
@@ -136,3 +137,6 @@ void LtePdcpRrcEnbD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newM
 
     // add here specific behavior for handling mode switch at the PDCP layer
 }
+
+} //namespace
+

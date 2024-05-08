@@ -14,6 +14,8 @@
 
 #include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/SelectionPolicyBase.h"
 
+namespace simu5g {
+
 //class MecOrchestrator;
 
 class AvailableResourcesSelectionBased : public SelectionPolicyBase
@@ -25,5 +27,6 @@ class AvailableResourcesSelectionBased : public SelectionPolicyBase
       virtual ~AvailableResourcesSelectionBased(){}
 };
 
+} //namespace
 
 #endif /* NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_AVAILABLERESOURCESELECTION_H_ */

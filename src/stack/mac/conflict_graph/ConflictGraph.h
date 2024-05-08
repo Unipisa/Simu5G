@@ -15,6 +15,8 @@
 #include "stack/mac/layer/LteMacEnbD2D.h"
 #include "common/cellInfo/CellInfo.h"
 
+namespace simu5g {
+
 typedef enum
 {
     CG_DISTANCE,
@@ -94,7 +96,7 @@ protected:
     virtual void findEdges(const std::vector<CGVertex>& vertices) = 0;
 
 public:
-   
+
     ConflictGraph(LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti);
     virtual ~ConflictGraph();
 
@@ -106,6 +108,8 @@ public:
 
     const CGMatrix* getConflictGraph() { return &conflictGraph_; }
 };
+
+} //namespace
 
 #endif	/* CONFLICTGRAPH_H */
 

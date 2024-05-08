@@ -17,6 +17,8 @@
 #include "stack/mac/amc/LteAmc.h"
 #include "stack/mac/amc/UserTxParams.h"
 
+namespace simu5g {
+
 /**
  * @class LteSchedulerEnbDl
  *
@@ -75,5 +77,7 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
     bool getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId);
 
 };
+
+} //namespace
 
 #endif // _LTE_LTE_SCHEDULER_ENB_DL_H_

@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "x2/packet/X2InformationElement.h"
 
+namespace simu5g {
+
 // add here new X2 message types
 enum LteX2MessageType
 {
@@ -135,7 +137,7 @@ class LteX2Message : public LteX2Message_Base
         X2InformationElement* ie = ieList_.front();
         ieList_.pop_front();
         msgLength_ -= ie->getLength();
-        // chunk is immutable during serialization! 
+        // chunk is immutable during serialization!
         // (chunk length can therefore not be adapted - we only adapt the separate msg_Length_)
         return ie;
     }
@@ -163,6 +165,8 @@ class LteX2Message : public LteX2Message_Base
 };
 
 Register_Class(LteX2Message);
+
+} //namespace
 
 #endif
 

@@ -18,6 +18,8 @@
 #include "common/binder/Binder.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class DasFilter;
 
 /**
@@ -332,5 +334,7 @@ class CellInfo : public omnetpp::cSimpleModule
 
     ~CellInfo();
 };
+
+} //namespace
 
 #endif

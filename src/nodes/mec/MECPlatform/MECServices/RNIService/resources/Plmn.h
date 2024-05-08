@@ -15,6 +15,8 @@
 #include "nodes/mec/utils/MecCommon.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
+namespace simu5g {
+
 // https://en.wikipedia.org/wiki/Mobile_country_code
 
 
@@ -36,11 +38,13 @@ public:
     void setMnc(const std::string& mnc);
     std::string getMcc() const;
     std::string getMnc() const;
-    
-    
+
+
   nlohmann::ordered_json toJson() const override;
 
 };
+
+} //namespace
 
 #endif // _PLMN_H_
 

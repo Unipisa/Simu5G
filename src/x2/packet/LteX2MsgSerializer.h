@@ -15,6 +15,8 @@
 #include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
+namespace simu5g {
+
 class LteX2MsgSerializer : public inet::FieldsChunkSerializer {
 private:
     void serializeStatusMap(inet::MemoryOutputStream& stream, std::vector<CompRbStatus> map) const;
@@ -26,6 +28,8 @@ protected:
 public:
   LteX2MsgSerializer() : FieldsChunkSerializer() {}
 };
+
+} //namespace
 
 #endif /* X2_PACKET_LTEX2MSGSERIALIZER_H_ */
 

@@ -12,6 +12,8 @@
 #include "stack/mac/scheduling_modules/LteDrr.h"
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 void LteDrr::prepareSchedule()
@@ -198,3 +200,6 @@ LteDrr::notifyActiveConnection(MacCid cid)
 
     EV << NOW << "LteSchedulerEnb::notifyDrr active: " << drrMap_[cid].active_ << endl;
 }
+
+} //namespace
+

@@ -15,6 +15,8 @@
 #include "stack/packetFlowManager/PacketFlowManagerUe.h"
 #include "stack/packetFlowManager/PacketFlowManagerEnb.h"
 
+namespace simu5g {
+
 Define_Module(UmTxEntity);
 
 using namespace inet;
@@ -424,3 +426,6 @@ void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
         }
     }
 }
+
+} //namespace
+

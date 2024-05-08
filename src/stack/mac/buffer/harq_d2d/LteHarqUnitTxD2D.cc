@@ -12,6 +12,8 @@
 #include "stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqUnitTxD2D::LteHarqUnitTxD2D(unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac)
@@ -194,4 +196,6 @@ Packet *LteHarqUnitTxD2D::extractPdu()
 
     return extractedPdu;
 }
+
+} //namespace
 

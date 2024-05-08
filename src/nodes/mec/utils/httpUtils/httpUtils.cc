@@ -24,6 +24,7 @@
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 
+namespace simu5g {
 
 namespace Http {
     using namespace inet;
@@ -768,3 +769,6 @@ namespace Http {
 
 
 }
+
+} //namespace
+

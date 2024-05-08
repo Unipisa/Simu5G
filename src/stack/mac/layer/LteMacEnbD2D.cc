@@ -19,6 +19,7 @@
 #include "stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(LteMacEnbD2D);
 
@@ -643,3 +644,6 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
         LteMacBase::fromPhy(pkt);
     }
 }
+
+} //namespace
+

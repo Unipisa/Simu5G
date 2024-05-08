@@ -16,6 +16,8 @@
 #include "inet/mobility/contract/IMobility.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class BackgroundTrafficManager;
@@ -147,5 +149,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     // for statistics purposes
     void collectMeasuredSinr(double sample, Direction dir);
 };
+
+} //namespace
 
 #endif

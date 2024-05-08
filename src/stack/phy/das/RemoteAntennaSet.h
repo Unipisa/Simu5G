@@ -15,6 +15,7 @@
 #include <vector>
 #include <inet/common/geometry/common/Coord.h>
 
+namespace simu5g {
 
 /**
  * @class RemoteAntennaSet
@@ -97,5 +98,7 @@ class RemoteAntennaSet
      */
     friend std::ostream &operator << (std::ostream &stream, const RemoteAntennaSet* ruSet_);
 };
+
+} //namespace
 
 #endif

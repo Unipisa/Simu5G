@@ -20,11 +20,13 @@
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
+
 /*
  * This module is responsible for keep trace of all PDCP SDUs.
  * A PDCP SDU passes the following state while it is going down
  * through the LTE NIC layers:
- * 
+ *
  * PDCP SDU
  * few operations
  * PDCP PDU
@@ -35,11 +37,11 @@
  * MAC PDU (aka TB)
  *
  * Each PDCP has its own seq number, managed by the corresponding LCID
- * 
+ *
  * The main functions of this module are:
  *  - detect PDCP SDU discarded (no part transmitted)
  *  - calculate the delay time of a pkt, from PDCP SDU to last Harq ACK of the
- *    corresponding seq number.  
+ *    corresponding seq number.
  */
 
 class LteRlcUmDataPdu;
@@ -245,4 +247,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
         virtual ~PacketFlowManagerEnb();
         virtual void finish() override;
 };
+
+} //namespace
+
 #endif

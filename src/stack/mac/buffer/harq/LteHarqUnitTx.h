@@ -19,6 +19,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacBase.h"
 
+namespace simu5g {
+
 class LteMacBase;
 
 /**
@@ -219,5 +221,7 @@ class LteHarqUnitTx
 
     virtual void resetUnit();
 };
+
+} //namespace
 
 #endif

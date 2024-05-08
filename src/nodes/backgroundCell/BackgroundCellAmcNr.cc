@@ -14,6 +14,8 @@
 #include "nodes/backgroundCell/BackgroundCellAmcNr.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 BackgroundCellAmcNr::~BackgroundCellAmcNr()
 {
@@ -182,3 +184,6 @@ unsigned int BackgroundCellAmcNr::computeTbsFromNinfo(double nInfo, double coder
     }
     return tbs;
 }
+
+} //namespace
+

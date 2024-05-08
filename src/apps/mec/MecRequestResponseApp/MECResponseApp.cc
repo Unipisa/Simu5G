@@ -25,6 +25,8 @@
 #include <fstream>
 #include "MECResponseApp.h"
 
+namespace simu5g {
+
 Define_Module(MECResponseApp);
 
 
@@ -307,3 +309,6 @@ void MECResponseApp::sendStopAck()
 
     ueAppSocket_.sendTo(pkt, ueAppAddress, ueAppPort);
 }
+
+} //namespace
+

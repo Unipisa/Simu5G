@@ -26,6 +26,8 @@
 #include <string>
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 
+namespace simu5g {
+
 /**
  * in HttpResponseMessage_m
  * {
@@ -60,5 +62,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
           std::map<std::string, std::string> headerFields_;
 
 };
+
+} //namespace
 
 #endif //_HTTRESPONSEMESSAGE_H_

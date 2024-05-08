@@ -16,6 +16,8 @@
 #include "stack/rlc/packet/LteRlcPdu_m.h"
 #include "stack/rlc/packet/LteRlcSdu_m.h"
 
+namespace simu5g {
+
 /*!
  * LTE RLC AM Types
  */
@@ -198,5 +200,7 @@ enum RlcUmTimerType
 {
     REORDERING_T = 0
 };
+
+} //namespace
 
 #endif

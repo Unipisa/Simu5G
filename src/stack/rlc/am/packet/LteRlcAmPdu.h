@@ -14,6 +14,8 @@
 
 #include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
+namespace simu5g {
+
 class LteRlcAmPdu : public LteRlcAmPdu_Base
 {
     std::vector<bool> bitmap_;
@@ -61,6 +63,8 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
 };
 
 Register_Class(LteRlcAmPdu);
+
+} //namespace
 
 #endif
 

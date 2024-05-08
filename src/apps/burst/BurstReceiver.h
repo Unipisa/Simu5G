@@ -21,6 +21,8 @@
 
 #include "BurstPacket_m.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 class BurstReceiver : public cSimpleModule
@@ -41,6 +43,8 @@ class BurstReceiver : public cSimpleModule
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
 };
+
+} //namespace
 
 #endif
 

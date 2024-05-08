@@ -17,6 +17,8 @@
 #include "stack/mac/amc/UserTxParams.h"
 #include "stack/phy/feedback/LteFeedback.h"
 
+namespace simu5g {
+
 // specifies a list of bands that can be used by a user
 typedef std::vector<unsigned short> UsableBands;
 
@@ -93,5 +95,7 @@ class AmcPilot
 
     void setMode(PilotComputationModes mode ) { mode_ = mode; }
 };
+
+} //namespace
 
 #endif

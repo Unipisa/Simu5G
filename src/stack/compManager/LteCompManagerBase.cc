@@ -11,6 +11,8 @@
 
 #include "stack/compManager/LteCompManagerBase.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -238,4 +240,6 @@ void LteCompManagerBase::setUsableBands(UsableBands& usableBands)
     usableBands_ = usableBands;
     mac_->getAmc()->setPilotUsableBands(nodeId_, usableBands_);
 }
+
+} //namespace
 

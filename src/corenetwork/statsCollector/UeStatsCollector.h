@@ -19,7 +19,7 @@
 #include <string>
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 
-
+namespace simu5g {
 
 using namespace inet;
 
@@ -152,5 +152,6 @@ class UeStatsCollector: public cSimpleModule
         virtual void handleMessage(cMessage *msg) override {}
 };
 
+} //namespace
 
 #endif //_LTE_ENOBSTATSCOLLECTOR_H_

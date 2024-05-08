@@ -14,6 +14,7 @@
 
 #include "x2/packet/X2InformationElement.h"
 
+namespace simu5g {
 
 //
 // X2CompReplyIE
@@ -48,5 +49,7 @@ class X2CompReplyIE : public X2InformationElement
     }
     virtual ~X2CompReplyIE() {}
 };
+
+} //namespace
 
 #endif

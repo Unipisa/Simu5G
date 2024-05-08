@@ -13,6 +13,8 @@ import inet.common.INETDefs;
 import common.LteCommon;
 import inet.common.TagBase;
 
+namespace simu5g;
+
 class TftControlInfo extends inet::TagBase
 {
     unsigned int tft;

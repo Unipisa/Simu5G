@@ -13,6 +13,8 @@
 
 #include "stack/phy/feedback/LteSummaryFeedback.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 double LteSummaryFeedback::confidence(simtime_t creationTime) const {
@@ -96,5 +98,5 @@ void LteSummaryFeedback::print(MacCellId cellId, MacNodeId nodeId,
     }
 }
 
-
+} //namespace
 

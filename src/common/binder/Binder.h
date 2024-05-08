@@ -23,6 +23,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
+namespace simu5g {
+
 class UeStatsCollector;
 
 /**
@@ -638,5 +640,7 @@ class Binder : public omnetpp::cSimpleModule
 
 
 };
+
+} //namespace
 
 #endif

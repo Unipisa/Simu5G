@@ -2,7 +2,7 @@
 
 #include "common/utils/utils.h"
 
-namespace simu5g{
+namespace simu5g {
 
 namespace utils {
 
@@ -32,4 +32,4 @@ namespace utils {
 
 }
 
-}
+} //namespace

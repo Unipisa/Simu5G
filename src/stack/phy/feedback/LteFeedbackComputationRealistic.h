@@ -14,6 +14,8 @@
 
 #include "stack/phy/feedback/LteFeedbackComputation.h"
 
+namespace simu5g {
+
 class PhyPisaData;
 class LteFeedbackComputationRealistic : public LteFeedbackComputation
 {
@@ -61,5 +63,7 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
         int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
         std::vector<double> snr, MacNodeId id = 0);
 };
+
+} //namespace
 
 #endif

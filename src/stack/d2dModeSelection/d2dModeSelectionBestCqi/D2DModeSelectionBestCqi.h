@@ -14,6 +14,8 @@
 
 #include "stack/d2dModeSelection/D2DModeSelectionBase.h"
 
+namespace simu5g {
+
 //
 // D2DModeSelectionBestCqi
 //
@@ -34,5 +36,7 @@ public:
     virtual void initialize(int stage);
     virtual void doModeSwitchAtHandover(MacNodeId nodeId, bool handoverCompleted);
 };
+
+} //namespace
 
 #endif /* LTE_D2DMODESELECTIONBESTCQI_H_ */

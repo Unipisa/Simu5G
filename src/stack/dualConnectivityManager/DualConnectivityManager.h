@@ -17,6 +17,8 @@
 #include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -52,5 +54,7 @@ class DualConnectivityManager : public cSimpleModule
     // receive PDCP PDU from X2 Manager and send it to the PDCP layer
     void receiveDataFromSourceNode(inet::Packet* pkt, MacNodeId sourceNode);
 };
+
+} //namespace
 
 #endif /* DUALCONNECTIVITYMANAGER_H_ */

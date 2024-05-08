@@ -12,6 +12,8 @@
 #include "stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 using namespace inet;
 using namespace omnetpp;
 
@@ -300,4 +302,6 @@ void DistanceBasedConflictGraph::findEdges(const std::vector<CGVertex>& vertices
         }  // end inner loop
     } // end outer loop
 }
+
+} //namespace
 

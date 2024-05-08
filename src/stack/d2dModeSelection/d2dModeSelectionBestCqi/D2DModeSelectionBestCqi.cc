@@ -11,6 +11,8 @@
 
 #include "stack/d2dModeSelection/d2dModeSelectionBestCqi/D2DModeSelectionBestCqi.h"
 
+namespace simu5g {
+
 Define_Module(D2DModeSelectionBestCqi);
 
 using namespace omnetpp;
@@ -94,3 +96,6 @@ void D2DModeSelectionBestCqi::doModeSwitchAtHandover(MacNodeId nodeId, bool hand
 
     D2DModeSelectionBase::doModeSwitchAtHandover(nodeId, handoverCompleted);
 }
+
+} //namespace
+

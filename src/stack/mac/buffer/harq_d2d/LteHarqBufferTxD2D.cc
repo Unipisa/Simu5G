@@ -11,6 +11,8 @@
 
 #include "stack/mac/buffer/harq_d2d/LteHarqBufferTxD2D.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqBufferTxD2D::LteHarqBufferTxD2D(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
@@ -73,3 +75,6 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
 LteHarqBufferTxD2D::~LteHarqBufferTxD2D()
 {
 }
+
+} //namespace
+

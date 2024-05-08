@@ -25,6 +25,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 using namespace inet;
 using namespace std;
 
@@ -358,3 +360,6 @@ void UEWarningAlertApp::handleAckStopMEWarningAlertApp(cMessage* msg)
 
     cancelEvent(selfStop_);
 }
+
+} //namespace
+

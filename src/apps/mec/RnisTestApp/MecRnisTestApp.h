@@ -25,6 +25,7 @@
 
 #include "apps/mec/MecApps/MecAppBase.h"
 
+namespace simu5g {
 
 using namespace std;
 using namespace omnetpp;
@@ -77,5 +78,7 @@ class MecRnisTestApp : public MecAppBase
        virtual ~MecRnisTestApp();
 
 };
+
+} //namespace
 
 #endif

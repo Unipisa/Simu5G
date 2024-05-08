@@ -12,6 +12,7 @@
 #include <iostream>
 #include "stack/phy/feedback/LteFeedback.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -132,3 +133,6 @@ void LteMuMimoMatrix::print(const char *s) const {
     for (unsigned int i=1025;i<maxNodeId_;i++)
     EV << NOW << "" << muMatrix_[i];
 }
+
+} //namespace
+

@@ -30,6 +30,8 @@
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 
+namespace simu5g {
+
 Define_Module(LteMacUe);
 
 using namespace inet;
@@ -1275,3 +1277,6 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
     lcgMap_.clear();
     connDesc_.clear();
 }
+
+} //namespace
+

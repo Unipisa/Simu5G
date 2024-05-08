@@ -12,6 +12,8 @@
 #include "stack/pdcp_rrc/layer/entity/LteRxPdcpEntity.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
+
 Define_Module(LteRxPdcpEntity);
 
 LteRxPdcpEntity::LteRxPdcpEntity()
@@ -64,3 +66,6 @@ void LteRxPdcpEntity::handlePdcpSdu(Packet* pkt)
 LteRxPdcpEntity::~LteRxPdcpEntity()
 {
 }
+
+} //namespace
+

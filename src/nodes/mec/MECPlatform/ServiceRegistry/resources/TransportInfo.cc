@@ -13,6 +13,7 @@
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/TransportInfo.h"
 
+namespace simu5g {
 
 TransportInfo::TransportInfo(const std::string& id, const std::string& name, const std::string& type, const std::string& protocol, const EndPointInfo& endPoint):
                         endPoint_(endPoint)
@@ -35,5 +36,5 @@ nlohmann::ordered_json TransportInfo::toJson() const
     return val;
 }
 
-
+} //namespace
 

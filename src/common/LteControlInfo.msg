@@ -13,6 +13,7 @@ import inet.common.INETDefs;
 import common.LteCommon;
 import inet.common.TagBase;
 
+namespace simu5g;
 
 enum LtePhyFrameType;
 enum LteRlcType;

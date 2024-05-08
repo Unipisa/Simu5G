@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+namespace simu5g;
+
 /// Link Directions
 enum Direction
 {

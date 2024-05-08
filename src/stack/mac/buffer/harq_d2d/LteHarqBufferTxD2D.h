@@ -15,6 +15,8 @@
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessTxD2D.h"
 
+namespace simu5g {
+
 /*
  * NOTA: e' compito del mac ul usare solo il processo di turno, non c'e' nessun controllo.
  * TODO: aggiungere supporto all'uplink: funzioni in cui si specifica il processo da usare
@@ -45,5 +47,7 @@ class LteHarqBufferTxD2D : public LteHarqBufferTx
 
     virtual ~LteHarqBufferTxD2D();
 };
+
+} //namespace
 
 #endif

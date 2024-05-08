@@ -11,6 +11,8 @@
 
 #include "stack/rlc/LteRlcMux.h"
 
+namespace simu5g {
+
 Define_Module(LteRlcMux);
 
 
@@ -93,3 +95,6 @@ void LteRlcMux::finish()
 {
     // TODO make-finish
 }
+
+} //namespace
+

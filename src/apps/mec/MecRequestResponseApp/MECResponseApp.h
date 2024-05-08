@@ -22,6 +22,8 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
+namespace simu5g {
+
 #define UEAPP_REQUEST 0
 #define MECAPP_RESPONSE 1
 #define UEAPP_STOP 2
@@ -96,5 +98,7 @@ protected:
     MECResponseApp();
     virtual ~MECResponseApp();
 };
+
+} //namespace
 
 #endif

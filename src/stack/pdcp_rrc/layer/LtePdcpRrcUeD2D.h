@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
+namespace simu5g {
+
 /**
  * @class LtePdcp
  * @brief PDCP Layer
@@ -55,5 +57,7 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
   public:
 
 };
+
+} //namespace
 
 #endif

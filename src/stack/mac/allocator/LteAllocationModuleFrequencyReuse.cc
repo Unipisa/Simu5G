@@ -12,6 +12,8 @@
 #include "stack/mac/allocator/LteAllocationModuleFrequencyReuse.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 LteAllocationModuleFrequencyReuse::LteAllocationModuleFrequencyReuse(LteMacEnb* mac,Direction direction)
@@ -101,3 +103,6 @@ std::set<Band>  LteAllocationModuleFrequencyReuse::getAllocatorOccupiedBands()
     }
     return vectorBand;
 }
+
+} //namespace
+

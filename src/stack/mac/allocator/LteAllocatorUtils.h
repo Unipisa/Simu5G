@@ -12,6 +12,8 @@
 #ifndef LTEALLOCATORUTILS_H_
 #define LTEALLOCATORUTILS_H_
 
+namespace simu5g {
+
     //----------------------------------------------------------------------
     //             STRUCT AND TYPE_DEF FOR allocatedRbsPerBand_
     //----------------------------------------------------------------------
@@ -108,8 +110,6 @@
         UNUSED,
     };
 
-
-
-
+}
 
 #endif /* LTEALLOCATORUTILS_H_ */

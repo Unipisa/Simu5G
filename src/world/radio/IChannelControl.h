@@ -20,6 +20,8 @@
 #include <inet/common/geometry/common/Coord.h>
 #include "stack/phy/packet/AirFrame_m.h"
 
+namespace simu5g {
+
 // Forward declarations
 class AirFrame;
 
@@ -80,5 +82,7 @@ class IChannelControl
     /** Returns propagation speed of the signal in meter/sec */
     virtual double getPropagationSpeed() = 0;
 };
+
+} //namespace
 
 #endif

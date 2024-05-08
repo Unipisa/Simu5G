@@ -12,6 +12,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class LteHarqFeedback extends inet::FieldsChunk
 {
     // H-ARQ acid to which this fb is addressed

@@ -15,6 +15,8 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "inet/common/geometry/common/Coord.h"
 
+namespace simu5g {
+
 class LocationInfo : public AttributeBase
 {
     public:
@@ -29,5 +31,6 @@ class LocationInfo : public AttributeBase
         inet::Coord speed_;
 };
 
+} //namespace
 
 #endif /* CORENETWORK_NODES_MEC_MECPLATFORM_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONINFO_H_ */

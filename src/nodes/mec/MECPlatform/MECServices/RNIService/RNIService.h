@@ -15,10 +15,11 @@
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/L2Meas.h"
 
+namespace simu5g {
 
 /**
  * Radio Network Information Service (RNIS)
- * This class inherits the MECServiceBase module interface for the implementation 
+ * This class inherits the MECServiceBase module interface for the implementation
  * of the RNI Service defined in ETSI GS MEC 012 RNI API.
  * The current available functionalities are related to the L2 measures information resource
  */
@@ -29,7 +30,7 @@ class RNIService: public MecServiceBase
   private:
 
     L2Meas L2MeasResource_;
-    
+
   public:
     RNIService();
   protected:
@@ -47,6 +48,7 @@ class RNIService: public MecServiceBase
 
 };
 
+} //namespace
 
 #endif // ifndef _RNISERVICE_H
 

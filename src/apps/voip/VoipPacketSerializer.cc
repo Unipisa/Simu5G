@@ -17,6 +17,8 @@
 #include "apps/voip/VoipPacketSerializer.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 Register_Serializer(VoipPacket, VoipPacketSerializer);
@@ -59,4 +61,5 @@ const Ptr<Chunk> VoipPacketSerializer::deserialize(MemoryInputStream& stream) co
     return voipPacket;
 }
 
+} //namespace
 

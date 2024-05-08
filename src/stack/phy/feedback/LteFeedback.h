@@ -19,6 +19,8 @@
 #include "stack/mac/amc/UserTxParams.h"
 #include "stack/phy/feedback/LteSummaryFeedback.h"
 
+namespace simu5g {
+
 class LteFeedback;
 typedef std::vector<LteFeedback> LteFeedbackVector;
 typedef std::vector<LteFeedbackVector> LteFeedbackDoubleVector;
@@ -339,5 +341,7 @@ class LteMuMimoMatrix
     }
     void print(const char *s) const;
 };
+
+} //namespace
 
 #endif

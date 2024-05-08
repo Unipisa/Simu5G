@@ -20,6 +20,7 @@
 
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(LtePdcpRrcUe);
 Define_Module(LtePdcpRrcEnb);
@@ -536,3 +537,6 @@ void LtePdcpRrcUe::initialize(int stage)
         nodeId_ = getAncestorPar("macNodeId");
     }
 }
+
+} //namespace
+

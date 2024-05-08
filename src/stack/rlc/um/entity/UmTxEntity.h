@@ -17,6 +17,8 @@
 #include "stack/rlc/LteRlcDefs.h"
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 class LteRlcUm;
 class PacketFlowManagerBase;
 
@@ -193,5 +195,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
     /// Next PDU sequence number to be assigned
     unsigned int sno_;
 };
+
+} //namespace
 
 #endif

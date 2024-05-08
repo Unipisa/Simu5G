@@ -17,6 +17,7 @@
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/Message.h"
 
+namespace simu5g {
 
 Define_Module(X2AppServer);
 
@@ -88,3 +89,6 @@ void X2AppServer::handleTimer(cMessage *msg)
 {
     SctpServer::handleTimer(msg);
 }
+
+} //namespace
+

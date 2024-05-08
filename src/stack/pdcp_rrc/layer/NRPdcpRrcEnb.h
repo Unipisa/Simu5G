@@ -18,6 +18,8 @@
 #include "stack/pdcp_rrc/layer/LtePdcpRrcEnbD2D.h"
 #include "stack/dualConnectivityManager/DualConnectivityManager.h"
 
+namespace simu5g {
+
 /**
  * @class NRPdcpRrcEnb
  * @brief PDCP Layer
@@ -86,5 +88,7 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
     virtual void activeUeUL(std::set<MacNodeId>* ueSet);
 
 };
+
+} //namespace
 
 #endif

@@ -15,6 +15,8 @@
 #include "stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "stack/d2dModeSelection/D2DModeSelectionBase.h"
 
+namespace simu5g {
+
 Define_Module(NRPhyUe);
 
 NRPhyUe::NRPhyUe()
@@ -516,3 +518,6 @@ void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this ue
     pdcp_->deleteEntities(masterId_);
 }
+
+} //namespace
+

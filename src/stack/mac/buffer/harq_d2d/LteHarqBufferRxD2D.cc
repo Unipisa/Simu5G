@@ -18,6 +18,8 @@
 #include "stack/mac/layer/LteMacUeD2D.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacNodeId srcId, bool isMulticast)
@@ -151,7 +153,7 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 auto temp = processes_[i]->extractPdu(cw);
                 unsigned int size = temp->getByteLength();
                 auto info = temp->getTag<UserControlInfo>();
-                
+
                 // emit delay statistic
                 if (info->getDirection() == D2D)
                     macUe_emit(macDelayD2D_, (NOW - temp->getCreationTime()).dbl());
@@ -199,3 +201,6 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
 LteHarqBufferRxD2D::~LteHarqBufferRxD2D()
 {
 }
+
+} //namespace
+

@@ -16,6 +16,8 @@
 #include "common/binder/Binder.h"
 #include "CellUEInfo.h"
 
+namespace simu5g {
+
 L2Meas::L2Meas() {
     binder_ = getBinder();
 }
@@ -84,7 +86,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
 	else if(ueArray.size() == 1){
 		val["cellUEInfo"] = ueArray[0];
 	}
-	
+
 	//  l2Meas["L2Meas"] = val;
     //  return l2Meas;
         return val;}
@@ -279,5 +281,8 @@ nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vect
 	l2Meas["L2Meas"] = val;
 	return l2Meas;
 
-	
+
 }
+
+} //namespace
+

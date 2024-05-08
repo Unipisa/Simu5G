@@ -12,6 +12,8 @@
 #include "stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "stack/phy/layer/LtePhyUe.h"
 
+namespace simu5g {
+
 Define_Module(LteDlFeedbackGenerator);
 
 using namespace omnetpp;
@@ -290,3 +292,6 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
         tPeriodicSensing_->stop();
     }
 }
+
+} //namespace
+

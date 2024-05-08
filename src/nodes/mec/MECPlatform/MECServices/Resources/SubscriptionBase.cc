@@ -12,6 +12,8 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
 #include "common/cellInfo/CellInfo.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 SubscriptionBase::SubscriptionBase() {}
@@ -105,4 +107,6 @@ int SubscriptionBase::getSocketConnId() const
 {
     return socket_->getSocketId();
 }
+
+} //namespace
 

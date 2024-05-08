@@ -12,6 +12,8 @@
 
 #include "time.h"
 
+namespace simu5g {
+
 TimeStamp::TimeStamp()
 {
     seconds_ = omnetpp::simTime().dbl();
@@ -36,10 +38,10 @@ bool TimeStamp::isValid() const
 nlohmann::ordered_json TimeStamp::toJson() const
 {
     nlohmann::ordered_json val;
-    
+
     val["seconds"] = seconds_;
     val["nanoSeconds"] = nanoSeconds_;
-    
+
 
     return val;
 }
@@ -52,12 +54,12 @@ int32_t TimeStamp::getSeconds() const
 void TimeStamp::setSeconds(int32_t value)
 {
     seconds_ = value;
-    
+
 }
 void TimeStamp::setSeconds()
 {
     seconds_ =  seconds_ = omnetpp::simTime().dbl();
-    
+
 }
 
 int32_t TimeStamp::getNanoSeconds() const
@@ -67,7 +69,7 @@ int32_t TimeStamp::getNanoSeconds() const
 void TimeStamp::setNanoSeconds(int32_t value)
 {
     nanoSeconds_ = value;
-    
+
 }
 
 void TimeStamp::setValid(bool valid)
@@ -75,4 +77,5 @@ void TimeStamp::setValid(bool valid)
     valid_ = valid;
 }
 
+} //namespace
 

@@ -18,6 +18,8 @@
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/AssociateId.h"
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class L2MeasSubscription : public SubscriptionBase
@@ -43,7 +45,6 @@ class L2MeasSubscription : public SubscriptionBase
 
 };
 
-
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_L2MEASSUBSCRIPTION_H_ */

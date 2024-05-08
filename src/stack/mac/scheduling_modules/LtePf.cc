@@ -12,6 +12,8 @@
 #include "stack/mac/scheduling_modules/LtePf.h"
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 void LtePf::prepareSchedule()
@@ -196,4 +198,6 @@ void LtePf::commitSchedule()
 
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
+
+} //namespace
 

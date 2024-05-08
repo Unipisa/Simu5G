@@ -17,6 +17,7 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Plmn.h"
 
+namespace simu5g {
 
 class Ecgi : public AttributeBase {
   protected:
@@ -31,9 +32,9 @@ public:
   Ecgi(const mec::Ecgi ecgi);
 
   Ecgi(MacCellId cellId, Plmn& plmn);
-  
+
   virtual ~Ecgi();
-  
+
   void setCellId(const MacCellId cellId);
   void setPlmn(const Plmn& plmn);
   void setPlmn(const mec::Plmn plmn);
@@ -45,6 +46,8 @@ public:
   nlohmann::ordered_json toJson() const override;
 
 };
+
+} //namespace
 
 #endif // _ECGI_H_
 

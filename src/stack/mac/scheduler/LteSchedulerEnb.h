@@ -16,6 +16,8 @@
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "stack/mac/allocator/LteAllocatorUtils.h"
 
+namespace simu5g {
+
 /// forward declarations
 class LteScheduler;
 class LteAllocationModule;
@@ -369,5 +371,7 @@ class LteSchedulerEnb
      */
     LteScheduler* getScheduler(SchedDiscipline discipline);
 };
+
+} //namespace
 
 #endif // _LTE_LTESCHEDULERENB_H_

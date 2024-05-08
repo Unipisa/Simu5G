@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 
+namespace simu5g {
+
 /**
  * \class LteRLC
  * \brief RLC Layer
@@ -86,5 +88,7 @@ class LteRlcMux : public omnetpp::cSimpleModule
     omnetpp::cGate* umSap_[2];
     omnetpp::cGate* amSap_[2];
 };
+
+} //namespace
 
 #endif

@@ -13,6 +13,8 @@
 #include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
+namespace simu5g {
+
 cModule* MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
     EV << "MecServiceSelectionBased::findBestMecHost - finding best MecHost..." << endl;
@@ -74,4 +76,6 @@ cModule* MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
     return bestHost;
 
 }
+
+} //namespace
 

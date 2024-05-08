@@ -16,6 +16,8 @@
 
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class LtePdcpPdu extends inet::FieldsChunk
 {
     chunkLength = inet::B(1); // TODO: size 0

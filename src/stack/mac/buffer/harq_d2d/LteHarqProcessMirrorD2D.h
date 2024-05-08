@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 /*
  * LteHarqProcessMirrorD2D stores the status of one H-ARQ "mirror" process
  * It contains a vector that keeps the status of each unit (there is one unit per codeword)
@@ -51,5 +53,7 @@ class LteHarqProcessMirrorD2D
     int64_t getPduLength(Codeword cw) { return pduLength_[cw]; }
     virtual ~LteHarqProcessMirrorD2D();
 };
+
+} //namespace
 
 #endif

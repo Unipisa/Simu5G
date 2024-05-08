@@ -18,8 +18,10 @@
 #include <string>
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 /// <summary>
-/// 
+///
 /// </summary>
 class  AssociateId: public AttributeBase
 {
@@ -38,9 +40,9 @@ class  AssociateId: public AttributeBase
         /// <summary>
         /// Numeric value (0-255) corresponding to specified type of identifier
         /// </summary>
-        
+
         void setAssociateId(const mec::AssociateId& associateId);
-        
+
 
         std::string getType() const;
         void setType(std::string value);
@@ -49,7 +51,7 @@ class  AssociateId: public AttributeBase
         /// </summary>
         std::string getValue() const;
         void setValue(std::string value);
-        
+
         MacNodeId getNodeId();
 
     protected:
@@ -58,5 +60,7 @@ class  AssociateId: public AttributeBase
         std::string value_;
 
 };
+
+} //namespace
 
 #endif /* _ASSOCIATEID_H_ */

@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class Binder;
 
 /*
@@ -71,5 +73,7 @@ class ComponentCarrier : public omnetpp::cSimpleModule
     unsigned int getTddNumSymbolsUl() { return tddNumSymbolsUl_; }
 
 };
+
+} //namespace
 
 #endif

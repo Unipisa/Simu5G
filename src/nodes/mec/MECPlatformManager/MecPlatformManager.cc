@@ -14,6 +14,8 @@
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
+namespace simu5g {
+
 Define_Module(MecPlatformManager);
 
 MecPlatformManager::MecPlatformManager()
@@ -96,6 +98,5 @@ void MecPlatformManager::registerMecService(ServiceDescriptor& serviceDescriptor
         mecOrchestrator->registerMecService(serviceDescriptor);
 }
 
-
-
+} //namespace
 

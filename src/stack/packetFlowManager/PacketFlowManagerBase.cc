@@ -19,6 +19,7 @@
 
 #include <sstream>
 
+namespace simu5g {
 
 //Define_Module(PacketFlowManagerBase);
 
@@ -49,3 +50,6 @@ void PacketFlowManagerBase::resetDiscardCounter()
 void PacketFlowManagerBase::finish()
 {
 }
+
+} //namespace
+

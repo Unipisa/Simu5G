@@ -17,6 +17,8 @@
 #include "stack/mac/allocator/LteAllocationModule.h"
 #include "stack/mac/conflict_graph/ConflictGraph.h"
 
+namespace simu5g {
+
 struct Candidate {
     Band index;
     unsigned int len;
@@ -82,5 +84,7 @@ class LteAllocatorBestFit : public virtual LteScheduler
     // Set the specified bands to exclusive
     void setAllocationType(std::vector<Band> bandVect, AllocationUeType type,MacNodeId nodeId);
 };
+
+} //namespace
 
 #endif // _LTE_LTEALLOCATORBESTFIT_H_

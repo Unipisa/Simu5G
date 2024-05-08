@@ -15,6 +15,8 @@
 #include "stack/mac/packet/LteMacSduRequest_m.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 /**
  * @class LteMacSduRequest
  * @brief Lte MAC SDU Request message
@@ -80,6 +82,8 @@ class LteMacSduRequest : public LteMacSduRequest_Base
 };
 
 Register_Class(LteMacSduRequest);
+
+} //namespace
 
 #endif
 

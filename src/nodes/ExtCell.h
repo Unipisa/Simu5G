@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 typedef std::vector<int> BandStatus;
 
 /* The allocation type defines the interference produced by the ext cell
@@ -109,5 +111,7 @@ class ExtCell : public omnetpp::cSimpleModule
     // set the band utilization percentage
     void setBandUtilization(double bandUtilization);
 };
+
+} //namespace
 
 #endif

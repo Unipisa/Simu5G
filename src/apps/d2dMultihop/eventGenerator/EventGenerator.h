@@ -18,6 +18,8 @@
 #include "common/binder/Binder.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 class MultihopD2D;
 
 class EventGenerator : public omnetpp::cSimpleModule
@@ -55,6 +57,8 @@ protected:
     void registerNode(MultihopD2D* app, MacNodeId lteNodeId);
     void unregisterNode(MultihopD2D* app, MacNodeId lteNodeId);
 };
+
+} //namespace
 
 #endif
 

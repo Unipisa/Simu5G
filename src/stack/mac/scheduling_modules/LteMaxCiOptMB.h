@@ -16,6 +16,8 @@
 #include <string>
 #include "stack/mac/amc/AmcPilot.h"
 
+namespace simu5g {
+
 typedef std::map< MacNodeId,std::vector<BandLimit> > SchedulingDecision;
 typedef std::map<MacNodeId,UsableBands> UsableBandList;
 
@@ -52,5 +54,7 @@ public:
     virtual void commitSchedule();
 
 };
+
+} //namespace
 
 #endif /* LTEMAXCIOPTMB_H_ */

@@ -19,6 +19,8 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include "apps/alert/AlertPacket_m.h"
 
+namespace simu5g {
+
 class AlertReceiver : public omnetpp::cSimpleModule
 {
     inet::UdpSocket socket;
@@ -38,6 +40,8 @@ class AlertReceiver : public omnetpp::cSimpleModule
     // utility: show current statistics above the icon
     virtual void refreshDisplay() const override;
 };
+
+} //namespace
 
 #endif
 

@@ -12,6 +12,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
 
 message MECOrchestratorMessage {
     int contextId; // identifier of the ueMecApp 

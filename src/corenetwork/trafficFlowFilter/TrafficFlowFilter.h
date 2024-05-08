@@ -16,6 +16,8 @@
 #include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 /**
  * Objective of the Traffic Flow Filter is mapping IP 4-Tuples to TFT identifiers. This commonly means identifying a bearer and
  * associating it to an ID that will be recognized by the first GTP-U entity
@@ -71,5 +73,7 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
 
     virtual void finish() override;
 };
+
+} //namespace
 
 #endif

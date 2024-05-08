@@ -16,6 +16,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 
 using namespace omnetpp;
@@ -243,3 +245,6 @@ bool LteHarqBufferRx::isHarqBufferActive() const {
     }
     return false;
 }
+
+} //namespace
+

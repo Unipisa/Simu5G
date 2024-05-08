@@ -11,6 +11,8 @@
 
 #include "stack/mac/amc/AmcPilotD2D.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
@@ -148,3 +150,6 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
 
     return info2;
 }
+
+} //namespace
+

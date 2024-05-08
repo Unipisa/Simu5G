@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+namespace simu5g {
+
 static double BLER_15_CQI_TU [15][16] = {
 {
  1, 1, 0.996, 0.992, 0.968, 0.88, 0.76, 0.564, 0.364, 0.22, 0.084, 0.044, 0.008, 0, 0.004, 0,
@@ -181,5 +183,6 @@ GetBLER_TU (double SINR, int MCS)
   return BLER;
 }
 
+} //namespace
 
 #endif /* BLERVSSINR_15CQI_TU_H_ */

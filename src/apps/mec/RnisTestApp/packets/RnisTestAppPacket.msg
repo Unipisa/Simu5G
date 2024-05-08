@@ -25,6 +25,8 @@ class nlohmann::json
     @existingClass;
 }
 
+namespace simu5g;
+
 class RnisTestAppPacket extends MECPacket
 {
 }

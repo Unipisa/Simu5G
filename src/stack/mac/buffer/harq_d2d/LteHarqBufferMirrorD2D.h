@@ -18,6 +18,8 @@
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 /*
  * LteHarqBufferMirrorD2D represents a "copy" of the H-ARQ TX buffers of
  * D2D transmitting endpoint. It is used to allow the eNodeB to know whether
@@ -63,5 +65,7 @@ class LteHarqBufferMirrorD2D
 
     virtual ~LteHarqBufferMirrorD2D();
 };
+
+} //namespace
 
 #endif

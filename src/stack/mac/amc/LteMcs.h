@@ -14,6 +14,8 @@
 
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 // This file contains MCS types and constants; MCS and ITBS tables;
 // and functions related to MCS and Tx-Modes.
 
@@ -112,5 +114,7 @@ const unsigned int* itbs2tbs(LteMod mod, TxMode txMode, unsigned char layers, un
  * @return A vector containing the number of layers per codeword.
  */
 std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const unsigned int antennaPorts);
+
+} //namespace
 
 #endif

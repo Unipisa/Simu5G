@@ -15,6 +15,8 @@
 #include "stack/mac/allocator/LteAllocationModule.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 bool
@@ -622,3 +624,6 @@ bool LteSchedulerEnbDl::getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeI
 
     return true;
 }
+
+} //namespace
+

@@ -18,6 +18,7 @@
 
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
+namespace simu5g {
 
 /**
  * Converts between VoipPacket and binary (network byte order) packet.
@@ -31,5 +32,7 @@ class VoipPacketSerializer : public inet::FieldsChunkSerializer
   public:
     VoipPacketSerializer() : FieldsChunkSerializer() {}
 };
+
+} //namespace
 
 #endif // ifndef __INET_VOIPPACKETSERIALIZER_H

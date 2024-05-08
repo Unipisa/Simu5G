@@ -13,6 +13,8 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "common/utils/utils.h"
 
+namespace simu5g {
+
 Define_Module(ServiceRegistry);
 
 using namespace omnetpp;
@@ -242,10 +244,5 @@ const std::vector<ServiceInfo>* ServiceRegistry::getAvailableMecServices() const
 
 
 
-
-
-
-
-
-
+} //namespace
 

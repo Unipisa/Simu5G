@@ -11,6 +11,8 @@
 #include <math.h>       /* pow */
 #include  <iostream>
 
+namespace simu5g {
+
 using namespace omnetpp;
 ApplicationDescriptor::ApplicationDescriptor(const char* fileName)
 {
@@ -142,3 +144,6 @@ void ApplicationDescriptor::printApplicationDescriptor() const
             "cpu: " << virtualResourceDescritor_.cpu << "\n\t\t" <<
             "disk: " << virtualResourceDescritor_.disk << "\n";
 }
+
+} //namespace
+

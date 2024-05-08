@@ -22,6 +22,7 @@
 #include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer.h"
 #include "common/utils/utils.h"
 
+namespace simu5g {
 
 Define_Module(LocationService);
 
@@ -457,6 +458,5 @@ LocationService::~LocationService(){
 return;
 }
 
-
-
+} //namespace
 

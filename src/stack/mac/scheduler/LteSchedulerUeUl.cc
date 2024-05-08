@@ -16,6 +16,8 @@
 #include "stack/mac/packet/LteMacPdu.h"
 #include "stack/mac/scheduler/LcgScheduler.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe * mac, double carrierFrequency)
 {
@@ -133,3 +135,6 @@ LteMacScheduleList* LteSchedulerUeUl::getScheduledBytesList()
 {
     return &scheduledBytesList_;
 }
+
+} //namespace
+

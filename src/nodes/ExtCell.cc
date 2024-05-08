@@ -11,6 +11,8 @@
 
 #include "nodes/ExtCell.h"
 
+namespace simu5g {
+
 Define_Module(ExtCell);
 
 void ExtCell::initialize(int stage)
@@ -167,3 +169,6 @@ void ExtCell::setBandUtilization(double bandUtilization)
 
     bandUtilization_ = bandUtilization;
 }
+
+} //namespace
+

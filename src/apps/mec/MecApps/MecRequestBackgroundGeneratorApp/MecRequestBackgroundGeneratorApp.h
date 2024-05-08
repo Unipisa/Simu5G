@@ -17,6 +17,8 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class MecRequestBackgroundGeneratorApp : public MecAppBase
@@ -58,6 +60,6 @@ protected:
      virtual ~MecRequestBackgroundGeneratorApp();
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MEAPPS_MEBGAPP_H_ */

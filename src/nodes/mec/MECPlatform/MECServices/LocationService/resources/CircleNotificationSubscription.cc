@@ -16,6 +16,8 @@
 #include "common/binder/Binder.h"
 #include "inet/mobility/base/MovingMobilityBase.h"
 #include "nodes/mec/MECPlatform/EventNotification/CircleNotificationEvent.h"
+
+namespace simu5g {
 using namespace omnetpp;
 
 CircleNotificationSubscription::CircleNotificationSubscription()
@@ -393,3 +395,6 @@ bool CircleNotificationSubscription::findUe(MacNodeId nodeId)
     }
     return false;
 }
+
+} //namespace
+

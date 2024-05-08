@@ -13,6 +13,8 @@
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/MeasRepUeSubscription.h"
 #include <iostream>
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 MeasRepUeSubscription::MeasRepUeSubscription() :SubscriptionBase() {};
@@ -175,5 +177,5 @@ void MeasRepUeSubscription::sendSubscriptionResponse(){
 }
 void MeasRepUeSubscription::sendNotification(EventNotification *event){}
 
-
+} //namespace
 

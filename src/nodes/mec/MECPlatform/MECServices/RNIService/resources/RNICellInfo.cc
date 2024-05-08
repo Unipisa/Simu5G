@@ -13,6 +13,8 @@
 #include "RNICellInfo.h"
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 
+namespace simu5g {
+
 RNICellInfo::RNICellInfo(){}
 
 RNICellInfo::RNICellInfo(BaseStationStatsCollector* eNodeB){
@@ -31,10 +33,10 @@ nlohmann::ordered_json RNICellInfo::toJsonCell() const  {
 	int value;
 	value = collector_->get_dl_gbr_prb_usage_cell();
 	if(value != -1) val["dl_gbr_prb_usage_cell"] = value;
-	
+
 	value = collector_->get_ul_gbr_prb_usage_cell();
 	if(value != -1) val["ul_gbr_prb_usage_cell"] = value;
-	 
+
 	value = collector_->get_dl_nongbr_prb_usage_cell();
 	if(value != -1) val["dl_nongbr_prb_usage_cell"] = value;
 
@@ -57,28 +59,28 @@ nlohmann::ordered_json RNICellInfo::toJsonCell() const  {
 
 	value = collector_->get_received_randomly_selected_preambles_high_range_cell();
 	if(value != -1) val["received_randomly_selected_preambles_high_range_cell"] = value;
-	
+
 	value = collector_->get_number_of_active_ue_dl_gbr_cell();
 	if(value != -1) val["number_of_active_ue_dl_gbr_cell"] = value;
-	
+
 	value = collector_->get_number_of_active_ue_ul_gbr_cell();
 	if(value != -1) val["number_of_active_ue_ul_gbr_cell"] = value;
-	
+
 	value = collector_->get_number_of_active_ue_dl_nongbr_cell();
 	if(value != -1) val["number_of_active_ue_dl_nongbr_cell"] = value;
-	
+
 	value = collector_->get_number_of_active_ue_ul_nongbr_cell();
 	if(value != -1) val["number_of_active_ue_ul_nongbr_cell"] = value;
-	
+
 	value = collector_->get_dl_gbr_pdr_cell();
 	if(value != -1) val["dl_gbr_pdr_cell"] = value;
-	
+
 	value = collector_->get_ul_gbr_pdr_cell();
 	if(value != -1) val["ul_gbr_pdr_cell"] = value;
-	
+
 	value = collector_->get_dl_nongbr_pdr_cell();
 	if(value != -1) val["dl_nongbr_pdr_cell"] = value;
-	
+
 	value = collector_->get_ul_nongbr_pdr_cell();
 	if(value != -1) val["ul_nongbr_pdr_cell"] = value;
 
@@ -98,7 +100,7 @@ Ecgi RNICellInfo::getEcgi() const
 
 nlohmann::ordered_json RNICellInfo::toJson() const {
 	nlohmann::ordered_json val = toJsonCell();
-	
+
 //	// per UE
 //	std::map<ipv4, ueCollector>::const_iterator it = ueList_->getBeginIterator();
 //	std::map<ipv4, ueCollector>::const_iterator endIt = ueList_->getBeginIterator();
@@ -136,3 +138,6 @@ nlohmann::ordered_json RNICellInfo::toJson() const {
 //
 //	return val;
 //}
+
+} //namespace
+

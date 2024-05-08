@@ -12,9 +12,11 @@
 #include "corenetwork/gtp/GtpUserX2.h"
 #include "inet/common/ProtocolTag_m.h"
 #include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"  
+#include "inet/networklayer/common/L3AddressResolver.h"
 #include <iostream>
 #include "x2/packet/X2ControlInfo_m.h"
+
+namespace simu5g {
 
 Define_Module(GtpUserX2);
 
@@ -94,3 +96,6 @@ void GtpUserX2::handleFromUdp(Packet * pkt)
     // send message to the X2 Manager
     send(pkt,"lteStackOut");
 }
+
+} //namespace
+

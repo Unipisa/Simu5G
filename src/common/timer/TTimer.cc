@@ -11,6 +11,8 @@
 
 #include "common/timer/TTimer.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 void TTimer::start(simtime_t t)
@@ -178,3 +180,6 @@ void TMultiTimer::remove(const unsigned int event)
     // Remove the Event from the reverse list
     reverseList_.erase(rIt);
 }
+
+} //namespace
+

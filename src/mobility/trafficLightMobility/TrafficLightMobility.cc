@@ -13,6 +13,8 @@
 #include "mobility/trafficLightMobility/TrafficLightController.h"
 #include "inet/common/INETMath.h"
 
+namespace simu5g {
+
 Define_Module(TrafficLightMobility);
 
 TrafficLightMobility::TrafficLightMobility()
@@ -207,3 +209,6 @@ double TrafficLightMobility::getOrientationAngleDegree()
 
     return rot > 0 ? angleDeg : angleDeg + 180;
 }
+
+} //namespace
+

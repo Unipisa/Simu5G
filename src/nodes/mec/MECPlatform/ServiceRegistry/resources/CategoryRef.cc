@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/CategoryRef.h"
 
+namespace simu5g {
+
 CategoryRef::CategoryRef(const std::string& href, const std::string& id, const std::string& name, const std::string& version)
 {
     href_  = href;
@@ -30,5 +32,5 @@ nlohmann::ordered_json CategoryRef::toJson() const
     return val;
 }
 
-
+} //namespace
 

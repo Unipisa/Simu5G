@@ -15,6 +15,8 @@
 #include "stack/phy/layer/LtePhyUe.h"
 #include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
+namespace simu5g {
+
 Define_Module(BackgroundCellChannelModel);
 
 void BackgroundCellChannelModel::initialize(int stage)
@@ -1199,5 +1201,5 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
    return true;
 }
 
-
+} //namespace
 

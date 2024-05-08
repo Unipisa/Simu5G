@@ -17,6 +17,8 @@
 #include "stack/rlc/am/buffer/AmRxQueue.h"
 #include "stack/mac/packet/LteMacSduRequest.h"
 
+namespace simu5g {
+
 Define_Module(LteRlcAm);
 
 using namespace omnetpp;
@@ -123,7 +125,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    
+
     AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
 
     // Create a new RLC packet
@@ -283,3 +285,6 @@ void LteRlcAm::handleMessage(cMessage* msg)
     }
     return;
 }
+
+} //namespace
+

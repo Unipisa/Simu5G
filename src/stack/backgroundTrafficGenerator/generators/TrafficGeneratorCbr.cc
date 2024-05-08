@@ -11,6 +11,8 @@
 
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorCbr.h"
 
+namespace simu5g {
+
 Define_Module(TrafficGeneratorCbr);
 
 void TrafficGeneratorCbr::initialize(int stage)
@@ -44,3 +46,6 @@ double TrafficGeneratorCbr::getAvgLoad(Direction dir)
     double avgLoad = (double)(size_[dir] + headerLen_)/period_[dir];
     return avgLoad;
 }
+
+} //namespace
+

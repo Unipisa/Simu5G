@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/amc/LteMcs.h"
 
+namespace simu5g {
+
 // This file contains MCS types and constants; MCS and ITBS tables;
 // and functions related to MCS and Tx-Modes.
 
@@ -75,5 +77,6 @@ class NRMcsTable
 const unsigned int TBSTABLESIZE = 94;
 extern const unsigned int nInfoToTbs[TBSTABLESIZE];
 
+} //namespace
 
 #endif

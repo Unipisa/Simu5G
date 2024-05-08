@@ -24,6 +24,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 using namespace inet;
 using namespace std;
 
@@ -778,3 +780,6 @@ void RTVideoStreamingSender::initializeVideoStream()
 
     _initialDelay = delay;
 }
+
+} //namespace
+

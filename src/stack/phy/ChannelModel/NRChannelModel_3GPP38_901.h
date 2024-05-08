@@ -7,13 +7,14 @@
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
-// 
+//
 
 #ifndef NRCHANNELMODEL_3GPP38_901_H_
 #define NRCHANNELMODEL_3GPP38_901_H_
 
 #include "stack/phy/ChannelModel/NRChannelModel.h"
 
+namespace simu5g {
 
 // NRChannelModel_3GPP38_901
 //
@@ -102,5 +103,7 @@ public:
     virtual double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl);
 
 };
+
+} //namespace
 
 #endif /* NRChannelModel_3GPP38_901_H_ */

@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+namespace simu5g;
+
 message RtxNotification 
 {
     int bytes;       // number of bytes to be retransmitted

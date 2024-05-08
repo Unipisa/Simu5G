@@ -13,6 +13,8 @@
 #include <inet/common/TimeTag_m.h>
 #include "apps/burst/BurstSender.h"
 
+namespace simu5g {
+
 #define round(x) floor((x) + 0.5)
 
 Define_Module(BurstSender);
@@ -149,3 +151,6 @@ void BurstSender::sendPacket()
     if (idFrame_ < burstSize_)
         scheduleAt(simTime() + intraBurstTime_, selfPacket_);
 }
+
+} //namespace
+

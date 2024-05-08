@@ -22,6 +22,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 cplusplus {{
    using namespace inet;
 }};

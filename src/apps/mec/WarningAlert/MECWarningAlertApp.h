@@ -25,6 +25,7 @@
 
 #include "apps/mec/MecApps/MecAppBase.h"
 
+namespace simu5g {
 
 using namespace std;
 using namespace omnetpp;
@@ -101,5 +102,7 @@ class MECWarningAlertApp : public MecAppBase
        virtual ~MECWarningAlertApp();
 
 };
+
+} //namespace
 
 #endif

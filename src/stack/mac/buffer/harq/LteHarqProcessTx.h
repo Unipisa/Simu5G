@@ -14,6 +14,8 @@
 
 #include "stack/mac/buffer/harq/LteHarqUnitTx.h"
 
+namespace simu5g {
+
 typedef std::vector<LteHarqUnitTx *> UnitVector;
 typedef std::pair<unsigned char, TxHarqPduStatus> UnitStatus;
 typedef std::vector<std::vector<UnitStatus> > BufferStatus;
@@ -199,5 +201,7 @@ class LteHarqProcessTx
 
   protected:
 };
+
+} //namespace
 
 #endif

@@ -12,6 +12,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
 
 //
 // Packet used by the ~BurstSender and ~BurstReceiver modules.

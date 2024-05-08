@@ -24,6 +24,8 @@
 #include "inet/mobility/static/StationaryMobility.h"
 #include <set>
 
+namespace simu5g {
+
 typedef enum
 {
     OFF, GREEN, YELLOW, RED
@@ -85,5 +87,6 @@ class TrafficLightController : public omnetpp::cSimpleModule {
         ~TrafficLightController();
 };
 
+} //namespace
 
 #endif /* MOBILITY_TRAFFICLIGHTCONTROLLER_H_ */

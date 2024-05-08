@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 /// forward declarations
 class LteSchedulerEnb;
 
@@ -212,5 +214,7 @@ class LteScheduler
     void buildCarrierActiveConnectionSet();
 
 };
+
+} //namespace
 
 #endif // _LTE_LTESCHEDULER_H_

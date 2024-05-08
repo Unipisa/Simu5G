@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class AmTxQueue;
 class AmRxQueue;
 
@@ -180,5 +182,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      */
     void indicateNewDataToMac(omnetpp::cPacket *pkt);
 };
+
+} //namespace
 
 #endif

@@ -18,6 +18,8 @@
 #include <inet/common/ModuleAccess.h>
 #include <cmath>
 
+namespace simu5g {
+
 Define_Module(TrafficLightController);
 
 using namespace omnetpp;
@@ -462,5 +464,5 @@ void TrafficLightController::drawRect()
 
 }
 
-
+} //namespace
 

@@ -17,6 +17,8 @@
 
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 /**
  * @class SplitBearersTable
  * @brief Hash table to keep track of connections
@@ -83,5 +85,7 @@ class SplitBearersTable
     /// Hash table of size TABLE_SIZE
     entry_ ht_[TABLE_SIZE];
 };
+
+} //namespace
 
 #endif

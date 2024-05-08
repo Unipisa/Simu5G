@@ -19,6 +19,8 @@
 #include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
 #include "stack/rlc/LteRlcDefs.h"
 
+namespace simu5g {
+
 class LteMacBase;
 class LteRlcUm;
 class LteRlcUmDataPdu;
@@ -193,6 +195,8 @@ class UmRxEntity : public omnetpp::cSimpleModule
     void clearBufferedSdu();
 
 };
+
+} //namespace
 
 #endif
 

@@ -15,6 +15,7 @@
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
+namespace simu5g {
 
 class CategoryRef : public AttributeBase
 {
@@ -31,7 +32,6 @@ class CategoryRef : public AttributeBase
         nlohmann::ordered_json toJson() const;
 };
 
-
-
+} //namespace
 
 #endif /* NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_ */

@@ -15,14 +15,16 @@
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 
+namespace simu5g {
+
 /**
  * Location Service
- * This class inherits the MECServiceBase module interface for the implementation 
+ * This class inherits the MECServiceBase module interface for the implementation
  * of the Location Service defined in ETSI GS MEC 013 Location API.
  * In particular, the current available functionalities are:
  *  - get the current location of a UE (or a group of UEs)
  *  - get the current location of a Base Station (or a group of Base Stations)
- *  - circle notification subscription 
+ *  - circle notification subscription
  */
 
 
@@ -37,7 +39,7 @@ class LocationService: public MecServiceBase
 
     double LocationSubscriptionPeriod_;
     omnetpp::cMessage *LocationSubscriptionEvent_;
-    
+
     /*
     * This timer is used to check aperiodic subscriptions, i.e. every period subscription
     * states are checked. For example, in the circle notification subscriptions, the timer is used
@@ -69,6 +71,7 @@ class LocationService: public MecServiceBase
 
 };
 
+} //namespace
 
 #endif // ifndef _LOCATIONSERVICE_H
 

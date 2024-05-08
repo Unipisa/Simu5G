@@ -21,6 +21,8 @@
 
 #include "stack/mac/amc/LteMcs.h"
 
+namespace simu5g {
+
 /**
  * @class UserTxParams
  *
@@ -199,5 +201,7 @@ class UserTxParams
      */
     void print(const char* s) const;
 };
+
+} //namespace
 
 #endif

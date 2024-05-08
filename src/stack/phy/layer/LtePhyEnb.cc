@@ -14,6 +14,8 @@
 #include "stack/phy/das/DasFilter.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 Define_Module(LtePhyEnb);
 
 using namespace omnetpp;
@@ -486,4 +488,6 @@ void LtePhyEnb::initializeFeedbackComputation()
 
     EV << "Feedback Computation \"" << name << "\" loaded." << endl;
 }
+
+} //namespace
 

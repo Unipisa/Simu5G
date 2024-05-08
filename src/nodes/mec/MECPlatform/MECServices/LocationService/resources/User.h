@@ -16,6 +16,8 @@
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
+namespace simu5g {
+
 class User : public AttributeBase
 {
     public:
@@ -42,6 +44,6 @@ class User : public AttributeBase
 
 };
 
-
+} //namespace
 
 #endif /* CORENETWORK_NODES_MEC_MECPLATFORM_MESERVICES_LOCATIONSERVICE_RESOURCES_USER_H_ */

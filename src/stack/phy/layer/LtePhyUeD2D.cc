@@ -14,6 +14,8 @@
 #include "stack/phy/packet/LteFeedbackPkt.h"
 #include "stack/d2dModeSelection/D2DModeSelectionBase.h"
 
+namespace simu5g {
+
 Define_Module(LtePhyUeD2D);
 using namespace inet;
 
@@ -650,3 +652,6 @@ void LtePhyUeD2D::finish()
         LtePhyUe::finish();
     }
 }
+
+} //namespace
+

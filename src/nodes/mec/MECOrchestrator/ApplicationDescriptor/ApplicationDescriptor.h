@@ -16,6 +16,8 @@
 #include "nodes/mec/utils/MecCommon.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
+namespace simu5g {
+
 class ApplicationDescriptor
 {
     private:
@@ -89,5 +91,6 @@ class ApplicationDescriptor
         void printApplicationDescriptor() const;
 };
 
+} //namespace
 
 #endif /* NODES_MEC_MECORCHESTRATOR_APPLICATIONDESCRIPTOR_APPLICATIONDESCRIPTOR_H_ */

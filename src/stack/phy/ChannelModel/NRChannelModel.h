@@ -14,6 +14,8 @@
 
 #include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
+namespace simu5g {
+
 class NRChannelModel : public LteRealisticChannelModel
 {
 
@@ -98,5 +100,7 @@ public:
      */
     double computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId);
 };
+
+} //namespace
 
 #endif /* NRCHANNELMODEL_H_ */

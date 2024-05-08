@@ -15,6 +15,8 @@
 #include "stack/pdcp_rrc/layer/entity/LteTxPdcpEntity.h"
 #include "stack/dualConnectivityManager/DualConnectivityManager.h"
 
+namespace simu5g {
+
 class LtePdcpRrcBase;
 
 /**
@@ -43,5 +45,7 @@ class NRTxPdcpEntity : public LteTxPdcpEntity
 
     virtual void initialize();
 };
+
+} //namespace
 
 #endif

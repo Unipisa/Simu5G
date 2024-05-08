@@ -13,6 +13,8 @@ import common.LteCommonEnum;
 import common.LteCommon;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 //packet D2DModeSwitchNotification
 class D2DModeSwitchNotification extends inet::FieldsChunk
 {

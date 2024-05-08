@@ -12,6 +12,8 @@
 #include "common/LteControlInfo.h"
 #include "stack/mac/amc/UserTxParams.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 UserControlInfo::~UserControlInfo()
@@ -69,3 +71,6 @@ inet::Coord UserControlInfo::getCoord() const
 {
     return senderCoord;
 }
+
+} //namespace
+

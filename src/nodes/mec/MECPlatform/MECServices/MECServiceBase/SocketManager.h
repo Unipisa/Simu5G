@@ -18,6 +18,8 @@
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 
+namespace simu5g {
+
 /*
  * For each new connection, the MecServiceBase creates a new SocketManager
  * object to manage the state TCP connection by implementing the
@@ -101,5 +103,7 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
      */
     virtual void statusArrived(inet::TcpStatusInfo *status) { delete status; }
 };
+
+} //namespace
 
 #endif

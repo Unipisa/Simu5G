@@ -17,6 +17,8 @@
 #include <inet/common/socket/SocketTag_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
+namespace simu5g {
+
 Define_Module(GtpUser);
 
 using namespace omnetpp;
@@ -302,3 +304,6 @@ void GtpUser::handleFromUdp(Packet * pkt)
         send(originalPacket,"pppGate");
     }
 }
+
+} //namespace
+

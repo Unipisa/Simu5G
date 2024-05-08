@@ -21,6 +21,8 @@
 
 #include "CbrPacket_m.h"
 
+namespace simu5g {
+
 class CbrSender : public omnetpp::cSimpleModule
 {
     inet::UdpSocket socket;
@@ -66,6 +68,8 @@ class CbrSender : public omnetpp::cSimpleModule
     void finish() override;
     void handleMessage(omnetpp::cMessage *msg) override;
 };
+
+} //namespace
 
 #endif
 

@@ -19,6 +19,8 @@
 #include "stack/phy/packet/LteAirFrame.h"
 #include <omnetpp.h>
 
+namespace simu5g {
+
 using namespace inet;
 using namespace omnetpp;
 
@@ -155,5 +157,7 @@ class LteChannelModel : public omnetpp::cSimpleModule
     virtual bool isUplinkInterferenceEnabled() { return false; }
     virtual bool isD2DInterferenceEnabled() { return false; }
 };
+
+} //namespace
 
 #endif

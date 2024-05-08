@@ -14,6 +14,8 @@
 
 #include "stack/mac/scheduler/LteSchedulerEnbUl.h"
 
+namespace simu5g {
+
 /**
  * @class NRSchedulerGnbUl
  *
@@ -37,5 +39,7 @@ class NRSchedulerGnbUl : public LteSchedulerEnbUl
      */
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
 };
+
+} //namespace
 
 #endif // _NRSCHEDULER_GNB_UL_H_

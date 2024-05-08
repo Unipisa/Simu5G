@@ -13,6 +13,8 @@
 #include <inet/common/TimeTag_m.h>
 #include "CbrSender.h"
 
+namespace simu5g {
+
 #define round(x) floor((x) + 0.5)
 
 Define_Module(CbrSender);
@@ -148,3 +150,6 @@ void CbrSender::finish()
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
     emit( cbrGeneratedThroughtputSignal_, txBytes_ / elapsedTime.dbl() );
 }
+
+} //namespace
+

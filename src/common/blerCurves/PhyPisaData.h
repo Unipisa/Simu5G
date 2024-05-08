@@ -18,6 +18,8 @@
 
 #include "common/blerCurves/BLERvsSINR_15CQI_TU.h"
 
+namespace simu5g {
+
 class PhyPisaData
 {
     double lambdaTable_[10000][3];
@@ -48,5 +50,7 @@ class PhyPisaData
     void setBlerShift( int shift ) { blerShift_ = shift; }
     double getChannel(unsigned int i);
 };
+
+} //namespace
 
 #endif

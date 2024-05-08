@@ -14,6 +14,8 @@
 
 #include "x2/packet/X2InformationElement.h"
 
+namespace simu5g {
+
 //
 // X2HandoverCommandIE
 //
@@ -59,5 +61,7 @@ public:
   void setUeId(MacNodeId ueId) { ueId_ = ueId; }
   MacNodeId getUeId() { return ueId_; }
 };
+
+} //namespace
 
 #endif

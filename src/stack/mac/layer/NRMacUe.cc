@@ -17,6 +17,8 @@
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
 #include "inet/common/TimeTag_m.h"
 
+namespace simu5g {
+
 Define_Module(NRMacUe);
 
 NRMacUe::NRMacUe() : LteMacUeD2D()
@@ -724,3 +726,6 @@ void NRMacUe::macPduMake(MacCid cid)
         }
     }
 }
+
+} //namespace
+

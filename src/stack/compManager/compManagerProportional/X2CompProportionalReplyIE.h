@@ -14,6 +14,8 @@
 
 #include "stack/compManager/X2CompReplyIE.h"
 
+namespace simu5g {
+
 enum CompRbStatus
 {
     AVAILABLE_RB, NOT_AVAILABLE_RB
@@ -64,5 +66,7 @@ class X2CompProportionalReplyIE : public X2CompReplyIE
     }
     std::vector<CompRbStatus>& getAllowedBlocksMap() { return allowedBlocksMap_; }
 };
+
+} //namespace
 
 #endif

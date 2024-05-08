@@ -13,6 +13,7 @@
 #include "common/binder/Binder.h"
 #include "inet/networklayer/contract/ipv4/Ipv4Address.h"
 
+namespace simu5g {
 
 AssociateId::AssociateId()
 {
@@ -60,7 +61,7 @@ std::string AssociateId::getType() const
 void AssociateId::setType(std::string value)
 {
     type_ = value;
-    
+
 }
 std::string AssociateId::getValue() const
 {
@@ -69,7 +70,7 @@ std::string AssociateId::getValue() const
 void AssociateId::setValue(std::string value)
 {
     value_ = value;
-    
+
 }
 
 MacNodeId AssociateId::getNodeId()
@@ -77,3 +78,6 @@ MacNodeId AssociateId::getNodeId()
     Binder* binder = getBinder();
     return binder->getMacNodeId(inet::Ipv4Address(value_.c_str()));
 }
+
+} //namespace
+

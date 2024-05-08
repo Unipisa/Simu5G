@@ -13,6 +13,8 @@
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/L2MeasSubscription.h"
 #include <iostream>
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 L2MeasSubscription::L2MeasSubscription() :SubscriptionBase() {};
@@ -168,5 +170,5 @@ void L2MeasSubscription::sendSubscriptionResponse(){
 }
 void L2MeasSubscription::sendNotification(EventNotification *event){}
 
-
+} //namespace
 

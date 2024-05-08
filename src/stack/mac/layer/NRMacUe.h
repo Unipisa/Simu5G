@@ -14,6 +14,8 @@
 
 #include "stack/mac/layer/LteMacUeD2D.h"
 
+namespace simu5g {
+
 class NRMacUe : public LteMacUeD2D
 {
 
@@ -47,5 +49,7 @@ class NRMacUe : public LteMacUeD2D
     NRMacUe();
     virtual ~NRMacUe();
 };
+
+} //namespace
 
 #endif

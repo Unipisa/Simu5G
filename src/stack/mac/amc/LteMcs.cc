@@ -11,6 +11,8 @@
 
 #include "stack/mac/amc/LteMcs.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 /**
@@ -386,3 +388,6 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
     }
     return res;
 }
+
+} //namespace
+

@@ -14,6 +14,8 @@
 
 #include "x2/packet/X2InformationElement.h"
 
+namespace simu5g {
+
 //
 // X2CompRequestIE
 // Base class for CoMP request messages
@@ -47,5 +49,7 @@ class X2CompRequestIE : public X2InformationElement
     }
     virtual ~X2CompRequestIE() {}
 };
+
+} //namespace
 
 #endif

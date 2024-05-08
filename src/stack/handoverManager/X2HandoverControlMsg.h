@@ -15,6 +15,8 @@
 #include "x2/packet/LteX2Message.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 /**
  * @class X2HandoverControlMsg
  *
@@ -36,6 +38,8 @@ class X2HandoverControlMsg : public LteX2Message
 
     virtual ~X2HandoverControlMsg();
 };
+
+} //namespace
 
 #endif
 

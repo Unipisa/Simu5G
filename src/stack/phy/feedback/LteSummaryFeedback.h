@@ -15,6 +15,8 @@
 
 
 #include "stack/phy/feedback/LteSummaryFeedback.h"
+
+namespace simu5g {
 class LteSummaryFeedback
 {
     //! confidence function lower bound
@@ -173,6 +175,6 @@ class LteSummaryFeedback
     void print(MacCellId cellId, MacNodeId nodeId, const Direction dir, TxMode txm, const char* s) const;
 };
 
-
+} //namespace
 
 #endif /* STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_ */

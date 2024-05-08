@@ -17,6 +17,8 @@
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class MecResponseApp : public cSimpleModule
@@ -36,5 +38,7 @@ class MecResponseApp : public cSimpleModule
         void sendResponse(cMessage* msg);
 
 };
+
+} //namespace
 
 #endif

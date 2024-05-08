@@ -14,6 +14,8 @@
 
 #include "stack/mac/amc/AmcPilot.h"
 
+namespace simu5g {
+
 /**
  * @class AmcPilotD2D
  * @brief AMC pilot for D2D communication
@@ -52,5 +54,7 @@ class AmcPilotD2D : public AmcPilot
     virtual void setUsableBands(MacNodeId id , UsableBands usableBands){}
     virtual bool getUsableBands(MacNodeId id, UsableBands*& uBands){ return false; }
 };
+
+} //namespace
 
 #endif

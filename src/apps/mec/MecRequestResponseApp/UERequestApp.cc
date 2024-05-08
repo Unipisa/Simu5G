@@ -25,6 +25,8 @@
 
 #include <math.h>
 
+namespace simu5g {
+
 using namespace inet;
 using namespace std;
 
@@ -333,4 +335,5 @@ void UERequestApp::recvResponse(cMessage* msg)
         scheduleAt(simTime() + requestPeriod_, sendRequest_);
 }
 
+} //namespace
 

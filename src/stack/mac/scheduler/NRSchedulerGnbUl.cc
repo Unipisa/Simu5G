@@ -14,6 +14,7 @@
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
 
+namespace simu5g {
 
 bool NRSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
 {
@@ -223,3 +224,6 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector* ban
     }
     return 0;
 }
+
+} //namespace
+

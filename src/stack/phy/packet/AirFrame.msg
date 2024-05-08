@@ -17,6 +17,9 @@ cplusplus {{
 
 import inet.common.geometry.Geometry;
 //class inet::Coord; {@existingClass;}
+
+namespace simu5g;
+
 class ModulationType {@existingClass;};
 
 //

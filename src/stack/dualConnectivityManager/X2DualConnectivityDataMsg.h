@@ -16,6 +16,7 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo_m.h"
 
+namespace simu5g {
 
 /**
  * @class X2DualConnectivityDataMsg
@@ -39,6 +40,8 @@ class X2DualConnectivityDataMsg : public LteX2Message
 };
 
 //Register_Class(X2DualConnectivityDataMsg);
+
+} //namespace
 
 #endif
 

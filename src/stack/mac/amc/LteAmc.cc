@@ -18,6 +18,7 @@
 #include "stack/mac/amc/AmcPilotAuto.h"
 #include "stack/mac/amc/AmcPilotD2D.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 LteAmc::~LteAmc()
@@ -1609,3 +1610,6 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
 }
 
 void LteAmc::setPilotMode( PilotComputationModes mode)  {pilot_->setMode(mode);}
+
+} //namespace
+

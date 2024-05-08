@@ -25,6 +25,8 @@
 #include "apps/vod/VoDPacket_m.h"
 #include "apps/vod/M1Message_m.h"
 
+namespace simu5g {
+
 class VoDUDPServer : public omnetpp::cSimpleModule
 {
   protected:
@@ -103,5 +105,7 @@ class VoDUDPServer : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage*);
     virtual void handleSVCMessage(omnetpp::cMessage*);
 };
+
+} //namespace
 
 #endif

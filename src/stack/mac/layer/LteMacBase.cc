@@ -24,6 +24,8 @@
 #include "assert.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteMacBase::LteMacBase()
@@ -564,3 +566,6 @@ double LteMacBase::getHarqErrorRate(Direction dir)
         return (double)totalHarqErrorRateUlSum_/totalHarqErrorRateUlCount_;
     throw cRuntimeError("LteMacBase::getHarqErrorRate - unhandled direction %d", dir);
 }
+
+} //namespace
+

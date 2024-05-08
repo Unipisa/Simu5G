@@ -20,6 +20,8 @@
 #include "common/LteControlInfo.h"
 #include <sstream>
 
+namespace simu5g {
+
 Define_Module(PacketFlowManagerEnb);
 
 PacketFlowManagerEnb::PacketFlowManagerEnb()
@@ -594,7 +596,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         // === for each RLC PDU SN, recover the set of RLC SDU (PDCP PDU) SN === //
 
         SequenceNumberSet::iterator it = rlcSnoSet.begin();
-        
+
         for (; it != rlcSnoSet.end(); ++it)
         {
             // for each RLC PDU
@@ -1097,4 +1099,5 @@ void PacketFlowManagerEnb::finish()
 {
 }
 
+} //namespace
 

@@ -14,6 +14,8 @@
 
 #include "stack/mac/scheduler/LteScheduler.h"
 
+namespace simu5g {
+
 class LtePf : public LteScheduler
 {
   protected:
@@ -58,5 +60,7 @@ class LtePf : public LteScheduler
         pfRate_.clear();
     }
 };
+
+} //namespace
 
 #endif // _LTE_LTEPF_H_

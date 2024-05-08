@@ -13,6 +13,8 @@
 #include "common/LteCommon.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 Define_Module(EventGenerator);
 
 using namespace omnetpp;
@@ -168,3 +170,6 @@ void EventGenerator::unregisterNode(MultihopD2D* app, MacNodeId lteNodeId)
     if (sit != lteNodeIdSet_.end())
         lteNodeIdSet_.erase(sit);
 }
+
+} //namespace
+

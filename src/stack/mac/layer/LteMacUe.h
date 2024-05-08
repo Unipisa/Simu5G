@@ -17,6 +17,8 @@
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "stack/phy/feedback/LteFeedback.h"
 
+namespace simu5g {
+
 class LteSchedulingGrant;
 class LteSchedulerUeUl;
 class Binder;
@@ -217,5 +219,7 @@ class LteMacUe : public LteMacBase
     // update ID of the serving cell during handover
     virtual void doHandover(MacNodeId targetEnb);
 };
+
+} //namespace
 
 #endif

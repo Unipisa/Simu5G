@@ -26,6 +26,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 Define_Module(MECWarningAlertApp);
 
 using namespace inet;
@@ -478,4 +480,6 @@ void MECWarningAlertApp::handleProcessedMessage(cMessage *msg)
     }
     MecAppBase::handleProcessedMessage(msg);
 }
+
+} //namespace
 

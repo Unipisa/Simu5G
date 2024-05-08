@@ -12,6 +12,8 @@
 #include "stack/d2dModeSelection/D2DModeSelectionBase.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
+namespace simu5g {
+
 Define_Module(D2DModeSelectionBase);
 
 using namespace inet;
@@ -133,3 +135,6 @@ void D2DModeSelectionBase::sendModeSwitchNotifications()
         check_and_cast<LteMacEnbD2D*>(mac_)->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
     }
 }
+
+} //namespace
+

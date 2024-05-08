@@ -18,6 +18,8 @@
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
+namespace simu5g {
+
 class DasFilter;
 
 class LtePhyUe : public LtePhyBase
@@ -162,5 +164,7 @@ class LtePhyUe : public LtePhyBase
     double getAverageCqi(Direction dir);
     double getVarianceCqi(Direction dir);
 };
+
+} //namespace
 
 #endif  /* _LTE_AIRPHYUE_H_ */

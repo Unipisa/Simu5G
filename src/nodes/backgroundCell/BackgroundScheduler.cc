@@ -11,6 +11,8 @@
 
 #include "nodes/backgroundCell/BackgroundScheduler.h"
 
+namespace simu5g {
+
 Define_Module(BackgroundScheduler);
 
 void BackgroundScheduler::initialize(int stage)
@@ -315,3 +317,6 @@ TrafficGeneratorBase* BackgroundScheduler::getPrevBandInterferingUe(int band)
     MacNodeId bgUeId = ulPrevBandAllocation_[band];
     return bgTrafficManager_->getTrafficGenerator(bgUeId);
 }
+
+} //namespace
+

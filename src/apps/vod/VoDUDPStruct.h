@@ -14,6 +14,8 @@
 
 #include <inet/networklayer/common/L3Address.h>
 
+namespace simu5g {
+
 /**
  * Stores information on a video stream
  */
@@ -23,5 +25,7 @@ struct Media1
     int clientPort;           // client Udp port
     long numPkSent;           // number of packets sent
 };
+
+} //namespace
 
 #endif

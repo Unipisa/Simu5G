@@ -17,6 +17,7 @@
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
 
 Define_Module(X2AppClient);
 
@@ -81,4 +82,5 @@ void X2AppClient::socketDataArrived(SctpSocket *, Packet *msg, bool)
     }
 }
 
+} //namespace
 

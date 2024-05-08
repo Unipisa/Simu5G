@@ -14,6 +14,8 @@
 
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 
+namespace simu5g {
+
 /**
  * @class LteSchedulerEnbUl
  *
@@ -105,5 +107,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
 
     void removePendingRac(MacNodeId nodeId);
 };
+
+} //namespace
 
 #endif // _LTE_LTE_SCHEDULER_ENB_UL_H_

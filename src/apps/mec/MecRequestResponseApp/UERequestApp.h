@@ -24,6 +24,7 @@
 
 #include "common/binder/Binder.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -93,5 +94,7 @@ class UERequestApp: public cSimpleModule
     void recvResponse(cMessage* msg);
 
 };
+
+} //namespace
 
 #endif

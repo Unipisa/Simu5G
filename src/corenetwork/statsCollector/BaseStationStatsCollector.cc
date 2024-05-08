@@ -17,6 +17,8 @@
 #include "stack/mac/layer/LteMacEnb.h"
 #include <string>
 
+namespace simu5g {
+
 Define_Module(BaseStationStatsCollector);
 BaseStationStatsCollector::BaseStationStatsCollector()
 {
@@ -74,7 +76,7 @@ void BaseStationStatsCollector::initialize(int stage){
         {
             throw cRuntimeError("%s::initialize - EnodeB statistic collector only works with RLC in UM mode", collectorType_.c_str() );
         }
-        
+
         if(getParentModule()->getSubmodule("cellularNic")->findSubmodule("packetFlowManager") != -1)
         {
             EV << collectorType_ << "::initialize - packetFlowManager reference" << endl;
@@ -498,4 +500,6 @@ void BaseStationStatsCollector::resetStats(MacNodeId nodeId)
     if(ue != ueCollectors_.end())
         ue->second->resetStats();
 }
+
+} //namespace
 

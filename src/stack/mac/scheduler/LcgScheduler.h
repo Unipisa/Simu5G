@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/layer/LteMacUe.h"
 
+namespace simu5g {
+
 /// forward declarations
 class LteSchedulerUeUl;
 class LteMacPdu;
@@ -128,5 +130,8 @@ class LcgScheduler
 //
 //        virtual void update() {;}
 };
+
+} //namespace
+
 #endif
 

@@ -18,6 +18,8 @@
 #include "stack/handoverManager/X2HandoverControlMsg.h"
 #include "stack/handoverManager/X2HandoverDataMsg.h"
 
+namespace simu5g {
+
 class IP2Nic;
 
 //
@@ -61,5 +63,7 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     // receive data from X2 message and send it to the X2 Manager
     void receiveDataFromSourceEnb(inet::Packet* datagram, MacNodeId sourceEnb);
 };
+
+} //namespace
 
 #endif /* __LTEHANDOVERMANAGER_H_ */

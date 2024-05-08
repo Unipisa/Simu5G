@@ -18,6 +18,7 @@
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 #include "DeviceAppMessages/DeviceAppPacket_m.h"
 
+namespace simu5g {
 
 /*
  * This is a very simple application implementing some Device Application functionalities,
@@ -111,5 +112,7 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
       virtual ~DeviceApp();
 
  };
+
+} //namespace
 
 #endif /* APPS_MEC_MEAPPS_DEVICEAPP_H_ */

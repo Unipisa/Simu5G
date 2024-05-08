@@ -15,6 +15,8 @@
 #include "common/LteControlInfo.h"
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 
+namespace simu5g {
+
 class LteDummyChannelModel : public LteChannelModel
 {
      private:
@@ -106,5 +108,7 @@ class LteDummyChannelModel : public LteChannelModel
    }
 
 };
+
+} //namespace
 
 #endif /* STACK_PHY_CHANNELMODEL_LTEDUMMYCHANNELMODEL_H_ */

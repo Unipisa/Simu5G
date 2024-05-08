@@ -17,6 +17,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class MecRequestResponsePacket extends inet::FieldsChunk 
 {
     unsigned int sno;

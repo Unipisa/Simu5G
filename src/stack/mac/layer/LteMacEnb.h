@@ -18,6 +18,8 @@
 #include "common/LteCommon.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
+namespace simu5g {
+
 class MacBsr;
 class LteSchedulerEnbDl;
 class LteSchedulerEnbUl;
@@ -259,5 +261,7 @@ class LteMacEnb : public LteMacBase
     int getActiveUesNumber(Direction dir);
 
 };
+
+} //namespace
 
 #endif

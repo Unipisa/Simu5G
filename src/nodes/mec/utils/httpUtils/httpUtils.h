@@ -23,6 +23,8 @@
 
 #include <string>
 
+namespace simu5g {
+
 /*
  * httpUtils collects all the functions needed to manage HTTP messages:
  * - body parsing
@@ -194,5 +196,6 @@ namespace Http {
 
 }
 
+} //namespace
 
 #endif

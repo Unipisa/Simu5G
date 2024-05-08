@@ -23,6 +23,8 @@
 #include "common/binder/Binder.h"
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
+namespace simu5g {
+
 /**
  * GtpUser is used for building data tunnels between GTP peers.
  * GtpUser can receive two kind of packets:
@@ -69,5 +71,7 @@ class GtpUser : public omnetpp::cSimpleModule
     // detect outgoing interface name (CellularNic)
     inet::NetworkInterface *detectInterface();
 };
+
+} //namespace
 
 #endif

@@ -20,6 +20,8 @@
 #include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
 #include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
+namespace simu5g {
+
 class LteCellInfo;
 
 class SubscriptionBase
@@ -76,10 +78,6 @@ class SubscriptionBase
         TimeStamp expiryTime_;
 };
 
-
-
-
-
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_RESOURCES_SUBSCRIPTIONBASE_H_ */

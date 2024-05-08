@@ -14,6 +14,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 Define_Module(UmRxEntity);
 
 using namespace inet;
@@ -424,7 +426,7 @@ void UmRxEntity::reassemble(unsigned int index)
 
                         toPdcp(pktSdu);
                         pktSdu = nullptr;
-                        
+
                         clearBufferedSdu();
 
                         break;
@@ -969,4 +971,6 @@ void UmRxEntity::handleBurst(BurstCheck event)
     ttiBits_ = 0;
 
 }
+
+} //namespace
 

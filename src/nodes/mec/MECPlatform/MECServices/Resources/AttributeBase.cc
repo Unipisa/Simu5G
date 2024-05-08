@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
+namespace simu5g {
+
 AttributeBase::AttributeBase()
 {
 }
@@ -54,3 +56,6 @@ nlohmann::ordered_json AttributeBase::toJson( AttributeBase&  content )
 {
     return  content.toJson();
 }
+
+} //namespace
+

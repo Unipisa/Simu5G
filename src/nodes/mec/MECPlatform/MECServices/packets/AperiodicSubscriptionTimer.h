@@ -15,6 +15,8 @@
 #include "AperiodicSubscriptionTimer_m.h"
 #include <set>
 
+namespace simu5g {
+
 class AperiodicSubscriptionTimer: public AperiodicSubscriptionTimer_m {
 public:
     AperiodicSubscriptionTimer();
@@ -42,5 +44,7 @@ public:
 private:
     std::set<int> subIdSet_;
 };
+
+} //namespace
 
 #endif /* NODES_MEC_MEPLATFORM_MESERVICES_PACKETS_APERIODICSUBSCRIPTIONTIMER_H_ */

@@ -15,6 +15,8 @@
 #include "stack/rlc/packet/LteRlcDataPdu_m.h"
 #include "stack/rlc/LteRlcDefs.h"
 
+namespace simu5g {
+
 /**
  * @class LteRlcDataPdu
  * @brief Base class for Lte RLC UM/AM Data Pdu
@@ -257,5 +259,7 @@ public:
 Register_Class(LteRlcDataPdu);
 Register_Class(LteRlcUmDataPdu);
 Register_Class(LteRlcAmDataPdu);
+
+} //namespace
 
 #endif /* LTERLCDATAPDU_H_ */

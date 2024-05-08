@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationInfo.h"
 
+namespace simu5g {
+
 LocationInfo::LocationInfo()
 {
     coordinates_ = inet::Coord::NIL;
@@ -59,3 +61,6 @@ nlohmann::ordered_json LocationInfo::toJson() const
     }
  return val;
 }
+
+} //namespace
+

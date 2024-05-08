@@ -21,6 +21,8 @@
 #include "stack/pdcp_rrc/layer/entity/LteRxPdcpEntity.h"
 #include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
 
+namespace simu5g {
+
 class LteTxPdcpEntity;
 class LteRxPdcpEntity;
 
@@ -378,5 +380,7 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
     virtual void initialize(int stage);
     virtual void deleteEntities(MacNodeId nodeId);
 };
+
+} //namespace
 
 #endif

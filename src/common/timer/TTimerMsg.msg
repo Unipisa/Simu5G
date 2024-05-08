@@ -10,6 +10,9 @@
 //
 
 import common.LteCommon;
+
+namespace simu5g;
+
 cplusplus {{
     enum TTimerType
     {

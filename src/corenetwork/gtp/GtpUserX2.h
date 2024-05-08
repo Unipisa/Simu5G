@@ -19,6 +19,8 @@
 #include "common/binder/Binder.h"
 #include "x2/packet/LteX2Message.h"
 
+namespace simu5g {
+
 /**
  * GtpUserX2 is used for building data tunnels between GTP peers over X2, for handover procedure.
  * GtpUserX2 can receive two kind of packets:
@@ -49,5 +51,7 @@ class GtpUserX2 : public omnetpp::cSimpleModule
     // receive a GTP-U packet from UDP, detunnel it and send it to the X2 Manager
     void handleFromUdp(inet::Packet * gtpMsg);
 };
+
+} //namespace
 
 #endif

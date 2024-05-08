@@ -24,6 +24,7 @@
 #include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
 #include "apps/mec/MecApps/MecAppBase.h"
 
+namespace simu5g {
 
 class MecRTVideoStreamingReceiver : public MecAppBase
 {
@@ -115,6 +116,6 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     virtual ~MecRTVideoStreamingReceiver();
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MECRTVIDEOSTREAMINGRECEIVER_H_ */

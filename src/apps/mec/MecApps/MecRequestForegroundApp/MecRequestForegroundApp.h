@@ -15,6 +15,8 @@
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class MecRequestForegroundApp : public MecAppBase
@@ -53,6 +55,6 @@ protected:
 
 };
 
-
+} //namespace
 
 #endif /* APPS_MEC_MEAPPS_MEFGAPP_H_ */

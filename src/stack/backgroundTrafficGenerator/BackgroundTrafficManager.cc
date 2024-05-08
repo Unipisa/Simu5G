@@ -15,6 +15,8 @@
 #include "stack/phy/layer/LtePhyEnb.h"
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 
+namespace simu5g {
+
 Define_Module(BackgroundTrafficManager);
 
 
@@ -351,4 +353,5 @@ double BackgroundTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coo
     return channelModel_->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bsId);
 }
 
+} //namespace
 

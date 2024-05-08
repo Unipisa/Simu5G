@@ -11,6 +11,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class LteRac extends inet::FieldsChunk
 {
     // meaningful only for DL (response) RAC packets : if true RAC request has been admitted.

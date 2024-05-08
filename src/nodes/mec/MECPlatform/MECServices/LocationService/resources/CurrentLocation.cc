@@ -11,6 +11,7 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
 
+namespace simu5g {
 
 CurrentLocation::CurrentLocation(){};
 CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords, const TimeStamp& ts): coords(coords), timeStamp(ts)
@@ -39,6 +40,5 @@ nlohmann::ordered_json CurrentLocation::toJson() const
 
 }
 
-
-
+} //namespace
 

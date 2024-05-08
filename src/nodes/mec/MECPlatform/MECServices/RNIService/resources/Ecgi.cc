@@ -11,6 +11,7 @@
 
 #include "../../RNIService/resources/Ecgi.h"
 
+namespace simu5g {
 
 Ecgi::Ecgi():plmn_()
 {
@@ -73,8 +74,10 @@ nlohmann::ordered_json Ecgi::toJson() const
     nlohmann::ordered_json val;
     val["cellId"] = cellId_;
     val["plmn"] = plmn_.toJson();
-    
+
 
     return val;
 }
+
+} //namespace
 

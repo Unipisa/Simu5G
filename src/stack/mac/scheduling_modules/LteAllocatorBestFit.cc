@@ -14,6 +14,8 @@
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/conflict_graph/ConflictGraph.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteAllocatorBestFit::LteAllocatorBestFit()
@@ -542,3 +544,6 @@ void LteAllocatorBestFit::setAllocationType(std::vector<Band> bookedBands,Alloca
         bandStatusMap_[*it].second.insert(nodeId);
     }
 }
+
+} //namespace
+

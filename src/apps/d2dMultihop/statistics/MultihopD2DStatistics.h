@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 //
 // MultihopD2DStatistics module
 //
@@ -77,5 +79,7 @@ public:
     void recordSuppressedMessage(unsigned int msgId);
     void recordDuplicateReception(unsigned int msgId);
 };
+
+} //namespace
 
 #endif /* MULTIHOPD2DSTATISTICS_H_ */

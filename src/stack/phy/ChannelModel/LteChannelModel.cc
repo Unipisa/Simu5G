@@ -11,6 +11,8 @@
 
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 
+namespace simu5g {
+
 //Define_Module(LteChannelModel);
 
 void LteChannelModel::initialize(int stage)
@@ -91,3 +93,6 @@ bool LteChannelModel::isErrorDas(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
    return true;
 }
+
+} //namespace
+

@@ -16,6 +16,8 @@
 #include "stack/mac/allocator/LteAllocationModule.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 bool
@@ -1095,3 +1097,6 @@ void LteSchedulerEnbUl::removePendingRac(MacNodeId nodeId)
             it->second.erase(nodeId);
     }
 }
+
+} //namespace
+

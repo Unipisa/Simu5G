@@ -21,6 +21,8 @@
 
 #include "world/radio/IChannelControl.h"
 
+namespace simu5g {
+
 // Forward declarations
 class AirFrame;
 
@@ -157,5 +159,7 @@ class ChannelControl : public omnetpp::cSimpleModule, public IChannelControl
     /** Returns propagation speed of the signal in meter/sec */
     virtual double getPropagationSpeed() override { return SPEED_OF_LIGHT; }
 };
+
+} //namespace
 
 #endif

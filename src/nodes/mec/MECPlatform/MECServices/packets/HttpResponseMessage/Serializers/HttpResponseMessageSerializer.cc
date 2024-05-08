@@ -22,7 +22,10 @@
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 #include <string>
-namespace inet {
+
+namespace simu5g {
+
+using namespace inet;
 
 Register_Serializer(HttpResponseMessage, HttpResponseMessageSerializer);
 
@@ -50,5 +53,5 @@ const Ptr<Chunk> HttpResponseMessageSerializer::deserialize(MemoryInputStream& s
         return applicationPacket;
 }
 
-} // namespace inet
+} //namespace
 

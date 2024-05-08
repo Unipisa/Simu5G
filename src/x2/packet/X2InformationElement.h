@@ -15,6 +15,8 @@
 #include "x2/packet/LteX2Message_m.h"
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 // add here new IE types
 enum X2InformationElementType
 {
@@ -68,5 +70,7 @@ class X2InformationElement : public X2InformationElement_Base
     // return length (in B)
     virtual int64_t getLength() const { return length_; }
 };
+
+} //namespace
 
 #endif

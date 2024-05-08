@@ -14,6 +14,8 @@
 
 #include "stack/mac/scheduler/LteScheduler.h"
 
+namespace simu5g {
+
 class LteMaxCi : public virtual LteScheduler
 {
   protected:
@@ -28,5 +30,7 @@ class LteMaxCi : public virtual LteScheduler
     virtual void commitSchedule();
 
 };
+
+} //namespace
 
 #endif // _LTE_LTEMAXCI_H_

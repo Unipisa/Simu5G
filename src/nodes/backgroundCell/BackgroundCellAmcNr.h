@@ -17,6 +17,8 @@
 #include "nodes/backgroundCell/BackgroundCellAmc.h"
 #include "stack/mac/amc/NRMcs.h"
 
+namespace simu5g {
+
 class BackgroundCellAmcNr : public BackgroundCellAmc
 {
   protected:
@@ -38,5 +40,7 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
 
     virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
 };
+
+} //namespace
 
 #endif

@@ -11,6 +11,8 @@
 
 #include "stack/mac/amc/AmcPilotAuto.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency)
@@ -301,3 +303,6 @@ bool AmcPilotAuto::getUsableBands(MacNodeId id, UsableBands*& uBands)
     uBands = nullptr;
     return false;
 }
+
+} //namespace
+

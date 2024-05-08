@@ -25,6 +25,8 @@
 
 #include <fstream>
 
+namespace simu5g {
+
 using namespace inet;
 using namespace std;
 
@@ -327,3 +329,6 @@ void UeRnisTestApp::handleAckStopMecApp(cMessage* msg)
 
     cancelEvent(selfStop_);
 }
+
+} //namespace
+

@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 // attenuation value to be returned if max. distance of a scenario has been violated
 // and tolerating the maximum distance violation is enabled
 #define ATT_MAXDISTVIOLATED 1000
@@ -272,5 +274,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
      */
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundScheduler* bgScheduler);
 };
+
+} //namespace
 
 #endif

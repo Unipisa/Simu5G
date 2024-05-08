@@ -15,6 +15,8 @@
 #include "stack/mac/buffer/harq/LteHarqProcessRx.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 
+namespace simu5g {
+
 /**
  * H-ARQ RX processes contain pdus received from phy layer for which
  * H-ARQ feedback must be sent.
@@ -52,5 +54,7 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
 
     virtual ~LteHarqProcessRxD2D();
 };
+
+} //namespace
 
 #endif

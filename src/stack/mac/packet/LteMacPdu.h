@@ -16,6 +16,8 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 
+namespace simu5g {
+
 /**
  * @class LteMacPdu
  * @brief Lte MAC Pdu
@@ -294,6 +296,8 @@ class LteMacPdu : public LteMacPdu_Base
 };
 
 Register_Class(LteMacPdu);
+
+} //namespace
 
 #endif
 

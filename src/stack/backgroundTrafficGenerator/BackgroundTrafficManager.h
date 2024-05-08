@@ -16,6 +16,8 @@
 #include "common/blerCurves/PhyPisaData.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 class TrafficGeneratorBase;
@@ -143,5 +145,7 @@ class BackgroundTrafficManager : public cSimpleModule
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
 };
+
+} //namespace
 
 #endif

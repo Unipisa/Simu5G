@@ -14,6 +14,8 @@
 
 #include "stack/mac/layer/LteMacEnb.h"
 
+namespace simu5g {
+
 //
 // D2DModeSelectionBase
 // Base class for D2D Mode Selection modules
@@ -72,5 +74,7 @@ public:
     // NOTE: re-implement this method in derived classes
     virtual void doModeSwitchAtHandover(MacNodeId nodeId, bool handoverCompleted);
 };
+
+} //namespace
 
 #endif /* LTE_D2DMODESELECTIONBASE_H_ */

@@ -14,6 +14,8 @@
 
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
+namespace simu5g {
+
 class NRMacGnb : public LteMacEnbD2D
 {
   protected:
@@ -30,5 +32,7 @@ class NRMacGnb : public LteMacEnbD2D
     virtual void initialize(int stage);
 
 };
+
+} //namespace
 
 #endif

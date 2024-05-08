@@ -13,6 +13,8 @@
 #include <omnetpp.h>
 #include "common/blerCurves/PhyPisaData.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 double blerCurvesNew[3][15][49]={
@@ -2672,3 +2674,6 @@ double PhyPisaData::getChannel(unsigned int i)
     i = i % channel_.size();
     return channel_[i];
 }
+
+} //namespace
+

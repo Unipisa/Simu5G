@@ -11,6 +11,8 @@
 
 #include "CbrReceiver.h"
 
+namespace simu5g {
+
 Define_Module(CbrReceiver);
 using namespace inet;
 
@@ -84,5 +86,5 @@ void CbrReceiver::finish()
     emit( cbrReceivedThroughtput_, recvBytes_ / elapsedTime.dbl() );
 }
 
-
+} //namespace
 

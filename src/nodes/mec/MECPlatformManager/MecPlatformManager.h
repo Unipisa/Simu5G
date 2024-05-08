@@ -19,6 +19,8 @@
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 //
@@ -73,5 +75,7 @@ class MecPlatformManager : public cSimpleModule
 
         void registerMecService(ServiceDescriptor&) const;
 };
+
+} //namespace
 
 #endif

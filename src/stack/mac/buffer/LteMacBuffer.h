@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class LteMacQueue;
 
 /**
@@ -160,5 +162,7 @@ class LteMacBuffer
     /// List of  packets
     std::list<PacketInfo> Queue_;
 };
+
+} //namespace
 
 #endif

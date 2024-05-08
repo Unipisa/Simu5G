@@ -12,6 +12,8 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/UserInfo.h"
 
+namespace simu5g {
+
 UserInfo::UserInfo():timestamp_(), locationInfo_(){}
 UserInfo::UserInfo(const LocationInfo& location, const inet::Ipv4Address& address, MacCellId accessPointId, const std::string& resourceUrl, int zoneId):
         timestamp_(), locationInfo_(location)
@@ -45,3 +47,6 @@ nlohmann::ordered_json UserInfo::toJson() const
     val["locationInfo"] = locationInfo_.toJson();
     return val;
 }
+
+} //namespace
+

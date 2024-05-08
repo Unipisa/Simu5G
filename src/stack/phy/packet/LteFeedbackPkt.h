@@ -15,6 +15,8 @@
 #include "stack/phy/packet/LteFeedbackPkt_m.h"
 #include "stack/phy/feedback/LteFeedback.h"
 
+namespace simu5g {
+
 class LteFeedbackPkt : public LteFeedbackPkt_Base
 {
 private:
@@ -66,5 +68,7 @@ private:
     void setSourceNodeId(MacNodeId id);
     MacNodeId getSourceNodeId() const;
 };
+
+} //namespace
 
 #endif

@@ -14,6 +14,7 @@
 #include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(LtePdcpRrcUeD2D);
 
@@ -170,4 +171,6 @@ void LtePdcpRrcUeD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMo
 
     // add here specific behavior for handling mode switch at the PDCP layer
 }
+
+} //namespace
 

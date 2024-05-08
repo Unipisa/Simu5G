@@ -12,6 +12,8 @@
 #include "CellUEInfo.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 
+namespace simu5g {
+
 CellUEInfo::CellUEInfo(){}
 
 CellUEInfo::CellUEInfo(UeStatsCollector* ueCollector, const Ecgi& ecgi):
@@ -40,12 +42,12 @@ nlohmann::ordered_json CellUEInfo::toJson() const
     value = ueCollector_->get_dl_gbr_delay_ue();
     if(value != -1) val["dl_gbr_delay_ue"] = value;
 
-    value = ueCollector_->get_ul_gbr_delay_ue(); 
+    value = ueCollector_->get_ul_gbr_delay_ue();
     if(value != -1) val["ul_gbr_delay_ue"] = value;
-        
+
     value = ueCollector_->get_dl_nongbr_delay_ue();
     if(value != -1) val["dl_nongbr_delay_ue"] = value;
-        
+
     value = ueCollector_->get_ul_nongbr_delay_ue();
     if(value != -1) val["ul_nongbr_delay_ue"] = value;
 
@@ -87,3 +89,6 @@ nlohmann::ordered_json CellUEInfo::toJson() const
 
     return val;
 }
+
+} //namespace
+

@@ -12,6 +12,8 @@
 #include "stack/dualConnectivityManager/DualConnectivityManager.h"
 #include "inet/common/ProtocolTag_m.h"
 
+namespace simu5g {
+
 Define_Module(DualConnectivityManager);
 
 void DualConnectivityManager::initialize()
@@ -110,4 +112,6 @@ void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet* pkt, MacNo
     // send data to PDCP
     pdcp_->receiveDataFromSourceNode(pkt, sourceNode);
 }
+
+} //namespace
 

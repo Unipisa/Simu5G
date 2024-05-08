@@ -15,6 +15,7 @@
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
+namespace simu5g {
 
 class CreateContextAppMessage : public CreateContextApp
 {
@@ -36,6 +37,6 @@ class CreateContextAppMessage : public CreateContextApp
 
 };
 
-
+} //namespace
 
 #endif /* NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPMESSAGE_H_ */

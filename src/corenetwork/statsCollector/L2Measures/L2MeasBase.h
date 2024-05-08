@@ -16,6 +16,8 @@
 #include <string>
 #include <omnetpp.h>
 
+namespace simu5g {
+
 class L2MeasBase
 {
     private:
@@ -46,5 +48,6 @@ class L2MeasBase
         virtual void reset();
 };
 
+} //namespace
 
 #endif //_L2MEASBASE_H_

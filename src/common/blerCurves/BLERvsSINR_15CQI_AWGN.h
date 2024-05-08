@@ -29,6 +29,8 @@
 
 #include <iostream>
 
+namespace simu5g {
+
 static double BLER_15_CQI_AWGN [15][43] = {
 {
  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9998, 0.9998, 0.9998, 0.9988, 0.9984, 0.9956, 0.9862, 0.9732, 0.9384, 0.8938, 0.8144, 0.7088, 0.5742, 0.4392, 0.2864, 0.1818, 0.0988, 0.0476, 0.0192, 0.0086, 0.0022, 0.0004, 0, 0, 0, 0, 0, 0,
@@ -184,5 +186,6 @@ GetBLER_AWGN (double SINR, int MCS)
   return BLER;
 }
 
+} //namespace
 
 #endif /* BLERVSSINR_15CQI_AWGN_H_ */

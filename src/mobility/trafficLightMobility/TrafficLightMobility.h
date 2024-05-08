@@ -22,6 +22,8 @@
 #include <map>
 #include "inet/mobility/single/LinearMobility.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 class TrafficLightController;
@@ -49,5 +51,7 @@ class TrafficLightMobility : public LinearMobility
     TrafficLightMobility();
     void getTrafficLights();
 };
+
+} //namespace
 
 #endif /* MOBILITY_TRAFFICLIGHTMOBILITY_H_ */

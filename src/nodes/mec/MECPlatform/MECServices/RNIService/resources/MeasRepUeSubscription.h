@@ -18,6 +18,8 @@
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/AssociateId.h"
 #include "nodes/mec/utils/MecCommon.h"
 
+namespace simu5g {
+
 class MeasRepUeSubscription : public SubscriptionBase
 {
 
@@ -40,7 +42,6 @@ class MeasRepUeSubscription : public SubscriptionBase
 
 };
 
-
-
+} //namespace
 
 #endif /* APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_MEASREPUESUBSCRIPTION_H_ */

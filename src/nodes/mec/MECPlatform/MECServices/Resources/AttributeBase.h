@@ -19,8 +19,9 @@
 #include "nodes/mec/utils/httpUtils/json.hpp"
 #include "common/LteCommon.h"
 
+namespace simu5g {
 
-class AttributeBase 
+class AttributeBase
 {
     public:
         AttributeBase();
@@ -36,5 +37,7 @@ class AttributeBase
         static bool toJson( bool value );
         static nlohmann::ordered_json toJson(AttributeBase& content );
 };
+
+} //namespace
 
 #endif // _ATTRIBUTEBASE_H_

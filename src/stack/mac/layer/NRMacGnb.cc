@@ -12,6 +12,8 @@
 #include "stack/mac/layer/NRMacGnb.h"
 #include "stack/mac/scheduler/NRSchedulerGnbUl.h"
 
+namespace simu5g {
+
 Define_Module(NRMacGnb);
 
 NRMacGnb::NRMacGnb() :  LteMacEnbD2D()
@@ -37,3 +39,6 @@ void NRMacGnb::initialize(int stage)
     }
     LteMacEnbD2D::initialize(stage);
 }
+
+} //namespace
+

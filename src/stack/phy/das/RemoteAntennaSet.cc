@@ -11,6 +11,8 @@
 
 #include "stack/phy/das/RemoteAntennaSet.h"
 
+namespace simu5g {
+
 void RemoteAntennaSet::addRemoteAntenna(double ruX, double ruY, double ruPow)
 {
     RemoteAntenna ru;
@@ -52,3 +54,6 @@ std::ostream &operator << (std::ostream &stream, const RemoteAntennaSet* ruSet)
     }
     return stream;
 }
+
+} //namespace
+

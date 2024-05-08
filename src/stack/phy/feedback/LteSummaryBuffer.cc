@@ -11,6 +11,8 @@
 
 #include "stack/phy/feedback/LteSummaryBuffer.h"
 
+namespace simu5g {
+
 void LteSummaryBuffer::createSummary(LteFeedback fb) {
     try {
         // RI
@@ -80,4 +82,5 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
     }
 }
 
+} //namespace
 

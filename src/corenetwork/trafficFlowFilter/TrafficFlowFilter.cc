@@ -14,6 +14,8 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 
+namespace simu5g {
+
 Define_Module(TrafficFlowFilter);
 
 using namespace inet;
@@ -228,4 +230,6 @@ void TrafficFlowFilter::finish()
     if (gateway_ != nullptr)
         delete[] gateway_;
 }
+
+} //namespace
 

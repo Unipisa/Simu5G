@@ -17,6 +17,8 @@
 #include "common/LteCommon.h"
 #include "inet/networklayer/common/L3Address.h"
 
+namespace simu5g {
+
 /*
  * Header file containing some structs used to manage MEC-related information
  */
@@ -110,7 +112,7 @@ namespace mec {
      * value:
      *       Value for the identifier.
      */
-    struct AssociateId 
+    struct AssociateId
     {
         std::string type;
         std::string value;
@@ -145,8 +147,10 @@ namespace mec {
     {
         int secods;
         int nanoSecods;
-        
+
     };
 }
+
+} //namespace
 
 #endif

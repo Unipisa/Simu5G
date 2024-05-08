@@ -16,6 +16,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class AlertPacket extends inet::FieldsChunk
 {
     unsigned int sno;

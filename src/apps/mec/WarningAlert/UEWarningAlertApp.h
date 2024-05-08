@@ -27,6 +27,7 @@
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -98,5 +99,7 @@ class UEWarningAlertApp: public cSimpleModule
         void handleInfoMEWarningAlertApp(cMessage* msg);
         void handleAckStopMEWarningAlertApp(cMessage* msg);
 };
+
+} //namespace
 
 #endif

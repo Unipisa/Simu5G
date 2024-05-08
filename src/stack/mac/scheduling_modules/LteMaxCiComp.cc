@@ -12,6 +12,8 @@
 #include "stack/mac/scheduling_modules/LteMaxCiComp.h"
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 bool LteMaxCiComp::getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId)
@@ -186,3 +188,6 @@ void LteMaxCiComp::commitSchedule()
 {
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
+
+} //namespace
+

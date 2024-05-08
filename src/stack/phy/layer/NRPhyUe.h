@@ -14,6 +14,8 @@
 
 #include "stack/phy/layer/LtePhyUeD2D.h"
 
+namespace simu5g {
+
 class NRPhyUe : public LtePhyUeD2D
 {
 
@@ -35,5 +37,7 @@ class NRPhyUe : public LtePhyUeD2D
     NRPhyUe();
     virtual ~NRPhyUe();
 };
+
+} //namespace
 
 #endif  /* _NRPHYUE_H_ */

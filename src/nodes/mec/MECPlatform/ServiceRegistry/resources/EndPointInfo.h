@@ -16,6 +16,7 @@
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
+namespace simu5g {
 
 class EndPointInfo : public AttributeBase
 {
@@ -31,7 +32,6 @@ class EndPointInfo : public AttributeBase
         nlohmann::ordered_json toJson() const;
 };
 
-
-
+} //namespace
 
 #endif /* NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_ENDPOINTINFO_H_ */

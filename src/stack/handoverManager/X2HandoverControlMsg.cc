@@ -13,6 +13,8 @@
 #include "x2/packet/LteX2MsgSerializer.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -42,3 +44,6 @@ X2HandoverControlMsg* X2HandoverControlMsg::dup() const {
 
 X2HandoverControlMsg::~X2HandoverControlMsg() {
 }
+
+} //namespace
+

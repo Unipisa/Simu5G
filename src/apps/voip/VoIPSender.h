@@ -19,6 +19,8 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include "apps/voip/VoipPacket_m.h"
 
+namespace simu5g {
+
 class VoIPSender : public omnetpp::cSimpleModule
 {
     inet::UdpSocket socket;
@@ -73,6 +75,8 @@ class VoIPSender : public omnetpp::cSimpleModule
     void handleMessage(omnetpp::cMessage *msg) override;
 
 };
+
+} //namespace
 
 #endif
 

@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/allocator/LteAllocatorUtils.h"
 
+namespace simu5g {
+
 class LteMacEnb;
 
 class LteAllocationModule
@@ -323,5 +325,7 @@ class LteAllocationModule
         return bands_;
     }
 };
+
+} //namespace
 
 #endif

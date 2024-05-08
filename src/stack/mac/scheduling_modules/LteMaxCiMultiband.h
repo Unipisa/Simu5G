@@ -14,6 +14,8 @@
 
 #include "stack/mac/scheduler/LteScheduler.h"
 
+namespace simu5g {
+
     typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
     typedef std::priority_queue<ScoreDesc> ScoreList;
 
@@ -30,5 +32,6 @@ public:
     virtual void commitSchedule();
 };
 
+} //namespace
 
 #endif /* LTEMAXCIMULTIBAND_H_ */

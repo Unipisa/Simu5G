@@ -15,6 +15,8 @@
 #include "stack/rlc/packet/LteRlcPdu_m.h"
 #include "common/LteControlInfo.h"
 
+namespace simu5g {
+
 class LteRlcPdu : public LteRlcPdu_Base {
    private:
 
@@ -47,5 +49,7 @@ class LteRlcPdu : public LteRlcPdu_Base {
 };
 
 Register_Class(LteRlcPdu);
+
+} //namespace
 
 #endif /* LTERLCPDU_H_ */

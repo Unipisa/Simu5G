@@ -17,6 +17,8 @@
 #include "stack/mac/amc/LteAmc.h"
 #include "stack/mac/amc/NRMcs.h"
 
+namespace simu5g {
+
 /**
  * @class NRAMC
  * @brief NR AMC module for Omnet++ simulator
@@ -51,5 +53,7 @@ class NRAmc : public LteAmc
 //    virtual unsigned int computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
 //    virtual unsigned int computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
 };
+
+} //namespace
 
 #endif

@@ -14,6 +14,8 @@
 
 #include "stack/phy/layer/LtePhyEnb.h"
 
+namespace simu5g {
+
 class LtePhyEnbD2D : public LtePhyEnb
 {
     friend class DasFilter;
@@ -30,5 +32,7 @@ class LtePhyEnbD2D : public LtePhyEnb
     virtual ~LtePhyEnbD2D();
 
 };
+
+} //namespace
 
 #endif  /* _LTE_AIRPHYENBD2D_H_ */

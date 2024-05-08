@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
 
+namespace simu5g {
+
 class LteAllocationModuleFrequencyReuse : public LteAllocationModule
 {
     public:
@@ -25,5 +27,7 @@ class LteAllocationModuleFrequencyReuse : public LteAllocationModule
     // Get the bands already allocated by RAC and RTX ( Debug purpose)
     virtual std::set<Band> getAllocatorOccupiedBands();
 };
+
+} //namespace
 
 #endif

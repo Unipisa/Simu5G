@@ -11,6 +11,8 @@
 
 #include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 using namespace inet;
 
@@ -40,3 +42,6 @@ X2DualConnectivityDataMsg* X2DualConnectivityDataMsg::dup() const {
 
 X2DualConnectivityDataMsg::~X2DualConnectivityDataMsg() {
 }
+
+} //namespace
+

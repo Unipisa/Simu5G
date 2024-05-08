@@ -12,6 +12,8 @@
 #include "stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
 #include "common/LteControlInfo.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb* macOwner)
@@ -60,3 +62,6 @@ void LteHarqBufferMirrorD2D::markSelectedAsWaiting()
 LteHarqBufferMirrorD2D::~LteHarqBufferMirrorD2D()
 {
 }
+
+} //namespace
+

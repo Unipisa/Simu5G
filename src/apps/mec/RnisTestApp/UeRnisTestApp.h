@@ -21,6 +21,7 @@
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
 
+namespace simu5g {
 
 using namespace omnetpp;
 
@@ -80,5 +81,7 @@ class UeRnisTestApp: public cSimpleModule
         void handleInfoMecApp(cMessage* msg);
         void handleAckStopMecApp(cMessage* msg);
 };
+
+} //namespace
 
 #endif

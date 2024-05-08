@@ -22,6 +22,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/phy/layer/LtePhyBase.h"
 
+namespace simu5g {
+
 class EventGenerator;
 
 class MultihopD2D : public omnetpp::cSimpleModule
@@ -94,6 +96,8 @@ protected:
 
     virtual void handleEvent(unsigned int eventId);
 };
+
+} //namespace
 
 #endif
 

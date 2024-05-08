@@ -11,6 +11,8 @@
 
 import common.timer.TTimerMsg;
 
+namespace simu5g;
+
 packet TMultiTimerMsg extends TTimerMsg
 {
     unsigned int event;

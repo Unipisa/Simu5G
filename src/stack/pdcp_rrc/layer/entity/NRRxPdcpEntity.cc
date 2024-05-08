@@ -11,6 +11,8 @@
 
 #include "stack/pdcp_rrc/layer/entity/NRRxPdcpEntity.h"
 
+namespace simu5g {
+
 Define_Module(NRRxPdcpEntity);
 
 NRRxPdcpEntity::NRRxPdcpEntity() : t_reordering_(this)
@@ -194,3 +196,6 @@ void NRRxPdcpEntity::handleMessage(cMessage *msg)
         delete msg;
     }
 }
+
+} //namespace
+

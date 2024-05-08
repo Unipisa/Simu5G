@@ -15,6 +15,8 @@
 #include <inet/applications/sctpapp/SctpClient.h>
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 class SctpAssociation;
 
 /**
@@ -32,6 +34,8 @@ class X2AppClient : public inet::SctpClient
     void socketEstablished(inet::SctpSocket *socket, unsigned long int buffer) override;
     void socketDataArrived(inet::SctpSocket *socket, inet::Packet *msg, bool urgent) override;
 };
+
+} //namespace
 
 #endif
 

@@ -11,6 +11,8 @@
 
 #include "apps/voip/VoIPReceiver.h"
 
+namespace simu5g {
+
 Define_Module(VoIPReceiver);
 
 using namespace std;
@@ -311,4 +313,6 @@ void VoIPReceiver::finish()
     // last talkspurt playout
     playout(true);
 }
+
+} //namespace
 

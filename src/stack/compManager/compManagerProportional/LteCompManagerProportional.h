@@ -16,6 +16,8 @@
 #include "stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
 #include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
 
+namespace simu5g {
+
 class LteCompManagerProportional : public LteCompManagerBase {
 
 protected:
@@ -55,5 +57,7 @@ public:
 
     virtual void initialize();
 };
+
+} //namespace
 
 #endif /* LTE_LTECOMPMANAGERPROPORTIONAL_H_ */

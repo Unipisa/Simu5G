@@ -11,6 +11,8 @@
 
 #include "stack/compManager/compManagerProportional/LteCompManagerProportional.h"
 
+namespace simu5g {
+
 Define_Module(LteCompManagerProportional);
 using namespace inet;
 
@@ -292,3 +294,6 @@ std::vector<unsigned int> LteCompManagerProportional::roundVector(std::vector<do
     }
     return integerVec;
 }
+
+} //namespace
+

@@ -15,6 +15,8 @@
 #include "common/blerCurves/PhyPisaData.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(double targetBler, std::map<MacNodeId, Lambda>* lambda,
@@ -270,3 +272,6 @@ double LteFeedbackComputationRealistic::meanSnr(std::vector<double> snr)
     mean /= snr.size();
     return mean;
 }
+
+} //namespace
+

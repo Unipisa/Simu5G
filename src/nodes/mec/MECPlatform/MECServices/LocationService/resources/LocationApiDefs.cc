@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 namespace LocationUtils
 {
@@ -38,3 +40,6 @@ namespace LocationUtils
         return mobility_->getCurrentVelocity();
     }
 }
+
+} //namespace
+

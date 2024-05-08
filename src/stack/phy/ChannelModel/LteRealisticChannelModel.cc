@@ -22,6 +22,7 @@
 #include "stack/phy/layer/LtePhyUe.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
+namespace simu5g {
 
 // attenuation value to be returned if max. distance of a scenario has been violated
 // and tolerating the maximum distance violation is enabled
@@ -3216,3 +3217,6 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
 
    return true;
 }
+
+} //namespace
+

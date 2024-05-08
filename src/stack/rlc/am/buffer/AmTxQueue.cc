@@ -13,6 +13,8 @@
 #include "stack/rlc/am/LteRlcAm.h"
 #include "stack/mac/layer/LteMacBase.h"
 
+namespace simu5g {
+
 Define_Module(AmTxQueue);
 
 AmTxQueue::AmTxQueue() :
@@ -867,3 +869,6 @@ void AmTxQueue::handleMessage(cMessage* msg)
     }
     return;
 }
+
+} //namespace
+

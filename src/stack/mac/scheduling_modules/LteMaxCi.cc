@@ -13,6 +13,8 @@
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 void LteMaxCi::prepareSchedule()
@@ -188,4 +190,6 @@ void LteMaxCi::commitSchedule()
 {
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
+
+} //namespace
 

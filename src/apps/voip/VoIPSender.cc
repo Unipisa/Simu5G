@@ -13,6 +13,8 @@
 #include <inet/common/TimeTag_m.h>
 #include "apps/voip/VoIPSender.h"
 
+namespace simu5g {
+
 #define round(x) floor((x) + 0.5)
 
 Define_Module(VoIPSender);
@@ -193,3 +195,6 @@ void VoIPSender::sendVoIPPacket()
     if (nframesTmp_ > 0)
         scheduleAt(simTime() + sampling_time, selfSender_);
 }
+
+} //namespace
+

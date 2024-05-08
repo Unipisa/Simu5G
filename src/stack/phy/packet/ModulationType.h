@@ -26,6 +26,7 @@
 #include <ostream>
 #include <stdint.h>
 
+namespace simu5g {
 
 enum ModulationClass {
   /** Modulation class unknown or unspecified. A WifiMode with this
@@ -182,5 +183,6 @@ private:
 
 bool operator==(const ModulationType &a, const ModulationType &b);
 
+} //namespace
 
 #endif

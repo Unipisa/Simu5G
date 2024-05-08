@@ -11,6 +11,8 @@
 
 #include "stack/mac/amc/NRMcs.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace omnetpp;
 
@@ -178,3 +180,6 @@ const unsigned int nInfoToTbs[TBSTABLESIZE] =
     1288,1320,1352,1416,1480,1544,1608,1672,1736,1800,1864,1928,2024,2088,2152,2216,2280,2408,2472,2536,2600,2664,2728,2792,2856,2976,3104,3240,3368,3496,
     3624,3752,3824
 };
+
+} //namespace
+

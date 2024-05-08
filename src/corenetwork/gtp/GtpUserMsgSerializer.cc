@@ -13,6 +13,8 @@
 #include "corenetwork/gtp/GtpUserMsgSerializer.h"
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
+namespace simu5g {
+
 using namespace inet;
 
 Register_Serializer(GtpUserMsg, GtpUserMsgSerializer);
@@ -43,4 +45,5 @@ const Ptr<Chunk> GtpUserMsgSerializer::deserialize(MemoryInputStream& stream) co
     return gtpUserMsg;
 }
 
+} //namespace
 

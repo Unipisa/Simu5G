@@ -11,6 +11,8 @@
 
 #include "stack/mac/amc/NRAmc.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace omnetpp;
 
@@ -282,3 +284,6 @@ NRMCSelem NRAmc::getMcsElemPerCqi(Cqi cqi, const Direction dir)
     // Return the MCSElem found.
     return ret;
 }
+
+} //namespace
+

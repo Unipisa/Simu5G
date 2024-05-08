@@ -22,6 +22,8 @@
 #include "stack/mac/amc/UserTxParams.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 /// Forward declaration of AmcPilot class, used by LteAmc.
 class AmcPilot;
 /// Forward declaration of CellInfo class, used by LteAmc.
@@ -216,5 +218,7 @@ class LteAmc
 
     void setPilotMode( PilotComputationModes mode);
 };
+
+} //namespace
 
 #endif

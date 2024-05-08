@@ -11,6 +11,8 @@
 
 #include "stack/phy/ChannelModel/NRChannelModel.h"
 
+namespace simu5g {
+
 // attenuation value to be returned if max. distance of a scenario has been violated
 // and tolerating the maximum distance violation is enabled
 #define ATT_MAXDISTVIOLATED 1000
@@ -489,4 +491,6 @@ double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double tw
 
    return attenuation;
 }
+
+} //namespace
 

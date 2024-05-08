@@ -28,6 +28,8 @@
 
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 struct mecAppMapEntry
@@ -177,5 +179,7 @@ class MecOrchestrator : public cSimpleModule
          */
         const ApplicationDescriptor& onboardApplicationPackage(const char* fileName);
     };
+
+} //namespace
 
 #endif

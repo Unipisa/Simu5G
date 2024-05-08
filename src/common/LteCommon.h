@@ -37,6 +37,7 @@
 #include "common/features.h"
 #include "common/LteCommonEnum_m.h"
 
+namespace simu5g {
 
 class Binder;
 class CellInfo;
@@ -752,6 +753,8 @@ std::vector<T> getTagsWithInherit(inet::Packet *pkt)
     }
     return t;
 }
+
+} //namespace
 
 #endif
 

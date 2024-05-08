@@ -13,6 +13,8 @@
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 #include "stack/backgroundTrafficGenerator/generators/RtxNotification_m.h"
 
+namespace simu5g {
+
 Define_Module(TrafficGeneratorBase);
 
 TrafficGeneratorBase::TrafficGeneratorBase()
@@ -317,4 +319,6 @@ void TrafficGeneratorBase::collectMeasuredSinr(double sample, Direction dir)
     else
         emit(bgMeasuredSinrUl_, sample);
 }
+
+} //namespace
 

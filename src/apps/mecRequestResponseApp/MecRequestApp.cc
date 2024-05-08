@@ -12,6 +12,8 @@
 
 #include "apps/mecRequestResponseApp/MecRequestApp.h"
 
+namespace simu5g {
+
 simsignal_t MecRequestApp::requestSize_ = registerSignal("requestSize");
 simsignal_t MecRequestApp::requestRTT_ = registerSignal("requestRTT");
 simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
@@ -164,3 +166,6 @@ void MecRequestApp::recvResponse(cMessage* msg)
     emit(requestRTT_, rtt);
     emit(recvResponseSno_, (long)sno);
 }
+
+} //namespace
+

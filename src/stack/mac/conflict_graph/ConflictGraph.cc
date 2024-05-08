@@ -11,6 +11,8 @@
 
 #include "stack/mac/conflict_graph/ConflictGraph.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 /*!
@@ -107,3 +109,6 @@ void ConflictGraph::printConflictGraph()
     }
     EV << endl;
 }
+
+} //namespace
+

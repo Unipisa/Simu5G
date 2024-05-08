@@ -14,6 +14,7 @@
 #include "stack/pdcp_rrc/layer/entity/NRRxPdcpEntity.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(NRPdcpRrcUe);
 
@@ -283,3 +284,6 @@ void NRPdcpRrcUe::sendToLowerLayer(Packet *pkt)
     else
         LtePdcpRrcBase::sendToLowerLayer(pkt);
 }
+
+} //namespace
+

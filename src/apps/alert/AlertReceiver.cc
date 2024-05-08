@@ -12,6 +12,8 @@
 #include "apps/alert/AlertReceiver.h"
 #include <inet/common/ModuleAccess.h>  // for multicast support
 
+namespace simu5g {
+
 Define_Module(AlertReceiver);
 using namespace inet;
 
@@ -85,4 +87,6 @@ void AlertReceiver::refreshDisplay() const
     }
     getDisplayString().setTagArg("t", 0, buf);
 }
+
+} //namespace
 

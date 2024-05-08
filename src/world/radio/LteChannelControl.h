@@ -14,6 +14,8 @@
 
 #include "world/radio/ChannelControl.h"
 
+namespace simu5g {
+
 /**
  * Monitors which radios are "in range"
  *
@@ -36,5 +38,7 @@ class LteChannelControl : public ChannelControl
     /** Called from ChannelAccess, to transmit a frame to all the radios in range, on the frame's channel */
     virtual void sendToChannel(RadioRef srcRadio, AirFrame *airFrame);
 };
+
+} //namespace
 
 #endif

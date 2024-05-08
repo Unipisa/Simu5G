@@ -12,6 +12,7 @@
 #include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
+namespace simu5g {
 
 Define_Module(NRPdcpRrcEnb);
 
@@ -256,4 +257,6 @@ void NRPdcpRrcEnb::activeUeUL(std::set<MacNodeId>* ueSet)
             ueSet->insert(nodeId);
     }
 }
+
+} //namespace
 

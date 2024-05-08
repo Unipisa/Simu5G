@@ -15,6 +15,8 @@
 #include "common/LteControlInfo_m.h"
 #include <vector>
 
+namespace simu5g {
+
 class UserTxParams;
 
 /**
@@ -106,6 +108,8 @@ class UserControlInfo : public UserControlInfo_Base
 };
 
 Register_Class(UserControlInfo);
+
+} //namespace
 
 #endif
 

@@ -21,7 +21,9 @@
 #include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 
-namespace inet {
+namespace simu5g {
+
+using namespace inet;
 
 Register_Serializer(HttpRequestMessage, HttpRequestMessageSerializer);
 
@@ -57,5 +59,5 @@ const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& st
     return applicationPacket;
 }
 
-} // namespace inet
+} //namespace
 

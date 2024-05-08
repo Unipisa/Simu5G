@@ -17,6 +17,8 @@
 
 #include "common/LteCommon.h"
 
+namespace simu5g {
+
 /**
  * @class ConnectionsTable
  * @brief Hash table to keep track of connections
@@ -133,5 +135,7 @@ class ConnectionsTable
     /// Hash table of size TABLE_SIZE
     entry_ ht_[TABLE_SIZE];
 };
+
+} //namespace
 
 #endif

@@ -39,6 +39,8 @@
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
 
+namespace simu5g {
+
 Define_Module(UALCMPApp);
 
 UALCMPApp::UALCMPApp()
@@ -455,3 +457,6 @@ void UALCMPApp::finish()
 
 UALCMPApp::~UALCMPApp(){
 }
+
+} //namespace
+

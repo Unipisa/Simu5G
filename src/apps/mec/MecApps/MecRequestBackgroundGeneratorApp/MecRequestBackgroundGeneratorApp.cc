@@ -15,6 +15,8 @@
 #include "inet/common/TimeTag_m.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
 
+namespace simu5g {
+
 using namespace inet;
 Define_Module(MecRequestBackgroundGeneratorApp);
 
@@ -222,4 +224,5 @@ void MecRequestBackgroundGeneratorApp::finish()
     }
 }
 
+} //namespace
 

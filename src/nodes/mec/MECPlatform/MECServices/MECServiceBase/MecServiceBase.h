@@ -30,11 +30,13 @@
 #include "common/binder/Binder.h"
 #include "common/utils/utils.h"
 
+namespace simu5g {
+
 /**
  *
  * This class implements the general structure of a Mec Service. It holds all the TCP connections
  * with the e.g Mec Applications and manages its lifecycle. It manages Request-Replay and Subscribe-Notify schemes.
- * Every request is inserted in the queue and executed in FIFO order. Also subscription event are queued in a separate queue and 
+ * Every request is inserted in the queue and executed in FIFO order. Also subscription event are queued in a separate queue and
  * have the priority. The execution times are calculated with the calculateRequestServiceTime method.
  * During initialization it saves all the eNodeB/gNodeBs connected to the Mec Host on which the service is running.
  *
@@ -84,7 +86,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         std::string baseSubscriptionLocation_;
 
 
-        /* 
+        /*
         * Load generator variables
         * the current implementation assumes a M/M/1 system
         */
@@ -288,6 +290,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         virtual void removeSubscritions(int connId);
 };
 
+} //namespace
 
 #endif // __INET_GENERICSERVICE_H
 

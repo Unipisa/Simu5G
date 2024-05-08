@@ -13,6 +13,8 @@
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 #include "stack/mac/scheduler/LteSchedulerEnbUl.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 void LteScheduler::setEnbScheduler(LteSchedulerEnb* eNbScheduler)
@@ -222,3 +224,6 @@ void LteScheduler::buildCarrierActiveConnectionSet()
             carrierActiveConnectionSet_.insert(*it);
     }
 }
+
+} //namespace
+

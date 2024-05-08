@@ -15,7 +15,9 @@
 
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
-namespace inet {
+namespace simu5g {
+
+using namespace inet;
 
 enum DevAppCode {START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_CODE, START_NACK_CODE, STOP_NACK_CODE};
 
@@ -41,7 +43,7 @@ enum DevAppCode {START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_C
  * 5 NACK STOP
  */
 
-class DeviceAppMessageSerializer : public FieldsChunkSerializer
+class DeviceAppMessageSerializer : public inet::FieldsChunkSerializer
 {
   protected:
     virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
@@ -51,7 +53,7 @@ class DeviceAppMessageSerializer : public FieldsChunkSerializer
     DeviceAppMessageSerializer() : FieldsChunkSerializer() {}
 };
 
-} // namespace inet
+} //namespace
 
 #endif
 

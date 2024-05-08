@@ -13,6 +13,8 @@ cplusplus {{
 #include "stack/rlc/LteRlcDefs.h"
 }}
 
+namespace simu5g;
+
 enum LteAmType;
 
 struct RlcFragDesc { @existingClass; }

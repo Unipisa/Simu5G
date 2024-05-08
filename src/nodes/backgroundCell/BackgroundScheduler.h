@@ -19,6 +19,8 @@
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 #include "stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 
+namespace simu5g {
+
 typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
 typedef std::priority_queue<ScoreDesc> ScoreList;
 
@@ -121,5 +123,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     TrafficGeneratorBase* getBandInterferingUe(int band);
     TrafficGeneratorBase* getPrevBandInterferingUe(int band);
 };
+
+} //namespace
 
 #endif

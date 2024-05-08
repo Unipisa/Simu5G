@@ -14,6 +14,8 @@
 #include "stack/mac/scheduling_modules/LteMaxCiMultiband.h"
 #include "stack/mac/scheduler/LteSchedulerEnb.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace omnetpp;
 
@@ -130,4 +132,6 @@ void LteMaxCiMultiband::commitSchedule()
 {
     *activeConnectionSet_ = activeConnectionTempSet_;
 }
+
+} //namespace
 

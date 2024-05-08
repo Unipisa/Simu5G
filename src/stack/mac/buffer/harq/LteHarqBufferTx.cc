@@ -11,6 +11,8 @@
 
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqBufferTx::LteHarqBufferTx(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
@@ -418,3 +420,6 @@ bool LteHarqBufferTx::isInUnitList(unsigned char acid, Codeword cw, UnitList uni
     }
     return false;
 }
+
+} //namespace
+

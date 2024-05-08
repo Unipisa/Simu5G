@@ -11,6 +11,8 @@
 
 #include "LteDummyChannelModel.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 Define_Module(LteDummyChannelModel);
@@ -145,3 +147,6 @@ bool LteDummyChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo* lteI
       << ") -> Receive AirFrame." << endl;
    return true;
 }
+
+} //namespace
+

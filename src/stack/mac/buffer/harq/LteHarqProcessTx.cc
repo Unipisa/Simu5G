@@ -11,6 +11,8 @@
 
 #include "stack/mac/buffer/harq/LteHarqProcessTx.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 LteHarqProcessTx::LteHarqProcessTx(unsigned char acid, unsigned int numUnits, unsigned int numProcesses,
@@ -313,3 +315,6 @@ LteHarqProcessTx::~LteHarqProcessTx()
     units_ = nullptr;
     macOwner_ = nullptr;
 }
+
+} //namespace
+

@@ -19,6 +19,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "inet/common/ModuleAccess.h"  // for multicast support
 
+namespace simu5g {
+
 #define round(x) floor((x) + 0.5)
 
 Define_Module(MultihopD2D);
@@ -417,3 +419,6 @@ void MultihopD2D::finish()
     // unregister from the event generator
     eventGen_->unregisterNode(this, lteNodeId_);
 }
+
+} //namespace
+

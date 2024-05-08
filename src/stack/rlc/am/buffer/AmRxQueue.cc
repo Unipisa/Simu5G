@@ -16,6 +16,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "inet/common/packet/Packet.h"
 
+namespace simu5g {
+
 Define_Module(AmRxQueue);
 
 using namespace inet;
@@ -801,4 +803,6 @@ AmRxQueue::~AmRxQueue()
     }
     pendingPduBuffer_.clear();
 }
+
+} //namespace
 

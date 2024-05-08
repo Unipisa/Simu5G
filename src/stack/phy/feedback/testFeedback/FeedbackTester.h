@@ -15,6 +15,8 @@
 #include <omnetpp.h>
 #include "stack/phy/feedback/LteDlFeedbackGenerator.h"
 
+namespace simu5g {
+
 /**
  * TODO
  */
@@ -28,5 +30,7 @@ class FeedbackTester : public omnetpp::cSimpleModule
     virtual void initialize() override;
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 };
+
+} //namespace
 
 #endif

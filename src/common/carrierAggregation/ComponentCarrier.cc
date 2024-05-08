@@ -12,6 +12,8 @@
 #include "common/carrierAggregation/ComponentCarrier.h"
 #include "common/binder/Binder.h"
 
+namespace simu5g {
+
 Define_Module(ComponentCarrier);
 
 void ComponentCarrier::initialize()
@@ -33,3 +35,6 @@ void ComponentCarrier::initialize()
     // register the carrier to the binder
     binder_->registerCarrier(carrierFrequency_, numBands_, numerologyIndex_, useTdd_, tddNumSymbolsDl_, tddNumSymbolsUl_);
 }
+
+} //namespace
+

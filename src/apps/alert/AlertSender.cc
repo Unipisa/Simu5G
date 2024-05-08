@@ -15,6 +15,8 @@
 
 #include "apps/alert/AlertSender.h"
 
+namespace simu5g {
+
 #define round(x) floor((x) + 0.5)
 
 Define_Module(AlertSender);
@@ -131,3 +133,6 @@ void AlertSender::refreshDisplay() const
     sprintf(buf, "sent: %d pks", nextSno_);
     getDisplayString().setTagArg("t", 0, buf);
 }
+
+} //namespace
+

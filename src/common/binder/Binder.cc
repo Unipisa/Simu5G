@@ -19,6 +19,8 @@
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 
+namespace simu5g {
+
 using namespace std;
 using namespace inet;
 
@@ -1351,4 +1353,5 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     }
 }
 
+} //namespace
 

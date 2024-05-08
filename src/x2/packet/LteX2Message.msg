@@ -17,6 +17,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+namespace simu5g;
+
 class LteX2Message extends inet::FieldsChunk
 {
     @customize(true);

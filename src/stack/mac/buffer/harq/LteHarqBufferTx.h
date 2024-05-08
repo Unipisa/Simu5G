@@ -16,6 +16,8 @@
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/buffer/harq/LteHarqProcessTx.h"
 
+namespace simu5g {
+
 /*
  * NOTA: e' compito del mac ul usare solo il processo di turno, non c'e' nessun controllo.
  * TODO: aggiungere supporto all'uplink: funzioni in cui si specifica il processo da usare
@@ -212,5 +214,7 @@ class LteHarqBufferTx
      */
     bool isInUnitList(unsigned char acid, Codeword cw, UnitList unitIds);
 };
+
+} //namespace
 
 #endif

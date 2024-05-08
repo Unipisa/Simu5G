@@ -20,7 +20,8 @@ cplusplus {{
    using namespace inet;
 }};
 
- 
+namespace simu5g;
+
 class LteMacPdu extends inet::FieldsChunk
 {
     @customize(true);

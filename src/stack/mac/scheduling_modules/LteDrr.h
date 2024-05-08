@@ -16,6 +16,8 @@
 #include "stack/mac/scheduler/LteScheduler.h"
 #include "common/Circular.h"
 
+namespace simu5g {
+
 class LteSchedulerEnb;
 
 class LteDrr : public LteScheduler
@@ -78,5 +80,8 @@ class LteDrr : public LteScheduler
 
     void updateSchedulingInfo();
 };
+
+} //namespace
+
 #endif
 

@@ -11,5 +11,9 @@
 
 #include "stack/mac/packet/LteMacPdu.h"
 
+namespace simu5g {
+
 int64_t LteMacPdu::numMacPdus_ = 0;
+
+} //namespace
 

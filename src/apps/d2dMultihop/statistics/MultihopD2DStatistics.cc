@@ -12,6 +12,8 @@
 #include "apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
 #include "apps/d2dMultihop/MultihopD2D.h"
 
+namespace simu5g {
+
 Define_Module(MultihopD2DStatistics);
 
 using namespace omnetpp;
@@ -174,3 +176,6 @@ void MultihopD2DStatistics::finish()
         emit(d2dMultihopEventRcvdDupMsg_, (long)eventInfoIt->second.numDuplicates_);
     }
 }
+
+} //namespace
+

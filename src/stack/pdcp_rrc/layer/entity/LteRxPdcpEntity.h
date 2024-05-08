@@ -17,6 +17,8 @@
 #include "common/LteControlInfo.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
+namespace simu5g {
+
 class LtePdcpRrcBase;
 class LtePdcpPdu;
 
@@ -62,5 +64,7 @@ class LteRxPdcpEntity : public cSimpleModule
      */
     virtual bool isEmpty() const {return true;}
 };
+
+} //namespace
 
 #endif

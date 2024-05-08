@@ -15,6 +15,8 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/buffer/harq/LteHarqProcessRx.h"
 
+namespace simu5g {
+
 class LteMacBase;
 class LteHarqProcessRx;
 
@@ -191,5 +193,7 @@ class LteHarqBufferRx
 
 
 };
+
+} //namespace
 
 #endif

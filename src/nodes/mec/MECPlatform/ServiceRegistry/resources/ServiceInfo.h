@@ -21,6 +21,8 @@
 #include <omnetpp.h>
 #include <string>
 
+namespace simu5g {
+
 /*
  * According to ETSI GS MEC 011 V2.1.1
  */
@@ -56,5 +58,6 @@ class ServiceInfo : public AttributeBase
         bool isLocal_;
 };
 
+} //namespace
 
 #endif /* NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_SERVICEINFO_H_ */

@@ -26,6 +26,8 @@
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
+namespace simu5g {
+
 /*
  * This is a case class for rapidly implementation a MEC app. It is supposed that the MEC app
  * consumes only one MEC service. It manages socket connections, HTTP message parsing and
@@ -133,7 +135,6 @@ protected:
 
 };
 
-
-
+} //namespace
 
 #endif /* APPS_MEC_MEAPPS_MECAPPBASE_H_ */

@@ -11,6 +11,8 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/User.h"
 
+namespace simu5g {
+
 User::User():timestamp_(){}
 User::User(const inet::Ipv4Address& address, const MacCellId accessPointId, const std::string& resourceUrl, int zoneId):timestamp_()
 {
@@ -33,3 +35,6 @@ nlohmann::ordered_json User::toJson() const
 
     return val;
 }
+
+} //namespace
+

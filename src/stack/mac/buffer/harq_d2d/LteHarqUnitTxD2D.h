@@ -16,6 +16,8 @@
 #include "stack/mac/layer/LteMacUeD2D.h"
 #include "stack/mac/layer/LteMacEnbD2D.h"
 
+namespace simu5g {
+
 /**
  * An LteHarqUnit is an HARQ mac pdu container,
  * an harqBuffer is made of harq processes which is made of harq units.
@@ -69,5 +71,7 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
 
     virtual ~LteHarqUnitTxD2D();
 };
+
+} //namespace
 
 #endif

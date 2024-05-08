@@ -21,7 +21,6 @@
 # include <unistd.h>
 #endif // ifdef _WIN32
 
-
 namespace simu5g{
 
 namespace utils {
@@ -38,6 +37,5 @@ class cModule_LessId
 } // namespace utils
 
 } // namespace simu5g
-
 
 #endif // ifndef __INET_HTTPUTILS_H

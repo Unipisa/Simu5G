@@ -12,6 +12,8 @@
 #include "stack/rlc/um/LteRlcUmD2D.h"
 #include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 
+namespace simu5g {
+
 Define_Module(LteRlcUmD2D);
 using namespace omnetpp;
 
@@ -204,3 +206,6 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
         }
     }
 }
+
+} //namespace
+

@@ -11,6 +11,7 @@
 
 import stack.rlc.packet.LteRlcSdu;
 
+namespace simu5g;
 
 class LteRlcAmSdu extends LteRlcSdu
 {

@@ -20,7 +20,9 @@
 
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
-namespace inet {
+namespace simu5g {
+
+using namespace inet;
 
 /**
  * Converts between ApplicationPacket and binary (network byte order) application packet.
@@ -35,7 +37,7 @@ class HttpResponseMessageSerializer : public FieldsChunkSerializer
     HttpResponseMessageSerializer() : FieldsChunkSerializer() {}
 };
 
-} // namespace inet
+} //namespace
 
 #endif
 

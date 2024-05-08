@@ -3,6 +3,8 @@
 
 #include "inet/common/INETDefs.h"
 
+namespace simu5g {
+
 using namespace omnetpp;
 
 
@@ -144,4 +146,5 @@ void HttpResponseMessage::copy(const HttpResponseMessage& other)
     this->headerFields_ = other.headerFields_;
 }
 
+} //namespace
 

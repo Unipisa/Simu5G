@@ -15,6 +15,8 @@
 #include <inet/common/TimeTag_m.h>
 #include "apps/vod/VoDUDPServer.h"
 
+namespace simu5g {
+
 Define_Module(VoDUDPServer);
 using namespace std;
 using namespace inet;
@@ -201,4 +203,6 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
         scheduleAt(simTime() + TIME_SLOT, msgNew);
     }
 }
+
+} //namespace
 
