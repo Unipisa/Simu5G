@@ -9,6 +9,9 @@
 // and cannot be removed from it.
 //
 
+#ifndef _LTESCHEDULINGGRANT_H_
+#define _LTESCHEDULINGGRANT_H_
+
 #include "stack/mac/packet/LteSchedulingGrant_m.h"
 #include "common/LteCommon.h"
 #include "stack/mac/amc/UserTxParams.h"
@@ -159,3 +162,5 @@ private:
 };
 
 } //namespace
+
+#endif // _LTESCHEDULINGGRANT_H_
