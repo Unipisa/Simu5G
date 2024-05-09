@@ -58,6 +58,8 @@ UALCMPApp::UALCMPApp()
 
 void UALCMPApp::initialize(int stage)
 {
+    inet::ApplicationBase::initialize(stage);   // TODO base class is MecServiceBase
+
     EV << "UALCMPApp::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
     {
@@ -84,8 +86,6 @@ void UALCMPApp::initialize(int stage)
         std::string mecOrchestratorHostname = getAncestorPar("mecOrchestratorHostname").stringValue();
         mecOrchestrator_ = check_and_cast<MecOrchestrator*>(getSimulation()->getModuleByPath(mecOrchestratorHostname.c_str()));
     }
-
-    inet::ApplicationBase::initialize(stage);
 }
 
 void UALCMPApp::handleStartOperation(inet::LifecycleOperation *operation)
