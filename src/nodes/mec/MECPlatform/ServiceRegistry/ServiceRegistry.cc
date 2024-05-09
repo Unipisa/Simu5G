@@ -36,7 +36,6 @@ ServiceRegistry::~ServiceRegistry() {
 void ServiceRegistry::initialize(int stage)
 {
     EV << "ServiceRegistry::initialize - stage " << stage << endl;
-    cSimpleModule::initialize(stage);
     inet::ApplicationBase::initialize(stage);
     // avoid multiple initializations
 
