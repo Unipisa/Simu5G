@@ -46,6 +46,7 @@ MecServiceBase::MecServiceBase()
 
 void MecServiceBase::initialize(int stage)
 {
+    inet::ApplicationBase::initialize(stage);
 
     EV << "MecServiceBase::initialize stage " << stage << endl;
     if (stage == inet::INITSTAGE_LOCAL)
@@ -111,7 +112,6 @@ void MecServiceBase::initialize(int stage)
         // get the BSs connected to the mec host
         getConnectedBaseStations();
     }
-    inet::ApplicationBase::initialize(stage);
 }
 
 void MecServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
