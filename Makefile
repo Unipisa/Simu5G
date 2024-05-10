@@ -1,17 +1,17 @@
 all: checkmakefiles
 	@cd src && $(MAKE)
 
-tests: tests_lte tests_NR tests_mec
-	@echo "All tests done."
+tests: all
+	@cd src && $(MAKE) && cd ../tests/fingerprint/ && ./fingerprints
 
 tests_lte: all
-	@cd src && $(MAKE) && cd ../tests/fingerprint/LTE && ./fingerprints
+	@cd src && $(MAKE) && cd ../tests/fingerprint && ./fingerprints lte_*.csv
 
 tests_NR: all
-	@cd src && $(MAKE) && cd ../tests/fingerprint/NR && ./fingerprints
+	@cd src && $(MAKE) && cd ../tests/fingerprint && ./fingerprints nr_*.csv
 
 tests_mec: all
-	@cd src && $(MAKE) && cd ../tests/fingerprint/mec && ./fingerprints
+	@cd src && $(MAKE) && cd ../tests/fingerprint && ./fingerprints mec*.csv
 
 clean: checkmakefiles
 	@cd src && $(MAKE) clean
