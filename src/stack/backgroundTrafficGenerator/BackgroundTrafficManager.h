@@ -56,6 +56,9 @@ class BackgroundTrafficManager : public cSimpleModule
     // references to the MAC and PHY layer of the e/gNodeB
     inet::ModuleRefByPar<LteMacEnb> mac_;
 
+    // reference to phy module
+    inet::ModuleRefByPar<LtePhyEnb> phy_;
+
     //pointer to pisadata
     PhyPisaData* phyPisaData_;
 

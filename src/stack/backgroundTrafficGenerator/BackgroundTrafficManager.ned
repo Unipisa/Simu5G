@@ -24,5 +24,6 @@ simple BackgroundTrafficManager like IBackgroundTrafficManager
         @class("BackgroundTrafficManager");
         string binderModule = default("binder");
         string macModule = default("^.^.mac");
+        string phyModule = default("^.^.phy");
 }
 
