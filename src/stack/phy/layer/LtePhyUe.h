@@ -12,6 +12,8 @@
 #ifndef _LTE_AIRPHYUE_H_
 #define _LTE_AIRPHYUE_H_
 
+#include <inet/mobility/contract/IMobility.h>
+
 #include "stack/phy/layer/LtePhyBase.h"
 #include "stack/phy/das/DasFilter.h"
 #include "stack/mac/layer/LteMacUe.h"

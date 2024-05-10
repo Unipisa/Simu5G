@@ -23,7 +23,6 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "stack/phy/packet/LteAirFrame.h"
-#include "stack/mac/layer/LteMacEnb.h"
 #include "stack/mac/amc/LteAmc.h"
 #include "stack/phy/ChannelModel/LteChannelModel.h"
 #include "stack/phy/feedback/LteFeedbackComputationRealistic.h"

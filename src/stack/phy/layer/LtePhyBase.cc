@@ -11,6 +11,7 @@
 
 #include "stack/phy/layer/LtePhyBase.h"
 #include "common/LteCommon.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 namespace simu5g {
 

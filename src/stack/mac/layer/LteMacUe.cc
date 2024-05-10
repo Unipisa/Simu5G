@@ -16,6 +16,7 @@
 #include "stack/mac/packet/LteRac_m.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/amc/UserTxParams.h"
+#include "stack/mac/layer/LteMacEnb.h"
 #include "inet/networklayer/common/NetworkInterface.h"
 #include "inet/common/ModuleAccess.h"
 #include "inet/networklayer/ipv4/Ipv4InterfaceData.h"

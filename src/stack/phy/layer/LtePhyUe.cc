@@ -13,6 +13,7 @@
 #include "stack/phy/layer/LtePhyUe.h"
 
 #include "stack/ip2nic/IP2Nic.h"
+#include "stack/mac/layer/LteMacEnb.h"
 #include "stack/phy/packet/LteFeedbackPkt.h"
 #include "stack/phy/feedback/LteDlFeedbackGenerator.h"
 
