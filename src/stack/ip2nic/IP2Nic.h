@@ -13,6 +13,7 @@
 #define __IP2NIC_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
@@ -35,7 +36,7 @@ class IP2Nic : public omnetpp::cSimpleModule
     RanNodeType nodeType_;      // node type: can be ENODEB, GNODEB, UE
 
     // reference to the binder
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // LTE MAC node id of this node
     MacNodeId nodeId_;

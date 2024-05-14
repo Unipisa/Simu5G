@@ -53,7 +53,7 @@ void IP2Nic::initialize(int stage)
 
         ueHold_ = false;
 
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
 
         dualConnectivityEnabled_ = getAncestorPar("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
