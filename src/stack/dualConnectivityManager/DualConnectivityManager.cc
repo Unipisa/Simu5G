@@ -18,7 +18,7 @@ Define_Module(DualConnectivityManager);
 
 void DualConnectivityManager::initialize()
 {
-    pdcp_ = check_and_cast<LtePdcpRrcBase*>(getParentModule()->getSubmodule("pdcpRrc"));
+    pdcp_.reference(this, "pdcpRrcModule", true);
 
     // get the node id
     nodeId_ = getAncestorPar("macCellId");

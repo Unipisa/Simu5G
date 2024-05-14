@@ -12,6 +12,8 @@
 #ifndef __LTEHANDOVERMANAGER_H_
 #define __LTEHANDOVERMANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/ip2nic/IP2Nic.h"
 #include "common/LteCommon.h"
 #include "x2/packet/X2ControlInfo_m.h"
@@ -37,7 +39,7 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     omnetpp::cGate* x2Manager_[2];
 
     // reference to the PDCP layer
-    IP2Nic* ip2nic_;
+    inet::ModuleRefByPar<IP2Nic> ip2nic_;
 
     // flag for seamless/lossless handover
     bool losslessHandover_;

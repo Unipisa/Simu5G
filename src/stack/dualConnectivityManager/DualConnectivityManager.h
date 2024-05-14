@@ -12,6 +12,8 @@
 #ifndef DUALCONNECTIVITYMANAGER_H_
 #define DUALCONNECTIVITYMANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "x2/packet/X2ControlInfo_m.h"
 #include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
@@ -31,7 +33,7 @@ class DualConnectivityManager : public cSimpleModule
   protected:
 
     // reference to PDCP layer
-    LtePdcpRrcBase* pdcp_;
+    inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
 
     // X2 identifier
     X2NodeId nodeId_;

@@ -20,6 +20,7 @@ simple DualConnectivityManager like IDualConnectivityManager
     parameters:
         @display("i=block/cogwheel");
         @class("DualConnectivityManager");
+        string pdcpRrcModule = default("^.pdcpRrc");
 
     gates:
         //# connections to the X2 Manager

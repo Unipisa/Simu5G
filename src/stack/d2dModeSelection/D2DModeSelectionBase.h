@@ -12,6 +12,8 @@
 #ifndef LTE_D2DMODESELECTIONBASE_H_
 #define LTE_D2DMODESELECTIONBASE_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/mac/layer/LteMacEnb.h"
 
 namespace simu5g {
@@ -40,10 +42,10 @@ protected:
     std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> >* peeringModeMap_;
 
     // reference to the MAC layer
-    LteMacEnb* mac_;
+    inet::ModuleRefByPar<LteMacEnb> mac_;
 
     // reference to the binder
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // period between two selection instances
     double modeSelectionPeriod_;

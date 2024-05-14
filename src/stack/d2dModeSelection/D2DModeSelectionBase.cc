@@ -26,10 +26,10 @@ void D2DModeSelectionBase::initialize(int stage)
         switchList_.clear();
 
         // get reference to mac layer
-        mac_ = check_and_cast<LteMacEnb*>(getParentModule()->getSubmodule("mac"));
+        mac_.reference(this, "macModule", true);
 
         // get reference to the binder
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
 
         // get mode selection period
         modeSelectionPeriod_ = par("modeSelectionPeriod").doubleValue();
@@ -132,7 +132,7 @@ void D2DModeSelectionBase::sendModeSwitchNotifications()
         LteD2DMode oldMode = it->oldMode;
         LteD2DMode newMode = it->newMode;
 
-        check_and_cast<LteMacEnbD2D*>(mac_)->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
+        check_and_cast<LteMacEnbD2D*>(mac_.get())->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
     }
 }
 

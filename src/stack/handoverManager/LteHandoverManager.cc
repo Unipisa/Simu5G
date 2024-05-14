@@ -30,7 +30,7 @@ void LteHandoverManager::initialize()
     x2Manager_[OUT_GATE] = gate("x2ManagerOut");
 
     // get reference to the IP2Nic layer
-    ip2nic_ = check_and_cast<IP2Nic*>(getParentModule()->getSubmodule("ip2nic"));
+    ip2nic_.reference(this, "ip2nicModule", true);
 
     losslessHandover_ = par("losslessHandover").boolValue();
 
