@@ -99,7 +99,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 //    interfaceTableModule = par("interfaceTableModule").stringValue();
 
 
-    interfaceTable = check_and_cast<inet::InterfaceTable*>(mecHost->getSubmodule("virtualisationInfrastructure")->getSubmodule("interfaceTable"));
+    interfaceTable = check_and_cast<inet::InterfaceTable*>(virtualisationInfr->getSubmodule("interfaceTable"));
 
     /*
      * NOTE: if the mecHost is connected both to ppp and pppENB gates, 2 pppIf interfaces are present in the
