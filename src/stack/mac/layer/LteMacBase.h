@@ -148,7 +148,7 @@ class LteMacBase : public omnetpp::cSimpleModule
 
     // @author Alessandro Noferi
     // reference to the packetFlowManager
-    PacketFlowManagerBase * packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
 
     // support to different numerologies
     struct NumerologyPeriodCounter {

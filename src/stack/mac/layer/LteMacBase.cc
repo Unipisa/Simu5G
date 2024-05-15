@@ -37,7 +37,6 @@ LteMacBase::LteMacBase()
 
     totalHarqErrorRateDlSum_ = totalHarqErrorRateDlCount_ = 0;
     totalHarqErrorRateUlSum_ = totalHarqErrorRateUlCount_ = 0;
-    packetFlowManager_ = nullptr;
 }
 
 LteMacBase::~LteMacBase()
@@ -421,23 +420,7 @@ void LteMacBase::initialize(int stage)
         nrToUpper_ = 0;
         nrToLower_ = 0;
 
-        if(strcmp(this->getName(), "nrMac") == 0 && getNodeType() == UE)
-        {
-            if(getParentModule()->findSubmodule("nrPacketFlowManager") != -1)
-            {
-                EV << "LteMacBase::initialize - MAC layer is NRMac, cast the packetFlowManager to NR" << endl;
-                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("nrPacketFlowManager"));
-            }
-        }
-        else{
-            if(getParentModule()->findSubmodule("packetFlowManager") != -1)
-            {
-                RanNodeType nt = getNodeType();
-                const char *cnt = omnetpp::cEnum::get("simu5g::RanNodeType")->getStringFor(nt);
-                EV << "LteMacBase::initialize - MAC layer, nodeType: "<< cnt  << endl;
-                packetFlowManager_ = check_and_cast<PacketFlowManagerBase *>(getParentModule()->getSubmodule("packetFlowManager"));
-            }
-        }
+        packetFlowManager_.reference(this, "packetFlowManagerModule", false);
 
         /* register signals */
         macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");

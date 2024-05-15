@@ -22,6 +22,7 @@ simple LteMacBase like LteMac
         string binderModule = default("binder");
         string interfaceTableModule;
         string interfaceName = default("cellular");
+        string packetFlowManagerModule = default("^.packetFlowManager"); // TODO or nrPacketFlowManager
 
         //# Mac Queues
         int queueSize @unit(B) = default(2MiB);              // MAC Buffers queue size
