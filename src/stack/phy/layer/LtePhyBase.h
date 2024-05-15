@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
 
 #include "world/radio/ChannelAccess.h"
 #include "world/radio/ChannelControl.h"
@@ -91,7 +92,7 @@ class LtePhyBase : public ChannelAccess
     RanNodeType nodeType_;
 
     /// Reference to Binder
-    Binder *binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     /// Reference to CellInfo
     CellInfo* cellInfo_;

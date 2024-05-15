@@ -34,7 +34,7 @@ void LtePhyBase::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
         cellInfo_ = nullptr;
         // get gate ids
         upperGateIn_ = findGate("upperGateIn");
