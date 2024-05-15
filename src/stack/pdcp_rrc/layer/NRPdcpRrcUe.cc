@@ -34,7 +34,7 @@ void NRPdcpRrcUe::initialize(int stage)
     }
 
     if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
-        nrNodeId_ = getAncestorPar("nrMacNodeId");
+        nrNodeId_ = getContainingNode(this)->par("nrMacNodeId");
 
     LtePdcpRrcUeD2D::initialize(stage);
 

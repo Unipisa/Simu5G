@@ -44,11 +44,13 @@ void GtpUser::initialize(int stage)
 
     ownerType_ = selectOwnerType(getAncestorPar("nodeType"));
 
+    cModule *networkNode = getContainingNode(this);
+
     // find the address of the core network gateway
     if (ownerType_ != PGW && ownerType_ != UPF)
     {
         // check if this is a gNB connected as secondary node
-        bool connectedBS = isBaseStation(ownerType_) && getParentModule()->gate("ppp$o")->isConnected();
+        bool connectedBS = isBaseStation(ownerType_) && networkNode->gate("ppp$o")->isConnected();
 
         if (connectedBS || ownerType_ == UPF_MEC)
         {
@@ -58,7 +60,7 @@ void GtpUser::initialize(int stage)
     }
 
     if(isBaseStation(ownerType_))
-        myMacNodeID = getParentModule()->par("macNodeId");
+        myMacNodeID = networkNode->par("macNodeId");
     else
         myMacNodeID = 0;
 

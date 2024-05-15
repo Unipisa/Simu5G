@@ -131,23 +131,23 @@ void LteMacUe::initialize(int stage)
     else if (stage == INITSTAGE_LINK_LAYER)
     {
         if (strcmp(getFullName(),"nrMac") == 0)
-            cellId_ = getAncestorPar("nrMasterId");
+            cellId_ = networkNode_->par("nrMasterId");
         else
-            cellId_ = getAncestorPar("masterId");
+            cellId_ = networkNode_->par("masterId");
     }
     else if (stage == INITSTAGE_NETWORK_LAYER)
     {
         if (strcmp(getFullName(),"nrMac") == 0)
-            nodeId_ = getAncestorPar("nrMacNodeId");
+            nodeId_ = networkNode_->par("nrMacNodeId");
         else
-            nodeId_ = getAncestorPar("macNodeId");
+            nodeId_ = networkNode_->par("macNodeId");
 
         /* Insert UeInfo in the Binder */
         UeInfo* info = new UeInfo();
         info->id = nodeId_;            // local mac ID
         info->cellId = cellId_;        // cell ID
         info->init = false;            // flag for phy initialization
-        info->ue = this->getParentModule()->getParentModule();  // reference to the UE module
+        info->ue = networkNode_;  // reference to the UE module
         info->phy = phy_;
 
         binder_->addUeInfo(info);

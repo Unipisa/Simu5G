@@ -71,7 +71,7 @@ void CellInfo::initialize(int stage)
             throw omnetpp::cRuntimeError("The number of Antennas specified exceeds the limit of %d", NUM_RUS);
 
         // register the containing eNB  to the binder
-        cellId_ = getParentModule()->par("macCellId");
+        cellId_ = inet::getContainingNode(this)->par("macCellId");
 
         int ruRange = par("ruRange");
         double nodebTxPower = getAncestorPar("txPower");

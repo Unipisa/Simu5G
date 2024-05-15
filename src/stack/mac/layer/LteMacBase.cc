@@ -390,6 +390,8 @@ void LteMacBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
     {
+        networkNode_ = getContainingNode(this);
+
         /* Gates initialization */
         up_[IN_GATE] = gate("RLC_to_MAC");
         up_[OUT_GATE] = gate("MAC_to_RLC");

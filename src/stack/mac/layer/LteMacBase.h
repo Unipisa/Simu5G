@@ -102,6 +102,8 @@ class LteMacBase : public omnetpp::cSimpleModule
     /// MacNodeId
     MacNodeId nodeId_;
 
+    cModule *networkNode_ = nullptr;
+
     /// MacCellId
     MacCellId cellId_;
 

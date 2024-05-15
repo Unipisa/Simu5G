@@ -56,8 +56,9 @@ void BaseStationStatsCollector::initialize(int stage){
     {
         EV << collectorType_ << "::initialize stage: "<< stage << endl;
 
-        ecgi_.plmn.mcc = getAncestorPar("mcc").stdstringValue();
-        ecgi_.plmn.mnc = getAncestorPar("mnc").stdstringValue();
+        cModule *node = getContainingNode(this);
+        ecgi_.plmn.mcc = node->par("mcc").stdstringValue();
+        ecgi_.plmn.mnc = node->par("mnc").stdstringValue();
 
         mac_.reference(this, "macModule", true);
         pdcp_.reference(this, "pdcpRrcModule", true);

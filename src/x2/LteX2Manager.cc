@@ -31,7 +31,7 @@ void LteX2Manager::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         // get the node id
-        nodeId_ = getAncestorPar("macCellId");
+        nodeId_ = inet::getContainingNode(this)->par("macCellId");
 
         // get reference to the binder
         binder_.reference(this, "binderModule", true);

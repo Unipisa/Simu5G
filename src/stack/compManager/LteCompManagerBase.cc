@@ -21,7 +21,7 @@ using namespace inet;
 void LteCompManagerBase::initialize()
 {
     // get the node id
-    nodeId_ = getAncestorPar("macCellId");
+    nodeId_ = inet::getContainingNode(this)->par("macCellId");
 
     // get reference to the binder
     Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);

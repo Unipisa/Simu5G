@@ -352,7 +352,7 @@ void LtePdcpRrcBase::initialize(int stage)
             throw cRuntimeError("Size of compressed header must not be less than %" PRId64 "B.", MIN_COMPRESSED_HEADER_SIZE.get());
         }
 
-        nodeId_ = getAncestorPar("macNodeId");
+        nodeId_ = getContainingNode(this)->par("macNodeId");
 
         // statistics
         receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
@@ -528,7 +528,8 @@ void LtePdcpRrcUe::initialize(int stage)
     LtePdcpRrcBase::initialize(stage);
     if (stage == inet::INITSTAGE_NETWORK_LAYER)
     {
-        nodeId_ = getAncestorPar("macNodeId");
+        // refresh value, the parameter maybe changed between INITSTAGE_LOCAL and INITSTAGE_NETWORK_LAYER
+        nodeId_ = getContainingNode(this)->par("macNodeId");
     }
 }
 

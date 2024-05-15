@@ -43,7 +43,7 @@ void X2AppClient::initialize(int stage)
         L3Address addr = L3AddressResolver().resolve(par("connectAddress").stringValue());
         X2NodeId peerId = binder->getX2NodeId(addr.toIpv4());
 
-        X2NodeId nodeId = check_and_cast<LteMacEnb*>(getParentModule()->getParentModule()->getSubmodule("cellularNic")->getSubmodule("mac"))->getMacCellId();
+        X2NodeId nodeId = check_and_cast<LteMacEnb*>(getContainingNode(this)->getSubmodule("cellularNic")->getSubmodule("mac"))->getMacCellId();
         binder->setX2PeerAddress(nodeId, peerId, addr);
 
         // set the connect port

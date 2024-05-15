@@ -117,9 +117,9 @@ void LtePhyUe::initialize(int stage)
 
         // get local id
         if (isNr_)
-            nodeId_ = getAncestorPar("nrMacNodeId");
+            nodeId_ = hostModule->par("nrMacNodeId");
         else
-            nodeId_ = getAncestorPar("macNodeId");
+            nodeId_ = hostModule->par("macNodeId");
         EV << "Local MacNodeId: " << nodeId_ << endl;
     }
     else if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
@@ -127,9 +127,9 @@ void LtePhyUe::initialize(int stage)
         // get serving cell from configuration
         // TODO find a more elegant way
         if (isNr_)
-            masterId_ = getAncestorPar("nrMasterId");
+            masterId_ = hostModule->par("nrMasterId");
         else
-            masterId_ = getAncestorPar("masterId");
+            masterId_ = hostModule->par("masterId");
         candidateMasterId_ = masterId_;
 
         // find the best candidate master cell
@@ -199,9 +199,9 @@ void LtePhyUe::initialize(int stage)
             masterId_ = candidateMasterId_;
             // set serving cell
             if (isNr_)
-                getAncestorPar("nrMasterId").setIntValue(masterId_);
+                hostModule->par("nrMasterId").setIntValue(masterId_);
             else
-                getAncestorPar("masterId").setIntValue(masterId_);
+                hostModule->par("masterId").setIntValue(masterId_);
             currentMasterRssi_ = candidateMasterRssi_;
             updateHysteresisTh(candidateMasterRssi_);
         }
@@ -456,9 +456,9 @@ void LtePhyUe::doHandover()
 
     // update NED parameter
     if (isNr_)
-        getAncestorPar("nrMasterId").setIntValue(masterId_);
+        hostModule->par("nrMasterId").setIntValue(masterId_);
     else
-        getAncestorPar("masterId").setIntValue(masterId_);
+        hostModule->par("masterId").setIntValue(masterId_);
 
     // update reference to master node's mobility module
     if (masterId_ == 0)

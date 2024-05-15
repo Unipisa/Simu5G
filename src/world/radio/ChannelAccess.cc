@@ -57,7 +57,7 @@ void ChannelAccess::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         cc = getChannelControl();
-        hostModule = inet::findContainingNode(this);
+        hostModule = inet::getContainingNode(this);
         myRadioRef = nullptr;
 
         positionUpdateArrived = false;

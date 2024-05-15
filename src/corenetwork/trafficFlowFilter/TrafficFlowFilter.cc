@@ -54,7 +54,7 @@ void TrafficFlowFilter::initialize(int stage)
           */
         // obtain the IP address of externel MEC applications (if any)
 
-        std::string extAddress = getAncestorPar("extMeAppsAddress").stringValue();
+        std::string extAddress = getContainingNode(this)->par("extMeAppsAddress").stringValue();
         if(!extAddress.empty())
         {
             std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();

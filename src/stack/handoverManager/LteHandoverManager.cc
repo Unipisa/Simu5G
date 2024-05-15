@@ -23,7 +23,7 @@ using namespace omnetpp;
 void LteHandoverManager::initialize()
 {
     // get the node id
-    nodeId_ = getAncestorPar("macCellId");
+    nodeId_ = inet::getContainingNode(this)->par("macCellId");
 
     // get reference to the gates
     x2Manager_[IN_GATE] = gate("x2ManagerIn");

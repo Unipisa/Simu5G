@@ -62,8 +62,8 @@ void IP2Nic::initialize(int stage)
         if (nodeType_ == ENODEB || nodeType_ == GNODEB)
         {
             // TODO not so elegant
-            cModule *bs = getParentModule()->getParentModule();
-            MacNodeId masterId = getAncestorPar("masterId");
+            cModule *bs = getContainingNode(this);
+            MacNodeId masterId = bs->par("masterId");
             MacNodeId cellId = binder_->registerNode(bs, nodeType_,masterId);
             nodeId_ = cellId;
             nrNodeId_ = 0;
@@ -73,12 +73,12 @@ void IP2Nic::initialize(int stage)
         if(nodeType_ == ENODEB || nodeType_ == GNODEB) {
             registerInterface();
         } else if (nodeType_ == UE) {
-            cModule *ue = getParentModule()->getParentModule();
+            cModule *ue = getContainingNode(this);
 
             masterId_ = ue->par("masterId");
             nodeId_ = binder_->registerNode(ue, nodeType_, masterId_);
 
-            if (ue->hasPar("nrMasterId") && (int)ue->par("nrMasterId") != 0)   // register also the NR MacNodeId
+            if (ue->hasPar("nrMasterId") && ue->par("nrMasterId").intValue() != 0)   // register also the NR MacNodeId
             {
                 nrMasterId_ = ue->par("nrMasterId");
                 nrNodeId_ = binder_->registerNode(ue, nodeType_,nrMasterId_, true);

@@ -50,12 +50,13 @@ void LteDlFeedbackGenerator::initialize(int stage)
         generatorType_ = getFeedbackGeneratorType(
             par("feedbackGeneratorType").stringValue());
 
+        cModule * networkNode = getContainingNode(this);
         // TODO: find a more elegant way
         if (strcmp(getFullName(), "nrDlFbGen") == 0)
-            masterId_ = getAncestorPar("nrMasterId");
+            masterId_ = networkNode->par("nrMasterId");
         else
-            masterId_ = getAncestorPar("masterId");
-        nodeId_ = getAncestorPar("macNodeId");
+            masterId_ = networkNode->par("masterId");
+        nodeId_ = networkNode->par("macNodeId");
 
         /** Initialize timers **/
 

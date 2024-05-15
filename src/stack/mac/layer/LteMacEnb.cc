@@ -140,7 +140,7 @@ void LteMacEnb::initialize(int stage)
     LteMacBase::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        nodeId_ = getAncestorPar("macNodeId");
+        nodeId_ = networkNode_->par("macNodeId");
 
         cellId_ = nodeId_;
 
