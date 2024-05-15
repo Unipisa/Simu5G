@@ -1175,11 +1175,9 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
 //
         // check the presence of um
-        LteRlcUm *rlcUm;
-        cModule *rlc = getParentModule()->getSubmodule("rlc");
-        if(rlc->findSubmodule("um") != -1)
+        LteRlcUm *rlcUm = inet::findModuleFromPar<LteRlcUm>(par("rlcUmModule"), this);
+        if(rlcUm != nullptr)
         {
-            rlcUm = check_and_cast<LteRlcUm *>(rlc->getSubmodule("um"));
             std::set<MacNodeId> activeRlcUe;
             rlcUm->activeUeUL(&activeRlcUe);
             for(auto ue : activeRlcUe)
@@ -1194,7 +1192,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
          */
 
         NRPdcpRrcEnb *nrPdpc;
-        cModule *pdcp = getParentModule()->getSubmodule("pdcpRrc");
+        cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
         if(strcmp(pdcp->getClassName(), "NRPdcpRrcEnb") == 0)
         {
             nrPdpc = check_and_cast<NRPdcpRrcEnb*>(pdcp);
