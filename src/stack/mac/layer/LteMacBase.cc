@@ -23,6 +23,7 @@
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "assert.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "stack/phy/layer/LtePhyBase.h"
 
 namespace simu5g {
 
@@ -400,7 +401,10 @@ void LteMacBase::initialize(int stage)
         queueSize_ = par("queueSize");
 
         /* Get reference to binder */
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
+
+        // get the reference to the PHY layer
+        phy_ = check_and_cast<LtePhyBase*>(down_[OUT_GATE]->getPathEndGate()->getOwnerModule());
 
         /* Set The MAC MIB */
 

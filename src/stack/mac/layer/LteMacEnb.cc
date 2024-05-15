@@ -195,9 +195,6 @@ void LteMacEnb::initialize(int stage)
         // Modified from getFullName() to getFullPath() to fix the usage in compound modules
         binder_->registerName(nodeId_, hostModule->getFullPath());
         binder_->registerModule(nodeId_, hostModule);
-
-        // get the reference to the PHY layer
-        phy_ = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("phy"));
     }
     else if (stage == inet::INITSTAGE_LINK_LAYER)
     {

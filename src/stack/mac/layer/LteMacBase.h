@@ -12,6 +12,9 @@
 #ifndef _LTE_LTEMACBASE_H_
 #define _LTE_LTEMACBASE_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
+#include "common/binder/Binder.h"
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 
@@ -75,7 +78,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     /*
      * Data Structures
      */
-    Binder *binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     /*
      * Gates
@@ -141,7 +144,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     std::map<MacNodeId, ::omnetpp::simtime_t> resetHarq_;
 
     // reference to the phy layer
-    LtePhyBase* phy_;
+    omnetpp::opp_component_ptr<LtePhyBase> phy_;
 
     // @author Alessandro Noferi
     // reference to the packetFlowManager

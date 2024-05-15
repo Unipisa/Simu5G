@@ -19,6 +19,7 @@ simple LteMacBase like LteMac
 {
     parameters:
         @display("i=block/mac");
+        string binderModule = default("binder");
         string interfaceTableModule;
         string interfaceName = default("cellular");
 

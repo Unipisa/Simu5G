@@ -148,15 +148,7 @@ void LteMacUe::initialize(int stage)
         info->cellId = cellId_;        // cell ID
         info->init = false;            // flag for phy initialization
         info->ue = this->getParentModule()->getParentModule();  // reference to the UE module
-
-
-        // get the reference to the PHY layer
-        if (isNrUe(nodeId_))
-            info->phy = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("nrPhy"));
-        else
-            info->phy = check_and_cast<LtePhyBase*>(getParentModule()->getSubmodule("phy"));
-
-        phy_ = info->phy;
+        info->phy = phy_;
 
         binder_->addUeInfo(info);
 
