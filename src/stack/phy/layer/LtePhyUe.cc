@@ -105,29 +105,11 @@ void LtePhyUe::initialize(int stage)
 
         handoverStarter_ = new cMessage("handoverStarter");
 
-        if (isNr_)
-        {
-            mac_ = check_and_cast<LteMacUe *>(
-                getParentModule()-> // nic
-                getSubmodule("nrMac"));
-            rlcUm_ = check_and_cast<LteRlcUm*>(
-                getParentModule()-> // nic
-                getSubmodule("nrRlc")->
-                    getSubmodule("um"));
-        }
-        else
-        {
-            mac_ = check_and_cast<LteMacUe *>(
-                getParentModule()-> // nic
-                getSubmodule("mac"));
-            rlcUm_ = check_and_cast<LteRlcUm*>(
-                getParentModule()-> // nic
-                getSubmodule("rlc")->
-                    getSubmodule("um"));
-        }
-        pdcp_ = check_and_cast<LtePdcpRrcBase*>(
-            getParentModule()-> // nic
-            getSubmodule("pdcpRrc"));
+        // get the reference to the MAC module
+        mac_ = check_and_cast<LteMacUe*>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
+
+        rlcUm_.reference(this, "rlcUmModule", true);
+        pdcp_.reference(this, "pdcpRrcModule", true);
 
         // get local id
         if (isNr_)

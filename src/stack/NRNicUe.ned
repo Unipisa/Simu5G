@@ -43,6 +43,7 @@ module NRNicUe extends LteNicUeD2D
         											// PHY layer (needed at handover)
 
         @display("bgb=694,443");
+        nrPhy.rlcUmModule = "^.nrRlc.um";
 
     submodules:
         // RLC Layer

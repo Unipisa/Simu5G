@@ -107,9 +107,9 @@ class LtePhyUe : public LtePhyBase
     double txAmount_;    // drawn current amount for tx operations (mA)
     double rxAmount_;    // drawn current amount for rx operations (mA)
 
-    LteMacUe *mac_;
-    LteRlcUm *rlcUm_;
-    LtePdcpRrcBase *pdcp_;
+    opp_component_ptr<LteMacUe> mac_;
+    inet::ModuleRefByPar<LteRlcUm> rlcUm_;
+    inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
 
     omnetpp::simtime_t lastFeedback_;
 

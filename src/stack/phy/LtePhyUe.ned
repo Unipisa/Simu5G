@@ -20,6 +20,9 @@ simple LtePhyUe extends LtePhyBase
     parameters:
         @class("LtePhyUe");
 
+        string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"
+        string pdcpRrcModule = default("^.pdcpRrc");
+
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);
 
