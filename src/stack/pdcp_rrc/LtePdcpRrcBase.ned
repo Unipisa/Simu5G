@@ -19,6 +19,9 @@ simple LtePdcpRrcBase like LtePdcpRrc
 {
     parameters:
         @display("i=block/fork");
+        string binderModule = default("binder");
+        string packetFlowManagerModule = default("^.packetFlowManager"); // optional
+        string nrPacketFlowManagerModule = default("^.nrPacketFlowManager"); // optional
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
         int conversationalRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);
         int streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);

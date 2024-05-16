@@ -13,6 +13,7 @@
 #define _NRPDCPRRCENB_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
 
 #include "entity/NRTxPdcpEntity.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrcEnbD2D.h"
@@ -36,7 +37,7 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
     bool dualConnectivityEnabled_;
 
     // reference to the Dual Connectivity Manager
-    DualConnectivityManager* dualConnectivityManager_;
+    inet::ModuleRefByPar<DualConnectivityManager> dualConnectivityManager_;
 
     virtual void initialize(int stage);
 

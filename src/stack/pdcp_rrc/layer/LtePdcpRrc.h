@@ -13,6 +13,8 @@
 #define _LTE_LTEPDCPRRC_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/binder/Binder.h"
 #include "common/LteCommon.h"
 #include "stack/pdcp_rrc/ConnectionsTable.h"
@@ -250,11 +252,11 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * reference to the packetFlowManager to do notifications
      * about PDCP packets
      */
-    PacketFlowManagerBase *packetFlowManager_;
-    PacketFlowManagerBase *NRpacketFlowManager_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> NRpacketFlowManager_;
 
 
-    virtual PacketFlowManagerBase* getPacketFlowManager() {return packetFlowManager_;}
+    virtual PacketFlowManagerBase* getPacketFlowManager() {return packetFlowManager_.getNullable();}
 
     /*
      * Data structures
@@ -264,7 +266,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     inet::B headerCompressedSize_;
 
     /// Binder reference
-    Binder *binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     /// Connection Identifier
     LogicalCid lcid_;

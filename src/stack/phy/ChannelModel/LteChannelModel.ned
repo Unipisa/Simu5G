@@ -18,6 +18,9 @@ simple LteChannelModel like LteChannelModelInterface
         @display("i=block/classifier2");
         @class("LteChannelModel");
 
+        string binderModule = default("binder");
+        string cellInfoModule = default("^.^.cellInfo");  // optional
+
         // component carrier for this channel model
         int componentCarrierIndex = default(0);
 }

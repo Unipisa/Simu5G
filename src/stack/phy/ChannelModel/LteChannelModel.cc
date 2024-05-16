@@ -19,7 +19,7 @@ void LteChannelModel::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
 
         unsigned int componentCarrierIndex = par("componentCarrierIndex");
         componentCarrier_ = check_and_cast<ComponentCarrier*>(getModuleByPath("carrierAggregation")->getSubmodule("componentCarrier", componentCarrierIndex));
@@ -28,10 +28,9 @@ void LteChannelModel::initialize(int stage)
         carrierFrequency_ = componentCarrier_->getCarrierFrequency();
 
         // register the carrier to the cellInfo module and the binder
-        cModule* cInfo = getParentModule()->getParentModule()->getSubmodule("cellInfo");
-        if (cInfo != NULL)   // cInfo is NULL on UEs
+        cellInfo_.reference(this, "cellInfoModule", false);
+        if (cellInfo_)   // cInfo is NULL on UEs
         {
-            cellInfo_ = check_and_cast<CellInfo*>(cInfo);
             cellInfo_->registerCarrier(carrierFrequency_, numBands_, componentCarrier_->getNumerologyIndex());
         }
     }

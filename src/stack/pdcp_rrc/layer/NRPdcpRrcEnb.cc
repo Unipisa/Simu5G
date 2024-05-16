@@ -21,10 +21,8 @@ void NRPdcpRrcEnb::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         dualConnectivityEnabled_ = getAncestorPar("dualConnectivityEnabled").boolValue();
-        if (!dualConnectivityEnabled_)
-            dualConnectivityManager_ = NULL;
-        else
-            dualConnectivityManager_ = check_and_cast<DualConnectivityManager*>(getParentModule()->getSubmodule("dualConnectivityManager"));
+        if (dualConnectivityEnabled_)
+            dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);
     }
     LtePdcpRrcEnbD2D::initialize(stage);
 }

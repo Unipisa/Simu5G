@@ -12,6 +12,8 @@
 #ifndef STACK_PHY_CHANNELMODEL_LTECHANNELMODEL_H_
 #define STACK_PHY_CHANNELMODEL_LTECHANNELMODEL_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "common/carrierAggregation/ComponentCarrier.h"
@@ -32,10 +34,10 @@ class LteChannelModel : public omnetpp::cSimpleModule
 {
   protected:
     // Reference to Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // Reference to cell info module
-    CellInfo* cellInfo_;
+    inet::ModuleRefByPar<CellInfo> cellInfo_;
 
     // Reference to the corresponding PHY layer
     LtePhyBase * phy_;

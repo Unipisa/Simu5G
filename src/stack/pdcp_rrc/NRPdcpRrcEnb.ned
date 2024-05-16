@@ -19,6 +19,7 @@ simple NRPdcpRrcEnb extends LtePdcpRrcEnbD2D
 {
     parameters:
         @class("NRPdcpRrcEnb");
+        string dualConnectivityManagerModule = default("^.dualConnectivityManager");
 }
 
 

@@ -36,9 +36,6 @@ LtePdcpRrcBase::LtePdcpRrcBase()
 {
     ht_ = new ConnectionsTable();
     lcid_ = 1;
-
-    packetFlowManager_ = nullptr;
-    NRpacketFlowManager_ = nullptr;
 }
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
@@ -347,7 +344,7 @@ void LtePdcpRrcBase::initialize(int stage)
         amSap_[IN_GATE] = gate("AM_Sap$i",0);
         amSap_[OUT_GATE] = gate("AM_Sap$o",0);
 
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
         headerCompressedSize_ = B(par("headerCompressedSize"));
         if(headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED &&
                 headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE)
@@ -363,18 +360,17 @@ void LtePdcpRrcBase::initialize(int stage)
         sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
         sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
-        if(getParentModule()->findSubmodule("packetFlowManager")!= -1)
+        packetFlowManager_.reference(this, "packetFlowManagerModule", false);
+        NRpacketFlowManager_.reference(this, "nrPacketFlowManagerModule", false);
+
+        if(packetFlowManager_)
         {
             EV << "LtePdcpRrcBase::initialize - PacketFlowManager present" << endl;
-            packetFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("packetFlowManager"));
         }
-        if(getParentModule()->findSubmodule("nrPacketFlowManager")!= -1)
+        if(NRpacketFlowManager_)
         {
             EV << "LtePdcpRrcBase::initialize - NRpacketFlowManager present" << endl;
-            NRpacketFlowManager_ = check_and_cast<PacketFlowManagerBase *> (getParentModule()->getSubmodule("nrPacketFlowManager"));
         }
-
-
 
         // TODO WATCH_MAP(gatemap_);
         WATCH(headerCompressedSize_);
