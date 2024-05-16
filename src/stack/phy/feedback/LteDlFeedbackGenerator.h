@@ -13,6 +13,7 @@
 #define _LTE_LTEDLFBGENERATOR_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
 
 #include "common/cellInfo/CellInfo.h"
 #include "common/LteCommon.h"
@@ -21,6 +22,7 @@
 #include "common/timer/TTimer.h"
 #include "common/timer/TTimerMsg_m.h"
 #include "stack/phy/feedback/LteFeedbackComputation.h"
+#include "stack/phy/layer/LtePhyUe.h"
 
 namespace simu5g {
 
@@ -57,6 +59,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
 
     DasFilter *dasFilter_;  /// reference to das filter
     CellInfo *cellInfo_; /// reference to cellInfo
+    inet::ModuleRefByPar<LtePhyUe> phy_;
 
     // cellInfo parameters
     std::map<Remote, int> antennaCws_; /// number of antenna per remote

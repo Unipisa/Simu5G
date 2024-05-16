@@ -10,7 +10,6 @@
 //
 
 #include "stack/phy/feedback/LteDlFeedbackGenerator.h"
-#include "stack/phy/layer/LtePhyUe.h"
 
 namespace simu5g {
 
@@ -83,16 +82,11 @@ void LteDlFeedbackGenerator::initialize(int stage)
         if (masterId_ > 0)  // only if not detached
             initCellInfo();
 
-        LtePhyUe* tmp;
-        // TODO: find a more elegant way
-        if (strcmp(getFullName(), "nrDlFbGen") == 0)
-            tmp = dynamic_cast<LtePhyUe*>(getParentModule()->getSubmodule("nrPhy"));
-        else
-            tmp = dynamic_cast<LtePhyUe*>(getParentModule()->getSubmodule("phy"));
+        phy_.reference(this, "phyModule", true);
 
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe taken" << endl;
-        dasFilter_ = tmp->getDasFilter();
+        dasFilter_ = phy_->getDasFilter();
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe used" << endl;
 //        initializeFeedbackComputation(par("feedbackComputation").xmlValue());
@@ -250,11 +244,7 @@ void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
     }
 
     //use PHY function to send feedback
-    // TODO: find a more elegant way
-    if (strcmp(getFullName(), "nrDlFbGen") == 0)
-        (dynamic_cast<LtePhyUe*>(getParentModule()->getSubmodule("nrPhy")))->sendFeedback(fb, fb, feedbackReq);
-    else
-        (dynamic_cast<LtePhyUe*>(getParentModule()->getSubmodule("phy")))->sendFeedback(fb, fb, feedbackReq);
+    phy_->sendFeedback(fb, fb, feedbackReq);
 }
 
 // TODO adjust default value

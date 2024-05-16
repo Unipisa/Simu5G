@@ -70,6 +70,7 @@ module NRNicUe extends LteNicUeD2D
         // Feedback generator submodule
         nrDlFbGen: LteDlFeedbackGenerator {
             @display("p=144,50;is=s");
+            phyModule = "^.nrPhy";
         }
  		//#
         //# Modules used to take trace of PDCP pkt flow
