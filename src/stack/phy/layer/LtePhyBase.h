@@ -70,7 +70,7 @@ class LtePhyBase : public ChannelAccess
     static short airFramePriority_;
     /** channel models to use.*/
     std::map<double, LteChannelModel*> channelModel_;
-    LteChannelModel* primaryChannelModel_;
+    inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
     int upperGateIn_;

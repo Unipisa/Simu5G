@@ -35,6 +35,7 @@ simple LtePhyBase like LtePhy
         bool enableMulticastD2DRangeCheck = default(false);
         double multicastD2DRange @unit(m) = default(1000m);
         string binderModule = default("binder");
+        string channelModelModule = default("^.channelModel[0]"); // or "nrChannelModel[0]"
 
     gates:
         input upperGateIn;       // from upper layer

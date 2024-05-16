@@ -45,6 +45,7 @@ module NRNicUe extends LteNicUeD2D
         @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlc.um";
         nrPhy.otherPhyModule = "^.phy";
+        nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrMac.packetFlowManagerModule = "^.nrPacketFlowManager";
         phy.otherPhyModule = "^.nrPhy";
 

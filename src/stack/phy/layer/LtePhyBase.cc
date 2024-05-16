@@ -21,7 +21,6 @@ short LtePhyBase::airFramePriority_ = 10;
 
 LtePhyBase::LtePhyBase()
 {
-    primaryChannelModel_ = nullptr;
 }
 
 LtePhyBase::~LtePhyBase()
@@ -165,8 +164,7 @@ void LtePhyBase::handleUpperMessage(cMessage* msg)
 
 void LtePhyBase::initializeChannelModel()
 {
-    std::string moduleName = (strcmp(getFullName(), "nrPhy") == 0) ? "nrChannelModel" : "channelModel";
-    primaryChannelModel_ = check_and_cast<LteChannelModel*>(getParentModule()->getSubmodule(moduleName.c_str(),0));
+    primaryChannelModel_.reference(this, "channelModelModule", true);
     primaryChannelModel_->setPhy(this);
     double carrierFreq = primaryChannelModel_->getCarrierFrequency();
     unsigned int numerologyIndex = primaryChannelModel_->getNumerologyIndex();
@@ -179,7 +177,7 @@ void LtePhyBase::initializeChannelModel()
     LteChannelModel* chanModel = NULL;
     for (int index=1; index<vectSize; index++)
     {
-        chanModel = check_and_cast<LteChannelModel*>(getParentModule()->getSubmodule(moduleName.c_str(),index));
+        chanModel = check_and_cast<LteChannelModel*>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
         chanModel->setPhy(this);
         carrierFreq = chanModel->getCarrierFrequency();
         numerologyIndex = chanModel->getNumerologyIndex();
