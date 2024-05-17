@@ -14,6 +14,7 @@
 
 #include <inet/mobility/contract/IMobility.h>
 
+#include "stack/ip2nic/IP2Nic.h"
 #include "stack/phy/layer/LtePhyBase.h"
 #include "stack/phy/das/DasFilter.h"
 #include "stack/mac/layer/LteMacUe.h"
@@ -110,6 +111,7 @@ class LtePhyUe : public LtePhyBase
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlcUm_;
     inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
+    inet::ModuleRefByPar<IP2Nic> ip2nic_;
 
     omnetpp::simtime_t lastFeedback_;
 

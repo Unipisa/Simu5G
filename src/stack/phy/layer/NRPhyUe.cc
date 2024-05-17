@@ -322,8 +322,7 @@ void NRPhyUe::triggerHandover()
     binder_->addUeHandoverTriggered(nodeId_);
 
     // inform the UE's IP2Nic module to start holding downstream packets
-    IP2Nic* ip2nic =  check_and_cast<IP2Nic*>(getParentModule()->getSubmodule("ip2nic"));
-    ip2nic->triggerHandoverUe(candidateMasterId_, isNr_);
+    ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
     if (masterId_ != 0 && candidateMasterId_ != 0)
@@ -463,8 +462,7 @@ void NRPhyUe::doHandover()
     binder_->removeHandoverTriggered(nodeId_);
 
     // inform the UE's IP2Nic module to forward held packets
-    IP2Nic* ip2nic =  check_and_cast<IP2Nic*>(getParentModule()->getSubmodule("ip2nic"));
-    ip2nic->signalHandoverCompleteUe(isNr_);
+    ip2nic_->signalHandoverCompleteUe(isNr_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
     if (oldMaster != 0 && candidateMasterId_ != 0)

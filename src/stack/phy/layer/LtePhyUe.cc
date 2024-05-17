@@ -110,6 +110,7 @@ void LtePhyUe::initialize(int stage)
 
         rlcUm_.reference(this, "rlcUmModule", true);
         pdcp_.reference(this, "pdcpRrcModule", true);
+        ip2nic_.reference(this, "ip2nicModule", true);
 
         // get local id
         if (isNr_)
@@ -380,8 +381,7 @@ void LtePhyUe::triggerHandover()
     binder_->addUeHandoverTriggered(nodeId_);
 
     // inform the UE's IP2Nic module to start holding downstream packets
-    IP2Nic* ip2nic =  check_and_cast<IP2Nic*>(getParentModule()->getSubmodule("ip2nic"));
-    ip2nic->triggerHandoverUe(candidateMasterId_);
+    ip2nic_->triggerHandoverUe(candidateMasterId_);
     binder_->removeHandoverTriggered(nodeId_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
@@ -501,8 +501,7 @@ void LtePhyUe::doHandover()
     binder_->removeUeHandoverTriggered(nodeId_);
 
     // inform the UE's IP2Nic module to forward held packets
-    IP2Nic* ip2nic =  check_and_cast<IP2Nic*>(getParentModule()->getSubmodule("ip2nic"));
-    ip2nic->signalHandoverCompleteUe();
+    ip2nic_->signalHandoverCompleteUe();
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
     if (oldMaster != 0 && candidateMasterId_ != 0)
