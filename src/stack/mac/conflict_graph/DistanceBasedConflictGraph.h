@@ -28,9 +28,6 @@ class DistanceBasedConflictGraph : public ConflictGraph
     double d2dMultiTransmissionRadius_;
     double d2dMultiInterferenceRadius_;
 
-    // reference to the phy layer
-    LtePhyBase* phyEnb_;
-
     // utility function to convert a distance to dBm according to the channel model
     double getDbmFromDistance(double distance);
 

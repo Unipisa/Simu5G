@@ -31,9 +31,6 @@ DistanceBasedConflictGraph::DistanceBasedConflictGraph(LteMacEnbD2D* macEnb, boo
     d2dInterferenceRadius_ = -1.0;
     d2dMultiTransmissionRadius_ = -1.0;
     d2dMultiInterferenceRadius_ = -1.0;
-
-    // get the reference to the PHY layer of the eNB
-    phyEnb_ = check_and_cast<LtePhyBase*>(macEnb_->getParentModule()->getSubmodule("phy"));
 }
 
 void DistanceBasedConflictGraph::setThresholds(double d2dInterferenceRadius, double d2dMultiTransmissionRadius, double d2dMultiInterferenceRadius)
@@ -50,7 +47,7 @@ double DistanceBasedConflictGraph::getDbmFromDistance(double distance)
     double pLoss = 0;
 
     // get the reference to the channel model of the eNB
-    LteChannelModel* channelModel = phyEnb_->getChannelModel();
+    LteChannelModel* channelModel = macEnb_->getPhy()->getChannelModel();
 
     // obtain path loss in dBm
     if (channelModel == NULL)
