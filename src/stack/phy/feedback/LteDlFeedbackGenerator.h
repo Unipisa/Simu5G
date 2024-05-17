@@ -27,6 +27,8 @@
 namespace simu5g {
 
 class DasFilter;
+class LtePhyUe;
+
 /**
  * @class LteDlFeedbackGenerator
  * @brief Lte Downlink Feedback Generator

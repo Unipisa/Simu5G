@@ -23,6 +23,7 @@ simple LtePhyUe extends LtePhyBase
         string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"
         string pdcpRrcModule = default("^.pdcpRrc");
         string ip2nicModule = default("^.ip2nic");
+        string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
 
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);

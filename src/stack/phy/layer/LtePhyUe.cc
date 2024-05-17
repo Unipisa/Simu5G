@@ -111,6 +111,7 @@ void LtePhyUe::initialize(int stage)
         rlcUm_.reference(this, "rlcUmModule", true);
         pdcp_.reference(this, "pdcpRrcModule", true);
         ip2nic_.reference(this, "ip2nicModule", true);
+        fbGen_.reference(this, "feedbackGeneratorModule", true);
 
         // get local id
         if (isNr_)
@@ -487,9 +488,7 @@ void LtePhyUe::doHandover()
     }
 
     // update DL feedback generator
-    LteDlFeedbackGenerator* fbGen;
-    fbGen = check_and_cast<LteDlFeedbackGenerator*>(getParentModule()->getSubmodule("dlFbGen"));
-    fbGen->handleHandover(masterId_);
+    fbGen_->handleHandover(masterId_);
 
     // collect stat
     emit(servingCell_, (long)masterId_);

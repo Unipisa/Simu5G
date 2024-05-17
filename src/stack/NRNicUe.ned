@@ -46,6 +46,7 @@ module NRNicUe extends LteNicUeD2D
         nrPhy.rlcUmModule = "^.nrRlc.um";
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
+        nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrMac.packetFlowManagerModule = "^.nrPacketFlowManager";
         phy.otherPhyModule = "^.nrPhy";
 

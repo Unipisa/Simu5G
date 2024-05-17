@@ -20,10 +20,12 @@
 #include "stack/mac/layer/LteMacUe.h"
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/phy/feedback/LteDlFeedbackGenerator.h"
 
 namespace simu5g {
 
 class DasFilter;
+class LteDlFeedbackGenerator;
 
 class LtePhyUe : public LtePhyBase
 {
@@ -112,6 +114,7 @@ class LtePhyUe : public LtePhyBase
     inet::ModuleRefByPar<LteRlcUm> rlcUm_;
     inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
     inet::ModuleRefByPar<IP2Nic> ip2nic_;
+    inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
     omnetpp::simtime_t lastFeedback_;
 

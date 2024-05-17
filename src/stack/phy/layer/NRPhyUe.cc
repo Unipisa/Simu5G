@@ -443,12 +443,7 @@ void NRPhyUe::doHandover()
     }
 
     // update DL feedback generator
-    LteDlFeedbackGenerator* fbGen;
-    if (!isNr_)
-        fbGen = check_and_cast<LteDlFeedbackGenerator*>(getParentModule()->getSubmodule("dlFbGen"));
-    else
-        fbGen = check_and_cast<LteDlFeedbackGenerator*>(getParentModule()->getSubmodule("nrDlFbGen"));
-    fbGen->handleHandover(masterId_);
+    fbGen_->handleHandover(masterId_);
 
     // collect stat
     emit(servingCell_, (long)masterId_);
