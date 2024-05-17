@@ -32,12 +32,7 @@ void UmTxEntity::initialize()
     notifyEmptyBuffer_ = false;
     holdingDownstreamInPackets_ = false;
 
-    // TODO find a more elegant way
-    LteMacBase* mac;
-    if (strcmp(getParentModule()->getFullName(),"nrRlc") == 0)
-        mac = check_and_cast<LteMacBase*>(getParentModule()->getParentModule()->getSubmodule("nrMac"));
-    else
-        mac = check_and_cast<LteMacBase*>(getParentModule()->getParentModule()->getSubmodule("mac"));
+    LteMacBase* mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
     // store the node id of the owner module
     ownerNodeId_ = mac->getMacNodeId();

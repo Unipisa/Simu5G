@@ -55,8 +55,7 @@ void AmRxQueue::initialize()
     lteRlc_ = check_and_cast<LteRlcAm *>(getParentModule()->getSubmodule("am"));
 
     //statistics
-    LteMacBase* mac = check_and_cast<LteMacBase*>(
-        getParentModule()->getParentModule()->getSubmodule("mac"));
+    LteMacBase* mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
     {
