@@ -47,7 +47,11 @@ void LteMacUeD2D::initialize(int stage)
     {
         // check the RLC module type: if it is not "D2D", abort simulation
         std::string pdcpType = getParentModule()->par("LtePdcpRrcType").stdstringValue();
-        cModule* rlc = getParentModule()->getSubmodule("rlc");
+        // get RLC module: follow the connection of MAC_to_RLC gate.
+        cGate *g;
+        for (g = up_[OUT_GATE]; g && g->getType() == up_[OUT_GATE]->getType(); g = g->getNextGate())
+            ;
+        cModule* rlc = CHK(g)->getOwnerModule();
         std::string rlcUmType = rlc->par("LteRlcUmType").stdstringValue();
         bool rlcD2dCapable = rlc->par("d2dCapable").boolValue();
         if (rlcUmType != "LteRlcUm" || !rlcD2dCapable)
