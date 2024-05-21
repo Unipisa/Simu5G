@@ -38,7 +38,7 @@ void UmTxEntity::initialize()
     ownerNodeId_ = mac->getMacNodeId();
 
     // get the reference to the RLC module
-    lteRlc_ = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
+    lteRlc_.reference(this, "umModule", true);
     queueSize_ = lteRlc_->par("queueSize");
     queueLength_ = 0;
 

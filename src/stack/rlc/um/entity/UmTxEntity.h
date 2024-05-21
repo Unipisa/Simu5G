@@ -13,6 +13,8 @@
 #define _LTE_UMTXENTITY_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/rlc/LteRlcDefs.h"
 #include "nodes/mec/utils/MecCommon.h"
@@ -61,7 +63,6 @@ class UmTxEntity : public omnetpp::cSimpleModule
     UmTxEntity()
     {
         flowControlInfo_ = nullptr;
-        lteRlc_ = nullptr;
         packetFlowManager_ = nullptr;
     }
     virtual ~UmTxEntity()
@@ -121,9 +122,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
   protected:
 
     // reference to the parent's RLC layer
-    LteRlcUm* lteRlc_;
-
-
+    inet::ModuleRefByPar<LteRlcUm> lteRlc_;
 
     /*
      * @author Alessandro Noferi

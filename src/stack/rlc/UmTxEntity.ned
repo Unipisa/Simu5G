@@ -20,6 +20,7 @@ simple UmTxEntity
     parameters:
         @dynamic(true);
         @display("i=block/segm");
+        string umModule = default("^.um");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
 }
 
