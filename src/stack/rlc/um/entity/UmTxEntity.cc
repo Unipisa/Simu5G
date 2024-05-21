@@ -47,32 +47,20 @@ void UmTxEntity::initialize()
     // @author Alessandro Noferi
     if(mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
     {
-        if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
+        if(packetFlowManager_)
         {
             EV << "UmTxEntity::initialize - RLC layer if of a base station" << endl;
             ASSERT(check_and_cast<PacketFlowManagerEnb *>(packetFlowManager_.get()));
         }
-        else ASSERT(!packetFlowManager_);
     }
     else if(mac->getNodeType() == UE)
     {
-        if(strcmp(lteRlc_->getParentModule()->getName(), "nrRlc") == 0)
         {
-            if(getParentModule()->getParentModule()->findSubmodule("nrPacketFlowManager") != -1)
-            {
-                EV << "UmTxEntity::initialize - RLC layer is NRRlc, cast the packetFlowManager to NR" << endl;
-                ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
-            }
-            else ASSERT(!packetFlowManager_);
-        }
-        else
-        {
-            if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
+            if(packetFlowManager_)
             {
                 EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
                 ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
             }
-            else ASSERT(!packetFlowManager_);
         }
     }
     burstStatus_ = INACTIVE;
