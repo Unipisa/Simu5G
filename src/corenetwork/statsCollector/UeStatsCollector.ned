@@ -21,6 +21,7 @@ module UeStatsCollector like StatsCollector
 {
     parameters:
         string collectorType = default("ueStatsCollector");
+        string binderModule = default("binder");
         string interfaceTableModule;
         string macModule = default("^.cellularNic.mac");
         // string pdcpRrcModule = default("^.cellularNic.pdcpRrc");

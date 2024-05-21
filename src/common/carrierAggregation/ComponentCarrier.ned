@@ -17,6 +17,8 @@ simple ComponentCarrier
         @display("i=block/control");
         @class("ComponentCarrier");
 
+        string binderModule = default("binder");
+
         // Carrier Frequency (GHz) -->
         double carrierFrequency @unit("GHz") = default(2GHz);
 

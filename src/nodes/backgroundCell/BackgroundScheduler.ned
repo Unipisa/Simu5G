@@ -17,6 +17,7 @@ simple BackgroundScheduler
         @display("i=block/control");
         @class("BackgroundScheduler");
 
+        string binderModule = default("binder");
         string trafficManagerModule;
 
         // transmission power

@@ -22,6 +22,7 @@ package simu5g.apps.d2dMultihop.eventGenerator;
 simple EventGenerator
 {
     parameters:
+        string binderModule = default("binder");
         double startTime @unit(s) = default(0.1s);
         volatile double eventPeriod @unit(s) = default(1s);
         bool singleEventSource = default(true);

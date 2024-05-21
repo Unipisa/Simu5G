@@ -61,7 +61,7 @@ void BackgroundScheduler::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_LOCAL+1)
     {
-         binder_ = getBinder();
+         binder_.reference(this, "binderModule", true);
 
          // add this cell to the binder
          id_ = binder_->addBackgroundScheduler(this, carrierFrequency_);

@@ -14,6 +14,8 @@
 
 #include <map>
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "corenetwork/gtp/GtpUserMsg_m.h"
@@ -38,7 +40,7 @@ class GtpUser : public omnetpp::cSimpleModule
     int localPort_;
 
     // reference to the LTE Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // the GTP protocol Port
     unsigned int tunnelPeerPort_;

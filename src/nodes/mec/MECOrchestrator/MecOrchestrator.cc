@@ -51,7 +51,7 @@ void MecOrchestrator::initialize(int stage)
         return;
     EV << "MecOrchestrator::initialize - stage " << stage << endl;
 
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
 
     const char *selectionPolicyPar = par("selectionPolicy");
     if(!strcmp(selectionPolicyPar, "MecServiceBased"))

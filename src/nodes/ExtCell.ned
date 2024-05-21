@@ -19,6 +19,8 @@ simple ExtCell
     parameters:
         @display("i=device/antennatower;bgb=300,300");
 
+        string binderModule = default("binder");
+
         // coordinates
         double position_x @unit("m") = default(0m);
         double position_y @unit("m") = default(0m);

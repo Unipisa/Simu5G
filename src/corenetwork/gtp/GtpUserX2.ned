@@ -17,6 +17,8 @@ package simu5g.corenetwork.gtp;
 simple GtpUserX2
 {
     parameters:
+        string binderModule = default("binder");
+
         int localPort = default(32);
         int tunnelPeerPort = default(32);
 

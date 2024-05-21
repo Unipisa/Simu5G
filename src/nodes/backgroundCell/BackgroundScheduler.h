@@ -13,6 +13,7 @@
 #define __BACKGROUNDSCHEDULER_H_
 
 #include <inet/common/INETDefs.h>
+#include <inet/common/ModuleRefByPar.h>
 
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
@@ -57,7 +58,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     unsigned int numBands_;
 
     // reference to the binder
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // reference to the background traffic manager - one per carrier
     inet::ModuleRefByPar<BackgroundTrafficManager> bgTrafficManager_;

@@ -22,6 +22,7 @@ simple X2AppServer extends SctpServer
 {
     parameters:
         @class("X2AppServer");
+        string binderModule = default("binder");
 
     gates:
         input x2ManagerIn @labels(X2Msg);

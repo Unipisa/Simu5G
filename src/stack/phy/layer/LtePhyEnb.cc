@@ -197,8 +197,8 @@ void LtePhyEnb::handleAirFrame(cMessage* msg)
 
     connectedNodeId_ = lteInfo->getSourceId();
 
-    int sourceId = getBinder()->getOmnetId(connectedNodeId_);
-    int senderId = getBinder()->getOmnetId(lteInfo->getDestId());
+    int sourceId = binder_->getOmnetId(connectedNodeId_);
+    int senderId = binder_->getOmnetId(lteInfo->getDestId());
     if(sourceId == 0 || senderId == 0)
     {
         // either source or destination have left the simulation

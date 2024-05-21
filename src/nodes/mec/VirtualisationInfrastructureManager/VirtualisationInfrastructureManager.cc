@@ -34,7 +34,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     //------------------------------------
     // Binder module
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
     //------------------------------------
 
 

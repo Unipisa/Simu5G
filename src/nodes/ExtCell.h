@@ -13,6 +13,8 @@
 #define __EXTCELL_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
 
@@ -53,7 +55,7 @@ class ExtCell : public omnetpp::cSimpleModule
     unsigned int numBands_;
 
     // reference to the binder
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // Current and previous band occupation status. Used for interference computation
     BandStatus bandStatus_;

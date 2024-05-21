@@ -36,7 +36,8 @@ void X2AppServer::initialize(int stage)
         // register listening port to the binder. It will be used by
         // the client side as connectPort
         int localPort = par("localPort");
-        getBinder()->registerX2Port(id, localPort);
+        Binder* binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
+        binder->registerX2Port(id, localPort);
     }
 }
 

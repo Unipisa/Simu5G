@@ -12,6 +12,7 @@
 #ifndef LTE_LTEX2MANAGER_H_
 #define LTE_LTEX2MANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "common/LteCommon.h"
@@ -26,6 +27,9 @@ class LteX2Manager : public omnetpp::cSimpleModule {
 
     // X2 identifier
     X2NodeId nodeId_;
+
+    // reference to the LTE Binder module
+    inet::ModuleRefByPar<Binder> binder_;
 
     // "interface table" for data gates
     // for each X2 message type, this map stores the index of the gate vector data

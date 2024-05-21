@@ -13,6 +13,8 @@
 #define __GTP_USER_X2_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include <map>
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "corenetwork/gtp/GtpUserMsg_m.h"
@@ -34,7 +36,7 @@ class GtpUserX2 : public omnetpp::cSimpleModule
     int localPort_;
 
     // reference to the LTE Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // the GTP protocol Port
     unsigned int tunnelPeerPort_;

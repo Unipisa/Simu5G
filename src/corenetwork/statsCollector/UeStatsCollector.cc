@@ -32,8 +32,7 @@ void UeStatsCollector::initialize(int stage)
         }
         else if (stage == inet::INITSTAGE_APPLICATION_LAYER) // same as lteMacUe, when read the interface entry
     {
-        Binder* binder = getBinder();
-
+        Binder* binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
 
         mac_.reference(this, "macModule", true);
 //        pdcp_.reference(this, "pdcpRrcModule", true);

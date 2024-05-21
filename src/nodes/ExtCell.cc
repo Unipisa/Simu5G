@@ -45,7 +45,7 @@ void ExtCell::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_LOCAL+1)
     {
-         binder_ = getBinder();
+         binder_.reference(this, "binderModule", true);
 
          // initialize band status structures
          bandStatus_.resize(numBands_, 0);

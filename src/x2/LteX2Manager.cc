@@ -32,6 +32,9 @@ void LteX2Manager::initialize(int stage)
     {
         // get the node id
         nodeId_ = getAncestorPar("macCellId");
+
+        // get reference to the binder
+        binder_.reference(this, "binderModule", true);
     }
     else if (stage == inet::INITSTAGE_NETWORK_LAYER)
     {
@@ -48,7 +51,7 @@ void LteX2Manager::initialize(int stage)
             if (strstr(ifName,"x2ppp") != nullptr)
             {
                 const Ipv4Address addr = NetworkInterface->getProtocolData<Ipv4InterfaceData>()->getIPAddress();
-                getBinder()->setX2NodeId(addr, nodeId_);
+                binder_->setX2NodeId(addr, nodeId_);
             }
         }
     }
@@ -66,7 +69,7 @@ void LteX2Manager::initialize(int stage)
 
             // get the connectAddress for the X2App client and the corresponding X2 id
             L3Address addr = L3AddressResolver().resolve(client->par("connectAddress").stringValue());
-            X2NodeId peerId = getBinder()->getX2NodeId(addr.toIpv4());
+            X2NodeId peerId = binder_->getX2NodeId(addr.toIpv4());
 
             // bind the peerId to the output gate
             x2InterfaceTable_[peerId] = i;

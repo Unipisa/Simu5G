@@ -24,6 +24,7 @@ simple VirtualisationInfrastructureManager
     parameters:
         @display("i=block/control");
 
+        string binderModule = default("binder");
         int mp1Port = default(10021);
         string scheduling @enum(segregation,fair) = default("segregation");
 

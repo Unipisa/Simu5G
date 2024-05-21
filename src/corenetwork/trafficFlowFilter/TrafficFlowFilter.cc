@@ -28,7 +28,7 @@ void TrafficFlowFilter::initialize(int stage)
         return;
 
     // get reference to the binder
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
 
     fastForwarding_ = par("fastForwarding");
 

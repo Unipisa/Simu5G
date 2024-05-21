@@ -12,6 +12,8 @@
 #ifndef __MECORCHESTRATORMANAGER_H_
 #define __MECORCHESTRATORMANAGER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
@@ -85,7 +87,7 @@ class MecOrchestrator : public cSimpleModule
 
     //------------------------------------
     //Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
     //------------------------------------
 
     //parent modules

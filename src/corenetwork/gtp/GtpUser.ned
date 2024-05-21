@@ -17,6 +17,7 @@ package simu5g.corenetwork.gtp;
 simple GtpUser
 {
     parameters:
+        string binderModule = default("binder");
         string interfaceTableModule;            // path to the InterfaceTable module
         string ipOutInterface = default("");    // optional: manual specification of outgoing interface for received IP
         int localPort = default(31);

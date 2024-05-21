@@ -35,7 +35,7 @@ void EventGenerator::initialize()
     EV << "EventGenerator initialize "<< endl;
 
     selfMessage_ = new cMessage("selfMessage");
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
     singleEventSource_ = par("singleEventSource").boolValue();
 
     simtime_t startTime = par("startTime");

@@ -18,7 +18,7 @@ Define_Module(ComponentCarrier);
 
 void ComponentCarrier::initialize()
 {
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
     numBands_ = par("numBands");
     carrierFrequency_ = par("carrierFrequency");
     numerologyIndex_ = par("numerologyIndex");

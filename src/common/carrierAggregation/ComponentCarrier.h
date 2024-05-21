@@ -13,6 +13,8 @@
 #define COMPONENTCARRIER_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 
 namespace simu5g {
@@ -26,7 +28,7 @@ class ComponentCarrier : public omnetpp::cSimpleModule
 {
   protected:
     // Reference to Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // Carrier Frequency
     double carrierFrequency_;

@@ -34,7 +34,7 @@ void GtpUser::initialize(int stage)
     localPort_ = par("localPort");
 
     // get reference to the binder
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
 
     // transport layer access
     socket_.setOutputGate(gate("socketOut"));

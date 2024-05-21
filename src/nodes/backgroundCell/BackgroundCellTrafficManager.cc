@@ -37,6 +37,7 @@ void BackgroundCellTrafficManager::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         numBgUEs_ = getAncestorPar("numBgUes");
+        binder_.reference(this, "binderModule", true);   // TODO from BackgroundTrafficManager::initialize(stage);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
@@ -47,7 +48,7 @@ void BackgroundCellTrafficManager::initialize(int stage)
         else
             bgAmc_ = new BackgroundCellAmc();
 
-        phyPisaData_ = &(getBinder()->phyPisaData);
+        phyPisaData_ = &(binder_->phyPisaData);
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
@@ -75,7 +76,7 @@ void BackgroundCellTrafficManager::initialize(int stage)
             }
         }
 
-        getBinder()->addBgTrafficManagerInfo(info);
+        binder_->addBgTrafficManagerInfo(info);
     }
 }
 

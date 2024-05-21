@@ -11,6 +11,8 @@
 #ifndef __VIM_H_
 #define __VIM_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
@@ -74,7 +76,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
     //------------------------------------
     // SIMULTE Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
     //------------------------------------
 
     // other modules

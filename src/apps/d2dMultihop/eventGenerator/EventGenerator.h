@@ -14,6 +14,8 @@
 
 #include <string.h>
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "apps/d2dMultihop/MultihopD2D.h"
 #include "common/binder/Binder.h"
 #include "stack/phy/layer/LtePhyBase.h"
@@ -27,7 +29,7 @@ class EventGenerator : public omnetpp::cSimpleModule
     omnetpp::cMessage *selfMessage_;
 
     uint32_t eventId_;
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     bool singleEventSource_;
 

@@ -25,6 +25,7 @@ simple LteX2Manager
     parameters:
         @display("i=block/cogwheel");
         string interfaceTableModule;
+        string binderModule = default("binder");
 
     gates:
         inout dataPort[]; // connection to X2 user modules

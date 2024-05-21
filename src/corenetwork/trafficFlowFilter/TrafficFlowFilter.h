@@ -13,6 +13,8 @@
 #define __TRAFFICFLOWFILTER_H_
 
 #include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+
 #include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "common/binder/Binder.h"
 
@@ -35,7 +37,7 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     CoreNodeType ownerType_;
 
     // reference to the LTE Binder module
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // if this flag is set, each packet received from the radio network, having the same radio network as destination
     // must be re-sent down without going through the Internet
