@@ -95,8 +95,6 @@ void LteRealisticChannelModel::initialize(int stage)
 
         collectSinrStatistics_ = par("collectSinrStatistics");
 
-        //get binder
-        binder_ = getBinder();
         //clear jakes fading map structure
         jakesFadingMap_.clear();
     }

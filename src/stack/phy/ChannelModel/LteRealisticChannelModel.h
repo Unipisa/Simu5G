@@ -104,9 +104,6 @@ protected:
   //Thermal noise
   double thermalNoise_;
 
-  //pointer to Binder module
-  Binder* binder_;
-
   //Cable loss
   double cableLoss_;
 
