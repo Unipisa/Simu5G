@@ -43,7 +43,7 @@ void AmTxQueue::initialize()
     discarded_.resize(txWindowDesc_.windowSize_+1, false);
 
     // reference to corresponding RLC AM module
-    lteRlc_ = check_and_cast<LteRlcAm *>(getParentModule()->getSubmodule("am"));
+    lteRlc_.reference(this, "amModule", true);
 }
 
 AmTxQueue::~AmTxQueue()

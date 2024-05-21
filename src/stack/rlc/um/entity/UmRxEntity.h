@@ -96,7 +96,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
     std::deque<inet::Packet *> *fragments = nullptr;
   private:
 
-    Binder* binder_;
+    inet::ModuleRefByPar<Binder> binder_;
 
     // reference to eNB for statistic purpose
     omnetpp::cModule* nodeB_;

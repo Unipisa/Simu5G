@@ -52,7 +52,7 @@ void AmRxQueue::initialize()
     received_.resize(rxWindowDesc_.windowSize_);
     totalRcvdBytes_ = 0;
 
-    lteRlc_ = check_and_cast<LteRlcAm *>(getParentModule()->getSubmodule("am"));
+    lteRlc_.reference(this, "amModule", true);
 
     //statistics
     LteMacBase* mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);

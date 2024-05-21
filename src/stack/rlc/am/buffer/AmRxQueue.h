@@ -12,6 +12,8 @@
 #ifndef _LTE_AMRXBUFFER_H_
 #define _LTE_AMRXBUFFER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/rlc/LteRlcDefs.h"
 #include "common/timer/TTimer.h"
 #include "stack/rlc/am/LteRlcAm.h"
@@ -27,7 +29,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
   protected:
 
     // parent RLC AM module
-    LteRlcAm* lteRlc_;
+    inet::ModuleRefByPar<LteRlcAm> lteRlc_;
 
     //! Receiver window descriptor
     RlcWindowDesc rxWindowDesc_;

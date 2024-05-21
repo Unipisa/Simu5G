@@ -12,6 +12,8 @@
 #ifndef _LTE_AMTXBUFFER_H_
 #define _LTE_AMTXBUFFER_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "common/timer/TTimer.h"
@@ -43,7 +45,7 @@ class AmTxQueue : public cSimpleModule
     /*
      * reference to corresponding RLC AM module
      */
-    LteRlcAm* lteRlc_;
+    inet::ModuleRefByPar<LteRlcAm> lteRlc_;
 
     /*
      * SDU (upper layer PDU) currently being processed

@@ -285,9 +285,7 @@ void UmRxEntity::toPdcp(Packet* pktAux)
 {
 
     auto rlcSdu = pktAux->popAtFront<LteRlcSdu>();
-    LteRlcUm* lteRlc = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
-
-
+    LteRlcUm* lteRlc = this->rlc_;
 
     auto lteInfo = pktAux->getTag<FlowControlInfo>();
     unsigned int sno = rlcSdu->getSnoMainPacket();
@@ -731,7 +729,7 @@ void UmRxEntity::reassemble(unsigned int index)
 
 void UmRxEntity::initialize()
 {
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
     timeout_ = par("timeout").doubleValue();
     rxWindowDesc_.clear();
     rxWindowDesc_.windowSize_ = par("rxWindowSize");
@@ -740,7 +738,7 @@ void UmRxEntity::initialize()
     totalRcvdBytes_ = 0;
     totalPduRcvdBytes_ = 0;
 
-    rlc_.reference(this, "lteRlcUmModule", true);
+    rlc_.reference(this, "umModule", true);
 
     //statistics
 
