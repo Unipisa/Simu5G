@@ -391,7 +391,7 @@ void NRPhyUe::doHandover()
     }
     binder_->updateUeInfoCellId(nodeId_,candidateMasterId_);
     // @author Alessandro Noferi
-    if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
+    if (hasCollector)
     {
         binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
     }

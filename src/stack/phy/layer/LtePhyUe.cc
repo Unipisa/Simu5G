@@ -72,6 +72,8 @@ void LtePhyUe::initialize(int stage)
         averageCqiDl_ = registerSignal("averageCqiDl");
         averageCqiUl_ = registerSignal("averageCqiUl");
 
+        hasCollector = par("hasCollector");
+
         if (!hasListeners(averageCqiDl_))
             error("no phy listeners");
 
@@ -440,7 +442,7 @@ void LtePhyUe::doHandover()
     binder_->updateUeInfoCellId(nodeId_,candidateMasterId_);
 
     // @author Alessandro Noferi
-    if(getParentModule()->getParentModule()->findSubmodule("ueCollector") != -1)
+    if (hasCollector)
     {
         binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
     }

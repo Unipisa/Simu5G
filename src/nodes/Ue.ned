@@ -83,6 +83,7 @@ module Ue
 
         bool hasRNISupport = default(false);
         cellularNic.mac.collectorModule = hasRNISupport ? "^.^.ueCollector" : "";
+        cellularNic.phy.hasCollector = hasRNISupport;
 
     gates:
         input radioIn @directIn;     // connection to master

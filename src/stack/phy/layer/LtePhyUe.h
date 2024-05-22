@@ -126,6 +126,7 @@ class LtePhyUe : public LtePhyBase
     unsigned int cqiDlCount_;
     unsigned int cqiUlCount_;
 
+    bool hasCollector = false;
 
     virtual void initialize(int stage) override;
     virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
