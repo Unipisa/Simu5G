@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,6 +15,21 @@ package simu5g.apps.burst;
 import inet.applications.contract.IApp;
 
 
+//
+// This module represents the BurstSender application which sends bursts of packets
+// at regular intervals. It can be configured with various parameters to define the
+// size and timing of the bursts, as well as the destination of the packets.
+//
+// @parameter localPort: Local port to bind the sender (default is -1, which means any port)
+// @parameter destPort: Destination port to which packets will be sent (default is 3000)
+// @parameter destAddress: Destination address in string format
+// @parameter startTime: Time at which the BurstSender starts sending bursts (default is 0s)
+// @parameter burstSize: Number of packets to be sent in each burst (default is 10)
+// @parameter interBurstTime: Time interval between consecutive bursts (default is 1s)
+// @parameter packetSize: Size of each packet in bytes (default is 40B)
+// @parameter intraBurstTime: Time interval between packets within a burst (default is 0.01s)
+// @parameter tos: Type Of Service/Traffic Class for the sent packets (default is -1, meaning no specific TOS/Traffic Class is set)
+//
 simple BurstSender like IApp
 {
     parameters:

@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,7 +14,10 @@ package simu5g.apps.vod;
 import inet.applications.contract.IApp;
 
 //
-// Video on demand app
+// The VoDUDPServer module handles video-on-demand streaming using UDP transport
+// protocol. It reads video frames from a specified trace file and streams them
+// to clients based on their requested start times. The current implementation
+// supports only SVC (Scalable Video Coding) trace type.
 //
 simple VoDUDPServer like IApp
 {

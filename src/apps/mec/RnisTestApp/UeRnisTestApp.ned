@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -9,19 +10,16 @@
 // and cannot be removed from it.
 //
 
-
 package simu5g.apps.mec.RnisTestApp;
 
 import inet.applications.contract.IApp;
 
-
 //
-// This UE app asks the Device App to instantiate a MecRnisTestApp.
-// After the MEC app has been initialized, the UE app requests the MEC app to
-// periodically query the RNI Service.
-// When the UE app received the requested info from the MEC app, it just outputs
-// that in the Qtenv log (set the logger parameter to dump the output to a file).
-// If the period is set to 0, then only one query is requested.
+// This module defines the UeRnisTestApp, a UE application that interacts with 
+// a DeviceApp to instantiate and communicate with a MEC (Mobile Edge Computing) app. 
+// The UeRnisTestApp requests the MEC app to query the RNI (Radio Network Information) 
+// service periodically and outputs the received information to the Qtenv log. 
+// If the querying period is set to 0, a single query is made.
 //
 simple UeRnisTestApp like IApp
 {

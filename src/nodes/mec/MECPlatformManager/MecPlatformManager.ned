@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,11 +13,14 @@
 package simu5g.nodes.mec.MECPlatformManager;
 
 //
-// simple module implementing the MEC platform manager (MECPM) entity of a
-// MEC system. It does not follow the ETSI specs, but acts only as a
-// passtrhough between the MEC orchestrator and the MEC host modules
+//# MECPlatformManager module
 //
-// The mecOrchestrator module is used to link the MECPM with the MEC orchestrator
+// This module implements the Mobile Edge Computing (MEC) platform manager (MECPM)
+// entity within a MEC system. It serves as a conduit between the MEC orchestrator 
+// and MEC host modules. Its primary role is to instantiate and terminate MEC applications 
+// based on the orchestrator's requests, managing the lifecycle of these applications 
+// and ensuring they are properly integrated within the virtualization infrastructure 
+// and service registry.
 //
 simple MecPlatformManager
 {

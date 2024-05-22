@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -22,7 +23,11 @@ import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfras
 
 
 //
-//# MEHost module
+// This module represents the Mobile Edge Computing (MEC) host in the network.
+// It is responsible for hosting MEC applications and managing their lifecycle,
+// resources, and connectivity to the core network and base stations.
+// The MECHost includes a virtualization infrastructure, a MEC platform, and
+// various managers to ensure smooth operation and service delivery.
 //
 module MECHost
 {

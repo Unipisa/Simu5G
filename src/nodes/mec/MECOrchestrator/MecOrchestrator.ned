@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,12 +13,10 @@
 package simu5g.nodes.mec.MECOrchestrator;
 
 //
-// This module implements the MEC orchestrator of a MEC system.
-// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations
-// of the standard by using OMNeT++ features.
-// Communications with the LCM proxy occur via connections, while the MEC hosts associated with
-// the MEC system (and the MEC orchestrator) are managed with the mecHostList parameter.
-// This MEC orchestrator provides:
+// This module oversees the MEC orchestrator's functionalities within a MEC system.
+// Not adhering strictly to ETSI standard APIs, it leverages OMNeT++ features to manage the lifecycle operations of MEC applications.
+// It communicates with the LCM proxy via connections and is configured to administer MEC hosts associated with the MEC system based on parameters.
+// Key functionalities provided include:
 //   - MEC app instantiation
 //   - MEC app termination
 //   - MEC app run-time onboarding

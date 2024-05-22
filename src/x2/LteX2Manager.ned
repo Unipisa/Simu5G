@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,11 +15,10 @@ package simu5g.x2;
 //
 // LteX2Manager
 //
-// The task of this module is to allow communications between eNodeBs via the X2 interface.
-// It acts as a bridge between the X2 user modules and the X2Apps that are responsible
-// for communication with the X2Apps on the peering eNodeBs.
-// If you want to implement a new module that needs to exploit the X2 interface, you must
-// connect the module to the dataPort gate of the LteX2Manager.
+// The LteX2Manager module enables communication between LTE eNodeBs using the X2 interface. 
+// It facilitates the interaction between X2 user modules and X2Apps, which manage the 
+// communication with peer eNodeBs. To leverage the X2 interface in a new module, 
+// connect it to the dataPort gate of the LteX2Manager.
 //
 simple LteX2Manager
 {

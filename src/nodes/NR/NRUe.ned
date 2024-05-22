@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -15,9 +16,29 @@ package simu5g.nodes.NR;
 import simu5g.corenetwork.statsCollector.NRueStatsCollector;
 import simu5g.nodes.Ue;
 
-
 //
-// User Equipment Module
+// NRUe Module
+// This module represents a 5G NR (New Radio) User Equipment (UE) in the Simu5G network.
+//
+// The NRUe module extends the basic Ue module and includes additional parameters 
+// and submodules specific to NR functionalities.
+//
+// Parameters:
+// - nicType: Defines the type of NIC used by the UE, defaulting to "NRNicUe".
+// - nrMasterId: A mutable parameter representing the master ID for NR.
+// - nrMacNodeId: A mutable parameter for the NR MAC Node ID.
+// - nrMacCellId: A mutable parameter for the NR MAC Cell ID.
+//
+// Gates:
+// - nrRadioIn: A direct input gate for connections to the master node.
+//
+// Submodules:
+// - NRueCollector: An optional submodule of type NRueStatsCollector that collects 
+//   statistics for the NR UE, utilized if RNISupport is present.
+//
+// Connections:
+// - Allows unconnected connections by default.
+// - Connects the NR radio input directly to the cellular NIC's NR radio input.
 //
 module NRUe extends Ue
 {

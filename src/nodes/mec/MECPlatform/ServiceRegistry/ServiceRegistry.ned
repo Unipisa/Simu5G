@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -20,6 +21,12 @@ import inet.applications.contract.IApp;
 // MEC system.
 // Mec services register themself with:
 // 	- ServiceName -> IpAddress and port
+//
+// 
+// The ServiceRegistry module is responsible for handling the registration, discovery, and
+// maintenance of MEC services within the platform. It facilitates seamless communication 
+// between different MEC services and the MEC orchestrator by providing RESTful APIs 
+// that comply with the ETSI GS MEC 011 specifications.
 //
 simple ServiceRegistry like IApp
 {

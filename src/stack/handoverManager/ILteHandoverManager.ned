@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,7 +15,10 @@ package simu5g.stack.handoverManager;
 import simu5g.x2.IX2User;
 
 //
-// Interface for the Handover Manager
+// Interface for the Handover Manager. This module interface defines the basic
+// contract that any handover manager in the Simu5G simulation must adhere to.
+// It extends the X2User interface to facilitate communication between eNodeBs
+// during the handover process.
 //
 moduleinterface ILteHandoverManager extends IX2User
 {

@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,9 +15,13 @@ package simu5g.apps.mec.RealTimeVideoStreamingApp;
 
 import inet.applications.contract.IApp;
 
-
 //
-// This is a UE app that asks to a Device App to instantiate the MECRTVideoStreamingReceiver.
+// This module represents a UE application that initiates a request to a Device App 
+// for instantiating the MECRTVideoStreamingReceiver app on a MEC server.
+// It handles the full lifecycle of the MECRTVideoStreamingReceiver app, 
+// including starting, stopping, and sending video stream packets. 
+// The module also manages network communication and mobility information 
+// to provide real-time video streaming within a mobile network environment.
 //
 simple RTVideoStreamingSender like IApp
 {

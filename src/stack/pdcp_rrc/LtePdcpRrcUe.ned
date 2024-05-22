@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,10 +14,18 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// User Equipment PDCP/RRC layer of LTE stack
+// This module represents the PDCP/RRC layer for the User Equipment (UE) in the 
+// LTE stack. It handles the Packet Data Convergence Protocol (PDCP) and Radio 
+// Resource Control (RRC) functionalities for LTE, enabling the UE to communicate 
+// efficiently in an LTE network environment.
 //
 simple LtePdcpRrcUe extends LtePdcpRrcBase
 {
     @class("LtePdcpRrcUe");
+    //
+    // This simple module represents the PDCP and RRC layers of the LTE stack in the User Equipment (UE).
+    // It manages the packet data convergence protocol functions and radio resource control functionalities,
+    // enabling seamless data communication and control signaling in the UE.
+    //
 }
 

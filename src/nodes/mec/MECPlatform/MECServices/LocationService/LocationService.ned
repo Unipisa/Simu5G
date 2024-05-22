@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,8 +14,11 @@ package simu5g.nodes.mec.MECPlatform.MECServices.LocationService;
 import simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.IMECService;
 import inet.applications.contract.IApp;
 
-//# Location Service module
-
+//
+// The LocationService module implements location-related functionalities for mobile edge computing (MEC).
+// It provides APIs to get the current location of User Equipment (UE) or Base Stations (BS).
+// It supports functionalities like circle notification subscription to monitor UEs in a circular area.
+//
 simple LocationService like IMECService, IApp
 {
     parameters:

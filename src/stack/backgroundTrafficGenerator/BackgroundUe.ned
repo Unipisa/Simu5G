@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -9,11 +10,17 @@
 // and cannot be removed from it.
 //
 
+
 package simu5g.stack.backgroundTrafficGenerator;
 
 import inet.mobility.contract.IMobility;
 import simu5g.stack.backgroundTrafficGenerator.generators.ITrafficGenerator;
 
+//
+// This module represents a background UE (User Equipment) in the network,
+// responsible for generating background traffic. It includes configurable
+// parameters for mobility and traffic generation.
+//
 module BackgroundUe
 {
     parameters:

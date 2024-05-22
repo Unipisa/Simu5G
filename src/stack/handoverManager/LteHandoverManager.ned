@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,6 +12,13 @@
 
 package simu5g.stack.handoverManager;
 
+//
+// LteHandoverManager is a module responsible for managing the handover process in a
+// Long-Term Evolution (LTE) network. It handles the signaling and coordination
+// required to transfer an active session from one eNodeB to another, ensuring
+// minimal disruption. The module directly interfaces with the X2 Manager to
+// facilitate this inter-eNodeB communication.
+//
 simple LteHandoverManager like ILteHandoverManager
 {
     parameters:

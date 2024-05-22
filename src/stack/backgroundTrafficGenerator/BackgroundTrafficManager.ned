@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,11 +13,14 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
-// BackgroundTrafficManager
 //
-// This is the traffic manager for background UEs within a
-// real (simulated) cell. It interacts with the protocol
-// stack of the e/gNB
+// The BackgroundTrafficManager is responsible for overseeing background traffic
+// management for UEs within a simulated cell. It ensures the effective handling
+// of background traffic by coordinating with various components of the e/gNB's 
+// protocol stack. This module supports assigning resource blocks, managing 
+// interference, and updating CQIs for background UEs, thus playing a crucial role 
+// in simulating realistic traffic conditions in LTE/5G networks.
+//
 simple BackgroundTrafficManager extends BackgroundTrafficManagerBase
 {
     parameters:

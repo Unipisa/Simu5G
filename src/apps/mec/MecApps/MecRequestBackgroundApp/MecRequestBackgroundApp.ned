@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,7 +14,18 @@ package simu5g.apps.mec.MecApps.MecRequestBackgroundApp;
 
 import simu5g.apps.mec.MecApps.MecAppBase;
 
-
+//
+// This module defines a background MEC (Multi-access Edge Computing) application
+// that sends HTTP requests to MEC services at specified intervals. The application
+// uses TCP sockets for communication and supports lifecycle management. The
+// module parameters allow configuring the number of applications, resource
+// allocation, packet size, server connection details, and traffic properties.
+// The `lambda` parameter controls the mean interval between requests.
+//
+// This background application can generate synthetic load on MEC services
+// to simulate various network conditions and assess service performance
+// under different configurations.
+//
 simple MecRequestBackgroundApp extends MecAppBase
 {
     parameters:

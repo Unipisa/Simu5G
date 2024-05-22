@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,7 +14,12 @@ package simu5g.apps.cbr;
 
 import inet.applications.contract.IApp;
 
-
+//
+// The CbrReceiver module is responsible for receiving constant bit rate (CBR) traffic.
+// It binds to a specified local port (default 3000) and records various statistical
+// measures such as frame delay, jitter, frame loss, received throughput, and total bytes received.
+// The module emits signals which can be used to analyze network performance at the application level.
+//
 simple CbrReceiver like IApp
 {
     parameters:

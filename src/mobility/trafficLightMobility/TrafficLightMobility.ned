@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,9 +15,14 @@ package simu5g.mobility.trafficLightMobility;
 import inet.mobility.single.LinearMobility;
 
 //
-// This is a linear mobility model with speed and angle parameters.
-// Angle changes when the mobile node reaches a traffic light.
-// When the mobile node hits a wall, it reflects off the wall at the same angle.
+// This module represents a mobility model that allows for dynamic movement
+// of nodes based on traffic light signals. Nodes can change direction at 
+// traffic lights and will reflect off boundaries with the same angle.
+//
+// Parameters:
+//   - initialRoadIndex: Index of the initial road where the node starts.
+//   - trafficLightsList: List of traffic light modules that influence the node.
+//   - enableTurns: Flag to enable or disable random turns at traffic lights.
 //
 simple TrafficLightMobility extends LinearMobility
 {

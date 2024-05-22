@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -27,7 +28,8 @@ import simu5g.nodes.NR.NRUe;
 import org.car2x.veins.base.modules.*;
 
 //
-// Car Module
+// This module defines a Car equipped with LTE User Equipment (UE) functionalities. 
+// It extends the Ue module by adding Veins mobility and necessary network configurations.
 //
 module Car extends Ue
 {

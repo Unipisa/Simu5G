@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,6 +12,13 @@
 
 package simu5g.nodes.backgroundCell;
 
+//
+// BackgroundCellChannelModel is responsible for simulating the channel conditions
+// between User Equipments (UEs) and eNodeBs in background cells. It includes
+// support for various path loss scenarios, shadowing, and different types of
+// fading. The module can dynamically adjust for Line-of-Sight (LOS) and Non-Line-of-Sight
+// (NLOS) conditions based on the specified parameters.
+//
 simple BackgroundCellChannelModel
 {
     parameters:

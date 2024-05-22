@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -16,10 +17,10 @@ import inet.applications.contract.IApp;
 
 
  //
- //  This is a UE app that asks to a Device App to instantiate the MECWarningAlertApp.
- //  After a successful response, it asks to the MEC app to be notified when the car
- //  enters a circle zone described by x,y center position and the radius. When a danger
- //  event arrives, the car colors becomes red.
+ // This is a UE app that asks to a Device App to instantiate the MECWarningAlertApp.
+ // After a successful response, it asks to the MEC app to be notified when the car
+ // enters a circle zone described by x,y center position and the radius. When a danger
+ // event arrives, the car colors becomes red.
  //
  //  The event behavior flow of the app is:
  //  1) send create MEC app to the Device App

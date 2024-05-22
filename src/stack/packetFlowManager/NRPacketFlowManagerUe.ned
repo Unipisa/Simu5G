@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,6 +12,12 @@
 
 package simu5g.stack.packetFlowManager;
 
+//
+// This simple module represents the Packet Flow Manager for the User Equipment 
+// (UE) in an NR (New Radio) network. It handles the flow of packets for various 
+// services within the UE, ensuring that data traffic is efficiently managed 
+// according to the NR specifications.
+//
 simple NRPacketFlowManagerUe like IPacketFlowManager
 {
     @class("PacketFlowManagerUe");

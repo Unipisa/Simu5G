@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -21,9 +22,12 @@ import simu5g.stack.phy.ChannelModel.ILteChannelModel;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.LteRlc;
 
-
 //
-// Base module for the LTE Stack.
+// The LteNicBase module serves as the foundational building block for LTE networking 
+// in Simu5G. It integrates protocols for LTE communication, including PDCP, RLC, MAC, 
+// and PHY layers. This base module allows higher-level modules, such as user equipment (UE) 
+// and eNodeB (evolved Node B), to configure and utilize these layers according to their 
+// specific requirements.
 //
 module LteNicBase extends NetworkInterface like ICellularNic
 {

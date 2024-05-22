@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -15,9 +16,10 @@ package simu5g.nodes.mec.MECPlatform.MECServices.RNIService;
 import simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.IMECService;
 import inet.applications.contract.IApp;
 
-//# RNI service module
-
-
+//
+// This module implements the Radio Network Information Service (RNIS) as defined in ETSI GS MEC 012 RNI API.
+// The service provides functionalities related to layer 2 measurements.
+//
 simple RNIService like IMECService, IApp
 {
     parameters:

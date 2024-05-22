@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,12 +12,12 @@
 
 package simu5g.corenetwork.statsCollector;
 //
-// This is the statistic collector of an eNodeB. It stores all the attributes of the RNI
-// service Layer2Meaurements resource. The RNI service will call its methods in order to
-// responds to requests
-
+// This module represents the statistics collector for a gNodeB in a 5G NR network.
+// It extends the BaseStationStatsCollector, integrating functionalities specific
+// to gNodeB. The GNodeBStatsCollector is responsible for gathering and storing
+// various performance metrics and statistics related to the gNodeB's operation,
+// which are essential for analyzing network performance and troubleshooting.
 //
-
 module GNodeBStatsCollector extends BaseStationStatsCollector
 {
     parameters:

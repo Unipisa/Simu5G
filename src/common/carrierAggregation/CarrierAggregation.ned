@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,6 +12,11 @@
 
 package simu5g.common.carrierAggregation;
 
+//
+// This module represents the carrier aggregation functionality used in gNodeBs and UEs.
+// It allows the configuration of multiple component carriers (CCs) to aggregate bandwidth
+// and improve the overall data rates and network performance.
+//
 module CarrierAggregation
 {
     parameters:

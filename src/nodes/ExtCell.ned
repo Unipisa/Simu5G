@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,7 +13,11 @@
 package simu5g.nodes;
 
 //
-// ExtCell Module
+// The ExtCell module represents an external cell in the simulation environment.
+// It is used to model interference from neighboring cells. The parameters define
+// the physical and operational characteristics of the external cell, such as 
+// its position, transmission power, direction, and frequency. The module also 
+// includes settings for managing resource allocation within the cell.
 //
 simple ExtCell
 {

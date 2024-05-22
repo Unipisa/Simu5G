@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,8 +12,6 @@
 
 package simu5g.apps.d2dMultihop.eventGenerator;
 
-//
-// EventGenerator module
 //
 // This module generate periodic events (e.g. a collision between
 // vehicles) in random positions of the network (or randomly

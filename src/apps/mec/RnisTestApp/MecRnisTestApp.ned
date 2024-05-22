@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -15,9 +16,10 @@ import simu5g.apps.mec.MecApps.MecAppBase;
 
 
 //
-// This is a simple MEC app that connects to the Radio Network Information
-// Service and periodically requests L2 Measurements from it.
-// The response obtained from the RNIS is just sent back to the UE app.
+// This module represents a simple MEC app that connects to the Radio Network Information
+// Service (RNIS) and periodically requests L2 Measurements. The measurements obtained
+// from the RNIS are then sent back to the UE application. It can be used to demonstrate
+// the interaction between UE and MEC applications for querying RNIS.
 //
 simple MecRnisTestApp extends MecAppBase
 {

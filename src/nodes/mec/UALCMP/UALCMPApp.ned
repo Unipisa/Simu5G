@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -23,6 +24,14 @@ import inet.applications.contract.IApp;
 //   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
+//
+// This module facilitates communication between a device application and a MEC orchestrator,
+// enabling lifecycle operations such as instantiation, termination, and relocation of MEC applications.
+// Conforming to the ETSI MEC standard (ETSI GS MEC 016 V2.2.1), it supports three primary endpoints:
+//   1. GET /app_list: Retrieve available MEC application information.
+//   2. POST /app_contexts: Request the creation of a new MEC application context.
+//   3. DELETE /app_contexts/{contextId}: Request the deletion of an existing MEC application context.
+// The module relies on OMNeT++ messaging and connections for interfacing with the MEC orchestrator.
 //
 simple UALCMPApp like IApp
 {

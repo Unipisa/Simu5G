@@ -1,3 +1,5 @@
+
+
 //
 //                  Simu5G
 //
@@ -18,12 +20,12 @@ import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 
 //
-// Implements a simple model of the 5GC UPF
+// Implements a 5G Core User Plane Function (UPF) module.
 //
-// The core network can contain multiple UPFs: see example in "simulations/NR/standalone"
-// UPF not connected to an external Data Network are intermediate UPFs. In the current version, intermediate UPFs just act
-// like IP routers.
-// UPFs connected to an external Data Network take care of (de)tunneling packets according to GTP
+// The UPF is responsible for packet routing and forwarding, packet inspection, and (de)tunneling according to GTP.
+// The core network can contain multiple UPFs. Intermediate UPFs, which are not connected to an external Data Network, 
+// act like IP routers in the current version.
+// This module allows the connection of mobile terminals to external data networks or other 5G network elements through GTP tunneling.
 //
 module Upf extends NetworkLayerNodeBase
 {

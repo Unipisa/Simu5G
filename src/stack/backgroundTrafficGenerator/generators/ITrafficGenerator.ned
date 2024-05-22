@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -9,8 +10,15 @@
 // and cannot be removed from it.
 //
 
+
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
+//
+// This module interface defines the contract for traffic generator modules
+// within the background traffic generation framework of the Simu5G project.
+// Implementing modules should provide mechanisms for generating traffic
+// with specific parameters such as start times, packet sizes, and periods.
+//
 moduleinterface ITrafficGenerator
 {
     parameters:

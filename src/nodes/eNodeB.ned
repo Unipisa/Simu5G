@@ -1,3 +1,4 @@
+
 //
 //                           Simu5G
 //
@@ -6,7 +7,6 @@
 // The above file and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-
 
 package simu5g.nodes;
 
@@ -27,11 +27,22 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.stack.ICellularNic;
 import simu5g.x2.LteX2App;
 
-
 //
 // eNodeB Module
 //
-// Module for eNodeB functionalities
+// This module represents an eNodeB (evolved Node B) in an LTE network.
+// This module acts as a base station, managing communication between UEs (User Equipment) 
+// and the core network. It incorporates functionalities such as handling control and user plane traffic,
+// managing RRC (Radio Resource Control) connections, and supporting X2 interface for 
+// inter-eNodeB communication.
+//
+// Key features of this module include:
+// - Handling multiple interfaces for connecting to UEs, Core Network, and other eNodeBs.
+// - Integration of different transport protocols like UDP, TCP, and SCTP.
+// - Support for MEC (Multi-access Edge Computing) for low-latency applications.
+// - Traffic flow filtering and GTP (GPRS Tunnelling Protocol) integration.
+// 
+// For more details on configuration and usage, refer to the Simu5G documentation.
 //
 module eNodeB
 {

@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -16,7 +17,12 @@ import inet.applications.sctpapp.SctpServer;
 // X2AppServer
 //
 // This module extends the SctpServer application, by adding
-// an input gate to receive messages from the X2 Manager module
+// an input gate to receive messages from the X2 Manager module.
+//
+// The X2AppServer module is responsible for handling messages
+// from the X2 Manager, forwarding them to the SCTP layer for
+// transmission. It ensures that the messages are properly encapsulated
+// in SCTP packets before sending.
 //
 simple X2AppServer extends SctpServer
 {

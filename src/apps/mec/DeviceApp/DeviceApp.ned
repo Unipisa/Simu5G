@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,6 +15,13 @@ package simu5g.apps.mec.DeviceApp;
 
 import inet.applications.contract.IApp;
 
+//
+// This module defines the DeviceApp, responsible for instantiating and terminating MEC applications 
+// upon requests from UE applications. It acts as a mediator between the UE apps and the MEC platform, 
+// handling messages for starting and stopping MEC applications, and responding with acknowledgment or 
+// failure messages. The module uses both UDP and TCP communication for interacting with UE apps 
+// and the MEC Application Lifecycle Management Proxy (UALCMP), respectively.
+//
 simple DeviceApp like IApp
 {
     string UALCMPAddress = default(""); // UALCMP connect address to connect to, may be left empty ("")

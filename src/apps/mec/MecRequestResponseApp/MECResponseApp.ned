@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -15,7 +16,10 @@ import simu5g.apps.mec.MecApps.MecAppBase;
 
 
 //
-//  This is a MEC app that ... TBC
+// This module implements a Mobile Edge Computing (MEC) application that processes
+// incoming requests from User Equipment (UE) applications. It establishes connection
+// with a service registry to retrieve the necessary service endpoints and communicate
+// through TCP and UDP sockets to handle requests, send responses, and process service messages.
 //
 simple MECResponseApp extends MecAppBase
 {

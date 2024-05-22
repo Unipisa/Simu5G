@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -9,10 +10,19 @@
 // and cannot be removed from it.
 //
 
+
 package simu5g.apps.mecRequestResponseApp;
 
 import inet.applications.contract.IApp;
 
+//
+// The MecRequestApp module generates packets at regular intervals and sends them
+// to a specified address using UDP. It then receives response packets and computes
+// the round trip time (RTT) for each packet. The module also supports migration
+// handling by updating the base station ID and rescheduling packet transmission
+// accordingly. The packet generation and handling are primarily for simulating
+// mobile edge computing (MEC) request/response scenarios.
+//
 simple MecRequestApp like IApp
 {
     parameters:

@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,7 +14,7 @@ package simu5g.apps.d2dMultihop;
 
 import inet.applications.contract.IApp;
 
-// MultihopD2D
+
 //
 // This module implements an application for disseminating event's notificaitons,
 // using multihop D2D transmissions. New messages are generated upon the reception

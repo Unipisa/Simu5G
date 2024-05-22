@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,7 +13,13 @@
 package simu5g.corenetwork.gtp;
 
 //
-// Implements a simplified version of the GTP-U protocol for tunneling packets over X2 (for handover)
+// This module implements a simplified version of the GTP-U protocol for tunneling packets over X2 interfaces.
+// It is primarily used for handover procedures in LTE networks, where it facilitates the transfer of packets between GTP peers.
+// The module can handle two types of packets:
+// 1. LteX2Message from the X2 Manager, which encapsulates IP datagrams.
+// 2. GtpUserX2Msg from UDP-IP layers, which are detunneled and sent to the X2 Manager.
+//
+// It leverages UDP sockets for communication and interacts with the LTE Binder module to resolve peer addresses.
 //
 simple GtpUserX2
 {

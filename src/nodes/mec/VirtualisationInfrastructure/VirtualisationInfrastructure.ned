@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -21,10 +22,13 @@ import inet.networklayer.contract.INetworkLayer;
 import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 
-
-//#
-//# VirtualisationInfrastructure
-//#
+//
+// This module represents the Virtualisation Infrastructure in a MEC host.
+// It includes various protocol layers (application, transport, network, link)
+// and associated modules for handling traffic and resource management in the network.
+// The module connects to MEC applications and services to support virtual resource allocation, 
+// service registration, and communication within the MEC environment.
+//
 module VirtualisationInfrastructure
 {
     parameters:

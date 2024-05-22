@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -12,9 +13,11 @@
 package simu5g.apps.vod;
 import inet.applications.contract.IApp;
 
-
 //
-// Video-on-demand (VoD) client application.
+// The VoDUDPClient module simulates a video-on-demand (VoD) client application
+// that receives video data over UDP. It collects throughput and delay
+// statistics at different quality levels (layers 0 to 3) and supports
+// configuration parameters for various operational settings.
 //
 simple VoDUDPClient like IApp
 {

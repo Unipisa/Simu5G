@@ -12,12 +12,12 @@
 package simu5g.stack.d2dModeSelection;
 
 //
-// Base module for the D2D Mode Selection
+// Base module for D2D Mode Selection modules.
 //
 // Extends this module for implementing new mode selection policies.
 // It runs periodically the mode selection algorithm and, for flows
 // that must be switched, sends a notification to the transmitting
-// endpoint of those flows
+// endpoint of those flows.
 //
 simple D2DModeSelectionBase like ID2DModeSelection
 {

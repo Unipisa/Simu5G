@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -20,7 +21,13 @@ import simu5g.x2.LteX2Manager;
 
 
 //
-// eNodeB of LTE stack
+// The LTE eNodeB module is responsible for connecting LTE user devices (UEs) to 
+// the core network. It facilitates data and signaling transmission using the LTE 
+// stack, which includes PDCP, RLC, MAC, and PHY layers. This module also manages 
+// different LTE features, such as Dual Connectivity, Coordinated MultiPoint (CoMP), 
+// and X2 interface for inter-eNodeB communication. The parameters and submodules 
+// allow customization of the eNodeB's behavior, including whether it supports D2D 
+// communication, CoMP, or dual connectivity.
 //
 module LteNicEnb extends LteNicBase
 {

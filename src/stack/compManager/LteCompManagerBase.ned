@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -11,6 +12,34 @@
 
 package simu5g.stack.compManager;
 
+//
+ // This module serves as the base class for Coordinated Multi-Point (CoMP) manager modules in LTE networks.
+ // It provides essential functionalities and parameters needed to manage CoMP operations.
+ // To implement a specific CoMP algorithm, extend this class and override its pure virtual methods.
+ //
+// ALTERNATIVE:
+//
+// LteCompManagerBase: Base class for CoMP manager modules. This module serves as the
+// foundational component for developing and integrating different CoMP algorithms
+// within the simu5g framework. Extend this module and override its virtual methods
+// to implement specific CoMP algorithms.
+//
+// Parameters:
+// - compNodeType: Specifies the type of CoMP node (client, client and coordinator, coordinator only).
+// - coordinatorId: The identifier for the coordinator node.
+// - clientList: A space-separated list of client node identifiers.
+// - coordinationPeriod: The time interval between two coordination instances.
+//
+// Gates:
+// - x2ManagerIn: Input gate for connections to the X2 Manager.
+// - x2ManagerOut: Output gate for connections to the X2 Manager.
+//
+// Signals:
+// - compReservedBlocks: Signal to track the number of reserved blocks for CoMP operations.
+//
+// Statistics:
+// - compReservedBlocks: Statistics related to CoMP reserved blocks, recorded as mean and vector.
+//
 simple LteCompManagerBase like ILteCompManager
 {
     parameters:

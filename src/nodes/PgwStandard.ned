@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -19,6 +20,11 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 
 //
 // Implements a simplified EPC PDN Gateway (P-GW)
+// This module represents the Packet Data Network Gateway (P-GW) in the 
+// Evolved Packet Core (EPC) architecture. It serves as a gateway that 
+// connects the LTE network to external packet data networks, providing 
+// critical functionalities such as IP address allocation, policy enforcement, 
+// and packet filtering.
 //
 module PgwStandard extends NetworkLayerNodeBase
 {

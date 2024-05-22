@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -16,7 +17,9 @@ import inet.applications.sctpapp.SctpClient;
 // X2AppClient
 //
 // This module extends the SctpClient application, by adding
-// an output gate to send messages to the X2 Manager
+// an output gate to send messages to the X2 Manager and
+// manages the connection initiation towards the peer's
+// server module based on the configuration specified in .ini file.
 //
 simple X2AppClient extends SctpClient
 {

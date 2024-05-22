@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -13,7 +14,11 @@
 package simu5g.stack;
 
 //
-// e/gNodeB with NR stack
+// NRNicEnb is an extension of LteNicEnbD2D and represents an e/gNodeB with 
+// the NR (New Radio) stack. This module is tailored for 5G NR simulation scenarios
+// and integrates specific components such as NRMacGnb, NRChannelModel_3GPP38_901,
+// and NRPacketFlowManagerGnb. These components enhance the realism and accuracy 
+// of NR-based network simulations.
 //
 module NRNicEnb extends LteNicEnbD2D
 {

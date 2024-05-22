@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -14,6 +15,10 @@ package simu5g.nodes.mec.MECPlatform;
 
 //
 // Template for ME Services.
+//
+// This module interface defines the structure for Mobile Edge (ME) Services 
+// within the MEC (Multi-access Edge Computing) Platform. It includes parameters 
+// for service name and gates for incoming and outgoing application data flows.
 //
 moduleinterface IMEService
 {

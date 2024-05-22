@@ -1,3 +1,4 @@
+
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -15,6 +16,12 @@
 
 package simu5g.nodes.mec.VirtualisationInfrastructureManager;
 
+//
+// This module represents the background application running on the 
+// Virtualisation Infrastructure Manager (VIM). It is intended for
+// simulating background tasks that utilize CPU, RAM, and disk resources.
+// The parameters allow configuring the allocation of these resources.
+//
 module BackgroundApp
 {
     double ram @unit("B") = default(10MB);

@@ -1,3 +1,4 @@
+
 //
 //                  Simu5G
 //
@@ -15,8 +16,10 @@ package simu5g.apps.mec.MecRequestResponseApp;
 import inet.applications.contract.IApp;
 
 //
-//  This is a UE app that asks to a Device App to obtain the endpoint of a MECResponseApp.
-//  After a successful response, it ... TBC
+// This is a UE app that asks to a Device App to obtain the endpoint of a MECResponseApp.
+// After a successful response, it interacts with the MEC application to send requests
+// and process responses. This module is designed to test the communication and service
+// response time within a MEC architecture setup.
 //
 simple UERequestApp like IApp
 {
