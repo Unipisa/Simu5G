@@ -82,6 +82,7 @@ module Ue
         int numPcapRecorders = default(0); // no of PcapRecorders
 
         bool hasRNISupport = default(false);
+        cellularNic.mac.collectorModule = hasRNISupport ? "^.^.ueCollector" : "";
 
     gates:
         input radioIn @directIn;     // connection to master

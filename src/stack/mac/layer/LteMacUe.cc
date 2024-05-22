@@ -174,26 +174,24 @@ void LteMacUe::initialize(int stage)
 
             if(isNrUe(nodeId_) &&  eNBType == GNODEB)
             {
-
                 EV << "I am a NR Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
-                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
-                {
-                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));
+                if (!par("collectorModule").isEmptyString()) {
+                    UeStatsCollector *ue = getModuleFromPar<UeStatsCollector>(par("collectorModule"), this);
                     binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
                 }
             }
             else if (!isNrUe(nodeId_) && eNBType == ENODEB)
             {
                 EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
-                if(getParentModule()->getParentModule()->findSubmodule("ueCollector") != -1)
-                {
-                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("ueCollector"));
+                if (!par("collectorModule").isEmptyString()) {
+                    UeStatsCollector *ue = getModuleFromPar<UeStatsCollector>(par("collectorModule"), this);
                     binder_->addUeCollectorToEnodeB(nodeId_, ue,cellId_);
                 }
             }
             else
             {
                 EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: "<< cellId_ << " has a different type" <<  endl;
+                // TODO is this a valid check or is the collector module possible here:    ASSERT(par("collectorModule").isEmptyString());
             }
 
             ////

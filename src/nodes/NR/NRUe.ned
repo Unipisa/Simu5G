@@ -27,6 +27,7 @@ module NRUe extends Ue
         int nrMasterId @mutable = default(0);
         int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter
         int nrMacCellId @mutable = default(0); // TODO: this is not a real parameter
+        cellularNic.nrMac.collectorModule = hasRNISupport ? "^.^.NRueCollector" : "";
 
     gates:
         input nrRadioIn @directIn;     // connection to master

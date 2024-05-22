@@ -19,5 +19,6 @@ simple LteMacUe extends LteMacBase
 {
     parameters:
         @class("LteMacUe");
+        string collectorModule = default("");
 }
 
