@@ -26,9 +26,9 @@ class LteBinder;
 class CircleNotificationSubscription : public SubscriptionBase
 {
     public:
-        CircleNotificationSubscription();
-        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
-        CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
+        CircleNotificationSubscription(Binder* binder_);
+        CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
+        CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
         virtual ~CircleNotificationSubscription();
 
 //        nlohmann::ordered_json toJson() const override;

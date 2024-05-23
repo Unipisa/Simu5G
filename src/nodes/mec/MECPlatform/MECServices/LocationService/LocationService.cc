@@ -284,7 +284,7 @@ void LocationService::handlePOSTRequest(const HttpRequestMessage *currentRequest
             return;
         }
 
-        CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(subscriptionId_, socket , baseSubscriptionLocation_,  eNodeB_);
+        CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(binder_, subscriptionId_, socket , baseSubscriptionLocation_,  eNodeB_);
         bool res = newSubscription->fromJson(jsonBody);
         //correct subscription post
         if(res)
@@ -369,7 +369,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
 
            CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
            int id = sub->getSubscriptionId();
-           CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(id, socket , baseSubscriptionLocation_,  eNodeB_, sub->getFirstNotification(), sub->getLastoNotification());
+           CircleNotificationSubscription* newSubscription  = new CircleNotificationSubscription(binder_, id, socket , baseSubscriptionLocation_,  eNodeB_, sub->getFirstNotification(), sub->getLastoNotification());
            bool res = newSubscription->fromJson(jsonBody);
            if(res == true)
            {

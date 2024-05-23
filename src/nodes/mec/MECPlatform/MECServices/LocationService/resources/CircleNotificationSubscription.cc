@@ -20,23 +20,23 @@
 namespace simu5g {
 using namespace omnetpp;
 
-CircleNotificationSubscription::CircleNotificationSubscription()
+CircleNotificationSubscription::CircleNotificationSubscription(Binder* binder_)
 {
- binder = getBinder();
+ binder = binder_;
  firstNotificationSent = false;
  lastNotification = 0;
 }
 
-CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs):
+CircleNotificationSubscription::CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs):
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
-    binder = getBinder();
+    binder = binder_;
     baseResLocation_+= "area/circle";
     firstNotificationSent = false;
 };
 
-CircleNotificationSubscription::CircleNotificationSubscription(unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot):
+CircleNotificationSubscription::CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket , const std::string& baseResLocation, std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot):
 SubscriptionBase(subId,socket,baseResLocation, eNodeBs){
-    binder = getBinder();
+    binder = binder_;
     baseResLocation_+= "area/circle";
     firstNotificationSent = firstNotSent;
     lastNotification = lastNot;
