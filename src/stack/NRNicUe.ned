@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -20,10 +19,11 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
 
+
 //
 // This module defines a User Equipment (UE) network interface card that
-// supports both LTE and NR (New Radio) technologies. It extends the 
-// LteNicUeD2D module by adding additional submodules and parameters to 
+// supports both LTE and NR (New Radio) technologies. It extends the
+// LteNicUeD2D module by adding additional submodules and parameters to
 // support NR-specific functionalities.
 //
 module NRNicUe extends LteNicUeD2D

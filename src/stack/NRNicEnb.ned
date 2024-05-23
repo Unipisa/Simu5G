@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,11 +13,11 @@
 package simu5g.stack;
 
 //
-// NRNicEnb is an extension of LteNicEnbD2D and represents an e/gNodeB with 
-// the NR (New Radio) stack. This module is tailored for 5G NR simulation scenarios
-// and integrates specific components such as NRMacGnb, NRChannelModel_3GPP38_901,
-// and NRPacketFlowManagerGnb. These components enhance the realism and accuracy 
-// of NR-based network simulations.
+// The NRNicEnb module is a network interface which provides 5G connectivity
+// within an gNodeB. It implements data and signaling plane of the NR (New Radio) stack,
+// which includes PDCP, RLC, MAC, and PHY layers. The parameters and submodules
+// allow customization of the eNodeB's behavior, including whether it supports
+// D2D communication, CoMP (Coordinated MultiPoint), or dual connectivity.
 //
 module NRNicEnb extends LteNicEnbD2D
 {

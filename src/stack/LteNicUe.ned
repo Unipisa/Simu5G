@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -16,19 +15,10 @@ package simu5g.stack;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 
 //
-// This module represents a User Equipment (UE) device implementing a 
-// Long Term Evolution (LTE) stack. It includes various protocol layers 
-// like PDCP, RLC, MAC, and PHY.
-//
-// Parameters:
-// - LtePdcpRrcType: Specifies the type of PDCP and RRC stack to use.
-// - LteMacType: Specifies the type of MAC stack to use.
-// - LtePhyType: Specifies the type of PHY stack to use.
-// - PacketFlowManagerType: Specifies the type of packet flow manager.
-// - d2dCapable: Indicates if the UE is capable of Device-to-Device (D2D) communication.
-//
-// Submodules:
-// - dlFbGen: Downlink Feedback Generator for managing downlink feedback.
+// The LteNicUe module is a network interface which provides LTE connectivity
+// within a UE (User Equipment). It implements data and signaling plane of the LTE stack,
+// which includes PDCP, RLC, MAC, and PHY layers. The parameters and submodules
+// allow customization of the UE's behavior.
 //
 module LteNicUe extends LteNicBase
 {
