@@ -1252,7 +1252,7 @@ void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector 
     }
 
     // no cell has the UeCollector, add it
-    enb = getParentModule()->getModuleByPath(getModuleNameByMacNodeId(cell));
+    enb = getModuleByMacNodeId(cell);
     if (enb->getSubmodule("collector") != nullptr)
     {
         enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
@@ -1275,8 +1275,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
     RanNodeType newCellType = getBaseStationTypeById(newCell);
 
     // get and remove the UeCollector from the OldCell
-    const char* cellModuleName = getModuleNameByMacNodeId(oldCell); // eNodeB module name
-    cModule *oldEnb = getParentModule()->getModuleByPath(cellModuleName); //  eNobe module
+    cModule *oldEnb = getModuleByMacNodeId(oldCell); //  eNobe module
     BaseStationStatsCollector * enbColl = nullptr;
     UeStatsCollector * ueColl = nullptr;
     if (oldEnb->getSubmodule("collector") != nullptr)
@@ -1307,7 +1306,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
         if(newCellType == GNODEB)
         {
             // retrieve NrUeCollector
-            cModule *ueModule = getModuleByPath(getModuleNameByMacNodeId(ue));
+            cModule *ueModule = getModuleByMacNodeId(ue);
             if(ueModule->findSubmodule("NRueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
             else
@@ -1318,7 +1317,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
         else if (newCellType == ENODEB)
         {
             // retrieve NrUeCollector
-            cModule *ueModule = getModuleByPath(getModuleNameByMacNodeId(ue));
+            cModule *ueModule = getModuleByMacNodeId(ue);
             if(ueModule->findSubmodule("ueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
             else
@@ -1334,7 +1333,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
 
 RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
 {
-    cModule *module = getModuleByPath(getModuleNameByMacNodeId(cellId));
+    cModule *module = getModuleByMacNodeId(cellId);
     std::string nodeType;
     if(module->hasPar("nodeType"))
     {

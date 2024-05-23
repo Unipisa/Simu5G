@@ -165,7 +165,7 @@ void LteMacUe::initialize(int stage)
              * It checks the NIC, i.e. Lte or NR and chooses the correct UeCollector to connect.             *
              */
 
-            cModule *module = binder_->getModuleByPath(binder_->getModuleNameByMacNodeId(cellId_));
+            cModule *module = binder_->getModuleByMacNodeId(cellId_);
             std::string nodeType;
             if(module->hasPar("nodeType"))
                 nodeType = module->par("nodeType").stdstringValue();
