@@ -38,6 +38,8 @@ class L2Meas : public AttributeBase
 		L2Meas(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
 		virtual ~L2Meas();
 
+        void setBinder(Binder *binder) { binder_ = binder; }
+
 		nlohmann::ordered_json toJson() const override;
 
 		void addEnodeB(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);

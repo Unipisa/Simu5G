@@ -19,7 +19,7 @@
 namespace simu5g {
 
 L2Meas::L2Meas() {
-    binder_ = getBinder();
+    binder_ = nullptr;
 }
 
 L2Meas::L2Meas(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs) {
@@ -105,6 +105,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
 
 	std::map<MacCellId, BaseStationStatsCollector*>::const_iterator eit;
 	bool found = false;
+	ASSERT(binder_ != nullptr);
 	for(auto ipAddress: uesID){
 
 	    /*

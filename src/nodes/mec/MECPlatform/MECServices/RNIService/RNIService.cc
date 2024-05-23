@@ -43,7 +43,10 @@ void RNIService::initialize(int stage)
 {
     MecServiceBase::initialize(stage);
 
-    if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
+    if (stage == inet::INITSTAGE_LOCAL) {
+        L2MeasResource_.setBinder(binder_);
+    }
+    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         L2MeasResource_.addEnodeB(eNodeB_);
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     }
