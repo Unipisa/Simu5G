@@ -73,11 +73,5 @@ void AssociateId::setValue(std::string value)
 
 }
 
-MacNodeId AssociateId::getNodeId()
-{
-    Binder* binder = getBinder();
-    return binder->getMacNodeId(inet::Ipv4Address(value_.c_str()));
-}
-
 } //namespace
 
