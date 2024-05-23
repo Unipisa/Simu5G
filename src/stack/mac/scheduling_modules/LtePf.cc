@@ -21,9 +21,6 @@ void LtePf::prepareSchedule()
     EV << NOW << "LtePf::execSchedule ############### eNodeB " << eNbScheduler_->mac_->getMacNodeId() << " ###############" << endl;
     EV << NOW << "LtePf::execSchedule Direction: " << ( ( direction_ == DL ) ? " DL ": " UL ") << endl;
 
-    if (binder_ == nullptr)
-        binder_ = getBinder();
-
     // Clear structures
     grantedBytes_.clear();
 
@@ -61,7 +58,7 @@ void LtePf::prepareSchedule()
             dir = DL;
 
         // check if node is still a valid node in the simulation - might have been dynamically removed
-        if(getBinder()->getOmnetId(nodeId) == 0){
+        if(binder_->getOmnetId(nodeId) == 0){
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
             EV << "CID " << cid << " of node "<< nodeId << " removed from active connection set - no OmnetId in Binder known.";

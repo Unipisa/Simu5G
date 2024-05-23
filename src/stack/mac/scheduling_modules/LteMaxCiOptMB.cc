@@ -23,7 +23,7 @@ namespace simu5g {
 using namespace std;
 using namespace omnetpp;
 
-LteMaxCiOptMB::LteMaxCiOptMB()
+LteMaxCiOptMB::LteMaxCiOptMB(Binder *binder) : LteScheduler(binder)
 {
     problemFile_ = "./optFile.lp";
     solutionFile_     = "./solution.sol";

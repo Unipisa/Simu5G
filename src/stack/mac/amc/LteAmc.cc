@@ -35,9 +35,9 @@ AmcPilot* LteAmc::getAmcPilot(const cPar& p)
     EV << "Creating Amc pilot " << p.stringValue() << endl;
     const char* s = p.stringValue();
     if(strcmp(s,"AUTO")==0)
-    return new AmcPilotAuto(this);
+    return new AmcPilotAuto(binder_, this);
     if(strcmp(s,"D2D")==0)
-    return new AmcPilotD2D(this);
+    return new AmcPilotD2D(binder_, this);
     throw cRuntimeError("Amc Pilot not recognized");
 }
 

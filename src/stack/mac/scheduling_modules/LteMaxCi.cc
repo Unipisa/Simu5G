@@ -21,9 +21,6 @@ void LteMaxCi::prepareSchedule()
 {
     EV << NOW << " LteMaxCI::schedule " << eNbScheduler_->mac_->getMacNodeId() << endl;
 
-    if (binder_ == nullptr)
-        binder_ = getBinder();
-
     activeConnectionTempSet_ = *activeConnectionSet_;
 
     // Build the score list by cycling through the active connections.

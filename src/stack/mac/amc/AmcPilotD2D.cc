@@ -34,7 +34,7 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
 
     BandSet b;
     Band i = 0;
-    for ( ; i < getBinder()->getTotalBands(); ++i)
+    for ( ; i < binder_->getTotalBands(); ++i)
         b.insert(i);
 
     preconfiguredTxParams_->writeBands(b);
@@ -93,7 +93,7 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
     if (mode_ == AVG_CQI)
     {
         // MEAN cqi computation method
-        chosenCqi = getBinder()->meanCqi(sfb.getCqi(0),id,dir);
+        chosenCqi = binder_->meanCqi(sfb.getCqi(0),id,dir);
         for (Band i = 0; i < sfb.getCqi(0).size(); ++i)
         {
             Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, i);

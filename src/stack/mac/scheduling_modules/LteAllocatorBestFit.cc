@@ -18,7 +18,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteAllocatorBestFit::LteAllocatorBestFit()
+LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder)
 {
     conflictGraph_ = nullptr;
 }
@@ -102,9 +102,6 @@ bool LteAllocatorBestFit::checkConflict(const CGMatrix* cgMatrix, MacNodeId node
 void LteAllocatorBestFit::prepareSchedule()
 {
     EV << NOW << " LteAllocatorBestFit::schedule " << eNbScheduler_->mac_->getMacNodeId() << endl;
-
-    if (binder_ == nullptr)
-        binder_ = getBinder();
 
     if (conflictGraph_ == nullptr)
         conflictGraph_ = mac_->getConflictGraph();

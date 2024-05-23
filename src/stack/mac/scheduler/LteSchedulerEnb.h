@@ -144,8 +144,9 @@ class LteSchedulerEnb
      * Set Direction and bind the internal pointers to the MAC objects.
      * @param dir link direction
      * @param mac pointer to MAC module
+     * @param binder pointer to Binder module
      */
-    void initialize(Direction dir, LteMacEnb* mac);
+    void initialize(Direction dir, LteMacEnb* mac, Binder *binder);
 
     /*
      * Initialize counters for schedulers

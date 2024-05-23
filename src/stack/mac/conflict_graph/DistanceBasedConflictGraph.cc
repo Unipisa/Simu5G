@@ -22,8 +22,8 @@ using namespace omnetpp;
  * \memberof DistanceBasedConflictGraph
  * \brief class constructor;
  */
-DistanceBasedConflictGraph::DistanceBasedConflictGraph(LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh)
-        : ConflictGraph(macEnb,reuseD2D,reuseD2DMulti)
+DistanceBasedConflictGraph::DistanceBasedConflictGraph(Binder *binder, LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh)
+        : ConflictGraph(binder, macEnb,reuseD2D,reuseD2DMulti)
 {
     d2dDbmThreshold_ = d2dMultiTxDbmThreshold_ = d2dMultiInterfDbmThreshold_ = dbmThresh;
 
@@ -60,14 +60,12 @@ double DistanceBasedConflictGraph::getDbmFromDistance(double distance)
 
 void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
 {
-    Binder* binder = getBinder();
-
     if (reuseD2D_)  // get point-to-point links
     {
         // get the list of point-to-point D2D connections
 
         typedef std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> > PeeringMap;
-        PeeringMap* peeringMap = binder->getD2DPeeringMap();
+        PeeringMap* peeringMap = binder_->getD2DPeeringMap();
 
         PeeringMap::iterator pit = peeringMap->begin(), pet = peeringMap->end();
         for (; pit != pet; ++pit)
@@ -83,7 +81,7 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
 
     if (reuseD2DMulti_)  // get point-to-multipoint transmitters
     {
-        std::set<MacNodeId>& multicastTransmitterSet = binder->getD2DMulticastTransmitters();
+        std::set<MacNodeId>& multicastTransmitterSet = binder_->getD2DMulticastTransmitters();
         std::set<MacNodeId>::iterator it = multicastTransmitterSet.begin(), et = multicastTransmitterSet.end();
         for (; it != et; ++it)
         {

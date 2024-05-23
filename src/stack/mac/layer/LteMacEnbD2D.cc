@@ -74,7 +74,7 @@ void LteMacEnbD2D::initialize(int stage)
             {
                 case CG_DISTANCE:
                 {
-                    conflictGraph_ = new DistanceBasedConflictGraph(this, reuseD2D_, reuseD2DMulti_, par("conflictGraphThreshold"));
+                    conflictGraph_ = new DistanceBasedConflictGraph(binder_, this, reuseD2D_, reuseD2DMulti_, par("conflictGraphThreshold"));
                     check_and_cast<DistanceBasedConflictGraph*>(conflictGraph_)->setThresholds(par("conflictGraphD2DInterferenceRadius"), par("conflictGraphD2DMultiTxRadius"), par("conflictGraphD2DMultiInterferenceRadius"));
                     break;
                 }

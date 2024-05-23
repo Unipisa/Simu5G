@@ -75,6 +75,7 @@ class ConflictGraph
 {
 
 protected:
+    Binder *binder_;
 
     // reference to the MAC layer
     LteMacEnbD2D *macEnb_;
@@ -97,7 +98,7 @@ protected:
 
 public:
 
-    ConflictGraph(LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti);
+    ConflictGraph(Binder *binder, LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti);
     virtual ~ConflictGraph();
 
     // compute Conflict Graph

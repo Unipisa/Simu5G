@@ -37,8 +37,8 @@ class AmcPilotAuto : public AmcPilot
      * Constructor
      * @param amc LteAmc owner module
      */
-    AmcPilotAuto(LteAmc *amc) :
-        AmcPilot(amc)
+    AmcPilotAuto(Binder *binder, LteAmc *amc) :
+        AmcPilot(binder, amc)
     {
         mode_ = AVG_CQI;//MAX_CQI;//MIN_CQI;
         name_ = "Auto";

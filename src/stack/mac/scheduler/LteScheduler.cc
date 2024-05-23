@@ -213,9 +213,6 @@ void LteScheduler::buildCarrierActiveConnectionSet()
     // put in the activeConnectionSet only connections that are active
     // and whose UE is enabled to use this carrier
 
-    if (binder_ == NULL)
-        binder_ = getBinder();
-
     const UeSet& carrierUeSet = binder_->getCarrierUeSet(carrierFrequency_);
     ActiveSet::iterator it = activeConnectionSet_->begin();
     for (; it != activeConnectionSet_->end(); ++it)

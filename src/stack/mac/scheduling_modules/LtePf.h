@@ -53,7 +53,8 @@ class LtePf : public LteScheduler
 
     // *****************************************************************************************
 
-    LtePf(double pfAlpha) :
+    LtePf(Binder *binder, double pfAlpha) :
+        LteScheduler(binder),
         scoreEpsilon_(0.000001)
     {
         pfAlpha_ = pfAlpha;

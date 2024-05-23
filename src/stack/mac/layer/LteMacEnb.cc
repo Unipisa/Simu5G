@@ -203,7 +203,7 @@ void LteMacEnb::initialize(int stage)
         {
             enbSchedulerDl_ = new LteSchedulerEnbDl();
             (enbSchedulerDl_->resourceBlocks()) = cellInfo_->getNumBands();
-            enbSchedulerDl_->initialize(DL, this);
+            enbSchedulerDl_->initialize(DL, this, binder_);
         }
 
         /* Create and initialize MAC Uplink scheduler */
@@ -211,7 +211,7 @@ void LteMacEnb::initialize(int stage)
         {
             enbSchedulerUl_ = new LteSchedulerEnbUl();
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
-            enbSchedulerUl_->initialize(UL, this);
+            enbSchedulerUl_->initialize(UL, this, binder_);
         }
 
         const CarrierInfoMap* carriers = cellInfo_->getCarrierInfoMap();

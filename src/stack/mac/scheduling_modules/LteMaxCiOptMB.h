@@ -46,7 +46,7 @@ class LteMaxCiOptMB : public virtual LteScheduler
     // apply the scheduling decision in the allocator (occupies the Resource blocks)
     void applyScheduling();
 public:
-    LteMaxCiOptMB();
+    LteMaxCiOptMB(Binder *binder);
     virtual ~LteMaxCiOptMB(){};
 
     virtual void prepareSchedule();

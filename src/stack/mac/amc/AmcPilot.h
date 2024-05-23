@@ -40,6 +40,7 @@ class LteAmc;
 class AmcPilot
 {
   protected:
+    Binder *binder_;
 
     //! LteAmc owner module
     LteAmc *amc_;
@@ -59,8 +60,9 @@ class AmcPilot
      * Constructor
      * @param amc LteAmc owner module
      */
-    AmcPilot(LteAmc *amc)
+    AmcPilot(Binder *binder, LteAmc *amc)
     {
+        binder_ = binder;
         amc_ = amc;
         name_ = "NONE";
     }

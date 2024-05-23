@@ -111,11 +111,11 @@ class LteScheduler
     /**
      * Default constructor.
      */
-    LteScheduler()
+    LteScheduler(Binder *binder)
     {
         //    WATCH(activeSet_);
         activeConnectionSet_ = nullptr;
-        binder_ = nullptr;
+        binder_ = binder;
     }
     /**
      * Destructor.

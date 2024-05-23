@@ -189,7 +189,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
     else if (mode_ == AVG_CQI)
     {
         // MEAN cqi computation method
-        chosenCqi = getBinder()->meanCqi(sfb.getCqi(0),id,dir);
+        chosenCqi = binder_->meanCqi(sfb.getCqi(0),id,dir);
         for (Band i = 0; i < sfb.getCqi(0).size(); ++i)
         {
             Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, i);
@@ -201,7 +201,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
     else if (mode_ == MEDIAN_CQI)
     {
         // MEAN cqi computation method
-        chosenCqi = getBinder()->medianCqi(sfb.getCqi(0),id,dir);
+        chosenCqi = binder_->medianCqi(sfb.getCqi(0),id,dir);
         for (Band i = 0; i < sfb.getCqi(0).size(); ++i)
         {
             Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, i);
@@ -279,7 +279,7 @@ bool AmcPilotAuto::getUsableBands(MacNodeId id, UsableBands*& uBands)
         if (getNodeTypeById(id) == UE)
         {
             // if it is a UE, look for its serving cell
-            MacNodeId cellId = getBinder()->getNextHop(id);
+            MacNodeId cellId = binder_->getNextHop(id);
             it = usableBandsList_.find(cellId);
             if(it!=usableBandsList_.end())
                 found = true;

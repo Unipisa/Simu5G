@@ -29,6 +29,7 @@ class LteMaxCiComp : public virtual LteScheduler
     bool getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId);
 
   public:
+    LteMaxCiComp(Binder *binder) : LteScheduler(binder) {}
 
     virtual void prepareSchedule();
 

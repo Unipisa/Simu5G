@@ -31,8 +31,8 @@ class AmcPilotD2D : public AmcPilot
      * Constructor
      * @param amc LteAmc owner module
      */
-    AmcPilotD2D(LteAmc *amc) :
-        AmcPilot(amc)
+    AmcPilotD2D(Binder *binder, LteAmc *amc) :
+        AmcPilot(binder, amc)
     {
         name_ = "D2D";
         mode_ = MIN_CQI;

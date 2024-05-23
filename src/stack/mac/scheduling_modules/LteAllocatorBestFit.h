@@ -70,7 +70,7 @@ class LteAllocatorBestFit : public virtual LteScheduler
 
   public:
 
-    LteAllocatorBestFit();
+    LteAllocatorBestFit(Binder *binder);
 
     virtual void prepareSchedule();
 

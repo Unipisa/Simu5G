@@ -65,6 +65,7 @@ class LteDrr : public LteScheduler
     DrrDescMap drrTempMap_;
 
   public:
+    LteDrr(Binder *binder) : LteScheduler(binder) {}
 
     // Scheduling functions ********************************************************************
 

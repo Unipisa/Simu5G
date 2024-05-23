@@ -20,8 +20,9 @@ using namespace omnetpp;
  * \memberof ConflictGraph
  * \brief class constructor;
  */
-ConflictGraph::ConflictGraph(LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti)
+ConflictGraph::ConflictGraph(Binder *binder, LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti)
 {
+    binder_ = binder;
     conflictGraph_.clear();
     macEnb_ = macEnb;
     cellInfo_ = macEnb_->getCellInfo();

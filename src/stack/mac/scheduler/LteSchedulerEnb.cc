@@ -95,12 +95,12 @@ LteSchedulerEnb::~LteSchedulerEnb()
         delete *it;
 }
 
-void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac)
+void LteSchedulerEnb::initialize(Direction dir, LteMacEnb* mac, Binder *binder)
 {
     direction_ = dir;
     mac_ = mac;
 
-    binder_ = getBinder();
+    binder_ = binder;
 
     vbuf_ = mac_->getMacBuffers();
     bsrbuf_ = mac_->getBsrVirtualBuffers();
@@ -1029,19 +1029,19 @@ LteScheduler* LteSchedulerEnb::getScheduler(SchedDiscipline discipline)
     switch(discipline)
     {
         case DRR:
-        return new LteDrr();
+        return new LteDrr(binder_);
         case PF:
-        return new LtePf(mac_->par("pfAlpha").doubleValue());
+        return new LtePf(binder_, mac_->par("pfAlpha").doubleValue());
         case MAXCI:
-        return new LteMaxCi();
+        return new LteMaxCi(binder_);
         case MAXCI_MB:
-        return new LteMaxCiMultiband();
+        return new LteMaxCiMultiband(binder_);
         case MAXCI_OPT_MB:
-        return new LteMaxCiOptMB();
+        return new LteMaxCiOptMB(binder_);
         case MAXCI_COMP:
-        return new LteMaxCiComp();
+        return new LteMaxCiComp(binder_);
         case ALLOCATOR_BESTFIT:
-        return new LteAllocatorBestFit();
+        return new LteAllocatorBestFit(binder_);
 
         default:
         throw cRuntimeError("LteScheduler not recognized");

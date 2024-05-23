@@ -34,7 +34,7 @@ void NRMacGnb::initialize(int stage)
         {
             enbSchedulerUl_ = new NRSchedulerGnbUl();
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
-            enbSchedulerUl_->initialize(UL, this);
+            enbSchedulerUl_->initialize(UL, this, binder_);
         }
     }
     LteMacEnbD2D::initialize(stage);

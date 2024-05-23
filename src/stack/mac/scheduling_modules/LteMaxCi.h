@@ -24,6 +24,7 @@ class LteMaxCi : public virtual LteScheduler
     typedef std::priority_queue<ScoreDesc> ScoreList;
 
   public:
+    LteMaxCi(Binder *binder) : LteScheduler(binder) {}
 
     virtual void prepareSchedule();
 

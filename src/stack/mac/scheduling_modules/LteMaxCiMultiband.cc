@@ -23,8 +23,6 @@ bool debug = false;
 
 void LteMaxCiMultiband::prepareSchedule()
 {
-    if (binder_ == nullptr)
-        binder_ = getBinder();
     activeConnectionTempSet_ = *activeConnectionSet_;
     MacCid cid;
     unsigned int byPs = 0;
