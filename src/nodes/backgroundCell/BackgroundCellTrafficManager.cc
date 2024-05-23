@@ -44,9 +44,9 @@ void BackgroundCellTrafficManager::initialize(int stage)
         bgScheduler_.reference(this, "bgSchedulerModule", true);
 
         if (bgScheduler_->isNr())
-            bgAmc_ = new BackgroundCellAmcNr();
+            bgAmc_ = new BackgroundCellAmcNr(binder_);
         else
-            bgAmc_ = new BackgroundCellAmc();
+            bgAmc_ = new BackgroundCellAmc(binder_);
 
         phyPisaData_ = &(binder_->phyPisaData);
     }

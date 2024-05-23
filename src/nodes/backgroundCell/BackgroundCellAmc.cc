@@ -21,9 +21,9 @@ BackgroundCellAmc::~BackgroundCellAmc()
 {
 }
 
-BackgroundCellAmc::BackgroundCellAmc()
+BackgroundCellAmc::BackgroundCellAmc(Binder *binder)
 {
-    binder_ = NULL;
+    binder_ = binder;
 
     calculateMcsScale();
 

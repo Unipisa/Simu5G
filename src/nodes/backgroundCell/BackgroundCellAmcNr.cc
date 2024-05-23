@@ -21,7 +21,7 @@ BackgroundCellAmcNr::~BackgroundCellAmcNr()
 {
 }
 
-BackgroundCellAmcNr::BackgroundCellAmcNr() : BackgroundCellAmc()
+BackgroundCellAmcNr::BackgroundCellAmcNr(Binder *binder) : BackgroundCellAmc(binder)
 {
 }
 
@@ -104,10 +104,6 @@ NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
 unsigned int BackgroundCellAmcNr::getSymbolsPerSlot(double carrierFrequency, Direction dir)
 {
     unsigned totSymbols = 14;   // TODO get this parameter from CellInfo/Carrier
-
-    // use a function from the binder
-    if (binder_ == NULL)
-        binder_ = getBinder();
 
     SlotFormat sf = binder_->getSlotFormat(carrierFrequency);
     if (!sf.tdd)

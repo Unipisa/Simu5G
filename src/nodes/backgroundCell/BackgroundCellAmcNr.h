@@ -35,7 +35,7 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
     unsigned int computeTbsFromNinfo(double nInfo, double coderate);
 
   public:
-    BackgroundCellAmcNr();
+    BackgroundCellAmcNr(Binder *binder);
     virtual ~BackgroundCellAmcNr();
 
     virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);

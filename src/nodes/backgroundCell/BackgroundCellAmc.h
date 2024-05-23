@@ -35,7 +35,7 @@ class BackgroundCellAmc
     void calculateMcsScale();
 
   public:
-    BackgroundCellAmc();
+    BackgroundCellAmc(Binder *binder);
     virtual ~BackgroundCellAmc();
 
     virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
