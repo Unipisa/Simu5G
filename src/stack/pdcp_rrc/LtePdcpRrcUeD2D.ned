@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,21 +12,13 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// This module represents a D2D-capable User Equipment (UE) PDCP/RRC layer in the LTE stack.
-// It extends the basic LTE PDCP/RRC functionality with D2D communication capabilities,
-// allowing direct communication between UEs without routing traffic through the base station.
-// The module integrates with other LTE layers including MAC and PHY to support D2D operations.
+// The LtePdcpRrcUeD2D module implements the PDCP/RRC layer for a LTE NIC employed at 
+// a User Equipment with support to Device-to-device (D2D) communications.  It extends 
+// the basic PDCP/RRC functionality with D2D communication capabilities.
 //
 simple LtePdcpRrcUeD2D extends LtePdcpRrcUe
 {
     parameters:
         @class("LtePdcpRrcUeD2D");
-        /**
-         * @brief D2D-capable PDCP/RRC layer module for UE in LTE networks.
-         *
-         * This module extends the basic PDCP/RRC layer to enable Device-to-Device (D2D) communication in LTE networks.
-         * It handles both normal uplink communication to the eNB and direct D2D communication between UEs.
-         * The module includes functionality for handling mode switches between D2D and uplink modes.
-         */
 }
 

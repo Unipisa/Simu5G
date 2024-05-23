@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,19 +12,9 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// This module represents the PDCP/RRC layer for the User Equipment (UE) in the 
-// New Radio (NR) stack. It handles the Packet Data Convergence Protocol (PDCP) 
-// and Radio Resource Control (RRC) functionalities for NR, enabling the UE 
-// to communicate efficiently in an NR network environment.
-//
-// ALTERNATIVE:
-//
-// The NRPdcpRrcUe module implements the PDCP (Packet Data Convergence Protocol)
-// and RRC (Radio Resource Control) functionality for the UE (User Equipment)
-// in the NR (New Radio) stack. This module handles packet forwarding to 
-// the RLC (Radio Link Control) layer, supports Dual Connectivity, and manages 
-// PDCP entities for packet flow. It extends the LtePdcpRrcUeD2D to include
-// NR-specific functionalities.
+// The NrPdcpRrcUe module implements the PDCP/RRC layer for a NR NIC employed at 
+// a User Equipment. It extends the ~LtePdcpRrcUeD2D module to enable Dual Connectivity
+// and Split Bearer functionalities at the UE
 //
 simple NRPdcpRrcUe extends LtePdcpRrcUeD2D
 {

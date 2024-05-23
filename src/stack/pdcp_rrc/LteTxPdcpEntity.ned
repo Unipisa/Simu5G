@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,14 +12,10 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// This module represents the Transmit Entity of NR (New Radio) PDCP (Packet Data Convergence Protocol).
-// It extends the functionalities of the LteTxPdcpEntity and incorporates additional features 
-// necessary for NR transmissions.
-//
-// @neddoc[Entity responsible for transmitting PDCP PDUs in the LTE stack. 
-// This module handles the creation, sequencing, and metadata association 
-// for PDCP PDUs before they are passed down to the RLC layer. 
-// It includes error-checking, header compression, and sequence number management.]
+// This module handles the operations related to the LTE PDCP (Packet Data Convergence Protocol) 
+// layer at the transmitting side of a specific connection. This module handles the creation, 
+// sequencing, header compression and metadata association for PDCP PDUs before they are passed 
+// down to the RLC layer. 
 //
 simple LteTxPdcpEntity
 {

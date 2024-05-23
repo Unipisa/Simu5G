@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,19 +13,10 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// This module defines the receiving entity for the NR PDCP layer. It is responsible for handling
-// incoming PDCP Service Data Units (SDUs), performing reordering based on sequence numbers, and 
-// delivering the SDUs to the upper layer. The module supports dual connectivity, where it can 
-// reorder packets before delivery when necessary. Parameters include enabling out-of-order delivery, 
-// setting the timeout for the reception buffer, and configuring the size of the reception window.
-//
-// ALTERNATIVE:
-//
-// This module represents the Receive Entity of the New Radio (NR) Packet Data Convergence Protocol (PDCP) layer.
-// It extends the functionalities of LteRxPdcpEntity to support NR-specific features such as:
-// - Managing the reorder window for packet delivery.
-// - Handling out-of-order delivery based on the configuration.
-// - Implementing timers to manage reordering.
+// This module handles the operations related to the NR PDCP (Packet Data Convergence Protocol) 
+// layer at the receiving side of a specific connection. It extends the ~LteRxPdcpEntity module
+// This module handles the creation, by adding support for Dual Connectivity functionality. In
+// particular, it manages re-ordering of out-of-sequence PDCP PDUs in Dual Connectivity deployments.
 //
 simple NRRxPdcpEntity extends LteRxPdcpEntity
 {

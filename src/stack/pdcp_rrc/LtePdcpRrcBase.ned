@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,40 +13,11 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// Base module for the PDCP/RRC layer of LTE Stack.
-//
-// The LtePdcpRrcBase module serves as the base module for the PDCP/RRC layer
-// in the LTE stack. It handles critical PDCP functionalities such as header 
-// compression, packet flow management, and connection setup between the UE/eNB
-// and the lower RLC layer.
-//
-// ALTERNATIVE:
-//
-// This module handles the Packet Data Convergence Protocol (PDCP) and 
-// Radio Resource Control (RRC) layers, key components in the LTE stack.
-// It defines parameters for header compression and 
-// mapping to different Radio Link Control (RLC) modes.
-//
-// Parameters
-// - headerCompressedSize: Size of the compressed header in bytes. Default is -1B (compression disabled).
-// - conversationalRlc, streamingRlc, interactiveRlc, backgroundRlc: Enumerated types for different RLC modes.
-//
-// Gates
-// - DataPort: Port for transmitting data packets.
-// - EUTRAN_RRC_Sap: Control port for the RRC layer.
-// - TM_Sap[], UM_Sap[], AM_Sap[]: Ports for different RLC modes - Transparent, Unacknowledged, and Acknowledged Mode SAPs.
-// 
-// Signals
-// - receivedPacketFromUpperLayer: Signal for packets received from the upper layer.
-// - sentPacketToUpperLayer: Signal for packets sent to the upper layer.
-// - receivedPacketFromLowerLayer: Signal for packets received from the lower layer.
-// - sentPacketToLowerLayer: Signal for packets sent to the lower layer.
-//
-// Statistics
-// - receivedPacketFromUpperLayer: Records count and sum of packet bytes.
-// - sentPacketToUpperLayer: Records count and sum of packet bytes.
-// - receivedPacketFromLowerLayer: Records count and sum of packet bytes.
-// - sentPacketToLowerLayer: Records count and sum of packet bytes.
+// The LtePdcpRrcBase module implements the functionalities of the Packet Data 
+// Convergence Protocol (PDCP) and Radio Resource Control (RRC) layers. It enables
+// header compression and maps incoming IP packets to different Radio Link Control 
+// (RLC) modes. This module dynamically creates ~LteTxPdcpEntity and ~LteRxPdcpEntity 
+// submodules to handle individual tx/rx connections 
 //
 simple LtePdcpRrcBase like ILtePdcpRrc
 {

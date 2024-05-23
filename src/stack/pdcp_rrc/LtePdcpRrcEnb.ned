@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,18 +13,10 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// eNodeB PDCP/RRC layer of LTE stack.
-// 
-// This module represents the PDCP/RRC layer for an LTE eNodeB (evolved Node B). 
-// It handles packet data convergence and radio resource control, ensuring efficient 
-// data transfer between the eNodeB and the user equipment (UE). The module supports 
-// key LTE features including Dual Connectivity, providing flexibility and performance 
-// enhancements in managing LTE networks. It is a critical component for simulations 
-// that require detailed eNodeB behavior in LTE networks.
-//
-// This module defines the PDCP and RRC layers for eNodeB in the LTE stack. 
-// It extends the functionalities of the base class LtePdcpRrcBase, 
-// providing specific implementations for the eNodeB context.
+// The LtePdcpRrcEnb module implements the PDCP/RRC layer for a LTE NIC employed at 
+// eNodeBs. It performs header compression and maps incoming IP datagrams to different
+// Radio Link Control (RLC) modes. It supports Dual Connectivity and Split Bearer 
+// functionalities.
 //
 simple LtePdcpRrcEnb extends LtePdcpRrcBase
 {
