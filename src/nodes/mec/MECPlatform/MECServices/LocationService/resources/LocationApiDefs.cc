@@ -18,9 +18,8 @@ namespace LocationUtils
 {
 
 
-    inet::Coord getCoordinates(const MacNodeId id)
+    inet::Coord getCoordinates(Binder* binder, const MacNodeId id)
     {
-        Binder* binder = getBinder();
         OmnetId omnetId = binder->getOmnetId(id);
         if(omnetId == 0)
             return inet::Coord::NIL; // or throw exception?
@@ -29,9 +28,8 @@ namespace LocationUtils
         return mobility_->getCurrentPosition();
     }
 
-    inet::Coord getSpeed(const MacNodeId id)
+    inet::Coord getSpeed(Binder* binder, const MacNodeId id)
     {
-        Binder* binder = getBinder();
         OmnetId omnetId = binder->getOmnetId(id);
         if(omnetId == 0)
             return inet::Coord::NIL; // or throw exception?

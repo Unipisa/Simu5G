@@ -30,8 +30,8 @@ namespace LocationUtils{
     */
     enum DistanceCriteria {AllWithinDistance, AnyWithinDistance, AllBeyondDistance, AnyBeyondDistance};
 
-    inet::Coord getCoordinates(const MacNodeId id);
-    inet::Coord getSpeed(const MacNodeId id);
+    inet::Coord getCoordinates(Binder* binder, const MacNodeId id);
+    inet::Coord getSpeed(Binder* binder, const MacNodeId id);
 
 }
 

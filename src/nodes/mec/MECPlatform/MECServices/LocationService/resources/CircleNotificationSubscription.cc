@@ -276,7 +276,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                 else
                 {
                 // set the initial state
-                    inet::Coord coord = LocationUtils::getCoordinates(id);
+                    inet::Coord coord = LocationUtils::getCoordinates(binder, id);
                     inet::Coord center = inet::Coord(latitude,longitude,0.);
                     EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
                     EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
@@ -297,7 +297,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
             else
             {
                 // set the initial state
-                inet::Coord coord = LocationUtils::getCoordinates(id);
+                inet::Coord coord = LocationUtils::getCoordinates(binder, id);
                 inet::Coord center = inet::Coord(latitude,longitude,0.);
                 EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
                 EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
@@ -331,7 +331,7 @@ EventNotification* CircleNotificationSubscription::handleSubscription()
 
         if(!findUe(it->first))
             continue; // TODO manage what to do
-        inet::Coord coord = LocationUtils::getCoordinates(it->first);
+        inet::Coord coord = LocationUtils::getCoordinates(binder, it->first);
         inet::Coord center = inet::Coord(latitude,longitude,0.);
 //        EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
 //        EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;

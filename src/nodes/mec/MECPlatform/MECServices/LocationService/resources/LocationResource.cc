@@ -70,8 +70,8 @@ UserInfo LocationResource::getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellI
     // throw exeption if macNodeId does no exist?
     inet::Ipv4Address ipAddress = binder_->getIPv4Address(nodeId);
     std::string refUrl = baseUri_ + "?address=acr:" + ipAddress.str();
-    inet::Coord  speed = LocationUtils::getSpeed(nodeId);
-    inet::Coord  position = LocationUtils::getCoordinates(nodeId);
+    inet::Coord  speed = LocationUtils::getSpeed(binder_, nodeId);
+    inet::Coord  position = LocationUtils::getCoordinates(binder_, nodeId);
     UserInfo ueInfo = UserInfo(position, speed , ipAddress, cellId, refUrl);
     return ueInfo;
 }
