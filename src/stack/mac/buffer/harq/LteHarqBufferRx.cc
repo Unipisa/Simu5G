@@ -48,7 +48,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
     }
     else // this is a UE
     {
-        nodeB_ = getMacByMacNodeId(macUe_->getMacCellId());
+        nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
         macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputDl");
         macThroughput_ = macUe_registerSignal("macThroughputDl");
         macDelay_ = macUe_registerSignal("macDelayDl");

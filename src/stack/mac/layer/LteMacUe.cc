@@ -154,7 +154,7 @@ void LteMacUe::initialize(int stage)
 
         if (cellId_ > 0)
         {
-            LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(cellId_))->getAmc();
+            LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, cellId_))->getAmc();
             amc->attachUser(nodeId_, UL);
             amc->attachUser(nodeId_, DL);
 
@@ -583,7 +583,7 @@ void LteMacUe::macPduMake(MacCid cid)
                 // the tx buffer does not exist yet for this mac node id, create one
                 // FIXME: hb is never deleted
                 LteHarqBufferTx* hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this,
-                    (LteMacBase*) getMacByMacNodeId(cellId_));
+                    (LteMacBase*) getMacByMacNodeId(binder_, cellId_));
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
             }

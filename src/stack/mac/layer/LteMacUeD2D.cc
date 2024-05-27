@@ -71,7 +71,7 @@ void LteMacUeD2D::initialize(int stage)
             preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
-            enb_ = check_and_cast<LteMacEnbD2D*>(getMacByMacNodeId(cellId_));
+            enb_ = check_and_cast<LteMacEnbD2D*>(getMacByMacNodeId(binder_, cellId_));
 
             LteAmc *amc = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(cellId_))->getSubmodule("cellularNic")->getSubmodule("mac"))->getAmc();
             amc->attachUser(nodeId_, D2D);
@@ -354,10 +354,10 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 auto info = pit->second->getTag<UserControlInfo>();
 
                 if (info->getDirection() == UL) {
-                    hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(binder_, destId));
                 }
                 else { // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(destId));
+                    hb = new LteHarqBufferTxD2D((unsigned int) ENB_TX_HARQ_PROCESSES, this, (LteMacBase*) getMacByMacNodeId(binder_, destId));
                 }
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
@@ -1203,7 +1203,7 @@ void LteMacUeD2D::doHandover(MacNodeId targetEnb)
         if (preconfiguredTxParams_ != nullptr)
             delete preconfiguredTxParams_;
         preconfiguredTxParams_ = getPreconfiguredTxParams();
-        enb_ = check_and_cast<LteMacEnbD2D*>(getMacByMacNodeId(targetEnb));
+        enb_ = check_and_cast<LteMacEnbD2D*>(getMacByMacNodeId(binder_, targetEnb));
     }
     LteMacUe::doHandover(targetEnb);
 }

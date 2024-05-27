@@ -185,7 +185,7 @@ class LteHarqBufferRx
      */
     void initMacUe(){
         if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(srcId_));
+            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(getBinder(), srcId_));
         else
             macUe_ = macOwner_;
     }

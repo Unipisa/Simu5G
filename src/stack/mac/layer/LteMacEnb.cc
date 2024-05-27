@@ -656,7 +656,7 @@ void LteMacEnb::macPduMake(MacCid cid)
             {
                 // FIXME: possible memory leak
                 LteHarqBufferTx* hb = new LteHarqBufferTx(ENB_TX_HARQ_PROCESSES,
-                    this,(LteMacBase*)getMacUe(destId));
+                    this, getMacUe(binder_, destId));
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
             }

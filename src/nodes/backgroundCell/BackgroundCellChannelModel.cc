@@ -932,7 +932,7 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
            (*it)->txAngle = (*it)->phy->getTxAngle();
 
            //get reference to mac layer
-           (*it)->mac = check_and_cast<LteMacEnb*>(getMacByMacNodeId(id));
+           (*it)->mac = check_and_cast<LteMacEnb*>(getMacByMacNodeId(binder_, id));
 
            (*it)->init = true;
        }

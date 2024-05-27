@@ -407,7 +407,7 @@ LteMacBase* Binder::getMacFromMacNodeId(MacNodeId id)
     LteMacBase* mac;
     if (macNodeIdToModule_.find(id) == macNodeIdToModule_.end())
     {
-        mac = check_and_cast<LteMacBase*>(getMacByMacNodeId(id));
+        mac = check_and_cast<LteMacBase*>(getMacByMacNodeId(this, id));
         macNodeIdToModule_[id] = mac;
     }
     else

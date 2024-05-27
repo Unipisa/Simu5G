@@ -699,7 +699,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
    {
        // we are on the BS, so we need to retrieve the channel model of the sender
        // XXX I know, there might be a faster way...
-       LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
+       LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(binder_, ueId))->getChannelModel(lteInfo->getCarrierFrequency());
 
        if (dir == DL) // we are on the UE
            ueChannelModel->emit(measuredSinrDl_, sumSnr / usedRBs);
@@ -1984,7 +1984,7 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteI
        {
            // we are on the BS, so we need to retrieve the channel model of the sender
            // XXX I know, there might be a faster way...
-           LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
+           LteChannelModel* ueChannelModel = check_and_cast<LtePhyUe*>(getPhyByMacNodeId(binder_, id))->getChannelModel(lteInfo->getCarrierFrequency());
            ueChannelModel->emit(rcvdSinrUl_, sumSnr / usedRBs);
        }
    }
@@ -2868,7 +2868,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
            (*it)->txAngle = (*it)->phy->getTxAngle();
 
            //get reference to mac layer
-           (*it)->mac = check_and_cast<LteMacEnb*>(getMacByMacNodeId(id));
+           (*it)->mac = check_and_cast<LteMacEnb*>(getMacByMacNodeId(binder_, id));
 
            (*it)->init = true;
        }

@@ -734,7 +734,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     /* Delete Mac Buffers */
 
     // delete macBuffer[nodeId_] at old master
-    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(masterId));
+    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, masterId));
     masterMac->deleteQueues(nodeId_);
 
     // delete queues for master at this ue
@@ -743,7 +743,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     /* Delete Rlc UM Buffers */
 
     // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm*>(getRlcByMacNodeId(masterId, UM));
+    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm*>(getRlcByMacNodeId(binder_, masterId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for master at this ue
@@ -751,7 +751,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
 
     /* Delete PDCP Entities */
     // delete pdcpEntities[nodeId_] at old master
-    LtePdcpRrcEnb* masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(masterId));
+    LtePdcpRrcEnb* masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(binder_, masterId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for master at this ue

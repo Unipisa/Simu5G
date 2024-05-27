@@ -45,7 +45,7 @@ LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
     }
     else  // UE
     {
-        nodeB_ = getMacByMacNodeId(macOwner_->getMacCellId());
+        nodeB_ = getMacByMacNodeId(getBinder(), macOwner_->getMacCellId());
         if (dstMac_ == nodeB_)  // UL
         {
             macPacketLoss_ = omnetpp::cComponent::registerSignal("macPacketLossUl");

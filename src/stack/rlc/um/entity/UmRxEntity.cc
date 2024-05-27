@@ -173,7 +173,7 @@ void UmRxEntity::enque(cPacket* pktAux)
     double tputSample = (double)totalPduRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
     // emit statistics
-    cModule* ue = getRlcByMacNodeId(ueId, UM);
+    cModule* ue = getRlcByMacNodeId(binder_, ueId, UM);
     if (ue != NULL)
     {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI)  // UE in IM
@@ -299,7 +299,7 @@ void UmRxEntity::toPdcp(Packet* pktAux)
     else  // UL. This module is at the eNB: get the node id of the sender
         ueId = lteInfo->getSourceId();
 
-    cModule* ue = getRlcByMacNodeId(ueId, UM);
+    cModule* ue = getRlcByMacNodeId(binder_, ueId, UM);
     // check whether some PDCP PDUs have not been delivered
     while (sno > lastSnoDelivered_+1)
     {
@@ -688,7 +688,7 @@ void UmRxEntity::reassemble(unsigned int index)
     else  // UL. This module is at the eNB: get the node id of the sender
         ueId = lteInfo->getSourceId();
 
-    cModule* ue = getRlcByMacNodeId(ueId, UM);
+    cModule* ue = getRlcByMacNodeId(binder_, ueId, UM);
     // check whether some PDCP PDUs have not been delivered
     while (pduSno > lastPduReassembled_+1)
     {
@@ -743,7 +743,7 @@ void UmRxEntity::initialize()
     //statistics
 
     LteMacBase* mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
-    nodeB_ = getRlcByMacNodeId(mac->getMacCellId(), UM);
+    nodeB_ = getRlcByMacNodeId(binder_, mac->getMacCellId(), UM);
 
     resetFlag_ = false;
 
