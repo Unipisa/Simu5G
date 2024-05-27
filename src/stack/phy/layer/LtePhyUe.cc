@@ -224,7 +224,7 @@ void LtePhyUe::initialize(int stage)
         // get cellInfo at this stage because the next hop of the node is registered in the IP2Nic module at the INITSTAGE_NETWORK_LAYER
         if (masterId_ > 0)
         {
-            cellInfo_ = getCellInfo(nodeId_);
+            cellInfo_ = getCellInfo(binder_, nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             if (cellInfo_ != NULL)
             {

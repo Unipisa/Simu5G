@@ -54,7 +54,7 @@ void LtePhyEnb::initialize(int stage)
         // get local id
         nodeId_ = getAncestorPar("macNodeId");
         EV << "Local MacNodeId: " << nodeId_ << endl;
-        cellInfo_ = getCellInfo(nodeId_);
+        cellInfo_ = getCellInfo(binder_, nodeId_);
         if (cellInfo_ != NULL)
         {
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));

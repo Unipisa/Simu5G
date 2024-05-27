@@ -497,7 +497,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
        enbCoord = phy_->getCoord();
    }
 
-   CellInfo* eNbCell = getCellInfo(eNbId);
+   CellInfo* eNbCell = getCellInfo(binder_, eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
    EV << "LteRealisticChannelModel::getSINR - srcId=" << lteInfo->getSourceId()
@@ -815,7 +815,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
        enbCoord = phy_->getCoord();
    }
 
-   CellInfo* eNbCell = getCellInfo(eNbId);
+   CellInfo* eNbCell = getCellInfo(binder_, eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
    EV << "LteRealisticChannelModel::getRSRP - srcId=" << lteInfo->getSourceId()
@@ -987,7 +987,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
    }
    speed = computeSpeed(bgUeId, ueCoord);
 
-   CellInfo* eNbCell = getCellInfo(eNbId);
+   CellInfo* eNbCell = getCellInfo(binder_, eNbId);
    const char* eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
    EV << "LteRealisticChannelModel::getSINR_bgUe - DIR=" << (( dir==DL )?"DL" : "UL")
@@ -1738,7 +1738,7 @@ double LteRealisticChannelModel::rayleighFading(MacNodeId id,
 {
    //get raylegh variable from trace file
    double temp1 = binder_->phyPisaData.getChannel(
-           getCellInfo(id)->getLambda(id)->channelIndex + band);
+           getCellInfo(binder_, id)->getLambda(id)->channelIndex + band);
    return linearToDb(temp1);
 }
 

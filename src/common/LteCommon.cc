@@ -503,13 +503,12 @@ LogicalCid MacCidToLcid(MacCid cid)
     return ((LogicalCid) (cid));
 }
 
-CellInfo* getCellInfo(MacNodeId nodeId)
+CellInfo* getCellInfo(Binder* binder, MacNodeId nodeId)
 {
-    Binder* temp = getBinder();
     // Check if is an eNodeB
     // function GetNextHop returns nodeId
-    MacNodeId id = temp->getNextHop(nodeId);
-    OmnetId omnetid = temp->getOmnetId(id);
+    MacNodeId id = binder->getNextHop(nodeId);
+    OmnetId omnetid = binder->getOmnetId(id);
     omnetpp::cModule* module = getSimulation()->getModule(omnetid);
     return module? check_and_cast<CellInfo*>(module->getSubmodule("cellInfo")) : nullptr;
 }

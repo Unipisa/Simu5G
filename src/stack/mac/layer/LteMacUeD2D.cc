@@ -958,7 +958,7 @@ UserTxParams* LteMacUeD2D::getPreconfiguredTxParams()
     txParams->writeCqi(std::vector<Cqi>(1,cqi));
 
     BandSet b;
-    CellInfo* cellInfo = getCellInfo(nodeId_);
+    CellInfo* cellInfo = getCellInfo(binder_, nodeId_);
     if (cellInfo != NULL)
     {
         for (Band i = 0; i < cellInfo->getNumBands(); ++i)
