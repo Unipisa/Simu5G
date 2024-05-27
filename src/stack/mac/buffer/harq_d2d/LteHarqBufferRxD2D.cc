@@ -22,7 +22,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacNodeId srcId, bool isMulticast)
+LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast)
 {
     macOwner_ = owner;
     srcId_ = srcId;
@@ -34,7 +34,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacN
 
     for (unsigned int i = 0; i < numHarqProcesses_; i++)
     {
-        processes_[i] = new LteHarqProcessRxD2D(i, macOwner_);
+        processes_[i] = new LteHarqProcessRxD2D(i, macOwner_, binder);
     }
 
     /* Signals initialization: those are used to gather statistics */

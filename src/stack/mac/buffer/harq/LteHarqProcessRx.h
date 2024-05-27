@@ -78,7 +78,7 @@ class LteHarqProcessRx
      * @param acid process identifier
      * @param
      */
-    LteHarqProcessRx(unsigned char acid, LteMacBase *owner);
+    LteHarqProcessRx(unsigned char acid, LteMacBase *owner, Binder *binder);
 
     /**
      * Inserts a pdu into the process and evaluates it (corrupted or correct).

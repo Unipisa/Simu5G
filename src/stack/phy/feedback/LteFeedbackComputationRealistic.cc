@@ -19,7 +19,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(double targetBler, std::map<MacNodeId, Lambda>* lambda,
+LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(Binder *binder, double targetBler, std::map<MacNodeId, Lambda>* lambda,
     double lambdaMinTh, double lambdaMaxTh, double lambdaRatioTh, unsigned int numBands)
 {
     targetBler_ = targetBler;
@@ -28,7 +28,7 @@ LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(double targetBl
     lambdaMinTh_ = lambdaMinTh;
     lambdaMaxTh_ = lambdaMaxTh;
     lambdaRatioTh_ = lambdaRatioTh;
-    phyPisaData_ = &(getBinder()->phyPisaData);
+    phyPisaData_ = &(binder->phyPisaData);
 
     baseMin_.resize(phyPisaData_->nMcs(), 2);
 }

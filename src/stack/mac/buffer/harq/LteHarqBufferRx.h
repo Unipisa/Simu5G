@@ -66,7 +66,7 @@ class LteHarqBufferRx
 
   public:
     LteHarqBufferRx() {}
-    LteHarqBufferRx(unsigned int num, LteMacBase *owner, MacNodeId srcId);
+    LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId);
 
     /**
      * Insertion of a new pdu coming from phy layer into

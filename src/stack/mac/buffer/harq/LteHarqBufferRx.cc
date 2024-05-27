@@ -22,7 +22,7 @@ unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 
 using namespace omnetpp;
 
-LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
+LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
     MacNodeId srcId)
 {
     macOwner_ = owner;
@@ -35,7 +35,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner,
 
     for (unsigned int i = 0; i < numHarqProcesses_; i++)
     {
-        processes_[i] = new LteHarqProcessRx(i, macOwner_);
+        processes_[i] = new LteHarqProcessRx(i, macOwner_, binder);
     }
 
     /* Signals initialization: those are used to gather statistics */

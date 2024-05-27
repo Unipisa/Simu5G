@@ -452,6 +452,7 @@ LteFeedbackComputation* LtePhyEnb::getFeedbackComputationFromName(
             lambdaRatioTh = params["lambdaRatioTh"].doubleValue();
         }
         LteFeedbackComputation* fbcomp = new LteFeedbackComputationRealistic(
+            binder_,
             targetBler, cellInfo_->getLambda(), lambdaMinTh, lambdaMaxTh,
             lambdaRatioTh, cellInfo_->getNumBands());
         return fbcomp;
@@ -478,6 +479,7 @@ void LtePhyEnb::initializeFeedbackComputation()
     // compute feedback for the primary carrier only
     // TODO add support for feedback computation for all carriers
     lteFeedbackComputation_ = new LteFeedbackComputationRealistic(
+        binder_,
         targetBler, cellInfo_->getLambda(), lambdaMinTh, lambdaMaxTh,
         lambdaRatioTh, cellInfo_->getPrimaryCarrierNumBands());
 

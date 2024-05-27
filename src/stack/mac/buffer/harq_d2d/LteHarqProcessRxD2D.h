@@ -36,7 +36,7 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
      * @param acid process identifier
      * @param
      */
-    LteHarqProcessRxD2D(unsigned char acid, LteMacBase *owner);
+    LteHarqProcessRxD2D(unsigned char acid, LteMacBase *owner, Binder *binder);
 
     /**
      * Creates a feedback message based on the evaluation result for this pdu.

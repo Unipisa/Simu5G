@@ -44,7 +44,7 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
     Cqi getCqi(TxMode txmode, double snr);
     double meanSnr(std::vector<double> snr);
     public:
-    LteFeedbackComputationRealistic(double targetBler, std::map<MacNodeId, Lambda>* lambda, double lambdaMinTh,
+    LteFeedbackComputationRealistic(Binder *binder, double targetBler, std::map<MacNodeId, Lambda>* lambda, double lambdaMinTh,
         double lambdaMaxTh, double lambdaRatioTh, unsigned int numBands);
     virtual ~LteFeedbackComputationRealistic();
 

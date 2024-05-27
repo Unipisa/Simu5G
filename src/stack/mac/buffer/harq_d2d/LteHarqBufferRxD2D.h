@@ -47,7 +47,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
     virtual void sendFeedback();
 
   public:
-    LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, MacNodeId srcId, bool isMulticast=false);
+    LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast=false);
 
     /*
      * Insertion of a new pdu coming from phy layer into
