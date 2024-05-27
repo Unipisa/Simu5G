@@ -45,7 +45,7 @@ void ServiceRegistry::initialize(int stage)
     if (stage!=inet::INITSTAGE_APPLICATION_LAYER - 1)
         return;
 
-    binder_ = getBinder();
+    binder_.reference(this, "binderModule", true);
 
     mePlatform = getParentModule();
     if(mePlatform != NULL){

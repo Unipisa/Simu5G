@@ -29,6 +29,9 @@ simple UALCMPApp like IApp
     parameters:
         @display("i=block/source");
         @class("UALCMPApp");
+
+        string binderModule = default("binder");
+
         string serviceName = default("UALCMP");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);

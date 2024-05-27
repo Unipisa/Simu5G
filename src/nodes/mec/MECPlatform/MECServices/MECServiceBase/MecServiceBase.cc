@@ -33,7 +33,6 @@ using namespace omnetpp;
 
 MecServiceBase::MecServiceBase()
 {
-    binder_ = nullptr;
     meHost_ = nullptr;
     servRegistry_ = nullptr;
     mecPlatformManager_ = nullptr;
@@ -74,7 +73,7 @@ void MecServiceBase::initialize(int stage)
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         responseTimeSignal_ = registerSignal("responseTime");
 
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
         meHost_ = getParentModule() // MECPlatform
                 ->getParentModule(); // MeHost
 

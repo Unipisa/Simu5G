@@ -14,6 +14,7 @@
 
 #include <omnetpp.h>
 #include "inet/common/INETDefs.h"
+#include <inet/common/ModuleRefByPar.h>
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/common/lifecycle/LifecycleOperation.h"
 #include "inet/common/socket/SocketMap.h"
@@ -75,7 +76,7 @@ class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICal
         typedef std::set<SocketManager *, simu5g::utils::cModule_LessId> ThreadSet;
         ThreadSet threadSet;
         std::string host_;
-        Binder* binder_;
+        inet::ModuleRefByPar<Binder> binder_;
         omnetpp::cModule* meHost_;
 
         MecPlatformManager* mecPlatformManager_;

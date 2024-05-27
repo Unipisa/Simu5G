@@ -78,7 +78,7 @@ void UALCMPApp::initialize(int stage)
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         responseTimeSignal_ = registerSignal("responseTime");
-        binder_ = getBinder();
+        binder_.reference(this, "binderModule", true);
     }
 
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
