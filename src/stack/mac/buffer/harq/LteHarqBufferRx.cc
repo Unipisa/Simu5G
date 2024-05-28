@@ -25,6 +25,7 @@ using namespace omnetpp;
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
     MacNodeId srcId)
 {
+    binder_ = binder;
     macOwner_ = owner;
     srcId_ = srcId;
     initMacUe();

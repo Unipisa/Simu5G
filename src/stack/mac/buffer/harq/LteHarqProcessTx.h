@@ -73,7 +73,7 @@ class LteHarqProcessTx : omnetpp::noncopyable
      * @param numProcesses number of processes contained in the H-ARQ buffer.
      * @return
      */
-    LteHarqProcessTx(unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,
+    LteHarqProcessTx(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,
         LteMacBase *dstMac);
 
 

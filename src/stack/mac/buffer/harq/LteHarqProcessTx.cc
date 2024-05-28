@@ -15,7 +15,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqProcessTx::LteHarqProcessTx(unsigned char acid, unsigned int numUnits, unsigned int numProcesses,
+LteHarqProcessTx::LteHarqProcessTx(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses,
     LteMacBase *macOwner, LteMacBase *dstMac)
 {
     macOwner_ = macOwner;
@@ -30,7 +30,7 @@ LteHarqProcessTx::LteHarqProcessTx(unsigned char acid, unsigned int numUnits, un
     // H-ARQ unit instances
     for (unsigned int i = 0; i < numHarqUnits_; i++)
     {
-        (*units_)[i] = new LteHarqUnitTx(acid, i, macOwner_, dstMac);
+        (*units_)[i] = new LteHarqUnitTx(binder, acid, i, macOwner_, dstMac);
     }
 }
 

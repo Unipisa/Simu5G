@@ -35,7 +35,7 @@ class LteHarqBufferTxD2D : public LteHarqBufferTx
      * @param owner simple module instantiating an H-ARQ TX buffer
      * @param nodeId UE nodeId for which this buffer has been created
      */
-    LteHarqBufferTxD2D(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac);
+    LteHarqBufferTxD2D(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac);
 
     /**
      * Manages H-ARQ feedback sent to a certain H-ARQ unit and checks if

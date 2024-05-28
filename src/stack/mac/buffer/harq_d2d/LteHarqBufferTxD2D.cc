@@ -15,7 +15,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferTxD2D::LteHarqBufferTxD2D(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
+LteHarqBufferTxD2D::LteHarqBufferTxD2D(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
 {
     numProc_ = numProc;
     macOwner_ = owner;
@@ -25,7 +25,7 @@ LteHarqBufferTxD2D::LteHarqBufferTxD2D(unsigned int numProc, LteMacBase *owner, 
     numEmptyProc_ = numProc;
     for (unsigned int i = 0; i < numProc_; i++)
     {
-        (*processes_)[i] = new LteHarqProcessTxD2D(i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
+        (*processes_)[i] = new LteHarqProcessTxD2D(binder, i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
     }
 }
 

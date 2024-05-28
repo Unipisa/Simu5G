@@ -16,8 +16,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqUnitTxD2D::LteHarqUnitTxD2D(unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac)
-    : LteHarqUnitTx(acid, cw, macOwner, dstMac)
+LteHarqUnitTxD2D::LteHarqUnitTxD2D(Binder *binder, unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac)
+    : LteHarqUnitTx(binder, acid, cw, macOwner, dstMac)
 {
     check_and_cast<LteMacEnbD2D*>(nodeB_);
     check_and_cast<LteMacUeD2D*>(macOwner_);

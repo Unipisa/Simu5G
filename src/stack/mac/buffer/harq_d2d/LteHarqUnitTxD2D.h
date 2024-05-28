@@ -50,7 +50,7 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
      *
      * @param id unit identifier
      */
-    LteHarqUnitTxD2D(unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac);
+    LteHarqUnitTxD2D(Binder *binder, unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac);
 
     /**
      * Manages ACK/NACK.

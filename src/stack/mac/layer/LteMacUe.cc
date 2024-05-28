@@ -582,7 +582,7 @@ void LteMacUe::macPduMake(MacCid cid)
             {
                 // the tx buffer does not exist yet for this mac node id, create one
                 // FIXME: hb is never deleted
-                LteHarqBufferTx* hb = new LteHarqBufferTx((unsigned int) ENB_TX_HARQ_PROCESSES, this,
+                LteHarqBufferTx* hb = new LteHarqBufferTx(binder_, (unsigned int) ENB_TX_HARQ_PROCESSES, this,
                     (LteMacBase*) getMacByMacNodeId(binder_, cellId_));
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;

@@ -17,7 +17,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
+LteHarqUnitTx::LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw,
     LteMacBase *macOwner, LteMacBase *dstMac)
 {
     pdu_ = nullptr;
@@ -45,7 +45,7 @@ LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
     }
     else  // UE
     {
-        nodeB_ = getMacByMacNodeId(getBinder(), macOwner_->getMacCellId());
+        nodeB_ = getMacByMacNodeId(binder, macOwner_->getMacCellId());
         if (dstMac_ == nodeB_)  // UL
         {
             macPacketLoss_ = omnetpp::cComponent::registerSignal("macPacketLossUl");

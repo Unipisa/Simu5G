@@ -48,7 +48,7 @@ class LteHarqBufferTx : omnetpp::noncopyable
      * @param owner simple module instantiating an H-ARQ TX buffer
      * @param nodeId UE nodeId for which this buffer has been created
      */
-    LteHarqBufferTx(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac);
+    LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac);
 
     /*
      * Get a reference to the specified process

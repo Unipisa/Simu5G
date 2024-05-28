@@ -15,7 +15,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqProcessTxD2D::LteHarqProcessTxD2D(unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner, LteMacBase *dstMac)
+LteHarqProcessTxD2D::LteHarqProcessTxD2D(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner, LteMacBase *dstMac)
 {
     macOwner_ = macOwner;
     acid_ = acid;
@@ -28,7 +28,7 @@ LteHarqProcessTxD2D::LteHarqProcessTxD2D(unsigned char acid, unsigned int numUni
     // H-ARQ unit istances
     for (unsigned int i = 0; i < numHarqUnits_; i++)
     {
-        (*units_)[i] = new LteHarqUnitTxD2D(acid, i, macOwner_, dstMac);
+        (*units_)[i] = new LteHarqUnitTxD2D(binder, acid, i, macOwner_, dstMac);
     }
 }
 

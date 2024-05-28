@@ -99,7 +99,7 @@ class LteHarqUnitTx : omnetpp::noncopyable
      *
      * @param id unit identifier
      */
-    LteHarqUnitTx(unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac);
+    LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac);
 
     /**
      * Inserts a pdu in this harq unit.

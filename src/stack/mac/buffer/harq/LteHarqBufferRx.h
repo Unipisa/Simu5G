@@ -34,6 +34,9 @@ class LteHarqProcessRx;
 class LteHarqBufferRx
 {
   protected:
+    /// binder module reference
+    Binder *binder_;
+
     /// mac module reference
     LteMacBase *macOwner_;
 
@@ -185,7 +188,7 @@ class LteHarqBufferRx
      */
     void initMacUe(){
         if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(getBinder(), srcId_));
+            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(binder_, srcId_));
         else
             macUe_ = macOwner_;
     }

@@ -37,7 +37,7 @@ class LteHarqProcessTxD2D : public LteHarqProcessTx
      * @param numProcesses number of processes contained in the H-ARQ buffer.
      * @return
      */
-    LteHarqProcessTxD2D(unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,  LteMacBase *dstMac);
+    LteHarqProcessTxD2D(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,  LteMacBase *dstMac);
     virtual Packet *extractPdu(Codeword cw);
     virtual ~LteHarqProcessTxD2D();
 };
