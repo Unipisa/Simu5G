@@ -29,24 +29,6 @@ LteHarqBufferTx::LteHarqBufferTx(unsigned int numProc, LteMacBase *owner, LteMac
     }
 }
 
-LteHarqBufferTx& LteHarqBufferTx::operator=(const LteHarqBufferTx& other)
-{
-    if (&other == this)
-        return *this;
-
-    macOwner_ = other.macOwner_;
-    numProc_ = other.numProc_;
-    numEmptyProc_ = other.numEmptyProc_;
-    selectedAcid_ = other.selectedAcid_;
-    nodeId_ = other.nodeId_;
-
-    processes_ = new std::vector<LteHarqProcessTx *>(numProc_);
-    for (unsigned int i = 0; i < numProc_; i++)
-        (*processes_)[i] = new LteHarqProcessTx( *(*other.processes_)[i] );
-
-    return *this;
-}
-
 UnitList LteHarqBufferTx::firstReadyForRtx()
 {
     unsigned char oldestProcessAcid = HARQ_NONE;

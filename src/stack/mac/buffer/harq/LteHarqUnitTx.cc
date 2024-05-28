@@ -71,43 +71,6 @@ LteHarqUnitTx::LteHarqUnitTx(unsigned char acid, Codeword cw,
     }
 }
 
-LteHarqUnitTx& LteHarqUnitTx::operator=(const LteHarqUnitTx& other)
-{
-    if (&other == this)
-        return *this;
-
-    pdu_ = other.pdu_;
-    pduId_ = other.pduId_;
-    acid_ = other.acid_;
-    cw_ = other.cw_;
-    transmissions_ = other.transmissions_;
-    txTime_ = other.txTime_;
-    status_ = other.status_;
-    macOwner_ = other.macOwner_;
-    dstMac_ = other.dstMac_;
-    maxHarqRtx_ = other.maxHarqRtx_;
-
-    nodeB_ = other.nodeB_;
-
-    macPacketLoss_ = other.macPacketLoss_;
-    macCellPacketLoss_ = other.macCellPacketLoss_;
-    harqErrorRate_ = other.harqErrorRate_;
-    harqErrorRate_1_ = other.harqErrorRate_1_;
-    harqErrorRate_2_ = other.harqErrorRate_2_;
-    harqErrorRate_3_ = other.harqErrorRate_3_;
-    harqErrorRate_4_ = other.harqErrorRate_4_;
-
-    macCellPacketLossD2D_ = other.macCellPacketLossD2D_;
-    macPacketLossD2D_ = other.macPacketLossD2D_;
-    harqErrorRateD2D_ = other.harqErrorRateD2D_;
-    harqErrorRateD2D_1_ = other.harqErrorRateD2D_1_;
-    harqErrorRateD2D_2_ = other.harqErrorRateD2D_2_;
-    harqErrorRateD2D_3_ = other.harqErrorRateD2D_3_;
-    harqErrorRateD2D_4_ = other.harqErrorRateD2D_4_;
-
-    return *this;
-}
-
 void LteHarqUnitTx::insertPdu(Packet *pkt)
 {
     if (!pkt)

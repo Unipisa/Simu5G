@@ -29,7 +29,7 @@ typedef std::vector<std::vector<UnitStatus> > BufferStatus;
  * H-ARQ feedback.
  */
 
-class LteHarqProcessTx
+class LteHarqProcessTx : omnetpp::noncopyable
 {
   protected:
 
@@ -76,14 +76,6 @@ class LteHarqProcessTx
     LteHarqProcessTx(unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,
         LteMacBase *dstMac);
 
-    /**
-     * Copy constructor and operator=
-     */
-    LteHarqProcessTx(const LteHarqProcessTx& other)
-    {
-        operator=(other);
-    }
-    LteHarqProcessTx& operator=(const LteHarqProcessTx& other);
 
     /**
      * Insert a pdu into an H-ARQ unit contained in this process.
