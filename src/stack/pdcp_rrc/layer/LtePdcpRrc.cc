@@ -473,8 +473,6 @@ void LtePdcpRrcBase::finish()
 void LtePdcpRrcEnb::initialize(int stage)
 {
     LtePdcpRrcBase::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-        nodeId_ = getAncestorPar("macNodeId");
 }
 
 void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
