@@ -36,7 +36,7 @@ class LteMacBase;
  * TXHARQ_PDU_EMPTY:          yes     not present            not ready for tx
  * TXHARQ_PDU_SELECTED:       no      present                will be tx
  */
-class LteHarqUnitTx
+class LteHarqUnitTx : omnetpp::noncopyable
 {
   protected:
 
@@ -100,15 +100,6 @@ class LteHarqUnitTx
      * @param id unit identifier
      */
     LteHarqUnitTx(unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac);
-
-    /**
-     * Copy constructor and operator=
-     */
-    LteHarqUnitTx(const LteHarqUnitTx& other)
-    {
-        operator=(other);
-    }
-    LteHarqUnitTx& operator=(const LteHarqUnitTx& other);
 
     /**
      * Inserts a pdu in this harq unit.

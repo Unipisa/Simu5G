@@ -34,27 +34,6 @@ LteHarqProcessTx::LteHarqProcessTx(unsigned char acid, unsigned int numUnits, un
     }
 }
 
-LteHarqProcessTx& LteHarqProcessTx::operator=(const LteHarqProcessTx& other)
-{
-    if (&other == this)
-        return *this;
-
-    macOwner_ = other.macOwner_;
-
-    numProcesses_ = other.numProcesses_;
-    numHarqUnits_ = other.numHarqUnits_;
-    acid_ = other.acid_;
-    numEmptyUnits_ = other.numEmptyUnits_;
-    numSelected_ = other.numSelected_;
-    dropped_ = other.dropped_;
-
-    units_ = new UnitVector(numHarqUnits_);
-    for (unsigned int i = 0; i < numHarqUnits_; i++)
-        (*units_)[i] = new LteHarqUnitTx( *(*other.units_)[i] );
-
-    return *this;
-}
-
 std::vector<UnitStatus>
 LteHarqProcessTx::getProcessStatus()
 {

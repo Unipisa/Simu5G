@@ -24,7 +24,7 @@ namespace simu5g {
  * TODO: commenti
  */
 
-class LteHarqBufferTx
+class LteHarqBufferTx : omnetpp::noncopyable
 {
   protected:
     LteMacBase *macOwner_;
@@ -49,15 +49,6 @@ class LteHarqBufferTx
      * @param nodeId UE nodeId for which this buffer has been created
      */
     LteHarqBufferTx(unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac);
-
-    /**
-     * Copy constructor and operator=
-     */
-    LteHarqBufferTx(const LteHarqBufferTx& other)
-    {
-        operator=(other);
-    }
-    LteHarqBufferTx& operator=(const LteHarqBufferTx& other);
 
     /*
      * Get a reference to the specified process
