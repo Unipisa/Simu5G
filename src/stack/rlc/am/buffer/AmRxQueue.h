@@ -31,6 +31,9 @@ class AmRxQueue : public omnetpp::cSimpleModule
     // parent RLC AM module
     inet::ModuleRefByPar<LteRlcAm> lteRlc_;
 
+    // Binder module
+    inet::ModuleRefByPar<Binder> binder_;
+
     //! Receiver window descriptor
     RlcWindowDesc rxWindowDesc_;
 

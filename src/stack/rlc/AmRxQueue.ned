@@ -21,6 +21,7 @@ simple AmRxQueue
         @dynamic(true);
         @display("i=block/segm");
         string amModule = default("^.am");
+        string binderModule = default("binder");
         int rxWindowSize = default(200);
         double ackReportInterval @unit(s) = 0.10s;
         double statusReportInterval @unit(s) = 0.20s;
