@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ModuleAccess.h>
+
 #include "stack/compManager/LteCompManagerBase.h"
 
 namespace simu5g {
@@ -21,12 +23,15 @@ void LteCompManagerBase::initialize()
     // get the node id
     nodeId_ = getAncestorPar("macCellId");
 
+    // get reference to the binder
+    Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
+
     // get reference to the gates
     x2Manager_[IN_GATE] = gate("x2ManagerIn");
     x2Manager_[OUT_GATE] = gate("x2ManagerOut");
 
     // get reference to mac layer
-    mac_ = check_and_cast<LteMacEnb*>(getMacByMacNodeId(getBinder(), nodeId_));
+    mac_ = check_and_cast<LteMacEnb*>(getMacByMacNodeId(binder, nodeId_));
 
     // get the number of available bands
     numBands_ = mac_->getCellInfo()->getNumBands();

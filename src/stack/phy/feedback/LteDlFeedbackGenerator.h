@@ -61,6 +61,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
 
     DasFilter *dasFilter_;  /// reference to das filter
     CellInfo *cellInfo_; /// reference to cellInfo
+    inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<LtePhyUe> phy_;
 
     // cellInfo parameters

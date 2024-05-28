@@ -34,6 +34,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
     if (stage == INITSTAGE_LOCAL)
     {
         // Read NED parameters
+        binder_.reference(this, "binderModule", true);
         fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI);// TTI -> seconds
         fbDelay_ = (simtime_t)(int(par("fbDelay")) * TTI);// TTI -> seconds
         if (fbPeriod_ <= fbDelay_)

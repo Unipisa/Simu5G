@@ -52,6 +52,7 @@ simple LteDlFeedbackGenerator
         // DAS_AWARE: feedback generator reports feedback only for the last txmode used and only for rus in Antenna set
         string feedbackGeneratorType @enum(IDEAL,REAL,DAS_AWARE) = default("IDEAL");
 
+        string binderModule = default("binder");
         string phyModule = default("^.phy");
 }
 

@@ -21,6 +21,7 @@ simple LteCompManagerBase like LteCompManager
         int coordinatorId;							           // id of the coordinator node
         string clientList = default("");                       // list of ids of client nodes, separated by blank spaces
         double coordinationPeriod @unit(s) = default(0.001s);
+        string binderModule = default("binder");
 
         @signal[compReservedBlocks];
         @statistic[compReservedBlocks](title="CoMP Reserved Blocks"; unit=""; source="compReservedBlocks"; record=mean,vector);
