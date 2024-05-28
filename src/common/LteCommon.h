@@ -664,7 +664,6 @@ MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid);
 MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info);        // get the CID from the packet control info
 MacNodeId MacCidToNodeId(MacCid cid);
 LogicalCid MacCidToLcid(MacCid cid);
-Binder* getBinder();
 CellInfo* getCellInfo(Binder* binder, MacNodeId nodeId);
 omnetpp::cModule* getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
 omnetpp::cModule* getMacByMacNodeId(Binder *binder, MacNodeId nodeId);
