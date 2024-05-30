@@ -28,5 +28,6 @@ module TrafficLight
             parameters:
                 @display("p=48,52;is=s");
                 mobilityModule = default("^.mobility");
+                bidirectional = parent.bidirectional;
         }
 }

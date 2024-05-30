@@ -23,4 +23,5 @@ simple TrafficLightController
     int startState @enum(OFF,GREEN,YELLOW,RED) = default(3); // do not use 0 or 2, for now!
     double meanCarLength @unit(m) = default(4m);
     double areaWidth @unit(m) = default(1m);
+    bool bidirectional = default(false);
 }

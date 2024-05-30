@@ -82,7 +82,7 @@ void TrafficLightController::initialize(int stage)
     state_ = OFF;
     stateMsg_ = new cMessage("changeState");
 
-    bidirectional_ = getAncestorPar("bidirectional");
+    bidirectional_ = par("bidirectional");
 
     scheduleAt(simTime() + startTime_, stateMsg_);
 }
