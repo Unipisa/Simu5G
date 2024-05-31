@@ -663,7 +663,8 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
             {
                 // if served by the same cell, then the mode is selected according to the corresponding parameter
                 LteMacBase* srcMac = getMacFromMacNodeId(src);
-                bool d2dInitialMode = srcMac->getAncestorPar("d2dInitialMode").boolValue();
+                inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
+                bool d2dInitialMode = srcNic->hasPar("d2dInitialMode") ? srcNic->par("d2dInitialMode").boolValue() : false;
                 d2dPeeringMap_[src][dst] = (d2dInitialMode) ? DM : IM;
             }
             else

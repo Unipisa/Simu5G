@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/networklayer/common/NetworkInterface.h>
+
 #include "stack/pdcp_rrc/layer/NRPdcpRrcUe.h"
 #include "stack/pdcp_rrc/layer/entity/NRTxPdcpEntity.h"
 #include "stack/pdcp_rrc/layer/entity/NRRxPdcpEntity.h"
@@ -22,7 +24,8 @@ void NRPdcpRrcUe::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        dualConnectivityEnabled_ = getAncestorPar("dualConnectivityEnabled").boolValue();
+        inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
         // initialize gates
         nrTmSap_[IN_GATE] = gate("TM_Sap$i",1);

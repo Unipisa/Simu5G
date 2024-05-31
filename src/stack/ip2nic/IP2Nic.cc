@@ -55,7 +55,8 @@ void IP2Nic::initialize(int stage)
 
         binder_.reference(this, "binderModule", true);
 
-        dualConnectivityEnabled_ = getAncestorPar("dualConnectivityEnabled").boolValue();
+        NetworkInterface *nic = getContainingNicModule(this);
+        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             sbTable_ = new SplitBearersTable();
 

@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/networklayer/common/NetworkInterface.h>
+
 #include "stack/pdcp_rrc/layer/NRPdcpRrcEnb.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
@@ -20,7 +22,8 @@ void NRPdcpRrcEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        dualConnectivityEnabled_ = getAncestorPar("dualConnectivityEnabled").boolValue();
+        inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);
     }
