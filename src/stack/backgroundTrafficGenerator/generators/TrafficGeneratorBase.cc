@@ -74,9 +74,9 @@ void TrafficGeneratorBase::initialize(int stage)
         cqiMeanUl_ = par("cqiMeanUl");
         cqiStddevUl_ = par("cqiStddevUl");
 
-        enablePeriodicCqiUpdate_ = getAncestorPar("enablePeriodicCqiUpdate");
-        useProbabilisticCqi_ = getAncestorPar("useProbabilisticCqi");
-        computeAvgInterference_ = getAncestorPar("computeAvgInterference");
+        enablePeriodicCqiUpdate_ = par("enablePeriodicCqiUpdate");
+        useProbabilisticCqi_ = par("useProbabilisticCqi");
+        computeAvgInterference_ = par("computeAvgInterference");
         if (enablePeriodicCqiUpdate_)
         {
             fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI); // TTI -> seconds

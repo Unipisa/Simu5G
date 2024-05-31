@@ -57,7 +57,7 @@ void BackgroundTrafficManager::initialize(int stage)
     cSimpleModule::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        numBgUEs_ = getAncestorPar("numBgUes");
+        numBgUEs_ = par("numBgUes");
         binder_.reference(this, "binderModule", true);
         phy_.reference(this, "phyModule", true);
     }
@@ -94,9 +94,9 @@ void BackgroundTrafficManager::initialize(int stage)
         info->allocatedRbsUl = 0.0;
         info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
 
-        if (!getAncestorPar("enablePeriodicCqiUpdate"))
+        if (!par("enablePeriodicCqiUpdate").boolValue())
         {
-            if (getAncestorPar("computeAvgInterference"))
+            if (par("computeAvgInterference").boolValue())
             {
                 initializeAvgInterferenceComputation();
                 info->init = true;

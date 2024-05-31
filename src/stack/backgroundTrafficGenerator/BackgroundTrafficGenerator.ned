@@ -20,6 +20,10 @@ module BackgroundTrafficGenerator
         bool enablePeriodicCqiUpdate = default(true);
         bool useProbabilisticCqi = default(false);
         bool computeAvgInterference = default(false);
+        *.computeAvgInterference = this.computeAvgInterference;
+        *.enablePeriodicCqiUpdate = this.enablePeriodicCqiUpdate;
+        *.useProbabilisticCqi = this.useProbabilisticCqi;
+        *.numBgUes = this.numBgUes;
 
     submodules:
         bgUE[numBgUes]: BackgroundUe {

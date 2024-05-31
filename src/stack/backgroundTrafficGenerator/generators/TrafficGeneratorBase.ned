@@ -17,6 +17,10 @@ simple TrafficGeneratorBase like ITrafficGenerator
         @display("i=block/source");
         @class("TrafficGeneratorBase");
 
+        bool computeAvgInterference;
+        bool enablePeriodicCqiUpdate;
+        bool useProbabilisticCqi;
+
         string backgroundTrafficManagerModule = default("^.^.manager");
 
         double startTimeDl @unit("s") = default(-1s);

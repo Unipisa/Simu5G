@@ -25,5 +25,8 @@ simple BackgroundTrafficManager like IBackgroundTrafficManager
         string binderModule = default("binder");
         string macModule = default("^.^.mac");
         string phyModule = default("^.^.phy");
+        int numBgUes;
+        bool enablePeriodicCqiUpdate;
+        bool computeAvgInterference;
 }
 
