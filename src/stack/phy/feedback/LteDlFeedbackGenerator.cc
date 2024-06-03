@@ -239,9 +239,8 @@ void LteDlFeedbackGenerator::sendFeedback(LteFeedbackDoubleVector fb,
     if (feedbackComputationPisa_)
     {
         feedbackReq.request = true;
-        feedbackReq.genType = getFeedbackGeneratorType(
-                par("feedbackGeneratorType").stringValue());
-        feedbackReq.type = getFeedbackType(par("feedbackType").stringValue());
+        feedbackReq.genType = generatorType_;
+        feedbackReq.type = fbType_;
         feedbackReq.txMode = currentTxMode_;
         feedbackReq.rbAllocationType = rbAllocationType_;
     }
