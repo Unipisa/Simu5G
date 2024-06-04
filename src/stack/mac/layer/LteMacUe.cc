@@ -210,7 +210,7 @@ void LteMacUe::initialize(int stage)
         binder_->setMacNodeId(ipv4if->getIPAddress(), nodeId_);
 
         // for emulation mode
-        const char* extHostAddress = getAncestorPar("extHostAddress").stringValue();
+        const char* extHostAddress = networkNode_->par("extHostAddress").stringValue();
         if (strcmp(extHostAddress, "") != 0)
         {
             // register the address of the external host to enable forwarding
