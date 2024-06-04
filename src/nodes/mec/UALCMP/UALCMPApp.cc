@@ -50,7 +50,6 @@ UALCMPApp::UALCMPApp()
     supportedQueryParams_.insert("app_list");
     supportedQueryParams_.insert("app_contexts");
     scheduledSubscription = false;
-    mecOrchestrator_ = nullptr;
     requestSno = 0;
     subscriptionId_ = 0;
     subscriptions_.clear();
@@ -83,8 +82,7 @@ void UALCMPApp::initialize(int stage)
 
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
-        std::string mecOrchestratorHostname = getAncestorPar("mecOrchestratorHostname").stringValue();
-        mecOrchestrator_ = check_and_cast<MecOrchestrator*>(getSimulation()->getModuleByPath(mecOrchestratorHostname.c_str()));
+        mecOrchestrator_.reference(this, "mecOrchestratorHostname", true);
     }
 }
 

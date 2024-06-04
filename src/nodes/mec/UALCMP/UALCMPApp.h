@@ -47,7 +47,7 @@ class UALCMPApp: public MecServiceBase
     };
 
     bool scheduledSubscription;
-    MecOrchestrator *mecOrchestrator_; // reference to the MecOrchestrator used to get AppList
+    inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator_; // reference to the MecOrchestrator used to get AppList
 
     unsigned int requestSno;    // counter to keep trace of the requests
     std::map<unsigned int, LcmRequestStatus> pendingRequests;

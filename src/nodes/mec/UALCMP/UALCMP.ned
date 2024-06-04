@@ -86,6 +86,8 @@ module UALCMP
         //#
 		// =============== UDP ============== //
         ualcmpApp: UALCMPApp {
+                    // hostname of the reference orchestrator
+            mecOrchestratorHostname = parent.mecOrchestratorHostname;
             @display("p=549.69,74.045,row");
         }
 

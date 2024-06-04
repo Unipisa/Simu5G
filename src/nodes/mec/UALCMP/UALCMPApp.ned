@@ -39,6 +39,9 @@ simple UALCMPApp like IApp
         int localPort = default(1000);     // localPort number to listen on
         string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
 
+        // hostname of the reference orchestrator
+        string mecOrchestratorHostname;
+
         double requestServiceTime @unit(s) = default(5us);
         double subscriptionServiceTime @unit(s) = default(10us);
 
