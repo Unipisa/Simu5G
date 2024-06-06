@@ -19,8 +19,8 @@ module LteNicUeD2D extends LteNicUe
 {
     parameters:
         pdcpRrc.typename = default("LtePdcpRrcUeD2D");
-        LteMacType = default("LteMacUeD2D");
-        LtePhyType = default("LtePhyUeD2D");
+        mac.typename = default("LteMacUeD2D");
+        phy.typename = default("LtePhyUeD2D");
         packetFlowManager.typename = default("PacketFlowManagerUe");
 
         d2dCapable = default(true);             // DO NOT CHANGE

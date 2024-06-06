@@ -26,8 +26,6 @@ import simu5g.stack.rlc.LteRlc;
 module NRNicUe extends LteNicUeD2D
 {
     parameters:
-        string NRMacType = default("NRMacUe");
-        string NRPhyType = default("NRPhyUe");
         string NRChannelModelType = default("NRChannelModel_3GPP38_901");
 
         packetFlowManager.typename = default("PacketFlowManagerUe");
@@ -35,7 +33,7 @@ module NRNicUe extends LteNicUeD2D
         int numNRCarriers = default(1);
 
         pdcpRrc.typename = default("NRPdcpRrcUe");
-        LtePhyType = default("NRPhyUe");	        // TODO fix this
+        phy.typename = default("NRPhyUe");	        // TODO fix this
         											// LtePhy is of type NRPhyUe so that it is
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
@@ -57,12 +55,12 @@ module NRNicUe extends LteNicUeD2D
             *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.nrPacketFlowManager" : "";
         }
         // MAC Layer
-        nrMac: <NRMacType> like LteMac {
+        nrMac: <default("NRMacUe")> like LteMac {
             interfaceTableModule = parent.interfaceTableModule;
             @display("p=466,314");
         }
         // PHY Layer
-        nrPhy: <NRPhyType> like LtePhy {
+        nrPhy: <default("NRPhyUe")> like LtePhy {
             @display("p=466,389");
         }
         // NR Channel Model

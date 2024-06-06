@@ -26,8 +26,8 @@ module LteNicEnb extends LteNicBase
 {
     parameters:
         pdcpRrc.typename = default("LtePdcpRrcEnb");
-        LteMacType = default("LteMacEnb");
-        LtePhyType = default("LtePhyEnb");
+        mac.typename = default("LteMacEnb");
+        phy.typename = default("LtePhyEnb");
         packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);

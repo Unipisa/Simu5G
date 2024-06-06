@@ -19,7 +19,7 @@ module NRNicEnb extends LteNicEnbD2D
 {
     parameters:
         pdcpRrc.typename = default("NRPdcpRrcEnb");
-        LteMacType = default("NRMacGnb");
+        mac.typename = default("NRMacGnb");
         LteChannelModelType = default("NRChannelModel_3GPP38_901");
         @display("bgb=694,443");
         packetFlowManager.typename = default("NRPacketFlowManagerGnb");

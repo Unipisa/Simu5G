@@ -34,11 +34,9 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
-        string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
 
         bool hasRNISupport = default(false);
 
-        string LtePhyType;
         string nodeType;
         double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
         double processingDelayOut @unit(s) = default(0s);   // additional processing delay for outgoing ip packets
@@ -84,11 +82,11 @@ module LteNicBase extends NetworkInterface like ICellularNic
             *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.packetFlowManager" : "";
         }
         // MAC Layer
-        mac: <LteMacType> like LteMac {
+        mac: <> like LteMac {
             @display("p=363,314");
         }
         // LtePhy submodule
-        phy: <LtePhyType> like LtePhy {
+        phy: <> like LtePhy {
             @display("p=363,389");
         }
 

@@ -22,8 +22,8 @@ module LteNicEnbD2D extends LteNicEnb
 {
     parameters:
         pdcpRrc.typename = default("LtePdcpRrcEnbD2D");
-        LteMacType = default("LteMacEnbD2D");
-        LtePhyType = default("LtePhyEnbD2D");
+        mac.typename = default("LteMacEnbD2D");
+        phy.typename = default("LtePhyEnbD2D");
         packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(true);   // DO NOT CHANGE
 
