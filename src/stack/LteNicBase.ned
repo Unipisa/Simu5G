@@ -90,7 +90,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         // LtePhy submodule
         phy: <LtePhyType> like LtePhy {
             @display("p=363,389");
-            @class(LtePhyType);
         }
 
         channelModel[numCarriers]: <LteChannelModelType> like LteChannelModelInterface {
