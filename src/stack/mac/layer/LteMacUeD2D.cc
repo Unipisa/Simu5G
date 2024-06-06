@@ -46,7 +46,7 @@ void LteMacUeD2D::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         // check the RLC module type: if it is not "D2D", abort simulation
-        std::string pdcpType = getParentModule()->par("LtePdcpRrcType").stdstringValue();
+        std::string pdcpType = getParentModule()->getSubmodule("pdcpRrc")->getComponentType()->getName();
         // get RLC module: follow the connection of MAC_to_RLC gate.
         cGate *g;
         for (g = up_[OUT_GATE]; g && g->getType() == up_[OUT_GATE]->getType(); g = g->getNextGate())
