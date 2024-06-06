@@ -16,7 +16,6 @@ module BackgroundTrafficGenerator
     parameters:
         @display("i=block/source");
         int numBgUes = default(0);
-        string bgTrafficManagerType = default("BackgroundTrafficManager");
         bool enablePeriodicCqiUpdate = default(true);
         bool useProbabilisticCqi = default(false);
         bool computeAvgInterference = default(false);
@@ -29,7 +28,7 @@ module BackgroundTrafficGenerator
         bgUE[numBgUes]: BackgroundUe {
             @display("p=77,118");
         }
-        manager: <bgTrafficManagerType> like IBackgroundTrafficManager {
+        manager: <default("BackgroundTrafficManager")> like IBackgroundTrafficManager {
             @display("p=77,41");
         }
 }

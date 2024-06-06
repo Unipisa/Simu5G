@@ -25,8 +25,6 @@ module BackgroundCell
     parameters:
         @display("i=device/antennatower;bgb=430,163");
 
-        string bgTrafficManagerType = default("BackgroundCellTrafficManager");
-
     submodules:
         // mobility module for the background base station
         mobility: StationaryMobility {
@@ -47,7 +45,7 @@ module BackgroundCell
         // traffic generator for the background UEs within the BackgroundCell
         bgTrafficGenerator: BackgroundTrafficGenerator {
             @display("p=347,38,row");
-            bgTrafficManagerType = parent.bgTrafficManagerType;
+            manager.typename = default("BackgroundCellTrafficManager");
         }
 }
 
