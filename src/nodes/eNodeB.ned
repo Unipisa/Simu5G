@@ -82,7 +82,6 @@ module eNodeB
         string mecHost = default("");		// symbolic name of the connected MEHost in the Network
 
         //# @author Alessandro Noferi
-        string StatsCollectorType = default("BaseStationStatsCollector");
         bool hasRNISupport = default(false);
 
         //# use it in case of emulation
@@ -113,7 +112,7 @@ module eNodeB
                 @display("p=110.43,244.3775;is=s");
         }
 
-        collector: <StatsCollectorType> like StatsCollector if hasRNISupport {
+        collector: <default("BaseStationStatsCollector")> like StatsCollector if hasRNISupport {
             @display("p=50,275;is=s");
         }
 
