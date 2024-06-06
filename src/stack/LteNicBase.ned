@@ -34,7 +34,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool isWireless = true;
         string interfaceTableModule;
         string routingTableModule;
-        string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D"
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
 
         bool hasRNISupport = default(false);
@@ -74,7 +73,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=412,67");
         }
         // PDCP-RRC Layer
-        pdcpRrc: <LtePdcpRrcType> like LtePdcpRrc {
+        pdcpRrc: <> like LtePdcpRrc {
             @display("p=362,141");
         }
         // RLC Layer

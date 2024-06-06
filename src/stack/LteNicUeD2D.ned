@@ -18,7 +18,7 @@ package simu5g.stack;
 module LteNicUeD2D extends LteNicUe
 {
     parameters:
-        LtePdcpRrcType = default("LtePdcpRrcUeD2D");
+        pdcpRrc.typename = default("LtePdcpRrcUeD2D");
         LteMacType = default("LteMacUeD2D");
         LtePhyType = default("LtePhyUeD2D");
         packetFlowManager.typename = default("PacketFlowManagerUe");

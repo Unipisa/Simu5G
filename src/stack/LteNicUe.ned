@@ -21,7 +21,7 @@ import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 module LteNicUe extends LteNicBase
 {
     parameters:
-        LtePdcpRrcType = default("LtePdcpRrcUe");
+        pdcpRrc.typename = default("LtePdcpRrcUe");
         LteMacType = default("LteMacUe");
         LtePhyType = default("LtePhyUe");
         packetFlowManager.typename = default("PacketFlowManagerUe");

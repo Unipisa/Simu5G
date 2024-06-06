@@ -25,7 +25,7 @@ import simu5g.x2.LteX2Manager;
 module LteNicEnb extends LteNicBase
 {
     parameters:
-        LtePdcpRrcType = default("LtePdcpRrcEnb");
+        pdcpRrc.typename = default("LtePdcpRrcEnb");
         LteMacType = default("LteMacEnb");
         LtePhyType = default("LtePhyEnb");
         packetFlowManager.typename = default("PacketFlowManagerEnb");
