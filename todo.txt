@@ -1,0 +1,17 @@
+getAncestorPar():
+  gateway - @networkNode : UALCMP, gNodeB, eNodeB
+            ??? : MECHost
+  nodeType - @networkNode : UALCMP, gNodeB, eNodeB, PgwStandard, Ue, Upf
+             ??? : MECHost
+             ??? : INetworkLayer2CellularNic, IP2Nic
+             @networkInterface: ICellularNic, LteNicBase
+  txPower - @unit(dBm): BackgroundScheduler, ExtCell, TrafficGeneratorBase
+            @unit(mw): eNodeB
+
+
+fooType NED parameters:
+  umType, LteRlcUmType
+  NRChannelModelType
+  LteChannelModelType - module vector, .channelModel[*].typename ???
+
+
