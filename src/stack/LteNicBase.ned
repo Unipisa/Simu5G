@@ -37,7 +37,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string LtePdcpRrcType;      // One of: "LtePdcpRrcUe", "LtePdcpRrcEnb", "LtePdcpRrcUeD2D", "LtePdcpRrcEnbD2D"
         string LteMacType;          // One of: "LteMacUe", "LteMacEnb", "LteMacUeD2D", "LteMacEnbD2D"
 
-        string PacketFlowManagerType; // One of: "PacketFlowManagerUe", "PacketFlowManagerUe"
         bool hasRNISupport = default(false);
 
         string LtePhyType;
@@ -101,7 +100,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        packetFlowManager: <PacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+        packetFlowManager: <default("")> like PacketFlowManager if hasRNISupport {
             @display("p=69,299");
         }
 

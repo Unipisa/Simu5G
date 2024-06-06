@@ -28,7 +28,7 @@ module LteNicEnb extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcEnb");
         LteMacType = default("LteMacEnb");
         LtePhyType = default("LtePhyEnb");
-        PacketFlowManagerType = default("PacketFlowManagerEnb");
+        packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
         string LteCompManagerType = default("LteCompManagerProportional");

@@ -30,9 +30,7 @@ module NRNicUe extends LteNicUeD2D
         string NRPhyType = default("NRPhyUe");
         string NRChannelModelType = default("NRChannelModel_3GPP38_901");
 
-        PacketFlowManagerType = default("PacketFlowManagerUe");
-
-        string NRPacketFlowManagerType = default("NRPacketFlowManagerUe");
+        packetFlowManager.typename = default("PacketFlowManagerUe");
 
         int numNRCarriers = default(1);
 
@@ -80,7 +78,7 @@ module NRNicUe extends LteNicUeD2D
  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        nrPacketFlowManager: <NRPacketFlowManagerType> like PacketFlowManager if hasRNISupport {
+        nrPacketFlowManager: <default("NRPacketFlowManagerUe")> like PacketFlowManager if hasRNISupport {
             @display("p=197,299");
         }
 

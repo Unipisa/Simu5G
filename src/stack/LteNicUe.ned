@@ -24,7 +24,7 @@ module LteNicUe extends LteNicBase
         LtePdcpRrcType = default("LtePdcpRrcUe");
         LteMacType = default("LteMacUe");
         LtePhyType = default("LtePhyUe");
-        PacketFlowManagerType = default("PacketFlowManagerUe");
+        packetFlowManager.typename = default("PacketFlowManagerUe");
         d2dCapable = default(false);          // DO NOT CHANGE
 
     submodules:
