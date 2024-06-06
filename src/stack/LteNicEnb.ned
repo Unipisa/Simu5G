@@ -31,7 +31,6 @@ module LteNicEnb extends LteNicBase
         packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
-        string LteCompManagerType = default("LteCompManagerProportional");
 
     submodules:
         //#
@@ -44,7 +43,7 @@ module LteNicEnb extends LteNicBase
         //#
         //# Modules exploiting X2 interface
         //#
-        compManager: <LteCompManagerType> like LteCompManager if compEnabled {
+        compManager: <default("LteCompManagerProportional")> like LteCompManager if compEnabled {
             @display("p=493,314,row");
         }
         handoverManager: LteHandoverManager {
