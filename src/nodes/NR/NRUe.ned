@@ -22,7 +22,7 @@ import simu5g.nodes.Ue;
 module NRUe extends Ue
 {
     parameters:
-        nicType = default("NRNicUe");
+        cellularNic.typename = default("NRNicUe");
 
         int nrMasterId @mutable = default(0);
         int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter

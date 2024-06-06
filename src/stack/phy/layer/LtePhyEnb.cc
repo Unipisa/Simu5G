@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/networklayer/common/NetworkInterface.h>
+
 #include "stack/phy/layer/LtePhyEnb.h"
 #include "stack/phy/packet/LteFeedbackPkt.h"
 #include "stack/phy/das/DasFilter.h"
@@ -60,7 +62,7 @@ void LtePhyEnb::initialize(int stage)
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));
             das_ = new DasFilter(this, binder_, cellInfo_->getRemoteAntennaSet(), 0);
         }
-        isNr_ = (getAncestorPar("nicType").stdstringValue() == "NRNicEnb");
+        isNr_ = (std::string(getContainingNicModule(this)->getComponentType()->getName()) == "NRNicEnb");
 
         nodeType_ = (isNr_) ? GNODEB : ENODEB;
         WATCH(nodeType_);

@@ -9,6 +9,8 @@
 // and cannot be removed from it.
 //
 
+#include <inet/networklayer/common/NetworkInterface.h>
+
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 #include "stack/mac/layer/LteMacBase.h"
@@ -47,7 +49,7 @@ void UeStatsCollector::initialize(int stage)
          * since they are splitted, too.
          */
 
-        bool isNr_ = (getAncestorPar("nicType").stdstringValue() == "NRNicUe") ? true : false;
+        bool isNr_ = (std::string(getContainingNicModule(mac_)->getComponentType()->getName()) == "NRNicUe");
 
         packetFlowManager_.reference(this, "packetFlowManagerModule", isNr_);
 

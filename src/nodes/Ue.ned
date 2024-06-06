@@ -61,9 +61,6 @@ module Ue
         int macNodeId @mutable = default(0); // TODO: this is not a real parameter
         int macCellId @mutable = default(0); // TODO: this is not a real parameter
 
-        //# D2D capability
-        string nicType = default("LteNicUe");
-
         //# Network Layer specs
         bool hasIpv4 = default(true);
         bool hasIpv6 = default(false);
@@ -103,7 +100,7 @@ module Ue
             parameters:
                 @display("p=503.736,589.50397,row,150");
         }
-        cellularNic: <nicType> like ICellularNic {
+        cellularNic: <default("LteNicUe")> like ICellularNic {
             nodeType = parent.nodeType;
             @display("p=355.152,589.50397");
         }

@@ -25,5 +25,5 @@ module gNodeB extends eNodeB
         StatsCollectorType = default("GNodeBStatsCollector");
         gateway = default("upf"); // change this path if the gateway node is inside a compound module
         nodeType = "GNODEB";        // DO NOT CHANGE
-        nicType = default("NRNicEnb");
+        cellularNic.typename = default("NRNicEnb");
 }

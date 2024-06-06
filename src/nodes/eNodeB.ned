@@ -59,7 +59,6 @@ module eNodeB
         int macNodeId @mutable = default(0); // TODO: this is not a real parameter
         int macCellId @mutable = default(0);  // TODO: this is not a real parameter
         double txPower @unit(mw) = default(100mw);
-        string nicType = default("LteNicEnb");
 
         //# Network Layer specs
         bool hasIpv4 = default(true);
@@ -121,7 +120,7 @@ module eNodeB
         //#
         //# cellularNic modules
         //#
-        cellularNic: <nicType> like ICellularNic {
+        cellularNic: <default("LteNicEnb")> like ICellularNic {
             parameters:
                 @display("p=433.54,520.4525");
                 nodeType = parent.nodeType;
