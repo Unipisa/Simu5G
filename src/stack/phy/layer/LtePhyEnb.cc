@@ -52,7 +52,7 @@ void LtePhyEnb::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         // get local id
-        nodeId_ = getContainingNode(this)->par("macNodeId");
+        nodeId_ = hostModule->par("macNodeId");
         EV << "Local MacNodeId: " << nodeId_ << endl;
         cellInfo_ = getCellInfo(binder_, nodeId_);
         if (cellInfo_ != NULL)
