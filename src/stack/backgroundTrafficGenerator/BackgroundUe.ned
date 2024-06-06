@@ -18,7 +18,6 @@ module BackgroundUe
 {
     parameters:
         @display("i=device/pocketpc");
-        string trafficGeneratorType = default("TrafficGeneratorBase");
         bool computeAvgInterference;
         bool enablePeriodicCqiUpdate;
         bool useProbabilisticCqi;
@@ -29,7 +28,7 @@ module BackgroundUe
         mobility: <default("StationaryMobility")> like IMobility if typename != "" {
             @display("p=57,61;is=s");
         }
-        generator: <trafficGeneratorType> like ITrafficGenerator {
+        generator: <default("TrafficGeneratorBase")> like ITrafficGenerator {
             @display("p=142,61;is=s");
         }
 }
