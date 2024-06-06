@@ -26,10 +26,9 @@ module LteNicEnbD2D extends LteNicEnb
         LtePhyType = default("LtePhyEnbD2D");
         packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(true);   // DO NOT CHANGE
-        string d2dModeSelectionType = default("D2DModeSelectionBase");
 
     submodules:
-        d2dModeSelection: <d2dModeSelectionType> like D2DModeSelection {
+        d2dModeSelection: <default("D2DModeSelectionBase")> like D2DModeSelection {
             @display("p=623,314,row");
         }
 }
