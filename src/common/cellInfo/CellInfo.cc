@@ -76,7 +76,7 @@ void CellInfo::initialize(int stage)
         cellId_ = host->par("macCellId");
 
         int ruRange = par("ruRange");
-        double nodebTxPower = getAncestorPar("txPower");
+        double nodebTxPower = host->par("txPower");
 
         // first RU to be registered is the MACRO
         ruSet_->addRemoteAntenna(nodeX_, nodeY_, nodebTxPower);
