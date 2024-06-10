@@ -72,7 +72,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         // bridge between radio nic and network layer
         ip2nic: <default("IP2Nic")> like INetworkLayer2CellularNic {
             nodeType = parent.nodeType;
-            @display("p=362,67");
+            @display("p=412,67");
         }
         // PDCP-RRC Layer
         pdcpRrc: <LtePdcpRrcType> like LtePdcpRrc {
