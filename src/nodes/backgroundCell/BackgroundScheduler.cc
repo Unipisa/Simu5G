@@ -92,7 +92,7 @@ void BackgroundScheduler::receiveSignal(cComponent *source, simsignal_t signalID
     {
         // this is a HACK to prevent the bgBaseStation to change its position when its background UEs change theirs
         // this would happen because the background UEs' mobility module is a submodule of the bgBaseStation
-        if ( strcmp(this->getParentModule()->getFullName(), source->getParentModule()->getFullName()) != 0)
+        if ( this->getParentModule() != source->getParentModule())
             return;
 
         inet::IMobility *mobility = check_and_cast<inet::IMobility*>(obj);

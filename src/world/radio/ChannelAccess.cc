@@ -123,8 +123,8 @@ void ChannelAccess::receiveSignal(cComponent *source, simsignal_t signalID, cObj
     // since background UEs and their mobility modules are submodules of the e/gNB, a mobilityStateChangedSignal
     // intended for a background UE would be intercepted by the e/gNB too, making it change its position.
     // To prevent this issue, we need to check if the source of the signal is the same as the module receiving it
-    if ( (strcmp(hostModule->getFullName(), source->getParentModule()->getFullName()) != 0) )
-            return;
+    if (hostModule != source->getParentModule())
+        return;
 
     if (signalID == inet::IMobility::mobilityStateChangedSignal)
     {
