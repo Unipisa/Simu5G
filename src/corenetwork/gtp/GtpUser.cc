@@ -273,7 +273,7 @@ void GtpUser::handleFromUdp(Packet * pkt)
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)
             std::string gwFullPath = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
-            if (this->getParentModule()->getFullPath() == gwFullPath)
+            if (networkNode_->getFullPath() == gwFullPath)
             {
                 // the destination is a Base Station under the same core network as this PGW/UPF,
                 // tunnel the packet toward that BS
