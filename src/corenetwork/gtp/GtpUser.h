@@ -58,6 +58,8 @@ class GtpUser : public omnetpp::cSimpleModule
 
     inet::NetworkInterface* ie_;
 
+    omnetpp::opp_component_ptr<cModule> networkNode_;
+
   protected:
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
