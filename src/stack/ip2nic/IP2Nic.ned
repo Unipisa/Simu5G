@@ -26,6 +26,7 @@ simple IP2Nic like INetworkLayer2CellularNic
         string interfaceName = default("cellular");
         string routingTableModule;
         string binderModule = default("binder");
+        string handoverManagerModule = default("");
         @display("i=block/layer");
     gates:
         // connection to network layer.

@@ -31,6 +31,7 @@ module LteNicEnb extends LteNicBase
         packetFlowManager.typename = default("PacketFlowManagerEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
+        *.handoverManagerModule = "^.handoverManager";
 
     submodules:
         //#

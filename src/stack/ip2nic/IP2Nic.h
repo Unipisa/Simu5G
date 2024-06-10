@@ -53,7 +53,7 @@ class IP2Nic : public omnetpp::cSimpleModule
      */
 
     // manager for the handover
-    LteHandoverManager* hoManager_;
+    inet::ModuleRefByPar<LteHandoverManager> hoManager_;
     // store the pair <ue,target_enb> for temporary forwarding of data during handover
     std::map<MacNodeId, MacNodeId> hoForwarding_;
     // store the UEs for temporary holding of data received over X2 during handover

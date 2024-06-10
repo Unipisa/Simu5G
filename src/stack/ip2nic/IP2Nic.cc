@@ -49,7 +49,7 @@ void IP2Nic::initialize(int stage)
 
         setNodeType(par("nodeType").stdstringValue());
 
-        hoManager_ = nullptr;
+        hoManager_.reference(this, "handoverManagerModule", false);
 
         ueHold_ = false;
 
@@ -524,8 +524,8 @@ void IP2Nic::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
 
     hoForwarding_[ueId] = targetEnb;
 
-    if (hoManager_ == nullptr)
-        hoManager_ = check_and_cast<LteHandoverManager*>(getParentModule()->getSubmodule("handoverManager"));
+    if (!hoManager_)
+        hoManager_.reference(this, "handoverManagerModule", true);
 
     if (targetEnb != 0)
         hoManager_->sendHandoverCommand(ueId, targetEnb, true);
@@ -542,8 +542,8 @@ void IP2Nic::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
 void IP2Nic::sendTunneledPacketOnHandover(Packet* datagram, MacNodeId targetEnb)
 {
     EV << "IP2Nic::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
-    if (hoManager_ == nullptr)
-        hoManager_ = check_and_cast<LteHandoverManager*>(getParentModule()->getSubmodule("handoverManager"));
+    if (!hoManager_)
+        hoManager_.reference(this, "handoverManagerModule", true);
     hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
 }
 
@@ -573,8 +573,8 @@ void IP2Nic::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
     Enter_Method("signalHandoverCompleteTarget");
 
     // signal the event to the source eNB
-    if (hoManager_ == nullptr)
-        hoManager_ = check_and_cast<LteHandoverManager*>(getParentModule()->getSubmodule("handoverManager"));
+    if (!hoManager_)
+        hoManager_.reference(this, "handoverManagerModule", true);
     hoManager_->sendHandoverCommand(ueId, sourceEnb, false);
 
     // send down buffered packets in the following order:
