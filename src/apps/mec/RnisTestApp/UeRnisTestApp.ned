@@ -30,8 +30,8 @@ simple UeRnisTestApp like IApp
 
         //connection infos
         int localPort = default(4000);
-        int deviceAppPort = default(4000); // ipAddress of the DeviceApp
-        string deviceAppAddress;           // port of the DeviceApp
+        int deviceAppPort = default(4000); // port of the DeviceApp
+        string deviceAppAddress;           // ipAddress of the DeviceApp
 
         double queryingPeriod @unit("s") = default(1s);   // RNIS querying period
 
