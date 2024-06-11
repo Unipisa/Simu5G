@@ -35,6 +35,7 @@ Define_Module(UeRnisTestApp);
 UeRnisTestApp::UeRnisTestApp(){
     selfStart_ = NULL;
     selfStop_ = NULL;
+    selfMecAppStart_ = nullptr;
 }
 
 UeRnisTestApp::~UeRnisTestApp(){
