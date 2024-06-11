@@ -536,17 +536,15 @@ void MecServiceBase::getConnectedBaseStations(){
     EV <<"MecServiceBase::getConnectedBaseStations" << endl;
 
     //getting the list of BS associated to this mec system from NED
-    if(meHost_->hasPar("bsList") && !meHost_->par("bsList").isEmptyString()){
-
-       char* token = strtok ( (char*)meHost_->par("bsList").stringValue(), ", ");            // split by commas
-       while (token != NULL)
-       {
-           EV <<"MecServiceBase::getConnectedBaseStations " << token << endl;
-           cModule *bsModule = getSimulation()->getModuleByPath(token);
-           EV << "add2: " << bsModule << endl;
-           eNodeB_.insert(bsModule);
-           token = strtok (NULL, ", ");
-       }
+    if(meHost_->hasPar("bsList")) {
+        auto bsList = check_and_cast<cValueArray *>(meHost_->par("bsList").objectValue());
+        for (int i = 0; i < bsList->size(); i++) {
+            const char *token = bsList->get(i).stringValue();
+            EV <<"MecServiceBase::getConnectedBaseStations " << token << endl;
+            cModule *bsModule = getSimulation()->getModuleByPath(token);
+            EV << "add2: " << bsModule << endl;
+            eNodeB_.insert(bsModule);
+        }
     }
     return;
 }

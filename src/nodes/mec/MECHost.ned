@@ -44,7 +44,7 @@ module MECHost
 
         //# List of Base Stations associated to the MEC host
         // This is a string of comma-separated values
-        string bsList = default("");
+        object bsList = default([]);
 
     gates:
 
