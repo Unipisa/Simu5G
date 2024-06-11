@@ -57,15 +57,15 @@ void UeRnisTestApp::initialize(int stage)
 
     //retrieve parameters
     period_ = par("period");
-    localPort_ = par("localPort");
+    int localPort = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    sourceSimbolicAddress = (char*)getParentModule()->getFullName();
-    deviceSimbolicAppAddress_ = (char*)par("deviceAppAddress").stringValue();
-    deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress_);
+    const char* sourceSimbolicAddress = getParentModule()->getFullName();
+    const char* deviceSimbolicAppAddress = (char*)par("deviceAppAddress").stringValue();
+    deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress);
 
     //binding socket
     socket.setOutputGate(gate("socketOut"));
-    socket.bind(localPort_);
+    socket.bind(localPort);
 
     int tos = par("tos");
     if (tos != -1)
@@ -85,8 +85,8 @@ void UeRnisTestApp::initialize(int stage)
 
     //testing
     EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str()  <<"]"<< endl;
-    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSimbolicAppAddress_ << " [" << deviceAppAddress_.str()  <<"]"<< endl;
-    EV << "UeRnisTestApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
+    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSimbolicAppAddress << " [" << deviceAppAddress_.str()  <<"]"<< endl;
+    EV << "UeRnisTestApp::initialize - binding to port: local:" << localPort << " , dest:" << deviceAppPort_ << endl;
 }
 
 void UeRnisTestApp::handleMessage(cMessage *msg)
