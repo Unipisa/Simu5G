@@ -454,18 +454,16 @@ cModule* MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
 
 void MecOrchestrator::getConnectedMecHosts()
 {
-    //getting the list of mec hosts associated to this mec system from parameter
-    if (!par("mecHostList").isEmptyString()) {
-        std::string mecHostList = par("mecHostList").stdstringValue();
-        EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< mecHostList << endl;
-        char* token = strtok ( (char*)mecHostList.c_str(), ", ");            // split by commas
+    EV <<"MecOrchestrator::getConnectedMecHosts - mecHostList: "<< par("mecHostList").str() << endl;
 
-        while (token != NULL)
-        {
+    //getting the list of mec hosts associated to this mec system from parameter
+    auto mecHostList = check_and_cast<cValueArray *>(par("mecHostList").objectValue());
+    if (mecHostList->size() > 0) {
+        for (int i = 0; i < mecHostList->size(); i++) {
+            const char *token = mecHostList->get(i).stringValue();
             EV <<"MecOrchestrator::getConnectedMecHosts - mec host (from par): "<< token << endl;
             cModule *mecHostModule = getSimulation()->getModuleByPath(token);
             mecHosts.push_back(mecHostModule);
-            token = strtok (NULL, ", ");
         }
     }
     else{
@@ -511,19 +509,12 @@ void MecOrchestrator::registerMecService(ServiceDescriptor& serviceDescriptor) c
 void MecOrchestrator::onboardApplicationPackages()
 {
     //getting the list of mec hosts associated to this mec system from parameter
-    if (!par("mecApplicationPackageList").isEmptyString()) {
-
-        char* token = strtok ( (char*) par("mecApplicationPackageList").stringValue(), ", ");            // split by commas
-
-        while (token != NULL)
-        {
-            int len = strlen(token);
-            char buf[len+strlen(".json")+strlen("ApplicationDescriptors/")+1];
-            strcpy(buf,"ApplicationDescriptors/");
-            strcat(buf,token);
-            strcat(buf,".json");
-            onboardApplicationPackage(buf);
-            token = strtok (NULL, ", ");
+    auto mecApplicationPackageList = check_and_cast<cValueArray *>(par("mecApplicationPackageList").objectValue());
+    if (mecApplicationPackageList->size() > 0) {
+        for (int i = 0; i < mecApplicationPackageList->size(); i++) {
+            const char *token = mecApplicationPackageList->get(i).stringValue();
+            std::string buf = std::string("ApplicationDescriptors/") + token + ".json";
+            onboardApplicationPackage(buf.c_str());
         }
     }
     else{

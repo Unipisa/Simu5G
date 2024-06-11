@@ -30,8 +30,8 @@ simple MecOrchestrator
 
         string selectionPolicy @enum(MecHostBased,MecServiceBased,AvailableResourcesBased) = default("MecServiceBased"); // available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"
         int mecHostIndex = default(0); // to be used with the MecHostBased policybased
-        string mecHostList = default("");
-        string mecApplicationPackageList = default("");
+        object mecHostList = default([]);
+        object mecApplicationPackageList = default([]);
 
         // times to simulate lifecycle operations
         double onboardingTime @unit(s) = default(50ms);
