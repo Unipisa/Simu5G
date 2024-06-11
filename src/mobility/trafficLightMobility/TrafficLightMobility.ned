@@ -25,6 +25,6 @@ simple TrafficLightMobility extends LinearMobility
         @class(TrafficLightMobility);
 
         int initialRoadIndex = default(0);
-        string trafficLightsList = default("");
+        object trafficLightsList = default([]);
         bool enableTurns = default(false);
 }

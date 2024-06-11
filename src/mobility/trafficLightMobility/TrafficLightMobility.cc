@@ -175,17 +175,13 @@ void TrafficLightMobility::move()
 
 void TrafficLightMobility::getTrafficLights()
 {
-    if (!par("trafficLightsList").isEmptyString()) {
-        std::string trafficLightsList = par("trafficLightsList").stdstringValue();
-        EV <<"TrafficLightMobility::getTrafficLights - trafficLightsList: "<< par("trafficLightsList").stringValue() << endl;
-        char* token = strtok ( (char*)trafficLightsList.c_str(), ", ");            // split by commas
-        while (token != NULL)
-        {
+    auto trafficLightsList = check_and_cast<cValueArray *>(par("trafficLightsList").objectValue());
+    if (trafficLightsList->size() > 0) {
+        for (int i = 0; i < trafficLightsList->size(); i++) {
+            const char *token = trafficLightsList->get(i).stringValue();
             cModule *trafficLight = getSimulation()->getModuleByPath(token);
             TrafficLightController* tfModule = check_and_cast<TrafficLightController*>(trafficLight->getSubmodule("trafficLightController"));
-
             trafficLights_.push_back(tfModule);
-            token = strtok (NULL, ", ");
         }
     }
     else{
