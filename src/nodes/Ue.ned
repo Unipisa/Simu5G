@@ -46,10 +46,6 @@ module Ue
         @figure[linkLayer.title](type=text; pos=845,461; anchor=ne; text="link layer");
         @figure[submodules];
 
-
-        //# Mobility
-        mobility.typename = default("StationaryMobility");
-
         //# Apps
         int numApps = default(0);   // no of apps.
                                     // Specify the app types in INI file with app[0..1].typename="UdpVideoStreamClient" syntax
@@ -93,7 +89,7 @@ module Ue
         interfaceTable: InterfaceTable {
             @display("p=127.368004,257.868;is=s");
         }
-        mobility: <default("")> like IMobility if typename != "" {
+        mobility: <default("StationaryMobility")> like IMobility {
             @display("p=127.368004,172.26001;is=s");
         }
 

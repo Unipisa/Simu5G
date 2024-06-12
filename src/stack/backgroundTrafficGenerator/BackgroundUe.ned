@@ -18,10 +18,9 @@ module BackgroundUe
 {
     parameters:
         @display("i=device/pocketpc");
-        mobility.typename = default("StationaryMobility");
         string trafficGeneratorType = default("TrafficGeneratorBase");
     submodules:
-        mobility: <default("")> like IMobility if typename != "" {
+        mobility: <default("StationaryMobility")> like IMobility if typename != "" {
             @display("p=57,61;is=s");
         }
         generator: <trafficGeneratorType> like ITrafficGenerator {
