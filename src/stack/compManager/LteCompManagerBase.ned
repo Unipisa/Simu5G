@@ -19,7 +19,7 @@ simple LteCompManagerBase like LteCompManager
 
         string compNodeType @enum(COMP_CLIENT,COMP_CLIENT_COORDINATOR,COMP_COORDINATOR) = default("COMP_CLIENT");
         int coordinatorId;							           // id of the coordinator node
-        string clientList = default("");                       // list of ids of client nodes, separated by blank spaces
+        object clientList = default([]);                       // list of ids of client nodes
         double coordinationPeriod @unit(s) = default(0.001s);
         string binderModule = default("binder");
 

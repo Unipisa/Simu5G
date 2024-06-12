@@ -58,7 +58,7 @@ void LteCompManagerBase::initialize()
     if (nodeType_ != COMP_CLIENT)
     {
         // get the list of slave nodes
-        std::vector<int> clients = cStringTokenizer(par("clientList").stringValue()).asIntVector();
+        auto clients = check_and_cast<cValueArray *>(par("clientList").objectValue())->asIntVector();
         clientList_.resize(clients.size());
         for (unsigned int i=0; i<clients.size(); i++)
             clientList_[i] = clients[i];
