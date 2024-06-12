@@ -104,23 +104,17 @@ void VoDUDPServer::handleMessage(cMessage *msg)
             clientsStartStreamTime = par("clientsStartStreamTime").doubleValue();
             //vclientsStartStreamTime = cStringTokenizer(clientsStartStreamTime).asDoubleVector();
 
-            clientsReqTime = par("clientsReqTime");
-            vclientsReqTime = cStringTokenizer(clientsReqTime).asDoubleVector();
+            vclientsReqTime = check_and_cast<cValueArray *>(par("clientsReqTime").objectValue())->asDoubleVectorInUnit("s");
 
-            int size = 0;
-
-            const char *destAddrs = par("destAddresses");
-            cStringTokenizer tokenizer(destAddrs);
-            const char *token;
-            while ((token = tokenizer.nextToken()) != nullptr)
+            auto destAddrs = check_and_cast<cValueArray *>(par("clientsReqTime").objectValue())->asStringVector();
+            for (const auto& token : destAddrs)
             {
-                clientAddr.push_back(L3AddressResolver().resolve(token));
-                size++;
+                clientAddr.push_back(L3AddressResolver().resolve(token.c_str()));
             }
 
             /* Register video streams*/
 
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < clientAddr.size(); i++)
             {
                 M1Message* M1 = new M1Message();
                 M1->setClientAddr(clientAddr[i]);
