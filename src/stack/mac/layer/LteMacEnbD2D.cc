@@ -41,14 +41,10 @@ void LteMacEnbD2D::initialize(int stage)
     LteMacEnb::initialize(stage);
     if (stage == INITSTAGE_LOCAL)
     {
-        cGate *g;
-        for (g = up_[OUT_GATE]; g && g->getType() == up_[OUT_GATE]->getType(); g = g->getNextGate())
-            ;
-        cModule* rlc = CHK(g)->getOwnerModule();
-        std::string rlcUmType = rlc->par("LteRlcUmType").stdstringValue();
-        bool rlcD2dCapable = rlc->par("d2dCapable").boolValue();
-        if (rlcUmType != "LteRlcUm" || !rlcD2dCapable)
-            throw cRuntimeError("LteMacEnbD2D::initialize - %s module found, must be LteRlcUmD2D. Aborting", rlcUmType.c_str());
+        cModule *rlcUm = inet::getModuleFromPar<cModule>(par("rlcUmModule"), this);
+        std::string rlcUmType = rlcUm->getComponentType()->getName();
+        if ( rlcUmType != "LteRlcUmD2D")
+            throw cRuntimeError("LteMacEnbD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'. Aborting", par("rlcUmModule").stringValue(), rlcUmType.c_str());
     }
     else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT)
     {

@@ -22,6 +22,8 @@ simple LteMacUeD2D extends LteMacUe
 
         bool usePreconfiguredTxParams = default(false);
         int d2dCqi = default(7);
+        string rlcUmModule = default("^.rlc.um");
+        string pdcpRrcModule = default("^.pdcpRrc");
 
         @signal[harqErrorRate_1st_D2D];
         @statistic[harqErrorRate_1st_D2D](title="Harq Error Rate D2D (1st Tx)"; unit=""; source="harqErrorRate_1st_D2D"; record=mean,vector);
