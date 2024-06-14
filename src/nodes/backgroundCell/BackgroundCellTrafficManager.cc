@@ -67,13 +67,10 @@ void BackgroundCellTrafficManager::initialize(int stage)
         info->allocatedRbsUl = 0.0;
         info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
 
-        if (par("enablePeriodicCqiUpdate").boolValue())
+        if (par("enablePeriodicCqiUpdate").boolValue() && par("computeAvgInterference").boolValue())
         {
-            if (par("computeAvgInterference").boolValue())
-            {
-                initializeAvgInterferenceComputation();
-                info->init = true;
-            }
+            initializeAvgInterferenceComputation();
+            info->init = true;
         }
 
         binder_->addBgTrafficManagerInfo(info);
