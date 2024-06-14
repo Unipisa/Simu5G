@@ -76,15 +76,12 @@ void BackgroundTrafficManager::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
+        // get the reference to the channel model for the given carrier
+        bsTxPower_ = phy_->getTxPwr();
+        bsCoord_ = phy_->getCoord();
+        channelModel_ = phy_->getChannelModel(carrierFrequency_);
         if (channelModel_ == nullptr)
-        {
-            // get the reference to the channel model for the given carrier
-            bsTxPower_ = phy_->getTxPwr();
-            bsCoord_ = phy_->getCoord();
-            channelModel_ = phy_->getChannelModel(carrierFrequency_);
-            if (channelModel_ == nullptr)
-                throw cRuntimeError("BackgroundTrafficManager::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_);
-        }
+            throw cRuntimeError("BackgroundTrafficManager::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_);
 
         BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
         info->init = false;
@@ -145,16 +142,6 @@ void BackgroundTrafficManager::notifyBacklog(int index, Direction dir, bool rtx)
 
 Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    if (channelModel_ == nullptr)
-    {
-        // get the reference to the channel model for the given carrier
-        bsTxPower_ = phy_->getTxPwr();
-        bsCoord_ = phy_->getCoord();
-        channelModel_ = phy_->getChannelModel(carrierFrequency_);
-        if (channelModel_ == nullptr)
-            throw cRuntimeError("BackgroundTrafficManager::getCqi - cannot find channel model for carrier frequency %f", carrierFrequency_);
-    }
-
     // this is a fictitious frame that needs to compute the SINR
     LteAirFrame *frame = new LteAirFrame("bgUeSinrComputationFrame");
     UserControlInfo *cInfo = new UserControlInfo();
