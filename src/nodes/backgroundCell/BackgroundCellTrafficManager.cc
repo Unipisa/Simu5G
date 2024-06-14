@@ -65,6 +65,14 @@ std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Directi
     return snr;
 }
 
+unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    Cqi cqi = bgUe_.at(index)->getCqi(dir);
+
+    return bgAmc_->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
+}
+
 double BackgroundCellTrafficManager::getTtiPeriod()
 {
     return bgScheduler_->getTtiPeriod();
