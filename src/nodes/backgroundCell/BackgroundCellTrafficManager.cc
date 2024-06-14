@@ -147,14 +147,6 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
     return meanCqi;
 }
 
-unsigned int BackgroundCellTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
-{
-    int index = bgUeId - BGUE_MIN_ID;
-    Cqi cqi = bgUe_.at(index)->getCqi(dir);
-
-    return bgAmc_->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
-}
-
 void BackgroundCellTrafficManager::racHandled(MacNodeId bgUeId)
 {
     Enter_Method("BackgroundTrafficManager::racHandled");
