@@ -51,9 +51,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManager
     // returns the CQI based on the given position and power
     virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
-    // returns the bytes per block of the given UE for in the given direction
-    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
-
     // signal that the RAC for the given UE has been handled
     virtual void racHandled(MacNodeId bgUeId);
 
