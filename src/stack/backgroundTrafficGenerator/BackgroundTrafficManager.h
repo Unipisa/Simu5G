@@ -16,6 +16,7 @@
 
 #include "common/LteCommon.h"
 #include "common/blerCurves/PhyPisaData.h"
+#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 #include "stack/mac/layer/LteMacEnb.h"
 #include "stack/phy/layer/LtePhyEnb.h"
@@ -32,7 +33,7 @@ class LteChannelModel;
 //
 // BackgroundTrafficManager
 //
-class BackgroundTrafficManager : public cSimpleModule
+class BackgroundTrafficManager : public cSimpleModule, public IBackgroundTrafficManager
 {
   protected:
 
