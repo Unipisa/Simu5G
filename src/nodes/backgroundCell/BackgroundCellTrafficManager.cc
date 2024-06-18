@@ -60,14 +60,19 @@ unsigned int BackgroundCellTrafficManager::getNumBands()
     return bgScheduler_->getNumBands();
 }
 
-
-Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
     BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
     TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
 
     MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
     std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgScheduler_, dir);
+    return snr;
+}
+
+Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+{
+    std::vector<double> snr = getSINR(bgUeIndex, dir, bgUePos, bgUeTxPower);
 
     // convert the SNR to CQI and compute the mean
     double meanSinr = 0;
@@ -85,6 +90,7 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
     }
 
     meanSinr /= snr.size();
+    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
     bgUe->collectMeasuredSinr(meanSinr, dir);
 
     meanCqi /= snr.size();

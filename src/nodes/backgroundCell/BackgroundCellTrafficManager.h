@@ -38,7 +38,7 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
   protected:
     virtual double getTtiPeriod();
     virtual bool isSetBgTrafficManagerInfoInit();
-
+    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
   public:
     BackgroundCellTrafficManager();
     virtual ~BackgroundCellTrafficManager();
