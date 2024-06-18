@@ -20,7 +20,7 @@ namespace simu5g {
 Define_Module(BackgroundTrafficManager);
 
 
-const double nrCqiTable[16] = {
+const double BackgroundTrafficManager::nrCqiTable[16] = {
         -9999.0,
         -9999.0,
         -9999.0,
@@ -39,7 +39,7 @@ const double nrCqiTable[16] = {
         25.5
 };
 
-double getCqiFromTable(double snr)
+double BackgroundTrafficManager::getCqiFromTable(double snr)
 {
     for (unsigned int i=0; i<16; i++)
     {

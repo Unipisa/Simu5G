@@ -87,6 +87,8 @@ class BackgroundTrafficManager : public cSimpleModule
     virtual int numInitStages() const  {return inet::INITSTAGE_LAST; }
     virtual void handleMessage(cMessage* msg);
 
+    static const double nrCqiTable[16];
+    static double getCqiFromTable(double snr);
 
     // define functions for interactions with the NIC
 
