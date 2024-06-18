@@ -36,6 +36,9 @@ class LteChannelModel;
 class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 {
   protected:
+    // references to the MAC and PHY layer of the e/gNodeB
+    inet::ModuleRefByPar<LteMacEnb> mac_;
+
     // reference to phy module
     inet::ModuleRefByPar<LtePhyEnb> phy_;
 
@@ -54,6 +57,9 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 
     // get the number of RBs
     virtual unsigned int getNumBands();
+
+    // returns the bytes per block of the given UE for in the given direction
+    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
 
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);

@@ -80,6 +80,15 @@ std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction d
     return snr;
 }
 
+unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
+{
+    int index = bgUeId - BGUE_MIN_ID;
+    Cqi cqi = bgUe_.at(index)->getCqi(dir);
+
+    // get bytes per block based on CQI
+    return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
+}
+
 double BackgroundTrafficManager::getTtiPeriod()
 {
     return mac_->getTtiPeriod();

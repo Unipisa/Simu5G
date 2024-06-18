@@ -55,9 +55,6 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // reference to binder module
     inet::ModuleRefByPar<Binder> binder_;
 
-    // references to the MAC and PHY layer of the e/gNodeB
-    inet::ModuleRefByPar<LteMacEnb> mac_;
-
     //pointer to pisadata
     PhyPisaData* phyPisaData_;
 
@@ -140,9 +137,6 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // returns the buffer of the given UE for in the given direction
     virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx = false);
-
-    // returns the bytes per block of the given UE for in the given direction
-    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
 
     // signal that the RAC for the given UE has been handled
     virtual void racHandled(MacNodeId bgUeId);

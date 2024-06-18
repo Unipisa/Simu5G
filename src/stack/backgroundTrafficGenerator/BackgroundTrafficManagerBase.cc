@@ -64,11 +64,6 @@ void BackgroundTrafficManagerBase::initialize(int stage)
 
         phyPisaData_ = &(binder_->phyPisaData);
     }
-    if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
-    {
-        // get the reference to the MAC layer
-        mac_.reference(this, "macModule", true);
-    }
     if (stage == inet::INITSTAGE_LAST-1)
     {
         BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
@@ -231,15 +226,6 @@ unsigned int BackgroundTrafficManagerBase::getBackloggedUeBuffer(MacNodeId bgUeI
 {
     int index = bgUeId - BGUE_MIN_ID;
     return bgUe_.at(index)->getBufferLength(dir, rtx);
-}
-
-unsigned int BackgroundTrafficManagerBase::getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir)
-{
-    int index = bgUeId - BGUE_MIN_ID;
-    Cqi cqi = bgUe_.at(index)->getCqi(dir);
-
-    // get bytes per block based on CQI
-    return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
 }
 
 unsigned int BackgroundTrafficManagerBase::consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx)
