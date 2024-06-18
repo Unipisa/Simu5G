@@ -37,9 +37,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManager
     // reference to class AMC for this cell
     BackgroundCellAmc* bgAmc_;
 
-    static double nrCqiTable[16];
-    double getCqiFromTable(double snr);
-
   public:
     BackgroundCellTrafficManager();
     virtual ~BackgroundCellTrafficManager();

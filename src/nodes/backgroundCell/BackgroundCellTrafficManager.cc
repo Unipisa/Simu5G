@@ -22,35 +22,6 @@ namespace simu5g {
 
 Define_Module(BackgroundCellTrafficManager);
 
-double BackgroundCellTrafficManager::nrCqiTable[16] = {
-        -9999.0,
-        -9999.0,
-        -9999.0,
-        -5.5,
-        -3.5,
-        -1.5,
-        0.5,
-        4.5,
-        5.5,
-        7.5,
-        10.5,
-        12.5,
-        15.5,
-        17.5,
-        21.5,
-        25.5
-};
-
-double BackgroundCellTrafficManager::getCqiFromTable(double snr)
-{
-    for (unsigned int i=0; i<16; i++)
-    {
-        if (snr < nrCqiTable[i])
-            return i-1;
-    }
-    return 15;
-}
-
 BackgroundCellTrafficManager::BackgroundCellTrafficManager()
 {
 }
