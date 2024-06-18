@@ -12,19 +12,15 @@
 
 package simu5g.stack.backgroundTrafficGenerator;
 
-// BackgroundTrafficManager
+// BackgroundTrafficManagerBase
 //
-// This is the traffic manager for background UEs within a
-// real (simulated) cell. It interacts with the protocol
-// stack of the e/gNB
-simple BackgroundTrafficManager extends BackgroundTrafficManagerBase
+// This is base module for the traffic manager for background UEs
+//
+simple BackgroundTrafficManagerBase like IBackgroundTrafficManager
 {
     parameters:
         @display("i=block/control");
         @class("BackgroundTrafficManager");
-        string macModule = default("^.^.mac");
-        string phyModule = default("^.^.phy");
-        bool enablePeriodicCqiUpdate;
-        bool computeAvgInterference;
+        string binderModule = default("binder");
+        int numBgUes;
 }
-

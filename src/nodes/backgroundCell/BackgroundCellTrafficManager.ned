@@ -11,17 +11,19 @@
 
 package simu5g.nodes.backgroundCell;
 
-import simu5g.stack.backgroundTrafficGenerator.IBackgroundTrafficManager;
-import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficManager;
+import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficManagerBase;
+
 
 // BackgroundCellTrafficManager
 //
 // This is the traffic manager for background UEs within a
 // background cell, which does not have the protocol stack
-simple BackgroundCellTrafficManager extends BackgroundTrafficManager like IBackgroundTrafficManager
+simple BackgroundCellTrafficManager extends BackgroundTrafficManagerBase
 {
     parameters:
         @display("i=block/control");
         @class("BackgroundCellTrafficManager");
         string bgSchedulerModule = default("^.^.bgScheduler");
+        bool enablePeriodicCqiUpdate;
+        bool computeAvgInterference;
 }
