@@ -120,6 +120,36 @@ void BackgroundTrafficManagerBase::notifyBacklog(int index, Direction dir, bool 
     }
 }
 
+Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+{
+    std::vector<double> snr = getSINR(bgUeIndex, dir, bgUePos, bgUeTxPower);
+
+    // convert the SNR to CQI and compute the mean
+    double meanSinr = 0;
+    Cqi bandCqi, meanCqi = 0;
+    std::vector<double>::iterator it = snr.begin();
+
+    for (; it != snr.end(); ++it)
+    {
+        meanSinr += *it;
+
+        // lookup table that associates the SINR to a range of CQI values
+        bandCqi = computeCqiFromSinr(*it);
+
+        meanCqi += bandCqi;
+    }
+
+    meanSinr /= snr.size();
+    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
+    bgUe->collectMeasuredSinr(meanSinr, dir);
+
+    meanCqi /= snr.size();
+    if(meanCqi < 2)
+        meanCqi = 2;
+
+    return meanCqi;
+}
+
 Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
 {
     int newsnr = floor(sinr + 0.5);

@@ -47,9 +47,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     // get the number of RBs
     virtual unsigned int getNumBands();
 
-    // returns the CQI based on the given position and power
-    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
-
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
 };

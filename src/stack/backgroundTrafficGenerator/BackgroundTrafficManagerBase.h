@@ -97,6 +97,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     virtual double getTtiPeriod() = 0;
     virtual bool isSetBgTrafficManagerInfoInit() = 0;
+    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) = 0;
 
     // define functions for interactions with the NIC
 
@@ -115,6 +116,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     // invoked by the UE's traffic generator when new data is backlogged
     virtual void notifyBacklog(int index, Direction dir, bool rtx = false);
+
+    // returns the CQI based on the given position and power
+    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
 
     // returns the CQI based on the given sinr
     virtual Cqi computeCqiFromSinr(double sinr);
