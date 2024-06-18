@@ -35,6 +35,27 @@ class LteChannelModel;
 //
 class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 {
+  protected:
+    // reference to phy module
+    inet::ModuleRefByPar<LtePhyEnb> phy_;
+
+    // reference to the channel model for the given carrier
+    LteChannelModel* channelModel_;
+
+  protected:
+    virtual void initialize(int stage);
+
+  public:
+    BackgroundTrafficManager();
+
+    // get the number of RBs
+    virtual unsigned int getNumBands();
+
+    // returns the CQI based on the given position and power
+    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+
+    // Compute received power for a background UE according to pathloss
+    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
 };
 
 } //namespace

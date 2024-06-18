@@ -46,7 +46,6 @@ double BackgroundTrafficManagerBase::getCqiFromTable(double snr)
 
 BackgroundTrafficManagerBase::BackgroundTrafficManagerBase()
 {
-    channelModel_ = nullptr;
 }
 
 void BackgroundTrafficManagerBase::initialize(int stage)
@@ -56,7 +55,6 @@ void BackgroundTrafficManagerBase::initialize(int stage)
     {
         numBgUEs_ = par("numBgUes");
         binder_.reference(this, "binderModule", true);
-        phy_.reference(this, "phyModule", true);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
     {
@@ -73,13 +71,6 @@ void BackgroundTrafficManagerBase::initialize(int stage)
     }
     if (stage == inet::INITSTAGE_LAST-1)
     {
-        // get the reference to the channel model for the given carrier
-        bsTxPower_ = phy_->getTxPwr();
-        bsCoord_ = phy_->getCoord();
-        channelModel_ = phy_->getChannelModel(carrierFrequency_);
-        if (channelModel_ == nullptr)
-            throw cRuntimeError("BackgroundTrafficManagerBase::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_);
-
         BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
         info->init = false;
         info->bgTrafficManager = this;
@@ -111,11 +102,6 @@ void BackgroundTrafficManagerBase::handleMessage(cMessage *msg)
     }
 }
 
-unsigned int BackgroundTrafficManagerBase::getNumBands()
-{
-    return channelModel_->getNumBands();
-}
-
 void BackgroundTrafficManagerBase::notifyBacklog(int index, Direction dir, bool rtx)
 {
     if (dir != DL && dir != UL)
@@ -132,53 +118,6 @@ void BackgroundTrafficManagerBase::notifyBacklog(int index, Direction dir, bool 
     {
         backloggedRtxBgUes_[dir].push_back(index);
     }
-}
-
-Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
-{
-    // this is a fictitious frame that needs to compute the SINR
-    LteAirFrame *frame = new LteAirFrame("bgUeSinrComputationFrame");
-    UserControlInfo *cInfo = new UserControlInfo();
-
-    // build a control info
-    cInfo->setSourceId(BGUE_MIN_ID + bgUeIndex);  // MacNodeId for the bgUe
-    cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
-    cInfo->setFrameType(FEEDBACKPKT);
-    cInfo->setCoord(bgUePos);
-    cInfo->setDirection(dir);
-    cInfo->setCarrierFrequency(carrierFrequency_);
-    if (dir == UL)
-        cInfo->setTxPower(bgUeTxPower);
-    else
-        cInfo->setTxPower(bsTxPower_);
-
-    std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo);
-
-    // free memory
-    delete frame;
-    delete cInfo;
-
-    // convert the SNR to CQI and compute the mean
-    double meanSinr = 0;
-    Cqi bandCqi, meanCqi = 0;
-    std::vector<double>::iterator it = snr.begin();
-    for (; it != snr.end(); ++it)
-    {
-        meanSinr += *it;
-
-        bandCqi = computeCqiFromSinr(*it);
-        meanCqi += bandCqi;
-    }
-
-    meanSinr /= snr.size();
-    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
-    bgUe->collectMeasuredSinr(meanSinr, dir);
-
-    meanCqi /= snr.size();
-    if(meanCqi < 2)
-        meanCqi = 2;
-
-    return meanCqi;
 }
 
 Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
@@ -324,12 +263,6 @@ void BackgroundTrafficManagerBase::initializeAvgInterferenceComputation()
         avgCellLoad_ += bgUe_.at(i)->getAvgLoad(DL);
         avgUeLoad_.push_back(bgUe_.at(i)->getAvgLoad(UL));
     }
-}
-
-double BackgroundTrafficManagerBase::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
-{
-    MacNodeId bsId = mac_->getMacNodeId();
-    return channelModel_->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bsId);
 }
 
 } //namespace
