@@ -35,6 +35,9 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     // reference to class AMC for this cell
     BackgroundCellAmc* bgAmc_;
 
+  protected:
+    virtual double getTtiPeriod();
+
   public:
     BackgroundCellTrafficManager();
     virtual ~BackgroundCellTrafficManager();
@@ -45,9 +48,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
 
     // returns the CQI based on the given position and power
     virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
-
-    // signal that the RAC for the given UE has been handled
-    virtual void racHandled(MacNodeId bgUeId);
 
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);

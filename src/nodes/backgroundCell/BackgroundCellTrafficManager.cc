@@ -116,28 +116,9 @@ Cqi BackgroundCellTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet:
     return meanCqi;
 }
 
-void BackgroundCellTrafficManager::racHandled(MacNodeId bgUeId)
+double BackgroundCellTrafficManager::getTtiPeriod()
 {
-    Enter_Method("BackgroundCellTrafficManager::racHandled");
-
-    int index = bgUeId - BGUE_MIN_ID;
-
-    waitingForRac_.remove(index);
-
-    // some bytes have been added in the RB assigned for the first BSR, consume them from the buffer
-    unsigned int servedWithFirstBsr = getBackloggedUeBytesPerBlock(bgUeId, UL);
-    unsigned int newBuffLen = consumeBackloggedUeBytes(bgUeId, servedWithFirstBsr, UL);
-
-    // if there are still data in the buffer
-    if (newBuffLen > 0)
-    {
-        ActiveUeNotification* notification = new ActiveUeNotification("activeUeNotification");
-        notification->setIndex(index);
-
-        double offset = bgScheduler_->getTtiPeriod() * 6;  // TODO make it configurable
-                                                             //      there are 6 slots between the first BSR and actual data
-        scheduleAt(NOW + offset, notification);
-    }
+    return bgScheduler_->getTtiPeriod();
 }
 
 double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)

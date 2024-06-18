@@ -246,8 +246,8 @@ void BackgroundTrafficManagerBase::racHandled(MacNodeId bgUeId)
         ActiveUeNotification* notification = new ActiveUeNotification("activeUeNotification");
         notification->setIndex(index);
 
-        double offset = mac_->getTtiPeriod() * 6;  // TODO make it configurable
-                                                   //      there are 6 slots between the first BSR and actual data
+        double offset = getTtiPeriod() * 6;  // TODO make it configurable
+                                             //      there are 6 slots between the first BSR and actual data
         scheduleAt(NOW + offset, notification);
     }
 }
