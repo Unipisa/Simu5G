@@ -53,7 +53,7 @@ unsigned int BackgroundTrafficManager::getNumBands()
     return channelModel_->getNumBands();
 }
 
-Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
     // this is a fictitious frame that needs to compute the SINR
     LteAirFrame *frame = new LteAirFrame("bgUeSinrComputationFrame");
@@ -76,6 +76,13 @@ Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coo
     // free memory
     delete frame;
     delete cInfo;
+
+    return snr;
+}
+
+Cqi BackgroundTrafficManager::computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
+{
+    std::vector<double> snr = getSINR(bgUeIndex, dir, bgUePos, bgUeTxPower);
 
     // convert the SNR to CQI and compute the mean
     double meanSinr = 0;

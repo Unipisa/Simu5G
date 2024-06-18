@@ -47,6 +47,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 
     virtual double getTtiPeriod();
     virtual bool isSetBgTrafficManagerInfoInit();
+    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
 
   public:
     BackgroundTrafficManager();
