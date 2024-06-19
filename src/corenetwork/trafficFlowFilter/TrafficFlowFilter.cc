@@ -36,18 +36,14 @@ void TrafficFlowFilter::initialize(int stage)
     ownerType_ = selectOwnerType(par("ownerType"));
     if (ownerType_ == PGW || ownerType_ == UPF)
     {
-        std::string gwFullPath = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
-        gateway_ = new char[gwFullPath.length() + 1];
-        strcpy(gateway_, gwFullPath.c_str());
+        gateway_ = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
     }
     else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
     {
-        std::string gwFullPath = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
-        gateway_ = new char[gwFullPath.length() + 1];
-        strcpy(gateway_, gwFullPath.c_str());
+        gateway_ = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
     }
     else
-        gateway_ = nullptr;
+        gateway_.clear();
 
     // mec
     if(isBaseStation(ownerType_))
@@ -152,7 +148,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     {
         // check if the destination belongs to another core network (for multi-operator scenarios)
         std::string destGw = binder_->getNetworkName() + "." + CHK(inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stdstringValue();
-        if (strcmp(gateway_, destGw.c_str()) != 0)
+        if (gateway_ != destGw)
         {
             // the destination is a MEC host under a different core network, send the packet to the gateway
             return -1;
@@ -214,7 +210,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     // check if the destination belongs to another core network (for multi-operator scenarios)
     std::string destGw = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
-    if (strcmp(gateway_,destGw.c_str()) != 0)
+    if (gateway_ != destGw)
     {
         // the destination is a Base Station under a different core network, send the packet to the gateway
         EV << "Forward packet to the gateway" << endl;
@@ -223,12 +219,6 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     EV << "Forward packet to BS " << destMaster << endl;
     return destMaster;
-}
-
-void TrafficFlowFilter::finish()
-{
-    if (gateway_ != nullptr)
-        delete[] gateway_;
 }
 
 } //namespace
