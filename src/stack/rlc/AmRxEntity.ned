@@ -13,7 +13,14 @@
 package simu5g.stack.rlc;
 
 //
-// Receive Entity of RLC AM
+// This module implements the receiving side functionalities of the Acknowledged
+// Mode (AM) of the Radio Link Control (RLC) layer for a specific connection. 
+// It stores RLC Protocol Data Units (PDUs) arriving from the Medium Access 
+// Control (MAC) layer and, when possible, performs reassembly and in-sequence 
+// delivery of packets to the Packet Data Convergence Protocol (PDCP) layer.
+// It also acknowledges the (un)successful reception of PDUs to the peering ~AmTxEntity
+// in order to trigger retransmissions of missing packets and provide guaranteed 
+// delivery of packets to the PDCP layer
 //
 simple AmRxEntity
 {

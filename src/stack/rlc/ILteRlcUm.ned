@@ -13,7 +13,9 @@
 package simu5g.stack.rlc;
 
 //
-// UM Module for the RLC layer of LTE Stack.
+// Interface module for the Unacknowledged Mode (UM) of the Radio Link Control (RLC) layer
+// It defines gates to the Packet Data Convergence Protocol (PDCP) module and the ~LteRlcMux
+// module
 //
 moduleinterface ILteRlcUm
 {

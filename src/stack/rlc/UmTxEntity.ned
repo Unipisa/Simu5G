@@ -13,7 +13,12 @@
 package simu5g.stack.rlc;
 
 //
-// Transmit Entity of RLC UM
+// This module implements the transmitting side functionalities of the Unacknowledged 
+// Mode (UM) of the Radio Link Control (RLC) layer for a specific connection. 
+// It stores packets coming from the Packet Data Convergence Protocol (PDCP) layer 
+// into a transmission buffer and, upon the notification of a transmission opportunity 
+// from the Medium Access Control (MAC) layer, it sends down a RLC Protocol Data Unit 
+// (PDU) of the appropriate size (possibly performind segmentation and/or concatentation)
 //
 simple UmTxEntity
 {

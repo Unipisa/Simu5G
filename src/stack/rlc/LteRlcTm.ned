@@ -13,8 +13,9 @@
 package simu5g.stack.rlc;
 
 //
-// TM Module for the RLC layer of LTE Stack.
-//
+// This module implements the functionalities of the Transparent Mode (UM) of the 
+// Radio Link Control (RLC) layer. 
+// 
 simple LteRlcTm
 {
     parameters:

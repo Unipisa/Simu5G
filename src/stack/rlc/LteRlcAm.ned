@@ -13,7 +13,18 @@
 package simu5g.stack.rlc;
 
 //
-// AM Module for the RLC layer of LTE Stack.
+// This module implements the functionalities of the Acknowledged Mode (AM) of the 
+// Radio Link Control (RLC) layer. 
+// At the transmitting side, it stores packets coming from the Packet Data Convergence
+// Protocol (PDCP) layer into a transmission buffer and, upon the notification of a 
+// transmission opportunity from the Medium Access Control (MAC) layer, it sends down 
+// a RLC Protocol Data Unit (PDU) of the appropriate size (via segmentation and/or
+// concatentation).
+// At the receiving side, it stores RLC PDU arriving from the MAC layer in order to 
+// perform reassembly and in-sequence delivery of packets to the PDCP layer.
+// It implements an Automatic Repeat reQuest (ARQ) mechanism in order to retransmit 
+// unacknowledged RLC PDUs at the transmitting side and provide guaranteed delivery 
+// at the receiving side.
 //
 simple LteRlcAm
 {
