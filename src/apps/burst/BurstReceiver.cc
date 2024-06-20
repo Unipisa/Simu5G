@@ -48,9 +48,6 @@ void BurstReceiver::handleMessage(cMessage *msg)
         return;
 
     Packet* pPacket = check_and_cast<Packet*>(msg);
-    if (pPacket == nullptr)
-            throw cRuntimeError("BurstReceiver::handleMessage - FATAL! Error when casting to inet::Packet");
-
     auto burstHeader = pPacket->popAtFront<BurstPacket>();
 
     numReceived_++;
