@@ -63,11 +63,7 @@ void ServiceRegistry::initialize(int stage)
     subscriptionServiceTime_ = par("subscriptionServiceTime");
     subscriptionService_ = new cMessage("serveSubscription");
     subscriptionQueueSize_ = par("subscriptionQueueSize");
-    currentRequestMessageServed_ = nullptr;
-    currentSubscriptionServed_ = nullptr;
 
-    subscriptionId_ = 0;
-    subscriptions_.clear();
 
     baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
 }

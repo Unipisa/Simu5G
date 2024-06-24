@@ -41,6 +41,7 @@ MecServiceBase::MecServiceBase()
     lastFGRequestArrived_ = 0;
     loadGenerator_ = false;
     rho_ = 0;
+    subscriptionId_ = 0;
 }
 
 void MecServiceBase::initialize(int stage)
@@ -65,10 +66,6 @@ void MecServiceBase::initialize(int stage)
         EV << "MecServiceBase::initialize - mean subscription service time " << subscriptionServiceTime_<< endl;
 
         EV << "MecServiceBase::initialize" << endl;
-
-
-        subscriptionId_ = 0;
-        subscriptions_.clear();
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         responseTimeSignal_ = registerSignal("responseTime");

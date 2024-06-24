@@ -51,8 +51,6 @@ UALCMPApp::UALCMPApp()
     supportedQueryParams_.insert("app_contexts");
     scheduledSubscription = false;
     requestSno = 0;
-    subscriptionId_ = 0;
-    subscriptions_.clear();
 }
 
 void UALCMPApp::initialize(int stage)
@@ -72,8 +70,6 @@ void UALCMPApp::initialize(int stage)
         subscriptionServiceTime_ = par("subscriptionServiceTime");
         subscriptionService_ = new cMessage("serveSubscription");
         subscriptionQueueSize_ = par("subscriptionQueueSize");
-        currentRequestMessageServed_ = nullptr;
-        currentSubscriptionServed_ = nullptr;
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         responseTimeSignal_ = registerSignal("responseTime");
