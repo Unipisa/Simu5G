@@ -13,7 +13,13 @@
 package simu5g.stack.mac;
 
 //
-// D2D-capable User Equipment MAC layer of LTE stack
+// Long-Term Evolution (LTE) Medium Access Control (MAC) layer for user equipment (UE) used for device-to-device (D2D) communication
+//
+// This module manages the Medium Access Control (MAC) layer functionalities in the User Equipment (UE) for 
+// direct device-to-device (D2D) communication within the LTE network. It extends the basic MAC functionality of 
+// LTE UE to support D2D features, enabling two UE devices to communicate directly without the need to route 
+// traffic through the base station. This is crucial for enhancing network performance, reducing latency, and 
+// offloading traffic from the core network, making it a vital component in the next-generation 5G ecosystem.
 //
 simple LteMacUeD2D extends LteMacUe
 {

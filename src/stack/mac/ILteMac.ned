@@ -9,11 +9,18 @@
 // and cannot be removed from it.
 //
 
-
 package simu5g.stack.mac;
 
 //
-// Interface for the MAC layer of LTE Stack.
+// Interface for the Medium Access Control (MAC) layer of LTE Stack.
+// 
+// The LteMac moduleinterface provides the definition for the MAC layer
+// in the LTE network. It serves as an intermediary between the Radio Link
+// Control (RLC) layer and the Physical (PHY) layer, facilitating the transmission
+// and control of data packets. The MAC layer is responsible for various 
+// functions such as scheduling, HARQ (Hybrid Automatic Repeat Request), 
+// and traffic prioritization, ensuring efficient and reliable communication 
+// in the LTE network.
 //
 moduleinterface ILteMac
 {

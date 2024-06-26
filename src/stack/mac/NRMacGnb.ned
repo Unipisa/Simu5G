@@ -13,6 +13,13 @@ package simu5g.stack.mac;
 //
 // NR MAC module of the gNB
 //
+// Medium Access Control (MAC) layer of the gNodeB (gNB) for New Radio (NR) communication.
+// This module is responsible for managing the MAC layer functionalities, including 
+// scheduling, handling of Hybrid Automatic Repeat Request (HARQ) processes, and 
+// resource allocation. It plays a crucial role in the 5G network by ensuring efficient 
+// data transmission and reception, adapting to varying network conditions, and 
+// supporting enhanced mobile broadband services.
+//
 simple NRMacGnb extends LteMacEnbD2D
 {
     parameters:

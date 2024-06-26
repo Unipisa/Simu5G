@@ -11,7 +11,11 @@
 
 package simu5g.stack.mac;
 //
-// NR MAC module of the UE
+// New Radio (NR) Medium Access Control (MAC) module for the User Equipment (UE)
+// This module implements the NR MAC layer functionalities specific to the User Equipment (UE)
+// in a 5G network. It extends the capabilities of LteMacUeD2D by supporting new NR-specific 
+// features and protocols, ensuring efficient data transmission, resource allocation, and 
+// overall communication performance in NR systems.
 //
 simple NRMacUe extends LteMacUeD2D
 {

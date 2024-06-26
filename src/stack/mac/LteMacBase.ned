@@ -13,7 +13,9 @@
 package simu5g.stack.mac;
 
 //
-// Base module for the MAC layer of LTE Stack.
+// Base module for the Medium Access Control (MAC) layer of the LTE (Long Term Evolution) Stack.
+//
+// The LteMacBase module serves as the foundational component of the MAC layer in the LTE network stack. It is responsible for handling the Medium Access Control functions which include scheduling, buffer management, error correction through H-ARQ (Hybrid Automatic Repeat reQuest), and interfacing between the RLC (Radio Link Control) layer and the PHY (Physical) layer. This module is critical in managing data transmission efficiency and reliability in both uplink and downlink communications within LTE cells, ensuring proper QoS (Quality of Service) and maintaining overall network performance.
 //
 simple LteMacBase like ILteMac
 {

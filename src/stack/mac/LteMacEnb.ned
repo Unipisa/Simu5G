@@ -13,7 +13,11 @@
 package simu5g.stack.mac;
 
 //
-// eNodeB MAC layer of LTE stack
+// Medium Access Control (MAC) layer for the evolved Node B (eNodeB) in an LTE network.
+// This module is responsible for managing all data transmission aspects at the 
+// MAC sublayer within the eNodeB, including scheduling, resource allocation, 
+// and handling of data flow between the physical layer and upper layers. It aims 
+// to provide efficient, fair, and reliable communication for connected user equipments (UEs).
 //
 simple LteMacEnb extends LteMacBase
 {
