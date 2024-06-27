@@ -44,6 +44,7 @@ void ServiceRegistry::initialize(int stage)
      */
     if (stage == inet::INITSTAGE_LOCAL)
     {
+        /* ---- >>>>> ---- found in MecServiceBase ---- */
         serviceName_ = par("serviceName").stringValue();
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
@@ -59,9 +60,7 @@ void ServiceRegistry::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         meHost_ = getParentModule() // MECPlatform
                 ->getParentModule(); // MeHost
-
-        /* --------------- */
-
+        /* ---- <<<<< ---- found in MecServiceBase ---- */
     }
     if (stage == inet::INITSTAGE_APPLICATION_LAYER - 1) {
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";

@@ -71,8 +71,13 @@ void MecServiceBase::initialize(int stage)
         responseTimeSignal_ = registerSignal("responseTime");
 
         binder_.reference(this, "binderModule", true);
+
+        /* ---- >>>>> ---- not found in UALCMPApp ---- */
+
         meHost_ = getParentModule() // MECPlatform
                 ->getParentModule(); // MeHost
+
+        /* ---- >>>>> ---- not found in ServiceRegistry ---- */
 
         loadGenerator_ = par("loadGenerator").boolValue();
         if(loadGenerator_)
@@ -107,6 +112,8 @@ void MecServiceBase::initialize(int stage)
 
         // get the BSs connected to the mec host
         getConnectedBaseStations();
+        /* ---- <<<<< ---- not found in ServiceRegistry ---- */
+        /* ---- <<<<< ---- not found in UALCMPApp ---- */
     }
 }
 

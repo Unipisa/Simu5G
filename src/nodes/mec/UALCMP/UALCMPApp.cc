@@ -61,8 +61,8 @@ void UALCMPApp::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         EV << "MecServiceBase::initialize" << endl;
+        /* ---- >>>>> ---- found in MecServiceBase ---- */
         serviceName_ = par("serviceName").stringValue();
-
         requestServiceTime_ = par("requestServiceTime");
         requestService_ = new cMessage("serveRequest");
         requestQueueSize_ = par("requestQueueSize");
@@ -73,7 +73,9 @@ void UALCMPApp::initialize(int stage)
 
         requestQueueSizeSignal_ = registerSignal("requestQueueSize");
         responseTimeSignal_ = registerSignal("responseTime");
+
         binder_.reference(this, "binderModule", true);
+        /* ---- <<<<< ---- found in MecServiceBase ---- */
     }
 
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
