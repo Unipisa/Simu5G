@@ -42,30 +42,30 @@ void ServiceRegistry::initialize(int stage)
     /* since Mec Service will register at init stage INITSTAGE_APPLICATION_LAYER,
      * be sure that the ServiceRegistry is ready
      */
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER - 1)
-        return;
+    if (stage == inet::INITSTAGE_LOCAL)
+    {
+        serviceName_ = par("serviceName").stringValue();
+        requestServiceTime_ = par("requestServiceTime");
+        requestService_ = new cMessage("serveRequest");
+        requestQueueSize_ = par("requestQueueSize");
 
-    binder_.reference(this, "binderModule", true);
-    meHost_ = getParentModule() // MECPlatform
-            ->getParentModule(); // MeHost
+        subscriptionServiceTime_ = par("subscriptionServiceTime");
+        subscriptionService_ = new cMessage("serveSubscription");
+        subscriptionQueueSize_ = par("subscriptionQueueSize");
 
-    EV << "ServiceRegistry::initialize" << endl;
+        requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+        responseTimeSignal_ = registerSignal("responseTime");
 
-    serviceName_ = par("serviceName").stringValue();
+        binder_.reference(this, "binderModule", true);
+        meHost_ = getParentModule() // MECPlatform
+                ->getParentModule(); // MeHost
 
-    requestQueueSizeSignal_ = registerSignal("requestQueueSize");
-    responseTimeSignal_ = registerSignal("responseTime");
+        /* --------------- */
 
-    requestServiceTime_ = par("requestServiceTime");
-    requestService_ = new cMessage("serveRequest");
-    requestQueueSize_ = par("requestQueueSize");
-
-    subscriptionServiceTime_ = par("subscriptionServiceTime");
-    subscriptionService_ = new cMessage("serveSubscription");
-    subscriptionQueueSize_ = par("subscriptionQueueSize");
-
-
-    baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
+    }
+    if (stage == inet::INITSTAGE_APPLICATION_LAYER - 1) {
+        baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
+    }
 }
 
 
