@@ -13,7 +13,7 @@
 #define _LOCATIONSERVICE_H
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase2.h"
 
 namespace simu5g {
 
@@ -31,7 +31,7 @@ namespace simu5g {
 //class Location;
 class AperiodicSubscriptionTimer;
 
-class LocationService: public MecServiceBase
+class LocationService: public MecServiceBase2
 {
   private:
 

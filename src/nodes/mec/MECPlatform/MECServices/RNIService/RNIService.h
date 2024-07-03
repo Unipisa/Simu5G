@@ -12,7 +12,7 @@
 #ifndef _RNISERVICE_H
 #define _RNISERVICE_H
 
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase2.h"
 #include "nodes/mec/MECPlatform/MECServices/RNIService/resources/L2Meas.h"
 
 namespace simu5g {
@@ -25,7 +25,7 @@ namespace simu5g {
  */
 
 
-class RNIService: public MecServiceBase
+class RNIService: public MecServiceBase2
 {
   private:
 

@@ -41,7 +41,7 @@ RNIService::RNIService():L2MeasResource_(){
 
 void RNIService::initialize(int stage)
 {
-    MecServiceBase::initialize(stage);
+    MecServiceBase2::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
         L2MeasResource_.setBinder(binder_);

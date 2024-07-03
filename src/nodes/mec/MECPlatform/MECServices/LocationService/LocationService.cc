@@ -43,7 +43,7 @@ LocationService::LocationService(){
 
 void LocationService::initialize(int stage)
 {
-    MecServiceBase::initialize(stage);
+    MecServiceBase2::initialize(stage);
 
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         LocationResource_.addEnodeB(eNodeB_);
