@@ -36,32 +36,9 @@ ServiceRegistry::~ServiceRegistry() {
 void ServiceRegistry::initialize(int stage)
 {
     EV << "ServiceRegistry::initialize - stage " << stage << endl;
-    inet::ApplicationBase::initialize(stage);
-    // avoid multiple initializations
 
-    /* since Mec Service will register at init stage INITSTAGE_APPLICATION_LAYER,
-     * be sure that the ServiceRegistry is ready
-     */
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
-        /* ---- >>>>> ---- found in MecServiceBase ---- */
-        serviceName_ = par("serviceName").stringValue();
-        requestServiceTime_ = par("requestServiceTime");
-        requestService_ = new cMessage("serveRequest");
-        requestQueueSize_ = par("requestQueueSize");
+    MecServiceBase::initialize(stage);
 
-        subscriptionServiceTime_ = par("subscriptionServiceTime");
-        subscriptionService_ = new cMessage("serveSubscription");
-        subscriptionQueueSize_ = par("subscriptionQueueSize");
-
-        requestQueueSizeSignal_ = registerSignal("requestQueueSize");
-        responseTimeSignal_ = registerSignal("responseTime");
-
-        binder_.reference(this, "binderModule", true);
-        meHost_ = getParentModule() // MECPlatform
-                ->getParentModule(); // MeHost
-        /* ---- <<<<< ---- found in MecServiceBase ---- */
-    }
     if (stage == inet::INITSTAGE_APPLICATION_LAYER - 1) {
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
     }
