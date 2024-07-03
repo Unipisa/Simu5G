@@ -55,30 +55,11 @@ UALCMPApp::UALCMPApp()
 
 void UALCMPApp::initialize(int stage)
 {
-    inet::ApplicationBase::initialize(stage);   // TODO base class is MecServiceBase
+    MecServiceBase::initialize(stage);
 
     EV << "UALCMPApp::initialize stage " << stage << endl;
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
-        EV << "MecServiceBase::initialize" << endl;
-        /* ---- >>>>> ---- found in MecServiceBase ---- */
-        serviceName_ = par("serviceName").stringValue();
-        requestServiceTime_ = par("requestServiceTime");
-        requestService_ = new cMessage("serveRequest");
-        requestQueueSize_ = par("requestQueueSize");
 
-        subscriptionServiceTime_ = par("subscriptionServiceTime");
-        subscriptionService_ = new cMessage("serveSubscription");
-        subscriptionQueueSize_ = par("subscriptionQueueSize");
-
-        requestQueueSizeSignal_ = registerSignal("requestQueueSize");
-        responseTimeSignal_ = registerSignal("responseTime");
-
-        binder_.reference(this, "binderModule", true);
-        /* ---- <<<<< ---- found in MecServiceBase ---- */
-    }
-
-    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
+    if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
         mecOrchestrator_.reference(this, "mecOrchestratorHostname", true);
     }
