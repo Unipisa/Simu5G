@@ -76,43 +76,6 @@ void MecServiceBase::initialize(int stage)
 
         meHost_ = getParentModule() // MECPlatform
                 ->getParentModule(); // MeHost
-
-        /* ---- >>>>> ---- not found in ServiceRegistry ---- */
-
-        loadGenerator_ = par("loadGenerator").boolValue();
-        if(loadGenerator_)
-        {
-            beta_ = par("betaa").doubleValue();
-            lambda_ = 1/beta_;
-            numBGApps_ = par("numBGApps").intValue();
-            /*
-             * check if the system is stable.
-             * For M/M/1 --> rho (lambda_/mu) < 1
-             * If arrivals come from multiple independent exponential sources:
-             * (numBGApps*lambda_)/mu) < 1
-             */
-            double lambdaT = lambda_*(numBGApps_+1);
-            rho_ = lambdaT*requestServiceTime_;
-            if(rho_ >= 1)
-                throw cRuntimeError ("M/M/1 system is unstable: rho is %f", rho_);
-            EV <<"MecServiceBase::initialize - rho: "<< rho_ <<  endl;
-        }
-
-        int found = getParentModule()->findSubmodule("serviceRegistry");
-        if(found == -1)
-            throw cRuntimeError("MecServiceBase::initialize - ServiceRegistry not present!");
-        servRegistry_ = check_and_cast<ServiceRegistry*>(getParentModule()->getSubmodule("serviceRegistry"));
-
-        cModule* module = meHost_->getSubmodule("mecPlatformManager");
-        if(module != nullptr)
-        {
-            EV << "MecServiceBase::initialize - MecPlatformManager found" << endl;
-            mecPlatformManager_ = check_and_cast<MecPlatformManager*>(module);
-        }
-
-        // get the BSs connected to the mec host
-        getConnectedBaseStations();
-        /* ---- <<<<< ---- not found in ServiceRegistry ---- */
         /* ---- <<<<< ---- not found in UALCMPApp ---- */
     }
 }
