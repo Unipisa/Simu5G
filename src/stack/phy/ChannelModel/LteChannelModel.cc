@@ -39,43 +39,37 @@ void LteChannelModel::initialize(int stage)
 
 std::vector<double> LteChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
 std::vector<double> LteChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
 std::vector<double> LteChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
 std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord,MacNodeId enbId)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
 std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord,MacNodeId enbId,const std::vector<double>& rsrpVector)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
 std::vector<double> LteChannelModel::getSIR(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-   std::vector<double> tmp;
-   tmp.push_back(10000);
+    static const std::vector<double> tmp { 10000.0 };
    return tmp;
 }
 
