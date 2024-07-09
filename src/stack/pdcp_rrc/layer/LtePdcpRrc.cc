@@ -488,7 +488,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
         if (MacCidToNodeId(tit->first) == nodeId)
         {
             (tit->second)->deleteModule();  // Delete Entity
-            txEntities_.erase(tit++);       // Delete Elem
+            tit = txEntities_.erase(tit);       // Delete Elem
         }
         else
         {
@@ -500,7 +500,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
         if (MacCidToNodeId(rit->first) == nodeId)
         {
             (rit->second)->deleteModule();  // Delete Entity
-            rxEntities_.erase(rit++);       // Delete Elem
+            rit = rxEntities_.erase(rit);       // Delete Elem
         }
         else
         {
@@ -518,12 +518,12 @@ void LtePdcpRrcUe::deleteEntities(MacNodeId nodeId)
     for (tit = txEntities_.begin(); tit != txEntities_.end(); )
     {
         (tit->second)->deleteModule();  // Delete Entity
-        txEntities_.erase(tit++);       // Delete Elem
+        tit = txEntities_.erase(tit);       // Delete Elem
     }
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); )
     {
         (rit->second)->deleteModule();  // Delete Entity
-        rxEntities_.erase(rit++);       // Delete Elem
+        rit = rxEntities_.erase(rit);       // Delete Elem
     }
 }
 

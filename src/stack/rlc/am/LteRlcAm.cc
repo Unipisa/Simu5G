@@ -204,7 +204,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
         if (MacCidToNodeId(tit->first) == nodeId)
         {
             delete tit->second; // Delete Queue
-            txBuffers_.erase(tit++); // Delete Elem
+            tit = txBuffers_.erase(tit); // Delete Elem
         }
         else
         {
@@ -216,7 +216,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
         if (MacCidToNodeId(rit->first) == nodeId)
         {
             delete rit->second; // Delete Queue
-            rxBuffers_.erase(rit++); // Delete Elem
+            rit = rxBuffers_.erase(rit); // Delete Elem
         }
         else
         {

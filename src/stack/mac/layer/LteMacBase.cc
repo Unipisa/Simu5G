@@ -309,7 +309,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
                 delete pkt;
             }
             delete mit->second;        // Delete Queue
-            mbuf_.erase(mit++);        // Delete Elem
+            mit = mbuf_.erase(mit);    // Delete Elem
         }
         else
         {
@@ -323,7 +323,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
             while (!vit->second->isEmpty())
                 vit->second->popFront();
             delete vit->second;        // Delete Queue
-            macBuffers_.erase(vit++);        // Delete Elem
+            vit = macBuffers_.erase(vit);        // Delete Elem
         }
         else
         {
@@ -341,7 +341,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
             if (hit->first == nodeId)
             {
                 delete hit->second; // Delete Queue
-                mtit->second.erase(hit++); // Delete Elem
+                hit = mtit->second.erase(hit); // Delete Elem
             }
             else
             {
@@ -359,7 +359,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
             if (hit2->first == nodeId)
             {
                 delete hit2->second; // Delete Queue
-                mrit->second.erase(hit2++); // Delete Elem
+                hit2 = mrit->second.erase(hit2); // Delete Elem
             }
             else
             {

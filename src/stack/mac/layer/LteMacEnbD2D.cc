@@ -390,7 +390,7 @@ void LteMacEnbD2D::deleteHarqBuffersMirrorD2D(MacNodeId nodeId)
             if (senderId == nodeId || destId == nodeId)
             {
                 delete it->second;
-                mit->second.erase(it++);
+                it = mit->second.erase(it);
             }
             else
             {
@@ -416,7 +416,7 @@ void LteMacEnbD2D::deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer
             if (senderId == txPeer && destId == rxPeer)
             {
                 delete it->second;
-                mit->second.erase(it++);
+                it = mit->second.erase(it);
             }
             else
             {

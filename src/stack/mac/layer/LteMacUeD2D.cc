@@ -1088,7 +1088,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket* pktAux)
                     {
                         if (lt->second.first == cid)
                         {
-                            lcgMap_.erase(lt++);
+                            lt = lcgMap_.erase(lt);
                         }
                         else
                         {

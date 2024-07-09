@@ -1239,14 +1239,14 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
             delete pkt;
         }
         delete mit->second;        // Delete Queue
-        mbuf_.erase(mit++);        // Delete Elem
+        mit = mbuf_.erase(mit);        // Delete Elem
     }
     for (vit = macBuffers_.begin(); vit != macBuffers_.end(); )
     {
         while (!vit->second->isEmpty())
             vit->second->popFront();
         delete vit->second;                  // Delete Queue
-        macBuffers_.erase(vit++);           // Delete Elem
+        vit = macBuffers_.erase(vit);           // Delete Elem
     }
 
     // delete H-ARQ buffers
@@ -1257,7 +1257,7 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
         for (hit = mtit->second.begin(); hit != mtit->second.end(); )
         {
             delete hit->second; // Delete Queue
-            mtit->second.erase(hit++); // Delete Elem
+            hit = mtit->second.erase(hit); // Delete Elem
         }
     }
 
@@ -1268,7 +1268,7 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
         for (hit2 = mrit->second.begin(); hit2 != mrit->second.end();)
         {
              delete hit2->second; // Delete Queue
-             mrit->second.erase(hit2++); // Delete Elem
+             hit2 = mrit->second.erase(hit2); // Delete Elem
         }
     }
 

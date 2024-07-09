@@ -233,7 +233,7 @@ void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
         if (MacCidToNodeId(tit->first) == nodeId)
         {
             (tit->second)->deleteModule();  // Delete Entity
-            txEntities_.erase(tit++);       // Delete Elem
+            tit = txEntities_.erase(tit);       // Delete Elem
         }
         else
         {
@@ -245,7 +245,7 @@ void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
         if (MacCidToNodeId(rit->first) == nodeId)
         {
             (rit->second)->deleteModule();  // Delete Entity
-            rxEntities_.erase(rit++);       // Delete Elem
+            rit = rxEntities_.erase(rit);       // Delete Elem
         }
         else
         {

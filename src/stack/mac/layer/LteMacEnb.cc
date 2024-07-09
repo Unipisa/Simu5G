@@ -119,7 +119,7 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
         if (MacCidToNodeId(bit->first) == nodeId)
         {
             delete bit->second; // Delete Queue
-            bsrbuf_.erase(bit++); // Delete Elem
+            bit = bsrbuf_.erase(bit); // Delete Elem
         }
         else
         {

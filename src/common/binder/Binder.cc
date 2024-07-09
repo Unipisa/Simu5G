@@ -149,7 +149,7 @@ void Binder::unregisterNode(MacNodeId id)
     {
         if(it->second == id)
         {
-            macNodeIdToIPAddress_.erase(it++);
+            it = macNodeIdToIPAddress_.erase(it);
         }
         else
         {
