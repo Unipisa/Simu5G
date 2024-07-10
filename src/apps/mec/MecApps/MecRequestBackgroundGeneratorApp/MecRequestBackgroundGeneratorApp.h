@@ -25,7 +25,6 @@ class MecRequestBackgroundGeneratorApp : public MecAppBase
 {
 protected:
 
-     inet::NodeStatus *nodeStatus = nullptr;
      int numberOfApplications_;    // requests to send in this session
      cMessage *burstTimer;
      cMessage *burstPeriod;

@@ -22,7 +22,6 @@ using namespace omnetpp;
 class MecRequestForegroundApp : public MecAppBase
 {
 protected:
-     inet::NodeStatus *nodeStatus = nullptr;
      cMessage *sendFGRequest;
      double lambda;
 

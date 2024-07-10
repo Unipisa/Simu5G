@@ -41,10 +41,8 @@ class VoDUDPServer : public omnetpp::cSimpleModule
     std::fstream outfile;
     double TIME_SLOT;
 
-    const char * clientsIP;
     int clientsPort;
     double clientsStartStreamTime;
-    const char * clientsReqTime;
 
     std::vector<std::string> vclientsIP;
 
