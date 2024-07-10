@@ -168,17 +168,12 @@ class LtePhyBase : public ChannelAccess
 
     LteChannelModel* getChannelModel(double carrierFreq = 0.0)
     {
-        if (carrierFreq == 0.0) // when not specified, returns the first channel model (primary cell) TODO check this
-        {
-            std::map<double, LteChannelModel*>::iterator it = channelModel_.begin();
-            if (it != channelModel_.end())
-                return channelModel_.begin()->second;
-        }
-
-        if (channelModel_.find(carrierFreq) == channelModel_.end())
+        if (channelModel_.empty())
             return nullptr;
-
-        return channelModel_[carrierFreq];
+        if (carrierFreq == 0.0) // when not specified, returns the first channel model (primary cell) TODO check this
+            return channelModel_.begin()->second;
+        auto it = channelModel_.find(carrierFreq);
+        return (it == channelModel_.end()) ? nullptr : it->second;
     }
 
     double getMicroTxPwr()
