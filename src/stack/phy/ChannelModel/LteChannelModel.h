@@ -43,7 +43,7 @@ class LteChannelModel : public omnetpp::cSimpleModule
     LtePhyBase * phy_;
 
     // Reference to the component carrier
-    ComponentCarrier* componentCarrier_;
+    inet::ModuleRefByPar<ComponentCarrier> componentCarrier_;
 
     // Carrier Frequency
     double carrierFrequency_;

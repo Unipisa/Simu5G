@@ -21,8 +21,7 @@ void LteChannelModel::initialize(int stage)
     {
         binder_.reference(this, "binderModule", true);
 
-        unsigned int componentCarrierIndex = par("componentCarrierIndex");
-        componentCarrier_ = check_and_cast<ComponentCarrier*>(getModuleByPath("carrierAggregation")->getSubmodule("componentCarrier", componentCarrierIndex));
+        componentCarrier_.reference(this, "componentCarrierModule", true);
 
         numBands_ = componentCarrier_->getNumBands();   // TODO fix this for UEs' channel model (probably it's not used)
         carrierFrequency_ = componentCarrier_->getCarrierFrequency();

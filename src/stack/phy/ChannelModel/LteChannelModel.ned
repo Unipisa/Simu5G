@@ -22,6 +22,6 @@ simple LteChannelModel like LteChannelModelInterface
         string cellInfoModule = default("^.^.cellInfo");  // optional
 
         // component carrier for this channel model
-        int componentCarrierIndex = default(0);
+        string componentCarrierModule = default("carrierAggregation.componentCarrier[0]");
 }
 
