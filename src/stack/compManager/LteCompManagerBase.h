@@ -45,7 +45,7 @@ protected:
     omnetpp::cGate* x2Manager_[2];
 
     // reference to the MAC layer
-    LteMacEnb* mac_;
+    omnetpp::opp_component_ptr<LteMacEnb> mac_;
 
     // number of available bands
     int numBands_;

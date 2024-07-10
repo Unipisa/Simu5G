@@ -148,13 +148,13 @@ class DasFilter
     double rssiThreshold_;
 
     /// Pointer to the Lte Binder
-    Binder* binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     /// Pointer to the Das filter of the master (used on UEs binded to eNBs)
     DasFilter* das_;
 
     /// Pointer to the Nic
-    LtePhyBase* ltePhy_;
+    omnetpp::opp_component_ptr<LtePhyBase> ltePhy_;
 };
 
 } //namespace

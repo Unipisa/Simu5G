@@ -526,7 +526,7 @@ LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     {
                         EV << NOW << " LteSchedulerEnbDl::rtxschedule CODEWORD IS NOW BUSY!!!" << endl;
 
-                        check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(nodeId, carrierFrequency, DL, false);
+                        mac_->signalProcessForRtx(nodeId, carrierFrequency, DL, false);
 
                         // do not process this HARQ process anymore
                         // go to next codeword

@@ -89,7 +89,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
                 if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
                 {
                     // signal the MAC the need for retransmission
-                    check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
+                    check_and_cast<LteMacEnb*>(macOwner_.get())->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
                 }
             }
         }

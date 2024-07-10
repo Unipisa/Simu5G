@@ -15,6 +15,8 @@
 #include "common/LteCommon.h"
 #include "stack/mac/allocator/LteAllocatorUtils.h"
 
+#include "stack/mac/layer/LteMacEnb.h"
+
 namespace simu5g {
 
 class LteMacEnb;
@@ -28,7 +30,7 @@ class LteAllocationModule
   protected:
 
     /// Owner MAC module
-    LteMacEnb *mac_;
+    omnetpp::opp_component_ptr<LteMacEnb> mac_;
 
     /// Number of bands
     unsigned int bands_;

@@ -71,7 +71,7 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     simtime_t lastfragment_;
 
     // reference to the UE app module, for statistic purposes (statistics will be recorded at the UE side)
-    cModule* ueAppModule_;
+    opp_component_ptr<cModule> ueAppModule_;
 
     // signals
     simsignal_t e2eDelaySegment_;

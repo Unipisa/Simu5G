@@ -34,14 +34,14 @@ class EventGenerator : public omnetpp::cSimpleModule
     bool singleEventSource_;
 
     // store references to the app modules
-    std::vector<MultihopD2D*> appVector_;
+    std::vector<omnetpp::opp_component_ptr<MultihopD2D>> appVector_;
 
     // store LTE IDs of the nodes
     std::set<MacNodeId> lteNodeIdSet_;
 
     // store references to the PHY modules
     // (to speed up position retrieval)
-    std::map<MacNodeId, LtePhyBase*> lteNodePhy_;
+    std::map<MacNodeId, omnetpp::opp_component_ptr<LtePhyBase>> lteNodePhy_;
 
     // notify a node to start an event dissemination
     void notifyEvent();

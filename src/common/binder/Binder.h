@@ -22,6 +22,7 @@
 #include "common/LteCommon.h"
 #include "common/blerCurves/PhyPisaData.h"
 #include "nodes/ExtCell.h"
+#include "stack/mac/layer/LteMacBase.h"
 
 namespace simu5g {
 
@@ -45,8 +46,8 @@ class Binder : public omnetpp::cSimpleModule
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
     std::map<MacNodeId, std::string> macNodeIdToModuleName_;
-    std::map<MacNodeId, cModule*> macNodeIdToModuleRef_;
-    std::map<MacNodeId, LteMacBase*> macNodeIdToModule_;
+    std::map<MacNodeId, omnetpp::opp_component_ptr<cModule>> macNodeIdToModuleRef_;
+    std::map<MacNodeId, omnetpp::opp_component_ptr<LteMacBase>> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
     std::map<int, OmnetId> nodeIds_;

@@ -54,7 +54,7 @@ class L2Meas : public AttributeBase
 
 		TimeStamp timestamp_;
 		std::map<MacCellId, BaseStationStatsCollector*> eNodeBs_;
-		Binder *binder_;
+		omnetpp::opp_component_ptr<Binder> binder_;
 };
 
 } //namespace

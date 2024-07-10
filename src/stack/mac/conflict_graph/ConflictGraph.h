@@ -75,13 +75,13 @@ class ConflictGraph
 {
 
 protected:
-    Binder *binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     // reference to the MAC layer
     LteMacEnbD2D *macEnb_;
 
     // Reference to the CellInfo
-    CellInfo *cellInfo_;
+    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
 
     // Conflict Graph
     CGMatrix conflictGraph_;

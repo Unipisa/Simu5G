@@ -66,7 +66,7 @@ class LcgScheduler
     omnetpp::simtime_t lastExecutionTime_;
 
     /// MAC module, used to get parameters from NED
-    LteMacUe *mac_;
+    omnetpp::opp_component_ptr<LteMacUe> mac_;
 
     /// Associated LteSchedulerUeUl (it is the one who creates the LteScheduler)
     LteSchedulerUeUl* ueScheduler_;

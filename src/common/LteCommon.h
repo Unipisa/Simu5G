@@ -537,7 +537,7 @@ struct EnbInfo
     LtePhyBase * phy;
     LteMacEnb * mac;
     LteRealisticChannelModel * realChan;
-    omnetpp::cModule * eNodeB;
+    omnetpp::opp_component_ptr<omnetpp::cModule> eNodeB;
     int x2;
 };
 
@@ -548,7 +548,7 @@ struct UeInfo
     MacNodeId id;
     MacNodeId cellId;
     LteRealisticChannelModel * realChan;
-    omnetpp::cModule * ue;
+    omnetpp::opp_component_ptr<omnetpp::cModule> ue;
     LtePhyBase* phy;
 };
 

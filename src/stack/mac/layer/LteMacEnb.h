@@ -23,6 +23,7 @@
 namespace simu5g {
 
 class MacBsr;
+class LteAmc;
 class LteSchedulerEnbDl;
 class LteSchedulerEnbUl;
 class ConflictGraph;

@@ -35,7 +35,7 @@ class LteHarqBufferRx
 {
   protected:
     /// binder module reference
-    Binder *binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     /// mac module reference
     LteMacBase *macOwner_;

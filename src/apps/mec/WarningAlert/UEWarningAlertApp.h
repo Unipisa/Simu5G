@@ -68,7 +68,7 @@ class UEWarningAlertApp: public cSimpleModule
     std::string mecAppName;
 
     // mobility informations
-    cModule* ue;
+    opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
 

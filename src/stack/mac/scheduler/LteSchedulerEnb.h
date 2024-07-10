@@ -15,6 +15,7 @@
 #include "common/LteCommon.h"
 #include "stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "stack/mac/allocator/LteAllocatorUtils.h"
+#include "stack/mac/layer/LteMacEnb.h"
 
 namespace simu5g {
 
@@ -70,10 +71,10 @@ class LteSchedulerEnb
     };
 
     // Owner MAC module. Set via initialize().
-    LteMacEnb *mac_;
+    omnetpp::opp_component_ptr<LteMacEnb> mac_;
 
     // Reference to the LTE Binder
-    Binder *binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     // System allocator, carries out the block-allocation functions.
     LteAllocationModule *allocator_;

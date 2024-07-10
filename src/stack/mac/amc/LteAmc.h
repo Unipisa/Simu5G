@@ -20,6 +20,7 @@
 #include "stack/mac/amc/AmcPilot.h"
 #include "stack/mac/amc/LteMcs.h"
 #include "stack/mac/amc/UserTxParams.h"
+#include "stack/mac/layer/LteMacEnb.h"
 #include "common/binder/Binder.h"
 
 namespace simu5g {
@@ -50,9 +51,9 @@ class LteAmc
     void printTxParams(Direction dir, double carrierFrequency);
     void printMuMimoMatrix(const char *s);
     protected:
-    LteMacEnb *mac_;
-    Binder *binder_;
-    CellInfo *cellInfo_;
+    omnetpp::opp_component_ptr<LteMacEnb> mac_;
+    omnetpp::opp_component_ptr<Binder> binder_;
+    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
     AmcPilot *pilot_;
     RbAllocationType allocationType_;
     int numBands_;

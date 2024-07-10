@@ -14,6 +14,7 @@
 
 #include <omnetpp.h>
 
+#include "common/binder/Binder.h"
 #include "stack/mac/amc/LteMcs.h"
 
 namespace simu5g {
@@ -23,7 +24,7 @@ class BackgroundCellAmc
   protected:
 
     // reference to the binder
-    Binder* binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     McsTable dlMcsTable_;
     McsTable ulMcsTable_;

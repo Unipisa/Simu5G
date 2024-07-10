@@ -376,7 +376,7 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                         --codewords;
                         allocatedBytes+=rtxBytes;
 
-                        check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(nodeId, carrierFrequency, UL, false);
+                        mac_->signalProcessForRtx(nodeId, carrierFrequency, UL, false);
                     }
                 }
                 EV << NOW << "LteSchedulerEnbUl::rtxschedule UE " << nodeId << " allocated bytes : " << allocatedBytes << endl;
@@ -386,7 +386,7 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
         {
             // --- START Schedule D2D retransmissions --- //
             Direction dir = D2D;
-            HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_)->getHarqBuffersMirrorD2D(carrierFrequency);
+            HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
             if (harqBuffersMirrorD2D != NULL)
             {
                 HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin() , et_d2d=harqBuffersMirrorD2D->end();
@@ -453,7 +453,7 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                             --codewords;
                             allocatedBytes+=rtxBytes;
 
-                            check_and_cast<LteMacEnb*>(mac_)->signalProcessForRtx(senderId, carrierFrequency, D2D, false);
+                            mac_->signalProcessForRtx(senderId, carrierFrequency, D2D, false);
                         }
                     }
                     EV << NOW << " LteSchedulerEnbUl::rtxschedule - D2D UE: " << senderId << " allocated bytes : " << allocatedBytes << endl;
@@ -795,7 +795,7 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
         D2DPair pair(senderId, destId);
 
         // Get the current active HARQ process
-        HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_)->getHarqBuffersMirrorD2D(carrierFrequency);
+        HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
         EV << "\t the acid that should be considered is " << (unsigned int)acid << endl;
 
         LteHarqProcessMirrorD2D* currentProcess = harqBuffersMirrorD2D->at(pair)->getProcess(acid);

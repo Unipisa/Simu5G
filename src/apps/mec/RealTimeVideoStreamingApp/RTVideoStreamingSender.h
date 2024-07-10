@@ -125,7 +125,7 @@ class RTVideoStreamingSender: public cSimpleModule
     bool sendAllOnOneTime_;
 
     // mobility informations
-    cModule* ue;
+    opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
     omnetpp::cMessage *mobilityStats_;

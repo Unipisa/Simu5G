@@ -229,7 +229,7 @@ class TMultiTimer : public omnetpp::cObject
     unsigned int timerId_;
 
     //! Object for handling the event.
-    omnetpp::cSimpleModule* module_;
+    omnetpp::opp_component_ptr<omnetpp::cSimpleModule> module_;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
     TMultiTimerMsg* intr_;

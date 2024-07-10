@@ -69,7 +69,7 @@ class LtePhyBase : public ChannelAccess
      */
     static short airFramePriority_;
     /** channel models to use.*/
-    std::map<double, LteChannelModel*> channelModel_;
+    std::map<double, omnetpp::opp_component_ptr<LteChannelModel>> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
@@ -95,7 +95,7 @@ class LtePhyBase : public ChannelAccess
     inet::ModuleRefByPar<Binder> binder_;
 
     /// Reference to CellInfo
-    CellInfo* cellInfo_;
+    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
 
     // used in multicast D2D to prevent a send direct towards out-of-range UEs. Range is expressed via multicastD2DRange_
     bool enableMulticastD2DRangeCheck_;
@@ -161,7 +161,7 @@ class LtePhyBase : public ChannelAccess
         return primaryChannelModel_;
     }
 
-    const std::map<double, LteChannelModel*>* getChannelModels()
+    const std::map<double, omnetpp::opp_component_ptr<LteChannelModel>>* getChannelModels()
     {
         return &channelModel_;
     }

@@ -40,7 +40,7 @@ class LteChannelModel : public omnetpp::cSimpleModule
     inet::ModuleRefByPar<CellInfo> cellInfo_;
 
     // Reference to the corresponding PHY layer
-    LtePhyBase * phy_;
+    opp_component_ptr<LtePhyBase> phy_;
 
     // Reference to the component carrier
     inet::ModuleRefByPar<ComponentCarrier> componentCarrier_;

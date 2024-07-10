@@ -60,7 +60,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
     TxMode currentTxMode_;  /// transmission mode to use in feedback generation
 
     DasFilter *dasFilter_;  /// reference to das filter
-    CellInfo *cellInfo_; /// reference to cellInfo
+    omnetpp::opp_component_ptr<CellInfo> cellInfo_; /// reference to cellInfo
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<LtePhyUe> phy_;
 

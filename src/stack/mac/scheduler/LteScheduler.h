@@ -61,10 +61,10 @@ class LteScheduler
   protected:
 
     /// MAC module, used to get parameters from NED
-    LteMacEnb *mac_;
+    omnetpp::opp_component_ptr<LteMacEnb> mac_;
 
     /// Reference to the LTE binder
-    Binder *binder_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 
     /// Associated LteSchedulerEnb (it is the one who creates the LteScheduler)
     LteSchedulerEnb* eNbScheduler_;

@@ -153,7 +153,7 @@ void EventGenerator::unregisterNode(MultihopD2D* app, MacNodeId lteNodeId)
 {
     for (auto it = appVector_.begin(); it != appVector_.end(); ++it)
     {
-        if (*it == app) // compare pointers
+        if (it->get() == app) // compare pointers
         {
             appVector_.erase(it);
             break;

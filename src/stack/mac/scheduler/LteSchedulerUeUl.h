@@ -14,6 +14,8 @@
 
 #include "common/LteCommon.h"
 
+#include "stack/mac/layer/LteMacUe.h"
+
 namespace simu5g {
 
 class LteMacUe;
@@ -27,7 +29,7 @@ class LteSchedulerUeUl
   protected:
 
     // MAC module, queried for parameters
-    LteMacUe *mac_;
+    omnetpp::opp_component_ptr<LteMacUe> mac_;
 
     // Schedule List
     LteMacScheduleList scheduleList_;
