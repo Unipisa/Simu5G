@@ -107,7 +107,7 @@ class LteAmc
     LteAmc& operator=(const LteAmc& other);
     void initialize();
     virtual ~LteAmc();
-    void sefType(int f)
+    void setfType(int f)
     {
         fType_ = f;
     }
