@@ -24,8 +24,6 @@ simple DeviceApp like IApp
 
     string localAddress = default(""); // may be left empty ("")
     int localPort = default(-1); // port number to listen on
-    string connectAddress = default("");  // server address (may be symbolic)
-    int connectPort = default(1000); // port number to connect to
     double startTime @unit(s) = default(1s); // time first session begins
     double stopTime @unit(s) = default(-1s);  // time of finishing sending, negative values mean forever
     int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
