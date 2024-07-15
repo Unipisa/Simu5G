@@ -310,7 +310,7 @@ void DeviceApp::initialize(int stage){
     UALCMPSocket_.setOutputGate(gate("socketOut"));
 
     ueAppSocket_.bind(localAddress, localPort); // bind ueSocket to listen on local port
-    UALCMPSocket_.bind(localAddress, 8740); // bind ueSocket to listen on local port
+    UALCMPSocket_.bind(localAddress, par("ualcmpLocalPort")); // bind UALCMP Socket to listen on ualcmpLocalPort
 
     ueAppSocket_.setCallback(this);
     UALCMPSocket_.setCallback(this);
