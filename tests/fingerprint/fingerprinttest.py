@@ -256,7 +256,7 @@ class FingerprintTestCaseGenerator():
 
     def escape(self, str):
         if re.search(r'[\r\n\",]', str):
-            str = '"' + re.sub('"','""',str) + '"'
+            str = '"' + re.sub(r'"', '""', str) + '"'
         return str
 
     def formatUpdatedSimulationsTable(self, csvFile, simulations):
@@ -451,7 +451,7 @@ class SimulationTestCase(unittest.TestCase):
 #        env['CPUPROFILE_FREQUENCY'] = "1000"
         process = subprocess.Popen(['sh','-c',command], shell=sys.platform.startswith('win'), cwd=workingdir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
         out = process.communicate()[0]
-        out = re.sub("\r", "", out.decode('utf-8'))
+        out = re.sub(r'\r', "", out.decode('utf-8'))
         return (process.returncode, out)
 
 
@@ -478,8 +478,8 @@ class FingerprintTestCase(SimulationTestCase):
         # run the simulation
         workingdir = _iif(self.wd.startswith('/'), rootDir + "/" + self.wd, self.wd)
         wdname = '' + self.wd + ' ' + self.cmdLine
-        wdname = re.sub('/', '_', wdname)
-        wdname = re.sub('[\W]+', '_', wdname)
+        wdname = re.sub(r'/', '_', wdname)
+        wdname = re.sub(r'[\W]+', '_', wdname)
         resultdir = os.path.abspath(".") + "/results/" + self.csvFile + "/" + wdname
         ensure_dir(resultdir)
 
