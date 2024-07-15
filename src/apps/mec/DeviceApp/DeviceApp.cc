@@ -300,18 +300,38 @@ void DeviceApp::initialize(int stage){
 
     if(stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
+
+    const char *localAddressStr = par("localAddress");
+    L3Address localAddress = *localAddressStr ? L3AddressResolver().resolve(localAddressStr) : L3Address();
+
     localPort = par("localPort");
 
     ueAppSocket_.setOutputGate(gate("socketOut"));
     UALCMPSocket_.setOutputGate(gate("socketOut"));
 
-    ueAppSocket_.bind(localPort); // bind ueSocket to listen on local port
-    UALCMPSocket_.bind(8740); // bind ueSocket to listen on local port
-
+    ueAppSocket_.bind(localAddress, localPort); // bind ueSocket to listen on local port
+    UALCMPSocket_.bind(localAddress, 8740); // bind ueSocket to listen on local port
 
     ueAppSocket_.setCallback(this);
-
     UALCMPSocket_.setCallback(this);
+
+    int timeToLive = par("timeToLive"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
+    if (timeToLive != -1) {
+        ueAppSocket_.setTimeToLive(timeToLive);
+        UALCMPSocket_.setTimeToLive(timeToLive);
+    }
+
+    int dscp = par("dscp"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
+    if (dscp != -1) {
+        ueAppSocket_.setDscp(dscp);
+        UALCMPSocket_.setDscp(dscp);
+    }
+
+    int tos = par("tos"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
+    if (tos != -1) {
+        ueAppSocket_.setTos(tos);
+        UALCMPSocket_.setTos(tos);
+    }
 
     const char *lcmAddress = par("UALCMPAddress").stringValue();
     UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
