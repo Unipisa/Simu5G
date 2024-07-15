@@ -49,7 +49,4 @@ simple MecRequestBackgroundApp extends MecAppBase
         double stopTime @unit(s) = default(-1s);  // time of finishing sending, negative values mean forever
 
         @display("i=block/app");
-        @lifecycleSupport;
-        double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
-        double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
 }
