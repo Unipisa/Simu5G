@@ -16,14 +16,14 @@ import inet.applications.contract.IApp;
 
 simple DeviceApp like IApp
 {
-    string UALCMPAddress = default(""); // may be left empty ("")
-    int UALCMPPort = default(-1); // port number to listen on
+    string UALCMPAddress = default(""); // UALCMP connect address to connect to, may be left empty ("")
+    int UALCMPPort = default(-1); // UALCMP port number to connect to
 
     string appProvider = default("");
     string appPackageSource = default("");
 
-    string localAddress = default(""); // may be left empty ("")
-    int localPort = default(-1); // port number to listen on
+    string localAddress = default(""); // used local address for UE and UALCMP, may be left empty ("")
+    int localPort = default(-1); // UE port number to listen on
     double startTime @unit(s) = default(1s); // time first session begins
     double stopTime @unit(s) = default(-1s);  // time of finishing sending, negative values mean forever
     int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
