@@ -51,7 +51,6 @@ moduleinterface IMECService
 
         string localAddress; // local address; may be left empty ("")
         int localPort;     // localPort number to listen on
-        string dataTransferMode @enum("bytecount","object","bytestream"); // bytestream for emulation
 
         double requestServiceTime;
         double subscriptionServiceTime @unit(s);

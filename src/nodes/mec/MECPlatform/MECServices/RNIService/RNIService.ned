@@ -25,7 +25,6 @@ simple RNIService like IMECService, IApp
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")
         int localPort = default(1000);     // localPort number to listen on
-        string dataTransferMode @enum("bytecount","object","bytestream") = default("bytestream"); // bytestream for emulation
 
         double requestServiceTime @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
