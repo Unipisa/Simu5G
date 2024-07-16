@@ -35,8 +35,6 @@ simple MecRequestBackgroundApp extends MecAppBase
 
         bool logger = default(false);
 
-        string localAddress = default(""); // may be left empty ("")
-        int localPort = default(-1); // port number to listen on
         string connectAddress = default("");  // server address (may be symbolic)
         int connectPort = default(1000); // port number to connect to
         double startTime @unit(s) = default(1s); // time first session begins
