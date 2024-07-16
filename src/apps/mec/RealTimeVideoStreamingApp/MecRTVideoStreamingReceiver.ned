@@ -22,11 +22,6 @@ simple MecRTVideoStreamingReceiver extends MecAppBase
 
         int packetSize @unit(B) = default(10B);
 
-        // IApp parameters
-        int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
-        int dscp = default(-1); // if not -1, set the DSCP (IPv4/IPv6) field of sent packets to this value
-        int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
-
         bool logger = default(false);
 
         double discardPercentage = 0.8;
