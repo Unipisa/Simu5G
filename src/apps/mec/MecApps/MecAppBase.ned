@@ -28,8 +28,6 @@ simple MecAppBase like IMECApp, IApp
         string mp1Address = default("");
         int mp1Port = default(10021);
 
-        int localUePort;
-
         // modules:
         string vimModule = default("^.vim");
         string mecPlatformModule = default("^.mecPlatform");

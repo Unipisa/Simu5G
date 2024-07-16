@@ -25,7 +25,6 @@ simple MecRequestBackgroundApp extends MecAppBase
 
         mecAppId = default(0); // it will be override by getId() in initialize
         mecAppIndex = default(0);
-        localUePort = default(0); // not used in MecRequestBackgroundGeneratorApp
 
         double lambda @unit(s) = default(10ms);
 

@@ -30,6 +30,7 @@ simple MECWarningAlertApp extends MecAppBase
 
         int packetSize @unit(B) = default(10B);
 
+        int localUePort;
 
         bool logger = default(false);
 }

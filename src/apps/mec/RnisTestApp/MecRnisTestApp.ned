@@ -25,6 +25,8 @@ simple MecRnisTestApp extends MecAppBase
         @class(MecRnisTestApp);
         @display("i=block/app;is=s");
 
+        int localUePort;
+
         // Resource required info
         requiredRam = default(10MB);
         requiredDisk = default(1MB);
