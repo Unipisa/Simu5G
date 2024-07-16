@@ -33,8 +33,6 @@ simple MecRequestBackgroundApp extends MecAppBase
         requiredDisk = default(100MB);
         requiredCpu = default(15000);
 
-        bool logger = default(false);
-
         string connectAddress = default("");  // server address (may be symbolic)
         int connectPort = default(1000); // port number to connect to
         double startTime @unit(s) = default(1s); // time first session begins

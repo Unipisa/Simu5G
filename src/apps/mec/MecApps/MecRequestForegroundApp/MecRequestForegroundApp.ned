@@ -29,6 +29,4 @@ simple MecRequestForegroundApp extends MecAppBase
 
         int packetSize @unit(B) = default(10B);
         double lambda @unit(s) = default(10ms);
-
-        bool logger = default(false);
 }

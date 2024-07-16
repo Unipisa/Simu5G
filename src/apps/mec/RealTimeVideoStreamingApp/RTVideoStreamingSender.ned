@@ -48,8 +48,6 @@ simple RTVideoStreamingSender like IApp
         string fileName;
         bool sendAllOnOneTime = true;
 
-        bool logger = default(false);
-
         @signal[positionX](type=double);
         @statistic[positionX](title="UE positionX"; source=positionX; record=vector);
         @signal[positionY](type=double);

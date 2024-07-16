@@ -30,6 +30,4 @@ simple MecRequestBackgroundGeneratorApp extends MecAppBase
         requiredRam = default(10MB);
         requiredDisk = default(100MB);
         requiredCpu = default(15000);
-
-        bool logger = default(false);
 }
