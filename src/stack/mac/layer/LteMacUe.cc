@@ -199,7 +199,7 @@ void LteMacUe::initialize(int stage)
 
         // find interface entry and use its address
         IInterfaceTable *interfaceTable = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-        NetworkInterface * iface = interfaceTable->findInterfaceByName(par("interfaceName").stringValue());
+        NetworkInterface * iface = findContainingNicModule(this);
         if(iface == nullptr)
             throw new cRuntimeError("no interface entry for lte interface - cannot bind node %i", nodeId_);
 

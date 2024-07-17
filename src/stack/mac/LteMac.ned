@@ -20,7 +20,6 @@ moduleinterface LteMac
     parameters:
         @display("i=block/mac");
         string interfaceTableModule;
-        string interfaceName;
 
     gates:
         input RLC_to_MAC;    // RLC to MAC
