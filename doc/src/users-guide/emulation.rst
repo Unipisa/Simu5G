@@ -9,12 +9,12 @@ external real-world applications and frameworks. For example,
 it allows one to `make Simu5G interoperable with the Intel
 OpenNESS framework <emulation_openness.html>`__.
 
-Check out our PIMRC 2020 paper on this topic:
+Check out our IEEE Access paper on this topic:
 
--  G. Nardini, G. Stea, A. Virdis, D. Sabella, P. Thakkar,
-   "Using Simu5G as a Realtime Network Emulator to Test MEC
-   Apps in an End-To-End 5G Testbed", PiMRC 2020, London, UK,
-   1-3 September 2020
+-  G. Nardini, G. Stea, A. Virdis, "Scalable Real-time Emulation 
+   of 5G Networks with Simu5G", IEEE Access, vol. 9, 
+   pp. 148504-148520, 2021. doi: 10.1109/ACCESS.2021.3123873. 
+   
 
 An emulation demo
 -----------------
