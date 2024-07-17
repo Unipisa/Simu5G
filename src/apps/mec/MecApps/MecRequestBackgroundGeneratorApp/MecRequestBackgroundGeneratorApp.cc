@@ -73,7 +73,7 @@ void MecRequestBackgroundGeneratorApp::established(int connId)
 void MecRequestBackgroundGeneratorApp::handleSelfMessage(cMessage *msg){
     if(strcmp(msg->getName(), "burstTimer") == 0)
     {
-        burstFlag = (burstFlag == true)? false : true;
+        burstFlag = !burstFlag;
         if(burstFlag){
             sendBulkRequest();
             scheduleAt(simTime()+0.5, burstPeriod);
