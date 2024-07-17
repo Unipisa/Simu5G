@@ -47,20 +47,20 @@ module Upf extends NetworkLayerNodeBase
     submodules:
         pppIf: PppInterface {
             parameters:
-                @display("p=1150,525");
+                @display("p=1150,1000");
         }
         udp: Udp {
             parameters:
-                @display("p=374.0425,201.4075");
+                @display("p=375,200");
         }
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
-                @display("p=881.7925,79.5475");
+                @display("p=1250,80");
                 ownerType = parent.nodeType;
         }
         gtp_user: GtpUser {
             parameters:
-                @display("p=525,80");
+                @display("p=935,80");
         }
         tn: MessageDispatcher {
             parameters:
