@@ -448,8 +448,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
     {
         MacNodeId ueId = binder_->getMacNodeId((Ipv4Address)ci->getDstAddr());
         MacNodeId nrUeId = binder_->getNrMacNodeId((Ipv4Address)ci->getDstAddr());
-        bool ueLteStack = (binder_->getNextHop(ueId) > 0) ? true:false;
-        bool ueNrStack = (binder_->getNextHop(nrUeId) > 0) ? true:false;
+        bool ueLteStack = (binder_->getNextHop(ueId) > 0);
+        bool ueNrStack = (binder_->getNextHop(nrUeId) > 0);
 
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20)  // use split bearer TODO fix threshold
         {
@@ -485,8 +485,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
 
     if (nodeType_ == UE)
     {
-        bool ueLteStack = (binder_->getNextHop(nodeId_) > 0) ? true:false;
-        bool ueNrStack = (binder_->getNextHop(nrNodeId_) > 0) ? true:false;
+        bool ueLteStack = (binder_->getNextHop(nodeId_) > 0);
+        bool ueNrStack = (binder_->getNextHop(nrNodeId_) > 0);
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20)  // use split bearer TODO fix threshold
         {
             int sentPackets;

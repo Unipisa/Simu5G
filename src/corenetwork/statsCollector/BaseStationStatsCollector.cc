@@ -283,7 +283,7 @@ UeStatsCollectorMap* BaseStationStatsCollector::getCollectorMap()
 
 bool BaseStationStatsCollector::hasUeCollector(MacNodeId id)
 {
-    return (ueCollectors_.find(id) != ueCollectors_.end()) ? true : false;
+    return (ueCollectors_.find(id) != ueCollectors_.end());
 }
 
 

@@ -121,7 +121,7 @@ Packet *LteHarqUnitTx::extractPdu()
 
     auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
     lteInfo->setTxNumber(transmissions_);
-    lteInfo->setNdi((transmissions_ == 1) ? true : false);
+    lteInfo->setNdi(transmissions_ == 1);
     EV << "LteHarqUnitTx::extractPdu - ndi set to " << ((transmissions_ == 1) ? "true" : "false") << endl;
 
     auto extractedPdu = pdu_->dup();

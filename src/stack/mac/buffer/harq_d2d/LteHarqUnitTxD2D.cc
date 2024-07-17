@@ -183,7 +183,7 @@ Packet *LteHarqUnitTxD2D::extractPdu()
     status_ = TXHARQ_PDU_WAITING; // waiting for feedback
     auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
     lteInfo->setTxNumber(transmissions_);
-    lteInfo->setNdi((transmissions_ == 1) ? true : false);
+    lteInfo->setNdi(transmissions_ == 1);
     EV << "LteHarqUnitTxD2D::extractPdu - ndi set to " << ((transmissions_ == 1) ? "true" : "false") << endl;
 
     auto extractedPdu = pdu_->dup();

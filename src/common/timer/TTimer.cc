@@ -90,7 +90,7 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
 
 bool TMultiTimer::busy(unsigned int event) const
 {
-    return ((reverseList_.find(event) != reverseList_.end()) ? true : false);
+    return ((reverseList_.find(event) != reverseList_.end()));
 }
 
 void TMultiTimer::handle(unsigned int event)

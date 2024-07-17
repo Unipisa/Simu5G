@@ -34,7 +34,7 @@ void NRPhyUe::initialize(int stage)
     LtePhyUeD2D::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL)
     {
-        isNr_ = (strcmp(getFullName(),"nrPhy") == 0) ? true : false;
+        isNr_ = (strcmp(getFullName(),"nrPhy") == 0);
         if (isNr_)
             otherPhy_ = check_and_cast<NRPhyUe*>(getParentModule()->getSubmodule("phy"));
         else

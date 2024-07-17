@@ -282,7 +282,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                     EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
                     EV << "distance: " << coord.distance(center) <<endl;
 
-                    users[id] = (coord.distance(center) <= radius) ? true : false; // true = inside
+                    users[id] = (coord.distance(center) <= radius); // true = inside
                 }
             }
         }
@@ -302,7 +302,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                 EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
                 EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
                 EV << "distance: " << coord.distance(center) <<endl;
-                users[id] = (coord.distance(center) <= radius) ? true : false;
+                users[id] = (coord.distance(center) <= radius);
             }
 
         }
