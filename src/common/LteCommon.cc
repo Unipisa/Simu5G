@@ -545,10 +545,10 @@ void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap)
 {
     cXMLElementList parameters = xmlData->getElementsByTagName("Parameter");
 
-    for (cXMLElementList::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
-        const char *name = (*it)->getAttribute("name");
-        const char *type = (*it)->getAttribute("type");
-        const char *value = (*it)->getAttribute("value");
+    for (auto parameter : parameters) {
+        const char *name = parameter->getAttribute("name");
+        const char *type = parameter->getAttribute("type");
+        const char *value = parameter->getAttribute("value");
         if (name == 0 || type == 0 || value == 0) {
             EV << "Invalid parameter, could not find name, type or value." << endl;
             continue;

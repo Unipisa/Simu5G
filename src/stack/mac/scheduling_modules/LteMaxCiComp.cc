@@ -70,9 +70,9 @@ void LteMaxCiComp::prepareSchedule()
     unsigned int blocks = 0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
+    for (unsigned int it1 : carrierActiveConnectionSet_) {
         // Current connection.
-        cid = *it1;
+        cid = it1;
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);

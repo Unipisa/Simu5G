@@ -78,8 +78,7 @@ void LteChannelControl::sendToChannel(RadioRef srcRadio, AirFrame *airFrame)
 
     // loop through all radios in range
     const RadioRefVector& neighbors = getNeighbors(srcRadio);
-    for (unsigned int i = 0; i < neighbors.size(); i++) {
-        RadioRef r = neighbors[i];
+    for (auto r : neighbors) {
         coreEV << "sending message to radio\n";
         simtime_t delay = 0.0;
         check_and_cast<cSimpleModule *>(srcRadio->radioModule)->sendDirect(airFrame->dup(), delay, airFrame->getDuration(), r->radioInGate);

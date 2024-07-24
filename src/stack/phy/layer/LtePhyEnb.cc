@@ -205,14 +205,14 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
     if (r.size() > 1) {
         // Use DAS
         // Message from ue
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
-            EV << "LtePhy: Receiving Packet from antenna " << (*it) << "\n";
+        for (auto it : r) {
+            EV << "LtePhy: Receiving Packet from antenna " << it << "\n";
 
             /*
              * On eNodeB set the current position
              * to the receiving das antenna
              */
-            cc->setRadioPosition(myRadioRef, das_->getAntennaCoord(*it));
+            cc->setRadioPosition(myRadioRef, das_->getAntennaCoord(it));
 
             RemoteUnitPhyData data;
             data.txPower = lteInfo->getTxPower();

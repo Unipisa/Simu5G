@@ -36,8 +36,7 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     if (jsonFile.contains("appServiceRequired")) {
         if (jsonFile["appServiceRequired"].is_array()) {
             nlohmann::json serviceVector = jsonFile["appServiceRequired"];
-            for (int i = 0; i < serviceVector.size(); ++i) {
-                nlohmann::json serviceDep = serviceVector.at(i);
+            for (auto serviceDep : serviceVector) {
                 appServicesRequired_.push_back((std::string)serviceDep["ServiceDependency"]["serName"]);
             }
         }
@@ -50,8 +49,8 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     if (jsonFile.contains("appServiceProvided")) {
         if (jsonFile["appServiceProvided"].is_array()) {
             nlohmann::json serviceVector = jsonFile["appServiceProvided"];
-            for (int i = 0; i < serviceVector.size(); ++i) {
-                appServicesProduced_.push_back((std::string)serviceVector.at(i));
+            for (const auto & i : serviceVector) {
+                appServicesProduced_.push_back((std::string)i);
             }
         }
         else {

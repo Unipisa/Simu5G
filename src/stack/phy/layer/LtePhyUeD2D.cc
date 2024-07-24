@@ -203,8 +203,8 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
     if (r.size() > 1) {
         // DAS
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
-            EV << "LtePhyUeD2D: Receiving Packet from antenna " << (*it) << "\n";
+        for (auto it : r) {
+            EV << "LtePhyUeD2D: Receiving Packet from antenna " << it << "\n";
 
             /*
              * On UE set the sender position
@@ -476,8 +476,8 @@ void LtePhyUeD2D::decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo)
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
     if (r.size() > 1) {
         // DAS
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
-            EV << "LtePhyUeD2D::decodeAirFrame: Receiving Packet from antenna " << (*it) << "\n";
+        for (auto it : r) {
+            EV << "LtePhyUeD2D::decodeAirFrame: Receiving Packet from antenna " << it << "\n";
 
             /*
              * On UE set the sender position

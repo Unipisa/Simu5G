@@ -520,10 +520,10 @@ void LteMacUe::macPduMake(MacCid cid)
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        for (MacPduList::iterator pit = lit->second.begin(); pit != lit->second.end(); pit++) {
+        for (auto & pit : lit->second) {
 
-            MacNodeId destId = pit->first.first;
-            Codeword cw = pit->first.second;
+            MacNodeId destId = pit.first.first;
+            Codeword cw = pit.first.second;
 
             // Check if the HarqTx buffer already exists for the destId
             // Get a reference for the destId TXBuffer
@@ -546,7 +546,7 @@ void LteMacUe::macPduMake(MacCid cid)
             UnitList txList = txBuf->getEmptyUnits(currentHarq_);
             EV << "LteMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
-            auto macPkt = pit->second;
+            auto macPkt = pit.second;
 
             // BSR related operations
 

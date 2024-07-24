@@ -514,8 +514,8 @@ bool LteSchedulerEnbDl::rtxscheduleBackground(double carrierFrequency, BandLimit
     }
 
     // consume bytes
-    for (auto it = bgScheduledRtx.begin(); it != bgScheduledRtx.end(); ++it)
-        bgTrafficManager->consumeBackloggedUeBytes(it->first, it->second, direction_, true); // in bytes
+    for (auto & it : bgScheduledRtx)
+        bgTrafficManager->consumeBackloggedUeBytes(it.first, it.second, direction_, true); // in bytes
 
     unsigned int availableBlocks = allocator_->computeTotalRbs();
     EV << " LteSchedulerEnbDl::rtxscheduleBackground OFDM Space: " << availableBlocks << endl;

@@ -223,8 +223,8 @@ std::vector<Cqi> AmcPilotAuto::getMultiBandCqi(MacNodeId id, const Direction dir
 void AmcPilotAuto::setUsableBands(MacNodeId id, UsableBands usableBands)
 {
     EV << NOW << " AmcPilotAuto::setUsableBands - setting Usable bands: for node " << id << " [";
-    for (unsigned int i = 0; i < usableBands.size(); ++i) {
-        EV << usableBands[i] << ",";
+    for (unsigned short usableBand : usableBands) {
+        EV << usableBand << ",";
     }
     EV << "]" << endl;
     UsableBandsList::iterator it = usableBandsList_.find(id);
@@ -258,8 +258,8 @@ bool AmcPilotAuto::getUsableBands(MacNodeId id, UsableBands *& uBands)
     if (found) {
         uBands = &(it->second);
         EV << " [";
-        for (unsigned int i = 0; i < it->second.size(); ++i) {
-            EV << it->second[i] << ",";
+        for (unsigned short i : it->second) {
+            EV << i << ",";
         }
         EV << "]" << endl;
 

@@ -446,8 +446,8 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
         }
 
         // consume bytes
-        for (auto it = bgScheduledRtx.begin(); it != bgScheduledRtx.end(); ++it)
-            bgTrafficManager->consumeBackloggedUeBytes(it->first, it->second, direction_, true); // in bytes
+        for (auto & it : bgScheduledRtx)
+            bgTrafficManager->consumeBackloggedUeBytes(it.first, it.second, direction_, true); // in bytes
 
         int availableBlocks = allocator_->computeTotalRbs();
 

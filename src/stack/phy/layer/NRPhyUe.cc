@@ -173,8 +173,8 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
     if (r.size() > 1) {
         // DAS
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
-            EV << "NRPhyUe: Receiving Packet from antenna " << (*it) << "\n";
+        for (auto it : r) {
+            EV << "NRPhyUe: Receiving Packet from antenna " << it << "\n";
 
             /*
              * On UE set the sender position

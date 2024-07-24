@@ -49,8 +49,7 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
     // serialization of list containing the information elements
     X2InformationElementsList ieList = msg->getIeList();
     stream.writeUint16Be(ieList.size());
-    for (X2InformationElementsList::iterator it = ieList.begin(); it != ieList.end(); it++) {
-        X2InformationElement *ie = *it;
+    for (auto ie : ieList) {
         stream.writeByte(ie->getType());
 
         switch (ie->getType()) {
@@ -91,8 +90,7 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
 void LteX2MsgSerializer::serializeStatusMap(inet::MemoryOutputStream& stream, std::vector<CompRbStatus> map) const {
     stream.writeUint32Be(map.size());
 
-    for (std::vector<CompRbStatus>::iterator it = map.begin(); it != map.end(); it++) {
-        CompRbStatus status = *it;
+    for (auto status : map) {
         stream.writeByte(status);
     }
 }

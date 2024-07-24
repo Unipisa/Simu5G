@@ -135,9 +135,9 @@ void LteAllocatorBestFit::prepareSchedule()
     ActiveSet inactive_connections;
     inactive_connections.clear();
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
+    for (unsigned int it1 : carrierActiveConnectionSet_) {
         // Current connection.
-        cid = *it1;
+        cid = it1;
 
         MacNodeId nodeId = MacCidToNodeId(cid);
 
@@ -205,9 +205,9 @@ void LteAllocatorBestFit::prepareSchedule()
     }
 
     //Delete inactive connections
-    for (ActiveSet::iterator in_it = inactive_connections.begin(); in_it != inactive_connections.end(); ++in_it) {
-        carrierActiveConnectionSet_.erase(*in_it);
-        activeConnectionTempSet_.erase(*in_it);
+    for (unsigned int inactive_connection : inactive_connections) {
+        carrierActiveConnectionSet_.erase(inactive_connection);
+        activeConnectionTempSet_.erase(inactive_connection);
     }
 
     // Schedule the connections in score order.

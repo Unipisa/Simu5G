@@ -36,8 +36,8 @@ std::ostream& operator<<(std::ostream& os, const ChannelControl::RadioEntry& rad
 
 std::ostream& operator<<(std::ostream& os, const ChannelControl::TransmissionList& tl)
 {
-    for (ChannelControl::TransmissionList::const_iterator it = tl.begin(); it != tl.end(); ++it)
-        os << endl << *it;
+    for (auto it : tl)
+        os << endl << it;
     return os;
 }
 
@@ -137,8 +137,8 @@ void ChannelControl::unregisterRadio(RadioRef r)
         if (it->radioModule == r->radioModule) {
             RadioRef radioToRemove = &*it;
             // erase radio from all registered radios' neighbor list
-            for (RadioList::iterator i2 = radios.begin(); i2 != radios.end(); ++i2) {
-                RadioRef otherRadio = &*i2;
+            for (auto & radio : radios) {
+                RadioRef otherRadio = &radio;
                 otherRadio->neighbors.erase(radioToRemove);
                 otherRadio->isNeighborListValid = false;
                 radioToRemove->isNeighborListValid = false;
@@ -156,9 +156,9 @@ void ChannelControl::unregisterRadio(RadioRef r)
 ChannelControl::RadioRef ChannelControl::lookupRadio(cModule *radio)
 {
     Enter_Method_Silent();
-    for (RadioList::iterator it = radios.begin(); it != radios.end(); it++)
-        if (it->radioModule == radio)
-            return &(*it);
+    for (auto & it : radios)
+        if (it.radioModule == radio)
+            return &it;
     return 0;
 }
 
@@ -178,8 +178,8 @@ void ChannelControl::updateConnections(RadioRef h)
 {
     inet::Coord& hpos = h->pos;
     double maxDistSquared = maxInterferenceDistance * maxInterferenceDistance;
-    for (RadioList::iterator it = radios.begin(); it != radios.end(); ++it) {
-        RadioEntry *hi = &(*it);
+    for (auto & radio : radios) {
+        RadioEntry *hi = &radio;
         if (hi == h)
             continue;
 

@@ -585,8 +585,8 @@ const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserT
 
     // DEBUG
     EV << NOW << " LteAmc::setTxParams DAS antenna set for user " << id << " is \t";
-    for (std::set<Remote>::const_iterator it = info.readAntennaSet().begin(); it != info.readAntennaSet().end(); ++it) {
-        EV << "[" << dasToA(*it) << "]\t";
+    for (auto it : info.readAntennaSet()) {
+        EV << "[" << dasToA(it) << "]\t";
     }
     EV << endl;
 

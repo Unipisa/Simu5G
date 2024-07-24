@@ -190,8 +190,8 @@ void BackgroundScheduler::updateAllocation(Direction dir)
     }
 
     // notify the traffic manager
-    for (auto mit = rtxScheduledBgUes.begin(); mit != rtxScheduledBgUes.end(); ++mit)
-        bgTrafficManager_->consumeBackloggedUeBytes(mit->first, mit->second, dir, true);
+    for (auto & rtxScheduledBgUe : rtxScheduledBgUes)
+        bgTrafficManager_->consumeBackloggedUeBytes(rtxScheduledBgUe.first, rtxScheduledBgUe.second, dir, true);
 
     // sort backlogged UEs (MaxC/I)
     ScoreList score;

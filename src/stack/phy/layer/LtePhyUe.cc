@@ -561,8 +561,8 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
     if (r.size() > 1) {
         // DAS
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
-            EV << "LtePhy: Receiving Packet from antenna " << (*it) << "\n";
+        for (auto it : r) {
+            EV << "LtePhy: Receiving Packet from antenna " << it << "\n";
 
             /*
              * On UE set the sender position
@@ -799,15 +799,15 @@ double LtePhyUe::getVarianceCqi(Direction dir)
     double err, sum = 0;
 
     if (dir == DL) {
-        for (auto it = cqiDlSamples_.begin(); it != cqiDlSamples_.end(); ++it) {
-            err = avgCqi - *it;
+        for (short & cqiDlSample : cqiDlSamples_) {
+            err = avgCqi - cqiDlSample;
             sum = (err * err);
         }
         return sum / cqiDlSamples_.size();
     }
     if (dir == UL) {
-        for (auto it = cqiUlSamples_.begin(); it != cqiUlSamples_.end(); ++it) {
-            err = avgCqi - *it;
+        for (short & cqiUlSample : cqiUlSamples_) {
+            err = avgCqi - cqiUlSample;
             sum = (err * err);
         }
         return sum / cqiUlSamples_.size();

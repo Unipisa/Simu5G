@@ -59,8 +59,8 @@ void LteFeedbackComputationRealistic::generateBaseFeedback(int numBands, int num
     if (fbType == WIDEBAND) {
         cqiTmp.resize(layer, 0);
         cqi = getCqi(txmode, mean);
-        for (unsigned int i = 0; i < cqiTmp.size(); i++)
-            cqiTmp[i] = cqi;
+        for (unsigned short & i : cqiTmp)
+            i = cqi;
         fb.setWideBandCqi(cqiTmp);
     }
     else if (fbType == ALLBANDS) {

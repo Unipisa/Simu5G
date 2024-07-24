@@ -110,16 +110,16 @@ void VoDUDPServer::handleMessage(cMessage *msg)
 
             /* Register video streams*/
 
-            for (int i = 0; i < clientAddr.size(); i++) {
+            for (const auto & i : clientAddr) {
                 M1Message *M1 = new M1Message();
-                M1->setClientAddr(clientAddr[i]);
+                M1->setClientAddr(i);
                 M1->setClientPort(clientsPort);
                 double npkt;
                 npkt = clientsStartStreamTime;
                 M1->setNumPkSent((int)(npkt * fps));
 
                 numStreams++;
-                EV << "VoD Server self message: Dest IP: " << clientAddr[i] << " port: " << clientsPort << " start stream: " << (int)(npkt * fps) << endl;
+                EV << "VoD Server self message: Dest IP: " << i << " port: " << clientsPort << " start stream: " << (int)(npkt * fps) << endl;
 //                    scheduleAt(simTime() + vclientsReqTime[i], M1);
                 scheduleAt(simTime(), M1);
             }

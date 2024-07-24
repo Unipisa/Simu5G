@@ -220,8 +220,8 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     if (jsonBody.contains("address")) {
         if (jsonBody["address"].is_array()) {
             nlohmann::json addressVector = jsonBody["address"];
-            for (int i = 0; i < addressVector.size(); ++i) {
-                std::string add = addressVector.at(i);
+            for (const auto & i : addressVector) {
+                std::string add = i;
                 MacNodeId id = binder->getMacNodeId(inet::Ipv4Address(add.c_str()));
                 /*
                  * check if the address is already present in the network.

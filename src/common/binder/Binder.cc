@@ -899,8 +899,8 @@ void Binder::computeAverageCqiForBackgroundUes()
             // if the total cellRbsUl is higher than numBands, then scale the allocation for all UEs
             if (cellRbsUl > numBands) {
                 double scaleFactor = (double)numBands / cellRbsUl;
-                for (unsigned int i = 0; i < info->allocatedRbsUeUl.size(); i++)
-                    info->allocatedRbsUeUl[i] *= scaleFactor;
+                for (double & i : info->allocatedRbsUeUl)
+                    i *= scaleFactor;
             }
         }
 
