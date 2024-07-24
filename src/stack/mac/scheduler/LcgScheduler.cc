@@ -212,7 +212,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             // If priority service: (availableBytes>0) && (desc->buffer_.occupancy() > 0) && (desc->parameters_.bucket_ > 0)
             // If best effort service: (availableBytes>0) && (desc->buffer_.occupancy() > 0)
             if ((availableBytes > minBytes) && (toServe > 0)
-                && (!priorityService || 1 /*TODO (desc->parameters_.bucket_ > 0)*/))
+                && (!priorityService || true /*TODO (desc->parameters_.bucket_ > 0)*/))
             {
                 // Check if it is possible to serve the sdu, depending on the constraint
                 // of the type of service

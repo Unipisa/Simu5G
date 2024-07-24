@@ -161,7 +161,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
 
         socket.sendTo(packet, msgNew->getClientAddr(), msgNew->getClientPort());
         numPkSentApp++;
-        while (1) {
+        while (true) {
             /* Get infos about the frame from file */
 
             if (svcTrace_[numPkSentApp].index == LONG_MAX)

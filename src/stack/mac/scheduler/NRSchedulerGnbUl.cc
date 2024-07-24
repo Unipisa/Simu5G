@@ -205,7 +205,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
     catch (std::exception& e) {
         throw cRuntimeError("Exception in NRSchedulerGnbUl::rtxschedule(): %s", e.what());
     }
-    return 0;
+    return false;
 }
 
 } //namespace

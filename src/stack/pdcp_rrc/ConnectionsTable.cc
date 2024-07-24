@@ -32,7 +32,7 @@ unsigned int ConnectionsTable::hash_func(uint32_t srcAddr, uint32_t dstAddr, uin
 LogicalCid ConnectionsTable::find_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService)
 {
     int hashIndex = hash_func(srcAddr, dstAddr, typeOfService);
-    while (1) {
+    while (true) {
         if (ht_[hashIndex].lcid_ == 0xFFFF)                                                        // Entry not found
             return 0xFFFF;
         if (ht_[hashIndex].srcAddr_ == srcAddr &&
@@ -46,7 +46,7 @@ LogicalCid ConnectionsTable::find_entry(uint32_t srcAddr, uint32_t dstAddr, uint
 LogicalCid ConnectionsTable::find_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService, uint16_t dir)
 {
     int hashIndex = hash_func(srcAddr, dstAddr, typeOfService, dir);
-    while (1) {
+    while (true) {
         if (ht_[hashIndex].lcid_ == 0xFFFF)                                                        // Entry not found
             return 0xFFFF;
         if (ht_[hashIndex].srcAddr_ == srcAddr &&

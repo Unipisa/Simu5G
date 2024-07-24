@@ -460,7 +460,7 @@ void LteMaxCiOptMB::readSolution()
     UsableBands usableBands;
 
     // read from file
-    while (1) {
+    while (true) {
         if ((file.rdstate() & std::istream::eofbit) != 0)
             break;
         getline(file, line);

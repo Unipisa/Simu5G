@@ -27,7 +27,7 @@ unsigned int SplitBearersTable::hash_func(uint32_t srcAddr, uint32_t dstAddr, ui
 int SplitBearersTable::find_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService)
 {
     int hashIndex = hash_func(srcAddr, dstAddr, typeOfService);
-    while (1) {
+    while (true) {
         if (!ht_[hashIndex].present_)                                                  // Entry not found
             return -1;
         if (ht_[hashIndex].srcAddr_ == srcAddr &&

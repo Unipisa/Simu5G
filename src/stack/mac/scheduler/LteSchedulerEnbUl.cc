@@ -420,7 +420,7 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
     catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxschedule(): %s", e.what());
     }
-    return 0;
+    return false;
 }
 
 bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim)
@@ -460,7 +460,7 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
     catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxscheduleBackground(): %s", e.what());
     }
-    return 0;
+    return false;
 }
 
 unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
