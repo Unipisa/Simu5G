@@ -66,10 +66,8 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
         typedef std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> PeeringMap;
         PeeringMap *peeringMap = binder_->getD2DPeeringMap();
 
-        PeeringMap::iterator pit = peeringMap->begin(), pet = peeringMap->end();
-        for ( ; pit != pet; ++pit) {
-            std::map<MacNodeId, LteD2DMode>::iterator it = pit->second.begin(), et = pit->second.end();
-            for ( ; it != et; ++it) {
+        for (auto pit = peeringMap->begin(), pet = peeringMap->end(); pit != pet; ++pit) {
+            for (auto it = pit->second.begin(), et = pit->second.end(); it != et; ++it) {
                 CGVertex v(pit->first, it->first);
                 vertices.push_back(v);
             }
@@ -78,8 +76,7 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
 
     if (reuseD2DMulti_) { // get point-to-multipoint transmitters
         std::set<MacNodeId>& multicastTransmitterSet = binder_->getD2DMulticastTransmitters();
-        std::set<MacNodeId>::iterator it = multicastTransmitterSet.begin(), et = multicastTransmitterSet.end();
-        for ( ; it != et; ++it) {
+        for (auto it = multicastTransmitterSet.begin(), et = multicastTransmitterSet.end(); it != et; ++it) {
             CGVertex v(*it, 0);   // create a "fake" link
             vertices.push_back(v);
         }
@@ -88,12 +85,10 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
 
 void DistanceBasedConflictGraph::findEdges(const std::vector<CGVertex>& vertices)
 {
-    std::vector<CGVertex>::const_iterator vit = vertices.begin(), vet = vertices.end();
-    for ( ; vit != vet; ++vit) {
+    for (auto vit = vertices.begin(), vet = vertices.end(); vit != vet; ++vit) {
         CGVertex v1 = *vit;
 
-        std::vector<CGVertex>::const_iterator it = vit;
-        for ( ; it != vet; ++it) {
+        for (auto it = vit; it != vet; ++it) {
             CGVertex v2 = *it;
 
             if (v1 == v2) {

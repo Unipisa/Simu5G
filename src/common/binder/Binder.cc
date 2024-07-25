@@ -477,11 +477,10 @@ void Binder::initAndResetUlTransmissionInfo()
         return;
     }
 
-    UplinkTransmissionMap::iterator it = ulTransmissionMap_.begin();
-    for ( ; it != ulTransmissionMap_.end(); ++it) {
+    for (auto& entry : ulTransmissionMap_) {
         // the second element (i.e. referring to the old time slot) becomes the first element
-        if (!(it->second.empty()))
-            it->second.erase(it->second.begin());
+        if (!(entry.second.empty()))
+            entry.second.erase(entry.second.begin());
     }
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
@@ -508,8 +507,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     }
 
     // for each allocated band, store the UE info
-    std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
-    for ( ; it != et; ++it) {
+    for (auto it = rbMap[antenna].begin(), et = rbMap[antenna].end(); it != et; ++it) {
         Band b = it->first;
         if (it->second > 0)
             ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
@@ -584,10 +582,9 @@ int Binder::getX2Port(X2NodeId nodeId)
 
 Cqi Binder::meanCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
 {
-    std::vector<Cqi>::iterator it;
     Cqi mean = 0;
-    for (it = bandCqi.begin(); it != bandCqi.end(); ++it) {
-        mean += *it;
+    for (Cqi value : bandCqi) {
+        mean += value;
     }
     mean /= bandCqi.size();
 
@@ -625,7 +622,7 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
                 LteMacBase *srcMac = getMacFromMacNodeId(src);
                 inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
                 bool d2dInitialMode = srcNic->hasPar("d2dInitialMode") ? srcNic->par("d2dInitialMode").boolValue() : false;
-                d2dPeeringMap_[src][dst] = (d2dInitialMode) ? DM : IM;
+                d2dPeeringMap_[src][dst] = d2dInitialMode ? DM : IM;
             }
             else {
                 // if served by different cells, then the mode can be IM only
@@ -683,11 +680,10 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
     if (d2dPeeringMap_.find(nodeId) == d2dPeeringMap_.end())
         return false;
 
-    std::map<MacNodeId, LteD2DMode>::iterator it = d2dPeeringMap_[nodeId].begin();
-    if (it == d2dPeeringMap_[nodeId].end())
+    if (d2dPeeringMap_[nodeId].begin() == d2dPeeringMap_[nodeId].end())
         return false;
 
-    for ( ; it != d2dPeeringMap_[nodeId].end(); ++it) {
+    for (auto it = d2dPeeringMap_[nodeId].begin(); it != d2dPeeringMap_[nodeId].end(); ++it) {
         if (it->second == IM)
             return false;
     }
@@ -728,10 +724,9 @@ std::set<MacNodeId>& Binder::getD2DMulticastTransmitters()
 
 void Binder::updateUeInfoCellId(MacNodeId id, MacCellId newCellId)
 {
-    std::vector<UeInfo *>::iterator it = ueList_.begin();
-    for ( ; it != ueList_.end(); ++it) {
-        if ((*it)->id == id) {
-            (*it)->cellId = newCellId;
+    for (UeInfo *ue : ueList_) {
+        if (ue->id == id) {
+            ue->cellId = newCellId;
             return;
         }
     }

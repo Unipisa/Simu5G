@@ -208,8 +208,7 @@ RxBufferStatus LteHarqBufferRx::getBufferStatus()
 
 LteHarqBufferRx::~LteHarqBufferRx()
 {
-    std::vector<LteHarqProcessRx *>::iterator it = processes_.begin();
-    for ( ; it != processes_.end(); ++it)
+    for (auto it = processes_.begin(); it != processes_.end(); ++it)
         delete *it;
     processes_.clear();
     macOwner_ = nullptr;
@@ -218,9 +217,7 @@ LteHarqBufferRx::~LteHarqBufferRx()
 // @author Alessandro noferi
 
 bool LteHarqBufferRx::isHarqBufferActive() const {
-    std::vector<LteHarqProcessRx *>::const_iterator it = processes_.begin();
-    std::vector<LteHarqProcessRx *>::const_iterator end = processes_.end();
-    for ( ; it != end; ++it) {
+    for (auto it = processes_.begin(); it != processes_.end(); ++it) {
         if ((*it)->isHarqProcessActive()) {
             return true;
         }

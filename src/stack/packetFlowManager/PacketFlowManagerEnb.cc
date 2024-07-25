@@ -798,7 +798,7 @@ void PacketFlowManagerEnb::insertHarqProcess(LogicalCid lcid, unsigned int harqP
 void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
 {
     Grant grant = { grantId, simTime() };
-    for (auto grant : ulGrants_[nodeId]) {
+    for (const auto& grant : ulGrants_[nodeId]) {
         if (grant.grantId == grantId)
             throw cRuntimeError("%s::grantSent - grant [%d] for nodeId [%d] already present", pfmType.c_str(), grantId, nodeId);
     }

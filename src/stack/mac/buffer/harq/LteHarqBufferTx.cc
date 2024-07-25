@@ -94,9 +94,8 @@ void LteHarqBufferTx::markSelected(UnitList unitIds, unsigned char availableTbs)
         (*processes_)[acid]->markSelected(cw);
     }
     else {
-        CwList::iterator it;
         // all units are marked
-        for (it = cwList.begin(); it != cwList.end(); it++) {
+        for (auto it = cwList.begin(); it != cwList.end(); it++) {
             (*processes_)[acid]->markSelected(*it);
         }
     }
@@ -238,8 +237,7 @@ void LteHarqBufferTx::sendSelectedDown()
     }
 
     CwList ul = (*processes_)[selectedAcid_]->selectedUnitsIds();
-    CwList::iterator it;
-    for (it = ul.begin(); it != ul.end(); it++) {
+    for (auto it = ul.begin(); it != ul.end(); it++) {
         auto pkt = (*processes_)[selectedAcid_]->extractPdu(*it);
         auto pduToSend = pkt->peekAtFront<LteMacPdu>();
         auto cinfo = pkt->getTag<UserControlInfo>();
@@ -256,9 +254,8 @@ void LteHarqBufferTx::dropProcess(unsigned char acid)
 {
     // pdus can be dropped only if the unit is in BUFFERED state.
     CwList ul = (*processes_)[acid]->readyUnitsIds();
-    CwList::iterator it;
 
-    for (it = ul.begin(); it != ul.end(); it++) {
+    for (auto it = ul.begin(); it != ul.end(); it++) {
         (*processes_)[acid]->dropPdu(*it);
     }
     // if a process contains units in BUFFERED state, then all units of this
@@ -270,9 +267,8 @@ void LteHarqBufferTx::selfNack(unsigned char acid, Codeword cw)
 {
     bool reset = false;
     CwList ul = (*processes_)[acid]->readyUnitsIds();
-    CwList::iterator it;
 
-    for (it = ul.begin(); it != ul.end(); it++) {
+    for (auto it = ul.begin(); it != ul.end(); it++) {
         reset = (*processes_)[acid]->selfNack(*it);
     }
     if (reset)
@@ -328,9 +324,7 @@ LteHarqProcessTx *LteHarqBufferTx::getSelectedProcess()
 // @author Alessandro noferi
 
 bool LteHarqBufferTx::isHarqBufferActive() const {
-    std::vector<LteHarqProcessTx *>::const_iterator it = processes_->begin();
-    std::vector<LteHarqProcessTx *>::const_iterator end = processes_->end();
-    for ( ; it != end; ++it) {
+    for (auto it = processes_->begin(); it != processes_->end(); ++it) {
         if ((*it)->isHarqProcessActive()) {
             return true;
         }
@@ -340,8 +334,7 @@ bool LteHarqBufferTx::isHarqBufferActive() const {
 
 LteHarqBufferTx::~LteHarqBufferTx()
 {
-    std::vector<LteHarqProcessTx *>::iterator it = processes_->begin();
-    for ( ; it != processes_->end(); ++it)
+    for (auto it = processes_->begin(); it != processes_->end(); ++it)
         delete *it;
 
     processes_->clear();
@@ -355,8 +348,7 @@ bool LteHarqBufferTx::isInUnitList(unsigned char acid, Codeword cw, UnitList uni
     if (acid != unitIds.first)
         return false;
 
-    CwList::iterator it;
-    for (it = unitIds.second.begin(); it != unitIds.second.end(); it++) {
+    for (auto it = unitIds.second.begin(); it != unitIds.second.end(); it++) {
         if (cw == *it) {
             return true;
         }

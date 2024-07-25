@@ -136,8 +136,7 @@ void LtePhyUe::initialize(int stage)
 
             // get the list of all eNodeBs in the network
             std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-            std::vector<EnbInfo *>::iterator it = enbList->begin();
-            for ( ; it != enbList->end(); ++it) {
+            for (auto it = enbList->begin(); it != enbList->end(); ++it) {
                 // the NR phy layer only checks signal from gNBs
                 if (isNr_ && (*it)->nodeType != GNODEB)
                     continue;
@@ -165,11 +164,10 @@ void LtePhyUe::initialize(int stage)
                 cInfo->setDirection(DL);
 
                 // get RSSI from the BS
-                std::vector<double>::iterator it;
                 double rssi = 0;
                 std::vector<double> rssiV = primaryChannelModel_->getRSRP(frame, cInfo);
-                for (it = rssiV.begin(); it != rssiV.end(); ++it)
-                    rssi += *it;
+                for (auto value : rssiV)
+                    rssi += value;
                 rssi /= rssiV.size();   // compute the mean over all RBs
 
                 EV << "LtePhyUe::initialize - RSSI from cell " << cellId << ": " << rssi << " dB (current candidate cell " << candidateMasterId_ << ": " << candidateMasterRssi_ << " dB)" << endl;
@@ -261,11 +259,10 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
     }
     else {
         // Broadcast message from not-master enb
-        std::vector<double>::iterator it;
         rssi = 0;
         std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, lteInfo);
-        for (it = rssiV.begin(); it != rssiV.end(); ++it)
-            rssi += *it;
+        for (auto value : rssiV)
+            rssi += value;
         rssi /= rssiV.size();
     }
 

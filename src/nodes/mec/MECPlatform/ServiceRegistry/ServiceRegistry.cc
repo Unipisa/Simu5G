@@ -82,34 +82,26 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
             std::vector<std::string> ser_name;
             std::vector<std::string> ser_instance_id;
 
-            std::vector<std::string>::iterator it = queryParameters.begin();
-            std::vector<std::string>::iterator end = queryParameters.end();
-            std::vector<std::string> params;
-            std::vector<std::string> splittedParams;
-            for ( ; it != end; ++it) {
-                if (it->rfind("ser_instance_id", 0) == 0) { // cell_id=par1,par2
+            for (const auto& queryParam : queryParameters) {
+                if (queryParam.rfind("ser_instance_id", 0) == 0) { // cell_id=par1,par2
                     EV << "ServiceRegistry::handleGETReques - parameters: " << endl;
-                    params = simu5g::utils::splitString(*it, "=");
+                    auto params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        EV << "ser_instance_id: " << *pit << endl;
-                        ser_instance_id.push_back(*pit);
+                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    for (const auto& pit : splittedParams) {
+                        EV << "ser_instance_id: " << pit << endl;
+                        ser_instance_id.push_back(pit);
                     }
                 }
-                else if (it->rfind("ser_name", 0) == 0) {
-                    params = simu5g::utils::splitString(*it, "=");
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        EV << "ser_name: " << *pit << endl;
-                        ser_name.push_back(*pit);
+                else if (queryParam.rfind("ser_name", 0) == 0) {
+                    auto params = simu5g::utils::splitString(queryParam, "=");
+                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    for (const auto& pit : splittedParams) {
+                        EV << "ser_name: " << pit << endl;
+                        ser_name.push_back(pit);
                     }
                 }
                 else { // bad parameters
@@ -120,7 +112,7 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
 
             nlohmann::ordered_json jsonResBody;
 
-            for (auto sName : ser_name) {
+            for (const auto& sName : ser_name) {
                 for (const auto& serv : mecServices_) {
                     if (serv.getName() == sName)
                         jsonResBody.push_back(serv.toJson());

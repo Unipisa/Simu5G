@@ -504,10 +504,8 @@ void sendHttpResponse(inet::TcpSocket *socket, int code, const char *reason, std
         resPkt->setBody(body);
         resPkt->setContentLength(strlen(body));
     }
-    std::map<std::string, std::string>::iterator it = headers.begin();
-    std::map<std::string, std::string>::iterator end = headers.end();
-    for ( ; it != end; ++it) {
-        resPkt->setHeaderField(it->first, it->second);
+    for (const auto& header : headers) {
+        resPkt->setHeaderField(header.first, header.second);
     }
 
     resPkt->setChunkLength(B(resPkt->getPayload().size()));
@@ -585,10 +583,8 @@ void sendHttpRequest(inet::TcpSocket *socket, const char *method, const char *ho
     if (parameters != nullptr) {
         reqPkt->setParameters(parameters);
     }
-    std::map<std::string, std::string>::iterator it = headers.begin();
-    std::map<std::string, std::string>::iterator end = headers.end();
-    for ( ; it != end; ++it) {
-        reqPkt->setHeaderField(it->first, it->second);
+    for (const auto& header : headers) {
+        reqPkt->setHeaderField(header.first, header.second);
     }
     reqPkt->setChunkLength(B(reqPkt->getPayload().size()));
     reqPkt->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());

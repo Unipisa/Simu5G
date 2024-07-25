@@ -35,11 +35,10 @@ void LteScheduler::initializeBandLimit()
 
     // initialize band limits to be used on each slot for retransmissions
     // and grant requests
-    BandLimitVector::iterator it = bandLimit_->begin();
-    for ( ; it != bandLimit_->end(); ++it) {
-        BandLimit elem; // TODO to be moved outside the for ?
-        elem.band_ = it->band_;
-        elem.limit_ = it->limit_;
+    for (auto& bandLimitElem : *bandLimit_) {
+        BandLimit elem;
+        elem.band_ = bandLimitElem.band_;
+        elem.limit_ = bandLimitElem.limit_;
 
         slotRacBandLimit_.push_back(elem);
         slotRtxBandLimit_.push_back(elem);
@@ -48,12 +47,10 @@ void LteScheduler::initializeBandLimit()
 
 //    // === DEBUG === //
 //    EV << "LteScheduler::initializeBandLimit - Set Band Limit for this carrier: " << endl;
-//    for (it = bandLimit_->begin(); it != bandLimit_->end(); ++it)
-//    {
-//        EV << " - Band[" << it->band_ << "] limit[";
-//        for (unsigned int cw=0; cw < it->limit_.size(); cw++)
-//        {
-//            EV << it->limit_[cw] << ", ";
+//    for (auto& bandLimitElem : *bandLimit_) {
+//        EV << " - Band[" << bandLimitElem.band_ << "] limit[";
+//        for (unsigned int cw=0; cw < bandLimitElem.limit_.size(); cw++) {
+//            EV << bandLimitElem.limit_[cw] << ", ";
 //        }
 //        EV << "]" << endl;
 //    }
@@ -91,13 +88,10 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 
 //    // === DEBUG === //
 //    EV << "LteScheduler::requestGrant - Set Band Limit for this carrier: " << endl;
-//    BandLimitVector::iterator it = bandLim->begin();
-//    for (; it != bandLim->end(); ++it)
-//    {
-//        EV << " - Band[" << it->band_ << "] limit[";
-//        for (int cw=0; cw < it->limit_.size(); cw++)
-//        {
-//            EV << it->limit_[cw] << ", ";
+//    for (auto& bandLimitElem : *bandLim) {
+//        EV << " - Band[" << bandLimitElem.band_ << "] limit[";
+//        for (int cw=0; cw < bandLimitElem.limit_.size(); cw++) {
+//            EV << bandLimitElem.limit_[cw] << ", ";
 //        }
 //        EV << "]" << endl;
 //    }
@@ -200,10 +194,9 @@ void LteScheduler::buildCarrierActiveConnectionSet()
     // and whose UE is enabled to use this carrier
 
     const UeSet& carrierUeSet = binder_->getCarrierUeSet(carrierFrequency_);
-    ActiveSet::iterator it = activeConnectionSet_->begin();
-    for ( ; it != activeConnectionSet_->end(); ++it) {
-        if (carrierUeSet.find(MacCidToNodeId(*it)) != carrierUeSet.end())
-            carrierActiveConnectionSet_.insert(*it);
+    for (auto& activeConnection : *activeConnectionSet_) {
+        if (carrierUeSet.find(MacCidToNodeId(activeConnection)) != carrierUeSet.end())
+            carrierActiveConnectionSet_.insert(activeConnection);
     }
 }
 

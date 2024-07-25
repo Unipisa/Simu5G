@@ -129,10 +129,8 @@ std::string HttpResponseMessage::getPayload() const {
     payload += "Connection: " + this->connection.str() + crlf;
 
     if (!headerFields_.empty()) {
-        std::map<std::string, std::string>::const_iterator it = headerFields_.begin();
-        std::map<std::string, std::string>::const_iterator end = headerFields_.end();
-        for ( ; it != end; ++it) {
-            payload += it->first + it->second + crlf;
+        for (const auto& headerField : headerFields_) {
+            payload += headerField.first + headerField.second + crlf;
         }
     }
     payload += crlf + body.str();

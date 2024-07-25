@@ -267,8 +267,7 @@ bool LteHarqProcessTx::isHarqProcessActive()
 
 LteHarqProcessTx::~LteHarqProcessTx()
 {
-    UnitVector::iterator it = units_->begin();
-    for ( ; it != units_->end(); ++it)
+    for (auto it = units_->begin(); it != units_->end(); ++it)
         delete *it;
 
     units_->clear();

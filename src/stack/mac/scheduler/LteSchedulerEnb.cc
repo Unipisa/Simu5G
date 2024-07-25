@@ -89,8 +89,7 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
 LteSchedulerEnb::~LteSchedulerEnb()
 {
     delete allocator_;
-    std::vector<LteScheduler *>::iterator it = scheduler_.begin();
-    for ( ; it != scheduler_.end(); ++it)
+    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
         delete *it;
 }
 
@@ -137,8 +136,7 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
 {
-    std::vector<LteScheduler *>::iterator it = scheduler_.begin();
-    for ( ; it != scheduler_.end(); ++it)
+    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
         (*it)->initializeSchedulerPeriodCounter(maxNumerologyIndex);
 }
 
@@ -147,8 +145,7 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
     EV << "LteSchedulerEnb::schedule performed by Node: " << mac_->getMacNodeId() << endl;
 
     // clearing structures for new scheduling
-    std::map<double, LteMacScheduleList>::iterator lit = scheduleList_.begin();
-    for ( ; lit != scheduleList_.end(); ++lit)
+    for (auto lit = scheduleList_.begin(); lit != scheduleList_.end(); ++lit)
         lit->second.clear();
     allocatedCws_.clear();
 
@@ -157,8 +154,7 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
 
     // schedule one carrier at a time
     LteScheduler *scheduler = nullptr;
-    std::vector<LteScheduler *>::iterator it = scheduler_.begin();
-    for ( ; it != scheduler_.end(); ++it) {
+    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it) {
         scheduler = *it;
         EV << "LteSchedulerEnb::schedule carrier [" << scheduler->getCarrierFrequency() << "]" << endl;
 
@@ -813,8 +809,7 @@ void LteSchedulerEnb::backlog(MacCid cid)
     EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
     activeConnectionSet_.insert(cid);
 
-    std::vector<LteScheduler *>::iterator it = scheduler_.begin();
-    for ( ; it != scheduler_.end(); ++it)
+    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
         (*it)->notifyActiveConnection(cid);
 }
 

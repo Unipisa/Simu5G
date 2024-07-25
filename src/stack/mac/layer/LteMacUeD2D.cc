@@ -309,7 +309,6 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             LteHarqBufferTx *txBuf;
             HarqTxBuffers::iterator hit = harqTxBuffers.find(destId);
             if (hit != harqTxBuffers.end()) {
-                // The tx buffer already exists
                 txBuf = hit->second;
             }
             else {

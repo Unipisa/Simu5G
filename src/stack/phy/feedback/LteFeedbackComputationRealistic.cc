@@ -245,8 +245,7 @@ LteFeedback LteFeedbackComputationRealistic::computeFeedback(const Remote remote
 double LteFeedbackComputationRealistic::meanSnr(std::vector<double> snr)
 {
     double mean = 0;
-    std::vector<double>::iterator it;
-    for (it = snr.begin(); it != snr.end(); ++it)
+    for (auto it = snr.begin(); it != snr.end(); ++it)
         mean += *it;
     mean /= snr.size();
     return mean;

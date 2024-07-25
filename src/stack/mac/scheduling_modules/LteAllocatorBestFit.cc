@@ -488,8 +488,7 @@ void LteAllocatorBestFit::initAndReset()
 
 void LteAllocatorBestFit::setAllocationType(std::vector<Band> bookedBands, AllocationUeType type, MacNodeId nodeId)
 {
-    std::vector<Band>::iterator it = bookedBands.begin();
-    for ( ; it != bookedBands.end(); ++it) {
+    for (auto it = bookedBands.begin(); it != bookedBands.end(); ++it) {
         bandStatusMap_[*it].first = type;
         bandStatusMap_[*it].second.insert(nodeId);
     }

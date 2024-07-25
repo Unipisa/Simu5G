@@ -41,8 +41,7 @@ MultihopD2D::~MultihopD2D()
     cancelAndDelete(selfSender_);
 
     if (trickleEnabled_) {
-        std::map<unsigned int, inet::Packet *>::iterator it = last_.begin();
-        for ( ; it != last_.end(); ++it)
+        for (auto it = last_.begin(); it != last_.end(); ++it)
             if (it->second != nullptr)
                 delete it->second;
         last_.clear();

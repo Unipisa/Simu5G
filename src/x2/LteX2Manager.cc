@@ -120,10 +120,7 @@ void LteX2Manager::fromStack(Packet *pkt)
     // (GTPUserX2 module will tunnel this datagram towards the target eNB)
     // otherwise it is a X2 control message and sent to the x2 peer
     DestinationIdList destList = x2Info->getDestIdList();
-    DestinationIdList::iterator it = destList.begin();
-
-    for ( ; it != destList.end(); ++it) {
-        X2NodeId targetEnb = *it;
+    for (auto targetEnb : destList) {
         auto pktDuplicate = pkt->dup();
         x2msg->markMutableIfExclusivelyOwned();
         x2msg->setSourceId(nodeId_);
@@ -137,7 +134,7 @@ void LteX2Manager::fromStack(Packet *pkt)
         }
         else {
             // select the index for the output gate (it belongs to a vector)
-            int gateIndex = x2InterfaceTable_[*it];
+            int gateIndex = x2InterfaceTable_[targetEnb];
             outputGate = gate("x2$o", gateIndex);
         }
 

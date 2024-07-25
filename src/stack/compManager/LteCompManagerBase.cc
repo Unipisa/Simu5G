@@ -129,9 +129,7 @@ void LteCompManagerBase::runCoordinatorOperations()
     doCoordination();
 
     // for each client, send the appropriate reply
-    std::vector<X2NodeId>::iterator cit = clientList_.begin();
-    for ( ; cit != clientList_.end(); ++cit) {
-        X2NodeId clientId = *cit;
+    for (auto clientId : clientList_) {
         X2CompReplyIE *replyIe = buildCoordinatorReply(clientId);
         sendCoordinatorReply(clientId, replyIe);
     }

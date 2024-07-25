@@ -36,8 +36,7 @@ class LteMacPdu : public LteMacPdu_Base
         // duplicate MacControlElementsList (includes BSRs)
         ceList_ = std::list<MacControlElement *> ();
         MacControlElementsList otherCeList = other.ceList_;
-        MacControlElementsList::iterator cit;
-        for (cit = otherCeList.begin(); cit != otherCeList.end(); cit++) {
+        for (auto cit = otherCeList.begin(); cit != otherCeList.end(); cit++) {
             MacBsr *bsr = dynamic_cast<MacBsr *>(*cit);
             if (bsr) {
                 ceList_.push_back(new MacBsr(*bsr));
@@ -151,8 +150,7 @@ class LteMacPdu : public LteMacPdu_Base
         drop(sduList_);
         delete sduList_;
 
-        MacControlElementsList::iterator cit;
-        for (cit = ceList_.begin(); cit != ceList_.end(); cit++) {
+        for (auto cit = ceList_.begin(); cit != ceList_.end(); cit++) {
             delete *cit;
         }
     }

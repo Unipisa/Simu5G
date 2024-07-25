@@ -51,10 +51,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
         // retrieving reference to HARQ entities
         HarqRxBuffers *harqQueues = mac_->getHarqRxBuffers(carrierFrequency);
         if (harqQueues != nullptr) {
-            HarqRxBuffers::iterator it = harqQueues->begin();
-            HarqRxBuffers::iterator et = harqQueues->end();
-
-            for ( ; it != et; ++it) {
+            for (auto it = harqQueues->begin(); it != harqQueues->end(); ++it) {
                 // get current nodeId
                 MacNodeId nodeId = it->first;
 
@@ -80,10 +77,9 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                 EV << NOW << " NRSchedulerGnbUl::rtxschedule UE: " << nodeId << endl;
 
                 // get the number of HARQ processes
-                unsigned int process = 0;
                 unsigned int maxProcesses = currHarq->getProcesses();
 
-                for (process = 0; process < maxProcesses; ++process ) {
+                for (unsigned int process = 0; process < maxProcesses; ++process) {
                     // for each HARQ process
                     LteHarqProcessRx *currProc = currHarq->getProcess(process);
 
@@ -124,8 +120,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
             Direction dir = D2D;
             HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
             if (harqBuffersMirrorD2D != nullptr) {
-                HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin(), et_d2d = harqBuffersMirrorD2D->end();
-                while (it_d2d != et_d2d) {
+                for (auto it_d2d = harqBuffersMirrorD2D->begin(); it_d2d != harqBuffersMirrorD2D->end(); ) {
 
                     // get current nodeIDs
                     MacNodeId senderId = (it_d2d->first).first; // Transmitter
@@ -155,10 +150,9 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                     EV << NOW << " NRSchedulerGnbUl::rtxschedule D2D TX UE: " << senderId << " - RX UE: " << destId << endl;
 
                     // get the number of HARQ processes
-                    unsigned int process = 0;
                     unsigned int maxProcesses = currHarq->getProcesses();
 
-                    for (process = 0; process < maxProcesses; ++process ) {
+                    for (unsigned int process = 0; process < maxProcesses; ++process) {
                         // for each HARQ process
                         LteHarqProcessMirrorD2D *currProc = currHarq->getProcess(process);
 
