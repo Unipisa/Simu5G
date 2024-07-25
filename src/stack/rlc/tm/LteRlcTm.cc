@@ -125,7 +125,7 @@ void LteRlcTm::initialize()
     sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
     sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
     rlcPacketLossDl = registerSignal("rlcPacketLossDl");
-    rlcPacketLossDl = registerSignal("rlcPacketLossUl");
+    rlcPacketLossUl = registerSignal("rlcPacketLossUl");
 }
 
 void LteRlcTm::handleMessage(cMessage *msg)

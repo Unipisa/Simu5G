@@ -771,14 +771,14 @@ double LtePhyUe::getVarianceCqi(Direction dir)
     if (dir == DL) {
         for (short & cqiDlSample : cqiDlSamples_) {
             err = avgCqi - cqiDlSample;
-            sum = (err * err);
+            sum += (err * err);
         }
         return sum / cqiDlSamples_.size();
     }
     if (dir == UL) {
         for (short & cqiUlSample : cqiUlSamples_) {
             err = avgCqi - cqiUlSample;
-            sum = (err * err);
+            sum += (err * err);
         }
         return sum / cqiUlSamples_.size();
     }

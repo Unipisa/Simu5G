@@ -92,7 +92,7 @@ void TrafficGeneratorBase::initialize(int stage)
 
             double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
             if (cqiUl > 15)
-                cqi_[DL] = 15;
+                cqi_[UL] = 15;
             else if (cqiUl < 2)
                 cqi_[UL] = 2;
             else
@@ -179,7 +179,7 @@ void TrafficGeneratorBase::updateMeasurements()
         if (trafficEnabled_[UL]) {
             double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
             if (cqiUl > 15)
-                cqi_[DL] = 15;
+                cqi_[UL] = 15;
             else if (cqiUl < 2)
                 cqi_[UL] = 2;
             else
