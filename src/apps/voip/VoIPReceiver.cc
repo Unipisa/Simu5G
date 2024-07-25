@@ -73,7 +73,7 @@ void VoIPReceiver::handleMessage(cMessage *msg)
         return;
     Packet *pPacket = check_and_cast<Packet *>(msg);
 
-    if (pPacket == 0) {
+    if (pPacket == nullptr) {
         throw cRuntimeError("VoIPReceiver::handleMessage - FATAL! Error when casting to inet packet");
     }
 

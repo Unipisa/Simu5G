@@ -33,8 +33,8 @@ using namespace std;
 Define_Module(UeRnisTestApp);
 
 UeRnisTestApp::UeRnisTestApp() {
-    selfStart_ = NULL;
-    selfStop_ = NULL;
+    selfStart_ = nullptr;
+    selfStop_ = nullptr;
     selfMecAppStart_ = nullptr;
 }
 
@@ -123,7 +123,7 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
 
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
 
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(msg);
@@ -137,7 +137,7 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
         // From MEC application
         else {
             auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to RnisTestAppPacket");
 
             if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(msg);

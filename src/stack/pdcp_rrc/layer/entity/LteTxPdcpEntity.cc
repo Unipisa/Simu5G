@@ -18,7 +18,7 @@ Define_Module(LteTxPdcpEntity);
 
 LteTxPdcpEntity::LteTxPdcpEntity()
 {
-    pdcp_ = NULL;
+    pdcp_ = nullptr;
     sno_ = 0;
 }
 

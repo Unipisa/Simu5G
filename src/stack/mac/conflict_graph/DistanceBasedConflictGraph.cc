@@ -50,7 +50,7 @@ double DistanceBasedConflictGraph::getDbmFromDistance(double distance)
     LteChannelModel *channelModel = macEnb_->getPhy()->getChannelModel();
 
     // obtain path loss in dBm
-    if (channelModel == NULL)
+    if (channelModel == nullptr)
         throw cRuntimeError("DistanceBasedConflictGraph::getDbmFromDistance - channel model is a null pointer. Abort");
     else
         pLoss = channelModel->computePathLoss(distance, dbp, los);

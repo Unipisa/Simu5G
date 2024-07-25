@@ -131,7 +131,7 @@ void UERequestApp::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
 
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UERequestApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
 
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP))
@@ -144,7 +144,7 @@ void UERequestApp::handleMessage(cMessage *msg)
         // From MEC application
         else {
             auto mePkt = packet->peekAtFront<RequestResponseAppPacket>();
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UERequestApp::handleMessage - \tFATAL! Error when casting to RequestAppPacket");
 
             if (mePkt->getType() == MECAPP_RESPONSE)

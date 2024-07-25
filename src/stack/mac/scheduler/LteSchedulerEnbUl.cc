@@ -23,7 +23,7 @@ using namespace omnetpp;
 bool LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
 {
     HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);
-    if (harqRxBuff == NULL)                              // a new HARQ buffer will be created at reception
+    if (harqRxBuff == nullptr)                              // a new HARQ buffer will be created at reception
         return true;
 
     // check if harq buffer have already been created for this node
@@ -340,7 +340,7 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
             // --- START Schedule D2D retransmissions --- //
             Direction dir = D2D;
             HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
-            if (harqBuffersMirrorD2D != NULL) {
+            if (harqBuffersMirrorD2D != nullptr) {
                 HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin(), et_d2d = harqBuffersMirrorD2D->end();
                 while (it_d2d != et_d2d) {
 

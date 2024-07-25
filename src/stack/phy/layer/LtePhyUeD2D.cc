@@ -93,7 +93,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL) {
+    if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -302,7 +302,7 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
 
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
+    if (channelModel == nullptr)
         throw cRuntimeError("LtePhyUeD2D::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq);
 
     if (lteInfo->getFrameType() == DATAPKT && (channelModel->isUplinkInterferenceEnabled() || channelModel->isD2DInterferenceEnabled())) {
@@ -370,7 +370,7 @@ void LtePhyUeD2D::storeAirFrame(LteAirFrame *newFrame)
     UserControlInfo *newInfo = check_and_cast<UserControlInfo *>(newFrame->getControlInfo());
     double carrierFreq = newInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
+    if (channelModel == nullptr)
         throw cRuntimeError("LtePhyUeD2D::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq);
 
     Coord myCoord = getCoord();
@@ -467,7 +467,7 @@ void LtePhyUeD2D::decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo)
 
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
+    if (channelModel == nullptr)
         throw cRuntimeError("LtePhyUeD2D::decodeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq);
 
     // apply decider to received packet

@@ -724,12 +724,12 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
                 vqueue->getQueueOccupancy() << "\n";
         }
         else {
-            LteMacBuffer *vqueue = NULL;
+            LteMacBuffer *vqueue = nullptr;
             LteMacBufferMap::iterator it = macBuffers_.find(cid);
             if (it != macBuffers_.end())
                 vqueue = it->second;
 
-            if (vqueue != NULL) {
+            if (vqueue != nullptr) {
                 vqueue->pushBack(vpkt);
 
                 EV << "LteMacBuffers : Using old buffer on node: " <<

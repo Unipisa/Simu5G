@@ -21,8 +21,8 @@ Define_Module(NRPhyUe);
 
 NRPhyUe::NRPhyUe()
 {
-    handoverStarter_ = NULL;
-    handoverTrigger_ = NULL;
+    handoverStarter_ = nullptr;
+    handoverTrigger_ = nullptr;
 }
 
 NRPhyUe::~NRPhyUe()
@@ -59,7 +59,7 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
 
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL) {
+    if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -69,7 +69,7 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
     //Update coordinates of this user
     if (lteInfo->getFrameType() == HANDOVERPKT) {
         // check if the message is on another carrier frequency or handover is already in process
-        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != NULL && handoverTrigger_->isScheduled())) {
+        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled())) {
             EV << "Received handover packet on a different carrier frequency. Delete it." << endl;
             delete lteInfo;
             delete frame;
@@ -145,7 +145,7 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
     // if the packet is a D2D multicast one, store it and decode it at the end of the TTI
     if (d2dMulticastEnableCaptureEffect_ && binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())) {
         // if not already started, auto-send a message to signal the presence of data to be decoded
-        if (d2dDecodingTimer_ == NULL) {
+        if (d2dDecodingTimer_ == nullptr) {
             d2dDecodingTimer_ = new cMessage("d2dDecodingTimer");
             d2dDecodingTimer_->setSchedulingPriority(10);          // last thing to be performed in this TTI
             scheduleAt(NOW, d2dDecodingTimer_);
@@ -158,7 +158,7 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
         return;                          // exit the function, decoding will be done later
     }
 
-    if ((lteInfo->getUserTxParams()) != NULL) {
+    if ((lteInfo->getUserTxParams()) != nullptr) {
         int cw = lteInfo->getCw();
         if (lteInfo->getUserTxParams()->readCqiVector().size() == 1)
             cw = 0;
@@ -240,7 +240,7 @@ void NRPhyUe::triggerHandover()
         if (otherPhy_->getMasterId() == masterNode) {
             MacNodeId otherNodeId = otherPhy_->getMacNodeId();
             const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
-            if (handoverPair != NULL) {
+            if (handoverPair != nullptr) {
                 if (handoverPair->second == candidateMasterId_) {
                     // delay this handover
                     double delta = handoverDelta_;
@@ -390,7 +390,7 @@ void NRPhyUe::doHandover()
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
-        if (oldCellInfo == NULL) {
+        if (oldCellInfo == nullptr) {
             // first time the UE is attached to someone
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             cellInfo_->lambdaInit(nodeId_, index);

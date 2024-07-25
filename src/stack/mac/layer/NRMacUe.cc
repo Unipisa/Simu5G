@@ -66,7 +66,7 @@ void NRMacUe::handleSelfMessage()
         if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
             continue;
 
-        if (git->second != NULL)
+        if (git->second != nullptr)
             noSchedulingGrants = false;
     }
 
@@ -80,7 +80,7 @@ void NRMacUe::handleSelfMessage()
         bool checkRac = false;
         bool skip = false;
         for (git = schedulingGrant_.begin(); git != get; ++git) {
-            if (git->second != NULL && git->second->getPeriodic()) {
+            if (git->second != nullptr && git->second->getPeriodic()) {
                 periodicGrant = true;
                 double carrierFreq = git->first;
 
@@ -138,7 +138,7 @@ void NRMacUe::handleSelfMessage()
                 continue;
 
             // skip if no grant is configured for this carrier
-            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
+            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
             for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++) {
@@ -267,7 +267,7 @@ int NRMacUe::macSduRequest()
         if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git->first)) > 0)
             continue;
 
-        if (git->second == NULL)
+        if (git->second == nullptr)
             continue;
 
         for (int cw = 0; cw < git->second->getGrantedCwBytesArraySize(); cw++)
@@ -366,7 +366,7 @@ void NRMacUe::macPduMake(MacCid cid)
                     // Call the appropriate function for make a BSR for a D2D communication
                     Packet *macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    if (info != NULL) {
+                    if (info != nullptr) {
                         info->setCarrierFrequency(carrierFreq);
                         info->setUserTxParams(git->second->getUserTxParams()->dup());
                         if (bsrD2DMulticastTriggered_) {
@@ -378,9 +378,9 @@ void NRMacUe::macPduMake(MacCid cid)
                     }
 
                     // Add the created BSR to the PDU List
-                    if (macPktBsr != NULL) {
+                    if (macPktBsr != nullptr) {
                         LteChannelModel *channelModel = phy_->getChannelModel();
-                        if (channelModel == NULL)
+                        if (channelModel == nullptr)
                             throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][std::pair<MacNodeId, Codeword>(getMacCellId(), 0)] = macPktBsr;
@@ -474,7 +474,7 @@ void NRMacUe::macPduMake(MacCid cid)
                         throw cRuntimeError("Empty buffer for cid %d, while expected SDUs were %d", destCid, sduPerCid);
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
-                    if (pkt != NULL) {
+                    if (pkt != nullptr) {
                         // multicast support
                         // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
                         auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);

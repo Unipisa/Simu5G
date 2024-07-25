@@ -18,7 +18,7 @@ Define_Module(LteRxPdcpEntity);
 
 LteRxPdcpEntity::LteRxPdcpEntity()
 {
-    pdcp_ = NULL;
+    pdcp_ = nullptr;
 }
 
 void LteRxPdcpEntity::initialize()

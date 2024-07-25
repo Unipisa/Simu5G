@@ -31,11 +31,11 @@ using namespace omnetpp;
 LteSchedulerEnb::LteSchedulerEnb()
 {
     direction_ = DL;
-    mac_ = 0;
-    allocator_ = 0;
-    vbuf_ = 0;
-    harqTxBuffers_ = 0;
-    harqRxBuffers_ = 0;
+    mac_ = nullptr;
+    allocator_ = nullptr;
+    vbuf_ = nullptr;
+    harqTxBuffers_ = nullptr;
+    harqRxBuffers_ = nullptr;
     resourceBlocks_ = 0;
     utilization_ = 0;
 }
@@ -67,7 +67,7 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
 
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
     CarrierInfoMap::const_iterator it = carriers->begin();
-    LteScheduler *newSched = NULL;
+    LteScheduler *newSched = nullptr;
     for ( ; it != carriers->end(); ++it) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
@@ -110,7 +110,7 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
     // Create LteScheduler. One per carrier
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
-    LteScheduler *newSched = NULL;
+    LteScheduler *newSched = nullptr;
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
     CarrierInfoMap::const_iterator it = carriers->begin();
     for ( ; it != carriers->end(); ++it) {
@@ -156,7 +156,7 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
     resetAllocator();
 
     // schedule one carrier at a time
-    LteScheduler *scheduler = NULL;
+    LteScheduler *scheduler = nullptr;
     std::vector<LteScheduler *>::iterator it = scheduler_.begin();
     for ( ; it != scheduler_.end(); ++it) {
         scheduler = *it;

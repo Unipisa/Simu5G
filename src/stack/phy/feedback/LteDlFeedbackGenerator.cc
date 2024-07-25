@@ -130,7 +130,7 @@ void LteDlFeedbackGenerator::initCellInfo()
     cellInfo_ = getCellInfo(binder_, masterId_);
     EV << "DLFeedbackGenerator - nodeid: " << nodeId_ << " cellInfo taken" << endl;
 
-    if (cellInfo_ != NULL) {
+    if (cellInfo_ != nullptr) {
         antennaCws_ = cellInfo_->getAntennaCws();
         numBands_ = cellInfo_->getPrimaryCarrierNumBands();
         numPreferredBands_ = cellInfo_->getNumPreferredBands();
@@ -240,10 +240,10 @@ LteFeedbackComputation *LteDlFeedbackGenerator::getFeedbackComputationFromName(s
     ParameterMap::iterator it;
     if (name == "REAL") {
         feedbackComputationPisa_ = true;
-        return 0;
+        return nullptr;
     }
     else
-        return 0;
+        return nullptr;
 }
 
 void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
@@ -257,7 +257,7 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
             tPeriodicSensing_->start(0);
     }
     else {
-        cellInfo_ = NULL;
+        cellInfo_ = nullptr;
 
         // stop measuring feedback
         tPeriodicSensing_->stop();

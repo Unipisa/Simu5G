@@ -159,7 +159,7 @@ ChannelControl::RadioRef ChannelControl::lookupRadio(cModule *radio)
     for (auto & it : radios)
         if (it.radioModule == radio)
             return &it;
-    return 0;
+    return nullptr;
 }
 
 const ChannelControl::RadioRefVector& ChannelControl::getNeighbors(RadioRef h)

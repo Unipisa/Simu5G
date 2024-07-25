@@ -56,7 +56,7 @@ void LtePhyEnb::initialize(int stage)
         nodeId_ = hostModule->par("macNodeId");
         EV << "Local MacNodeId: " << nodeId_ << endl;
         cellInfo_ = getCellInfo(binder_, nodeId_);
-        if (cellInfo_ != NULL) {
+        if (cellInfo_ != nullptr) {
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));
             das_ = new DasFilter(this, binder_, cellInfo_->getRemoteAntennaSet(), 0);
         }
@@ -162,7 +162,7 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
     // check if the air frame was sent on a correct carrier frequency
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL) {
+    if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -266,7 +266,7 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
 
     //Apply analog model (pathloss)
     //Get snr for UL direction
-    if (channelModel != NULL)
+    if (channelModel != nullptr)
         snr = channelModel->getSINR(frame, lteinfo);
     else
         throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
@@ -324,7 +324,7 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
             lteinfo->setDirection(DL);
 
             //Get snr for DL direction
-            if (channelModel != NULL)
+            if (channelModel != nullptr)
                 snr = channelModel->getSINR(frame, lteinfo);
             else
                 throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
@@ -427,12 +427,12 @@ LteFeedbackComputation *LtePhyEnb::getFeedbackComputationFromName(std::string na
         return fbcomp;
     }
     else
-        return 0;
+        return nullptr;
 }
 
 void LtePhyEnb::initializeFeedbackComputation()
 {
-    lteFeedbackComputation_ = 0;
+    lteFeedbackComputation_ = nullptr;
 
     const char *name = "REAL";
 

@@ -120,7 +120,7 @@ void VoDUDPClient::finish()
 
             string args = inputFileName + " " + pb.str() + " " + ss.str() + " " + np.str();
             FILE *fp = popen("./Framework/createns2output.py", "w");
-            if (fp != NULL) {
+            if (fp != nullptr) {
                 fprintf(fp, "%s", args.c_str());
                 fclose(fp);
             }

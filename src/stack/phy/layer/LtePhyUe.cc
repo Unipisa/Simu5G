@@ -215,13 +215,13 @@ void LtePhyUe::initialize(int stage)
         if (masterId_ > 0) {
             cellInfo_ = getCellInfo(binder_, nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
-            if (cellInfo_ != NULL) {
+            if (cellInfo_ != nullptr) {
                 cellInfo_->lambdaInit(nodeId_, index);
                 cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));
             }
         }
         else
-            cellInfo_ = NULL;
+            cellInfo_ = nullptr;
     }
 }
 
@@ -444,7 +444,7 @@ void LtePhyUe::doHandover()
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
-        if (oldCellInfo == NULL) {
+        if (oldCellInfo == nullptr) {
             // first time the UE is attached to someone
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             cellInfo_->lambdaInit(nodeId_, index);
@@ -496,7 +496,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     // check if the air frame was sent on a correct carrier frequency
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL) {
+    if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -628,7 +628,7 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
 
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
+    if (channelModel == nullptr)
         throw cRuntimeError("LtePhyUe::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq);
 
     if (lteInfo->getFrameType() == DATAPKT && (channelModel->isUplinkInterferenceEnabled() || channelModel->isD2DInterferenceEnabled())) {

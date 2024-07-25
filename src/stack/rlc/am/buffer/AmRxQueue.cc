@@ -173,12 +173,12 @@ void AmRxQueue::discard(const int sn)
     if (dir != UNKNOWN_DIRECTION) {
         // UE module
         cModule *ue = getRlcByMacNodeId(binder_, (dir == DL ? dstId : srcId), UM);
-        if (ue != NULL)
+        if (ue != nullptr)
             ue->emit(rlcPacketLoss_, 1.0);
 
         // NODEB
         cModule *nodeb = getRlcByMacNodeId(binder_, (dir == DL ? srcId : dstId), UM);
-        if (nodeb != NULL)
+        if (nodeb != nullptr)
             nodeb->emit(rlcCellPacketLoss_, 1.0);
     }
 }
@@ -397,11 +397,11 @@ void AmRxQueue::passUp(const int index)
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
-    if (nodeb != NULL) {
+    if (nodeb != nullptr) {
         nodeb->emit(rlcCellThroughput_, cellTputSample);
         nodeb->emit(rlcCellPacketLoss_, 0.0);
     }
-    if (ue != NULL) {
+    if (ue != nullptr) {
         ue->emit(rlcThroughput_, tputSample);
         ue->emit(rlcDelay_, delay);
         ue->emit(rlcPacketLoss_, 0.0);

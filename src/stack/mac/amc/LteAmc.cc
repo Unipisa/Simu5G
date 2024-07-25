@@ -931,7 +931,7 @@ unsigned int LteAmc::bytesGain(Cqi cqi, unsigned int layers, unsigned int bytes,
         return 0;
     const unsigned int *tbsVect = readTbsVect(cqi, layers, dir);
 
-    if (tbsVect == 0)
+    if (tbsVect == nullptr)
         return 0;
 
     unsigned int i = 0;

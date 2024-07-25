@@ -19,7 +19,7 @@ namespace simu5g {
 bool NRSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
 {
     HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);
-    if (harqRxBuff == NULL)                              // a new HARQ buffer will be created at reception
+    if (harqRxBuff == nullptr)                              // a new HARQ buffer will be created at reception
         return true;
 
     // check if harq buffer have already been created for this node
@@ -50,7 +50,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
 
         // retrieving reference to HARQ entities
         HarqRxBuffers *harqQueues = mac_->getHarqRxBuffers(carrierFrequency);
-        if (harqQueues != NULL) {
+        if (harqQueues != nullptr) {
             HarqRxBuffers::iterator it = harqQueues->begin();
             HarqRxBuffers::iterator et = harqQueues->end();
 
@@ -123,7 +123,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
             // --- START Schedule D2D retransmissions --- //
             Direction dir = D2D;
             HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
-            if (harqBuffersMirrorD2D != NULL) {
+            if (harqBuffersMirrorD2D != nullptr) {
                 HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin(), et_d2d = harqBuffersMirrorD2D->end();
                 while (it_d2d != et_d2d) {
 

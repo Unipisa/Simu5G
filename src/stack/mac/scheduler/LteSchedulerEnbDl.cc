@@ -22,7 +22,7 @@ using namespace omnetpp;
 bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
 {
     HarqTxBuffers *harqTxBuff = mac_->getHarqTxBuffers(carrierFrequency);
-    if (harqTxBuff == NULL)                              // a new HARQ buffer will be created at transmission
+    if (harqTxBuff == nullptr)                              // a new HARQ buffer will be created at transmission
         return true;
 
     // check if harq buffer have already been created for this node
@@ -134,7 +134,7 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
     std::vector<unsigned int> assignedBytes;
 
     HarqTxBuffers *harqTxBuff = mac_->getHarqTxBuffers(carrierFrequency);
-    if (harqTxBuff == NULL)
+    if (harqTxBuff == nullptr)
         throw cRuntimeError("LteSchedulerEnbDl::schedulePerAcidRtx - HARQ Buffer not found for carrier %f", carrierFrequency);
     LteHarqBufferTx *currHarq = harqTxBuff->at(nodeId);
 
@@ -407,7 +407,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
 
     // retrieving reference to HARQ entities
     HarqTxBuffers *harqQueues = mac_->getHarqTxBuffers(carrierFrequency);
-    if (harqQueues != NULL) {
+    if (harqQueues != nullptr) {
         HarqTxBuffers::iterator it = harqQueues->begin();
         HarqTxBuffers::iterator et = harqQueues->end();
 

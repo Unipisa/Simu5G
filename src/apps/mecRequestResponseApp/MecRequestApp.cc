@@ -20,7 +20,7 @@ simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
 Define_Module(MecRequestApp);
 
 MecRequestApp::MecRequestApp() {
-    selfSender_ = NULL;
+    selfSender_ = nullptr;
 }
 
 MecRequestApp::~MecRequestApp() {
@@ -143,7 +143,7 @@ void MecRequestApp::sendRequest()
 void MecRequestApp::recvResponse(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-    if (packet == 0)
+    if (packet == nullptr)
         throw cRuntimeError("MecRequestApp::handleRequest - FATAL! Error when casting to inet packet");
     packet->removeControlInfo();
 

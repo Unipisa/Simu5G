@@ -337,7 +337,7 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
 HarqBuffersMirrorD2D *LteMacEnbD2D::getHarqBuffersMirrorD2D(double carrierFrequency)
 {
     if (harqBuffersMirrorD2D_.find(carrierFrequency) == harqBuffersMirrorD2D_.end())
-        return NULL;
+        return nullptr;
     return &harqBuffersMirrorD2D_[carrierFrequency];
 }
 

@@ -93,7 +93,7 @@ NumerologyIndex Binder::getUeMaxNumerologyIndex(MacNodeId ueId)
 const std::set<NumerologyIndex> *Binder::getUeNumerologyIndex(MacNodeId ueId)
 {
     if (ueNumerologyIndex_.find(ueId) == ueNumerologyIndex_.end())
-        return NULL;
+        return nullptr;
     return &ueNumerologyIndex_[ueId];
 }
 
@@ -553,7 +553,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
 const std::vector<std::vector<UeAllocationInfo>> *Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
 {
     if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()) {
-        return NULL;
+        return nullptr;
     }
 
     return &(ulTransmissionMap_[carrierFreq].at(t));
@@ -763,7 +763,7 @@ void Binder::addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId d
 const std::pair<MacNodeId, MacNodeId> *Binder::getHandoverTriggered(MacNodeId nodeId)
 {
     if (handoverTriggered_.find(nodeId) == handoverTriggered_.end())
-        return NULL;
+        return nullptr;
     return &handoverTriggered_[nodeId];
 }
 

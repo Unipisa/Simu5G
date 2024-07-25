@@ -897,7 +897,7 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
         LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>((*it)->phy->getChannelModel(carrierFrequency));
 
         // if the interfering BS does not use the selected carrier frequency, skip it
-        if (interfChanModel == NULL) {
+        if (interfChanModel == nullptr) {
             ++it;
             continue;
         }

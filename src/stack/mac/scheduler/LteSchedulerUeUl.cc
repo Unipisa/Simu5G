@@ -55,7 +55,7 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
 
     // get the grant
     const LteSchedulingGrant *grant = mac_->getSchedulingGrant(carrierFrequency_);
-    if (grant == NULL)
+    if (grant == nullptr)
         return &scheduleList_;
 
     Direction dir = grant->getDirection();

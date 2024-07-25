@@ -228,7 +228,7 @@ void LteMacUe::initialize(int stage)
 
             // for each numerology available in this UE, set the corresponding timers
             const std::set<NumerologyIndex> *numerologyIndexSet = binder_->getUeNumerologyIndex(nodeId_);
-            if (numerologyIndexSet != NULL) {
+            if (numerologyIndexSet != nullptr) {
                 std::set<NumerologyIndex>::const_iterator it = numerologyIndexSet->begin();
                 for ( ; it != numerologyIndexSet->end(); ++it) {
                     // set periodicity for this carrier according to its numerology
@@ -265,7 +265,7 @@ int LteMacUe::macSduRequest()
 
     auto git = schedulingGrant_.begin();
     for ( ; git != schedulingGrant_.end(); ++git) {
-        if (git->second == NULL)
+        if (git->second == nullptr)
             continue;
 
         for (int cw = 0; cw < git->second->getGrantedCwBytesArraySize(); cw++)
@@ -358,12 +358,12 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
                 vqueue->getQueueOccupancy() << "\n";
         }
         else {
-            LteMacBuffer *vqueue = NULL;
+            LteMacBuffer *vqueue = nullptr;
             LteMacBufferMap::iterator it = macBuffers_.find(cid);
             if (it != macBuffers_.end())
                 vqueue = it->second;
 
-            if (vqueue != NULL) {
+            if (vqueue != nullptr) {
                 vqueue->pushBack(vpkt);
 
                 EV << "LteMacBuffers : Using old buffer on node: " <<
@@ -811,7 +811,7 @@ void LteMacUe::handleSelfMessage()
             double carrierFrequency = mtit->first;
 
             // skip if no grant is configured for this carrier
-            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
+            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
             LteHarqBufferTx *currHarq;
@@ -842,7 +842,7 @@ void LteMacUe::handleSelfMessage()
                 double carrierFrequency = sit->first;
 
                 // skip if no grant is configured for this carrier
-                if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
+                if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                     continue;
 
                 LteSchedulerUeUl *carrierLcgScheduler = sit->second;

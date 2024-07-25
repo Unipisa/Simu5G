@@ -100,7 +100,7 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu)
         // shift window by 'i' positions
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - shifting window by " << pos << " positions" << endl;
         for (unsigned int i = pos; i < rxWindowDesc_.rxNext_ - rxWindowDesc_.rxDeliv_; ++i) {
-            if (sduBuffer_.get(i) != NULL)
+            if (sduBuffer_.get(i) != nullptr)
                 sduBuffer_.addAt(i - pos, sduBuffer_.remove(i));
             received_.at(i - pos) = received_.at(i);
             received_.at(i) = false;
@@ -165,7 +165,7 @@ void NRRxPdcpEntity::handleMessage(cMessage *msg)
         int offset = rxWindowDesc_.rxDeliv_ - old;
         EV << NOW << " NRRxPdcpEntity::handleMessage - shifting window by " << offset << " positions" << endl;
         for (unsigned int i = offset; i < rxWindowDesc_.windowSize_; ++i) {
-            if (sduBuffer_.get(i) != NULL)
+            if (sduBuffer_.get(i) != nullptr)
                 sduBuffer_.addAt(i - offset, sduBuffer_.remove(i));
             received_.at(i - offset) = received_.at(i);
             received_.at(i) = false;

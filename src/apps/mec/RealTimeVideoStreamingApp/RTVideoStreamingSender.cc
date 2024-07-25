@@ -196,7 +196,7 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
 
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("RTVideoStreamingSender::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
 
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) {
@@ -213,7 +213,7 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
         else {
             auto mePkt = packet->peekAtFront<RealTimeVideoStreamingAppPacket>();
             EV << "RTVideoStreamingSender::handleMessage - message from MEC app of type: " << mePkt->getType() << endl;
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("RTVideoStreamingSender::handleMessage - \tFATAL! Error when casting to WarningAppPacket");
 
             if (mePkt->getType() == RTVIDEOSTREAMING_COMMAND) {

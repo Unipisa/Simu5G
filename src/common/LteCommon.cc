@@ -531,7 +531,7 @@ cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
     // since we do not have a MAC-Module anymore
     int id = binder->getOmnetId(nodeId);
     if (id == 0) {
-        return NULL;
+        return nullptr;
     }
     return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcpRrc");
 }
@@ -549,7 +549,7 @@ void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap)
         const char *name = parameter->getAttribute("name");
         const char *type = parameter->getAttribute("type");
         const char *value = parameter->getAttribute("value");
-        if (name == 0 || type == 0 || value == 0) {
+        if (name == nullptr || type == nullptr || value == nullptr) {
             EV << "Invalid parameter, could not find name, type or value." << endl;
             continue;
         }
@@ -564,13 +564,13 @@ void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap)
             param.setBoolValue(sValue == "true" || sValue == "1");
         }
         else if (sType == "double") {
-            param.setDoubleValue(strtod(value, 0));
+            param.setDoubleValue(strtod(value, nullptr));
         }
         else if (sType == "string") {
             param.setStringValue(value);
         }
         else if (sType == "long") {
-            param.setLongValue(strtol(value, 0, 0));
+            param.setLongValue(strtol(value, nullptr, 0));
         }
         else {
             EV << "Unknown parameter type: \"" << sType << "\"" << endl;

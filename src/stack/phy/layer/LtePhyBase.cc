@@ -166,7 +166,7 @@ void LtePhyBase::initializeChannelModel()
         binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
 
     int vectSize = primaryChannelModel_->getVectorSize();
-    LteChannelModel *chanModel = NULL;
+    LteChannelModel *chanModel = nullptr;
     for (int index = 1; index < vectSize; index++) {
         chanModel = check_and_cast<LteChannelModel *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
         chanModel->setPhy(this);

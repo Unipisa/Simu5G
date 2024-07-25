@@ -79,7 +79,7 @@ unsigned int LteScheduler::decreaseSchedulerPeriodCounter()
 
 unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector *bandLim)
 {
-    if (bandLim == NULL) {
+    if (bandLim == nullptr) {
         // reset the band limit vector used for requesting grants
         for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element
@@ -108,7 +108,7 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 
 unsigned int LteScheduler::requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector *bandLim)
 {
-    if (bandLim == NULL) {
+    if (bandLim == nullptr) {
         // reset the band limit vector used for requesting grants
         for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element

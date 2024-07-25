@@ -82,7 +82,7 @@ void LteMacUeD2D::initialize(int stage)
 //            }
         }
         else
-            enb_ = NULL;
+            enb_ = nullptr;
     }
 }
 
@@ -149,7 +149,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     auto macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
                     double carrierFreq = git->first;
-                    if (info != NULL) {
+                    if (info != nullptr) {
                         info->setCarrierFrequency(carrierFreq);
                         info->setUserTxParams(git->second->getUserTxParams()->dup());
                         if (bsrD2DMulticastTriggered_) {
@@ -164,7 +164,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     if (macPktBsr != nullptr) {
                         // select channel model for given carrier frequency
                         LteChannelModel *channelModel = phy_->getChannelModel(carrierFreq);
-                        if (channelModel == NULL)
+                        if (channelModel == nullptr)
                             throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][std::pair<MacNodeId, Codeword>(getMacCellId(), 0)] = macPktBsr;
@@ -255,7 +255,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
 
-                    if (pkt != NULL) {
+                    if (pkt != nullptr) {
                         // multicast support
                         // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
                         auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
@@ -734,7 +734,7 @@ void LteMacUeD2D::handleSelfMessage()
             double carrierFrequency = mtit->first;
 
             // skip if no grant is configured for this carrier
-            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == NULL)
+            if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
             for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++) {
@@ -871,7 +871,7 @@ UserTxParams *LteMacUeD2D::getPreconfiguredTxParams()
 
     BandSet b;
     CellInfo *cellInfo = getCellInfo(binder_, nodeId_);
-    if (cellInfo != NULL) {
+    if (cellInfo != nullptr) {
         for (Band i = 0; i < cellInfo->getNumBands(); ++i)
             b.insert(i);
     }
@@ -1076,7 +1076,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 void LteMacUeD2D::doHandover(MacNodeId targetEnb)
 {
     if (targetEnb == 0)
-        enb_ = NULL;
+        enb_ = nullptr;
     else {
         if (preconfiguredTxParams_ != nullptr)
             delete preconfiguredTxParams_;

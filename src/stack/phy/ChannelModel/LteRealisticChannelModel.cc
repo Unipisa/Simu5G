@@ -2657,7 +2657,7 @@ LteRealisticChannelModel::JakesFadingMap *LteRealisticChannelModel::obtainUeJake
     // get the associated channel and get a reference to its Jakes Map
     JakesFadingMap *j;
     LteRealisticChannelModel *re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
-    if (re == NULL)
+    if (re == nullptr)
         throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer. Abort.");
     else
         j = re->getJakesMap();
@@ -2734,7 +2734,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>((*it)->phy->getChannelModel(carrierFrequency));
 
         // if the eNB does not use the selected carrier frequency, skip it
-        if (interfChanModel == NULL) {
+        if (interfChanModel == nullptr) {
             ++it;
             continue;
         }

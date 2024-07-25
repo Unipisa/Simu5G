@@ -164,7 +164,7 @@ void UmRxEntity::enque(cPacket *pktAux)
 
     // emit statistics
     cModule *ue = getRlcByMacNodeId(binder_, ueId, UM);
-    if (ue != NULL) {
+    if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcPduThroughput_, tputSample);
             ue->emit(rlcPduDelay_, (NOW - pktPdu->getCreationTime()).dbl());
@@ -280,11 +280,11 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     while (sno > lastSnoDelivered_ + 1) {
         lastSnoDelivered_++;
 
-        if (nodeB_ != NULL)
+        if (nodeB_ != nullptr)
             nodeB_->emit(rlcCellPacketLoss_, 1.0);
 
         // emit statistic: packet loss
-        if (ue != NULL) {
+        if (ue != nullptr) {
             if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI)
                 ue->emit(rlcPacketLoss_, 1.0);
             else
@@ -301,7 +301,7 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     totalRcvdBytes_ += length;
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-    if (ue != NULL) {
+    if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcThroughput_, tputSample);
             ue->emit(rlcPacketLoss_, 0.0);
@@ -315,7 +315,7 @@ void UmRxEntity::toPdcp(Packet *pktAux)
             ue->emit(rlcDelayD2D_, (NOW - ts).dbl());
         }
     }
-    if (nodeB_ != NULL) {
+    if (nodeB_ != nullptr) {
         nodeB_->emit(rlcCellThroughput_, cellTputSample);
         nodeB_->emit(rlcCellPacketLoss_, 0.0);
     }
@@ -850,11 +850,11 @@ void UmRxEntity::handleBurst(BurstCheck event)
      *          burst = 1
      *          update total var with temp var
      */
-    EV_FATAL << "UmRxEntity::handleBurst - size: " << pduBuffer_.size() + ((buffered_.pkt == NULL) ? 0 : 1) << endl;
+    EV_FATAL << "UmRxEntity::handleBurst - size: " << pduBuffer_.size() + ((buffered_.pkt == nullptr) ? 0 : 1) << endl;
 
     simtime_t t1 = simTime();
 
-    if (((pduBuffer_.size() + (buffered_.pkt == NULL)) ? 0 : 1) == 0) { //last TTI emptied the burst
+    if (((pduBuffer_.size() + (buffered_.pkt == nullptr)) ? 0 : 1) == 0) { //last TTI emptied the burst
         if (isBurst_) { // burst ends
             //send stats
             // if the transmission requires two TTIs and I do not count

@@ -50,7 +50,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
     //Apply analog model (pathloss)
     //Get snr for UL direction
     std::vector<double> snr;
-    if (channelModel != NULL)
+    if (channelModel != nullptr)
         snr = channelModel->getSINR(frame, lteinfo);
     else
         throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
@@ -103,7 +103,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
             lteinfo->setTxPower(txPower_);
             lteinfo->setDirection(DL);
             //Get snr for DL direction
-            if (channelModel != NULL)
+            if (channelModel != nullptr)
                 snr = channelModel->getSINR(frame, lteinfo);
             else
                 throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
@@ -126,7 +126,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
                         Coord peerCoord = (*it)->phy->getCoord();
 
                         // get SINR for this link
-                        if (channelModel != NULL)
+                        if (channelModel != nullptr)
                             snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
                         else
                             throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
@@ -169,7 +169,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage *msg)
     // check if the air frame was sent on a correct carrier frequency
     double carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL) {
+    if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;

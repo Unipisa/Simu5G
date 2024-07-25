@@ -237,7 +237,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
         // Found
         LteMacQueue *queue = it->second;
 
-        LteMacBuffer *vqueue = NULL;
+        LteMacBuffer *vqueue = nullptr;
         LteMacBufferMap::iterator it = macBuffers_.find(cid);
         if (it != macBuffers_.end())
             vqueue = it->second;
@@ -260,7 +260,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
             return false;
         }
 
-        if (vqueue != NULL) {
+        if (vqueue != nullptr) {
             vqueue->pushBack(vpkt);
 
             EV << "LteMacBuffers : Using old buffer on node: " <<

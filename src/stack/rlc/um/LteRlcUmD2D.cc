@@ -21,7 +21,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId = 0;
     LogicalCid lcid = 0;
-    if (lteInfo != NULL) {
+    if (lteInfo != nullptr) {
         nodeId = ctrlInfoToUeId(lteInfo);
         lcid = lteInfo->getLcid();
     }

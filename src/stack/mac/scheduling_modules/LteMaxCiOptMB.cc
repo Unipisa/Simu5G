@@ -510,7 +510,7 @@ void LteMaxCiOptMB::launchProblem()
 {
     std::stringstream cmd;
     FILE *fp = popen("cplex -c", "w");
-    if (fp != NULL) {
+    if (fp != nullptr) {
         cmd << "\"set logfile *\" \"read " << problemFile_ << " lp\" \"optimize\" ";
         cmd << "\"write " << solutionFile_ << "\" \"y\" ";
         cmd << " > /dev/null" << endl;

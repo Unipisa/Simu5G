@@ -33,8 +33,8 @@ using namespace std;
 Define_Module(UEWarningAlertApp);
 
 UEWarningAlertApp::UEWarningAlertApp() {
-    selfStart_ = NULL;
-    selfStop_ = NULL;
+    selfStart_ = nullptr;
+    selfStop_ = nullptr;
 }
 
 UEWarningAlertApp::~UEWarningAlertApp() {
@@ -129,7 +129,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
 
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UEWarningAlertApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
 
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMEWarningAlertApp(msg);
@@ -143,7 +143,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         // From MEC application
         else {
             auto mePkt = packet->peekAtFront<WarningAppPacket>();
-            if (mePkt == 0)
+            if (mePkt == nullptr)
                 throw cRuntimeError("UEWarningAlertApp::handleMessage - \tFATAL! Error when casting to WarningAppPacket");
 
             if (!strcmp(mePkt->getType(), WARNING_ALERT)) handleInfoMEWarningAlertApp(msg);
