@@ -364,9 +364,7 @@ void MultihopD2D::markAsReceived(uint32_t msgId)
 
 bool MultihopD2D::isAlreadyReceived(uint32_t msgId)
 {
-    if (relayedMsgMap_.find(msgId) == relayedMsgMap_.end())
-        return false;
-    return true;
+    return relayedMsgMap_.find(msgId) != relayedMsgMap_.end();
 }
 
 void MultihopD2D::markAsRelayed(uint32_t msgId)
@@ -378,20 +376,14 @@ bool MultihopD2D::isAlreadyRelayed(uint32_t msgId)
 {
     if (relayedMsgMap_.find(msgId) == relayedMsgMap_.end()) // the message has not been received
         return false;
-    if (!relayedMsgMap_[msgId])                                    // the message has been received but not relayed yet
-        return false;
-
-    return true;
+    return relayedMsgMap_[msgId];                                    // the message has been received but not relayed yet
 }
 
 bool MultihopD2D::isWithinBroadcastArea(Coord srcCoord, double maxRadius)
 {
     Coord myCoord = ltePhy_->getCoord();
     double dist = myCoord.distance(srcCoord);
-    if (dist < maxRadius)
-        return true;
-
-    return false;
+    return dist < maxRadius;
 }
 
 void MultihopD2D::finish()

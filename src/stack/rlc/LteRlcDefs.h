@@ -104,10 +104,7 @@ struct RlcFragDesc
     bool addFragment()
     {
         fragCounter_++;
-        if (fragCounter_ >= totalFragments_)
-            return true;
-        else
-            return false;
+        return fragCounter_ >= totalFragments_;
     }
 
 };

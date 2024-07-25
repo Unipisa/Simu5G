@@ -422,9 +422,7 @@ void Binder::registerMecHostUpfAddress(const inet::L3Address& mecHostAddress, co
 
 bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
 {
-    if (mecHostAddress_.find(mecHostAddress) == mecHostAddress_.end())
-        return false;
-    return true;
+    return mecHostAddress_.find(mecHostAddress) != mecHostAddress_.end();
 }
 
 const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostAddress)
@@ -739,9 +737,7 @@ void Binder::addUeHandoverTriggered(MacNodeId nodeId)
 
 bool Binder::hasUeHandoverTriggered(MacNodeId nodeId)
 {
-    if (ueHandoverTriggered_.find(nodeId) == ueHandoverTriggered_.end())
-        return false;
-    return true;
+    return ueHandoverTriggered_.find(nodeId) != ueHandoverTriggered_.end();
 }
 
 void Binder::removeUeHandoverTriggered(MacNodeId nodeId)

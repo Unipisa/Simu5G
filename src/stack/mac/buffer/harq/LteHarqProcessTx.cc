@@ -82,12 +82,7 @@ bool LteHarqProcessTx::pduFeedback(HarqAcknowledgment fb, Codeword cw)
     }
 
     // return true if the process has become empty
-    if (numEmptyUnits_ == numHarqUnits_)
-        reset = true;
-    else
-        reset = false;
-
-    return reset;
+    return numEmptyUnits_ == numHarqUnits_;
 }
 
 bool LteHarqProcessTx::selfNack(Codeword cw)
@@ -99,12 +94,7 @@ bool LteHarqProcessTx::selfNack(Codeword cw)
     }
 
     // return true if the process has become empty
-    if (numEmptyUnits_ == numHarqUnits_)
-        reset = true;
-    else
-        reset = false;
-
-    return reset;
+    return numEmptyUnits_ == numHarqUnits_;
 }
 
 bool LteHarqProcessTx::hasReadyUnits()

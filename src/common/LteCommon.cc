@@ -349,16 +349,12 @@ RanNodeType getNodeTypeById(MacNodeId id)
 
 bool isBaseStation(CoreNodeType nodeType)
 {
-    if (nodeType == ENB || nodeType == GNB)
-        return true;
-    return false;
+    return nodeType == ENB || nodeType == GNB;
 }
 
 bool isNrUe(MacNodeId id)
 {
-    if (getNodeTypeById(id) == UE && id >= NR_UE_MIN_ID)
-        return true;
-    return false;
+    return getNodeTypeById(id) == UE && id >= NR_UE_MIN_ID;
 }
 
 const std::string planeToA(Plane p)
