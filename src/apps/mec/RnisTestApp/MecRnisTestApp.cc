@@ -93,8 +93,8 @@ void MecRnisTestApp::handleUeMessage(omnetpp::cMessage *msg)
             throw cRuntimeError("MecRnisTestApp::handleUeMessage - RnisTestAppStartPacket is null");
 
         if (par("logger").boolValue()) {
-            ofstream myfile;
-            myfile.open("example.txt", ios::app);
+            std::ofstream myfile;
+            myfile.open("example.txt", std::ios::app);
             if (myfile.is_open()) {
                 myfile << "[" << NOW << "] MecRnisTestApp - Received START message from UE, connecting to the RNIS\n";
                 myfile.close();
@@ -129,8 +129,8 @@ void MecRnisTestApp::handleUeMessage(omnetpp::cMessage *msg)
         EV << "MecRnisTestApp::handleUeMessage - an ACK has been sent to the UE" << endl;
 
         if (par("logger").boolValue()) {
-            ofstream myfile;
-            myfile.open("example.txt", ios::app);
+            std::ofstream myfile;
+            myfile.open("example.txt", std::ios::app);
             if (myfile.is_open()) {
                 myfile << "[" << NOW << "] MecRnisTestApp - Received STOP message from UE, stop querying the RNIS\n";
                 myfile.close();
@@ -167,8 +167,8 @@ void MecRnisTestApp::sendQuery(int cellId, std::string ueIpv4Address)
     uri += ("?" + query_string);
 
     if (par("logger").boolValue()) {
-        ofstream myfile;
-        myfile.open("example.txt", ios::app);
+        std::ofstream myfile;
+        myfile.open("example.txt", std::ios::app);
         if (myfile.is_open()) {
             myfile << "[" << NOW << "] MecRnisTestApp - Sent GET layer2_meas query to the Radio Network Information Service \n";
             myfile.close();

@@ -123,8 +123,8 @@ void MECWarningAlertApp::handleUeMessage(omnetpp::cMessage *msg)
         radius = warnPk->getRadius();
 
         if (par("logger").boolValue()) {
-            ofstream myfile;
-            myfile.open("example.txt", ios::app);
+            std::ofstream myfile;
+            myfile.open("example.txt", std::ios::app);
             if (myfile.is_open()) {
                 myfile << "[" << NOW << "] MEWarningAlertApp - Received message from UE, connecting to the Location Service\n";
                 myfile.close();
@@ -185,8 +185,8 @@ void MECWarningAlertApp::sendSubscription()
     std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
 
     if (par("logger").boolValue()) {
-        ofstream myfile;
-        myfile.open("example.txt", ios::app);
+        std::ofstream myfile;
+        myfile.open("example.txt", std::ios::app);
         if (myfile.is_open()) {
             myfile << "[" << NOW << "] MEWarningAlertApp - Sent POST circleNotificationSubscription the Location Service \n";
             myfile.close();

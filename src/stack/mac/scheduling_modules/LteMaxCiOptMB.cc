@@ -449,8 +449,8 @@ void LteMaxCiOptMB::readSolution()
     std::string line;
     size_t pos;
 
-    string nameString;
-    string ue, band, value;
+    std::string nameString;
+    std::string ue, band, value;
     BandLimit bandLimit;
 
     // open the solution file
@@ -467,7 +467,7 @@ void LteMaxCiOptMB::readSolution()
 
         // find the next line containing one x variable
         pos = line.find("me=\"s");
-        if (pos == string::npos)
+        if (pos == std::string::npos)
             continue;
 
         // read UE id and Band ID
@@ -484,7 +484,7 @@ void LteMaxCiOptMB::readSolution()
 
         // fill the bandLimit and usableBand structures
 //        cout  << NOW << " LteMaxCiOptMB::readSolution - Ue[" << ue<<"] - band[" << band<<"] - value[" << value << "]" << endl;
-        limit = (value.find('1') != string::npos) ? -1 : -2;
+        limit = (value.find('1') != std::string::npos) ? -1 : -2;
         bandLimit.limit_.push_back(limit);
         bandLimit.band_ = bandId;
         schedulingDecision_[ueId].push_back(bandLimit);
