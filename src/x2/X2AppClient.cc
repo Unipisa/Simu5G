@@ -72,10 +72,7 @@ void X2AppClient::socketDataArrived(SctpSocket *, Packet *msg, bool)
     }
     else {
         EV << "X2AppClient::socketDataArrived - No encapsulated message. Discard." << endl;
-
         throw cRuntimeError("X2AppClient::socketDataArrived: No encapsulated message.");
-
-        delete msg;
     }
 }
 
