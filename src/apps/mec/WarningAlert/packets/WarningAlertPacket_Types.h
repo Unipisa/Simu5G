@@ -12,15 +12,15 @@
 #ifndef APPS_MEC_WARNINGALERT_PACKETS_WARNINGALERTPACKET_TYPES_H_
 #define APPS_MEC_WARNINGALERT_PACKETS_WARNINGALERTPACKET_TYPES_H_
 
-#define START_WARNING    "StartWarning"
-#define START_ACK        "StartAck"
-#define START_NACK       "StartNack"
+constexpr const char* START_WARNING = "StartWarning";
+constexpr const char* START_ACK = "StartAck";
+constexpr const char* START_NACK = "StartNack";
 
-#define STOP_WARNING     "StoptWarning"
-#define STOP_ACK         "StopAck"
-#define STOP_NACK        "StopNack"
+constexpr const char* STOP_WARNING = "StoptWarning";
+constexpr const char* STOP_ACK = "StopAck";
+constexpr const char* STOP_NACK = "StopNack";
 
-#define WARNING_ALERT    "WarningAlert"
+constexpr const char* WARNING_ALERT = "WarningAlert";
 
 #endif /* APPS_MEC_WARNINGALERT_PACKETS_WARNINGALERTPACKET_TYPES_H_ */
 

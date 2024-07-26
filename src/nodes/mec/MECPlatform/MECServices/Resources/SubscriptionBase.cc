@@ -55,7 +55,7 @@ bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
         return false;
     }
 
-    if (std::string(jsonBody["callbackReference"]).find('/') == -1) { //bad uri
+    if (std::string(jsonBody["callbackReference"]).find('/') == std::string::npos) { //bad uri
         Http::send400Response(socket_); // must be ipv4
         return false;
     }

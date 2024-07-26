@@ -40,10 +40,10 @@ TrafficLightController::~TrafficLightController() {
         if (getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) != -1)
             getSimulation()->getSystemModule()->getCanvas()->removeFigure(rect_);
 
-        delete (line_);
-        delete (rect_);
+        delete line_;
+        delete rect_;
     }
-};
+}
 
 void TrafficLightController::initialize(int stage)
 {

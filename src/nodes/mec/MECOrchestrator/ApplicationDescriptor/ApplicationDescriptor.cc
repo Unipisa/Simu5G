@@ -82,7 +82,7 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     }
     else {
         isEmulated = false;
-        externalAddress = std::string();
+        externalAddress.clear();
         externalPort = 0;
     }
 

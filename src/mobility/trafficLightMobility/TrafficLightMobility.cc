@@ -179,7 +179,7 @@ void TrafficLightMobility::getTrafficLights()
 double TrafficLightMobility::getOrientationAngleDegree()
 {
     double angleRad = lastOrientation.getRotationAngle(); // in rad
-    double angleDeg = std::round(angleRad * (double)180 / M_PI);
+    double angleDeg = std::round(angleRad * 180 / M_PI);
     auto rotC = lastOrientation.getRotationAxis(); // suppose the car moves in xy plane
     int rot = 0;
     if (rotC == inet::Coord::NIL)

@@ -31,7 +31,7 @@ void NRMacGnb::initialize(int stage)
         /* Create and initialize NR MAC Uplink scheduler */
         if (enbSchedulerUl_ == nullptr) {
             enbSchedulerUl_ = new NRSchedulerGnbUl();
-            (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
+            enbSchedulerUl_->resourceBlocks() = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this, binder_);
         }
     }
