@@ -34,7 +34,7 @@ Define_Module(MecRnisTestApp);
 using namespace inet;
 using namespace omnetpp;
 
-MecRnisTestApp::MecRnisTestApp(): MecAppBase()
+MecRnisTestApp::MecRnisTestApp() : MecAppBase()
 {
 }
 

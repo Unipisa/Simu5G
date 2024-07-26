@@ -740,7 +740,7 @@ void LteMacUeD2D::handleSelfMessage()
                 bool ready = currHarq->getProcess(currentHarq_)->hasReadyUnits();
                 CwList cwListRetx = currHarq->getProcess(currentHarq_)->readyUnitsIds();
 
-                EV << "\t [process=" << (unsigned int)currentHarq_ << "] , [retx=" << ((ready) ? "true" : "false")
+                EV << "\t [process=" << (unsigned int)currentHarq_ << "] , [retx=" << (ready ? "true" : "false")
                    << "] , [n=" << cwListRetx.size() << "]" << endl;
 
                 // check if one 'ready' unit has the same direction of the grant

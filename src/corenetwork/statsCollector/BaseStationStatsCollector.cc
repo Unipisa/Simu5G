@@ -438,7 +438,7 @@ const mec::Ecgi& BaseStationStatsCollector::getEcgi() const
     return ecgi_;
 }
 
-MacCellId BaseStationStatsCollector::getCellId()const
+MacCellId BaseStationStatsCollector::getCellId() const
 {
     return cellInfo_->getMacCellId();
 }

@@ -55,7 +55,7 @@ bool LteRlcAmPdu::isFirst() const
 
 bool LteRlcAmPdu::isMiddle() const
 {
-    return (!isFirst()) && (!isLast());
+    return !isFirst() && !isLast();
 }
 
 bool LteRlcAmPdu::isLast() const

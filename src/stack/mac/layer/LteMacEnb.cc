@@ -1091,7 +1091,6 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             }
         }
 
-//
         // check the presence of um
         LteRlcUm *rlcUm = inet::findModuleFromPar<LteRlcUm>(par("rlcUmModule"), this);
         if (rlcUm != nullptr) {

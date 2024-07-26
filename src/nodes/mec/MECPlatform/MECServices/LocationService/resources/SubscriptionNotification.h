@@ -45,11 +45,9 @@ class SubscriptioNotification : public AttributeBase
     bool isFinalNotification;
     bool isValidIsFinalNotification;
 
-    std::vector<std::string> links;
-    //check done by looking at empty() method
+    std::vector<std::string> links;  // Check done by looking at empty() method
 
-    std::vector<TerminalLocation> ues;
-    //check done by looking at empty() method
+    std::vector<TerminalLocation> ues;  // Check done by looking at empty() method
 
 };
 

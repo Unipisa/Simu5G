@@ -61,7 +61,7 @@ class CircleNotificationSubscription : public SubscriptionBase
     std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the are
 
     //callbackReference
-    std::string callbackData;// optional: YES
+    std::string callbackData; // optional: YES
     std::string notifyURL; // optional: NO
 
     std::string resourceURL;
@@ -77,7 +77,7 @@ class CircleNotificationSubscription : public SubscriptionBase
 
     double radius; // optional: NO
 
-    int trackingAccuracy; // optional: NO
+    int trackingAccuracy = 0; // optional: NO
     LocationUtils::EnteringLeavingCriteria actionCriteria;// optional: NO
 
 };

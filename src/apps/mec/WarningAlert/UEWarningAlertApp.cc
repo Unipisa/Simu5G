@@ -128,9 +128,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMEWarningAlertApp(msg);
-
             else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMEWarningAlertApp(msg);
-
             else {
                 throw cRuntimeError("UEWarningAlertApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
             }

@@ -32,8 +32,8 @@ enum LteAmType
     MRW     = 2,
     //! Move Receiver Window ACK
     MRW_ACK = 3,
-//! BITMAP
-//BITMAP = 4
+    //! BITMAP
+    //BITMAP = 4
 };
 
 /*
@@ -128,7 +128,7 @@ struct RlcWindowDesc
 
 };
 
-/*!
+ /*!
  * Move Receiver Window command descriptor
  */
 struct MrwDesc

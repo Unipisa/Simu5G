@@ -167,7 +167,7 @@ Packet *LteHarqUnitTxD2D::extractPdu()
     auto lteInfo = pdu_->getTagForUpdate<UserControlInfo>();
     lteInfo->setTxNumber(transmissions_);
     lteInfo->setNdi(transmissions_ == 1);
-    EV << "LteHarqUnitTxD2D::extractPdu - ndi set to " << ((transmissions_ == 1) ? "true" : "false") << endl;
+    EV << "LteHarqUnitTxD2D::extractPdu - ndi set to " << (transmissions_ == 1 ? "true" : "false") << endl;
 
     auto extractedPdu = pdu_->dup();
     if (lteInfo->getDirection() == D2D_MULTI) {

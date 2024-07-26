@@ -39,7 +39,6 @@ LcgScheduler& LcgScheduler::operator=(const LcgScheduler& other)
 
 LcgScheduler::~LcgScheduler()
 {
-
 }
 
 ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction grantDir)

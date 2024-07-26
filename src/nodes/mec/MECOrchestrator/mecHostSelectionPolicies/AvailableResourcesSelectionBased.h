@@ -24,7 +24,7 @@ class AvailableResourcesSelectionBased : public SelectionPolicyBase
     virtual cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
-    AvailableResourcesSelectionBased(MecOrchestrator *mecOrchestrator):SelectionPolicyBase(mecOrchestrator) {}
+    AvailableResourcesSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}
     virtual ~AvailableResourcesSelectionBased() {}
 };
 

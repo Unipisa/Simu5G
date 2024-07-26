@@ -15,7 +15,6 @@ namespace simu5g {
 
 EventNotification::EventNotification() {
     // TODO Auto-generated constructor stub
-
 }
 
 EventNotification::EventNotification(const std::string& type, const int& subId)

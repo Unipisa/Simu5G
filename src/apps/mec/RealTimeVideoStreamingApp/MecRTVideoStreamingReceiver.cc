@@ -30,7 +30,7 @@ Define_Module(MecRTVideoStreamingReceiver);
 using namespace inet;
 using namespace omnetpp;
 
-MecRTVideoStreamingReceiver::MecRTVideoStreamingReceiver(): MecAppBase()
+MecRTVideoStreamingReceiver::MecRTVideoStreamingReceiver() : MecAppBase()
 {
     currentSessionId_ = -1;
     ueAppModule_ = nullptr;

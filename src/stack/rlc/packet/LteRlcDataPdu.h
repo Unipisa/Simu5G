@@ -79,7 +79,6 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
 
     virtual ~LteRlcDataPdu()
     {
-
         // Needs to delete all contained packets
         RlcSduList::iterator sit;
         for (sit = sduList_.begin(); sit != sduList_.end(); sit++)
@@ -162,7 +161,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
         auto pkt = sduList_.front();
         sduList_.pop_front();
         size = sduSizes_.front();
-        rlcPduLength_ -= (sduSizes_.front());
+        rlcPduLength_ -= sduSizes_.front();
         sduSizes_.pop_front();
         numSdu_--;
         drop(pkt);

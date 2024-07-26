@@ -25,9 +25,9 @@ class CategoryRef : public AttributeBase
     std::string version_;
 
   public:
-    CategoryRef() {};
+    CategoryRef() {}
     CategoryRef(const std::string& href, const std::string& id, const std::string& name, const std::string& version);
-    ~CategoryRef() {};
+    ~CategoryRef() {}
     nlohmann::ordered_json toJson() const;
 };
 

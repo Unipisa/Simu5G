@@ -17,8 +17,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 LteFeedback::LteFeedback() :
-    status_(EMPTY), txMode_(SINGLE_ANTENNA_PORT0), periodicFeedback_(true), remoteAntennaId_(
-            MACRO) {
+    status_(EMPTY), txMode_(SINGLE_ANTENNA_PORT0), periodicFeedback_(true), remoteAntennaId_(MACRO) {
 }
 
 void LteFeedback::reset() {

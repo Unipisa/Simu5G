@@ -177,10 +177,10 @@ void LteDrr::notifyActiveConnection(MacCid cid)
     activeList_.find(cid, alreadyIn);
     if (!alreadyIn) {
         activeList_.insert(cid);
-        (drrMap_[cid]).active_ = true;
+        drrMap_[cid].active_ = true;
     }
 
-    (drrMap_[cid]).eligible_ = true;
+    drrMap_[cid].eligible_ = true;
 
     EV << NOW << "LteSchedulerEnb::notifyDrr active: " << drrMap_[cid].active_ << endl;
 }

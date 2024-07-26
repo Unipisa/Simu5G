@@ -61,6 +61,7 @@ class VoDUDPServer : public omnetpp::cSimpleModule
         uint32_t trec_time;
         uint32_t trec_size;
     };
+
     struct svcPacket
     {
         int tid;

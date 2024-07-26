@@ -48,9 +48,7 @@ SubscriptionBase::~SubscriptionBase() {}
 
 bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
 {
-
     if (!jsonBody.contains("callbackReference") || jsonBody["callbackReference"].is_array()) {
-
         Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
         return false;
     }

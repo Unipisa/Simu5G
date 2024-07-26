@@ -37,13 +37,9 @@ namespace simu5g {
 class LteRlcTm : public omnetpp::cSimpleModule
 {
   public:
-    LteRlcTm()
-    {
-    }
+    LteRlcTm() {}
 
-    virtual ~LteRlcTm()
-    {
-    }
+    virtual ~LteRlcTm() {}
 
   protected:
     /**
@@ -53,9 +49,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 
     virtual void initialize() override;
-    virtual void finish() override
-    {
-    }
+    virtual void finish() override {}
 
   private:
     /**

@@ -111,7 +111,7 @@ void HttpResponseMessage::setHeaderField(const std::string& key, const std::stri
     headerFields_[key] = value;
 }
 
-std::string HttpResponseMessage::getHeaderField(const std::string& key)const
+std::string HttpResponseMessage::getHeaderField(const std::string& key) const
 {
     auto it = headerFields_.find(key);
     if (it == headerFields_.end())

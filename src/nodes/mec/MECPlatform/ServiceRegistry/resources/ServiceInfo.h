@@ -34,7 +34,7 @@ class ServiceInfo : public AttributeBase
 
     nlohmann::ordered_json toJson() const;
 
-    const std::string& getName()const { return serName_; }
+    const std::string& getName() const { return serName_; }
     const std::string& getInstanceId() const { return serInstanceId_; }
     const std::string& getMecHost() const { return mecHost_; }
 

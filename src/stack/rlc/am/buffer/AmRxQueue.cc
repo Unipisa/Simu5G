@@ -481,9 +481,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
                             bComplete = true;
                             break;
                         }
-                        else if (tempPdu->isLast()
-                                 || tempPdu->isWhole())
-                        {
+                        else if (tempPdu->isLast() || tempPdu->isWhole()) {
                             auto auxPkt = check_and_cast<Packet *>(pduBuffer_.get(i + 1));
                             auto aux = auxPkt->peekAtFront<LteRlcAmPdu>();
                             throw cRuntimeError("AmRxQueue::checkCompleteSdu(): backward search: sequence error, found last or whole PDU [%d] preceding a middle one [%d], belonging to  SDU [%d], current SDU is [%d]", tempPdu->getSnoFragment(),

@@ -33,10 +33,9 @@ Define_Module(MECWarningAlertApp);
 using namespace inet;
 using namespace omnetpp;
 
-MECWarningAlertApp::MECWarningAlertApp(): MecAppBase()
+MECWarningAlertApp::MECWarningAlertApp() : MecAppBase()
 {
     circle = nullptr; // circle danger zone
-
 }
 
 MECWarningAlertApp::~MECWarningAlertApp()
@@ -96,7 +95,6 @@ void MECWarningAlertApp::finish() {
     EV << "MECWarningAlertApp::finish()" << endl;
 
     if (gate("socketOut")->isConnected()) {
-
     }
 }
 
@@ -150,15 +148,15 @@ void MECWarningAlertApp::modifySubscription()
                        "\"notifyURL\":\"example.com/notification/1234\"},"
                        "\"checkImmediate\": \"false\","
                        "\"address\": \"" + ueAppAddress.str() + "\","
-                                                                "\"clientCorrelator\": \"null\","
-                                                                "\"enteringLeavingCriteria\": \"Leaving\","
-                                                                "\"frequency\": 5,"
-                                                                "\"radius\": " + std::to_string(radius) + ","
-                                                                                                          "\"trackingAccuracy\": 10,"
-                                                                                                          "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
-                                                                                                                                                               "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
-                                                                                                                                                                                                                     "}"
-                                                                                                                                                                                                                     "}\r\n";
+                       "\"clientCorrelator\": \"null\","
+                       "\"enteringLeavingCriteria\": \"Leaving\","
+                       "\"frequency\": 5,"
+                       "\"radius\": " + std::to_string(radius) + ","
+                       "\"trackingAccuracy\": 10,"
+                       "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
+                       "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
+                       "}"
+                       "}\r\n";
     std::string uri = "/example/location/v2/subscriptions/area/circle/" + subId;
     std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
     Http::sendPutRequest(serviceSocket_, body.c_str(), host.c_str(), uri.c_str());
@@ -172,15 +170,15 @@ void MECWarningAlertApp::sendSubscription()
                        "\"notifyURL\":\"example.com/notification/1234\"},"
                        "\"checkImmediate\": \"false\","
                        "\"address\": \"" + ueAppAddress.str() + "\","
-                                                                "\"clientCorrelator\": \"null\","
-                                                                "\"enteringLeavingCriteria\": \"Entering\","
-                                                                "\"frequency\": 5,"
-                                                                "\"radius\": " + std::to_string(radius) + ","
-                                                                                                          "\"trackingAccuracy\": 10,"
-                                                                                                          "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
-                                                                                                                                                               "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
-                                                                                                                                                                                                                     "}"
-                                                                                                                                                                                                                     "}\r\n";
+                       "\"clientCorrelator\": \"null\","
+                       "\"enteringLeavingCriteria\": \"Entering\","
+                       "\"frequency\": 5,"
+                       "\"radius\": " + std::to_string(radius) + ","
+                       "\"trackingAccuracy\": 10,"
+                       "\"latitude\": " + std::to_string(centerPositionX) + ","           // as x
+                       "\"longitude\": " + std::to_string(centerPositionY) + ""        // as y
+                       "}"
+                       "}\r\n";
     std::string uri = "/example/location/v2/subscriptions/area/circle";
     std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
 

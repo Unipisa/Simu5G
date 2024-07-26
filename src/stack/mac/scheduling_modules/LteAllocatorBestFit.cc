@@ -116,7 +116,8 @@ void LteAllocatorBestFit::prepareSchedule()
         // Get the last band in the Set (a set is ordered so the last band is the latest occupied)
         firstUnallocatedBand = *alreadyAllocatedBands.rbegin();
     }
-    else firstUnallocatedBand = 0;
+    else
+        firstUnallocatedBand = 0;
 
     // Start the allocation of IM flows from the end of the frame
     int firstUnallocatedBandIM = eNbScheduler_->getResourceBlocks() - 1;
@@ -166,7 +167,8 @@ void LteAllocatorBestFit::prepareSchedule()
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
-            if (info.readCqiVector()[i] == 0) cqiNull = true;
+            if (info.readCqiVector()[i] == 0)
+                cqiNull = true;
         }
         if (cqiNull) {
             EV << NOW << "Cqi null, direction: " << dirToA(dir) << endl;
@@ -390,7 +392,8 @@ void LteAllocatorBestFit::prepareSchedule()
 
                 // Book the bands that must be allocated
                 bookedBands.push_back(band);
-                if (blocks == req_RBs) break; // All the blocks and bytes have been allocated
+                if (blocks == req_RBs)
+                    break; // All the blocks and bytes have been allocated
             }
         }
         else {
@@ -403,7 +406,8 @@ void LteAllocatorBestFit::prepareSchedule()
 
                 // Book the bands that must be allocated
                 bookedBands.push_back(band);
-                if (blocks == req_RBs) break; // All the blocks and bytes have been allocated
+                if (blocks == req_RBs)
+                    break; // All the blocks and bytes have been allocated
             }
         }
 

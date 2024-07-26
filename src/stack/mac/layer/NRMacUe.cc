@@ -152,7 +152,7 @@ void NRMacUe::handleSelfMessage()
                     bool ready = currProc->hasReadyUnits();
                     CwList cwListRetx = currProc->readyUnitsIds();
 
-                    EV << "\t [process=" << proc << "] , [retx=" << ((ready) ? "true" : "false") << "] , [n=" << cwListRetx.size() << "]" << endl;
+                    EV << "\t [process=" << proc << "] , [retx=" << (ready ? "true" : "false") << "] , [n=" << cwListRetx.size() << "]" << endl;
 
                     // check if one 'ready' unit has the same direction of the grant
                     bool checkDir = false;

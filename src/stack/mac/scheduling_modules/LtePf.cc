@@ -112,7 +112,7 @@ void LtePf::prepareSchedule()
     while (!score.empty()) {
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
-        MacCid cid = current.x_;// The CID
+        MacCid cid = current.x_; // The CID
 
         EV << NOW << "LtePf::execSchedule @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
         EV << NOW << "LtePf::execSchedule CID: " << cid;
@@ -176,6 +176,7 @@ void LtePf::commitSchedule()
             shortTermRate = 0.0;
 
         EV << NOW << " LtePf::storeSchedule Short Term Rate " << shortTermRate << endl;
+
         // Updating the long term rate
         double& longTermRate = pfRate_[cid];
         longTermRate = (1.0 - pfAlpha_) * longTermRate + pfAlpha_ * shortTermRate;

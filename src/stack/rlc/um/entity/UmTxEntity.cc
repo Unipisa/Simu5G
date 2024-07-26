@@ -52,11 +52,9 @@ void UmTxEntity::initialize()
         }
     }
     else if (mac->getNodeType() == UE) {
-        {
-            if (packetFlowManager_) {
-                EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
-                ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
-            }
+        if (packetFlowManager_) {
+            EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
+            ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
         }
     }
     burstStatus_ = INACTIVE;

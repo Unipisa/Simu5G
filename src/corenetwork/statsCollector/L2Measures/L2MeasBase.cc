@@ -13,7 +13,7 @@
 
 namespace simu5g {
 
-L2MeasBase::L2MeasBase() {};
+L2MeasBase::L2MeasBase() {}
 
 void L2MeasBase::init(std::string name, int period, bool movingAverage)
 {

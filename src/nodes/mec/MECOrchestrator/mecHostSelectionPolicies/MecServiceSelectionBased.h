@@ -24,7 +24,7 @@ class MecServiceSelectionBased : public SelectionPolicyBase
     virtual cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
-    MecServiceSelectionBased(MecOrchestrator *mecOrchestrator):SelectionPolicyBase(mecOrchestrator) {}
+    MecServiceSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}
     virtual ~MecServiceSelectionBased() {}
 };
 

@@ -762,7 +762,6 @@ unsigned int LteAmc::computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int bl
     EV << NOW << " LteAmc::computeBytesOnNRbs_MB Available space: " << bytes << "\n";
 
     return bytes;
-
 }
 
 unsigned int LteAmc::computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)

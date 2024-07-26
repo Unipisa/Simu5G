@@ -56,8 +56,8 @@ void WarningAlertPacketSerializer::serialize(MemoryOutputStream& stream, const P
     }
     else if (ss == STOP_WARNING) {
         auto stopPk = staticPtrCast<const WarningStopPacket>(chunk);
-        stream.writeByte((uint8_t)1);// CODE
-        stream.writeByte((uint8_t)0);// Length
+        stream.writeByte((uint8_t)1); // CODE
+        stream.writeByte((uint8_t)0); // Length
 
         int64_t remainders = B(stopPk->getChunkLength() - (stream.getLength() - startPosition)).get();
         if (remainders < 0)
@@ -175,7 +175,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             break;
         }
 
-        case 3:// ACK START
+        case 3: // ACK START
         {
             auto ackStartPacket = makeShared<WarningAppPacket>();
             ackStartPacket->setType(START_ACK);
@@ -187,7 +187,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             return ackStartPacket;
 
         }
-        case 4:// NACK START
+        case 4: // NACK START
         {
             auto nackStartPacket = makeShared<WarningAppPacket>();
             nackStartPacket->setType(START_NACK);

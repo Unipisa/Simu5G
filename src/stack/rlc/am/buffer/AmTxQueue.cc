@@ -391,9 +391,7 @@ void AmTxQueue::moveTxWindow(const int seqNum)
             throw cRuntimeError("AmTxQueue::moveTxWindow(): encountered empty PDU at location %d, shift position %d", i, pos);
     }
 
-    for (int i = pos;
-         i < ((txWindowDesc_.seqNum_ - txWindowDesc_.firstSeqNum_)); ++i)
-    {
+    for (int i = pos; i < (txWindowDesc_.seqNum_ - txWindowDesc_.firstSeqNum_); ++i) {
         if (pduRtxQueue_.get(i) != nullptr) {
             auto pdu = check_and_cast<Packet *>(pduRtxQueue_.remove(i));
             pduRtxQueue_.addAt(i - pos, pdu);
@@ -427,12 +425,9 @@ void AmTxQueue::moveTxWindow(const int seqNum)
     }
 
     // cleanup
-    for (int i = (txWindowDesc_.seqNum_ - txWindowDesc_.firstSeqNum_);
-         i < txWindowDesc_.windowSize_; ++i)
-    {
+    for (int i = (txWindowDesc_.seqNum_ - txWindowDesc_.firstSeqNum_); i < txWindowDesc_.windowSize_; ++i) {
         if (pduRtxQueue_.get(i) != nullptr)
-            throw cRuntimeError("AmTxQueue::moveTxWindow(): encountered busy PDU at location %d, shift position %d", i,
-                    pos);
+            throw cRuntimeError("AmTxQueue::moveTxWindow(): encountered busy PDU at location %d, shift position %d", i, pos);
 
         EV << NOW << " AmTxQueue::moveTxWindow  empty location [" << i
            << "] marked as received [" << (received_.at(i))
@@ -635,11 +630,8 @@ void AmTxQueue::recvCumulativeAck(const int seqNum)
         // Ignore the cumulative ACK, is out of the transmitter window (the MRW command has not yet been received by AM rx entity)
         return;
     }
-    else if ((unsigned int)seqNum
-             > (txWindowDesc_.firstSeqNum_ + txWindowDesc_.windowSize_))
-    {
-        throw cRuntimeError("AmTxQueue::recvCumulativeAck(): SN %d exceeds window size %d",
-                seqNum, txWindowDesc_.windowSize_);
+    else if ((unsigned int)seqNum > (txWindowDesc_.firstSeqNum_ + txWindowDesc_.windowSize_)) {
+        throw cRuntimeError("AmTxQueue::recvCumulativeAck(): SN %d exceeds window size %d", seqNum, txWindowDesc_.windowSize_);
     }
     else {
         // The ACK is inside the window
@@ -707,9 +699,7 @@ void AmTxQueue::pduTimerHandle(const int sn)
 
     // Some debug checks
     if ((index < 0) || (index >= txWindowDesc_.windowSize_))
-        throw cRuntimeError(
-                "AmTxQueue::pduTimerHandle(): The PDU [%d] for which timer elapsed is out of the window : index [%d]", sn,
-                index);
+        throw cRuntimeError("AmTxQueue::pduTimerHandle(): The PDU [%d] for which timer elapsed is out of the window : index [%d]", sn, index);
 
     if (pduRtxQueue_.get(index) == nullptr)
         throw cRuntimeError("AmTxQueue::pduTimerHandle(): PDU %d not found", index);

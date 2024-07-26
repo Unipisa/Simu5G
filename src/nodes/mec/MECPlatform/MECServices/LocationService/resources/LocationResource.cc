@@ -57,7 +57,6 @@ void LocationResource::addBinder(Binder *binder)
 void LocationResource::setBaseUri(const std::string& baseUri)
 {
     baseUri_ = baseUri;
-
 }
 
 LocationResource::~LocationResource() {}

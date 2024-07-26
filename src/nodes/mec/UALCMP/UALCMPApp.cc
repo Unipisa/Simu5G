@@ -133,7 +133,7 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
 
             jsonBody["contextId"] = std::to_string(ack->getContextId());
             jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
-            jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"] = ack->getAppInstanceUri();// add the end point
+            jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"] = ack->getAppInstanceUri(); // add the end point
 //            jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
             std::stringstream uri;
             uri << baseUriQueries_ << "/app_contexts/" << ack->getContextId();
@@ -386,7 +386,8 @@ void UALCMPApp::finish()
     return;
 }
 
-UALCMPApp::~UALCMPApp() {
+UALCMPApp::~UALCMPApp()
+{
 }
 
 } //namespace

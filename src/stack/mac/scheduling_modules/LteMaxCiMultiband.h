@@ -24,7 +24,7 @@ class LteMaxCiMultiband : public virtual LteScheduler
 
   public:
     LteMaxCiMultiband(Binder *binder) : LteScheduler(binder) {}
-    virtual ~LteMaxCiMultiband() {};
+    virtual ~LteMaxCiMultiband() {}
 
     virtual void prepareSchedule();
 

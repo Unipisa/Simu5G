@@ -55,7 +55,6 @@ nlohmann::ordered_json Plmn::toJson() const
     val["mnc"] = getMnc();
 
     return val;
-
 }
 
 } //namespace

@@ -58,6 +58,7 @@ class AmcPilotAuto : public AmcPilot
      * Note that the id can be either a UE or an eNodeB
      */
     void setUsableBands(MacNodeId id, UsableBands usableBands);
+    
     /*
      * returns as a parameter the subset of bands that will be used in scheduling operation.
      * e.g. limit the set of bands that will be considered in the "scheduleGrant" function

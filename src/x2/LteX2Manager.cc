@@ -41,9 +41,7 @@ void LteX2Manager::initialize(int stage)
         for (int i = 0; i < interfaceTable->getNumInterfaces(); i++) {
             // look for x2ppp interfaces in the interface table
             NetworkInterface *NetworkInterface = interfaceTable->getInterface(i);
-
             const char *ifName = NetworkInterface->getInterfaceName();
-
             if (strstr(ifName, "x2ppp") != nullptr) {
                 const Ipv4Address addr = NetworkInterface->getProtocolData<Ipv4InterfaceData>()->getIPAddress();
                 binder_->setX2NodeId(addr, nodeId_);

@@ -8,7 +8,6 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-
 #include "stack/mac/layer/NRMacGnb.h"
 #include "stack/mac/scheduler/NRSchedulerGnbUl.h"
 
@@ -16,7 +15,7 @@ namespace simu5g {
 
 Define_Module(NRMacGnb);
 
-NRMacGnb::NRMacGnb() :  LteMacEnbD2D()
+NRMacGnb::NRMacGnb() : LteMacEnbD2D()
 {
     nodeType_ = GNODEB;
 }
