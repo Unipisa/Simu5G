@@ -28,7 +28,7 @@ class SelectionPolicyBase
     virtual cModule *findBestMecHost(const ApplicationDescriptor&) = 0;
 
   public:
-    SelectionPolicyBase(MecOrchestrator *mecOrchestrator) { mecOrchestrator_ = mecOrchestrator; }
+    SelectionPolicyBase(MecOrchestrator *mecOrchestrator) : mecOrchestrator_(mecOrchestrator) {}
     virtual ~SelectionPolicyBase() {}
 };
 

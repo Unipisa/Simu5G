@@ -223,7 +223,7 @@ void UmRxEntity::enque(cPacket *pktAux)
     }
 }
 
-void UmRxEntity::moveRxWindow(const int pos)
+void UmRxEntity::moveRxWindow(int pos)
 {
     EV << NOW << " UmRxEntity::moveRxWindow moving forth of " << pos << " locations" << endl;
 

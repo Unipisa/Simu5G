@@ -79,7 +79,7 @@ class McsTable
     }
 
     /// MCS Table re-scaling function
-    void rescale(const double scale);
+    void rescale(double scale);
 };
 
 /********************************************

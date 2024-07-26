@@ -76,7 +76,7 @@ McsTable::McsTable()
     table[28] = MCSelem(_64QAM, 26, 749.52);
 }
 
-void McsTable::rescale(const double scale)
+void McsTable::rescale(double scale)
 {
     if (scale <= 0)
         throw cRuntimeError("Bad Rescaling value: %f", scale);

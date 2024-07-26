@@ -17,7 +17,7 @@ EventNotification::EventNotification() {
     // TODO Auto-generated constructor stub
 }
 
-EventNotification::EventNotification(const std::string& type, const int& subId)
+EventNotification::EventNotification(const std::string& type, int subId)
 {
     type_ = type;
     subId_ = subId;

@@ -179,7 +179,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
     void handleBurst(BurstCheck event);
 
     // move forward the reordering window
-    void moveRxWindow(const int pos);
+    void moveRxWindow(int pos);
 
     // consider the PDU at position 'index' for reassembly
     void reassemble(unsigned int index);
