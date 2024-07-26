@@ -25,22 +25,22 @@ NRMcsTable::NRMcsTable(bool extended)
     extended_ = extended;  // make it configurable
 
     if (!extended) {
-        cqiTable[0] = CQIelem(_QPSK, 0.0),
-        cqiTable[1] = CQIelem(_QPSK, 78.0),
-        cqiTable[2] = CQIelem(_QPSK, 120.0),
-        cqiTable[3] = CQIelem(_QPSK, 193.0),
-        cqiTable[4] = CQIelem(_QPSK, 308.0),
-        cqiTable[5] = CQIelem(_QPSK, 449.0),
-        cqiTable[6] = CQIelem(_QPSK, 602.0),
-        cqiTable[7] = CQIelem(_16QAM, 378.0),
-        cqiTable[8] = CQIelem(_16QAM, 490.0),
-        cqiTable[9] = CQIelem(_16QAM, 616.0),
-        cqiTable[10] = CQIelem(_64QAM, 466.0),
-        cqiTable[11] = CQIelem(_64QAM, 567.0),
-        cqiTable[12] = CQIelem(_64QAM, 666.0),
-        cqiTable[13] = CQIelem(_64QAM, 772.0),
-        cqiTable[14] = CQIelem(_64QAM, 873.0),
-        cqiTable[15] = CQIelem(_64QAM, 948.0),
+        cqiTable[0] = CQIelem(_QPSK, 0.0);
+        cqiTable[1] = CQIelem(_QPSK, 78.0);
+        cqiTable[2] = CQIelem(_QPSK, 120.0);
+        cqiTable[3] = CQIelem(_QPSK, 193.0);
+        cqiTable[4] = CQIelem(_QPSK, 308.0);
+        cqiTable[5] = CQIelem(_QPSK, 449.0);
+        cqiTable[6] = CQIelem(_QPSK, 602.0);
+        cqiTable[7] = CQIelem(_16QAM, 378.0);
+        cqiTable[8] = CQIelem(_16QAM, 490.0);
+        cqiTable[9] = CQIelem(_16QAM, 616.0);
+        cqiTable[10] = CQIelem(_64QAM, 466.0);
+        cqiTable[11] = CQIelem(_64QAM, 567.0);
+        cqiTable[12] = CQIelem(_64QAM, 666.0);
+        cqiTable[13] = CQIelem(_64QAM, 772.0);
+        cqiTable[14] = CQIelem(_64QAM, 873.0);
+        cqiTable[15] = CQIelem(_64QAM, 948.0);
 
         table[0] = NRMCSelem(_QPSK, 120.0);
         table[1] = NRMCSelem(_QPSK, 157.0);
@@ -73,22 +73,22 @@ NRMcsTable::NRMcsTable(bool extended)
         table[28] = NRMCSelem(_64QAM, 948.0);
     }
     else {
-        cqiTable[0] = CQIelem(_QPSK, 0.0),
-        cqiTable[1] = CQIelem(_QPSK, 78.0),
-        cqiTable[2] = CQIelem(_QPSK, 193.0),
-        cqiTable[3] = CQIelem(_QPSK, 449.0),
-        cqiTable[4] = CQIelem(_16QAM, 378.0),
-        cqiTable[5] = CQIelem(_16QAM, 490.0),
-        cqiTable[6] = CQIelem(_16QAM, 616.0),
-        cqiTable[7] = CQIelem(_64QAM, 466.0),
-        cqiTable[8] = CQIelem(_64QAM, 567.0),
-        cqiTable[9] = CQIelem(_64QAM, 666.0),
-        cqiTable[10] = CQIelem(_64QAM, 772.0),
-        cqiTable[11] = CQIelem(_64QAM, 873.0),
-        cqiTable[12] = CQIelem(_256QAM, 711.0),
-        cqiTable[13] = CQIelem(_256QAM, 797.0),
-        cqiTable[14] = CQIelem(_256QAM, 885.0),
-        cqiTable[15] = CQIelem(_256QAM, 948.0),
+        cqiTable[0] = CQIelem(_QPSK, 0.0);
+        cqiTable[1] = CQIelem(_QPSK, 78.0);
+        cqiTable[2] = CQIelem(_QPSK, 193.0);
+        cqiTable[3] = CQIelem(_QPSK, 449.0);
+        cqiTable[4] = CQIelem(_16QAM, 378.0);
+        cqiTable[5] = CQIelem(_16QAM, 490.0);
+        cqiTable[6] = CQIelem(_16QAM, 616.0);
+        cqiTable[7] = CQIelem(_64QAM, 466.0);
+        cqiTable[8] = CQIelem(_64QAM, 567.0);
+        cqiTable[9] = CQIelem(_64QAM, 666.0);
+        cqiTable[10] = CQIelem(_64QAM, 772.0);
+        cqiTable[11] = CQIelem(_64QAM, 873.0);
+        cqiTable[12] = CQIelem(_256QAM, 711.0);
+        cqiTable[13] = CQIelem(_256QAM, 797.0);
+        cqiTable[14] = CQIelem(_256QAM, 885.0);
+        cqiTable[15] = CQIelem(_256QAM, 948.0);
 
         table[0] = NRMCSelem(_QPSK, 120.0);
         table[1] = NRMCSelem(_QPSK, 193.0);

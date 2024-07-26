@@ -350,5 +350,5 @@ ScheduleList& LcgScheduler::getScheduledBytesList()
     return scheduledBytesList_;
 }
 
-} //namespace
+} //namespace simu5g
 

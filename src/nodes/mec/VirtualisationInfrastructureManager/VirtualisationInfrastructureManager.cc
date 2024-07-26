@@ -437,7 +437,7 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
         appEntry.ueAppID = ueAppID;
         appEntry.resources.ram = reqRam;
         appEntry.resources.disk = reqDisk;
-        double cpu = (double)reqCpu;
+        double cpu = reqCpu;
         appEntry.resources.cpu = cpu;
         mecAppMap.insert({ ueAppID, appEntry });
 

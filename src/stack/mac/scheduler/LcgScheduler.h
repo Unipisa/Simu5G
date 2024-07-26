@@ -118,7 +118,7 @@ class LcgScheduler
     virtual ScheduleList& getScheduledBytesList();
 };
 
-} //namespace
+} //namespace simu5g
 
 #endif
 

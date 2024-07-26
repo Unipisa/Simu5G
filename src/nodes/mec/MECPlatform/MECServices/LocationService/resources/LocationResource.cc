@@ -204,7 +204,8 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
     return LocationResource;
 }
 
-nlohmann::ordered_json LocationResource::toJson(std::vector<MacCellId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const {
+nlohmann::ordered_json LocationResource::toJson(std::vector<MacCellId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const
+{
     nlohmann::ordered_json val;
     return val;
 }

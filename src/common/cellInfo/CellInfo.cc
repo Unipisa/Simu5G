@@ -154,8 +154,8 @@ void CellInfo::updateMCSScale(double *mcs, double signalRe,
 {
     // RBsubcarriers * (TTISymbols - SignallingSymbols) - pilotREs
 
-    int rbSubcarriers = ((dir == DL) ? par("rbyDl") : par("rbyUl"));
-    int rbSymbols = ((dir == DL) ? par("rbxDl") : par("rbxUl"));
+    int rbSubcarriers = (dir == DL) ? par("rbyDl") : par("rbyUl");
+    int rbSymbols = (dir == DL) ? par("rbxDl") : par("rbxUl");
 
     rbSymbols *= 2; // slot --> RB
 

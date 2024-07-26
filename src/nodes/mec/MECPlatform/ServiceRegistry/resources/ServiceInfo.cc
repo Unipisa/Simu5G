@@ -40,8 +40,8 @@ nlohmann::ordered_json ServiceInfo::toJson() const
     val["transportInfo"] = transportInfo_.toJson();
     val["serializer"] = serializer_;
     val["scopeOfLocality"] = scopeOfLocality_;
-    val["consumedLocalOnly"] = (consumedLocalOnly_ == true) ? "TRUE" : "FALSE";
-    val["isLocal"] = (isLocal_ == true) ? "TRUE" : "FALSE";
+    val["consumedLocalOnly"] = consumedLocalOnly_ ? "TRUE" : "FALSE";
+    val["isLocal"] = isLocal_ ? "TRUE" : "FALSE";
 
     return val;
 }

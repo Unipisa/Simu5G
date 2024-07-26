@@ -328,16 +328,14 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
             // SISO and MU-MIMO supports only rank 1 transmission (1 layer)
             case SINGLE_ANTENNA_PORT0:
             case SINGLE_ANTENNA_PORT5:
-            case MULTI_USER: {
+            case MULTI_USER: 
                 res.push_back(1);
                 break;
-            }
 
             // TX Diversity uses a number of layers equal to antennaPorts
-            case TRANSMIT_DIVERSITY: {
+            case TRANSMIT_DIVERSITY: 
                 res.push_back(antennaPorts);
                 break;
-            }
 
             // Spatial MUX uses MIN(RI, antennaPorts) layers
             case OL_SPATIAL_MULTIPLEXING:
@@ -362,10 +360,9 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
                 break;
             }
 
-            default: {
+            default: 
                 res.push_back(1);
                 break;
-            }
         }
     }
     return res;

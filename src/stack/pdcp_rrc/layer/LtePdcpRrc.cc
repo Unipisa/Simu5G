@@ -233,8 +233,7 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
 
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
-    EV << "LtePdcp : Sending packet " << pkt->getName()
-       << " on port DataPort$o\n";
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o\n";
 
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
@@ -246,8 +245,7 @@ void LtePdcpRrcBase::toEutranRrcSap(cPacket *pkt)
     cPacket *upPkt = pkt->decapsulate();
     delete pkt;
 
-    EV << "LteRrc : Sending packet " << upPkt->getName()
-       << " on port EUTRAN_RRC_Sap$o\n";
+    EV << "LteRrc : Sending packet " << upPkt->getName() << " on port EUTRAN_RRC_Sap$o\n";
     send(upPkt, eutranRrcSap_[OUT_GATE]);
 }
 
@@ -333,8 +331,7 @@ void LtePdcpRrcBase::initialize(int stage)
         binder_.reference(this, "binderModule", true);
         headerCompressedSize_ = B(par("headerCompressedSize"));
         if (headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED &&
-            headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE)
-        {
+            headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE) {
             throw cRuntimeError("Size of compressed header must not be less than %" PRId64 "B.", MIN_COMPRESSED_HEADER_SIZE.get());
         }
 
@@ -457,7 +454,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
     // delete connections related to the given UE
     for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
-            (tit->second)->deleteModule();  // Delete Entity
+            tit->second->deleteModule();  // Delete Entity
             tit = txEntities_.erase(tit);       // Delete Elem
         }
         else {
@@ -466,7 +463,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
     }
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
-            (rit->second)->deleteModule();  // Delete Entity
+            rit->second->deleteModule();  // Delete Entity
             rit = rxEntities_.erase(rit);       // Delete Elem
         }
         else {
@@ -482,11 +479,11 @@ void LtePdcpRrcUe::deleteEntities(MacNodeId nodeId)
 
     // delete all connections TODO: check this (for NR dual connectivity)
     for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        (tit->second)->deleteModule();  // Delete Entity
+        tit->second->deleteModule();  // Delete Entity
         tit = txEntities_.erase(tit);       // Delete Elem
     }
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        (rit->second)->deleteModule();  // Delete Entity
+        rit->second->deleteModule();  // Delete Entity
         rit = rxEntities_.erase(rit);       // Delete Elem
     }
 }

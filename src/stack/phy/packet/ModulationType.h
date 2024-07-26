@@ -117,7 +117,7 @@ class ModulationType
                 phyRate = dataRate;
                 break;
         }
-    };
+    }
     uint32_t getPhyRate(void) const { return phyRate; }
     /**
      * \returns the data bit rate of this signal.
