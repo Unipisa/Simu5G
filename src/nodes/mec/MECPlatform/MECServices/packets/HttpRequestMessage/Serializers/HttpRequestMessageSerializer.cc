@@ -52,7 +52,6 @@ const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& st
     std::string data = stream.readString();
     applicationPacket = check_and_cast<HttpRequestMessage *>(Http::parseHeader(data));
 
-//    EV << "PR: " << applicationPacket->getPayload();
     B remainders = stream.getLength() - (stream.getPosition() - startPosition);
     ASSERT(remainders >= B(0));
     stream.readByteRepeatedly('?', B(remainders).get());

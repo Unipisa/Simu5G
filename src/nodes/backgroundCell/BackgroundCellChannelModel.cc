@@ -107,7 +107,6 @@ std::vector<double> BackgroundCellChannelModel::getSINR(MacNodeId bgUeId, inet::
     //sub cable loss
     recvPower -= cableLoss_; // (dBm-dB)=dBm
 
-//    std::cout << "BackgroundCellChannelModel::getSinr - attenuation " << attenuation << " antennaGainTx-Rx " << antennaGainTx << " " << antennaGainRx << " cableLoss " << cableLoss_ << endl;
 
     //=============== ANGULAR ATTENUATION =================
     if (dir == DL && bgScheduler->getTxDirection() == ANISOTROPIC) {
@@ -774,11 +773,6 @@ double BackgroundCellChannelModel::jakesFading(MacNodeId nodeId, double speed, u
         // Convert to cartesian form and aggregate {Re, Im} over all fading paths.
         re_h = re_h + attenuation * cos(phi);
         im_h = im_h - attenuation * sin(phi);
-
-        //        EV << "ID=" << nodeId << " - t[" << t << "] - dopplerShift[" << doppler_shift << "] - phiD[" <<
-        //                phi_d << "] - phiI[" << phi_i << "] - phi[" << phi << "] - attenuation[" << attenuation << "] - f["
-        //                << f << "] - Band[" << band << "] - cos(phi)["
-        //                << cos(phi) << "]" << endl;
     }
 
     // Output: |H_f|^2 = absolute channel impulse response due to fading.

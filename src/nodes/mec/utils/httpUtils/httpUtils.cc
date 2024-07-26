@@ -366,12 +366,9 @@ bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messag
         temp = packet;
         packet = *storedData + temp;
         storedData->clear();
-        //std::cout << "MecAppBase::parseReceivedMsgbuffered data dopo " << packet << std::endl;
-
     }
 
     while ((pos = packet.find(delimiter)) != std::string::npos) {
-        //std::cout << "MecAppBase::parseReceivedMsg" << std::endl;
         header = packet.substr(0, pos);
         packet.erase(0, pos + delimiter.length()); //remove header
         //            HttpBaseMessage* newHttpMessage = Http::parseHeader(header);
@@ -380,14 +377,12 @@ bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messag
         Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
         switch (res) {
             case (Http::COMPLETE_NO_DATA):
-                // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 (*currentHttpMessage)->setSockId(socketId);
                 messageQueue.insert(*currentHttpMessage);
                 completeMsg = true;
                 *currentHttpMessage = nullptr;
                 return completeMsg;
             case (Http::COMPLETE_DATA):
-                // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 (*currentHttpMessage)->setSockId(socketId);
                 messageQueue.insert(*currentHttpMessage);
                 completeMsg = true;
@@ -406,10 +401,7 @@ bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messag
      * should be saved and aggregated with the subsequent fragmented
      */
     if (packet.length() != 0) {
-        //std::cout << "MecAppBase::parseReceivedMsg packet.length() " << packet << std::endl;
         *storedData = packet;
-        //std::cout << "##############" << std::endl;
-
         return completeMsg;
     }
     return completeMsg = true;

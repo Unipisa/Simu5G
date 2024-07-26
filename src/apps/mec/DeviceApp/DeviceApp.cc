@@ -499,7 +499,6 @@ void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bo
     std::string packet(bytes.begin(), bytes.end());
 
     delete msg;
-//    EV << packet << endl;
 
     bool res = Http::parseReceivedMsg(packet, &UALCMPMessageBuffer, &UALCMPMessage);
     if (res) {

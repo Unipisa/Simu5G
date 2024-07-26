@@ -284,9 +284,6 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
             continue; // TODO manage what to do
         inet::Coord coord = LocationUtils::getCoordinates(binder, it->first);
         inet::Coord center = inet::Coord(latitude, longitude, 0.);
-//        EV << "center: [" << latitude << ";"<<longitude << "]"<<endl;
-//        EV << "coord: [" << coord.x << ";"<<coord.y << "]"<<endl;
-//        EV << "distance: " << coord.distance(center) <<endl;
 
         if (actionCriteria == LocationUtils::Entering) {
             if (coord.distance(center) <= radius && it->second == false) {

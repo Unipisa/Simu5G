@@ -101,7 +101,6 @@ void SocketManager::peerClosed()
     //service->removeConnection(this); //sock->close(); // it crashes when mec app is deleted  with ->deleteModule FIXME
 
     // FIXME resolve this comments
-//    EV << "MeServiceBase::removeConnection"<<endl;
 //    // remove socket
 //    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
 //    sock->close();

@@ -58,7 +58,6 @@ void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsign
         }
         // else do not update. The current candidate would satisfy the requested load.
     }
-//       std::cout << " New candidate is: index[" << candidate.index << "], len["<< candidate.len << "]" << endl;
 
 }
 
@@ -284,7 +283,6 @@ void LteAllocatorBestFit::prepareSchedule()
 
         bool enableFrequencyReuse = (reuseD2D && dir == D2D) || (reuseD2DMulti && dir == D2D_MULTI);
         if (enableFrequencyReuse) { // if frequency reuse is possible for the connection's direction
-//            std::cout << NOW << " UE " << nodeId << " is D2D enabled" << endl;
             EV << NOW << " Connection " << cid << " can exploit frequency reuse, dir[" << dirToA(dir) << "]" << endl;
 
             // Check if the allocation is possible starting from the first unallocated band
@@ -316,7 +314,6 @@ void LteAllocatorBestFit::prepareSchedule()
                 }
 
                 if (jump_band) {
-//                    std::cout << NOW << " UE " << nodeId << " --- skipping band " << band << endl;
 
                     if (!newHole) {
                         // found a hole <holeIndex,holeLen>

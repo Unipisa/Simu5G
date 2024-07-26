@@ -460,10 +460,8 @@ void RTVideoStreamingSender::sendMessage() {
                     mpegPayload->setLength(B(maxDataSize));
 
                     bytesRemaining = bytesRemaining - maxDataSize;
-//                       EV << "BR: " << bytesRemaining << endl;
                 }
                 else {
-//                       EV << "else BR: " << bytesRemaining << endl;
                     mpegHeader->setPayloadLength(bytesRemaining);
                     mpegPayload->setLength(B(bytesRemaining));
                     // set marker because this is
@@ -572,7 +570,6 @@ void RTVideoStreamingSender::sendMessage() {
 
 //        RtpInnerPacket *rinpOut = new RtpInnerPacket("dataOut()");
 //        rinpOut->setDataOutPkt(packet);
-//        EV << "fragment number " <<  fragFrameStatus_.numberOfFragments - fragFrameStatus_.remainingFragments << " of frame ["<<  fragFrameStatus_.frameNumber <<"] in rtp with seq num ["<< rtpHeader->getSequenceNumber() << "]" << endl;
 
         socket.sendTo(packet, mecAppAddress_, mecAppPort_);
         scheduleAfter(1.0 / (_framesPerSecond * (fragFrameStatus_.numberOfFragments)), _nextFrame);

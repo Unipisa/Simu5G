@@ -140,7 +140,6 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
 
 //        //getting the UEApp L3Address
 //        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
-//        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppL3Address: " << ueAppAddress.str() << endl;
 
         double ram = msg->getRequiredRam();
         double disk = msg->getRequiredDisk();
@@ -185,7 +184,6 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         currentMEApps++;
 
         //Sending ACK to the UEApp
-//        EV << "VirtualisationInfrastructureManager::instantiateMEApp - calling ackMEAppPacket with  "<< ACK_START_MEAPP << endl;
 //        ackMEAppPacket(packet, ACK_START_MEAPP);
 
         //testing
@@ -223,7 +221,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
 
 //        //getting the UEApp L3Address
 //        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
-//        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppL3Address: " << ueAppAddress.str() << endl;
 
         double ram = msg->getRequiredRam();
         double disk = msg->getRequiredDisk();
@@ -293,7 +290,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
 
         mecAppPortCounter++;
 
-//        EV << "VirtualisationInfrastructureManager::instantiateMEApp - UEAppSimbolicAddress: " << sourceAddress << endl;
 
         //connecting VirtualisationInfrastructure gates to the MEApp gates
 
@@ -397,7 +393,6 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage *msg)
         EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
         //Sending ACK_STOP_MEAPP to the UEApp
-//        EV << "VirtualisationInfrastructureManager::terminateMEApp - calling ackMEAppPacket with  "<< ACK_STOP_MEAPP << endl;
 
         //before to remove the map entry!
 //        ackMEAppPacket(packet, ACK_STOP_MEAPP);

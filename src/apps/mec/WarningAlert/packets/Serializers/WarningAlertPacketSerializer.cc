@@ -120,7 +120,6 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             auto startPacket = makeShared<WarningStartPacket>();
 
             startPacket->setType(START_WARNING);
-            //std::cout << "type " << startPacket->getType()<< endl;
             B messageDataLength = B(stream.readByte());
             std::vector<uint8_t> bytes;
             stream.readBytes(bytes, messageDataLength);

@@ -151,7 +151,6 @@ void UmRxEntity::enque(cPacket *pktAux)
      */
 //    int rlcSduSize = (B(pdu->getChunkLength()) - B(RLC_HEADER_UM)).get(); // RLC pdu size - RLC header
 //    ttiBits_ += rlcSduSize; // test
-//    EV << "UmRxEntity::enque - RlcSdu of size " << rlcSduSize << " arrived" << endl;
 
     // emit statistics
     MacNodeId ueId;

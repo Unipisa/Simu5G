@@ -360,7 +360,6 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         ConnectionMap::iterator cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::insertMacPdu - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::insertMacPdu - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
             return;
         }
@@ -424,7 +423,6 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         std::map<LogicalCid, StatusDescriptor>::iterator cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << " node id "<< desc->nodeId_<< " PacketFlowManagerEnb::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::macPduArrived - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
             return;
         }
@@ -561,7 +559,6 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
         ConnectionMap::iterator cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << "node id "<< desc->nodeId_-1025 << " " << pfmType <<"::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::discardMacPdu - Logical CID %d not present. It must be initilized before", pfmType.c_str(), lcid);
             return;
         }

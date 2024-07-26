@@ -483,7 +483,6 @@ void LteMaxCiOptMB::readSolution()
         int limit;
 
         // fill the bandLimit and usableBand structures
-//        cout  << NOW << " LteMaxCiOptMB::readSolution - Ue[" << ue<<"] - band[" << band<<"] - value[" << value << "]" << endl;
         limit = (value.find('1') != std::string::npos) ? -1 : -2;
         bandLimit.limit_.push_back(limit);
         bandLimit.band_ = bandId;
@@ -522,8 +521,6 @@ void LteMaxCiOptMB::launchProblem()
 
 void LteMaxCiOptMB::applyScheduling()
 {
-//    cout << NOW << " "<< ueList_.size() << "/" << cidList_.size() << "/" << schedulingDecision_.size() << endl;
-
     if (cidList_.size() != schedulingDecision_.size()) {
         cRuntimeError("LteMaxCiOptMB::applyScheduling - number of CIDs and schedulingDecision size doesn't match. Aborting...");
     }

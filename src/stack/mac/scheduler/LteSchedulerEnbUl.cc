@@ -104,11 +104,9 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
                     EV << "Putting band " << i << endl;
                     for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
                         if (allowedBands.find(elem.band_) != allowedBands.end()) {
-//                            EV << "\t" << i << " " << "yes" << endl;
                             elem.limit_[j] = -1;
                         }
                         else {
-//                            EV << "\t" << i << " " << "no" << endl;
                             elem.limit_[j] = -2;
                         }
                     }
@@ -125,11 +123,9 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
                             continue;
 
                         if (allowedBands.find(elem.band_) != allowedBands.end()) {
-//                            EV << "\t" << i << " " << "yes" << endl;
                             elem.limit_[j] = -1;
                         }
                         else {
-//                            EV << "\t" << i << " " << "no" << endl;
                             elem.limit_[j] = -2;
                         }
                     }
@@ -485,11 +481,9 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
                 EV << "Putting band " << i << endl;
                 for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
                     if (allowedBands.find(elem.band_) != allowedBands.end()) {
-//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j] = -1;
                     }
                     else {
-//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j] = -2;
                     }
                 }
@@ -507,11 +501,9 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
                         continue;
 
                     if (allowedBands.find(elem.band_) != allowedBands.end()) {
-//                        EV << "\t" << i << " " << "yes" << endl;
                         elem.limit_[j] = -1;
                     }
                     else {
-//                        EV << "\t" << i << " " << "no" << endl;
                         elem.limit_[j] = -2;
                     }
                 }

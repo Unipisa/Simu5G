@@ -208,12 +208,8 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
 //    }
 
 //
-//    EV << "MecAppBase::socketDataArrived - payload: " << endl;
-//
-
     std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
-//    EV << packet << endl;
     HttpMessageStatus *msgStatus = (HttpMessageStatus *)socket->getUserData();
 
     bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, &(msgStatus->bufferedData), &(msgStatus->currentMessage));

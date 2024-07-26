@@ -417,8 +417,6 @@ double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double tw
     // double movement = .0;
     computeSpeed(nodeId, phy_->getCoord());
 
-    //    EV << "LteRealisticChannelModel::computeExtCellPathLoss:" << scenario_ << "-" << shadowing_ << "\n";
-
     //compute attenuation based on selected scenario and based on LOS or NLOS
     bool los = losMap_[nodeId];
 

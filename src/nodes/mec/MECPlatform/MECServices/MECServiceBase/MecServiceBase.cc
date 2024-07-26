@@ -232,7 +232,6 @@ void MecServiceBase::socketClosed(inet::TcpSocket *socket)
 bool MecServiceBase::manageRequest()
 {
     EV_INFO << " MecServiceBase::manageRequest" << endl;
-    //  EV << "MecServiceBase::manageRequest - start manageRequest" << endl;
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(currentRequestMessageServed_->getSockId()));
     if (socket) {
         /*

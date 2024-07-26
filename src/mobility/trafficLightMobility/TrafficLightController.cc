@@ -214,7 +214,6 @@ bool TrafficLightController::isInStraightLine(inet::Coord carPosition)
     int dx1 = tempPoint.x - carPosition.x;
     int dy1 = tempPoint.y - carPosition.y;
 
-//        EV << "dx " << dx << "dy " << dy << "dx1 " << dx1 << "dy1 " << dy1 << endl;
 
     // TODO does this only works for 0, 90, 180 and 270 degrees?
     if (dx1 * dy != dy1 * dx)

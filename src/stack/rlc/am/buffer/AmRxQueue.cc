@@ -374,8 +374,6 @@ void AmRxQueue::passUp(const int index)
 
     auto ci = pkt->getTag<FlowControlInfo>();
 
-    // EV << NOW << " AmRxQueue::passUp original packet size  " << pkt->getByteLength() << " pdu orig size " << bufPacketSize << "header size" <<  B(bufferedpdu->getChunkLength()).get() << endl;
-
     Direction dir = (Direction)ci->getDirection();
     MacNodeId dstId = ci->getDestId();
     MacNodeId srcId = ci->getSourceId();
@@ -676,7 +674,6 @@ void AmRxQueue::moveRxWindow(const int seqNum)
                 currentSdu = -1;
                 // Remove all PDUs from pending PDU buffer.
                 for (auto& p: pendingPduBuffer_) {
-                    // EV << NOW << " AmRxQueue::moveRxWindow deleting" << p->getName() << "(buffer has "<< pendingPduBuffer_.size() << " elements) "<< std::endl;
                     delete p;
                 }
                 pendingPduBuffer_.clear();

@@ -73,7 +73,6 @@ void LteMacUeD2D::initialize(int stage)
 // TODO remove it. UeCollector connection made in LteMacUe Initialize
 //            if(isNrUe(nodeId_))
 //            {
-//                EV << "I am an LTE Ue with node id: " << nodeId_ << " connected to gnb with id: "<< cellId_ << endl;
 //                if(getParentModule()->getParentModule()->findSubmodule("NRueCollector") != -1)
 //                {
 //                    UeStatsCollector *ue = check_and_cast<UeStatsCollector *> (getParentModule()->getParentModule()->getSubmodule("NRueCollector"));

@@ -363,8 +363,7 @@ double LteRealisticChannelModel::computeAngle(Coord center, Coord point) {
         // quadrant I
         angle = arcoSen;
 
-    //    EV << "computeAngle: angle[" << angle <<"] - arcoSen[" << arcoSen <<
-    //          "] - relativePos[" << relx << "," << rely <<
+        //          "] - relativePos[" << relx << "," << rely <<
     //          "] - siny[" << rely/dist << "] - senx[" << relx/dist <<
     //          "]" << endl;
 
@@ -1738,11 +1737,6 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
         // Convert to cartesian form and aggregate {Re, Im} over all fading paths.
         re_h = re_h + attenuation * cos(phi);
         im_h = im_h - attenuation * sin(phi);
-
-        //        EV << "ID=" << nodeId << " - t[" << t << "] - dopplerShift[" << doppler_shift << "] - phiD[" <<
-        //                phi_d << "] - phiI[" << phi_i << "] - phi[" << phi << "] - attenuation[" << attenuation << "] - f["
-        //                << f << "] - Band[" << band << "] - cos(phi)["
-        //                << cos(phi) << "]" << endl;
     }
 
     // Output: |H_f|^2 = absolute channel impulse response due to fading.
@@ -2576,7 +2570,6 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 
 double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId nodeId)
 {
-    //    EV << "LteRealisticChannelModel::computeExtCellPathLoss:" << scenario_ << "-" << shadowing_ << "\n";
 
     //compute attenuation based on selected scenario and based on LOS or NLOS
     bool los = losMap_[nodeId];
@@ -2626,7 +2619,6 @@ double LteRealisticChannelModel::computeExtCellPathLoss(double dist, MacNodeId n
 //       {
 //           att = lastComputedSF_.at(nodeId).second;
 //       }
-//       EV << "(" << att << ")";
 //       attenuation += att;
 //   }
 
