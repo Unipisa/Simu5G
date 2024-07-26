@@ -625,13 +625,11 @@ double BackgroundCellChannelModel::getStdDev(bool dist, MacNodeId nodeId)
                 return 3.;
             else
                 return 4.;
-            break;
         case URBAN_MACROCELL:
             if (losMap_[nodeId])
                 return 4.;
             else
                 return 6.;
-            break;
         case RURAL_MACROCELL:
         case SUBURBAN_MACROCELL:
             if (losMap_[nodeId]) {
@@ -642,7 +640,6 @@ double BackgroundCellChannelModel::getStdDev(bool dist, MacNodeId nodeId)
             }
             else
                 return 8.;
-            break;
         default:
             throw cRuntimeError("Wrong path-loss scenario value %d", scenario_);
     }

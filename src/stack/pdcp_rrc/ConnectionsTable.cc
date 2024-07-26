@@ -67,7 +67,6 @@ void ConnectionsTable::create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t
     ht_[hashIndex].dstAddr_ = dstAddr;
     ht_[hashIndex].typeOfService_ = typeOfService;
     ht_[hashIndex].lcid_ = lcid;
-    return;
 }
 
 void ConnectionsTable::create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t typeOfService, uint16_t dir, LogicalCid lcid)
@@ -80,7 +79,6 @@ void ConnectionsTable::create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t
     ht_[hashIndex].typeOfService_ = typeOfService;
     ht_[hashIndex].dir_ = dir;
     ht_[hashIndex].lcid_ = lcid;
-    return;
 }
 
 ConnectionsTable::~ConnectionsTable()

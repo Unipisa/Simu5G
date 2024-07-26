@@ -294,7 +294,6 @@ void MECResponseApp::sendStopAck()
     inet::Packet *pkt = new inet::Packet("RequestResponseAppPacket");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     req->setType(UEAPP_ACK_STOP);
-    ;
     req->setChunkLength(packetSize_);
     pkt->insertAtBack(req);
 

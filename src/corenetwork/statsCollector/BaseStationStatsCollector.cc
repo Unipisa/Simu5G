@@ -310,7 +310,6 @@ void BaseStationStatsCollector::add_ul_nongbr_pdr_cell()
 void BaseStationStatsCollector::add_dl_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "add_dl_nongbr_pdr_cell_perUser()" << endl;
-    ;
     double discard;
     for (auto const& ue : ueCollectors_) {
         discard = packetFlowManager_->getDiscardedPktPerUe(ue.first);
@@ -337,7 +336,6 @@ void BaseStationStatsCollector::add_ul_nongbr_delay_perUser()
 void BaseStationStatsCollector::add_dl_nongbr_delay_perUser()
 {
     EV << collectorType_ << "add_dl_nongbr_delay_perUser()" << endl;
-    ;
     double delay;
     for (auto const& ue : ueCollectors_) {
         delay = packetFlowManager_->getDelayStatsPerUe(ue.first);
@@ -385,7 +383,6 @@ void BaseStationStatsCollector::add_dl_nongbr_throughput_ue_perUser()
 
 void BaseStationStatsCollector::add_ul_nongbr_throughput_ue_perUser()
 {
-
     EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser" << endl;
     double throughput;
     for (auto const& ue : ueCollectors_) {

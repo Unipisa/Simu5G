@@ -302,19 +302,16 @@ double NRChannelModel_3GPP38_901::getStdDev(bool dist, MacNodeId nodeId)
                 return 4.;
             else
                 return 7.82;
-            break;
         case INDOOR_HOTSPOT:
             if (losMap_[nodeId])
                 return 3.;
             else
                 return 8.03;
-            break;
         case URBAN_MACROCELL:
             if (losMap_[nodeId])
                 return 4.;
             else
                 return 6.;
-            break;
         case RURAL_MACROCELL:
             if (losMap_[nodeId]) {
                 if (dist)
@@ -324,7 +321,6 @@ double NRChannelModel_3GPP38_901::getStdDev(bool dist, MacNodeId nodeId)
             }
             else
                 return 8.;
-            break;
         default:
             throw cRuntimeError("Wrong path-loss scenario value %d", scenario_);
     }

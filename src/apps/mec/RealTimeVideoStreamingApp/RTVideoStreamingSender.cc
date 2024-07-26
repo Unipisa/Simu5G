@@ -157,7 +157,6 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
                 scheduleAfter(mobilityUpdateInterval_, mobilityStats_);
                 return;
             }
-            break;
             case KIND_SELF_MEC_APP_START:
                 sendStartMECApp();
                 break;
@@ -425,7 +424,6 @@ void RTVideoStreamingSender::sendMessage() {
         // send the frame all on once
         if (sendAllOnOneTime_) {
             bool first = true;
-            ;
             int maxDataSize = 0;
             int numberOfFragments = 0;
             int slicedDataSize = 0;

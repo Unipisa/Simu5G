@@ -101,7 +101,6 @@ void MecRequestForegroundApp::handleMp1Message(int connId)
                     EV << "address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());
-                    ;
                     servicePort = endPoint["port"];
                     serviceSocket_ = addNewSocket();
                     connect(serviceSocket_, serviceAddress, servicePort);
@@ -131,7 +130,6 @@ void MecRequestForegroundApp::sendRequest() {
     std::string host = serviceSocket_->getRemoteAddress().str() + ":" + std::to_string(serviceSocket_->getRemotePort());
 
     Http::sendGetRequest(serviceSocket_, host.c_str(), uri);
-    return;
 }
 
 } //namespace

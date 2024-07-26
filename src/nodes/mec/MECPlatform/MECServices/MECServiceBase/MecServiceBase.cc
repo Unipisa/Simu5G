@@ -522,7 +522,6 @@ MecServiceBase::~MecServiceBase() {
 
     while (!requests_.isEmpty()) {
         delete requests_.pop();
-        ;
     }
 
     while (!subscriptionEvents_.empty()) {

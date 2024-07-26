@@ -139,14 +139,12 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             startPacket->setRadius(c);
 
             return startPacket;
-            break;
         }
         case 1: // STOP
         {
             auto stopPacket = makeShared<WarningStopPacket>();
             stopPacket->setType(STOP_WARNING);
             return stopPacket;
-            break;
         }
         case 2: // ALERT
         {
@@ -187,7 +185,6 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             stream.readByteRepeatedly('?', remainders.get());
 
             return ackStartPacket;
-            break;
 
         }
         case 4:// NACK START
@@ -200,7 +197,6 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             stream.readByteRepeatedly('?', remainders.get());
 
             return nackStartPacket;
-            break;
         }
 
         default: {

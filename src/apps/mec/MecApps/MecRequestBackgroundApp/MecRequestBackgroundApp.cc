@@ -146,7 +146,6 @@ void MecRequestBackgroundApp::handleMp1Message(int connId)
                     EV << "address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());
-                    ;
                     servicePort = endPoint["port"];
                     serviceSocket_ = addNewSocket();
                     connect(serviceSocket_, serviceAddress, servicePort);

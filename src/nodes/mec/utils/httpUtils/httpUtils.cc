@@ -253,7 +253,6 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
             case (Http::COMPLETE_NO_DATA):
                 EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 return true;
-                break;
             case (Http::COMPLETE_DATA):
                 throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
                 break;
@@ -292,7 +291,6 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
             case (Http::COMPLETE_NO_DATA):
                 EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 return true;
-                break;
             case (Http::COMPLETE_DATA):
                 throw cRuntimeError("httpUtils parseReceivedMsg - This function does not support multiple HTTP messages in one segment");
             case (Http::INCOMPLETE_DATA):
@@ -338,7 +336,6 @@ bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messag
                 completeMsg = true;
                 *currentHttpMessage = nullptr;
                 return completeMsg;
-                break;
             case (Http::COMPLETE_DATA):
                 // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 (*currentHttpMessage)->setSockId(socketId);
@@ -390,7 +387,6 @@ bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messag
                 completeMsg = true;
                 *currentHttpMessage = nullptr;
                 return completeMsg;
-                break;
             case (Http::COMPLETE_DATA):
                 // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
                 (*currentHttpMessage)->setSockId(socketId);
@@ -595,27 +591,22 @@ void sendHttpRequest(inet::TcpSocket *socket, const char *method, const char *ho
 
 void send200Response(inet::TcpSocket *socket, const char *body) {
     sendHttpResponse(socket, 200, "OK", body);
-    return;
 }
 
 void send201Response(inet::TcpSocket *socket, const char *body) {
     sendHttpResponse(socket, 201, "Created", body);
-    return;
 }
 
 void send201Response(inet::TcpSocket *socket, const char *body, std::pair<std::string, std::string>& header) {
     sendHttpResponse(socket, 201, "Created", header, body);
-    return;
 }
 
 void send201Response(inet::TcpSocket *socket, const char *body, std::map<std::string, std::string>& headers) {
     sendHttpResponse(socket, 201, "Created", headers, body);
-    return;
 }
 
 void send204Response(inet::TcpSocket *socket) {
     sendHttpResponse(socket, 204, "No Content");
-    return;
 }
 
 void send405Response(inet::TcpSocket *socket, const char *methods) {
@@ -627,7 +618,6 @@ void send405Response(inet::TcpSocket *socket, const char *methods) {
         header.second = std::string(methods);
     }
     sendHttpResponse(socket, 405, "Method Not Allowed", header);
-    return;
 }
 
 void send400Response(inet::TcpSocket *socket)
@@ -644,7 +634,6 @@ void send400Response(inet::TcpSocket *socket, const char *reason)
     probDet.type = "Client Error";
 
     sendHttpResponse(socket, 400, "Bad Request", probDet.toJson().dump().c_str());
-    return;
 }
 
 void send404Response(inet::TcpSocket *socket, const char *reason)
@@ -657,57 +646,46 @@ void send404Response(inet::TcpSocket *socket, const char *reason)
 
     sendHttpResponse(socket, 400, "Bad Request", probDet.toJson().dump().c_str());
     sendHttpResponse(socket, 400, "Bad Request", reason);
-    return;
 }
 
 void send404Response(inet::TcpSocket *socket)
 {
     sendHttpResponse(socket, 404, "Not Found", "{ \"send404Response\" : \"TODO implement ProblemDetails\"}");
-    return;
 }
 
 void send505Response(inet::TcpSocket *socket)
 {
     sendHttpResponse(socket, 505, "HTTP Version Not Supported");
-    return;
 }
 
 void send503Response(inet::TcpSocket *socket, const char *reason)
 {
     sendHttpResponse(socket, 503, "HTTP Version Not Supported", reason);
-    return;
-
 }
 
 void send500Response(inet::TcpSocket *socket, const char *reason)
 {
     sendHttpResponse(socket, 500, "Internal Error", reason);
-    return;
-
 }
 
 void sendPostRequest(inet::TcpSocket *socket, const char *body, const char *host, const char *uri, const char *parameters)
 {
     sendHttpRequest(socket, "POST", host, uri, parameters, body);
-    return;
 }
 
 void sendPutRequest(inet::TcpSocket *socket, const char *body, const char *host, const char *uri, const char *parameters)
 {
     sendHttpRequest(socket, "PUT", host, uri, parameters, body);
-    return;
 }
 
 void sendGetRequest(inet::TcpSocket *socket, const char *host, const char *uri, const char *parameters, const char *body)
 {
     sendHttpRequest(socket, "GET", host, uri, parameters, body);
-    return;
 }
 
 void sendDeleteRequest(inet::TcpSocket *socket, const char *host, const char *uri)
 {
     sendHttpRequest(socket, "DELETE", host, uri);
-    return;
 }
 
 } // namespace Http

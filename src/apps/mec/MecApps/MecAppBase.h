@@ -65,7 +65,6 @@ class MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallb
     cQueue packetQueue_;
     cMessage *currentProcessedMsg_;
     cMessage *processMessage_;
-    ;
 
     // endpoint for contacting the Service Registry
     inet::L3Address mp1Address;

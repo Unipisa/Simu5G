@@ -133,7 +133,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             stream.readBytes(bytes, messageDataLength);
             startPacket->setMecAppName((char *)&bytes[0]);
             return startPacket;
-            break;
         }
         case STOP_MECAPP_CODE: {
             auto stopPacket = makeShared<DeviceAppStopPacket>();
@@ -141,7 +140,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             stream.readBytes(bytes, messageDataLength);
             stopPacket->setContextId((char *)&bytes[0]);
             return stopPacket;
-            break;
         }
         case START_ACK_CODE: {
             auto ackPacket = makeShared<DeviceAppStartAckPacket>();
@@ -155,21 +153,18 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             ackPacket->setIpAddress(ipPort[0].c_str());
             ackPacket->setPort(atoi(ipPort[1].c_str()));
             return ackPacket;
-            break;
         }
         case START_NACK_CODE: {
             auto stopAckPacket = makeShared<DeviceAppStartAckPacket>();
             stopAckPacket->setType(ACK_START_MECAPP);
             stopAckPacket->setResult("NACK");
             return stopAckPacket;
-            break;
         }
         case STOP_ACK_CODE: {
             auto stopAckPacket = makeShared<DeviceAppStopAckPacket>();
             stopAckPacket->setType(ACK_STOP_MECAPP);
             stopAckPacket->setResult("ACK");
             return stopAckPacket;
-            break;
         }
         case STOP_NACK_CODE: {
             auto stopAckPacket = makeShared<DeviceAppStopAckPacket>();
@@ -177,7 +172,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             stopAckPacket->setResult("NACK");
             // put timestamp tag
             return stopAckPacket;
-            break;
         }
         default: {
             throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Code %d not recognized!", messageCode);
