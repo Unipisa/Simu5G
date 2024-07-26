@@ -99,11 +99,10 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
 
                         // if the process is in CORRUPTED state, then schedule a retransmission for this process
 
-                        unsigned int rtxBytes = 0;
                         // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
 
                         // perform a retransmission on available codewords for the selected acid
-                        rtxBytes = schedulePerAcidRtx(nodeId, carrierFrequency, cw, process, bandLim);
+                        unsigned int rtxBytes = schedulePerAcidRtx(nodeId, carrierFrequency, cw, process, bandLim);
                         if (rtxBytes > 0) {
                             --codewords;
                             allocatedBytes += rtxBytes;
@@ -169,11 +168,10 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                                 continue;
                             }
 
-                            unsigned int rtxBytes = 0;
                             // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
 
                             // perform a retransmission on available codewords for the selected acid
-                            rtxBytes = schedulePerAcidRtxD2D(destId, senderId, carrierFrequency, cw, process, bandLim);
+                            unsigned int rtxBytes = schedulePerAcidRtxD2D(destId, senderId, carrierFrequency, cw, process, bandLim);
                             if (rtxBytes > 0) {
                                 --codewords;
                                 allocatedBytes += rtxBytes;

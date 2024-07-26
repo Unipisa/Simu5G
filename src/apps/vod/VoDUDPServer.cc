@@ -40,8 +40,7 @@ void VoDUDPServer::initialize(int stage)
     inputFileName = par("vod_trace_file").stringValue();
     traceType = par("traceType").stringValue();
     fps = par("fps");
-    double one = 1.0;
-    TIME_SLOT = one / fps;
+    TIME_SLOT = 1.0 / fps;
     numStreams = 0;
 
     // set up Udp socket
@@ -81,7 +80,7 @@ void VoDUDPServer::initialize(int stage)
     EV << "VoD Server initialize: Trace: " << inputFileName << " trace type " << traceType << endl;
     cMessage *timer = new cMessage("Timer");
     double start = par("startTime");
-    double offset = (double)start + simTime().dbl();
+    double offset = start + simTime().dbl();
     scheduleAt(offset, timer);
 }
 
@@ -112,8 +111,7 @@ void VoDUDPServer::handleMessage(cMessage *msg)
                 M1Message *M1 = new M1Message();
                 M1->setClientAddr(i);
                 M1->setClientPort(clientsPort);
-                double npkt;
-                npkt = clientsStartStreamTime;
+                double npkt = clientsStartStreamTime;
                 M1->setNumPkSent((int)(npkt * fps));
 
                 numStreams++;
