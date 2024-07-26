@@ -83,8 +83,7 @@ void MecResponseApp::sendResponse(cMessage *msg)
     auto pkt = packet->popAtFront<MecRequestResponsePacket>();
     auto respPkt = inet::makeShared<MecRequestResponsePacket>();
 
-    char *reqSourceAddress = new char[strlen(pkt->getSrcAddress()) + 1];
-    strcpy(reqSourceAddress, pkt->getSrcAddress());
+    const char *reqSourceAddress = pkt->getSrcAddress();
     int reqSourcePort = pkt->getSrcPort();
 
     EV << simTime() << "MecResponseApp::sendResponse - Sending response for packet with number " << pkt->getSno() << " to " << reqSourceAddress << "(port " << reqSourcePort << ")" << endl;
