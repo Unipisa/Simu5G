@@ -717,7 +717,7 @@ void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned i
     for ( ; bsit != desc->burstStatus_.end(); ++bsit) {
         rlcpit = bsit->second.rlcPdu.find(rlcSno);
         if (rlcpit != bsit->second.rlcPdu.end()) {
-            if (ack == true) {
+            if (ack) {
                 // if arrived, sum it to the thpVolDl
                 bsit->second.burstSize += rlcpit->second;
             }

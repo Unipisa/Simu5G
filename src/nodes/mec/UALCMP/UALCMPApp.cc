@@ -172,7 +172,7 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
 
     if (socket) {
-        if (ack->getSuccess() == true)
+        if (ack->getSuccess())
             Http::send204Response(socket);
         else {
             Http::ProblemDetailBase pd;
