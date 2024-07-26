@@ -103,7 +103,7 @@ NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
 
 unsigned int BackgroundCellAmcNr::getSymbolsPerSlot(double carrierFrequency, Direction dir)
 {
-    unsigned totSymbols = 14;   // TODO get this parameter from CellInfo/Carrier
+    unsigned int totSymbols = 14;   // TODO get this parameter from CellInfo/Carrier
 
     SlotFormat sf = binder_->getSlotFormat(carrierFrequency);
     if (!sf.tdd)
