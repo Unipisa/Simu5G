@@ -849,7 +849,7 @@ unsigned int LteSchedulerEnb::readRbOccupation(const MacNodeId id, double carrie
     // parse rbMap according to the carrier
     Band startingBand = mac_->getCellInfo()->getCarrierStartingBand(carrierFrequency);
     Band lastBand = mac_->getCellInfo()->getCarrierLastBand(carrierFrequency);
-    RbMap::iterator it = tmpRbMap.begin(), et = tmpRbMap.end();
+    auto it = tmpRbMap.begin(), et = tmpRbMap.end();
     for ( ; it != et; ++it) {
         std::map<Band, unsigned int> remoteEntry;
         unsigned int i = 0;

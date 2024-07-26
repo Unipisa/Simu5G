@@ -759,7 +759,7 @@ const std::pair<MacNodeId, MacNodeId> *Binder::getHandoverTriggered(MacNodeId no
 
 void Binder::removeHandoverTriggered(MacNodeId nodeId)
 {
-    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>>::iterator it = handoverTriggered_.find(nodeId);
+    auto it = handoverTriggered_.find(nodeId);
     if (it != handoverTriggered_.end())
         handoverTriggered_.erase(it);
 }

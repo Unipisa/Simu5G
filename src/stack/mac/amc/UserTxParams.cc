@@ -39,8 +39,8 @@ void UserTxParams::print(const char *s) const {
         EV << NOW << " " << s << " PMI: " << pmi_ << "\n";
 
         //*** Bands ********************************************
-        std::set<Band>::const_iterator it = allowedBands_.begin();
-        std::set<Band>::const_iterator et = allowedBands_.end();
+        auto it = allowedBands_.begin();
+        auto et = allowedBands_.end();
 
         EV << NOW << " " << s << " Bands = {";
         if (it != et) {

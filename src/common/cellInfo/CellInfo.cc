@@ -182,11 +182,11 @@ void CellInfo::createAntennaCwMap()
 
 void CellInfo::detachUser(MacNodeId nodeId)
 {
-    std::map<MacNodeId, inet::Coord>::iterator pt = uePosition.find(nodeId);
+    auto pt = uePosition.find(nodeId);
     if (pt != uePosition.end())
         uePosition.erase(pt);
 
-    std::map<MacNodeId, Lambda>::iterator lt = lambdaMap_.find(nodeId);
+    auto lt = lambdaMap_.find(nodeId);
     if (lt != lambdaMap_.end())
         lambdaMap_.erase(lt);
 }
@@ -208,7 +208,7 @@ unsigned int CellInfo::getNumBands()
 unsigned int CellInfo::getPrimaryCarrierNumBands()
 {
     unsigned int primaryCarrierNumBands = 0;
-    CarrierInfoMap::iterator it = carrierMap_.begin();
+    auto it = carrierMap_.begin();
     if (it != carrierMap_.end())
         primaryCarrierNumBands = it->second.numBands;
 
@@ -217,7 +217,7 @@ unsigned int CellInfo::getPrimaryCarrierNumBands()
 
 unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
 {
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
@@ -227,7 +227,7 @@ unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
 double CellInfo::getPrimaryCarrierFrequency()
 {
     double primaryCarrierFrequency = 0.0;
-    CarrierInfoMap::iterator it = carrierMap_.begin();
+    auto it = carrierMap_.begin();
     if (it != carrierMap_.end())
         primaryCarrierFrequency = it->first;
 
@@ -236,7 +236,7 @@ double CellInfo::getPrimaryCarrierFrequency()
 
 void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it != carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %d", carrierFrequency, cellId_);
     else {
@@ -298,7 +298,7 @@ const CarrierInfoMap *CellInfo::getCarrierInfoMap()
 
 unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
 {
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
@@ -311,11 +311,11 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
 BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
 {
     if (carrierFrequency == 0.0) {
-        CarrierInfoMap::iterator it = carrierMap_.begin();
+        auto it = carrierMap_.begin();
         if (it != carrierMap_.end())
             return &(it->second.bandLimit);
     }
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
@@ -324,7 +324,7 @@ BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
 
 unsigned int CellInfo::getCarrierStartingBand(double carrierFrequency)
 {
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
 
@@ -333,7 +333,7 @@ unsigned int CellInfo::getCarrierStartingBand(double carrierFrequency)
 
 unsigned int CellInfo::getCarrierLastBand(double carrierFrequency)
 {
-    CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
+    auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
 

@@ -98,8 +98,8 @@ nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, 
 
     uePositionList = it->second->getUePositionList();
 
-    std::map<MacNodeId, inet::Coord>::const_iterator pit = uePositionList->begin();
-    std::map<MacNodeId, inet::Coord>::const_iterator end = uePositionList->end();
+    auto pit = uePositionList->begin();
+    auto end = uePositionList->end();
     for ( ; pit != end; ++pit) {
         inet::Ipv4Address ipAddress = binder_->getIPv4Address(pit->first);
         if (addressess.find(ipAddress) != addressess.end())
@@ -118,7 +118,7 @@ nlohmann::ordered_json LocationResource::toJson() const {
     nlohmann::ordered_json val;
     nlohmann::ordered_json userList;
     nlohmann::ordered_json ueArray;
-    std::map<MacCellId, CellInfo *>::const_iterator it = eNodeBs_.begin();
+    auto it = eNodeBs_.begin();
 
     for ( ; it != eNodeBs_.end(); ++it) {
         ueArray.push_back(getUserListPerCell(it));
@@ -141,7 +141,7 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
     nlohmann::ordered_json val;
     nlohmann::ordered_json ueArray;
 
-    std::vector<inet::Ipv4Address>::const_iterator uit = uesID.begin();
+    auto uit = uesID.begin();
     std::map<MacCellId, CellInfo *>::const_iterator eit;
     std::map<MacNodeId, inet::Coord>::const_iterator pit;
     const std::map<MacNodeId, inet::Coord> *uePositionList;
@@ -182,7 +182,7 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
     nlohmann::ordered_json LocationResource;
     nlohmann::ordered_json ueArray;
 
-    std::vector<MacCellId>::const_iterator cid = cellsID.begin();
+    auto cid = cellsID.begin();
     std::map<MacCellId, CellInfo *>::const_iterator it;
 //    const std::map<MacNodeId, inet::Coord>* uePositionList;
 

@@ -1058,13 +1058,13 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
 
         std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
-        std::map<double, HarqTxBuffers>::const_iterator it1 = harqBuffers->begin();
-        std::map<double, HarqTxBuffers>::const_iterator end1 = harqBuffers->end();
+        auto it1 = harqBuffers->begin();
+        auto end1 = harqBuffers->end();
 
         for ( ; it1 != end1; ++it1) {
             const HarqTxBuffers& harqBuffer = it1->second;
-            HarqTxBuffers::const_iterator itHarq = harqBuffer.begin();
-            HarqTxBuffers::const_iterator endHarq = harqBuffer.end();
+            auto itHarq = harqBuffer.begin();
+            auto endHarq = harqBuffer.end();
             for ( ; itHarq != endHarq; ++itHarq) {
                 if (itHarq->second->isHarqBufferActive()) {
                     activeUeSet.insert(itHarq->first); // active users in HARQ
@@ -1074,8 +1074,8 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
         // every time a RLC SDU enters the layer, a newPktData is sent to
         // mac to inform the presence of data in RLC.
-        LteMacBufferMap::const_iterator vit = macBuffers_.begin();
-        LteMacBufferMap::const_iterator eit = macBuffers_.end();
+        auto vit = macBuffers_.begin();
+        auto eit = macBuffers_.end();
         for ( ; vit != eit; ++vit) {
             if (!vit->second->isEmpty())
                 activeUeSet.insert(MacCidToNodeId(vit->first)); // active users in RLC

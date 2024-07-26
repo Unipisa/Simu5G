@@ -403,7 +403,7 @@ unsigned int LteAllocationModule::rbOccupation(const MacNodeId nodeId, RbMap& rb
 {
     // compute allocated blocks on all antennas for given user and logical band.
     RemoteSet antennas = allocatedRbsUe_.at(nodeId).availableAntennaSet_;
-    RemoteSet::iterator it = antennas.begin(), et = antennas.end();
+    auto it = antennas.begin(), et = antennas.end();
 
     unsigned int blocks = 0;
 
