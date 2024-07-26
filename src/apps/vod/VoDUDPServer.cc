@@ -131,7 +131,7 @@ void VoDUDPServer::handleMessage(cMessage *msg)
 
 void VoDUDPServer::handleSVCMessage(cMessage *msg)
 {
-    M1Message *msgNew = (M1Message *)msg;
+    M1Message *msgNew = static_cast<M1Message *>(msg);
     long numPkSentApp = msgNew->getNumPkSent();
     if (svcTrace_[numPkSentApp].index == LONG_MAX) {
         /* End of file, send finish packet */
