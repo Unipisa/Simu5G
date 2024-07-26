@@ -80,6 +80,7 @@ void LtePf::prepareSchedule()
         }
         if (cqiNull)
             continue;
+
         // compute score based on total available bytes
         unsigned int availableBlocks = 0;
         unsigned int availableBytes = 0;
@@ -99,6 +100,7 @@ void LtePf::prepareSchedule()
         if (pfRate_[cid] < scoreEpsilon_) s = 1.0 / scoreEpsilon_;
         else if (availableBlocks > 0) s = ((availableBytes / availableBlocks) / pfRate_[cid]) + uniform(getEnvir()->getRNG(0), -scoreEpsilon_ / 2.0, scoreEpsilon_ / 2.0);
         else s = 0.0;
+
         // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
         ScoreDesc desc(cid, s);
         score.push(desc);

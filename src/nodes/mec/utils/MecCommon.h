@@ -140,8 +140,8 @@ struct Timestamp
 {
     int secods;
     int nanoSecods;
-
 };
+
 } // namespace mec
 
 } //namespace

@@ -32,7 +32,6 @@ BurstSender::~BurstSender()
 {
     cancelAndDelete(selfBurst_);
     cancelAndDelete(selfPacket_);
-
 }
 
 void BurstSender::initialize(int stage)

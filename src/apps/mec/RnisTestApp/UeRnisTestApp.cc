@@ -42,7 +42,6 @@ UeRnisTestApp::~UeRnisTestApp() {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
     cancelAndDelete(selfMecAppStart_);
-
 }
 
 void UeRnisTestApp::initialize(int stage)
@@ -181,7 +180,6 @@ void UeRnisTestApp::sendStartMecApp()
         if (myfile.is_open()) {
             myfile << "[" << NOW << "] UeRnisTestApp - UE sent start message to the Device App \n";
             myfile.close();
-
         }
     }
 
@@ -198,7 +196,6 @@ void UeRnisTestApp::sendStopMecApp()
 
     //termination requirements and info
     stop->setType(STOP_MECAPP);
-
     stop->setChunkLength(inet::B(10));
     stop->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
@@ -247,7 +244,6 @@ void UeRnisTestApp::handleAckStartMecApp(cMessage *msg)
 
     sendMessageToMecApp();
     scheduleAt(simTime() + period_, selfMecAppStart_);
-
 }
 
 void UeRnisTestApp::sendMessageToMecApp() {
@@ -277,7 +273,6 @@ void UeRnisTestApp::sendMessageToMecApp() {
 
 void UeRnisTestApp::handleInfoMecApp(cMessage *msg)
 {
-
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto rnisInfo = packet->peekAtFront<RnisTestAppInfoPacket>();
 

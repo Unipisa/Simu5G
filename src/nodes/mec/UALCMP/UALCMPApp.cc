@@ -104,7 +104,6 @@ void UALCMPApp::handleMessageWhenUp(cMessage *msg)
     }
     else {
         MecServiceBase::handleMessageWhenUp(msg);
-
     }
 }
 
@@ -256,7 +255,6 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
     }
     else { //bad uri
         Http::send404Response(socket);
-
     }
 }
 

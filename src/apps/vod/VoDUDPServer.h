@@ -97,7 +97,6 @@ class VoDUDPServer : public omnetpp::cSimpleModule
     virtual ~VoDUDPServer();
 
   protected:
-
     void initialize(int stage);
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void finish();

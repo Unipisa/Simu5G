@@ -601,7 +601,6 @@ Cqi Binder::medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
     EV << "Binder::medianCqi - median point is " << bandCqi.size() << "/2 = " << medianPoint << ". MedianCqi = " << bandCqi[medianPoint] << endl;
 
     return bandCqi[medianPoint];
-
 }
 
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)

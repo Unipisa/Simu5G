@@ -105,7 +105,6 @@ void TrafficLightController::handleMessage(omnetpp::cMessage *msg)
                 queuedCars_[0].clear();
                 queuedCars_[1].clear();
                 scheduleAt(simTime() + greenPeriod_, stateMsg_);
-
             }
             else if (state_ == GREEN) {
                 state_ = RED;
@@ -113,7 +112,6 @@ void TrafficLightController::handleMessage(omnetpp::cMessage *msg)
 //                initDrawLine();
                 drawRect();
                 scheduleAt(simTime() + redPeriod_, stateMsg_);
-
             }
         }
     }
@@ -158,7 +156,6 @@ bool TrafficLightController::isApproaching(inet::Coord carPosition, inet::deg ca
 {
     if (carDirection == heading_ && isInStraightLine(carPosition)) {
         return isSameAngle(carPosition, carDirection, false);
-
     }
     else if (bidirectional_ && carDirection == inet::deg(fmod(heading_.get() + 180, 360)) && isInStraightLine(carPosition)) {
         return isSameAngle(carPosition, carDirection, true);
@@ -358,7 +355,6 @@ void TrafficLightController::drawRect()
             end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
         else if (!bidirectional_ && heading_.get() == 270) {
-
             end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
         EV << "drawing rect " << heading_.get() << endl;

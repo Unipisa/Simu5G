@@ -437,7 +437,6 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
             EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::discardRlcPdu - lcid[" << lcid << "], discarded PDCP PDU " << pdcpSno << " in RLC PDU " << rlcSno << endl;
             pktDiscardCounterPerUe_[desc->nodeId_].discarded += 1;
             pktDiscardCounterTotal_.discarded += 1;
-
         }
         // if the pdcp was entire and the set of rlc is empty, discard it
         if (rit->second.empty() && pit->second.hasArrivedAll) {
@@ -808,7 +807,6 @@ void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
 
 void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantId)
 {
-
     for (auto it = ulGrants_[nodeId].begin(); it != ulGrants_[nodeId].end(); ) {
         if (it->grantId == grantId) {
 

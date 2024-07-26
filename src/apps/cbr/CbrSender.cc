@@ -39,7 +39,6 @@ CbrSender::~CbrSender()
 
 void CbrSender::initialize(int stage)
 {
-
     cSimpleModule::initialize(stage);
     EV << "CBR Sender initialize: stage " << stage << " - initialize=" << initialized_ << endl;
 
@@ -55,7 +54,6 @@ void CbrSender::initialize(int stage)
         destPort_ = par("destPort");
 
         txBytes_ = 0;
-
     }
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         // calculating traffic starting time

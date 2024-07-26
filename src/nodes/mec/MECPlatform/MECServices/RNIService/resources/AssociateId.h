@@ -51,7 +51,6 @@ class AssociateId : public AttributeBase
 
   protected:
     std::string type_;
-
     std::string value_;
 
 };

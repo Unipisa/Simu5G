@@ -46,7 +46,6 @@ void NRTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
             if (!useNR) {
                 if (getNodeTypeById(destId) != UE)
                     throw cRuntimeError("NRTxPdcpEntity::deliverPdcpPdu - the destination is a UE under the control of a secondary node, but the packet has not been marked as NR packet.");
-                ;
 
                 EV << NOW << " NRTxPdcpEntity::deliverPdcpPdu - LCID[" << lteInfo->getLcid() << "] useNR[" << useNR << "] - the destination is a UE. Send packet to lower layer." << endl;
                 LteTxPdcpEntity::deliverPdcpPdu(pkt);
@@ -73,7 +72,6 @@ void NRTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
         lteInfo->setDestId(pdcp_->getNodeId());
     else
         lteInfo->setDestId(pdcp_->getDestId(lteInfo));
-
 }
 
 NRTxPdcpEntity::~NRTxPdcpEntity()

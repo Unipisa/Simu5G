@@ -85,7 +85,6 @@ void MECResponseApp::handleProcessedMessage(cMessage *msg)
                 handleRequest(msg);
             else if (req->getType() == UEAPP_STOP)
                 handleStopRequest(msg);
-
             else
                 throw cRuntimeError("MECResponseApp::handleProcessedMessage - Type not recognized!");
             return;

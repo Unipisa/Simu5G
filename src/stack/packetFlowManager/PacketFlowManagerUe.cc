@@ -373,13 +373,10 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         auto macSdu = macPdu->getSdu(i).peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
 
-        //
         auto aa = macPdu->getSdu(i); // all rlc pdus have the same lcid
         auto ee = aa.getTag<FlowControlInfo>();
         int ll = ee->getLcid();
         EV << "ALE LCID: " << ll << endl;
-
-        //
 
         EV << "MAC pdu: " << macPduId << " has RLC pdu: " << rlcSno << endl;
 

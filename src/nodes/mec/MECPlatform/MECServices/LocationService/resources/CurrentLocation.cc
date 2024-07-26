@@ -38,7 +38,6 @@ nlohmann::ordered_json CurrentLocation::toJson() const
     val["timeStamp"] = timeStamp.toJson();
 
     return val;
-
 }
 
 } //namespace

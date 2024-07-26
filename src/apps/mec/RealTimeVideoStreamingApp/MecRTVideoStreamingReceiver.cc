@@ -86,7 +86,6 @@ void MecRTVideoStreamingReceiver::handleMessage(cMessage *msg)
         }
     }
     MecAppBase::handleMessage(msg);
-
 }
 
 void MecRTVideoStreamingReceiver::handleUeMessage(omnetpp::cMessage *msg)
@@ -209,7 +208,6 @@ void MecRTVideoStreamingReceiver::handleSessionStartMessage(cMessage *msg)
     if (!stopped) {
         EV << "MecRTVideoStreamingReceiver::handleStartSessionMessage - session with id [" << currentSessionId_ << "] is currently active. Discard msg" << endl;
         startPkt->setType(START_RTVIDEOSTREAMING_SESSION_NACK);
-
     }
     else {
         fps = startPkt->getFps();

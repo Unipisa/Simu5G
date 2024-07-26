@@ -126,7 +126,6 @@ void MecRequestBackgroundGeneratorApp::handleMp1Message(int connId)
                     EV << "address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());
-                    ;
                     servicePort = endPoint["port"];
                     serviceSocket_ = addNewSocket();
                     connect(serviceSocket_, serviceAddress, servicePort);
@@ -175,7 +174,6 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage) {
 }
 
 void MecRequestBackgroundGeneratorApp::sendBulkRequest() {
-
     int numRequests = truncnormal(numberOfApplications_, 20, 2);
     std::string payload = "BulkRequest: " + std::to_string(numRequests + 1);
 

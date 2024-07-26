@@ -41,7 +41,6 @@ UEWarningAlertApp::~UEWarningAlertApp() {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
     cancelAndDelete(selfMecAppStart_);
-
 }
 
 void UEWarningAlertApp::initialize(int stage)
@@ -188,7 +187,6 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
         if (myfile.is_open()) {
             myfile << "[" << NOW << "] UEWarningAlertApp - UE sent start message to the Device App \n";
             myfile.close();
-
         }
     }
 

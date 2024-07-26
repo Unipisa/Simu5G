@@ -39,7 +39,6 @@ void NRPdcpRrcUe::initialize(int stage)
         nrNodeId_ = getContainingNode(this)->par("nrMacNodeId");
 
     LtePdcpRrcUeD2D::initialize(stage);
-
 }
 
 MacNodeId NRPdcpRrcUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
@@ -140,7 +139,6 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
         EV << "NRPdcpRrcUe : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
-
     }
 
     // assign LCID
@@ -239,7 +237,6 @@ void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
 
 void NRPdcpRrcUe::sendToLowerLayer(Packet *pkt)
 {
-
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     if (!dualConnectivityEnabled_ || lteInfo->getUseNR()) {
         EV << "NRPdcpRrcUe : Sending packet " << pkt->getName() << " on port "

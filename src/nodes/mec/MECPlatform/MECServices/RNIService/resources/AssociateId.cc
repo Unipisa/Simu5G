@@ -60,7 +60,6 @@ std::string AssociateId::getType() const
 void AssociateId::setType(std::string value)
 {
     type_ = value;
-
 }
 
 std::string AssociateId::getValue() const
@@ -71,7 +70,6 @@ std::string AssociateId::getValue() const
 void AssociateId::setValue(std::string value)
 {
     value_ = value;
-
 }
 
 } //namespace

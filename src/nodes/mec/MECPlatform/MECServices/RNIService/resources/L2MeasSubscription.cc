@@ -86,7 +86,6 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
                 if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
                     filterCriteria_.associteId_.setType(filterCriteria["associateId"]["type"]);
                     filterCriteria_.associteId_.setValue(filterCriteria["associateId"]["value"]);
-
                 }
             }
         }
@@ -148,7 +147,6 @@ void L2MeasSubscription::sendSubscriptionResponse() {
     val[subscriptionType_]["_links"]["self"] = links_;
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
-
 }
 
 void L2MeasSubscription::sendNotification(EventNotification *event) {}

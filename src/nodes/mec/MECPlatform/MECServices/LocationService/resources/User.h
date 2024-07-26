@@ -41,7 +41,6 @@ class User : public AttributeBase
     int zoneId_;
     MacCellId accessPointId_;
     std::string resourceUrl_;
-
 };
 
 } //namespace

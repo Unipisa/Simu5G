@@ -92,7 +92,6 @@ std::set<Band> LteAllocationModuleFrequencyReuse::getAllocatorOccupiedBands()
     vectorBand.clear();
     for (unsigned int i = 0; i < bands_; i++) {
         if (allocatedRbsPerBand_[MAIN_PLANE][MACRO][i].allocated_ > 0) vectorBand.insert(i);
-
     }
     return vectorBand;
 }

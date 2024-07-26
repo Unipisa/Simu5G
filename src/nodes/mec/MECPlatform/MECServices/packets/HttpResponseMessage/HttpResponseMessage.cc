@@ -19,7 +19,6 @@ HttpResponseMessage::HttpResponseMessage(const HttpResponseStatus res, const cha
     setContentType("application/json");
     setConnection("keep-alive");
     setBody("");
-
 }
 
 void HttpResponseMessage::addBodyChunk(const std::string& bodyChunk)

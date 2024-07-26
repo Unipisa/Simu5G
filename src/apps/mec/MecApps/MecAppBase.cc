@@ -154,7 +154,6 @@ void MecAppBase::handleMessage(cMessage *msg)
                 processingTime = scheduleNextMsg(msg);
             EV << "MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
             scheduleAt(simTime() + processingTime, processMessage_);
-
         }
         else if (processMessage_->isScheduled() && !packetQueue_.isEmpty()) {
             packetQueue_.insert(msg);

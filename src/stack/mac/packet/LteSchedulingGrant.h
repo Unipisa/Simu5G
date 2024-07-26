@@ -53,7 +53,6 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
     {
         userTxParams = nullptr;
         grantedCwBytes.resize(MAX_CODEWORDS);
-
         grantId = getChunkId();
     }
 

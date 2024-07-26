@@ -93,7 +93,6 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
 
 bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body)
 {
-
     // ues; // optional: NO
     //
     ////callbackReference
@@ -110,7 +109,6 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
     // EnteringLeavingCriteria; // optional: NO
 
     if (body.contains("circleNotificationSubscription")) { // mandatory attribute
-
         subscriptionType_ = "circleNotificationSubscription";
     }
     else {
@@ -275,7 +273,6 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
 
 EventNotification *CircleNotificationSubscription::handleSubscription()
 {
-
     EV << "CircleNotificationSubscription::handleSubscription()" << endl;
     terminalLocations.clear();
     std::map<MacNodeId, bool>::iterator it = users.begin();
@@ -325,7 +322,6 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
     }
     else
         return nullptr;
-
 }
 
 bool CircleNotificationSubscription::findUe(MacNodeId nodeId)

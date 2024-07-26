@@ -175,7 +175,6 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
         EV << "LteRrc : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), mylcid);
-
     }
 
     // assign LCID

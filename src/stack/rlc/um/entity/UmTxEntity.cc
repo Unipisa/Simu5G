@@ -60,7 +60,6 @@ void UmTxEntity::initialize()
         }
     }
     burstStatus_ = INACTIVE;
-
 }
 
 bool UmTxEntity::enque(cPacket *pkt)

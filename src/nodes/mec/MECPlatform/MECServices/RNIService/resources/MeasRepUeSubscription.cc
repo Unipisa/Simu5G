@@ -87,7 +87,6 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
                 if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
                     filterCriteria_.associteId_.setType(filterCriteria["associateId"]["type"]);
                     filterCriteria_.associteId_.setValue(filterCriteria["associateId"]["value"]);
-
                 }
             }
         }

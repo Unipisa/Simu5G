@@ -311,7 +311,6 @@ void MultihopD2D::handleTrickleTimer(cMessage *msg)
 
 void MultihopD2D::relayPacket(cMessage *msg)
 {
-
     Packet *pPacket = check_and_cast<Packet *>(msg);
     auto src = pPacket->popAtFront<MultihopD2DPacket>();
 

@@ -43,12 +43,10 @@ void LocationResource::addEnodeB(std::set<cModule *, simu5g::utils::cModule_Less
 }
 
 void LocationResource::addEnodeB(cModule *eNodeB) {
-
     CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
     eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     EV << "LocationResource::addEnodeB with cellId: " << cellInfo->getMacCellId() << endl;
     EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
-
 }
 
 void LocationResource::addBinder(Binder *binder)

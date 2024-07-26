@@ -373,7 +373,6 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
 
 cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
-
     EV << "MecOrchestrator::findBestMecHost - finding best MecHost..." << endl;
     cModule *bestHost = nullptr;
 
@@ -487,7 +486,6 @@ const ApplicationDescriptor *MecOrchestrator::getApplicationDescriptorByAppName(
     for (const auto& appDesc : mecApplicationDescriptors_) {
         if (appDesc.second.getAppName() == appName)
             return &(appDesc.second);
-
     }
 
     return nullptr;

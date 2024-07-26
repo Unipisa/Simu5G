@@ -20,7 +20,6 @@ namespace simu5g {
 class LteRlcPdu : public LteRlcPdu_Base
 {
   private:
-
     void copy(const LteRlcPdu& other)
     {
         this->totalFragments = other.totalFragments;

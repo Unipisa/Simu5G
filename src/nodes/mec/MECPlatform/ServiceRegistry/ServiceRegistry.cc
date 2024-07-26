@@ -141,7 +141,6 @@ void ServiceRegistry::handleDELETERequest(const HttpRequestMessage *currentReque
 
 void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 {
-
     for (const auto& serv : mecServices_) {
         if (serv.getName() == servDesc.name && serv.getMecHost() == servDesc.mecHostname) {
             throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
@@ -165,7 +164,6 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
     mecServices_.push_back(servInfo);
 
     EV << "ServiceRegistry::registerMeService - " << servInfo.toJson().dump(2) << "\nadded!" << endl;
-
 }
 
 const std::vector<ServiceInfo> *ServiceRegistry::getAvailableMecServices() const

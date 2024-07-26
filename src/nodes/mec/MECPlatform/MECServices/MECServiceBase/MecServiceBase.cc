@@ -425,7 +425,6 @@ double MecServiceBase::calculateSubscriptionServiceTime()
     time = exponential(subscriptionServiceTime_, SUBSCRIPTION_RNG);
 //    return (time*1e-6);
     return time;
-
 }
 
 void MecServiceBase::handleCurrentRequest(inet::TcpSocket *socket) {}
