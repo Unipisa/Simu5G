@@ -16,7 +16,7 @@
 
 #include "common/LteCommon.h"
 #include "nodes/backgroundCell/BackgroundCellAmc.h"
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "stack/backgroundTrafficGenerator/BackgroundTrafficManagerBase.h"
 
 namespace simu5g {
 
@@ -25,7 +25,7 @@ using namespace omnetpp;
 //
 // BackgroundCellTrafficManager
 //
-class BackgroundCellTrafficManager : public BackgroundTrafficManager
+class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
 {
   protected:
 
