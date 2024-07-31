@@ -309,7 +309,7 @@ LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 {
     try
     {
-        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         unsigned int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 
         // get the RTX buffer size
@@ -551,7 +551,7 @@ bool LteSchedulerEnbDl::rtxscheduleBackground(double carrierFrequency, BandLimit
 
     // --- Schedule RTX for background UEs --- //
     std::map<int, unsigned int> bgScheduledRtx;
-    BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+    IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
     std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                    et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
     for (; it != et; ++it)

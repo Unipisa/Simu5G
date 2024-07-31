@@ -228,7 +228,7 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
 
     std::list<MacNodeId> servedRac;
 
-    BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+    IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
     std::list<int>::const_iterator it = bgTrafficManager->getWaitingForRacUesBegin(),
                                    et = bgTrafficManager->getWaitingForRacUesEnd();
 
@@ -487,7 +487,7 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
 
         // --- Schedule RTX for background UEs --- //
         std::map<int, unsigned int> bgScheduledRtx;
-        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
         for (; it != et; ++it)
@@ -937,7 +937,7 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 {
     try
     {
-        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         unsigned int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 
         // get the RTX buffer size

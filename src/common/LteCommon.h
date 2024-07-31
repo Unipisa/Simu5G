@@ -49,7 +49,7 @@ class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
 class ExtCell;
-class BackgroundTrafficManager;
+class IBackgroundTrafficManager;
 class BackgroundScheduler;
 class TrafficGeneratorBase;
 
@@ -559,7 +559,7 @@ struct UeInfo
 struct BgTrafficManagerInfo
 {
     bool init;         // initialization flag
-    BackgroundTrafficManager* bgTrafficManager;
+    IBackgroundTrafficManager* bgTrafficManager;
     double carrierFrequency;
     double allocatedRbsDl;
     double allocatedRbsUl;

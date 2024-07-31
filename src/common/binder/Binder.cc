@@ -872,7 +872,7 @@ void Binder::computeAverageCqiForBackgroundUes()
             if (!(info->init))
                 continue;
 
-            BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+            IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
             unsigned int numBands = bgTrafficManager->getNumBands();
 
             //---------------------------------------------------------------------
@@ -977,7 +977,7 @@ void Binder::computeAverageCqiForBackgroundUes()
 //        if (!(info->init))
 //            continue;
 //
-//        BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+//        IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
 //
 //        // Compute the SINR for each UE within the cell
 //        auto bgUes_it = bgTrafficManager->getBgUesBegin();
@@ -1117,7 +1117,7 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
     double sinr;
 
     BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
-    BackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+    IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
 
     // TODO configure forceCellLos from config files
     bool ownCellLos = losStatus;

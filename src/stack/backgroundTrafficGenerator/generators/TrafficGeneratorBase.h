@@ -16,13 +16,11 @@
 
 #include "common/LteCommon.h"
 #include "inet/mobility/contract/IMobility.h"
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
-
-class BackgroundTrafficManager;
 
 //
 // TrafficGeneratorBase
@@ -32,7 +30,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
   protected:
 
     // reference to the traffic manager
-    inet::ModuleRefByPar<BackgroundTrafficManager> bgTrafficManager_;
+    inet::ModuleRefByPar<IBackgroundTrafficManager> bgTrafficManager_;
 
     // index of the bg UE within the vector of bg UEs
     int bgUeIndex_;

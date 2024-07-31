@@ -19,7 +19,7 @@
 #include "common/binder/Binder.h"
 #include "nodes/backgroundCell/BackgroundCellChannelModel.h"
 #include "nodes/ExtCell.h"
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 #include "stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 
 namespace simu5g {
@@ -61,7 +61,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     inet::ModuleRefByPar<Binder> binder_;
 
     // reference to the background traffic manager - one per carrier
-    inet::ModuleRefByPar<BackgroundTrafficManager> bgTrafficManager_;
+    inet::ModuleRefByPar<IBackgroundTrafficManager> bgTrafficManager_;
 
     // reference to the channel model for this background base station
     inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;

@@ -157,7 +157,7 @@ bool LteScheduler::scheduleRetransmissions()
     if (!spaceEnded)
     {
         // check if there are backlogged retransmissions for background UEs
-        BackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency_);
+        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency_);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(eNbScheduler_->direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(eNbScheduler_->direction_, true);
         if (it != et)

@@ -18,7 +18,7 @@
 #include "stack/mac/layer/LteMacBase.h"
 #include "stack/mac/amc/LteAmc.h"
 #include "common/LteCommon.h"
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 
@@ -46,7 +46,7 @@ class LteMacEnb : public LteMacBase
     int eNodeBCount;
 
     /// reference to the background traffic manager
-    std::map<double, BackgroundTrafficManager*> bgTrafficManager_;
+    std::map<double, IBackgroundTrafficManager*> bgTrafficManager_;
 
     /*******************************************************************************************/
 
@@ -193,7 +193,7 @@ class LteMacEnb : public LteMacBase
     /**
      * Getter for the backgroundTrafficManager
      */
-    virtual BackgroundTrafficManager* getBackgroundTrafficManager(double carrierFrequency)
+    virtual IBackgroundTrafficManager* getBackgroundTrafficManager(double carrierFrequency)
     {
         if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
             throw omnetpp::cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
