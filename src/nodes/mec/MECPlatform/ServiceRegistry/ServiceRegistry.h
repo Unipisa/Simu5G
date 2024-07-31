@@ -35,10 +35,6 @@ private:
     // key serviceName
     std::vector<ServiceInfo> mecServices_;
 
-    //parent modules
-    omnetpp::cModule* mePlatform;
-    omnetpp::cModule* meHost;
-
     /*
     * To be ETSI compliant. Each MEC service has a uuid. This implementation does not
     * take into account this information, i.e. service discovery is only available via

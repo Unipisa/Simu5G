@@ -46,16 +46,8 @@ void ServiceRegistry::initialize(int stage)
         return;
 
     binder_.reference(this, "binderModule", true);
-
-    mePlatform = getParentModule();
-    if(mePlatform != NULL){
-        meHost = mePlatform->getParentModule();
-    }
-    else{
-        EV << "ServiceRegistry::initialize - ERROR getting mePlatform cModule!" << endl;
-        throw cRuntimeError("ServiceRegistry::initialize - \tFATAL! Error when getting getParentModule()");
-    }
-
+    meHost_ = getParentModule() // MECPlatform
+            ->getParentModule(); // MeHost
 
     EV << "ServiceRegistry::initialize" << endl;
 
@@ -220,7 +212,7 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
     std::string serInstanceId = uuidBase + std::to_string(servIdCounter++);
 
 
-    bool isLocal = (servDesc.mecHostname == meHost->getName());
+    bool isLocal = (servDesc.mecHostname == meHost_->getName());
 
 
 
