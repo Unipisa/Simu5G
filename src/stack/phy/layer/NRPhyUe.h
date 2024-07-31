@@ -12,6 +12,8 @@
 #ifndef _NRPHYUE_H_
 #define _NRPHYUE_H_
 
+#include <inet/common/ModuleRefByPar.h>
+
 #include "stack/phy/layer/LtePhyUeD2D.h"
 
 namespace simu5g {
@@ -22,7 +24,7 @@ class NRPhyUe : public LtePhyUeD2D
   protected:
 
     // reference to the parallel PHY layer
-    NRPhyUe* otherPhy_;
+    inet::ModuleRefByPar<NRPhyUe> otherPhy_;
 
     virtual void initialize(int stage);
     virtual void handleAirFrame(cMessage* msg);

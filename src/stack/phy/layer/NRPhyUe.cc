@@ -35,10 +35,7 @@ void NRPhyUe::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL)
     {
         isNr_ = (strcmp(getFullName(),"nrPhy") == 0);
-        if (isNr_)
-            otherPhy_ = check_and_cast<NRPhyUe*>(getParentModule()->getSubmodule("phy"));
-        else
-            otherPhy_ = check_and_cast<NRPhyUe*>(getParentModule()->getSubmodule("nrPhy"));
+        otherPhy_.reference(this, "otherPhyModule", true);
     }
 }
 

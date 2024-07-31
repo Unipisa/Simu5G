@@ -44,7 +44,9 @@ module NRNicUe extends LteNicUeD2D
 
         @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlc.um";
+        nrPhy.otherPhyModule = "^.phy";
         nrMac.packetFlowManagerModule = "^.nrPacketFlowManager";
+        phy.otherPhyModule = "^.nrPhy";
 
     submodules:
         // RLC Layer
