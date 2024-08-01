@@ -47,7 +47,7 @@ module NRNicUe extends LteNicUeD2D
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
-        nrMac.packetFlowManagerModule = "^.nrPacketFlowManager";
+        nrMac.packetFlowManagerModule = hasRNISupport ? "^.nrPacketFlowManager" : "";
         phy.otherPhyModule = "^.nrPhy";
 
     submodules:
@@ -56,6 +56,7 @@ module NRNicUe extends LteNicUeD2D
             @display("p=466,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
+            *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.nrPacketFlowManager" : "";
         }
         // MAC Layer
         nrMac: <NRMacType> like LteMac {

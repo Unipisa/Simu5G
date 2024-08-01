@@ -42,6 +42,7 @@ void UmTxEntity::initialize()
     queueSize_ = lteRlc_->par("queueSize");
     queueLength_ = 0;
 
+    packetFlowManager_.reference(this, "packetFlowManagerModule", false);
 
     // @author Alessandro Noferi
     if(mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB)
@@ -49,8 +50,9 @@ void UmTxEntity::initialize()
         if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
         {
             EV << "UmTxEntity::initialize - RLC layer if of a base station" << endl;
-            packetFlowManager_ = check_and_cast<PacketFlowManagerEnb *>(getParentModule()->getParentModule()->getSubmodule("packetFlowManager"));
+            ASSERT(check_and_cast<PacketFlowManagerEnb *>(packetFlowManager_.get()));
         }
+        else ASSERT(!packetFlowManager_);
     }
     else if(mac->getNodeType() == UE)
     {
@@ -59,17 +61,18 @@ void UmTxEntity::initialize()
             if(getParentModule()->getParentModule()->findSubmodule("nrPacketFlowManager") != -1)
             {
                 EV << "UmTxEntity::initialize - RLC layer is NRRlc, cast the packetFlowManager to NR" << endl;
-                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getParentModule()->getSubmodule("nrPacketFlowManager"));
+                ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
             }
-
+            else ASSERT(!packetFlowManager_);
         }
         else
         {
             if(getParentModule()->getParentModule()->findSubmodule("packetFlowManager") != -1)
             {
                 EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
-                packetFlowManager_ = check_and_cast<PacketFlowManagerUe *>(getParentModule()->getParentModule()->getSubmodule("packetFlowManager"));
+                ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
             }
+            else ASSERT(!packetFlowManager_);
         }
     }
     burstStatus_ = INACTIVE;

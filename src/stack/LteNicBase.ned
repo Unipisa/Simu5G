@@ -83,6 +83,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=362,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.mac";
+            *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.packetFlowManager" : "";
         }
         // MAC Layer
         mac: <LteMacType> like LteMac {

@@ -15,6 +15,7 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
+#include "stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/rlc/LteRlcDefs.h"
 #include "nodes/mec/utils/MecCommon.h"
@@ -63,8 +64,8 @@ class UmTxEntity : public omnetpp::cSimpleModule
     UmTxEntity()
     {
         flowControlInfo_ = nullptr;
-        packetFlowManager_ = nullptr;
     }
+
     virtual ~UmTxEntity()
     {
         delete flowControlInfo_;
@@ -134,7 +135,8 @@ class UmTxEntity : public omnetpp::cSimpleModule
      * it is not mandatory for a correct network simulation.
      * It is use useful e.g for RNI service within MEC
      */
-    PacketFlowManagerBase* packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
+
     RlcBurstStatus burstStatus_;
 
 
