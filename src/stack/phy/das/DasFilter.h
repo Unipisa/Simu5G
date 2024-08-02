@@ -102,7 +102,7 @@ class DasFilter
     /**
      * setMasterRuSet() this function is called by UEs to set the
      * Remote Antenna Set of their master
-     * - If the UE is attached to a relay sets the RAS to NULL
+     * - If the UE is attached to a relay sets the RAS to nullptr
      * - Otherwise it calls the getRemoteAntennaSet of the master
      *   to retrieve the RAS
      *

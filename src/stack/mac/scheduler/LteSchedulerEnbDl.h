@@ -43,19 +43,19 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      */
     bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency);
 
-    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) { return false; }
+    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) { return false; }
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL);
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 
     /**
      * Schedule retransmissions for background UEs
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = NULL);
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 
     /**
      * Schedules retransmission for the Harq Process of the given UE on a set of logical bands.

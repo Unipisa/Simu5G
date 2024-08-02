@@ -81,7 +81,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * popFront() extracts a packet from the
      * front of the queue (standard operation).
      *
-     * @return NULL if queue is empty,
+     * @return nullptr if queue is empty,
      *            pkt on successful operation
      */
     omnetpp::cPacket *popFront();
@@ -90,7 +90,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * popFront() extracts a packet from the
      * back of the queue.
      *
-     * @return NULL if queue is empty,
+     * @return nullptr if queue is empty,
      *            pkt on successful operation
      */
     omnetpp::cPacket *popBack();

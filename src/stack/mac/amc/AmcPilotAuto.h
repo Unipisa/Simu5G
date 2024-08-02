@@ -63,7 +63,7 @@ class AmcPilotAuto : public AmcPilot
      * e.g. limit the set of bands that will be considered in the "scheduleGrant" function
      * If the node id refers to a UE and usable bands are not defined for it, then
      * usable bands corresponding to the id of its serving eNB are returned. If usable
-     * bands for the eNB are missing too, then the function returns a NULL pointer (i.e.,
+     * bands for the eNB are missing too, then the function returns a nullptr (i.e.,
      * bands will not be limited)
      * The method returns false if ALL bands are usable (hence, ignore the pointer), otherwise returns true
      */

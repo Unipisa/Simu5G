@@ -43,9 +43,9 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
         macDelay_ = omnetpp::cComponent::registerSignal("macDelayUl");
         macThroughput_ = omnetpp::cComponent::registerSignal("macThroughputUl");
         macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputUl");
-        macThroughputD2D_ = 0;
-        macDelayD2D_ = 0;
-        macCellThroughputD2D_ = 0;
+        macThroughputD2D_ = SIMSIGNAL_NULL;
+        macDelayD2D_ = SIMSIGNAL_NULL;
+        macCellThroughputD2D_ = SIMSIGNAL_NULL;
     }
     else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macOwner_->getMacCellId());
@@ -60,9 +60,9 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
             macCellThroughputD2D_ = omnetpp::cComponent::registerSignal("macCellThroughputD2D");
         }
         else {
-            macThroughputD2D_ = 0;
-            macDelayD2D_ = 0;
-            macCellThroughputD2D_ = 0;
+            macThroughputD2D_ = SIMSIGNAL_NULL;
+            macDelayD2D_ = SIMSIGNAL_NULL;
+            macCellThroughputD2D_ = SIMSIGNAL_NULL;
         }
     }
 }

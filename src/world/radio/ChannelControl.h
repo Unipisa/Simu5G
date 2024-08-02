@@ -41,7 +41,8 @@ struct IChannelControl::RadioEntry {
 
     struct Compare {
         bool operator()(const RadioRef& lhs, const RadioRef& rhs) const {
-            ASSERT(lhs && rhs);
+            ASSERT(lhs != nullptr);
+            ASSERT(rhs != nullptr);
             return lhs->radioModule->getId() < rhs->radioModule->getId();
         }
 

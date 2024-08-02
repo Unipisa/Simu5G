@@ -265,7 +265,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     HarqTxBuffers *getHarqTxBuffers(double carrierFrequency)
     {
         if (harqTxBuffers_.find(carrierFrequency) == harqTxBuffers_.end())
-            return NULL;
+            return nullptr;
         return &harqTxBuffers_[carrierFrequency];
     }
 
@@ -273,7 +273,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     HarqRxBuffers *getHarqRxBuffers(double carrierFrequency)
     {
         if (harqRxBuffers_.find(carrierFrequency) == harqRxBuffers_.end())
-            return NULL;
+            return nullptr;
         return &harqRxBuffers_[carrierFrequency];
     }
 

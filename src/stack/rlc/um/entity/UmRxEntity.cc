@@ -854,7 +854,7 @@ void UmRxEntity::handleBurst(BurstCheck event)
 
     simtime_t t1 = simTime();
 
-    if (((pduBuffer_.size() + (buffered_.pkt == nullptr)) ? 0 : 1) == 0) { //last TTI emptied the burst
+    if (pduBuffer_.size() + (buffered_.pkt == nullptr ? 0 : 1) == 0) { //last TTI emptied the burst
         if (isBurst_) { // burst ends
             //send stats
             // if the transmission requires two TTIs and I do not count

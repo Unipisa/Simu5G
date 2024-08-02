@@ -63,7 +63,7 @@ class LteHarqBufferRx
 
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
-    // Only access via methods. This can be NULL if node is removed from simulation
+    // Only access via methods. This can be nullptr if node is removed from simulation
     LteMacBase *macUe_;
 
   public:
@@ -160,7 +160,7 @@ class LteHarqBufferRx
      */
     virtual omnetpp::simsignal_t macUe_registerSignal(const char *signal)
     {
-        if (macUe_) {
+        if (macUe_ != nullptr) {
             return omnetpp::cComponent::registerSignal(signal);
         }
         return 0;
@@ -173,7 +173,7 @@ class LteHarqBufferRx
      */
     virtual void macUe_emit(omnetpp::simsignal_t signal, double val)
     {
-        if (macUe_) {
+        if (macUe_ != nullptr) {
             macUe_->emit(signal, val);
         }
     }

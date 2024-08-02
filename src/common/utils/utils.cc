@@ -25,7 +25,7 @@ std::vector<std::string> splitString(const std::string& str, std::string delim) 
 
 bool cModule_LessId::operator()(const omnetpp::cModule *left, const omnetpp::cModule *right) const
 {
-    return (left ? left->getId() : -1) < (right ? right->getId() : -1);
+    return (left != nullptr ? left->getId() : -1) < (right != nullptr ? right->getId() : -1);
 }
 
 } // namespace utils

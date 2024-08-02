@@ -295,19 +295,19 @@ class LteSchedulerEnb
      * Updates current schedule list with RAC requests (only for UL).
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
+    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) = 0;
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) = 0;
 
     /**
      * Schedule retransmissions for background UEs
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr) = 0;
 
     /*
      * OFDMA frame management

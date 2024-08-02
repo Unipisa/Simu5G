@@ -89,7 +89,7 @@ class LteMacBuffer
      * front() returns the  packet in back
      * of the queue without performing actual extraction.
      *
-     * @return NULL if queue is empty,
+     * @return nullptr if queue is empty,
      *            pointer to  pkt on successful operation
      */
     PacketInfo back() const;

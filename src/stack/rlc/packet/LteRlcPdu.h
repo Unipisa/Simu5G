@@ -29,7 +29,7 @@ class LteRlcPdu : public LteRlcPdu_Base
     }
 
   public:
-    LteRlcPdu(const char *name = NULL, int kind = 0) : LteRlcPdu_Base(name, kind) {}
+    LteRlcPdu(const char *name = nullptr, int kind = 0) : LteRlcPdu_Base(name, kind) {}
     LteRlcPdu(const LteRlcPdu& other) : LteRlcPdu_Base(other) { copy(other); }
 
     LteRlcPdu& operator=(const LteRlcPdu& other)
@@ -44,7 +44,7 @@ class LteRlcPdu : public LteRlcPdu_Base
     virtual LteRlcPdu *dup() const { return new LteRlcPdu(*this); }
     virtual ~LteRlcPdu() {
         cObject *ctrlInfo = removeControlInfo();
-        if (ctrlInfo) {
+        if (ctrlInfo != nullptr) {
             delete ctrlInfo;
         }
     }

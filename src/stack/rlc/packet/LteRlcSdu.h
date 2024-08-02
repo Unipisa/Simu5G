@@ -27,7 +27,7 @@ class LteRlcSdu : public LteRlcSdu_Base
         this->lengthMainPacket = other.lengthMainPacket;
 
         // copy the attached control info, if any
-        if (other.getControlInfo() != NULL) {
+        if (other.getControlInfo() != nullptr) {
             FlowControlInfo *info = omnetpp::check_and_cast<FlowControlInfo *>(other.getControlInfo());
             FlowControlInfo *info_dup = info->dup();
             this->setControlInfo(info_dup);
@@ -35,7 +35,7 @@ class LteRlcSdu : public LteRlcSdu_Base
     }
 
   public:
-    LteRlcSdu(const char *name = NULL, int kind = 0) : LteRlcSdu_Base(name, kind) {}
+    LteRlcSdu(const char *name = nullptr, int kind = 0) : LteRlcSdu_Base(name, kind) {}
     LteRlcSdu(const LteRlcSdu& other) : LteRlcSdu_Base(other) { copy(other); }
     LteRlcSdu& operator=(const LteRlcSdu& other) { if (this == &other) return *this; LteRlcSdu_Base::operator=(other); copy(other); return *this; }
     virtual LteRlcSdu *dup() const { return new LteRlcSdu(*this); }

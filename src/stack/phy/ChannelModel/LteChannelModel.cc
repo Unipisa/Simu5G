@@ -27,7 +27,7 @@ void LteChannelModel::initialize(int stage)
 
         // register the carrier to the cellInfo module and the binder
         cellInfo_.reference(this, "cellInfoModule", false);
-        if (cellInfo_) { // cInfo is NULL on UEs
+        if (cellInfo_ != nullptr) { // cInfo is NULL on UEs
             cellInfo_->registerCarrier(carrierFrequency_, numBands_, componentCarrier_->getNumerologyIndex());
         }
     }

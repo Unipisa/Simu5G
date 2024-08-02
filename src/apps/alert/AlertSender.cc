@@ -66,7 +66,7 @@ void AlertSender::initialize(int stage)
     const char *multicastInterface = par("multicastInterface");
     if (multicastInterface[0]) {
         NetworkInterface *ie = ift->findInterfaceByName(multicastInterface);
-        if (!ie)
+        if (ie == nullptr)
             throw cRuntimeError("Wrong multicastInterface setting: no interface named \"%s\"", multicastInterface);
         socket.setMulticastOutputInterface(ie->getInterfaceId());
     }

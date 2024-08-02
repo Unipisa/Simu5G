@@ -143,7 +143,7 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 void LtePhyEnb::handleAirFrame(cMessage *msg)
 {
     UserControlInfo *lteInfo = check_and_cast<UserControlInfo *>(msg->removeControlInfo());
-    if (!lteInfo) {
+    if (lteInfo == nullptr) {
         return;
     }
 

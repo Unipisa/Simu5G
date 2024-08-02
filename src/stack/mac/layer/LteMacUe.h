@@ -182,7 +182,7 @@ class LteMacUe : public LteMacBase
     inline const LteSchedulingGrant *getSchedulingGrant(double carrierFrequency) const
     {
         if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end())
-            return NULL;
+            return nullptr;
         return schedulingGrant_.at(carrierFrequency).get();
     }
 

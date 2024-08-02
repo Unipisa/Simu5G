@@ -36,7 +36,7 @@ class NRSchedulerGnbUl : public LteSchedulerEnbUl
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL);
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 };
 
 } //namespace

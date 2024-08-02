@@ -341,7 +341,7 @@ void NRPhyUe::doHandover()
 
     if (candidateMasterId_ != 0) {
         LteAmc *newAmc = getAmcModule(candidateMasterId_);
-        assert(newAmc != NULL);
+        assert(newAmc != nullptr);
         newAmc->attachUser(nodeId_, UL);
         newAmc->attachUser(nodeId_, DL);
         newAmc->attachUser(nodeId_, D2D);

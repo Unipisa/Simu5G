@@ -37,7 +37,7 @@ static int parseInt(const char *s, int defaultValue)
 // the destructor unregister the radio module
 ChannelAccess::~ChannelAccess()
 {
-    if (cc && myRadioRef) {
+    if (cc != nullptr && myRadioRef != nullptr) {
         // check if channel control exist
         IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
         if (cc)
@@ -80,7 +80,7 @@ void ChannelAccess::initialize(int stage)
                         hostModule->getFullPath().c_str());
 
             const char *s = hostModule->getDisplayString().getTagArg("p", 2);
-            if (s && *s)
+            if (s != nullptr && *s)
                 error("The coordinates of '%s' host are invalid. Please remove automatic arrangement"
                       " (3rd argument of 'p' tag)"
                       " from '@display' attribute, or configure Mobility for this host.",
@@ -127,7 +127,7 @@ void ChannelAccess::receiveSignal(cComponent *source, simsignal_t signalID, cObj
         radioPos = mobility->getCurrentPosition();
         positionUpdateArrived = true;
 
-        if (myRadioRef)
+        if (myRadioRef != nullptr)
             cc->setRadioPosition(myRadioRef, radioPos);
 
         // emit serving cell and the distance from it
