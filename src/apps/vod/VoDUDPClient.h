@@ -47,7 +47,7 @@ class VoDUDPClient : public omnetpp::cSimpleModule
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void finish() override;
     virtual void handleMessage(omnetpp::cMessage *msg) override;
-    virtual void receiveStream(VoDPacket *msg);
+    virtual void receiveStream(const VoDPacket *msg);
 };
 
 } //namespace

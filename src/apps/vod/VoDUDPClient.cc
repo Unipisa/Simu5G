@@ -144,13 +144,15 @@ void VoDUDPClient::handleMessage(cMessage* msg)
             socket.setTos(tos);
         delete msg;
     }
-    else if (!strcmp(msg->getName(), "VoDPacket"))
-        receiveStream((VoDPacket*) (msg));   //FIXME: must decapsulate - see https://inet.omnetpp.org/docs/developers-guide/ch-packets.html
+    else if (!strcmp(msg->getName(), "VoDPacket")) {
+        receiveStream(check_and_cast<inet::Packet *>(msg)->peekAtFront<VoDPacket>().get());
+        delete msg;
+    }
     else
         delete msg;
 }
 
-void VoDUDPClient::receiveStream(VoDPacket *msg)
+void VoDUDPClient::receiveStream(const VoDPacket *msg)
 {
     // int seqNum = msg->getFrameSeqNum();
     simtime_t sendingTime = msg->getPayloadTimestamp();
@@ -180,9 +182,6 @@ void VoDUDPClient::receiveStream(VoDPacket *msg)
         emit(tptLayer3_, tputSample);
         emit(delayLayer3_, delay.dbl());
     }
-    //    outfile << seqNum << "\t" << frameLength << "\t" << delay << endl;
-
-    delete msg;
 }
 
 } //namespace
