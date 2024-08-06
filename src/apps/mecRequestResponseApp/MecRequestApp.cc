@@ -143,8 +143,6 @@ void MecRequestApp::sendRequest()
 void MecRequestApp::recvResponse(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-    if (packet == nullptr)
-        throw cRuntimeError("MecRequestApp::handleRequest - FATAL! Error when casting to inet packet");
     packet->removeControlInfo();
 
     auto respPkt = packet->popAtFront<MecRequestResponsePacket>();

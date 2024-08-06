@@ -255,27 +255,23 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
 
-                    if (pkt != nullptr) {
-                        // multicast support
-                        // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
-                        auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
+                    // multicast support
+                    // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
+                    auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
 
-                        if (infoVec.empty())
-                            throw cRuntimeError("No tag of type LteControlInfo found");
+                    if (infoVec.empty())
+                        throw cRuntimeError("No tag of type LteControlInfo found");
 
-                        int32_t groupId = infoVec.front().getMulticastGroupId();
-                        if (groupId >= 0) // for unicast, group id is -1
-                            macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
+                    int32_t groupId = infoVec.front().getMulticastGroupId();
+                    if (groupId >= 0) // for unicast, group id is -1
+                        macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
 
-                        drop(pkt);
+                    drop(pkt);
 
-                        auto header = macPkt->removeAtFront<LteMacPdu>();
-                        header->pushSdu(pkt);
-                        macPkt->insertAtFront(header);
-                        sduPerCid--;
-                    }
-                    else
-                        throw cRuntimeError("LteMacUeD2D::macPduMake - extracted SDU is NULL. Abort.");
+                    auto header = macPkt->removeAtFront<LteMacPdu>();
+                    header->pushSdu(pkt);
+                    macPkt->insertAtFront(header);
+                    sduPerCid--;
                 }
 
                 // consider virtual buffers to compute BSR size

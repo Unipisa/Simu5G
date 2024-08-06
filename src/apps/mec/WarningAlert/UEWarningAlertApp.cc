@@ -128,10 +128,6 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
          */
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-
-            if (mePkt == nullptr)
-                throw cRuntimeError("UEWarningAlertApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
-
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMEWarningAlertApp(msg);
 
             else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMEWarningAlertApp(msg);
@@ -143,9 +139,6 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
         // From MEC application
         else {
             auto mePkt = packet->peekAtFront<WarningAppPacket>();
-            if (mePkt == nullptr)
-                throw cRuntimeError("UEWarningAlertApp::handleMessage - \tFATAL! Error when casting to WarningAppPacket");
-
             if (!strcmp(mePkt->getType(), WARNING_ALERT)) handleInfoMEWarningAlertApp(msg);
             else if (!strcmp(mePkt->getType(), START_NACK)) {
                 EV << "UEWarningAlertApp::handleMessage - MEC app did not started correctly, trying to start again" << endl;

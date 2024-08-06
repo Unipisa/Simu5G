@@ -48,8 +48,6 @@ void MecResponseApp::handleMessage(cMessage *msg)
 void MecResponseApp::handleRequest(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-    if (packet == nullptr)
-        throw cRuntimeError("MecResponseApp::handleRequest - FATAL! Error when casting to inet packet");
     packet->removeControlInfo();
 
     auto reqPkt = packet->peekAtFront<MecRequestResponsePacket>();
@@ -82,9 +80,6 @@ void MecResponseApp::handleRequest(cMessage *msg)
 void MecResponseApp::sendResponse(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
-    if (packet == nullptr)
-        throw cRuntimeError("MecResponseApp::sendResponse - FATAL! Error when casting to inet packet");
-
     auto pkt = packet->popAtFront<MecRequestResponsePacket>();
     auto respPkt = inet::makeShared<MecRequestResponsePacket>();
 

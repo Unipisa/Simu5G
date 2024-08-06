@@ -122,10 +122,6 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
          */
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
-
-            if (mePkt == nullptr)
-                throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
-
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(msg);
 
             else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMecApp(msg);
@@ -137,9 +133,6 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
         // From MEC application
         else {
             auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
-            if (mePkt == nullptr)
-                throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to RnisTestAppPacket");
-
             if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(msg);
             else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK)) {
                 EV << "UeRnisTestApp::handleMessage - MEC app did not started correctly, trying to start again" << endl;

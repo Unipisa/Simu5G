@@ -71,11 +71,8 @@ void VoIPReceiver::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
         return;
-    Packet *pPacket = check_and_cast<Packet *>(msg);
 
-    if (pPacket == nullptr) {
-        throw cRuntimeError("VoIPReceiver::handleMessage - FATAL! Error when casting to inet packet");
-    }
+    Packet *pPacket = check_and_cast<Packet *>(msg);
 
     // read VoIP header
     auto voipHeader = pPacket->popAtFront<VoipPacket>();

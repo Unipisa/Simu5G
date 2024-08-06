@@ -474,26 +474,23 @@ void NRMacUe::macPduMake(MacCid cid)
                         throw cRuntimeError("Empty buffer for cid %d, while expected SDUs were %d", destCid, sduPerCid);
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
-                    if (pkt != nullptr) {
-                        // multicast support
-                        // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
-                        auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
-                        if (infoVec.empty())
-                            throw cRuntimeError("No tag of type LteControlInfo found");
 
-                        int32_t groupId = infoVec.front().getMulticastGroupId();
-                        if (groupId >= 0) // for unicast, group id is -1
-                            macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
+                    // multicast support
+                    // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
+                    auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
+                    if (infoVec.empty())
+                        throw cRuntimeError("No tag of type LteControlInfo found");
 
-                        drop(pkt);
+                    int32_t groupId = infoVec.front().getMulticastGroupId();
+                    if (groupId >= 0) // for unicast, group id is -1
+                        macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
 
-                        auto header = macPkt->removeAtFront<LteMacPdu>();
-                        header->pushSdu(pkt);
-                        macPkt->insertAtFront(header);
-                        sduPerCid--;
-                    }
-                    else
-                        throw cRuntimeError("NRMacUe::macPduMake - extracted SDU is NULL. Abort.");
+                    drop(pkt);
+
+                    auto header = macPkt->removeAtFront<LteMacPdu>();
+                    header->pushSdu(pkt);
+                    macPkt->insertAtFront(header);
+                    sduPerCid--;
                 }
 
                 // consider virtual buffers to compute BSR size
