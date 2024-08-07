@@ -27,14 +27,12 @@ UeStatsCollector::UeStatsCollector()
 
 void UeStatsCollector::initialize(int stage)
 {
-    if(stage == inet::INITSTAGE_LOCAL)
-        {
-            collectorType_ = par("collectorType").stringValue();
+    if (stage == inet::INITSTAGE_LOCAL) {
+        collectorType_ = par("collectorType").stringValue();
 
-        }
-        else if (stage == inet::INITSTAGE_APPLICATION_LAYER) // same as lteMacUe, when read the interface entry
-    {
-        Binder* binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
+    }
+    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) { // same as lteMacUe, when read the interface entry
+        Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
 
         mac_.reference(this, "macModule", true);
 //        pdcp_.reference(this, "pdcpRrcModule", true);
@@ -56,32 +54,31 @@ void UeStatsCollector::initialize(int stage)
         handover_ = false;
 
         // packet delay
-         ul_nongbr_delay_ue.init("ul_nongbr_delay_ue", par("delayPacketPeriods"), par("movingAverage"));
-         dl_nongbr_delay_ue.init("dl_nongbr_delay_ue",par("delayPacketPeriods"), par("movingAverage"));
+        ul_nongbr_delay_ue.init("ul_nongbr_delay_ue", par("delayPacketPeriods"), par("movingAverage"));
+        dl_nongbr_delay_ue.init("dl_nongbr_delay_ue", par("delayPacketPeriods"), par("movingAverage"));
         // packet discard rate
-         ul_nongbr_pdr_ue.init("ul_nongbr_pdr_ue", par("discardRatePeriods"), par("movingAverage"));
-         dl_nongbr_pdr_ue.init("dl_nongbr_pdr_ue", par("discardRatePeriods"), par("movingAverage"));
+        ul_nongbr_pdr_ue.init("ul_nongbr_pdr_ue", par("discardRatePeriods"), par("movingAverage"));
+        dl_nongbr_pdr_ue.init("dl_nongbr_pdr_ue", par("discardRatePeriods"), par("movingAverage"));
         // scheduled throughput
-         ul_nongbr_throughput_ue.init("ul_nongbr_throughput_ue", par("tPutPeriods"), par("movingAverage"));
-         dl_nongbr_throughput_ue.init("dl_nongbr_throughput_ue", par("tPutPeriods"), par("movingAverage"));
+        ul_nongbr_throughput_ue.init("ul_nongbr_throughput_ue", par("tPutPeriods"), par("movingAverage"));
+        dl_nongbr_throughput_ue.init("dl_nongbr_throughput_ue", par("tPutPeriods"), par("movingAverage"));
         // data volume
-         ul_nongbr_data_volume_ue.init("ul_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
-         dl_nongbr_data_volume_ue.init("dl_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
+        ul_nongbr_data_volume_ue.init("ul_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
+        dl_nongbr_data_volume_ue.init("dl_nongbr_data_volume_ue", par("dataVolumePeriods"), par("movingAverage"));
     }
 }
 
 void UeStatsCollector::resetDelayCounter()
 {
-    if(packetFlowManager_ != nullptr)
-        packetFlowManager_ ->resetDelayCounter();
+    if (packetFlowManager_ != nullptr)
+        packetFlowManager_->resetDelayCounter();
 }
 
 void UeStatsCollector::add_ul_nongbr_delay_ue()
 {
-    if(packetFlowManager_ != nullptr)
-    {
+    if (packetFlowManager_ != nullptr) {
         double delay = packetFlowManager_->getDelayStats();
-        if(delay != 0)
+        if (delay != 0)
             EV << "UeStatsCollector::add_ul_nongbr_delay_ue() - delay: " << delay << endl;
         ul_nongbr_delay_ue.addValue((int)delay);
     }
@@ -99,27 +96,30 @@ void UeStatsCollector::add_ul_nongbr_pdr_ue()
     double rate = ((double)pair.discarded * 1000000) / pair.total;
     ul_nongbr_pdr_ue.addValue((int)rate);
 }
+
 // called by the eNodeBCollector
 void UeStatsCollector::add_dl_nongbr_pdr_ue(double value)
 {
     dl_nongbr_pdr_ue.addValue(value);
 }
 
-
 // called by the eNodeBCollector
 void UeStatsCollector::add_ul_nongbr_throughput_ue(double value)
 {
     ul_nongbr_throughput_ue.addValue(value);
 }
+
 void UeStatsCollector::add_dl_nongbr_throughput_ue(double value)
 {
     dl_nongbr_throughput_ue.addValue(value);
 }
+
 // called by the eNodeBCollector
 void UeStatsCollector::add_ul_nongbr_data_volume_ue(unsigned int value)
 {
     ul_nongbr_data_volume_ue.addValue(value);
 }
+
 void UeStatsCollector::add_dl_nongbr_data_volume_ue(unsigned int value)
 {
     dl_nongbr_data_volume_ue.addValue(value);
@@ -129,6 +129,7 @@ int UeStatsCollector::get_ul_nongbr_delay_ue()
 {
     return ul_nongbr_delay_ue.getMean();
 }
+
 int UeStatsCollector::get_dl_nongbr_delay_ue()
 {
     return dl_nongbr_delay_ue.getMean();
@@ -138,6 +139,7 @@ int UeStatsCollector::get_ul_nongbr_pdr_ue()
 {
     return ul_nongbr_pdr_ue.getMean();
 }
+
 int UeStatsCollector::get_dl_nongbr_pdr_ue()
 {
     return dl_nongbr_pdr_ue.getMean();
@@ -147,6 +149,7 @@ int UeStatsCollector::get_ul_nongbr_throughput_ue()
 {
     return ul_nongbr_throughput_ue.getMean();
 }
+
 int UeStatsCollector::get_dl_nongbr_throughput_ue()
 {
     return dl_nongbr_throughput_ue.getMean();
@@ -156,6 +159,7 @@ int UeStatsCollector::get_ul_nongbr_data_volume_ue()
 {
     return ul_nongbr_data_volume_ue.getMean();
 }
+
 int UeStatsCollector::get_dl_nongbr_data_volume_ue()
 {
     return dl_nongbr_data_volume_ue.getMean();
@@ -163,9 +167,8 @@ int UeStatsCollector::get_dl_nongbr_data_volume_ue()
 
 DiscardedPkts UeStatsCollector::getULDiscardedPkt()
 {
-    DiscardedPkts pair = {0,0};
-    if(packetFlowManager_ != nullptr)
-    {
+    DiscardedPkts pair = { 0, 0 };
+    if (packetFlowManager_ != nullptr) {
 
         pair = packetFlowManager_->getDiscardedPkt();
         //double rate = ((double)pair.discarded * 1000000) / pair.total;
@@ -179,13 +182,13 @@ void UeStatsCollector::resetStats()
     // packet delay
     ul_nongbr_delay_ue.reset();
     dl_nongbr_delay_ue.reset();
-   // packet discard rate
+    // packet discard rate
     ul_nongbr_pdr_ue.reset();
     dl_nongbr_pdr_ue.reset();
-   // scheduled throughput
+    // scheduled throughput
     ul_nongbr_throughput_ue.reset();
     dl_nongbr_throughput_ue.reset();
-   // data volume
+    // data volume
     ul_nongbr_data_volume_ue.reset();
     dl_nongbr_data_volume_ue.reset();
 }

@@ -46,7 +46,7 @@ using namespace omnetpp;
  * 4) send delete MEC app to the Device App
  */
 
-class UEWarningAlertApp: public cSimpleModule
+class UEWarningAlertApp : public cSimpleModule
 {
 
     //communication to device app and mec app
@@ -58,8 +58,8 @@ class UEWarningAlertApp: public cSimpleModule
     int deviceAppPort_;
     inet::L3Address deviceAppAddress_;
 
-    char* sourceSimbolicAddress;            //Ue[x]
-    char* deviceSimbolicAppAddress_;              //meHost.virtualisationInfrastructure
+    char *sourceSimbolicAddress;            //Ue[x]
+    char *deviceSimbolicAppAddress_;              //meHost.virtualisationInfrastructure
 
     // MEC application endPoint (returned by the device app)
     inet::L3Address mecAppAddress_;
@@ -87,26 +87,27 @@ class UEWarningAlertApp: public cSimpleModule
     // uses to write in a log a file
     bool log;
 
-    public:
-        ~UEWarningAlertApp();
-        UEWarningAlertApp();
+  public:
+    ~UEWarningAlertApp();
+    UEWarningAlertApp();
 
-    protected:
+  protected:
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-        virtual void finish();
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
-        void sendStartMEWarningAlertApp();
-        void sendMessageToMECApp();
-        void sendStopMEWarningAlertApp();
+    void sendStartMEWarningAlertApp();
+    void sendMessageToMECApp();
+    void sendStopMEWarningAlertApp();
 
-        void handleAckStartMEWarningAlertApp(cMessage* msg);
-        void handleInfoMEWarningAlertApp(cMessage* msg);
-        void handleAckStopMEWarningAlertApp(cMessage* msg);
+    void handleAckStartMEWarningAlertApp(cMessage *msg);
+    void handleInfoMEWarningAlertApp(cMessage *msg);
+    void handleAckStopMEWarningAlertApp(cMessage *msg);
 };
 
 } //namespace
 
 #endif
+

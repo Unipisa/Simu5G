@@ -23,7 +23,7 @@ unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 using namespace omnetpp;
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
-    MacNodeId srcId)
+        MacNodeId srcId)
 {
     binder_ = binder;
     macOwner_ = owner;
@@ -34,21 +34,18 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
     totalRcvdBytes_ = 0;
     isMulticast_ = false;
 
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         processes_[i] = new LteHarqProcessRx(i, macOwner_, binder);
     }
 
     /* Signals initialization: those are used to gather statistics */
-    if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-    {
+    if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
         macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputUl");
         macDelay_ = macUe_registerSignal("macDelayUl");
         macThroughput_ = macUe_registerSignal("macThroughputUl");
     }
-    else // this is a UE
-    {
+    else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
         macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputDl");
         macThroughput_ = macUe_registerSignal("macThroughputDl");
@@ -63,8 +60,7 @@ void LteHarqBufferRx::insertPdu(Codeword cw, inet::Packet *pkt)
     auto uInfo = pkt->getTag<UserControlInfo>();
 
     MacNodeId srcId = uInfo->getSourceId();
-    if (macOwner_->isHarqReset(srcId))
-    {
+    if (macOwner_->isHarqReset(srcId)) {
         // if the HARQ processes have been aborted during this TTI (e.g. due to a D2D mode switch),
         // incoming packets should not be accepted
         delete pkt;
@@ -75,17 +71,14 @@ void LteHarqBufferRx::insertPdu(Codeword cw, inet::Packet *pkt)
     processes_[acid]->insertPdu(cw, pkt);
     // debug output
     EV << "H-ARQ RX: new pdu (id " << pdu->getId()
-       << " ) inserted into process " << (int) acid << endl;
+       << " ) inserted into process " << (int)acid << endl;
 }
 
 void LteHarqBufferRx::sendFeedback()
 {
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
-        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw)
-        {
-            if (processes_[i]->isEvaluated(cw))
-            {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
+        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
+            if (processes_[i]->isEvaluated(cw)) {
                 auto pkt = processes_[i]->createFeedback(cw);
                 auto hfb = pkt->peekAtFront<LteHarqFeedback>();
 
@@ -93,7 +86,7 @@ void LteHarqBufferRx::sendFeedback()
                 auto uInfo = pkt->getTag<UserControlInfo>();
                 const char *r = hfb->getResult() ? "ACK" : "NACK";
                 EV << "H-ARQ RX: feedback sent to TX process "
-                   << (int) hfb->getAcid() << " Codeword  " << (int) cw
+                   << (int)hfb->getAcid() << " Codeword  " << (int)cw
                    << "of node with id "
                    << uInfo->getDestId()
                    << " result: " << r << endl;
@@ -109,12 +102,9 @@ unsigned int LteHarqBufferRx::purgeCorruptedPdus()
 {
     unsigned int purged = 0;
 
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
-        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw)
-        {
-            if (processes_[i]->getUnitStatus(cw) == RXHARQ_PDU_CORRUPTED)
-            {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
+        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
+            if (processes_[i]->getUnitStatus(cw) == RXHARQ_PDU_CORRUPTED) {
                 EV << "LteHarqBufferRx::purgeCorruptedPdus - purged pdu with acid " << i << endl;
                 // purge PDU
                 processes_[i]->purgeCorruptedPdu(cw);
@@ -130,14 +120,11 @@ unsigned int LteHarqBufferRx::purgeCorruptedPdus()
 std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
 {
     this->sendFeedback();
-    std::list<Packet*> ret;
+    std::list<Packet *> ret;
     unsigned char acid = 0;
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
-        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw)
-        {
-            if (processes_[i]->isCorrect(cw))
-            {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
+        for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
+            if (processes_[i]->isCorrect(cw)) {
                 auto pktTemp = processes_[i]->extractPdu(cw);
                 auto temp = pktTemp->peekAtFront<LteMacPdu>();
                 auto uInfo = pktTemp->getTag<UserControlInfo>();
@@ -153,8 +140,7 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 // emit throughput statistics
-                if (den > 0)
-                {
+                if (den > 0) {
                     double tputSample = (double)totalRcvdBytes_ / den;
                     double cellTputSample = (double)totalCellRcvdBytes_ / den;
 
@@ -167,7 +153,7 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 acid = i;
 
                 EV << "LteHarqBufferRx::extractCorrectPdus H-ARQ RX: pdu (id " << ret.back()->getId()
-                   << " ) extracted from process " << (int) acid
+                   << " ) extracted from process " << (int)acid
                    << "to be sent upper" << endl;
             }
         }
@@ -181,10 +167,8 @@ UnitList LteHarqBufferRx::firstAvailable()
     UnitList ret;
 
     unsigned char acid = HARQ_NONE;
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
-        if (processes_[i]->isEmpty())
-        {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
+        if (processes_[i]->isEmpty()) {
             acid = i;
             break;
         }
@@ -192,8 +176,7 @@ UnitList LteHarqBufferRx::firstAvailable()
 
     ret.first = acid;
 
-    if (acid != HARQ_NONE)
-    {
+    if (acid != HARQ_NONE) {
         // if there is any free process, return empty list
         ret.second = processes_[acid]->emptyUnitsIds();
     }
@@ -214,8 +197,7 @@ RxBufferStatus LteHarqBufferRx::getBufferStatus()
 {
     RxBufferStatus bs(numHarqProcesses_);
     unsigned int numHarqUnits = 0;
-    for (unsigned int i = 0; i < numHarqProcesses_; i++)
-    {
+    for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         numHarqUnits = (processes_)[i]->getNumHarqUnits();
         std::vector<RxUnitStatus> vus(numHarqUnits);
         vus = (processes_)[i]->getProcessStatus();
@@ -227,20 +209,19 @@ RxBufferStatus LteHarqBufferRx::getBufferStatus()
 LteHarqBufferRx::~LteHarqBufferRx()
 {
     std::vector<LteHarqProcessRx *>::iterator it = processes_.begin();
-    for (; it != processes_.end(); ++it)
+    for ( ; it != processes_.end(); ++it)
         delete *it;
     processes_.clear();
     macOwner_ = nullptr;
 }
 
-
 // @author Alessandro noferi
 
 bool LteHarqBufferRx::isHarqBufferActive() const {
-    std::vector<LteHarqProcessRx *>::const_iterator it =  processes_.begin();
+    std::vector<LteHarqProcessRx *>::const_iterator it = processes_.begin();
     std::vector<LteHarqProcessRx *>::const_iterator end = processes_.end();
-    for(; it != end; ++it){
-        if((*it)->isHarqProcessActive()){
+    for ( ; it != end; ++it) {
+        if ((*it)->isHarqProcessActive()) {
             return true;
         }
     }

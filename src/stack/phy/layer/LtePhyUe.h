@@ -34,7 +34,7 @@ class LtePhyUe : public LtePhyBase
     MacNodeId masterId_;
 
     /** Reference to master node's mobility module */
-    IMobility* masterMobility_;
+    IMobility *masterMobility_;
 
     /** Statistic for distance from serving cell */
     omnetpp::simsignal_t distance_;
@@ -99,7 +99,7 @@ class LtePhyUe : public LtePhyBase
      * when receiving broadcasts and to retrieve physical
      * antenna properties on packet reception
      */
-    DasFilter* das_;
+    DasFilter *das_;
 
     /// Threshold for antenna association
     // TODO: bring it to ned par!
@@ -130,11 +130,11 @@ class LtePhyUe : public LtePhyBase
 
     virtual void initialize(int stage) override;
     virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
-    virtual void handleAirFrame(omnetpp::cMessage* msg) override;
+    virtual void handleAirFrame(omnetpp::cMessage *msg) override;
     virtual void finish() override;
-    virtual void finish(cComponent *component, omnetpp::simsignal_t signalID) override {cIListener::finish(component, signalID);}
+    virtual void finish(cComponent *component, omnetpp::simsignal_t signalID) override { cIListener::finish(component, signalID); }
 
-    virtual void handleUpperMessage(omnetpp::cMessage* msg) override;
+    virtual void handleUpperMessage(omnetpp::cMessage *msg) override;
 
     virtual void emitMobilityStats() override;
 
@@ -143,7 +143,7 @@ class LtePhyUe : public LtePhyBase
      */
     double updateHysteresisTh(double v);
 
-    void handoverHandler(LteAirFrame* frame, UserControlInfo* lteInfo);
+    void handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     void deleteOldBuffers(MacNodeId masterId);
 
@@ -162,6 +162,7 @@ class LtePhyUe : public LtePhyBase
     {
         return masterId_;
     }
+
     omnetpp::simtime_t coherenceTime(double speed)
     {
         double fd = (speed / SPEED_OF_LIGHT) * carrierFrequency_;
@@ -175,4 +176,5 @@ class LtePhyUe : public LtePhyBase
 
 } //namespace
 
-#endif  /* _LTE_AIRPHYUE_H_ */
+#endif /* _LTE_AIRPHYUE_H_ */
+

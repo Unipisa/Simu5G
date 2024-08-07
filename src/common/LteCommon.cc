@@ -36,8 +36,7 @@ const inet::Protocol LteProtocol::x2ap("x2ap", "X2AP");         // X2AP Protocol
 
 const std::string lteTrafficClassToA(LteTrafficClass type)
 {
-    switch (type)
-    {
+    switch (type) {
         case CONVERSATIONAL:
             return "CONVERSATIONAL";
         case STREAMING:
@@ -66,8 +65,7 @@ LteTrafficClass aToLteTrafficClass(std::string s)
 
 const std::string rlcTypeToA(LteRlcType type)
 {
-    switch (type)
-    {
+    switch (type) {
         case TM:
             return "tm";
         case UM:
@@ -79,7 +77,7 @@ const std::string rlcTypeToA(LteRlcType type)
     }
 }
 
-char * cStringToLower(char* str)
+char *cStringToLower(char *str)
 {
     for (int i = 0; str[i]; i++)
         str[i] = tolower(str[i]);
@@ -100,8 +98,7 @@ LteRlcType aToRlcType(std::string s)
 
 const std::string dirToA(Direction dir)
 {
-    switch (dir)
-    {
+    switch (dir) {
         case DL:
             return "DL";
         case UL:
@@ -117,8 +114,7 @@ const std::string dirToA(Direction dir)
 
 const std::string d2dModeToA(LteD2DMode mode)
 {
-    switch (mode)
-    {
+    switch (mode) {
         case IM:
             return "IM";
         case DM:
@@ -128,11 +124,9 @@ const std::string d2dModeToA(LteD2DMode mode)
     }
 }
 
-
 const std::string allocationTypeToA(RbAllocationType type)
 {
-    switch (type)
-    {
+    switch (type) {
         case TYPE2_DISTRIBUTED:
             return "distributed";
         case TYPE2_LOCALIZED:
@@ -143,8 +137,7 @@ const std::string allocationTypeToA(RbAllocationType type)
 
 const std::string modToA(LteMod mod)
 {
-    switch (mod)
-    {
+    switch (mod) {
         case _QPSK:
             return "QPSK";
         case _16QAM:
@@ -159,8 +152,7 @@ const std::string modToA(LteMod mod)
 
 const std::string periodicityToA(FbPeriodicity per)
 {
-    switch (per)
-    {
+    switch (per) {
         case PERIODIC:
             return "PERIODIC";
         case APERIODIC:
@@ -180,6 +172,7 @@ FeedbackType getFeedbackType(std::string s)
 
     return WIDEBAND; // default
 }
+
 FeedbackGeneratorType getFeedbackGeneratorType(std::string s)
 {
     if (s == "IDEAL")
@@ -205,8 +198,7 @@ RbAllocationType getRbAllocationType(std::string s)
 const std::string txModeToA(TxMode tx)
 {
     int i = 0;
-    while (txmodes[i].tx != UNKNOWN_TX_MODE)
-    {
+    while (txmodes[i].tx != UNKNOWN_TX_MODE) {
         if (txmodes[i].tx == tx)
             return txmodes[i].txName;
         i++;
@@ -217,8 +209,7 @@ const std::string txModeToA(TxMode tx)
 TxMode aToTxMode(std::string s)
 {
     int i = 0;
-    while (txmodes[i].tx != UNKNOWN_TX_MODE)
-    {
+    while (txmodes[i].tx != UNKNOWN_TX_MODE) {
         if (txmodes[i].txName == s)
             return txmodes[i].tx;
         i++;
@@ -229,8 +220,7 @@ TxMode aToTxMode(std::string s)
 const std::string schedDisciplineToA(SchedDiscipline discipline)
 {
     int i = 0;
-    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE)
-    {
+    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE) {
         if (disciplines[i].discipline == discipline)
             return disciplines[i].disciplineName;
         i++;
@@ -241,8 +231,7 @@ const std::string schedDisciplineToA(SchedDiscipline discipline)
 SchedDiscipline aToSchedDiscipline(std::string s)
 {
     int i = 0;
-    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE)
-    {
+    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE) {
         if (disciplines[i].disciplineName == s)
             return disciplines[i].discipline;
         i++;
@@ -253,8 +242,7 @@ SchedDiscipline aToSchedDiscipline(std::string s)
 const std::string dasToA(const Remote r)
 {
     int i = 0;
-    while (remotes[i].remote != UNKNOWN_RU)
-    {
+    while (remotes[i].remote != UNKNOWN_RU) {
         if (remotes[i].remote == r)
             return remotes[i].remoteName;
         i++;
@@ -265,8 +253,7 @@ const std::string dasToA(const Remote r)
 Remote aToDas(std::string s)
 {
     int i = 0;
-    while (remotes[i].remote != UNKNOWN_RU)
-    {
+    while (remotes[i].remote != UNKNOWN_RU) {
         if (remotes[i].remoteName == s)
             return remotes[i].remote;
         i++;
@@ -277,8 +264,7 @@ Remote aToDas(std::string s)
 const std::string phyFrameTypeToA(const LtePhyFrameType r)
 {
     int i = 0;
-    while (phytypes[i].phyType != UNKNOWN_TYPE)
-    {
+    while (phytypes[i].phyType != UNKNOWN_TYPE) {
         if (phytypes[i].phyType == r)
             return phytypes[i].phyName;
         i++;
@@ -289,8 +275,7 @@ const std::string phyFrameTypeToA(const LtePhyFrameType r)
 LtePhyFrameType aToPhyFrameType(std::string s)
 {
     int i = 0;
-    while (phytypes[i].phyType != UNKNOWN_TYPE)
-    {
+    while (phytypes[i].phyType != UNKNOWN_TYPE) {
         if (phytypes[i].phyName == s)
             return phytypes[i].phyType;
         i++;
@@ -301,8 +286,7 @@ LtePhyFrameType aToPhyFrameType(std::string s)
 const std::string nodeTypeToA(const RanNodeType t)
 {
     int i = 0;
-    while (nodetypes[i].node != UNKNOWN_NODE_TYPE)
-    {
+    while (nodetypes[i].node != UNKNOWN_NODE_TYPE) {
         if (nodetypes[i].node == t)
             return nodetypes[i].nodeName;
         i++;
@@ -313,8 +297,7 @@ const std::string nodeTypeToA(const RanNodeType t)
 RanNodeType aToNodeType(std::string name)
 {
     int i = 0;
-    while (nodetypes[i].node != UNKNOWN_NODE_TYPE)
-    {
+    while (nodetypes[i].node != UNKNOWN_NODE_TYPE) {
         if (nodetypes[i].nodeName == name)
             return nodetypes[i].node;
         i++;
@@ -325,8 +308,7 @@ RanNodeType aToNodeType(std::string name)
 const std::string applicationTypeToA(ApplicationType a)
 {
     int i = 0;
-    while (applications[i].app != UNKNOWN_APP)
-    {
+    while (applications[i].app != UNKNOWN_APP) {
         if (applications[i].app == a)
             return applications[i].appName;
         i++;
@@ -337,8 +319,7 @@ const std::string applicationTypeToA(ApplicationType a)
 ApplicationType aToApplicationType(std::string s)
 {
     int i = 0;
-    while (applications[i].app != UNKNOWN_APP)
-    {
+    while (applications[i].app != UNKNOWN_APP) {
         if (applications[i].appName == s)
             return applications[i].app;
         i++;
@@ -349,8 +330,7 @@ ApplicationType aToApplicationType(std::string s)
 const std::string fbGeneratorTypeToA(FeedbackGeneratorType type)
 {
     int i = 0;
-    while (feedbackGeneratorTypeTable[i].ty != UNKNOW_FB_GEN_TYPE)
-    {
+    while (feedbackGeneratorTypeTable[i].ty != UNKNOW_FB_GEN_TYPE) {
         if (feedbackGeneratorTypeTable[i].ty == type)
             return feedbackGeneratorTypeTable[i].tyname;
         i++;
@@ -383,8 +363,7 @@ bool isNrUe(MacNodeId id)
 
 const std::string planeToA(Plane p)
 {
-    switch (p)
-    {
+    switch (p) {
         case MAIN_PLANE:
             return "MAIN_PLANE";
         case MU_MIMO_PLANE:
@@ -397,8 +376,7 @@ const std::string planeToA(Plane p)
 const std::string DeploymentScenarioToA(DeploymentScenario type)
 {
     int i = 0;
-    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO)
-    {
+    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO) {
         if (DeploymentScenarioTable[i].scenario == type)
             return DeploymentScenarioTable[i].scenarioName;
         i++;
@@ -409,8 +387,7 @@ const std::string DeploymentScenarioToA(DeploymentScenario type)
 DeploymentScenario aToDeploymentScenario(std::string s)
 {
     int i = 0;
-    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO)
-    {
+    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO) {
         if (DeploymentScenarioTable[i].scenarioName == s)
             return DeploymentScenarioTable[i].scenario;
         i++;
@@ -418,14 +395,14 @@ DeploymentScenario aToDeploymentScenario(std::string s)
     return UNKNOW_SCENARIO;
 }
 
-bool isMulticastConnection(LteControlInfo* lteInfo)
+bool isMulticastConnection(LteControlInfo *lteInfo)
 {
-    return (lteInfo->getMulticastGroupId() >= 0);
+    return lteInfo->getMulticastGroupId() >= 0;
 }
 
 MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid)
 {
-    return (((MacCid) nodeId << 16) | lcid);
+    return ((MacCid)nodeId << 16) | lcid;
 }
 
 /*
@@ -448,8 +425,7 @@ MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info)
     LogicalCid lcid = info->getLcid();
     MacNodeId ueId;
 
-    switch (dir)
-    {
+    switch (dir) {
         case DL: case D2D:
             ueId = info->getDestId();
             break;
@@ -479,8 +455,7 @@ MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
     unsigned int dir = info->getDirection();
     MacNodeId ueId;
 
-    switch (dir)
-    {
+    switch (dir) {
         case DL: case D2D:
             ueId = info->getDestId();
             break;
@@ -495,88 +470,86 @@ MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
 
 MacNodeId MacCidToNodeId(MacCid cid)
 {
-    return ((MacNodeId) (cid >> 16));
+    return (MacNodeId)(cid >> 16);
 }
 
 LogicalCid MacCidToLcid(MacCid cid)
 {
-    return ((LogicalCid) (cid));
+    return (LogicalCid)(cid);
 }
 
-CellInfo* getCellInfo(Binder* binder, MacNodeId nodeId)
+CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
 {
     // Check if is an eNodeB
     // function GetNextHop returns nodeId
     MacNodeId id = binder->getNextHop(nodeId);
     OmnetId omnetid = binder->getOmnetId(id);
-    omnetpp::cModule* module = getSimulation()->getModule(omnetid);
-    return module? check_and_cast<CellInfo*>(module->getSubmodule("cellInfo")) : nullptr;
+    omnetpp::cModule *module = getSimulation()->getModule(omnetid);
+    return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
 }
 
-cModule* getPhyByMacNodeId(Binder *binder, MacNodeId nodeId)
+cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
     int id = binder->getOmnetId(nodeId);
-    if (id == 0){
+    if (id == 0) {
         return nullptr;
     }
     if (isNrUe(nodeId))
-        return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrPhy"));
-    return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("phy"));
+        return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrPhy");
+    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("phy");
 }
 
-cModule* getMacByMacNodeId(Binder *binder, MacNodeId nodeId)
+cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
     int id = binder->getOmnetId(nodeId);
-	if (id == 0){
-		return nullptr;
-	}
-	if (isNrUe(nodeId))
-	    return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrMac"));
-	return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("mac"));
+    if (id == 0) {
+        return nullptr;
+    }
+    if (isNrUe(nodeId))
+        return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrMac");
+    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("mac");
 }
 
-cModule* getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType)
+cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType)
 {
-	cModule* module = getMacByMacNodeId(binder, nodeId);
-	if(module == nullptr){
-		return nullptr;
-	}
+    cModule *module = getMacByMacNodeId(binder, nodeId);
+    if (module == nullptr) {
+        return nullptr;
+    }
     if (isNrUe(nodeId))
         return getSimulation()->getModule(binder->getOmnetId(nodeId))->getSubmodule("cellularNic")->getSubmodule("nrRlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
     return getSimulation()->getModule(binder->getOmnetId(nodeId))->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
 }
 
-cModule* getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
+cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
     int id = binder->getOmnetId(nodeId);
-    if (id == 0){
+    if (id == 0) {
         return NULL;
     }
-    return (getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcpRrc"));
+    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcpRrc");
 }
 
-LteMacBase* getMacUe(Binder *binder, MacNodeId nodeId)
+LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId)
 {
-    return check_and_cast<LteMacBase*>(getMacByMacNodeId(binder, nodeId));
+    return check_and_cast<LteMacBase *>(getMacByMacNodeId(binder, nodeId));
 }
 
-void getParametersFromXML(cXMLElement* xmlData, ParameterMap& outputMap)
+void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap)
 {
     cXMLElementList parameters = xmlData->getElementsByTagName("Parameter");
 
-    for (cXMLElementList::const_iterator it = parameters.begin(); it != parameters.end(); it++)
-    {
-        const char* name = (*it)->getAttribute("name");
-        const char* type = (*it)->getAttribute("type");
-        const char* value = (*it)->getAttribute("value");
-        if (name == 0 || type == 0 || value == 0)
-        {
+    for (cXMLElementList::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
+        const char *name = (*it)->getAttribute("name");
+        const char *type = (*it)->getAttribute("type");
+        const char *value = (*it)->getAttribute("value");
+        if (name == 0 || type == 0 || value == 0) {
             EV << "Invalid parameter, could not find name, type or value." << endl;
             continue;
         }
@@ -587,24 +560,19 @@ void getParametersFromXML(cXMLElement* xmlData, ParameterMap& outputMap)
         cMsgPar param(name);
 
         // parse type of parameter and set value
-        if (sType == "bool")
-        {
+        if (sType == "bool") {
             param.setBoolValue(sValue == "true" || sValue == "1");
         }
-        else if (sType == "double")
-        {
+        else if (sType == "double") {
             param.setDoubleValue(strtod(value, 0));
         }
-        else if (sType == "string")
-        {
+        else if (sType == "string") {
             param.setStringValue(value);
         }
-        else if (sType == "long")
-        {
+        else if (sType == "long") {
             param.setLongValue(strtol(value, 0, 0));
         }
-        else
-        {
+        else {
             EV << "Unknown parameter type: \"" << sType << "\"" << endl;
             continue;
         }
@@ -614,21 +582,17 @@ void getParametersFromXML(cXMLElement* xmlData, ParameterMap& outputMap)
     }
 }
 
-void parseStringToIntArray(std::string str, int* values, int dim, int pad)
+void parseStringToIntArray(std::string str, int *values, int dim, int pad)
 {
-    for (int i = 0; i < dim; i++)
-    {
+    for (int i = 0; i < dim; i++) {
         int pos = str.find(',');
 
-        if (pos == -1)
-        {
+        if (pos == -1) {
             // last number or malformed string
             pos = str.find(';');
-            if (pos == -1)
-            {
+            if (pos == -1) {
                 // malformed string or too few numbers, use 0 for remaining entries
-                for (int j = i; j < dim; j++)
-                {
+                for (int j = i; j < dim; j++) {
                     values[j] = pad;
                 }
                 EV << "parseStringToIntArray: Error: too few values in string array, padding with " << pad << endl;
@@ -667,19 +631,16 @@ double dBToLinear(double db)
 
 void initializeAllChannels(cModule *mod)
 {
-    for (cModule::GateIterator i(mod); !i.end(); i++)
-    {
-        cGate* gate = *i;
-        if (gate->getChannel() != nullptr)
-        {
-                if(!gate->getChannel()->initialized()){
-                        gate->getChannel()->callInitialize();
-                }
+    for (cModule::GateIterator i(mod); !i.end(); i++) {
+        cGate *gate = *i;
+        if (gate->getChannel() != nullptr) {
+            if (!gate->getChannel()->initialized()) {
+                gate->getChannel()->callInitialize();
+            }
         }
     }
 
-    for (cModule::SubmoduleIterator i(mod); !i.end(); i++)
-    {
+    for (cModule::SubmoduleIterator i(mod); !i.end(); i++) {
         cModule *submodule = *i;
         initializeAllChannels(submodule);
     }

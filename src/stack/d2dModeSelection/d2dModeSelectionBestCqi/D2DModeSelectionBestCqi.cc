@@ -31,9 +31,8 @@ void D2DModeSelectionBestCqi::doModeSelection()
     double primaryCarrierFrequency = mac_->getCellInfo()->getCarriers()->front();
 
     switchList_.clear();
-    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> >::iterator it = peeringModeMap_->begin();
-    for (; it != peeringModeMap_->end(); ++it)
-    {
+    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>>::iterator it = peeringModeMap_->begin();
+    for ( ; it != peeringModeMap_->end(); ++it) {
         MacNodeId srcId = it->first;
 
         // consider only UEs within this cell
@@ -41,10 +40,9 @@ void D2DModeSelectionBestCqi::doModeSelection()
             continue;
 
         std::map<MacNodeId, LteD2DMode>::iterator jt = it->second.begin();
-        for (; jt != it->second.end(); ++jt)
-        {
+        for ( ; jt != it->second.end(); ++jt) {
             MacNodeId dstId = jt->first;   // since the D2D CQI is the same for all D2D connections,
-                                            // the mode will be the same for all destinations
+                                           // the mode will be the same for all destinations
 
             // consider only UEs within this cell
             if (binder_->getNextHop(dstId) != mac_->getMacCellId())
@@ -67,8 +65,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
             // compare the bits in the two modes and select the best one
             LteD2DMode newMode = (bitsUl > bitsD2D) ? IM : DM;
 
-            if (newMode != oldMode)
-            {
+            if (newMode != oldMode) {
                 // add this flow to the list of flows to be switched
                 FlowId p(srcId, dstId);
                 FlowModeInfo info;

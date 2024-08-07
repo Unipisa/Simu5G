@@ -31,8 +31,8 @@ class BurstSender : public cSimpleModule
     bool initialized_;
 
     // timers
-    cMessage* selfBurst_;
-    cMessage* selfPacket_;
+    cMessage *selfBurst_;
+    cMessage *selfPacket_;
 
     //sender
     int idBurst_;

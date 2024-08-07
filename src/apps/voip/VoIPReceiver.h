@@ -35,7 +35,7 @@ class VoIPReceiver : public omnetpp::cSimpleModule
     int emodel_A_;
     double emodel_Ro_;
 
-    typedef std::list<VoipPacket*> PacketsList;
+    typedef std::list<VoipPacket *> PacketsList;
     PacketsList mPacketsList_;
     PacketsList mPlayoutQueue_;
     unsigned int mCurrentTalkspurt_;

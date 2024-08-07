@@ -15,11 +15,11 @@ namespace simu5g {
 
 CategoryRef::CategoryRef(const std::string& href, const std::string& id, const std::string& name, const std::string& version)
 {
-    href_  = href;
-    id_   = id;
+    href_ = href;
+    id_ = id;
     name_ = name;
-    version_  = version;
-    }
+    version_ = version;
+}
 
 nlohmann::ordered_json CategoryRef::toJson() const
 {

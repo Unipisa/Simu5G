@@ -31,7 +31,7 @@ class MultihopD2D : public omnetpp::cSimpleModule
 {
     static uint16_t numMultihopD2DApps;  // counter of apps (used for assigning the ids)
 
-protected:
+  protected:
     enum {
         KIND_SELF_SENDER = 1000,
         KIND_RELAY,
@@ -52,11 +52,11 @@ protected:
     bool trickleEnabled_;
     unsigned int k_;
     omnetpp::simtime_t I_;
-    std::map<unsigned int, inet::Packet*> last_;
+    std::map<unsigned int, inet::Packet *> last_;
     std::map<unsigned int, unsigned int> counter_;
     /***************************************************/
 
-    std::map<uint32_t,bool> relayedMsgMap_;  // indicates if a received message has been relayed before
+    std::map<uint32_t, bool> relayedMsgMap_;  // indicates if a received message has been relayed before
 
     int localPort_;
     int destPort_;
@@ -92,9 +92,9 @@ protected:
     bool isWithinBroadcastArea(inet::Coord srcCoord, double maxRadius);
 
     virtual void sendPacket();
-    virtual void handleRcvdPacket(omnetpp::cMessage* msg);
-    virtual void handleTrickleTimer(omnetpp::cMessage* msg);
-    virtual void relayPacket(omnetpp::cMessage* msg);
+    virtual void handleRcvdPacket(omnetpp::cMessage *msg);
+    virtual void handleTrickleTimer(omnetpp::cMessage *msg);
+    virtual void relayPacket(omnetpp::cMessage *msg);
 
   public:
     MultihopD2D();

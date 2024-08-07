@@ -53,12 +53,12 @@ class LteHarqBufferTx : omnetpp::noncopyable
     /*
      * Get a reference to the specified process
      */
-    LteHarqProcessTx * getProcess(unsigned char acid);
+    LteHarqProcessTx *getProcess(unsigned char acid);
 
     /*
      * Get a reference to the selected process
      */
-    LteHarqProcessTx * getSelectedProcess();
+    LteHarqProcessTx *getSelectedProcess();
 
     /**
      * Finds the H-ARQ process which contains the pdu which is not
@@ -177,9 +177,8 @@ class LteHarqBufferTx : omnetpp::noncopyable
 
     BufferStatus getBufferStatus();
 
-    std::vector<LteHarqProcessTx *> * getHarqProcesses(){ return processes_ ; }
+    std::vector<LteHarqProcessTx *> *getHarqProcesses() { return processes_; }
     unsigned int getNumProcesses() { return numProc_; }
-
 
     /**
      * @author Alessandro noferi
@@ -190,7 +189,6 @@ class LteHarqBufferTx : omnetpp::noncopyable
      */
 
     bool isHarqBufferActive() const;
-
 
     virtual ~LteHarqBufferTx();
 
@@ -209,3 +207,4 @@ class LteHarqBufferTx : omnetpp::noncopyable
 } //namespace
 
 #endif
+

@@ -64,10 +64,9 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     double initialPlayoutDelay;
     cMessage *displayFrame;
 
-
-    bool firstFrameDisplayed ;
-    long lastFrameDisplayed_ ;
-    int expectedFrameDisplayed_ ;
+    bool firstFrameDisplayed;
+    long lastFrameDisplayed_;
+    int expectedFrameDisplayed_;
     simtime_t lastfragment_;
 
     // reference to the UE app module, for statistic purposes (statistics will be recorded at the UE side)
@@ -119,3 +118,4 @@ class MecRTVideoStreamingReceiver : public MecAppBase
 } //namespace
 
 #endif /* APPS_MEC_MECRTVIDEOSTREAMINGRECEIVER_H_ */
+

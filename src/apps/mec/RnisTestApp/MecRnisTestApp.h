@@ -44,41 +44,41 @@ class MecRnisTestApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
-    inet::TcpSocket* serviceSocket_;
-    inet::TcpSocket* mp1Socket_;
+    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
 
-    HttpBaseMessage* mp1HttpMessage;
-    HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *serviceHttpMessage;
 
     simtime_t rnisQueryingPeriod_;
-    cMessage* rnisQueryingTimer_;
+    cMessage *rnisQueryingTimer_;
 
-    protected:
-        virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-        virtual void initialize(int stage) override;
-        virtual void finish() override;
+  protected:
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage) override;
+    virtual void finish() override;
 
-        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
+    virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
 
-        virtual void handleHttpMessage(int connId) override;
-        virtual void handleServiceMessage(int connId) override;
-        virtual void handleMp1Message(int connId) override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+    virtual void handleHttpMessage(int connId) override;
+    virtual void handleServiceMessage(int connId) override;
+    virtual void handleMp1Message(int connId) override;
+    virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
-        virtual void sendQuery(int cellId, std::string ueIpv4Address);
+    virtual void sendQuery(int cellId, std::string ueIpv4Address);
 
-        virtual void handleSelfMessage(cMessage *msg) override;
-
+    virtual void handleSelfMessage(cMessage *msg) override;
 
 //        /* TCPSocket::CallbackInterface callback methods */
-       virtual void established(int connId) override;
+    virtual void established(int connId) override;
 
-    public:
-       MecRnisTestApp();
-       virtual ~MecRnisTestApp();
+  public:
+    MecRnisTestApp();
+    virtual ~MecRnisTestApp();
 
 };
 
 } //namespace
 
 #endif
+

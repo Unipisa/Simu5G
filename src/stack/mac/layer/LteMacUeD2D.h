@@ -28,7 +28,7 @@ class LteMacUeD2D : public LteMacUe
   protected:
 
     // reference to the eNB
-    LteMacEnbD2D* enb_;
+    LteMacEnbD2D *enb_;
 
     // flag for empty schedule list (true when no carriers have been scheduled)
     bool emptyScheduleList_;
@@ -42,9 +42,8 @@ class LteMacUeD2D : public LteMacUe
 
     // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
     bool usePreconfiguredTxParams_;
-    UserTxParams* preconfiguredTxParams_;
-    UserTxParams* getPreconfiguredTxParams();  // build and return new user tx params
-
+    UserTxParams *preconfiguredTxParams_;
+    UserTxParams *getPreconfiguredTxParams();  // build and return new user tx params
 
     /**
      * Reads MAC parameters for ue and performs initialization.
@@ -62,7 +61,7 @@ class LteMacUeD2D : public LteMacUe
      */
     virtual void handleSelfMessage() override;
 
-    virtual void macHandleGrant(omnetpp::cPacket* pkt) override;
+    virtual void macHandleGrant(omnetpp::cPacket *pkt) override;
 
     /*
      * Checks RAC status
@@ -72,11 +71,11 @@ class LteMacUeD2D : public LteMacUe
     /*
      * Receives and handles RAC responses
      */
-    virtual void macHandleRac(omnetpp::cPacket* pkt) override;
+    virtual void macHandleRac(omnetpp::cPacket *pkt) override;
 
-    void macHandleD2DModeSwitch(omnetpp::cPacket* pkt);
+    void macHandleD2DModeSwitch(omnetpp::cPacket *pkt);
 
-    virtual Packet* makeBsr(int size);
+    virtual Packet *makeBsr(int size);
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -87,7 +86,7 @@ class LteMacUeD2D : public LteMacUe
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    virtual void macPduMake(MacCid cid=0) override;
+    virtual void macPduMake(MacCid cid = 0) override;
 
   public:
     LteMacUeD2D();
@@ -105,9 +104,11 @@ class LteMacUeD2D : public LteMacUe
         else
             bsrTriggered_ = true;
     }
+
     virtual void doHandover(MacNodeId targetEnb) override;
 };
 
 } //namespace
 
 #endif
+

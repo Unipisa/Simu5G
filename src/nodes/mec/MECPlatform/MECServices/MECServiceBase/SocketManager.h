@@ -28,13 +28,12 @@ namespace simu5g {
  * and it puts them in the request queue of the server.
  */
 
-
 class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
     MecServiceBase *service;
     inet::TcpSocket *sock;    // ptr into socketMap managed by TCPSrvHostApp
-    HttpBaseMessage* currentHttpMessage;
+    HttpBaseMessage *currentHttpMessage;
     omnetpp::cQueue httpMessageQueue;
     std::string bufferedData;
 
@@ -52,8 +51,8 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
 
   public:
 
-    SocketManager() { sock = nullptr; service = nullptr; currentHttpMessage = nullptr;}
-    virtual ~SocketManager() {delete sock;}
+    SocketManager() { sock = nullptr; service = nullptr; currentHttpMessage = nullptr; }
+    virtual ~SocketManager() { delete sock; }
 
     // internal: called by TCPSrvHostApp after creating this module
     virtual void init(MecServiceBase *serv, inet::TcpSocket *socket) { service = serv; sock = socket; }
@@ -107,3 +106,4 @@ class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICa
 } //namespace
 
 #endif
+

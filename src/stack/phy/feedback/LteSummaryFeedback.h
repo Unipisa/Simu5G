@@ -12,8 +12,6 @@
 #ifndef STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_
 #define STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_
 
-
-
 #include "stack/phy/feedback/LteSummaryFeedback.h"
 
 namespace simu5g {
@@ -41,7 +39,7 @@ class LteSummaryFeedback
     //! time elapsed from last refresh of RI.
     omnetpp::simtime_t tRi_;
     //! time elapsed from last refresh of CQI.
-    std::vector<std::vector<omnetpp::simtime_t> > tCqi_;
+    std::vector<std::vector<omnetpp::simtime_t>> tCqi_;
     //! time elapsed from last refresh of PMI.
     std::vector<omnetpp::simtime_t> tPmi_;
     // valid flag
@@ -68,8 +66,8 @@ class LteSummaryFeedback
     void reset();
 
     /*************
-     *  Setters
-     *************/
+    *  Setters
+    *************/
 
     //! Set the RI.
     void setRi(Rank ri)
@@ -97,8 +95,8 @@ class LteSummaryFeedback
     }
 
     /*************
-     *  Getters
-     *************/
+    *  Getters
+    *************/
 
     //! Get the number of codewords.
     unsigned char getTotCodewords() const
@@ -172,9 +170,10 @@ class LteSummaryFeedback
      *  @param txm The transmission mode.
      *  @param s The name of the function that requested the debug.
      */
-    void print(MacCellId cellId, MacNodeId nodeId, const Direction dir, TxMode txm, const char* s) const;
+    void print(MacCellId cellId, MacNodeId nodeId, const Direction dir, TxMode txm, const char *s) const;
 };
 
 } //namespace
 
 #endif /* STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_ */
+

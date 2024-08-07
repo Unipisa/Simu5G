@@ -23,7 +23,7 @@ namespace simu5g {
 typedef std::vector<unsigned short> UsableBands;
 
 // maps a user with a set of usable bands. If a UE is not in the list, the set of usable bands comprises the whole spectrum
-typedef std::map<MacNodeId,UsableBands> UsableBandsList;
+typedef std::map<MacNodeId, UsableBands> UsableBandsList;
 
 /// Forward declaration of LteAmc class, used by AmcPilot.
 class LteAmc;
@@ -66,10 +66,11 @@ class AmcPilot
         amc_ = amc;
         name_ = "NONE";
     }
+
     /**
      * Destructor
      */
-    virtual ~AmcPilot(){
+    virtual ~AmcPilot() {
 
     }
 
@@ -90,14 +91,15 @@ class AmcPilot
         return name_;
     }
 
-    virtual std::vector<Cqi>  getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) = 0;
+    virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) = 0;
 
-    virtual void setUsableBands(MacNodeId id , UsableBands usableBands) = 0;
-    virtual bool getUsableBands(MacNodeId id, UsableBands*& uBands) = 0;
+    virtual void setUsableBands(MacNodeId id, UsableBands usableBands) = 0;
+    virtual bool getUsableBands(MacNodeId id, UsableBands *& uBands) = 0;
 
-    void setMode(PilotComputationModes mode ) { mode_ = mode; }
+    void setMode(PilotComputationModes mode) { mode_ = mode; }
 };
 
 } //namespace
 
 #endif
+

@@ -25,38 +25,37 @@ class BaseStationStatsCollector;
 class Binder;
 
 /*
-* This class is responsible to retrieve the L2 measures and create the JSON body
-* response. It maintains the list of all the eNB/gNBs associated with the MEC host
-* where the RNIS is running and keeps the pointers to the s.*
-*/
-
+ * This class is responsible to retrieve the L2 measures and create the JSON body
+ * response. It maintains the list of all the eNB/gNBs associated with the MEC host
+ * where the RNIS is running and keeps the pointers to the s.*
+ */
 
 class L2Meas : public AttributeBase
 {
-	public:
-        L2Meas();
-		L2Meas(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
-		virtual ~L2Meas();
+  public:
+    L2Meas();
+    L2Meas(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    virtual ~L2Meas();
 
-        void setBinder(Binder *binder) { binder_ = binder; }
+    void setBinder(Binder *binder) { binder_ = binder; }
 
-		nlohmann::ordered_json toJson() const override;
+    nlohmann::ordered_json toJson() const override;
 
-		void addEnodeB(std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
-		void addEnodeB(omnetpp::cModule* eNodeB);
+    void addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    void addEnodeB(omnetpp::cModule *eNodeB);
 
-		nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
-		nlohmann::ordered_json toJsonUe(std::vector<inet::Ipv4Address>& uesID) const;
-		nlohmann::ordered_json toJson(std::vector<MacNodeId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const;
+    nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
+    nlohmann::ordered_json toJsonUe(std::vector<inet::Ipv4Address>& uesID) const;
+    nlohmann::ordered_json toJson(std::vector<MacNodeId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const;
 
+  protected:
 
-	protected:
-
-		TimeStamp timestamp_;
-		std::map<MacCellId, BaseStationStatsCollector*> eNodeBs_;
-		omnetpp::opp_component_ptr<Binder> binder_;
+    TimeStamp timestamp_;
+    std::map<MacCellId, BaseStationStatsCollector *> eNodeBs_;
+    omnetpp::opp_component_ptr<Binder> binder_;
 };
 
 } //namespace
 
 #endif // _L2MEAS_H_
+

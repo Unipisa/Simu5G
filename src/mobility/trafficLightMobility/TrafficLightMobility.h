@@ -33,7 +33,7 @@ class TrafficLightMobility : public LinearMobility
   protected:
     rad heading_;                                        // current heading
     deg current_heading_deg_normalized_;                 // adjust the heading after the boarder between 0 and 360 deg
-    std::vector<TrafficLightController*> trafficLights_; // references to the traffic lights affecting this mobility module
+    std::vector<TrafficLightController *> trafficLights_; // references to the traffic lights affecting this mobility module
 
     bool enableTurns_; // flag for enabling random turns at a traffic light
 
@@ -55,3 +55,4 @@ class TrafficLightMobility : public LinearMobility
 } //namespace
 
 #endif /* MOBILITY_TRAFFICLIGHTMOBILITY_H_ */
+

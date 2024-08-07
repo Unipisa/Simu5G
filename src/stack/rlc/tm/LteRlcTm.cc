@@ -28,12 +28,12 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
     // check if space is available or queue size is unlimited (queueSize_ is set to 0)
-    if(queuedPdus_.getLength() >= queueSize_ && queueSize_ != 0){
+    if (queuedPdus_.getLength() >= queueSize_ && queueSize_ != 0) {
         // cannot queue - queue is full
         EV << "LteRlcTm : Dropping packet " << pkt->getName() << " (queue full) \n";
 
         // statistics: packet was lost
-        if (lteInfo->getDirection()==DL)
+        if (lteInfo->getDirection() == DL)
             emit(rlcPacketLossDl, 1.0);
         else
             emit(rlcPacketLossUl, 1.0);
@@ -55,11 +55,10 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     queuedPdus_.insert(pkt);
 
     // statistics: packet was not lost
-    if (lteInfo->getDirection()==DL)
+    if (lteInfo->getDirection() == DL)
         emit(rlcPacketLossDl, 0.0);
     else
         emit(rlcPacketLossUl, 0.0);
-
 
     // create a message so as to notify the MAC layer that the queue contains new data
     auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
@@ -69,7 +68,7 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     pktDup->insertAtFront(newDataPkt);
 
     EV << "LteRlcTm::handleUpperMessage - Sending message " << newDataPkt->getName() << " to port TM_Sap_down$o\n";
-    emit(sentPacketToLowerLayer,pktDup);
+    emit(sentPacketToLowerLayer, pktDup);
     send(pktDup, down_[OUT_GATE]);
 }
 
@@ -78,21 +77,23 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
     emit(receivedPacketFromLowerLayer, pkt);
 
     if (strcmp(pkt->getName(), "LteMacSduRequest") == 0) {
-        if(queuedPdus_.getLength() > 0){
+        if (queuedPdus_.getLength() > 0) {
             auto rlcPduPkt = queuedPdus_.pop();
             EV << "LteRlcTm : Received " << pkt->getName() << " - sending packet " << rlcPduPkt->getName() << " to port TM_Sap_down$o\n";
-            emit(sentPacketToLowerLayer,pkt);
-            drop (rlcPduPkt);
+            emit(sentPacketToLowerLayer, pkt);
+            drop(rlcPduPkt);
 
             send(rlcPduPkt, down_[OUT_GATE]);
-        } else
+        }
+        else
             EV << "LteRlcTm : Received " << pkt->getName() << " but no PDUs buffered - nothing to send to MAC.\n";
 
-    } else {
+    }
+    else {
         // FIXME: needs to be changed to use inet::Packet
-        FlowControlInfo* lteInfo = check_and_cast<FlowControlInfo*>(pkt->removeControlInfo());
-        cPacket* upPkt = check_and_cast<cPacket *>(pkt->decapsulate());
-        cPacket* upUpPkt = check_and_cast<cPacket *>(upPkt->decapsulate());
+        FlowControlInfo *lteInfo = check_and_cast<FlowControlInfo *>(pkt->removeControlInfo());
+        cPacket *upPkt = check_and_cast<cPacket *>(pkt->decapsulate());
+        cPacket *upUpPkt = check_and_cast<cPacket *>(upPkt->decapsulate());
         upUpPkt->setControlInfo(lteInfo);
         delete upPkt;
         // pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
@@ -128,19 +129,17 @@ void LteRlcTm::initialize()
     rlcPacketLossDl = registerSignal("rlcPacketLossUl");
 }
 
-void LteRlcTm::handleMessage(cMessage* msg)
+void LteRlcTm::handleMessage(cMessage *msg)
 {
-    cPacket* pkt = check_and_cast<cPacket *>(msg);
+    cPacket *pkt = check_and_cast<cPacket *>(msg);
     EV << "LteRlcTm : Received packet " << pkt->getName() <<
-    " from port " << pkt->getArrivalGate()->getName() << endl;
+        " from port " << pkt->getArrivalGate()->getName() << endl;
 
-    cGate* incoming = pkt->getArrivalGate();
-    if (incoming == up_[IN_GATE])
-    {
+    cGate *incoming = pkt->getArrivalGate();
+    if (incoming == up_[IN_GATE]) {
         handleUpperMessage(pkt);
     }
-    else if (incoming == down_[IN_GATE])
-    {
+    else if (incoming == down_[IN_GATE]) {
         handleLowerMessage(pkt);
     }
     return;

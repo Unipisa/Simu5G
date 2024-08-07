@@ -51,7 +51,7 @@ class PacketFlowManagerBase;
 class UmTxEntity : public omnetpp::cSimpleModule
 {
     struct FragmentInfo {
-        inet::Packet * pkt= nullptr;
+        inet::Packet *pkt = nullptr;
         int size = 0;
     };
 
@@ -77,7 +77,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
      *
      * @return TRUE if packet was enqueued in SDU buffer
      */
-    bool enque(omnetpp::cPacket* pkt);
+    bool enque(omnetpp::cPacket *pkt);
 
     /**
      * rlcPduMake() creates a PDU having the specified size
@@ -87,8 +87,8 @@ class UmTxEntity : public omnetpp::cSimpleModule
      */
     void rlcPduMake(int pduSize);
 
-    void setFlowControlInfo(FlowControlInfo* lteInfo) { flowControlInfo_ = lteInfo; }
-    FlowControlInfo* getFlowControlInfo() { return flowControlInfo_; }
+    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo; }
+    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // force the sequence number to assume the sno passed as argument
     void setNextSequenceNumber(unsigned int nextSno) { sno_ = nextSno; }
@@ -106,7 +106,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
     bool isHoldingDownstreamInPackets();
 
     // store the packet in the holding buffer
-    void enqueHoldingPackets(inet::cPacket* pkt);
+    void enqueHoldingPackets(inet::cPacket *pkt);
 
     // resume sending packets in the downstream
     void resumeDownstreamInPackets();
@@ -115,10 +115,10 @@ class UmTxEntity : public omnetpp::cSimpleModule
     bool isEmptyingBuffer() { return notifyEmptyBuffer_; }
 
     // returns true if this entity is for a D2D_MULTI connection
-    bool isD2DMultiConnection() { return (flowControlInfo_->getDirection() == D2D_MULTI); }
+    bool isD2DMultiConnection() { return flowControlInfo_->getDirection() == D2D_MULTI; }
 
     // called when a D2D mode switch is triggered
-    void rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer=true);
+    void rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer = true);
 
   protected:
 
@@ -139,12 +139,11 @@ class UmTxEntity : public omnetpp::cSimpleModule
 
     RlcBurstStatus burstStatus_;
 
-
     /*
      * Flow-related info.
      * Initialized with the control info of the first packet of the flow
      */
-    FlowControlInfo* flowControlInfo_;
+    FlowControlInfo *flowControlInfo_;
 
     /*
      * The SDU enqueue buffer.
@@ -200,3 +199,4 @@ class UmTxEntity : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

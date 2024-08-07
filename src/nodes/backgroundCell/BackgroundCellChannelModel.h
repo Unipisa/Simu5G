@@ -23,7 +23,7 @@ namespace simu5g {
 
 // attenuation value to be returned if max. distance of a scenario has been violated
 // and tolerating the maximum distance violation is enabled
-#define ATT_MAXDISTVIOLATED 1000
+#define ATT_MAXDISTVIOLATED    1000
 
 class BackgroundCellChannelModel : public omnetpp::cSimpleModule
 {
@@ -93,7 +93,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     bool enableUplinkInterference_;
 
     // Store the last computed shadowing for each user
-    std::map<MacNodeId, std::pair<inet::simtime_t, double> > lastComputedSF_;
+    std::map<MacNodeId, std::pair<inet::simtime_t, double>> lastComputedSF_;
 
     // map that stores for each user if is in Line of Sight or not with eNodeB
     std::map<MacNodeId, bool> losMap_;
@@ -105,7 +105,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     typedef std::pair<inet::simtime_t, inet::Coord> Position;
 
     // last position of current user
-    std::map<MacNodeId, std::queue<Position> > positionHistory_;
+    std::map<MacNodeId, std::queue<Position>> positionHistory_;
 
     // last position of current user at which probability of LOS
     // was computed.
@@ -121,7 +121,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     };
 
     // for each node and for each band we store information about jakes fading
-    std::map<MacNodeId, std::vector<JakesFadingData> > jakesFadingMap_;
+    std::map<MacNodeId, std::vector<JakesFadingData>> jakesFadingMap_;
 
     typedef std::vector<JakesFadingData> JakesFadingVector;
     typedef std::map<MacNodeId, JakesFadingVector> JakesFadingMap;
@@ -218,10 +218,11 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
      */
     void computeLosProbability(double d, MacNodeId nodeId);
 
-    JakesFadingMap * getJakesMap()
+    JakesFadingMap *getJakesMap()
     {
         return &jakesFadingMap_;
     }
+
     /* compute speed (m/s) for a given node
      * @param nodeid mac node id of UE
      * @return the speed in m/s
@@ -253,13 +254,13 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     double getTwoDimDistance(inet::Coord a, inet::Coord b);
     double computeAngularAttenuation(double hAngle, double vAngle);
 
-    bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);
-    bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> * interference);
-    bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, double carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double>* interference);
+    bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
+    bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
+    bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, double carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double> *interference);
 
   protected:
     virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL+1; }
+    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 1; }
 
   public:
 
@@ -269,15 +270,16 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     /*
      * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
      */
-    virtual std::vector<double> getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase* bgUe, BackgroundScheduler* bgScheduler, Direction dir);
+    virtual std::vector<double> getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase *bgUe, BackgroundScheduler *bgScheduler, Direction dir);
 
     /*
      * Compute received power for a background UE according to pathloss
      *
      */
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundScheduler* bgScheduler);
+    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, const BackgroundScheduler *bgScheduler);
 };
 
 } //namespace
 
 #endif
+

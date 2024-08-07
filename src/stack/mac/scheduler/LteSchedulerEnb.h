@@ -31,8 +31,8 @@ class LteMacEnb;
 class LteSchedulerEnb
 {
     /******************
-     * Friend classes
-     ******************/
+    * Friend classes
+    ******************/
 
     // Lte Scheduler Modules access grants
     friend class LteScheduler;
@@ -47,8 +47,8 @@ class LteSchedulerEnb
   protected:
 
     /*******************
-     * Data structures
-     *******************/
+    * Data structures
+    *******************/
 
     // booked requests list : Band, bytes, blocks
     struct Request
@@ -68,6 +68,7 @@ class LteSchedulerEnb
         {
             Request(0, 0, 0);
         }
+
     };
 
     // Owner MAC module. Set via initialize().
@@ -80,7 +81,7 @@ class LteSchedulerEnb
     LteAllocationModule *allocator_;
 
     // Scheduling agent. One per carrier
-    std::vector<LteScheduler*> scheduler_;
+    std::vector<LteScheduler *> scheduler_;
 
     // Operational Direction. Set via initialize().
     Direction direction_;
@@ -95,16 +96,16 @@ class LteSchedulerEnb
     LteMacAllocatedCws allocatedCws_;
 
     // Pointer to downlink virtual buffers (that are in LteMacBase)
-    LteMacBufferMap* vbuf_;
+    LteMacBufferMap *vbuf_;
 
     // Pointer to uplink virtual buffers (that are in LteMacBase)
-    LteMacBufferMap* bsrbuf_;
+    LteMacBufferMap *bsrbuf_;
 
     // Pointer to Harq Tx Buffers (that are in LteMacBase)
-    std::map<double, HarqTxBuffers>* harqTxBuffers_;
+    std::map<double, HarqTxBuffers> *harqTxBuffers_;
 
     // Pointer to Harq Rx Buffers (that are in LteMacBase)
-    std::map<double, HarqRxBuffers>* harqRxBuffers_;
+    std::map<double, HarqRxBuffers> *harqRxBuffers_;
 
     /// Total available resource blocks (switch on direction)
     /// Initialized by LteMacEnb::handleSelfMessage() using resourceBlocks()
@@ -134,6 +135,7 @@ class LteSchedulerEnb
     {
         operator=(other);
     }
+
     LteSchedulerEnb& operator=(const LteSchedulerEnb& other);
 
     /**
@@ -147,7 +149,7 @@ class LteSchedulerEnb
      * @param mac pointer to MAC module
      * @param binder pointer to Binder module
      */
-    void initialize(Direction dir, LteMacEnb* mac, Binder *binder);
+    void initialize(Direction dir, LteMacEnb *mac, Binder *binder);
 
     /*
      * Initialize counters for schedulers
@@ -158,7 +160,7 @@ class LteSchedulerEnb
      * Schedule data. Returns one schedule list per carrier
      * @param list
      */
-    virtual std::map<double, LteMacScheduleList>* schedule();
+    virtual std::map<double, LteMacScheduleList> *schedule();
 
     /**
      * Adds an entry (if not already in) to scheduling list.
@@ -235,9 +237,9 @@ class LteSchedulerEnb
      * @return The allocated bytes. 0 if retransmission was not possible
      */
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
-        std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limibBl = false) = 0;
+            std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limibBl = false) = 0;
 
-    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
             Remote antenna = MACRO, bool limitBl = false) = 0;
 
     /**
@@ -259,14 +261,14 @@ class LteSchedulerEnb
      * @return The number of bytes that have been actually granted.
      */
     virtual unsigned int scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
-            BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
+            BandLimitVector *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
     virtual unsigned int scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
-            BandLimitVector* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
+            BandLimitVector *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
     /*
      * Getter for active connection set
      */
-    ActiveSet* readActiveConnections();
+    ActiveSet *readActiveConnections();
 
     void removeActiveConnections(MacNodeId nodeId);
 
@@ -279,7 +281,7 @@ class LteSchedulerEnb
      * @param cw
      * @return
      */
-    virtual bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency) =0;
+    virtual bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency) = 0;
 
     /*
      * Schedule and related methods.
@@ -293,19 +295,19 @@ class LteSchedulerEnb
      * Updates current schedule list with RAC requests (only for UL).
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool racschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
+    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
 
     /**
      * Schedule retransmissions for background UEs
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL) = 0;
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = NULL) = 0;
 
     /*
      * OFDMA frame management
@@ -355,25 +357,26 @@ class LteSchedulerEnb
     // Get the bands already allocated
     std::set<Band> getOccupiedBands();
 
-    void storeAllocationEnb(std::vector<std::vector<AllocatedRbsPerBandMapA> > allocatedRbsPerBand, std::set<Band>* untouchableBands = nullptr);
+    void storeAllocationEnb(std::vector<std::vector<AllocatedRbsPerBandMapA>> allocatedRbsPerBand, std::set<Band> *untouchableBands = nullptr);
 
     // store an element in the schedule list
-    void storeScListId(double carrierFrequency,std::pair<unsigned int, Codeword> scList,unsigned int num_blocks);
+    void storeScListId(double carrierFrequency, std::pair<unsigned int, Codeword> scList, unsigned int num_blocks);
 
   private:
 
     /*****************
-     * UTILITIES
-     *****************/
+    * UTILITIES
+    *****************/
 
     /**
      * Returns a particular LteScheduler subclass,
      * implementing the given discipline.
      * @param discipline scheduler discipline
      */
-    LteScheduler* getScheduler(SchedDiscipline discipline);
+    LteScheduler *getScheduler(SchedDiscipline discipline);
 };
 
 } //namespace
 
 #endif // _LTE_LTESCHEDULERENB_H_
+

@@ -21,7 +21,7 @@
 namespace simu5g {
 
 typedef std::pair<MacNodeId, MacNodeId> D2DPair;
-typedef std::map<D2DPair, LteHarqBufferMirrorD2D*> HarqBuffersMirrorD2D;
+typedef std::map<D2DPair, LteHarqBufferMirrorD2D *> HarqBuffersMirrorD2D;
 class ConflictGraph;
 
 class LteMacEnbD2D : public LteMacEnb
@@ -36,10 +36,10 @@ class LteMacEnbD2D : public LteMacEnb
 
     // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
     bool usePreconfiguredTxParams_;
-    UserTxParams* preconfiguredTxParams_;
+    UserTxParams *preconfiguredTxParams_;
 
     // Conflict Graph builder
-    ConflictGraph* conflictGraph_;
+    ConflictGraph *conflictGraph_;
 
     // parameters for conflict graph (needed when frequency reuse is enabled)
     bool reuseD2D_;
@@ -65,16 +65,16 @@ class LteMacEnbD2D : public LteMacEnb
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(omnetpp::cPacket* pkt);
+    virtual void macPduUnmake(omnetpp::cPacket *pkt);
 
     virtual void macHandleFeedbackPkt(omnetpp::cPacket *pkt);
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the  lower layer
      */
-    virtual void sendGrants(std::map<double, LteMacScheduleList>* scheduleList);
+    virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
 
-    void macHandleD2DModeSwitch(omnetpp::cPacket* pkt);
+    void macHandleD2DModeSwitch(omnetpp::cPacket *pkt);
 
     /**
      * Flush Tx H-ARQ buffers for all users
@@ -99,7 +99,7 @@ class LteMacEnbD2D : public LteMacEnb
      */
     virtual void handleSelfMessage();
 
-    virtual void handleMessage(omnetpp::cMessage* msg);
+    virtual void handleMessage(omnetpp::cMessage *msg);
 
     virtual bool isD2DCapable()
     {
@@ -116,7 +116,7 @@ class LteMacEnbD2D : public LteMacEnb
         return reuseD2DMulti_;
     }
 
-    virtual ConflictGraph* getConflictGraph()
+    virtual ConflictGraph *getConflictGraph()
     {
         return conflictGraph_;
     }
@@ -130,7 +130,7 @@ class LteMacEnbD2D : public LteMacEnb
     virtual void deleteQueues(MacNodeId nodeId);
 
     // get the reference to the "mirror" buffers
-    HarqBuffersMirrorD2D* getHarqBuffersMirrorD2D(double carrierFrequency);
+    HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(double carrierFrequency);
 
     // delete the "mirror" Harq Buffer for this pair (useful at mode switch)
     void deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer);
@@ -145,12 +145,14 @@ class LteMacEnbD2D : public LteMacEnb
     /*
      * getter
      */
-    UserTxParams* getPreconfiguredTxParams(){
+    UserTxParams *getPreconfiguredTxParams() {
 
         return preconfiguredTxParams_;
     }
+
 };
 
 } //namespace
 
 #endif
+

@@ -29,17 +29,15 @@ Define_Module(Binder);
 void Binder::registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     CarrierInfoMap::iterator it = componentCarriers_.find(carrierFrequency);
-    if (it != componentCarriers_.end() && carrierNumBands <= componentCarriers_[carrierFrequency].numBands)
-    {
+    if (it != componentCarriers_.end() && carrierNumBands <= componentCarriers_[carrierFrequency].numBands) {
         EV << "Binder::registerCarrier - Carrier @ " << carrierFrequency << "GHz already registered" << endl;
     }
-    else
-    {
+    else {
         CarrierInfo cInfo;
         cInfo.carrierFrequency = carrierFrequency;
         cInfo.numBands = carrierNumBands;
         cInfo.numerologyIndex = numerologyIndex;
-        cInfo.slotFormat = computeSlotFormat(useTdd,tddNumSymbolsDl,tddNumSymbolsUl);
+        cInfo.slotFormat = computeSlotFormat(useTdd, tddNumSymbolsDl, tddNumSymbolsUl);
         componentCarriers_[carrierFrequency] = cInfo;
 
         // update total number of bands in the system
@@ -64,15 +62,13 @@ void Binder::registerCarrierUe(double carrierFrequency, unsigned int numerologyI
 
     carrierUeMap_[carrierFrequency].insert(ueId);
 
-    if (ueNumerologyIndex_.find(ueId) == ueNumerologyIndex_.end())
-    {
+    if (ueNumerologyIndex_.find(ueId) == ueNumerologyIndex_.end()) {
         std::set<NumerologyIndex> numerologySet;
         ueNumerologyIndex_[ueId] = numerologySet;
     }
     ueNumerologyIndex_[ueId].insert(numerologyIndex);
 
-    if (ueMaxNumerologyIndex_.size() <= ueId)
-    {
+    if (ueMaxNumerologyIndex_.size() <= ueId) {
         ueMaxNumerologyIndex_.resize(ueId + 1);
         ueMaxNumerologyIndex_[ueId] = numerologyIndex;
     }
@@ -94,7 +90,7 @@ NumerologyIndex Binder::getUeMaxNumerologyIndex(MacNodeId ueId)
     return ueMaxNumerologyIndex_[ueId];
 }
 
-const std::set<NumerologyIndex>* Binder::getUeNumerologyIndex(MacNodeId ueId)
+const std::set<NumerologyIndex> *Binder::getUeNumerologyIndex(MacNodeId ueId)
 {
     if (ueNumerologyIndex_.find(ueId) == ueNumerologyIndex_.end())
         return NULL;
@@ -104,8 +100,7 @@ const std::set<NumerologyIndex>* Binder::getUeNumerologyIndex(MacNodeId ueId)
 SlotFormat Binder::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     SlotFormat sf;
-    if (!useTdd)
-    {
+    if (!useTdd) {
         sf.tdd = false;
 
         // these values are not used when tdd is false
@@ -113,15 +108,14 @@ SlotFormat Binder::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl, 
         sf.numUlSymbols = 0;
         sf.numFlexSymbols = 0;
     }
-    else
-    {
+    else {
         unsigned int rbxDl = 7;  // TODO replace with the parameter obtained from NED file once you moved the function to the Component Carrier
 
         sf.tdd = true;
         unsigned int numSymbols = rbxDl * 2;
 
-        if (tddNumSymbolsDl+tddNumSymbolsUl > numSymbols)
-            throw cRuntimeError("Binder::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl,tddNumSymbolsUl);
+        if (tddNumSymbolsDl + tddNumSymbolsUl > numSymbols)
+            throw cRuntimeError("Binder::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl, tddNumSymbolsUl);
 
         sf.numDlSymbols = tddNumSymbolsDl;
         sf.numUlSymbols = tddNumSymbolsUl;
@@ -139,49 +133,46 @@ SlotFormat Binder::getSlotFormat(double carrierFrequency)
     return it->second.slotFormat;
 }
 
-
 void Binder::unregisterNode(MacNodeId id)
 {
     EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
 
     std::map<Ipv4Address, MacNodeId>::iterator it;
-    for(it = macNodeIdToIPAddress_.begin(); it != macNodeIdToIPAddress_.end(); )
-    {
-        if(it->second == id)
-        {
+    for (it = macNodeIdToIPAddress_.begin(); it != macNodeIdToIPAddress_.end(); ) {
+        if (it->second == id) {
             it = macNodeIdToIPAddress_.erase(it);
         }
-        else
-        {
+        else {
             it++;
         }
     }
 
     // iterate all nodeIds and find HarqRx buffers dependent on 'id'
     std::map<int, OmnetId>::iterator idIter;
-    for (idIter = nodeIds_.begin(); idIter != nodeIds_.end(); idIter++){
-        LteMacBase* mac = getMacFromMacNodeId(idIter->first);
+    for (idIter = nodeIds_.begin(); idIter != nodeIds_.end(); idIter++) {
+        LteMacBase *mac = getMacFromMacNodeId(idIter->first);
         mac->unregisterHarqBufferRx(id);
     }
 
     // remove 'id' from LteMacBase* cache but do not delete pointer.
-    if(macNodeIdToModule_.erase(id) != 1){
+    if (macNodeIdToModule_.erase(id) != 1) {
         EV_ERROR << "Cannot unregister node - node id \"" << id << "\" - not found";
     }
 
     // remove 'id' from MacNodeId mapping
-    if(nodeIds_.erase(id) != 1){
+    if (nodeIds_.erase(id) != 1) {
         EV_ERROR << "Cannot unregister node - node id \"" << id << "\" - not found";
     }
     // remove 'id' from ulTransmissionMap_ if currently scheduled
-    for(auto &carrier : ulTransmissionMap_){ // all carrier frequency
-        for(auto &bands : carrier.second){ // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
-            for(auto &ues : bands){ // all Ue's in each block
+    for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
+        for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
+            for (auto& ues : bands) { // all Ue's in each block
                 auto itr = ues.begin();
-                while(itr != ues.end()){
-                    if (itr->nodeId == id){
+                while (itr != ues.end()) {
+                    if (itr->nodeId == id) {
                         itr = ues.erase(itr);
-                    } else {
+                    }
+                    else {
                         itr++;
                     }
                 }
@@ -196,15 +187,13 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
 
     MacNodeId macNodeId = -1;
 
-    if (type == UE)
-    {
+    if (type == UE) {
         if (!registerNr)
             macNodeId = macNodeIdCounter_[1]++;
         else
             macNodeId = macNodeIdCounter_[2]++;
     }
-    else if (type == ENODEB || type == GNODEB)
-    {
+    else if (type == ENODEB || type == GNODEB) {
         macNodeId = macNodeIdCounter_[0]++;
     }
 
@@ -221,12 +210,10 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
     else
         module->par("nrMacNodeId") = macNodeId;
 
-    if (type == UE)
-    {
+    if (type == UE) {
         registerNextHop(masterId, macNodeId);
     }
-    else if (type == ENODEB || type == GNODEB)
-    {
+    else if (type == ENODEB || type == GNODEB) {
         module->par("macCellId") = macNodeId;
         registerNextHop(macNodeId, macNodeId);
         registerMasterNode(masterId, macNodeId);
@@ -241,8 +228,7 @@ void Binder::registerNextHop(MacNodeId masterId, MacNodeId slaveId)
     EV << "Binder : Registering slave " << slaveId << " to master "
        << masterId << "\n";
 
-    if (masterId != slaveId)
-    {
+    if (masterId != slaveId) {
         dMap_[masterId][slaveId] = true;
     }
 
@@ -260,39 +246,35 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     if (secondaryNodeToMasterNode_.size() <= slaveId)
         secondaryNodeToMasterNode_.resize(slaveId + 1);
 
-    if (masterId == 0)  // this node is a master itself
+    if (masterId == 0)                         // this node is a master itself
         masterId = slaveId;
     secondaryNodeToMasterNode_[slaveId] = masterId;
 }
 
 void Binder::initialize(int stage)
 {
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = std::string(getSystemModule()->getName());
     }
 
-    if (stage == inet::INITSTAGE_LAST)
-    {
+    if (stage == inet::INITSTAGE_LAST) {
         maxDataRatePerRb_ = par("maxDataRatePerRb");
 
         // if avg interference enabled, compute CQIs
         computeAverageCqiForBackgroundUes();
     }
-
 }
 
 void Binder::finish()
 {
-    if (par("printTrafficGeneratorConfig").boolValue())
-    {
+    if (par("printTrafficGeneratorConfig").boolValue()) {
         // build filename
         std::stringstream outputFilenameStr;
         outputFilenameStr << "config";
-        cConfigurationEx* configEx = getEnvir()->getConfigEx();
+        cConfigurationEx *configEx = getEnvir()->getConfigEx();
 
-        const char* itervars = configEx->getVariable(CFGVAR_ITERATIONVARSF);
+        const char *itervars = configEx->getVariable(CFGVAR_ITERATIONVARSF);
         outputFilenameStr << "-" << itervars << "repetition=" << configEx->getVariable("repetition") << ".ini";
         std::string outputFilename = outputFilenameStr.str();
 
@@ -300,12 +282,11 @@ void Binder::finish()
         std::ofstream out(outputFilename);
 
         std::string toPrint;
-        std::vector<UeInfo*>::iterator it = ueList_.begin(), et = ueList_.end();
-        for ( ; it != et; ++it)
-        {
+        std::vector<UeInfo *>::iterator it = ueList_.begin(), et = ueList_.end();
+        for ( ; it != et; ++it) {
             std::stringstream ss;
 
-            UeInfo* info = *it;
+            UeInfo *info = *it;
 
             if (info->id < NR_UE_MIN_ID)
                 continue;
@@ -314,19 +295,18 @@ void Binder::finish()
             int ueIndex = info->ue->getIndex();
 
             // get HARQ error rate
-            LteMacBase* macUe = check_and_cast<LteMacBase*>(info->ue->getSubmodule("cellularNic")->getSubmodule("nrMac"));
+            LteMacBase *macUe = check_and_cast<LteMacBase *>(info->ue->getSubmodule("cellularNic")->getSubmodule("nrMac"));
             double harqErrorRateDl = macUe->getHarqErrorRate(DL);
             double harqErrorRateUl = macUe->getHarqErrorRate(UL);
 
             // get average CQI
-            LtePhyUe* phyUe = check_and_cast<LtePhyUe*>(info->phy);
+            LtePhyUe *phyUe = check_and_cast<LtePhyUe *>(info->phy);
             double cqiDl = phyUe->getAverageCqi(DL);
             double cqiUl = phyUe->getAverageCqi(UL);
             double cqiVarianceDl = phyUe->getVarianceCqi(DL);
             double cqiVarianceUl = phyUe->getVarianceCqi(UL);
 
-            if (info->cellId == 1)
-            {
+            if (info->cellId == 1) {
                 // the UE belongs to the central cell
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
@@ -338,8 +318,7 @@ void Binder::finish()
                 toPrint = ss.str();
                 ss.clear();
             }
-            else
-            {
+            else {
                 int bgCellId = cellId - 2;
 
                 // the UE belongs to a background cell
@@ -376,7 +355,7 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 OmnetId Binder::getOmnetId(MacNodeId nodeId)
 {
     std::map<int, OmnetId>::iterator it = nodeIds_.find(nodeId);
-    if(it != nodeIds_.end())
+    if (it != nodeIds_.end())
         return it->second;
     return 0;
 }
@@ -391,27 +370,25 @@ std::map<int, OmnetId>::const_iterator Binder::getNodeIdListEnd()
     return nodeIds_.end();
 }
 
-MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id){
-	std::map<int, OmnetId>::iterator it;
-	for (it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
-	    if (it->second == id)
-	        return it->first;
-	return 0;
+MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
+    std::map<int, OmnetId>::iterator it;
+    for (it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
+        if (it->second == id)
+            return it->first;
+    return 0;
 }
 
-LteMacBase* Binder::getMacFromMacNodeId(MacNodeId id)
+LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 {
     if (id == 0)
         return nullptr;
 
-    LteMacBase* mac;
-    if (macNodeIdToModule_.find(id) == macNodeIdToModule_.end())
-    {
-        mac = check_and_cast<LteMacBase*>(getMacByMacNodeId(this, id));
+    LteMacBase *mac;
+    if (macNodeIdToModule_.find(id) == macNodeIdToModule_.end()) {
+        mac = check_and_cast<LteMacBase *>(getMacByMacNodeId(this, id));
         macNodeIdToModule_[id] = mac;
     }
-    else
-    {
+    else {
         mac = macNodeIdToModule_[id];
     }
     return mac;
@@ -453,7 +430,7 @@ bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
 const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostAddress)
 {
     if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
-         throw cRuntimeError("Binder::getUpfFromMecHost - address not found");
+        throw cRuntimeError("Binder::getUpfFromMecHost - address not found");
     return mecHostToUpfAddress_[mecHostAddress];
 }
 
@@ -462,26 +439,24 @@ void Binder::registerName(MacNodeId nodeId, std::string moduleName)
     macNodeIdToModuleName_[nodeId] = moduleName;
 }
 
-void Binder::registerModule(MacNodeId nodeId, cModule* module)
+void Binder::registerModule(MacNodeId nodeId, cModule *module)
 {
     macNodeIdToModuleRef_[nodeId] = module;
 }
 
-const char* Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
+const char *Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleName_.find(nodeId) == macNodeIdToModuleName_.end())
         throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID not found");
     return macNodeIdToModuleName_[nodeId].c_str();
 }
 
-
-cModule* Binder::getModuleByMacNodeId(MacNodeId nodeId)
+cModule *Binder::getModuleByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleRef_.find(nodeId) == macNodeIdToModuleRef_.end())
         throw cRuntimeError("Binder::getModuleByMacNodeId - node ID not found");
     return macNodeIdToModuleRef_[nodeId];
 }
-
 
 ConnectedUesMap Binder::getDeployedUes(MacNodeId localId, Direction dir)
 {
@@ -496,16 +471,14 @@ simtime_t Binder::getLastUpdateUlTransmissionInfo()
 
 void Binder::initAndResetUlTransmissionInfo()
 {
-    if (lastUplinkTransmission_ < NOW - 2*TTI)
-    {
+    if (lastUplinkTransmission_ < NOW - 2 * TTI) {
         // data structures have not been used in the last 2 time slots,
         // so they do not need to be updated.
         return;
     }
 
     UplinkTransmissionMap::iterator it = ulTransmissionMap_.begin();
-    for (; it != ulTransmissionMap_.end(); ++it)
-    {
+    for ( ; it != ulTransmissionMap_.end(); ++it) {
         // the second element (i.e. referring to the old time slot) becomes the first element
         if (!(it->second.empty()))
             it->second.erase(it->second.begin());
@@ -513,7 +486,7 @@ void Binder::initAndResetUlTransmissionInfo()
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
 
-void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase* phy, Direction dir)
+void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir)
 {
     UeAllocationInfo info;
     info.nodeId = nodeId;
@@ -522,24 +495,21 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.dir = dir;
     info.trafficGen = nullptr;
 
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
-    {
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0) {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
         ulTransmissionMap_[carrierFreq].resize(2);
         ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
-    else if (ulTransmissionMap_[carrierFreq].size() == 1)
-    {
+    else if (ulTransmissionMap_[carrierFreq].size() == 1) {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo>>());
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
 
     // for each allocated band, store the UE info
     std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
-    for ( ; it != et; ++it)
-    {
+    for ( ; it != et; ++it) {
         Band b = it->first;
         if (it->second > 0)
             ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
@@ -548,7 +518,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     lastUplinkTransmission_ = NOW;
 }
 
-void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir)
+void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir)
 {
     UeAllocationInfo info;
     info.nodeId = nodeId;
@@ -557,24 +527,21 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     info.dir = dir;
     info.trafficGen = trafficGen;
 
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0)
-    {
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || ulTransmissionMap_[carrierFreq].size() == 0) {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
         ulTransmissionMap_[carrierFreq].resize(2);
         ulTransmissionMap_[carrierFreq][PREV_TTI].resize(numCarrierBands);
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
-    else if (ulTransmissionMap_[carrierFreq].size() == 1)
-    {
+    else if (ulTransmissionMap_[carrierFreq].size() == 1) {
         int numCarrierBands = componentCarriers_[carrierFreq].numBands;
-        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo> >());
+        ulTransmissionMap_[carrierFreq].push_back(std::vector<std::vector<UeAllocationInfo>>());
         ulTransmissionMap_[carrierFreq][CURR_TTI].resize(numCarrierBands);
     }
 
     // for each allocated band, store the UE info
     std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
-    for ( ; it != et; ++it)
-    {
+    for ( ; it != et; ++it) {
         Band b = it->first;
         if (it->second > 0)
             ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
@@ -583,10 +550,9 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     lastUplinkTransmission_ = NOW;
 }
 
-
-const std::vector<std::vector<UeAllocationInfo> >* Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
+const std::vector<std::vector<UeAllocationInfo>> *Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
 {
-    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()){
+    if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()) {
         return NULL;
     }
 
@@ -595,22 +561,20 @@ const std::vector<std::vector<UeAllocationInfo> >* Binder::getUlTransmissionMap(
 
 void Binder::registerX2Port(X2NodeId nodeId, int port)
 {
-    if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end() )
-    {
+    if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end()) {
         // no port has yet been registered
         std::list<int> ports;
         ports.push_back(port);
         x2ListeningPorts_[nodeId] = ports;
     }
-    else
-    {
+    else {
         x2ListeningPorts_[nodeId].push_back(port);
     }
 }
 
 int Binder::getX2Port(X2NodeId nodeId)
 {
-    if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end() )
+    if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end())
         throw cRuntimeError("Binder::getX2Port - No ports available on node %d", nodeId);
 
     int port = x2ListeningPorts_[nodeId].front();
@@ -618,27 +582,26 @@ int Binder::getX2Port(X2NodeId nodeId)
     return port;
 }
 
-Cqi Binder::meanCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir)
+Cqi Binder::meanCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
 {
     std::vector<Cqi>::iterator it;
-    Cqi mean=0;
-    for (it=bandCqi.begin();it!=bandCqi.end();++it)
-    {
-        mean+=*it;
+    Cqi mean = 0;
+    for (it = bandCqi.begin(); it != bandCqi.end(); ++it) {
+        mean += *it;
     }
-    mean/=bandCqi.size();
+    mean /= bandCqi.size();
 
-    if(mean==0)
+    if (mean == 0)
         mean = 1;
 
     return mean;
 }
 
-Cqi Binder::medianCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir)
+Cqi Binder::medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
 {
-    std::sort(bandCqi.begin(),bandCqi.end());
+    std::sort(bandCqi.begin(), bandCqi.end());
 
-    int medianPoint = bandCqi.size()/2;
+    int medianPoint = bandCqi.size() / 2;
 
     EV << "Binder::medianCqi - median point is " << bandCqi.size() << "/2 = " << medianPoint << ". MedianCqi = " << bandCqi[medianPoint] << endl;
 
@@ -649,26 +612,22 @@ Cqi Binder::medianCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir)
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-            || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
         throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %d Dst %d", src, dst);
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
-    if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end())
-    {
-        LteMacBase* dstMac = getMacFromMacNodeId(dst);
-        if (dstMac->isD2DCapable())
-        {
+    if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end()) {
+        LteMacBase *dstMac = getMacFromMacNodeId(dst);
+        if (dstMac->isD2DCapable()) {
             // set the initial mode
-            if (nextHop_[src] == nextHop_[dst])
-            {
+            if (nextHop_[src] == nextHop_[dst]) {
                 // if served by the same cell, then the mode is selected according to the corresponding parameter
-                LteMacBase* srcMac = getMacFromMacNodeId(src);
+                LteMacBase *srcMac = getMacFromMacNodeId(src);
                 inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
                 bool d2dInitialMode = srcNic->hasPar("d2dInitialMode") ? srcNic->par("d2dInitialMode").boolValue() : false;
                 d2dPeeringMap_[src][dst] = (d2dInitialMode) ? DM : IM;
             }
-            else
-            {
+            else {
                 // if served by different cells, then the mode can be IM only
                 d2dPeeringMap_[src][dst] = IM;
             }
@@ -678,13 +637,11 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
             // this is a D2D-capable flow
             return true;
         }
-        else
-        {
+        else {
             EV << "Binder::checkD2DCapability - UE " << src << " may not transmit to UE " << dst << " using D2D (UE " << dst << " is not D2D capable)" << endl;
             // this is not a D2D-capable flow
             return false;
         }
-
     }
 
     // an entry is present, hence this is a D2D-capable flow
@@ -694,7 +651,7 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-            || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
         throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %d Dst %d", src, dst);
 
     // if the entry is missing, returns false
@@ -705,7 +662,7 @@ bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
     return true;
 }
 
-std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> >* Binder::getD2DPeeringMap()
+std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
 {
     return &d2dPeeringMap_;
 }
@@ -713,7 +670,7 @@ std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> >* Binder::getD2DPeeringMap(
 LteD2DMode Binder::getD2DMode(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-            || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
         throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %d Dst %d", src, dst);
 
     return d2dPeeringMap_[src][dst];
@@ -730,25 +687,21 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
     if (it == d2dPeeringMap_[nodeId].end())
         return false;
 
-    for (; it != d2dPeeringMap_[nodeId].end(); ++it)
-    {
+    for ( ; it != d2dPeeringMap_[nodeId].end(); ++it) {
         if (it->second == IM)
             return false;
     }
     return true;
 }
 
-
 void Binder::registerMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
-    if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end())
-    {
+    if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end()) {
         MulticastGroupIdSet newSet;
         newSet.insert(groupId);
         multicastGroupMap_[nodeId] = newSet;
     }
-    else
-    {
+    else {
         multicastGroupMap_[nodeId].insert(groupId);
     }
 }
@@ -756,9 +709,9 @@ void Binder::registerMulticastGroup(MacNodeId nodeId, int32_t groupId)
 bool Binder::isInMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
     if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end())
-        return false;   // the node is not enrolled in any group
+        return false;                          // the node is not enrolled in any group
     if (multicastGroupMap_[nodeId].find(groupId) == multicastGroupMap_[nodeId].end())
-        return false;   // the node is not enrolled in the given group
+        return false;                          // the node is not enrolled in the given group
 
     return true;
 }
@@ -773,14 +726,11 @@ std::set<MacNodeId>& Binder::getD2DMulticastTransmitters()
     return multicastTransmitterSet_;
 }
 
-
 void Binder::updateUeInfoCellId(MacNodeId id, MacCellId newCellId)
 {
-    std::vector<UeInfo*>::iterator it = ueList_.begin();
-    for (; it != ueList_.end(); ++it)
-    {
-        if ((*it)->id == id)
-        {
+    std::vector<UeInfo *>::iterator it = ueList_.begin();
+    for ( ; it != ueList_.end(); ++it) {
+        if ((*it)->id == id) {
             (*it)->cellId = newCellId;
             return;
         }
@@ -810,7 +760,7 @@ void Binder::addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId d
     handoverTriggered_[nodeId] = p;
 }
 
-const std::pair<MacNodeId, MacNodeId>* Binder::getHandoverTriggered(MacNodeId nodeId)
+const std::pair<MacNodeId, MacNodeId> *Binder::getHandoverTriggered(MacNodeId nodeId)
 {
     if (handoverTriggered_.find(nodeId) == handoverTriggered_.end())
         return NULL;
@@ -819,21 +769,19 @@ const std::pair<MacNodeId, MacNodeId>* Binder::getHandoverTriggered(MacNodeId no
 
 void Binder::removeHandoverTriggered(MacNodeId nodeId)
 {
-    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> >::iterator it = handoverTriggered_.find(nodeId);
-    if (it!=handoverTriggered_.end())
+    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>>::iterator it = handoverTriggered_.find(nodeId);
+    if (it != handoverTriggered_.end())
         handoverTriggered_.erase(it);
 }
-
 
 void Binder::computeAverageCqiForBackgroundUes()
 {
     EV << " ===== Binder::computeAverageCqiForBackgroundUes - START =====" << endl;
 
     // initialize interference matrix
-    for (unsigned int i=0; i<bgTrafficManagerList_.size(); i++)
-    {
+    for (unsigned int i = 0; i < bgTrafficManagerList_.size(); i++) {
         std::map<unsigned int, double> tmp;
-        for (unsigned int j=0; j<bgTrafficManagerList_.size(); j++)
+        for (unsigned int j = 0; j < bgTrafficManagerList_.size(); j++)
             tmp[j] = 0.0;
 
         bgCellsInterferenceMatrix_[i] = tmp;
@@ -858,21 +806,19 @@ void Binder::computeAverageCqiForBackgroundUes()
      *  - Compute SINR with interference
      *  - Update cell block usage according to connect UEs
      */
-    while(condition)
-    {
+    while (condition) {
         countInterferenceCheck++;
-        EV << " * ITERATION " <<  countInterferenceCheck << " *" << endl;
+        EV << " * ITERATION " << countInterferenceCheck << " *" << endl;
 
         // --- MAIN Interference Check Cycle --- //
 
         // loop through the BackgroundTrafficManagers (one per cell)
-        for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
-        {
-            BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
+        for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++) {
+            BgTrafficManagerInfo *info = bgTrafficManagerList_.at(bgTrafficManagerId);
             if (!(info->init))
                 continue;
 
-            IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+            IBackgroundTrafficManager *bgTrafficManager = info->bgTrafficManager;
             unsigned int numBands = bgTrafficManager->getNumBands();
 
             //---------------------------------------------------------------------
@@ -880,8 +826,7 @@ void Binder::computeAverageCqiForBackgroundUes()
             // for iterations after the first one, update the interference before analyzing a whole cell
             // Note that it makes no sense computing this at the first iteration when the cell is allocating
             // zero blocks still
-            if (countInterferenceCheck>1)
-            {
+            if (countInterferenceCheck > 1) {
                 updateMutualInterference(bgTrafficManagerId, numBands, DL);
                 updateMutualInterference(bgTrafficManagerId, numBands, UL);
             }
@@ -892,9 +837,8 @@ void Binder::computeAverageCqiForBackgroundUes()
             // Compute the SINR for each UE within the cell
             auto bgUes_it = bgTrafficManager->getBgUesBegin();
             auto bgUes_et = bgTrafficManager->getBgUesEnd();
-            while (bgUes_it != bgUes_et)
-            {
-                TrafficGeneratorBase* bgUe = *bgUes_it;
+            while (bgUes_it != bgUes_et) {
+                TrafficGeneratorBase *bgUe = *bgUes_it;
 
                 //---------------------------------------------------------------------
                 // STEP 2: compute SINR
@@ -920,11 +864,10 @@ void Binder::computeAverageCqiForBackgroundUes()
                 double ueLoadUl = bgUe->getAvgLoad(UL) * 8;
 
                 // convert the UE load request to rbs based on SINR
-                double ueRbsDl = computeRequestedRbsFromSinr(sinrDl,ueLoadDl);
-                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl,ueLoadUl);
+                double ueRbsDl = computeRequestedRbsFromSinr(sinrDl, ueLoadDl);
+                double ueRbsUl = computeRequestedRbsFromSinr(sinrUl, ueLoadUl);
 
-                if(ueRbsDl<0 || ueRbsUl<0)
-                {
+                if (ueRbsDl < 0 || ueRbsUl < 0) {
                     EV << "Error! Computed negative requested rbs DL[" << ueRbsDl << "] UL[" << ueRbsUl << "]" << endl;
                     throw cRuntimeError("Binder::computeAverageCqiForBackgroundUes - Error! Computed negative requested rbs\n");
                 }
@@ -941,8 +884,7 @@ void Binder::computeAverageCqiForBackgroundUes()
                 info->allocatedRbsUeUl.at(bgUeId) = ueRbsUl;
 
                 // update allocation for the DL only at the first iteration
-                if (countInterferenceCheck == 1)
-                {
+                if (countInterferenceCheck == 1) {
                     info->allocatedRbsDl = (cellRbsDl > numBands) ? numBands : cellRbsDl;
                     info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
                 }
@@ -955,17 +897,15 @@ void Binder::computeAverageCqiForBackgroundUes()
             info->allocatedRbsUl = (cellRbsUl > numBands) ? numBands : cellRbsUl;
 
             // if the total cellRbsUl is higher than numBands, then scale the allocation for all UEs
-            if (cellRbsUl > numBands)
-            {
+            if (cellRbsUl > numBands) {
                 double scaleFactor = (double)numBands / cellRbsUl;
-                for (unsigned int i=0; i < info->allocatedRbsUeUl.size(); i++)
+                for (unsigned int i = 0; i < info->allocatedRbsUeUl.size(); i++)
                     info->allocatedRbsUeUl[i] *= scaleFactor;
             }
-
         }
 
         EV << "* END ITERATION " << countInterferenceCheck << endl;
-        if ( countInterferenceCheck > MAX_INTERFERENCE_CHECK )
+        if (countInterferenceCheck > MAX_INTERFERENCE_CHECK)
             condition = false;
     }
 
@@ -1003,41 +943,36 @@ void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned 
     EV << "Binder::updateMutualInterference - computing interference for traffic manager " << bgTrafficManagerId << " dir[" << dirToA(dir) << "]" << endl;
 
     double ownRbs, extRbs; // current rbs allocation
-    BgTrafficManagerInfo* ownInfo = bgTrafficManagerList_.at(bgTrafficManagerId);
+    BgTrafficManagerInfo *ownInfo = bgTrafficManagerList_.at(bgTrafficManagerId);
 
-    if (dir == DL)
-    {
+    if (dir == DL) {
         // obtain current allocation info
         ownRbs = ownInfo->allocatedRbsDl;
 
         // loop through the BackgroundTrafficManagers (one per cell)
-        for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
-        {
+        for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++) {
             // skip own interference
             if (extId == bgTrafficManagerId)
                 continue;
 
             // obtain current allocation info for interfering bg cell
-            BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+            BgTrafficManagerInfo *extInfo = bgTrafficManagerList_.at(extId);
             extRbs = extInfo->allocatedRbsDl;
 
             double newOverlapPercentage = computeInterferencePercentageDl(ownRbs, extRbs, numBands);
 
             EV << "ownId[" << bgTrafficManagerId << "] extId[" << extId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
 
-
             // update interference
             bgCellsInterferenceMatrix_[bgTrafficManagerId][extId] = newOverlapPercentage;
 
         }// end ext-cell computation
     }
-    else
-    {
+    else {
         // for each UE in the BG cell
         auto bgUes_it = ownInfo->bgTrafficManager->getBgUesBegin();
         auto bgUes_et = ownInfo->bgTrafficManager->getBgUesEnd();
-        while (bgUes_it != bgUes_et)
-        {
+        while (bgUes_it != bgUes_et) {
             int bgUeId = (*bgUes_it)->getId();
             uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
 
@@ -1045,20 +980,18 @@ void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned 
             ownRbs = ownInfo->allocatedRbsUeUl.at(bgUeId);
 
             // loop through the BackgroundTrafficManagers (one per cell)
-            for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
-            {
+            for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++) {
                 // skip own interference
                 if (extId == bgTrafficManagerId)
                     continue;
 
                 // obtain current allocation info for interfering bg cell
-                BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+                BgTrafficManagerInfo *extInfo = bgTrafficManagerList_.at(extId);
 
                 // for each UE in the ext BG cell
                 auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
                 auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
-                while (extBgUes_it != extBgUes_et)
-                {
+                while (extBgUes_it != extBgUes_et) {
                     int extBgUeId = (*extBgUes_it)->getId();
                     uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
 
@@ -1070,8 +1003,7 @@ void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned 
                     EV << "ownId[" << globalBgUeId << "] extId[" << globalExtBgUeId << "] - ownRbs[" << ownRbs << "] extRbs[" << extRbs << "] - overlap[" << newOverlapPercentage << "]" << endl;
 
                     // update interference
-                    if (bgUesInterferenceMatrix_.find(globalBgUeId) == bgUesInterferenceMatrix_.end())
-                    {
+                    if (bgUesInterferenceMatrix_.find(globalBgUeId) == bgUesInterferenceMatrix_.end()) {
                         std::map<unsigned int, double> newMap;
                         bgUesInterferenceMatrix_[globalBgUeId] = newMap;
                     }
@@ -1094,8 +1026,8 @@ double Binder::computeInterferencePercentageDl(double n, double k, unsigned int 
     if (n == 0)
         return 0;
 
-    double min = (n<k)?n:k;
-    return (double)min/n;
+    double min = (n < k) ? n : k;
+    return (double)min / n;
 
 //    // assuming the allocation is random
 //    return (double)k / numBands;
@@ -1105,7 +1037,7 @@ double Binder::computeInterferencePercentageUl(double n, double k, double nTotal
 {
     // assuming the allocation of one UE is random (within the total allocated by its cell, not the total available bands)
 
-    double max = (nTotal>kTotal)?nTotal:kTotal;
+    double max = (nTotal > kTotal) ? nTotal : kTotal;
     if (max == 0)
         return 0.0;
 
@@ -1116,8 +1048,8 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
 {
     double sinr;
 
-    BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
-    IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
+    BgTrafficManagerInfo *info = bgTrafficManagerList_.at(bgTrafficManagerId);
+    IBackgroundTrafficManager *bgTrafficManager = info->bgTrafficManager;
 
     // TODO configure forceCellLos from config files
     bool ownCellLos = losStatus;
@@ -1129,20 +1061,18 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
     double totInterference = 0.0;
 
     // loop through the BackgroundTrafficManagers (one per cell)
-    for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++)
-    {
+    for (unsigned int extId = 0; extId < bgTrafficManagerList_.size(); extId++) {
         // skip own interference
         if (extId == bgTrafficManagerId)
             continue;
 
-        BgTrafficManagerInfo* extInfo = bgTrafficManagerList_.at(extId);
+        BgTrafficManagerInfo *extInfo = bgTrafficManagerList_.at(extId);
 
         inet::Coord interfCoord;
         double interfTxPower;
         double overlapPercentage;
         double interferenceDbm = 0.0;
-        if (dir == DL)
-        {
+        if (dir == DL) {
             interfCoord = (extInfo->bgTrafficManager)->getBsCoord();
             interfTxPower = (extInfo->bgTrafficManager)->getBsTxPower();
 
@@ -1154,15 +1084,13 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
 
             totInterference += (dBmToLinear(interferenceDbm) * overlapPercentage);
         }
-        else
-        {
+        else {
             uint32_t globalBgUeId = ((uint32_t)bgTrafficManagerId << 16) | (uint32_t)bgUeId;
 
             // for each UE in the ext BG cell
             auto extBgUes_it = extInfo->bgTrafficManager->getBgUesBegin();
             auto extBgUes_et = extInfo->bgTrafficManager->getBgUesEnd();
-            while (extBgUes_it != extBgUes_et)
-            {
+            while (extBgUes_it != extBgUes_et) {
                 int extBgUeId = (*extBgUes_it)->getId();
                 uint32_t globalExtBgUeId = ((uint32_t)extId << 16) | (uint32_t)extBgUeId;
 
@@ -1190,7 +1118,6 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
     return sinr;
 }
 
-
 double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 {
     // TODO choose appropriate values for these constants
@@ -1199,7 +1126,7 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
     const double MAX_SINR = 25.5;
 
     // we let a UE to have a minimum CQI (2) even when SINR is too low (this is what our scheduler does)
-    if( sinr <= -3.5 )
+    if (sinr <= -3.5)
         sinr = -3.5;
     if (sinr > MAX_SINR)
         sinr = MAX_SINR;
@@ -1222,51 +1149,43 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
  * @author Alessandro Noferi
  */
 
-void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector , MacNodeId cell)
+void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector, MacNodeId cell)
 {
-    EV << "LteBinder::addUeCollector"<< endl;
-    std::vector<EnbInfo*>::iterator it = enbList_.begin(), end = enbList_.end();
+    EV << "LteBinder::addUeCollector" << endl;
+    std::vector<EnbInfo *>::iterator it = enbList_.begin(), end = enbList_.end();
     cModule *enb = nullptr;
-    BaseStationStatsCollector * enbColl = nullptr;
+    BaseStationStatsCollector *enbColl = nullptr;
 
     // check if the coallector is already present in a cell
-    for(; it != end ; ++it)
-    {
+    for ( ; it != end; ++it) {
         enb = (*it)->eNodeB;
-        if (enb->getSubmodule("collector") != nullptr)
-        {
+        if (enb->getSubmodule("collector") != nullptr) {
             enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
-            if(enbColl->hasUeCollector(ue))
-            {
+            if (enbColl->hasUeCollector(ue)) {
                 EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << (*it)->id << "]" << endl;
-                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%d] already present in eNodeB [%d]", ue,(*it)->id ) ;
+                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%d] already present in eNodeB [%d]", ue, (*it)->id);
             }
         }
-        else
-        {
+        else {
             EV << "LteBinder::addUeCollector - eNodeB [" << (*it)->id << "] does not have the eNodeBStatsCollector" << endl;
 //            throw cRuntimeError("LteBinder::addUeCollector - eNodeB [%d] does not have the eNodeBStatsCollector", (*it)->id ) ;
 
         }
-
     }
 
     // no cell has the UeCollector, add it
     enb = getModuleByMacNodeId(cell);
-    if (enb->getSubmodule("collector") != nullptr)
-    {
+    if (enb->getSubmodule("collector") != nullptr) {
         enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
         enbColl->addUeCollector(ue, ueCollector);
         EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] added to eNodeB [" << cell << "]" << endl;
     }
-    else
-    {
+    else {
         EV << "LteBinder::addUeCollector - eNodeB [" << cell << "] does not have the eNodeBStatsCollector." <<
-              " UeCollector for node [" << ue << "] NOT added to eNodeB [" << cell << "]" << endl;
+            " UeCollector for node [" << ue << "] NOT added to eNodeB [" << cell << "]" << endl;
 //        throw cRuntimeError("LteBinder::addUeCollector - eNodeBStatsCollector not present in eNodeB [%d]",(*it)->id ) ;
     }
 }
-
 
 void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
 {
@@ -1276,57 +1195,48 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
 
     // get and remove the UeCollector from the OldCell
     cModule *oldEnb = getModuleByMacNodeId(oldCell); //  eNobe module
-    BaseStationStatsCollector * enbColl = nullptr;
-    UeStatsCollector * ueColl = nullptr;
-    if (oldEnb->getSubmodule("collector") != nullptr)
-    {
-       enbColl = check_and_cast<BaseStationStatsCollector *>(oldEnb->getSubmodule("collector"));
-       if(enbColl->hasUeCollector(ue))
-       {
-           ueColl = enbColl->getUeCollector(ue);
-           ueColl->resetStats();
-           enbColl->removeUeCollector(ue);
-       }
-       else
-       {
-           throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%d] not present in eNodeB [%d]", ue,oldCell ) ;
-       }
+    BaseStationStatsCollector *enbColl = nullptr;
+    UeStatsCollector *ueColl = nullptr;
+    if (oldEnb->getSubmodule("collector") != nullptr) {
+        enbColl = check_and_cast<BaseStationStatsCollector *>(oldEnb->getSubmodule("collector"));
+        if (enbColl->hasUeCollector(ue)) {
+            ueColl = enbColl->getUeCollector(ue);
+            ueColl->resetStats();
+            enbColl->removeUeCollector(ue);
+        }
+        else {
+            throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%d] not present in eNodeB [%d]", ue, oldCell);
+        }
     }
-    else
-    {
-        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%d]", oldCell) ;
+    else {
+        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%d]", oldCell);
     }
     // if the two base station are the same type, just move the collector
-    if(oldCellType == newCellType)
-    {
+    if (oldCellType == newCellType) {
         addUeCollectorToEnodeB(ue, ueColl, newCell);
     }
-    else
-    {
-        if(newCellType == GNODEB)
-        {
+    else {
+        if (newCellType == GNODEB) {
             // retrieve NrUeCollector
             cModule *ueModule = getModuleByMacNodeId(ue);
-            if(ueModule->findSubmodule("NRueCollector") == -1)
+            if (ueModule->findSubmodule("NRueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got NRueCollector required for the gNB", ue) ;
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got NRueCollector required for the gNB", ue);
             addUeCollectorToEnodeB(ue, ueColl, newCell);
 
         }
-        else if (newCellType == ENODEB)
-        {
+        else if (newCellType == ENODEB) {
             // retrieve NrUeCollector
             cModule *ueModule = getModuleByMacNodeId(ue);
-            if(ueModule->findSubmodule("ueCollector") == -1)
+            if (ueModule->findSubmodule("ueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got ueCollector required for the eNB", ue) ;
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got ueCollector required for the eNB", ue);
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
-        else
-        {
-            throw cRuntimeError("LteBinder::moveUeCollector - The new cell is not a cell [%d]", newCellType) ;
+        else {
+            throw cRuntimeError("LteBinder::moveUeCollector - The new cell is not a cell [%d]", newCellType);
         }
     }
 }
@@ -1335,13 +1245,11 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
 {
     cModule *module = getModuleByMacNodeId(cellId);
     std::string nodeType;
-    if(module->hasPar("nodeType"))
-    {
+    if (module->hasPar("nodeType")) {
         nodeType = module->par("nodeType").stdstringValue();
         return static_cast<RanNodeType>(omnetpp::cEnum::get("simu5g::RanNodeType")->lookup(nodeType.c_str()));
     }
-    else
-    {
+    else {
         return UNKNOWN_NODE_TYPE;
     }
 }

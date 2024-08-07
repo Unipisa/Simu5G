@@ -59,7 +59,7 @@ class IP2Nic : public omnetpp::cSimpleModule
     // store the UEs for temporary holding of data received over X2 during handover
     std::set<MacNodeId> hoHolding_;
 
-    typedef std::list<inet::Packet*> IpDatagramQueue;
+    typedef std::list<inet::Packet *> IpDatagramQueue;
     std::map<MacNodeId, IpDatagramQueue> hoFromX2_;
     std::map<MacNodeId, IpDatagramQueue> hoFromIp_;
 
@@ -74,24 +74,24 @@ class IP2Nic : public omnetpp::cSimpleModule
 
     // for each connection exploiting Split Bearer,
     // keep trace of the number of packets sent down to the PDCP
-    SplitBearersTable* sbTable_;
+    SplitBearersTable *sbTable_;
 
   protected:
     /**
      * Handle packets from transport layer and forward them to the stack
      */
-    void fromIpUe(inet::Packet * datagram);
+    void fromIpUe(inet::Packet *datagram);
 
     /**
      * Manage packets received from the stack
      * and forward them to transport layer.
      */
-    virtual void prepareForIpv4(inet::Packet *datagram, const inet::Protocol *protocol = &inet::Protocol::ipv4);
+    virtual void prepareForIpv4(inet::Packet *datagram, const inet::Protocol *protocol = & inet::Protocol::ipv4);
     virtual void toIpUe(inet::Packet *datagram);
-    virtual void fromIpBs(inet::Packet * datagram);
-    virtual void toIpBs(inet::Packet * datagram);
-    virtual void toStackBs(inet::Packet* datagram);
-    virtual void toStackUe(inet::Packet* datagram);
+    virtual void fromIpBs(inet::Packet *datagram);
+    virtual void toIpBs(inet::Packet *datagram);
+    virtual void toStackBs(inet::Packet *datagram);
+    virtual void toStackUe(inet::Packet *datagram);
 
     /**
      * utility: set nodeType_ field
@@ -105,7 +105,7 @@ class IP2Nic : public omnetpp::cSimpleModule
      *
      * @param ci LteStackControlInfo object
      */
-    void printControlInfo(inet::Packet* pkt);
+    void printControlInfo(inet::Packet *pkt);
     void registerInterface();
     void registerMulticastGroups();
 
@@ -131,7 +131,7 @@ class IP2Nic : public omnetpp::cSimpleModule
     omnetpp::cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
 
     // corresponding entry for our interface
-    inet::NetworkInterface* networkIf;
+    inet::NetworkInterface *networkIf;
 
   public:
 
@@ -140,16 +140,16 @@ class IP2Nic : public omnetpp::cSimpleModule
      */
     void triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb);
     void triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb);
-    void sendTunneledPacketOnHandover(inet::Packet* datagram, MacNodeId targetEnb);
-    void receiveTunneledPacketOnHandover(inet::Packet* datagram, MacNodeId sourceEnb);
+    void sendTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId targetEnb);
+    void receiveTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId sourceEnb);
     void signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb);
     void signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb);
 
     /*
      * Handover management at the UE side
      */
-    void triggerHandoverUe(MacNodeId newMasterId, bool isNr=false);
-    void signalHandoverCompleteUe(bool isNr=false);
+    void triggerHandoverUe(MacNodeId newMasterId, bool isNr = false);
+    void signalHandoverCompleteUe(bool isNr = false);
 
     virtual ~IP2Nic();
 };
@@ -157,3 +157,4 @@ class IP2Nic : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

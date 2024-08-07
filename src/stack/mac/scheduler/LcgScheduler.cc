@@ -16,7 +16,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LcgScheduler::LcgScheduler(LteMacUe* mac)
+LcgScheduler::LcgScheduler(LteMacUe *mac)
 {
     lastExecutionTime_ = 0;
     mac_ = mac;
@@ -45,12 +45,12 @@ LcgScheduler::~LcgScheduler()
 ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction grantDir)
 {
     /* clean up old schedule decisions
-     for each cid, this map will store the the amount of sent data (in SDUs)
+       for each cid, this map will store the the amount of sent data (in SDUs)
      */
     scheduleList_.clear();
 
     /* clean up old schedule decisions
-     for each cid, this map will store the the amount of sent data (in bytes, useful for macSduRequest)
+       for each cid, this map will store the the amount of sent data (in bytes, useful for macSduRequest)
      */
     scheduledBytesList_.clear();
 
@@ -71,11 +71,10 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         return scheduleList_;
 
     // for all traffic classes
-    for (unsigned short i = 0; i < UNKNOWN_TRAFFIC_TYPE; ++i)
-    {
+    for (unsigned short i = 0; i < UNKNOWN_TRAFFIC_TYPE; ++i) {
         // Prepare the iterators to cycle the entire scheduling set
         std::pair<LcgMap::iterator, LcgMap::iterator> it_pair;
-        it_pair = lcgMap.equal_range((LteTrafficClass) i);
+        it_pair = lcgMap.equal_range((LteTrafficClass)i);
         LcgMap::iterator it = it_pair.first, et = it_pair.second;
 
         EV << NOW << " LcgScheduler::schedule - Node  " << mac_->getMacNodeId() << ", Starting priority service for traffic class " << i << endl;
@@ -87,18 +86,15 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         //       grant for sending the BSR related to the D2D connection(s).
         //       A smarter policy should be implemented
 
-        if (grantDir == UL && mac_->bsrTriggered())
-        {
+        if (grantDir == UL && mac_->bsrTriggered()) {
             // look for an active D2D connection
-            for (it = it_pair.first; it != et; ++it)
-            {
+            for (it = it_pair.first; it != et; ++it) {
                 // get the Flow descriptor
                 MacCid cid = it->second.first;
                 FlowControlInfo connDesc = mac_->getConnDesc().at(cid);
-                if (connDesc.getDirection() == D2D)
-                {
+                if (connDesc.getDirection() == D2D) {
                     // get the connection virtual buffer
-                    LteMacBuffer* vQueue = it->second.second;
+                    LteMacBuffer *vQueue = it->second.second;
                     // get the buffer size
                     unsigned int queueLength = vQueue->getQueueOccupancy(); // in bytes
                     if (queueLength != 0)
@@ -109,12 +105,11 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         // -------------------------------------------------------------------------------------------------- //
 
         //! FIXME Allocation of the same resource to flows with same priority not implemented
-        for (it = it_pair.first; it != et; ++it)
-        {
+        for (it = it_pair.first; it != et; ++it) {
             // processing all connections of same traffic class
 
             // get the connection virtual buffer
-            LteMacBuffer* vQueue = it->second.second;
+            LteMacBuffer *vQueue = it->second.second;
 
             // get the buffer size
             unsigned int queueLength = vQueue->getQueueOccupancy(); // in bytes
@@ -132,13 +127,11 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
             unsigned int toServe = queueLength;
             // Check whether the virtual buffer is empty
-            if (queueLength == 0)
-            {
+            if (queueLength == 0) {
                 EV << "LcgScheduler::schedule scheduled connection is no more active " << endl;
                 continue; // go to next connection
             }
-            else
-            {
+            else {
                 // we need to consider also the size of RLC and MAC headers
                 if (connDesc.getRlcType() == UM)
                     toServe += RLC_HEADER_UM;
@@ -152,10 +145,9 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             // get a pointer to the appropriate status element: we need a tracing element
             // in order to store information about connections and data transmitted. These
             // information may be consulted at the end of the LCP algorithm
-            StatusElem* elem;
+            StatusElem *elem;
 
-            if (statusMap_.find(cid) == statusMap_.end())
-            {
+            if (statusMap_.find(cid) == statusMap_.end()) {
                 // the element does not exist, initialize it
                 elem = &statusMap_[cid];
                 elem->occupancy_ = vQueue->getQueueLength();
@@ -164,8 +156,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 // TODO set bucket from QoS parameters
                 elem->bucket_ = 1000;
             }
-            else
-            {
+            else {
                 elem = &statusMap_[cid];
             }
 
@@ -177,8 +168,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 //                fprintf(stderr, "\tMin Reserved Rate: %.0lf bytes/s\n", desc->parameters_.minReservedRate_);
 //                fprintf(stderr, "\tMax Burst: %.0lf bytes\n", desc->parameters_.maxBurst_);
 
-            if (priorityService)
-            {
+            if (priorityService) {
                 // Update bucket value for this connection
 
                 // get the actual bucket value and the configured max size
@@ -189,15 +179,13 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
                 // if the connection started before last scheduling event , use the
                 // global time interval
-                if (lastExecutionTime_ > 0)
-                { // TODO desc->parameters_.startTime_) {
+                if (lastExecutionTime_ > 0) { // TODO desc->parameters_.startTime_) {
                     // PBR*(n*TTI) where n is the number of TTI from last update
                     bucket += /* TODO desc->parameters_.minReservedRate_*/ 100.0 * TTI;
                 }
                 // otherwise, set the bucket value accordingly to the start time
-                else
-                {
-                    simtime_t localTimeInterval = NOW - 0/* TODO desc->parameters_.startTime_ */;
+                else {
+                    simtime_t localTimeInterval = NOW - 0 /* TODO desc->parameters_.startTime_ */;
                     if (localTimeInterval < 0)
                         localTimeInterval = 0;
 
@@ -223,7 +211,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
             // If priority service: (availableBytes>0) && (desc->buffer_.occupancy() > 0) && (desc->parameters_.bucket_ > 0)
             // If best effort service: (availableBytes>0) && (desc->buffer_.occupancy() > 0)
-            if ((availableBytes > minBytes ) && (toServe > 0)
+            if ((availableBytes > minBytes) && (toServe > 0)
                 && (!priorityService || 1 /*TODO (desc->parameters_.bucket_ > 0)*/))
             {
                 // Check if it is possible to serve the sdu, depending on the constraint
@@ -233,23 +221,19 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 // Best Effort service:
                 //    ( sdu->size() <= availableBytes) && (!priorityService_)
 
-                if ((toServe <= availableBytes) /*&& ( !priorityService || ( sduSize <= 0) ) // TODO desc->parameters_.bucket_*/)
-                {
+                if ((toServe <= availableBytes) /*&& ( !priorityService || ( sduSize <= 0) ) // TODO desc->parameters_.bucket_*/) {
                     // remove SDU from virtual buffer
                     vQueue->popFront();
 
-                    if (priorityService)
-                    {
+                    if (priorityService) {
 //    TODO                        desc->parameters_.bucket_ -= sduSize;
 //                        // update the tracing element accordingly
 //    TODO                    elem->bucket_ = 100.0 /* TODO desc->parameters_.bucket_*/;
                     }
 
-
                     // check if there is space for a SDU
                     int alloc = toServe;
-                    if (firstSdu)
-                    {
+                    if (firstSdu) {
                         alloc -= MAC_HEADER;
                         firstSdu = false;
                     }
@@ -268,8 +252,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
                     availableBytes -= toServe;
 
-                    while (!vQueue->isEmpty())
-                    {
+                    while (!vQueue->isEmpty()) {
                         // remove SDUs from virtual buffer
                         vQueue->popFront();
                     }
@@ -280,19 +263,16 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                     EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << ", remaining grant: " << availableBytes << " bytes" << endl;
                     EV << NOW << " LcgScheduler::schedule - Node " << mac_->getMacNodeId() << " buffer Size: " << toServe << " bytes" << endl;
                 }
-                else
-                {
+                else {
 
-                    if (priorityService)
-                    {
+                    if (priorityService) {
 //    TODO                        desc->parameters_.bucket_ -= sduSize;
 //                        // update the tracing element accordingly
 //    TODO                    elem->bucket_ = 100.0 /* TODO desc->parameters_.bucket_*/;
                     }
 
                     int alloc = availableBytes;
-                    if (firstSdu)
-                    {
+                    if (firstSdu) {
                         alloc -= MAC_HEADER;
                         firstSdu = false;
                     }
@@ -311,21 +291,17 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                         elem->sentSdus_++;
 
                     // update buffer
-                    while (alloc > 0)
-                    {
+                    while (alloc > 0) {
                         // update pkt info
                         PacketInfo newPktInfo = vQueue->popFront();
-                        if (newPktInfo.first > alloc)
-                        {
+                        if (newPktInfo.first > alloc) {
                             newPktInfo.first = newPktInfo.first - alloc;
                             vQueue->pushFront(newPktInfo);
                             alloc = 0;
                         }
-                        else
-                        {
+                        else {
                             alloc -= newPktInfo.first;
                         }
-
                     }
 
                     toServe -= availableBytes;
@@ -338,8 +314,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             }
 
             // check if flow is still backlogged
-            if (availableBytes > minBytes)
-            {
+            if (availableBytes > minBytes) {
                 // TODO the priority is higher when the associated integer is lower ( e.g. priority 2 is
                 // greater than 4 )
 //
@@ -366,39 +341,33 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 //
 //            }
 //
-            if(elem->sentSdus_ > 0)
-            {
+            if (elem->sentSdus_ > 0) {
                 // update the last schedule time
                 lastExecutionTime_ = NOW;
 
                 // signal service for current connection
-                unsigned int* servicedSdu = nullptr;
+                unsigned int *servicedSdu = nullptr;
 
-                if (scheduleList_.find(cid) == scheduleList_.end())
-                {
+                if (scheduleList_.find(cid) == scheduleList_.end()) {
                     // the element does not exist, initialize it
                     servicedSdu = &scheduleList_[cid];
                     *servicedSdu = elem->sentSdus_;
                 }
-                else
-                {
+                else {
                     // connection already scheduled during this TTI
                     servicedSdu = &scheduleList_.at(cid);
                 }
 
                 // update scheduled bytes
-                if (scheduledBytesList_.find(cid) == scheduledBytesList_.end())
-                {
+                if (scheduledBytesList_.find(cid) == scheduledBytesList_.end()) {
                     scheduledBytesList_[cid] = elem->sentData_;
                 }
-                else
-                {
+                else {
                     scheduledBytesList_[cid] += elem->sentData_;
                 }
             }
             // If the end of the connections map is reached and we were on priority and on last traffic class
-            if (priorityService && (it == et) && ((i + 1) == (unsigned short) UNKNOWN_TRAFFIC_TYPE))
-            {
+            if (priorityService && (it == et) && ((i + 1) == (unsigned short)UNKNOWN_TRAFFIC_TYPE)) {
                 // the first phase of the LCP algorithm has completed ...
                 // ... switch to best effort allocation!
                 priorityService = false;

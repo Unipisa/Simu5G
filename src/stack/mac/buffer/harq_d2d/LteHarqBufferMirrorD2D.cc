@@ -16,7 +16,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb* macOwner)
+LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb *macOwner)
 {
     numProc_ = numProc;
     maxHarqRtx_ = maxHarqRtx;
@@ -48,11 +48,9 @@ void LteHarqBufferMirrorD2D::receiveHarqFeedback(inet::Packet *pkt)
 
 void LteHarqBufferMirrorD2D::markSelectedAsWaiting()
 {
-    for (unsigned int i = 0; i < numProc_; i++)
-    {
+    for (unsigned int i = 0; i < numProc_; i++) {
         std::vector<TxHarqPduStatus> status = processes_[i]->getProcessStatus();
-        for (unsigned int cw = 0; cw < status.size(); cw++)
-        {
+        for (unsigned int cw = 0; cw < status.size(); cw++) {
             if (status[cw] == TXHARQ_PDU_SELECTED)
                 processes_[i]->markWaiting(cw);
         }

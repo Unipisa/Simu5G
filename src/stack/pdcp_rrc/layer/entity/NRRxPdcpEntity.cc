@@ -35,7 +35,7 @@ void NRRxPdcpEntity::initialize()
     LteRxPdcpEntity::initialize();
 }
 
-void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
+void NRRxPdcpEntity::handlePdcpSdu(Packet *pdcpSdu)
 {
     Enter_Method("NRRxPdcpEntity::handlePdcpSdu");
 
@@ -44,8 +44,7 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
 
     EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - processing PDCP SDU with SN[" << rcvdSno << "]" << endl;
 
-    if (!(pdcp_->isDualConnectivityEnabled()) || outOfOrderDelivery_) // deliver packet to upper layer
-    {
+    if (!(pdcp_->isDualConnectivityEnabled()) || outOfOrderDelivery_) { // deliver packet to upper layer
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - Deliver SDU SN[" << rcvdSno << "] to upper layer" << endl;
         pdcp_->toDataPort(pdcpSdu);
         return;
@@ -53,8 +52,7 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
     // else dual connectivity is enabled and reordering needs to be done
 
     // check if already considered for reordering
-    if (rcvdSno < rxWindowDesc_.rxDeliv_)
-    {
+    if (rcvdSno < rxWindowDesc_.rxDeliv_) {
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - the SN[" << rcvdSno << "] <  was already considered for reordering. Discard the SDU" << endl;
         delete pdcpSdu;
         return;
@@ -62,16 +60,14 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
 
     // get the position in the buffer
     int index = rcvdSno - rxWindowDesc_.rxDeliv_;
-    if (index >= rxWindowDesc_.windowSize_)
-    {
+    if (index >= rxWindowDesc_.windowSize_) {
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - the SN[" << rcvdSno << "] <  is too large with respect to the window size. Advance the window and deliver out-of-sequence SDUs" << endl;
         delete pdcpSdu;
         return;
     }
 
     // check if already received
-    if (received_.at(index))
-    {
+    if (received_.at(index)) {
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - the SN[" << rcvdSno << "] <  has already been received. Discard the SDU" << endl;
         delete pdcpSdu;
         return;
@@ -79,10 +75,9 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
 
     // update next expected sequence number
     if (rcvdSno >= rxWindowDesc_.rxNext_)
-        rxWindowDesc_.rxNext_ = rcvdSno+1;
+        rxWindowDesc_.rxNext_ = rcvdSno + 1;
 
-    if (rcvdSno == rxWindowDesc_.rxDeliv_)
-    {
+    if (rcvdSno == rxWindowDesc_.rxDeliv_) {
         // this SDU is the next one to be delivered
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - Deliver SDU SN[" << rcvdSno << "] to upper layer" << endl;
         pdcp_->toDataPort(pdcpSdu);
@@ -90,10 +85,9 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
         rxWindowDesc_.rxDeliv_++;
 
         // try to deliver in-order, buffered SDUs, if any
-        int pos=1;
-        while (pos < rxWindowDesc_.windowSize_ && received_.at(pos))
-        {
-            cPacket* sdu = check_and_cast<cPacket*>(sduBuffer_.remove(pos));
+        int pos = 1;
+        while (pos < rxWindowDesc_.windowSize_ && received_.at(pos)) {
+            cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(pos));
             received_.at(pos) = false;
 
             EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - Deliver SDU buffered at index[" << pos << "] to upper layer" << endl;
@@ -105,16 +99,14 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
 
         // shift window by 'i' positions
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - shifting window by " << pos << " positions" << endl;
-        for (unsigned int i = pos; i < rxWindowDesc_.rxNext_ - rxWindowDesc_.rxDeliv_; ++i)
-        {
+        for (unsigned int i = pos; i < rxWindowDesc_.rxNext_ - rxWindowDesc_.rxDeliv_; ++i) {
             if (sduBuffer_.get(i) != NULL)
-                sduBuffer_.addAt(i-pos, sduBuffer_.remove(i));
-            received_.at(i-pos) = received_.at(i);
+                sduBuffer_.addAt(i - pos, sduBuffer_.remove(i));
+            received_.at(i - pos) = received_.at(i);
             received_.at(i) = false;
         }
     }
-    else
-    {
+    else {
         // else, buffer SDU
 
         EV << NOW << " NRRxPdcpEntity::handlePdcpSdu - SDU SN[" << rcvdSno << "] received out of sequence. Buffer at index[" << index << "]" << endl;
@@ -126,16 +118,13 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
     // handle t-reordering
 
     // if t_reordering is running
-    if (t_reordering_.busy())
-    {
+    if (t_reordering_.busy()) {
         if (rxWindowDesc_.rxDeliv_ >= rxWindowDesc_.rxReord_)
             t_reordering_.stop();
     }
     // if t_reordering is not running
-    if (!t_reordering_.busy())
-    {
-        if (rxWindowDesc_.rxDeliv_ < rxWindowDesc_.rxNext_)
-        {
+    if (!t_reordering_.busy()) {
+        if (rxWindowDesc_.rxDeliv_ < rxWindowDesc_.rxNext_) {
             t_reordering_.start(timeout_);
             rxWindowDesc_.rxReord_ = rxWindowDesc_.rxNext_;
         }
@@ -144,8 +133,7 @@ void NRRxPdcpEntity::handlePdcpSdu(Packet* pdcpSdu)
 
 void NRRxPdcpEntity::handleMessage(cMessage *msg)
 {
-    if (msg->isName("timer"))
-    {
+    if (msg->isName("timer")) {
         t_reordering_.handle();
 
         EV << NOW << " NRRxPdcpEntity::handleMessage : t_reordering timer has expired " << endl;
@@ -153,22 +141,19 @@ void NRRxPdcpEntity::handleMessage(cMessage *msg)
         unsigned int old = rxWindowDesc_.rxDeliv_;
 
         // deliver buffered SDUs
-        while (rxWindowDesc_.rxDeliv_ < rxWindowDesc_.rxReord_)
-        {
+        while (rxWindowDesc_.rxDeliv_ < rxWindowDesc_.rxReord_) {
             int pos = rxWindowDesc_.rxDeliv_ - old;
-            if (received_.at(pos) == true)
-            {
+            if (received_.at(pos) == true) {
                 EV << NOW << " NRRxPdcpEntity::handleMessage - Deliver SDU buffered at index[" << pos << "] to upper layer" << endl;
-                cPacket* sdu = check_and_cast<cPacket*>(sduBuffer_.remove(pos));
+                cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(pos));
                 pdcp_->toDataPort(sdu);
             }
             rxWindowDesc_.rxDeliv_++;
         }
 
-        while (received_.at(rxWindowDesc_.rxDeliv_ - old) == true)
-        {
+        while (received_.at(rxWindowDesc_.rxDeliv_ - old) == true) {
             EV << NOW << " NRRxPdcpEntity::handleMessage - Deliver SDU buffered at index[" << (rxWindowDesc_.rxDeliv_ - old) << "] to upper layer" << endl;
-            cPacket* sdu = check_and_cast<cPacket*>(sduBuffer_.remove(rxWindowDesc_.rxDeliv_ - old));
+            cPacket *sdu = check_and_cast<cPacket *>(sduBuffer_.remove(rxWindowDesc_.rxDeliv_ - old));
             pdcp_->toDataPort(sdu);
 
             rxWindowDesc_.rxDeliv_++;
@@ -179,16 +164,14 @@ void NRRxPdcpEntity::handleMessage(cMessage *msg)
         // shift window by 'i' positions
         int offset = rxWindowDesc_.rxDeliv_ - old;
         EV << NOW << " NRRxPdcpEntity::handleMessage - shifting window by " << offset << " positions" << endl;
-        for (unsigned int i = offset; i < rxWindowDesc_.windowSize_; ++i)
-        {
+        for (unsigned int i = offset; i < rxWindowDesc_.windowSize_; ++i) {
             if (sduBuffer_.get(i) != NULL)
-                sduBuffer_.addAt(i-offset, sduBuffer_.remove(i));
-            received_.at(i-offset) = received_.at(i);
+                sduBuffer_.addAt(i - offset, sduBuffer_.remove(i));
+            received_.at(i - offset) = received_.at(i);
             received_.at(i) = false;
         }
 
-        if (rxWindowDesc_.rxNext_ > rxWindowDesc_.rxDeliv_)
-        {
+        if (rxWindowDesc_.rxNext_ > rxWindowDesc_.rxDeliv_) {
             rxWindowDesc_.rxReord_ = rxWindowDesc_.rxNext_;
             t_reordering_.start(timeout_);
         }

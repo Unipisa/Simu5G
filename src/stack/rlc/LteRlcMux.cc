@@ -15,7 +15,6 @@ namespace simu5g {
 
 Define_Module(LteRlcMux);
 
-
 using namespace omnetpp;
 
 /*
@@ -27,33 +26,32 @@ void LteRlcMux::rlc2mac(cPacket *pkt)
     EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port RLC_to_MAC\n";
 
     // Send message
-    send(pkt,macSap_[OUT_GATE]);
+    send(pkt, macSap_[OUT_GATE]);
 }
 
-    /*
-     * Lower layer handler
-     */
+/*
+ * Lower layer handler
+ */
 
 void LteRlcMux::mac2rlc(cPacket *pktAux)
 {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    switch (lteInfo->getRlcType())
-    {
+    switch (lteInfo->getRlcType()) {
         case TM:
-        EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port TM_Sap$o\n";
-        send(pkt,tmSap_[OUT_GATE]);
-        break;
+            EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port TM_Sap$o\n";
+            send(pkt, tmSap_[OUT_GATE]);
+            break;
         case UM:
-        EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port UM_Sap$o\n";
-        send(pkt,umSap_[OUT_GATE]);
-        break;
+            EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port UM_Sap$o\n";
+            send(pkt, umSap_[OUT_GATE]);
+            break;
         case AM:
-        EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port AM_Sap$o\n";
-        send(pkt,amSap_[OUT_GATE]);
-        break;
+            EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port AM_Sap$o\n";
+            send(pkt, amSap_[OUT_GATE]);
+            break;
         default:
-        throw cRuntimeError("LteRlcMux: wrong traffic type %d", lteInfo->getRlcType());
+            throw cRuntimeError("LteRlcMux: wrong traffic type %d", lteInfo->getRlcType());
     }
 }
 
@@ -73,19 +71,17 @@ void LteRlcMux::initialize()
     amSap_[OUT_GATE] = gate("AM_Sap$o");
 }
 
-void LteRlcMux::handleMessage(cMessage* msg)
+void LteRlcMux::handleMessage(cMessage *msg)
 {
-    cPacket* pkt = check_and_cast<cPacket *>(msg);
+    cPacket *pkt = check_and_cast<cPacket *>(msg);
     EV << "LteRlcMux : Received packet " << pkt->getName() <<
-    " from port " << pkt->getArrivalGate()->getName() << endl;
+        " from port " << pkt->getArrivalGate()->getName() << endl;
 
-    cGate* incoming = pkt->getArrivalGate();
-    if (incoming == macSap_[IN_GATE])
-    {
+    cGate *incoming = pkt->getArrivalGate();
+    if (incoming == macSap_[IN_GATE]) {
         mac2rlc(pkt);
     }
-    else
-    {
+    else {
         rlc2mac(pkt);
     }
     return;

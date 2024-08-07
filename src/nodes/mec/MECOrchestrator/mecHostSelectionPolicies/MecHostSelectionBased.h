@@ -20,14 +20,16 @@ namespace simu5g {
 
 class MecHostSelectionBased : public SelectionPolicyBase
 {
-    protected:
-        int mecHostIndex_;
-        virtual cModule* findBestMecHost(const ApplicationDescriptor&) override;
-    public:
-        MecHostSelectionBased(MecOrchestrator* mecOrchestrator, int index);
-      virtual ~MecHostSelectionBased(){}
+  protected:
+    int mecHostIndex_;
+    virtual cModule *findBestMecHost(const ApplicationDescriptor&) override;
+
+  public:
+    MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index);
+    virtual ~MecHostSelectionBased() {}
 };
 
 } //namespace
 
 #endif /* NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_ */
+

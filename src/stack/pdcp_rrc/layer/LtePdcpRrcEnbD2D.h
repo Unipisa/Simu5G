@@ -30,7 +30,7 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
   protected:
 
     virtual void initialize(int stage) override;
-    virtual void handleMessage(omnetpp::cMessage* msg) override;
+    virtual void handleMessage(omnetpp::cMessage *msg) override;
 
     /**
      * handler for data port
@@ -47,3 +47,4 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
 } //namespace
 
 #endif
+

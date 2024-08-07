@@ -20,7 +20,6 @@ namespace simu5g {
 
 class LteHarqProcessRxD2D;
 
-
 /**
  * H-ARQ RX buffer for D2D: messages coming from phy are stored in H-ARQ RX buffer.
  * When a new pdu is inserted, it is in EVALUATING state meaning that the hardware is
@@ -35,10 +34,10 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
 {
   protected:
 
-        // D2D Statistics
-        inet::simsignal_t macDelayD2D_;
-        inet::simsignal_t macCellThroughputD2D_;
-        inet::simsignal_t macThroughputD2D_;
+    // D2D Statistics
+    inet::simsignal_t macDelayD2D_;
+    inet::simsignal_t macCellThroughputD2D_;
+    inet::simsignal_t macThroughputD2D_;
 
     /**
      * Checks for all processes if the pdu has been evaluated and sends
@@ -47,7 +46,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
     virtual void sendFeedback();
 
   public:
-    LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast=false);
+    LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast = false);
 
     /*
      * Insertion of a new pdu coming from phy layer into
@@ -63,7 +62,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
      *
      * @return uncorrupted pdus or empty list if none
      */
-    virtual std::list<inet::Packet*> extractCorrectPdus();
+    virtual std::list<inet::Packet *> extractCorrectPdus();
 
     virtual ~LteHarqBufferRxD2D();
 };
@@ -71,3 +70,4 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
 } //namespace
 
 #endif
+

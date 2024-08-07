@@ -41,7 +41,7 @@ LteMacBuffer& LteMacBuffer::operator=(const LteMacBuffer& queue)
     return *this;
 }
 
-LteMacBuffer* LteMacBuffer::dup() const
+LteMacBuffer *LteMacBuffer::dup() const
 {
     return new LteMacBuffer(*this);
 }
@@ -116,8 +116,7 @@ unsigned int LteMacBuffer::getProcessed() const
     return processed_;
 }
 
-const std::list<PacketInfo>*
-LteMacBuffer::getPacketlist() const
+const std::list<PacketInfo> *LteMacBuffer::getPacketlist() const
 {
     return &Queue_;
 }
@@ -134,10 +133,10 @@ int LteMacBuffer::getQueueLength() const
 
 bool LteMacBuffer::isEmpty() const
 {
-    return (queueLength_ == 0);
+    return queueLength_ == 0;
 }
 
-std::ostream& operator << (std::ostream &stream, const LteMacBuffer* queue)
+std::ostream& operator<<(std::ostream& stream, const LteMacBuffer *queue)
 {
     stream << "LteMacBuffer-> Length: " << queue->getQueueLength() <<
         " Occupancy: " << queue->getQueueOccupancy() <<

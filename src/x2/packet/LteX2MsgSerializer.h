@@ -17,16 +17,18 @@
 
 namespace simu5g {
 
-class LteX2MsgSerializer : public inet::FieldsChunkSerializer {
-private:
+class LteX2MsgSerializer : public inet::FieldsChunkSerializer
+{
+  private:
     void serializeStatusMap(inet::MemoryOutputStream& stream, std::vector<CompRbStatus> map) const;
     std::vector<CompRbStatus> deserializeStatusMap(inet::MemoryInputStream& stream) const;
-protected:
-  virtual void serialize(inet::MemoryOutputStream& stream, const inet::Ptr<const inet::Chunk>& chunk) const override;
-  virtual const inet::Ptr<inet::Chunk> deserialize(inet::MemoryInputStream& stream) const override;
 
-public:
-  LteX2MsgSerializer() : FieldsChunkSerializer() {}
+  protected:
+    virtual void serialize(inet::MemoryOutputStream& stream, const inet::Ptr<const inet::Chunk>& chunk) const override;
+    virtual const inet::Ptr<inet::Chunk> deserialize(inet::MemoryInputStream& stream) const override;
+
+  public:
+    LteX2MsgSerializer() : FieldsChunkSerializer() {}
 };
 
 } //namespace

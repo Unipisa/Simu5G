@@ -19,11 +19,11 @@ namespace simu5g {
 
 class LteAllocationModuleFrequencyReuse : public LteAllocationModule
 {
-    public:
+  public:
     /// Default constructor.
     LteAllocationModuleFrequencyReuse(LteMacEnb *mac, const Direction direction);
     // Store the Allocation based on passed paremeter
-    virtual void storeAllocation( std::vector<std::vector<AllocatedRbsPerBandMapA> > allocatedRbsPerBand,std::set<Band>* untouchableBands = nullptr);
+    virtual void storeAllocation(std::vector<std::vector<AllocatedRbsPerBandMapA>> allocatedRbsPerBand, std::set<Band> *untouchableBands = nullptr);
     // Get the bands already allocated by RAC and RTX ( Debug purpose)
     virtual std::set<Band> getAllocatorOccupiedBands();
 };
@@ -31,3 +31,4 @@ class LteAllocationModuleFrequencyReuse : public LteAllocationModule
 } //namespace
 
 #endif
+

@@ -24,24 +24,22 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
         }
 
         // CQI
-        if (fb.hasBandCqi()) // Per-band
-        {
+        if (fb.hasBandCqi()) { // Per-band
             std::vector<CqiVector> cqi = fb.getBandCqi();
             unsigned int n = cqi.size();
             for (Codeword cw = 0; cw < n; ++cw)
                 for (Band i = 0; i < totBands_; ++i)
                     cumulativeSummary_.setCqi(cqi.at(cw).at(i), cw, i);
-        } else {
-            if (fb.hasWbCqi()) // Wide-band
-            {
+        }
+        else {
+            if (fb.hasWbCqi()) { // Wide-band
                 CqiVector cqi(fb.getWbCqi());
                 unsigned int n = cqi.size();
                 for (Codeword cw = 0; cw < n; ++cw)
                     for (Band i = 0; i < totBands_; ++i)
                         cumulativeSummary_.setCqi(cqi.at(cw), cw, i); // ripete lo stesso wb cqi su ogni banda della stessa cw
             }
-            if (fb.hasPreferredCqi()) // Preferred-band
-            {
+            if (fb.hasPreferredCqi()) { // Preferred-band
                 CqiVector cqi(fb.getPreferredCqi());
                 BandSet bands(fb.getPreferredBands());
                 unsigned int n = cqi.size();
@@ -55,12 +53,12 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
         // Per il PMI si comporta in modo analogo
 
         // PMI
-        if (fb.hasBandPmi()) // Per-band
-        {
+        if (fb.hasBandPmi()) { // Per-band
             PmiVector pmi(fb.getBandPmi());
             for (Band i = 0; i < totBands_; ++i)
                 cumulativeSummary_.setPmi(pmi.at(i), i);
-        } else {
+        }
+        else {
             if (fb.hasWbPmi()) {
                 // Wide-band
                 Pmi pmi(fb.getWbPmi());
@@ -76,7 +74,8 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
                     cumulativeSummary_.setPmi(pmi, *it);
             }
         }
-    } catch (std::exception& e) {
+    }
+    catch (std::exception& e) {
         throw omnetpp::cRuntimeError("Exception in LteSummaryBuffer::summarize(): %s",
                 e.what());
     }

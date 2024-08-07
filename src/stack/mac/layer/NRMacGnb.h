@@ -20,7 +20,6 @@ class NRMacGnb : public LteMacEnbD2D
 {
   protected:
 
-
   public:
 
     NRMacGnb();
@@ -36,3 +35,4 @@ class NRMacGnb : public LteMacEnbD2D
 } //namespace
 
 #endif
+

@@ -30,6 +30,7 @@ struct NRMCSelem
         mod_ = mod;
         coderate_ = coderate;
     }
+
 };
 
 /**
@@ -46,12 +47,11 @@ class NRMcsTable
      * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
      * This table contains value taken from the table 7.2.3-1 (TS 38.214)
      */
-    CQIelem cqiTable[MAXCQI+1];
-
+    CQIelem cqiTable[MAXCQI + 1];
 
     NRMCSelem table[CQI2ITBSSIZE];
 
-    NRMcsTable(bool extended=true);
+    NRMcsTable(bool extended = true);
     ~NRMcsTable()
     {
     }
@@ -80,3 +80,4 @@ extern const unsigned int nInfoToTbs[TBSTABLESIZE];
 } //namespace
 
 #endif
+

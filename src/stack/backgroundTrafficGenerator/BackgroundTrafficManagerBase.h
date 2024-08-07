@@ -29,7 +29,6 @@ class TrafficGeneratorBase;
 class LteMacEnb;
 class LteChannelModel;
 
-
 //
 // BackgroundTrafficManagerBase
 //
@@ -41,7 +40,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     int numBgUEs_;
 
     // reference to all the background UEs
-    std::vector<TrafficGeneratorBase*> bgUe_;
+    std::vector<TrafficGeneratorBase *> bgUe_;
 
     // indexes of the backlogged bg UEs
     std::list<int> backloggedBgUes_[2];
@@ -56,7 +55,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     inet::ModuleRefByPar<Binder> binder_;
 
     //pointer to pisadata
-    PhyPisaData* phyPisaData_;
+    PhyPisaData *phyPisaData_;
 
     /// TTI for this node
     double ttiPeriod_;
@@ -84,10 +83,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     /*************************************/
 
-
     virtual void initialize(int stage);
-    virtual int numInitStages() const  {return inet::INITSTAGE_LAST; }
-    virtual void handleMessage(cMessage* msg);
+    virtual int numInitStages() const { return inet::INITSTAGE_LAST; }
+    virtual void handleMessage(cMessage *msg);
 
     static const double nrCqiTable[16];
     static double getCqiFromTable(double snr);
@@ -121,11 +119,11 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     virtual Cqi computeCqiFromSinr(double sinr);
 
     // returns the pointer to the traffic generator of the given background UE
-    TrafficGeneratorBase* getTrafficGenerator(MacNodeId bgUeId);
+    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId);
 
     // returns the begin (end) iterator of the vector of UEs
-    std::vector<TrafficGeneratorBase*>::const_iterator getBgUesBegin();
-    std::vector<TrafficGeneratorBase*>::const_iterator getBgUesEnd();
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin();
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd();
 
     // returns the begin (end) iterator of the vector of backlogged UEs
     std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false);
@@ -148,3 +146,4 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 } //namespace
 
 #endif
+

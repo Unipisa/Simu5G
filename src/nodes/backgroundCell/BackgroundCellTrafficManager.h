@@ -33,12 +33,13 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     inet::ModuleRefByPar<BackgroundScheduler> bgScheduler_;
 
     // reference to class AMC for this cell
-    BackgroundCellAmc* bgAmc_;
+    BackgroundCellAmc *bgAmc_;
 
   protected:
     virtual double getTtiPeriod();
     virtual bool isSetBgTrafficManagerInfoInit();
     virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
+
   public:
     BackgroundCellTrafficManager();
     virtual ~BackgroundCellTrafficManager();
@@ -48,7 +49,7 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     virtual unsigned int getNumBands();
 
     // returns the bytes per block of the given UE for in the given direction
-    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) {
+    virtual unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) {
         throw cRuntimeError("Not implemented");
     }
 
@@ -59,3 +60,4 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
 } //namespace
 
 #endif
+

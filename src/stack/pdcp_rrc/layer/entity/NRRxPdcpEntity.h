@@ -37,7 +37,7 @@ struct PdcpRxWindowDesc
     //! Sno of the SDU following the SDU that triggered t_reordering (RX_REORD)
     unsigned int rxReord_;
 
-    void clear(unsigned int i=0)
+    void clear(unsigned int i = 0)
     {
         rxNext_ = i;
         rxDeliv_ = i;
@@ -88,7 +88,7 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
     double timeout_;
 
     // handler for PDCP SDU
-    virtual void handlePdcpSdu(Packet* pdcpSdu);
+    virtual void handlePdcpSdu(Packet *pdcpSdu);
 
   public:
 
@@ -99,9 +99,10 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
 
     virtual void handleMessage(cMessage *msg);
 
-    virtual bool isEmpty() const {return sduBuffer_.size() == 0;}
+    virtual bool isEmpty() const { return sduBuffer_.size() == 0; }
 };
 
 } //namespace
 
 #endif
+

@@ -12,26 +12,26 @@
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_
 
-
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
 namespace simu5g {
 
 class CategoryRef : public AttributeBase
 {
-    protected:
-        std::string href_;
-        std::string id_;
-        std::string name_;
-        std::string version_;
+  protected:
+    std::string href_;
+    std::string id_;
+    std::string name_;
+    std::string version_;
 
-    public:
-        CategoryRef(){};
-        CategoryRef(const std::string& href, const std::string& id, const std::string& name, const std::string& version);
-        ~CategoryRef(){};
-        nlohmann::ordered_json toJson() const;
+  public:
+    CategoryRef() {};
+    CategoryRef(const std::string& href, const std::string& id, const std::string& name, const std::string& version);
+    ~CategoryRef() {};
+    nlohmann::ordered_json toJson() const;
 };
 
 } //namespace
 
 #endif /* NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_ */
+

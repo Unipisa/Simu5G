@@ -46,9 +46,9 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 {
 
     /*
-    * The node can have different active connections (lcid) at the same time, hence we need to
-    * maintain the status for each of them
-    */
+     * The node can have different active connections (lcid) at the same time, hence we need to
+     * maintain the status for each of them
+     */
     struct StatusDescriptor {
         MacNodeId nodeId_; // dest node of this lcid
         std::map<unsigned int, PdcpStatus> pdcpStatus_; // a pdcp pdu can be fragmented in many rlc that could be sent and ack in different time (this prevent early remove on ack)
@@ -67,13 +67,10 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     omnetpp::cOutVector times_;
     std::set<unsigned int> myset;
 
-
-
-    protected:
+  protected:
 
     virtual void initialize(int stage) override;
-    void initPdcpStatus(StatusDescriptor* desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
-
+    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
 
 //    bool hasFragments(LogicalCid lcid, unsigned int pdcp);
 
@@ -89,42 +86,39 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     virtual void clearAllLcid() override;
     virtual void clearStats();
 
-
-
-    virtual void insertPdcpSdu(inet::Packet* pdcpPkt) override;
+    virtual void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     /*
-    * This method insert a new rlc seqnum and the corresponding pdcp pdus inside it
-    * @param lcid
-    * @param rlcSno sequence number of the rlc pdu
-    * @param pdcpSnoSet list of pdcp pdu inside the rlc pdu
-    * @param lastIsFrag used to inform if the last pdcp is fragmented or not
-    */
+     * This method insert a new rlc seqnum and the corresponding pdcp pdus inside it
+     * @param lcid
+     * @param rlcSno sequence number of the rlc pdu
+     * @param pdcpSnoSet list of pdcp pdu inside the rlc pdu
+     * @param lastIsFrag used to inform if the last pdcp is fragmented or not
+     */
 
     virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
 
     /*
-    * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it
-    * @param lcid
-    * @param macPdu packet pointer
-    */
+     * This method insert a new macPduId Omnet id and the corresponding rlc pdus inside it
+     * @param lcid
+     * @param macPdu packet pointer
+     */
     virtual void insertMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
 
-
     /*
-    * This method checks if the HARQ acSequenceNumberSetk relative to a macPduId acknowledges an ENTIRE
-    * pdcp sdu
-    * @param lcid
-    * @param macPduId Omnet id of the mac pdu
-    */
+     * This method checks if the HARQ acSequenceNumberSetk relative to a macPduId acknowledges an ENTIRE
+     * pdcp sdu
+     * @param lcid
+     * @param macPduId Omnet id of the mac pdu
+     */
     virtual void macPduArrived(const inet::Ptr<const LteMacPdu> macPdu) override;
 
     /*
-    * This method is called after maxHarqTrasmission of a MAC PDU ID has been
-    * reached. The PDCP, RLC, sno referred to the macPdu are cleared from the
-    * data structures
-    * @param lcid
-    * @param macPduId Omnet id of the mac pdu to be discarded
-    */
+     * This method is called after maxHarqTrasmission of a MAC PDU ID has been
+     * reached. The PDCP, RLC, sno referred to the macPdu are cleared from the
+     * data structures
+     * @param lcid
+     * @param macPduId Omnet id of the mac pdu to be discarded
+     */
     virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
 
     /*
@@ -138,14 +132,12 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 
     virtual void insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId) override;
 
-
     /*
      * invoked by the MAC layer to notify that harqProcId is completed.
      * This method need to go back up the chain of sequence numbers to identify which
      * PDCP SDUs have been transmitted in this process.
      */
     // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId);
-
 
     DiscardedPkts getDiscardedPkt();
 
@@ -160,3 +152,4 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 } //namespace
 
 #endif
+

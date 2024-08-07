@@ -41,12 +41,11 @@ unsigned int RemoteAntennaSet::getAntennaSetSize()
     return remoteAntennaSet_.size();
 }
 
-std::ostream &operator << (std::ostream &stream, const RemoteAntennaSet* ruSet)
+std::ostream& operator<<(std::ostream& stream, const RemoteAntennaSet *ruSet)
 {
     if (ruSet == nullptr)
-        return (stream << "Empty set");
-    for (unsigned int i = 0; i < ruSet->remoteAntennaSet_.size(); i++)
-    {
+        return stream << "Empty set";
+    for (unsigned int i = 0; i < ruSet->remoteAntennaSet_.size(); i++) {
         stream << "RU" << i << " : " << "Pos = (" <<
             ruSet->remoteAntennaSet_[i].ruPosition_.x << "," <<
             ruSet->remoteAntennaSet_[i].ruPosition_.y << ") ; txPow = " <<

@@ -41,7 +41,7 @@ class Binder : public omnetpp::cSimpleModule
     // name of the system (top-level) module
     std::string networkName_;
 
-    typedef std::map<MacNodeId, std::map<MacNodeId, bool> > DeployedUesMap;
+    typedef std::map<MacNodeId, std::map<MacNodeId, bool>> DeployedUesMap;
 
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
@@ -67,15 +67,15 @@ class Binder : public omnetpp::cSimpleModule
     std::map<double, BackgroundSchedulerList> bgSchedulerList_;
 
     // list of all eNBs. Used for inter-cell interference evaluation
-    std::vector<EnbInfo*> enbList_;
+    std::vector<EnbInfo *> enbList_;
 
     // list of all UEs. Used for inter-cell interference evaluation
-    std::vector<UeInfo*> ueList_;
+    std::vector<UeInfo *> ueList_;
 
     // list of all background traffic manager. Used for background UEs CQI computation
-    std::vector<BgTrafficManagerInfo*> bgTrafficManagerList_;
+    std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
 
-    typedef std::map<unsigned int, std::map<unsigned int, double> > BgInterferenceMatrix;
+    typedef std::map<unsigned int, std::map<unsigned int, double>> BgInterferenceMatrix;
     // map of maps storing the mutual interference between BG cells
     BgInterferenceMatrix bgCellsInterferenceMatrix_;
     // map of maps storing the mutual interference between BG UEs
@@ -94,21 +94,20 @@ class Binder : public omnetpp::cSimpleModule
     CarrierInfoMap componentCarriers_;
 
     // for each carrier, store the UEs that are able to use it
-    typedef std::map<double, UeSet > CarrierUeMap;
+    typedef std::map<double, UeSet> CarrierUeMap;
     CarrierUeMap carrierUeMap_;
-
 
     // hack to link carrier freq to numerology index
     std::map<double, NumerologyIndex> carrierFreqToNumerologyIndex_;
     // max numerology index used by UEs
     std::vector<NumerologyIndex> ueMaxNumerologyIndex_;
     // set of numerologies used by each UE
-    std::map<MacNodeId, std::set<NumerologyIndex> > ueNumerologyIndex_;
+    std::map<MacNodeId, std::set<NumerologyIndex>> ueNumerologyIndex_;
 
     /*
      * Uplink interference support
      */
-    typedef std::map<double, std::vector< std::vector< std::vector<UeAllocationInfo> > > > UplinkTransmissionMap;
+    typedef std::map<double, std::vector<std::vector<std::vector<UeAllocationInfo>>>> UplinkTransmissionMap;
     // for each carrier frequency, for both previous and current TTIs, for each RB, stores the UE (nodeId and ref to the PHY module) that transmitted/are transmitting within that RB
     UplinkTransmissionMap ulTransmissionMap_;
     // TTI of the last update of the UL band status
@@ -119,10 +118,10 @@ class Binder : public omnetpp::cSimpleModule
     /*
      * X2 Support
      */
-    typedef std::map<X2NodeId, std::list<int> > X2ListeningPortMap;
+    typedef std::map<X2NodeId, std::list<int>> X2ListeningPortMap;
     X2ListeningPortMap x2ListeningPorts_;
 
-    std::map<MacNodeId, std::map<MacNodeId, inet::L3Address> > x2PeerAddress_;
+    std::map<MacNodeId, std::map<MacNodeId, inet::L3Address>> x2PeerAddress_;
 
 //    std::map<MacNodeId, L3Address> x2Address_;
 
@@ -130,7 +129,7 @@ class Binder : public omnetpp::cSimpleModule
      * D2D Support
      */
     // determines if two D2D-capable UEs are communicating in D2D mode or Infrastructure Mode
-    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> > d2dPeeringMap_;
+    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> d2dPeeringMap_;
 
     /*
      * Multicast support
@@ -145,13 +144,15 @@ class Binder : public omnetpp::cSimpleModule
      */
     // store the id of the UEs that are performing handover
     std::set<MacNodeId> ueHandoverTriggered_;
-    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId> > handoverTriggered_;
+    std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
+
   protected:
     virtual void initialize(int stages) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void handleMessage(omnetpp::cMessage *msg) override
     {
     }
+
     virtual void finish() override;
 
   public:
@@ -192,7 +193,7 @@ class Binder : public omnetpp::cSimpleModule
      * Registers a carrier to the global Binder module
      */
     void registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
-            bool useTdd=false, unsigned int tddNumSymbolsDl=0, unsigned int tddNumSymbolsUl=0);
+            bool useTdd = false, unsigned int tddNumSymbolsDl = 0, unsigned int tddNumSymbolsUl = 0);
 
     /**
      * Registers a UE to a given carrier
@@ -212,7 +213,7 @@ class Binder : public omnetpp::cSimpleModule
     /**
      * Returns the numerology indices used by the given UE
      */
-    const std::set<NumerologyIndex>* getUeNumerologyIndex(MacNodeId ueId);
+    const std::set<NumerologyIndex> *getUeNumerologyIndex(MacNodeId ueId);
 
     /**
      * Returns the numerology associated to a carrier frequency
@@ -318,7 +319,7 @@ class Binder : public omnetpp::cSimpleModule
      * @param id MacNodeId of the module
      * @return LteMacBase* of the module
      */
-    LteMacBase* getMacFromMacNodeId(MacNodeId id);
+    LteMacBase *getMacFromMacNodeId(MacNodeId id);
 
     /**
      * getNextHop() returns the master of
@@ -355,6 +356,7 @@ class Binder : public omnetpp::cSimpleModule
             return getNrMacNodeId(address);
         return nodeId;
     }
+
     /**
      * Returns the MacNodeId for the given IP address
      *
@@ -380,15 +382,16 @@ class Binder : public omnetpp::cSimpleModule
     inet::Ipv4Address getIPv4Address(MacNodeId nodeId)
     {
         for (const auto& kv : macNodeIdToIPAddress_) {
-            if(kv.second == nodeId)
+            if (kv.second == nodeId)
                 return kv.first;
         }
         for (const auto& kv : nrMacNodeIdToIPAddress_) {
-            if(kv.second == nodeId)
+            if (kv.second == nodeId)
                 return kv.first;
         }
         return inet::Ipv4Address::UNSPECIFIED_ADDRESS;
     }
+
     /**
      * Returns the X2NodeId for the given IP address
      *
@@ -399,6 +402,7 @@ class Binder : public omnetpp::cSimpleModule
     {
         return getMacNodeId(address);
     }
+
     /**
      * Associates the given IP address with the given MacNodeId.
      *
@@ -411,6 +415,7 @@ class Binder : public omnetpp::cSimpleModule
         else
             macNodeIdToIPAddress_[address] = nodeId;
     }
+
     /**
      * Associates the given IP address with the given X2NodeId.
      *
@@ -420,15 +425,18 @@ class Binder : public omnetpp::cSimpleModule
     {
         setMacNodeId(address, nodeId);
     }
+
     inet::L3Address getX2PeerAddress(X2NodeId srcId, X2NodeId destId)
     {
         return x2PeerAddress_[srcId][destId];
     }
+
     void setX2PeerAddress(X2NodeId srcId, X2NodeId destId, inet::L3Address interfAddr)
     {
         std::pair<X2NodeId, inet::L3Address> p(destId, interfAddr);
         x2PeerAddress_[srcId].insert(p);
     }
+
 //    L3Address getX2Address(X2NodeId nodeId)
 //    {
 //        return x2Address_[nodeId];
@@ -463,15 +471,15 @@ class Binder : public omnetpp::cSimpleModule
     /**
      * Returns the module name for the given MAC node ID
      */
-    const char* getModuleNameByMacNodeId(MacNodeId nodeId);
+    const char *getModuleNameByMacNodeId(MacNodeId nodeId);
     /**
      * Associates the given MAC node ID to the module
      */
-    void registerModule(MacNodeId nodeId, cModule* module);
+    void registerModule(MacNodeId nodeId, cModule *module);
     /**
      * Returns the module for the given MAC node ID
      */
-    cModule* getModuleByMacNodeId(MacNodeId nodeId);
+    cModule *getModuleByMacNodeId(MacNodeId nodeId);
 
     /*
      * getDeployedUes() returns the affiliates
@@ -480,11 +488,11 @@ class Binder : public omnetpp::cSimpleModule
     ConnectedUesMap getDeployedUes(MacNodeId localId, Direction dir);
     PhyPisaData phyPisaData;
 
-    int getNodeCount(){
+    int getNodeCount() {
         return nodeIds_.size();
     }
 
-    int addExtCell(ExtCell* extCell, double carrierFrequency)
+    int addExtCell(ExtCell *extCell, double carrierFrequency)
     {
         if (extCellList_.find(carrierFrequency) == extCellList_.end())
             extCellList_[carrierFrequency] = ExtCellList();
@@ -498,7 +506,7 @@ class Binder : public omnetpp::cSimpleModule
         return extCellList_[carrierFrequency];
     }
 
-    int addBackgroundScheduler(BackgroundScheduler* bgScheduler, double carrierFrequency)
+    int addBackgroundScheduler(BackgroundScheduler *bgScheduler, double carrierFrequency)
     {
         if (bgSchedulerList_.find(carrierFrequency) == bgSchedulerList_.end())
             bgSchedulerList_[carrierFrequency] = BackgroundSchedulerList();
@@ -507,53 +515,53 @@ class Binder : public omnetpp::cSimpleModule
         return bgSchedulerList_[carrierFrequency].size() - 1;
     }
 
-    BackgroundSchedulerList* getBackgroundSchedulerList(double carrierFrequency)
+    BackgroundSchedulerList *getBackgroundSchedulerList(double carrierFrequency)
     {
         return &bgSchedulerList_[carrierFrequency];
     }
 
-    void addEnbInfo(EnbInfo* info)
+    void addEnbInfo(EnbInfo *info)
     {
         enbList_.push_back(info);
     }
 
-    std::vector<EnbInfo*> * getEnbList()
+    std::vector<EnbInfo *> *getEnbList()
     {
         return &enbList_;
     }
 
-    void addUeInfo(UeInfo* info)
+    void addUeInfo(UeInfo *info)
     {
         ueList_.push_back(info);
     }
 
-    std::vector<UeInfo*> * getUeList()
+    std::vector<UeInfo *> *getUeList()
     {
         return &ueList_;
     }
 
-    void addBgTrafficManagerInfo(BgTrafficManagerInfo* info)
+    void addBgTrafficManagerInfo(BgTrafficManagerInfo *info)
     {
         bgTrafficManagerList_.push_back(info);
     }
 
-    std::vector<BgTrafficManagerInfo*> * getBgTrafficManagerList()
+    std::vector<BgTrafficManagerInfo *> *getBgTrafficManagerList()
     {
         return &bgTrafficManagerList_;
     }
 
-    Cqi meanCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
+    Cqi meanCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir);
 
-    Cqi medianCqi(std::vector<Cqi> bandCqi,MacNodeId id,Direction dir);
+    Cqi medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir);
 
     /*
      * Uplink interference support
      */
     omnetpp::simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
-    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase* phy, Direction dir);
-    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase* trafficGen, Direction dir);  // overloaded function for bgUes
-    const std::vector<std::vector<UeAllocationInfo> >* getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
+    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir);
+    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir);  // overloaded function for bgUes
+    const std::vector<std::vector<UeAllocationInfo>> *getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support
      */
@@ -566,7 +574,7 @@ class Binder : public omnetpp::cSimpleModule
     bool checkD2DCapability(MacNodeId src, MacNodeId dst);
     bool getD2DCapability(MacNodeId src, MacNodeId dst);
 
-    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode> >* getD2DPeeringMap();
+    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *getD2DPeeringMap();
     void setD2DMode(MacNodeId src, MacNodeId dst, LteD2DMode mode);
     LteD2DMode getD2DMode(MacNodeId src, MacNodeId dst);
     bool isFrequencyReuseEnabled(MacNodeId nodeId);
@@ -590,7 +598,7 @@ class Binder : public omnetpp::cSimpleModule
     void removeUeHandoverTriggered(MacNodeId nodeId);
 
     void addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId destId);
-    const std::pair<MacNodeId, MacNodeId>* getHandoverTriggered(MacNodeId nodeId);
+    const std::pair<MacNodeId, MacNodeId> *getHandoverTriggered(MacNodeId nodeId);
     void removeHandoverTriggered(MacNodeId nodeId);
 
     void updateUeInfoCellId(MacNodeId nodeId, MacCellId cellId);
@@ -618,7 +626,7 @@ class Binder : public omnetpp::cSimpleModule
      *  ueCollector: reference to the collector
      *  cell: MacCellId of the target eNB
      */
-    void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector* ueCollector, MacCellId cell);
+    void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector, MacCellId cell);
 
     /* this method moves the UeStastCollector reference between the eNB/gNB's baseStationStatsCollector
      * structure.
@@ -631,9 +639,9 @@ class Binder : public omnetpp::cSimpleModule
 
     RanNodeType getBaseStationTypeById(MacNodeId);
 
-
 };
 
 } //namespace
 
 #endif
+

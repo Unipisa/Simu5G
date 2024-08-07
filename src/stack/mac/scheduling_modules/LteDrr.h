@@ -47,6 +47,7 @@ class LteDrr : public LteScheduler
             active_ = false;
             eligible_ = false;
         }
+
     };
 
     typedef std::map<MacCid, DrrDesc> DrrDescMap;

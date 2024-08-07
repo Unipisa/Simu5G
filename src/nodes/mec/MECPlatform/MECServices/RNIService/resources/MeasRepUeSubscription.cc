@@ -19,19 +19,17 @@ using namespace omnetpp;
 
 MeasRepUeSubscription::MeasRepUeSubscription() :SubscriptionBase() {};
 MeasRepUeSubscription::MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,
-        std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs) :
-        SubscriptionBase(subId,socket,baseResLocation, eNodeBs){};
-MeasRepUeSubscription:: ~MeasRepUeSubscription(){};
+        std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) :
+    SubscriptionBase(subId, socket, baseResLocation, eNodeBs) {};
+MeasRepUeSubscription::~MeasRepUeSubscription() {};
 
 bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
 {
-    if(body.contains("MeasRepUeSubcription")) // mandatory attribute
-    {
+    if (body.contains("MeasRepUeSubcription")) { // mandatory attribute
 
         subscriptionType_ = "MeasRepUeSubcription";
     }
-    else
-    {
+    else {
         Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
         return false;
     }
@@ -41,26 +39,21 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
     // add basis information
     bool result = SubscriptionBase::fromJson(jsonBody);
     // add information relative to this type of subscription
-    if(result)
-    {
-        callbackReference_ += "notifications/"+ std::to_string(subscriptionId_);
+    if (result) {
+        callbackReference_ += "notifications/" + std::to_string(subscriptionId_);
 
-        if(!jsonBody.contains("filterCriteria") || jsonBody["filterCriteria"].is_array())
-        {
-            std::cout << "1"  << std::endl;
-           Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 att
-           return false;
+        if (!jsonBody.contains("filterCriteria") || jsonBody["filterCriteria"].is_array()) {
+            std::cout << "1" << std::endl;
+            Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 att
+            return false;
         }
-
 
         nlohmann::json filterCriteria = jsonBody["filterCriteria"];
 
         //check for appInstanceId filter
-        if(filterCriteria.contains("appInstanceId")  )
-        {
-            if(filterCriteria["appInstanceId"].is_array())
-            {
-                std::cout << "2"  << std::endl;
+        if (filterCriteria.contains("appInstanceId")) {
+            if (filterCriteria["appInstanceId"].is_array()) {
+                std::cout << "2" << std::endl;
 
                 Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 att
                 return false;
@@ -69,11 +62,9 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
         }
 
         //check ues filter
-        if(filterCriteria.contains("associateId"))
-        {
-            if(filterCriteria["associateId"].is_array())
-            {
-                std::cout << "3"  << std::endl;
+        if (filterCriteria.contains("associateId")) {
+            if (filterCriteria["associateId"].is_array()) {
+                std::cout << "3" << std::endl;
 
                 Http::send400Response(socket_); // only one ip
                 return false;
@@ -92,29 +83,24 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
 //                     }
 //                 }
             }
-            else
-            {
-                if(filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS")
-                {
+            else {
+                if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
                     filterCriteria_.associteId_.setType(filterCriteria["associateId"]["type"]);
                     filterCriteria_.associteId_.setValue(filterCriteria["associateId"]["value"]);
 
                 }
             }
         }
-        else
-        {
-            std::cout << "4"  << std::endl;
+        else {
+            std::cout << "4" << std::endl;
 
             Http::send400Response(socket_); // a user must be indicated
             return false;
         }
 
         //check cellIds filter
-        if(filterCriteria.contains("ecgi"))
-        {
-            if(filterCriteria["ecgi"].is_array())
-            {
+        if (filterCriteria.contains("ecgi")) {
+            if (filterCriteria["ecgi"].is_array()) {
 //                nlohmann::json cellVector = filterCriteria["cellId"];
 //                for(int i = 0; i < cellVector.size(); ++i)
 //                {
@@ -122,10 +108,8 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
 //                    cellids.push_back((MacNodeId)std::stoi(cellId));
 //                 }
             }
-            else
-            {
-                if(filterCriteria["ecgi"].contains("cellId") && filterCriteria["ecgi"].contains("plmn"))
-                {
+            else {
+                if (filterCriteria["ecgi"].contains("cellId") && filterCriteria["ecgi"].contains("plmn")) {
                     std::string cellId = filterCriteria["ecgi"]["cellId"];
                     filterCriteria_.ecgi.setCellId((MacNodeId)std::stoi(cellId));
                     mec::Plmn plmn;
@@ -133,20 +117,17 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
                     plmn.mnc = filterCriteria["ecgi"]["plmn"]["mnc"];
                     filterCriteria_.ecgi.setPlmn(plmn);
                 }
-                else
-                {
-                    std::cout << "5"  << std::endl;
+                else {
+                    std::cout << "5" << std::endl;
 
                     Http::send400Response(socket_); // a user must be indicated
                     return false;
                 }
-
             }
         }
 
         //check trigger filter
-        if(filterCriteria.contains("trigger"))
-        {
+        if (filterCriteria.contains("trigger")) {
             std::string trigger = filterCriteria["trigger"];
             //check if it is event trigger and notify, based on the state of the ues e cells
 
@@ -157,25 +138,23 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
         response[subscriptionType_]["_links"]["self"] = links_;
 
         std::pair<std::string, std::string> p("Location: ", links_);
-        Http::send201Response(socket_, response.dump(2).c_str(), p );
+        Http::send201Response(socket_, response.dump(2).c_str(), p);
         return true;
     }
 
     return false;
 }
-void MeasRepUeSubscription::sendSubscriptionResponse(){
-        nlohmann::ordered_json val;
-        val[subscriptionType_]["callbackReference"] = callbackReference_;
-        val[subscriptionType_]["_links"]["self"] = links_;
-        val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
-        val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
 
-
-
-
+void MeasRepUeSubscription::sendSubscriptionResponse() {
+    nlohmann::ordered_json val;
+    val[subscriptionType_]["callbackReference"] = callbackReference_;
+    val[subscriptionType_]["_links"]["self"] = links_;
+    val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
+    val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
 
 }
-void MeasRepUeSubscription::sendNotification(EventNotification *event){}
+
+void MeasRepUeSubscription::sendNotification(EventNotification *event) {}
 
 } //namespace
 

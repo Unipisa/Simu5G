@@ -42,16 +42,17 @@ class LcgScheduler
 
         /// Comparison operator to enable sorting.
         bool operator<(const SortedDesc& y) const
-            {
+        {
             return score_ < y.score_;
         }
 
-    public:
+      public:
         SortedDesc(const T x, const S score)
         {
             x_ = x;
             score_ = score;
         }
+
     };
 
     struct StatusElem
@@ -69,7 +70,7 @@ class LcgScheduler
     omnetpp::opp_component_ptr<LteMacUe> mac_;
 
     /// Associated LteSchedulerUeUl (it is the one who creates the LteScheduler)
-    LteSchedulerUeUl* ueScheduler_;
+    LteSchedulerUeUl *ueScheduler_;
 
     // schedule List - returned by reference on scheduler invocation
     ScheduleList scheduleList_;
@@ -88,7 +89,7 @@ class LcgScheduler
     /**
      * Default constructor.
      */
-    LcgScheduler(LteMacUe * mac);
+    LcgScheduler(LteMacUe *mac);
     LcgScheduler(const LcgScheduler& other) { operator=(other); }
     LcgScheduler& operator=(const LcgScheduler& other);
     /**
@@ -100,7 +101,7 @@ class LcgScheduler
      * Initializes the LteScheduler.
      * @param ueScheduler UE scheduler
      */
-    inline virtual void setUeUlScheduler(LteSchedulerUeUl* ueScheduler)
+    inline virtual void setUeUlScheduler(LteSchedulerUeUl *ueScheduler)
     {
         ueScheduler_ = ueScheduler;
     }

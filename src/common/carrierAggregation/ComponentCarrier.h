@@ -79,3 +79,4 @@ class ComponentCarrier : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

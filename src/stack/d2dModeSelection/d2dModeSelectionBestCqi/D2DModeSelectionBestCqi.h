@@ -24,12 +24,12 @@ namespace simu5g {
 class D2DModeSelectionBestCqi : public D2DModeSelectionBase
 {
 
-protected:
+  protected:
 
     // run the mode selection algorithm
     virtual void doModeSelection();
 
-public:
+  public:
     D2DModeSelectionBestCqi() {}
     virtual ~D2DModeSelectionBestCqi() {}
 
@@ -40,3 +40,4 @@ public:
 } //namespace
 
 #endif /* LTE_D2DMODESELECTIONBESTCQI_H_ */
+

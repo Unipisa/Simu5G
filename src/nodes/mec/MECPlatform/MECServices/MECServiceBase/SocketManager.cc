@@ -23,12 +23,11 @@ using namespace omnetpp;
 Register_Class(SocketManager);
 Define_Module(SocketManager);
 
-
-void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
+void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
     EV << "SocketManager::dataArrived" << endl;
     msg->removeControlInfo();
 
-    std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
+    std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     EV << "SocketManager::dataArrived - payload length: " << bytes.size() << endl;
     std::string packet(bytes.begin(), bytes.end());
     EV << "SocketManager::dataArrived - payload : " << packet << endl;
@@ -39,36 +38,31 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
      * to insert in the request queue:
      *    BulkRequest: #reqNum
      */
-    if(packet.rfind("BulkRequest", 0) == 0)
-    {
+    if (packet.rfind("BulkRequest", 0) == 0) {
         EV << "Bulk Request ";
         std::string size = simu5g::utils::splitString(packet, ": ")[1];
         int requests = std::stoi(size);
-        if(requests < 0)
-          throw cRuntimeError("Number of request must be non negative");
-        EV << " of size "<< requests << endl;
-        if(requests == 0)
-        {
+        if (requests < 0)
+            throw cRuntimeError("Number of request must be non negative");
+        EV << " of size " << requests << endl;
+        if (requests == 0) {
             return;
         }
-        for(int i = 0 ; i < requests ; ++i)
-        {
-          if(i == requests -1)
-          {
-              HttpRequestMessage *req = new HttpRequestMessage();
-              req->setLastBackGroundRequest(true);
-              req->setSockId(sock->getSocketId());
-              req->setState(CORRECT);
-              service->newRequest(req); //use it to send back response message (only for the last message)
-          }
-          else
-          {
-              HttpRequestMessage *req = new HttpRequestMessage();
-              req->setBackGroundRequest(true);
-              req->setSockId(sock->getSocketId());
-              req->setState(CORRECT);
-              service->newRequest(req);
-          }
+        for (int i = 0; i < requests; ++i) {
+            if (i == requests - 1) {
+                HttpRequestMessage *req = new HttpRequestMessage();
+                req->setLastBackGroundRequest(true);
+                req->setSockId(sock->getSocketId());
+                req->setState(CORRECT);
+                service->newRequest(req); //use it to send back response message (only for the last message)
+            }
+            else {
+                HttpRequestMessage *req = new HttpRequestMessage();
+                req->setBackGroundRequest(true);
+                req->setSockId(sock->getSocketId());
+                req->setState(CORRECT);
+                service->newRequest(req);
+            }
         }
         delete msg;
         return;
@@ -77,17 +71,15 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
 
     bool res = Http::parseReceivedMsg(sock->getSocketId(), packet, httpMessageQueue, &bufferedData, &currentHttpMessage);
 
-    if(res)
-    {
+    if (res) {
 //        currentHttpMessage->setSockId(sock->getSocketId());
-        while(!httpMessageQueue.isEmpty())
-        {
+        while (!httpMessageQueue.isEmpty()) {
             // TODO handle response in service!!
             service->emitRequestQueueLength();
-            HttpBaseMessage* msg =  (HttpBaseMessage*)httpMessageQueue.pop();
+            HttpBaseMessage *msg = (HttpBaseMessage *)httpMessageQueue.pop();
             msg->setArrivalTime(simTime());
-            if(msg->getType() == REQUEST)
-                service->newRequest(check_and_cast<HttpRequestMessage*>(msg));
+            if (msg->getType() == REQUEST)
+                service->newRequest(check_and_cast<HttpRequestMessage *>(msg));
             else
                 delete msg;
         }
@@ -96,13 +88,13 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent){
     return;
 }
 
-void SocketManager::established(){
+void SocketManager::established() {
     EV_INFO << "New connection established " << endl;
 }
 
 void SocketManager::peerClosed()
 {
-    EV <<"Closed connection from: " << sock->getRemoteAddress()<< std::endl;
+    EV << "Closed connection from: " << sock->getRemoteAddress() << std::endl;
     sock->setState(inet::TcpSocket::PEER_CLOSED);
     service->removeSubscritions(sock->getSocketId()); // if any
 
@@ -121,7 +113,7 @@ void SocketManager::peerClosed()
 
 void SocketManager::closed()
 {
-    EV <<"Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
+    EV << "Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
     sock->setState(inet::TcpSocket::CLOSED);
     service->removeSubscritions(sock->getSocketId());
     service->closeConnection(this);
@@ -129,7 +121,7 @@ void SocketManager::closed()
 
 void SocketManager::failure(int code)
 {
-    EV <<"Socket of: " << sock->getRemoteAddress() << " failed. Code: " << code << std::endl;
+    EV << "Socket of: " << sock->getRemoteAddress() << " failed. Code: " << code << std::endl;
     service->removeSubscritions(sock->getSocketId());
     service->removeConnection(this);
 }

@@ -35,21 +35,21 @@ class LtePhyEnb : public LtePhyBase
      * when receiving broadcasts and to retrieve physical
      * antenna properties on packet reception
      */
-    DasFilter* das_;
+    DasFilter *das_;
 
     virtual void initialize(int stage);
 
     virtual void handleSelfMessage(omnetpp::cMessage *msg);
-    virtual void handleAirFrame(omnetpp::cMessage* msg);
-    bool handleControlPkt(UserControlInfo* lteinfo, LteAirFrame* frame);
-    void handleFeedbackPkt(UserControlInfo* lteinfo, LteAirFrame* frame);
-    virtual void requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame, inet::Packet* pkt);
+    virtual void handleAirFrame(omnetpp::cMessage *msg);
+    bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
+    void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
+    virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt);
     /**
      * Getter for the Das Filter
      */
-    DasFilter* getDasFilter();
+    DasFilter *getDasFilter();
     // Feedback computation for PisaPhy
-    LteFeedbackComputation* getFeedbackComputationFromName(std::string name, ParameterMap& params);
+    LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
     void initializeFeedbackComputation();
 
     virtual void emitDistanceFromMaster() {}
@@ -62,4 +62,5 @@ class LtePhyEnb : public LtePhyBase
 
 } //namespace
 
-#endif  /* _LTE_AIRPHYENB_H_ */
+#endif /* _LTE_AIRPHYENB_H_ */
+

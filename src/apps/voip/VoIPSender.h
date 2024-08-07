@@ -33,7 +33,7 @@ class VoIPSender : public omnetpp::cSimpleModule
     double scaleSil_;
     double shapeSil_;
     bool isTalk_;
-    omnetpp::cMessage* selfSource_;
+    omnetpp::cMessage *selfSource_;
     //sender
     int iDtalk_;
     int nframes_;
@@ -70,7 +70,7 @@ class VoIPSender : public omnetpp::cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const  override { return inet::NUM_INIT_STAGES; }
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(omnetpp::cMessage *msg) override;
 

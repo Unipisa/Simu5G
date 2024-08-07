@@ -35,10 +35,10 @@ class LteHarqBufferMirrorD2D
     unsigned char maxHarqRtx_;
 
     /// processes vector
-    std::vector<LteHarqProcessMirrorD2D*> processes_;
+    std::vector<LteHarqProcessMirrorD2D *> processes_;
 
     // reference to the MAC module
-    LteMacEnb* macOwner_;
+    LteMacEnb *macOwner_;
 
   public:
 
@@ -49,7 +49,7 @@ class LteHarqBufferMirrorD2D
      * @param owner simple module instantiating an H-ARQ TX buffer
      * @param nodeId UE nodeId for which this buffer has been created
      */
-    LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb* macOwner);
+    LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb *macOwner);
 
     /**
      * Manages H-ARQ feedback sent to a certain H-ARQ unit and checks if
@@ -59,7 +59,7 @@ class LteHarqBufferMirrorD2D
      */
     void receiveHarqFeedback(inet::Packet *pkt);
 
-    LteHarqProcessMirrorD2D* getProcess(int proc) { return processes_[proc]; }
+    LteHarqProcessMirrorD2D *getProcess(int proc) { return processes_[proc]; }
     unsigned int getProcesses() { return numProc_; }
     void markSelectedAsWaiting();
 
@@ -69,3 +69,4 @@ class LteHarqBufferMirrorD2D
 } //namespace
 
 #endif
+

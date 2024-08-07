@@ -9,21 +9,18 @@
 // and cannot be removed from it.
 //
 
-
-
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/TransportInfo.h"
 
 namespace simu5g {
 
 TransportInfo::TransportInfo(const std::string& id, const std::string& name, const std::string& type, const std::string& protocol, const EndPointInfo& endPoint):
-                        endPoint_(endPoint)
+    endPoint_(endPoint)
 {
     id_ = id;
     name_ = name;
     type_ = type;
     protocol_ = protocol;
 }
-
 
 nlohmann::ordered_json TransportInfo::toJson() const
 {

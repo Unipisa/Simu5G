@@ -32,3 +32,4 @@ class GtpUserMsgSerializer : public inet::FieldsChunkSerializer
 } //namespace
 
 #endif // ifndef __INET_GTPUSERMSGSERIALIZER_H
+

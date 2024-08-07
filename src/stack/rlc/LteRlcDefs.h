@@ -24,12 +24,12 @@ namespace simu5g {
 enum LteAmType
 {
     //! Data packet
-    DATA = 0,
+    DATA    = 0,
     //****** control packets ********
     //! ACK
-    ACK = 1,
+    ACK     = 1,
     //! Move Receiver Window
-    MRW = 2,
+    MRW     = 2,
     //! Move Receiver Window ACK
     MRW_ACK = 3,
 //! BITMAP
@@ -73,13 +73,14 @@ struct RlcFragDesc
         fragUnit_ = 0;
         resetFragmentation();
     }
+
     /*
      * Configures the fragmentation descriptor for working on SDU of size sduSize
      */
 
     void startFragmentation(unsigned int sduSize, unsigned int firstFragment)
     {
-        totalFragments_ = ceil((double) sduSize / (double) fragUnit_);
+        totalFragments_ = ceil((double)sduSize / (double)fragUnit_);
         fragCounter_ = 0;
         firstSn_ = firstFragment;
     }
@@ -108,6 +109,7 @@ struct RlcFragDesc
         else
             return false;
     }
+
 };
 
 struct RlcWindowDesc
@@ -126,6 +128,7 @@ struct RlcWindowDesc
         firstSeqNum_ = 0;
         windowSize_ = 0;
     }
+
 };
 
 /*!
@@ -143,13 +146,13 @@ struct MrwDesc
         mrwSeqNum_ = 0;
         lastMrw_ = 0;
     }
+
 };
 
 enum RlcAmTimerType
 {
     PDU_T = 0, MRW_T = 1, BUFFER_T = 2, BUFFERSTATUS_T = 3
 };
-
 
 /*
  * RLC Data PDU
@@ -180,7 +183,7 @@ struct RlcUmRxWindowDesc
     //! Size of the reception window
     unsigned int windowSize_;
 
-    void clear(unsigned int i=0)
+    void clear(unsigned int i = 0)
     {
         firstSno_ = i;
         firstSnoForReordering_ = i;
@@ -204,3 +207,4 @@ enum RlcUmTimerType
 } //namespace
 
 #endif
+

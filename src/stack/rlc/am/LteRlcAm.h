@@ -37,8 +37,8 @@ class LteRlcAm : public omnetpp::cSimpleModule
      * Data structures
      */
 
-    typedef std::map<MacCid, AmTxQueue*> AmTxBuffers;
-    typedef std::map<MacCid, AmRxQueue*> AmRxBuffers;
+    typedef std::map<MacCid, AmTxQueue *> AmTxBuffers;
+    typedef std::map<MacCid, AmRxQueue *> AmRxBuffers;
 
     /**
      * The buffers map associate each CID with
@@ -48,8 +48,8 @@ class LteRlcAm : public omnetpp::cSimpleModule
     AmTxBuffers txBuffers_;
     AmRxBuffers rxBuffers_;
 
-    omnetpp::cGate* up_[2];
-    omnetpp::cGate* down_[2];
+    omnetpp::cGate *up_[2];
+    omnetpp::cGate *down_[2];
 
   public:
     virtual ~LteRlcAm()
@@ -88,7 +88,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      * @return pointer to the TXBuffer for that CID
      *
      */
-    AmTxQueue* getTxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmTxQueue *getTxBuffer(MacNodeId nodeId, LogicalCid lcid);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -101,7 +101,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      * @return pointer to the RXBuffer for that CID
      *
      */
-    AmRxQueue* getRxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmRxQueue *getRxBuffer(MacNodeId nodeId, LogicalCid lcid);
 
     /**
      * handler for traffic coming
@@ -186,3 +186,4 @@ class LteRlcAm : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

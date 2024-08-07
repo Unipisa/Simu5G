@@ -16,45 +16,46 @@ namespace simu5g {
 AttributeBase::AttributeBase()
 {
 }
+
 AttributeBase::~AttributeBase()
 {
 }
 
-std::string AttributeBase::toJson( const std::string& value )
+std::string AttributeBase::toJson(const std::string& value)
 {
     return value;
 }
 
-std::string AttributeBase::toJson( const std::time_t& value )
+std::string AttributeBase::toJson(const std::time_t& value)
 {
     char buf[sizeof "2011-10-08T07:07:09Z"];
     strftime(buf, sizeof buf, "%FT%TZ", gmtime(&value));
     return buf;
 }
 
-int32_t AttributeBase::toJson( int32_t value )
+int32_t AttributeBase::toJson(int32_t value)
 {
     return value;
 }
 
-int64_t AttributeBase::toJson( int64_t value )
+int64_t AttributeBase::toJson(int64_t value)
 {
     return value;
 }
 
-double AttributeBase::toJson( double value )
+double AttributeBase::toJson(double value)
 {
     return value;
 }
 
-bool AttributeBase::toJson( bool value )
+bool AttributeBase::toJson(bool value)
 {
     return value;
 }
 
-nlohmann::ordered_json AttributeBase::toJson( AttributeBase&  content )
+nlohmann::ordered_json AttributeBase::toJson(AttributeBase& content)
 {
-    return  content.toJson();
+    return content.toJson();
 }
 
 } //namespace

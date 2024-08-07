@@ -34,7 +34,7 @@ class NRTxPdcpEntity : public LteTxPdcpEntity
   protected:
 
     // deliver the PDCP PDU to the lower layer or to the X2
-    virtual void deliverPdcpPdu(Packet* pkt);
+    virtual void deliverPdcpPdu(Packet *pkt);
 
     virtual void setIds(inet::Ptr<FlowControlInfo> lteInfo);
 
@@ -49,3 +49,4 @@ class NRTxPdcpEntity : public LteTxPdcpEntity
 } //namespace
 
 #endif
+

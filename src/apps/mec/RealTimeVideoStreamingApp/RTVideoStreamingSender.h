@@ -45,13 +45,12 @@ struct FragmentedFrameStatus {
     int remainingFramesSlices;
 };
 
-
 /**
  * This is a UE app that asks to a Device App to instantiate the MECRTVideoStreamingReceiver app
  * @author Alessandro Noferi
  */
 
-class RTVideoStreamingSender: public cSimpleModule
+class RTVideoStreamingSender : public cSimpleModule
 {
     //communication to device app and Mec app
     inet::UdpSocket socket;
@@ -62,8 +61,8 @@ class RTVideoStreamingSender: public cSimpleModule
     int deviceAppPort_;
     inet::L3Address deviceAppAddress_;
 
-    char* sourceSimbolicAddress;            //Ue[x]
-    char* deviceSimbolicAppAddress_;        //meHost.virtualisationInfrastructure
+    char *sourceSimbolicAddress;            //Ue[x]
+    char *deviceSimbolicAppAddress_;        //meHost.virtualisationInfrastructure
 
     // MEC application endPoint (returned by the device app)
     inet::L3Address mecAppAddress_;
@@ -89,19 +88,19 @@ class RTVideoStreamingSender: public cSimpleModule
     cMessage *selfMecAppStart_;
     cMessage *selfMecAppStop_;
 
-    cMessage* selfSessionStart_;
-    cMessage* selfSessionStop_;
+    cMessage *selfSessionStart_;
+    cMessage *selfSessionStop_;
 
     inet::UdpSocket videoStreamSocket_;
 
-    const char* fileName;
+    const char *fileName;
     /**
      * The input file stream for the data file.
      */
     std::ifstream _inputFileStream;
 
     int mtu_;
-    cMessage* _nextFrame;
+    cMessage *_nextFrame;
 
     /**
      * The initial delay of the mpeg video.
@@ -139,49 +138,49 @@ class RTVideoStreamingSender: public cSimpleModule
 
     FragmentedFrameStatus fragFrameStatus_;
 
-    public:
-        ~RTVideoStreamingSender();
-        RTVideoStreamingSender();
+  public:
+    ~RTVideoStreamingSender();
+    RTVideoStreamingSender();
 
-    protected:
+  protected:
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-        virtual void finish();
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
-        // communication with device app
-        void sendStartMECApp();
-        void sendStopMECApp();
-        // communication with mec app
-        void sendMessage();
-        void sendStartMessage();
-        void sendStopMessage();
-        void sendSessionStopMessage();
-        void sendSessionStartMessage();
+    // communication with device app
+    void sendStartMECApp();
+    void sendStopMECApp();
+    // communication with mec app
+    void sendMessage();
+    void sendStartMessage();
+    void sendStopMessage();
+    void sendSessionStopMessage();
+    void sendSessionStartMessage();
 
+    // handlers
+    void handleStartAck(cMessage *msg);
+    void handleStartNack(cMessage *msg);
 
-        // handlers
-        void handleStartAck(cMessage* msg);
-        void handleStartNack(cMessage* msg);
+    void handleStopAck(cMessage *msg);
+    void handleStopNack(cMessage *msg);
 
-        void handleStopAck(cMessage* msg);
-        void handleStopNack(cMessage* msg);
+    void handleStartSessionAck(cMessage *msg);
+    void handleStartSessionNack(cMessage *msg);
 
-        void handleStartSessionAck(cMessage* msg);
-        void handleStartSessionNack(cMessage* msg);
+    void handleStopSessionAck(cMessage *msg);
+    void handleStopSessionNack(cMessage *msg);
 
-        void handleStopSessionAck(cMessage* msg);
-        void handleStopSessionNack(cMessage* msg);
+    void handleAckStartMECApp(cMessage *msg);
+    void handleInfoMECApp(cMessage *msg);
+    void handleAckStopMECApp(cMessage *msg);
 
-        void handleAckStartMECApp(cMessage* msg);
-        void handleInfoMECApp(cMessage* msg);
-        void handleAckStopMECApp(cMessage* msg);
-
-        void openFileStream();
-        void initializeVideoStream();
+    void openFileStream();
+    void initializeVideoStream();
 };
 
 } //namespace
 
 #endif /* APPS_MEC_RTVIDEOSTREAMINGSENDER_H_ */
+

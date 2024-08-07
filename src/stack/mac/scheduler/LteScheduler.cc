@@ -17,7 +17,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-void LteScheduler::setEnbScheduler(LteSchedulerEnb* eNbScheduler)
+void LteScheduler::setEnbScheduler(LteSchedulerEnb *eNbScheduler)
 {
     eNbScheduler_ = eNbScheduler;
     direction_ = eNbScheduler_->direction_;
@@ -36,8 +36,7 @@ void LteScheduler::initializeBandLimit()
     // initialize band limits to be used on each slot for retransmissions
     // and grant requests
     BandLimitVector::iterator it = bandLimit_->begin();
-    for (; it != bandLimit_->end(); ++it)
-    {
+    for ( ; it != bandLimit_->end(); ++it) {
         BandLimit elem; // TODO to be moved outside the for ?
         elem.band_ = it->band_;
         elem.limit_ = it->limit_;
@@ -61,7 +60,6 @@ void LteScheduler::initializeBandLimit()
 //    // === END DEBUG === //
 }
 
-
 void LteScheduler::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
 {
     // 2^(maxNumerologyIndex - numerologyIndex)
@@ -79,14 +77,11 @@ unsigned int LteScheduler::decreaseSchedulerPeriodCounter()
     return ret;
 }
 
-
-unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector* bandLim)
+unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector *bandLim)
 {
-    if (bandLim == NULL)
-    {
+    if (bandLim == NULL) {
         // reset the band limit vector used for requesting grants
-        for (unsigned int i = 0; i < bandLimit_->size(); i++)
-        {
+        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element
             slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
             slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
@@ -111,13 +106,11 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
     return eNbScheduler_->scheduleGrant(cid, bytes, terminate, active, eligible, carrierFrequency_, bandLim);
 }
 
-unsigned int LteScheduler::requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector* bandLim)
+unsigned int LteScheduler::requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, BandLimitVector *bandLim)
 {
-    if (bandLim == NULL)
-    {
+    if (bandLim == NULL) {
         // reset the band limit vector used for requesting grants
-        for (unsigned int i = 0; i < bandLimit_->size(); i++)
-        {
+        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element
             slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
             slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
@@ -141,12 +134,10 @@ bool LteScheduler::scheduleRetransmissions()
     if (eNbScheduler_->direction_ == UL && mac_->getProcessForRtx(carrierFrequency_, UL) == 0 && mac_->getProcessForRtx(carrierFrequency_, D2D) == 0)
         skip = true;
 
-    if (!skip)
-    {
+    if (!skip) {
         // reset the band limit vector used for retransmissions
         // TODO do this only when it was actually used in previous slot
-        for (unsigned int i = 0; i < bandLimit_->size(); i++)
-        {
+        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element
             slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
             slotRtxBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
@@ -154,21 +145,17 @@ bool LteScheduler::scheduleRetransmissions()
         spaceEnded = eNbScheduler_->rtxschedule(carrierFrequency_, &slotRtxBandLimit_);
     }
 
-    if (!spaceEnded)
-    {
+    if (!spaceEnded) {
         // check if there are backlogged retransmissions for background UEs
-        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency_);
+        IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency_);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(eNbScheduler_->direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(eNbScheduler_->direction_, true);
-        if (it != et)
-        {
+        if (it != et) {
             // if the bandlimit was not reset for foreground UEs, do it here
-            if (skip)
-            {
+            if (skip) {
                 // reset the band limit vector used for retransmissions
                 // TODO do this only when it was actually used in previous slot
-                for (unsigned int i = 0; i < bandLimit_->size(); i++)
-                {
+                for (unsigned int i = 0; i < bandLimit_->size(); i++) {
                     // copy the element
                     slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
                     slotRtxBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
@@ -184,8 +171,7 @@ bool LteScheduler::scheduleRacRequests()
 {
     // reset the band limit vector used for rac
     // TODO do this only when it was actually used in previous slot
-    for (unsigned int i = 0; i < bandLimit_->size(); i++)
-    {
+    for (unsigned int i = 0; i < bandLimit_->size(); i++) {
         // copy the element
         slotRacBandLimit_[i].band_ = bandLimit_->at(i).band_;
         slotRacBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
@@ -215,8 +201,7 @@ void LteScheduler::buildCarrierActiveConnectionSet()
 
     const UeSet& carrierUeSet = binder_->getCarrierUeSet(carrierFrequency_);
     ActiveSet::iterator it = activeConnectionSet_->begin();
-    for (; it != activeConnectionSet_->end(); ++it)
-    {
+    for ( ; it != activeConnectionSet_->end(); ++it) {
         if (carrierUeSet.find(MacCidToNodeId(*it)) != carrierUeSet.end())
             carrierActiveConnectionSet_.insert(*it);
     }

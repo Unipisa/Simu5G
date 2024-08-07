@@ -60,49 +60,49 @@ class MECWarningAlertApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
-    inet::TcpSocket* serviceSocket_;
-    inet::TcpSocket* mp1Socket_;
+    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
 
-    HttpBaseMessage* mp1HttpMessage;
-    HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *serviceHttpMessage;
 
     int size_;
     std::string subId;
 
     // circle danger zone
-    cOvalFigure * circle;
+    cOvalFigure *circle;
     double centerPositionX;
     double centerPositionY;
     double radius;
 
-    protected:
-        virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-        virtual void initialize(int stage) override;
-        virtual void finish() override;
+  protected:
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage) override;
+    virtual void finish() override;
 
-        virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
+    virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
 
-        virtual void handleHttpMessage(int connId) override;
-        virtual void handleServiceMessage(int connId) override;
-        virtual void handleMp1Message(int connId) override;
-        virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+    virtual void handleHttpMessage(int connId) override;
+    virtual void handleServiceMessage(int connId) override;
+    virtual void handleMp1Message(int connId) override;
+    virtual void handleUeMessage(omnetpp::cMessage *msg) override;
 
-        virtual void modifySubscription();
-        virtual void sendSubscription();
-        virtual void sendDeleteSubscription();
+    virtual void modifySubscription();
+    virtual void sendSubscription();
+    virtual void sendDeleteSubscription();
 
-        virtual void handleSelfMessage(cMessage *msg) override;
-
+    virtual void handleSelfMessage(cMessage *msg) override;
 
 //        /* TCPSocket::CallbackInterface callback methods */
-       virtual void established(int connId) override;
+    virtual void established(int connId) override;
 
-    public:
-       MECWarningAlertApp();
-       virtual ~MECWarningAlertApp();
+  public:
+    MECWarningAlertApp();
+    virtual ~MECWarningAlertApp();
 
 };
 
 } //namespace
 
 #endif
+

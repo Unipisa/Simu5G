@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef _DEVAPPPACKETSERIALIZER_H_
 #define _DEVAPPPACKETSERIALIZER_H_
 
@@ -19,7 +18,7 @@ namespace simu5g {
 
 using namespace inet;
 
-enum DevAppCode {START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_CODE, START_NACK_CODE, STOP_NACK_CODE};
+enum DevAppCode { START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_CODE, START_NACK_CODE, STOP_NACK_CODE };
 
 /**
  * Converts between ApplicationPacket and binary (network byte order) application packet.

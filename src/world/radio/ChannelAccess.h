@@ -32,7 +32,7 @@ class AirFrame;
 class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
 {
   protected:
-    IChannelControl* cc;  // Pointer to the ChannelControl module
+    IChannelControl *cc;  // Pointer to the ChannelControl module
     IChannelControl::RadioRef myRadioRef;  // Identifies this radio in the ChannelControl module
     cModule *hostModule;    // the host that contains this radio model
     inet::Coord radioPos;  // the physical position of the radio (derived from display string or from mobility models)
@@ -75,3 +75,4 @@ class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
 } //namespace
 
 #endif
+

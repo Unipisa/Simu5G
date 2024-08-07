@@ -32,8 +32,7 @@ class UALCMPMessage;
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 
-
-class UALCMPApp: public MecServiceBase
+class UALCMPApp : public MecServiceBase
 {
   private:
 
@@ -54,6 +53,7 @@ class UALCMPApp: public MecServiceBase
 
   public:
     UALCMPApp();
+
   protected:
 
     virtual void initialize(int stage) override;
@@ -63,13 +63,13 @@ class UALCMPApp: public MecServiceBase
     void handleStartOperation(inet::LifecycleOperation *operation) override;
 
     // GET the list of available MEC app descriptors
-    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
     // POST the instantiation of a MEC app
-    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
+    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
     // PUT not implemented, yet
-    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
+    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
     // DELETE a MEC app previously instantiated
-    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
     /*
      * These two methods manage the responses coming from the MEC orchestrator and
@@ -77,7 +77,6 @@ class UALCMPApp: public MecServiceBase
      */
     void handleCreateContextAppAckMessage(UALCMPMessage *msg);
     void handleDeleteContextAppAckMessage(UALCMPMessage *msg);
-
 
     /*
      * Method used to parse the body of POST requests for the instantiation of MEC apps.
@@ -89,10 +88,9 @@ class UALCMPApp: public MecServiceBase
      * @return CreateContextAppMessage* message to be sent to the MEC orchestrator
      *
      */
-    CreateContextAppMessage* parseContextCreateRequest(const nlohmann::json&);
+    CreateContextAppMessage *parseContextCreateRequest(const nlohmann::json&);
 
     virtual ~UALCMPApp();
-
 
 };
 

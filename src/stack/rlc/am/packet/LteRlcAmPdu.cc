@@ -13,64 +13,54 @@
 
 namespace simu5g {
 
-void
-LteRlcAmPdu::setBitmapArraySize(size_t size)
+void LteRlcAmPdu::setBitmapArraySize(size_t size)
 {
     this->bitmap_.resize(size);
 }
 
-size_t
-LteRlcAmPdu::getBitmapArraySize() const
+size_t LteRlcAmPdu::getBitmapArraySize() const
 {
     return this->bitmap_.size();
 }
 
-bool
-LteRlcAmPdu::getBitmap(size_t k) const
-    {
+bool LteRlcAmPdu::getBitmap(size_t k) const
+{
     return this->bitmap_.at(k);
 }
 
-void
-LteRlcAmPdu::setBitmap(size_t k, bool bitmap_)
+void LteRlcAmPdu::setBitmap(size_t k, bool bitmap_)
 {
     this->bitmap_[k] = bitmap_;
 }
 
-void
-LteRlcAmPdu::setBitmapVec(std::vector<bool> bitmap_vec)
+void LteRlcAmPdu::setBitmapVec(std::vector<bool> bitmap_vec)
 {
     this->bitmap_ = bitmap_vec;
 }
 
-std::vector<bool>
-LteRlcAmPdu::getBitmapVec()
+std::vector<bool> LteRlcAmPdu::getBitmapVec()
 {
     return this->bitmap_;
 }
 
-bool
-LteRlcAmPdu::isWhole() const
+bool LteRlcAmPdu::isWhole() const
 {
-    return (firstSn == lastSn);
+    return firstSn == lastSn;
 }
 
-bool
-LteRlcAmPdu::isFirst() const
+bool LteRlcAmPdu::isFirst() const
 {
-    return (firstSn == snoFragment);
+    return firstSn == snoFragment;
 }
 
-bool
-LteRlcAmPdu::isMiddle() const
+bool LteRlcAmPdu::isMiddle() const
 {
-    return ((!isFirst()) && (!isLast()));
+    return (!isFirst()) && (!isLast());
 }
 
-bool
-LteRlcAmPdu::isLast() const
+bool LteRlcAmPdu::isLast() const
 {
-    return (lastSn == snoFragment);
+    return lastSn == snoFragment;
 }
 
 } //namespace

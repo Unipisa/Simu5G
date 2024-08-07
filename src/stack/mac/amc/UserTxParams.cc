@@ -17,7 +17,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-void UserTxParams::print(const char* s) const {
+void UserTxParams::print(const char *s) const {
     try {
         EV << NOW << " " << s << " --------------------------\n";
         EV << NOW << " " << s << "           UserTxParams\n";
@@ -28,11 +28,10 @@ void UserTxParams::print(const char* s) const {
         //*** CQIs *********************************************
         unsigned int codewords = cqiVector_.size();
         EV << NOW << " " << s << " CQI = {";
-        if(codewords > 0)
-        {
+        if (codewords > 0) {
             EV << cqiVector_.at(0);
-            for(Codeword cw = 1; cw < codewords; ++cw)
-            EV << ", " << cqiVector_.at(cw);
+            for (Codeword cw = 1; cw < codewords; ++cw)
+                EV << ", " << cqiVector_.at(cw);
         }
         EV << "}\n";
         //******************************************************
@@ -44,20 +43,18 @@ void UserTxParams::print(const char* s) const {
         std::set<Band>::const_iterator et = allowedBands_.end();
 
         EV << NOW << " " << s << " Bands = {";
-        if(it != et)
-        {
+        if (it != et) {
             EV << *it;
             ++it;
-            for(; it != et; ++it)
-            EV << ", " << *it;
+            for ( ; it != et; ++it)
+                EV << ", " << *it;
         }
         EV << "}\n";
         //******************************************************
 
         EV << NOW << " " << s << " --------------------------\n";
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw omnetpp::cRuntimeError("Exception in UserTxParams::print(): %s", e.what());
     }
 }

@@ -49,24 +49,22 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
     lteInfo->setDirection(getDirection());
 
     // check if src and dest of the flow are D2D-capable (currently in IM)
-    if (getNodeTypeById(srcId) == UE && getNodeTypeById(destId) == UE && binder_->getD2DCapability(srcId, destId))
-    {
+    if (getNodeTypeById(srcId) == UE && getNodeTypeById(destId) == UE && binder_->getD2DCapability(srcId, destId)) {
         // this way, we record the ID of the endpoint even if the connection is in IM
         // this is useful for mode switching
         lteInfo->setD2dTxPeerId(srcId);
         lteInfo->setD2dRxPeerId(destId);
     }
-    else
-    {
+    else {
         lteInfo->setD2dTxPeerId(0);
         lteInfo->setD2dRxPeerId(0);
     }
 
     // Cid Request
     EV << "LtePdcpRrcEnbD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
-            << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
-            << " , ToS: " << lteInfo->getTypeOfService()
-            << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
+       << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
+       << " , ToS: " << lteInfo->getTypeOfService()
+       << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
 
     /*
      * Different lcid for different directions of the same flow are assigned.
@@ -74,8 +72,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
      */
 
     LogicalCid mylcid;
-    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF)
-    {
+    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF) {
         // LCID not found
 
         // assign a new LCID to the connection
@@ -101,7 +98,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
     EV << "LtePdcpRrcEnbD2D : dest ID: " << destId << "\n";
 
     // get the PDCP entity for this LCID and process the packet
-    LteTxPdcpEntity* entity = getTxEntity(cid);
+    LteTxPdcpEntity *entity = getTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
@@ -110,14 +107,13 @@ void LtePdcpRrcEnbD2D::initialize(int stage)
     LtePdcpRrcEnb::initialize(stage);
 }
 
-void LtePdcpRrcEnbD2D::handleMessage(cMessage* msg)
+void LtePdcpRrcEnbD2D::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto chunk = pkt->peekAtFront<Chunk>();
 
     // check whether the message is a notification for mode switch
-    if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr)
-    {
+    if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
         EV << "LtePdcpRrcEnbD2D::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
 
         auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
@@ -125,8 +121,7 @@ void LtePdcpRrcEnbD2D::handleMessage(cMessage* msg)
         pdcpHandleD2DModeSwitch(switchPkt->getPeerId(), switchPkt->getNewMode());
         delete pkt;
     }
-    else
-    {
+    else {
         LtePdcpRrcEnb::handleMessage(msg);
     }
 }

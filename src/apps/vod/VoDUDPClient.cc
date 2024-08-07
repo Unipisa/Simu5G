@@ -36,7 +36,7 @@ void VoDUDPClient::initialize(int stage)
     _mkdir(dir.c_str());
     _mkdir(trace.c_str());
 #else
-    mode_t dir_permissions = S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IXOTH;
+    mode_t dir_permissions = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH;
     mkdir(dir.c_str(), dir_permissions);
     mkdir(trace.c_str(), dir_permissions);
 #endif
@@ -49,7 +49,7 @@ void VoDUDPClient::initialize(int stage)
 
     totalRcvdBytes_ = 0;
 
-    cMessage* timer = new cMessage("Timer");
+    cMessage *timer = new cMessage("Timer");
     scheduleAt(simTime(), timer);
 
     tptLayer0_ = registerSignal("VoDTptLayer0");
@@ -81,8 +81,7 @@ void VoDUDPClient::finish()
     int numPktPerFrame = par("numPktPerFrame");
     int numFrame = par("numFrame");
 
-    if (startMetrics == "on")
-    {
+    if (startMetrics == "on") {
         stringstream ss, nf, pb, npktf;
         ss << getId();
         pb << playbackSize;
@@ -96,9 +95,9 @@ void VoDUDPClient::finish()
             + " " + avipluginPath + " " + ss.str() + " " + nf.str();
 
         // Bin FPS NumPkt frame configurabili
-        string plot = "./Framework/plot.py 25 ./Framework/clients/client" + ss.str() +
-            "/output/nsoutput.txt-plos ./Framework/clients/client" + ss.str() +
-            "/output/nsoutput.txt-psnr 25 " + nf.str() + " " + npktf.str() + " " + ss.str();
+        string plot = "./Framework/plot.py 25 ./Framework/clients/client" + ss.str()
+            + "/output/nsoutput.txt-plos ./Framework/clients/client" + ss.str()
+            + "/output/nsoutput.txt-psnr 25 " + nf.str() + " " + npktf.str() + " " + ss.str();
 
         fstream f;
         string apri = "client" + ss.str() + ".sh";
@@ -110,21 +109,18 @@ void VoDUDPClient::finish()
         //system(anaPar.c_str());
         //system(plot.c_str());
     }
-    else
-    {
-        if (traceType == "ns2")
-        {
+    else {
+        if (traceType == "ns2") {
             stringstream ss, pb, np;
             ss << getId();
             pb << playbackSize;
             double startStreamTime = par("startStreamTime");
-            int npkt = (int) startStreamTime;
+            int npkt = (int)startStreamTime;
             np << npkt;
 
             string args = inputFileName + " " + pb.str() + " " + ss.str() + " " + np.str();
-            FILE* fp = popen("./Framework/createns2output.py","w");
-            if (fp != NULL)
-            {
+            FILE *fp = popen("./Framework/createns2output.py", "w");
+            if (fp != NULL) {
                 fprintf(fp, "%s", args.c_str());
                 fclose(fp);
             }
@@ -132,10 +128,9 @@ void VoDUDPClient::finish()
     }
 }
 
-void VoDUDPClient::handleMessage(cMessage* msg)
+void VoDUDPClient::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         int localPort = par("localPort");
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localPort);
@@ -162,23 +157,19 @@ void VoDUDPClient::receiveStream(const VoDPacket *msg)
 
     totalRcvdBytes_ += msg->getFrameLength();
     double tputSample = (double)totalRcvdBytes_ / (simTime() - getSimulation()->getWarmupPeriod());
-    if (layer == 0)
-    {
+    if (layer == 0) {
         emit(tptLayer0_, tputSample);
         emit(delayLayer0_, delay.dbl());
     }
-    else if (layer == 1)
-    {
+    else if (layer == 1) {
         emit(tptLayer1_, tputSample);
         emit(delayLayer1_, delay.dbl());
     }
-    else if (layer == 2)
-    {
+    else if (layer == 2) {
         emit(tptLayer2_, tputSample);
         emit(delayLayer2_, delay.dbl());
     }
-    else if (layer == 3)
-    {
+    else if (layer == 3) {
         emit(tptLayer3_, tputSample);
         emit(delayLayer3_, delay.dbl());
     }

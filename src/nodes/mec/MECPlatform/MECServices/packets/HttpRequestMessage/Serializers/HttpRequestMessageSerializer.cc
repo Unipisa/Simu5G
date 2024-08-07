@@ -32,7 +32,7 @@ void HttpRequestMessageSerializer::serialize(MemoryOutputStream& stream, const P
     EV << "HttpRequestMessageSerializer::serialize" << endl;
     auto startPosition = stream.getLength();
     const auto& applicationPacket = staticPtrCast<const HttpRequestMessage>(chunk);
-    stream.writeBytes((const uint8_t*)applicationPacket->getPayload().c_str(), B(applicationPacket->getPayload().size()));
+    stream.writeBytes((const uint8_t *)applicationPacket->getPayload().c_str(), B(applicationPacket->getPayload().size()));
 
 //    stream.writeUint32Be(B(applicationPacket->getChunkLength()).get());
 //    stream.writeUint32Be(applicationPacket->getSequenceNumber());
@@ -50,7 +50,7 @@ const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& st
 //    B dataLength = B(stream.readUint32Be());
 
     std::string data = stream.readString();
-    applicationPacket = check_and_cast<HttpRequestMessage*>(Http::parseHeader(data));
+    applicationPacket = check_and_cast<HttpRequestMessage *>(Http::parseHeader(data));
 
 //    EV << "PR: " << applicationPacket->getPayload();
     B remainders = stream.getLength() - (stream.getPosition() - startPosition);

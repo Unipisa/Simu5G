@@ -20,7 +20,6 @@ namespace simu5g {
 class LteMacBase;
 class LteHarqProcessRx;
 
-
 /**
  * H-ARQ RX buffer: messages coming from phy are stored in H-ARQ RX buffer.
  * When a new pdu is inserted, it is in EVALUATING state meaning that the hardware is
@@ -60,7 +59,7 @@ class LteHarqBufferRx
     omnetpp::simsignal_t macThroughput_;
 
     // reference to the eNB module
-    omnetpp::cModule* nodeB_;
+    omnetpp::cModule *nodeB_;
 
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
@@ -85,7 +84,7 @@ class LteHarqBufferRx
      *
      * @return uncorrupted pdus or empty list if none
      */
-    virtual std::list<inet::Packet*> extractCorrectPdus();
+    virtual std::list<inet::Packet *> extractCorrectPdus();
 
     /**
      * Purges PDUs in corrupted state (if any)
@@ -97,7 +96,7 @@ class LteHarqBufferRx
     /*
      * Returns pointer to <acid> process.
      */
-    LteHarqProcessRx* getProcess(unsigned char acid)
+    LteHarqProcessRx *getProcess(unsigned char acid)
     {
         return processes_.at(acid);
     }
@@ -131,10 +130,9 @@ class LteHarqBufferRx
     /*
      *  Corresponding cModule node will be removed from simulation.
      */
-    virtual void unregister_macUe(){
+    virtual void unregister_macUe() {
         macUe_ = nullptr;
     }
-
 
     /**
      * @author Alessandro noferi
@@ -155,15 +153,14 @@ class LteHarqBufferRx
      */
     virtual void sendFeedback();
 
-
     /**
      *  Only register signals from macUe_ if the node still exists.
      *  It is possible that the source node (e.g., a UE) left the simulation but the
      *  packets form the node still reside in the simulation.
      */
-    virtual omnetpp::simsignal_t macUe_registerSignal(const char* signal)
+    virtual omnetpp::simsignal_t macUe_registerSignal(const char *signal)
     {
-        if (macUe_){
+        if (macUe_) {
             return omnetpp::cComponent::registerSignal(signal);
         }
         return 0;
@@ -176,7 +173,7 @@ class LteHarqBufferRx
      */
     virtual void macUe_emit(omnetpp::simsignal_t signal, double val)
     {
-        if (macUe_){
+        if (macUe_) {
             macUe_->emit(signal, val);
         }
     }
@@ -186,17 +183,16 @@ class LteHarqBufferRx
      * initialize it. macSource_ being a private member forces one to use the macSource_emit
      * function to emit statistics (hence, checking against nullptr)
      */
-    void initMacUe(){
+    void initMacUe() {
         if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = omnetpp::check_and_cast<LteMacBase*>(getMacByMacNodeId(binder_, srcId_));
+            macUe_ = omnetpp::check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, srcId_));
         else
             macUe_ = macOwner_;
     }
-
-
 
 };
 
 } //namespace
 
 #endif
+

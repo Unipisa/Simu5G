@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef  _MECCOMMON_H_
 #define _MECCOMMON_H_
 
@@ -22,7 +21,6 @@ namespace simu5g {
 /*
  * Header file containing some structs used to manage MEC-related information
  */
-
 
 class ResourceManager;
 
@@ -54,9 +52,8 @@ struct DataVolume {
 struct SockAddr {
     inet::L3Address addr;
     int port;
-    std::string str() const { return addr.str() + ":" + std::to_string(port);}
+    std::string str() const { return addr.str() + ":" + std::to_string(port); }
 };
-
 
 /*
  * Structure representing some useful information of the MEC service ServiceInfo
@@ -84,10 +81,8 @@ struct ServiceDescriptor {
 
     inet::L3Address addr;
     int port;
-    std::string str() const { return addr.str() + ":" + std::to_string(port);}
+    std::string str() const { return addr.str() + ":" + std::to_string(port); }
 };
-
-
 
 struct ResourceDescriptor {
     double ram;
@@ -95,62 +90,61 @@ struct ResourceDescriptor {
     double cpu;
 };
 
-
-
 namespace mec {
 
-    /*
-     * associated identifier for a UE
-     *
-     * type:
-     *      0 = reserved.
-     *      1 = UE_IPv4_ADDRESS.
-     *      2 = UE_IPV6_ADDRESS.
-     *      3 = NATED_IP_ADDRESS.
-     *      4 = GTP_TEID.
-     *
-     * value:
-     *       Value for the identifier.
-     */
-    struct AssociateId
-    {
-        std::string type;
-        std::string value;
-    };
+/*
+ * associated identifier for a UE
+ *
+ * type:
+ *      0 = reserved.
+ *      1 = UE_IPv4_ADDRESS.
+ *      2 = UE_IPV6_ADDRESS.
+ *      3 = NATED_IP_ADDRESS.
+ *      4 = GTP_TEID.
+ *
+ * value:
+ *       Value for the identifier.
+ */
+struct AssociateId
+{
+    std::string type;
+    std::string value;
+};
 
-    /*
-     * Public Land Mobile Network Identity as defined in ETSI TS 136 413
-     *
-     * mcc: The Mobile Country Code part of PLMN Identity
-     * mnc: The Mobile Network Code part of PLMN Identity
-     */
-    struct Plmn
-    {
-        std::string mcc;
-        std::string mnc;
-    };
+/*
+ * Public Land Mobile Network Identity as defined in ETSI TS 136 413
+ *
+ * mcc: The Mobile Country Code part of PLMN Identity
+ * mnc: The Mobile Network Code part of PLMN Identity
+ */
+struct Plmn
+{
+    std::string mcc;
+    std::string mnc;
+};
 
-    /*
-     * E-UTRAN CelI Global Identifier as defined in ETSI TS 136 413
-     *
-     *  plmn: Public Land Mobile Network Identity.
-     *  cellid: E-UTRAN CelI Global Identifier (CellId in our case)
-     *
-     */
-    struct Ecgi
-    {
-        Plmn plmn;
-        MacCellId cellId;
-    };
+/*
+ * E-UTRAN CelI Global Identifier as defined in ETSI TS 136 413
+ *
+ *  plmn: Public Land Mobile Network Identity.
+ *  cellid: E-UTRAN CelI Global Identifier (CellId in our case)
+ *
+ */
+struct Ecgi
+{
+    Plmn plmn;
+    MacCellId cellId;
+};
 
-    struct Timestamp
-    {
-        int secods;
-        int nanoSecods;
+struct Timestamp
+{
+    int secods;
+    int nanoSecods;
 
-    };
-}
+};
+} // namespace mec
 
 } //namespace
 
 #endif
+

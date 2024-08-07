@@ -32,14 +32,14 @@ class LteFeedback
     //! Feedback status type enumerator.
     enum
     {
-        EMPTY = 0x0000,
+        EMPTY           = 0x0000,
         RANK_INDICATION = 0x0001,
-        WB_CQI = 0x0002,
-        WB_PMI = 0x0004,
-        BAND_CQI = 0x0008,
-        BAND_PMI = 0x0010,
-        PREFERRED_CQI = 0x0020,
-        PREFERRED_PMI = 0x0040
+        WB_CQI          = 0x0002,
+        WB_PMI          = 0x0004,
+        BAND_CQI        = 0x0008,
+        BAND_PMI        = 0x0010,
+        PREFERRED_CQI   = 0x0020,
+        PREFERRED_PMI   = 0x0040
     };
 
     //! Rank indicator.
@@ -85,6 +85,7 @@ class LteFeedback
     {
         return !(status_);
     }
+
     //! Return true if is periodic.
     bool isPeriodicFeedback() const
     {
@@ -94,31 +95,37 @@ class LteFeedback
     /// check existence of elements
     bool hasRankIndicator() const
     {
-        return (status_ & RANK_INDICATION);
+        return status_ & RANK_INDICATION;
     }
+
     bool hasWbCqi() const
     {
-        return (status_ & WB_CQI);
+        return status_ & WB_CQI;
     }
+
     bool hasWbPmi() const
     {
-        return (status_ & WB_PMI);
+        return status_ & WB_PMI;
     }
+
     bool hasBandCqi() const
     {
-        return (status_ & BAND_CQI);
+        return status_ & BAND_CQI;
     }
+
     bool hasBandPmi() const
     {
-        return (status_ & BAND_PMI);
+        return status_ & BAND_PMI;
     }
+
     bool hasPreferredCqi() const
     {
-        return (status_ & PREFERRED_CQI);
+        return status_ & PREFERRED_CQI;
     }
+
     bool hasPreferredPmi() const
     {
-        return (status_ & PREFERRED_PMI);
+        return status_ & PREFERRED_PMI;
     }
 
     // **************** GETTERS ****************
@@ -127,66 +134,79 @@ class LteFeedback
     {
         return rank_;
     }
+
     //! Get the wide-band CQI. Does not check if valid.
     CqiVector getWbCqi() const
     {
         return wideBandCqi_;
     }
+
     //! Get the wide-band CQI for one codeword. Does not check if valid.
     Cqi getWbCqi(Codeword cw) const
     {
         return wideBandCqi_[cw];
     }
+
     //! Get the wide-band PMI. Does not check if valid.
     Pmi getWbPmi() const
     {
         return wideBandPmi_;
     }
+
     //! Get the per-band CQI. Does not check if valid.
     std::vector<CqiVector> getBandCqi() const
     {
         return perBandCqi_;
     }
+
     //! Get the per-band CQI for one codeword. Does not check if valid.
     CqiVector getBandCqi(Codeword cw) const
     {
         return perBandCqi_[cw];
     }
+
     //! Get the per-band PMI. Does not check if valid.
     PmiVector getBandPmi() const
     {
         return perBandPmi_;
     }
+
     //! Get the per preferred band CQI. Does not check if valid.
     CqiVector getPreferredCqi() const
     {
         return preferredCqi_;
     }
+
     //! Get the per preferred band CQI for one codeword. Does not check if valid.
     Cqi getPreferredCqi(Codeword cw) const
     {
         return preferredCqi_[cw];
     }
+
     //! Get the per preferred band PMI. Does not check if valid.
     Pmi getPreferredPmi() const
     {
         return preferredPmi_;
     }
+
     //! Get the set of preferred bands. Does not check if valid.
     BandSet getPreferredBands() const
     {
         return preferredBands_;
     }
+
     //! Get the transmission mode.
     TxMode getTxMode() const
     {
         return txMode_;
     }
+
     //! \test DAS support - Get the remote Antenna identifier
     Remote getAntennaId() const
     {
         return remoteAntennaId_;
     }
+
     // *****************************************
 
     // **************** SETTERS ****************
@@ -196,12 +216,14 @@ class LteFeedback
         rank_ = rank;
         status_ |= RANK_INDICATION;
     }
+
     //! Set the wide-band CQI.
     void setWideBandCqi(const CqiVector wbCqi)
     {
         wideBandCqi_ = wbCqi;
         status_ |= WB_CQI;
     }
+
     //! Set the wide-band CQI for one codeword. Does not check if valid.
     void setWideBandCqi(const Cqi cqi, const Codeword cw)
     {
@@ -212,18 +234,21 @@ class LteFeedback
 
         status_ |= WB_CQI;
     }
+
     //! Set the wide-band PMI.
     void setWideBandPmi(const Pmi wbPmi)
     {
         wideBandPmi_ = wbPmi;
         status_ |= WB_PMI;
     }
+
     //! Set the per-band CQI.
     void setPerBandCqi(const std::vector<CqiVector> bandCqi)
     {
         perBandCqi_ = bandCqi;
         status_ |= BAND_CQI;
     }
+
     //! Set the per-band CQI for one codeword. Does not check if valid.
     void setPerBandCqi(const CqiVector bandCqi, const Codeword cw)
     {
@@ -234,6 +259,7 @@ class LteFeedback
 
         status_ |= BAND_CQI;
     }
+
     //! Set the per-band PMI.
     void setPerBandPmi(const PmiVector bandPmi)
     {
@@ -247,6 +273,7 @@ class LteFeedback
         preferredCqi_ = preferredCqi;
         status_ |= PREFERRED_CQI;
     }
+
     //! Set the per preferred band CQI for one codeword. Does not check if valid.
     void setPreferredCqi(const Cqi preferredCqi, const Codeword cw)
     {
@@ -257,12 +284,14 @@ class LteFeedback
 
         status_ |= PREFERRED_CQI;
     }
+
     //! Set the per preferred band PMI. Invoke this function only after setPreferredCqi().
     void setPreferredPmi(const Pmi preferredPmi)
     {
         preferredPmi_ = preferredPmi;
         status_ |= PREFERRED_PMI;
     }
+
     //! Set the per preferred bands. Invoke this function everytime you invoke setPreferredCqi().
     void setPreferredBands(const BandSet preferredBands)
     {
@@ -286,6 +315,7 @@ class LteFeedback
     {
         periodicFeedback_ = type;
     }
+
     // *****************************************
 
     /** Print debug information about the LteFeedback instance.
@@ -294,7 +324,7 @@ class LteFeedback
      *  @param dir The link direction.
      *  @param s The name of the function that requested the debug.
      */
-    void print(MacCellId cellId, MacNodeId nodeId, Direction dir, const char* s) const;
+    void print(MacCellId cellId, MacNodeId nodeId, Direction dir, const char *s) const;
 };
 
 /**
@@ -306,7 +336,8 @@ class LteFeedback
 class LteMuMimoMatrix
 {
     typedef std::vector<MacNodeId> MuMatrix;
-    protected:
+
+  protected:
     MuMatrix muMatrix_;
     MacNodeId maxNodeId_;
 
@@ -314,10 +345,12 @@ class LteMuMimoMatrix
     {
         return i + UE_MIN_ID;
     }
+
     unsigned int toIndex(MacNodeId node)
     {
         return node - UE_MIN_ID;
     }
+
   public:
     LteMuMimoMatrix()
     {
@@ -335,13 +368,16 @@ class LteMuMimoMatrix
         muMatrix_[toIndex(id1)] = id2;
         muMatrix_[toIndex(id2)] = id1;
     }
+
     MacNodeId getMuMimoPair(MacNodeId id)
     {
         return muMatrix_[toIndex(id)];
     }
+
     void print(const char *s) const;
 };
 
 } //namespace
 
 #endif
+

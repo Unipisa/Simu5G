@@ -16,11 +16,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-
-
 LteFeedback::LteFeedback() :
-        status_(EMPTY), txMode_(SINGLE_ANTENNA_PORT0), periodicFeedback_(true), remoteAntennaId_(
-                MACRO) {
+    status_(EMPTY), txMode_(SINGLE_ANTENNA_PORT0), periodicFeedback_(true), remoteAntennaId_(
+            MACRO) {
 }
 
 void LteFeedback::reset() {
@@ -36,7 +34,7 @@ void LteFeedback::reset() {
 }
 
 void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
-        const char* s) const {
+        const char *s) const {
     EV << NOW << " " << s << "         LteFeedback\n";
     EV << NOW << " " << s << " CellId: " << cellId << "\n";
     EV << NOW << " " << s << " NodeId: " << nodeId << "\n";
@@ -45,7 +43,7 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
     EV << NOW << " " << s << " -------------------------\n";
     EV << NOW << " " << s << " TxMode: " << txModeToA(getTxMode()) << "\n";
     EV << NOW << " " << s << " Type: "
-              << (isPeriodicFeedback() ? "PERIODIC" : "APERIODIC") << "\n";
+       << (isPeriodicFeedback() ? "PERIODIC" : "APERIODIC") << "\n";
     EV << NOW << " " << s << " -------------------------\n";
 
     if (isEmptyFeedback()) {
@@ -60,7 +58,7 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
         unsigned int codewords = cqi.size();
         for (Codeword cw = 0; cw < codewords; ++cw)
             EV << NOW << " " << s << " Preferred CQI[" << cw << "] = "
-                      << cqi.at(cw) << "\n";
+               << cqi.at(cw) << "\n";
     }
 
     if (hasWbCqi()) {
@@ -68,7 +66,7 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
         unsigned int codewords = cqi.size();
         for (Codeword cw = 0; cw < codewords; ++cw)
             EV << NOW << " " << s << " Wideband CQI[" << cw << "] = "
-                      << cqi.at(cw) << "\n";
+               << cqi.at(cw) << "\n";
     }
 
     if (hasBandCqi()) {
@@ -116,7 +114,7 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
         if (it != et) {
             EV << *it;
             it++;
-            for (; it != et; ++it)
+            for ( ; it != et; ++it)
                 EV << ", " << *it;
         }
         EV << "}\n";
@@ -127,11 +125,11 @@ void LteMuMimoMatrix::print(const char *s) const {
     EV << NOW << " " << s << " ################" << endl;
     EV << NOW << " " << s << " LteMuMimoMatrix" << endl;
     EV << NOW << " " << s << " ################" << endl;
-    for (unsigned int i=1025;i<maxNodeId_;i++)
-    EV << NOW << "" << i;
+    for (unsigned int i = 1025; i < maxNodeId_; i++)
+        EV << NOW << "" << i;
     EV << endl;
-    for (unsigned int i=1025;i<maxNodeId_;i++)
-    EV << NOW << "" << muMatrix_[i];
+    for (unsigned int i = 1025; i < maxNodeId_; i++)
+        EV << NOW << "" << muMatrix_[i];
 }
 
 } //namespace

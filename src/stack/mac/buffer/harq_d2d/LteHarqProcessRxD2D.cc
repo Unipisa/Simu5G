@@ -41,8 +41,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
 
     // if the PDU belongs to a multicast connection, then do not create feedback
     // (i.e., in all other cases, feedback is created)
-    if (pduInfo->getDirection() != D2D_MULTI)
-    {
+    if (pduInfo->getDirection() != D2D_MULTI) {
         // TODO: Change LteHarqFeedback from chunk to tag,
         pkt = new Packet();
         auto fb = makeShared<LteHarqFeedback>();
@@ -61,24 +60,20 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
         pkt->insertAtFront(fb);
     }
 
-    if (!result_.at(cw))
-    {
-        if (pduInfo->getDirection() == D2D_MULTI)
-        {
+    if (!result_.at(cw)) {
+        if (pduInfo->getDirection() == D2D_MULTI) {
             // if the PDU belongs to a multicast/broadcast connection, then reset the codeword, since there will be no retransmission
             EV << NOW << " LteHarqProcessRxD2D::createFeedback - pdu for cw " << cw << " belonged to a multicast/broadcast connection. Resetting cw " << endl;
             delete pdu_.at(cw);
             pdu_.at(cw) = nullptr;
             resetCodeword(cw);
         }
-        else
-        {
+        else {
             // NACK will be sent
             status_.at(cw) = RXHARQ_PDU_CORRUPTED;
 
             EV << "LteHarqProcessRx::createFeedback - tx number " << (unsigned int)transmissions_ << endl;
-            if (transmissions_ == (maxHarqRtx_ + 1))
-            {
+            if (transmissions_ == (maxHarqRtx_ + 1)) {
                 EV << NOW << " LteHarqProcessRxD2D::createFeedback - max number of tx reached for cw " << cw << ". Resetting cw" << endl;
 
                 // purge PDU
@@ -86,23 +81,21 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
                 resetCodeword(cw);
             }
             else {
-                if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-                {
+                if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
                     // signal the MAC the need for retransmission
-                    check_and_cast<LteMacEnb*>(macOwner_.get())->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
+                    check_and_cast<LteMacEnb *>(macOwner_.get())->signalProcessForRtx(pduInfo->getSourceId(), pduInfo->getCarrierFrequency(), (Direction)pduInfo->getDirection());
                 }
             }
         }
     }
-    else
-    {
+    else {
         status_.at(cw) = RXHARQ_PDU_CORRECT;
     }
 
     return pkt;
 }
 
-Packet* LteHarqProcessRxD2D::createFeedbackMirror(Codeword cw)
+Packet *LteHarqProcessRxD2D::createFeedbackMirror(Codeword cw)
 {
     if (!isEvaluated(cw))
         throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
@@ -114,8 +107,7 @@ Packet* LteHarqProcessRxD2D::createFeedbackMirror(Codeword cw)
 
     // if the PDU belongs to a multicast connection, then do not create feedback
     // (i.e., in all other cases, feedback is created)
-    if (pduInfo->getDirection() != D2D_MULTI)
-    {
+    if (pduInfo->getDirection() != D2D_MULTI) {
         // TODO: Change LteHarqFeedbackMirror from chunk to tag,
         pkt = new Packet();
         auto fb = makeShared<LteHarqFeedbackMirror>();

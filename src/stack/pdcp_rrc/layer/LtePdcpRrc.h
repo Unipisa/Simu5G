@@ -28,10 +28,9 @@ namespace simu5g {
 class LteTxPdcpEntity;
 class LteRxPdcpEntity;
 
-
 class PacketFlowManagerBase;
 
-#define LTE_PDCP_HEADER_COMPRESSION_DISABLED B(-1)
+#define LTE_PDCP_HEADER_COMPRESSION_DISABLED    B(-1)
 
 /**
  * @class LtePdcp
@@ -126,7 +125,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param Packet packet to compress
      */
-    void headerCompress(inet::Packet* pkt);
+    void headerCompress(inet::Packet *pkt);
 
     /**
      * headerDecompress(): Performs header decompression.
@@ -135,7 +134,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param Packet packet to decompress
      */
-    void headerDecompress(inet::Packet* pkt);
+    void headerDecompress(inet::Packet *pkt);
 
     /*
      * Functions to be implemented from derived classes
@@ -160,7 +159,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * @return Direction of traffic
      */
     virtual Direction getDirection() = 0;
-    void setTrafficInformation(omnetpp::cPacket* pkt, inet::Ptr<FlowControlInfo> lteInfo);
+    void setTrafficInformation(omnetpp::cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo);
 
     bool isCompressionEnabled();
 
@@ -245,7 +244,6 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      */
     void sendToUpperLayer(omnetpp::cPacket *pkt);
 
-
     /*
      * @author Alessandro Noferi
      *
@@ -255,8 +253,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
     inet::ModuleRefByPar<PacketFlowManagerBase> NRpacketFlowManager_;
 
-
-    virtual PacketFlowManagerBase* getPacketFlowManager() {return packetFlowManager_.getNullable();}
+    virtual PacketFlowManagerBase *getPacketFlowManager() { return packetFlowManager_.getNullable(); }
 
     /*
      * Data structures
@@ -272,22 +269,22 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     LogicalCid lcid_;
 
     /// Hash Table used for CID <-> Connection mapping
-    ConnectionsTable* ht_;
+    ConnectionsTable *ht_;
 
     /// Identifier for this node
     MacNodeId nodeId_;
 
-    omnetpp::cGate* dataPort_[2];
-    omnetpp::cGate* eutranRrcSap_[2];
-    omnetpp::cGate* tmSap_[2];
-    omnetpp::cGate* umSap_[2];
-    omnetpp::cGate* amSap_[2];
+    omnetpp::cGate *dataPort_[2];
+    omnetpp::cGate *eutranRrcSap_[2];
+    omnetpp::cGate *tmSap_[2];
+    omnetpp::cGate *umSap_[2];
+    omnetpp::cGate *amSap_[2];
 
     /**
      * The entities map associate each CID with a PDCP Entity, identified by its ID
      */
-    typedef std::map<MacCid, LteTxPdcpEntity*> PdcpTxEntities;
-    typedef std::map<MacCid, LteRxPdcpEntity*> PdcpRxEntities;
+    typedef std::map<MacCid, LteTxPdcpEntity *> PdcpTxEntities;
+    typedef std::map<MacCid, LteRxPdcpEntity *> PdcpRxEntities;
     PdcpTxEntities txEntities_;
     PdcpRxEntities rxEntities_;
 
@@ -301,18 +298,18 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * @return pointer to the PDCP entity for the CID of the flow
      *
      */
-    virtual LteTxPdcpEntity* getTxEntity(MacCid cid);
+    virtual LteTxPdcpEntity *getTxEntity(MacCid cid);
 
-    virtual LteRxPdcpEntity* getRxEntity(MacCid cid);
+    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
 
     /*
      * Dual Connectivity support
      */
     virtual bool isDualConnectivityEnabled() { return false; }
 
-    virtual void forwardDataToTargetNode(inet::Packet* pkt, MacNodeId targetNode) {}
+    virtual void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode) {}
 
-    virtual void receiveDataFromSourceNode(inet::Packet* pkt, MacNodeId sourceNode) {}
+    virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) {}
 
     // statistics
     omnetpp::simsignal_t receivedPacketFromUpperLayer;
@@ -345,7 +342,7 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
 class LtePdcpRrcEnb : public LtePdcpRrcBase
 {
   protected:
-   void handleControlInfo(omnetpp::cPacket* upPkt, FlowControlInfo* lteInfo)
+    void handleControlInfo(omnetpp::cPacket *upPkt, FlowControlInfo *lteInfo)
     {
         delete lteInfo;
     }
@@ -356,16 +353,13 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
         MacNodeId destId = binder_->getMacNodeId(inet::Ipv4Address(lteInfo->getDstAddr()));
         // master of this ue (myself)
         MacNodeId master = binder_->getNextHop(destId);
-        if (master != nodeId_)
-        {
+        if (master != nodeId_) {
             destId = master;
         }
-        else
-        {
+        else {
             // for dual connectivity
             master = binder_->getMasterNode(master);
-            if (master != nodeId_)
-            {
+            if (master != nodeId_) {
                 destId = master;
             }
         }
@@ -378,6 +372,7 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
         // Data coming from Dataport on ENB are always Downlink
         return DL;
     }
+
   public:
     virtual void initialize(int stage);
     virtual void deleteEntities(MacNodeId nodeId);
@@ -386,3 +381,4 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
 } //namespace
 
 #endif
+

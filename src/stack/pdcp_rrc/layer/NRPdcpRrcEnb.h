@@ -71,8 +71,8 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
      * @return pointer to the PDCP entity for the LCID of the flow
      *
      */
-    virtual LteTxPdcpEntity* getTxEntity(MacCid lcid);
-    virtual LteRxPdcpEntity* getRxEntity(MacCid cid);
+    virtual LteTxPdcpEntity *getTxEntity(MacCid lcid);
+    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
 
     /*
      * Dual Connectivity support
@@ -80,16 +80,17 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
     virtual bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
 
     // send packet to the target node by invoking the Dual Connectivity manager
-    virtual void forwardDataToTargetNode(Packet* pkt, MacNodeId targetNode);
+    virtual void forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode);
 
     // receive packet from the source node. Called by the Dual Connectivity manager
-    virtual void receiveDataFromSourceNode(Packet* pkt, MacNodeId sourceNode);
+    virtual void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode);
 
   public:
-    virtual void activeUeUL(std::set<MacNodeId>* ueSet);
+    virtual void activeUeUL(std::set<MacNodeId> *ueSet);
 
 };
 
 } //namespace
 
 #endif
+

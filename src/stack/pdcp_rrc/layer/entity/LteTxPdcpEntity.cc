@@ -24,10 +24,10 @@ LteTxPdcpEntity::LteTxPdcpEntity()
 
 void LteTxPdcpEntity::initialize()
 {
-    pdcp_ = check_and_cast<LtePdcpRrcBase*>(getParentModule());
+    pdcp_ = check_and_cast<LtePdcpRrcBase *>(getParentModule());
 }
 
-void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet* pkt)
+void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - LCID[" << lteInfo->getLcid() << "] - processing packet from IP layer" << endl;
@@ -45,18 +45,18 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet* pkt)
     auto pdcpPkt = makeShared<LtePdcpPdu>();
 
     unsigned int headerLength;
-    switch(lteInfo->getRlcType()){
-    case UM:
-        headerLength = PDCP_HEADER_UM;
-        break;
-    case AM:
-        headerLength = PDCP_HEADER_AM;
-        break;
-    case TM:
-        headerLength = 0;
-        break;
-    default:
-        throw cRuntimeError("LtePdcpRrcBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
+    switch (lteInfo->getRlcType()) {
+        case UM:
+            headerLength = PDCP_HEADER_UM;
+            break;
+        case AM:
+            headerLength = PDCP_HEADER_AM;
+            break;
+        case TM:
+            headerLength = 0;
+            break;
+        default:
+            throw cRuntimeError("LtePdcpRrcBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
     }
     pdcpPkt->setChunkLength(B(headerLength));
     pkt->trim();
@@ -64,7 +64,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet* pkt)
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
 
     EV << "LtePdcp : Preparing to send "
-       << lteTrafficClassToA((LteTrafficClass) lteInfo->getTraffic())
+       << lteTrafficClassToA((LteTrafficClass)lteInfo->getTraffic())
        << " traffic\n";
     EV << "LtePdcp : Packet size " << pkt->getByteLength() << " Bytes\n";
 
@@ -72,7 +72,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet* pkt)
     deliverPdcpPdu(pkt);
 }
 
-void LteTxPdcpEntity::deliverPdcpPdu(Packet* pdcpPkt)
+void LteTxPdcpEntity::deliverPdcpPdu(Packet *pdcpPkt)
 {
     pdcp_->sendToLowerLayer(pdcpPkt);
 }
@@ -81,7 +81,7 @@ void LteTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 {
     lteInfo->setSourceId(pdcp_->getNodeId());   // TODO CHANGE HERE!!! Must be the NR node ID if this is a NR connection
 
-    if (lteInfo->getMulticastGroupId() > 0)   // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
+    if (lteInfo->getMulticastGroupId() > 0)                                               // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
         lteInfo->setDestId(pdcp_->getNodeId());
     else
         lteInfo->setDestId(pdcp_->getDestId(lteInfo));

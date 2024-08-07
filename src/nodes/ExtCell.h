@@ -62,7 +62,7 @@ class ExtCell : public omnetpp::cSimpleModule
     BandStatus prevBandStatus_;
 
     // TTI self message
-    omnetpp::cMessage* ttiTick_;
+    omnetpp::cMessage *ttiTick_;
 
     /*** ALLOCATION MANAGEMENT ***/
 
@@ -85,7 +85,7 @@ class ExtCell : public omnetpp::cSimpleModule
 
   protected:
     virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL+2; }
+    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 2; }
     virtual void handleMessage(omnetpp::cMessage *msg);
 
   public:
@@ -117,3 +117,4 @@ class ExtCell : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

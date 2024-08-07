@@ -19,22 +19,23 @@
 
 namespace simu5g {
 
-namespace LocationUtils{
+namespace LocationUtils {
 
-    /* From: RESTful Network APIforTerminal Location
-    * section 5.2.3.1
-    */
-    enum EnteringLeavingCriteria {Entering, Leaving};
-    /* From: RESTful Network APIforTerminal Location
-    * section 5.2.3.2
-    */
-    enum DistanceCriteria {AllWithinDistance, AnyWithinDistance, AllBeyondDistance, AnyBeyondDistance};
+/* From: RESTful Network APIforTerminal Location
+ * section 5.2.3.1
+ */
+enum EnteringLeavingCriteria { Entering, Leaving };
+/* From: RESTful Network APIforTerminal Location
+ * section 5.2.3.2
+ */
+enum DistanceCriteria { AllWithinDistance, AnyWithinDistance, AllBeyondDistance, AnyBeyondDistance };
 
-    inet::Coord getCoordinates(Binder* binder, const MacNodeId id);
-    inet::Coord getSpeed(Binder* binder, const MacNodeId id);
+inet::Coord getCoordinates(Binder *binder, const MacNodeId id);
+inet::Coord getSpeed(Binder *binder, const MacNodeId id);
 
-}
+} // namespace LocationUtils
 
 } //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONAPIDEFS_H_ */
+

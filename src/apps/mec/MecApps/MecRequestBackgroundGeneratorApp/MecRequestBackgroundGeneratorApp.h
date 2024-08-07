@@ -9,8 +9,6 @@
 // and cannot be removed from it.
 //
 
-
-
 #ifndef APPS_MEC_MEAPPS_MEBGAPP_H_
 #define APPS_MEC_MEAPPS_MEBGAPP_H_
 
@@ -23,42 +21,41 @@ using namespace omnetpp;
 
 class MecRequestBackgroundGeneratorApp : public MecAppBase
 {
-protected:
+  protected:
 
-     int numberOfApplications_;    // requests to send in this session
-     cMessage *burstTimer;
-     cMessage *burstPeriod;
-     bool      burstFlag;
-     cMessage *sendBurst;
+    int numberOfApplications_;    // requests to send in this session
+    cMessage *burstTimer;
+    cMessage *burstPeriod;
+    bool burstFlag;
+    cMessage *sendBurst;
 
+    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
 
-     inet::TcpSocket* serviceSocket_;
-     inet::TcpSocket* mp1Socket_;
+    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *serviceHttpMessage;
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage) override;
 
-     HttpBaseMessage* mp1HttpMessage;
-     HttpBaseMessage* serviceHttpMessage;
-     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-     virtual void initialize(int stage) override;
+    virtual void handleSelfMessage(cMessage *msg) override;
+    virtual void handleHttpMessage(int connId) override;
+    virtual void handleServiceMessage(int connId) override;
+    virtual void handleMp1Message(int connId) override;
 
-     virtual void handleSelfMessage(cMessage *msg) override;
-     virtual void handleHttpMessage(int connId) override;
-     virtual void handleServiceMessage(int connId) override;
-     virtual void handleMp1Message(int connId) override;
+    virtual void sendBulkRequest();
 
-     virtual void sendBulkRequest();
+    virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
 
+    virtual void established(int connId) override;
 
-     virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+    virtual void finish() override;
 
-     virtual void established(int connId) override;
-
-     virtual void finish() override;
-
-   public:
-     MecRequestBackgroundGeneratorApp();
-     virtual ~MecRequestBackgroundGeneratorApp();
+  public:
+    MecRequestBackgroundGeneratorApp();
+    virtual ~MecRequestBackgroundGeneratorApp();
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MEAPPS_MEBGAPP_H_ */
+

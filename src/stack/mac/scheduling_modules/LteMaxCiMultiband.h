@@ -16,15 +16,14 @@
 
 namespace simu5g {
 
-    typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
-    typedef std::priority_queue<ScoreDesc> ScoreList;
+typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
+typedef std::priority_queue<ScoreDesc> ScoreList;
 
 class LteMaxCiMultiband : public virtual LteScheduler
 {
 
-
-public:
-    LteMaxCiMultiband(Binder *binder) : LteScheduler(binder) { }
+  public:
+    LteMaxCiMultiband(Binder *binder) : LteScheduler(binder) {}
     virtual ~LteMaxCiMultiband() {};
 
     virtual void prepareSchedule();
@@ -35,3 +34,4 @@ public:
 } //namespace
 
 #endif /* LTEMAXCIMULTIBAND_H_ */
+

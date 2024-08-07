@@ -31,13 +31,13 @@ class LteMacUe : public LteMacBase
     bool firstTx;
 
     // one per carrier
-    std::map<double, LteSchedulerUeUl*> lcgScheduler_;
+    std::map<double, LteSchedulerUeUl *> lcgScheduler_;
 
     // configured grant - one each codeword
-    std::map<double, inet::IntrusivePtr<const LteSchedulingGrant> > schedulingGrant_;
+    std::map<double, inet::IntrusivePtr<const LteSchedulingGrant>> schedulingGrant_;
 
     /// List of scheduled connection for this UE
-    std::map<double, LteMacScheduleList*> scheduleList_;
+    std::map<double, LteMacScheduleList *> scheduleList_;
 
     // current H-ARQ process counter
     unsigned char currentHarq_;
@@ -65,7 +65,6 @@ class LteMacUe : public LteMacBase
 
     unsigned int bsrRtxTimer_;
     unsigned int bsrRtxTimerStart_;
-
 
     // BSR handling
     bool bsrTriggered_;
@@ -117,7 +116,7 @@ class LteMacUe : public LteMacBase
      * bufferizePacket() is called every time a packet is
      * received from the upper layer
      */
-    virtual bool bufferizePacket(omnetpp::cPacket* pkt) override;
+    virtual bool bufferizePacket(omnetpp::cPacket *pkt) override;
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -136,13 +135,13 @@ class LteMacUe : public LteMacBase
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(omnetpp::cPacket* pkt) override;
+    virtual void macPduUnmake(omnetpp::cPacket *pkt) override;
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer
      */
-    virtual void handleUpperMessage(omnetpp::cPacket* pkt) override;
+    virtual void handleUpperMessage(omnetpp::cPacket *pkt) override;
 
     /**
      * Main loop
@@ -152,12 +151,12 @@ class LteMacUe : public LteMacBase
     /*
      * Receives and handles scheduling grants
      */
-    virtual void macHandleGrant(omnetpp::cPacket* pkt) override;
+    virtual void macHandleGrant(omnetpp::cPacket *pkt) override;
 
     /*
      * Receives and handles RAC responses
      */
-    virtual void macHandleRac(omnetpp::cPacket* pkt) override;
+    virtual void macHandleRac(omnetpp::cPacket *pkt) override;
 
     /*
      * Checks RAC status
@@ -166,7 +165,7 @@ class LteMacUe : public LteMacBase
     /*
      * Update UserTxParam stored in every lteMacPdu when an rtx change this information
      */
-    virtual void updateUserTxParam(omnetpp::cPacket* pkt) override;
+    virtual void updateUserTxParam(omnetpp::cPacket *pkt) override;
 
     /**
      * Flush Tx H-ARQ buffers for the user
@@ -180,12 +179,13 @@ class LteMacUe : public LteMacBase
     /*
      * Access scheduling grant
      */
-    inline const LteSchedulingGrant* getSchedulingGrant(double carrierFrequency) const
+    inline const LteSchedulingGrant *getSchedulingGrant(double carrierFrequency) const
     {
         if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end())
             return NULL;
         return schedulingGrant_.at(carrierFrequency).get();
     }
+
     /*
      * Access current H-ARQ pointer
      */
@@ -193,6 +193,7 @@ class LteMacUe : public LteMacBase
     {
         return currentHarq_;
     }
+
     /*
      * Access BSR trigger flag
      */
@@ -223,3 +224,4 @@ class LteMacUe : public LteMacBase
 } //namespace
 
 #endif
+

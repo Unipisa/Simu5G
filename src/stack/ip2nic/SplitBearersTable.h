@@ -13,7 +13,7 @@
 #define _SPLITBEARERSTABLE_H_
 
 /// This is the maximum number of allowed connections * 2
-#define TABLE_SIZE 2048
+#define TABLE_SIZE    2048
 
 #include "common/LteCommon.h"
 
@@ -89,3 +89,4 @@ class SplitBearersTable
 } //namespace
 
 #endif
+

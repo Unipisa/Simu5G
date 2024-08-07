@@ -20,27 +20,23 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-bool
-LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
+bool LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
 {
-    HarqRxBuffers* harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);
-    if (harqRxBuff == NULL)  // a new HARQ buffer will be created at reception
+    HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);
+    if (harqRxBuff == NULL)                              // a new HARQ buffer will be created at reception
         return true;
 
     // check if harq buffer have already been created for this node
-    if (harqRxBuff->find(id) != harqRxBuff->end())
-    {
-        LteHarqBufferRx* ulHarq = harqRxBuff->at(id);
+    if (harqRxBuff->find(id) != harqRxBuff->end()) {
+        LteHarqBufferRx *ulHarq = harqRxBuff->at(id);
 
         // get current Harq Process for nodeId
         unsigned char currentAcid = harqStatus_[carrierFrequency].at(id);
         // get current Harq Process status
         std::vector<RxUnitStatus> status = ulHarq->getProcess(currentAcid)->getProcessStatus();
         // check if at least one codeword buffer is available for reception
-        for (; cw < MAX_CODEWORDS; ++cw)
-        {
-            if (status.at(cw).second == RXHARQ_PDU_EMPTY)
-            {
+        for ( ; cw < MAX_CODEWORDS; ++cw) {
+            if (status.at(cw).second == RXHARQ_PDU_EMPTY) {
                 return true;
             }
         }
@@ -48,8 +44,7 @@ LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFr
     return false;
 }
 
-void
-LteSchedulerEnbUl::updateHarqDescs()
+void LteSchedulerEnbUl::updateHarqDescs()
 {
     EV << NOW << "LteSchedulerEnbUl::updateHarqDescs  cell " << mac_->getMacCellId() << endl;
 
@@ -57,28 +52,24 @@ LteSchedulerEnbUl::updateHarqDescs()
     HarqRxBuffers::iterator it;
     HarqStatus::iterator currentStatus;
 
-    for (cit=harqRxBuffers_->begin();cit!=harqRxBuffers_->end();++cit)
-    {
-        for (it=cit->second.begin();it!=cit->second.end();++it)
-        {
-             if ((currentStatus=harqStatus_[cit->first].find(it->first)) != harqStatus_[cit->first].end())
-             {
-                 EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " OLD Current Process is  " << (unsigned int)currentStatus->second << endl;
-                 // updating current acid id
-                 currentStatus->second = (currentStatus->second +1 ) % (it->second->getProcesses());
+    for (cit = harqRxBuffers_->begin(); cit != harqRxBuffers_->end(); ++cit) {
+        for (it = cit->second.begin(); it != cit->second.end(); ++it) {
+            if ((currentStatus = harqStatus_[cit->first].find(it->first)) != harqStatus_[cit->first].end()) {
+                EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " OLD Current Process is  " << (unsigned int)currentStatus->second << endl;
+                // updating current acid id
+                currentStatus->second = (currentStatus->second + 1) % (it->second->getProcesses());
 
-                 EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << "NEW Current Process is " << (unsigned int)currentStatus->second << "(total harq processes " << it->second->getProcesses() << ")" << endl;
-             }
-             else
-             {
-                 EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " initialized the H-ARQ status " << endl;
-                 harqStatus_[cit->first][it->first]=0;
-             }
+                EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << "NEW Current Process is " << (unsigned int)currentStatus->second << "(total harq processes " << it->second->getProcesses() << ")" << endl;
+            }
+            else {
+                EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " initialized the H-ARQ status " << endl;
+                harqStatus_[cit->first][it->first] = 0;
+            }
         }
     }
 }
 
-bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* bandLim)
+bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *bandLim)
 {
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[ START RAC-SCHEDULE ]::--------------------" << endl;
     EV << NOW << " LteSchedulerEnbUl::racschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
@@ -88,12 +79,10 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
     unsigned int racAllocatedBlocks = 0;
 
     std::map<double, RacStatus>::iterator map_it = racStatus_.find(carrierFrequency);
-    if (map_it != racStatus_.end())
-    {
+    if (map_it != racStatus_.end()) {
         RacStatus& racStatus = map_it->second;
-        RacStatus::iterator it=racStatus.begin() , et=racStatus.end();
-        for (;it!=et;++it)
-        {
+        RacStatus::iterator it = racStatus.begin(), et = racStatus.end();
+        for ( ; it != et; ++it) {
             // get current nodeId
             MacNodeId nodeId = it->first;
             EV << NOW << " LteSchedulerEnbUl::racschedule handling RAC for node " << nodeId << endl;
@@ -103,55 +92,45 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
             BandLimitVector tempBandLim;
             tempBandLim.clear();
             std::string bands_msg = "BAND_LIMIT_SPECIFIED";
-            if (bandLim == nullptr)
-            {
+            if (bandLim == nullptr) {
                 // Create a vector of band limit using all bands
                 // FIXME: bandlim is never deleted
 
                 // for each band of the band vector provided
-                for (unsigned int i = 0; i < numBands; i++)
-                {
+                for (unsigned int i = 0; i < numBands; i++) {
                     BandLimit elem;
                     // copy the band
                     elem.band_ = Band(i);
                     EV << "Putting band " << i << endl;
-                    for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                    {
-                        if( allowedBands.find(elem.band_)!= allowedBands.end() )
-                        {
+                    for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
+                        if (allowedBands.find(elem.band_) != allowedBands.end()) {
 //                            EV << "\t" << i << " " << "yes" << endl;
-                            elem.limit_[j]=-1;
+                            elem.limit_[j] = -1;
                         }
-                        else
-                        {
+                        else {
 //                            EV << "\t" << i << " " << "no" << endl;
-                            elem.limit_[j]=-2;
+                            elem.limit_[j] = -2;
                         }
                     }
                     tempBandLim.push_back(elem);
                 }
                 bandLim = &tempBandLim;
             }
-            else
-            {
+            else {
                 // for each band of the band vector provided
-                for (unsigned int i = 0; i < numBands; i++)
-                {
+                for (unsigned int i = 0; i < numBands; i++) {
                     BandLimit& elem = bandLim->at(i);
-                    for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                    {
+                    for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
                         if (elem.limit_[j] == -2)
                             continue;
 
-                        if (allowedBands.find(elem.band_)!= allowedBands.end() )
-                        {
+                        if (allowedBands.find(elem.band_) != allowedBands.end()) {
 //                            EV << "\t" << i << " " << "yes" << endl;
-                            elem.limit_[j]=-1;
+                            elem.limit_[j] = -1;
                         }
-                        else
-                        {
+                        else {
 //                            EV << "\t" << i << " " << "no" << endl;
-                            elem.limit_[j]=-2;
+                            elem.limit_[j] = -2;
                         }
                     }
                 }
@@ -160,46 +139,41 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
             // FIXME default behavior
             //try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
 
-            const unsigned int cw =0;
-            const unsigned int blocks =1;
+            const unsigned int cw = 0;
+            const unsigned int blocks = 1;
 
-            bool allocation=false;
+            bool allocation = false;
 
             unsigned int size = bandLim->size();
-            for (Band b=0;b<size;++b)
-            {
+            for (Band b = 0; b < size; ++b) {
                 // if the limit flag is set to skip, jump off
                 int limit = bandLim->at(b).limit_.at(cw);
-                if (limit == -2)
-                {
+                if (limit == -2) {
                     EV << "LteSchedulerEnbUl::racschedule - skipping logical band according to limit value" << endl;
                     continue;
                 }
 
-                if ( allocator_->availableBlocks(nodeId,MACRO,b) >0)
-                {
-                    unsigned int bytes = mac_->getAmc()->computeBytesOnNRbs(nodeId,b,cw,blocks,UL,carrierFrequency);
-                    if (bytes > 0)
-                    {
+                if (allocator_->availableBlocks(nodeId, MACRO, b) > 0) {
+                    unsigned int bytes = mac_->getAmc()->computeBytesOnNRbs(nodeId, b, cw, blocks, UL, carrierFrequency);
+                    if (bytes > 0) {
 
-                        allocator_->addBlocks(MACRO,b,nodeId,1,bytes);
+                        allocator_->addBlocks(MACRO, b, nodeId, 1, bytes);
                         racAllocatedBlocks++;
 
                         EV << NOW << "LteSchedulerEnbUl::racschedule UE: " << nodeId << "Handled RAC on band: " << b << endl;
 
-                        allocation=true;
+                        allocation = true;
                         break;
                     }
                 }
             }
 
-            if (allocation)
-            {
+            if (allocation) {
                 // create scList id for current cid/codeword
                 MacCid cid = idToMacCid(nodeId, SHORT_BSR);  // build the cid. Since this grant will be used for a BSR,
                                                              // we use the LCID corresponding to the SHORT_BSR
-                std::pair<unsigned int,Codeword> scListId = std::pair<unsigned int,Codeword>(cid,cw);
-                scheduleList_[carrierFrequency][scListId]=blocks;
+                std::pair<unsigned int, Codeword> scListId = std::pair<unsigned int, Codeword>(cid, cw);
+                scheduleList_[carrierFrequency][scListId] = blocks;
             }
         }
 
@@ -207,8 +181,7 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
         racStatus.clear();
     }
 
-    if (racAllocatedBlocks < numBands)
-    {
+    if (racAllocatedBlocks < numBands) {
         // serve RAC for background UEs
         racscheduleBackground(racAllocatedBlocks, carrierFrequency, bandLim);
     }
@@ -219,25 +192,23 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector* ba
     EV << NOW << " LteSchedulerEnbUl::racschedule racAllocatedBlocks: " << racAllocatedBlocks << " availableBlocks after rac schedule: " << availableBlocks << endl;
     EV << NOW << " LteSchedulerEnbUl::racschedule --------------------::[  END RAC-SCHEDULE  ]::--------------------" << endl;
 
-    return (availableBlocks==0);
+    return availableBlocks == 0;
 }
 
-void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, double carrierFrequency, BandLimitVector* bandLim)
+void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, double carrierFrequency, BandLimitVector *bandLim)
 {
     EV << NOW << " LteSchedulerEnbUl::racscheduleBackground - scheduling RAC for background UEs" << endl;
 
     std::list<MacNodeId> servedRac;
 
-    IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+    IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
     std::list<int>::const_iterator it = bgTrafficManager->getWaitingForRacUesBegin(),
                                    et = bgTrafficManager->getWaitingForRacUesEnd();
-
 
     // Get number of logical bands
     unsigned int numBands = mac_->getCellInfo()->getNumBands();
 
-    for (;it!=et;++it)
-    {
+    for ( ; it != et; ++it) {
         // get current nodeId
         MacNodeId bgUeId = *it + BGUE_MIN_ID;
 
@@ -246,19 +217,16 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
         BandLimitVector tempBandLim;
         tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
-        if (bandLim == nullptr)
-        {
+        if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
 
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit elem;
                 // copy the band
                 elem.band_ = Band(i);
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
-                    elem.limit_[j]=-1;
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
+                    elem.limit_[j] = -1;
                 }
                 tempBandLim.push_back(elem);
             }
@@ -268,26 +236,22 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
         // FIXME default behavior
         //try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
 
-        const unsigned int cw =0;
-        const unsigned int blocks =1;
+        const unsigned int cw = 0;
+        const unsigned int blocks = 1;
 
         unsigned int size = bandLim->size();
-        for (Band b=0;b<size;++b)
-        {
+        for (Band b = 0; b < size; ++b) {
             // if the limit flag is set to skip, jump off
             int limit = bandLim->at(b).limit_.at(cw);
-            if (limit == -2)
-            {
+            if (limit == -2) {
                 EV << "LteSchedulerEnbUl::racscheduleBackground - skipping logical band according to limit value" << endl;
                 continue;
             }
 
-            if ( allocator_->availableBlocks(bgUeId,MACRO,b) >0)
-            {
+            if (allocator_->availableBlocks(bgUeId, MACRO, b) > 0) {
                 unsigned int bytes = blocks * (bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, UL));
-                if (bytes > 0)
-                {
-                    allocator_->addBlocks(MACRO,b,bgUeId,1,bytes);
+                if (bytes > 0) {
+                    allocator_->addBlocks(MACRO, b, bgUeId, 1, bytes);
                     racAllocatedBlocks++;
 
                     servedRac.push_back(bgUeId);
@@ -300,38 +264,32 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
         }
     }
 
-    while (!servedRac.empty())
-    {
+    while (!servedRac.empty()) {
         // notify the traffic manager that the RAC for this UE has been served
         bgTrafficManager->racHandled(servedRac.front());
         servedRac.pop_front();
     }
 }
 
-bool
-LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim)
+bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *bandLim)
 {
-    try
-    {
+    try {
         EV << NOW << " LteSchedulerEnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
         EV << NOW << " LteSchedulerEnbUl::rtxschedule eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
-
-        if (harqRxBuffers_->find(carrierFrequency) != harqRxBuffers_->end())
-        {
-            HarqRxBuffers::iterator it= harqRxBuffers_->at(carrierFrequency).begin() , et=harqRxBuffers_->at(carrierFrequency).end();
-            for(; it != et; ++it)
-            {
+        if (harqRxBuffers_->find(carrierFrequency) != harqRxBuffers_->end()) {
+            HarqRxBuffers::iterator it = harqRxBuffers_->at(carrierFrequency).begin(), et = harqRxBuffers_->at(carrierFrequency).end();
+            for ( ; it != et; ++it) {
                 // get current nodeId
                 MacNodeId nodeId = it->first;
 
-                if(nodeId == 0){
+                if (nodeId == 0) {
                     // UE has left the simulation - erase queue and continue
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
                 }
                 OmnetId id = binder_->getOmnetId(nodeId);
-                if(id == 0){
+                if (id == 0) {
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
                 }
@@ -342,13 +300,11 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                 // check whether the UE has a H-ARQ process waiting for retransmission. If not, skip UE.
                 bool skip = true;
                 unsigned char acid = (currentAcid + 2) % (it->second->getProcesses());
-                LteHarqProcessRx* currentProcess = it->second->getProcess(acid);
+                LteHarqProcessRx *currentProcess = it->second->getProcess(acid);
                 std::vector<RxUnitStatus> procStatus = currentProcess->getProcessStatus();
                 std::vector<RxUnitStatus>::iterator pit = procStatus.begin();
-                for (; pit != procStatus.end(); ++pit )
-                {
-                    if (pit->second == RXHARQ_PDU_CORRUPTED)
-                    {
+                for ( ; pit != procStatus.end(); ++pit ) {
+                    if (pit->second == RXHARQ_PDU_CORRUPTED) {
                         skip = false;
                         break;
                     }
@@ -357,24 +313,22 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     continue;
 
                 // Get user transmission parameters
-                const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_,carrierFrequency);// get the user info
+                const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);// get the user info
 
                 unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
-                unsigned int allocatedBytes =0;
+                unsigned int allocatedBytes = 0;
 
                 // TODO handle the codewords join case (sizeof(cw0+cw1) < currentTbs && currentLayers ==1)
 
-                for(Codeword cw = 0; (cw < MAX_CODEWORDS) && (codewords>0); ++cw)
-                {
-                    unsigned int rtxBytes=0;
+                for (Codeword cw = 0; (cw < MAX_CODEWORDS) && (codewords > 0); ++cw) {
+                    unsigned int rtxBytes = 0;
                     // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
 
                     // perform a retransmission on available codewords for the selected acid
-                    rtxBytes=LteSchedulerEnbUl::schedulePerAcidRtx(nodeId, carrierFrequency, cw,acid,bandLim);
-                    if (rtxBytes>0)
-                    {
+                    rtxBytes = LteSchedulerEnbUl::schedulePerAcidRtx(nodeId, carrierFrequency, cw, acid, bandLim);
+                    if (rtxBytes > 0) {
                         --codewords;
-                        allocatedBytes+=rtxBytes;
+                        allocatedBytes += rtxBytes;
 
                         mac_->signalProcessForRtx(nodeId, carrierFrequency, UL, false);
                     }
@@ -382,27 +336,24 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                 EV << NOW << "LteSchedulerEnbUl::rtxschedule UE " << nodeId << " allocated bytes : " << allocatedBytes << endl;
             }
         }
-        if (mac_->isD2DCapable())
-        {
+        if (mac_->isD2DCapable()) {
             // --- START Schedule D2D retransmissions --- //
             Direction dir = D2D;
-            HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
-            if (harqBuffersMirrorD2D != NULL)
-            {
-                HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin() , et_d2d=harqBuffersMirrorD2D->end();
-                while (it_d2d != et_d2d)
-                {
+            HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
+            if (harqBuffersMirrorD2D != NULL) {
+                HarqBuffersMirrorD2D::iterator it_d2d = harqBuffersMirrorD2D->begin(), et_d2d = harqBuffersMirrorD2D->end();
+                while (it_d2d != et_d2d) {
 
                     // get current nodeIDs
                     MacNodeId senderId = (it_d2d->first).first; // Transmitter
                     MacNodeId destId = (it_d2d->first).second;  // Receiver
 
-                    if(senderId == 0 || binder_->getOmnetId(senderId) == 0) {
+                    if (senderId == 0 || binder_->getOmnetId(senderId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
                     }
-                    if(destId == 0 || binder_->getOmnetId(destId) == 0) {
+                    if (destId == 0 || binder_->getOmnetId(destId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
@@ -414,19 +365,16 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     // check whether the UE has a H-ARQ process waiting for retransmission. If not, skip UE.
                     bool skip = true;
                     unsigned char acid = (currentAcid + 2) % (it_d2d->second->getProcesses());
-                    LteHarqProcessMirrorD2D* currentProcess = it_d2d->second->getProcess(acid);
+                    LteHarqProcessMirrorD2D *currentProcess = it_d2d->second->getProcess(acid);
                     std::vector<TxHarqPduStatus> procStatus = currentProcess->getProcessStatus();
                     std::vector<TxHarqPduStatus>::iterator pit = procStatus.begin();
-                    for (; pit != procStatus.end(); ++pit )
-                    {
-                        if (*pit == TXHARQ_PDU_BUFFERED)
-                        {
+                    for ( ; pit != procStatus.end(); ++pit ) {
+                        if (*pit == TXHARQ_PDU_BUFFERED) {
                             skip = false;
                             break;
                         }
                     }
-                    if (skip)
-                    {
+                    if (skip) {
                         ++it_d2d;
                         continue;
                     }
@@ -434,24 +382,22 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
                     EV << NOW << " LteSchedulerEnbUl::rtxschedule - D2D UE: " << senderId << " Acid: " << (unsigned int)currentAcid << endl;
 
                     // Get user transmission parameters
-                    const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir,carrierFrequency);// get the user info
+                    const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir, carrierFrequency);// get the user info
 
                     unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
-                    unsigned int allocatedBytes =0;
+                    unsigned int allocatedBytes = 0;
 
                     // TODO handle the codewords join case (size of(cw0+cw1) < currentTbs && currentLayers ==1)
 
-                    for(Codeword cw = 0; (cw < MAX_CODEWORDS) && (codewords>0); ++cw)
-                    {
-                        unsigned int rtxBytes=0;
+                    for (Codeword cw = 0; (cw < MAX_CODEWORDS) && (codewords > 0); ++cw) {
+                        unsigned int rtxBytes = 0;
                         // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
 
                         // perform a retransmission on available codewords for the selected acid
-                        rtxBytes = LteSchedulerEnbUl::schedulePerAcidRtxD2D(destId, senderId,  carrierFrequency, cw, acid, bandLim);
-                        if (rtxBytes>0)
-                        {
+                        rtxBytes = LteSchedulerEnbUl::schedulePerAcidRtxD2D(destId, senderId, carrierFrequency, cw, acid, bandLim);
+                        if (rtxBytes > 0) {
                             --codewords;
-                            allocatedBytes+=rtxBytes;
+                            allocatedBytes += rtxBytes;
 
                             mac_->signalProcessForRtx(senderId, carrierFrequency, D2D, false);
                         }
@@ -469,29 +415,26 @@ LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector* bandLim
 
         EV << NOW << " LteSchedulerEnbUl::rtxschedule --------------------::[  END RTX-SCHEDULE  ]::--------------------" << endl;
 
-        return (availableBlocks == 0);
+        return availableBlocks == 0;
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxschedule(): %s", e.what());
     }
     return 0;
 }
 
-bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim)
+bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim)
 {
-    try
-    {
+    try {
         EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground --------------------::[ START RTX-SCHEDULE-BACKGROUND ]::--------------------" << endl;
         EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
         // --- Schedule RTX for background UEs --- //
         std::map<int, unsigned int> bgScheduledRtx;
-        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+        IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
-        for (; it != et; ++it)
-        {
+        for ( ; it != et; ++it) {
             int bgUeIndex = *it;
             MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
 
@@ -512,77 +455,64 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
 
         EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground --------------------::[  END RTX-SCHEDULE-BACKGROUND ]::--------------------" << endl;
 
-        return (availableBlocks == 0);
+        return availableBlocks == 0;
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxscheduleBackground(): %s", e.what());
     }
     return 0;
 }
 
-unsigned int
-LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
-    std::vector<BandLimit>* bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
+        std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
 {
-    try
-    {
-        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_,carrierFrequency);    // get the user info
+    try {
+        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);    // get the user info
         const std::set<Band>& allowedBands = txParams.readBands();
         BandLimitVector tempBandLim;
         tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
-        if (bandLim == nullptr)
-        {
+        if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
             // FIXME: bandlim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit elem;
                 // copy the band
                 elem.band_ = Band(i);
                 EV << "Putting band " << i << endl;
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
-                    if( allowedBands.find(elem.band_)!= allowedBands.end() )
-                    {
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
+                    if (allowedBands.find(elem.band_) != allowedBands.end()) {
 //                        EV << "\t" << i << " " << "yes" << endl;
-                        elem.limit_[j]=-1;
+                        elem.limit_[j] = -1;
                     }
-                    else
-                    {
+                    else {
 //                        EV << "\t" << i << " " << "no" << endl;
-                        elem.limit_[j]=-2;
+                        elem.limit_[j] = -2;
                     }
                 }
                 tempBandLim.push_back(elem);
             }
             bandLim = &tempBandLim;
         }
-        else
-        {
+        else {
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit& elem = bandLim->at(i);
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
                     if (elem.limit_[j] == -2)
                         continue;
 
-                    if (allowedBands.find(elem.band_)!= allowedBands.end() )
-                    {
+                    if (allowedBands.find(elem.band_) != allowedBands.end()) {
 //                        EV << "\t" << i << " " << "yes" << endl;
-                        elem.limit_[j]=-1;
+                        elem.limit_[j] = -1;
                     }
-                    else
-                    {
+                    else {
 //                        EV << "\t" << i << " " << "no" << endl;
-                        elem.limit_[j]=-2;
+                        elem.limit_[j] = -2;
                     }
                 }
             }
@@ -590,10 +520,9 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
         EV << NOW << "LteSchedulerEnbUl::rtxAcid - Node[" << mac_->getMacNodeId() << ", User[" << nodeId << ", Codeword[ " << cw << "], ACID[" << (unsigned int)acid << "] " << endl;
 
-        LteHarqProcessRx* currentProcess = harqRxBuffers_->at(carrierFrequency).at(nodeId)->getProcess(acid);
+        LteHarqProcessRx *currentProcess = harqRxBuffers_->at(carrierFrequency).at(nodeId)->getProcess(acid);
 
-        if (currentProcess->getUnitStatus(cw) != RXHARQ_PDU_CORRUPTED)
-        {
+        if (currentProcess->getUnitStatus(cw) != RXHARQ_PDU_CORRUPTED) {
             // exit if the current active HARQ process is not ready for retransmission
             EV << NOW << " LteSchedulerEnbUl::rtxAcid User is on ACID " << (unsigned int)acid << " HARQ process is IDLE. No RTX scheduled ." << endl;
             return 0;
@@ -602,11 +531,9 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
         Codeword allocatedCw = 0;
         // search for already allocated codeword
         // create "mirror" scList ID for other codeword than current
-        std::pair<unsigned int, Codeword> scListMirrorId = std::pair<unsigned int, Codeword>(idToMacCid(nodeId,SHORT_BSR), MAX_CODEWORDS - cw - 1);
-        if (scheduleList_.find(carrierFrequency) != scheduleList_.end())
-        {
-            if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end())
-            {
+        std::pair<unsigned int, Codeword> scListMirrorId = std::pair<unsigned int, Codeword>(idToMacCid(nodeId, SHORT_BSR), MAX_CODEWORDS - cw - 1);
+        if (scheduleList_.find(carrierFrequency) != scheduleList_.end()) {
+            if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end()) {
                 allocatedCw = MAX_CODEWORDS - cw - 1;
             }
         }
@@ -623,8 +550,7 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
         bool finish = false;
         // for each band
         unsigned int size = bandLim->size();
-        for (unsigned int i = 0; (i < size) && (!finish); ++i)
-        {
+        for (unsigned int i = 0; (i < size) && (!finish); ++i) {
             // save the band and the relative limit
             Band b = bandLim->at(i).band_;
             int limit = bandLim->at(i).limit_.at(cw);
@@ -636,7 +562,7 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
             // use the provided limit as cap for available bytes, if it is not set to unlimited
             if (limit >= 0)
-                bandAvailableBytes = limit < (int) bandAvailableBytes ? limit : bandAvailableBytes;
+                bandAvailableBytes = limit < (int)bandAvailableBytes ? limit : bandAvailableBytes;
 
             EV << NOW << " LteSchedulerEnbUl::rtxAcid BAND " << b << endl;
             EV << NOW << " LteSchedulerEnbUl::rtxAcid total bytes:" << bytes << " still to serve: " << toServe << " bytes" << endl;
@@ -644,14 +570,12 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
             unsigned int servedBytes = 0;
             // there's no room on current band for serving the entire request
-            if (bandAvailableBytes < toServe)
-            {
+            if (bandAvailableBytes < toServe) {
                 // record the amount of served bytes
                 servedBytes = bandAvailableBytes;
                 // the request can be fully satisfied
             }
-            else
-            {
+            else {
                 // record the amount of served bytes
                 servedBytes = toServe;
                 // signal end loop - all data have been serviced
@@ -665,33 +589,29 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
             assignedBytes.push_back(servedBytes);
         }
 
-        if (toServe > 0)
-        {
+        if (toServe > 0) {
             // process couldn't be served - no sufficient space on available bands
             EV << NOW << " LteSchedulerEnbUl::rtxAcid Unavailable space for serving node " << nodeId << " ,HARQ Process " << (unsigned int)acid << " on codeword " << cw << endl;
             return 0;
         }
-        else
-        {
+        else {
             // record the allocation
             unsigned int size = assignedBlocks.size();
-            unsigned int cwAllocatedBlocks =0;
+            unsigned int cwAllocatedBlocks = 0;
 
             // create scList id for current node/codeword
-            std::pair<unsigned int,Codeword> scListId = std::pair<unsigned int,Codeword>(idToMacCid(nodeId, SHORT_BSR), cw);
+            std::pair<unsigned int, Codeword> scListId = std::pair<unsigned int, Codeword>(idToMacCid(nodeId, SHORT_BSR), cw);
 
-            for(unsigned int i = 0; i < size; ++i)
-            {
+            for (unsigned int i = 0; i < size; ++i) {
                 // For each LB for which blocks have been allocated
                 Band b = bandLim->at(i).band_;
 
-                cwAllocatedBlocks +=assignedBlocks.at(i);
+                cwAllocatedBlocks += assignedBlocks.at(i);
                 EV << "\t Cw->" << allocatedCw << "/" << MAX_CODEWORDS << endl;
                 //! handle multi-codeword allocation
-                if (allocatedCw!=MAX_CODEWORDS)
-                {
+                if (allocatedCw != MAX_CODEWORDS) {
                     EV << NOW << " LteSchedulerEnbUl::rtxAcid - adding " << assignedBlocks.at(i) << " to band " << i << endl;
-                    allocator_->addBlocks(antenna,b,nodeId,assignedBlocks.at(i),assignedBytes.at(i));
+                    allocator_->addBlocks(antenna, b, nodeId, assignedBlocks.at(i), assignedBytes.at(i));
                 }
                 //! TODO check if ok bandLim->at.limit_.at(cw) = assignedBytes.at(i);
             }
@@ -701,13 +621,11 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
 
             scheduleList_[carrierFrequency][scListId] = cwAllocatedBlocks;
             // mark codeword as used
-            if (allocatedCws_.find(nodeId)!=allocatedCws_.end())
-            {
+            if (allocatedCws_.find(nodeId) != allocatedCws_.end()) {
                 allocatedCws_.at(nodeId)++;
             }
-            else
-            {
-                allocatedCws_[nodeId]=1;
+            else {
+                allocatedCws_[nodeId] = 1;
             }
 
             EV << NOW << " LteSchedulerEnbUl::rtxAcid HARQ Process " << (unsigned int)acid << " : " << bytes << " bytes served! " << endl;
@@ -715,76 +633,63 @@ LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency,
             return bytes;
         }
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::rtxAcid(): %s", e.what());
     }
     return 0;
 }
 
-unsigned int
-LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, double carrierFrequency, Codeword cw, unsigned char acid,
-    std::vector<BandLimit>* bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeId senderId, double carrierFrequency, Codeword cw, unsigned char acid,
+        std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
 {
     Direction dir = D2D;
-    try
-    {
-        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir,carrierFrequency);    // get the user info
+    try {
+        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir, carrierFrequency);    // get the user info
         const std::set<Band>& allowedBands = txParams.readBands();
         BandLimitVector tempBandLim;
         tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
-        if (bandLim == nullptr)
-        {
+        if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
             // FIXME: bandlim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit elem;
                 // copy the band
                 elem.band_ = Band(i);
                 EV << "Putting band " << i << endl;
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
-                    if( allowedBands.find(elem.band_)!= allowedBands.end() )
-                    {
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
+                    if (allowedBands.find(elem.band_) != allowedBands.end()) {
                         EV << "\t" << i << " " << "yes" << endl;
-                        elem.limit_[j]=-1;
+                        elem.limit_[j] = -1;
                     }
-                    else
-                    {
+                    else {
                         EV << "\t" << i << " " << "no" << endl;
-                        elem.limit_[j]=-2;
+                        elem.limit_[j] = -2;
                     }
                 }
                 tempBandLim.push_back(elem);
             }
             bandLim = &tempBandLim;
         }
-        else
-        {
+        else {
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit& elem = bandLim->at(i);
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
                     if (elem.limit_[j] == -2)
                         continue;
 
-                    if (allowedBands.find(elem.band_)!= allowedBands.end() )
-                    {
+                    if (allowedBands.find(elem.band_) != allowedBands.end()) {
                         EV << "\t" << i << " " << "yes" << endl;
-                        elem.limit_[j]=-1;
+                        elem.limit_[j] = -1;
                     }
-                    else
-                    {
+                    else {
                         EV << "\t" << i << " " << "no" << endl;
-                        elem.limit_[j]=-2;
+                        elem.limit_[j] = -2;
                     }
                 }
             }
@@ -795,12 +700,11 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
         D2DPair pair(senderId, destId);
 
         // Get the current active HARQ process
-        HarqBuffersMirrorD2D* harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D*>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
+        HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
         EV << "\t the acid that should be considered is " << (unsigned int)acid << endl;
 
-        LteHarqProcessMirrorD2D* currentProcess = harqBuffersMirrorD2D->at(pair)->getProcess(acid);
-        if (currentProcess->getUnitStatus(cw) != TXHARQ_PDU_BUFFERED)
-        {
+        LteHarqProcessMirrorD2D *currentProcess = harqBuffersMirrorD2D->at(pair)->getProcess(acid);
+        if (currentProcess->getUnitStatus(cw) != TXHARQ_PDU_BUFFERED) {
             // exit if the current active HARQ process is not ready for retransmission
             EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D User is on ACID " << (unsigned int)acid << " HARQ process is IDLE. No RTX scheduled ." << endl;
             return 0;
@@ -810,10 +714,8 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
         //search for already allocated codeword
         //create "mirror" scList ID for other codeword than current
         std::pair<unsigned int, Codeword> scListMirrorId = std::pair<unsigned int, Codeword>(idToMacCid(senderId, D2D_SHORT_BSR), MAX_CODEWORDS - cw - 1);
-        if (scheduleList_.find(carrierFrequency) != scheduleList_.end())
-        {
-            if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end())
-            {
+        if (scheduleList_.find(carrierFrequency) != scheduleList_.end()) {
+            if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end()) {
                 allocatedCw = MAX_CODEWORDS - cw - 1;
             }
         }
@@ -830,8 +732,7 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
         bool finish = false;
         // for each band
         unsigned int size = bandLim->size();
-        for (unsigned int i = 0; (i < size) && (!finish); ++i)
-        {
+        for (unsigned int i = 0; (i < size) && (!finish); ++i) {
             // save the band and the relative limit
             Band b = bandLim->at(i).band_;
             int limit = bandLim->at(i).limit_.at(cw);
@@ -843,7 +744,7 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
 
             // use the provided limit as cap for available bytes, if it is not set to unlimited
             if (limit >= 0)
-                bandAvailableBytes = limit < (int) bandAvailableBytes ? limit : bandAvailableBytes;
+                bandAvailableBytes = limit < (int)bandAvailableBytes ? limit : bandAvailableBytes;
 
             EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D BAND " << b << endl;
             EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D total bytes:" << bytes << " still to serve: " << toServe << " bytes" << endl;
@@ -851,19 +752,17 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
 
             unsigned int servedBytes = 0;
             // there's no room on current band for serving the entire request
-            if (bandAvailableBytes < toServe)
-            {
+            if (bandAvailableBytes < toServe) {
                 // record the amount of served bytes
                 servedBytes = bandAvailableBytes;
                 // the request can be fully satisfied
             }
-            else
-            {
+            else {
                 // record the amount of served bytes
                 servedBytes = toServe;
                 // signal end loop - all data have been serviced
                 finish = true;
-                EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D ALL DATA HAVE BEEN SERVICED"<< endl;
+                EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D ALL DATA HAVE BEEN SERVICED" << endl;
             }
             unsigned int servedBlocks = (servedBytes == 0) ? 0 : 1;
             // update the bytes counter
@@ -873,33 +772,29 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
             assignedBytes.push_back(servedBytes);
         }
 
-        if (toServe > 0)
-        {
+        if (toServe > 0) {
             // process couldn't be served - no sufficient space on available bands
             EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D Unavailable space for serving node " << senderId << " ,HARQ Process " << (unsigned int)acid << " on codeword " << cw << endl;
             return 0;
         }
-        else
-        {
+        else {
             // record the allocation
             unsigned int size = assignedBlocks.size();
             unsigned int cwAllocatedBlocks = 0;
 
             // create scList id for current cid/codeword
-            std::pair<unsigned int,Codeword> scListId = std::pair<unsigned int,Codeword>(idToMacCid(senderId, D2D_SHORT_BSR), cw);
+            std::pair<unsigned int, Codeword> scListId = std::pair<unsigned int, Codeword>(idToMacCid(senderId, D2D_SHORT_BSR), cw);
 
-            for(unsigned int i = 0; i < size; ++i)
-            {
+            for (unsigned int i = 0; i < size; ++i) {
                 // For each LB for which blocks have been allocated
                 Band b = bandLim->at(i).band_;
 
                 cwAllocatedBlocks += assignedBlocks.at(i);
                 EV << "\t Cw->" << allocatedCw << "/" << MAX_CODEWORDS << endl;
                 //! handle multi-codeword allocation
-                if (allocatedCw!=MAX_CODEWORDS)
-                {
+                if (allocatedCw != MAX_CODEWORDS) {
                     EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D - adding " << assignedBlocks.at(i) << " to band " << i << endl;
-                    allocator_->addBlocks(antenna,b,senderId,assignedBlocks.at(i),assignedBytes.at(i));
+                    allocator_->addBlocks(antenna, b, senderId, assignedBlocks.at(i), assignedBytes.at(i));
                 }
                 //! TODO check if ok bandLim->at.limit_.at(cw) = assignedBytes.at(i);
             }
@@ -908,13 +803,11 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
             // schedule list contains number of granted blocks
             scheduleList_[carrierFrequency][scListId] = cwAllocatedBlocks;
             // mark codeword as used
-            if (allocatedCws_.find(senderId)!=allocatedCws_.end())
-            {
+            if (allocatedCws_.find(senderId) != allocatedCws_.end()) {
                 allocatedCws_.at(senderId)++;
             }
-            else
-            {
-                allocatedCws_[senderId]=1;
+            else {
+                allocatedCws_[senderId] = 1;
             }
 
             EV << NOW << " LteSchedulerEnbUl::schedulePerAcidRtxD2D HARQ Process " << (unsigned int)acid << " : " << bytes << " bytes served! " << endl;
@@ -923,21 +816,17 @@ LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId,MacNodeId senderId, do
 
             return bytes;
         }
-
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::schedulePerAcidRtxD2D(): %s", e.what());
     }
     return 0;
 }
 
-unsigned int
-LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
 {
-    try
-    {
-        IBackgroundTrafficManager* bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
+    try {
+        IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         unsigned int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 
         // get the RTX buffer size
@@ -949,29 +838,26 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 
         BandLimitVector tempBandLim;
         tempBandLim.clear();
-        if (bandLim == nullptr)
-        {
+        if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
             // FIXME: bandlim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands; i++)
-            {
+            for (unsigned int i = 0; i < numBands; i++) {
                 BandLimit elem;
                 // copy the band
                 elem.band_ = Band(i);
                 EV << "Putting band " << i << endl;
-                for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
-                {
-                    elem.limit_[j]=-2;
+                for (unsigned int j = 0; j < MAX_CODEWORDS; j++) {
+                    elem.limit_[j] = -2;
                 }
                 tempBandLim.push_back(elem);
             }
             bandLim = &tempBandLim;
         }
 
-        EV << NOW << "LteSchedulerEnbUl::scheduleBgRtx - Node[" << mac_->getMacNodeId() << ", User[" << bgUeId << "]"<< endl;
+        EV << NOW << "LteSchedulerEnbUl::scheduleBgRtx - Node[" << mac_->getMacNodeId() << ", User[" << bgUeId << "]" << endl;
 
         Codeword allocatedCw = 0;
 
@@ -986,8 +872,7 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
         bool finish = false;
         // for each band
         unsigned int size = bandLim->size();
-        for (unsigned int i = 0; (i < size) && (!finish); ++i)
-        {
+        for (unsigned int i = 0; (i < size) && (!finish); ++i) {
             // save the band and the relative limit
             Band b = bandLim->at(i).band_;
             int limit = bandLim->at(i).limit_.at(cw);
@@ -996,7 +881,7 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 
             // use the provided limit as cap for available bytes, if it is not set to unlimited
             if (limit >= 0)
-                bandAvailableBytes = limit < (int) bandAvailableBytes ? limit : bandAvailableBytes;
+                bandAvailableBytes = limit < (int)bandAvailableBytes ? limit : bandAvailableBytes;
 
             EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx BAND " << b << endl;
             EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx total bytes:" << queueLength << " still to serve: " << toServe << " bytes" << endl;
@@ -1004,21 +889,19 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 
             unsigned int servedBytes = 0;
             // there's no room on current band for serving the entire request
-            if (bandAvailableBytes < toServe)
-            {
+            if (bandAvailableBytes < toServe) {
                 // record the amount of served bytes
                 servedBytes = bandAvailableBytes;
                 // the request can be fully satisfied
             }
-            else
-            {
+            else {
                 // record the amount of served bytes
                 servedBytes = toServe;
                 // signal end loop - all data have been serviced
                 finish = true;
             }
 
-            unsigned int servedBlocks = ceil((double)servedBytes/bytesPerBlock);
+            unsigned int servedBlocks = ceil((double)servedBytes / bytesPerBlock);
 
             // update the bytes counter
             toServe -= servedBytes;
@@ -1027,21 +910,18 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
             assignedBytes.push_back(servedBytes);
         }
 
-        if (toServe > 0)
-        {
+        if (toServe > 0) {
             // process couldn't be served - no sufficient space on available bands
             EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx Unavailable space for serving node " << bgUeId << endl;
             return 0;
         }
-        else
-        {
+        else {
             std::map<Band, unsigned int> allocatedRbMapEntry;
 
             // record the allocation
             unsigned int size = assignedBlocks.size();
             unsigned int allocatedBytes = 0;
-            for(unsigned int i = 0; i < size; ++i)
-            {
+            for (unsigned int i = 0; i < size; ++i) {
                 allocatedRbMapEntry[i] = 0;
 
                 // For each LB for which blocks have been allocated
@@ -1052,20 +932,19 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 
                 EV << "\t Cw->" << allocatedCw << "/" << MAX_CODEWORDS << endl;
                 //! handle multi-codeword allocation
-                if (allocatedCw!=MAX_CODEWORDS)
-                {
+                if (allocatedCw != MAX_CODEWORDS) {
                     EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx - adding " << assignedBlocks.at(i) << " to band " << i << endl;
-                    allocator_->addBlocks(antenna,b,bgUeId,assignedBlocks.at(i),assignedBytes.at(i));
+                    allocator_->addBlocks(antenna, b, bgUeId, assignedBlocks.at(i), assignedBytes.at(i));
                 }
             }
 
             // signal a retransmission
 
             // mark codeword as used
-            if (allocatedCws_.find(bgUeId)!=allocatedCws_.end())
+            if (allocatedCws_.find(bgUeId) != allocatedCws_.end())
                 allocatedCws_.at(bgUeId)++;
             else
-                allocatedCws_[bgUeId]=1;
+                allocatedCws_[bgUeId] = 1;
 
             EV << NOW << " LteSchedulerEnbUl::scheduleBgRtx: " << allocatedBytes << " bytes served! " << endl;
 
@@ -1073,15 +952,14 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
             allocatedRbMap[antenna] = allocatedRbMapEntry;
 
             // if uplink interference is enabled, mark the occupation in the ul transmission map (for ul interference computation purposes)
-            LteChannelModel* channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
+            LteChannelModel *channelModel = mac_->getPhy()->getChannelModel(carrierFrequency);
             if (channelModel->isUplinkInterferenceEnabled())
                 binder_->storeUlTransmissionMap(carrierFrequency, antenna, allocatedRbMap, bgUeId, mac_->getMacCellId(), bgTrafficManager->getTrafficGenerator(bgUeId), UL);
 
             return allocatedBytes;
         }
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception& e) {
         throw cRuntimeError("Exception in LteSchedulerEnbUl::scheduleBgRtx(): %s", e.what());
     }
     return 0;
@@ -1089,9 +967,8 @@ LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Code
 
 void LteSchedulerEnbUl::removePendingRac(MacNodeId nodeId)
 {
-    std::map<double, RacStatus>::iterator it=racStatus_.begin();
-    for (; it != racStatus_.end(); ++it)
-    {
+    std::map<double, RacStatus>::iterator it = racStatus_.begin();
+    for ( ; it != racStatus_.end(); ++it) {
         RacStatus::iterator elem_it = it->second.find(nodeId);
         if (elem_it != it->second.end())
             it->second.erase(nodeId);

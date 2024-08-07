@@ -51,8 +51,8 @@ class DasFilter
 {
   public:
     /// Constructor: Initializes the Remote Antenna Set
-    DasFilter(LtePhyBase* ltePhy, Binder* binder,
-        RemoteAntennaSet* ruSet, double rssiThreshold);
+    DasFilter(LtePhyBase *ltePhy, Binder *binder,
+            RemoteAntennaSet *ruSet, double rssiThreshold);
 
     /// Destructor: deallocates the Remote Antenna Set
     virtual ~DasFilter();
@@ -80,7 +80,7 @@ class DasFilter
      * @param myPos position of the UE
      * @return rssi received from eNB
      */
-    double receiveBroadcast(LteAirFrame* frame, UserControlInfo* lteInfo);
+    double receiveBroadcast(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     /**
      * getReportingSet() returns the current reporting set
@@ -97,7 +97,7 @@ class DasFilter
      *
      * @return RemoteAntennaSet associated to the module
      */
-    RemoteAntennaSet* getRemoteAntennaSet() const;
+    RemoteAntennaSet *getRemoteAntennaSet() const;
 
     /**
      * setMasterRuSet() this function is called by UEs to set the
@@ -131,7 +131,7 @@ class DasFilter
     /**
      * Debugging: prints a line with all physical antenna properties
      */
-    friend std::ostream &operator << (std::ostream &stream, const DasFilter* das_);
+    friend std::ostream& operator<<(std::ostream& stream, const DasFilter *das_);
 
   private:
 
@@ -139,7 +139,7 @@ class DasFilter
      * Class storing the physical properties of
      * each antenna (distance, power, etc...)
      */
-    RemoteAntennaSet* ruSet_;
+    RemoteAntennaSet *ruSet_;
 
     /// Set of antennas that feedback generator needs to report
     RemoteSet reportingSet_;
@@ -151,7 +151,7 @@ class DasFilter
     omnetpp::opp_component_ptr<Binder> binder_;
 
     /// Pointer to the Das filter of the master (used on UEs binded to eNBs)
-    DasFilter* das_;
+    DasFilter *das_;
 
     /// Pointer to the Nic
     omnetpp::opp_component_ptr<LtePhyBase> ltePhy_;
@@ -160,3 +160,4 @@ class DasFilter
 } //namespace
 
 #endif
+

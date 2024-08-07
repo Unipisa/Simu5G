@@ -50,7 +50,7 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
      * This is the feedback sent to the eNB
      * @return feedback message to be sent.
      */
-    virtual inet::Packet* createFeedbackMirror(Codeword cw);
+    virtual inet::Packet *createFeedbackMirror(Codeword cw);
 
     virtual ~LteHarqProcessRxD2D();
 };
@@ -58,3 +58,4 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
 } //namespace
 
 #endif
+

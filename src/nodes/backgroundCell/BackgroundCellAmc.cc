@@ -59,8 +59,7 @@ unsigned int BackgroundCellAmc::computeBitsPerRbBackground(Cqi cqi, const Direct
     EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << endl;
 
     // if CQI == 0 the UE is out of range, thus return 0
-    if (cqi == 0)
-    {
+    if (cqi == 0) {
         EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground - CQI equal to zero, return no bytes available" << endl;
         return 0;
     }
@@ -72,17 +71,17 @@ unsigned int BackgroundCellAmc::computeBitsPerRbBackground(Cqi cqi, const Direct
     EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground Modulation: " << modToA(mod) << " - iTbs: " << iTbs << " i: " << i << endl;
 
     unsigned char layers = 1;
-    const unsigned int* tbsVect = itbs2tbs(mod, TRANSMIT_DIVERSITY, layers, iTbs - i);
+    const unsigned int *tbsVect = itbs2tbs(mod, TRANSMIT_DIVERSITY, layers, iTbs - i);
     unsigned int blocks = 1;
 
-    EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground Available space: " << tbsVect[blocks-1] << "\n";
+    EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground Available space: " << tbsVect[blocks - 1] << "\n";
     return tbsVect[blocks - 1];
 }
 
 unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
 {
     // CQI threshold table selection
-    McsTable* mcsTable;
+    McsTable *mcsTable;
     if (dir == DL)
         mcsTable = &dlMcsTable_;
     else if ((dir == UL) || (dir == D2D) || (dir == D2D_MULTI))
@@ -97,13 +96,11 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     // Select the ranges for searching in the McsTable.
     unsigned int min = 0; // _QPSK
     unsigned int max = 9; // _QPSK
-    if (mod == _16QAM)
-    {
+    if (mod == _16QAM) {
         min = 10;
         max = 16;
     }
-    if (mod == _64QAM)
-    {
+    if (mod == _64QAM) {
         min = 17;
         max = 28;
     }
@@ -114,8 +111,7 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
 
     // Search in the McsTable from min to max until the rate exceeds
     // the threshold in an entry of the table.
-    for (unsigned int i = min; i <= max; i++)
-    {
+    for (unsigned int i = min; i <= max; i++) {
         elem = mcsTable->at(i);
         if (elem.threshold_ <= rate)
             iTbs = elem.iTbs_;

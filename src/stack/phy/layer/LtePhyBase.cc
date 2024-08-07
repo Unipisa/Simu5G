@@ -31,8 +31,7 @@ void LtePhyBase::initialize(int stage)
 {
     ChannelAccess::initialize(stage);
 
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
         cellInfo_ = nullptr;
         // get gate ids
@@ -53,41 +52,35 @@ void LtePhyBase::initialize(int stage)
         multicastD2DRange_ = par("multicastD2DRange");
         enableMulticastD2DRangeCheck_ = par("enableMulticastD2DRangeCheck");
     }
-    else if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
-    {
+    else if (stage == inet::INITSTAGE_PHYSICAL_LAYER) {
         initializeChannelModel();
     }
 }
 
-void LtePhyBase::handleMessage(cMessage* msg)
+void LtePhyBase::handleMessage(cMessage *msg)
 {
     EV << "LtePhyBase::handleMessage - new message received" << endl;
 
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     }
     // AirFrame
-    else if (msg->getArrivalGate()->getId() == radioInGate_)
-    {
+    else if (msg->getArrivalGate()->getId() == radioInGate_) {
         handleAirFrame(msg);
     }
-
     // message from stack
-    else if (msg->getArrivalGate()->getId() == upperGateIn_)
-    {
+    else if (msg->getArrivalGate()->getId() == upperGateIn_) {
         handleUpperMessage(msg);
     }
     // unknown message
-    else
-    {
+    else {
         EV << "Unknown message received." << endl;
         delete msg;
     }
 }
 
 void LtePhyBase::handleControlMsg(LteAirFrame *frame,
-    UserControlInfo *userInfo)
+        UserControlInfo *userInfo)
 {
     auto pkt = check_and_cast<inet::Packet *>(frame->decapsulate());
     delete frame;
@@ -117,14 +110,14 @@ LteAirFrame *LtePhyBase::createHandoverMessage()
     return bdcAirFrame;
 }
 
-void LtePhyBase::handleUpperMessage(cMessage* msg)
+void LtePhyBase::handleUpperMessage(cMessage *msg)
 {
-     EV << "LtePhy: message from stack" << endl;
+    EV << "LtePhy: message from stack" << endl;
 
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->removeTag<UserControlInfo>();
 
-    LteAirFrame* frame = nullptr;
+    LteAirFrame *frame = nullptr;
 
     if (lteInfo->getFrameType() == HARQPKT
         || lteInfo->getFrameType() == GRANTPKT
@@ -133,13 +126,12 @@ void LtePhyBase::handleUpperMessage(cMessage* msg)
     {
         frame = new LteAirFrame("harqFeedback-grant");
     }
-    else
-    {
+    else {
         // create LteAirFrame and encapsulate the received packet
         frame = new LteAirFrame("airframe");
     }
 
-    frame->encapsulate(check_and_cast<cPacket*>(msg));
+    frame->encapsulate(check_and_cast<cPacket *>(msg));
 
     // initialize frame fields
     if (lteInfo->getFrameType() == D2DMODESWITCHPKT)
@@ -174,10 +166,9 @@ void LtePhyBase::initializeChannelModel()
         binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
 
     int vectSize = primaryChannelModel_->getVectorSize();
-    LteChannelModel* chanModel = NULL;
-    for (int index=1; index<vectSize; index++)
-    {
-        chanModel = check_and_cast<LteChannelModel*>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
+    LteChannelModel *chanModel = NULL;
+    for (int index = 1; index < vectSize; index++) {
+        chanModel = check_and_cast<LteChannelModel *>(primaryChannelModel_->getParentModule()->getSubmodule(primaryChannelModel_->getName(), index));
         chanModel->setPhy(this);
         carrierFreq = chanModel->getCarrierFrequency();
         numerologyIndex = chanModel->getNumerologyIndex();
@@ -211,8 +202,8 @@ LteAmc *LtePhyBase::getAmcModule(MacNodeId id)
         return nullptr;
 
     amc = check_and_cast<LteMacEnb *>(
-        getSimulation()->getModule(omid)->getSubmodule("cellularNic")->getSubmodule(
-            "mac"))->getAmc();
+            getSimulation()->getModule(omid)->getSubmodule("cellularNic")->getSubmodule(
+                    "mac"))->getAmc();
     return amc;
 }
 
@@ -227,33 +218,29 @@ void LtePhyBase::sendMulticast(LteAirFrame *frame)
 
     // send the frame to nodes belonging to the multicast group only
     std::map<int, OmnetId>::const_iterator nodeIt = binder_->getNodeIdListBegin();
-    for (; nodeIt != binder_->getNodeIdListEnd(); ++nodeIt)
-    {
+    for ( ; nodeIt != binder_->getNodeIdListEnd(); ++nodeIt) {
         MacNodeId destId = nodeIt->first;
 
         // if the node in the list does not use the same LTE/NR technology of this PHY module, skip it
         if (isNrUe(destId) != isNr_)
             continue;
 
-        if (destId != nodeId_ && binder_->isInMulticastGroup(nodeIt->first, groupId))
-        {
-            EV << NOW << " LtePhyBase::sendMulticast - node " << destId << " is in the multicast group"<< endl;
+        if (destId != nodeId_ && binder_->isInMulticastGroup(nodeIt->first, groupId)) {
+            EV << NOW << " LtePhyBase::sendMulticast - node " << destId << " is in the multicast group" << endl;
 
             // get a pointer to receiving module
             cModule *receiver = getSimulation()->getModule(nodeIt->second);
-            LtePhyBase * recvPhy;
+            LtePhyBase *recvPhy;
             double dist;
 
-            if( enableMulticastD2DRangeCheck_ )
-            {
+            if (enableMulticastD2DRangeCheck_) {
                 // get the correct PHY layer module
-                recvPhy =  (isNrUe(destId)) ? check_and_cast<LtePhyBase *>(receiver->getSubmodule("cellularNic")->getSubmodule("nrPhy"))
+                recvPhy = (isNrUe(destId)) ? check_and_cast<LtePhyBase *>(receiver->getSubmodule("cellularNic")->getSubmodule("nrPhy"))
                                   : check_and_cast<LtePhyBase *>(receiver->getSubmodule("cellularNic")->getSubmodule("phy"));
 
                 dist = recvPhy->getRadioPosition().distance(getRadioPosition());
 
-                if( dist > multicastD2DRange_ )
-                {
+                if (dist > multicastD2DRange_) {
                     EV << NOW << " LtePhyBase::sendMulticast - node too far (" << dist << " > " << multicastD2DRange_ << ". skipping transmission" << endl;
                     continue;
                 }
@@ -272,18 +259,19 @@ void LtePhyBase::sendMulticast(LteAirFrame *frame)
 void LtePhyBase::sendUnicast(LteAirFrame *frame)
 {
     UserControlInfo *ci = check_and_cast<UserControlInfo *>(
-        frame->getControlInfo());
+            frame->getControlInfo());
     // dest MacNodeId from control info
     MacNodeId dest = ci->getDestId();
     // destination node (UE or ENODEB) omnet id
     try {
         binder_->getOmnetId(dest);
-    } catch (std::out_of_range& e) {
+    }
+    catch (std::out_of_range& e) {
         delete frame;
         return;         // make sure that nodes that left the simulation do not send
     }
     OmnetId destOmnetId = binder_->getOmnetId(dest);
-    if (destOmnetId == 0){
+    if (destOmnetId == 0) {
         // destination node has left the simulation
         delete frame;
         return;
@@ -301,7 +289,7 @@ int LtePhyBase::getReceiverGateIndex(const omnetpp::cModule *receiver, bool isNr
         gate = receiver->findGate("lteRadioIn");
         if (gate < 0) {
             throw cRuntimeError("receiver \"%s\" has no suitable radio input gate",
-                                receiver->getFullPath().c_str());
+                    receiver->getFullPath().c_str());
         }
     }
     return gate;

@@ -26,7 +26,7 @@ namespace simu5g {
 // Forward declarations
 class AirFrame;
 
-#define TRANSMISSION_PURGE_INTERVAL 1.0
+#define TRANSMISSION_PURGE_INTERVAL    1.0
 
 /**
  * Keeps track of radios/NICs, their positions and channels;
@@ -40,10 +40,11 @@ struct IChannelControl::RadioEntry {
     inet::Coord pos; // cached radio position
 
     struct Compare {
-        bool operator() (const RadioRef &lhs, const RadioRef &rhs) const {
+        bool operator()(const RadioRef& lhs, const RadioRef& rhs) const {
             ASSERT(lhs && rhs);
             return lhs->radioModule->getId() < rhs->radioModule->getId();
         }
+
     };
     // we cache neighbors set in an std::vector, because std::set iteration is slow;
     // std::vector is created and updated on demand
@@ -163,3 +164,4 @@ class ChannelControl : public omnetpp::cSimpleModule, public IChannelControl
 } //namespace
 
 #endif
+

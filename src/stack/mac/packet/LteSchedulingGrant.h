@@ -24,24 +24,23 @@ class UserTxParams;
 
 class LteSchedulingGrant : public LteSchedulingGrant_Base
 {
-private:
+  private:
     void copy(const LteSchedulingGrant& other) {
-        if (other.userTxParams != nullptr)
-        {
-            const UserTxParams* txParams = check_and_cast<const UserTxParams*>(other.userTxParams);
+        if (other.userTxParams != nullptr) {
+            const UserTxParams *txParams = check_and_cast<const UserTxParams *>(other.userTxParams);
             userTxParams = txParams->dup();
         }
-        else
-        {
+        else {
             userTxParams = nullptr;
         }
         grantedBlocks = other.grantedBlocks;
         grantedCwBytes = other.grantedCwBytes;
         direction_ = other.direction_;
     }
+
   protected:
 
-    const UserTxParams* userTxParams;
+    const UserTxParams *userTxParams;
     RbMap grantedBlocks;
     std::vector<unsigned int> grantedCwBytes;
     Direction direction_;
@@ -60,8 +59,7 @@ private:
 
     ~LteSchedulingGrant()
     {
-        if (userTxParams != nullptr)
-        {
+        if (userTxParams != nullptr) {
             delete userTxParams;
             userTxParams = nullptr;
         }
@@ -85,21 +83,21 @@ private:
         return new LteSchedulingGrant(*this);
     }
 
-    void setUserTxParams(const UserTxParams* arg)
+    void setUserTxParams(const UserTxParams *arg)
     {
-        if(userTxParams){
+        if (userTxParams) {
             delete userTxParams;
         }
         userTxParams = arg;
     }
 
-    const UserTxParams* getUserTxParams() const
+    const UserTxParams *getUserTxParams() const
     {
         return userTxParams;
     }
 
     const unsigned int getBlocks(Remote antenna, Band b) const
-        {
+    {
         return grantedBlocks.at(antenna).at(b);
     }
 
@@ -122,14 +120,17 @@ private:
     {
         grantedCwBytes.resize(size);
     }
+
     virtual size_t getGrantedCwBytesArraySize() const override
     {
         return grantedCwBytes.size();
     }
+
     virtual unsigned int getGrantedCwBytes(size_t k) const override
     {
         return grantedCwBytes.at(k);
     }
+
     virtual void setGrantedCwBytes(size_t k, unsigned int grantedCwBytes_var) override
     {
         grantedCwBytes[k] = grantedCwBytes_var;
@@ -138,9 +139,11 @@ private:
     virtual void appendGrantedCwBytes(unsigned int grantedCwBytes) override {
         throw cRuntimeError("insertGrantedCwBytes not implemented");
     }
+
     virtual void insertGrantedCwBytes(size_t k, unsigned int grantedCwBytes) override {
         throw cRuntimeError("insertGrantedCwBytes not implemented");
     }
+
     virtual void eraseGrantedCwBytes(size_t k) override {
         throw cRuntimeError("eraseGrantedCwBytes not implemented");
     }
@@ -149,6 +152,7 @@ private:
     {
         direction_ = dir;
     }
+
     Direction getDirection() const
     {
         return direction_;
@@ -164,3 +168,4 @@ private:
 } //namespace
 
 #endif // _LTESCHEDULINGGRANT_H_
+

@@ -25,67 +25,64 @@ namespace simu5g {
 class LteBinder;
 class CircleNotificationSubscription : public SubscriptionBase
 {
-    public:
-        CircleNotificationSubscription(Binder* binder_);
-        CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs);
-        CircleNotificationSubscription(Binder* binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent,  omnetpp::simtime_t lastNot);
-        virtual ~CircleNotificationSubscription();
+  public:
+    CircleNotificationSubscription(Binder *binder_);
+    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot);
+    virtual ~CircleNotificationSubscription();
 
 //        nlohmann::ordered_json toJson() const override;
 //        nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
 //        nlohmann::ordered_json toJsonUe(std::vector<MacNodeId>& uesID) const;
 //        nlohmann::ordered_json toJson(std::vector<MacCellId>& cellsID, std::vector<MacNodeId>& uesID) const;
 
+    virtual bool fromJson(const nlohmann::ordered_json& json) override;
+    virtual void sendSubscriptionResponse() override;
+    virtual void sendNotification(EventNotification *event) override;
+    virtual EventNotification *handleSubscription() override;
 
-        virtual bool fromJson(const nlohmann::ordered_json& json) override;
-        virtual void sendSubscriptionResponse() override;
-        virtual void sendNotification(EventNotification *event) override;
-        virtual EventNotification* handleSubscription() override;
+    virtual bool getCheckImmediate() const { return checkImmediate; }
 
-        virtual bool getCheckImmediate() const { return checkImmediate;}
+    bool getFirstNotification() const { return firstNotificationSent; }
+    omnetpp::simtime_t getLastoNotification() const { return lastNotification; }
 
-        bool getFirstNotification() const {return firstNotificationSent;}
-        omnetpp::simtime_t getLastoNotification() const { return lastNotification;}
+    std::string getResourceUrl() const { return resourceURL; }
 
-        std::string getResourceUrl() const { return resourceURL;}
+    bool findUe(MacNodeId nodeId);
 
-        bool findUe(MacNodeId nodeId);
+  protected:
 
-    protected:
+    Binder *binder; //used to retrieve NodeId - Ipv4Address mapping
+    omnetpp::simtime_t lastNotification;
+    bool firstNotificationSent;
 
-        Binder* binder; //used to retrieve NodeId - Ipv4Address mapping
-        omnetpp::simtime_t lastNotification;
-        bool firstNotificationSent;
+    std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area
 
-        std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area
+    std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the are
 
-        std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the are
+    //callbackReference
+    std::string callbackData;// optional: YES
+    std::string notifyURL; // optional: NO
 
-        //callbackReference
-        std::string callbackData;// optional: YES
-        std::string notifyURL; // optional: NO
+    std::string resourceURL;
+    bool checkImmediate; // optional: NO
+    std::string clientCorrelator; // optional: YES
 
+    double frequency; // optional: NO
 
-        std::string resourceURL;
-        bool checkImmediate; // optional: NO
-        std::string clientCorrelator; // optional: YES
+    inet::Coord center; // optional: NO, used for simulation
 
-        double frequency; // optional: NO
+    double latitude; // optional: NO, used for simulation
+    double longitude;// optional: NO, used for simulation
 
+    double radius; // optional: NO
 
-        inet::Coord center; // optional: NO, used for simulation
-
-        double latitude; // optional: NO, used for simulation
-        double longitude;// optional: NO, used for simulation
-
-
-        double radius; // optional: NO
-
-        int trackingAccuracy; // optional: NO
-        LocationUtils::EnteringLeavingCriteria actionCriteria;// optional: NO
+    int trackingAccuracy; // optional: NO
+    LocationUtils::EnteringLeavingCriteria actionCriteria;// optional: NO
 
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_ */
+

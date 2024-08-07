@@ -19,7 +19,7 @@ using namespace omnetpp;
 void LtePf::prepareSchedule()
 {
     EV << NOW << "LtePf::execSchedule ############### eNodeB " << eNbScheduler_->mac_->getMacNodeId() << " ###############" << endl;
-    EV << NOW << "LtePf::execSchedule Direction: " << ( ( direction_ == DL ) ? " DL ": " UL ") << endl;
+    EV << NOW << "LtePf::execSchedule Direction: " << ((direction_ == DL) ? " DL " : " UL ") << endl;
 
     // Clear structures
     grantedBytes_.clear();
@@ -33,16 +33,14 @@ void LtePf::prepareSchedule()
     ActiveSet::iterator cidIt = carrierActiveConnectionSet_.begin();
     ActiveSet::iterator cidEt = carrierActiveConnectionSet_.end();
 
-    for(; cidIt != cidEt; )
-    {
+    for ( ; cidIt != cidEt; ) {
         MacCid cid = *cidIt;
         ++cidIt;
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
         grantedBytes_[cid] = 0;
 
-        if(nodeId == 0 || id == 0)
-        {
+        if (nodeId == 0 || id == 0) {
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
@@ -58,64 +56,58 @@ void LtePf::prepareSchedule()
             dir = DL;
 
         // check if node is still a valid node in the simulation - might have been dynamically removed
-        if(binder_->getOmnetId(nodeId) == 0){
+        if (binder_->getOmnetId(nodeId) == 0) {
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
-            EV << "CID " << cid << " of node "<< nodeId << " removed from active connection set - no OmnetId in Binder known.";
+            EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no OmnetId in Binder known.";
             continue;
         }
 
-
-
         // compute available blocks for the current user
-        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId,dir,carrierFrequency_);
+        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        unsigned int codeword=info.getLayers().size();
-        if (eNbScheduler_->allocatedCws(nodeId)==codeword)
-        continue;
-        std::set<Band>::const_iterator it = bands.begin(),et=bands.end();
+        unsigned int codeword = info.getLayers().size();
+        if (eNbScheduler_->allocatedCws(nodeId) == codeword)
+            continue;
+        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt=info.readAntennaSet().end();
+        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
 
-        bool cqiNull=false;
-        for (unsigned int i=0;i<codeword;i++)
-        {
-            if (info.readCqiVector()[i]==0)
-            cqiNull=true;
+        bool cqiNull = false;
+        for (unsigned int i = 0; i < codeword; i++) {
+            if (info.readCqiVector()[i] == 0)
+                cqiNull = true;
         }
         if (cqiNull)
-        continue;
+            continue;
         // compute score based on total available bytes
-        unsigned int availableBlocks=0;
-        unsigned int availableBytes =0;
+        unsigned int availableBlocks = 0;
+        unsigned int availableBytes = 0;
         // for each antenna
-        for (;antennaIt!=antennaEt;++antennaIt)
-        {
+        for ( ; antennaIt != antennaEt; ++antennaIt) {
             // for each logical band
-            for (;it!=et;++it)
-            {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+            for ( ; it != et; ++it) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, dir, carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
             }
         }
 
-        double s=.0;
+        double s = .0;
 
-        if (pfRate_.find(cid)==pfRate_.end()) pfRate_[cid]=0;
-        if(pfRate_[cid] < scoreEpsilon_) s = 1.0 / scoreEpsilon_;
-        else if(availableBlocks > 0) s = ((availableBytes / availableBlocks) / pfRate_[cid]) + uniform(getEnvir()->getRNG(0),-scoreEpsilon_/2.0, scoreEpsilon_/2.0);
+        if (pfRate_.find(cid) == pfRate_.end()) pfRate_[cid] = 0;
+        if (pfRate_[cid] < scoreEpsilon_) s = 1.0 / scoreEpsilon_;
+        else if (availableBlocks > 0) s = ((availableBytes / availableBlocks) / pfRate_[cid]) + uniform(getEnvir()->getRNG(0), -scoreEpsilon_ / 2.0, scoreEpsilon_ / 2.0);
         else s = 0.0;
         // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
-        ScoreDesc desc(cid,s);
+        ScoreDesc desc(cid, s);
         score.push(desc);
 
         EV << NOW << "LtePf::execSchedule CID " << cid << "- Score = " << s << endl;
     }
 
     // Schedule the connections in score order.
-    while(!score.empty())
-    {
+    while (!score.empty()) {
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
         MacCid cid = current.x_;// The CID
@@ -129,33 +121,30 @@ void LtePf::prepareSchedule()
         bool active = true;
         bool eligible = true;
 
-        unsigned int granted = requestGrant (cid, 4294967295U, terminate, active, eligible);
+        unsigned int granted = requestGrant(cid, 4294967295U, terminate, active, eligible);
 
         grantedBytes_[cid] += granted;
 
         EV << NOW << "LtePf::execSchedule Granted: " << granted << " bytes" << endl;
 
         // Exit immediately if the terminate flag is set.
-        if(terminate)
-        {
+        if (terminate) {
             EV << NOW << "LtePf::execSchedule TERMINATE " << endl;
             break;
         }
 
         // Pop the descriptor from the score list if the active or eligible flag are clear.
-        if(!active || !eligible)
-        {
-            score.pop ();
+        if (!active || !eligible) {
+            score.pop();
 
-            if(!eligible)
-            EV << NOW << "LtePf::execSchedule NOT ELIGIBLE " << endl;
+            if (!eligible)
+                EV << NOW << "LtePf::execSchedule NOT ELIGIBLE " << endl;
         }
 
         // Set the connection as inactive if indicated by the grant ().
-        if(!active)
-        {
+        if (!active) {
             EV << NOW << "LtePf::execSchedule NOT ACTIVE" << endl;
-            activeConnectionTempSet_.erase (current.x_);
+            activeConnectionTempSet_.erase(current.x_);
             carrierActiveConnectionSet_.erase(current.x_);
         }
     }
@@ -168,14 +157,13 @@ void LtePf::commitSchedule()
     std::map<MacCid, unsigned int>::iterator it = grantedBytes_.begin();
     std::map<MacCid, unsigned int>::iterator et = grantedBytes_.end();
 
-    for (; it != et; ++it)
-    {
+    for ( ; it != et; ++it) {
         MacCid cid = it->first;
         unsigned int granted = it->second;
 
         EV << NOW << " LtePf::storeSchedule @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
         EV << NOW << " LtePf::storeSchedule CID: " << cid << endl;
-        EV << NOW << " LtePf::storeSchedule Direction: " << ((direction_ == DL) ? "DL": "UL" ) << endl;
+        EV << NOW << " LtePf::storeSchedule Direction: " << ((direction_ == DL) ? "DL" : "UL") << endl;
 
         // Computing the short term rate
         double shortTermRate;

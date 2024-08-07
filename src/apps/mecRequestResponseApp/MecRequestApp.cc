@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #include "apps/mecRequestResponseApp/MecRequestApp.h"
 
 namespace simu5g {
@@ -20,11 +19,11 @@ simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
 
 Define_Module(MecRequestApp);
 
-MecRequestApp::MecRequestApp(){
+MecRequestApp::MecRequestApp() {
     selfSender_ = NULL;
 }
 
-MecRequestApp::~MecRequestApp(){
+MecRequestApp::~MecRequestApp() {
     cancelAndDelete(selfSender_);
 }
 
@@ -33,17 +32,16 @@ void MecRequestApp::initialize(int stage)
     EV << "MecRequestApp::initialize - stage " << stage << endl;
     cSimpleModule::initialize(stage);
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     //retrieve parameters
     period_ = par("period");
     localPort_ = par("localPort");
     destPort_ = par("destPort");
-    sourceSymbolicAddress_ = (char*)getContainingNode(this)->getFullName();
-    const char* destSimbolicAddress = (char*)par("destAddress").stringValue();
+    sourceSymbolicAddress_ = (char *)getContainingNode(this)->getFullName();
+    const char *destSimbolicAddress = (char *)par("destAddress").stringValue();
     destAddress_ = inet::L3AddressResolver().resolve(destSimbolicAddress);
-
 
     //binding socket UDP
     socket.setOutputGate(gate("socketOut"));
@@ -73,18 +71,15 @@ void MecRequestApp::handleMessage(cMessage *msg)
 {
     EV << "MecRequestApp::handleMessage" << endl;
     // Sender Side
-    if (msg->isSelfMessage())
-    {
-        if (!strcmp(msg->getName(), "selfSender"))
-        {
+    if (msg->isSelfMessage()) {
+        if (!strcmp(msg->getName(), "selfSender")) {
             // update BS ID
-            if (enableMigration_ && bsId_ != nrPhy_->getMasterId())
-            {
-                MigrationTimer* migrationTimer = new MigrationTimer("migrationTimer");
+            if (enableMigration_ && bsId_ != nrPhy_->getMasterId()) {
+                MigrationTimer *migrationTimer = new MigrationTimer("migrationTimer");
                 migrationTimer->setOldAppId(bsId_);
                 migrationTimer->setNewAppId(nrPhy_->getMasterId());
 
-                double migrationTime = uniform(20,30);
+                double migrationTime = uniform(20, 30);
                 scheduleAt(simTime() + migrationTime, migrationTimer);
             }
 
@@ -94,9 +89,8 @@ void MecRequestApp::handleMessage(cMessage *msg)
             //rescheduling
             scheduleAt(simTime() + period_, selfSender_);
         }
-        else if (!strcmp(msg->getName(), "migrationTimer"))
-        {
-            MigrationTimer* migrationTimer = check_and_cast<MigrationTimer*>(msg);
+        else if (!strcmp(msg->getName(), "migrationTimer")) {
+            MigrationTimer *migrationTimer = check_and_cast<MigrationTimer *>(msg);
             appId_ = migrationTimer->getNewAppId();
             delete migrationTimer;
         }
@@ -104,8 +98,7 @@ void MecRequestApp::handleMessage(cMessage *msg)
             throw cRuntimeError("MecRequestApp::handleMessage - \tWARNING: Unrecognized self message");
     }
     // Receiver Side
-    else
-    {
+    else {
         recvResponse(msg);
         delete msg;
     }
@@ -114,9 +107,10 @@ void MecRequestApp::handleMessage(cMessage *msg)
 void MecRequestApp::finish()
 {
     // ensuring there is no selfStop_ scheduled!
-    if(selfSender_->isScheduled())
+    if (selfSender_->isScheduled())
         cancelEvent(selfSender_);
 }
+
 /*
  * -----------------------------------------------Sender Side------------------------------------------
  */
@@ -128,7 +122,7 @@ void MecRequestApp::sendRequest()
     int size = par("packetSize");
     emit(requestSize_, (long)size);
 
-    inet::Packet* packet = new inet::Packet("MecRequestResponsePacket");
+    inet::Packet *packet = new inet::Packet("MecRequestResponsePacket");
     auto reqPkt = makeShared<MecRequestResponsePacket>();
     reqPkt->setSno(sno_++);
     reqPkt->setAppId(appId_);
@@ -146,9 +140,9 @@ void MecRequestApp::sendRequest()
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void MecRequestApp::recvResponse(cMessage* msg)
+void MecRequestApp::recvResponse(cMessage *msg)
 {
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     if (packet == 0)
         throw cRuntimeError("MecRequestApp::handleRequest - FATAL! Error when casting to inet packet");
     packet->removeControlInfo();
@@ -160,7 +154,7 @@ void MecRequestApp::recvResponse(cMessage* msg)
 
     double rtt = simTime().dbl() - reqTimestamp;
 
-    EV << "MecRequestApp::recvResponse - sno["<< sno << "] rtt[" << rtt << "]" << endl;
+    EV << "MecRequestApp::recvResponse - sno[" << sno << "] rtt[" << rtt << "]" << endl;
 
     // emit statistics
     emit(requestRTT_, rtt);

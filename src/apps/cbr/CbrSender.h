@@ -29,7 +29,7 @@ class CbrSender : public omnetpp::cSimpleModule
     //has the sender been initialized?
     bool initialized_;
 
-    omnetpp::cMessage* selfSource_;
+    omnetpp::cMessage *selfSource_;
     //sender
     int nframes_;
     int iDframe_;

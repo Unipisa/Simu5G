@@ -16,7 +16,7 @@
 
 namespace simu5g {
 
-class MecServiceBase2: public MecServiceBase
+class MecServiceBase2 : public MecServiceBase
 {
   protected:
     virtual void initialize(int stage) override;

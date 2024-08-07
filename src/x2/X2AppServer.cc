@@ -27,8 +27,7 @@ using namespace inet;
 void X2AppServer::initialize(int stage)
 {
     SctpServer::initialize(stage);
-    if (stage==inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         x2ManagerIn_ = gate("x2ManagerIn");
 
         X2NodeId id = inet::getContainingNode(this)->par("macCellId");
@@ -36,31 +35,31 @@ void X2AppServer::initialize(int stage)
         // register listening port to the binder. It will be used by
         // the client side as connectPort
         int localPort = par("localPort");
-        Binder* binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
+        Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
         binder->registerX2Port(id, localPort);
     }
 }
 
 // generate SCTP header and send packet
-void X2AppServer::generateAndSend(Packet* pkt)
+void X2AppServer::generateAndSend(Packet *pkt)
 {
     pkt->addTag<DispatchProtocolReq>()->setProtocol(&Protocol::sctp);
     auto cmd = pkt->addTagIfAbsent<SctpSendReq>();
     cmd->setSocketId(assocId);
     cmd->setSendUnordered(ordered ? COMPLETE_MESG_ORDERED : COMPLETE_MESG_UNORDERED);
 
-    lastStream = (lastStream+1)%outboundStreams;
+    lastStream = (lastStream + 1) % outboundStreams;
     cmd->setSid(lastStream);
     cmd->setPrValue(par("prValue"));
     cmd->setPrMethod((int32_t)par("prMethod"));
 
-    if (queueSize>0 && numRequestsToSend > 0 && count < queueSize*2)
+    if (queueSize > 0 && numRequestsToSend > 0 && count < queueSize * 2)
         cmd->setLast(false);
     else
         cmd->setLast(true);
     pkt->setKind(SCTP_C_SEND);
     packetsSent++;
-    bytesSent += pkt->getBitLength()/8;
+    bytesSent += pkt->getBitLength() / 8;
 
     EV << "X2AppServer::generateAndSend: sending X2 message via SCTP: " << pkt->getId() << std::endl;
 
@@ -69,19 +68,17 @@ void X2AppServer::generateAndSend(Packet* pkt)
 
 void X2AppServer::handleMessage(cMessage *msg)
 {
-    cGate* incoming = msg->getArrivalGate();
-    if (incoming == x2ManagerIn_)
-    {
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == x2ManagerIn_) {
         EV << "X2AppServer::handleMessage - Received message from x2 manager" << endl;
         EV << "X2AppServer::handleMessage - Forwarding to X2 interface" << endl;
 
-        Packet* pkt = check_and_cast<Packet*>(msg);
+        Packet *pkt = check_and_cast<Packet *>(msg);
 
         // generate a Sctp packet and sent to lower layer
         generateAndSend(pkt);
     }
-    else
-    {
+    else {
         SctpServer::handleMessage(msg);
     }
 }

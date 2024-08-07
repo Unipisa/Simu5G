@@ -26,8 +26,7 @@ void ComponentCarrier::initialize()
         throw omnetpp::cRuntimeError("ComponentCarrier::initialize - numerology index [%d] not valid. It must be in the range between 0-4.", numerologyIndex_);
 
     useTdd_ = par("useTdd").boolValue();
-    if (useTdd_)
-    {
+    if (useTdd_) {
         tddNumSymbolsDl_ = par("tddNumSymbolsDl");
         tddNumSymbolsUl_ = par("tddNumSymbolsUl");
     }

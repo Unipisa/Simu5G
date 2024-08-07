@@ -51,3 +51,4 @@ class LteHarqBufferTxD2D : public LteHarqBufferTx
 } //namespace
 
 #endif
+

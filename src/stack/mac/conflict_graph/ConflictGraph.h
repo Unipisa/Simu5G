@@ -10,7 +10,7 @@
 //
 
 #ifndef CONFLICTGRAPH_H
-#define	CONFLICTGRAPH_H
+#define CONFLICTGRAPH_H
 
 #include "stack/mac/layer/LteMacEnbD2D.h"
 #include "common/cellInfo/CellInfo.h"
@@ -22,7 +22,6 @@ typedef enum
     CG_DISTANCE,
     CG_UNKNOWN
 } CGType;
-
 
 /*
  * Define the structure for graph's vertices
@@ -46,19 +45,21 @@ struct CGVertex
         return (srcId == v1.srcId) && (dstId == v1.dstId);
     }
 
-public:
+  public:
     CGVertex(MacNodeId src = 0, MacNodeId dst = 0)
     {
         srcId = src;
         dstId = dst;
     }
+
     bool isMulticast() const
     {
-        return (dstId == 0);
+        return dstId == 0;
     }
+
 };
 
-typedef std::map<CGVertex, std::map<CGVertex, bool> > CGMatrix;
+typedef std::map<CGVertex, std::map<CGVertex, bool>> CGMatrix;
 class CellInfo;
 class LteMacEnbD2D;
 
@@ -74,7 +75,7 @@ class LteMacEnbD2D;
 class ConflictGraph
 {
 
-protected:
+  protected:
     omnetpp::opp_component_ptr<Binder> binder_;
 
     // reference to the MAC layer
@@ -96,9 +97,9 @@ protected:
     virtual void findVertices(std::vector<CGVertex>& vertices) = 0;
     virtual void findEdges(const std::vector<CGVertex>& vertices) = 0;
 
-public:
+  public:
 
-    ConflictGraph(Binder *binder, LteMacEnbD2D* macEnb, bool reuseD2D, bool reuseD2DMulti);
+    ConflictGraph(Binder *binder, LteMacEnbD2D *macEnb, bool reuseD2D, bool reuseD2DMulti);
     virtual ~ConflictGraph();
 
     // compute Conflict Graph
@@ -107,10 +108,10 @@ public:
     // print Conflict Graph - for debug
     void printConflictGraph();
 
-    const CGMatrix* getConflictGraph() { return &conflictGraph_; }
+    const CGMatrix *getConflictGraph() { return &conflictGraph_; }
 };
 
 } //namespace
 
-#endif	/* CONFLICTGRAPH_H */
+#endif /* CONFLICTGRAPH_H */
 

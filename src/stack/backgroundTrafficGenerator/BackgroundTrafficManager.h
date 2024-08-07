@@ -29,7 +29,6 @@ class TrafficGeneratorBase;
 class LteMacEnb;
 class LteChannelModel;
 
-
 //
 // BackgroundTrafficManager
 //
@@ -43,7 +42,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
     inet::ModuleRefByPar<LtePhyEnb> phy_;
 
     // reference to the channel model for the given carrier
-    LteChannelModel* channelModel_;
+    LteChannelModel *channelModel_;
 
   protected:
     virtual void initialize(int stage);
@@ -59,7 +58,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
     virtual unsigned int getNumBands();
 
     // returns the bytes per block of the given UE for in the given direction
-    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
+    virtual unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir);
 
     // Compute received power for a background UE according to pathloss
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
@@ -68,3 +67,4 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
 } //namespace
 
 #endif
+

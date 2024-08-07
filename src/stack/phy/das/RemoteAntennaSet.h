@@ -96,9 +96,10 @@ class RemoteAntennaSet
      * Debugging: prints a line with all coordinates and tx powers of
      * all antennas (MACRO included)
      */
-    friend std::ostream &operator << (std::ostream &stream, const RemoteAntennaSet* ruSet_);
+    friend std::ostream& operator<<(std::ostream& stream, const RemoteAntennaSet *ruSet_);
 };
 
 } //namespace
 
 #endif
+

@@ -27,12 +27,12 @@ class NRPhyUe : public LtePhyUeD2D
     inet::ModuleRefByPar<NRPhyUe> otherPhy_;
 
     virtual void initialize(int stage);
-    virtual void handleAirFrame(cMessage* msg);
+    virtual void handleAirFrame(cMessage *msg);
     virtual void triggerHandover();
     virtual void doHandover();
 
     // force handover to the given target node (0 means forcing detachment)
-    virtual void forceHandover(MacNodeId targetMasterNode=0, double targetMasterRssi=0.0);
+    virtual void forceHandover(MacNodeId targetMasterNode = 0, double targetMasterRssi = 0.0);
     void deleteOldBuffers(MacNodeId masterId);
 
   public:
@@ -42,4 +42,5 @@ class NRPhyUe : public LtePhyUeD2D
 
 } //namespace
 
-#endif  /* _NRPHYUE_H_ */
+#endif /* _NRPHYUE_H_ */
+

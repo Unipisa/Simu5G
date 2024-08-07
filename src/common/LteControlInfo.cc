@@ -18,8 +18,7 @@ using namespace inet;
 
 UserControlInfo::~UserControlInfo()
 {
-    if (userTxParams != nullptr)
-    {
+    if (userTxParams != nullptr) {
         delete userTxParams;
         userTxParams = nullptr;
     }
@@ -37,13 +36,11 @@ UserControlInfo& UserControlInfo::operator=(const UserControlInfo& other)
     if (&other == this)
         return *this;
 
-    if (other.userTxParams != nullptr)
-    {
-        const UserTxParams* txParams = check_and_cast<const UserTxParams*>(other.userTxParams);
+    if (other.userTxParams != nullptr) {
+        const UserTxParams *txParams = check_and_cast<const UserTxParams *>(other.userTxParams);
         this->userTxParams = txParams->dup();
     }
-    else
-    {
+    else {
         this->userTxParams = nullptr;
     }
     this->grantedBlocks = other.grantedBlocks;
@@ -60,12 +57,11 @@ void UserControlInfo::setCoord(const inet::Coord& coord)
 
 void UserControlInfo::setUserTxParams(const UserTxParams *newParams)
 {
-    if(userTxParams != nullptr){
+    if (userTxParams != nullptr) {
         delete userTxParams;
     }
     userTxParams = newParams;
 }
-
 
 inet::Coord UserControlInfo::getCoord() const
 {

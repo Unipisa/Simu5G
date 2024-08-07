@@ -25,7 +25,7 @@ namespace simu5g {
 class NRChannelModel_3GPP38_901 : public NRChannelModel
 {
 
-public:
+  public:
     virtual void initialize(int stage);
 
     /*
@@ -107,3 +107,4 @@ public:
 } //namespace
 
 #endif /* NRChannelModel_3GPP38_901_H_ */
+

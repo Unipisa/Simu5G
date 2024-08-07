@@ -23,18 +23,17 @@ namespace simu5g {
  */
 class X2AppServer : public inet::SctpServer
 {
-        // reference to the gate
-    omnetpp::cGate* x2ManagerIn_;
+    // reference to the gate
+    omnetpp::cGate *x2ManagerIn_;
 
-    protected:
-        virtual void initialize(int stage) override;
-        virtual void handleMessage(omnetpp::cMessage *msg) override;
-        void handleTimer(omnetpp::cMessage *msg);
-        void generateAndSend(inet::Packet* pkt);
+  protected:
+    virtual void initialize(int stage) override;
+    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    void handleTimer(omnetpp::cMessage *msg);
+    void generateAndSend(inet::Packet *pkt);
 };
 
 } //namespace
 
 #endif
-
 

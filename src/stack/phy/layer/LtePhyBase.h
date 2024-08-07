@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef _LTE_AIRPHYBASE_H_
 #define _LTE_AIRPHYBASE_H_
 
@@ -123,7 +122,7 @@ class LtePhyBase : public ChannelAccess
     // Attenuation array
     AttenuationVector attenuationVector_;
     //Used only for PisaPhy
-    LteFeedbackComputation* lteFeedbackComputation_;
+    LteFeedbackComputation *lteFeedbackComputation_;
 
     double carrierFrequency_;
 
@@ -144,7 +143,7 @@ class LtePhyBase : public ChannelAccess
     // last time that the node has transmitted (currently, used only by UEs)
     omnetpp::simtime_t lastActive_;
 
-    public:
+  public:
 
     /**
      * Constructor
@@ -156,17 +155,17 @@ class LtePhyBase : public ChannelAccess
      */
     ~LtePhyBase();
 
-    const LteChannelModel* getPrimaryChannelModel()
+    const LteChannelModel *getPrimaryChannelModel()
     {
         return primaryChannelModel_;
     }
 
-    const std::map<double, omnetpp::opp_component_ptr<LteChannelModel>>* getChannelModels()
+    const std::map<double, omnetpp::opp_component_ptr<LteChannelModel>> *getChannelModels()
     {
         return &channelModel_;
     }
 
-    LteChannelModel* getChannelModel(double carrierFreq = 0.0)
+    LteChannelModel *getChannelModel(double carrierFreq = 0.0)
     {
         if (channelModel_.empty())
             return nullptr;
@@ -180,18 +179,22 @@ class LtePhyBase : public ChannelAccess
     {
         return microTxPower_;
     }
+
     double getMacroTxPwr()
     {
         return eNodeBtxPower_;
     }
+
     virtual double getTxPwr(Direction dir = UNKNOWN_DIRECTION)
     {
         return txPower_;
     }
+
     TxDirectionType getTxDirection()
     {
         return txDirection_;
     }
+
     double getTxAngle()
     {
         return txAngle_;
@@ -214,7 +217,7 @@ class LtePhyBase : public ChannelAccess
     virtual void initialize(int stage) override;
 
     virtual int numInitStages() const override {
-        return std::max(inet::INITSTAGE_LAST+1, ChannelAccess::numInitStages());
+        return std::max(inet::INITSTAGE_LAST + 1, ChannelAccess::numInitStages());
     }
 
     /**
@@ -267,7 +270,7 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg packet received from LteStack
      */
-    virtual void handleUpperMessage(omnetpp::cMessage* msg);
+    virtual void handleUpperMessage(omnetpp::cMessage *msg);
 
     /**
      * Processes messages received from the wireless channel.
@@ -302,14 +305,13 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg LteAirFrame received from the air channel
      */
-    virtual void handleAirFrame(omnetpp::cMessage* msg) = 0;
+    virtual void handleAirFrame(omnetpp::cMessage *msg) = 0;
 
     virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
 
     virtual void handleControlMsg(LteAirFrame *frame, UserControlInfo *userInfo);
 
     void initializeChannelModel();
-
 
     /**
      * Utility.
@@ -330,7 +332,7 @@ class LtePhyBase : public ChannelAccess
     /**
      * Determine radio gate index of receiving node
      */
-    int getReceiverGateIndex(const omnetpp::cModule*, bool isNr) const;
+    int getReceiverGateIndex(const omnetpp::cModule *, bool isNr) const;
 
   public:
     /*
@@ -349,4 +351,5 @@ class LtePhyBase : public ChannelAccess
 
 } //namespace
 
-#endif  /* _LTE_AIRPHYBASE_H_ */
+#endif /* _LTE_AIRPHYBASE_H_ */
+

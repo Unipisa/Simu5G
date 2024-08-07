@@ -17,8 +17,7 @@ namespace simu5g {
 
 void LteChannelModel::initialize(int stage)
 {
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         binder_.reference(this, "binderModule", true);
 
         componentCarrier_.reference(this, "componentCarrierModule", true);
@@ -28,62 +27,61 @@ void LteChannelModel::initialize(int stage)
 
         // register the carrier to the cellInfo module and the binder
         cellInfo_.reference(this, "cellInfoModule", false);
-        if (cellInfo_)   // cInfo is NULL on UEs
-        {
+        if (cellInfo_) { // cInfo is NULL on UEs
             cellInfo_->registerCarrier(carrierFrequency_, numBands_, componentCarrier_->getNumerologyIndex());
         }
     }
 }
 
-std::vector<double> LteChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
+std::vector<double> LteChannelModel::getSINR(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-std::vector<double> LteChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo* lteInfo)
+std::vector<double> LteChannelModel::getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-std::vector<double> LteChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord)
+std::vector<double> LteChannelModel::getRSRP_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord,MacNodeId enbId)
+std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo* lteInfo_1, MacNodeId destId, inet::Coord destCoord,MacNodeId enbId,const std::vector<double>& rsrpVector)
+std::vector<double> LteChannelModel::getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-std::vector<double> LteChannelModel::getSIR(LteAirFrame *frame, UserControlInfo* lteInfo)
+std::vector<double> LteChannelModel::getSIR(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     static const std::vector<double> tmp { 10000.0 };
-   return tmp;
+    return tmp;
 }
 
-bool LteChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteInfo)
+bool LteChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
-   return true;
+    return true;
 }
 
-bool LteChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo* lteInfo,const std::vector<double>& rsrpVector)
+bool LteChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector)
 {
-   return true;
+    return true;
 }
 
-bool LteChannelModel::isErrorDas(LteAirFrame *frame, UserControlInfo* lteInfo)
+bool LteChannelModel::isErrorDas(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
-   return true;
+    return true;
 }
 
 } //namespace

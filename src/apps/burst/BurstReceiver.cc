@@ -19,8 +19,7 @@ void BurstReceiver::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
-    if (stage == INITSTAGE_LOCAL)
-    {
+    if (stage == INITSTAGE_LOCAL) {
         mInit_ = true;
 
         numReceived_ = 0;
@@ -30,12 +29,10 @@ void BurstReceiver::initialize(int stage)
         burstRcvdPkt_ = registerSignal("burstRcvdPkt");
         burstPktDelay_ = registerSignal("burstPktDelay");
     }
-    else if (stage == INITSTAGE_APPLICATION_LAYER)
-    {
+    else if (stage == INITSTAGE_APPLICATION_LAYER) {
         int port = par("localPort");
         EV << "BurstReceiver::initialize - binding to port: local:" << port << endl;
-        if (port != -1)
-        {
+        if (port != -1) {
             socket.setOutputGate(gate("socketOut"));
             socket.bind(port);
         }
@@ -47,13 +44,13 @@ void BurstReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet* pPacket = check_and_cast<Packet*>(msg);
+    Packet *pPacket = check_and_cast<Packet *>(msg);
     auto burstHeader = pPacket->popAtFront<BurstPacket>();
 
     numReceived_++;
 
-    simtime_t delay = simTime()-burstHeader->getPayloadTimestamp();
-    EV << "BurstReceiver::handleMessage - Packet received: FRAME[" << burstHeader->getMsgId() << "] with delay["<< delay << "]" << endl;
+    simtime_t delay = simTime() - burstHeader->getPayloadTimestamp();
+    EV << "BurstReceiver::handleMessage - Packet received: FRAME[" << burstHeader->getMsgId() << "] with delay[" << delay << "]" << endl;
 
     emit(burstPktDelay_, delay);
     emit(burstRcvdPkt_, (long)burstHeader->getMsgId());

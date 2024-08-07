@@ -84,7 +84,8 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
     MacNodeId nodeId_;
 
     bool feedbackComputationPisa_;
-    private:
+
+  private:
 
     // initialize cell information
     void initCellInfo();
@@ -94,9 +95,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
      */
     void sendFeedback(LteFeedbackDoubleVector fb, FbPeriodicity per);
 
-
-    LteFeedbackComputation* getFeedbackComputationFromName(std::string name, ParameterMap& params);
-
+    LteFeedbackComputation *getFeedbackComputationFromName(std::string name, ParameterMap& params);
 
   protected:
 
@@ -153,3 +152,4 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

@@ -9,14 +9,13 @@
 // and cannot be removed from it.
 //
 
-
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 
 namespace simu5g {
 
 ServiceInfo::ServiceInfo(const std::string& serInstanceId, const std::string& serName, const CategoryRef& serCat, const std::string& version,
-                const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local):
-                serCategory_(serCat), transportInfo_(tInfo)
+        const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local):
+    serCategory_(serCat), transportInfo_(tInfo)
 {
     serInstanceId_ = serInstanceId;
     serName_ = serName;
@@ -40,9 +39,9 @@ nlohmann::ordered_json ServiceInfo::toJson() const
     val["state"] = state_;
     val["transportInfo"] = transportInfo_.toJson();
     val["serializer"] = serializer_;
-    val["scopeOfLocality"] = scopeOfLocality_ ;
-    val["consumedLocalOnly"] = (consumedLocalOnly_ == true)? "TRUE":"FALSE";
-    val["isLocal"] = (isLocal_== true)? "TRUE":"FALSE";
+    val["scopeOfLocality"] = scopeOfLocality_;
+    val["consumedLocalOnly"] = (consumedLocalOnly_ == true) ? "TRUE" : "FALSE";
+    val["isLocal"] = (isLocal_ == true) ? "TRUE" : "FALSE";
 
     return val;
 }

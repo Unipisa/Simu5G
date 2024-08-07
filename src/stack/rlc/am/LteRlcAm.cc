@@ -23,22 +23,20 @@ Define_Module(LteRlcAm);
 
 using namespace omnetpp;
 
-AmTxQueue*
-LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
+AmTxQueue *LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
 {
     // Find TXBuffer for this CID
     MacCid cid = idToMacCid(nodeId, lcid);
     AmTxBuffers::iterator it = txBuffers_.find(cid);
 
-    if (it == txBuffers_.end())
-    {
+    if (it == txBuffers_.end()) {
         // Not found: create
         std::stringstream buf;
         buf << "AmTxQueue Lcid: " << lcid << " cid: " << cid;
-        cModuleType* moduleType = cModuleType::get("simu5g.stack.rlc.AmTxQueue");
-        AmTxQueue* txbuf = check_and_cast<AmTxQueue *>(
-            moduleType->createScheduleInit(buf.str().c_str(),
-                getParentModule()));
+        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.AmTxQueue");
+        AmTxQueue *txbuf = check_and_cast<AmTxQueue *>(
+                moduleType->createScheduleInit(buf.str().c_str(),
+                        getParentModule()));
         txBuffers_[cid] = txbuf; // Add to tx_buffers map
 
         EV << NOW << " LteRlcAm : Added new AmTxBuffer: " << txbuf->getId()
@@ -46,8 +44,7 @@ LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
 
         return txbuf;
     }
-    else
-    {
+    else {
         // Found
         EV << NOW << " LteRlcAm : Using old AmTxBuffer: " << it->second->getId()
            << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
@@ -56,22 +53,20 @@ LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
     }
 }
 
-AmRxQueue*
-LteRlcAm::getRxBuffer(MacNodeId nodeId, LogicalCid lcid)
+AmRxQueue *LteRlcAm::getRxBuffer(MacNodeId nodeId, LogicalCid lcid)
 {
     // Find RXBuffer for this CID
     MacCid cid = idToMacCid(nodeId, lcid);
 
     AmRxBuffers::iterator it = rxBuffers_.find(cid);
-    if (it == rxBuffers_.end())
-    {
+    if (it == rxBuffers_.end()) {
         // Not found: create
         std::stringstream buf;
         buf << "AmRxQueue Lcid: " << lcid << " cid: " << cid;
-        cModuleType* moduleType = cModuleType::get("simu5g.stack.rlc.AmRxQueue");
-        AmRxQueue* rxbuf = check_and_cast<AmRxQueue *>(
-            moduleType->createScheduleInit(buf.str().c_str(),
-                getParentModule()));
+        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.AmRxQueue");
+        AmRxQueue *rxbuf = check_and_cast<AmRxQueue *>(
+                moduleType->createScheduleInit(buf.str().c_str(),
+                        getParentModule()));
         rxBuffers_[cid] = rxbuf; // Add to rx_buffers map
 
         EV << NOW << " LteRlcAm : Added new AmRxBuffer: " << rxbuf->getId()
@@ -79,8 +74,7 @@ LteRlcAm::getRxBuffer(MacNodeId nodeId, LogicalCid lcid)
 
         return rxbuf;
     }
-    else
-    {
+    else {
         // Found
         EV << NOW << " LteRlcAm : Using old AmRxBuffer: " << it->second->getId()
            << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
@@ -93,7 +87,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 {
     Enter_Method("sendDefragmented()"); // Direct Method Call
     take(pktAux); // Take ownership
-    auto pkt = check_and_cast<inet::Packet *> (pktAux);
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
     pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
 
     EV << NOW << " LteRlcAm : Sending packet " << pkt->getName()
@@ -101,10 +95,10 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
     send(pkt, up_[OUT_GATE]);
 }
 
-void LteRlcAm::bufferControlPdu(omnetpp::cPacket *pktAux){
-    auto pkt = check_and_cast<inet::Packet *> (pktAux);
+void LteRlcAm::bufferControlPdu(omnetpp::cPacket *pktAux) {
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
     txbuf->bufferControlPdu(pkt);
 }
 
@@ -112,7 +106,7 @@ void LteRlcAm::sendFragmented(cPacket *pktAux)
 {
     Enter_Method("sendFragmented()"); // Direct Method Call
     take(pktAux); // Take ownership
-    auto pkt = check_and_cast<inet::Packet *> (pktAux);
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
     pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
 
     EV << NOW << " LteRlcAm : Sending packet " << pkt->getName() << " of size "
@@ -126,7 +120,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
-    AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
 
     // Create a new RLC packet
     auto rlcPkt = makeShared<LteRlcAmSdu>();
@@ -145,7 +139,7 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
 
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
     txbuf->handleControlPacket(pkt);
     lteInfo = pkt->removeTag<FlowControlInfo>();
 }
@@ -156,12 +150,11 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     auto chunk = pkt->peekAtFront<inet::Chunk>();
 
-    if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr)
-    {
+    if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // process SDU request received from MAC
 
         // get the corresponding Tx buffer
-        AmTxQueue* txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        AmTxQueue *txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -172,11 +165,11 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 
         delete pkt;
 
-    } else {
+    }
+    else {
         // process AM PDU
         auto pdu = pkt->peekAtFront<LteRlcAmPdu>();
-        if ((pdu->getAmType() == ACK) || (pdu->getAmType() == MRW_ACK))
-        {
+        if ((pdu->getAmType() == ACK) || (pdu->getAmType() == MRW_ACK)) {
             EV << NOW << " LteRlcAm::handleLowerMessage Received ACK message" << endl;
 
             // forwarding ACK to associated transmitting entity
@@ -185,7 +178,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         }
 
         // Extract informations from fragment
-        AmRxQueue* rxbuf = getRxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        AmRxQueue *rxbuf = getRxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
         drop(pkt);
 
         EV << NOW << " LteRlcAm::handleLowerMessage sending packet to AM RX Queue " << endl;
@@ -199,27 +192,21 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
     AmTxBuffers::iterator tit;
     AmRxBuffers::iterator rit;
 
-    for (tit = txBuffers_.begin(); tit != txBuffers_.end(); )
-    {
-        if (MacCidToNodeId(tit->first) == nodeId)
-        {
+    for (tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
+        if (MacCidToNodeId(tit->first) == nodeId) {
             delete tit->second; // Delete Queue
             tit = txBuffers_.erase(tit); // Delete Elem
         }
-        else
-        {
+        else {
             ++tit;
         }
     }
-    for (rit = rxBuffers_.begin(); rit != rxBuffers_.end(); )
-    {
-        if (MacCidToNodeId(rit->first) == nodeId)
-        {
+    for (rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
+        if (MacCidToNodeId(rit->first) == nodeId) {
             delete rit->second; // Delete Queue
             rit = rxBuffers_.erase(rit); // Delete Elem
         }
-        else
-        {
+        else {
             ++rit;
         }
     }
@@ -231,13 +218,13 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
  *       Instead of sending one newDataPkt for a new SDU, we send a newDataPkt
  *       for each PDU since the number of retransmissions is not known beforehand.
  */
-void LteRlcAm::indicateNewDataToMac(cPacket* pktAux) {
+void LteRlcAm::indicateNewDataToMac(cPacket *pktAux) {
     Enter_Method("indicateNewDataToMac()");
 
-    auto pkt = check_and_cast<inet::Packet *> (pktAux);
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
 
-   // create a message so as to notify the MAC layer that the queue contains new data
-   // (MAC is only interested in FlowControlInfo tag and size)
+    // create a message so as to notify the MAC layer that the queue contains new data
+    // (MAC is only interested in FlowControlInfo tag and size)
 
     auto newData = new Packet("AM-NewData");
     auto rlcSdu = inet::makeShared<LteRlcSdu>();
@@ -266,20 +253,18 @@ void LteRlcAm::initialize()
     down_[OUT_GATE] = gate("AM_Sap_down$o");
 }
 
-void LteRlcAm::handleMessage(cMessage* msg)
+void LteRlcAm::handleMessage(cMessage *msg)
 {
-    cPacket* pkt = check_and_cast<cPacket *>(msg);
+    cPacket *pkt = check_and_cast<cPacket *>(msg);
     EV << NOW << " LteRlcAm : Received packet " << pkt->getName() << " from port "
        << pkt->getArrivalGate()->getName() << endl;
 
-    cGate* incoming = pkt->getArrivalGate();
-    if (incoming == up_[IN_GATE])
-    {
+    cGate *incoming = pkt->getArrivalGate();
+    if (incoming == up_[IN_GATE]) {
         EV << NOW << " LteRlcAm : calling handleUpperMessage" << endl;
         handleUpperMessage(pkt);
     }
-    else if (incoming == down_[IN_GATE])
-    {
+    else if (incoming == down_[IN_GATE]) {
         EV << NOW << " LteRlcAm : calling handleLowerMessage" << endl;
         handleLowerMessage(pkt);
     }

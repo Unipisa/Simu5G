@@ -30,6 +30,7 @@ class X2CompRequestIE : public X2InformationElement
         type_ = COMP_REQUEST_IE;
         length_ = 0;
     }
+
     X2CompRequestIE(const X2CompRequestIE& other) :
         X2InformationElement()
     {
@@ -43,13 +44,16 @@ class X2CompRequestIE : public X2InformationElement
         X2InformationElement::operator=(other);
         return *this;
     }
+
     virtual X2CompRequestIE *dup() const
     {
         return new X2CompRequestIE(*this);
     }
+
     virtual ~X2CompRequestIE() {}
 };
 
 } //namespace
 
 #endif
+

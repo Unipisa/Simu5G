@@ -13,7 +13,6 @@
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3Address.h"
 
-
 #ifdef _WIN32
 # include <io.h>
 # include <stdio.h>
@@ -21,7 +20,7 @@
 # include <unistd.h>
 #endif // ifdef _WIN32
 
-namespace simu5g{
+namespace simu5g {
 
 namespace utils {
 
@@ -33,9 +32,9 @@ class cModule_LessId
     bool operator()(const omnetpp::cModule *left, const omnetpp::cModule *right) const;
 };
 
-
 } // namespace utils
 
 } // namespace simu5g
 
 #endif // ifndef __INET_HTTPUTILS_H
+

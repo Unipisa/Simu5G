@@ -58,7 +58,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
     //! AM PDU fragment buffer
     //  (stores PDUs of the next SDU if they are shifted out of the PDU buffer before the SDU is completely
     //   received and can be passed to the upper layer)
-    std::deque<inet::Packet *>pendingPduBuffer_;
+    std::deque<inet::Packet *> pendingPduBuffer_;
 
     //! AM PDU Received vector
     /** For each AM PDU a received status variable is kept.
@@ -73,7 +73,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
     /*
      * FlowControlInfo matrix : used for CTRL messages generation
      */
-    FlowControlInfo* flowControlInfo_;
+    FlowControlInfo *flowControlInfo_;
 
     //Statistics
     static unsigned int totalCellRcvdBytes_;
@@ -94,10 +94,10 @@ class AmRxQueue : public omnetpp::cSimpleModule
     virtual ~AmRxQueue();
 
     //! Receive an RLC PDU from the lower layer
-    void enque(inet::Packet* pdu);
+    void enque(inet::Packet *pdu);
 
     //! Send a buffer status report to the ACK manager
-    virtual void handleMessage(omnetpp::cMessage* msg);
+    virtual void handleMessage(omnetpp::cMessage *msg);
 
     //initialize
     void initialize();
@@ -136,9 +136,10 @@ class AmRxQueue : public omnetpp::cSimpleModule
     void discard(const int sn);
 
     //! Defragment received frame
-    inet::Packet *defragmentFrames(std::deque<inet::Packet *> &fragmentFrames);
+    inet::Packet *defragmentFrames(std::deque<inet::Packet *>& fragmentFrames);
 };
 
 } //namespace
 
 #endif
+

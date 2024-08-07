@@ -32,9 +32,9 @@ class LteFeedbackComputation
      * @return Vector of Vector of LteFeedback indexes: Ru and Txmode
      */
     virtual LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,
-        TxMode currentTxMode,
-        std::map<Remote, int> antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype,
-        int numRus, std::vector<double> snr, MacNodeId id = 0)=0;
+            TxMode currentTxMode,
+            std::map<Remote, int> antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype,
+            int numRus, std::vector<double> snr, MacNodeId id = 0) = 0;
     /**
      * Interface for Feedback computation
      *
@@ -47,9 +47,9 @@ class LteFeedbackComputation
      * @return Vector of LteFeedback indexes: Txmode
      */
     virtual LteFeedbackVector computeFeedback(const Remote remote, FeedbackType fbType,
-        RbAllocationType rbAllocationType, TxMode currentTxMode,
-        int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-        std::vector<double> snr, MacNodeId id = 0)=0;
+            RbAllocationType rbAllocationType, TxMode currentTxMode,
+            int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
+            std::vector<double> snr, MacNodeId id = 0) = 0;
     /**
      * Interface for Feedback computation
      *
@@ -63,11 +63,12 @@ class LteFeedbackComputation
      * @return  LteFeedback
      */
     virtual LteFeedback computeFeedback(const Remote remote, TxMode txmode, FeedbackType fbType,
-        RbAllocationType rbAllocationType,
-        int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-        std::vector<double> snr, MacNodeId id = 0)=0;
+            RbAllocationType rbAllocationType,
+            int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
+            std::vector<double> snr, MacNodeId id = 0) = 0;
 };
 
 } //namespace
 
 #endif
+

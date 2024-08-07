@@ -21,47 +21,51 @@ namespace simu5g {
 //
 class X2HandoverCommandIE : public X2InformationElement
 {
-protected:
+  protected:
 
     bool startHandover_;
     MacNodeId ueId_;      // ID of the user performing handover
 
-public:
-  X2HandoverCommandIE()
-  {
-      type_ = X2_HANDOVER_CMD_IE;
-      length_ = sizeof(MacNodeId) + sizeof(uint8_t);
-      startHandover_ = false;
-      ueId_ = 0;
-  }
-  X2HandoverCommandIE(const X2HandoverCommandIE& other) :
-      X2InformationElement()
-  {
-      operator=(other);
-  }
+  public:
+    X2HandoverCommandIE()
+    {
+        type_ = X2_HANDOVER_CMD_IE;
+        length_ = sizeof(MacNodeId) + sizeof(uint8_t);
+        startHandover_ = false;
+        ueId_ = 0;
+    }
 
-  X2HandoverCommandIE& operator=(const X2HandoverCommandIE& other)
-  {
-      if (&other == this)
-          return *this;
-      startHandover_ = other.startHandover_;
-      ueId_ = other.ueId_;
-      X2InformationElement::operator=(other);
-      return *this;
-  }
-  virtual X2HandoverCommandIE *dup() const
-  {
-      return new X2HandoverCommandIE(*this);
-  }
-  virtual ~X2HandoverCommandIE() {}
+    X2HandoverCommandIE(const X2HandoverCommandIE& other) :
+        X2InformationElement()
+    {
+        operator=(other);
+    }
 
-  // getter/setter methods
-  void setStartHandover() { startHandover_ = true; }
-  bool isStartHandover() { return startHandover_; }
-  void setUeId(MacNodeId ueId) { ueId_ = ueId; }
-  MacNodeId getUeId() { return ueId_; }
+    X2HandoverCommandIE& operator=(const X2HandoverCommandIE& other)
+    {
+        if (&other == this)
+            return *this;
+        startHandover_ = other.startHandover_;
+        ueId_ = other.ueId_;
+        X2InformationElement::operator=(other);
+        return *this;
+    }
+
+    virtual X2HandoverCommandIE *dup() const
+    {
+        return new X2HandoverCommandIE(*this);
+    }
+
+    virtual ~X2HandoverCommandIE() {}
+
+    // getter/setter methods
+    void setStartHandover() { startHandover_ = true; }
+    bool isStartHandover() { return startHandover_; }
+    void setUeId(MacNodeId ueId) { ueId_ = ueId; }
+    MacNodeId getUeId() { return ueId_; }
 };
 
 } //namespace
 
 #endif
+

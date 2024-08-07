@@ -15,25 +15,23 @@
 
 namespace simu5g {
 
-MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator* mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator)
+MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator)
 {
     mecHostIndex_ = index;
 }
 
-cModule* MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)
+cModule *MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
     EV << "MecHostSelectionBased::findBestMecHost - finding best MecHost..." << endl;
-    cModule* bestHost = nullptr;
+    cModule *bestHost = nullptr;
 
     int size = mecOrchestrator_->mecHosts.size();
-    if(size < mecHostIndex_)
-    {
+    if (size < mecHostIndex_) {
         EV << "MecHostSelectionBased::findBestMecHost - No Mec Host with index [" << mecHostIndex_ << "] found" << endl;
     }
-    else
-    {
+    else {
         bestHost = mecOrchestrator_->mecHosts.at(mecHostIndex_);
-        EV << "MecHostSelectionBased::findBestMecHost - MEC host ["<< bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
+        EV << "MecHostSelectionBased::findBestMecHost - MEC host [" << bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
     }
     return bestHost;
 }

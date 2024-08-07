@@ -18,7 +18,7 @@ namespace simu5g {
 
 typedef std::vector<LteHarqUnitTx *> UnitVector;
 typedef std::pair<unsigned char, TxHarqPduStatus> UnitStatus;
-typedef std::vector<std::vector<UnitStatus> > BufferStatus;
+typedef std::vector<std::vector<UnitStatus>> BufferStatus;
 
 /**
  * Container of H-ARQ units.
@@ -74,8 +74,7 @@ class LteHarqProcessTx : omnetpp::noncopyable
      * @return
      */
     LteHarqProcessTx(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner,
-        LteMacBase *dstMac);
-
+            LteMacBase *dstMac);
 
     /**
      * Insert a pdu into an H-ARQ unit contained in this process.
@@ -197,3 +196,4 @@ class LteHarqProcessTx : omnetpp::noncopyable
 } //namespace
 
 #endif
+

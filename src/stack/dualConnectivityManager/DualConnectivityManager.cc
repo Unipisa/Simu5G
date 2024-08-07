@@ -39,9 +39,8 @@ void DualConnectivityManager::initialize()
 
 void DualConnectivityManager::handleMessage(cMessage *msg)
 {
-    cGate* incoming = msg->getArrivalGate();
-    if (incoming == x2Manager_[IN_GATE])
-    {
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == x2Manager_[IN_GATE]) {
         // incoming data from X2 Manager
         EV << "DualConnectivityManager::handleMessage - Received message from X2 manager" << endl;
         handleX2Message(msg);
@@ -50,14 +49,13 @@ void DualConnectivityManager::handleMessage(cMessage *msg)
         delete msg;
 }
 
-void DualConnectivityManager::handleX2Message(cMessage* msg)
+void DualConnectivityManager::handleX2Message(cMessage *msg)
 {
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
 
     packet->trim();
     auto x2Msg = packet->peekAtFront<LteX2Message>();
-    if (x2Msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG)
-    {
+    if (x2Msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG) {
         auto dcMsg = packet->removeAtFront<X2DualConnectivityDataMsg>();
 
         // forward packet to the PDCP layer
@@ -77,8 +75,7 @@ void DualConnectivityManager::handleX2Message(cMessage* msg)
     delete packet;
 }
 
-
-void DualConnectivityManager::forwardDataToTargetNode(inet::Packet* pkt, MacNodeId targetNode)
+void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
 {
     Enter_Method("forwardDataToTargetNode");
     take(pkt);
@@ -100,15 +97,15 @@ void DualConnectivityManager::forwardDataToTargetNode(inet::Packet* pkt, MacNode
 
     pkt->insertAtFront(dcMsg);
 
-    EV<<NOW<<" DualConnectivityManager::forwardDataToTargetNode - Send packet to node " << targetNode << endl;
+    EV << NOW << " DualConnectivityManager::forwardDataToTargetNode - Send packet to node " << targetNode << endl;
 
     // send to X2 Manager
-    send(pkt,x2Manager_[OUT_GATE]);
+    send(pkt, x2Manager_[OUT_GATE]);
 }
 
-void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet* pkt, MacNodeId sourceNode)
+void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
 {
-    EV<<NOW<<" DualConnectivityManager::receiveDataFromSourceNode - Received packet from node " << sourceNode << endl;
+    EV << NOW << " DualConnectivityManager::receiveDataFromSourceNode - Received packet from node " << sourceNode << endl;
     // send data to PDCP
     pdcp_->receiveDataFromSourceNode(pkt, sourceNode);
 }

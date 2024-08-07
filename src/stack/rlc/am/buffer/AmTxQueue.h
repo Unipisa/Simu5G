@@ -50,7 +50,7 @@ class AmTxQueue : public cSimpleModule
     /*
      * SDU (upper layer PDU) currently being processed
      */
-    Packet * currentSdu_ = nullptr;
+    Packet *currentSdu_ = nullptr;
     std::deque<Packet *> *fragmentList_ = nullptr;
     std::deque<int> txWindowIndexList_;
 
@@ -63,7 +63,7 @@ class AmTxQueue : public cSimpleModule
      * copy of LTE control info - used for sending down PDUs and control packets.
      */
 
-    FlowControlInfo* lteInfo_ = nullptr;
+    FlowControlInfo *lteInfo_ = nullptr;
 
     //--------------------------------------------------------------------------------------
     //        Buffers
@@ -140,7 +140,7 @@ class AmTxQueue : public cSimpleModule
      * Enqueues an upper layer packet into the transmission buffer
      * @param sdu the packet to be enqueued
      */
-    void enque(Packet* sdu);
+    void enque(Packet *sdu);
 
     /*
      *     Fragments current SDU (or next one, if current is completed) and adds PDUs (fragments) to the transmission buffer
@@ -158,13 +158,13 @@ class AmTxQueue : public cSimpleModule
     /*
      * Buffers a control pdu within the corresponding TxQueue
      */
-    void bufferControlPdu(cPacket* pkt);
+    void bufferControlPdu(cPacket *pkt);
 
     /*
      * Receives a control message from the AM receiver buffer
      * @param pkt
      */
-    virtual void handleControlPacket(cPacket* pkt);
+    virtual void handleControlPacket(cPacket *pkt);
 
   protected:
 
@@ -176,7 +176,7 @@ class AmTxQueue : public cSimpleModule
      * Analyze gate of incoming packet and call proper handler
      * @param msg
      */
-    virtual void handleMessage(cMessage* msg);
+    virtual void handleMessage(cMessage *msg);
 
     /* Discards a given RLC PDU and all the PDUs related to the same SDU
      *
@@ -228,9 +228,10 @@ class AmTxQueue : public cSimpleModule
     void pduTimerHandle(const int sn);
     void mrwTimerHandle(const int sn);
 
-    std::deque<Packet *> * fragmentFrame(Packet *frame, std::deque<int>& windowsIndex, RlcFragDesc rlcFragDesc);
+    std::deque<Packet *> *fragmentFrame(Packet *frame, std::deque<int>& windowsIndex, RlcFragDesc rlcFragDesc);
 };
 
 } //namespace
 
 #endif
+

@@ -39,7 +39,7 @@ class LteMacBuffer
 
     LteMacBuffer(const LteMacQueue& queue);
     LteMacBuffer& operator=(const LteMacBuffer& queue);
-    LteMacBuffer* dup() const;
+    LteMacBuffer *dup() const;
 
     /**
      * pushBack() inserts a new  packet
@@ -145,9 +145,9 @@ class LteMacBuffer
     /**
      * Get direct (readonly) access to pdu list
      */
-    const std::list<PacketInfo>* getPacketlist() const;
+    const std::list<PacketInfo> *getPacketlist() const;
 
-    friend std::ostream &operator << (std::ostream &stream, const LteMacQueue* queue);
+    friend std::ostream& operator<<(std::ostream& stream, const LteMacQueue *queue);
 
   private:
     /// Number of packets processed by the scheduler
@@ -166,3 +166,4 @@ class LteMacBuffer
 } //namespace
 
 #endif
+

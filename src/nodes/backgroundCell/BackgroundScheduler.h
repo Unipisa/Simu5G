@@ -67,9 +67,8 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;
 
     // TTI self message
-    omnetpp::cMessage* ttiTick_;
+    omnetpp::cMessage *ttiTick_;
     double ttiPeriod_;
-
 
     /*** ALLOCATION MANAGEMENT ***/
 
@@ -80,7 +79,6 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     // for the UL, we need to store which UE uses which block
     std::vector<int> ulBandAllocation_;
     std::vector<int> ulPrevBandAllocation_;
-
 
     // update the band status. Called at each TTI (not used for FULL_ALLOC)
     virtual void updateAllocation(Direction dir);
@@ -94,7 +92,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
 
   protected:
     virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_LOCAL+2; }
+    virtual int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 
   public:
@@ -102,13 +100,13 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     // This module is subscribed to position changes.
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
-    BackgroundCellChannelModel* getChannelModel() { return bgChannelModel_; }
+    BackgroundCellChannelModel *getChannelModel() { return bgChannelModel_; }
 
     const inet::Coord getPosition() const { return pos_; }
 
     int getId() const { return id_; }
 
-    double getTtiPeriod() const {return ttiPeriod_; }
+    double getTtiPeriod() const { return ttiPeriod_; }
 
     double getTxPower() const { return txPower_; }
 
@@ -123,10 +121,11 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     int getBandStatus(int band, Direction dir) { return bandStatus_[dir].at(band); }
     int getPrevBandStatus(int band, Direction dir) { return prevBandStatus_[dir].at(band); }
 
-    TrafficGeneratorBase* getBandInterferingUe(int band);
-    TrafficGeneratorBase* getPrevBandInterferingUe(int band);
+    TrafficGeneratorBase *getBandInterferingUe(int band);
+    TrafficGeneratorBase *getPrevBandInterferingUe(int band);
 };
 
 } //namespace
 
 #endif
+

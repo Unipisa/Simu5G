@@ -47,7 +47,7 @@ class BackgroundCellAmc
     /*
      * Access the correct itbs2tbs conversion table given cqi and layer numer
      */
-    const unsigned int* readTbsVect(Cqi cqi, unsigned int layers, Direction dir);
+    const unsigned int *readTbsVect(Cqi cqi, unsigned int layers, Direction dir);
 
     /*
      * given <cqi> and <layers> returns bytes allocable in <blocks>
@@ -63,3 +63,4 @@ class BackgroundCellAmc
 } //namespace
 
 #endif
+

@@ -34,44 +34,39 @@ void TrafficFlowFilter::initialize(int stage)
 
     // reading and setting owner type
     ownerType_ = selectOwnerType(par("ownerType"));
-    if (ownerType_ == PGW || ownerType_ == UPF)
-    {
+    if (ownerType_ == PGW || ownerType_ == UPF) {
         gateway_ = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
     }
-    else if(getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway"))
-    {
+    else if (getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway")) {
         gateway_ = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
     }
     else
         gateway_.clear();
 
     // mec
-    if(isBaseStation(ownerType_))
-    {
+    if (isBaseStation(ownerType_)) {
         /*
-          * @author Alessandro Noferi
-          *
-          */
+         * @author Alessandro Noferi
+         *
+         */
         // obtain the IP address of externel MEC applications (if any)
 
         std::string extAddress = getContainingNode(this)->par("extMeAppsAddress").stringValue();
-        if(!extAddress.empty())
-        {
-            std::vector<std::string> extAdd =  cStringTokenizer(extAddress.c_str(), "/").asVector();
-            if(extAdd.size() != 2){
+        if (!extAddress.empty()) {
+            std::vector<std::string> extAdd = cStringTokenizer(extAddress.c_str(), "/").asVector();
+            if (extAdd.size() != 2) {
                 throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be like address/mask");
             }
             meAppsExtAddress_ = inet::L3AddressResolver().resolve(extAdd[0].c_str());
             meAppsExtAddressMask_ = atoi(extAdd[1].c_str());
-            EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str()<<"/"<< meAppsExtAddressMask_<< endl;
+            EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str() << "/" << meAppsExtAddressMask_ << endl;
         }
     }
 
-    if(getParentModule()->hasPar("mecHost")){
+    if (getParentModule()->hasPar("mecHost")) {
 
         meHost = getParentModule()->par("mecHost").stringValue();
-        if(isBaseStation(ownerType_) && !meHost.empty())
-        {
+        if (isBaseStation(ownerType_) && !meHost.empty()) {
             std::stringstream meHostName;
             meHostName << meHost << ".virtualisationInfrastructure";
             meHost = meHostName.str();
@@ -88,21 +83,21 @@ void TrafficFlowFilter::initialize(int stage)
     registerProtocol(LteProtocol::ipv4uu, gateIn, SP_CONFIRM);
 }
 
-CoreNodeType TrafficFlowFilter::selectOwnerType(const char * type)
+CoreNodeType TrafficFlowFilter::selectOwnerType(const char *type)
 {
     EV << "TrafficFlowFilter::selectOwnerType - setting owner type to " << type << endl;
-    if(strcmp(type,"ENODEB") == 0)
+    if (strcmp(type, "ENODEB") == 0)
         return ENB;
-    else if(strcmp(type,"GNODEB") == 0)
+    else if (strcmp(type, "GNODEB") == 0)
         return GNB;
-    else if(strcmp(type,"PGW") == 0)
+    else if (strcmp(type, "PGW") == 0)
         return PGW;
-    else if(strcmp(type,"UPF") == 0)
+    else if (strcmp(type, "UPF") == 0)
         return UPF;
-    else if(strcmp(type, "UPF_MEC") == 0)
+    else if (strcmp(type, "UPF_MEC") == 0)
         return UPF_MEC;
     else
-        error("TrafficFlowFilter::selectOwnerType - unknown owner type [%s]. Aborting...",type);
+        error("TrafficFlowFilter::selectOwnerType - unknown owner type [%s]. Aborting...", type);
 
     // never gets here
     return ENB;
@@ -113,13 +108,13 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     EV << "TrafficFlowFilter::handleMessage - Received Packet:" << endl;
     EV << "name: " << msg->getFullName() << endl;
 
-    Packet* pkt = check_and_cast<Packet *>(msg);
+    Packet *pkt = check_and_cast<Packet *>(msg);
 
     // receive and read IP datagram
     // TODO: needs to be adapted for IPv6
     const auto& ipv4Header = pkt->peekAtFront<Ipv4Header>();
-    const Ipv4Address &destAddr = ipv4Header->getDestAddress();
-    const Ipv4Address &srcAddr = ipv4Header->getSrcAddress();
+    const Ipv4Address& destAddr = ipv4Header->getDestAddress();
+    const Ipv4Address& srcAddr = ipv4Header->getSrcAddress();
     pkt->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(&Protocol::ipv4);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
@@ -138,18 +133,16 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     EV << "TrafficFlowFilter::handleMessage - setting tft=" << tftId << endl;
 
     // send the datagram to the GTP-U module
-    send(pkt,"gtpUserGateOut");
+    send(pkt, "gtpUserGateOut");
 }
 
 TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L3Address destAddress)
 {
     // check whether the destination address is a (simulated) MEC host's address
-    if (binder_->isMecHost(destAddress))
-    {
+    if (binder_->isMecHost(destAddress)) {
         // check if the destination belongs to another core network (for multi-operator scenarios)
         std::string destGw = binder_->getNetworkName() + "." + CHK(inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stdstringValue();
-        if (gateway_ != destGw)
-        {
+        if (gateway_ != destGw) {
             // the destination is a MEC host under a different core network, send the packet to the gateway
             return -1;
         }
@@ -158,8 +151,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         return -3;
     }
     // emulation mode
-    else if (!meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_))
-    {
+    else if (!meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_)) {
         // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
         EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << " (external) " << endl;
         return -3;
@@ -167,24 +159,20 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
     destId = (destId != 0) ? destId : binder_->getNrMacNodeId(destAddress.toIpv4());
-    if (destId == 0)
-    {
-        EV << "TrafficFlowFilter::findTrafficFlow - destination "<< destAddress.str() << " is not a UE. ";
-        if (ownerType_ == UPF || ownerType_ == PGW)
-        {
+    if (destId == 0) {
+        EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is not a UE. ";
+        if (ownerType_ == UPF || ownerType_ == PGW) {
             EV << "Remove packet from the simulation." << endl;
             return -2;   // the destination UE has been removed from the simulation
         }
-        else // BS or MEC
-        {
+        else { // BS or MEC
             EV << "Forward packet to the gateway." << endl;
             return -1;   // the destination might be outside the cellular network, send the packet to the gateway
         }
     }
 
     MacNodeId destBS = binder_->getNextHop(destId);
-    if (destBS == 0)
-    {
+    if (destBS == 0) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
         return -2;   // the destination UE is not attached to any nodeB
     }
@@ -194,10 +182,9 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     MacNodeId destMaster = binder_->getMasterNode(destBS);
     MacNodeId srcMaster = binder_->getNextHop(binder_->getMacNodeId(srcAddress.toIpv4()));
 
-    if (isBaseStation(ownerType_))
-    {
+    if (isBaseStation(ownerType_)) {
         if (fastForwarding_ && srcMaster == destMaster)
-            return 0;                 // local delivery
+            return 0;                                        // local delivery
 
         return -1;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
                      // TODO if the BS is within the same core network, there should be a direct tunnel to
@@ -210,8 +197,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     // check if the destination belongs to another core network (for multi-operator scenarios)
     std::string destGw = binder_->getNetworkName() + "." + binder_->getModuleByMacNodeId(destMaster)->par("gateway").stdstringValue();
-    if (gateway_ != destGw)
-    {
+    if (gateway_ != destGw) {
         // the destination is a Base Station under a different core network, send the packet to the gateway
         EV << "Forward packet to the gateway" << endl;
         return -1;

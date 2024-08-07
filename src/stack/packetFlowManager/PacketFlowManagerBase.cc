@@ -36,8 +36,7 @@ PacketFlowManagerBase::~PacketFlowManagerBase()
 
 void PacketFlowManagerBase::initialize(int stage)
 {
-    if (stage == 1)
-    {
+    if (stage == 1) {
         LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
         nodeType_ = mac->getNodeType();
         harqProcesses_ = (nodeType_ == UE) ? UE_TX_HARQ_PROCESSES : ENB_TX_HARQ_PROCESSES;
@@ -47,7 +46,7 @@ void PacketFlowManagerBase::initialize(int stage)
 
 void PacketFlowManagerBase::resetDiscardCounter()
 {
-    pktDiscardCounterTotal_ = {0,0};
+    pktDiscardCounterTotal_ = { 0, 0 };
 }
 
 void PacketFlowManagerBase::finish()

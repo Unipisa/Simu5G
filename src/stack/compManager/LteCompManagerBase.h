@@ -36,13 +36,13 @@ typedef enum {
 class LteCompManagerBase : public omnetpp::cSimpleModule
 {
 
-protected:
+  protected:
 
     // X2 identifier
     X2NodeId nodeId_;
 
     // reference to the gates
-    omnetpp::cGate* x2Manager_[2];
+    omnetpp::cGate *x2Manager_[2];
 
     // reference to the MAC layer
     omnetpp::opp_component_ptr<LteMacEnb> mac_;
@@ -54,15 +54,14 @@ protected:
     double coordinationPeriod_;
 
     /// Self messages
-    omnetpp::cMessage* compClientTick_;
-    omnetpp::cMessage* compCoordinatorTick_;
+    omnetpp::cMessage *compClientTick_;
+    omnetpp::cMessage *compCoordinatorTick_;
 
     // Comp Node Type specification (client, client and coordinator, coordinator only)
     CompNodeType nodeType_;
 
     // Last received usable bands
     UsableBands usableBands_;
-
 
     // ID of the coordinator
     X2NodeId coordinatorId_;
@@ -75,22 +74,22 @@ protected:
 
     void runClientOperations();
     void runCoordinatorOperations();
-    void handleX2Message(inet::Packet* pkt);
-    void sendClientRequest(X2CompRequestIE* requestIe);
-    void sendCoordinatorReply(X2NodeId clientId, X2CompReplyIE* replyIe);
+    void handleX2Message(inet::Packet *pkt);
+    void sendClientRequest(X2CompRequestIE *requestIe);
+    void sendCoordinatorReply(X2NodeId clientId, X2CompReplyIE *replyIe);
 
     virtual void provisionalSchedule() = 0;  // run the provisional scheduling algorithm (client side)
     virtual void doCoordination() = 0;       // run the coordination algorithm (coordinator side)
 
-    virtual X2CompRequestIE* buildClientRequest() = 0;
+    virtual X2CompRequestIE *buildClientRequest() = 0;
     virtual void handleClientRequest(inet::IntrusivePtr<X2CompMsg> compMsg) = 0;
 
-    virtual X2CompReplyIE* buildCoordinatorReply(X2NodeId clientId) = 0;
+    virtual X2CompReplyIE *buildCoordinatorReply(X2NodeId clientId) = 0;
     virtual void handleCoordinatorReply(inet::IntrusivePtr<X2CompMsg> compMsg) = 0;
 
     void setUsableBands(UsableBands& usableBands);
 
-public:
+  public:
     virtual void initialize() override;
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 };
@@ -98,3 +97,4 @@ public:
 } //namespace
 
 #endif /* LTE_LTECOMPMANAGERBASE_H_ */
+

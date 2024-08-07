@@ -51,12 +51,12 @@ class GtpUser : public omnetpp::cSimpleModule
     // specifies the type of the node that contains this filter (it can be ENB or PGW)
     CoreNodeType ownerType_;
 
-    CoreNodeType selectOwnerType(const char * type);
+    CoreNodeType selectOwnerType(const char *type);
 
     // if this module is on BS, this variable includes the ID of the BS
     MacNodeId myMacNodeID;
 
-    inet::NetworkInterface* ie_;
+    inet::NetworkInterface *ie_;
 
     omnetpp::opp_component_ptr<cModule> networkNode_;
 
@@ -67,10 +67,10 @@ class GtpUser : public omnetpp::cSimpleModule
     virtual void handleMessage(omnetpp::cMessage *msg) override;
 
     // receive and IP Datagram from the traffic filter, encapsulates it in a GTP-U packet than forwards it to the proper next hop
-    void handleFromTrafficFlowFilter(inet::Packet * datagram);
+    void handleFromTrafficFlowFilter(inet::Packet *datagram);
 
     // receive a GTP-U packet from Udp, reads the TEID and decides whether performing label switching or removal
-    void handleFromUdp(inet::Packet * gtpMsg);
+    void handleFromUdp(inet::Packet *gtpMsg);
 
     // detect outgoing interface name (CellularNic)
     inet::NetworkInterface *detectInterface();
@@ -79,3 +79,4 @@ class GtpUser : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

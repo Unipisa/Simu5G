@@ -32,6 +32,7 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
         type_ = COMP_PROP_REQUEST_IE;
         length_ = sizeof(uint32_t);
     }
+
     X2CompProportionalRequestIE(const X2CompProportionalRequestIE& other) :
         X2CompRequestIE()
     {
@@ -46,10 +47,12 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
         X2CompRequestIE::operator=(other);
         return *this;
     }
+
     virtual X2CompProportionalRequestIE *dup() const
     {
         return new X2CompProportionalRequestIE(*this);
     }
+
     virtual ~X2CompProportionalRequestIE() {}
 
     // getter/setter methods
@@ -61,3 +64,4 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
 } //namespace
 
 #endif
+

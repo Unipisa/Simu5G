@@ -19,7 +19,7 @@ namespace simu5g {
 class NRChannelModel : public LteRealisticChannelModel
 {
 
-public:
+  public:
     virtual void initialize(int stage);
 
     /*
@@ -32,10 +32,10 @@ public:
     virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
 
     /*
-    *  Compute Attenuation caused by transmission direction
-    *
-    * @param angle angle
-    */
+     *  Compute Attenuation caused by transmission direction
+     *
+     * @param angle angle
+     */
     virtual double computeAngularAttenuation(double hAngle, double vAngle);
 
     /*
@@ -87,12 +87,11 @@ public:
      */
     double computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los);
 
-
     /*
      * evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
-    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double>* interference);
+    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference);
 
     /*
      * compute attenuation due to path loss and shadowing
@@ -104,3 +103,4 @@ public:
 } //namespace
 
 #endif /* NRCHANNELMODEL_H_ */
+

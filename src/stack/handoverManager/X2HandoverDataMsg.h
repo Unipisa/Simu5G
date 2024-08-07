@@ -44,9 +44,9 @@ class X2HandoverDataMsg : public LteX2Message
         return *this;
     }
 
-    virtual X2HandoverDataMsg* dup() const { return new X2HandoverDataMsg(*this); }
+    virtual X2HandoverDataMsg *dup() const { return new X2HandoverDataMsg(*this); }
 
-    virtual ~X2HandoverDataMsg() { }
+    virtual ~X2HandoverDataMsg() {}
 };
 
 } //namespace

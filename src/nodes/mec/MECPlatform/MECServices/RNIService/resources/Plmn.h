@@ -19,28 +19,26 @@ namespace simu5g {
 
 // https://en.wikipedia.org/wiki/Mobile_country_code
 
-
-class Plmn : public AttributeBase {
+class Plmn : public AttributeBase
+{
   protected:
     std::string mcc_; // 3 decimal digits
     std::string mnc_; // 2 or 3 decimal digits
 
     nlohmann::ordered_json toJsonCell() const; //should be private?
-  /* data */
+    /* data */
 
-
-public:
-  Plmn();
-  Plmn(const std::string& mcc, const std::string& mnc);
-  virtual ~Plmn();
+  public:
+    Plmn();
+    Plmn(const std::string& mcc, const std::string& mnc);
+    virtual ~Plmn();
 
     void setMcc(const std::string& mcc);
     void setMnc(const std::string& mnc);
     std::string getMcc() const;
     std::string getMnc() const;
 
-
-  nlohmann::ordered_json toJson() const override;
+    nlohmann::ordered_json toJson() const override;
 
 };
 

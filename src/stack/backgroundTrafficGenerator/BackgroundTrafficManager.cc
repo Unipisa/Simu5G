@@ -23,17 +23,14 @@ BackgroundTrafficManager::BackgroundTrafficManager()
 void BackgroundTrafficManager::initialize(int stage)
 {
     BackgroundTrafficManagerBase::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         phy_.reference(this, "phyModule", true);
     }
-    if (stage == inet::INITSTAGE_PHYSICAL_LAYER)
-    {
+    if (stage == inet::INITSTAGE_PHYSICAL_LAYER) {
         // get the reference to the MAC layer
         mac_.reference(this, "macModule", true); // TODO mac_ used in BackgroundTrafficManagerBase
     }
-    if (stage == inet::INITSTAGE_LAST-1)
-    {
+    if (stage == inet::INITSTAGE_LAST - 1) {
         // get the reference to the channel model for the given carrier
         bsTxPower_ = phy_->getTxPwr();
         bsCoord_ = phy_->getCoord();
@@ -86,7 +83,7 @@ unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bg
     Cqi cqi = bgUe_.at(index)->getCqi(dir);
 
     // get bytes per block based on CQI
-    return (mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8);
+    return mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
 }
 
 double BackgroundTrafficManager::getTtiPeriod()

@@ -32,13 +32,13 @@ using namespace std;
 
 Define_Module(UeRnisTestApp);
 
-UeRnisTestApp::UeRnisTestApp(){
+UeRnisTestApp::UeRnisTestApp() {
     selfStart_ = NULL;
     selfStop_ = NULL;
     selfMecAppStart_ = nullptr;
 }
 
-UeRnisTestApp::~UeRnisTestApp(){
+UeRnisTestApp::~UeRnisTestApp() {
     cancelAndDelete(selfStart_);
     cancelAndDelete(selfStop_);
     cancelAndDelete(selfMecAppStart_);
@@ -50,7 +50,7 @@ void UeRnisTestApp::initialize(int stage)
     EV << "UeRnisTestApp::initialize - stage " << stage << endl;
     cSimpleModule::initialize(stage);
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     log = par("logger").boolValue();
@@ -59,8 +59,8 @@ void UeRnisTestApp::initialize(int stage)
     period_ = par("period");
     int localPort = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    const char* sourceSimbolicAddress = getParentModule()->getFullName();
-    const char* deviceSimbolicAppAddress = (char*)par("deviceAppAddress").stringValue();
+    const char *sourceSimbolicAddress = getParentModule()->getFullName();
+    const char *deviceSimbolicAppAddress = (char *)par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress);
 
     //binding socket
@@ -84,8 +84,8 @@ void UeRnisTestApp::initialize(int stage)
     scheduleAt(simTime() + startTime, selfStart_);
 
     //testing
-    EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str()  <<"]"<< endl;
-    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSimbolicAppAddress << " [" << deviceAppAddress_.str()  <<"]"<< endl;
+    EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str() << "]" << endl;
+    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSimbolicAppAddress << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "UeRnisTestApp::initialize - binding to port: local:" << localPort << " , dest:" << deviceAppPort_ << endl;
 }
 
@@ -93,10 +93,8 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
 {
     EV << "UeRnisTestApp::handleMessage" << endl;
     // Sender Side
-    if (msg->isSelfMessage())
-    {
-        switch (msg->getKind())
-        {
+    if (msg->isSelfMessage()) {
+        switch (msg->getKind()) {
             case KIND_SELF_START:
                 sendStartMecApp();
                 break;
@@ -112,8 +110,8 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
         }
     }
     // Receiver Side
-    else{
-        inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    else {
+        inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
 
         inet::L3Address ipAdd = packet->getTag<L3AddressInd>()->getSrcAddress();
         // int port = packet->getTag<L4PortInd>()->getSrcPort();
@@ -122,44 +120,37 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
          * From Device app
          * device app usually runs in the UE (loopback), but it could also run in other places
          */
-        if(ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) // dev app
-        {
+        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
 
             if (mePkt == 0)
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to DeviceAppPacket");
 
-            if( !strcmp(mePkt->getType(), ACK_START_MECAPP) )    handleAckStartMecApp(msg);
+            if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(msg);
 
-            else if(!strcmp(mePkt->getType(), ACK_STOP_MECAPP))  handleAckStopMecApp(msg);
+            else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) handleAckStopMecApp(msg);
 
-            else
-            {
+            else {
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
             }
         }
         // From MEC application
-        else
-        {
+        else {
             auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
             if (mePkt == 0)
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error when casting to RnisTestAppPacket");
 
-            if(!strcmp(mePkt->getType(), RNIS_INFO))      handleInfoMecApp(msg);
-            else if(!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK))
-            {
+            if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(msg);
+            else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK)) {
                 EV << "UeRnisTestApp::handleMessage - MEC app did not started correctly, trying to start again" << endl;
             }
-            else if(!strcmp(mePkt->getType(), START_QUERY_RNIS_ACK))
-            {
+            else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_ACK)) {
                 EV << "UeRnisTestApp::handleMessage - MEC app started correctly" << endl;
-                if(selfMecAppStart_->isScheduled())
-                {
+                if (selfMecAppStart_->isScheduled()) {
                     cancelEvent(selfMecAppStart_);
                 }
             }
-            else
-            {
+            else {
                 throw cRuntimeError("UeRnisTestApp::handleMessage - \tFATAL! Error, RnisTestAppPacket type %s not recognized", mePkt->getType());
             }
         }
@@ -171,32 +162,31 @@ void UeRnisTestApp::finish()
 {
 
 }
+
 /*
  * -----------------------------------------------Sender Side------------------------------------------
  */
 void UeRnisTestApp::sendStartMecApp()
 {
-    EV << "UeRnisTestApp::sendStopMecApp - Sending " << START_MEAPP <<" type packet\n";
+    EV << "UeRnisTestApp::sendStopMecApp - Sending " << START_MEAPP << " type packet\n";
 
-    inet::Packet* packet = new inet::Packet("DeviceAppStartPacket");
+    inet::Packet *packet = new inet::Packet("DeviceAppStartPacket");
     auto start = inet::makeShared<DeviceAppStartPacket>();
 
     //instantiation requirements and info
     start->setType(START_MECAPP);
     start->setMecAppName(mecAppName.c_str());
-    start->setChunkLength(inet::B(2+mecAppName.size()+1));
+    start->setChunkLength(inet::B(2 + mecAppName.size() + 1));
     start->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(start);
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
 
-    if(log)
-    {
+    if (log) {
         ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UeRnisTestApp - UE sent start message to the Device App \n";
+        myfile.open("example.txt", ios::app);
+        if (myfile.is_open()) {
+            myfile << "[" << NOW << "] UeRnisTestApp - UE sent start message to the Device App \n";
             myfile.close();
 
         }
@@ -205,11 +195,12 @@ void UeRnisTestApp::sendStartMecApp()
     //rescheduling
     scheduleAt(simTime() + period_, selfStart_);
 }
+
 void UeRnisTestApp::sendStopMecApp()
 {
-    EV << "UeRnisTestApp::sendStopMecApp - Sending " << STOP_MEAPP <<" type packet\n";
+    EV << "UeRnisTestApp::sendStopMecApp - Sending " << STOP_MEAPP << " type packet\n";
 
-    inet::Packet* packet = new inet::Packet("DeviceAppStopPacket");
+    inet::Packet *packet = new inet::Packet("DeviceAppStopPacket");
     auto stop = inet::makeShared<DeviceAppStopPacket>();
 
     //termination requirements and info
@@ -221,19 +212,17 @@ void UeRnisTestApp::sendStopMecApp()
     packet->insertAtBack(stop);
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
 
-    if(log)
-    {
+    if (log) {
         ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UeRnisTestApp - UE sent stop message to the Device App \n";
+        myfile.open("example.txt", ios::app);
+        if (myfile.is_open()) {
+            myfile << "[" << NOW << "] UeRnisTestApp - UE sent stop message to the Device App \n";
             myfile.close();
         }
     }
 
     //rescheduling
-    if(selfStop_->isScheduled())
+    if (selfStop_->isScheduled())
         cancelEvent(selfStop_);
     scheduleAt(simTime() + period_, selfStop_);
 }
@@ -241,27 +230,25 @@ void UeRnisTestApp::sendStopMecApp()
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void UeRnisTestApp::handleAckStartMecApp(cMessage* msg)
+void UeRnisTestApp::handleAckStartMecApp(cMessage *msg)
 {
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
-    if(pkt->getResult() == true)
-    {
+    if (pkt->getResult() == true) {
         mecAppAddress_ = L3AddressResolver().resolve(pkt->getIpAddress());
         mecAppPort_ = pkt->getPort();
-        EV << "UeRnisTestApp::handleAckStartMecApp - Received " << pkt->getType() << ". MecApp instance is at: "<< mecAppAddress_<< ":" << mecAppPort_ << endl;
+        EV << "UeRnisTestApp::handleAckStartMecApp - Received " << pkt->getType() << ". MecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
         cancelEvent(selfStart_);
 
         //scheduling sendStopMecApp()
-        if(!selfStop_->isScheduled()){
-            simtime_t  stopTime = par("stopTime");
+        if (!selfStop_->isScheduled()) {
+            simtime_t stopTime = par("stopTime");
             scheduleAt(simTime() + stopTime, selfStop_);
             EV << "UeRnisTestApp::handleAckStartMecApp - Starting sendStopMecApp() in " << stopTime << " seconds " << endl;
         }
     }
-    else
-    {
+    else {
         EV << "UeRnisTestApp::handleAckStartMecApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
     }
 
@@ -270,11 +257,11 @@ void UeRnisTestApp::handleAckStartMecApp(cMessage* msg)
 
 }
 
-void UeRnisTestApp::sendMessageToMecApp(){
+void UeRnisTestApp::sendMessageToMecApp() {
 
     // send start monitoring message to the MEC application
 
-    inet::Packet* pkt = new inet::Packet("RnisTestAppStartPacket");
+    inet::Packet *pkt = new inet::Packet("RnisTestAppStartPacket");
     auto startMsg = inet::makeShared<RnisTestAppStartPacket>();
     startMsg->setType(START_QUERY_RNIS);
     startMsg->setPeriod(par("queryingPeriod"));
@@ -282,25 +269,23 @@ void UeRnisTestApp::sendMessageToMecApp(){
     startMsg->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(startMsg);
 
-    if(log)
-    {
+    if (log) {
         ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UeRnisTestApp - UE sent start subscription message to the MEC application \n";
+        myfile.open("example.txt", ios::app);
+        if (myfile.is_open()) {
+            myfile << "[" << NOW << "] UeRnisTestApp - UE sent start subscription message to the MEC application \n";
             myfile.close();
         }
     }
 
-    socket.sendTo(pkt, mecAppAddress_ , mecAppPort_);
+    socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
     EV << "UeRnisTestApp::sendMessageToMecApp() - start Message sent to the MEC app" << endl;
 }
 
-void UeRnisTestApp::handleInfoMecApp(cMessage* msg)
+void UeRnisTestApp::handleInfoMecApp(cMessage *msg)
 {
 
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto rnisInfo = packet->peekAtFront<RnisTestAppInfoPacket>();
 
     EV << "UeRnisTestApp::handleInfoMecApp - Received " << rnisInfo->getType() << " from MEC app:" << endl;
@@ -309,28 +294,25 @@ void UeRnisTestApp::handleInfoMecApp(cMessage* msg)
     nlohmann::json jsonBody = rnisInfo->getL2meas();
     EV << jsonBody.dump(4) << endl;
 
-    if(log)
-    {
+    if (log) {
         ofstream myfile;
-        myfile.open ("example.txt", ios::app);
-        if(myfile.is_open())
-        {
-            myfile <<"["<< NOW << "] UeRnisTestApp - Received RNIS info from MEC app:\n";
+        myfile.open("example.txt", ios::app);
+        if (myfile.is_open()) {
+            myfile << "[" << NOW << "] UeRnisTestApp - Received RNIS info from MEC app:\n";
             myfile << jsonBody.dump(4) << "\n";
             myfile.close();
         }
     }
-
 }
 
-void UeRnisTestApp::handleAckStopMecApp(cMessage* msg)
+void UeRnisTestApp::handleAckStopMecApp(cMessage *msg)
 {
-    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
+    inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
-    EV << "UeRnisTestApp::handleAckStopMecApp - Received " << pkt->getType() << " with result: "<< pkt->getResult() << endl;
-    if(pkt->getResult() == false)
-        EV << "Reason: "<< pkt->getReason() << endl;
+    EV << "UeRnisTestApp::handleAckStopMecApp - Received " << pkt->getType() << " with result: " << pkt->getResult() << endl;
+    if (pkt->getResult() == false)
+        EV << "Reason: " << pkt->getReason() << endl;
 
     cancelEvent(selfStop_);
 }

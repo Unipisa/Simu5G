@@ -26,11 +26,11 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
     preconfiguredTxParams_->writeTxMode(TRANSMIT_DIVERSITY);
     Rank ri = 1;                                              // rank for TxD is one
     preconfiguredTxParams_->writeRank(ri);
-    preconfiguredTxParams_->writePmi(intuniform(getEnvir()->getRNG(0),1, pow(ri, (double) 2)));   // taken from LteFeedbackComputationRealistic::computeFeedback
+    preconfiguredTxParams_->writePmi(intuniform(getEnvir()->getRNG(0), 1, pow(ri, (double)2)));   // taken from LteFeedbackComputationRealistic::computeFeedback
 
     if (cqi < 0 || cqi > 15)
         throw cRuntimeError("AmcPilotD2D::setPreconfiguredTxParams - CQI %hu is not a valid value. Aborting", cqi);
-    preconfiguredTxParams_->writeCqi(std::vector<Cqi>(1,cqi));
+    preconfiguredTxParams_->writeCqi(std::vector<Cqi>(1, cqi));
 
     BandSet b;
     Band i = 0;
@@ -48,15 +48,13 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
 {
     EV << NOW << " AmcPilot" << getName() << "::computeTxParams for UE " << id << ", direction " << dirToA(dir) << endl;
 
-    if ((dir == D2D || dir == D2D_MULTI) && usePreconfiguredTxParams_)
-    {
+    if ((dir == D2D || dir == D2D_MULTI) && usePreconfiguredTxParams_) {
         EV << NOW << " AmcPilot" << getName() << "::computeTxParams Use preconfigured Tx params for D2D connections" << endl;
         return *preconfiguredTxParams_;
     }
 
     // Check if user transmission parameters have been already allocated
-    if(amc_->existTxParams(id, dir, carrierFrequency))
-    {
+    if (amc_->existTxParams(id, dir, carrierFrequency)) {
         EV << NOW << " AmcPilot" << getName() << "::computeTxParams The Information for this user have been already assigned" << endl;
         return amc_->getTxParams(id, dir, carrierFrequency);
     }
@@ -78,30 +76,27 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
 
     MacNodeId peerId = 0;  // FIXME this way, the getFeedbackD2D() function will return the first feedback available
 
-    const LteSummaryFeedback& sfb = (dir==UL || dir==DL) ? amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency) : amc_->getFeedbackD2D(id, MACRO, txMode, peerId, carrierFrequency);
+    const LteSummaryFeedback& sfb = (dir == UL || dir == DL) ? amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency) : amc_->getFeedbackD2D(id, MACRO, txMode, peerId, carrierFrequency);
 
-    if (TxMode(txMode)==MULTI_USER) // Initialize MuMiMoMatrix
-        amc_->muMimoMatrixInit(dir,id);
+    if (TxMode(txMode) == MULTI_USER) // Initialize MuMiMoMatrix
+        amc_->muMimoMatrixInit(dir, id);
 
-    sfb.print(0,id,dir,txMode,"AmcPilotD2D::computeTxParams");
+    sfb.print(0, id, dir, txMode, "AmcPilotD2D::computeTxParams");
 
     // get a vector of  CQI over first CW
     std::vector<Cqi> summaryCqi = sfb.getCqi(0);
 
     Cqi chosenCqi;
     BandSet b;
-    if (mode_ == AVG_CQI)
-    {
+    if (mode_ == AVG_CQI) {
         // MEAN cqi computation method
-        chosenCqi = binder_->meanCqi(sfb.getCqi(0),id,dir);
-        for (Band i = 0; i < sfb.getCqi(0).size(); ++i)
-        {
+        chosenCqi = binder_->meanCqi(sfb.getCqi(0), id, dir);
+        for (Band i = 0; i < sfb.getCqi(0).size(); ++i) {
             Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, i);
             b.insert(cellWiseBand);
         }
     }
-    else
-    {
+    else {
         // MIN/MAX cqi computation method
         Band band = 0;
 
@@ -109,12 +104,10 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
         Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, band);
         chosenCqi = summaryCqi.at(band);
         unsigned int bands = summaryCqi.size();// number of bands
-        for(Band i = 1; i < bands; ++i)
-        {
+        for (Band i = 1; i < bands; ++i) {
             // For all LBs
             double s = (double)summaryCqi.at(i);
-            if((mode_ == MIN_CQI && s < chosenCqi) || (mode_ == MAX_CQI && s > chosenCqi))
-            {
+            if ((mode_ == MIN_CQI && s < chosenCqi) || (mode_ == MAX_CQI && s > chosenCqi)) {
                 band = i;
                 chosenCqi = s;
             }
@@ -133,7 +126,7 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
     UserTxParams info;
     info.writeTxMode(txMode);
     info.writeRank(sfb.getRi());
-    info.writeCqi(std::vector<Cqi>(1,chosenCqi));
+    info.writeCqi(std::vector<Cqi>(1, chosenCqi));
     info.writePmi(sfb.getPmi(0));
     info.writeBands(b);
     RemoteSet antennas;

@@ -16,30 +16,29 @@
 namespace simu5g {
 
 const double BackgroundTrafficManagerBase::nrCqiTable[16] = {
-        -9999.0,
-        -9999.0,
-        -9999.0,
-        -5.5,
-        -3.5,
-        -1.5,
-        0.5,
-        4.5,
-        5.5,
-        7.5,
-        10.5,
-        12.5,
-        15.5,
-        17.5,
-        21.5,
-        25.5
+    -9999.0,
+    -9999.0,
+    -9999.0,
+    -5.5,
+    -3.5,
+    -1.5,
+    0.5,
+    4.5,
+    5.5,
+    7.5,
+    10.5,
+    12.5,
+    15.5,
+    17.5,
+    21.5,
+    25.5
 };
 
 double BackgroundTrafficManagerBase::getCqiFromTable(double snr)
 {
-    for (unsigned int i=0; i<16; i++)
-    {
+    for (unsigned int i = 0; i < 16; i++) {
         if (snr < nrCqiTable[i])
-            return i-1;
+            return i - 1;
     }
     return 15;
 }
@@ -51,22 +50,19 @@ BackgroundTrafficManagerBase::BackgroundTrafficManagerBase()
 void BackgroundTrafficManagerBase::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         numBgUEs_ = par("numBgUes");
         binder_.reference(this, "binderModule", true);
     }
-    if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
-    {
+    if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT) {
         // create vector of BackgroundUEs
-        for (int i=0; i < numBgUEs_; i++)
-            bgUe_.push_back(check_and_cast<TrafficGeneratorBase*>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
+        for (int i = 0; i < numBgUEs_; i++)
+            bgUe_.push_back(check_and_cast<TrafficGeneratorBase *>(getParentModule()->getSubmodule("bgUE", i)->getSubmodule("generator")));
 
         phyPisaData_ = &(binder_->phyPisaData);
     }
-    if (stage == inet::INITSTAGE_LAST-1)
-    {
-        BgTrafficManagerInfo* info = new BgTrafficManagerInfo();
+    if (stage == inet::INITSTAGE_LAST - 1) {
+        BgTrafficManagerInfo *info = new BgTrafficManagerInfo();
         info->init = false;
         info->bgTrafficManager = this;
         info->carrierFrequency = carrierFrequency_;
@@ -74,8 +70,7 @@ void BackgroundTrafficManagerBase::initialize(int stage)
         info->allocatedRbsUl = 0.0;
         info->allocatedRbsUeUl.resize(numBgUEs_, 0.0);
 
-        if (isSetBgTrafficManagerInfoInit())
-        {
+        if (isSetBgTrafficManagerInfoInit()) {
             initializeAvgInterferenceComputation();
             info->init = true;
         }
@@ -86,9 +81,8 @@ void BackgroundTrafficManagerBase::initialize(int stage)
 
 void BackgroundTrafficManagerBase::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage()) // this is a activeUeNotification message
-    {
-        ActiveUeNotification* notification = check_and_cast<ActiveUeNotification*>(msg);
+    if (msg->isSelfMessage()) { // this is a activeUeNotification message
+        ActiveUeNotification *notification = check_and_cast<ActiveUeNotification *>(msg);
 
         // add the bg UE to the list of active UEs in x slots
         backloggedBgUes_[UL].push_back(notification->getIndex());
@@ -100,17 +94,15 @@ void BackgroundTrafficManagerBase::handleMessage(cMessage *msg)
 void BackgroundTrafficManagerBase::notifyBacklog(int index, Direction dir, bool rtx)
 {
     if (dir != DL && dir != UL)
-        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
+        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d", dir);
 
-    if (!rtx)
-    {
+    if (!rtx) {
         if (dir == UL)
             waitingForRac_.push_back(index);
         else
             backloggedBgUes_[DL].push_back(index);
     }
-    else
-    {
+    else {
         backloggedRtxBgUes_[dir].push_back(index);
     }
 }
@@ -124,8 +116,7 @@ Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet:
     Cqi bandCqi, meanCqi = 0;
     std::vector<double>::iterator it = snr.begin();
 
-    for (; it != snr.end(); ++it)
-    {
+    for ( ; it != snr.end(); ++it) {
         meanSinr += *it;
 
         // lookup table that associates the SINR to a range of CQI values
@@ -135,11 +126,11 @@ Cqi BackgroundTrafficManagerBase::computeCqi(int bgUeIndex, Direction dir, inet:
     }
 
     meanSinr /= snr.size();
-    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
+    TrafficGeneratorBase *bgUe = bgUe_.at(bgUeIndex);
     bgUe->collectMeasuredSinr(meanSinr, dir);
 
     meanCqi /= snr.size();
-    if(meanCqi < 2)
+    if (meanCqi < 2)
         meanCqi = 2;
 
     return meanCqi;
@@ -163,13 +154,11 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
 
     double targetBler = 0.01; // TODO get this from parameters
 
-    for (int i = 0; i < phyPisaData_->nMcs(); i++)
-    {
+    for (int i = 0; i < phyPisaData_->nMcs(); i++) {
         double tmp = phyPisaData_->getBler(txm, i, newsnr);
         double diff = targetBler - tmp;
         min[i] = (diff > 0) ? diff : (diff * -1);
-        if (low >= min[i])
-        {
+        if (low >= min[i]) {
             found = i;
             low = min[i];
         }
@@ -179,19 +168,18 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
 //    return getCqiFromTable(sinr);
 }
 
-
-TrafficGeneratorBase* BackgroundTrafficManagerBase::getTrafficGenerator(MacNodeId bgUeId)
+TrafficGeneratorBase *BackgroundTrafficManagerBase::getTrafficGenerator(MacNodeId bgUeId)
 {
     int index = bgUeId - BGUE_MIN_ID;
     return bgUe_.at(index);
 }
 
-std::vector<TrafficGeneratorBase*>::const_iterator BackgroundTrafficManagerBase::getBgUesBegin()
+std::vector<TrafficGeneratorBase *>::const_iterator BackgroundTrafficManagerBase::getBgUesBegin()
 {
     return bgUe_.begin();
 }
 
-std::vector<TrafficGeneratorBase*>::const_iterator BackgroundTrafficManagerBase::getBgUesEnd()
+std::vector<TrafficGeneratorBase *>::const_iterator BackgroundTrafficManagerBase::getBgUesEnd()
 {
     return bgUe_.end();
 }
@@ -233,8 +221,7 @@ unsigned int BackgroundTrafficManagerBase::consumeBackloggedUeBytes(MacNodeId bg
     int index = bgUeId - BGUE_MIN_ID;
     int newBuffLen = bgUe_.at(index)->consumeBytes(bytes, dir, rtx);
 
-    if (newBuffLen == 0)  // bg UE is no longer active
-    {
+    if (newBuffLen == 0) { // bg UE is no longer active
         if (!rtx)
             backloggedBgUes_[dir].remove(index);
         else
@@ -257,9 +244,8 @@ void BackgroundTrafficManagerBase::racHandled(MacNodeId bgUeId)
     unsigned int newBuffLen = consumeBackloggedUeBytes(bgUeId, servedWithFirstBsr, UL);
 
     // if there are still data in the buffer
-    if (newBuffLen > 0)
-    {
-        ActiveUeNotification* notification = new ActiveUeNotification("activeUeNotification");
+    if (newBuffLen > 0) {
+        ActiveUeNotification *notification = new ActiveUeNotification("activeUeNotification");
         notification->setIndex(index);
 
         double offset = getTtiPeriod() * 6;  // TODO make it configurable
@@ -268,14 +254,12 @@ void BackgroundTrafficManagerBase::racHandled(MacNodeId bgUeId)
     }
 }
 
-
 void BackgroundTrafficManagerBase::initializeAvgInterferenceComputation()
 {
     avgCellLoad_ = 0;
 
     // get avg load for all the UEs and for the cell
-    for (int i=0; i < numBgUEs_; i++)
-    {
+    for (int i = 0; i < numBgUEs_; i++) {
         avgCellLoad_ += bgUe_.at(i)->getAvgLoad(DL);
         avgUeLoad_.push_back(bgUe_.at(i)->getAvgLoad(UL));
     }

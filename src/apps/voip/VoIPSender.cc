@@ -15,7 +15,7 @@
 
 namespace simu5g {
 
-#define round(x) floor((x) + 0.5)
+#define round(x)    floor((x) + 0.5)
 
 Define_Module(VoIPSender);
 using namespace inet;
@@ -39,7 +39,7 @@ void VoIPSender::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     durTalk_ = 0;
@@ -72,8 +72,7 @@ void VoIPSender::initialize(int stage)
 
 void VoIPSender::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         if (!strcmp(msg->getName(), "selfSender"))
             sendVoIPPacket();
         else if (!strcmp(msg->getName(), "selfSource"))
@@ -86,18 +85,16 @@ void VoIPSender::handleMessage(cMessage *msg)
 void VoIPSender::initTraffic()
 {
     std::string destAddress = par("destAddress").stringValue();
-    cModule* destModule = findModuleByPath(par("destAddress").stringValue());
-    if (destModule == nullptr)
-    {
+    cModule *destModule = findModuleByPath(par("destAddress").stringValue());
+    if (destModule == nullptr) {
         // this might happen when users are created dynamically
         EV << simTime() << "VoIPSender::initTraffic - destination " << destAddress << " not found" << endl;
 
         simtime_t offset = 0.01; // TODO check value
-        scheduleAt(simTime()+offset, initTraffic_);
+        scheduleAt(simTime() + offset, initTraffic_);
         EV << simTime() << "VoIPSender::initTraffic - the node will retry to initialize traffic in " << offset << " seconds " << endl;
     }
-    else
-    {
+    else {
         delete initTraffic_;
 
         socket.setOutputGate(gate("socketOut"));
@@ -112,7 +109,7 @@ void VoIPSender::initTraffic()
         // calculating traffic starting time
         simtime_t startTime = par("startTime");
 
-        scheduleAt(simTime()+startTime, selfSource_);
+        scheduleAt(simTime() + startTime, selfSource_);
         EV << "\t starting traffic in " << startTime << " seconds " << endl;
     }
 }
@@ -126,7 +123,7 @@ void VoIPSender::talkspurt(simtime_t dur)
     if (nframes_ == 0)
         nframes_ = 1;
 
-    EV << "VoIPSender::talkspurt - TALKSPURT[" << iDtalk_-1 << "] - Will be created[" << nframes_ << "] frames\n\n";
+    EV << "VoIPSender::talkspurt - TALKSPURT[" << iDtalk_ - 1 << "] - Will be created[" << nframes_ << "] frames\n\n";
 
     iDframe_ = 0;
     nframesTmp_ = nframes_;
@@ -135,16 +132,13 @@ void VoIPSender::talkspurt(simtime_t dur)
 
 void VoIPSender::selectPeriodTime()
 {
-    if (!isTalk_)
-    {
+    if (!isTalk_) {
         double durSil2;
-        if(silences_)
-        {
+        if (silences_) {
             durSil_ = weibull(scaleSil_, shapeSil_);
-            durSil2 = round(SIMTIME_DBL(durSil_)*1000) / 1000;
+            durSil2 = round(SIMTIME_DBL(durSil_) * 1000) / 1000;
         }
-        else
-        {
+        else {
             durSil_ = durSil2 = 0;
         }
 
@@ -152,10 +146,9 @@ void VoIPSender::selectPeriodTime()
         scheduleAt(simTime() + durSil_, selfSource_);
         isTalk_ = true;
     }
-    else
-    {
+    else {
         durTalk_ = weibull(scaleTalk_, shapeTalk_);
-        double durTalk2 = round(SIMTIME_DBL(durTalk_)*1000) / 1000;
+        double durTalk2 = round(SIMTIME_DBL(durTalk_) * 1000) / 1000;
         EV << "VoIPSender::selectPeriodTime - Talkspurt[" << iDtalk_ << "] - Duration[" << durTalk_ << "/" << durTalk2 << "] seconds\n";
         talkspurt(durTalk_);
         scheduleAt(simTime() + durTalk_, selfSource_);
@@ -168,7 +161,7 @@ void VoIPSender::sendVoIPPacket()
     if (destAddress_.isUnspecified())
         destAddress_ = L3AddressResolver().resolve(par("destAddress"));
 
-    Packet* packet = new inet::Packet("VoIP");
+    Packet *packet = new inet::Packet("VoIP");
     auto voip = makeShared<VoipPacket>();
     voip->setIDtalk(iDtalk_ - 1);
     voip->setNframes(nframes_);
@@ -177,7 +170,7 @@ void VoIPSender::sendVoIPPacket()
     voip->setChunkLength(B(size_));
     voip->addTag<CreationTimeTag>()->setCreationTime(simTime());
     packet->insertAtBack(voip);
-    EV << "VoIPSender::sendVoIPPacket - Talkspurt[" << iDtalk_-1 << "] - Sending frame[" << iDframe_ << "]\n";
+    EV << "VoIPSender::sendVoIPPacket - Talkspurt[" << iDtalk_ - 1 << "] - Sending frame[" << iDframe_ << "]\n";
 
     socket.sendTo(packet, destAddress_, destPort_);
     --nframesTmp_;
@@ -186,10 +179,9 @@ void VoIPSender::sendVoIPPacket()
     // emit throughput sample
     totalSentBytes_ += size_;
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
-    if (interval > 0.0)
-    {
+    if (interval > 0.0) {
         double tputSample = (double)totalSentBytes_ / interval;
-        emit(voIPGeneratedThroughtput_, tputSample );
+        emit(voIPGeneratedThroughtput_, tputSample);
     }
 
     if (nframesTmp_ > 0)

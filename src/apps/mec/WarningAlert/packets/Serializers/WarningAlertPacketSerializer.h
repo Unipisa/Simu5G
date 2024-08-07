@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef _WARNINGALERTPACKETSERIALIZER_H_
 #define _WARNINGALERTPACKETSERIALIZER_H_
 

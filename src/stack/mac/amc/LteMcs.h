@@ -33,6 +33,7 @@ struct CQIelem
         mod_ = mod;
         rate_ = rate;
     }
+
 };
 
 /**
@@ -53,6 +54,7 @@ struct MCSelem
         iTbs_ = iTbs;
         threshold_ = threshold;
     }
+
 };
 
 /**
@@ -81,8 +83,8 @@ class McsTable
 };
 
 /********************************************
- *      ITBS 2 TBS FRIGHTENING TABLES
- ********************************************/
+*      ITBS 2 TBS FRIGHTENING TABLES
+********************************************/
 
 extern const unsigned int itbs2tbs_qpsk_1[][110];
 extern const unsigned int itbs2tbs_16qam_1[][110];
@@ -104,7 +106,7 @@ extern const unsigned int itbs2tbs_64qam8[][110];
  * @param dir The link direction.
  * @return A row of table 3-2 or table 3-3 specific for the given iTBS.
  */
-const unsigned int* itbs2tbs(LteMod mod, TxMode txMode, unsigned char layers, unsigned char itbs);
+const unsigned int *itbs2tbs(LteMod mod, TxMode txMode, unsigned char layers, unsigned char itbs);
 
 /**
  * Gives the number of layers for each codeword.
@@ -118,3 +120,4 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
 } //namespace
 
 #endif
+

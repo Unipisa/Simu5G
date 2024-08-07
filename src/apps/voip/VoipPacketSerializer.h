@@ -36,3 +36,4 @@ class VoipPacketSerializer : public inet::FieldsChunkSerializer
 } //namespace
 
 #endif // ifndef __INET_VOIPPACKETSERIALIZER_H
+

@@ -54,21 +54,19 @@ void GtpUserX2::initialize(int stage)
 
 void GtpUserX2::handleMessage(cMessage *msg)
 {
-    if (strcmp(msg->getArrivalGate()->getFullName(), "lteStackIn") == 0)
-    {
+    if (strcmp(msg->getArrivalGate()->getFullName(), "lteStackIn") == 0) {
         EV << "GtpUserX2::handleMessage - message from X2 Manager" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         handleFromStack(pkt);
     }
-    else if(strcmp(msg->getArrivalGate()->getFullName(),"socketIn")==0)
-    {
+    else if (strcmp(msg->getArrivalGate()->getFullName(), "socketIn") == 0) {
         EV << "GtpUserX2::handleMessage - message from udp layer" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         handleFromUdp(pkt);
     }
 }
 
-void GtpUserX2::handleFromStack(Packet* pkt)
+void GtpUserX2::handleFromStack(Packet *pkt)
 {
     // extract destination from the message
     auto x2Msg = pkt->peekAtFront<LteX2Message>();
@@ -85,7 +83,7 @@ void GtpUserX2::handleFromStack(Packet* pkt)
     socket_.sendTo(pkt, peerAddress, tunnelPeerPort_);
 }
 
-void GtpUserX2::handleFromUdp(Packet * pkt)
+void GtpUserX2::handleFromUdp(Packet *pkt)
 {
     EV << "GtpUserX2::handleFromUdp - Decapsulating and sending to local connection." << endl;
 
@@ -94,7 +92,7 @@ void GtpUserX2::handleFromUdp(Packet * pkt)
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
     // send message to the X2 Manager
-    send(pkt,"lteStackOut");
+    send(pkt, "lteStackOut");
 }
 
 } //namespace

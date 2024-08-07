@@ -35,3 +35,4 @@ class LteMaxCi : public virtual LteScheduler
 } //namespace
 
 #endif // _LTE_LTEMAXCI_H_
+

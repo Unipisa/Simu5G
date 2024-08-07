@@ -21,39 +21,38 @@ using namespace omnetpp;
 
 class MecRequestForegroundApp : public MecAppBase
 {
-protected:
-     cMessage *sendFGRequest;
-     double lambda;
+  protected:
+    cMessage *sendFGRequest;
+    double lambda;
 
-     inet::TcpSocket* serviceSocket_;
-     inet::TcpSocket* mp1Socket_;
+    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
 
-     HttpBaseMessage* mp1HttpMessage;
-     HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *serviceHttpMessage;
 
-     virtual void handleSelfMessage(cMessage *msg) override;
+    virtual void handleSelfMessage(cMessage *msg) override;
 
-     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-     virtual void initialize(int stage) override;
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage) override;
 
+    virtual void handleHttpMessage(int connId) override;
+    virtual void handleServiceMessage(int connId) override;
+    virtual void handleMp1Message(int connId) override;
 
-     virtual void handleHttpMessage(int connId) override;
-     virtual void handleServiceMessage(int connId) override;
-     virtual void handleMp1Message(int connId) override;
+    virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
 
-     virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+    virtual void established(int connId) override;
 
+    virtual void sendRequest();
 
-     virtual void established(int connId) override;
-
-     virtual void sendRequest();
-
-   public:
-     MecRequestForegroundApp() {}
-     virtual ~MecRequestForegroundApp();
+  public:
+    MecRequestForegroundApp() {}
+    virtual ~MecRequestForegroundApp();
 
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MEAPPS_MEFGAPP_H_ */
+

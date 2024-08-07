@@ -24,11 +24,11 @@ EventNotification::EventNotification(const std::string& type, const int& subId)
     subId_ = subId;
 }
 
-
 int EventNotification::getSubId() const
 {
     return subId_;
 }
+
 std::string EventNotification::getType() const
 {
     return type_;
@@ -39,13 +39,11 @@ void EventNotification::setSubId(int subId)
 {
     subId_ = subId;
 }
+
 void EventNotification::setType(const std::string& type)
 {
     type_ = type;
 }
-
-
-
 
 EventNotification::~EventNotification() {
     // TODO Auto-generated destructor stub

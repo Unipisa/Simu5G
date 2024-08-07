@@ -22,7 +22,7 @@ AperiodicSubscriptionTimer::AperiodicSubscriptionTimer(const char *name, const d
     setPeriod(period);
 }
 
-AperiodicSubscriptionTimer::AperiodicSubscriptionTimer(const char *name): AperiodicSubscriptionTimer_m(name){}
+AperiodicSubscriptionTimer::AperiodicSubscriptionTimer(const char *name): AperiodicSubscriptionTimer_m(name) {}
 
 AperiodicSubscriptionTimer::~AperiodicSubscriptionTimer() {
     // TODO Auto-generated destructor stub

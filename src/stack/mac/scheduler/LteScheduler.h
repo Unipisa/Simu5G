@@ -37,7 +37,7 @@ struct SortedDesc
         if (score_ < y.score_)
             return true;
         if (score_ == y.score_)
-            return uniform(omnetpp::getEnvir()->getRNG(0),0,1) < 0.5;
+            return uniform(omnetpp::getEnvir()->getRNG(0), 0, 1) < 0.5;
         return false;
     }
 
@@ -46,11 +46,13 @@ struct SortedDesc
     {
 
     }
+
     SortedDesc(const T x, const S score)
     {
         x_ = x;
         score_ = score;
     }
+
 };
 
 /**
@@ -67,13 +69,13 @@ class LteScheduler
     omnetpp::opp_component_ptr<Binder> binder_;
 
     /// Associated LteSchedulerEnb (it is the one who creates the LteScheduler)
-    LteSchedulerEnb* eNbScheduler_;
+    LteSchedulerEnb *eNbScheduler_;
 
     /// Link Direction (DL/UL)
     Direction direction_;
 
     //! Set of active connections.
-    ActiveSet* activeConnectionSet_;
+    ActiveSet *activeConnectionSet_;
 
     //! General Active set. Temporary variable used in the two phase scheduling operations
     ActiveSet activeConnectionTempSet_;
@@ -85,7 +87,7 @@ class LteScheduler
     double carrierFrequency_;
 
     //! Set of bands available for this carrier
-    BandLimitVector* bandLimit_;
+    BandLimitVector *bandLimit_;
 
     //! Set of bands available for this carrier for retransmissions (reset on every slot)
     BandLimitVector slotRacBandLimit_;
@@ -117,17 +119,19 @@ class LteScheduler
         activeConnectionSet_ = nullptr;
         binder_ = binder;
     }
+
     /**
      * Destructor.
      */
     virtual ~LteScheduler()
     {
     }
+
     /**
      * Initializes the LteScheduler.
      * @param eNbScheduler eNb scheduler
      */
-    virtual void setEnbScheduler(LteSchedulerEnb* eNbScheduler);
+    virtual void setEnbScheduler(LteSchedulerEnb *eNbScheduler);
 
     /**
      * Initializes the carrier frequency for this LteScheduler.
@@ -180,6 +184,7 @@ class LteScheduler
     virtual void prepareSchedule()
     {
     }
+
     virtual void commitSchedule()
     {
     }
@@ -187,10 +192,10 @@ class LteScheduler
     // *****************************************************************************************
 
     /// performs request of grant to the eNbScheduler
-    virtual unsigned int requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible , std::vector<BandLimit>* bandLim = nullptr);
+    virtual unsigned int requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, std::vector<BandLimit> *bandLim = nullptr);
 
     /// performs request of background grant to the eNbScheduler
-    virtual unsigned int requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible , std::vector<BandLimit>* bandLim = nullptr);
+    virtual unsigned int requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, std::vector<BandLimit> *bandLim = nullptr);
 
     /// calls eNbScheduler::rtxschedule()
     virtual bool scheduleRetransmissions();
@@ -201,6 +206,7 @@ class LteScheduler
     virtual void notifyActiveConnection(MacCid activeCid)
     {
     }
+
     virtual void updateSchedulingInfo()
     {
     }
@@ -218,3 +224,4 @@ class LteScheduler
 } //namespace
 
 #endif // _LTE_LTESCHEDULER_H_
+

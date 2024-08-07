@@ -27,16 +27,15 @@ namespace simu5g {
  */
 class NRPdcpRrcUe : public LtePdcpRrcUeD2D
 {
-    cGate* nrTmSap_[2];
-    cGate* nrUmSap_[2];
-    cGate* nrAmSap_[2];
+    cGate *nrTmSap_[2];
+    cGate *nrUmSap_[2];
+    cGate *nrAmSap_[2];
 
     /// Identifier for this node
     MacNodeId nrNodeId_;
 
     // flag for enabling Dual Connectivity
     bool dualConnectivityEnabled_;
-
 
   protected:
 
@@ -75,8 +74,8 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
      * @return pointer to the PDCP entity for the LCID of the flow
      *
      */
-    virtual LteTxPdcpEntity* getTxEntity(MacCid lcid);
-    virtual LteRxPdcpEntity* getRxEntity(MacCid lcid);
+    virtual LteTxPdcpEntity *getTxEntity(MacCid lcid);
+    virtual LteRxPdcpEntity *getRxEntity(MacCid lcid);
 
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
@@ -96,3 +95,4 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
 } //namespace
 
 #endif
+

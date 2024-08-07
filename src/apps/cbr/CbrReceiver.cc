@@ -26,19 +26,16 @@ void CbrReceiver::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
-    if (stage == INITSTAGE_LOCAL)
-    {
+    if (stage == INITSTAGE_LOCAL) {
         mInit_ = true;
         numReceived_ = 0;
         recvBytes_ = 0;
         cbrRcvdPkt_ = registerSignal("cbrRcvdPkt");
     }
-    else if (stage == INITSTAGE_APPLICATION_LAYER)
-    {
+    else if (stage == INITSTAGE_APPLICATION_LAYER) {
         int port = par("localPort");
         EV << "CbrReceiver::initialize - binding to port: local:" << port << endl;
-        if (port != -1)
-        {
+        if (port != -1) {
             socket.setOutputGate(gate("socketOut"));
             socket.bind(port);
         }
@@ -50,7 +47,7 @@ void CbrReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet* pPacket = check_and_cast<Packet*>(msg);
+    Packet *pPacket = check_and_cast<Packet *>(msg);
     auto cbrHeader = pPacket->popAtFront<CbrPacket>();
 
     numReceived_++;
@@ -58,16 +55,15 @@ void CbrReceiver::handleMessage(cMessage *msg)
     int pktSize = (int)cbrHeader->getPayloadSize();
 
     // just to make sure we do not update recvBytes AND we avoid dividing by 0
-    if( simTime() > getSimulation()->getWarmupPeriod() )
-    {
+    if (simTime() > getSimulation()->getWarmupPeriod()) {
         recvBytes_ += pktSize;
-        emit( cbrReceivedBytesSignal_ , pktSize );
+        emit(cbrReceivedBytesSignal_, pktSize);
     }
 
-    simtime_t delay = simTime()-cbrHeader->getPayloadTimestamp();
-    emit(cbrFrameDelaySignal_,delay );
+    simtime_t delay = simTime() - cbrHeader->getPayloadTimestamp();
+    emit(cbrFrameDelaySignal_, delay);
 
-    EV << "CbrReceiver::handleMessage - Packet received: FRAME[" << cbrHeader->getIDframe() << "/" << cbrHeader->getNframes() << "] with delay["<< delay << "]" << endl;
+    EV << "CbrReceiver::handleMessage - Packet received: FRAME[" << cbrHeader->getIDframe() << "/" << cbrHeader->getNframes() << "] with delay[" << delay << "]" << endl;
 
     emit(cbrRcvdPkt_, (long)cbrHeader->getIDframe());
 
@@ -77,13 +73,13 @@ void CbrReceiver::handleMessage(cMessage *msg)
 void CbrReceiver::finish()
 {
     double lossRate = 0;
-    if(totFrames_ > 0)
-        lossRate = 1.0-(numReceived_/(totFrames_*1.0));
+    if (totFrames_ > 0)
+        lossRate = 1.0 - (numReceived_ / (totFrames_ * 1.0));
 
-    emit(cbrFrameLossSignal_,lossRate);
+    emit(cbrFrameLossSignal_, lossRate);
 
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit( cbrReceivedThroughtput_, recvBytes_ / elapsedTime.dbl() );
+    emit(cbrReceivedThroughtput_, recvBytes_ / elapsedTime.dbl());
 }
 
 } //namespace

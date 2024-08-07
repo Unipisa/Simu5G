@@ -19,31 +19,32 @@
 
 namespace simu5g {
 
-class Ecgi : public AttributeBase {
+class Ecgi : public AttributeBase
+{
   protected:
     MacCellId cellId_;
     Plmn plmn_;
 
     nlohmann::ordered_json toJsonCell() const; //should be private?
 
-public:
-  Ecgi();
-  Ecgi(MacCellId cellId);
-  Ecgi(const mec::Ecgi ecgi);
+  public:
+    Ecgi();
+    Ecgi(MacCellId cellId);
+    Ecgi(const mec::Ecgi ecgi);
 
-  Ecgi(MacCellId cellId, Plmn& plmn);
+    Ecgi(MacCellId cellId, Plmn& plmn);
 
-  virtual ~Ecgi();
+    virtual ~Ecgi();
 
-  void setCellId(const MacCellId cellId);
-  void setPlmn(const Plmn& plmn);
-  void setPlmn(const mec::Plmn plmn);
-  void setEcgi(const mec::Ecgi& ecgi);
+    void setCellId(const MacCellId cellId);
+    void setPlmn(const Plmn& plmn);
+    void setPlmn(const mec::Plmn plmn);
+    void setEcgi(const mec::Ecgi& ecgi);
 
-  MacCellId getCellId() const;
-  Plmn getPlmn() const;
+    MacCellId getCellId() const;
+    Plmn getPlmn() const;
 
-  nlohmann::ordered_json toJson() const override;
+    nlohmann::ordered_json toJson() const override;
 
 };
 

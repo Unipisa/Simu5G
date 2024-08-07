@@ -20,14 +20,13 @@ Plmn::Plmn()
     mnc_ = "01";
 }
 
-
 Plmn::Plmn(const std::string& mcc, const std::string& mnc)
 {
     setMcc(mcc);
     setMnc(mnc);
 }
 
-Plmn::~Plmn(){}
+Plmn::~Plmn() {}
 
 void Plmn::setMcc(const std::string& mcc)
 {
@@ -43,6 +42,7 @@ std::string Plmn::getMcc() const
 {
     return mcc_;
 }
+
 std::string Plmn::getMnc() const
 {
     return mnc_;

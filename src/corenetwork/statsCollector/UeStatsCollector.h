@@ -36,123 +36,119 @@ using namespace inet;
  * periodically calculate the measures.
  *
  */
-class UeStatsCollector: public cSimpleModule
+class UeStatsCollector : public cSimpleModule
 {
-    private:
+  private:
 
-        std::string collectorType_; // ueCollectorStatsCollector or NRueCollectorStatsCollector
+    std::string collectorType_; // ueCollectorStatsCollector or NRueCollectorStatsCollector
 
-        // Used by the RNI service
-        mec::AssociateId associateId_;
+    // Used by the RNI service
+    mec::AssociateId associateId_;
 
-        // LTE Nic layers
+    // LTE Nic layers
 //        inet::ModuleRefByPar<LtePdcpRrcUe> pdcp_;
-        inet::ModuleRefByPar<LteMacBase>     mac_;
-        inet::ModuleRefByPar<PacketFlowManagerUe> packetFlowManager_;
+    inet::ModuleRefByPar<LteMacBase> mac_;
+    inet::ModuleRefByPar<PacketFlowManagerUe> packetFlowManager_;
 
-        // packet delay
-        L2MeasBase ul_nongbr_delay_ue;
-        L2MeasBase dl_nongbr_delay_ue;
-        // packet discard rate
-        L2MeasBase ul_nongbr_pdr_ue;
-        L2MeasBase dl_nongbr_pdr_ue;
-        // scheduled throughput
-        L2MeasBase ul_nongbr_throughput_ue;
-        L2MeasBase dl_nongbr_throughput_ue;
-        // data volume
-        L2MeasBase ul_nongbr_data_volume_ue;
-        L2MeasBase dl_nongbr_data_volume_ue;
+    // packet delay
+    L2MeasBase ul_nongbr_delay_ue;
+    L2MeasBase dl_nongbr_delay_ue;
+    // packet discard rate
+    L2MeasBase ul_nongbr_pdr_ue;
+    L2MeasBase dl_nongbr_pdr_ue;
+    // scheduled throughput
+    L2MeasBase ul_nongbr_throughput_ue;
+    L2MeasBase dl_nongbr_throughput_ue;
+    // data volume
+    L2MeasBase ul_nongbr_data_volume_ue;
+    L2MeasBase dl_nongbr_data_volume_ue;
 
-        // TODO insert signals for statistics
+    // TODO insert signals for statistics
 
-        bool handover_;
+    bool handover_;
 
-    public:
-        UeStatsCollector();
-        virtual ~UeStatsCollector(){}
+  public:
+    UeStatsCollector();
+    virtual ~UeStatsCollector() {}
 
-        // methods to update L2 measures
+    // methods to update L2 measures
 
-        // packet delay
-        void add_ul_nongbr_delay_ue();
-        void add_dl_nongbr_delay_ue(double value);// called by the eNodeBCollector
+    // packet delay
+    void add_ul_nongbr_delay_ue();
+    void add_dl_nongbr_delay_ue(double value);// called by the eNodeBCollector
 
-        // packet discard rate
-        void add_ul_nongbr_pdr_ue();
-        void add_dl_nongbr_pdr_ue(double value); // called by the eNodeBCollector
+    // packet discard rate
+    void add_ul_nongbr_pdr_ue();
+    void add_dl_nongbr_pdr_ue(double value); // called by the eNodeBCollector
 
-        // throughput
-        void add_ul_nongbr_throughput_ue(double value);
-        void add_dl_nongbr_throughput_ue(double value);
+    // throughput
+    void add_ul_nongbr_throughput_ue(double value);
+    void add_dl_nongbr_throughput_ue(double value);
 
-        // PDPC bytes
-        void add_ul_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
-        void add_dl_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
+    // PDPC bytes
+    void add_ul_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
+    void add_dl_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
 
+    void resetDelayCounter(); // reset structures to calculate the measure
 
-        void resetDelayCounter(); // reset structures to calculate the measure
+    /* thie method is used by the eNodeBStatsCollector to calculate
+     * packet discard rate per cell
+     */
+    DiscardedPkts getULDiscardedPkt();
 
-        /* thie method is used by the eNodeBStatsCollector to calculate
-         * packet discard rate per cell
-         */
-        DiscardedPkts getULDiscardedPkt();
+    // getters to retrieve L2 measures (e.g from RNI service)
 
+    // packet delay getters
+    int get_ul_nongbr_delay_ue();
+    int get_dl_nongbr_delay_ue();
 
+    // packet discard rate getters
+    int get_ul_nongbr_pdr_ue();
+    int get_dl_nongbr_pdr_ue();
 
-        // getters to retrieve L2 measures (e.g from RNI service)
+    // throughput getters
+    int get_ul_nongbr_throughput_ue();
+    int get_dl_nongbr_throughput_ue();
 
-        // packet delay getters
-        int get_ul_nongbr_delay_ue();
-        int get_dl_nongbr_delay_ue();
+    // PDPC bytes getters
+    int get_ul_nongbr_data_volume_ue();
+    int get_dl_nongbr_data_volume_ue();
 
-        // packet discard rate getters
-        int get_ul_nongbr_pdr_ue();
-        int get_dl_nongbr_pdr_ue();
+    /* getters for GBR (Guaranteed Bit Rate) L2 measures.
+     * currently not implemented since the simulator does not
+     * handle them
+     */
+    int get_dl_gbr_delay_ue() { return -1; }
+    int get_ul_gbr_delay_ue() { return -1; }
 
-        // throughput getters
-        int get_ul_nongbr_throughput_ue();
-        int get_dl_nongbr_throughput_ue();
+    int get_dl_gbr_pdr_ue() { return -1; }
+    int get_ul_gbr_pdr_ue() { return -1; }
 
-        // PDPC bytes getters
-        int get_ul_nongbr_data_volume_ue();
-        int get_dl_nongbr_data_volume_ue();
+    int get_dl_gbr_throughput_ue() { return -1; }
+    int get_ul_gbr_throughput_ue() { return -1; }
 
+    int get_dl_gbr_data_volume_ue() { return -1; }
+    int get_ul_gbr_data_volume_ue() { return -1; }
 
-        /* getters for GBR (Guaranteed Bit Rate) L2 measures.
-         * currently not implemented since the simulator does not
-         * handle them
-         */
-        int get_dl_gbr_delay_ue(){return -1;}
-        int get_ul_gbr_delay_ue(){return -1;}
+    void resetStats();
 
-        int get_dl_gbr_pdr_ue(){return -1;}
-        int get_ul_gbr_pdr_ue(){return -1;}
+    void setHandover(bool value)
+    {
+        handover_ = value;
+    }
 
-        int get_dl_gbr_throughput_ue(){return -1;}
-        int get_ul_gbr_throughput_ue(){return -1;}
+    mec::AssociateId getAssociateId() const
+    {
+        return associateId_;
+    }
 
-        int get_dl_gbr_data_volume_ue(){return -1;}
-        int get_ul_gbr_data_volume_ue(){return -1;}
-
-        void resetStats();
-
-        void setHandover(bool value)
-        {
-            handover_ = value;
-        }
-
-        mec::AssociateId getAssociateId() const
-        {
-            return associateId_;
-        }
-
-
-    protected:
-        virtual void initialize(int stages) override;
-        virtual int numInitStages() const override { return INITSTAGE_LAST; }
-        virtual void handleMessage(cMessage *msg) override {}
+  protected:
+    virtual void initialize(int stages) override;
+    virtual int numInitStages() const override { return INITSTAGE_LAST; }
+    virtual void handleMessage(cMessage *msg) override {}
 };
 
 } //namespace
 
 #endif //_LTE_ENOBSTATSCOLLECTOR_H_
+

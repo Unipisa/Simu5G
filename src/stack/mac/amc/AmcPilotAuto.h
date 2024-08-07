@@ -43,6 +43,7 @@ class AmcPilotAuto : public AmcPilot
         mode_ = AVG_CQI;//MAX_CQI;//MIN_CQI;
         name_ = "Auto";
     }
+
     /**
      * Assign logical bands for given nodeId and direction
      * @param id The mobile node ID.
@@ -56,7 +57,7 @@ class AmcPilotAuto : public AmcPilot
      * e.g. limit the set of bands that will be considered in the "computeTxParams" function
      * Note that the id can be either a UE or an eNodeB
      */
-    void setUsableBands(MacNodeId id , UsableBands usableBands);
+    void setUsableBands(MacNodeId id, UsableBands usableBands);
     /*
      * returns as a parameter the subset of bands that will be used in scheduling operation.
      * e.g. limit the set of bands that will be considered in the "scheduleGrant" function
@@ -66,12 +67,13 @@ class AmcPilotAuto : public AmcPilot
      * bands will not be limited)
      * The method returns false if ALL bands are usable (hence, ignore the pointer), otherwise returns true
      */
-    bool getUsableBands(MacNodeId id, UsableBands*& uBands);
+    bool getUsableBands(MacNodeId id, UsableBands *& uBands);
 
     // returns a vector with one CQI for each band ( for the given user )
-    std::vector<Cqi>  getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency);
+    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency);
 };
 
 } //namespace
 
 #endif
+

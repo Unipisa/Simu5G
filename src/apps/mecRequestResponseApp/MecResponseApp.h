@@ -28,17 +28,18 @@ class MecResponseApp : public cSimpleModule
 
     static simsignal_t recvRequestSno_;
 
-    protected:
+  protected:
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
 
-        void handleRequest(cMessage* msg);
-        void sendResponse(cMessage* msg);
+    void handleRequest(cMessage *msg);
+    void sendResponse(cMessage *msg);
 
 };
 
 } //namespace
 
 #endif
+

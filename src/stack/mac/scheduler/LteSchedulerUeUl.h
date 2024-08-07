@@ -38,7 +38,7 @@ class LteSchedulerUeUl
     LteMacScheduleList scheduledBytesList_;
 
     // Inner Scheduler - default to Standard LCG
-    LcgScheduler* lcgScheduler_;
+    LcgScheduler *lcgScheduler_;
 
     // carrier frequency handled by this scheduler
     double carrierFrequency_;
@@ -49,17 +49,17 @@ class LteSchedulerUeUl
      * @returns reference to scheduling list
      */
 
-    LteMacScheduleList* schedule();
+    LteMacScheduleList *schedule();
 
     /* After the scheduling, returns the amount of bytes
      * scheduled for each connection
      */
-    LteMacScheduleList* getScheduledBytesList();
+    LteMacScheduleList *getScheduledBytesList();
 
     /*
      * constructor
      */
-    LteSchedulerUeUl(LteMacUe * mac, double carrierFrequency);
+    LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency);
 
     /**
      * Copy constructor and operator=
@@ -68,6 +68,7 @@ class LteSchedulerUeUl
     {
         operator=(other);
     }
+
     LteSchedulerUeUl& operator=(const LteSchedulerUeUl& other);
 
     /*
@@ -79,3 +80,4 @@ class LteSchedulerUeUl
 } //namespace
 
 #endif // _LTE_LTE_SCHEDULER_UE_UL_H_
+

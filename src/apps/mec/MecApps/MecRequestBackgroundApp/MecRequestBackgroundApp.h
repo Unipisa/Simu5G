@@ -21,26 +21,25 @@ using namespace omnetpp;
 
 class MecRequestBackgroundApp : public MecAppBase
 {
-protected:
+  protected:
 
     int numberOfApplications_;    // requests to send in this session
     cMessage *burstTimer;
     cMessage *burstPeriod;
-    bool      burstFlag;
+    bool burstFlag;
     cMessage *sendBurst;
 
     double lambda; // it is the mean, not the rate
-    inet::TcpSocket* serviceSocket_;
-    inet::TcpSocket* mp1Socket_;
+    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_;
 
-    HttpBaseMessage* mp1HttpMessage;
-    HttpBaseMessage* serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *serviceHttpMessage;
 
     virtual void handleSelfMessage(cMessage *msg) override;
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
-
 
     virtual void handleHttpMessage(int connId) override;
     virtual void handleServiceMessage(int connId) override;
@@ -48,18 +47,18 @@ protected:
 
     virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
 
-
     virtual void established(int connId) override;
 
     virtual void sendRequest();
 
     virtual void finish() override;
 
-   public:
-     MecRequestBackgroundApp();
-     virtual ~MecRequestBackgroundApp();
+  public:
+    MecRequestBackgroundApp();
+    virtual ~MecRequestBackgroundApp();
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MEAPPS_MEBGAPP_H_ */
+

@@ -18,16 +18,14 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
-
 Register_Class(X2CompMsg);
 Register_Serializer(X2CompMsg, LteX2MsgSerializer);
 
 X2CompMsg::X2CompMsg() :
-        LteX2Message()
-    {
-        type_ = X2_COMP_MSG;
-    }
-
+    LteX2Message()
+{
+    type_ = X2_COMP_MSG;
+}
 
 X2CompMsg::X2CompMsg(const X2CompMsg& other) : LteX2Message() { operator=(other); }
 
@@ -39,9 +37,9 @@ X2CompMsg& X2CompMsg::operator=(const X2CompMsg& other)
     return *this;
 }
 
-X2CompMsg* X2CompMsg::dup() const { return new X2CompMsg(*this); }
+X2CompMsg *X2CompMsg::dup() const { return new X2CompMsg(*this); }
 
-X2CompMsg::~X2CompMsg() { }
+X2CompMsg::~X2CompMsg() {}
 
 } //namespace
 

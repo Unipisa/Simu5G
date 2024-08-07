@@ -31,6 +31,7 @@ class LteMacSduRequest : public LteMacSduRequest_Base
         ueId_ = other.ueId_;
         lcid_ = other.lcid_;
     }
+
   protected:
     /// ID of the destination UE associated with the request
     MacNodeId ueId_;
@@ -74,6 +75,7 @@ class LteMacSduRequest : public LteMacSduRequest_Base
     {
         return new LteMacSduRequest(*this);
     }
+
     MacNodeId getUeId() { return ueId_; }
     void setUeId(MacNodeId ueId) { ueId_ = ueId; }
 

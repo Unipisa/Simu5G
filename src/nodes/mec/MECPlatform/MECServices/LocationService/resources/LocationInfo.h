@@ -19,18 +19,19 @@ namespace simu5g {
 
 class LocationInfo : public AttributeBase
 {
-    public:
-        LocationInfo();
-        LocationInfo(const inet::Coord& coordinates, const inet::Coord& speed);
-        LocationInfo(const inet::Coord& coordinates);
-        virtual ~LocationInfo();
-        nlohmann::ordered_json toJson() const override;
+  public:
+    LocationInfo();
+    LocationInfo(const inet::Coord& coordinates, const inet::Coord& speed);
+    LocationInfo(const inet::Coord& coordinates);
+    virtual ~LocationInfo();
+    nlohmann::ordered_json toJson() const override;
 
-    private:
-        inet::Coord coordinates_;
-        inet::Coord speed_;
+  private:
+    inet::Coord coordinates_;
+    inet::Coord speed_;
 };
 
 } //namespace
 
 #endif /* CORENETWORK_NODES_MEC_MECPLATFORM_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONINFO_H_ */
+

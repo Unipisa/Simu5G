@@ -53,11 +53,11 @@ class IBackgroundTrafficManager
     virtual Cqi computeCqiFromSinr(double sinr) = 0;
 
     // returns the pointer to the traffic generator of the given background UE
-    virtual TrafficGeneratorBase* getTrafficGenerator(MacNodeId bgUeId) = 0;
+    virtual TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) = 0;
 
     // returns the begin (end) iterator of the vector of UEs
-    virtual std::vector<TrafficGeneratorBase*>::const_iterator getBgUesBegin() = 0;
-    virtual std::vector<TrafficGeneratorBase*>::const_iterator getBgUesEnd() = 0;
+    virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() = 0;
+    virtual std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd() = 0;
 
     // returns the begin (end) iterator of the vector of backlogged UEs
     virtual std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false) = 0;
@@ -71,7 +71,7 @@ class IBackgroundTrafficManager
     virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx = false) = 0;
 
     // returns the bytes per block of the given UE for in the given direction
-    virtual  unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) = 0;
+    virtual unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) = 0;
 
     // signal that the RAC for the given UE has been handled
     virtual void racHandled(MacNodeId bgUeId) = 0;
@@ -86,3 +86,4 @@ class IBackgroundTrafficManager
 } //namespace
 
 #endif
+

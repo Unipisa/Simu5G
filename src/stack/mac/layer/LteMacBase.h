@@ -43,7 +43,7 @@ typedef std::map<MacNodeId, LteHarqBufferRx *> HarqRxBuffers;
  * MultiMap associating a LCG group with all connection belonging to it and
  * corresponding virtual buffer pointer
  */
-typedef std::pair<MacCid, LteMacBuffer*> CidBufferPair;
+typedef std::pair<MacCid, LteMacBuffer *> CidBufferPair;
 typedef std::pair<LteTrafficClass, CidBufferPair> LcgPair;
 typedef std::multimap<LteTrafficClass, CidBufferPair> LcgMap;
 
@@ -83,8 +83,8 @@ class LteMacBase : public omnetpp::cSimpleModule
     /*
      * Gates
      */
-    ::omnetpp::cGate* up_[2];     /// RLC <--> MAC
-    ::omnetpp::cGate* down_[2];   /// MAC <--> PHY
+    ::omnetpp::cGate *up_[2];     /// RLC <--> MAC
+    ::omnetpp::cGate *down_[2];   /// MAC <--> PHY
 
     /*
      * MAC MIB Params
@@ -94,7 +94,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     int harqProcesses_;
 
     /// TTI self message
-    ::omnetpp::cMessage* ttiTick_;
+    ::omnetpp::cMessage *ttiTick_;
 
     /// TTI for this node
     double ttiPeriod_;
@@ -196,13 +196,13 @@ class LteMacBase : public omnetpp::cSimpleModule
     virtual void deleteQueues(MacNodeId nodeId);
 
     //* public utility function - drops ownership of an object
-    void dropObj(cOwnedObject* obj)
+    void dropObj(cOwnedObject *obj)
     {
         drop(obj);
     }
 
     //* public utility function - takes ownership of an object
-    void takeObj(cOwnedObject* obj)
+    void takeObj(cOwnedObject *obj)
     {
         take(obj);
     }
@@ -216,7 +216,7 @@ class LteMacBase : public omnetpp::cSimpleModule
         return ttiPeriod_;
     }
 
-    LtePhyBase* getPhy()
+    LtePhyBase *getPhy()
     {
         return phy_;
     }
@@ -225,13 +225,14 @@ class LteMacBase : public omnetpp::cSimpleModule
     {
         return nodeId_;
     }
+
     MacCellId getMacCellId()
     {
         return cellId_;
     }
 
     // Returns the virtual buffers
-    LteMacBufferMap* getMacBuffers()
+    LteMacBufferMap *getMacBuffers()
     {
         return &macBuffers_;
     }
@@ -249,19 +250,19 @@ class LteMacBase : public omnetpp::cSimpleModule
     }
 
     // Returns the harq tx buffers
-    std::map<double, HarqTxBuffers>* getHarqTxBuffers()
+    std::map<double, HarqTxBuffers> *getHarqTxBuffers()
     {
         return &harqTxBuffers_;
     }
 
     // Returns the harq rx buffers
-    std::map<double, HarqRxBuffers>* getHarqRxBuffers()
+    std::map<double, HarqRxBuffers> *getHarqRxBuffers()
     {
         return &harqRxBuffers_;
     }
 
     // Returns the harq tx buffers for the given carrier
-    HarqTxBuffers* getHarqTxBuffers(double carrierFrequency)
+    HarqTxBuffers *getHarqTxBuffers(double carrierFrequency)
     {
         if (harqTxBuffers_.find(carrierFrequency) == harqTxBuffers_.end())
             return NULL;
@@ -269,7 +270,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     }
 
     // Returns the harq rx buffers for the given carrier
-    HarqRxBuffers* getHarqRxBuffers(double carrierFrequency)
+    HarqRxBuffers *getHarqRxBuffers(double carrierFrequency)
     {
         if (harqRxBuffers_.find(carrierFrequency) == harqRxBuffers_.end())
             return NULL;
@@ -301,8 +302,7 @@ class LteMacBase : public omnetpp::cSimpleModule
     // check whether HARQ processes have been aborted during this TTI
     bool isHarqReset(MacNodeId srcId)
     {
-        if (resetHarq_.find(srcId) != resetHarq_.end())
-        {
+        if (resetHarq_.find(srcId) != resetHarq_.end()) {
             if (resetHarq_[srcId] == NOW)
                 return true;
         }
@@ -344,7 +344,6 @@ class LteMacBase : public omnetpp::cSimpleModule
      */
     virtual void handleMessage(::omnetpp::cMessage *msg) override;
 
-
     /**
      * Statistics recording
      */
@@ -371,7 +370,7 @@ class LteMacBase : public omnetpp::cSimpleModule
      *
      * @param pkt Packet to send
      */
-    void sendLowerPackets(omnetpp::cPacket* pkt);
+    void sendLowerPackets(omnetpp::cPacket *pkt);
 
     /**
      * sendUpperPackets() is used
@@ -379,26 +378,26 @@ class LteMacBase : public omnetpp::cSimpleModule
      *
      * @param pkt Packet to send
      */
-    void sendUpperPackets(omnetpp::cPacket* pkt);
+    void sendUpperPackets(omnetpp::cPacket *pkt);
 
     /*
      * Functions to be redefined by derivated classes
      */
 
     virtual void macPduMake(MacCid cid = 0) = 0;
-    virtual void macPduUnmake(omnetpp::cPacket* pkt) = 0;
+    virtual void macPduUnmake(omnetpp::cPacket *pkt) = 0;
 
     /**
      * bufferizePacket() is called every time a packet is
      * received from the upper layer
      */
-    virtual bool bufferizePacket(omnetpp::cPacket* pktAux);
+    virtual bool bufferizePacket(omnetpp::cPacket *pktAux);
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer
      */
-    virtual void handleUpperMessage(omnetpp::cPacket* pkt)
+    virtual void handleUpperMessage(omnetpp::cPacket *pkt)
     {
         bufferizePacket(pkt);
     }
@@ -406,28 +405,28 @@ class LteMacBase : public omnetpp::cSimpleModule
     /**
      * macHandleFeedbackPkt is called every time a feedback pkt arrives on MAC
      */
-    virtual void macHandleFeedbackPkt(omnetpp::cPacket* pkt)
+    virtual void macHandleFeedbackPkt(omnetpp::cPacket *pkt)
     {
     }
 
     /*
      * Receives and handles scheduling grants - implemented in LteMacUe
      */
-    virtual void macHandleGrant(omnetpp::cPacket* pkt)
+    virtual void macHandleGrant(omnetpp::cPacket *pkt)
     {
     }
 
     /*
      * Receives and handles RAC requests (eNodeB implementation)  and responses (LteMacUe implementation)
      */
-    virtual void macHandleRac(omnetpp::cPacket* pkt)
+    virtual void macHandleRac(omnetpp::cPacket *pkt)
     {
     }
 
     /*
      * Update UserTxParam stored in every lteMacPdu when an rtx change this information
      */
-    virtual void updateUserTxParam(omnetpp::cPacket* pkt)=0;
+    virtual void updateUserTxParam(omnetpp::cPacket *pkt) = 0;
 
     /// Upper Layer Handler
     void fromRlc(omnetpp::cPacket *pkt);
@@ -439,3 +438,4 @@ class LteMacBase : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

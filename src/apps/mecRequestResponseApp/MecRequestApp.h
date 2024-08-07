@@ -30,7 +30,7 @@ class MecRequestApp : public cSimpleModule
     simtime_t period_;
     int localPort_;
     int destPort_;
-    char* sourceSymbolicAddress_;
+    char *sourceSymbolicAddress_;
     inet::L3Address destAddress_;
 
     inet::ModuleRefByPar<NRPhyUe> nrPhy_;
@@ -48,21 +48,22 @@ class MecRequestApp : public cSimpleModule
     static simsignal_t requestRTT_;
     static simsignal_t recvResponseSno_;
 
-    public:
-        ~MecRequestApp();
-        MecRequestApp();
+  public:
+    ~MecRequestApp();
+    MecRequestApp();
 
-    protected:
+  protected:
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-        virtual void finish();
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
-        void sendRequest();
-        void recvResponse(cMessage* msg);
+    void sendRequest();
+    void recvResponse(cMessage *msg);
 };
 
 } //namespace
 
 #endif
+

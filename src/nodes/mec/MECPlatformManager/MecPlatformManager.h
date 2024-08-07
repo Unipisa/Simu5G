@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef __MECPLATFORMMANAGER_H_
 #define __MECPLATFORMMANAGER_H_
 
@@ -37,47 +36,48 @@ class MecOrchestrator;
 
 class MecPlatformManager : public cSimpleModule
 {
-    protected:
-        inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator;
-        inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
-        inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
+  protected:
+    inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator;
+    inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
+    inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
-    public:
-        MecPlatformManager();
+  public:
+    MecPlatformManager();
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        virtual void initialize(int stage);
-        virtual void handleMessage(cMessage*){}
-        virtual void finish(){}
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage);
+    virtual void handleMessage(cMessage *) {}
+    virtual void finish() {}
 
-        /* instancing the requested MECApp
-         *
-         * The argument is a message even if it is called as a direct method call from the
-         * MEC orchestrator. It could be useful in the future if the MECPM were enriched
-         * with gates and deeper functionalities.
-         *
-         * For the instantiateMEApp method:
-         * @return MecAppInstanceInfo structure with the endpoint of the MEC app.
-         *
-         * For the instantiateEmulatedMEApp method only a bool is returned, since the endpoint
-         * is known at the MEC orchestrator (in the appDescriptor)
-         */
-        // instantiating the MEC app
-        MecAppInstanceInfo* instantiateMEApp(CreateAppMessage*);
-        bool instantiateEmulatedMEApp(CreateAppMessage*);
-        // terminating the correspondent MEC app
-        bool terminateMEApp(DeleteAppMessage*);
-        bool terminateEmulatedMEApp(DeleteAppMessage*);
+    /* instancing the requested MECApp
+     *
+     * The argument is a message even if it is called as a direct method call from the
+     * MEC orchestrator. It could be useful in the future if the MECPM were enriched
+     * with gates and deeper functionalities.
+     *
+     * For the instantiateMEApp method:
+     * @return MecAppInstanceInfo structure with the endpoint of the MEC app.
+     *
+     * For the instantiateEmulatedMEApp method only a bool is returned, since the endpoint
+     * is known at the MEC orchestrator (in the appDescriptor)
+     */
+    // instantiating the MEC app
+    MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *);
+    bool instantiateEmulatedMEApp(CreateAppMessage *);
+    // terminating the correspondent MEC app
+    bool terminateMEApp(DeleteAppMessage *);
+    bool terminateEmulatedMEApp(DeleteAppMessage *);
 
-        const std::vector<ServiceInfo>* getAvailableMecServices() const;
+    const std::vector<ServiceInfo> *getAvailableMecServices() const;
 
-        /*
-         * method called by the MEC service to notify its presence to the MEC system
-         */
+    /*
+     * method called by the MEC service to notify its presence to the MEC system
+     */
 
-        void registerMecService(ServiceDescriptor&) const;
+    void registerMecService(ServiceDescriptor&) const;
 };
 
 } //namespace
 
 #endif
+

@@ -13,7 +13,7 @@
 
 namespace simu5g {
 
-LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb* macOwner)
+LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb *macOwner)
 {
     numUnits_ = numUnits;
     maxTransmissions_ = maxTransmissions;
@@ -32,26 +32,22 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
     pduLength_[cw] = pduLength;
     transmissions_[cw]++;
 
-    if (harqAck == HARQACK)
-    {
+    if (harqAck == HARQACK) {
         // pdu has been sent and received correctly
         transmissions_[cw] = 0;
         status_[cw] = TXHARQ_PDU_EMPTY;
     }
-    else if (harqAck == HARQNACK)
-    {
-        if (transmissions_[cw] == (maxTransmissions_ + 1))
-        {
+    else if (harqAck == HARQNACK) {
+        if (transmissions_[cw] == (maxTransmissions_ + 1)) {
             transmissions_[cw] = 0;
             status_[cw] = TXHARQ_PDU_EMPTY;
         }
-        else
-        {
+        else {
             // pdu_ ready for next transmission
             status_[cw] = TXHARQ_PDU_BUFFERED;
 
             // signal the MAC the need for retransmission
-            omnetpp::check_and_cast<LteMacEnb*>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
+            omnetpp::check_and_cast<LteMacEnb *>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
         }
     }
 }

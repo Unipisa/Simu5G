@@ -36,7 +36,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     int bgUeIndex_;
 
     // self messages for DL and UL
-    cMessage* selfSource_[2];
+    cMessage *selfSource_[2];
 
     // starting time for DL and UL traffic
     simtime_t startTime_[2];
@@ -68,7 +68,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     double lossRate_[2];
 
     // message for scheduling CQI reporting
-    cMessage* fbSource_;
+    cMessage *fbSource_;
 
     /*
      * STATUS
@@ -104,8 +104,8 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     simsignal_t bgHarqErrorRateUl_;
 
     virtual void initialize(int stage) override;
-    virtual int numInitStages() const override {return inet::INITSTAGE_SINGLE_MOBILITY+1; }
-    virtual void handleMessage(cMessage* msg) override;
+    virtual int numInitStages() const override { return inet::INITSTAGE_SINGLE_MOBILITY + 1; }
+    virtual void handleMessage(cMessage *msg) override;
 
     // get new values for sinr and cqi
     void updateMeasurements();
@@ -153,3 +153,4 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 } //namespace
 
 #endif
+

@@ -16,15 +16,14 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-bool LteMaxCiComp::getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId)
+bool LteMaxCiComp::getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeId ueId)
 {
     bandLimit->clear();
 
     // get usable bands for this user
-    UsableBands* usableBands = nullptr;
+    UsableBands *usableBands = nullptr;
     bool ret = eNbScheduler_->mac_->getAmc()->getPilotUsableBands(ueId, usableBands);
-    if (!ret)
-    {
+    if (!ret) {
         // leave the bandLimit empty
         return false;
     }
@@ -33,8 +32,7 @@ bool LteMaxCiComp::getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueI
     unsigned int numCodewords = 1;
     unsigned int numBands = eNbScheduler_->mac_->getCellInfo()->getNumBands();
     // for each band of the band vector provided
-    for (unsigned int i = 0; i < numBands; i++)
-    {
+    for (unsigned int i = 0; i < numBands; i++) {
         BandLimit elem;
         elem.band_ = Band(i);
 
@@ -42,10 +40,8 @@ bool LteMaxCiComp::getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueI
 
         // check whether band i is in the set of usable bands
         UsableBands::iterator it = usableBands->begin();
-        for (; it != usableBands->end(); ++it)
-        {
-            if (*it == i)
-            {
+        for ( ; it != usableBands->end(); ++it) {
+            if (*it == i) {
                 // band i must be marked as unlimited
                 limit = -1;
                 break;
@@ -70,19 +66,17 @@ void LteMaxCiComp::prepareSchedule()
 
     // Build the score list by cycling through the active connections.
     ScoreList score;
-    MacCid cid =0;
-    unsigned int blocks =0;
+    MacCid cid = 0;
+    unsigned int blocks = 0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); ++it1 )
-    {
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
         // Current connection.
         cid = *it1;
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
-        if(nodeId == 0 || id == 0)
-        {
+        if (nodeId == 0 || id == 0) {
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
@@ -90,47 +84,44 @@ void LteMaxCiComp::prepareSchedule()
         }
 
         // compute available blocks for the current user
-        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId,direction_,carrierFrequency_);
+        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(),et=bands.end();
-        unsigned int codeword=info.getLayers().size();
-        bool cqiNull=false;
-        for (unsigned int i=0;i<codeword;i++)
-        {
-            if (info.readCqiVector()[i]==0)
-            cqiNull=true;
+        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        unsigned int codeword = info.getLayers().size();
+        bool cqiNull = false;
+        for (unsigned int i = 0; i < codeword; i++) {
+            if (info.readCqiVector()[i] == 0)
+                cqiNull = true;
         }
         if (cqiNull)
-        continue;
+            continue;
         //no more free cw
-        if (eNbScheduler_->allocatedCws(nodeId)==codeword)
-        continue;
+        if (eNbScheduler_->allocatedCws(nodeId) == codeword)
+            continue;
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt=info.readAntennaSet().end();
+        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
 
         // compute score based on total available bytes
-        unsigned int availableBlocks=0;
-        unsigned int availableBytes =0;
+        unsigned int availableBlocks = 0;
+        unsigned int availableBytes = 0;
         // for each antenna
-        for (;antennaIt!=antennaEt;++antennaIt)
-        {
+        for ( ; antennaIt != antennaEt; ++antennaIt) {
             // for each logical band
-            for (;it!=et;++it)
-            {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+            for ( ; it != et; ++it) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, direction_,carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, direction_, carrierFrequency_);
             }
         }
 
         blocks = availableBlocks;
         // current user bytes per slot
-        byPs = (blocks>0) ? (availableBytes/blocks ) : 0;
+        byPs = (blocks > 0) ? (availableBytes / blocks) : 0;
 
         // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
-        ScoreDesc desc(cid,byPs);
+        ScoreDesc desc(cid, byPs);
         // insert the cid score
-        score.push (desc);
+        score.push(desc);
 
         EV << NOW << " LteMaxCiComp::schedule computed for cid " << cid << " score of " << desc.score_ << endl;
     }
@@ -138,13 +129,12 @@ void LteMaxCiComp::prepareSchedule()
     std::vector<BandLimit> usableBands;
 
     // Schedule the connections in score order.
-    while ( ! score.empty () )
-    {
+    while (!score.empty()) {
         // Pop the top connection from the list.
-        ScoreDesc current = score.top ();
+        ScoreDesc current = score.top();
 
         // Get the bandLimit for the current user
-        std::vector<BandLimit>* bandLim;
+        std::vector<BandLimit> *bandLim;
         bool ret = getBandLimit(&usableBands, MacCidToNodeId(current.x_));
         if (!ret)
             bandLim = nullptr;
@@ -157,26 +147,24 @@ void LteMaxCiComp::prepareSchedule()
         bool terminate = false;
         bool active = true;
         bool eligible = true;
-        unsigned int granted = requestGrant (current.x_, 4294967295U, terminate, active, eligible, bandLim);
+        unsigned int granted = requestGrant(current.x_, 4294967295U, terminate, active, eligible, bandLim);
 
         EV << NOW << "LteMaxCiComp::schedule granted " << granted << " bytes to connection " << current.x_ << endl;
 
         // Exit immediately if the terminate flag is set.
-        if ( terminate ) break;
+        if (terminate) break;
 
         // Pop the descriptor from the score list if the active or eligible flag are clear.
-        if ( ! active || ! eligible )
-        {
-            score.pop ();
+        if (!active || !eligible) {
+            score.pop();
             EV << NOW << "LteMaxCiComp::schedule  connection " << current.x_ << " was found ineligible" << endl;
         }
 
         // Set the connection as inactive if indicated by the grant ().
-        if ( ! active )
-        {
+        if (!active) {
             EV << NOW << "LteMaxCiComp::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
             carrierActiveConnectionSet_.erase(current.x_);
-            activeConnectionTempSet_.erase (current.x_);
+            activeConnectionTempSet_.erase(current.x_);
         }
     }
 }

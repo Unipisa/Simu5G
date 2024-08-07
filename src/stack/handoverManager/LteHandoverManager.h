@@ -36,7 +36,7 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    omnetpp::cGate* x2Manager_[2];
+    omnetpp::cGate *x2Manager_[2];
 
     // reference to the PDCP layer
     inet::ModuleRefByPar<IP2Nic> ip2nic_;
@@ -44,7 +44,7 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     // flag for seamless/lossless handover
     bool losslessHandover_;
 
-    void handleX2Message(omnetpp::cPacket* pkt);
+    void handleX2Message(omnetpp::cPacket *pkt);
 
   public:
     LteHandoverManager() {}
@@ -60,12 +60,13 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     void receiveHandoverCommand(MacNodeId ueId, MacNodeId eEnb, bool startHo);
 
     // send an IP datagram to the X2 Manager
-    void forwardDataToTargetEnb(inet::Packet* datagram, MacNodeId targetEnb);
+    void forwardDataToTargetEnb(inet::Packet *datagram, MacNodeId targetEnb);
 
     // receive data from X2 message and send it to the X2 Manager
-    void receiveDataFromSourceEnb(inet::Packet* datagram, MacNodeId sourceEnb);
+    void receiveDataFromSourceEnb(inet::Packet *datagram, MacNodeId sourceEnb);
 };
 
 } //namespace
 
 #endif /* __LTEHANDOVERMANAGER_H_ */
+

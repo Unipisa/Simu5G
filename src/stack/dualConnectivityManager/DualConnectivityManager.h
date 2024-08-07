@@ -39,9 +39,9 @@ class DualConnectivityManager : public cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    cGate* x2Manager_[2];
+    cGate *x2Manager_[2];
 
-    void handleX2Message(cMessage* msg);
+    void handleX2Message(cMessage *msg);
 
   public:
     DualConnectivityManager() {}
@@ -51,12 +51,13 @@ class DualConnectivityManager : public cSimpleModule
     virtual void handleMessage(cMessage *msg);
 
     // send a PDCP PDU to the X2 Manager
-    void forwardDataToTargetNode(inet::Packet* pkt, MacNodeId targetNode);
+    void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode);
 
     // receive PDCP PDU from X2 Manager and send it to the PDCP layer
-    void receiveDataFromSourceNode(inet::Packet* pkt, MacNodeId sourceNode);
+    void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode);
 };
 
 } //namespace
 
 #endif /* DUALCONNECTIVITYMANAGER_H_ */
+

@@ -16,21 +16,22 @@
 
 namespace simu5g {
 
-class CircleNotificationEvent: public EventNotification {
-    public:
-        CircleNotificationEvent();
-        CircleNotificationEvent(const std::string& type, const int& subId, const std::vector<TerminalLocation>& terminalLocations);
+class CircleNotificationEvent : public EventNotification
+{
+  public:
+    CircleNotificationEvent();
+    CircleNotificationEvent(const std::string& type, const int& subId, const std::vector<TerminalLocation>& terminalLocations);
 
-        const std::vector<TerminalLocation>& getTerminalLocations() const;
+    const std::vector<TerminalLocation>& getTerminalLocations() const;
 
+    virtual ~CircleNotificationEvent();
 
-        virtual ~CircleNotificationEvent();
-
-    private:
-        std::vector<TerminalLocation> terminalLocations_;
+  private:
+    std::vector<TerminalLocation> terminalLocations_;
 
 };
 
 } //namespace
 
 #endif /* NODES_MEC_MEPLATFORM_EVENTNOTIFICATION_CIRCLENOTIFICATIONEVENT_H_ */
+

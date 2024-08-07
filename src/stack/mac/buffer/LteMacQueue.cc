@@ -37,7 +37,7 @@ LteMacQueue& LteMacQueue::operator=(const LteMacQueue& queue)
     return *this;
 }
 
-LteMacQueue* LteMacQueue::dup() const
+LteMacQueue *LteMacQueue::dup() const
 {
     return new LteMacQueue(*this);
 }
@@ -45,9 +45,9 @@ LteMacQueue* LteMacQueue::dup() const
 // ENQUEUE
 bool LteMacQueue::pushBack(cPacket *pkt)
 {
-    Packet * pktAux = check_and_cast<Packet*>(pkt);
+    Packet *pktAux = check_and_cast<Packet *>(pkt);
     if (!isEnqueueablePacket(pktAux))
-         return false; // packet queue full or we have discarded fragments for this main packet
+        return false; // packet queue full or we have discarded fragments for this main packet
 
     cPacketQueue::insert(pkt);
     return true;
@@ -55,7 +55,7 @@ bool LteMacQueue::pushBack(cPacket *pkt)
 
 bool LteMacQueue::pushFront(cPacket *pkt)
 {
-    Packet * pktAux = check_and_cast<Packet*>(pkt);
+    Packet *pktAux = check_and_cast<Packet *>(pkt);
     if (!isEnqueueablePacket(pktAux))
         return false; // packet queue full or we have discarded fragments for this main packet
 
@@ -63,12 +63,12 @@ bool LteMacQueue::pushFront(cPacket *pkt)
     return true;
 }
 
-cPacket* LteMacQueue::popFront()
+cPacket *LteMacQueue::popFront()
 {
     return getQueueLength() > 0 ? cPacketQueue::pop() : nullptr;
 }
 
-cPacket* LteMacQueue::popBack()
+cPacket *LteMacQueue::popBack()
 {
     return getQueueLength() > 0 ? cPacketQueue::remove(cPacketQueue::back()) : nullptr;
 }
@@ -88,12 +88,12 @@ int64_t LteMacQueue::getQueueSize() const
     return queueSize_;
 }
 
-bool LteMacQueue::isEnqueueablePacket(Packet* pkt){
+bool LteMacQueue::isEnqueueablePacket(Packet *pkt) {
 
     auto chunk = pkt->peekAtFront<Chunk>();
     auto pdu = dynamicPtrCast<const LteRlcAmPdu>(chunk);
 
-    if(queueSize_ == 0){
+    if (queueSize_ == 0) {
         // unlimited queue size -- nothing to check for
         return true;
     }
@@ -105,15 +105,15 @@ bool LteMacQueue::isEnqueueablePacket(Packet* pkt){
      *         accepted as long as the MAC queue size is not exceeded.
      * For TM: No fragments are to be checked, anyways.
      */
-    if(pdu != nullptr){ // for AM we need to check if all fragments will fit
-        if(pdu->getTotalFragments() > 1) {
+    if (pdu != nullptr) { // for AM we need to check if all fragments will fit
+        if (pdu->getTotalFragments() > 1) {
             int remainingFrags = (pdu->getLastSn() - pdu->getSnoFragment() + 1);
-            bool allFragsWillFit = (remainingFrags*pkt->getByteLength()) + getByteLength() < queueSize_;
+            bool allFragsWillFit = (remainingFrags * pkt->getByteLength()) + getByteLength() < queueSize_;
             bool enqueable = (pdu->getSnoMainPacket() != lastUnenqueueableMainSno) && allFragsWillFit;
-            if(allFragsWillFit && !enqueable){
+            if (allFragsWillFit && !enqueable) {
                 EV_DEBUG << "PDU would fit but discarded frags before - rejecting fragment: " << pdu->getSnoMainPacket() << ":" << pdu->getSnoFragment() << std::endl;
             }
-            if(!enqueable){
+            if (!enqueable) {
                 lastUnenqueueableMainSno = pdu->getSnoMainPacket();
             }
             return enqueable;
@@ -121,7 +121,7 @@ bool LteMacQueue::isEnqueueablePacket(Packet* pkt){
     }
 
     // no fragments or unknown type -- can always be enqueued if there is enough space in the queue
-    return (pkt->getByteLength() + getByteLength() < queueSize_);
+    return pkt->getByteLength() + getByteLength() < queueSize_;
 }
 
 int LteMacQueue::getQueueLength() const
@@ -129,7 +129,7 @@ int LteMacQueue::getQueueLength() const
     return cPacketQueue::getLength();
 }
 
-std::ostream &operator << (std::ostream &stream, const LteMacQueue* queue)
+std::ostream& operator<<(std::ostream& stream, const LteMacQueue *queue)
 {
     stream << "LteMacQueue-> Length: " << queue->getQueueLength() <<
         " Occupancy: " << queue->getQueueOccupancy() <<

@@ -32,14 +32,14 @@ void LtePhyEnbD2D::initialize(int stage)
         enableD2DCqiReporting_ = par("enableD2DCqiReporting");
 }
 
-void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame, Packet* pktAux)
+void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Packet *pktAux)
 {
     EV << NOW << " LtePhyEnbD2D::requestFeedback " << endl;
 
     LteFeedbackDoubleVector fb;
 
     // select the correct channel model according to the carrier freq
-    LteChannelModel* channelModel = getChannelModel(lteinfo->getCarrierFrequency());
+    LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
 
     auto header = pktAux->removeAtFront<LteFeedbackPkt>();
 
@@ -65,44 +65,39 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame,
     std::map<Remote, int> antennaCws = cellInfo_->getAntennaCws();
     unsigned int numPreferredBand = cellInfo_->getNumPreferredBands();
     Direction dir = UL;
-    while (dir != UNKNOWN_DIRECTION)
-    {
+    while (dir != UNKNOWN_DIRECTION) {
         //for each RU is called the computation feedback function
-        if (req.genType == IDEAL)
-        {
+        if (req.genType == IDEAL) {
             fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-                antennaCws, numPreferredBand, IDEAL, nRus, snr,
-                lteinfo->getSourceId());
+                    antennaCws, numPreferredBand, IDEAL, nRus, snr,
+                    lteinfo->getSourceId());
         }
-        else if (req.genType == REAL)
-        {
+        else if (req.genType == REAL) {
             RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
             for (it = das_->getReportingSet().begin();
-                it != das_->getReportingSet().end(); ++it)
+                 it != das_->getReportingSet().end(); ++it)
             {
-                fb[(*it)].resize((int) txmode);
-                fb[(*it)][(int) txmode] =
-                lteFeedbackComputation_->computeFeedback(*it, txmode,
-                    type, rbtype, antennaCws[*it], numPreferredBand,
-                    REAL, nRus, snr, lteinfo->getSourceId());
+                fb[(*it)].resize((int)txmode);
+                fb[(*it)][(int)txmode] =
+                    lteFeedbackComputation_->computeFeedback(*it, txmode,
+                            type, rbtype, antennaCws[*it], numPreferredBand,
+                            REAL, nRus, snr, lteinfo->getSourceId());
             }
         }
         // the reports are computed only for the antenna in the reporting set
-        else if (req.genType == DAS_AWARE)
-        {
+        else if (req.genType == DAS_AWARE) {
             RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
             for (it = das_->getReportingSet().begin();
-                it != das_->getReportingSet().end(); ++it)
+                 it != das_->getReportingSet().end(); ++it)
             {
                 fb[(*it)] = lteFeedbackComputation_->computeFeedback(*it, type,
-                    rbtype, txmode, antennaCws[*it], numPreferredBand,
-                    DAS_AWARE, nRus, snr, lteinfo->getSourceId());
+                        rbtype, txmode, antennaCws[*it], numPreferredBand,
+                        DAS_AWARE, nRus, snr, lteinfo->getSourceId());
             }
         }
-        if (dir == UL)
-        {
+        if (dir == UL) {
             header->setLteFeedbackDoubleVectorUl(fb);
             //Prepare  parameters for next loop iteration - in order to compute SNR in DL
             lteinfo->setTxPower(txPower_);
@@ -115,37 +110,33 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame,
 
             dir = DL;
         }
-        else if (dir == DL)
-        {
+        else if (dir == DL) {
             header->setLteFeedbackDoubleVectorDl(fb);
 
-            if (enableD2DCqiReporting_)
-            {
+            if (enableD2DCqiReporting_) {
                 // compute D2D feedback for all possible peering UEs
-                std::vector<UeInfo*>* ueList = binder_->getUeList();
-                std::vector<UeInfo*>::iterator it = ueList->begin();
-                for (; it != ueList->end(); ++it)
-                {
+                std::vector<UeInfo *> *ueList = binder_->getUeList();
+                std::vector<UeInfo *>::iterator it = ueList->begin();
+                for ( ; it != ueList->end(); ++it) {
                     MacNodeId peerId = (*it)->id;
-                    if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_)
-                    {
-                         // the source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
+                    if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
+                        // the source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
 
-                         // retrieve the position of the peer
-                         Coord peerCoord = (*it)->phy->getCoord();
+                        // retrieve the position of the peer
+                        Coord peerCoord = (*it)->phy->getCoord();
 
-                         // get SINR for this link
-                         if (channelModel != NULL)
-                             snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
-                         else
-                             throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+                        // get SINR for this link
+                        if (channelModel != NULL)
+                            snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
+                        else
+                            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
 
-                         // compute the feedback for this link
-                         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
-                                 antennaCws, numPreferredBand, IDEAL, nRus, snr,
-                                 lteinfo->getSourceId());
+                        // compute the feedback for this link
+                        fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,
+                                antennaCws, numPreferredBand, IDEAL, nRus, snr,
+                                lteinfo->getSourceId());
 
-                         header->setLteFeedbackDoubleVectorD2D(peerId, fb);
+                        header->setLteFeedbackDoubleVectorD2D(peerId, fb);
                     }
                 }
             }
@@ -160,16 +151,15 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo* lteinfo, LteAirFrame* frame,
     pktAux->insertAtFront(header);
 }
 
-void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
+void LtePhyEnbD2D::handleAirFrame(cMessage *msg)
 {
-    UserControlInfo* lteInfo = check_and_cast<UserControlInfo*>(msg->removeControlInfo());
-    LteAirFrame* frame = static_cast<LteAirFrame*>(msg);
+    UserControlInfo *lteInfo = check_and_cast<UserControlInfo *>(msg->removeControlInfo());
+    LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
 
     EV << "LtePhyEnbD2D::handleAirFrame - received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     // handle broadcast packet sent by another eNB
-    if (lteInfo->getFrameType() == HANDOVERPKT)
-    {
+    if (lteInfo->getFrameType() == HANDOVERPKT) {
         EV << "LtePhyEnbD2D::handleAirFrame - received handover packet from another eNodeB. Ignore it." << endl;
         delete lteInfo;
         delete frame;
@@ -178,9 +168,8 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
 
     // check if the air frame was sent on a correct carrier frequency
     double carrierFreq = lteInfo->getCarrierFrequency();
-    LteChannelModel* channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
-    {
+    LteChannelModel *channelModel = getChannelModel(carrierFreq);
+    if (channelModel == NULL) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -188,8 +177,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
     }
 
     // Check if the frame is for us ( MacNodeId matches or - if this is a multicast communication - enrolled in multicast group)
-    if (lteInfo->getDestId() != nodeId_)
-    {
+    if (lteInfo->getDestId() != nodeId_) {
         EV << "ERROR: Frame is not for us. Delete it." << endl;
         EV << "Packet Type: " << phyFrameTypeToA((LtePhyFrameType)lteInfo->getFrameType()) << endl;
         EV << "Frame MacNodeId: " << lteInfo->getDestId() << endl;
@@ -199,8 +187,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
         return;
     }
 
-    if (lteInfo->getMulticastGroupId() != -1 && !(binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())))
-    {
+    if (lteInfo->getMulticastGroupId() != -1 && !(binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId()))) {
         EV << "Frame is for a multicast group, but we do not belong to that group. Delete the frame." << endl;
         EV << "Packet Type: " << phyFrameTypeToA((LtePhyFrameType)lteInfo->getFrameType()) << endl;
         EV << "Frame MacNodeId: " << lteInfo->getDestId() << endl;
@@ -218,8 +205,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (binder_->getNextHop(lteInfo->getSourceId()) != nodeId_)
-    {
+    if (binder_->getNextHop(lteInfo->getSourceId()) != nodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
         EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
         EV << "Master MacNodeId: " << nodeId_ << endl;
@@ -232,8 +218,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
 
     int sourceId = binder_->getOmnetId(connectedNodeId_);
     int senderId = binder_->getOmnetId(lteInfo->getDestId());
-    if(sourceId == 0 || senderId == 0)
-    {
+    if (sourceId == 0 || senderId == 0) {
         // either source or destination have left the simulation
         delete msg;
         return;
@@ -245,12 +230,10 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
 
     bool result = true;
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
-    if (r.size() > 1)
-    {
+    if (r.size() > 1) {
         // Use DAS
         // Message from ue
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++)
-        {
+        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
             EV << "LtePhy: Receiving Packet from antenna " << (*it) << "\n";
 
             /*
@@ -267,8 +250,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage* msg)
         }
         result = channelModel->isErrorDas(frame, lteInfo);
     }
-    else
-    {
+    else {
         result = channelModel->isError(frame, lteInfo);
     }
     if (result)

@@ -33,7 +33,7 @@ using namespace omnetpp;
 // that in the Qtenv log (set the logger parameter to dump the output to a file).
 // If the period is set to 0, then only one query is requested.
 //
-class UeRnisTestApp: public cSimpleModule
+class UeRnisTestApp : public cSimpleModule
 {
 
     //communication to device app and mec app
@@ -64,26 +64,27 @@ class UeRnisTestApp: public cSimpleModule
     // uses to write in a log a file
     bool log;
 
-    public:
-        ~UeRnisTestApp();
-        UeRnisTestApp();
+  public:
+    ~UeRnisTestApp();
+    UeRnisTestApp();
 
-    protected:
+  protected:
 
-        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-        void initialize(int stage);
-        virtual void handleMessage(cMessage *msg);
-        virtual void finish();
+    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage);
+    virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
-        void sendStartMecApp();
-        void sendMessageToMecApp();
-        void sendStopMecApp();
+    void sendStartMecApp();
+    void sendMessageToMecApp();
+    void sendStopMecApp();
 
-        void handleAckStartMecApp(cMessage* msg);
-        void handleInfoMecApp(cMessage* msg);
-        void handleAckStopMecApp(cMessage* msg);
+    void handleAckStartMecApp(cMessage *msg);
+    void handleInfoMecApp(cMessage *msg);
+    void handleAckStopMecApp(cMessage *msg);
 };
 
 } //namespace
 
 #endif
+

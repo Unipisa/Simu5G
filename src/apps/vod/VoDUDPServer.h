@@ -30,7 +30,7 @@ namespace simu5g {
 class VoDUDPServer : public omnetpp::cSimpleModule
 {
   protected:
-      inet::UdpSocket socket;
+    inet::UdpSocket socket;
     /* Server parameters */
 
     int serverPort;
@@ -84,10 +84,11 @@ class VoDUDPServer : public omnetpp::cSimpleModule
             currentFrame = -1;
             timestamp = -1;
         }
+
     };
     unsigned int nrec_;
 
-    tracerec* trace_;
+    tracerec *trace_;
 
     std::vector<svcPacket> svcTrace_;
 
@@ -100,10 +101,11 @@ class VoDUDPServer : public omnetpp::cSimpleModule
     void initialize(int stage);
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void finish();
-    virtual void handleMessage(omnetpp::cMessage*);
-    virtual void handleSVCMessage(omnetpp::cMessage*);
+    virtual void handleMessage(omnetpp::cMessage *);
+    virtual void handleSVCMessage(omnetpp::cMessage *);
 };
 
 } //namespace
 
 #endif
+

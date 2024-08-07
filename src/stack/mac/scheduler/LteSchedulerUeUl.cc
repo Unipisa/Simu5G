@@ -19,7 +19,7 @@
 namespace simu5g {
 
 using namespace omnetpp;
-LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe * mac, double carrierFrequency)
+LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency)
 {
     mac_ = mac;
     lcgScheduler_ = new LcgScheduler(mac);
@@ -41,14 +41,12 @@ LteSchedulerUeUl& LteSchedulerUeUl::operator=(const LteSchedulerUeUl& other)
     return *this;
 }
 
-
 LteSchedulerUeUl::~LteSchedulerUeUl()
 {
     delete lcgScheduler_;
 }
 
-LteMacScheduleList*
-LteSchedulerUeUl::schedule()
+LteMacScheduleList *LteSchedulerUeUl::schedule()
 {
     // 1) Environment Setup
 
@@ -56,7 +54,7 @@ LteSchedulerUeUl::schedule()
     scheduleList_.clear();
 
     // get the grant
-    const LteSchedulingGrant* grant = mac_->getSchedulingGrant(carrierFrequency_);
+    const LteSchedulingGrant *grant = mac_->getSchedulingGrant(carrierFrequency_);
     if (grant == NULL)
         return &scheduleList_;
 
@@ -75,8 +73,7 @@ LteSchedulerUeUl::schedule()
 
     // TODO check if HARQ ACK messages should be subtracted from available bytes
 
-    for (Codeword cw = 0; cw < codewords; ++cw)
-    {
+    for (Codeword cw = 0; cw < codewords; ++cw) {
         unsigned int availableBytes = grant->getGrantedCwBytes(cw);
 
         EV << NOW << " LteSchedulerUeUl::schedule - Node " << mac_->getMacNodeId() << " available data from grant are "
@@ -96,16 +93,14 @@ LteSchedulerUeUl::schedule()
             continue;
 
         std::map<MacCid, unsigned int>::const_iterator it = sdus.begin(), et = sdus.end();
-        for (; it != et; ++it)
-        {
+        for ( ; it != et; ++it) {
             // set schedule list entry
             std::pair<MacCid, Codeword> schedulePair(it->first, cw);
             scheduleList_[schedulePair] = it->second;
         }
 
         std::map<MacCid, unsigned int>::const_iterator bit = bytes.begin(), bet = bytes.end();
-        for (; bit != bet; ++bit)
-        {
+        for ( ; bit != bet; ++bit) {
             // set schedule list entry
             std::pair<MacCid, Codeword> schedulePair(bit->first, cw);
             scheduledBytesList_[schedulePair] = bit->second;
@@ -120,8 +115,7 @@ LteSchedulerUeUl::schedule()
         // get the highest backlogged flow id and priority
         backlog = mac_->getHighestBackloggedFlow(highestBackloggedFlow, highestBackloggedPriority);
 
-        if (backlog) // at least one backlogged flow exists
-        {
+        if (backlog) { // at least one backlogged flow exists
             // get the lowest backlogged flow id and priority
             mac_->getLowestBackloggedFlow(lowestBackloggedFlow, lowestBackloggedPriority);
         }
@@ -131,7 +125,7 @@ LteSchedulerUeUl::schedule()
     return &scheduleList_;
 }
 
-LteMacScheduleList* LteSchedulerUeUl::getScheduledBytesList()
+LteMacScheduleList *LteSchedulerUeUl::getScheduledBytesList()
 {
     return &scheduledBytesList_;
 }

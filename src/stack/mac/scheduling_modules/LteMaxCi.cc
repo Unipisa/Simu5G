@@ -25,12 +25,11 @@ void LteMaxCi::prepareSchedule()
 
     // Build the score list by cycling through the active connections.
     ScoreList score;
-    MacCid cid =0;
-    unsigned int blocks =0;
+    MacCid cid = 0;
+    unsigned int blocks = 0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); )
-    {
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ) {
         // Current connection.
         cid = *it1;
 
@@ -38,12 +37,12 @@ void LteMaxCi::prepareSchedule()
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
-        if(nodeId == 0 || id == 0){
-                // node has left the simulation - erase corresponding CIDs
-                activeConnectionSet_->erase(cid);
-                activeConnectionTempSet_.erase(cid);
-                carrierActiveConnectionSet_.erase(cid);
-                continue;
+        if (nodeId == 0 || id == 0) {
+            // node has left the simulation - erase corresponding CIDs
+            activeConnectionSet_->erase(cid);
+            activeConnectionTempSet_.erase(cid);
+            carrierActiveConnectionSet_.erase(cid);
+            continue;
         }
 
         // if we are allocating the UL subframe, this connection may be either UL or D2D
@@ -54,66 +53,61 @@ void LteMaxCi::prepareSchedule()
             dir = DL;
 
         // compute available blocks for the current user
-        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId,dir,carrierFrequency_);
+        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(),et=bands.end();
-        unsigned int codeword=info.getLayers().size();
-        bool cqiNull=false;
-        for (unsigned int i=0;i<codeword;i++)
-        {
-            if (info.readCqiVector()[i]==0)
-            cqiNull=true;
+        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        unsigned int codeword = info.getLayers().size();
+        bool cqiNull = false;
+        for (unsigned int i = 0; i < codeword; i++) {
+            if (info.readCqiVector()[i] == 0)
+                cqiNull = true;
         }
         if (cqiNull)
-        continue;
+            continue;
         //no more free cw
-        if (eNbScheduler_->allocatedCws(nodeId)==codeword)
-        continue;
+        if (eNbScheduler_->allocatedCws(nodeId) == codeword)
+            continue;
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt=info.readAntennaSet().end();
+        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
 
         // compute score based on total available bytes
-        unsigned int availableBlocks=0;
-        unsigned int availableBytes =0;
+        unsigned int availableBlocks = 0;
+        unsigned int availableBytes = 0;
         // for each antenna
-        for (;antennaIt!=antennaEt;++antennaIt)
-        {
+        for ( ; antennaIt != antennaEt; ++antennaIt) {
             // for each logical band
-            for (;it!=et;++it)
-            {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+            for ( ; it != et; ++it) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, dir,carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
             }
         }
 
         blocks = availableBlocks;
         // current user bytes per slot
-        byPs = (blocks>0) ? (availableBytes/blocks ) : 0;
+        byPs = (blocks > 0) ? (availableBytes / blocks) : 0;
 
         // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
-        ScoreDesc desc(cid,byPs);
+        ScoreDesc desc(cid, byPs);
         // insert the cid score
-        score.push (desc);
+        score.push(desc);
 
         EV << NOW << " LteMaxCI::schedule computed for cid " << cid << " score of " << desc.score_ << endl;
     }
 
-    if (direction_ == UL || direction_ == DL)  // D2D background traffic not supported (yet?)
-    {
+    if (direction_ == UL || direction_ == DL) { // D2D background traffic not supported (yet?)
         // query the BgTrafficManager to get the list of backlogged bg UEs to be added to the scorelist. This work
         // is done by this module itself, so that backgroundTrafficManager is transparent to the scheduling policy in use
 
-        IBackgroundTrafficManager* bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
+        IBackgroundTrafficManager *bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
         std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_),
-                                         et = bgTrafficManager->getBackloggedUesEnd(direction_);
+                                       et = bgTrafficManager->getBackloggedUesEnd(direction_);
 
         int bgUeIndex;
         int bytesPerBlock;
         MacNodeId bgUeId;
         MacCid bgCid;
-        for (; it != et; ++it)
-        {
+        for ( ; it != et; ++it) {
             bgUeIndex = *it;
             bgUeId = BGUE_MIN_ID + bgUeIndex;
 
@@ -130,54 +124,48 @@ void LteMaxCi::prepareSchedule()
     }
 
     // Schedule the connections in score order.
-    while ( ! score.empty () )
-    {
+    while (!score.empty()) {
         // Pop the top connection from the list.
-        ScoreDesc current = score.top ();
+        ScoreDesc current = score.top();
 
         bool terminate = false;
         bool active = true;
         bool eligible = true;
         unsigned int granted;
 
-        if ( MacCidToNodeId(current.x_) >= BGUE_MIN_ID)
-        {
+        if (MacCidToNodeId(current.x_) >= BGUE_MIN_ID) {
             EV << NOW << " LteMaxCI::schedule scheduling background UE " << MacCidToNodeId(current.x_) << " with score of " << current.score_ << endl;
 
             // Grant data to that background connection.
-            granted = requestGrantBackground (current.x_, 4294967295U, terminate, active, eligible);
+            granted = requestGrantBackground(current.x_, 4294967295U, terminate, active, eligible);
 
             EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to background UE " << MacCidToNodeId(current.x_) << endl;
         }
-        else
-        {
+        else {
             EV << NOW << " LteMaxCI::schedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
 
             // Grant data to that connection.
-            granted = requestGrant (current.x_, 4294967295U, terminate, active, eligible);
+            granted = requestGrant(current.x_, 4294967295U, terminate, active, eligible);
 
             EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to connection " << current.x_ << endl;
         }
 
         // Exit immediately if the terminate flag is set.
-        if ( terminate ) break;
+        if (terminate) break;
 
         // Pop the descriptor from the score list if the active or eligible flag are clear.
-        if ( ! active || ! eligible )
-        {
-            score.pop ();
+        if (!active || !eligible) {
+            score.pop();
             EV << NOW << "LteMaxCI::schedule  connection " << current.x_ << " was found ineligible" << endl;
         }
 
         // Set the connection as inactive if indicated by the grant ().
-        if ( ! active )
-        {
+        if (!active) {
             EV << NOW << "LteMaxCI::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
 
-            if ( MacCidToNodeId(current.x_) <= BGUE_MIN_ID)
-            {
+            if (MacCidToNodeId(current.x_) <= BGUE_MIN_ID) {
                 carrierActiveConnectionSet_.erase(current.x_);
-                activeConnectionTempSet_.erase (current.x_);
+                activeConnectionTempSet_.erase(current.x_);
             }
         }
     }

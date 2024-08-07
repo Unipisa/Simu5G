@@ -19,24 +19,24 @@ namespace simu5g {
 
 class CreateContextAppAckMessage : public CreateContextAppAck
 {
-    private:
-        nlohmann::json appContext;
+  private:
+    nlohmann::json appContext;
 
-        void copy(const CreateContextAppAckMessage& other);
+    void copy(const CreateContextAppAckMessage& other);
 
-    public:
-        CreateContextAppAckMessage(const char *name=nullptr, short kind=0);
-        CreateContextAppAckMessage(const CreateContextAppAckMessage& other);
-        virtual ~CreateContextAppAckMessage();
-        CreateContextAppAckMessage& operator=(const CreateContextAppAckMessage& other);
-        virtual CreateContextAppAckMessage *dup() const override {return new CreateContextAppAckMessage(*this);}
+  public:
+    CreateContextAppAckMessage(const char *name = nullptr, short kind = 0);
+    CreateContextAppAckMessage(const CreateContextAppAckMessage& other);
+    virtual ~CreateContextAppAckMessage();
+    CreateContextAppAckMessage& operator=(const CreateContextAppAckMessage& other);
+    virtual CreateContextAppAckMessage *dup() const override { return new CreateContextAppAckMessage(*this); }
 
-
-        virtual nlohmann::json getAppContext() const;
-        virtual void setAppContext(nlohmann::json& appContext);
+    virtual nlohmann::json getAppContext() const;
+    virtual void setAppContext(nlohmann::json& appContext);
 
 };
 
 } //namespace
 
 #endif /* NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPACKMESSAGE_H_ */
+

@@ -37,11 +37,9 @@ CellInfo::~CellInfo()
     delete ruSet_;
 }
 
-
 void CellInfo::initialize(int stage)
 {
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         pgnMinX_ = par("constraintAreaMinX");
         pgnMinY_ = par("constraintAreaMinY");
         pgnMaxX_ = par("constraintAreaMaxX");
@@ -58,8 +56,7 @@ void CellInfo::initialize(int stage)
         signalUl_ = par("signalUl");
         binder_.reference(this, "binderModule", true);
     }
-    if (stage == inet::INITSTAGE_LOCAL+1)
-    {
+    if (stage == inet::INITSTAGE_LOCAL + 1) {
         // get the total number of bands in the system
         totalBands_ = binder_->getTotalBands();
 
@@ -92,11 +89,9 @@ void CellInfo::initialize(int stage)
     }
 }
 
-
-
 void CellInfo::calculateNodePosition(double centerX, double centerY, int nTh,
-    int totalNodes, int range, double startingAngle, double *xPos,
-    double *yPos)
+        int totalNodes, int range, double startingAngle, double *xPos,
+        double *yPos)
 {
     if (totalNodes == 0)
         error("CellInfo::calculateNodePosition: divide by 0");
@@ -118,7 +113,6 @@ void CellInfo::calculateNodePosition(double centerX, double centerY, int nTh,
     return;
 }
 
-
 void CellInfo::deployRu(double nodeX, double nodeY, int numRu, int ruRange)
 {
     if (numRu == 0)
@@ -129,10 +123,9 @@ void CellInfo::deployRu(double nodeX, double nodeY, int numRu, int ruRange)
     std::string txPowersString = par("ruTxPower");
     int *txPowers = new int[numRu];
     parseStringToIntArray(txPowersString, txPowers, numRu, 0);
-    for (int i = 0; i < numRu; i++)
-    {
+    for (int i = 0; i < numRu; i++) {
         calculateNodePosition(nodeX, nodeY, i, numRu, ruRange, angle, &x, &y);
-        ruSet_->addRemoteAntenna(x, y, (double) txPowers[i]);
+        ruSet_->addRemoteAntenna(x, y, (double)txPowers[i]);
     }
     delete[] txPowers;
 }
@@ -157,7 +150,7 @@ void CellInfo::calculateMCSScale(double *mcsUl, double *mcsDl)
 }
 
 void CellInfo::updateMCSScale(double *mcs, double signalRe,
-    double signalCarriers, Direction dir)
+        double signalCarriers, Direction dir)
 {
     // RBsubcarriers * (TTISymbols - SignallingSymbols) - pilotREs
 
@@ -181,9 +174,8 @@ void CellInfo::createAntennaCwMap()
     int *values = new int[dim];
     // default for missing values is 1
     parseStringToIntArray(cws, values, dim, 1);
-    for (int i = 0; i < dim; i++)
-    {
-        antennaCws_[(Remote) i] = values[i];
+    for (int i = 0; i < dim; i++) {
+        antennaCws_[(Remote)i] = values[i];
     }
     delete[] values;
 }
@@ -247,15 +239,14 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
     CarrierInfoMap::iterator it = carrierMap_.find(carrierFrequency);
     if (it != carrierMap_.end())
         throw omnetpp::cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %d", carrierFrequency, cellId_);
-    else
-    {
+    else {
         carriersVector_.push_back(carrierFrequency);
 
         CarrierInfo cInfo;
         cInfo.carrierFrequency = carrierFrequency;
         cInfo.numBands = carrierNumBands;
         cInfo.numerologyIndex = numerologyIndex;
-        cInfo.slotFormat = computeSlotFormat(useTdd,tddNumSymbolsDl,tddNumSymbolsUl);
+        cInfo.slotFormat = computeSlotFormat(useTdd, tddNumSymbolsDl, tddNumSymbolsUl);
         carrierMap_[carrierFrequency] = cInfo;
 
         maxNumerologyIndex_ = numerologyIndex > maxNumerologyIndex_ ? numerologyIndex : maxNumerologyIndex_;
@@ -267,8 +258,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
 
         // update carriers' bounds
         unsigned int b = 0;
-        for (it = carrierMap_.begin(); it != carrierMap_.end(); ++it)
-        {
+        for (it = carrierMap_.begin(); it != carrierMap_.end(); ++it) {
             it->second.firstBand = b;
             it->second.lastBand = b + it->second.numBands - 1;
             b = it->second.lastBand + 1;
@@ -279,8 +269,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
             it->second.bandLimit.clear();
 
             // for each band of the band vector provided
-            for (unsigned int i = 0; i < numBands_; i++)
-            {
+            for (unsigned int i = 0; i < numBands_; i++) {
                 BandLimit elem;
                 elem.band_ = Band(i);
 
@@ -297,12 +286,12 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
     }
 }
 
-const std::vector<double>* CellInfo::getCarriers()
+const std::vector<double> *CellInfo::getCarriers()
 {
     return &carriersVector_;
 }
 
-const CarrierInfoMap* CellInfo::getCarrierInfoMap()
+const CarrierInfoMap *CellInfo::getCarrierInfoMap()
 {
     return &carrierMap_;
 }
@@ -316,13 +305,12 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
     if (index > it->second.numBands)
         throw omnetpp::cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available band on this carrier [%d]", index, it->second.numBands);
 
-    return (it->second.firstBand + index);
+    return it->second.firstBand + index;
 }
 
-BandLimitVector* CellInfo::getCarrierBandLimit(double carrierFrequency)
+BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
 {
-    if (carrierFrequency == 0.0)
-    {
+    if (carrierFrequency == 0.0) {
         CarrierInfoMap::iterator it = carrierMap_.begin();
         if (it != carrierMap_.end())
             return &(it->second.bandLimit);
@@ -355,8 +343,7 @@ unsigned int CellInfo::getCarrierLastBand(double carrierFrequency)
 SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     SlotFormat sf;
-    if (!useTdd)
-    {
+    if (!useTdd) {
         sf.tdd = false;
 
         // these values are not used when tdd is false
@@ -364,12 +351,11 @@ SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl
         sf.numUlSymbols = 0;
         sf.numFlexSymbols = 0;
     }
-    else
-    {
+    else {
         sf.tdd = true;
         unsigned int numSymbols = rbxDl_ * 2;
-        if (tddNumSymbolsDl+tddNumSymbolsUl > numSymbols)
-            throw omnetpp::cRuntimeError("CellInfo::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl,tddNumSymbolsUl);
+        if (tddNumSymbolsDl + tddNumSymbolsUl > numSymbols)
+            throw omnetpp::cRuntimeError("CellInfo::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl, tddNumSymbolsUl);
 
         sf.numDlSymbols = tddNumSymbolsDl;
         sf.numUlSymbols = tddNumSymbolsUl;

@@ -18,51 +18,46 @@ using namespace omnetpp;
 
 SubscriptionBase::SubscriptionBase() {}
 
-SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,  std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs) {
+SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     auto it = eNodeBs.begin();
-    for(; it != eNodeBs.end() ; ++it){
-        CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for ( ; it != eNodeBs.end(); ++it) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     }
-	subscriptionId_ = subId;
-	socket_ = socket;
-	baseResLocation_ = baseResLocation;
+    subscriptionId_ = subId;
+    socket_ = socket;
+    baseResLocation_ = baseResLocation;
 //	notificationTrigger = nullptr;
 }
 
-void SubscriptionBase::addEnodeB(std::set<cModule*, simu5g::utils::cModule_LessId>& eNodeBs) {
+void SubscriptionBase::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     auto it = eNodeBs.begin();
-    for(; it != eNodeBs.end() ; ++it){
-        CellInfo * cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for ( ; it != eNodeBs.end(); ++it) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
         EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
     }
 }
 
-void SubscriptionBase::addEnodeB(cModule* eNodeB) {
-    CellInfo * cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
+void SubscriptionBase::addEnodeB(cModule *eNodeB) {
+    CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
     eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
-    EV << "LocationResource::addEnodeB with cellId: "<< cellInfo->getMacCellId() << endl;
+    EV << "LocationResource::addEnodeB with cellId: " << cellInfo->getMacCellId() << endl;
     EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
 }
 
-
 SubscriptionBase::~SubscriptionBase() {}
-
-
 
 bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
 {
 
-    if(!jsonBody.contains("callbackReference") || jsonBody["callbackReference"].is_array())
-    {
+    if (!jsonBody.contains("callbackReference") || jsonBody["callbackReference"].is_array()) {
 
         Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
         return false;
     }
 
-    if(std::string(jsonBody["callbackReference"]).find('/') == -1) //bad uri
-    {
+    if (std::string(jsonBody["callbackReference"]).find('/') == -1) { //bad uri
         Http::send400Response(socket_); // must be ipv4
         return false;
     }
@@ -71,26 +66,23 @@ bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
 
     //chek expiration time
     // TODO add end timer
-    if(jsonBody.contains("expiryDeadline") && !jsonBody["expiryDeadline"].is_array())
-    {
+    if (jsonBody.contains("expiryDeadline") && !jsonBody["expiryDeadline"].is_array()) {
         expiryTime_.setSeconds(jsonBody["expiryDeadline"]["seconds"]);
         expiryTime_.setNanoSeconds(jsonBody["expiryDeadline"]["nanoSeconds"]);
         expiryTime_.setValid(true);
     }
-    else
-    {
+    else {
         expiryTime_.setValid(false);
     }
 
-    links_ = baseResLocation_ +std::to_string(subscriptionId_);
+    links_ = baseResLocation_ + std::to_string(subscriptionId_);
 
     return true;
 }
 
-
 void SubscriptionBase::set_links(std::string& link)
 {
-    links_ = link+"sub"+std::to_string(subscriptionId_);
+    links_ = link + "sub" + std::to_string(subscriptionId_);
 }
 
 std::string SubscriptionBase::getSubscriptionType() const

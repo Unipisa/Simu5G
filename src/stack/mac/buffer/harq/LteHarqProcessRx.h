@@ -19,7 +19,7 @@
 namespace simu5g {
 
 typedef std::pair<unsigned char, RxHarqPduStatus> RxUnitStatus;
-typedef std::vector<std::vector<RxUnitStatus> > RxBufferStatus;
+typedef std::vector<std::vector<RxUnitStatus>> RxBufferStatus;
 
 class LteMacBase;
 class LteMacPdu;
@@ -189,3 +189,4 @@ class LteHarqProcessRx
 } //namespace
 
 #endif
+

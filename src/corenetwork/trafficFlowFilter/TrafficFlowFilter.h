@@ -46,7 +46,7 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     // store the name of the gateway node (for MEC Hosts and base stations only)
     std::string gateway_;
 
-    CoreNodeType selectOwnerType(const char * type);
+    CoreNodeType selectOwnerType(const char *type);
 
     // === MEC support === //
 
@@ -62,9 +62,8 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     inet::L3Address meAppsExtAddress_;
     int meAppsExtAddressMask_;
 
-
   protected:
-    virtual int numInitStages() const override{ return inet::INITSTAGE_LAST+1; }
+    virtual int numInitStages() const override { return inet::INITSTAGE_LAST + 1; }
     virtual void initialize(int stage) override;
 
     // TrafficFlowFilter module may receive messages only from the input interface of its compound module
@@ -77,3 +76,4 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

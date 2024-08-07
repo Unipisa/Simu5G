@@ -34,8 +34,7 @@ BackgroundCellTrafficManager::~BackgroundCellTrafficManager()
 void BackgroundCellTrafficManager::initialize(int stage)
 {
     BackgroundTrafficManagerBase::initialize(stage);
-    if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT)
-    {
+    if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT) {
         bgScheduler_.reference(this, "bgSchedulerModule", true);
 
         if (bgScheduler_->isNr())
@@ -43,8 +42,7 @@ void BackgroundCellTrafficManager::initialize(int stage)
         else
             bgAmc_ = new BackgroundCellAmc(binder_);
     }
-    if (stage == inet::INITSTAGE_LAST-1)
-    {
+    if (stage == inet::INITSTAGE_LAST - 1) {
         bsTxPower_ = bgScheduler_->getTxPower();
         bsCoord_ = bgScheduler_->getPosition();
     }
@@ -62,8 +60,8 @@ unsigned int BackgroundCellTrafficManager::getNumBands()
 
 std::vector<double> BackgroundCellTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
-    TrafficGeneratorBase* bgUe = bgUe_.at(bgUeIndex);
+    BackgroundCellChannelModel *bgChannelModel = bgScheduler_->getChannelModel();
+    TrafficGeneratorBase *bgUe = bgUe_.at(bgUeIndex);
 
     MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
     std::vector<double> snr = bgChannelModel->getSINR(bgUeId, bgUePos, bgUe, bgScheduler_, dir);
@@ -77,7 +75,7 @@ double BackgroundCellTrafficManager::getTtiPeriod()
 
 double BackgroundCellTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus)
 {
-    BackgroundCellChannelModel* bgChannelModel = bgScheduler_->getChannelModel();
+    BackgroundCellChannelModel *bgChannelModel = bgScheduler_->getChannelModel();
     return bgChannelModel->getReceivedPower_bgUe(txPower, txPos, rxPos, dir, losStatus, bgScheduler_);
 }
 

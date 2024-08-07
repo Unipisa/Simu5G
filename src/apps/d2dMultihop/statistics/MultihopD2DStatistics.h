@@ -54,7 +54,7 @@ class MultihopD2DStatistics : public omnetpp::cSimpleModule
         unsigned int numSuppressed_;
         unsigned int numDuplicates_;
 
-        TransmissionInfo(){numSent_=0; numSuppressed_=0; numDuplicates_=0;}
+        TransmissionInfo() { numSent_ = 0; numSuppressed_ = 0; numDuplicates_ = 0; }
     };
     std::map<unsigned short, TransmissionInfo> eventTransmissionInfo_;
 
@@ -67,12 +67,12 @@ class MultihopD2DStatistics : public omnetpp::cSimpleModule
     omnetpp::simsignal_t d2dMultihopEventRcvdDupMsg_;      // number of duplicates within the target area
     omnetpp::simsignal_t d2dMultihopEventCompleteDeliveries_;    // percentage of clusters completely-covered within the target area
 
-protected:
+  protected:
 
     virtual void initialize();
     virtual void finish();
 
-public:
+  public:
     void recordNewBroadcast(unsigned int msgId, UeSet& destinations);
     void recordReception(MacNodeId nodeId, unsigned int msgId, omnetpp::simtime_t delay, int hops);
     void recordSentMessage(unsigned int msgId);
@@ -83,3 +83,4 @@ public:
 } //namespace
 
 #endif /* MULTIHOPD2DSTATISTICS_H_ */
+

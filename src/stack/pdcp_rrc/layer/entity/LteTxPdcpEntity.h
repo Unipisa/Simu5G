@@ -38,13 +38,13 @@ class LteTxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpRrcBase* pdcp_;
+    LtePdcpRrcBase *pdcp_;
 
     // next sequence number to be assigned
     unsigned int sno_;
 
     // deliver the PDCP PDU to the lower layer
-    virtual void deliverPdcpPdu(Packet* pdcpPkt);
+    virtual void deliverPdcpPdu(Packet *pdcpPkt);
 
     virtual void setIds(inet::Ptr<FlowControlInfo> lteInfo);
 
@@ -56,9 +56,10 @@ class LteTxPdcpEntity : public cSimpleModule
     virtual void initialize();
 
     // create a PDCP PDU from the IP datagram
-    void handlePacketFromUpperLayer(Packet* pkt);
+    void handlePacketFromUpperLayer(Packet *pkt);
 };
 
 } //namespace
 
 #endif
+

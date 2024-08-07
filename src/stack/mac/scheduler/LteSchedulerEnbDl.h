@@ -43,19 +43,19 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      */
     bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency);
 
-    virtual bool racschedule(double carrierFrequency, BandLimitVector* bandLim = NULL) { return false; }
+    virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = NULL) { return false; }
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL);
 
     /**
      * Schedule retransmissions for background UEs
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector* bandLim = NULL);
+    virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = NULL);
 
     /**
      * Schedules retransmission for the Harq Process of the given UE on a set of logical bands.
@@ -69,15 +69,16 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      * @return The allocated bytes. 0 if retransmission was not possible
      */
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
-        std::vector<BandLimit>* bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
+            std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
-    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit>* bandLim = nullptr,
+    virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
             Remote antenna = MACRO, bool limitBl = false);
 
-    bool getBandLimit(std::vector<BandLimit>* bandLimit, MacNodeId ueId);
+    bool getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeId ueId);
 
 };
 
 } //namespace
 
 #endif // _LTE_LTE_SCHEDULER_ENB_DL_H_
+

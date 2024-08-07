@@ -35,7 +35,7 @@ class IChannelControl
 
   public:
     typedef RadioEntry *RadioRef; // handle for ChannelControl's clients
-    typedef std::list<AirFrame*> TransmissionList;
+    typedef std::list<AirFrame *> TransmissionList;
 
   public:
     virtual ~IChannelControl() {}
@@ -86,3 +86,4 @@ class IChannelControl
 } //namespace
 
 #endif
+

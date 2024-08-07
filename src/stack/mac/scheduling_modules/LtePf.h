@@ -38,7 +38,7 @@ class LtePf : public LteScheduler
 
   public:
 
-    double & pfAlpha()
+    double& pfAlpha()
     {
         return pfAlpha_;
     }
@@ -60,8 +60,10 @@ class LtePf : public LteScheduler
         pfAlpha_ = pfAlpha;
         pfRate_.clear();
     }
+
 };
 
 } //namespace
 
 #endif // _LTE_LTEPF_H_
+

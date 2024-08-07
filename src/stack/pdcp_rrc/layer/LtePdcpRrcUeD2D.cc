@@ -27,8 +27,7 @@ MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     MacNodeId destId = binder_->getMacNodeId(destAddr);
 
     // check if the destination is inside the LTE network
-    if (destId == 0 || getDirection(destId) == UL)  // if not, the packet is destined to the eNB
-    {
+    if (destId == 0 || getDirection(destId) == UL) { // if not, the packet is destined to the eNB
         // UE is subject to handovers: master may change
         return binder_->getNextHop(lteInfo->getSourceId());
     }
@@ -55,8 +54,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
 
     // the direction of the incoming connection is a D2D_MULTI one if the application is of the same type,
     // else the direction will be selected according to the current status of the UE, i.e. D2D or UL
-    if (destAddr.isMulticast())
-    {
+    if (destAddr.isMulticast()) {
         binder_->addD2DMulticastTransmitter(nodeId_);
 
         lteInfo->setDirection(D2D_MULTI);
@@ -70,20 +68,16 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         uint32_t groupId = address & mask;
         lteInfo->setMulticastGroupId((int32_t)groupId);
     }
-    else
-    {
+    else {
         destId = binder_->getMacNodeId(destAddr);
-        if (destId != 0)  // the destination is a UE within the LTE network
-        {
-            if (binder_->checkD2DCapability(nodeId_, destId))
-            {
+        if (destId != 0) { // the destination is a UE within the LTE network
+            if (binder_->checkD2DCapability(nodeId_, destId)) {
                 // this way, we record the ID of the endpoints even if the connection is currently in IM
                 // this is useful for mode switching
                 lteInfo->setD2dTxPeerId(nodeId_);
                 lteInfo->setD2dRxPeerId(destId);
             }
-            else
-            {
+            else {
                 lteInfo->setD2dTxPeerId(0);
                 lteInfo->setD2dRxPeerId(0);
             }
@@ -91,8 +85,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
             // set actual flow direction based (D2D/UL) based on the current mode (DM/IM) of this peering
             lteInfo->setDirection(getDirection(destId));
         }
-        else  // the destination is outside the LTE network
-        {
+        else { // the destination is outside the LTE network
             lteInfo->setDirection(UL);
             lteInfo->setD2dTxPeerId(0);
             lteInfo->setD2dRxPeerId(0);
@@ -101,9 +94,9 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
 
     // Cid Request
     EV << "LtePdcpRrcUeD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
-            << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
-            << " , ToS: " << lteInfo->getTypeOfService()
-            << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
+       << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
+       << " , ToS: " << lteInfo->getTypeOfService()
+       << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
 
     /*
      * Different lcid for different directions of the same flow are assigned.
@@ -111,8 +104,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
      */
 
     LogicalCid mylcid;
-    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF)
-    {
+    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF) {
         // LCID not found
 
         // assign a new LCID to the connection
@@ -138,17 +130,16 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     MacCid cid = idToMacCid(destId, mylcid);
 
     // get the PDCP entity for this CID and process the packet
-    LteTxPdcpEntity* entity = getTxEntity(cid);
+    LteTxPdcpEntity *entity = getTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-void LtePdcpRrcUeD2D::handleMessage(cMessage* msg)
+void LtePdcpRrcUeD2D::handleMessage(cMessage *msg)
 {
-    cPacket* pktAux = check_and_cast<cPacket *>(msg);
+    cPacket *pktAux = check_and_cast<cPacket *>(msg);
 
     // check whether the message is a notification for mode switch
-    if (strcmp(pktAux->getName(),"D2DModeSwitchNotification") == 0)
-    {
+    if (strcmp(pktAux->getName(), "D2DModeSwitchNotification") == 0) {
         EV << "LtePdcpRrcUeD2D::handleMessage - Received packet " << pktAux->getName() << " from port " << pktAux->getArrivalGate()->getName() << endl;
 
         auto pkt = check_and_cast<inet::Packet *>(pktAux);
@@ -159,8 +150,7 @@ void LtePdcpRrcUeD2D::handleMessage(cMessage* msg)
 
         delete pktAux;
     }
-    else
-    {
+    else {
         LtePdcpRrcBase::handleMessage(msg);
     }
 }

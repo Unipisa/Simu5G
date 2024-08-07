@@ -23,7 +23,6 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
-
 MecAppBase::MecAppBase()
 {
     sendTimer = nullptr;
@@ -44,7 +43,7 @@ MecAppBase::~MecAppBase()
 void MecAppBase::initialize(int stage)
 {
 
-    if(stage != inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     const char *mp1Ip = par("mp1Address");
@@ -83,7 +82,7 @@ void MecAppBase::initialize(int stage)
     processMessage_ = new cMessage("processedMessage");
 }
 
-void MecAppBase::connect(inet::TcpSocket* socket, const inet::L3Address& address, const int port)
+void MecAppBase::connect(inet::TcpSocket *socket, const inet::L3Address& address, const int port)
 {
     // we need a new connId if this is not the first connection
     //socket->renewSocket();
@@ -112,73 +111,61 @@ void MecAppBase::connect(inet::TcpSocket* socket, const inet::L3Address& address
 
 void MecAppBase::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
-        if(strcmp(msg->getName(), "processedMessage") == 0)
-        {
-            handleProcessedMessage((cMessage*)packetQueue_.pop());
+    if (msg->isSelfMessage()) {
+        if (strcmp(msg->getName(), "processedMessage") == 0) {
+            handleProcessedMessage((cMessage *)packetQueue_.pop());
             //delete packetQueue_.pop();
-            if(!packetQueue_.isEmpty())
-            {
+            if (!packetQueue_.isEmpty()) {
                 double processingTime = scheduleNextMsg((cMessage *)packetQueue_.front());
-                EV <<"MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
+                EV << "MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
                 scheduleAt(simTime() + processingTime, processMessage_);
             }
-            else
-            {
+            else {
                 EV << "MecAppBase::handleMessage - no more messages are present in the queue" << endl;
             }
         }
-        else if(strcmp(msg->getName(), "processedHttpMsg") == 0)
-        {
+        else if (strcmp(msg->getName(), "processedHttpMsg") == 0) {
             EV << "MecAppBase::handleMessage(): processedHttpMsg " << endl;
-            ProcessingTimeMessage * procMsg = check_and_cast<ProcessingTimeMessage*>(msg);
+            ProcessingTimeMessage *procMsg = check_and_cast<ProcessingTimeMessage *>(msg);
             int connId = procMsg->getSocketId();
-            TcpSocket* sock = (TcpSocket*)sockets_.getSocketById(connId);
-            if(sock != nullptr)
-            {
-                HttpMessageStatus* msgStatus = (HttpMessageStatus *)sock->getUserData();
+            TcpSocket *sock = (TcpSocket *)sockets_.getSocketById(connId);
+            if (sock != nullptr) {
+                HttpMessageStatus *msgStatus = (HttpMessageStatus *)sock->getUserData();
                 handleHttpMessage(connId);
                 delete msgStatus->httpMessageQueue.pop();
-                if(!msgStatus->httpMessageQueue.isEmpty())
-                {
+                if (!msgStatus->httpMessageQueue.isEmpty()) {
                     EV << "MecAppBase::handleMessage(): processedHttpMsg - the httpMessageQueue is not empty, schedule next HTTP message" << endl;
                     double time = vim->calculateProcessingTime(mecAppId, 150);
-                    scheduleAt(simTime()+time, msg);
+                    scheduleAt(simTime() + time, msg);
                 }
             }
         }
-        else
-        {
+        else {
             handleSelfMessage(msg);
         }
     }
-    else
-    {
-        if(!processMessage_->isScheduled() && packetQueue_.isEmpty())
-        {
+    else {
+        if (!processMessage_->isScheduled() && packetQueue_.isEmpty()) {
             packetQueue_.insert(msg);
             double processingTime;
-            if(strcmp(msg->getFullName(), "data") == 0)
+            if (strcmp(msg->getFullName(), "data") == 0)
                 processingTime = MecAppBase::scheduleNextMsg(msg);
             else
-               processingTime = scheduleNextMsg(msg);
-            EV <<"MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
+                processingTime = scheduleNextMsg(msg);
+            EV << "MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
             scheduleAt(simTime() + processingTime, processMessage_);
 
         }
-        else if (processMessage_->isScheduled() && !packetQueue_.isEmpty())
-        {
+        else if (processMessage_->isScheduled() && !packetQueue_.isEmpty()) {
             packetQueue_.insert(msg);
         }
-        else
-        {
+        else {
             throw cRuntimeError("MecAppBase::handleMessage - This situation is not possible");
         }
     }
 }
 
-double MecAppBase::scheduleNextMsg(cMessage* msg)
+double MecAppBase::scheduleNextMsg(cMessage *msg)
 {
     double processingTime = vim->calculateProcessingTime(mecAppId, 20);// int(uniform(200, 400))); this cause machines to invert orders!
     return processingTime;
@@ -186,26 +173,22 @@ double MecAppBase::scheduleNextMsg(cMessage* msg)
 
 void MecAppBase::handleProcessedMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     }
-    else
-    {
-        TcpSocket* sock = (TcpSocket*)sockets_.findSocketFor(msg);
-        if(sock != nullptr)
-        {
+    else {
+        TcpSocket *sock = (TcpSocket *)sockets_.findSocketFor(msg);
+        if (sock != nullptr) {
             EV << "MecAppBase::handleProcessedMessage(): message for socket with ID: " << sock->getSocketId() << endl;
             sock->processMessage(msg);
         }
-        else
-        {
+        else {
             delete msg;
         }
     }
 }
 
-void MecAppBase::socketEstablished(TcpSocket * socket)
+void MecAppBase::socketEstablished(TcpSocket *socket)
 {
     established(socket->getSocketId());
 }
@@ -225,25 +208,23 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
 //        EV << "Null"<< endl;
 //    }
 
-
 //
 //    EV << "MecAppBase::socketDataArrived - payload: " << endl;
 //
 
-    std::vector<uint8_t> bytes =  msg->peekDataAsBytes()->getBytes();
+    std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
 //    EV << packet << endl;
-    HttpMessageStatus* msgStatus = (HttpMessageStatus*) socket->getUserData();
+    HttpMessageStatus *msgStatus = (HttpMessageStatus *)socket->getUserData();
 
-    bool res =  Http::parseReceivedMsg(socket->getSocketId(),  packet, msgStatus->httpMessageQueue , &(msgStatus->bufferedData),  &(msgStatus->currentMessage));
-    if(res)
-    {
+    bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, &(msgStatus->bufferedData), &(msgStatus->currentMessage));
+    if (res) {
         //msgStatus->currentMessage->setSockId(socket->getSocketId());
-        if(vim == nullptr)
+        if (vim == nullptr)
             throw cRuntimeError("MecAppBase::socketDataArrived - vim is null!");
         double time = vim->calculateProcessingTime(mecAppId, 150);
-        if(!msgStatus->processMsgTimer->isScheduled())
-            scheduleAt(simTime()+time, msgStatus->processMsgTimer);
+        if (!msgStatus->processMsgTimer->isScheduled())
+            scheduleAt(simTime() + time, msgStatus->processMsgTimer);
     }
 
     delete msg;
@@ -265,13 +246,12 @@ void MecAppBase::socketFailure(TcpSocket *sock, int code)
     // subclasses may override this function, and add code try to reconnect after a delay.
 }
 
-
-TcpSocket* MecAppBase::addNewSocket()
+TcpSocket *MecAppBase::addNewSocket()
 {
-    TcpSocket* newSocket = new TcpSocket();
+    TcpSocket *newSocket = new TcpSocket();
     newSocket->setOutputGate(gate("socketOut"));
     newSocket->setCallback(this);
-    HttpMessageStatus* msg = new HttpMessageStatus;
+    HttpMessageStatus *msg = new HttpMessageStatus;
     msg->processMsgTimer = new ProcessingTimeMessage("processedHttpMsg");
     msg->processMsgTimer->setSocketId(newSocket->getSocketId());
     newSocket->setUserData(msg);
@@ -281,20 +261,17 @@ TcpSocket* MecAppBase::addNewSocket()
     return newSocket;
 }
 
-
-void MecAppBase::removeSocket(inet::TcpSocket* tcpSock)
+void MecAppBase::removeSocket(inet::TcpSocket *tcpSock)
 {
-    HttpMessageStatus* msgStatus = (HttpMessageStatus *) tcpSock->getUserData();
+    HttpMessageStatus *msgStatus = (HttpMessageStatus *)tcpSock->getUserData();
     std::cout << "Deleting httpMessages in socket with sockId " << tcpSock->getSocketId() << std::endl;
-    while(!msgStatus->httpMessageQueue.isEmpty())
-    {
+    while (!msgStatus->httpMessageQueue.isEmpty()) {
         std::cout << "Deleting httpMessages message" << std::endl;
         delete msgStatus->httpMessageQueue.pop();
     }
-    if(msgStatus->currentMessage != nullptr )
+    if (msgStatus->currentMessage != nullptr)
         delete msgStatus->currentMessage;
-    if(msgStatus->processMsgTimer != nullptr)
-    {
+    if (msgStatus->processMsgTimer != nullptr) {
         cancelAndDelete(msgStatus->processMsgTimer);
     }
     delete sockets_.removeSocket(tcpSock);

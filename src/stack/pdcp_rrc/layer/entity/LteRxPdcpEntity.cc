@@ -23,10 +23,10 @@ LteRxPdcpEntity::LteRxPdcpEntity()
 
 void LteRxPdcpEntity::initialize()
 {
-    pdcp_ = check_and_cast<LtePdcpRrcBase*>(getParentModule());
+    pdcp_ = check_and_cast<LtePdcpRrcBase *>(getParentModule());
 }
 
-void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet* pkt)
+void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
 {
     EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - LCID[" << lcid_ << "] - processing packet from RLC layer" << endl;
 
@@ -35,23 +35,20 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet* pkt)
 
     // TODO NRRxentity could delete this packet in handlePdcpSdu()...
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
-    {
+    if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
         PacketFlowManagerBase *flowManager = pdcp_->getPacketFlowManager();
-            if(flowManager != nullptr)
-                flowManager->receivedPdcpSdu(pkt);
+        if (flowManager != nullptr)
+            flowManager->receivedPdcpSdu(pkt);
     }
-
 
     // perform PDCP operations
     pdcp_->headerDecompress(pkt); // Decompress packet header
-
 
     // handle PDCP SDU
     handlePdcpSdu(pkt);
 }
 
-void LteRxPdcpEntity::handlePdcpSdu(Packet* pkt)
+void LteRxPdcpEntity::handlePdcpSdu(Packet *pkt)
 {
     Enter_Method("LteRxPdcpEntity::handlePdcpSdu");
 

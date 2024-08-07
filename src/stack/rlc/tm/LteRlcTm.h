@@ -40,6 +40,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
     LteRlcTm()
     {
     }
+
     virtual ~LteRlcTm()
     {
     }
@@ -86,9 +87,8 @@ class LteRlcTm : public omnetpp::cSimpleModule
      * Data structures
      */
 
-    omnetpp::cGate* up_[2];
-    omnetpp::cGate* down_[2];
-
+    omnetpp::cGate *up_[2];
+    omnetpp::cGate *down_[2];
 
     /*
      * Queue for storing PDUs to be delivered to MAC when LteMacSduRequest is received
@@ -113,3 +113,4 @@ class LteRlcTm : public omnetpp::cSimpleModule
 } //namespace
 
 #endif
+

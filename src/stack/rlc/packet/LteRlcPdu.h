@@ -17,35 +17,38 @@
 
 namespace simu5g {
 
-class LteRlcPdu : public LteRlcPdu_Base {
-   private:
+class LteRlcPdu : public LteRlcPdu_Base
+{
+  private:
 
-     void copy(const LteRlcPdu& other)
-     {
-         this->totalFragments = other.totalFragments;
-         this->snoFragment = other.snoFragment;
-         this->snoMainPacket = other.snoMainPacket;
-     }
+    void copy(const LteRlcPdu& other)
+    {
+        this->totalFragments = other.totalFragments;
+        this->snoFragment = other.snoFragment;
+        this->snoMainPacket = other.snoMainPacket;
+    }
 
-   public:
-     LteRlcPdu(const char *name=NULL, int kind=0) : LteRlcPdu_Base(name,kind) {}
-     LteRlcPdu(const LteRlcPdu& other) : LteRlcPdu_Base(other) {copy(other);}
+  public:
+    LteRlcPdu(const char *name = NULL, int kind = 0) : LteRlcPdu_Base(name, kind) {}
+    LteRlcPdu(const LteRlcPdu& other) : LteRlcPdu_Base(other) { copy(other); }
 
-     LteRlcPdu& operator=(const LteRlcPdu& other)
-     {
-         if (this==&other)
-             return *this;
-         LteRlcPdu_Base::operator=(other);
-         copy(other);
-         return *this;
-     }
-     virtual LteRlcPdu *dup() const {return new LteRlcPdu(*this);}
-     virtual ~LteRlcPdu(){
-         cObject* ctrlInfo = removeControlInfo();
-         if(ctrlInfo){
-             delete ctrlInfo;
-         }
-     }
+    LteRlcPdu& operator=(const LteRlcPdu& other)
+    {
+        if (this == &other)
+            return *this;
+        LteRlcPdu_Base::operator=(other);
+        copy(other);
+        return *this;
+    }
+
+    virtual LteRlcPdu *dup() const { return new LteRlcPdu(*this); }
+    virtual ~LteRlcPdu() {
+        cObject *ctrlInfo = removeControlInfo();
+        if (ctrlInfo) {
+            delete ctrlInfo;
+        }
+    }
+
 };
 
 Register_Class(LteRlcPdu);
@@ -53,3 +56,4 @@ Register_Class(LteRlcPdu);
 } //namespace
 
 #endif /* LTERLCPDU_H_ */
+

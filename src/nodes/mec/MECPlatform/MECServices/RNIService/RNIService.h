@@ -24,8 +24,7 @@ namespace simu5g {
  * The current available functionalities are related to the L2 measures information resource
  */
 
-
-class RNIService: public MecServiceBase2
+class RNIService : public MecServiceBase2
 {
   private:
 
@@ -33,18 +32,18 @@ class RNIService: public MecServiceBase2
 
   public:
     RNIService();
+
   protected:
 
     virtual void initialize(int stage) override;
     virtual void finish() override;
 
-    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
-    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
-    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
-    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
+    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
+    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
     virtual ~RNIService();
-
 
 };
 

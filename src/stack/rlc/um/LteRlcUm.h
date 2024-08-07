@@ -108,8 +108,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * RLC data in the entities
      *
      */
-    void activeUeUL(std::set<MacNodeId>* ueSet);
-
+    void activeUeUL(std::set<MacNodeId> *ueSet);
 
     /**
      * @author Alessandro Noferi
@@ -121,12 +120,10 @@ class LteRlcUm : public omnetpp::cSimpleModule
     double getUeThroughput(MacNodeId nodeId);
     void resetThroughputStats(MacNodeId nodeId);
 
-
-
   protected:
 
-    omnetpp::cGate* up_[2];
-    omnetpp::cGate* down_[2];
+    omnetpp::cGate *up_[2];
+    omnetpp::cGate *down_[2];
 
     // statistics
     omnetpp::simsignal_t receivedPacketFromUpperLayer;
@@ -164,7 +161,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity* getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+    virtual UmTxEntity *getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -176,7 +173,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * @return pointer to the RXBuffer for that CID
      *
      */
-    virtual UmRxEntity* getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+    virtual UmRxEntity *getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * handler for traffic coming
@@ -220,8 +217,8 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * The entities map associate each CID with
      * a TX/RX Entity , identified by its ID
      */
-    typedef std::map<MacCid, UmTxEntity*> UmTxEntities;
-    typedef std::map<MacCid, UmRxEntity*> UmRxEntities;
+    typedef std::map<MacCid, UmTxEntity *> UmTxEntities;
+    typedef std::map<MacCid, UmRxEntity *> UmRxEntities;
     UmTxEntities txEntities_;
     UmRxEntities rxEntities_;
 
@@ -232,12 +229,12 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * FlowControlInfo in each entity
      *
      */
-    typedef std::map<MacNodeId, Throughput > ULThroughputPerUE;
+    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
     ULThroughputPerUE ulThroughput_;
-
 
 };
 
 } //namespace
 
 #endif
+

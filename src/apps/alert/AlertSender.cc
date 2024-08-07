@@ -17,7 +17,7 @@
 
 namespace simu5g {
 
-#define round(x) floor((x) + 0.5)
+#define round(x)    floor((x) + 0.5)
 
 Define_Module(AlertSender);
 using namespace inet;
@@ -40,7 +40,7 @@ void AlertSender::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     selfSender_ = new cMessage("selfSender");
@@ -58,7 +58,7 @@ void AlertSender::initialize(int stage)
         socket.setTos(tos);
 
     // for multicast support
-    inet::IInterfaceTable *ift = inet::getModuleFromPar< inet::IInterfaceTable >(par("interfaceTableModule"), this);
+    inet::IInterfaceTable *ift = inet::getModuleFromPar<inet::IInterfaceTable>(par("interfaceTableModule"), this);
     inet::MulticastGroupList mgl = ift->collectMulticastGroups();
     socket.joinLocalMulticastGroups(mgl);
 
@@ -83,16 +83,15 @@ void AlertSender::initialize(int stage)
 
     // TODO maybe un-necesessary
     // this conversion is made in order to obtain ms-aligned start time, even in case of random generated ones
-    simtime_t offset = (round(SIMTIME_DBL(startTime)*1000)/1000)+simTime();
+    simtime_t offset = (round(SIMTIME_DBL(startTime) * 1000) / 1000) + simTime();
 
-    scheduleAt(offset,selfSender_);
+    scheduleAt(offset, selfSender_);
     EV << "\t starting traffic in " << offset << " seconds " << endl;
 }
 
 void AlertSender::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         if (!strcmp(msg->getName(), "selfSender"))
             sendAlertPacket();
         else
@@ -102,7 +101,7 @@ void AlertSender::handleMessage(cMessage *msg)
 
 void AlertSender::sendAlertPacket()
 {
-    Packet* packet = new inet::Packet("Alert");
+    Packet *packet = new inet::Packet("Alert");
 
     auto alert = makeShared<AlertPacket>();
     alert->setSno(nextSno_);

@@ -44,3 +44,4 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
 } //namespace
 
 #endif
+

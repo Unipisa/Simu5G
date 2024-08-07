@@ -23,7 +23,8 @@
 
 namespace simu5g {
 
-class LteX2Manager : public omnetpp::cSimpleModule {
+class LteX2Manager : public omnetpp::cSimpleModule
+{
 
     // X2 identifier
     X2NodeId nodeId_;
@@ -41,17 +42,18 @@ class LteX2Manager : public omnetpp::cSimpleModule {
     // where the X2AP for that destination is connected to
     std::map<X2NodeId, int> x2InterfaceTable_;
 
-protected:
+  protected:
 
     void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(omnetpp::cMessage *msg) override;
 
-    virtual void fromStack(inet::Packet* pkt);
-    virtual void fromX2(inet::Packet* pkt);
+    virtual void fromStack(inet::Packet *pkt);
+    virtual void fromX2(inet::Packet *pkt);
 
 };
 
 } //namespace
 
 #endif /* LTE_LTEX2MANAGER_H_ */
+

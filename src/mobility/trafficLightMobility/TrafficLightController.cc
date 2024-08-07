@@ -24,7 +24,6 @@ Define_Module(TrafficLightController);
 
 using namespace omnetpp;
 
-
 TrafficLightController::TrafficLightController()
 {
     line_ = nullptr;
@@ -33,17 +32,16 @@ TrafficLightController::TrafficLightController()
     queuedCars_[1].clear();
 }
 
-TrafficLightController::~TrafficLightController(){
+TrafficLightController::~TrafficLightController() {
     cancelAndDelete(stateMsg_);
-    if(line_ != nullptr)
-    {
-        if(getSimulation()->getSystemModule()->getCanvas()->findFigure(line_) != -1)
+    if (line_ != nullptr) {
+        if (getSimulation()->getSystemModule()->getCanvas()->findFigure(line_) != -1)
             getSimulation()->getSystemModule()->getCanvas()->removeFigure(line_);
-        if(getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) != -1)
+        if (getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) != -1)
             getSimulation()->getSystemModule()->getCanvas()->removeFigure(rect_);
 
-        delete(line_);
-        delete(rect_);
+        delete (line_);
+        delete (rect_);
     }
 };
 
@@ -54,7 +52,7 @@ void TrafficLightController::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     // avoid multiple initializations
-    if (stage!=inet::INITSTAGE_APPLICATION_LAYER)
+    if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
     mobility_.reference(this, "mobilityModule", true);
@@ -62,20 +60,18 @@ void TrafficLightController::initialize(int stage)
     heading_ = inet::deg(fmod(mobility_->par("initialHeading").doubleValue(), 360));
     inet::rad elevation = inet::deg(fmod(mobility_->par("initialElevation").doubleValue(), 360));
     direction_ = inet::Quaternion(inet::EulerAngles(heading_, -elevation, inet::rad(0))).rotate(inet::Coord::X_AXIS);
-    direction_.x = std::round( direction_.x * 1000.0) / 1000.0;
-    direction_.y = std::round( direction_.y* 1000.0) / 1000.0;
+    direction_.x = std::round(direction_.x * 1000.0) / 1000.0;
+    direction_.y = std::round(direction_.y * 1000.0) / 1000.0;
 
     tlPosition_ = mobility_->getCurrentPosition();
     line_ = new cLineFigure();
     rect_ = new cRectangleFigure();
-
 
     areaWidth_ = par("areaWidth");
 
     greenPeriod_ = par("greenPeriod");
     yellowPeriod_ = par("yellowPeriod");
     redPeriod_ = par("redPeriod");
-
 
     startTime_ = par("startTime");
     meanCarLength_ = par("meanCarLength");
@@ -89,76 +85,66 @@ void TrafficLightController::initialize(int stage)
 
 void TrafficLightController::handleMessage(omnetpp::cMessage *msg)
 {
-    if(msg->isSelfMessage())
-    {
-        if(!strcmp(msg->getName(), "changeState"))
-        {
+    if (msg->isSelfMessage()) {
+        if (!strcmp(msg->getName(), "changeState")) {
             EV << "TrafficLightController::handleMessage: changeState" << endl;
-            if(state_ == OFF)
-            {
+            if (state_ == OFF) {
                 int state = par("startState");
-                state_ = (TrafficLightState) state;
+                state_ = (TrafficLightState)state;
                 std::string color = (state == GREEN ? "green" : "red");
-                getParentModule()->getDisplayString().setTagArg("i",1, color.c_str());
-                if (state_ == RED)
-                {
+                getParentModule()->getDisplayString().setTagArg("i", 1, color.c_str());
+                if (state_ == RED) {
                     drawRect();
                 }
-                scheduleAt(simTime() + (state == GREEN ? greenPeriod_: redPeriod_), stateMsg_);
+                scheduleAt(simTime() + (state == GREEN ? greenPeriod_ : redPeriod_), stateMsg_);
             }
-            else if(state_ == RED)
-            {
+            else if (state_ == RED) {
                 state_ = GREEN;
-                getParentModule()->getDisplayString().setTagArg("i",1, "green");
+                getParentModule()->getDisplayString().setTagArg("i", 1, "green");
                 getSimulation()->getSystemModule()->getCanvas()->removeFigure(rect_);
                 queuedCars_[0].clear();
                 queuedCars_[1].clear();
                 scheduleAt(simTime() + greenPeriod_, stateMsg_);
 
             }
-            else if(state_ == GREEN)
-            {
+            else if (state_ == GREEN) {
                 state_ = RED;
-                getParentModule()->getDisplayString().setTagArg("i",1, "red");
+                getParentModule()->getDisplayString().setTagArg("i", 1, "red");
 //                initDrawLine();
                 drawRect();
                 scheduleAt(simTime() + redPeriod_, stateMsg_);
 
             }
-
         }
     }
 }
 
 bool TrafficLightController::isTrafficLightRed(int carId, inet::Coord carPosition, inet::deg carDirection)  //inet::Quaternion carOrientation)
 {
-    if(state_ == RED && (carDirection == heading_ || (bidirectional_ && carDirection == inet::deg(fmod(heading_.get() + 180, 360)))))
-    {
-        EV << "TrafficLightController::isTrafficLightRed - tl coord [" << tlPosition_ << "] car coord [" << carPosition<< "] bidirectional: " << bidirectional_ <<
-                "] tl orientation ["<< heading_ << "] car orientation [" << heading_ << "]" << endl;
+    if (state_ == RED && (carDirection == heading_ || (bidirectional_ && carDirection == inet::deg(fmod(heading_.get() + 180, 360))))) {
+        EV << "TrafficLightController::isTrafficLightRed - tl coord [" << tlPosition_ << "] car coord [" << carPosition << "] bidirectional: " << bidirectional_ <<
+            "] tl orientation [" << heading_ << "] car orientation [" << heading_ << "]" << endl;
 
         bool reverseDir = (carDirection == inet::deg(fmod(heading_.get() + 180, 360)));
         std::set<int>& queue = (!reverseDir) ? queuedCars_[0] : queuedCars_[1];
         //check if the car is already queued
-        if(queue.find(carId) != queue.end())
-        {
+        if (queue.find(carId) != queue.end()) {
             EV << "TrafficLightController::isTrafficLightRed - The car is already in the queue of the RED trafficLight" << endl;
             return true;
         }
 
-        if(isInTrafficLightArea(carPosition, carDirection))
-        {
+        if (isInTrafficLightArea(carPosition, carDirection)) {
             EV << "TrafficLightController::isTrafficLightRed - check distance" << endl;
 //            double distance = carPosition.distance(tlPosition_);
-            EV << "distance: " << carPosition.distance(tlPosition_) << " queue length " << (queue.size() + 1)* meanCarLength_<< endl;
+            EV << "distance: " << carPosition.distance(tlPosition_) << " queue length " << (queue.size() + 1) * meanCarLength_ << endl;
             EV << "TrafficLightController::isTrafficLightRed - The car is in the queue of the RED trafficLight" << endl;
             queue.insert(carId);
 
             //increase the line
             if (reverseDir)
-                line_->setStart({tlPosition_.x - direction_.x*-1*meanCarLength_*(queue.size()+1), tlPosition_.y - direction_.y*-1*meanCarLength_*(queue.size()+1)});
+                line_->setStart({ tlPosition_.x - direction_.x * -1 * meanCarLength_ * (queue.size() + 1), tlPosition_.y - direction_.y * -1 * meanCarLength_ * (queue.size() + 1) });
             else
-                line_->setEnd({tlPosition_.x - direction_.x*meanCarLength_*(queue.size()+1), tlPosition_.y - direction_.y*meanCarLength_*(queue.size()+1)});
+                line_->setEnd({ tlPosition_.x - direction_.x * meanCarLength_ * (queue.size() + 1), tlPosition_.y - direction_.y * meanCarLength_ * (queue.size() + 1) });
 
             drawRect();
             return true;
@@ -168,27 +154,23 @@ bool TrafficLightController::isTrafficLightRed(int carId, inet::Coord carPositio
     return false;
 }
 
-
 bool TrafficLightController::isApproaching(inet::Coord carPosition, inet::deg carDirection)
 {
-    if (carDirection == heading_&& isInStraightLine(carPosition))
-    {
-        return isSameAngle(carPosition, carDirection,  false);
+    if (carDirection == heading_ && isInStraightLine(carPosition)) {
+        return isSameAngle(carPosition, carDirection, false);
 
     }
-    else if (bidirectional_ && carDirection == inet::deg(fmod(heading_.get() + 180, 360)) && isInStraightLine(carPosition))
-    {
-        return isSameAngle(carPosition, carDirection,  true);
+    else if (bidirectional_ && carDirection == inet::deg(fmod(heading_.get() + 180, 360)) && isInStraightLine(carPosition)) {
+        return isSameAngle(carPosition, carDirection, true);
     }
     return false;
 }
 
-bool TrafficLightController::isSameAngle(inet::Coord carPosition,  inet::deg heading, bool reverseDir)
+bool TrafficLightController::isSameAngle(inet::Coord carPosition, inet::deg heading, bool reverseDir)
 {
     double distance = carPosition.distance(tlPosition_);
 
-    if (reverseDir)
-    {
+    if (reverseDir) {
         heading = heading + inet::deg(180);
     }
 
@@ -200,34 +182,25 @@ bool TrafficLightController::isSameAngle(inet::Coord carPosition,  inet::deg hea
     EV << "TrafficLightController::isSameAngle - angle " << heading << endl;
     EV << "TrafficLightController::isSameAngle - distance " << distance << endl;
 
-
     bool inRange = false;
     // N.B y is inverted in omnet!
-    if(angle >= 0 && angle <= 90)
-    {
-        if(tlPosition_.x >= carPosition.x && tlPosition_.y >= carPosition.y)
-        {
+    if (angle >= 0 && angle <= 90) {
+        if (tlPosition_.x >= carPosition.x && tlPosition_.y >= carPosition.y) {
             inRange = true;
         }
     }
-    else if (angle > 90 && angle <= 180)
-    {
-        if(tlPosition_.x <= carPosition.x && tlPosition_.y >= carPosition.y)
-        {
+    else if (angle > 90 && angle <= 180) {
+        if (tlPosition_.x <= carPosition.x && tlPosition_.y >= carPosition.y) {
             inRange = true;
         }
     }
-    else if (angle > 180 && angle <= 270)
-    {
-        if(tlPosition_.x <= carPosition.x && tlPosition_.y <= carPosition.y)
-        {
+    else if (angle > 180 && angle <= 270) {
+        if (tlPosition_.x <= carPosition.x && tlPosition_.y <= carPosition.y) {
             inRange = true;
         }
     }
-    else // if (angle > 270 && angle < 360)
-    {
-        if(tlPosition_.x  >= carPosition.x && tlPosition_.y <= carPosition.y)
-        {
+    else { // if (angle > 270 && angle < 360)
+        if (tlPosition_.x >= carPosition.x && tlPosition_.y <= carPosition.y) {
             inRange = true;
         }
     }
@@ -235,57 +208,53 @@ bool TrafficLightController::isSameAngle(inet::Coord carPosition,  inet::deg hea
     return inRange;
 }
 
-
-
 bool TrafficLightController::isInStraightLine(inet::Coord carPosition)
 {
-        inet::Coord tempPoint = direction_*2 + tlPosition_;
-        int dx = tempPoint.x - tlPosition_.x;
-        int dy = tempPoint.y - tlPosition_.y;
+    inet::Coord tempPoint = direction_ * 2 + tlPosition_;
+    int dx = tempPoint.x - tlPosition_.x;
+    int dy = tempPoint.y - tlPosition_.y;
 
-        int dx1 = tempPoint.x - carPosition.x;
-        int dy1 = tempPoint.y - carPosition.y;
+    int dx1 = tempPoint.x - carPosition.x;
+    int dy1 = tempPoint.y - carPosition.y;
 
 //        EV << "dx " << dx << "dy " << dy << "dx1 " << dx1 << "dy1 " << dy1 << endl;
 
-        // TODO does this only works for 0, 90, 180 and 270 degrees?
-        if (dx1 * dy != dy1 * dx)
-            return false;
-        else
-            return true;
+    // TODO does this only works for 0, 90, 180 and 270 degrees?
+    if (dx1 * dy != dy1 * dx)
+        return false;
+    else
+        return true;
 }
-
 
 bool TrafficLightController::isInTrafficLightArea(inet::Coord carPosition, inet::deg carDirection)
 {
     /** check direction of the tl (vertical or horizonal)
-    * check if the car is around the tl:
-    *   - check the boarders of the area
-    *   - check the length of the queued cars
-    * e.g. :
-    *    |-------TF-------|
-    *    |                |
-    *    |                |
-    *    |                |
-    *    |                |
-    *    |__qued cars_____|
-    *
-    *
-    *    or
-    *
-    *    _______________
-    *    |             |
-    *    |             |
-    *    |             |
-    *    TF            |
-    *    |             |
-    *    |             |
-    *    |_____________|
-    *
-    *
-    * Assume also, only 0, 90, 180, 270 directions are possible
-    */
-
+     * check if the car is around the tl:
+     *   - check the boarders of the area
+     *   - check the length of the queued cars
+     * e.g. :
+     *    |-------TF-------|
+     *    |                |
+     *    |                |
+     *    |                |
+     *    |                |
+     *    |__qued cars_____|
+     *
+     *
+     *    or
+     *
+     *    _______________
+     *    |             |
+     *    |             |
+     *    |             |
+     *    TF            |
+     *    |             |
+     *    |             |
+     *    |_____________|
+     *
+     *
+     * Assume also, only 0, 90, 180, 270 directions are possible
+     */
 
     bool reverseDir = (carDirection == inet::deg(fmod(heading_.get() + 180, 360)));
 
@@ -295,80 +264,63 @@ bool TrafficLightController::isInTrafficLightArea(inet::Coord carPosition, inet:
     double tlAngle = heading_.get();
     double areaLength;
 
-    if(tlAngle == 0)
-    {
+    if (tlAngle == 0) {
         // control y
-        if(carPosition.y <= tlPosition_.y + areaWidth_ && carPosition.y >= tlPosition_.y - areaWidth_)
-        {
-            if(!reverseDir)
-            {
+        if (carPosition.y <= tlPosition_.y + areaWidth_ && carPosition.y >= tlPosition_.y - areaWidth_) {
+            if (!reverseDir) {
                 areaLength = tlPosition_.x - (queue.size() + 1) * meanCarLength_;
-                if(carPosition.x >= areaLength && carPosition.x <= tlPosition_.x )
+                if (carPosition.x >= areaLength && carPosition.x <= tlPosition_.x)
                     return true;
             }
-            else
-            {
+            else {
                 areaLength = tlPosition_.x + (queue.size() + 1) * meanCarLength_;
-                if(carPosition.x <= areaLength && carPosition.x >= tlPosition_.x )
+                if (carPosition.x <= areaLength && carPosition.x >= tlPosition_.x)
                     return true;
             }
         }
     }
-    else if(tlAngle == 180)
-    {
+    else if (tlAngle == 180) {
         // control y
-        if(carPosition.y <= tlPosition_.y + areaWidth_ && carPosition.y >= tlPosition_.y - areaWidth_)
-        {
-            if(!reverseDir)
-            {
+        if (carPosition.y <= tlPosition_.y + areaWidth_ && carPosition.y >= tlPosition_.y - areaWidth_) {
+            if (!reverseDir) {
                 areaLength = tlPosition_.x + (queue.size() + 1) * meanCarLength_;
-                if(carPosition.x <= areaLength && carPosition.x >= tlPosition_.x)
+                if (carPosition.x <= areaLength && carPosition.x >= tlPosition_.x)
                     return true;
             }
-            else
-            {
+            else {
                 areaLength = tlPosition_.x - (queue.size() + 1) * meanCarLength_;
-                if(carPosition.x >= areaLength && carPosition.x <= tlPosition_.x)
+                if (carPosition.x >= areaLength && carPosition.x <= tlPosition_.x)
                     return true;
             }
         }
     }
-
-    else if(tlAngle == 90)
-    {
+    else if (tlAngle == 90) {
         // control y
-        if(carPosition.x <= tlPosition_.x + areaWidth_ && carPosition.x >= tlPosition_.x - areaWidth_)
-        {
-            if(!reverseDir)
-            {
+        if (carPosition.x <= tlPosition_.x + areaWidth_ && carPosition.x >= tlPosition_.x - areaWidth_) {
+            if (!reverseDir) {
                 areaLength = tlPosition_.y - (queue.size() + 1) * meanCarLength_;
-                if(carPosition.y >= areaLength && carPosition.y <= tlPosition_.y)
+                if (carPosition.y >= areaLength && carPosition.y <= tlPosition_.y)
                     return true;
             }
-            else
-            {
+            else {
                 areaLength = tlPosition_.y + (queue.size() + 1) * meanCarLength_;
-                if(carPosition.y <= areaLength && carPosition.y >= tlPosition_.y)
+                if (carPosition.y <= areaLength && carPosition.y >= tlPosition_.y)
                     return true;
             }
         }
     }
-    else if(tlAngle == 270)
-    {
+    else if (tlAngle == 270) {
         // control y
-        if(carPosition.x <= tlPosition_.x + areaWidth_ && carPosition.x >= tlPosition_.x - areaWidth_)
-        {
-            if(!reverseDir)
-            {
+        if (carPosition.x <= tlPosition_.x + areaWidth_ && carPosition.x >= tlPosition_.x - areaWidth_) {
+            if (!reverseDir) {
                 areaLength = tlPosition_.y + (queue.size() + 1) * meanCarLength_;
-                if(carPosition.y <= areaLength && carPosition.y >= tlPosition_.y)
+                if (carPosition.y <= areaLength && carPosition.y >= tlPosition_.y)
                     return true;
             }
-            else
-            {
+            else {
                 areaLength = tlPosition_.y - (queue.size() + 1) * meanCarLength_;
-                EV << "areaLength "  << areaLength << endl;
-                if(carPosition.y >= areaLength && carPosition.y <= tlPosition_.y)
+                EV << "areaLength " << areaLength << endl;
+                if (carPosition.y >= areaLength && carPosition.y <= tlPosition_.y)
                     return true;
             }
         }
@@ -376,11 +328,10 @@ bool TrafficLightController::isInTrafficLightArea(inet::Coord carPosition, inet:
     return false;
 }
 
-
 void TrafficLightController::initDrawLine()
 {
-    line_->setStart({tlPosition_.x - direction_.x*-1*meanCarLength_*(queuedCars_[1].size()+1), tlPosition_.y - direction_.y*-1*meanCarLength_*(queuedCars_[1].size()+1)});
-    line_->setEnd({tlPosition_.x - direction_.x*meanCarLength_*(queuedCars_[0].size()+1), tlPosition_.y - direction_.y*meanCarLength_*(queuedCars_[0].size()+1)});
+    line_->setStart({ tlPosition_.x - direction_.x * -1 * meanCarLength_ * (queuedCars_[1].size() + 1), tlPosition_.y - direction_.y * -1 * meanCarLength_ * (queuedCars_[1].size() + 1) });
+    line_->setEnd({ tlPosition_.x - direction_.x * meanCarLength_ * (queuedCars_[0].size() + 1), tlPosition_.y - direction_.y * meanCarLength_ * (queuedCars_[0].size() + 1) });
     line_->setLineWidth(2);
     line_->setLineColor(cFigure::RED);
     getSimulation()->getSystemModule()->getCanvas()->addFigure(line_);
@@ -390,75 +341,63 @@ void TrafficLightController::drawRect()
 {
     omnetpp::cAbstractImageFigure::Rectangle bounds;
 
-    if(heading_ == inet::deg(90) || heading_ == inet::deg(270))
-    {
+    if (heading_ == inet::deg(90) || heading_ == inet::deg(270)) {
         double start = 0.0;
         double end = 0.0;
 
-        if(bidirectional_ &&  heading_.get() == 270 )
-        {
-            start =  meanCarLength_*(queuedCars_[1].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1) + meanCarLength_*(queuedCars_[1].size()+1);
+        if (bidirectional_ && heading_.get() == 270) {
+            start = meanCarLength_ * (queuedCars_[1].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1) + meanCarLength_ * (queuedCars_[1].size() + 1);
         }
-        else if(bidirectional_ &&  heading_.get() == 90 )
-        {
-            start =  meanCarLength_*(queuedCars_[0].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1) + meanCarLength_*(queuedCars_[1].size()+1);
+        else if (bidirectional_ && heading_.get() == 90) {
+            start = meanCarLength_ * (queuedCars_[0].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1) + meanCarLength_ * (queuedCars_[1].size() + 1);
         }
-        else if (!bidirectional_ &&  heading_.get() == 90 )
-        {
-            start =  meanCarLength_*(queuedCars_[0].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1);
+        else if (!bidirectional_ && heading_.get() == 90) {
+            start = meanCarLength_ * (queuedCars_[0].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
-        else if (!bidirectional_ &&  heading_.get() == 270 )
-        {
+        else if (!bidirectional_ && heading_.get() == 270) {
 
-            end = meanCarLength_*(queuedCars_[0].size()+1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
         EV << "drawing rect " << heading_.get() << endl;
         bounds.x = tlPosition_.x - areaWidth_;
         bounds.y = tlPosition_.y - start;
-        bounds.width = 2*areaWidth_;
+        bounds.width = 2 * areaWidth_;
         bounds.height = end;
     }
-
-    else if(heading_ == inet::deg(0) || heading_ == inet::deg(180))
-    {
+    else if (heading_ == inet::deg(0) || heading_ == inet::deg(180)) {
         double start = 0.0;
         double end = 0.0;
 
-        if(bidirectional_ &&  heading_.get() == 0 )
-        {
-            start =  meanCarLength_*(queuedCars_[0].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1) + meanCarLength_*(queuedCars_[1].size()+1);
+        if (bidirectional_ && heading_.get() == 0) {
+            start = meanCarLength_ * (queuedCars_[0].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1) + meanCarLength_ * (queuedCars_[1].size() + 1);
         }
-        else if(bidirectional_ &&  heading_.get() == 180 )
-        {
-            start =  meanCarLength_*(queuedCars_[1].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1) + meanCarLength_*(queuedCars_[1].size()+1);
+        else if (bidirectional_ && heading_.get() == 180) {
+            start = meanCarLength_ * (queuedCars_[1].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1) + meanCarLength_ * (queuedCars_[1].size() + 1);
         }
-        else if (!bidirectional_ &&  heading_.get() == 0 )
-        {
-            start =  meanCarLength_*(queuedCars_[0].size()+1);
-            end = meanCarLength_*(queuedCars_[0].size()+1);
+        else if (!bidirectional_ && heading_.get() == 0) {
+            start = meanCarLength_ * (queuedCars_[0].size() + 1);
+            end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
-        else if (!bidirectional_ &&  heading_.get() == 180 )
-        {
-            end = meanCarLength_*(queuedCars_[0].size()+1);
+        else if (!bidirectional_ && heading_.get() == 180) {
+            end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
         EV << "drawing rect " << heading_.get() << endl;
         bounds.y = tlPosition_.y - areaWidth_;
         bounds.x = tlPosition_.x - start;
-        bounds.height = 2*areaWidth_;
+        bounds.height = 2 * areaWidth_;
         bounds.width = end;
     }
-
 
     rect_->setBounds(bounds);
     rect_->setLineWidth(2);
     rect_->setLineColor(cFigure::RED);
 
-    if(getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) == -1)
+    if (getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) == -1)
         getSimulation()->getSystemModule()->getCanvas()->addFigure(rect_);
 
 }

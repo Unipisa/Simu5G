@@ -32,7 +32,7 @@ class NRAmc : public LteAmc
     unsigned int getResourceElements(unsigned int blocks, unsigned int symbolsPerSlot);
     unsigned int computeTbsFromNinfo(double nInfo, double coderate);
 
-    unsigned int computeCodewordTbs(UserTxParams* info, Codeword cw, Direction dir, unsigned int numRe);
+    unsigned int computeCodewordTbs(UserTxParams *info, Codeword cw, Direction dir, unsigned int numRe);
 
   public:
 
@@ -57,3 +57,4 @@ class NRAmc : public LteAmc
 } //namespace
 
 #endif
+

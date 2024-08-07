@@ -51,9 +51,8 @@ namespace simu5g {
  *
  */
 
-
-#define REQUEST_RNG 0
-#define SUBSCRIPTION_RNG 1
+#define REQUEST_RNG         0
+#define SUBSCRIPTION_RNG    1
 
 typedef std::map<std::string, std::string> reqMap;
 
@@ -64,231 +63,217 @@ class ServiceRegistry;
 class MecPlatformManager;
 class EventNotification;
 
-class MecServiceBase: public inet::ApplicationBase, public inet::TcpSocket::ICallback
+class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
-    public:
-        MecServiceBase();
+  public:
+    MecServiceBase();
 
-    protected:
-        std::string serviceName_;
-        inet::TcpSocket serverSocket; // Used to listen incoming connections
-        inet::SocketMap socketMap; // Stores the connections
-        typedef std::set<SocketManager *, simu5g::utils::cModule_LessId> ThreadSet;
-        ThreadSet threadSet;
-        std::string host_;
-        inet::ModuleRefByPar<Binder> binder_;
-        omnetpp::cModule* meHost_;
+  protected:
+    std::string serviceName_;
+    inet::TcpSocket serverSocket; // Used to listen incoming connections
+    inet::SocketMap socketMap; // Stores the connections
+    typedef std::set<SocketManager *, simu5g::utils::cModule_LessId> ThreadSet;
+    ThreadSet threadSet;
+    std::string host_;
+    inet::ModuleRefByPar<Binder> binder_;
+    omnetpp::cModule *meHost_;
 
-        MecPlatformManager* mecPlatformManager_;
-        ServiceRegistry* servRegistry_;
+    MecPlatformManager *mecPlatformManager_;
+    ServiceRegistry *servRegistry_;
 
-        std::string baseUriQueries_;
-        std::string baseUriSubscriptions_;
-        std::string baseSubscriptionLocation_;
+    std::string baseUriQueries_;
+    std::string baseUriSubscriptions_;
+    std::string baseSubscriptionLocation_;
 
+    /*
+     * Load generator variables
+     * the current implementation assumes a M/M/1 system
+     */
+    bool loadGenerator_;
+    double lambda_; // arrival rate of a BG request form a BG app
+    double beta_; // arrival rate of a BG request form a BG app
 
-        /*
-        * Load generator variables
-        * the current implementation assumes a M/M/1 system
-        */
-        bool loadGenerator_;
-        double lambda_; // arrival rate of a BG request form a BG app
-        double beta_; // arrival rate of a BG request form a BG app
+    int numBGApps_; // number of BG apps
+    double rho_;
+    omnetpp::simtime_t lastFGRequestArrived_;
 
-        int numBGApps_; // number of BG apps
-        double rho_;
-        omnetpp::simtime_t lastFGRequestArrived_;
+    unsigned int subscriptionId_; // identifier for new subscriptions
 
-        unsigned int subscriptionId_; // identifier for new subscriptions
+    // currently not uses
+    std::set<std::string> supportedQueryParams_;
+    std::set<std::string> supportedSubscriptionParams_;
 
-        // currently not uses
-        std::set<std::string>supportedQueryParams_;
-        std::set<std::string>supportedSubscriptionParams_;
+    typedef std::map<unsigned int, SubscriptionBase *> Subscriptions;
+    Subscriptions subscriptions_; //list of all active subscriptions
 
+    std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
 
-        typedef std::map<unsigned int, SubscriptionBase*> Subscriptions;
-        Subscriptions subscriptions_; //list of all active subscriptions
+    int requestQueueSize_;
 
-        std::set<omnetpp::cModule*, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
+    HttpRequestMessage *currentRequestMessageServed_;
 
-        int requestQueueSize_;
+    omnetpp::cMessage *requestService_;
+    double requestServiceTime_;
+    omnetpp::cQueue requests_;               // queue that holds incoming requests
 
+    omnetpp::cMessage *subscriptionService_;
+    double subscriptionServiceTime_;
+    int subscriptionQueueSize_;
+    std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events relative to subscriptions
+    EventNotification *currentSubscriptionServed_;
 
-        HttpRequestMessage *currentRequestMessageServed_;
+    // signals for statistics
+    omnetpp::simsignal_t requestQueueSizeSignal_;
+    omnetpp::simsignal_t responseTimeSignal_;
 
+    /*
+     * This method is called for every request in the requests_ queue.
+     * It check if the receiver is still connected and in case manages the request
+     */
+    virtual bool manageRequest();
 
-        omnetpp::cMessage *requestService_;
-        double requestServiceTime_;
-        omnetpp::cQueue requests_;               // queue that holds incoming requests
+    /*
+     * This method is called for every element in the subscriptions_ queue.
+     */
+    virtual bool manageSubscription();
 
-        omnetpp::cMessage *subscriptionService_;
-        double subscriptionServiceTime_;
-        int subscriptionQueueSize_;
-        std::queue<EventNotification*> subscriptionEvents_;          // queue that holds events relative to subscriptions
-        EventNotification *currentSubscriptionServed_;
+    /*
+     * This method checks the queues length and in case it simulates a request/subscription
+     * execution time.
+     * Subscriptions have precedence wrt requests
+     *
+     * if parameter is true -> scheduleAt(NOW)
+     * This is
+     *
+     *
+     * @param now when to send the next event
+     */
+    virtual void scheduleNextEvent(bool now = false);
 
-        // signals for statistics
-        omnetpp::simsignal_t requestQueueSizeSignal_;
-        omnetpp::simsignal_t responseTimeSignal_;
+    virtual void initialize(int stage) override;
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
+    virtual void finish() override;
+    virtual void refreshDisplay() const override;
 
+    /*
+     * This method finds all the BSs connected to the Mec Host hosting the service
+     */
+    virtual void getConnectedBaseStations();
 
-        /*
-         * This method is called for every request in the requests_ queue.
-         * It check if the receiver is still connected and in case manages the request
-         */
-        virtual bool manageRequest();
+    /*
+     * This method call the handle method according to the HTTP verb
+     * e.g GET --> handleGetRequest()
+     * These methods have to be implemented by the MEC services
+     */
+    virtual void handleCurrentRequest(inet::TcpSocket *socket);
 
-        /*
-         * This method is called for every element in the subscriptions_ queue.
-         */
-        virtual bool manageSubscription();
+    /*
+     * This method manages the situation of an incoming request when
+     * the request queue is full. It responds with a HTTP 503
+     */
+    virtual void handleRequestQueueFull(HttpRequestMessage *msg);
 
-        /*
-         * This method checks the queues length and in case it simulates a request/subscription
-         * execution time.
-         * Subscriptions have precedence wrt requests
-         *
-         * if parameter is true -> scheduleAt(NOW)
-         * This is
-         *
-         *
-         * @param now when to send the next event
-         */
-        virtual void scheduleNextEvent(bool now = false);
+    /*
+     * This method calculate the service time of the request based on:
+     *  - the method (e.g. GET POST)
+     *  - the number of parameters
+     *  - .ini parameter
+     *  - combination of the above
+     *
+     * In the base class it returns a Poisson service time with mean
+     * given by an .ini parameter.
+     * The Mec service can implement the calculation as preferred
+     *
+     */
+    virtual double calculateRequestServiceTime();
+    virtual double calculateSubscriptionServiceTime();
 
-        virtual void initialize(int stage) override;
-        virtual int  numInitStages() const override { return inet::NUM_INIT_STAGES; }
-        virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
-        virtual void finish() override;
-        virtual void refreshDisplay() const override;
+    /*
+     * Abstract methods
+     *
+     * handleGETRequest
+     * handlePOSTRequest
+     * handleDELETERequest
+     * handlePUTRequest
+     *
+     * The above methods handle the corresponding HTTP requests
+     * @param uri uri of the resource
+     * @param socket to send back the response
+     *
+     * @param body body of the request
+     *
+     */
 
-        /*
-         * This method finds all the BSs connected to the Mec Host hosting the service
-         */
-        virtual void getConnectedBaseStations();
+    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
+    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
+    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
+    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
 
-        /*
-         * This method call the handle method according to the HTTP verb
-         * e.g GET --> handleGetRequest()
-         * These methods have to be implemented by the MEC services
-         */
-        virtual void handleCurrentRequest(inet::TcpSocket *socket);
+    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }
+    virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
+    virtual void socketEstablished(inet::TcpSocket *socket) override {}
+    virtual void socketPeerClosed(inet::TcpSocket *socket) override {}
+    virtual void socketClosed(inet::TcpSocket *socket) override;
+    virtual void socketFailure(inet::TcpSocket *socket, int code) override {}
+    virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
+    virtual void socketDeleted(inet::TcpSocket *socket) override {}
 
-        /*
-         * This method manages the situation of an incoming request when
-         * the request queue is full. It responds with a HTTP 503
-         */
-        virtual void handleRequestQueueFull(HttpRequestMessage* msg);
-
-
-        /*
-        * This method calculate the service time of the request based on:
-        *  - the method (e.g. GET POST)
-        *  - the number of parameters
-        *  - .ini parameter
-        *  - combination of the above
-        *
-        * In the base class it returns a Poisson service time with mean
-        * given by an .ini parameter.
-        * The Mec service can implement the calculation as preferred
-        *
-        */
-        virtual double calculateRequestServiceTime();
-        virtual double calculateSubscriptionServiceTime();
-
-        /*
-         * Abstract methods
-         *
-         * handleGETRequest
-         * handlePOSTRequest
-         * handleDELETERequest
-         * handlePUTRequest
-         *
-         * The above methods handle the corresponding HTTP requests
-         * @param uri uri of the resource
-         * @param socket to send back the response
-         *
-         * @param body body of the request
-         *
-         */
-
-        virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) = 0;
-        virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   = 0;
-        virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    = 0;
-        virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) = 0;
-
-
-        virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }
-        virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
-        virtual void socketEstablished(inet::TcpSocket *socket) override {}
-        virtual void socketPeerClosed(inet::TcpSocket *socket) override {}
-        virtual void socketClosed(inet::TcpSocket *socket) override;
-        virtual void socketFailure(inet::TcpSocket *socket, int code) override {}
-        virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
-        virtual void socketDeleted(inet::TcpSocket *socket) override {}
-
-        virtual void handleStartOperation(inet::LifecycleOperation *operation) override;
-        virtual void handleStopOperation(inet::LifecycleOperation *operation) override;
-        virtual void handleCrashOperation(inet::LifecycleOperation *operation) override;
-
-
-
-
+    virtual void handleStartOperation(inet::LifecycleOperation *operation) override;
+    virtual void handleStopOperation(inet::LifecycleOperation *operation) override;
+    virtual void handleCrashOperation(inet::LifecycleOperation *operation) override;
 
 //        virtual void removeSubscription(inet::TcpSocket* socket) = 0;
-        virtual ~MecServiceBase();
+    virtual ~MecServiceBase();
 
-    public:
-        /*
-         * This method can be used by a module that want to inform that
-         * something happened, like a value greater than a  threshold
-         * in order to send a subscription
-         *
-         * @param event structure to be added in the queue
-         */
-        virtual void triggeredEvent(EventNotification *event);
+  public:
+    /*
+     * This method can be used by a module that want to inform that
+     * something happened, like a value greater than a  threshold
+     * in order to send a subscription
+     *
+     * @param event structure to be added in the queue
+     */
+    virtual void triggeredEvent(EventNotification *event);
 
-        /*
-         * This method adds the request in the requests_ queue
-         *
-         * @param msg request
-         */
-        virtual void newRequest(HttpRequestMessage *msg);
+    /*
+     * This method adds the request in the requests_ queue
+     *
+     * @param msg request
+     */
+    virtual void newRequest(HttpRequestMessage *msg);
 
+    // This method adds the subscription event in the subscriptions_ queue
 
+    virtual void newSubscriptionEvent(EventNotification *event);
 
-        // This method adds the subscription event in the subscriptions_ queue
+    /*
+     * This method handles a request. It parses the payload and in case
+     * calls the correct method (e.g GET, POST)
+     * @param socket used to send back the response
+     */
+    virtual void handleRequest(inet::TcpSocket *socket);
 
-        virtual void newSubscriptionEvent(EventNotification *event);
+    /* This method is used by the SocketManager object in order to remove itself from the
+     * map
+     *
+     * @param connection connection object to be deleted
+     */
+    virtual void removeConnection(SocketManager *connection);
 
-        /*
-         * This method handles a request. It parses the payload and in case
-         * calls the correct method (e.g GET, POST)
-         * @param socket used to send back the response
-         */
-        virtual void handleRequest( inet::TcpSocket *socket);
-
-        /* This method is used by the SocketManager object in order to remove itself from the
-         * map
-         *
-         * @param connection connection object to be deleted
-         */
-        virtual void removeConnection(SocketManager *connection);
-
-        virtual void closeConnection(SocketManager *connection);
-
+    virtual void closeConnection(SocketManager *connection);
 
 //        virtual Http::DataType getDataType(std::string& packet_);
 
-        /* This method can be used by the socketManager class to emit
-         * the length of the request queue upon a request arrival
-         */
-        virtual void emitRequestQueueLength();
+    /* This method can be used by the socketManager class to emit
+     * the length of the request queue upon a request arrival
+     */
+    virtual void emitRequestQueueLength();
 
-        /* This method removes the subscriptions associated
-         * with a closed connection
-         */
-        virtual void removeSubscritions(int connId);
+    /* This method removes the subscriptions associated
+     * with a closed connection
+     */
+    virtual void removeSubscritions(int connId);
 };
 
 } //namespace

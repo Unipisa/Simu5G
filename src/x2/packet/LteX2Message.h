@@ -64,7 +64,6 @@ class LteX2Message : public LteX2Message_Base
      * Here I should iterate on the list and set all ownerships
      */
 
-
     LteX2Message& operator=(const LteX2Message& other)
     {
         if (&other == this)
@@ -75,7 +74,7 @@ class LteX2Message : public LteX2Message_Base
         // perform deep-copy of element list
         msgLength_ = other.msgLength_;
         ieList_.clear();
-        for (auto it = other.ieList_.begin(); it != other.ieList_.end(); ++it){
+        for (auto it = other.ieList_.begin(); it != other.ieList_.end(); ++it) {
             ieList_.push_back((*it)->dup());
         }
 
@@ -86,7 +85,6 @@ class LteX2Message : public LteX2Message_Base
         operator=(other);
     }
 
-
     virtual LteX2Message *dup() const
     {
         return new LteX2Message(*this);
@@ -94,7 +92,7 @@ class LteX2Message : public LteX2Message_Base
 
     virtual ~LteX2Message()
     {
-        while (!ieList_.empty()){
+        while (!ieList_.empty()) {
             delete ieList_.front();
             ieList_.pop_front();
         }
@@ -117,12 +115,12 @@ class LteX2Message : public LteX2Message_Base
      *
      * @param ie IE to store
      */
-    virtual void pushIe(X2InformationElement* ie)
+    virtual void pushIe(X2InformationElement *ie)
     {
         ieList_.push_back(ie);
         msgLength_ += ie->getLength();
         // increase the chunk length by length of IE + 1 Byte (required to store the IE type)
-        setChunkLength(getChunkLength()+inet::b(8*(ie->getLength()+sizeof(uint8_t))));
+        setChunkLength(getChunkLength() + inet::b(8 * (ie->getLength() + sizeof(uint8_t))));
         // EV << "pushIe: pushed an element of length: " << ie->getLength() << " new chunk length: " << getChunkLength() << std::endl;
     }
 
@@ -132,9 +130,9 @@ class LteX2Message : public LteX2Message_Base
      *
      * @return popped IE
      */
-    virtual X2InformationElement* popIe()
+    virtual X2InformationElement *popIe()
     {
-        X2InformationElement* ie = ieList_.front();
+        X2InformationElement *ie = ieList_.front();
         ieList_.pop_front();
         msgLength_ -= ie->getLength();
         // chunk is immutable during serialization!
@@ -150,7 +148,7 @@ class LteX2Message : public LteX2Message_Base
      */
     virtual bool hasIe() const
     {
-        return (!ieList_.empty());
+        return !ieList_.empty();
     }
 
     int64_t getByteLength() const
@@ -160,8 +158,9 @@ class LteX2Message : public LteX2Message_Base
 
     int64_t getBitLength() const
     {
-        return (getByteLength() * 8);
+        return getByteLength() * 8;
     }
+
 };
 
 Register_Class(LteX2Message);

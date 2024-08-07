@@ -42,12 +42,12 @@ class LteMacEnb : public LteMacBase
     int numAntennas_;
 
     /// List of scheduled users (one per carrier) - Downlink
-    std::map<double, LteMacScheduleList>* scheduleListDl_;
+    std::map<double, LteMacScheduleList> *scheduleListDl_;
 
     int eNodeBCount;
 
     /// reference to the background traffic manager
-    std::map<double, IBackgroundTrafficManager*> bgTrafficManager_;
+    std::map<double, IBackgroundTrafficManager *> bgTrafficManager_;
 
     /*******************************************************************************************/
 
@@ -55,10 +55,10 @@ class LteMacEnb : public LteMacBase
     LteMacBufferMap bsrbuf_;
 
     /// Lte Mac Scheduler - Downlink
-    LteSchedulerEnbDl* enbSchedulerDl_;
+    LteSchedulerEnbDl *enbSchedulerDl_;
 
     /// Lte Mac Scheduler - Uplink
-    LteSchedulerEnbUl* enbSchedulerUl_;
+    LteSchedulerEnbUl *enbSchedulerUl_;
 
     /// Maps to keep track of nodes that need a retransmission to be scheduled
     std::map<double, int> needRtxDl_;
@@ -80,7 +80,7 @@ class LteMacEnb : public LteMacBase
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the  lower layer
      */
-    virtual void sendGrants(std::map<double, LteMacScheduleList>* scheduleList);
+    virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -100,7 +100,7 @@ class LteMacEnb : public LteMacBase
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(omnetpp::cPacket* pkt) override;
+    virtual void macPduUnmake(omnetpp::cPacket *pkt) override;
 
     /**
      * macSduRequest() sends a message to the RLC layer
@@ -118,7 +118,7 @@ class LteMacEnb : public LteMacBase
      * @param bsr bsr to store
      * @param cid connection id for this bsr
      */
-    void bufferizeBsr(MacBsr* bsr, MacCid cid);
+    void bufferizeBsr(MacBsr *bsr, MacCid cid);
 
     /**
      * bufferizePacket() is called every time a packet is
@@ -127,13 +127,13 @@ class LteMacEnb : public LteMacBase
      * @param pkt Packet to be buffered
      * @return TRUE if packet was buffered successfully, FALSE otherwise.
      */
-    virtual bool bufferizePacket(omnetpp::cPacket* pkt) override;
+    virtual bool bufferizePacket(omnetpp::cPacket *pkt) override;
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer
      */
-    virtual void handleUpperMessage(omnetpp::cPacket* pkt) override;
+    virtual void handleUpperMessage(omnetpp::cPacket *pkt) override;
 
     /**
      * Main loop
@@ -142,17 +142,17 @@ class LteMacEnb : public LteMacBase
     /**
      * macHandleFeedbackPkt is called every time a feedback pkt arrives on MAC
      */
-    virtual void macHandleFeedbackPkt(omnetpp::cPacket* pkt) override;
+    virtual void macHandleFeedbackPkt(omnetpp::cPacket *pkt) override;
 
     /*
      * Receives and handles RAC requests
      */
-    virtual void macHandleRac(omnetpp::cPacket* pkt) override;
+    virtual void macHandleRac(omnetpp::cPacket *pkt) override;
 
     /*
      * Update UserTxParam stored in every lteMacPdu when an rtx change this information
      */
-    virtual void updateUserTxParam(omnetpp::cPacket* pkt) override;
+    virtual void updateUserTxParam(omnetpp::cPacket *pkt) override;
 
     /**
      * Flush Tx H-ARQ buffers for all users
@@ -165,7 +165,7 @@ class LteMacEnb : public LteMacBase
     virtual ~LteMacEnb();
 
     /// Returns the BSR virtual buffers
-    LteMacBufferMap* getBsrVirtualBuffers()
+    LteMacBufferMap *getBsrVirtualBuffers()
     {
         return &bsrbuf_;
     }
@@ -189,12 +189,12 @@ class LteMacEnb : public LteMacBase
     /**
      * Getter for cellInfo.
      */
-    virtual CellInfo* getCellInfo();
+    virtual CellInfo *getCellInfo();
 
     /**
      * Getter for the backgroundTrafficManager
      */
-    virtual IBackgroundTrafficManager* getBackgroundTrafficManager(double carrierFrequency)
+    virtual IBackgroundTrafficManager *getBackgroundTrafficManager(double carrierFrequency)
     {
         if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
             throw omnetpp::cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
@@ -216,7 +216,7 @@ class LteMacEnb : public LteMacBase
      * Return the current active set (active connections)
      * @par direction
      */
-    ActiveSet* getActiveSet(Direction dir);
+    ActiveSet *getActiveSet(Direction dir);
 
     /*
      * Inform the base station that the given node will need a retransmission
@@ -243,8 +243,7 @@ class LteMacEnb : public LteMacBase
         return false;
     }
 
-    virtual ConflictGraph* getConflictGraph();
-
+    virtual ConflictGraph *getConflictGraph();
 
     /*
      * @author Alessandro Noferi
@@ -253,14 +252,13 @@ class LteMacEnb : public LteMacBase
      */
     double getUtilization(Direction dir);
 
-
     /* gets the number of active users based on the direction.
-    * A user is active (according with TS 136 314) if:
-    * - it has buffered data in MAC RLC or PDCP layers -> ActiveSet
-    * - it has data for which HARQ transmission has not yet terminated -> !EMPTY HarqBuffer
-    *
-    * @par direction
-    */
+     * A user is active (according with TS 136 314) if:
+     * - it has buffered data in MAC RLC or PDCP layers -> ActiveSet
+     * - it has data for which HARQ transmission has not yet terminated -> !EMPTY HarqBuffer
+     *
+     * @par direction
+     */
     int getActiveUesNumber(Direction dir);
 
 };
@@ -268,3 +266,4 @@ class LteMacEnb : public LteMacBase
 } //namespace
 
 #endif
+

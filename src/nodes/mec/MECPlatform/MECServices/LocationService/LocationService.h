@@ -27,11 +27,10 @@ namespace simu5g {
  *  - circle notification subscription
  */
 
-
 //class Location;
 class AperiodicSubscriptionTimer;
 
-class LocationService: public MecServiceBase2
+class LocationService : public MecServiceBase2
 {
   private:
 
@@ -41,10 +40,10 @@ class LocationService: public MecServiceBase2
     omnetpp::cMessage *LocationSubscriptionEvent_;
 
     /*
-    * This timer is used to check aperiodic subscriptions, i.e. every period subscription
-    * states are checked. For example, in the circle notification subscriptions, the timer is used
-    * to check if the UE enters/leaves the circle area    *
-    */
+     * This timer is used to check aperiodic subscriptions, i.e. every period subscription
+     * states are checked. For example, in the circle notification subscriptions, the timer is used
+     * to check if the UE enters/leaves the circle area    *
+     */
     AperiodicSubscriptionTimer *subscriptionTimer_;
 
   public:
@@ -56,10 +55,10 @@ class LocationService: public MecServiceBase2
     virtual void finish() override;
     virtual void handleMessage(cMessage *msg) override;
 
-    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
-    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)   override;
-    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket)    override;
-    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) override;
+    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
+    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
+    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
     /*
      * This method is called for every element in the subscriptions_ queue.
@@ -67,7 +66,6 @@ class LocationService: public MecServiceBase2
     virtual bool manageSubscription() override;
 
     virtual ~LocationService();
-
 
 };
 

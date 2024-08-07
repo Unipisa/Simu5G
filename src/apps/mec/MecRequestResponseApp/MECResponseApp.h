@@ -24,24 +24,24 @@
 
 namespace simu5g {
 
-#define UEAPP_REQUEST 0
-#define MECAPP_RESPONSE 1
-#define UEAPP_STOP 2
-#define UEAPP_ACK_STOP 3
+#define UEAPP_REQUEST      0
+#define MECAPP_RESPONSE    1
+#define UEAPP_STOP         2
+#define UEAPP_ACK_STOP     3
 
 class MECResponseApp : public MecAppBase
 {
-protected:
+  protected:
     inet::TcpSocket *mp1Socket_;
     inet::TcpSocket *serviceSocket_;
 
     inet::UdpSocket ueAppSocket_;
     int localUePort_;
 
-    HttpBaseMessage* mp1HttpMessage;
+    HttpBaseMessage *mp1HttpMessage;
 
-    cMessage* currentRequestfMsg_;
-    cMessage* processingTimer_;
+    cMessage *currentRequestfMsg_;
+    cMessage *processingTimer_;
     simtime_t msgArrived_;
     simtime_t getRequestSent_;
     simtime_t getRequestArrived_;
@@ -62,7 +62,6 @@ protected:
     inet::L3Address serviceAddress_;
     int servicePort_;
 
-
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleProcessedMessage(cMessage *msg) override;
@@ -71,7 +70,7 @@ protected:
     virtual void handleHttpMessage(int connId) override;
     virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
 
-    virtual double scheduleNextMsg(cMessage* msg) override;
+    virtual double scheduleNextMsg(cMessage *msg) override;
 
     // @brief handler for data received from the service registry
     virtual void handleMp1Message(int connId) override;
@@ -79,8 +78,8 @@ protected:
     // @brief handler for data received from a MEC service
     virtual void handleServiceMessage(int connId) override;
 
-    virtual void handleRequest(cMessage* msg);
-    virtual void handleStopRequest(cMessage* msg);
+    virtual void handleRequest(cMessage *msg);
+    virtual void handleStopRequest(cMessage *msg);
     virtual void sendStopAck();
     virtual void sendResponse();
 
@@ -93,7 +92,6 @@ protected:
     virtual void established(int connId) override;
     virtual void socketClosed(inet::TcpSocket *socket) override;
 
-
   public:
     MECResponseApp();
     virtual ~MECResponseApp();
@@ -102,3 +100,4 @@ protected:
 } //namespace
 
 #endif
+

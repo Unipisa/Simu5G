@@ -9,7 +9,6 @@
 // and cannot be removed from it.
 //
 
-
 #ifndef APPS_MEC_MEAPPS_MECAPPBASE_H_
 #define APPS_MEC_MEAPPS_MECAPPBASE_H_
 
@@ -19,7 +18,6 @@
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/common/ModuleRefByPar.h"
 #include "inet/common/socket/SocketMap.h"
-
 
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
@@ -50,23 +48,24 @@ struct HttpMessageStatus
     HttpBaseMessage *currentMessage = nullptr;
     std::string bufferedData;
     cQueue httpMessageQueue;
-    ProcessingTimeMessage* processMsgTimer = nullptr;
+    ProcessingTimeMessage *processMsgTimer = nullptr;
 };
 
-class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
+class MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
     /* TCP sockets are dynamically create by the user according to her needs
-    * the HttpBaseMessage* will be linked to the userData variable in TCPSocket class
-    * The base implementation already provides on socket to the ServiceRegistry and one socket to a MEC service
-    * key is the name of the socket, just to std::string,. E.g. LocServiceSocket, RNISSocket
-    * NOTE: remember to delete the HttpBaseMessage* pointer!
-    */
+     * the HttpBaseMessage* will be linked to the userData variable in TCPSocket class
+     * The base implementation already provides on socket to the ServiceRegistry and one socket to a MEC service
+     * key is the name of the socket, just to std::string,. E.g. LocServiceSocket, RNISSocket
+     * NOTE: remember to delete the HttpBaseMessage* pointer!
+     */
     inet::SocketMap sockets_;
 
     cQueue packetQueue_;
-    cMessage* currentProcessedMsg_;
-    cMessage* processMessage_;;
+    cMessage *currentProcessedMsg_;
+    cMessage *processMessage_;
+    ;
 
     // endpoint for contacting the Service Registry
     inet::L3Address mp1Address;
@@ -93,9 +92,7 @@ class  MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICall
     double requiredDisk;
     double requiredCpu;
 
-
-
-protected:
+  protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void handleMessage(omnetpp::cMessage *msg) override;
@@ -110,13 +107,13 @@ protected:
     virtual void handleUeMessage(omnetpp::cMessage *msg) = 0;
     virtual void established(int connId) = 0;
 
-    virtual double scheduleNextMsg(cMessage* msg);
+    virtual double scheduleNextMsg(cMessage *msg);
 
-    virtual inet::TcpSocket* addNewSocket();
+    virtual inet::TcpSocket *addNewSocket();
 
-    virtual void connect(inet::TcpSocket* socket, const inet::L3Address& address, const int port);
+    virtual void connect(inet::TcpSocket *socket, const inet::L3Address& address, const int port);
 
-    virtual void removeSocket(inet::TcpSocket* tcpSock);
+    virtual void removeSocket(inet::TcpSocket *tcpSock);
 
     /* inet::TcpSocket::CallbackInterface callback methods */
     virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;
@@ -129,12 +126,12 @@ protected:
     virtual void socketDeleted(inet::TcpSocket *socket) override {}
 
   public:
-        MecAppBase();
-        virtual ~MecAppBase();
-
+    MecAppBase();
+    virtual ~MecAppBase();
 
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MEAPPS_MECAPPBASE_H_ */
+

@@ -30,6 +30,7 @@ class LteRlcUmD2D : public LteRlcUm
     virtual ~LteRlcUmD2D()
     {
     }
+
     virtual void resumeDownstreamInPackets(MacNodeId peerId) override;
     virtual bool isEmptyingTxBuffer(MacNodeId peerId) override;
 
@@ -49,7 +50,7 @@ class LteRlcUmD2D : public LteRlcUm
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity* getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
+    virtual UmTxEntity *getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * UM Mode
@@ -78,9 +79,10 @@ class LteRlcUmD2D : public LteRlcUm
 
   private:
 
-    std::map<MacNodeId, std::set<UmTxEntity*, simu5g::utils::cModule_LessId> > perPeerTxEntities_;
+    std::map<MacNodeId, std::set<UmTxEntity *, simu5g::utils::cModule_LessId>> perPeerTxEntities_;
 };
 
 } //namespace
 
 #endif
+

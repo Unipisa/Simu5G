@@ -36,13 +36,13 @@ class LteRxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpRrcBase* pdcp_;
+    LtePdcpRrcBase *pdcp_;
 
     // Logical CID for this connection
     LogicalCid lcid_;
 
     // handler for PDCP SDU
-    virtual void handlePdcpSdu(Packet* pkt);
+    virtual void handlePdcpSdu(Packet *pkt);
 
   public:
 
@@ -52,7 +52,7 @@ class LteRxPdcpEntity : public cSimpleModule
     virtual void initialize();
 
     // obtain the IP datagram from the PDCP PDU
-    void handlePacketFromLowerLayer(Packet* pkt);
+    void handlePacketFromLowerLayer(Packet *pkt);
 
     /*
      * @author Alessandro Noferi
@@ -62,9 +62,10 @@ class LteRxPdcpEntity : public cSimpleModule
      * RNI service requests the number of active users
      * in UL, that also count buffered UL data in pdpc.
      */
-    virtual bool isEmpty() const {return true;}
+    virtual bool isEmpty() const { return true; }
 };
 
 } //namespace
 
 #endif
+

@@ -40,10 +40,9 @@ void ServiceRegistry::initialize(int stage)
     MecServiceBase::initialize(stage);
 
     if (stage == inet::INITSTAGE_APPLICATION_LAYER - 1) {
-        baseSubscriptionLocation_ = host_+ baseUriSubscriptions_ + "/";
+        baseSubscriptionLocation_ = host_ + baseUriSubscriptions_ + "/";
     }
 }
-
 
 void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
 {
@@ -54,7 +53,7 @@ void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
 
     // e.g. 1.2.3.4:5050
     std::stringstream hostStream;
-    hostStream << localAddress<< ":" << localPort;
+    hostStream << localAddress << ":" << localPort;
     host_ = hostStream.str();
 
     serverSocket.setOutputGate(gate("socketOut"));
@@ -64,63 +63,56 @@ void ServiceRegistry::handleStartOperation(inet::LifecycleOperation *operation)
     serverSocket.listen();
 }
 
-
-void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){
+void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {
     EV << "ServiceRegistry::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
-    if(uri == (baseUriQueries_ + "/services")) //queries
-    {
+    if (uri == (baseUriQueries_ + "/services")) { //queries
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
-        if(!params.empty())
-        {
+        if (!params.empty()) {
             std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
-            * supported paramater:
-            * - ser_instance_id
-            * - ser_name
-            */
+             * supported paramater:
+             * - ser_instance_id
+             * - ser_name
+             */
 
             std::vector<std::string> ser_name;
             std::vector<std::string> ser_instance_id;
 
-            std::vector<std::string>::iterator it  = queryParameters.begin();
+            std::vector<std::string>::iterator it = queryParameters.begin();
             std::vector<std::string>::iterator end = queryParameters.end();
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;
-            for(; it != end; ++it){
-                if(it->rfind("ser_instance_id", 0) == 0) // cell_id=par1,par2
-                {
-                    EV <<"ServiceRegistry::handleGETReques - parameters: " << endl;
+            for ( ; it != end; ++it) {
+                if (it->rfind("ser_instance_id", 0) == 0) { // cell_id=par1,par2
+                    EV << "ServiceRegistry::handleGETReques - parameters: " << endl;
                     params = simu5g::utils::splitString(*it, "=");
-                    if(params.size()!= 2) //must be param=values
-                    {
+                    if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
                     splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pit = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
-                    for(; pit != pend; ++pit){
-                        EV << "ser_instance_id: " <<*pit << endl;
+                    for ( ; pit != pend; ++pit) {
+                        EV << "ser_instance_id: " << *pit << endl;
                         ser_instance_id.push_back(*pit);
                     }
                 }
-                else if(it->rfind("ser_name", 0) == 0)
-                {
+                else if (it->rfind("ser_name", 0) == 0) {
                     params = simu5g::utils::splitString(*it, "=");
                     splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit  = splittedParams.begin();
+                    std::vector<std::string>::iterator pit = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
-                    for(; pit != pend; ++pit){
-                        EV << "ser_name: " <<*pit << endl;
+                    for ( ; pit != pend; ++pit) {
+                        EV << "ser_name: " << *pit << endl;
                         ser_name.push_back(*pit);
                     }
                 }
-                else // bad parameters
-                {
+                else { // bad parameters
                     Http::send400Response(socket);
                     return;
                 }
@@ -128,11 +120,9 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
 
             nlohmann::ordered_json jsonResBody;
 
-            for(auto sName : ser_name)
-            {
-                for(const auto& serv : mecServices_)
-                {
-                    if(serv.getName() == sName)
+            for (auto sName : ser_name) {
+                for (const auto& serv : mecServices_) {
+                    if (serv.getName() == sName)
                         jsonResBody.push_back(serv.toJson());
                 }
             }
@@ -140,35 +130,28 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
             // TODO add for for serviceid!
             Http::send200Response(socket, jsonResBody.dump().c_str());
         }
-
-        else //no query params
-        {
+        else { //no query params
             nlohmann::ordered_json jsonResBody;
-            for(auto& sName : mecServices_)
-            {
+            for (auto& sName : mecServices_) {
                 jsonResBody.push_back(sName.toJson());
             }
             Http::send200Response(socket, jsonResBody.dump().c_str());
         }
-   }
-   else
-   {
-       Http::send404Response(socket); //it is not a correct uri
-   }
+    }
+    else {
+        Http::send404Response(socket); //it is not a correct uri
+    }
 }
 
-
-void ServiceRegistry::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket){};
-void ServiceRegistry::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) {};
-void ServiceRegistry::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket* socket) {};
+void ServiceRegistry::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {};
+void ServiceRegistry::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {};
+void ServiceRegistry::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {};
 
 void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 {
 
-    for(const auto& serv : mecServices_)
-    {
-        if(serv.getName() == servDesc.name && serv.getMecHost() == servDesc.mecHostname)
-        {
+    for (const auto& serv : mecServices_) {
+        if (serv.getName() == servDesc.name && serv.getMecHost() == servDesc.mecHostname) {
             throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
         }
     }
@@ -183,29 +166,20 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 
     std::string serInstanceId = uuidBase + std::to_string(servIdCounter++);
 
-
     bool isLocal = (servDesc.mecHostname == meHost_->getName());
 
-
-
-    ServiceInfo servInfo(serInstanceId, servDesc.name, catRef, servDesc.version, "ACTIVE" , tInfo, servDesc.serialize, servDesc.mecHostname ,servDesc.scopeOfLocality , servDesc.isConsumedLocallyOnly, isLocal);
+    ServiceInfo servInfo(serInstanceId, servDesc.name, catRef, servDesc.version, "ACTIVE", tInfo, servDesc.serialize, servDesc.mecHostname, servDesc.scopeOfLocality, servDesc.isConsumedLocallyOnly, isLocal);
 
     mecServices_.push_back(servInfo);
 
-    EV << "ServiceRegistry::registerMeService - "<< servInfo.toJson().dump(2) << "\nadded!" << endl;
-
+    EV << "ServiceRegistry::registerMeService - " << servInfo.toJson().dump(2) << "\nadded!" << endl;
 
 }
 
-const std::vector<ServiceInfo>* ServiceRegistry::getAvailableMecServices() const
+const std::vector<ServiceInfo> *ServiceRegistry::getAvailableMecServices() const
 {
     return &mecServices_;
 }
-
-
-
-
-
 
 } //namespace
 

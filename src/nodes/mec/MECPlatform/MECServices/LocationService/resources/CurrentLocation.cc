@@ -13,7 +13,7 @@
 
 namespace simu5g {
 
-CurrentLocation::CurrentLocation(){};
+CurrentLocation::CurrentLocation() {};
 CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords, const TimeStamp& ts): coords(coords), timeStamp(ts)
 {
     this->accuracy = accuracy;
@@ -24,11 +24,12 @@ CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords): co
     this->accuracy = accuracy;
     timeStamp.setSeconds();
 }
-CurrentLocation::~CurrentLocation(){}
+
+CurrentLocation::~CurrentLocation() {}
 
 nlohmann::ordered_json CurrentLocation::toJson() const
 {
-    nlohmann::ordered_json val ;
+    nlohmann::ordered_json val;
 
     val["accuracy"] = accuracy;
     val["x"] = coords.x;

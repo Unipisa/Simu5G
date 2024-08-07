@@ -25,22 +25,18 @@ LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder)
 
 void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsigned int holeLen, unsigned int req)
 {
-    if (holeLen > req)
-    {
+    if (holeLen > req) {
         // this hole would satisfy requested load
-        if (!candidate.greater)
-        {
+        if (!candidate.greater) {
             // The current candidate would not satisfy the requested load.
             // The hole is a better candidate. Update
             candidate.greater = true;
             candidate.index = holeIndex;
             candidate.len = holeLen;
         }
-        else
-        {   // The current candidate would satisfy the requested load.
-            // compare the length of the hole with that of the best candidate
-            if (candidate.len > holeLen)
-            {
+        else { // The current candidate would satisfy the requested load.
+               // compare the length of the hole with that of the best candidate
+            if (candidate.len > holeLen) {
                 // the hole is a better candidate. Update
                 candidate.greater = true;
                 candidate.index = holeIndex;
@@ -48,15 +44,12 @@ void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsign
             }
         }
     }
-    else
-    {
+    else {
         // this hole would NOT satisfy requested load
-        if (!candidate.greater)
-        {
+        if (!candidate.greater) {
             // The current candidate would not satisfy the requested load.
             // compare the length of the hole with that of the best candidate
-            if (candidate.len < holeLen)
-            {
+            if (candidate.len < holeLen) {
                 // the hole is a better candidate. Update
                 candidate.greater = false;
                 candidate.index = holeIndex;
@@ -69,24 +62,21 @@ void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsign
 
 }
 
-bool LteAllocatorBestFit::checkConflict(const CGMatrix* cgMatrix, MacNodeId nodeIdA, MacNodeId nodeIdB)
+bool LteAllocatorBestFit::checkConflict(const CGMatrix *cgMatrix, MacNodeId nodeIdA, MacNodeId nodeIdB)
 {
     bool conflict = false;
 
     CGMatrix::const_iterator it = cgMatrix->begin(), et = cgMatrix->end();
-    for(; it != et; ++it)
-    {
+    for ( ; it != et; ++it) {
         if (it->first.srcId != nodeIdA)
             continue;
 
-        std::map<CGVertex,bool>::const_iterator conf_it = it->second.begin(), conf_et = it->second.end();
-        for (; conf_it != conf_et; ++conf_it)
-        {
+        std::map<CGVertex, bool>::const_iterator conf_it = it->second.begin(), conf_et = it->second.end();
+        for ( ; conf_it != conf_et; ++conf_it) {
             if (conf_it->first.srcId != nodeIdB)
                 continue;
 
-            if (conf_it->second)
-            {
+            if (conf_it->second) {
                 conflict = true;
                 break;
             }
@@ -112,9 +102,8 @@ void LteAllocatorBestFit::prepareSchedule()
     bool reuseD2D = mac_->isReuseD2DEnabled();
     bool reuseD2DMulti = mac_->isReuseD2DMultiEnabled();
 
-    const CGMatrix* cgMatrix = nullptr;
-    if (reuseD2D || reuseD2DMulti)
-    {
+    const CGMatrix *cgMatrix = nullptr;
+    if (reuseD2D || reuseD2DMulti) {
         if (conflictGraph_ == nullptr)
             throw cRuntimeError("LteAllocatorBestFit::prepareSchedule - conflictGraph is a NULL pointer");
         cgMatrix = conflictGraph_->getConflictGraph();
@@ -123,8 +112,7 @@ void LteAllocatorBestFit::prepareSchedule()
     // Get the bands occupied by RAC and RTX
     std::set<Band> alreadyAllocatedBands = eNbScheduler_->getOccupiedBands();
     unsigned int firstUnallocatedBand;
-    if(!alreadyAllocatedBands.empty())
-    {
+    if (!alreadyAllocatedBands.empty()) {
         // Get the last band in the Set (a set is ordered so the last band is the latest occupied)
         firstUnallocatedBand = *alreadyAllocatedBands.rbegin();
     }
@@ -147,18 +135,16 @@ void LteAllocatorBestFit::prepareSchedule()
     ActiveSet inactive_connections;
     inactive_connections.clear();
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin ();it1 != carrierActiveConnectionSet_.end (); ++it1 )
-    {
+    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
         // Current connection.
         cid = *it1;
 
         MacNodeId nodeId = MacCidToNodeId(cid);
 
         // Get virtual buffer reference
-        LteMacBuffer* conn = eNbScheduler_->bsrbuf_->at(cid);
+        LteMacBuffer *conn = eNbScheduler_->bsrbuf_->at(cid);
         // Check whether the virtual buffer is empty
-        if (conn->isEmpty())
-        {
+        if (conn->isEmpty()) {
             // The BSR buffer for this node is empty. Abort scheduling for the node: no data to transmit.
             EV << "LteAllocatorBestFit:: scheduled connection is no more active . Exiting grant " << endl;
             // The BSR buffer for this node is empty so the connection is no more active.
@@ -174,65 +160,58 @@ void LteAllocatorBestFit::prepareSchedule()
             dir = DL;
 
         // Compute available blocks for the current user
-        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId,dir,carrierFrequency_);
+        const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(),et=bands.end();
-        unsigned int codeword=info.getLayers().size();
-        bool cqiNull=false;
-        for (unsigned int i=0;i<codeword;i++)
-        {
-            if (info.readCqiVector()[i]==0) cqiNull=true;
+        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        unsigned int codeword = info.getLayers().size();
+        bool cqiNull = false;
+        for (unsigned int i = 0; i < codeword; i++) {
+            if (info.readCqiVector()[i] == 0) cqiNull = true;
         }
-        if (cqiNull)
-        {
-            EV<<NOW<<"Cqi null, direction: "<<dirToA(dir)<<endl;
+        if (cqiNull) {
+            EV << NOW << "Cqi null, direction: " << dirToA(dir) << endl;
             continue;
         }
         // No more free cw
-        if ( eNbScheduler_->allocatedCws(nodeId)==codeword )
-        {
-            EV<<NOW<<"Allocated codeword, direction: "<<dirToA(dir)<<endl;
+        if (eNbScheduler_->allocatedCws(nodeId) == codeword) {
+            EV << NOW << "Allocated codeword, direction: " << dirToA(dir) << endl;
             continue;
         }
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt=info.readAntennaSet().end();
+        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
         // Compute score based on total available bytes
-        unsigned int availableBlocks=0;
-        unsigned int availableBytes =0;
+        unsigned int availableBlocks = 0;
+        unsigned int availableBytes = 0;
         // For each antenna
-        for (;antennaIt!=antennaEt;++antennaIt)
-        {
+        for ( ; antennaIt != antennaEt; ++antennaIt) {
             // For each logical band
-            for (;it!=et;++it)
-            {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId,*antennaIt,*it);
+            for ( ; it != et; ++it) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,*it, blocks, dir,carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
             }
         }
 
         blocks = availableBlocks;
         // current user bytes per slot
-        byPs = (blocks>0) ? (availableBytes/blocks ) : 0;
+        byPs = (blocks > 0) ? (availableBytes / blocks) : 0;
 
         // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
-        ScoreDesc desc(cid,byPs);
+        ScoreDesc desc(cid, byPs);
         // Insert the cid score in the right list
-        score.push (desc);
+        score.push(desc);
 
         EV << NOW << " LteAllocatorBestFit::schedule computed for cid " << cid << " score of " << desc.score_ << endl;
     }
 
     //Delete inactive connections
-    for(ActiveSet::iterator in_it = inactive_connections.begin();in_it!=inactive_connections.end();++in_it)
-    {
+    for (ActiveSet::iterator in_it = inactive_connections.begin(); in_it != inactive_connections.end(); ++in_it) {
         carrierActiveConnectionSet_.erase(*in_it);
         activeConnectionTempSet_.erase(*in_it);
     }
 
     // Schedule the connections in score order.
-    while ( !score.empty()  )
-    {
+    while (!score.empty()) {
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
 
@@ -252,9 +231,9 @@ void LteAllocatorBestFit::prepareSchedule()
         EV << NOW << " LteAllocatorBestFit::schedule scheduling connection " << cid << " with score of " << current.score_ << endl;
 
         // Compute Tx params for the extracted node
-        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId,dir,carrierFrequency_);
+        const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         // Get virtual buffer reference
-        LteMacBuffer* conn = eNbScheduler_->bsrbuf_->at(cid);
+        LteMacBuffer *conn = eNbScheduler_->bsrbuf_->at(cid);
 
         // Get a reference of the first BSR
         PacketInfo vpkt = conn->front();
@@ -270,17 +249,17 @@ void LteAllocatorBestFit::prepareSchedule()
 
         // Calculate the number of Bytes available in a block
         unsigned int req_Bytes1RB = 0;
-        req_Bytes1RB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId,0,cw,1,dir,carrierFrequency_); // The band (here equals to 0) is useless
+        req_Bytes1RB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, 0, cw, 1, dir, carrierFrequency_); // The band (here equals to 0) is useless
 
         // This calculus is for coherence with the allocation done in the ScheduleGrant function
-        req_RBs = (vQueueFrontSize+req_Bytes1RB-1)/req_Bytes1RB;
+        req_RBs = (vQueueFrontSize + req_Bytes1RB - 1) / req_Bytes1RB;
 
         // Get the total number of bands
         unsigned int numBands = mac_->getCellInfo()->getNumBands();
 
         unsigned int blocks = 0;
         // Set the band counter to zero
-        int band=0;
+        int band = 0;
         // Create the set for booked bands
         std::vector<Band> bookedBands;
         bookedBands.clear();
@@ -301,26 +280,23 @@ void LteAllocatorBestFit::prepareSchedule()
         // frequency reuse-enabled connection are allocated starting from the beginning of the subframe,
         // whereas non-reuse-enabled ones are allocated from the end of the subframe
 
-        bool enableFrequencyReuse = (reuseD2D && dir==D2D) || (reuseD2DMulti && dir==D2D_MULTI);
-        if (enableFrequencyReuse)  // if frequency reuse is possible for the connection's direction
-        {
+        bool enableFrequencyReuse = (reuseD2D && dir == D2D) || (reuseD2DMulti && dir == D2D_MULTI);
+        if (enableFrequencyReuse) { // if frequency reuse is possible for the connection's direction
 //            std::cout << NOW << " UE " << nodeId << " is D2D enabled" << endl;
             EV << NOW << " Connection " << cid << " can exploit frequency reuse, dir[" << dirToA(dir) << "]" << endl;
 
             // Check if the allocation is possible starting from the first unallocated band
-            for( band=firstUnallocatedBand; band<numBands; band++ )
-            {
+            for ( band = firstUnallocatedBand; band < numBands; band++ ) {
                 bool jump_band = false;
                 // Jump to the next band if this have been already allocated to this node
-                if( alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end() )
+                if (alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end())
                     jump_band = true;
                 /*
                  * Jump to the next band if:
                  * - the band is occupied by a non-reuse-enabled node.
                  */
-                if(bandStatusMap_[band].first == EXCLUSIVE)
+                if (bandStatusMap_[band].first == EXCLUSIVE)
                     jump_band = true;
-
 
                 /*
                  * Jump to the next band if the current band is occupied by a conflicting node
@@ -329,22 +305,18 @@ void LteAllocatorBestFit::prepareSchedule()
                 // scan the nodes already allocated on this band
                 std::set<MacNodeId>::iterator it = bandStatusMap_[band].second.begin();
                 std::set<MacNodeId>::iterator et = bandStatusMap_[band].second.end();
-                for ( ; it != et; ++it)
-                {
+                for ( ; it != et; ++it) {
                     MacNodeId allocatedNodeId = *it;
-                    if (checkConflict(cgMatrix, nodeId, allocatedNodeId))
-                    {
+                    if (checkConflict(cgMatrix, nodeId, allocatedNodeId)) {
                         jump_band = true;
                         break;
                     }
                 }
 
-                if(jump_band)
-                {
+                if (jump_band) {
 //                    std::cout << NOW << " UE " << nodeId << " --- skipping band " << band << endl;
 
-                    if (!newHole)
-                    {
+                    if (!newHole) {
                         // found a hole <holeIndex,holeLen>
                         checkHole(candidate, holeIndex, holeLen, req_RBs);
 
@@ -357,10 +329,8 @@ void LteAllocatorBestFit::prepareSchedule()
                     continue;
                 }
 
-
                 // Going here means that this band can be allocated
-                if (newHole)
-                {
+                if (newHole) {
                     holeIndex = band;
                     newHole = false;
                 }
@@ -368,28 +338,24 @@ void LteAllocatorBestFit::prepareSchedule()
 
             }
         }
-        else
-        {
+        else {
             EV << NOW << " Connection " << cid << " cannot exploit frequency reuse, dir[" << dirToA(dir) << "]" << endl;
 
             bool jump_band = false;
 
             // Check if the allocation is possible starting from the first unallocated band (going back)
-            for( band=firstUnallocatedBandIM; band>=0; band-- )
-            {
+            for ( band = firstUnallocatedBandIM; band >= 0; band-- ) {
                 // Jump to the next band if this have been already allocated
-                if( alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end() )
+                if (alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end())
                     jump_band = true;
                 /*
                  * Jump to the next band if the band is allocated to another node
                  */
-                if( bandStatusMap_[band].first != UNUSED )
+                if (bandStatusMap_[band].first != UNUSED)
                     jump_band = true;
 
-                if(jump_band)
-                {
-                    if (!newHole)
-                    {
+                if (jump_band) {
+                    if (!newHole) {
                         // found a hole <holeIndex,holeLen>
                         checkHole(candidate, holeIndex, holeLen, req_RBs);
 
@@ -404,8 +370,7 @@ void LteAllocatorBestFit::prepareSchedule()
                 }
 
                 // Going here means that this band can be allocated
-                if (newHole)
-                {
+                if (newHole) {
                     holeIndex = band;
                     newHole = false;
                 }
@@ -416,46 +381,40 @@ void LteAllocatorBestFit::prepareSchedule()
 
         checkHole(candidate, holeIndex, holeLen, req_RBs);
 
-        if (enableFrequencyReuse)
-        {
+        if (enableFrequencyReuse) {
             // allocate contiguous RBs in the best candidate
-            for( band=candidate.index; band < candidate.index+candidate.len; band++ )
-            {
+            for ( band = candidate.index; band < candidate.index + candidate.len; band++ ) {
                 blocks++;
 
-                EV << NOW << " LteAllocatorBestFit - UE " << nodeId << ": allocated RB " << band << " [" <<blocks<<"]" << endl;
+                EV << NOW << " LteAllocatorBestFit - UE " << nodeId << ": allocated RB " << band << " [" << blocks << "]" << endl;
 
                 // Book the bands that must be allocated
                 bookedBands.push_back(band);
-                if (blocks==req_RBs) break; // All the blocks and bytes have been allocated
+                if (blocks == req_RBs) break; // All the blocks and bytes have been allocated
             }
         }
-        else
-        {
+        else {
             // allocate contiguous RBs in the best candidate
-            unsigned int end = (candidate.len > candidate.index) ? 0 : candidate.index-candidate.len;
-            for( band=candidate.index; band > end; band-- )
-            {
+            unsigned int end = (candidate.len > candidate.index) ? 0 : candidate.index - candidate.len;
+            for ( band = candidate.index; band > end; band-- ) {
                 blocks++;
 
-                EV << NOW << " LteAllocatorBestFit - UE " << nodeId << ": allocated RB " << band << " [" <<blocks<<"]" << endl;
+                EV << NOW << " LteAllocatorBestFit - UE " << nodeId << ": allocated RB " << band << " [" << blocks << "]" << endl;
 
                 // Book the bands that must be allocated
                 bookedBands.push_back(band);
-                if (blocks==req_RBs) break; // All the blocks and bytes have been allocated
+                if (blocks == req_RBs) break; // All the blocks and bytes have been allocated
             }
         }
 
         // If the booked request are sufficient to serve entirely or
         // partially a BSR (at least a RB) do the allocation
-        if(blocks<=req_RBs && blocks !=0)
-        {
+        if (blocks <= req_RBs && blocks != 0) {
             // Going here means that there's room for allocation (here's the true allocation)
-            std::sort(bookedBands.begin(),bookedBands.end());
+            std::sort(bookedBands.begin(), bookedBands.end());
             std::vector<Band>::iterator it_b = bookedBands.begin();
             // For all the bands previously booked
-            for(;it_b!=bookedBands.end();++it_b)
-            {
+            for ( ; it_b != bookedBands.end(); ++it_b) {
                 // TODO Find a correct way to specify plane and antenna
                 allocatedRbsPerBand_[MAIN_PLANE][MACRO][*it_b].ueAllocatedRbsMap_[nodeId] += 1;
                 allocatedRbsPerBand_[MAIN_PLANE][MACRO][*it_b].ueAllocatedBytesMap_[nodeId] += req_Bytes1RB;
@@ -466,32 +425,28 @@ void LteAllocatorBestFit::prepareSchedule()
             std::pair<unsigned int, Codeword> scListId;
             scListId.first = cid;
             scListId.second = 0; // TODO add support for codewords different from 0
-            eNbScheduler_->storeScListId(carrierFrequency_,scListId,blocks);
+            eNbScheduler_->storeScListId(carrierFrequency_, scListId, blocks);
 
             // If it is a Cell UE we must reserve the bands
-            if (!enableFrequencyReuse)
-            {
-                setAllocationType(bookedBands,EXCLUSIVE,nodeId);
+            if (!enableFrequencyReuse) {
+                setAllocationType(bookedBands, EXCLUSIVE, nodeId);
             }
-            else
-            {
-                setAllocationType(bookedBands,SHARED,nodeId);
+            else {
+                setAllocationType(bookedBands, SHARED, nodeId);
             }
 
             // Extract the BSR if an entire BSR is served
-            if(blocks == req_RBs)
-            {
+            if (blocks == req_RBs) {
                 // All the bytes have been served
                 conn->popFront();
             }
-            else
-            {
-                conn->front().first -= (blocks*req_Bytes1RB - MAC_HEADER - RLC_HEADER_UM); // Otherwise update the BSR size
+            else {
+                conn->front().first -= (blocks * req_Bytes1RB - MAC_HEADER - RLC_HEADER_UM); // Otherwise update the BSR size
             }
         }
 
         // Extract the node from the right set
-        if(!score.empty())
+        if (!score.empty())
             score.pop();
     }
 
@@ -526,17 +481,15 @@ void LteAllocatorBestFit::initAndReset()
     bandStatusMap_.clear();
     int numbands = eNbScheduler_->mac_->getAmc()->getSystemNumBands();
     //Set all bands to non-exclusive
-    for(int i=0;i<numbands;i++)
-    {
+    for (int i = 0; i < numbands; i++) {
         bandStatusMap_[i].first = UNUSED;
     }
 }
 
-void LteAllocatorBestFit::setAllocationType(std::vector<Band> bookedBands,AllocationUeType type,MacNodeId nodeId)
+void LteAllocatorBestFit::setAllocationType(std::vector<Band> bookedBands, AllocationUeType type, MacNodeId nodeId)
 {
     std::vector<Band>::iterator it = bookedBands.begin();
-    for(;it!=bookedBands.end();++it)
-    {
+    for ( ; it != bookedBands.end(); ++it) {
         bandStatusMap_[*it].first = type;
         bandStatusMap_[*it].second.insert(nodeId);
     }

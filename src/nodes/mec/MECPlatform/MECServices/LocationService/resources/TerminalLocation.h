@@ -29,22 +29,22 @@ namespace simu5g {
  *
  */
 
-
 class TerminalLocation : public AttributeBase
 {
-    protected:
-        std::string address;
-        std::string locationRetreivalStatus; // Retrieved or error
-        CurrentLocation currentLocation;
-        std::string errorInformation;
+  protected:
+    std::string address;
+    std::string locationRetreivalStatus; // Retrieved or error
+    CurrentLocation currentLocation;
+    std::string errorInformation;
 
-    public:
-        TerminalLocation();
-        TerminalLocation(const std::string& address, const std::string& locationRetreivalStatus, const CurrentLocation& currentLocation);
-        ~TerminalLocation();
-        nlohmann::ordered_json toJson() const;
+  public:
+    TerminalLocation();
+    TerminalLocation(const std::string& address, const std::string& locationRetreivalStatus, const CurrentLocation& currentLocation);
+    ~TerminalLocation();
+    nlohmann::ordered_json toJson() const;
 };
 
 } //namespace
 
 #endif /* APPS_MEC_MECSERVICES_LOCATIONSERVICE_RESOURCES_TERMINALLOCATION_H_ */
+

@@ -36,8 +36,7 @@ TrafficGeneratorBase::~TrafficGeneratorBase()
 void TrafficGeneratorBase::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         bgUeIndex_ = getParentModule()->getIndex();
 
         // calculating traffic starting time
@@ -55,18 +54,16 @@ void TrafficGeneratorBase::initialize(int stage)
 
         bgTrafficManager_.reference(this, "backgroundTrafficManagerModule", true);
 
-        if (startTime_[DL] >= 0.0)
-        {
+        if (startTime_[DL] >= 0.0) {
             trafficEnabled_[DL] = true;
             selfSource_[DL] = new cMessage("selfSourceDl");
-            scheduleAt(simTime()+startTime_[DL], selfSource_[DL]);
+            scheduleAt(simTime() + startTime_[DL], selfSource_[DL]);
         }
 
-        if (startTime_[UL] >= 0.0)
-        {
+        if (startTime_[UL] >= 0.0) {
             trafficEnabled_[UL] = true;
             selfSource_[UL] = new cMessage("selfSourceUl");
-            scheduleAt(simTime()+startTime_[UL], selfSource_[UL]);
+            scheduleAt(simTime() + startTime_[UL], selfSource_[UL]);
         }
 
         cqiMeanDl_ = par("cqiMeanDl");
@@ -77,14 +74,12 @@ void TrafficGeneratorBase::initialize(int stage)
         enablePeriodicCqiUpdate_ = par("enablePeriodicCqiUpdate");
         useProbabilisticCqi_ = par("useProbabilisticCqi");
         computeAvgInterference_ = par("computeAvgInterference");
-        if (enablePeriodicCqiUpdate_)
-        {
+        if (enablePeriodicCqiUpdate_) {
             fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI); // TTI -> seconds
             fbSource_ = new cMessage("fbSource");
             scheduleAt(simTime(), fbSource_);
         }
-        else if (!computeAvgInterference_)
-        {
+        else if (!computeAvgInterference_) {
             // use fixed CQI given as parameters
 
             double cqiDl = normal(cqiMeanDl_, cqiStddevDl_);
@@ -94,7 +89,6 @@ void TrafficGeneratorBase::initialize(int stage)
                 cqi_[DL] = 2;
             else
                 cqi_[DL] = floor(cqiDl);
-
 
             double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
             if (cqiUl > 15)
@@ -121,13 +115,11 @@ void TrafficGeneratorBase::initialize(int stage)
 
 void TrafficGeneratorBase::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage())
-    {
+    if (msg->isSelfMessage()) {
         // update measurements every feedback period
-        if (!strcmp(msg->getName(), "fbSource"))
-        {
+        if (!strcmp(msg->getName(), "fbSource")) {
             updateMeasurements();
-            scheduleAt(simTime()+fbPeriod_, fbSource_);
+            scheduleAt(simTime() + fbPeriod_, fbSource_);
             return;
         }
 
@@ -135,39 +127,33 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
         if (!enablePeriodicCqiUpdate_ && !computeAvgInterference_ && positionUpdated_)
             updateMeasurements();
 
-        if (!strcmp(msg->getName(), "selfSourceDl"))
-        {
+        if (!strcmp(msg->getName(), "selfSourceDl")) {
             unsigned int genBytes = generateTraffic(DL);
-            if (genBytes == bufferedBytes_[DL])
-            {
+            if (genBytes == bufferedBytes_[DL]) {
                 // the UE has become active, signal to the manager
                 bgTrafficManager_->notifyBacklog(bgUeIndex_, DL);
             }
 
             // generate new traffic in 'offset' seconds
             simtime_t offset = getNextGenerationTime(DL);
-            scheduleAt(simTime()+offset, selfSource_[DL]);
+            scheduleAt(simTime() + offset, selfSource_[DL]);
         }
-        else if (!strcmp(msg->getName(), "selfSourceUl"))
-        {
+        else if (!strcmp(msg->getName(), "selfSourceUl")) {
             unsigned int genBytes = generateTraffic(UL);
-            if (genBytes == bufferedBytes_[UL])
-            {
+            if (genBytes == bufferedBytes_[UL]) {
                 // the UE has become active, signal to the manager
                 bgTrafficManager_->notifyBacklog(bgUeIndex_, UL);
             }
 
             // generate new traffic in 'offset' seconds
             simtime_t offset = getNextGenerationTime(UL);
-            scheduleAt(simTime()+offset, selfSource_[UL]);
+            scheduleAt(simTime() + offset, selfSource_[UL]);
         }
-        else if (!strcmp(msg->getName(), "rtxNotification"))
-        {
-            RtxNotification* rtxNotification = check_and_cast<RtxNotification*>(msg);
+        else if (!strcmp(msg->getName(), "rtxNotification")) {
+            RtxNotification *rtxNotification = check_and_cast<RtxNotification *>(msg);
             Direction dir = (Direction)rtxNotification->getDirection();
             bufferedBytesRtx_[dir] += rtxNotification->getBytes();
-            if (rtxNotification->getBytes() == bufferedBytesRtx_[dir])
-            {
+            if (rtxNotification->getBytes() == bufferedBytesRtx_[dir]) {
                 // the UE has become active, signal to the manager
                 bgTrafficManager_->notifyBacklog(bgUeIndex_, dir, true);
             }
@@ -178,10 +164,8 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 
 void TrafficGeneratorBase::updateMeasurements()
 {
-    if (useProbabilisticCqi_)
-    {
-        if (trafficEnabled_[DL])
-        {
+    if (useProbabilisticCqi_) {
+        if (trafficEnabled_[DL]) {
             double cqiDl = normal(cqiMeanDl_, cqiStddevDl_);
 
             if (cqiDl > 15)
@@ -189,22 +173,20 @@ void TrafficGeneratorBase::updateMeasurements()
             else if (cqiDl < 2)
                 cqi_[DL] = 2;
             else
-                cqi_[DL] = floor(cqiDl+0.5);
+                cqi_[DL] = floor(cqiDl + 0.5);
         }
 
-        if (trafficEnabled_[UL])
-        {
+        if (trafficEnabled_[UL]) {
             double cqiUl = normal(cqiMeanUl_, cqiStddevUl_);
             if (cqiUl > 15)
                 cqi_[DL] = 15;
             else if (cqiUl < 2)
                 cqi_[UL] = 2;
             else
-                cqi_[UL] = floor(cqiUl+0.5);
+                cqi_[UL] = floor(cqiUl + 0.5);
         }
     }
-    else
-    {
+    else {
         if (trafficEnabled_[DL])
             cqi_[DL] = bgTrafficManager_->computeCqi(bgUeIndex_, DL, pos_);
 
@@ -219,7 +201,7 @@ unsigned int TrafficGeneratorBase::generateTraffic(Direction dir)
 {
     unsigned int dataLen = (dir == DL) ? par("packetSizeDl") : par("packetSizeUl");
     bufferedBytes_[dir] += (dataLen + headerLen_);
-    return (dataLen + headerLen_);
+    return dataLen + headerLen_;
 }
 
 simtime_t TrafficGeneratorBase::getNextGenerationTime(Direction dir)
@@ -243,7 +225,6 @@ void TrafficGeneratorBase::setCqiFromSinr(double sinr, Direction dir)
     cqi_[dir] = bgTrafficManager_->computeCqiFromSinr(sinr);
 }
 
-
 Cqi TrafficGeneratorBase::getCqi(Direction dir)
 {
     return cqi_[dir];
@@ -254,17 +235,15 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
     Enter_Method_Silent("TrafficGeneratorBase::consumeBytes");
 
     if (dir != DL && dir != UL)
-       throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d" , dir);
+        throw cRuntimeError("TrafficGeneratorBase::consumeBytes - unrecognized direction: %d", dir);
 
-    if (!rtx)
-    {
+    if (!rtx) {
         if (bytes > bufferedBytes_[dir])
             bytes = bufferedBytes_[dir];
 
         bufferedBytes_[dir] -= bytes;
     }
-    else
-    {
+    else {
         if (bytes > bufferedBytesRtx_[dir])
             bytes = bufferedBytesRtx_[dir];
 
@@ -279,9 +258,8 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
 
     // "schedule" a retransmission with the given probability
     double err = uniform(0.0, 1.0);
-    if (err < rtxRate_[dir])
-    {
-        RtxNotification* rtxNotification = new RtxNotification("rtxNotification");
+    if (err < rtxRate_[dir]) {
+        RtxNotification *rtxNotification = new RtxNotification("rtxNotification");
         rtxNotification->setDirection(dir);
         rtxNotification->setBytes(bytes);
         scheduleAt(NOW + rtxDelay_[dir], rtxNotification);
@@ -291,22 +269,20 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
         else
             emit(bgHarqErrorRateUl_, 1.0);
     }
-    else
-    {
+    else {
         if (dir == DL)
             emit(bgHarqErrorRateDl_, 0.0);
         else
             emit(bgHarqErrorRateUl_, 0.0);
     }
 
-    return ((!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir]);
+    return (!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir];
 }
 
 void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
-    if (signalID == inet::IMobility::mobilityStateChangedSignal)
-    {
-        inet::IMobility *mobility = check_and_cast<inet::IMobility*>(obj);
+    if (signalID == inet::IMobility::mobilityStateChangedSignal) {
+        inet::IMobility *mobility = check_and_cast<inet::IMobility *>(obj);
         pos_ = mobility->getCurrentPosition();
         positionUpdated_ = true;
     }

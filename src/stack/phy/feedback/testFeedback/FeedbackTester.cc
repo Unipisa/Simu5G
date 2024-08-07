@@ -27,8 +27,7 @@ void FeedbackTester::initialize()
 
 void FeedbackTester::handleMessage(cMessage *msg)
 {
-    if (msg == aperiodic_)
-    {
+    if (msg == aperiodic_) {
         scheduleAt(simTime() + interval_, aperiodic_);
         generator_->aperiodicRequest();
     }

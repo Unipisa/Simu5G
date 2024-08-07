@@ -35,7 +35,7 @@ class X2CompMsg : public LteX2Message
 
     X2CompMsg& operator=(const X2CompMsg& other);
 
-    virtual X2CompMsg* dup() const;
+    virtual X2CompMsg *dup() const;
 
     virtual ~X2CompMsg();
 };

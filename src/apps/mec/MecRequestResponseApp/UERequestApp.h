@@ -12,11 +12,10 @@
 #ifndef __UEREQUESTAPP_H_
 #define __UEREQUESTAPP_H_
 
-#define UEAPP_REQUEST 0
-#define MECAPP_RESPONSE 1
-#define UEAPP_STOP 2
-#define UEAPP_ACK_STOP 3
-
+#define UEAPP_REQUEST      0
+#define MECAPP_RESPONSE    1
+#define UEAPP_STOP         2
+#define UEAPP_ACK_STOP     3
 
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3Address.h"
@@ -28,7 +27,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class UERequestApp: public cSimpleModule
+class UERequestApp : public cSimpleModule
 {
     //communication to device app and mec app
     inet::UdpSocket socket;
@@ -39,7 +38,6 @@ class UERequestApp: public cSimpleModule
 
     simtime_t start_;
     simtime_t end_;
-
 
     // DeviceApp info
     int localPort_;
@@ -52,7 +50,6 @@ class UERequestApp: public cSimpleModule
 
     std::string mecAppName;
 
-
     //scheduling
     enum MsgKind {
         KIND_SELF_START = 1000,
@@ -64,7 +61,6 @@ class UERequestApp: public cSimpleModule
     cMessage *selfStop_;
     cMessage *sendRequest_;
     cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
-
 
     // signals for statistics
     simsignal_t processingTime_;
@@ -89,18 +85,19 @@ class UERequestApp: public cSimpleModule
     // --- Functions to interact with the DeviceApp --- //
     void sendStartMECRequestApp();
     void sendStopMECRequestApp();
-    void handleStopApp(cMessage* msg);
+    void handleStopApp(cMessage *msg);
     void sendStopApp();
 
-    void handleAckStartMECRequestApp(cMessage* msg);
-    void handleAckStopMECRequestApp(cMessage* msg);
+    void handleAckStartMECRequestApp(cMessage *msg);
+    void handleAckStopMECRequestApp(cMessage *msg);
 
     // --- Functions to interact with the MECPlatooningApp --- //
     void sendRequest();
-    void recvResponse(cMessage* msg);
+    void recvResponse(cMessage *msg);
 
 };
 
 } //namespace
 
 #endif
+

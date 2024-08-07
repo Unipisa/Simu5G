@@ -64,7 +64,7 @@ class LteHarqUnitTx : omnetpp::noncopyable
     omnetpp::simtime_t txTime_;
 
     // reference to the eNB module
-    omnetpp::cModule* nodeB_;
+    omnetpp::cModule *nodeB_;
 
     LteMacBase *macOwner_;
     //used for statistics
@@ -73,7 +73,6 @@ class LteHarqUnitTx : omnetpp::noncopyable
     unsigned int maxHarqRtx_;
 
     // Statistics
-
 
     omnetpp::simsignal_t macCellPacketLoss_;
     omnetpp::simsignal_t macPacketLoss_;
@@ -193,7 +192,7 @@ class LteHarqUnitTx : omnetpp::noncopyable
 
     virtual bool isMarked()
     {
-        return (status_ == TXHARQ_PDU_SELECTED);
+        return status_ == TXHARQ_PDU_SELECTED;
     }
 
     virtual long getMacPduId()
@@ -216,3 +215,4 @@ class LteHarqUnitTx : omnetpp::noncopyable
 } //namespace
 
 #endif
+

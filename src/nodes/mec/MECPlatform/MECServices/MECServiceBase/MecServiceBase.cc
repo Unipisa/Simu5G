@@ -49,8 +49,7 @@ void MecServiceBase::initialize(int stage)
     inet::ApplicationBase::initialize(stage);
 
     EV << "MecServiceBase::initialize stage " << stage << endl;
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         EV << "MecServiceBase::initialize" << endl;
 
         serviceName_ = par("serviceName").stringValue();
@@ -63,7 +62,7 @@ void MecServiceBase::initialize(int stage)
         subscriptionQueueSize_ = par("subscriptionQueueSize");
 
         EV << "MecServiceBase::initialize - mean request service time " << requestServiceTime_ << endl;
-        EV << "MecServiceBase::initialize - mean subscription service time " << subscriptionServiceTime_<< endl;
+        EV << "MecServiceBase::initialize - mean subscription service time " << subscriptionServiceTime_ << endl;
 
         EV << "MecServiceBase::initialize" << endl;
 
@@ -75,7 +74,7 @@ void MecServiceBase::initialize(int stage)
         /* ---- >>>>> ---- not found in UALCMPApp ---- */
 
         meHost_ = getParentModule() // MECPlatform
-                ->getParentModule(); // MeHost
+                    ->getParentModule(); // MeHost
         /* ---- <<<<< ---- not found in UALCMPApp ---- */
     }
 }
@@ -87,7 +86,7 @@ void MecServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     int localPort = par("localPort");
     EV << "MecServiceBase::handleStartOperation - local Address: " << localAddress << " port: " << localPort << endl;
     inet::L3Address localAdd(inet::L3AddressResolver().resolve(localAddress));
-    EV << "MecServiceBase::handleStartOperation - local Address resolved: "<< localAdd << endl;
+    EV << "MecServiceBase::handleStartOperation - local Address resolved: " << localAdd << endl;
 
     EV << "MecServiceBase::handleStartOperation - registering MEC service..." << endl;
 
@@ -106,28 +105,24 @@ void MecServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
     servDescriptor.catHref = par("catUri").stringValue();
     servDescriptor.catVersion = par("catVersion").stringValue();
 
-
     servDescriptor.scopeOfLocality = par("scopeOfLocality").stringValue();
     servDescriptor.isConsumedLocallyOnly = par("consumedLocalOnly").boolValue();
-
 
     servDescriptor.addr = localAdd;
     servDescriptor.port = localPort;
 
-    if(mecPlatformManager_ == nullptr)
-    {
-        EV << "MecServiceBase::handleStartOperation - MEC Orchestrator not present. Register directly to the host Service Registry"<< endl;
+    if (mecPlatformManager_ == nullptr) {
+        EV << "MecServiceBase::handleStartOperation - MEC Orchestrator not present. Register directly to the host Service Registry" << endl;
         servRegistry_->registerMecService(servDescriptor);
     }
-    else
-    {
-        EV << "MecServiceBase::handleStartOperation - registering MEC service via MEC Orchestrator"<< endl;
+    else {
+        EV << "MecServiceBase::handleStartOperation - registering MEC service via MEC Orchestrator" << endl;
         mecPlatformManager_->registerMecService(servDescriptor);
     }
 
     // e.g. 1.2.3.4:5050
     std::stringstream hostStream;
-    hostStream << localAddress<< ":" << localPort;
+    hostStream << localAddress << ":" << localPort;
     host_ = hostStream.str();
 
     serverSocket.setOutputGate(gate("socketOut"));
@@ -141,7 +136,7 @@ void MecServiceBase::handleStartOperation(inet::LifecycleOperation *operation)
 void MecServiceBase::handleStopOperation(inet::LifecycleOperation *operation)
 {
     for (auto thread : threadSet)
-           thread->getSocket()->close();
+        thread->getSocket()->close();
     serverSocket.close();
 //    delayActiveOperationFinish(par("stopOperationTimeout"));
 }
@@ -162,9 +157,8 @@ void MecServiceBase::handleCrashOperation(inet::LifecycleOperation *operation)
 void MecServiceBase::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        EV << " MecServiceBase::handleMessageWhenUp - "<< msg->getName() << endl;
-        if(strcmp(msg->getName(), "serveSubscription") == 0)
-        {
+        EV << " MecServiceBase::handleMessageWhenUp - " << msg->getName() << endl;
+        if (strcmp(msg->getName(), "serveSubscription") == 0) {
 //            maybe the service wants to perform some operations in case the subId is not present,
 //            so the service base just calls the manageSubscription() method.
 //            bool res = false;
@@ -183,13 +177,11 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
             bool res = manageSubscription();
             scheduleNextEvent(!res);
         }
-        else if(strcmp(msg->getName(), "serveRequest") == 0)
-        {
+        else if (strcmp(msg->getName(), "serveRequest") == 0) {
             bool res = manageRequest();
             scheduleNextEvent(!res);
         }
-        else
-        {
+        else {
             delete msg;
         }
     }
@@ -200,12 +192,11 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
         else if (serverSocket.belongsToSocket(msg))
             serverSocket.processMessage(msg);
         else {
-    //            throw cRuntimeError("Unknown incoming message: '%s'", msg->getName());
+            //            throw cRuntimeError("Unknown incoming message: '%s'", msg->getName());
             EV_ERROR << "message " << msg->getFullName() << "(" << msg->getClassName() << ") arrived for unknown socket \n";
             delete msg;
         }
     }
-
 }
 
 void MecServiceBase::socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo)
@@ -227,7 +218,7 @@ void MecServiceBase::socketAvailable(inet::TcpSocket *socket, inet::TcpAvailable
 
     socketMap.addSocket(newSocket);
     threadSet.insert(proc);
-    EV << "New socket added - ["<< newSocket->getRemoteAddress() <<":"<< newSocket->getRemotePort() << " connId: "<<newSocket->getSocketId()<<"]" << endl;
+    EV << "New socket added - [" << newSocket->getRemoteAddress() << ":" << newSocket->getRemotePort() << " connId: " << newSocket->getSocketId() << "]" << endl;
 
     socket->accept(availableInfo->getNewSocketId());
 }
@@ -240,42 +231,35 @@ void MecServiceBase::socketClosed(inet::TcpSocket *socket)
 
 bool MecServiceBase::manageRequest()
 {
-    EV_INFO <<" MecServiceBase::manageRequest" << endl;
-  //  EV << "MecServiceBase::manageRequest - start manageRequest" << endl;
+    EV_INFO << " MecServiceBase::manageRequest" << endl;
+    //  EV << "MecServiceBase::manageRequest - start manageRequest" << endl;
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(currentRequestMessageServed_->getSockId()));
-    if(socket)
-    {
+    if (socket) {
         /*
          * Manage backgroundRequest
          */
 
-        if(currentRequestMessageServed_->isBackgroundRequest())
-        {
-            if(currentRequestMessageServed_->isLastBackgroundRequest())
-            {
+        if (currentRequestMessageServed_->isBackgroundRequest()) {
+            if (currentRequestMessageServed_->isLastBackgroundRequest()) {
                 Http::send200Response(socket, "{Done}"); //notify the client last bg request served
             }
         }
-        else
-        {
+        else {
             handleRequest(socket);
             simtime_t responseTime = simTime() - currentRequestMessageServed_->getArrivalTime();
-            EV_INFO <<" MecServiceBase::manageRequest - Response time - " << responseTime << endl;
+            EV_INFO << " MecServiceBase::manageRequest - Response time - " << responseTime << endl;
             emit(responseTimeSignal_, responseTime);
         }
 
-        if(currentRequestMessageServed_ != nullptr)
-        {
+        if (currentRequestMessageServed_ != nullptr) {
             delete currentRequestMessageServed_;
             currentRequestMessageServed_ = nullptr;
         }
         return true;
     }
-    else // socket has been closed or some error occurred, discard request
-    {
+    else { // socket has been closed or some error occurred, discard request
         // I should schedule immediately a new request execution
-        if(currentRequestMessageServed_ != nullptr)
-        {
+        if (currentRequestMessageServed_ != nullptr) {
             delete currentRequestMessageServed_;
             currentRequestMessageServed_ = nullptr;
         }
@@ -285,45 +269,40 @@ bool MecServiceBase::manageRequest()
 
 void MecServiceBase::scheduleNextEvent(bool now)
 {
-    EV <<"MecServiceBase::scheduleNextEvent"<< endl;
+    EV << "MecServiceBase::scheduleNextEvent" << endl;
     // schedule next event
-    if(subscriptionEvents_.size() != 0 && !subscriptionService_->isScheduled() && !requestService_->isScheduled())
-    {
-        EV <<"MecServiceBase::scheduleNextEvent - subscription branch"<< endl;
+    if (subscriptionEvents_.size() != 0 && !subscriptionService_->isScheduled() && !requestService_->isScheduled()) {
+        EV << "MecServiceBase::scheduleNextEvent - subscription branch" << endl;
         currentSubscriptionServed_ = subscriptionEvents_.front();
         subscriptionEvents_.pop();
-        if(now)
-            scheduleAt(simTime() + 0 , subscriptionService_);
-        else
-        {
+        if (now)
+            scheduleAt(simTime() + 0, subscriptionService_);
+        else {
             double serviceTime = calculateSubscriptionServiceTime(); //must be >0
-            EV <<"MecServiceBase::scheduleNextEvent- subscription service time: "<< serviceTime << endl;
-            scheduleAt(simTime() + serviceTime , subscriptionService_);
+            EV << "MecServiceBase::scheduleNextEvent- subscription service time: " << serviceTime << endl;
+            scheduleAt(simTime() + serviceTime, subscriptionService_);
         }
     }
-    else if (requests_.getLength() != 0 && !requestService_->isScheduled() && !subscriptionService_->isScheduled())
-    {
-        EV <<"MecServiceBase::scheduleNextEvent - request branch"<< endl;
-        currentRequestMessageServed_ = check_and_cast<HttpRequestMessage*>(requests_.pop());
+    else if (requests_.getLength() != 0 && !requestService_->isScheduled() && !subscriptionService_->isScheduled()) {
+        EV << "MecServiceBase::scheduleNextEvent - request branch" << endl;
+        currentRequestMessageServed_ = check_and_cast<HttpRequestMessage *>(requests_.pop());
 
-        if(loadGenerator_ && !currentRequestMessageServed_->isBackgroundRequest())
-        {
-            EV <<"MecServiceBase::scheduleNextEvent - load generator is on, use the response time in the packet"<< endl;
+        if (loadGenerator_ && !currentRequestMessageServed_->isBackgroundRequest()) {
+            EV << "MecServiceBase::scheduleNextEvent - load generator is on, use the response time in the packet" << endl;
             /*
              * If the loadGenerator flag is active, use the responseTime calculated at arriving time
              */
-            scheduleAt(simTime() + currentRequestMessageServed_->getResponseTime() , requestService_);
+            scheduleAt(simTime() + currentRequestMessageServed_->getResponseTime(), requestService_);
             return;
         }
 
-        if(now)
-            scheduleAt(simTime() + 0 , subscriptionService_);
-        else
-        {
+        if (now)
+            scheduleAt(simTime() + 0, subscriptionService_);
+        else {
             //calculate the serviceTime base on the type | parameters
             double serviceTime = calculateRequestServiceTime(); //must be >0
-            EV <<"MecServiceBase::scheduleNextEvent- request service time: "<< serviceTime << endl;
-            scheduleAt(simTime() + serviceTime , requestService_);
+            EV << "MecServiceBase::scheduleNextEvent- request service time: " << serviceTime << endl;
+            scheduleAt(simTime() + serviceTime, requestService_);
         }
     }
 }
@@ -332,13 +311,11 @@ void MecServiceBase::handleRequestQueueFull(HttpRequestMessage *msg)
 {
     EV << " MecServiceBase::handleQueueFull" << endl;
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(msg->getSockId()));
-    if(!socket)
-    {
-        throw cRuntimeError ("MecServiceBase::handleRequestQueueFull - socket not found, this should not happen.");
+    if (!socket) {
+        throw cRuntimeError("MecServiceBase::handleRequestQueueFull - socket not found, this should not happen.");
     }
 
-    if(msg->isBackgroundRequest() && !msg->isLastBackgroundRequest())
-    {
+    if (msg->isBackgroundRequest() && !msg->isLastBackgroundRequest()) {
         delete msg;
         return;
     }
@@ -352,10 +329,10 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
 {
     EV << "Queue length: " << requests_.getLength() << endl;
     // If queue is full respond 503 queue full
-    if(requestQueueSize_ != 0 && requests_.getLength() == requestQueueSize_){
+    if (requestQueueSize_ != 0 && requests_.getLength() == requestQueueSize_) {
         EV << "MecServiceBase::newRequest - queue is full" << endl;
-       handleRequestQueueFull(msg);
-       return;
+        handleRequestQueueFull(msg);
+        return;
     }
 
     /*
@@ -367,28 +344,24 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
      * When the FG request queue is empty, upon a FG arrive the number of requests
      * already in the system is calculated supposing a M/M/1 system with service mu.
      */
-    if(loadGenerator_)
-    {
+    if (loadGenerator_) {
         int numOfBGReqs;
 
-        if(requests_.getLength() == 0)
-        {
+        if (requests_.getLength() == 0) {
             // debug
-            numOfBGReqs = geometric((1-rho_), 0);
+            numOfBGReqs = geometric((1 - rho_), 0);
             EV << "MecServiceBase::newRequest - number of BG requests in front of this FG request: " << numOfBGReqs << endl;
 
         }
-        else
-        {
+        else {
             simtime_t deltaTime = simTime() - lastFGRequestArrived_;
-            numOfBGReqs = poisson(deltaTime.dbl()*numBGApps_*lambda_, 0); // BG requests arrived in period of time deltaTime
+            numOfBGReqs = poisson(deltaTime.dbl() * numBGApps_ * lambda_, 0); // BG requests arrived in period of time deltaTime
             // debug
             EV << "MecServiceBase::newRequest - number of BG requests between this and the last FG request: " << numOfBGReqs << endl;
         }
 
         double sumOfresponseTimes = 0;
-        for(int i = 0 ; i < numOfBGReqs+1; ++i)
-        {
+        for (int i = 0; i < numOfBGReqs + 1; ++i) {
             sumOfresponseTimes += exponential(requestServiceTime_, REQUEST_RNG);
         }
 
@@ -403,11 +376,11 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
     scheduleNextEvent();
 }
 
-void MecServiceBase::newSubscriptionEvent(EventNotification* event)
+void MecServiceBase::newSubscriptionEvent(EventNotification *event)
 {
     EV << "Queue length: " << subscriptionEvents_.size() << endl;
     // If queue is full delete event
-    if(subscriptionQueueSize_ != 0 && subscriptionEvents_.size() == subscriptionQueueSize_){
+    if (subscriptionQueueSize_ != 0 && subscriptionEvents_.size() == subscriptionQueueSize_) {
         EV << "MecServiceBase::newSubscriptionEvent - subscription queue is full. Deleting event..." << endl;
         delete event;
         return;
@@ -424,7 +397,7 @@ bool MecServiceBase::manageSubscription()
 }
 
 // TODO method not used
-void MecServiceBase::triggeredEvent(EventNotification* event)
+void MecServiceBase::triggeredEvent(EventNotification *event)
 {
     newSubscriptionEvent(event);
 }
@@ -435,12 +408,10 @@ double MecServiceBase::calculateRequestServiceTime()
     /*
      * Manage the case it is a background request
      */
-    if(currentRequestMessageServed_->isBackgroundRequest())
-    {
+    if (currentRequestMessageServed_->isBackgroundRequest()) {
         time = exponential(requestServiceTime_, REQUEST_RNG);
     }
-    else
-    {
+    else {
         time = exponential(requestServiceTime_, REQUEST_RNG);
     }
 //    return (time*1e-6);
@@ -457,40 +428,32 @@ double MecServiceBase::calculateSubscriptionServiceTime()
 
 }
 
-void MecServiceBase::handleCurrentRequest(inet::TcpSocket *socket){}
+void MecServiceBase::handleCurrentRequest(inet::TcpSocket *socket) {}
 
-
-void MecServiceBase::handleRequest(inet::TcpSocket *socket){
+void MecServiceBase::handleRequest(inet::TcpSocket *socket) {
     EV << "MecServiceBase::handleRequest" << endl;
 
-     if(currentRequestMessageServed_->getState() == CORRECT){ // request-line is well formatted
-         if(std::strcmp(currentRequestMessageServed_->getMethod(),"GET") == 0)
-         {
-             handleGETRequest(currentRequestMessageServed_, socket); // pass URI
-         }
-         else if(std::strcmp(currentRequestMessageServed_->getMethod(),"POST") == 0) //subscription
-         {
-             handlePOSTRequest(currentRequestMessageServed_,  socket); // pass URI
-         }
-
-         else if(std::strcmp(currentRequestMessageServed_->getMethod(),"PUT") == 0)
-         {
-            handlePUTRequest(currentRequestMessageServed_,  socket); // pass URI
-         }
-         else if(std::strcmp(currentRequestMessageServed_->getMethod(),"DELETE") == 0)
-        {
-         handleDELETERequest(currentRequestMessageServed_,  socket); // pass URI
+    if (currentRequestMessageServed_->getState() == CORRECT) { // request-line is well formatted
+        if (std::strcmp(currentRequestMessageServed_->getMethod(), "GET") == 0) {
+            handleGETRequest(currentRequestMessageServed_, socket); // pass URI
         }
-         else
-         {
-             Http::send405Response(socket);
-         }
-     }
-     else
-     {
-         Http::send400Response(socket);
-     }
- }
+        else if (std::strcmp(currentRequestMessageServed_->getMethod(), "POST") == 0) { //subscription
+            handlePOSTRequest(currentRequestMessageServed_, socket); // pass URI
+        }
+        else if (std::strcmp(currentRequestMessageServed_->getMethod(), "PUT") == 0) {
+            handlePUTRequest(currentRequestMessageServed_, socket);// pass URI
+        }
+        else if (std::strcmp(currentRequestMessageServed_->getMethod(), "DELETE") == 0) {
+            handleDELETERequest(currentRequestMessageServed_, socket); // pass URI
+        }
+        else {
+            Http::send405Response(socket);
+        }
+    }
+    else {
+        Http::send400Response(socket);
+    }
+}
 
 void MecServiceBase::refreshDisplay() const
 {
@@ -498,16 +461,16 @@ void MecServiceBase::refreshDisplay() const
     return;
 }
 
-void MecServiceBase::getConnectedBaseStations(){
+void MecServiceBase::getConnectedBaseStations() {
 
-    EV <<"MecServiceBase::getConnectedBaseStations" << endl;
+    EV << "MecServiceBase::getConnectedBaseStations" << endl;
 
     //getting the list of BS associated to this mec system from NED
-    if(meHost_->hasPar("bsList")) {
+    if (meHost_->hasPar("bsList")) {
         auto bsList = check_and_cast<cValueArray *>(meHost_->par("bsList").objectValue());
         for (int i = 0; i < bsList->size(); i++) {
             const char *token = bsList->get(i).stringValue();
-            EV <<"MecServiceBase::getConnectedBaseStations " << token << endl;
+            EV << "MecServiceBase::getConnectedBaseStations " << token << endl;
             cModule *bsModule = getSimulation()->getModuleByPath(token);
             EV << "add2: " << bsModule << endl;
             eNodeB_.insert(bsModule);
@@ -516,23 +479,22 @@ void MecServiceBase::getConnectedBaseStations(){
     return;
 }
 
-
-void MecServiceBase::closeConnection(SocketManager * connection)
+void MecServiceBase::closeConnection(SocketManager *connection)
 {
-        EV << "MecServiceBase::closeConnection"<<endl;
+    EV << "MecServiceBase::closeConnection" << endl;
     // remove socket
-       socketMap.removeSocket(connection->getSocket());
-       threadSet.erase(connection);
-       socketClosed(connection->getSocket());
-       // remove thread object
-       connection->deleteModule();
+    socketMap.removeSocket(connection->getSocket());
+    threadSet.erase(connection);
+    socketClosed(connection->getSocket());
+    // remove thread object
+    connection->deleteModule();
 }
 
 void MecServiceBase::removeConnection(SocketManager *connection)
 {
-    EV << "MecServiceBase::removeConnection"<<endl;
+    EV << "MecServiceBase::removeConnection" << endl;
     // remove socket
-    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
+    inet::TcpSocket *sock = check_and_cast<inet::TcpSocket *>(socketMap.removeSocket(connection->getSocket()));
     sock->close();
     delete sock;
     // remove thread object
@@ -544,47 +506,44 @@ void MecServiceBase::finish()
 {
     EV << "MecServiceBase::finish()" << endl;
     serverSocket.close();
-    while (!threadSet.empty())
-    {
+    while (!threadSet.empty()) {
         removeConnection(*threadSet.begin());
     }
 }
 
-MecServiceBase::~MecServiceBase(){
-    std::cout << "~"<< serviceName_ << std::endl;
-        // remove and delete threads
+MecServiceBase::~MecServiceBase() {
+    std::cout << "~" << serviceName_ << std::endl;
+    // remove and delete threads
 
     cancelAndDelete(requestService_);
     cancelAndDelete(subscriptionService_);
     delete currentRequestMessageServed_;
     delete currentSubscriptionServed_;
 
-    while(!requests_.isEmpty())
-    {
-        delete requests_.pop();;
+    while (!requests_.isEmpty()) {
+        delete requests_.pop();
+        ;
     }
 
-    while(!subscriptionEvents_.empty())
-    {
+    while (!subscriptionEvents_.empty()) {
         EventNotification *notEv = subscriptionEvents_.front();
         subscriptionEvents_.pop();
         delete notEv;
     }
-    std::cout << "~"<< serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << "~" << serviceName_ << " Subscriptions list length: " << subscriptions_.size() << std::endl;
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {
-        std::cout << serviceName_<<" Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
+        std::cout << serviceName_ << " Deleting subscription with id: " << it->second->getSubscriptionId() << std::endl;
         delete it->second;
         it = subscriptions_.erase(it);
     }
-    std::cout << "~"<< serviceName_<<" Subscriptions list length: " << subscriptions_.size() << std::endl;
+    std::cout << "~" << serviceName_ << " Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
 
 void MecServiceBase::emitRequestQueueLength()
 {
-   // emit(requestQueueSizeSignal_, requests_.getLength());
+    // emit(requestQueueSizeSignal_, requests_.getLength());
 }
-
 
 void MecServiceBase::removeSubscritions(int connId)
 {
@@ -595,8 +554,9 @@ void MecServiceBase::removeSubscritions(int connId)
             delete it->second;
             it = subscriptions_.erase(it);
             EV << " list length: " << subscriptions_.size() << std::endl;
-        } else {
-           ++it;
+        }
+        else {
+            ++it;
         }
     }
 }

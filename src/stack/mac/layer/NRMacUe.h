@@ -19,7 +19,6 @@ namespace simu5g {
 class NRMacUe : public LteMacUeD2D
 {
 
-
   protected:
 
     /**
@@ -43,7 +42,7 @@ class NRMacUe : public LteMacUeD2D
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    virtual void macPduMake(MacCid cid=0);
+    virtual void macPduMake(MacCid cid = 0);
 
   public:
     NRMacUe();
@@ -53,3 +52,4 @@ class NRMacUe : public LteMacUeD2D
 } //namespace
 
 #endif
+

@@ -27,7 +27,6 @@ class LteMacBase;
 class LteRlcUm;
 class LteRlcUmDataPdu;
 
-
 /**
  * @class UmRxEntity
  * @brief Receiver entity for UM
@@ -47,19 +46,19 @@ class UmRxEntity : public omnetpp::cSimpleModule
      * Enqueues a lower layer packet into the PDU buffer
      * @param pdu the packet to be enqueued
      */
-    void enque(omnetpp::cPacket* pkt);
+    void enque(omnetpp::cPacket *pkt);
 
-    void setFlowControlInfo(FlowControlInfo* lteInfo) { flowControlInfo_ = lteInfo; }
-    FlowControlInfo* getFlowControlInfo() { return flowControlInfo_; }
+    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo; }
+    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // returns true if this entity is for a D2D_MULTI connection
-    bool isD2DMultiConnection() { return (flowControlInfo_->getDirection() == D2D_MULTI); }
+    bool isD2DMultiConnection() { return flowControlInfo_->getDirection() == D2D_MULTI; }
 
     // called when a D2D mode switch is triggered
-    void rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer=true);
+    void rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer = true);
 
     // returns if the entity contains RLC pdus
-    bool isEmpty() const { return (buffered_.pkt == nullptr && pduBuffer_.size() == 0);}
+    bool isEmpty() const { return buffered_.pkt == nullptr && pduBuffer_.size() == 0; }
 
   protected:
 
@@ -67,7 +66,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
      * Initialize watches
      */
     virtual void initialize();
-    virtual void handleMessage(omnetpp::cMessage* msg);
+    virtual void handleMessage(omnetpp::cMessage *msg);
 
     //Statistics
     static unsigned int totalCellPduRcvdBytes_;
@@ -94,12 +93,13 @@ class UmRxEntity : public omnetpp::cSimpleModule
 
     // buffered fragments
     std::deque<inet::Packet *> *fragments = nullptr;
+
   private:
 
     inet::ModuleRefByPar<Binder> binder_;
 
     // reference to eNB for statistic purpose
-    omnetpp::cModule* nodeB_;
+    omnetpp::cModule *nodeB_;
 
     // Node id of the owner module
     MacNodeId ownerNodeId_;
@@ -110,7 +110,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
      * Flow-related info.
      * Initialized with the control info of the first packet of the flow
      */
-    FlowControlInfo* flowControlInfo_;
+    FlowControlInfo *flowControlInfo_;
 
     // The PDU enqueue buffer.
     omnetpp::cArray pduBuffer_;
@@ -129,9 +129,9 @@ class UmRxEntity : public omnetpp::cSimpleModule
 
     // The SDU waiting for the missing portion
     struct Buffered {
-         inet::Packet* pkt = nullptr;
-         size_t size;
-         unsigned int currentPduSno;   // next PDU sequence number expected
+        inet::Packet *pkt = nullptr;
+        size_t size;
+        unsigned int currentPduSno;   // next PDU sequence number expected
     } buffered_;
 
     // Sequence number of the last SDU delivered to the upper layer
@@ -146,7 +146,6 @@ class UmRxEntity : public omnetpp::cSimpleModule
     // (modify the lastPduReassembled_ and lastSnoDelivered_ counters)
     // useful for D2D after a mode switch
     bool resetFlag_;
-
 
     /**
      *  @author Alessandro Noferi
@@ -169,20 +168,15 @@ class UmRxEntity : public omnetpp::cSimpleModule
     omnetpp::simtime_t t2_; // point in time the burst begins
     omnetpp::simtime_t t1_; // point in time last pkt sent during burst
 
-
     /*
-    * This method is used to manage a burst and calculate the UL tput of a UE
-    * It is called at the end of each TTI period and at the end of a t_reordering
-    * period. Only the EnodeB needs to manage the buffer, since only it has to
-    * calculate UL tput.
-    *
-    * @param event specifies when it is called, i.e after TTI or after timer reoridering
-    */
+     * This method is used to manage a burst and calculate the UL tput of a UE
+     * It is called at the end of each TTI period and at the end of a t_reordering
+     * period. Only the EnodeB needs to manage the buffer, since only it has to
+     * calculate UL tput.
+     *
+     * @param event specifies when it is called, i.e after TTI or after timer reoridering
+     */
     void handleBurst(BurstCheck event);
-
-
-
-
 
     // move forward the reordering window
     void moveRxWindow(const int pos);
@@ -191,7 +185,7 @@ class UmRxEntity : public omnetpp::cSimpleModule
     void reassemble(unsigned int index);
 
     // deliver a PDCP PDU to the PDCP layer
-    void toPdcp(inet::Packet* rlcSdu);
+    void toPdcp(inet::Packet *rlcSdu);
 
     // clear buffered SDU
     void clearBufferedSdu();

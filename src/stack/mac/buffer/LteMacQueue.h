@@ -54,7 +54,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
 
     LteMacQueue(const LteMacQueue& queue);
     LteMacQueue& operator=(const LteMacQueue& queue);
-    LteMacQueue* dup() const;
+    LteMacQueue *dup() const;
 
     /**
      * pushBack() inserts a new packet in the back
@@ -84,7 +84,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return NULL if queue is empty,
      *            pkt on successful operation
      */
-    omnetpp::cPacket* popFront();
+    omnetpp::cPacket *popFront();
 
     /**
      * popFront() extracts a packet from the
@@ -93,7 +93,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return NULL if queue is empty,
      *            pkt on successful operation
      */
-    omnetpp::cPacket* popBack();
+    omnetpp::cPacket *popBack();
 
     /**
      * getQueueOccupancy() returns the occupancy
@@ -127,7 +127,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      */
     omnetpp::simtime_t getHolTimestamp() const;
 
-    friend std::ostream &operator << (std::ostream &stream, const LteMacQueue* queue);
+    friend std::ostream& operator<<(std::ostream& stream, const LteMacQueue *queue);
 
   protected:
     /**
@@ -140,8 +140,9 @@ class LteMacQueue : public omnetpp::cPacketQueue
      *    b) we have enough space in the queue to hold all remaining fragments of the same packet
      *
      */
-    bool isEnqueueablePacket(inet::Packet* pkt);
+    bool isEnqueueablePacket(inet::Packet *pkt);
     unsigned int lastUnenqueueableMainSno; //<seq. number of
+
   private:
     /// Size of queue
     int queueSize_;
@@ -150,3 +151,4 @@ class LteMacQueue : public omnetpp::cPacketQueue
 } //namespace
 
 #endif
+

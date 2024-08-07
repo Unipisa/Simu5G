@@ -28,7 +28,7 @@ class TTimer : public omnetpp::cObject
      * @param module - the connected module
      * @return the idle timer
      */
-    TTimer(omnetpp::cSimpleModule* module)
+    TTimer(omnetpp::cSimpleModule *module)
     {
         module_ = module;
         busy_ = false;
@@ -122,10 +122,10 @@ class TTimer : public omnetpp::cObject
     unsigned int timerId_;
 
     //! Object for handling the event.
-    omnetpp::cSimpleModule* module_;
+    omnetpp::cSimpleModule *module_;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
-    TTimerMsg * intr_;
+    TTimerMsg *intr_;
 
     //! True if the the timer has been already started.
     bool busy_;
@@ -149,7 +149,7 @@ class TMultiTimer : public omnetpp::cObject
 {
   public:
     //! Build an idle multi-timer.
-    TMultiTimer(omnetpp::cSimpleModule* module)
+    TMultiTimer(omnetpp::cSimpleModule *module)
     {
         module_ = module;
         busy_ = false;
@@ -232,7 +232,7 @@ class TMultiTimer : public omnetpp::cObject
     omnetpp::opp_component_ptr<omnetpp::cSimpleModule> module_;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
-    TMultiTimerMsg* intr_;
+    TMultiTimerMsg *intr_;
 
     //! True if there is at least one scheduled event.
     bool busy_;
@@ -258,3 +258,4 @@ class TMultiTimer : public omnetpp::cObject
 } //namespace
 
 #endif
+

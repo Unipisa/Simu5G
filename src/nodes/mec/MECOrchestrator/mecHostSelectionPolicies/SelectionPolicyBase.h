@@ -24,14 +24,15 @@ class SelectionPolicyBase
     friend class MecOrchestrator;
 
   protected:
-    MecOrchestrator* mecOrchestrator_;
-    virtual cModule* findBestMecHost(const ApplicationDescriptor&) = 0;
+    MecOrchestrator *mecOrchestrator_;
+    virtual cModule *findBestMecHost(const ApplicationDescriptor&) = 0;
 
   public:
-    SelectionPolicyBase(MecOrchestrator* mecOrchestrator){mecOrchestrator_ = mecOrchestrator;}
+    SelectionPolicyBase(MecOrchestrator *mecOrchestrator) { mecOrchestrator_ = mecOrchestrator; }
     virtual ~SelectionPolicyBase() {}
 };
 
 } //namespace
 
 #endif /* NODES_MEC_MECORCHESTRATOR_SELECTIONPOLICYBASE_H_ */
+

@@ -32,39 +32,34 @@ NRPhyUe::~NRPhyUe()
 void NRPhyUe::initialize(int stage)
 {
     LtePhyUeD2D::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
-        isNr_ = (strcmp(getFullName(),"nrPhy") == 0);
+    if (stage == inet::INITSTAGE_LOCAL) {
+        isNr_ = (strcmp(getFullName(), "nrPhy") == 0);
         otherPhy_.reference(this, "otherPhyModule", true);
     }
 }
 
-
 // TODO: ***reorganize*** method
-void NRPhyUe::handleAirFrame(cMessage* msg)
+void NRPhyUe::handleAirFrame(cMessage *msg)
 {
-    UserControlInfo* lteInfo = check_and_cast<UserControlInfo*>(msg->removeControlInfo());
+    UserControlInfo *lteInfo = check_and_cast<UserControlInfo *>(msg->removeControlInfo());
 
-    if (useBattery_)
-    {
+    if (useBattery_) {
         //TODO BatteryAccess::drawCurrent(rxAmount_, 0);
     }
     connectedNodeId_ = masterId_;
-    LteAirFrame* frame = check_and_cast<LteAirFrame*>(msg);
+    LteAirFrame *frame = check_and_cast<LteAirFrame *>(msg);
     EV << "NRPhyUe: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     int sourceId = lteInfo->getSourceId();
-    if(binder_->getOmnetId(sourceId) == 0 )
-    {
+    if (binder_->getOmnetId(sourceId) == 0) {
         // source has left the simulation
         delete msg;
         return;
     }
 
     double carrierFreq = lteInfo->getCarrierFrequency();
-    LteChannelModel* channelModel = getChannelModel(carrierFreq);
-    if (channelModel == NULL)
-    {
+    LteChannelModel *channelModel = getChannelModel(carrierFreq);
+    if (channelModel == NULL) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
         delete lteInfo;
         delete frame;
@@ -72,11 +67,9 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
     }
 
     //Update coordinates of this user
-    if (lteInfo->getFrameType() == HANDOVERPKT)
-    {
+    if (lteInfo->getFrameType() == HANDOVERPKT) {
         // check if the message is on another carrier frequency or handover is already in process
-        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != NULL && handoverTrigger_->isScheduled()))
-        {
+        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != NULL && handoverTrigger_->isScheduled())) {
             EV << "Received handover packet on a different carrier frequency. Delete it." << endl;
             delete lteInfo;
             delete frame;
@@ -84,8 +77,7 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
         }
 
         // check if the message is from a different cellular technology
-        if (lteInfo->isNr() != isNr_)
-        {
+        if (lteInfo->isNr() != isNr_) {
             EV << "Received handover packet [from NR=" << lteInfo->isNr() << "] from a different radio technology [to NR=" << isNr_ << "]. Delete it." << endl;
             delete lteInfo;
             delete frame;
@@ -94,12 +86,10 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
 
         // check if the eNodeB is a secondary node
         MacNodeId masterNodeId = binder_->getMasterNode(sourceId);
-        if (masterNodeId != sourceId)
-        {
+        if (masterNodeId != sourceId) {
             // the node has a master node, check if the other PHY of this UE is attached to that master.
             // if not, the UE cannot attach to this secondary node and the packet must be deleted.
-            if (otherPhy_->getMasterId() != masterNodeId)
-            {
+            if (otherPhy_->getMasterId() != masterNodeId) {
                 EV << "Received handover packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
                 delete lteInfo;
                 delete frame;
@@ -112,8 +102,7 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
     }
 
     // Check if the frame is for us ( MacNodeId matches or - if this is a multicast communication - enrolled in multicast group)
-    if (lteInfo->getDestId() != nodeId_ && !(binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())))
-    {
+    if (lteInfo->getDestId() != nodeId_ && !(binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId()))) {
         EV << "ERROR: Frame is not for us. Delete it." << endl;
         EV << "Packet Type: " << phyFrameTypeToA((LtePhyFrameType)lteInfo->getFrameType()) << endl;
         EV << "Frame MacNodeId: " << lteInfo->getDestId() << endl;
@@ -131,8 +120,7 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI && lteInfo->getSourceId() != masterId_)
-    {
+    if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI && lteInfo->getSourceId() != masterId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
         EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
         EV << "UE MacNodeId: " << nodeId_ << endl;
@@ -141,15 +129,13 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
         return;
     }
 
-    if (binder_->isInMulticastGroup(nodeId_,lteInfo->getMulticastGroupId()))
-    {
+    if (binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())) {
         // HACK: if this is a multicast connection, change the destId of the airframe so that upper layers can handle it
         lteInfo->setDestId(nodeId_);
     }
 
     // send H-ARQ feedback up
-    if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT || lteInfo->getFrameType() == D2DMODESWITCHPKT)
-    {
+    if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT || lteInfo->getFrameType() == D2DMODESWITCHPKT) {
         handleControlMsg(frame, lteInfo);
         return;
     }
@@ -157,11 +143,9 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
     // this is a DATA packet
 
     // if the packet is a D2D multicast one, store it and decode it at the end of the TTI
-    if (d2dMulticastEnableCaptureEffect_ && binder_->isInMulticastGroup(nodeId_,lteInfo->getMulticastGroupId()))
-    {
+    if (d2dMulticastEnableCaptureEffect_ && binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())) {
         // if not already started, auto-send a message to signal the presence of data to be decoded
-        if (d2dDecodingTimer_ == NULL)
-        {
+        if (d2dDecodingTimer_ == NULL) {
             d2dDecodingTimer_ = new cMessage("d2dDecodingTimer");
             d2dDecodingTimer_->setSchedulingPriority(10);          // last thing to be performed in this TTI
             scheduleAt(NOW, d2dDecodingTimer_);
@@ -174,14 +158,12 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
         return;                          // exit the function, decoding will be done later
     }
 
-    if ((lteInfo->getUserTxParams()) != NULL)
-    {
+    if ((lteInfo->getUserTxParams()) != NULL) {
         int cw = lteInfo->getCw();
         if (lteInfo->getUserTxParams()->readCqiVector().size() == 1)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
-        if (lteInfo->getDirection() == DL)
-        {
+        if (lteInfo->getDirection() == DL) {
             emit(averageCqiDl_, cqi);
             recordCqi(cqi, DL);
         }
@@ -189,11 +171,9 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
     // apply decider to received packet
     bool result = true;
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
-    if (r.size() > 1)
-    {
+    if (r.size() > 1) {
         // DAS
-        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++)
-        {
+        for (RemoteSet::iterator it = r.begin(); it != r.end(); it++) {
             EV << "NRPhyUe: Receiving Packet from antenna " << (*it) << "\n";
 
             /*
@@ -206,26 +186,25 @@ void NRPhyUe::handleAirFrame(cMessage* msg)
 //            Move m;
 //            m.setStart(das_->getAntennaCoord(*it));
             RemoteUnitPhyData data;
-            data.txPower=lteInfo->getTxPower();
-            data.m=getRadioPosition();
+            data.txPower = lteInfo->getTxPower();
+            data.m = getRadioPosition();
             frame->addRemoteUnitPhyDataVector(data);
         }
         // apply analog models For DAS
-        result = channelModel->isErrorDas(frame,lteInfo);
+        result = channelModel->isErrorDas(frame, lteInfo);
     }
-    else
-    {
-        result = channelModel->isError(frame,lteInfo);
+    else {
+        result = channelModel->isError(frame, lteInfo);
     }
 
-            // update statistics
+    // update statistics
     if (result)
         numAirFrameReceived_++;
     else
         numAirFrameNotReceived_++;
 
     EV << "Handled LteAirframe with ID " << frame->getId() << " with result "
-       << ( result ? "RECEIVED" : "NOT RECEIVED" ) << endl;
+       << (result ? "RECEIVED" : "NOT RECEIVED") << endl;
 
     auto pkt = check_and_cast<inet::Packet *>(frame->decapsulate());
 
@@ -257,21 +236,17 @@ void NRPhyUe::triggerHandover()
     EV << "############" << endl;
 
     MacNodeId masterNode = binder_->getMasterNode(candidateMasterId_);
-    if (masterNode != candidateMasterId_)  // the candidate is a secondary node
-    {
-        if (otherPhy_->getMasterId() == masterNode)
-        {
+    if (masterNode != candidateMasterId_) { // the candidate is a secondary node
+        if (otherPhy_->getMasterId() == masterNode) {
             MacNodeId otherNodeId = otherPhy_->getMacNodeId();
-            const std::pair<MacNodeId, MacNodeId>* handoverPair = binder_->getHandoverTriggered(otherNodeId);
-            if (handoverPair != NULL)
-            {
-                if (handoverPair->second == candidateMasterId_)
-                {
+            const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
+            if (handoverPair != NULL) {
+                if (handoverPair->second == candidateMasterId_) {
                     // delay this handover
                     double delta = handoverDelta_;
                     if (handoverPair->first != 0) // the other "stack" is performing a complete handover
                         delta += handoverDetachment_ + handoverAttachment_;
-                    else                          // the other "stack" is attaching to an eNodeB
+                    else                                                   // the other "stack" is attaching to an eNodeB
                         delta += handoverAttachment_;
 
                     EV << NOW << " NRPhyUe::triggerHandover - Wait the handover completion for the other stack. Delay this handover." << endl;
@@ -280,8 +255,7 @@ void NRPhyUe::triggerHandover()
                     scheduleAt(simTime() + delta, handoverStarter_);
                     return;
                 }
-                else
-                {
+                else {
                     // cancel this handover
                     binder_->removeHandoverTriggered(nodeId_);
                     EV << NOW << " NRPhyUe::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateMasterId_ << " since the master is performing handover" << endl;
@@ -292,7 +266,6 @@ void NRPhyUe::triggerHandover()
     }
     // else it is a master itself
 
-
     if (candidateMasterRssi_ == 0)
         EV << NOW << " NRPhyUe::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << masterId_ << ". Now detaching... " << endl;
     else if (masterId_ == 0)
@@ -300,12 +273,10 @@ void NRPhyUe::triggerHandover()
     else
         EV << NOW << " NRPhyUe::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateMasterId_ << "... " << endl;
 
-    if (otherPhy_->getMasterId() != 0)
-    {
+    if (otherPhy_->getMasterId() != 0) {
         // check if there are secondary nodes connected
         MacNodeId otherMasterId = binder_->getMasterNode(otherPhy_->getMasterId());
-        if (otherMasterId == masterId_)
-        {
+        if (otherMasterId == masterId_) {
             EV << NOW << " NRPhyUe::triggerHandover - Forcing detachment from " << otherPhy_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
 
             // need to wait for the other stack to complete detachment
@@ -325,29 +296,27 @@ void NRPhyUe::triggerHandover()
     ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
-    if (masterId_ != 0 && candidateMasterId_ != 0)
-    {
-        IP2Nic* enbIp2nic =  check_and_cast<IP2Nic*>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->triggerHandoverSource(nodeId_,candidateMasterId_);
+    if (masterId_ != 0 && candidateMasterId_ != 0) {
+        IP2Nic *enbIp2nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        enbIp2nic->triggerHandoverSource(nodeId_, candidateMasterId_);
     }
 
-    if (masterId_ != 0)
-    {
+    if (masterId_ != 0) {
         // stop active D2D flows (go back to Infrastructure mode)
         // currently, DM is possible only for UEs served by the same cell
 
         // trigger D2D mode switch
-        cModule* enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
-        D2DModeSelectionBase *d2dModeSelection = check_and_cast<D2DModeSelectionBase*>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
+        cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
+        D2DModeSelectionBase *d2dModeSelection = check_and_cast<D2DModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
     }
 
     double handoverLatency;
-    if (masterId_ == 0)                        // attachment only
+    if (masterId_ == 0)                                                // attachment only
         handoverLatency = handoverAttachment_;
-    else if (candidateMasterId_ == 0)          // detachment only
+    else if (candidateMasterId_ == 0)                                                // detachment only
         handoverLatency = handoverDetachment_;
-    else                                       // complete handover time
+    else                                                // complete handover time
         handoverLatency = handoverDetachment_ + handoverAttachment_;
 
     handoverTrigger_ = new cMessage("handoverTrigger");
@@ -359,8 +328,7 @@ void NRPhyUe::doHandover()
     // if masterId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
     // if candidateMasterId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
 
-    if (masterId_ != 0)
-    {
+    if (masterId_ != 0) {
         // Delete Old Buffers
         deleteOldBuffers(masterId_);
 
@@ -371,8 +339,7 @@ void NRPhyUe::doHandover()
         oldAmc->detachUser(nodeId_, D2D);
     }
 
-    if (candidateMasterId_ != 0)
-    {
+    if (candidateMasterId_ != 0) {
         LteAmc *newAmc = getAmcModule(candidateMasterId_);
         assert(newAmc != NULL);
         newAmc->attachUser(nodeId_, UL);
@@ -384,18 +351,15 @@ void NRPhyUe::doHandover()
     if (masterId_ != 0)
         binder_->unregisterNextHop(masterId_, nodeId_);
 
-    if (candidateMasterId_ != 0)
-    {
+    if (candidateMasterId_ != 0) {
         binder_->registerNextHop(candidateMasterId_, nodeId_);
         das_->setMasterRuSet(candidateMasterId_);
     }
-    binder_->updateUeInfoCellId(nodeId_,candidateMasterId_);
+    binder_->updateUeInfoCellId(nodeId_, candidateMasterId_);
     // @author Alessandro Noferi
-    if (hasCollector)
-    {
+    if (hasCollector) {
         binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
     }
-
 
     // change masterId and notify handover to the MAC layer
     MacNodeId oldMaster = masterId_;
@@ -412,24 +376,21 @@ void NRPhyUe::doHandover()
 
     if (masterId_ == 0)
         masterMobility_ = nullptr;
-    else
-    {
-        cModule* masterModule = binder_->getModuleByMacNodeId(masterId_);
-        masterMobility_ = check_and_cast<IMobility*>(masterModule->getSubmodule("mobility"));
+    else {
+        cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
+        masterMobility_ = check_and_cast<IMobility *>(masterModule->getSubmodule("mobility"));
     }
     // update cellInfo
     if (masterId_ != 0)
         cellInfo_->detachUser(nodeId_);
 
-    if (candidateMasterId_ != 0)
-    {
-        CellInfo* oldCellInfo = cellInfo_;
-        LteMacEnb* newMacEnb =  check_and_cast<LteMacEnb*>(getSimulation()->getModule(binder_->getOmnetId(candidateMasterId_))->getSubmodule("cellularNic")->getSubmodule("mac"));
-        CellInfo* newCellInfo = newMacEnb->getCellInfo();
+    if (candidateMasterId_ != 0) {
+        CellInfo *oldCellInfo = cellInfo_;
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(candidateMasterId_))->getSubmodule("cellularNic")->getSubmodule("mac"));
+        CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
-        if (oldCellInfo == NULL)
-        {
+        if (oldCellInfo == NULL) {
             // first time the UE is attached to someone
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             cellInfo_->lambdaInit(nodeId_, index);
@@ -437,7 +398,7 @@ void NRPhyUe::doHandover()
         }
 
         // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
-        cMessage* msg = new cMessage("doModeSwitchAtHandover");
+        cMessage *msg = new cMessage("doModeSwitchAtHandover");
         msg->setSchedulingPriority(10);
         scheduleAt(NOW, msg);
     }
@@ -460,10 +421,9 @@ void NRPhyUe::doHandover()
     ip2nic_->signalHandoverCompleteUe(isNr_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
-    if (oldMaster != 0 && candidateMasterId_ != 0)
-    {
-        IP2Nic* enbIp2nic =  check_and_cast<IP2Nic*>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->signalHandoverCompleteTarget(nodeId_,oldMaster);
+    if (oldMaster != 0 && candidateMasterId_ != 0) {
+        IP2Nic *enbIp2nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
     }
 }
 
@@ -492,7 +452,7 @@ void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
     /* Delete Rlc UM Buffers */
 
     // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm*>(getRlcByMacNodeId(binder_, masterId, UM));
+    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(getRlcByMacNodeId(binder_, masterId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for master at this ue
@@ -502,7 +462,7 @@ void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete pdcpEntities[nodeId_] at old master
     // in case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing the node's master
     MacNodeId masterNodeId = binder_->getMasterNode(masterId);
-    LtePdcpRrcEnb* masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(binder_, masterNodeId));
+    LtePdcpRrcEnb *masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(binder_, masterNodeId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for master at this ue

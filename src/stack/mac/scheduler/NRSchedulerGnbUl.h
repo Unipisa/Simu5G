@@ -25,11 +25,10 @@ class NRSchedulerGnbUl : public LteSchedulerEnbUl
 {
   protected:
 
-
   public:
 
     // does nothing with asynchronous H-ARQ
-    virtual void updateHarqDescs() { }
+    virtual void updateHarqDescs() {}
 
     virtual bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency);
 
@@ -37,9 +36,10 @@ class NRSchedulerGnbUl : public LteSchedulerEnbUl
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    virtual bool rtxschedule(double carrierFrequency, BandLimitVector* bandLim = NULL);
+    virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = NULL);
 };
 
 } //namespace
 
 #endif // _NRSCHEDULER_GNB_UL_H_
+

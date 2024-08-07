@@ -17,34 +17,39 @@
 
 namespace simu5g {
 
-class AperiodicSubscriptionTimer: public AperiodicSubscriptionTimer_m {
-public:
+class AperiodicSubscriptionTimer : public AperiodicSubscriptionTimer_m
+{
+  public:
     AperiodicSubscriptionTimer();
-    AperiodicSubscriptionTimer(const char *name=nullptr, const double& period = 0);
-    AperiodicSubscriptionTimer(const char *name=nullptr);
+    AperiodicSubscriptionTimer(const char *name = nullptr, const double& period = 0);
+    AperiodicSubscriptionTimer(const char *name = nullptr);
     virtual ~AperiodicSubscriptionTimer();
 
     void insertSubId(int subId)
     {
         subIdSet_.insert(subId);
     }
+
     void removeSubId(int subId)
     {
         subIdSet_.erase(subId);
     }
+
     const std::set<int> getSubIdSet() const
     {
         return subIdSet_;
     }
+
     const int getSubIdSetSize() const
     {
         return subIdSet_.size();
     }
 
-private:
+  private:
     std::set<int> subIdSet_;
 };
 
 } //namespace
 
 #endif /* NODES_MEC_MEPLATFORM_MESERVICES_PACKETS_APERIODICSUBSCRIPTIONTIMER_H_ */
+

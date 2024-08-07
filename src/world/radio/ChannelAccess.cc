@@ -15,8 +15,8 @@
 #include "inet/common/InitStages.h"
 
 namespace inet {
-    Define_InitStage_Dependency(PHYSICAL_LAYER, SINGLE_MOBILITY);
-}
+Define_InitStage_Dependency(PHYSICAL_LAYER, SINGLE_MOBILITY);
+} // namespace inet
 
 namespace simu5g {
 
@@ -37,15 +37,15 @@ static int parseInt(const char *s, int defaultValue)
 // the destructor unregister the radio module
 ChannelAccess::~ChannelAccess()
 {
-    if (cc && myRadioRef)
-    {
+    if (cc && myRadioRef) {
         // check if channel control exist
         IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
         if (cc)
-             cc->unregisterRadio(myRadioRef);
+            cc->unregisterRadio(myRadioRef);
         myRadioRef = nullptr;
     }
 }
+
 /**
  * Upon initialization ChannelAccess registers the nic parent module
  * to have all its connections handled by ChannelControl
@@ -54,8 +54,7 @@ void ChannelAccess::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
-    if (stage == inet::INITSTAGE_LOCAL)
-    {
+    if (stage == inet::INITSTAGE_LOCAL) {
         cc = getChannelControl();
         hostModule = inet::getContainingNode(this);
         myRadioRef = nullptr;
@@ -64,30 +63,27 @@ void ChannelAccess::initialize(int stage)
 
         // subscribe to the correct mobility module
 
-        if (hostModule->findSubmodule("mobility") != -1)
-        {
+        if (hostModule->findSubmodule("mobility") != -1) {
             // register to get a notification when position changes
             hostModule->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         }
     }
-    else if (stage == inet::INITSTAGE_SINGLE_MOBILITY)
-    {
-        if (!positionUpdateArrived && hostModule->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this))
-        {
+    else if (stage == inet::INITSTAGE_SINGLE_MOBILITY) {
+        if (!positionUpdateArrived && hostModule->isSubscribed(inet::IMobility::mobilityStateChangedSignal, this)) {
             // ...else, get the initial position from the display string
             radioPos.x = parseInt(hostModule->getDisplayString().getTagArg("p", 0), -1);
             radioPos.y = parseInt(hostModule->getDisplayString().getTagArg("p", 1), -1);
 
             if (radioPos.x == -1 || radioPos.y == -1)
                 error("The coordinates of '%s' host are invalid. Please set coordinates in "
-                        "'@display' attribute, or configure Mobility for this host.",
+                      "'@display' attribute, or configure Mobility for this host.",
                         hostModule->getFullPath().c_str());
 
             const char *s = hostModule->getDisplayString().getTagArg("p", 2);
             if (s && *s)
                 error("The coordinates of '%s' host are invalid. Please remove automatic arrangement"
-                        " (3rd argument of 'p' tag)"
-                        " from '@display' attribute, or configure Mobility for this host.",
+                      " (3rd argument of 'p' tag)"
+                      " from '@display' attribute, or configure Mobility for this host.",
                         hostModule->getFullPath().c_str());
         }
         myRadioRef = cc->registerRadio(this);
@@ -126,9 +122,8 @@ void ChannelAccess::receiveSignal(cComponent *source, simsignal_t signalID, cObj
     if (hostModule != source->getParentModule())
         return;
 
-    if (signalID == inet::IMobility::mobilityStateChangedSignal)
-    {
-        inet::IMobility *mobility = check_and_cast<inet::IMobility*>(obj);
+    if (signalID == inet::IMobility::mobilityStateChangedSignal) {
+        inet::IMobility *mobility = check_and_cast<inet::IMobility *>(obj);
         radioPos = mobility->getCurrentPosition();
         positionUpdateArrived = true;
 

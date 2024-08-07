@@ -24,9 +24,9 @@ double LteSummaryFeedback::confidence(simtime_t creationTime) const {
         return 1.0;
     if (delta > confidenceUpperBound_)
         return 0.0;
-    return (1.0
-            - (delta - confidenceLowerBound_)
-                    / (confidenceUpperBound_ - confidenceLowerBound_));
+    return 1.0
+           - (delta - confidenceLowerBound_)
+           / (confidenceUpperBound_ - confidenceLowerBound_);
 }
 
 void LteSummaryFeedback::reset() {
@@ -35,7 +35,7 @@ void LteSummaryFeedback::reset() {
 
     cqi_ = std::vector<CqiVector>(totCodewords_,
             CqiVector(logicalBandsTot_, NOSIGNALCQI));
-    tCqi_ = std::vector<std::vector<simtime_t> >(totCodewords_,
+    tCqi_ = std::vector<std::vector<simtime_t>>(totCodewords_,
             std::vector<simtime_t>(logicalBandsTot_, simTime()));
 
     pmi_ = PmiVector(logicalBandsTot_, NOPMI);
@@ -44,7 +44,7 @@ void LteSummaryFeedback::reset() {
 }
 
 void LteSummaryFeedback::print(MacCellId cellId, MacNodeId nodeId,
-        const Direction dir, TxMode txm, const char* s) const {
+        const Direction dir, TxMode txm, const char *s) const {
     bool debug = false;
     if (debug) {
         EV << NOW << " " << s << "     LteSummaryFeedback\n";

@@ -35,7 +35,7 @@ void HttpResponseMessageSerializer::serialize(MemoryOutputStream& stream, const 
     auto startPosition = stream.getLength();
     const auto& applicationPacket = staticPtrCast<const HttpResponseMessage>(chunk);
     std::string payload = applicationPacket->getPayload();
-    stream.writeBytes((const uint8_t*)payload.c_str(), B(payload.size()));
+    stream.writeBytes((const uint8_t *)payload.c_str(), B(payload.size()));
     int64_t remainders = B(applicationPacket->getChunkLength() - (stream.getLength() - startPosition)).get();
     if (remainders < 0)
         throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(applicationPacket->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
@@ -50,7 +50,7 @@ const Ptr<Chunk> HttpResponseMessageSerializer::deserialize(MemoryInputStream& s
     auto applicationPacket = makeShared<HttpResponseMessage>();
 //    B dataLength = B(stream.getLength());
 //    size_t pos = 0;
-        return applicationPacket;
+    return applicationPacket;
 }
 
 } //namespace

@@ -34,7 +34,7 @@ class X2HandoverControlMsg : public LteX2Message
 
     X2HandoverControlMsg& operator=(const X2HandoverControlMsg& other);
 
-    virtual X2HandoverControlMsg* dup() const;
+    virtual X2HandoverControlMsg *dup() const;
 
     virtual ~X2HandoverControlMsg();
 };

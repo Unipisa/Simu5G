@@ -18,9 +18,10 @@
 
 namespace simu5g {
 
-class LteCompManagerProportional : public LteCompManagerBase {
+class LteCompManagerProportional : public LteCompManagerBase
+{
 
-protected:
+  protected:
 
     /*
      * Client info
@@ -43,15 +44,15 @@ protected:
     virtual void provisionalSchedule();  // run the provisional scheduling algorithm (client side)
     virtual void doCoordination();       // run the coordination algorithm (coordinator side)
 
-    virtual X2CompProportionalRequestIE* buildClientRequest();
+    virtual X2CompProportionalRequestIE *buildClientRequest();
     virtual void handleClientRequest(inet::Ptr<X2CompMsg> compMsg);
 
-    virtual X2CompProportionalReplyIE* buildCoordinatorReply(X2NodeId clientId);
+    virtual X2CompProportionalReplyIE *buildCoordinatorReply(X2NodeId clientId);
     virtual void handleCoordinatorReply(inet::Ptr<X2CompMsg> compMsg);
 
     UsableBands parseAllowedBlocksMap(std::vector<CompRbStatus>& allowedBlocksMap);
 
-public:
+  public:
     LteCompManagerProportional() {}
     virtual ~LteCompManagerProportional() {}
 
@@ -61,3 +62,4 @@ public:
 } //namespace
 
 #endif /* LTE_LTECOMPMANAGERPROPORTIONAL_H_ */
+

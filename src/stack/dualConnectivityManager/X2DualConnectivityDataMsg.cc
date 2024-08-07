@@ -19,24 +19,23 @@ using namespace inet;
 //Register_Serializer(X2DualConnectivityDataMsg, LteX2MsgSerializer);
 
 X2DualConnectivityDataMsg::X2DualConnectivityDataMsg() :
-        LteX2Message() {
+    LteX2Message() {
     type_ = X2_DUALCONNECTIVITY_DATA_MSG;
 }
 
 X2DualConnectivityDataMsg::X2DualConnectivityDataMsg(const X2DualConnectivityDataMsg& other) :
-        LteX2Message() {
+    LteX2Message() {
     operator=(other);
 }
 
-X2DualConnectivityDataMsg& X2DualConnectivityDataMsg::operator=(
-        const X2DualConnectivityDataMsg& other) {
+X2DualConnectivityDataMsg& X2DualConnectivityDataMsg::operator=(const X2DualConnectivityDataMsg& other) {
     if (&other == this)
         return *this;
     LteX2Message::operator=(other);
     return *this;
 }
 
-X2DualConnectivityDataMsg* X2DualConnectivityDataMsg::dup() const {
+X2DualConnectivityDataMsg *X2DualConnectivityDataMsg::dup() const {
     return new X2DualConnectivityDataMsg(*this);
 }
 

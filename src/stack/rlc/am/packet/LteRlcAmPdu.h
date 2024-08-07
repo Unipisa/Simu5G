@@ -26,6 +26,7 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
         LteRlcAmPdu_Base()
     {
     }
+
     LteRlcAmPdu(const LteRlcAmPdu& other) :
         LteRlcAmPdu_Base(other)
     {
@@ -39,7 +40,7 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
         return *this;
     }
 
-    virtual LteRlcAmPdu* dup() const override
+    virtual LteRlcAmPdu *dup() const override
     {
         return new LteRlcAmPdu(*this);
     }
@@ -50,9 +51,9 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
     virtual void setBitmap(size_t k, bool bitmap_var) override;
     virtual void setBitmapVec(std::vector<bool> bitmap_vec);
 
-    virtual void appendBitmap(bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented");}
-    virtual void insertBitmap(size_t k, bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented");}
-    virtual void eraseBitmap(size_t k)  override { throw omnetpp::cRuntimeError("Method not implemented");}
+    virtual void appendBitmap(bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented"); }
+    virtual void insertBitmap(size_t k, bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented"); }
+    virtual void eraseBitmap(size_t k)  override { throw omnetpp::cRuntimeError("Method not implemented"); }
 
     virtual std::vector<bool> getBitmapVec();
     //sequence check functions

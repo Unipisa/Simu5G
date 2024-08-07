@@ -26,8 +26,7 @@ void AlertReceiver::initialize(int stage)
 
     int port = par("localPort");
     EV << "AlertReceiver::initialize - binding to port: local:" << port << endl;
-    if (port != -1)
-    {
+    if (port != -1) {
         socket.setOutputGate(gate("socketOut"));
         socket.bind(port);
 
@@ -60,7 +59,7 @@ void AlertReceiver::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())
         return;
 
-    Packet* pPacket = check_and_cast<Packet*>(msg);
+    Packet *pPacket = check_and_cast<Packet *>(msg);
 
     // read Alert header
     auto alert = pPacket->popAtFront<AlertPacket>();
@@ -70,7 +69,7 @@ void AlertReceiver::handleMessage(cMessage *msg)
     emit(alertDelay_, delay);
     emit(alertRcvdMsg_, (long)1);
     nrReceived++;
-    delaySum+=delay;
+    delaySum += delay;
 
     EV << "AlertReceiver::handleMessage - Packet received: SeqNo[" << alert->getSno() << "] Delay[" << delay << "]" << endl;
 
@@ -80,9 +79,10 @@ void AlertReceiver::handleMessage(cMessage *msg)
 void AlertReceiver::refreshDisplay() const
 {
     char buf[80];
-    if(nrReceived >0){
-        sprintf(buf, "received: %ld pks\nav. delay: %s s", nrReceived, (delaySum/nrReceived).format(-4).c_str());
-    } else {
+    if (nrReceived > 0) {
+        sprintf(buf, "received: %ld pks\nav. delay: %s s", nrReceived, (delaySum / nrReceived).format(-4).c_str());
+    }
+    else {
         sprintf(buf, "received: 0 pks");
     }
     getDisplayString().setTagArg("t", 0, buf);

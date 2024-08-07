@@ -30,8 +30,7 @@ void TTimer::start(simtime_t t)
 
 void TTimer::stop()
 {
-    if (busy_)
-    {
+    if (busy_) {
         module_->cancelAndDelete(intr_);
     }
     busy_ = false;
@@ -50,8 +49,7 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
     iterator_d it;
 
     // retrieve the event expire time
-    if (busy_)
-    {
+    if (busy_) {
         it = directList_.begin();
         remaining = (it->first - NOW);
     }
@@ -61,7 +59,7 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
     // We use the enhanced version of insert. A suggestion to the
     // position is given (i.e. the last element).
     rIt = directList_.insert(directList_.end(),
-        std::pair<simtime_t, unsigned int>((NOW + time), event));
+            std::pair<simtime_t, unsigned int>((NOW + time), event));
 
     // add the information to the reverse List
     // If the element already exists abort
@@ -70,12 +68,11 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
 
     // Add the event to the reverse list
     reverseList_.insert(
-        std::pair<const unsigned int, const Event_it>(event, rIt));
+            std::pair<const unsigned int, const Event_it>(event, rIt));
 
     // if this event finishes earlier than the earliest scheduled event, if any
     // then we have to reschedule the event
-    if (!busy_ || time < remaining)
-    {
+    if (!busy_ || time < remaining) {
         if (busy_)
             module_->cancelAndDelete(intr_);
         intr_ = new TMultiTimerMsg("timer");
@@ -90,7 +87,7 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
 
 bool TMultiTimer::busy(unsigned int event) const
 {
-    return ((reverseList_.find(event) != reverseList_.end()));
+    return (reverseList_.find(event) != reverseList_.end());
 }
 
 void TMultiTimer::handle(unsigned int event)
@@ -119,8 +116,7 @@ void TMultiTimer::handle(unsigned int event)
     // reschedule the timer to manage the earliest event, if any
     if (directList_.empty())
         busy_ = false;
-    else
-    {
+    else {
         direct = directList_.begin();
 
         simtime_t time = direct->first;
@@ -152,8 +148,7 @@ void TMultiTimer::remove(const unsigned int event)
     dIt = (rIt->second);
 
     // Check if the event to be removed is the next in the event scheduler
-    if (dIt == directList_.begin())
-    {
+    if (dIt == directList_.begin()) {
         // Remove the Event from the direct list
         directList_.erase(dIt);
         // Remove the event from the connected simpleModule .
@@ -161,8 +156,7 @@ void TMultiTimer::remove(const unsigned int event)
 
         if (directList_.empty())
             busy_ = false;
-        else
-        {
+        else {
             simtime_t time = directList_.begin()->first;
             unsigned int event = directList_.begin()->second;
             intr_ = new TMultiTimerMsg("timer");
@@ -172,8 +166,7 @@ void TMultiTimer::remove(const unsigned int event)
             module_->scheduleAt(time, intr_);
         }
     }
-    else
-    {
+    else {
         // Remove the Event from the direct list
         directList_.erase(dIt);
     }

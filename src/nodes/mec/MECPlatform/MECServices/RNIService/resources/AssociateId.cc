@@ -21,7 +21,7 @@ AssociateId::AssociateId()
     value_ = "";
 }
 
-AssociateId::AssociateId(std::string& type,std::string& value)
+AssociateId::AssociateId(std::string& type, std::string& value)
 {
     setType(type);
     setValue(value);
@@ -32,7 +32,6 @@ AssociateId::AssociateId(mec::AssociateId& associateId)
     setType(associateId.type);
     setValue(associateId.value);
 }
-
 
 AssociateId::~AssociateId()
 {
@@ -47,10 +46,9 @@ nlohmann::ordered_json AssociateId::toJson() const
     return val;
 }
 
-
 void AssociateId::setAssociateId(const mec::AssociateId& associateId)
 {
-    type_  = associateId.type;
+    type_ = associateId.type;
     value_ = associateId.value;
 }
 
@@ -58,15 +56,18 @@ std::string AssociateId::getType() const
 {
     return type_;
 }
+
 void AssociateId::setType(std::string value)
 {
     type_ = value;
 
 }
+
 std::string AssociateId::getValue() const
 {
     return value_;
 }
+
 void AssociateId::setValue(std::string value)
 {
     value_ = value;

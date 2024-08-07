@@ -46,7 +46,7 @@ class EventGenerator : public omnetpp::cSimpleModule
     // notify a node to start an event dissemination
     void notifyEvent();
 
-protected:
+  protected:
 
     virtual void initialize() override;
     virtual void handleMessage(omnetpp::cMessage *msg) override;
@@ -56,8 +56,8 @@ protected:
     ~EventGenerator();
 
     void computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNodeId sourceId, double maxBroadcastRadius = -1.0);
-    void registerNode(MultihopD2D* app, MacNodeId lteNodeId);
-    void unregisterNode(MultihopD2D* app, MacNodeId lteNodeId);
+    void registerNode(MultihopD2D *app, MacNodeId lteNodeId);
+    void unregisterNode(MultihopD2D *app, MacNodeId lteNodeId);
 };
 
 } //namespace
