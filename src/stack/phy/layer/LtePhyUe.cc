@@ -87,17 +87,6 @@ void LtePhyUe::initialize(int stage)
         WATCH(handoverDelta_);
     }
     else if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT) {
-        if (useBattery_) {
-            // TODO register the device to the battery with two accounts, e.g. 0=tx and 1=rx
-            // it only affects statistics
-            //registerWithBattery("LtePhy", 2);
-//            txAmount_ = par("batteryTxCurrentAmount");
-//            rxAmount_ = par("batteryRxCurrentAmount");
-//
-//            WATCH(txAmount_);
-//            WATCH(rxAmount_);
-        }
-
         txPower_ = ueTxPower_;
 
         lastFeedback_ = 0;
@@ -566,10 +555,6 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
              * and tx power to the sender das antenna
              */
 
-//            cc->updateHostPosition(myHostRef,das_->getAntennaCoord(*it));
-            // Set position of sender
-//            Move m;
-//            m.setStart(das_->getAntennaCoord(*it));
             RemoteUnitPhyData data;
             data.txPower = lteInfo->getTxPower();
             data.m = getRadioPosition();
@@ -610,10 +595,6 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
 
 void LtePhyUe::handleUpperMessage(cMessage *msg)
 {
-//    if (useBattery_) {
-//    TODO     BatteryAccess::drawCurrent(txAmount_, 1);
-//    }
-
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->getTag<UserControlInfo>();
 
@@ -738,10 +719,6 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
     uinfo->setCoord(getRadioPosition());
 
     //TODO access speed data Update channel index
-//    if (coherenceTime(move.getSpeed())<(NOW-lastFeedback_)){
-//        cellInfo_->channelIncrease(nodeId_);
-//        cellInfo_->lambdaIncrease(nodeId_,1);
-//    }
     lastFeedback_ = NOW;
 
     // send one feedback packet for each carrier

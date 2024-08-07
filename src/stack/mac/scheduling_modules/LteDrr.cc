@@ -141,7 +141,6 @@ void LteDrr::updateSchedulingInfo()
     double minSize = 0;
     double minRate = 0;
     for (it = conn->begin(); it != et; ++it) {
-//            ConnectionParameters& pars = jt->second.parameters_;
         MacCid cid = it->first;
         MacNodeId nodeId = MacCidToNodeId(cid);
         bool eligible = true;

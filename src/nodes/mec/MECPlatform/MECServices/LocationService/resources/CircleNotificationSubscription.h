@@ -31,11 +31,6 @@ class CircleNotificationSubscription : public SubscriptionBase
     CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot);
     virtual ~CircleNotificationSubscription();
 
-//        nlohmann::ordered_json toJson() const override;
-//        nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
-//        nlohmann::ordered_json toJsonUe(std::vector<MacNodeId>& uesID) const;
-//        nlohmann::ordered_json toJson(std::vector<MacCellId>& cellsID, std::vector<MacNodeId>& uesID) const;
-
     virtual bool fromJson(const nlohmann::ordered_json& json) override;
     virtual void sendSubscriptionResponse() override;
     virtual void sendNotification(EventNotification *event) override;

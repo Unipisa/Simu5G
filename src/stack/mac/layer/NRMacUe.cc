@@ -553,7 +553,7 @@ void NRMacUe::macPduMake(MacCid cid)
             //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
             auto macPkt = pit->second;
 
-            /* BSR related operations
+            // BSR related operations
 
                // according to the TS 36.321 v8.7.0, when there are uplink resources assigned to the UE, a BSR
                // has to be send even if there is no data in the user's queues. In few words, a BSR is always

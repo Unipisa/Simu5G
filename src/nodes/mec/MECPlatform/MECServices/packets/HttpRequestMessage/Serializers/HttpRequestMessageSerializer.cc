@@ -34,8 +34,6 @@ void HttpRequestMessageSerializer::serialize(MemoryOutputStream& stream, const P
     const auto& applicationPacket = staticPtrCast<const HttpRequestMessage>(chunk);
     stream.writeBytes((const uint8_t *)applicationPacket->getPayload().c_str(), B(applicationPacket->getPayload().size()));
 
-//    stream.writeUint32Be(B(applicationPacket->getChunkLength()).get());
-//    stream.writeUint32Be(applicationPacket->getSequenceNumber());
     int64_t remainders = B(applicationPacket->getChunkLength() - (stream.getLength() - startPosition)).get();
     if (remainders < 0)
         throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(applicationPacket->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
@@ -47,8 +45,6 @@ const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& st
     EV << "HttpRequestMessageSerializer::deserialize" << endl;
     auto startPosition = stream.getPosition();
     auto applicationPacket = makeShared<HttpRequestMessage>();
-//    B dataLength = B(stream.readUint32Be());
-
     std::string data = stream.readString();
     applicationPacket = check_and_cast<HttpRequestMessage *>(Http::parseHeader(data));
 

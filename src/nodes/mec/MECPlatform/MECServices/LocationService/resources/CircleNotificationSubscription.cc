@@ -81,8 +81,6 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
     nlohmann::ordered_json notification;
     notification["subscriptionNotification"] = val;
 
-//    if(socket_->getState())
-//        throw cRuntimeError("%d", socket_->getState());
     Http::sendPostRequest(socket_, notification.dump(2).c_str(), clientHost_.c_str(), clientUri_.c_str());
 
     // update last notification sent

@@ -31,14 +31,8 @@ class SubscriptionBase
     SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     virtual ~SubscriptionBase();
 
-//        nlohmann::ordered_json toJson() const override;
-
     void addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     void addEnodeB(omnetpp::cModule *eNodeB);
-
-//        virtual nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const = 0;
-//        virtual nlohmann::ordered_json toJsonUe(std::vector<MacNodeId>& uesID) const = 0;
-//        virtual nlohmann::ordered_json toJson(std::vector<MacCellId>& cellsID, std::vector<MacNodeId>& uesID) const = 0;
 
     virtual void set_links(std::string& link);
 
@@ -50,12 +44,8 @@ class SubscriptionBase
     virtual std::string getSubscriptionType() const;
     virtual int getSubscriptionId() const;
     virtual int getSocketConnId() const;
-//        virtual void setNotificationTrigger(subscriptionTimer *nt) { notificationTrigger = nt;}
-//        virtual subscriptionTimer*  getNotificationTrigger() { return notificationTrigger;}
-
   protected:
 
-//        subscriptionTimer *notificationTrigger;
     inet::TcpSocket *socket_;
     TimeStamp timestamp_;
 

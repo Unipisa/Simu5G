@@ -134,7 +134,6 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
             jsonBody["contextId"] = std::to_string(ack->getContextId());
             jsonBody["appInfo"]["userAppInstanceInfo"]["appInstanceId"] = ack->getAppInstanceId();
             jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"] = ack->getAppInstanceUri(); // add the end point
-//            jsonBody["appInfo"]["userAppInstanceInfo"]["appLocation"]; // TODO not implemented yet
             std::stringstream uri;
             uri << baseUriQueries_ << "/app_contexts/" << ack->getContextId();
             std::pair<std::string, std::string> locHeader("Location: ", uri.str());
@@ -308,15 +307,9 @@ void UALCMPApp::handlePUTRequest(const HttpRequestMessage *currentRequestMessage
 
 void UALCMPApp::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
-    //    DELETE /exampleAPI/location/v1/subscriptions/area/circle/sub123 HTTP/1.1
-    //    Accept: application/xml
-    //    Host: example.com
-
     EV << "LocationService::handleDELETERequest" << endl;
     // uri must be in form /example/dev_app/v1/app_context/contextId
     std::string uri = currentRequestMessageServed->getUri();
-
-//    // it has to be managed the case when the sub is /area/circle (it has two slashes)
 
     std::size_t lastPart = uri.find_last_of("/"); // split at contextId
     std::string baseUri = uri.substr(0, lastPart); // uri

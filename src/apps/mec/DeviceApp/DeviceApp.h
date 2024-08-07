@@ -73,7 +73,6 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
     std::string appName;
 
     // variable set in ned, if the appDescriptor is not in the MEC orchestrator
-//        std::string appProvider; not used
     std::string appPackageSource;
 
     virtual void initialize(int stage) override;

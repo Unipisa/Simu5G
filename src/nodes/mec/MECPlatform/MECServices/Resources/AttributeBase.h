@@ -26,8 +26,6 @@ class AttributeBase
     AttributeBase();
     virtual ~AttributeBase();
     virtual nlohmann::ordered_json toJson() const = 0;
-//        virtual void fromJson(nlohmann::ordered_json& json) = 0;
-
     static std::string toJson(const std::string& value);
     static std::string toJson(const std::time_t& value);
     static int32_t toJson(int32_t value);

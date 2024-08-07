@@ -519,10 +519,6 @@ void RTVideoStreamingSender::sendMessage() {
 
             _sequenceNumber++;
 
-//                rtpHeader->setTimeStamp(_timeStampBase + (_initialDelay + (1 / _framesPerSecond) * (double)_frameNumber) * _clockRate);
-//                rtpHeader->setSsrc(_ssrc);
-//                packet->insertAtFront(rtpHeader);
-
             packet->insertAtBack(mpegHeader);
             packet->insertAtBack(mpegPayload);
 
@@ -558,18 +554,10 @@ void RTVideoStreamingSender::sendMessage() {
         mpegHeader->setTotalFrags(fragFrameStatus_.numberOfFragments);
         mpegHeader->addTagIfAbsent<CreationTimeTag>()->setCreationTime(simTime());
 
-//        rtpHeader->setPayloadType(_payloadType);
-//        rtpHeader->setSequenceNumber(_sequenceNumber);
         _sequenceNumber++;
 
-//        rtpHeader->setTimeStamp(_timeStampBase + (_initialDelay + (1 / _framesPerSecond) * (double)_frameNumber) * _clockRate);
-//        rtpHeader->setSsrc(_ssrc);
-//        packet->insertAtFront(rtpHeader);
         packet->insertAtBack(mpegHeader);
         packet->insertAtBack(mpegPayload);
-
-//        RtpInnerPacket *rinpOut = new RtpInnerPacket("dataOut()");
-//        rinpOut->setDataOutPkt(packet);
 
         socket.sendTo(packet, mecAppAddress_, mecAppPort_);
         scheduleAfter(1.0 / (_framesPerSecond * (fragFrameStatus_.numberOfFragments)), _nextFrame);

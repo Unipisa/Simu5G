@@ -65,11 +65,6 @@ class ComponentCarrier : public omnetpp::cSimpleModule
      */
     unsigned int getNumerologyIndex() { return numerologyIndex_; }
 
-//    /*
-//     * Returns the TDD slot format index
-//     */
-//    int getTddSlotFormatIndex() { return tddSlotFormatIndex_; }
-
     bool isTddEnabled() { return useTdd_; }
     unsigned int getTddNumSymbolsDl() { return tddNumSymbolsDl_; }
     unsigned int getTddNumSymbolsUl() { return tddNumSymbolsUl_; }

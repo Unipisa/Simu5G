@@ -309,13 +309,6 @@ void MecRnisTestApp::handleServiceMessage(int connId)
             rnisInfo->setChunkLength(inet::B(jsonBody.dump(4).length()));
             packet->insertAtBack(rnisInfo);
             ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
-//
-//            nlohmann::ordered_json val = jsonBody["L2Meas"];
-//            nlohmann::json cellInfo = val["cellInfo"];
-//            nlohmann::json cellUEInfo = val["cellUEInfo"];
-//
-//            std::cout << "cellInfo = " << cellInfo << endl;
-//            std::cout << "cellUEInfo = " << cellUEInfo << endl;
         }
     }
 }

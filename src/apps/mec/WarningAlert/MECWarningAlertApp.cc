@@ -74,22 +74,6 @@ void MECWarningAlertApp::initialize(int stage)
     scheduleAt(simTime() + 0, msg);
 }
 
-//void MECWarningAlertApp::handleMessage(cMessage *msg)
-//{
-////        MecAppBase::handleMessage(msg);
-//    if (!msg->isSelfMessage())
-//    {
-//        if(ueSocket.belongsToSocket(msg))
-//        {
-//            handleUeMessage(msg);
-//            delete msg;
-//            return;
-//        }
-//    }
-//    MecAppBase::handleMessage(msg);
-//
-//}
-
 void MECWarningAlertApp::finish() {
     MecAppBase::finish();
     EV << "MECWarningAlertApp::finish()" << endl;
@@ -410,7 +394,6 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
             packet->insertAtBack(nack);
             ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
 
-//            throw cRuntimeError("service socket already connected, or service IP address is unspecified");
         }
     }
 

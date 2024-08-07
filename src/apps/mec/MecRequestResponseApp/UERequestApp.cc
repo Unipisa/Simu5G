@@ -260,8 +260,6 @@ void UERequestApp::sendRequest()
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
 
-//    if(!unBlockingMsg_->isScheduled())
-    /// scheduleAfter(1, unBlockingMsg_);
 }
 
 void UERequestApp::handleStopApp(cMessage *msg)
@@ -282,8 +280,6 @@ void UERequestApp::sendStopApp()
     req->setChunkLength(requestPacketSize_);
     req->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
     pkt->insertAtBack(req);
-
-//    start_ = simTime();
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
 

@@ -165,7 +165,7 @@ void MECResponseApp::handleHttpMessage(int connId)
     if (mp1Socket_ != nullptr && connId == mp1Socket_->getSocketId()) {
         handleMp1Message(connId);
     }
-    else {              // if (connId == serviceSocket_->getSocketId())
+    else {
         handleServiceMessage(connId);
     }
 }

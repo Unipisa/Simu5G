@@ -96,8 +96,6 @@ void VoDUDPServer::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         if (!strcmp(msg->getName(), "Timer")) {
             clientsPort = par("destPort");
-            //     vclientsPort = cStringTokenizer(clientsPort).asIntVector();
-
             clientsStartStreamTime = par("clientsStartStreamTime").doubleValue();
             //vclientsStartStreamTime = cStringTokenizer(clientsStartStreamTime).asDoubleVector();
 
@@ -120,7 +118,6 @@ void VoDUDPServer::handleMessage(cMessage *msg)
 
                 numStreams++;
                 EV << "VoD Server self message: Dest IP: " << i << " port: " << clientsPort << " start stream: " << (int)(npkt * fps) << endl;
-//                    scheduleAt(simTime() + vclientsReqTime[i], M1);
                 scheduleAt(simTime(), M1);
             }
 

@@ -78,8 +78,6 @@ void MecRequestBackgroundGeneratorApp::handleSelfMessage(cMessage *msg) {
     }
     else if (strcmp(msg->getName(), "burstPeriod") == 0) {
         burstFlag = false;
-//            if(burstFlag)
-//                scheduleAt(simTime()+0.5, burstPeriod);
     }
     else if (strcmp(msg->getName(), "sendBurst") == 0) {
         sendBulkRequest();
@@ -154,7 +152,6 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage) {
                 bool res = vim->registerMecApp(getId(), requiredRam, requiredDisk, requiredCpu);
                 if (res == false) {
                     EV << "MecRequestBackgroundGeneratorApp::initialize - MecRequestBackgroundGeneratorApp [" << mecAppId << "]  cannot be instantiated" << endl;
-//                    throw cRuntimeError("MecRequestBackgroundGeneratorApp::initialize - MecRequestBackgroundGeneratorApp cannot be instantiated");
                 }
             }
             else {
@@ -190,7 +187,6 @@ void MecRequestBackgroundGeneratorApp::finish()
         bool res = vim->deRegisterMecApp(mecAppId);
         if (res == false) {
             EV << "MecRequestBackgroundGeneratorApp::finish - MEC host did not deallocate MecRequestBackgroundGeneratorApp [" << mecAppId << "] resources" << endl;
-//                    throw cRuntimeError("MecRequestBackgroundGeneratorApp::initialize - MecRequestBackgroundGeneratorApp cannot be instantiated");
         }
     }
     else {

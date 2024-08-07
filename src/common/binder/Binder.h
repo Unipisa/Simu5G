@@ -123,8 +123,6 @@ class Binder : public omnetpp::cSimpleModule
 
     std::map<MacNodeId, std::map<MacNodeId, inet::L3Address>> x2PeerAddress_;
 
-//    std::map<MacNodeId, L3Address> x2Address_;
-
     /*
      * D2D Support
      */
@@ -436,17 +434,6 @@ class Binder : public omnetpp::cSimpleModule
         std::pair<X2NodeId, inet::L3Address> p(destId, interfAddr);
         x2PeerAddress_[srcId].insert(p);
     }
-
-//    L3Address getX2Address(X2NodeId nodeId)
-//    {
-//        return x2Address_[nodeId];
-//    }
-//    void setX2Address(X2NodeId nodeId, L3Address interfAddr)
-//    {
-//        if (x2Address_.find(nodeId) != x2Address_.end())
-//            return;
-//        x2Address_[nodeId] = interfAddr;
-//    }
 
     /**
      * Register the address of MEC Hosts in the simulation

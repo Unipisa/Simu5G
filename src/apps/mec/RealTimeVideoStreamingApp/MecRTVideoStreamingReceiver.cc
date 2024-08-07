@@ -138,18 +138,6 @@ void MecRTVideoStreamingReceiver::handleSelfMessage(cMessage *msg)
     if (strcmp(msg->getName(), "displayFrame") == 0) {
         playoutFrame();
 
-//      if(percentage >= correctFrameThreshold && isFirstFrame)
-//      {
-//          firstFrameDisplayedTimeStamp = simTime();
-//          emit(firstFrameElapsedTime, (firstFrameDisplayedTimeStamp - videoRequestTimestamp));
-//          isFirstFrame = false;
-//      }
-
-        /*
-         * emit the time between the request and the display of the first frame available
-         */
-
-//      emit(framesDisplayed_, percentage);
         if (!stopped)
             scheduleAfter((1. / fps), displayFrame);
         return;
@@ -182,7 +170,6 @@ void MecRTVideoStreamingReceiver::handleStopMessage(cMessage *msg)
     EV << "MecRTVideoStreamingReceiver::handleStopMessage - STOP_RTVIDEOSTREAMING msg arrived" << endl;
 
     stopped = true;
-//        if(displayFrame->isScheduled())
     cancelEvent(displayFrame);
 
     // clear structures
@@ -241,7 +228,6 @@ void MecRTVideoStreamingReceiver::handleSessionStopMessage(cMessage *msg)
     }
     else {
         stopped = true;
-//        if(displayFrame->isScheduled())
         cancelEvent(displayFrame);
         ueAppModule_->emit(stopSession_, simTime());
 

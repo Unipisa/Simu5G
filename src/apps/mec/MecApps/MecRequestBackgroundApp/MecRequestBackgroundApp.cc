@@ -44,9 +44,6 @@ void MecRequestBackgroundApp::handleServiceMessage(int connId)
     HttpMessageStatus *msgStatus = (HttpMessageStatus *)serviceSocket_->getUserData();
     serviceHttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
     EV << "payload: " << serviceHttpMessage->getBody() << endl;
-//    if(burstFlag)
-//    scheduleAt(simTime() + exponential(lambda, 2));
-
 }
 
 void MecRequestBackgroundApp::initialize(int stage) {
@@ -109,7 +106,6 @@ void MecRequestBackgroundApp::handleSelfMessage(cMessage *msg) {
     }
     else if (strcmp(msg->getName(), "connectService") == 0) {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-//        connect(serviceSocket_, serviceAddress, servicePort);
         connect(serviceSocket_, mp1Address, mp1Port);
         delete msg;
     }

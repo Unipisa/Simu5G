@@ -45,16 +45,6 @@ void LteScheduler::initializeBandLimit()
         slotReqGrantBandLimit_.push_back(elem);
     }
 
-//    // === DEBUG === //
-//    EV << "LteScheduler::initializeBandLimit - Set Band Limit for this carrier: " << endl;
-//    for (auto& bandLimitElem : *bandLimit_) {
-//        EV << " - Band[" << bandLimitElem.band_ << "] limit[";
-//        for (unsigned int cw=0; cw < bandLimitElem.limit_.size(); cw++) {
-//            EV << bandLimitElem.limit_[cw] << ", ";
-//        }
-//        EV << "]" << endl;
-//    }
-//    // === END DEBUG === //
 }
 
 void LteScheduler::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
@@ -85,17 +75,6 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
         }
         bandLim = &slotReqGrantBandLimit_;
     }
-
-//    // === DEBUG === //
-//    EV << "LteScheduler::requestGrant - Set Band Limit for this carrier: " << endl;
-//    for (auto& bandLimitElem : *bandLim) {
-//        EV << " - Band[" << bandLimitElem.band_ << "] limit[";
-//        for (int cw=0; cw < bandLimitElem.limit_.size(); cw++) {
-//            EV << bandLimitElem.limit_[cw] << ", ";
-//        }
-//        EV << "]" << endl;
-//    }
-//    // === END DEBUG === //
 
     return eNbScheduler_->scheduleGrant(cid, bytes, terminate, active, eligible, carrierFrequency_, bandLim);
 }

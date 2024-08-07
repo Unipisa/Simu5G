@@ -62,8 +62,6 @@ void DeviceApp::handleUALCMPMessage()
                         if (appName == appInfo.at(i)["appName"]) {
                             jsonRequestBody["associateDevAppId"] = std::to_string(getId());
                             jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];// "WAMECAPP_External"; //startPk->getMecAppDId()
-                            //    jsonBody["appInfo"]["appPackageSource"] = "ApplicationDescriptors/WarningAlertApp.json";
-
                             jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
                             jsonRequestBody["appInfo"]["appProvider"] = appInfo.at(i)["appProvider"];//startPk->getMecAppProvider();//"lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest";
                             found = true;
@@ -310,7 +308,6 @@ void DeviceApp::initialize(int stage) {
 
     processedUALCMPMessage = new cMessage("processedUALCMPMessage");
 
-//    appProvider = par("appProvider").stringValue();
     appPackageSource = par("appPackageSource").stringValue();
 
     appState = IDLE;
@@ -337,8 +334,6 @@ void DeviceApp::handleMessage(omnetpp::cMessage *msg)
     else if (UALCMPSocket_.belongsToSocket(msg)) {
         UALCMPSocket_.processMessage(msg);
     }
-
-//    delete msg;
 
 }
 
@@ -469,7 +464,6 @@ void DeviceApp::socketDataArrived(UdpSocket *socket, Packet *pk)
     ueAppAddress = pk->getTag<L3AddressInd>()->getSrcAddress();
     ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
 
-    //    inet::Packet* packet = check_and_cast<inet::Packet*>(msg);
     auto pkt = pk->peekAtFront<DeviceAppPacket>();
     EV << "DeviceAppPacket type: " << pkt->getType() << endl;
     if (strcmp(pkt->getType(), START_MECAPP) == 0) {

@@ -35,8 +35,6 @@ void UeStatsCollector::initialize(int stage)
         Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
 
         mac_.reference(this, "macModule", true);
-//        pdcp_.reference(this, "pdcpRrcModule", true);
-
         associateId_.value = binder->getIPv4Address(mac_->getMacNodeId()).str(); // UE_IPV4_ADDRESS
         associateId_.type = "1"; // UE_IPV4_ADDRESS
 

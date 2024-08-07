@@ -87,25 +87,6 @@ void HttpResponseMessage::setStatus(HttpResponseStatus res) {
     }
 }
 
-//void HttpResponseMessage::setContentType(const char* contentType_){
-//    headerFields_["Content-Type: "] = std::string(contentType_);
-//}
-//
-//void HttpResponseMessage::setConnection(const char* connection_){
-//    headerFields_["Connection: "] = std::string(connection_);
-//}
-//
-//void HttpResponseMessage::setBody(const char * body_){
-//    body = ::omnetpp::opp_string(body_);
-//    headerFields_["Content-Length: "] = std::to_string(strlen(body_));
-//
-//}
-//
-//void HttpResponseMessage::setBody(const std::string& body_){
-//    body = ::omnetpp::opp_string(body_);
-//    headerFields_["Content-Length: "] = std::to_string(body_.size());
-//}
-
 void HttpResponseMessage::setHeaderField(const std::string& key, const std::string& value) {
     handleChange();
     headerFields_[key] = value;

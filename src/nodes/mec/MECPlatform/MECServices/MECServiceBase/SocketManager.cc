@@ -72,7 +72,6 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
     bool res = Http::parseReceivedMsg(sock->getSocketId(), packet, httpMessageQueue, &bufferedData, &currentHttpMessage);
 
     if (res) {
-//        currentHttpMessage->setSockId(sock->getSocketId());
         while (!httpMessageQueue.isEmpty()) {
             // TODO handle response in service!!
             service->emitRequestQueueLength();
@@ -97,17 +96,6 @@ void SocketManager::peerClosed()
     EV << "Closed connection from: " << sock->getRemoteAddress() << std::endl;
     sock->setState(inet::TcpSocket::PEER_CLOSED);
     service->removeSubscritions(sock->getSocketId()); // if any
-
-    //service->removeConnection(this); //sock->close(); // it crashes when mec app is deleted  with ->deleteModule FIXME
-
-    // FIXME resolve this comments
-//    // remove socket
-//    inet::TcpSocket * sock = check_and_cast< inet::TcpSocket*>( socketMap.removeSocket(connection->getSocket()));
-//    sock->close();
-//    delete sock;
-//    // remove thread object
-//    threadSet.erase(connection);
-//    connection->deleteModule();
 }
 
 void SocketManager::closed()

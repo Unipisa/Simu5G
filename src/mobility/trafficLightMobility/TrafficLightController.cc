@@ -109,7 +109,6 @@ void TrafficLightController::handleMessage(omnetpp::cMessage *msg)
             else if (state_ == GREEN) {
                 state_ = RED;
                 getParentModule()->getDisplayString().setTagArg("i", 1, "red");
-//                initDrawLine();
                 drawRect();
                 scheduleAt(simTime() + redPeriod_, stateMsg_);
             }
@@ -133,7 +132,6 @@ bool TrafficLightController::isTrafficLightRed(int carId, inet::Coord carPositio
 
         if (isInTrafficLightArea(carPosition, carDirection)) {
             EV << "TrafficLightController::isTrafficLightRed - check distance" << endl;
-//            double distance = carPosition.distance(tlPosition_);
             EV << "distance: " << carPosition.distance(tlPosition_) << " queue length " << (queue.size() + 1) * meanCarLength_ << endl;
             EV << "TrafficLightController::isTrafficLightRed - The car is in the queue of the RED trafficLight" << endl;
             queue.insert(carId);
@@ -171,7 +169,7 @@ bool TrafficLightController::isSameAngle(inet::Coord carPosition, inet::deg head
         heading = heading + inet::deg(180);
     }
 
-    //    // normalize angle
+    // normalize angle
     double angle = heading.get();
     angle = (angle < 0) ? angle + 360 : angle;
     angle = (angle >= 360) ? angle - 360 : angle;

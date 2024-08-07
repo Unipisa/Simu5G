@@ -46,7 +46,6 @@ class UeStatsCollector : public cSimpleModule
     mec::AssociateId associateId_;
 
     // LTE Nic layers
-//        inet::ModuleRefByPar<LtePdcpRrcUe> pdcp_;
     inet::ModuleRefByPar<LteMacBase> mac_;
     inet::ModuleRefByPar<PacketFlowManagerUe> packetFlowManager_;
 

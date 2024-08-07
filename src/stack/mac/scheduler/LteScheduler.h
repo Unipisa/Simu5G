@@ -115,7 +115,6 @@ class LteScheduler
      */
     LteScheduler(Binder *binder)
     {
-        //    WATCH(activeSet_);
         activeConnectionSet_ = nullptr;
         binder_ = binder;
     }

@@ -132,9 +132,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
          * For now the scenario is one to one, since the device application ID is used
          */
         if (contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId == contAppMsg->getAppDId()) {
-            //        meAppMap[ueAppID].lastAckStartSeqNum = pkt->getSno();
             //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
-            //        ackMEAppPacket(ueAppID, ACK_START_MEAPP);
             //testing
             EV << "MecOrchestrator::startMECApp - \tWARNING: required MEC App instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
             EV << "MecOrchestrator::startMECApp  - sending ackMEAppPacket with " << ACK_CREATE_CONTEXT_APP << endl;
@@ -161,7 +159,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
     if (it == mecApplicationDescriptors_.end()) {
         EV << "MecOrchestrator::startMECApp - Application package with AppDId[" << contAppMsg->getAppDId() << "] not onboarded." << endl;
         sendCreateAppContextAck(false, contAppMsg->getRequestId());
-//        throw cRuntimeError("MecOrchestrator::startMECApp - Application package with AppDId[%s] not onboarded", contAppMsg->getAppDId());
     }
 
     const ApplicationDescriptor& desc = it->second;
@@ -200,8 +197,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         newMecApp.mecpm = bestHost->getSubmodule("mecPlatformManager");
 
         newMecApp.mecAppName = desc.getAppName().c_str();
-//        newMecApp.lastAckStartSeqNum = pkt->getSno();
-
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(newMecApp.mecpm);
 
         /*
@@ -288,15 +283,12 @@ void MecOrchestrator::stopMECApp(UALCMPMessage *msg) {
         // maybe it has already been deleted
         EV << "MecOrchestrator::stopMECApp - \tWARNING Mec Application [" << meAppMap[contextId].mecUeAppID << "] not found!" << endl;
         sendDeleteAppContextAck(false, contAppMsg->getRequestId(), contextId);
-//        throw cRuntimeError("MecOrchestrator::stopMECApp - \tERROR ueAppIdToMeAppMapKey entry not found!");
         return;
     }
 
     // call the methods of resource manager and virtualization infrastructure of the selected mec host to deallocate the resources
 
     MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(meAppMap[contextId].mecpm);
-//     VirtualisationInfrastructureManager* vim = check_and_cast<VirtualisationInfrastructureManager*>(meAppMap[contextId].vim);
-
     DeleteAppMessage *deleteAppMsg = new DeleteAppMessage();
     deleteAppMsg->setUeAppID(meAppMap[contextId].mecUeAppID);
 
@@ -348,7 +340,6 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
     if (result) {
         if (meAppMap.empty() || meAppMap.find(contextId) == meAppMap.end()) {
             EV << "MecOrchestrator::ackMEAppPacket - ERROR meApp[" << contextId << "] does not exist!" << endl;
-//            throw cRuntimeError("MecOrchestrator::ackMEAppPacket - ERROR meApp[%d] does not exist!", contextId);
             return;
         }
 
@@ -431,7 +422,6 @@ void MecOrchestrator::getConnectedMecHosts()
         }
     }
     else {
-//        throw cRuntimeError ("MecOrchestrator::getConnectedMecHosts - No mecHostList found");
         EV << "MecOrchestrator::getConnectedMecHosts - No mecHostList found" << endl;
     }
 }
@@ -442,7 +432,6 @@ const ApplicationDescriptor& MecOrchestrator::onboardApplicationPackage(const ch
     ApplicationDescriptor appDesc(fileName);
     if (mecApplicationDescriptors_.find(appDesc.getAppDId()) != mecApplicationDescriptors_.end()) {
         EV << "MecOrchestrator::onboardApplicationPackages() - Application descriptor with appName [" << fileName << "] is already present.\n" << endl;
-//        throw cRuntimeError("MecOrchestrator::onboardApplicationPackages() - Application descriptor with appName [%s] is already present.\n"
 //                            "Duplicate appDId or application package already onboarded?", fileName);
     }
     else {

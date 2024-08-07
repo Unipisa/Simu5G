@@ -161,7 +161,6 @@ double LteRealisticChannelModel::getAttenuation_D2D(MacNodeId nodeId, Direction 
     double correlationDist = .0;
 
     //COMPUTE DISTANCE between ue1 and ue2
-    //double sqrDistance = phy_->getCoord().distance(coord);
     double sqrDistance = coord.distance(coord_2);
     speed = computeSpeed(nodeId, coord);
     correlationDist = computeCorrelationDistance(nodeId, coord);

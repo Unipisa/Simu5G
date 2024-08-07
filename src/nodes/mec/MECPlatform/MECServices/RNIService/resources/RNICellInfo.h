@@ -28,17 +28,7 @@ class RNICellInfo : public AttributeBase
     BaseStationStatsCollector *collector_; // it has the cellCollector and the map <Ipue -> uecollector>
     Ecgi ecgi_;
 
-    /**
-     *
-     * or std::map<ipv4, cellUeInfo>
-     * I prefer the pointer to the list of users in the cell to manage better
-       //   * new/deleted users without the need of take care of them here
-       //   */
-//    UeList* ueList_;
-//    //Ecgi ecgi_;
-
     nlohmann::ordered_json toJsonCell() const; //should be private?
-    /* data */
 
   public:
     RNICellInfo();
@@ -50,8 +40,6 @@ class RNICellInfo : public AttributeBase
     Ecgi getEcgi() const;
 
     nlohmann::ordered_json toJson() const override;
-//  nlohmann::ordered_json toJson(std::vector<Ipv4>& uesID) const;
-
 };
 
 } //namespace

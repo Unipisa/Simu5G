@@ -38,12 +38,6 @@ class MecRTVideoStreamingReceiver : public MecAppBase
         double playoutTime;
     };
 
-//    double playoutDelay_;
-//
-//    cMessage* displayTimer_;
-//
-//    ReceivingFrameStatus recFrameStatus_;
-
     std::map<uint32_t, ReceivingFrameStatus> playoutBuffer_;
 
     bool dropPackets_;
@@ -92,8 +86,6 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
-
-//    virtual void handleProcessedMessage(cMessage *msg) override;
 
     virtual void handleHttpMessage(int connId) override {};
     virtual void handleServiceMessage(int connId) override {};

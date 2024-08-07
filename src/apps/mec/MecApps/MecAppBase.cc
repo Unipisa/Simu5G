@@ -50,24 +50,6 @@ void MecAppBase::initialize(int stage)
     mp1Address = L3AddressResolver().resolve(mp1Ip);
     mp1Port = par("mp1Port");
 
-//    TcpSocket* serviceSocket = new TcpSocket();
-//    serviceSocket->setOutputGate(gate("socketOut"));
-//    serviceSocket->setCallback(this);
-//    HttpMessageStatus* msg = new HttpMessageStatus;
-//    msg = nullptr;
-//    serviceSocket->setUserData(msg);
-//
-//    sockets_["serviceSocket"] = serviceSocket;
-//
-//    TcpSocket* mp1Socket = new TcpSocket();
-//    mp1Socket->setOutputGate(gate("socketOut"));
-//    mp1Socket->setCallback(this);
-//    HttpMessageStatus* msg1 = new HttpMessageStatus;
-//    msg1 = nullptr;
-//    mp1Socket->setUserData(msg1);
-//
-//    sockets_["mp1Socket"] = mp1Socket;
-
     mecAppId = par("mecAppId"); // FIXME mecAppId is the deviceAppId (it does not change anything, though)
     mecAppIndex_ = par("mecAppIndex");
     requiredRam = par("requiredRam").doubleValue();
@@ -85,8 +67,6 @@ void MecAppBase::initialize(int stage)
 void MecAppBase::connect(inet::TcpSocket *socket, const inet::L3Address& address, const int port)
 {
     // we need a new connId if this is not the first connection
-    //socket->renewSocket();
-
     int timeToLive = par("timeToLive");
     if (timeToLive != -1)
         socket->setTimeToLive(timeToLive);
@@ -114,7 +94,6 @@ void MecAppBase::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         if (strcmp(msg->getName(), "processedMessage") == 0) {
             handleProcessedMessage((cMessage *)packetQueue_.pop());
-            //delete packetQueue_.pop();
             if (!packetQueue_.isEmpty()) {
                 double processingTime = scheduleNextMsg((cMessage *)packetQueue_.front());
                 EV << "MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
@@ -166,7 +145,7 @@ void MecAppBase::handleMessage(cMessage *msg)
 
 double MecAppBase::scheduleNextMsg(cMessage *msg)
 {
-    double processingTime = vim->calculateProcessingTime(mecAppId, 20);// int(uniform(200, 400))); this cause machines to invert orders!
+    double processingTime = vim->calculateProcessingTime(mecAppId, 20);
     return processingTime;
 }
 
@@ -196,25 +175,12 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
 {
     EV << "MecAppBase::socketDataArrived" << endl;
 
-//  In progress. Trying to handle an app message coming from different tcp segments in a better way
-//    bool res = msg->hasAtFront<HttpResponseMessage>();
-//    auto pkc = msg->peekAtFront<HttpResponseMessage>(b(-1), Chunk::PF_ALLOW_EMPTY | Chunk::PF_ALLOW_SERIALIZATION | Chunk::PF_ALLOW_INCOMPLETE);
-//    if(pkc!=nullptr && pkc->isComplete() &&  !pkc->isEmpty()){
-//
-//    }
-//    else
-//    {
-//        EV << "Null"<< endl;
-//    }
-
-//
     std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
     HttpMessageStatus *msgStatus = (HttpMessageStatus *)socket->getUserData();
 
     bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, &(msgStatus->bufferedData), &(msgStatus->currentMessage));
     if (res) {
-        //msgStatus->currentMessage->setSockId(socket->getSocketId());
         if (vim == nullptr)
             throw cRuntimeError("MecAppBase::socketDataArrived - vim is null!");
         double time = vim->calculateProcessingTime(mecAppId, 150);
@@ -275,10 +241,6 @@ void MecAppBase::removeSocket(inet::TcpSocket *tcpSock)
 void MecAppBase::finish()
 {
     EV << "MecAppBase::finish()" << endl;
-//    if(serviceSocket_.getState() == inet::TcpSocket::CONNECTED)
-//        serviceSocket_.close();
-//    if(mp1Socket_.getState() == inet::TcpSocket::CONNECTED)
-//        mp1Socket_.close();
 }
 
 } //namespace

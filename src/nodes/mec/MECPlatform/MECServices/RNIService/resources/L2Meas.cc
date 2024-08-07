@@ -52,7 +52,6 @@ nlohmann::ordered_json L2Meas::toJson() const {
     nlohmann::ordered_json ueArray;
 
     if (timestamp_.isValid()) {
-//		timestamp_.setSeconds();
         val["timestamp"] = timestamp_.toJson();
     }
 
@@ -83,8 +82,6 @@ nlohmann::ordered_json L2Meas::toJson() const {
         val["cellUEInfo"] = ueArray[0];
     }
 
-    //  l2Meas["L2Meas"] = val;
-    //  return l2Meas;
     return val;
 }
 
@@ -95,7 +92,6 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
     nlohmann::ordered_json ueArray;
 
     if (timestamp_.isValid()) {
-//		timestamp_.setSeconds();
         val["timestamp"] = timestamp_.toJson();
     }
 
@@ -199,8 +195,6 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
         val["cellUEInfo"] = ueArray[0];
     }
 
-//  l2Meas["L2Meas"] = val;
-//	return l2Meas;
     return val;
 }
 
@@ -213,7 +207,6 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
     nlohmann::ordered_json ueArray;
 
     if (timestamp_.isValid()) {
-        //      timestamp_.setSeconds();
         val["timestamp"] = timestamp_.toJson();
     }
 
@@ -248,8 +241,6 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
     else if (ueArray.size() == 1) {
         val["cellUEInfo"] = ueArray[0];
     }
-    //  l2Meas["L2Meas"] = val;
-    //  return l2Meas;
     return val;
 }
 

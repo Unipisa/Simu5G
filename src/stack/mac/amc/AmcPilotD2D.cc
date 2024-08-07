@@ -22,7 +22,6 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
 
     // default parameters for D2D
     preconfiguredTxParams_->isSet() = true;
-//    preconfiguredTxParams_->setD2DEnabled(true);
     preconfiguredTxParams_->writeTxMode(TRANSMIT_DIVERSITY);
     Rank ri = 1;                                              // rank for TxD is one
     preconfiguredTxParams_->writeRank(ri);
@@ -118,8 +117,6 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
             b.insert(cellWiseBand);
         }
 
-//        Band cellWiseBand = amc_->getCellInfo()->getCellwiseBand(carrierFrequency, band);
-//        b.insert(cellWiseBand);
     }
 
     // Set user transmission parameters

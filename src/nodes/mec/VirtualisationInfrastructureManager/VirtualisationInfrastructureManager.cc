@@ -67,8 +67,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
         scheduling = SEGREGATION;
     }
 
-    //    //setting gate sizes for VirtualisationInfrastructureManager and VirtualisationInfrastructure
-
     virtualisationInfr = mecHost->getSubmodule("virtualisationInfrastructure");
     if (virtualisationInfr == nullptr)
         throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMECApps parameter!");
@@ -92,8 +90,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     for (int i = 0; i < maxMECApps; i++)
         freeGates.push_back(i);
 //    ------------------------------------
-//    interfaceTableModule = par("interfaceTableModule").stringValue();
-
     interfaceTable = check_and_cast<inet::InterfaceTable *>(virtualisationInfr->getSubmodule("interfaceTable"));
 
     /*
@@ -108,10 +104,6 @@ void VirtualisationInfrastructureManager::initialize(int stage)
         else if (strcmp("eth", interfaceTable->getInterface(i)->getInterfaceName()) == 0) {
             mecAppLocalAddress_ = interfaceTable->getInterface(i)->getIpv4Address();
         }
-//        else
-//        {
-//            throw cRuntimeError("VirtualisationInfrastructureManager::initialize - Unknown interface [%s] found. Have you changed the names?", interfaceTable->getInterface(i)->getInterfaceName());
-//        }
     }
     mecAppPortCounter = 4001;
 
@@ -138,9 +130,6 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - ueAppIdToMeAppMapKey[" << ueAppID << endl;
         int key = ueAppID;
 
-//        //getting the UEApp L3Address
-//        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
-
         double ram = msg->getRequiredRam();
         double disk = msg->getRequiredDisk();
         double cpu = msg->getRequiredCpu();
@@ -157,9 +146,6 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
             return false;
         }
         // creating MEApp module instance
-//        cModuleType *moduleType = cModuleType::get("lte.nodes.mec.MEPlatform.EmulatedMecApplication");
-//        cModule *module = moduleType->create(meModuleName, mecHost); //MEAPP module-name & its Parent Module
-
         std::stringstream appName;
         appName << meModuleName << "[" << msg->getContextId() << "]";
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - meModuleName: " << appName.str() << endl;
@@ -172,20 +158,15 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         //mecAppMap[key].ueAddress = ueAppAddress;
         //mecAppMap[key].uePort = ueAppPort;
         newAppEntry.ueAppID = ueAppID;
-//        newAppEntry.meAppPort = mecAppPortCounter;
         newAppEntry.resources.ram = ram;
         newAppEntry.resources.disk = disk;
         newAppEntry.resources.cpu = cpu;
 
         mecAppMap.insert(std::pair<int, mecAppEntry>(key, newAppEntry));
 
-//        mecAppPortCounter++;
-
         currentMEApps++;
 
         //Sending ACK to the UEApp
-//        ackMEAppPacket(packet, ACK_START_MEAPP);
-
         //testing
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
         return true;
@@ -218,9 +199,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         //creating ueAppIdToMeAppMapKey map entry
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - ueAppIdToMeAppMapKey[" << ueAppID << "] = " << index << endl;
         int key = ueAppID;
-
-//        //getting the UEApp L3Address
-//        inet::L3Address ueAppAddress = inet::L3AddressResolver().resolve(sourceAddress);
 
         double ram = msg->getRequiredRam();
         double disk = msg->getRequiredDisk();
@@ -319,7 +297,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
          * if there is a service required: link the MECApp to MECPLATFORM to MECSERVICE
          */
 
-//        if(serviceIndex != NO_SERVICE)
         if (serviceIndex >= 0) {
             EV << "VirtualisationInfrastructureManager::instantiateMEApp - Connecting to the: " << msg->getRequiredService() << endl;
             //connecting MEPlatform gates to the MEApp gates
@@ -395,8 +372,6 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage *msg)
         //Sending ACK_STOP_MEAPP to the UEApp
 
         //before to remove the map entry!
-//        ackMEAppPacket(packet, ACK_STOP_MEAPP);
-
         int index = mecAppMap[key].meAppGateIndex;
         int serviceIndex = mecAppMap[key].serviceIndex;
 

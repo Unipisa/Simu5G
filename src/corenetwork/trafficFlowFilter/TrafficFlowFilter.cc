@@ -190,7 +190,6 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
                      // TODO if the BS is within the same core network, there should be a direct tunnel to
                      //      it without going through the gateway (for now, this is not implemented as it
                      //      may cause packets being transmitted via the X2
-
     }
 
     // MEC host or PGW/UPF

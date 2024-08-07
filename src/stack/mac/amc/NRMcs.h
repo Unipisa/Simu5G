@@ -70,8 +70,6 @@ class NRMcsTable
         return table[tbs];
     }
 
-//    /// MCS Table re-scaling function
-//    void rescale(const double scale);
 };
 
 const unsigned int TBSTABLESIZE = 94;

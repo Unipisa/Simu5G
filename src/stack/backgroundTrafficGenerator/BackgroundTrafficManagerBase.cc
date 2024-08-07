@@ -165,7 +165,6 @@ Cqi BackgroundTrafficManagerBase::computeCqiFromSinr(double sinr)
     }
     return found + 1;
 
-//    return getCqiFromTable(sinr);
 }
 
 TrafficGeneratorBase *BackgroundTrafficManagerBase::getTrafficGenerator(MacNodeId bgUeId)

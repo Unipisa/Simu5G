@@ -70,9 +70,6 @@ void ChannelControl::initialize()
 
     maxInterferenceDistance = calcInterfDist();
 
-//    WATCH(maxInterferenceDistance);
-//    WATCH_LIST(radios);
-//    WATCH_VECTOR(transmissions);
 }
 
 /**

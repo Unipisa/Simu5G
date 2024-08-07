@@ -114,21 +114,6 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
 {
     EV_INFO << "LocationService::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
-//    std::cout << uri << std::endl;
-//    std::vector<std::string> splittedUri = simu5g::utils::splitString(uri, "?");
-//    // uri must be in form example/v2/location/queries/resource
-//    std::size_t lastPart = splittedUri[0].find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case resourceType would be empty and the baseUri == uri
-//    // by the way the next if statement solves this problem
-//    std::string baseUri = splittedUri[0].substr(0,lastPart);
-//    std::string resourceType =  splittedUri[0].substr(lastPart+1);
-
     // check it is a GET for a query or a subscription
     if (uri == baseUriQueries_ + "/users") { //queries
         std::string params = currentRequestMessageServed->getParameters();
@@ -224,24 +209,7 @@ void LocationService::handlePOSTRequest(const HttpRequestMessage *currentRequest
     std::string uri = currentRequestMessageServed->getUri();
     std::string body = currentRequestMessageServed->getBody();
 
-//    // uri must be in form example/location/v2/subscriptions/sub_type
-//    // or
-//    // example/location/v2/subscriptions/type/sub_type () e.g /area/circle
-//    std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "LocationService::handlePOSTRequest - incorrect URI" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-//    // find_last_of does not take in to account if the uri has a last /
-//    // in this case subscriptionType would be empty and the baseUri == uri
-//    // by the way the next if statement solves this problem
-//    std::string baseUri = uri.substr(0,lastPart);
-//    std::string subscriptionType =  uri.substr(lastPart+1);
 //
-//    EV << "LocationService::handlePOSTRequest - baseuri: "<< baseUri << endl;
-
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
     if (uri == (baseUriSubscriptions_ + "/area/circle")) {
         nlohmann::json jsonBody;
@@ -297,13 +265,6 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
     // uri must be in form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
-//    std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "1" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
     // find_last_of does not take in to account if the uri has a last /
     // in this case subscriptionType would be empty and the baseUri == uri
     // by the way the next if statement solves this problem
@@ -352,23 +313,12 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
 
 void LocationService::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
-//    DELETE /exampleAPI/location/v1/subscriptions/area/circle/sub123 HTTP/1.1
-//    Accept: application/xml
-//    Host: example.com
-
     EV << "LocationService::handleDELETERequest" << endl;
     // uri must be in form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
     std::string uri = currentRequestMessageServed->getUri();
     std::size_t lastPart = uri.find_last_of("/");
-//    if(lastPart == std::string::npos)
-//    {
-//        EV << "1" << endl;
-//        Http::send404Response(socket); //it is not a correct uri
-//        return;
-//    }
-
     // find_last_of does not take in to account if the uri has a last /
     // in this case subscriptionType would be empty and the baseUri == uri
     // by the way the next if statement solve this problem

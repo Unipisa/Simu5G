@@ -22,7 +22,6 @@ RNICellInfo::RNICellInfo(BaseStationStatsCollector *eNodeB)
 {
     collector_ = eNodeB;
     ecgi_.setEcgi(collector_->getEcgi());
-//  ueList_ =    eNodeB->getUeListCollectors();
 }
 
 RNICellInfo::~RNICellInfo() 
@@ -48,11 +47,9 @@ nlohmann::ordered_json RNICellInfo::toJsonCell() const
     if (value != -1) val["ul_nongbr_prb_usage_cell"] = value;
 
     value = collector_->get_dl_total_prb_usage_cell();
-//	if(value != -1)
     val["dl_total_prb_usage_cell"] = value;
 
     value = collector_->get_ul_total_prb_usage_cell();
-//	if(value != -1)
     val["ul_total_prb_usage_cell"] = value;
 
     value = collector_->get_received_dedicated_preambles_cell();
@@ -104,43 +101,8 @@ Ecgi RNICellInfo::getEcgi() const
 nlohmann::ordered_json RNICellInfo::toJson() const 
 {
     nlohmann::ordered_json val = toJsonCell();
-
-//	// per UE
-//	std::map<ipv4, ueCollector>::const_iterator it = ueList_->getBeginIterator();
-//	std::map<ipv4, ueCollector>::const_iterator endIt = ueList_->getBeginIterator();
-//
-//    nlohmann::ordered_json jsonArray;
-//
-//	for(; it != endIt; ++it){
-//		CellUeInfo ue(&(it->second));
-//		jsonArray.push_back(ue.toJson());
-//	}
-//
-//	if(jsonArray.size() > 0)
-//	{
-//		val["cellUeInfo"] = jsonArray;
-//	}
     return val;
 }
-
-//nlohmann::ordered_json RNICellInfo::toJson(std::vector<Ipv4>& uesID) const {
-//	nlohmann::ordered_json val = toJsonCell();
-//	nlohmann::ordered_json jsonArray;
-//	std::vector<Ipv4>&::const_iterator it = uesID.begin();
-//	for(; it != uesID.end() ; ++it){
-//		if(ueList_.findUeByIpv4(*it) != false){
-//			CellUeInfo ue(ueList_.getUserCollectorByIPv4(*it));
-//			jsonArray.push_back(ue.toJson());
-//		}
-//
-//	}
-//	if(jsonArray.size() > 0)
-//	{
-//		val["cellUeInfo"] = jsonArray;
-//	}
-//
-//	return val;
-//}
 
 } //namespace
 

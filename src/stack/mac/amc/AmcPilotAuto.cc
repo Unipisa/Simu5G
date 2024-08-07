@@ -50,7 +50,6 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
 
     Band chosenBand = 0;
     double chosenCqi = 0;
-    // double max = 0;
     BandSet bandSet;
 
     /// TODO collapse the following part into a single part (e.g. do not fork on mode_ or usableBandsList_ size)

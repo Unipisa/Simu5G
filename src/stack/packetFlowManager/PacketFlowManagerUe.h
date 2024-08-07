@@ -72,8 +72,6 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     virtual void initialize(int stage) override;
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
 
-//    bool hasFragments(LogicalCid lcid, unsigned int pdcp);
-
   public:
     PacketFlowManagerUe();
     // return true if a structure for this lcid is present

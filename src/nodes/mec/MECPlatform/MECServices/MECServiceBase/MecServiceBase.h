@@ -223,7 +223,6 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual void handleStopOperation(inet::LifecycleOperation *operation) override;
     virtual void handleCrashOperation(inet::LifecycleOperation *operation) override;
 
-//        virtual void removeSubscription(inet::TcpSocket* socket) = 0;
     virtual ~MecServiceBase();
 
   public:
@@ -262,8 +261,6 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual void removeConnection(SocketManager *connection);
 
     virtual void closeConnection(SocketManager *connection);
-
-//        virtual Http::DataType getDataType(std::string& packet_);
 
     /* This method can be used by the socketManager class to emit
      * the length of the request queue upon a request arrival

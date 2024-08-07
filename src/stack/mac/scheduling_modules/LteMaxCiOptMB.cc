@@ -60,7 +60,6 @@ void LteMaxCiOptMB::generateProblem()
     int totUes = carrierActiveConnectionSet_.size();
     // skip problem generation if no User is active
     if (totUes == 0) {
-//        cout << NOW << " LteMaxCiOptMB::generateProblem - No Active Connections" << endl;
         return;
     }
 
@@ -109,8 +108,6 @@ void LteMaxCiOptMB::generateProblem()
         ueList_.push_back(ueId);
         cidList_.push_back(it);
         cqiPerBandMatrix.insert(pair<MacNodeId, std::vector<Cqi>>(ueId, eNbScheduler_->mac_->getAmc()->readMultiBandCqi(ueId, direction_, carrierFrequency_)));
-//        sort(cqiMatrix[ueId].begin(),cqiMatrix[ueId].end());
-
         // ******* DEBUG *******
         appFileStream << ueId << ") CQI[ ";
         first = true;
@@ -177,7 +174,6 @@ void LteMaxCiOptMB::generateProblem()
                 first = false;
             else
                 appFileStream << " + ";
-            //               bUe_config
             appFileStream << "b" << ueList_[iUe] << "_" << iBandConf;
         }
         appFileStream << " <= 1" << endl;
@@ -191,7 +187,6 @@ void LteMaxCiOptMB::generateProblem()
                 first = false;
             else
                 appFileStream << " + ";
-            //               bUe_config
             appFileStream << "b" << ueList_[iUe] << "_" << iBandConf;
         }
         appFileStream << " <= 1" << endl;
@@ -240,12 +235,6 @@ void LteMaxCiOptMB::generateProblem()
         appFileStream << " = 0" << endl;
     }
 
-//    LteMacBufferMap * buf = mac_->getMacBuffers();
-//    LteMacBufferMap::iterator it = buf->begin() , et=buf->end();
-//    for( ; it!=et ; ++it )
-//        cout << "\t CID["<< it->first << "] - ";
-//    cout << endl;
-
     appFileStream << "\\ ================ Constraint 6 ================" << endl;
     for ( iUe = 0; iUe < totUes; ++iUe) {
         LteMacBufferMap *buf = mac_->getMacBuffers();
@@ -255,8 +244,6 @@ void LteMaxCiOptMB::generateProblem()
             cRuntimeError("LteMaxCiOptMB::generateProblem Cannot find CID[%u]. Aborting... ", cidList_[iUe]);
         }
         queue = it->second->getQueueOccupancy();
-//        appFileStream << iUe<< ")UE=" << ueList[iUe] << " - cid=" << cidList[iUe] << endl;
-
         MacNodeId ueId = ueList_[iUe];
         appFileStream << "v" << ueId << " - p" << ueId << " <= " << queue << endl;
     }
@@ -271,8 +258,6 @@ void LteMaxCiOptMB::generateProblem()
         cqiPerBand = cqiPerBandMatrix[ueId];
 
         for ( iBandConf = 1; iBandConf <= totBandConfig; ++iBandConf ) {
-//            appFileStream << "\\ BandConf[" << iBandConf<< "] - minBand[" << cqiPerConfig[iBandConf-1]
-//                          << "] - minCqi[" << cqiPerBand[cqiPerConfig[iBandConf-1]] << "]" << endl;
             appFileStream << "p" << ueId << " + " << MAX_RATE << " b" << ueId << "_" << iBandConf
                           << " <= " << (cqiPerBand[cqiPerConfig[iBandConf - 1]] + MAX_RATE - 1) << endl;
         }
@@ -396,55 +381,6 @@ void LteMaxCiOptMB::prepareSchedule()
 // TODO use the XML built in functions
 void LteMaxCiOptMB::readSolution()
 {
-//    mac_->par("optSolution").setXMLValue("solution.sol");
-//    cXMLElement* root = mac_->par("optSolution").xmlValue();
-//    cXMLElement* elem;
-//    cXMLElementList list;
-//    cXMLElementList::const_iterator it;
-//    string nameString;
-//    string ue , band;
-//    std::size_t position;
-//    BandLimit bandLimit;
-//
-//    if (root == NULL) {
-//        cRuntimeError("FATAL! LteMaxCiOptMB::readSolution - No solution file found. Aborting");
-//    }
-//    list = root->getChildren();
-//    for (it = list.begin(); it != list.end(); ++it)
-//    {
-//        elem = *it;
-//        const char * nodeName = elem->getTagName();
-//
-////        cout << NOW << " LteMaxCiOptMB::readSolution - TagName[" << nodeName << "]" << endl;
-//
-//        if(strcasecmp(nodeName, "variables") == 0)
-//        break;
-//    }
-//    if(it == list.end())
-//        cRuntimeError("FATAL! LteMaxCiOptMB::readSolution - Cannot find TAG Variables. Aborting");
-//
-//    list = elem->getChildren();
-//    for (it = list.begin(); it != list.end(); ++it)
-//    {
-//
-//        elem = *it;
-//        const char * name = elem->getAttribute("name");
-//        nameString.assign(name);
-//        position = nameString.find('s');
-//        if(position!=string::npos)
-//        {
-//            ue = nameString.substr(position+1,4);
-//            band = nameString.substr(position+6);
-//            const char * value = elem->getAttribute("value");
-////            cout  << NOW << " LteMaxCiOptMB::readSolution - name[" << name << "/"<< nameString<<"] - value[" << value << "]" << endl;
-//            cout  << NOW << " LteMaxCiOptMB::readSolution - Ue[" << ue<<"] - band[" << band<<"] - value[" << value << "]" << endl;
-//
-//            bandLimit.limit_.push_back((*(value)=='1')? -1 : -2);
-//            bandLimit.band_  = atoi(band.c_str());
-//            schedulingDecision_[atoi(ue.c_str())].push_back(bandLimit);
-//        }
-//    }
-
     std::ifstream file;
     std::string line;
     size_t pos;
@@ -494,7 +430,6 @@ void LteMaxCiOptMB::readSolution()
         }
     }
 
-    // int totUes = cidList_.size();
     int ueId;
 
     UsableBandList::iterator itUsable = usableBands_.begin(),

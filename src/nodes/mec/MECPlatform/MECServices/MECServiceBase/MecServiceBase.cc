@@ -138,7 +138,6 @@ void MecServiceBase::handleStopOperation(inet::LifecycleOperation *operation)
     for (auto thread : threadSet)
         thread->getSocket()->close();
     serverSocket.close();
-//    delayActiveOperationFinish(par("stopOperationTimeout"));
 }
 
 void MecServiceBase::handleCrashOperation(inet::LifecycleOperation *operation)
@@ -159,21 +158,6 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
     if (msg->isSelfMessage()) {
         EV << " MecServiceBase::handleMessageWhenUp - " << msg->getName() << endl;
         if (strcmp(msg->getName(), "serveSubscription") == 0) {
-//            maybe the service wants to perform some operations in case the subId is not present,
-//            so the service base just calls the manageSubscription() method.
-//            bool res = false;
-//            // fixme check if the subscription is still active, i.e. the client did not disconnected
-//            if(subscriptions_.find(currentSubscriptionServed_->getSubId()) != subscriptions_.end() )
-//                res = manageSubscription();
-//            else
-//            {
-//                // subscription id not present, client disconnected, do not manage.
-//                if(currentSubscriptionServed_!= nullptr)
-//                        delete currentSubscriptionServed_;
-//                currentSubscriptionServed_ = nullptr;
-//                return false;
-//            }
-//      }
             bool res = manageSubscription();
             scheduleNextEvent(!res);
         }
@@ -192,7 +176,6 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
         else if (serverSocket.belongsToSocket(msg))
             serverSocket.processMessage(msg);
         else {
-            //            throw cRuntimeError("Unknown incoming message: '%s'", msg->getName());
             EV_ERROR << "message " << msg->getFullName() << "(" << msg->getClassName() << ") arrived for unknown socket \n";
             delete msg;
         }
@@ -225,8 +208,6 @@ void MecServiceBase::socketAvailable(inet::TcpSocket *socket, inet::TcpAvailable
 
 void MecServiceBase::socketClosed(inet::TcpSocket *socket)
 {
-//    if (operationalState == State::STOPPING_OPERATION && threadSet.empty() && !serverSocket.isOpen())
-//        startActiveOperationExtraTimeOrFinish(par("stopOperationExtraTime"));
 }
 
 bool MecServiceBase::manageRequest()
@@ -413,7 +394,6 @@ double MecServiceBase::calculateRequestServiceTime()
     else {
         time = exponential(requestServiceTime_, REQUEST_RNG);
     }
-//    return (time*1e-6);
     EV << "MecServiceBase::calculateRequestServiceTime - time: " << time << endl;
     return time;
 }
@@ -422,7 +402,6 @@ double MecServiceBase::calculateSubscriptionServiceTime()
 {
     double time;
     time = exponential(subscriptionServiceTime_, SUBSCRIPTION_RNG);
-//    return (time*1e-6);
     return time;
 }
 

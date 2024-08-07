@@ -236,12 +236,6 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
     EV << "LtePdcp : Sending packet " << pkt->getName()
        << " on port DataPort$o\n";
 
-//    if(lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D)
-//    {
-//        if(packetFlowManager_ != nullptr)
-//            packetFlowManager_->receivedPdcpSdu(pkt);
-//    }
-
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
     emit(sentPacketToUpperLayer, pkt);

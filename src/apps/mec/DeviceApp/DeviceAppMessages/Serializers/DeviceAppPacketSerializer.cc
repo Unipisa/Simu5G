@@ -57,16 +57,13 @@ void DeviceAppMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr
             stream.writeByte((uint8_t)START_ACK_CODE);
             stream.writeByte((uint8_t)(sdata.size()));
             stream.writeString(sdata);
-//            throw cRuntimeError("%s", sdata.c_str());
             int64_t remainders = B(ackPk->getChunkLength() - (stream.getLength() - startPosition)).get();
-//            throw cRuntimeError("%d, %d, %d", remainders, sdata.size(), ackPk->getChunkLength());
             if (remainders < 0)
                 throw cRuntimeError("DeviceApp - START_ACK_CODE length = %d smaller than required %d bytes. Data: %s [%lu]",
                         (int)B(ackPk->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get(), sdata.c_str(), sdata.size());
             stream.writeByteRepeatedly('?', remainders);
         }
         else {
-//            throw cRuntimeError("false");
             stream.writeByte((uint8_t)START_NACK_CODE);
             stream.writeByte((uint8_t)0);
 
@@ -146,7 +143,6 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
             ackPacket->setType(ACK_START_MECAPP);
             ackPacket->setResult("ACK");
             stream.readBytes(bytes, messageDataLength);  // endPoint ipAddress:port (for now) or something else (later)
-//            std::string endPoint(bytes.begin(), bytes.end());
             std::vector<std::string> ipPort = cStringTokenizer((char *)&bytes[0], ":").asVector();
             if (ipPort.size() != 2)
                 throw cRuntimeError("DeviceAppMessageSerializer::deserialize - endPoint must be ip:port, but is: %s ", (char *)&bytes[0]);

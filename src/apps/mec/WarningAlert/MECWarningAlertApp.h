@@ -93,7 +93,6 @@ class MECWarningAlertApp : public MecAppBase
 
     virtual void handleSelfMessage(cMessage *msg) override;
 
-//        /* TCPSocket::CallbackInterface callback methods */
     virtual void established(int connId) override;
 
   public:

@@ -116,20 +116,6 @@ class LcgScheduler
      * scheduled for each connection
      */
     virtual ScheduleList& getScheduledBytesList();
-
-    // *****************************************************************************************
-
-//        /// performs request of grant to the eNbScheduler
-//        virtual unsigned int grant(MacCid cid,unsigned int bytes, bool& terminate,bool& active,bool& eligible);
-//
-//        /// calls eNbScheduler rtxschedule()
-//        virtual bool rtxschedule();
-//
-//        virtual void notify( MacCid activeCid ) {;}
-//
-//        virtual void remove( MacCid cid ) {;}
-//
-//        virtual void update() {;}
 };
 
 } //namespace

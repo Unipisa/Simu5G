@@ -146,8 +146,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     virtual void initialize(int stage) override;
 
-//    bool hasFragments(LogicalCid lcid, unsigned int pdcp);
-
   public:
     PacketFlowManagerEnb();
     // return true if a structure for this lcid is present

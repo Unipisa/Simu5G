@@ -548,7 +548,6 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
             int limit = bandLim->at(i).limit_.at(cw);
 
             // TODO add support to multi CW
-//            unsigned int bandAvailableBytes = // if a codeword has been already scheduled for retransmission, limit available blocks to what's been  allocated on that codeword
 //                    ((allocatedCw == MAX_CODEWORDS) ? availableBytes(nodeId,antenna, b, cw) : mac_->getAmc()->blocks2bytes(nodeId, b, cw, allocator_->getBlocks(antenna,b,nodeId) , direction_));    // available space
             unsigned int bandAvailableBytes = availableBytes(nodeId, antenna, b, cw, direction_, carrierFrequency);
 

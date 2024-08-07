@@ -54,19 +54,6 @@ void RNIService::initialize(int stage)
 void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
     std::string uri = currentRequestMessageServed->getUri();
-    // std::vector<std::string> splittedUri = simu5g::utils::splitString(uri, "?");
-    // // uri must be in form example/v1/rni/queries/resource
-    // std::size_t lastPart = splittedUri[0].find_last_of("/");
-    // if(lastPart == std::string::npos)
-    // {
-    //     Http::send404Response(socket); //it is not a correct uri
-    //     return;
-    // }
-    // // find_last_of does not take in to account if the uri has a last /
-    // // in this case resourceType would be empty and the baseUri == uri
-    // // by the way the next if statement solve this problem
-    // std::string baseUri = splittedUri[0].substr(0,lastPart);
-    // std::string resourceType =  splittedUri[0].substr(lastPart+1);
 
     // check it is a GET for a query or a subscription
     if (uri == (baseUriQueries_ + "/layer2_meas")) { //queries
@@ -163,7 +150,6 @@ void RNIService::handleDELETERequest(const HttpRequestMessage *currentRequestMes
 
 void RNIService::finish()
 {
-// TODO
     return;
 }
 

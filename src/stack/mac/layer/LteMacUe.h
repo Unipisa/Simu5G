@@ -69,9 +69,6 @@ class LteMacUe : public LteMacBase
     // BSR handling
     bool bsrTriggered_;
 
-//    // reference to the channel models
-//    std::map<double, LteChannelModel*> channelModel_;
-
     // statistics
     omnetpp::simsignal_t cqiDlSpmux0_;
     omnetpp::simsignal_t cqiDlSpmux1_;

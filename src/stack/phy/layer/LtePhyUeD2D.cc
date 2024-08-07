@@ -211,10 +211,6 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
              * and tx power to the sender das antenna
              */
 
-//            cc->updateHostPosition(myHostRef,das_->getAntennaCoord(*it));
-            // Set position of sender
-//            Move m;
-//            m.setStart(das_->getAntennaCoord(*it));
             RemoteUnitPhyData data;
             data.txPower = lteInfo->getTxPower();
             data.m = getRadioPosition();
@@ -293,10 +289,6 @@ void LtePhyUeD2D::doHandover()
 
 void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
 {
-//    if (useBattery_) {
-//    TODO     BatteryAccess::drawCurrent(txAmount_, 1);
-//    }
-
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->removeTag<UserControlInfo>();
 
@@ -484,10 +476,6 @@ void LtePhyUeD2D::decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo)
              * and tx power to the sender das antenna
              */
 
-//            cc->updateHostPosition(myHostRef,das_->getAntennaCoord(*it));
-            // Set position of sender
-//            Move m;
-//            m.setStart(das_->getAntennaCoord(*it));
             RemoteUnitPhyData data;
             data.txPower = lteInfo->getTxPower();
             data.m = getRadioPosition();
@@ -564,11 +552,6 @@ void LtePhyUeD2D::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVe
 
     uinfo->setCoord(getRadioPosition());
 
-    //TODO access speed data Update channel index
-//    if (coherenceTime(move.getSpeed())<(NOW-lastFeedback_)){
-//        cellInfo_->channelIncrease(nodeId_);
-//        cellInfo_->lambdaIncrease(nodeId_,1);
-//    }
     lastFeedback_ = NOW;
 
     // send one feedback packet for each carrier

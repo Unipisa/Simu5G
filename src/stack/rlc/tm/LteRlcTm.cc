@@ -96,7 +96,6 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
         cPacket *upUpPkt = check_and_cast<cPacket *>(upPkt->decapsulate());
         upUpPkt->setControlInfo(lteInfo);
         delete upPkt;
-        // pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
 
         EV << "LteRlcTm : Sending packet " << upUpPkt->getName() << " to port TM_Sap_up$o\n";
         emit(sentPacketToUpperLayer, upUpPkt);

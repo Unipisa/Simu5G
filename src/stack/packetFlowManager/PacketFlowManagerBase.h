@@ -79,8 +79,6 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
     virtual int numInitStages() const { return 2; }
     virtual void initialize(int stage);
 
-//      virtual bool hasFragments(LogicalCid lcid, unsigned int pdcp);
-
   public:
 
     PacketFlowManagerBase();

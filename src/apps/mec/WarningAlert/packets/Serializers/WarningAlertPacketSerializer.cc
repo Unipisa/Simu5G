@@ -164,7 +164,6 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             alertPacket->setPositionX(std::stod(coords[0]));
             alertPacket->setPositionY(std::stod(coords[1]));
 
-//            throw cRuntimeError("len %d, pos %d", B(stream.getLength()).get(),B(stream.getPosition()).get());
             B remainders = totalLength - (stream.getPosition());
             ASSERT(remainders >= B(0));
             stream.readByteRepeatedly('?', remainders.get());

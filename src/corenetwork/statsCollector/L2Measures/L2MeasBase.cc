@@ -25,13 +25,10 @@ void L2MeasBase::init(std::string name, int period, bool movingAverage)
     sum_ = 0;
     mean_ = 0;
     movingAverage_ = movingAverage;
-//    outVector_.setName(name_.c_str());
-//    histogram_.setName(name_.c_str());
 }
 
 L2MeasBase::~L2MeasBase()
 {
-//    histogram_.recordAs(name_.c_str());
 }
 
 void L2MeasBase::addValue(double value) {

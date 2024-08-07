@@ -86,8 +86,6 @@ void LteDlFeedbackGenerator::initialize(int stage)
         dasFilter_ = phy_->getDasFilter();
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe used" << endl;
-//        initializeFeedbackComputation(par("feedbackComputation").xmlValue());
-
         // TODO: remove this parameter
         feedbackComputationPisa_ = true;
 

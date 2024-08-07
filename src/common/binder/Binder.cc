@@ -899,32 +899,6 @@ void Binder::computeAverageCqiForBackgroundUes()
             condition = false;
     }
 
-//    // DEBUG
-//    // loop through the BackgroundTrafficManagers (one per cell)
-//    for (unsigned int bgTrafficManagerId = 0; bgTrafficManagerId < bgTrafficManagerList_.size(); bgTrafficManagerId++)
-//    {
-//        BgTrafficManagerInfo* info = bgTrafficManagerList_.at(bgTrafficManagerId);
-//        if (!(info->init))
-//            continue;
-//
-//        IBackgroundTrafficManager* bgTrafficManager = info->bgTrafficManager;
-//
-//        // Compute the SINR for each UE within the cell
-//        auto bgUes_it = bgTrafficManager->getBgUesBegin();
-//        auto bgUes_et = bgTrafficManager->getBgUesEnd();
-//        int cont = 0;
-//        while (bgUes_it != bgUes_et)
-//        {
-//            TrafficGeneratorBase* bgUe = *bgUes_it;
-//            Cqi cqiDl = bgUe->getCqi(DL);
-//            Cqi cqiUl = bgUe->getCqi(UL);
-//
-//            std::cout << "BgTrafficManager " << bgTrafficManagerId << " - UE[" << cont << "] cqiDl[" << cqiDl << "] cqiUl[" << cqiUl << "] "<< endl;
-//            ++bgUes_it;
-//            ++cont;
-//        }
-//    }
-
     EV << " ===== Binder::computeAverageCqiForBackgroundUes - END =====" << endl;
 }
 
@@ -1019,8 +993,6 @@ double Binder::computeInterferencePercentageDl(double n, double k, unsigned int 
     double min = (n < k) ? n : k;
     return (double)min / n;
 
-//    // assuming the allocation is random
-//    return (double)k / numBands;
 }
 
 double Binder::computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal)
@@ -1111,7 +1083,6 @@ double Binder::computeSinr(unsigned int bgTrafficManagerId, int bgUeId, double t
 double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 {
     // TODO choose appropriate values for these constants
-    //      and make them configurable
     const double MIN_SINR = -5.5;
     const double MAX_SINR = 25.5;
 
@@ -1127,7 +1098,6 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 
     double bitRate = normalizedSinr * maxDataRatePerRb_;
 
-    //     double rbs = bitRate/reqLoad;
     double rbs = reqLoad / bitRate;
 
     EV << "Binder::computeRequestedRbsFromSinr - sinr[" << sinr << "] - bitRate[" << bitRate << "] - rbs[" << rbs << "]" << endl;
@@ -1158,8 +1128,6 @@ void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector,
         }
         else {
             EV << "LteBinder::addUeCollector - eNodeB [" << (*it)->id << "] does not have the eNodeBStatsCollector" << endl;
-//            throw cRuntimeError("LteBinder::addUeCollector - eNodeB [%d] does not have the eNodeBStatsCollector", (*it)->id ) ;
-
         }
     }
 
@@ -1173,7 +1141,6 @@ void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector,
     else {
         EV << "LteBinder::addUeCollector - eNodeB [" << cell << "] does not have the eNodeBStatsCollector." <<
             " UeCollector for node [" << ue << "] NOT added to eNodeB [" << cell << "]" << endl;
-//        throw cRuntimeError("LteBinder::addUeCollector - eNodeBStatsCollector not present in eNodeB [%d]",(*it)->id ) ;
     }
 }
 

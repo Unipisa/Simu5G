@@ -181,10 +181,6 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
              * and tx power to the sender das antenna
              */
 
-//            cc->updateHostPosition(myHostRef,das_->getAntennaCoord(*it));
-            // Set position of sender
-//            Move m;
-//            m.setStart(das_->getAntennaCoord(*it));
             RemoteUnitPhyData data;
             data.txPower = lteInfo->getTxPower();
             data.m = getRadioPosition();

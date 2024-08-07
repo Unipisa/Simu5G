@@ -84,7 +84,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         //       and if the bsrTriggered flag is set. If so, do not schedule any UL connection and use the
         //       grant for sending the BSR related to the D2D connection(s).
         //       A smarter policy should be implemented
-
         if (grantDir == UL && mac_->bsrTriggered()) {
             // look for an active D2D connection
             for (it = it_pair.first; it != et; ++it) {
@@ -162,11 +161,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             EV << NOW << " LcgScheduler::schedule Node " << mac_->getMacNodeId() << " , Parameters:" << endl;
             EV << "\t Logical Channel ID: " << MacCidToLcid(cid) << endl;
             EV << "\t CID: " << cid << endl;
-//                fprintf(stderr, "\tGroup ID: %d\n", desc->parameters_.groupId_);
-//                fprintf(stderr, "\tPriority: %d\n", desc->parameters_.priority_);
-//                fprintf(stderr, "\tMin Reserved Rate: %.0lf bytes/s\n", desc->parameters_.minReservedRate_);
-//                fprintf(stderr, "\tMax Burst: %.0lf bytes\n", desc->parameters_.maxBurst_);
-
             if (priorityService) {
                 // Update bucket value for this connection
 
@@ -225,9 +219,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                     vQueue->popFront();
 
                     if (priorityService) {
-//    TODO                        desc->parameters_.bucket_ -= sduSize;
-//                        // update the tracing element accordingly
-//    TODO                    elem->bucket_ = 100.0 /* TODO desc->parameters_.bucket_*/;
                     }
 
                     // check if there is space for a SDU
@@ -265,9 +256,6 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
                 else {
 
                     if (priorityService) {
-//    TODO                        desc->parameters_.bucket_ -= sduSize;
-//                        // update the tracing element accordingly
-//    TODO                    elem->bucket_ = 100.0 /* TODO desc->parameters_.bucket_*/;
                     }
 
                     int alloc = availableBytes;
@@ -316,30 +304,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             if (availableBytes > minBytes) {
                 // TODO the priority is higher when the associated integer is lower ( e.g. priority 2 is
                 // greater than 4 )
-//
-//                if ( desc->parameters_.priority_ >= lowestBackloggedPriority_ ) {
-//
-//                    if(LteDebug::trace("LcgScheduler::schedule"))
-//                        fprintf(stderr,"%.9f LcgScheduler::schedule - Node %d, this flow priority: %u (old lowest priority %u) - LOWEST FOR NOW\n", NOW, nodeId_, desc->parameters_.priority_, lowestBackloggedPriority_);
-//
-//                    // store the new lowest backlogged flow and its priority
-//                    lowestBackloggedFlow_ = fid;
-//                    lowestBackloggedPriority_ = desc->parameters_.priority_;
             }
-//
-//
-//                if ( highestBackloggedPriority_ == -1 || desc->parameters_.priority_ <= highestBackloggedPriority_ ) {
-//
-//                    if(LteDebug::trace("LcgScheduler::schedule"))
-//                        fprintf(stderr,"%.9f LcgScheduler::schedule - Node %d, this flow priority: %u (old highest priority %u) - HIGHEST FOR NOW\n", NOW, nodeId_, desc->parameters_.priority_, highestBackloggedPriority_);
-//
-//                    // store the new highest backlogged flow and its priority
-//                    highestBackloggedFlow_ = fid;
-//                    highestBackloggedPriority_ = desc->parameters_.priority_;
-//                }
-//
-//            }
-//
             if (elem->sentSdus_ > 0) {
                 // update the last schedule time
                 lastExecutionTime_ = NOW;

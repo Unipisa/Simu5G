@@ -442,7 +442,6 @@ void LteAmc::pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double ca
     // DEBUG
     EV << "Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
-//    fb.print(0,id,dir,"LteAmc::pushFeedback");
     fb.print(cellId_, id, dir, "LteAmc::pushFeedback");
 }
 
@@ -976,8 +975,6 @@ const unsigned int *LteAmc::readTbsVect(Cqi cqi, unsigned int layers, Direction 
                 case 4:
                     tbsVect = itbs2tbs_16qam_4[itbs - 9];
                     break;
-//                    case 8:
-//                        tbsVect = itbs2tbs_16qam_8[itbs]; break;
             }
             break;
         }
@@ -992,8 +989,6 @@ const unsigned int *LteAmc::readTbsVect(Cqi cqi, unsigned int layers, Direction 
                 case 4:
                     tbsVect = itbs2tbs_64qam_4[itbs - 15];
                     break;
-//                    case 8:
-//                        tbsVect = itbs2tbs_64qam_8[itbs]; break;
             }
             break;
         }

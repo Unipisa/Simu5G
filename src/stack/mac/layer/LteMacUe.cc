@@ -44,8 +44,6 @@ LteMacUe::LteMacUe() :
     firstTx = false;
 
     currentHarq_ = 0;
-//    periodCounter_ = 0;
-//    expirationCounter_ = 0;
     racRequested_ = false;
     bsrTriggered_ = false;
     requestedSdus_ = 0;
@@ -77,7 +75,6 @@ LteMacUe::~LteMacUe()
     auto git = schedulingGrant_.begin();
     for ( ; git != schedulingGrant_.end(); ++git) {
         if (git->second != nullptr) {
-//            delete git->second;
             git->second = nullptr;
         }
     }
@@ -111,20 +108,6 @@ void LteMacUe::initialize(int stage)
         cqiDlSiso3_ = registerSignal("cqiDlSiso3");
         cqiDlSiso4_ = registerSignal("cqiDlSiso4");
     }
-//    else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT_2)
-//    {
-//        // primary cell
-//        LteChannelModel* chanModel = check_and_cast<LteChannelModel*>(getParentModule()->getSubmodule("channelModel", 0));
-//        double carrierFreq = chanModel->getCarrierFrequency();
-//        channelModel_[carrierFreq] = chanModel;
-//
-//        for (int index=1; index<chanModel->getVectorSize(); index++)
-//        {
-//            chanModel = check_and_cast<LteChannelModel*>(getParentModule()->getSubmodule("channelModel", 0));
-//            carrierFreq = chanModel->getCarrierFrequency();
-//            channelModel_[carrierFreq] = chanModel;
-//        }
-//    }
     else if (stage == INITSTAGE_LINK_LAYER) {
         if (strcmp(getFullName(), "nrMac") == 0)
             cellId_ = networkNode_->par("nrMasterId");
@@ -911,7 +894,6 @@ void LteMacUe::macHandleGrant(cPacket *pktAux)
     EV << NOW << " LteMacUe::macHandleGrant - Direction: " << dirToA(grant->getDirection()) << " Carrier: " << carrierFrequency << endl;
 
     if (schedulingGrant_.find(carrierFrequency) != schedulingGrant_.end() && schedulingGrant_[carrierFrequency] != nullptr) {
-//        delete schedulingGrant_[carrierFrequency];
         schedulingGrant_[carrierFrequency] = nullptr;
     }
 

@@ -106,7 +106,6 @@ class LteMacPdu : public LteMacPdu_Base
         LteMacPdu_Base(other)
     {
         copy(other);
-        //operator=(other);
     }
 
     LteMacPdu& operator=(const LteMacPdu& other)

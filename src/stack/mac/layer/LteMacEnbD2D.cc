@@ -119,9 +119,6 @@ void LteMacEnbD2D::handleMessage(cMessage *msg)
         // compute conflict graph for resource allocation
         conflictGraph_->computeConflictGraph();
 
-//        // debug
-//        conflictGraph_->printConflictGraph();
-
         scheduleAt(NOW + conflictGraphUpdatePeriod_, msg);
     }
     else

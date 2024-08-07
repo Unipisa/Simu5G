@@ -145,12 +145,6 @@ void UmRxEntity::enque(cPacket *pktAux)
     index = tsn - rxWindowDesc_.firstSno_;
     pduBuffer_.addAt(index, pktPdu);
     received_.at(index) = true;
-    /*
-     *  @author Alessandro Noferi
-     *  add RLC sdu bits for the burst (if any)
-     */
-//    int rlcSduSize = (B(pdu->getChunkLength()) - B(RLC_HEADER_UM)).get(); // RLC pdu size - RLC header
-//    ttiBits_ += rlcSduSize; // test
 
     // emit statistics
     MacNodeId ueId;

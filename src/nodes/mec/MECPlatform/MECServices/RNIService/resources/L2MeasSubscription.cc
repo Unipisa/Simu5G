@@ -67,20 +67,6 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
 
                 Http::send400Response(socket_); // only one ip
                 return false;
-//                nlohmann::json ueVector = filterCriteria["associateId"];
-//                for(int i = 0; i < ueVector.size(); ++i)
-//                {
-//                    if(ueVector.at(i)["associateId"]["type"] == "UE_IPv4_ADDRESS")
-//                    {
-//                        std::string address = ueVector.at(i)["associateId"]["value"];
-//                        ues.push_back(binder_->getMacNodeId(IPv4Address(address.c_str())));
-//                    }
-//                    else
-//                    {
-//                        Http::send400Response(socket_); // must be ipv4
-//                        return false;
-//                     }
-//                 }
             }
             else {
                 if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
@@ -99,12 +85,6 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
         //check cellIds filter
         if (filterCriteria.contains("ecgi")) {
             if (filterCriteria["ecgi"].is_array()) {
-//                nlohmann::json cellVector = filterCriteria["cellId"];
-//                for(int i = 0; i < cellVector.size(); ++i)
-//                {
-//                    std::string cellId = cellVector.at(i)["cellId"];
-//                    cellids.push_back((MacNodeId)std::stoi(cellId));
-//                 }
             }
             else {
                 if (filterCriteria["ecgi"].contains("cellId") && filterCriteria["ecgi"].contains("plmn")) {
