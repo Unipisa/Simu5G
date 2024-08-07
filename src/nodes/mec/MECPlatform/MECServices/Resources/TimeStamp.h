@@ -25,8 +25,6 @@ class  TimeStamp: public AttributeBase
     int32_t seconds_;
     int32_t nanoSeconds_;
 
-    omnetpp::simtime_t omnet_time;
-
     bool valid_;
 
     public:
