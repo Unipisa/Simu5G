@@ -17,8 +17,6 @@
 #include "inet/transportlayer/contract/tcp/TcpSocket.h"
 
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
-
 #include "nodes/mec/utils/httpUtils/json.hpp"
 
 #include <string>
