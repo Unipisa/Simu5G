@@ -16,6 +16,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 LteHarqProcessTxD2D::LteHarqProcessTxD2D(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner, LteMacBase *dstMac)
+    : LteHarqProcessTx(binder, acid, numUnits, numProcesses, macOwner, dstMac)
 {
     macOwner_ = macOwner;
     acid_ = acid;
