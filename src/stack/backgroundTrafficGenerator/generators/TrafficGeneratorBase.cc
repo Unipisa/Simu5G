@@ -123,7 +123,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
             return;
         }
 
-        // if periodic CQI updateis disabled, and CQI was not estimated using avg interference, then update SINR when the UE changed its position
+        // if periodic CQI update is disabled, and CQI was not estimated using avg interference, then update SINR when the UE changed its position
         if (!enablePeriodicCqiUpdate_ && !computeAvgInterference_ && positionUpdated_)
             updateMeasurements();
 

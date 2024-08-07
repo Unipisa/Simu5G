@@ -520,7 +520,7 @@ void LteMacUeD2D::checkRAC()
         return;
     }
 
-    // Avoids double requests whithin same TTI window
+    // Avoids double requests within same TTI window
     if (racRequested_) {
         EV << NOW << " LteMacUeD2D::checkRAC - double RAC request" << endl;
         racRequested_ = false;

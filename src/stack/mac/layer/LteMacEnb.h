@@ -78,7 +78,7 @@ class LteMacEnb : public LteMacBase
 
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
-     * It sends them to the  lower layer
+     * It sends them to the lower layer
      */
     virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
 

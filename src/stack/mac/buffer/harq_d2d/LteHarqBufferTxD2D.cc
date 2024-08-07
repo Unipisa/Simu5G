@@ -39,7 +39,7 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
     long fbPduId = fbpkt->getFbMacPduId(); // id of the pdu that should receive this fb
     long unitPduId = (*processes_)[acid]->getPduId(cw);
 
-    // After handover or a D2D mode switch, the process nay have been dropped. The received feedback must be ignored.
+    // After handover or a D2D mode switch, the process may have been dropped. The received feedback must be ignored.
     if ((*processes_)[acid]->isDropped()) {
         EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << ". The corresponding unit has been "
                                                                         " reset after handover or a D2D mode switch (the contained pdu was dropped). Ignore feedback." << endl;
@@ -49,7 +49,7 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
 
     if (fbPduId != unitPduId) {
         // fb is not for the pdu in this unit, maybe the addressed one was dropped
-        EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << "Codeword " << cw << " not addressed"
+        EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << " Codeword " << cw << " not addressed"
                                                                                              " to the actually contained pdu (maybe it was dropped)" << endl;
         EV << "Received id: " << fbPduId << endl;
         EV << "PDU id: " << unitPduId << endl;

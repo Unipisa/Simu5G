@@ -106,5 +106,5 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
 
 } //namespace
 
-#endif /* NRChannelModel_3GPP38_901_H_ */
+#endif /* NRCHANNELMODEL_3GPP38_901_H_ */
 

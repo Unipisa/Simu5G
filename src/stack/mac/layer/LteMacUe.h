@@ -42,7 +42,7 @@ class LteMacUe : public LteMacBase
     // current H-ARQ process counter
     unsigned char currentHarq_;
 
-    // perodic grant handling - one per carrier
+    // periodic grant handling - one per carrier
     std::map<double, unsigned int> periodCounter_;
     std::map<double, unsigned int> expirationCounter_;
 

@@ -311,28 +311,28 @@ class LteRealisticChannelModel : public LteChannelModel
      */
     double computeUrbanMicro(double distance, bool los);
     /*
-     * compute scenario for Urban Macro cell
+     * Compute attenuation for Urban Macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double distance, bool los);
     /*
-     * compute scenario for Sub Urban Macro cell
+     * Compute attenuation for Sub Urban Macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
     double computeSubUrbanMacro(double distance, double& dbp, bool los);
     /*
-     * Compute scenario for rural macro cell
+     * Compute attenuation for Rural Macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
     double computeRuralMacro(double distance, double& dbp, bool los);
     /*
-     * compute std deviation of shadowing according to scenario and visibility
+     * Compute std deviation of shadowing according to scenario and visibility
      *
      * @param distance between UE and eNodeB
      * @param nodeid mac node id of UE
@@ -350,7 +350,7 @@ class LteRealisticChannelModel : public LteChannelModel
      *
      * @param speed speed of UE
      * @param nodeid mac node id of UE
-     * @param band logical bend id
+     * @param band logical band id
      * @param cqiDl if true, the jakesMap in the UE side should be used
      * @param isBgUe if true, this is called for a background UE
      */

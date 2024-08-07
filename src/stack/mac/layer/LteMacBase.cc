@@ -487,7 +487,7 @@ void LteMacBase::refreshDisplay() const
         sprintf(buf, "hl: %ld in, %ld out\nll: %ld in, %ld out", nrFromUpper_, nrToUpper_, nrFromLower_, nrToLower_);
 
         getDisplayString().setTagArg("t", 0, buf);
-        getDisplayString().setTagArg("bgtt", 0, "Number of packets in and ouf the higher layer (hl) and the lower layer (ll).");
+        getDisplayString().setTagArg("bgtt", 0, "Number of packets in and out of the higher layer (hl) and the lower layer (ll).");
     }
 }
 

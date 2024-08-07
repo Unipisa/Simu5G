@@ -31,7 +31,7 @@ cModule *AvailableResourcesSelectionBased::findBestMecHost(const ApplicationDesc
         }
         if (vim->getAvailableResources().cpu > maxCpuSpeed) {
             // Temporally select this mec host as the best
-            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporally chosen as bet MEC host. Available resources: " << endl;
+            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporally chosen as best MEC host. Available resources: " << endl;
             vim->printResources();
             bestHost = mecHost;
             maxCpuSpeed = vim->getAvailableResources().cpu;

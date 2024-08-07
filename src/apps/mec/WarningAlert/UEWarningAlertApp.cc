@@ -234,7 +234,7 @@ void UEWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage *msg)
     if (pkt->getResult() == true) {
         mecAppAddress_ = L3AddressResolver().resolve(pkt->getIpAddress());
         mecAppPort_ = pkt->getPort();
-        EV << "UEWarningAlertApp::handleAckStartMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket. mecApp isntance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
+        EV << "UEWarningAlertApp::handleAckStartMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
         cancelEvent(selfStart_);
         //scheduling sendStopMEWarningAlertApp()
         if (!selfStop_->isScheduled()) {
@@ -252,7 +252,7 @@ void UEWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage *msg)
 
 void UEWarningAlertApp::sendMessageToMECApp() {
 
-    // send star monitoring message to the MEC application
+    // send start monitoring message to the MEC application
 
     inet::Packet *pkt = new inet::Packet("WarningAlertPacketStart");
     auto alert = inet::makeShared<WarningStartPacket>();
@@ -282,7 +282,7 @@ void UEWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<WarningAlertPacket>();
 
-    EV << "UEWarningAlertApp::handleInfoMEWarningrAlertApp - Received " << pkt->getType() << " type WarningAlertPacket" << endl;
+    EV << "UEWarningAlertApp::handleInfoMEWarningAlertApp - Received " << pkt->getType() << " type WarningAlertPacket" << endl;
 
     //updating runtime color of the car icon background
     if (pkt->getDanger()) {
@@ -295,7 +295,7 @@ void UEWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)
             }
         }
 
-        EV << "UEWarningAlertApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: DANGER!" << endl;
+        EV << "UEWarningAlertApp::handleInfoMEWarningAlertApp - Warning Alert Detected: DANGER!" << endl;
         ue->getDisplayString().setTagArg("i", 1, "red");
     }
     else {
@@ -308,7 +308,7 @@ void UEWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)
             }
         }
 
-        EV << "UEWarningAlertApp::handleInfoMEWarningrAlertApp - Warning Alert Detected: NO DANGER!" << endl;
+        EV << "UEWarningAlertApp::handleInfoMEWarningAlertApp - Warning Alert Detected: NO DANGER!" << endl;
         ue->getDisplayString().setTagArg("i", 1, "green");
     }
 }

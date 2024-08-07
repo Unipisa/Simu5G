@@ -27,7 +27,7 @@ class LteHarqProcessRx;
  * A feedback is sent after the pdu has been evaluated (HARQ_FB_EVALUATION_INTERVAL), and
  * in case of ACK the pdu moves to CORRECT state, else it is dropped from the process.
  * The operations of checking if a pdu is ready for feedback and if it is in correct state are
- * done in the extractCorrectPdu mehtod which must be called at every tti (it must be part
+ * done in the extractCorrectPdu method which must be called at every tti (it must be part
  * of the mac main loop).
  */
 class LteHarqBufferRx

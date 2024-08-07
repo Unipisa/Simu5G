@@ -509,7 +509,7 @@ const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, T
     id = nh;
 
     if (peerId == 0) {
-        // we returns the first feedback stored  in the structure
+        // we returns the first feedback stored in the structure
         std::map<MacNodeId, History_>::iterator it = d2dFeedbackHistory_.at(carrierFrequency).begin();
         for ( ; it != d2dFeedbackHistory_.at(carrierFrequency).end(); ++it) {
             if (it->first == 0) // skip fake UE 0

@@ -53,7 +53,7 @@ class CircleNotificationSubscription : public SubscriptionBase
 
     std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area
 
-    std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the are
+    std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the area
 
     //callbackReference
     std::string callbackData; // optional: YES

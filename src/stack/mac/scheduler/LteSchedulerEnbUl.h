@@ -44,7 +44,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UES.
     std::map<double, HarqStatus> harqStatus_;
 
-    //! RAC requests flags: signals wheter an UE shall be granted the RAC allocation
+    //! RAC requests flags: signals whether an UE shall be granted the RAC allocation
     std::map<double, RacStatus> racStatus_;
 
   public:

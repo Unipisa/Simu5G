@@ -47,13 +47,13 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
 
     /**
      * Updates current schedule list with HARQ retransmissions.
-     * @return TRUE if OFDM space is exhausted.
+     * @return true if OFDM space is exhausted.
      */
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 
     /**
      * Schedule retransmissions for background UEs
-     * @return TRUE if OFDM space is exhausted.
+     * @return true if OFDM space is exhausted.
      */
     virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 
