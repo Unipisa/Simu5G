@@ -19,7 +19,7 @@
 #include "nodes/mec/MECPlatform/MECServices/LocationService/LocationService.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
 #include "common/utils/utils.h"
 
 namespace simu5g {
@@ -52,7 +52,8 @@ void LocationService::initialize(int stage)
         LocationSubscriptionEvent_ = new cMessage("LocationSubscriptionEvent");
         LocationSubscriptionPeriod_ = par("LocationSubscriptionPeriod");
 
-        subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer", 0.1);
+        subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer");
+        subscriptionTimer_->setPeriod(0.1);
     }
 }
 
