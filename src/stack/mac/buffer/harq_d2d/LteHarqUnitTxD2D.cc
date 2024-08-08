@@ -16,29 +16,19 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+simsignal_t LteHarqUnitTxD2D::macCellPacketLossD2D_ = cComponent::registerSignal("macCellPacketLossD2D");
+simsignal_t LteHarqUnitTxD2D::macPacketLossD2D_ = cComponent::registerSignal("macPacketLossD2D");
+simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_ = cComponent::registerSignal("harqErrorRateD2D");
+simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_1_ = cComponent::registerSignal("harqErrorRate_1st_D2D");
+simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_2_ = cComponent::registerSignal("harqErrorRate_2nd_D2D");
+simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_3_ = cComponent::registerSignal("harqErrorRate_3rd_D2D");
+simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_4_ = cComponent::registerSignal("harqErrorRate_4th_D2D");
+
 LteHarqUnitTxD2D::LteHarqUnitTxD2D(Binder *binder, unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac)
     : LteHarqUnitTx(binder, acid, cw, macOwner, dstMac)
 {
     check_and_cast<LteMacEnbD2D *>(nodeB_);
     check_and_cast<LteMacUeD2D *>(macOwner_);
-    if ((macOwner_->getNodeType() == UE) && (dstMac_ != nodeB_)) {
-        macCellPacketLossD2D_ = cComponent::registerSignal("macCellPacketLossD2D");
-        macPacketLossD2D_ = cComponent::registerSignal("macPacketLossD2D");
-        harqErrorRateD2D_ = cComponent::registerSignal("harqErrorRateD2D");
-        harqErrorRateD2D_1_ = cComponent::registerSignal("harqErrorRate_1st_D2D");
-        harqErrorRateD2D_2_ = cComponent::registerSignal("harqErrorRate_2nd_D2D");
-        harqErrorRateD2D_3_ = cComponent::registerSignal("harqErrorRate_3rd_D2D");
-        harqErrorRateD2D_4_ = cComponent::registerSignal("harqErrorRate_4th_D2D");
-    }
-    else {
-        macPacketLossD2D_ = SIMSIGNAL_NULL;
-        macCellPacketLossD2D_ = SIMSIGNAL_NULL;
-        harqErrorRateD2D_ = SIMSIGNAL_NULL;
-        harqErrorRateD2D_1_ = SIMSIGNAL_NULL;
-        harqErrorRateD2D_2_ = SIMSIGNAL_NULL;
-        harqErrorRateD2D_3_ = SIMSIGNAL_NULL;
-        harqErrorRateD2D_4_ = SIMSIGNAL_NULL;
-    }
 }
 
 

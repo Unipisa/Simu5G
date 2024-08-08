@@ -22,6 +22,10 @@ unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 
 using namespace omnetpp;
 
+simsignal_t LteHarqBufferRx::macCellThroughputSignal_[2] = { cComponent::registerSignal("macCellThroughputDl"), cComponent::registerSignal("macCellThroughputUl") };
+simsignal_t LteHarqBufferRx::macDelaySignal_[2] = { cComponent::registerSignal("macDelayDl"), cComponent::registerSignal("macDelayUl") };
+simsignal_t LteHarqBufferRx::macThroughputSignal_[2] = { cComponent::registerSignal("macThroughputDl"), cComponent::registerSignal("macThroughputUl") };
+
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
         MacNodeId srcId) : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), isMulticast_(false)
 {
@@ -35,15 +39,11 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
     // Signals initialization: these are used to gather statistics
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
-        macCellThroughput_ = cComponent::registerSignal("macCellThroughputUl");
-        macDelay_ = macUe_registerSignal("macDelayUl");
-        macThroughput_ = macUe_registerSignal("macThroughputUl");
+        dir = UL;
     }
     else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
-        macCellThroughput_ = cComponent::registerSignal("macCellThroughputDl");
-        macThroughput_ = macUe_registerSignal("macThroughputDl");
-        macDelay_ = macUe_registerSignal("macDelayDl");
+        dir = DL;
     }
 }
 
@@ -126,7 +126,7 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 unsigned int size = pktTemp->getByteLength();
 
                 // emit delay statistic
-                macUe_emit(macDelay_, (NOW - pktTemp->getCreationTime()).dbl());
+                macUe_emit(macDelaySignal_[dir], (NOW - pktTemp->getCreationTime()).dbl());
 
                 // Calculate Throughput by sending the number of bits for this packet
                 totalCellRcvdBytes_ += size;
@@ -138,8 +138,8 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                     double tputSample = (double)totalRcvdBytes_ / den;
                     double cellTputSample = (double)totalCellRcvdBytes_ / den;
 
-                    nodeB_->emit(macCellThroughput_, cellTputSample);
-                    macUe_emit(macThroughput_, tputSample);
+                    nodeB_->emit(macCellThroughputSignal_[dir], cellTputSample);
+                    macUe_emit(macThroughputSignal_[dir], tputSample);
                 }
 
                 macOwner_->dropObj(pktTemp);

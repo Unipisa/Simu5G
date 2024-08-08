@@ -56,9 +56,11 @@ class LteHarqBufferRx
     // Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_ = 0;
-    simsignal_t macDelay_;
-    simsignal_t macCellThroughput_;
-    simsignal_t macThroughput_;
+    Direction dir = UNKNOWN_DIRECTION;
+
+    static simsignal_t macCellThroughputSignal_[2];
+    static simsignal_t macDelaySignal_[2];
+    static simsignal_t macThroughputSignal_[2];
 
     // reference to the eNB module
     cModule *nodeB_;
@@ -154,19 +156,6 @@ class LteHarqBufferRx
      * feedback if affirmative.
      */
     virtual void sendFeedback();
-
-    /**
-     *  Only register signals from macUe_ if the node still exists.
-     *  It is possible that the source node (e.g., a UE) left the simulation, but the
-     *  packets from the node still reside in the simulation.
-     */
-    virtual simsignal_t macUe_registerSignal(const char *signal)
-    {
-        if (macUe_ != nullptr) {
-            return cComponent::registerSignal(signal);
-        }
-        return 0;
-    }
 
     /**
      *  Only emit signals from macUe_ if the node still exists.

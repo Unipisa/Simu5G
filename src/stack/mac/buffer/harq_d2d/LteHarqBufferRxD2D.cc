@@ -22,6 +22,10 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+simsignal_t LteHarqBufferRxD2D::macThroughputD2D_ = cComponent::registerSignal("macThroughputD2D");
+simsignal_t LteHarqBufferRxD2D::macDelayD2D_ = cComponent::registerSignal("macDelayD2D");
+simsignal_t LteHarqBufferRxD2D::macCellThroughputD2D_ = cComponent::registerSignal("macCellThroughputD2D");
+
 LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast)
 {
     macOwner_ = owner;
@@ -40,30 +44,11 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
 
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
-        macDelay_ = cComponent::registerSignal("macDelayUl");
-        macThroughput_ = cComponent::registerSignal("macThroughputUl");
-        macCellThroughput_ = cComponent::registerSignal("macCellThroughputUl");
-        macThroughputD2D_ = SIMSIGNAL_NULL;
-        macDelayD2D_ = SIMSIGNAL_NULL;
-        macCellThroughputD2D_ = SIMSIGNAL_NULL;
+        dir = UL;
     }
     else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macOwner_->getMacCellId());
-        macCellThroughput_ = cComponent::registerSignal("macCellThroughputDl");
-        macThroughput_ = macUe_registerSignal("macThroughputDl");
-        macDelay_ = macUe_registerSignal("macDelayDl");
-
-        // if D2D is enabled, register also D2D statistics
-        if (macOwner_->isD2DCapable()) {
-            macThroughputD2D_ = macUe_registerSignal("macThroughputD2D");
-            macDelayD2D_ = macUe_registerSignal("macDelayD2D");
-            macCellThroughputD2D_ = cComponent::registerSignal("macCellThroughputD2D");
-        }
-        else {
-            macThroughputD2D_ = SIMSIGNAL_NULL;
-            macDelayD2D_ = SIMSIGNAL_NULL;
-            macCellThroughputD2D_ = SIMSIGNAL_NULL;
-        }
+        dir = DL;
     }
 }
 
@@ -142,7 +127,7 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 if (info->getDirection() == D2D)
                     macUe_emit(macDelayD2D_, (NOW - temp->getCreationTime()).dbl());
                 else
-                    macUe_emit(macDelay_, (NOW - temp->getCreationTime()).dbl());
+                    macUe_emit(macDelaySignal_[dir], (NOW - temp->getCreationTime()).dbl()); // TODO `info->getDirection()` and `dir` maybe differs
 
                 // Calculate Throughput by sending the number of bits for this packet
                 totalRcvdBytes_ += size;
@@ -160,8 +145,8 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                         macUe_emit(macThroughputD2D_, tputSample);
                     }
                     else {
-                        nodeB_->emit(macCellThroughput_, cellTputSample);
-                        macUe_emit(macThroughput_, tputSample);
+                        nodeB_->emit(macCellThroughputSignal_[dir], cellTputSample); // TODO `info->getDirection()` and `dir` maybe differs
+                        macUe_emit(macThroughputSignal_[dir], tputSample); // TODO `info->getDirection()` and `dir` maybe differs
                     }
                 }
 
