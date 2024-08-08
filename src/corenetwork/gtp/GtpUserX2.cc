@@ -42,12 +42,12 @@ void GtpUserX2::initialize(int stage)
 
 void GtpUserX2::handleMessage(cMessage *msg)
 {
-    if (strcmp(msg->getArrivalGate()->getFullName(), "lteStackIn") == 0) {
+    if (msg->arrivedOn("lteStackIn")) {
         EV << "GtpUserX2::handleMessage - message from X2 Manager" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         handleFromStack(pkt);
     }
-    else if (strcmp(msg->getArrivalGate()->getFullName(), "socketIn") == 0) {
+    else if (msg->arrivedOn("socketIn")) {
         EV << "GtpUserX2::handleMessage - message from udp layer" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         handleFromUdp(pkt);

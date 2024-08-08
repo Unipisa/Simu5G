@@ -102,13 +102,13 @@ CoreNodeType GtpUser::selectOwnerType(const char *type)
 
 void GtpUser::handleMessage(cMessage *msg)
 {
-    if (strcmp(msg->getArrivalGate()->getFullName(), "trafficFlowFilterGate") == 0) {
+    if (msg->arrivedOn("trafficFlowFilterGate")) {
         EV << "GtpUser::handleMessage - message from trafficFlowFilter" << endl;
 
         // forward the encapsulated Ipv4 datagram
         handleFromTrafficFlowFilter(check_and_cast<Packet *>(msg));
     }
-    else if (strcmp(msg->getArrivalGate()->getFullName(), "socketIn") == 0) {
+    else if (msg->arrivedOn("socketIn")) {
         EV << "GtpUser::handleMessage - message from udp layer" << endl;
         Packet *packet = check_and_cast<Packet *>(msg);
         PacketPrinter printer; // turns packets into human readable strings
