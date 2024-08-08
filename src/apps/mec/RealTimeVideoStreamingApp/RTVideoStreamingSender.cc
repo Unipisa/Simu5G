@@ -407,15 +407,12 @@ void RTVideoStreamingSender::sendMessage() {
             case 'P':
                 pictureType = 2;
                 break;
-
             case 'B':
                 pictureType = 3;
                 break;
-
             case 'D':
                 pictureType = 4;
                 break;
-
             default:
                 pictureType = 0;
                 break;
