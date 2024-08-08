@@ -21,11 +21,13 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 // attenuation value to be returned if max. distance of a scenario has been violated
 // and tolerating the maximum distance violation is enabled
 #define ATT_MAXDISTVIOLATED    1000
 
-class BackgroundCellChannelModel : public omnetpp::cSimpleModule
+class BackgroundCellChannelModel : public cSimpleModule
 {
     // carrier frequency for this cell
     double carrierFrequency_;
@@ -117,7 +119,7 @@ class BackgroundCellChannelModel : public omnetpp::cSimpleModule
     struct JakesFadingData
     {
         std::vector<double> angleOfArrival;
-        std::vector<omnetpp::simtime_t> delaySpread;
+        std::vector<simtime_t> delaySpread;
     };
 
     // for each node and for each band we store information about jakes fading

@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /// forward declarations
 class LteSchedulerEnb;
 
@@ -37,7 +39,7 @@ struct SortedDesc
         if (score_ < y.score_)
             return true;
         if (score_ == y.score_)
-            return uniform(omnetpp::getEnvir()->getRNG(0), 0, 1) < 0.5;
+            return uniform(getEnvir()->getRNG(0), 0, 1) < 0.5;
         return false;
     }
 
@@ -63,10 +65,10 @@ class LteScheduler
   protected:
 
     /// MAC module, used to get parameters from NED
-    omnetpp::opp_component_ptr<LteMacEnb> mac_;
+    opp_component_ptr<LteMacEnb> mac_;
 
     /// Reference to the LTE binder
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     /// Associated LteSchedulerEnb (it is the one who creates the LteScheduler)
     LteSchedulerEnb *eNbScheduler_;

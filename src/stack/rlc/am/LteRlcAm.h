@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class AmTxQueue;
 class AmRxQueue;
 
@@ -29,7 +31,7 @@ class AmRxQueue;
  *
  * TODO
  */
-class LteRlcAm : public omnetpp::cSimpleModule
+class LteRlcAm : public cSimpleModule
 {
   protected:
 
@@ -48,8 +50,8 @@ class LteRlcAm : public omnetpp::cSimpleModule
     AmTxBuffers txBuffers_;
     AmRxBuffers rxBuffers_;
 
-    omnetpp::cGate *up_[2];
-    omnetpp::cGate *down_[2];
+    cGate *up_[2];
+    cGate *down_[2];
 
   public:
     virtual ~LteRlcAm()
@@ -62,7 +64,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     virtual void initialize() override;
     virtual void finish() override
@@ -118,7 +120,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleUpperMessage(omnetpp::cPacket *pkt);
+    void handleUpperMessage(cPacket *pkt);
 
     /**
      * Am Mode
@@ -135,7 +137,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleLowerMessage(omnetpp::cPacket *pkt);
+    void handleLowerMessage(cPacket *pkt);
 
   public:
     /**
@@ -148,7 +150,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void routeControlMessage(omnetpp::cPacket *pkt);
+    void routeControlMessage(cPacket *pkt);
 
     /**
      * sendFragmented() is invoked by the TXBuffer as a direct method
@@ -157,7 +159,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to forward
      */
-    void sendFragmented(omnetpp::cPacket *pkt);
+    void sendFragmented(cPacket *pkt);
 
     /**
      * bufferControlPdu() is invoked by the RXBuffer as a direct method
@@ -166,7 +168,7 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to buffer
      */
-    void bufferControlPdu(omnetpp::cPacket *pkt);
+    void bufferControlPdu(cPacket *pkt);
 
     /**
      * sendDefragmented() is invoked by the RXBuffer as a direct method
@@ -175,12 +177,12 @@ class LteRlcAm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to forward
      */
-    void sendDefragmented(omnetpp::cPacket *pkt);
+    void sendDefragmented(cPacket *pkt);
 
     /**
      * informMacOfWaitingData() sends a new data notification to the MAC
      */
-    void indicateNewDataToMac(omnetpp::cPacket *pkt);
+    void indicateNewDataToMac(cPacket *pkt);
 };
 
 } //namespace

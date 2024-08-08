@@ -24,6 +24,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 #define UEAPP_REQUEST      0
 #define MECAPP_RESPONSE    1
 #define UEAPP_STOP         2
@@ -68,7 +70,7 @@ class MECResponseApp : public MecAppBase
     virtual void finish() override;
     virtual void handleSelfMessage(cMessage *msg) override;
     virtual void handleHttpMessage(int connId) override;
-    virtual void handleUeMessage(omnetpp::cMessage *msg) override {}
+    virtual void handleUeMessage(cMessage *msg) override {}
 
     virtual double scheduleNextMsg(cMessage *msg) override;
 

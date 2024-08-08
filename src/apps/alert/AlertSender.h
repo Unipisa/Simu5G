@@ -21,7 +21,9 @@
 
 namespace simu5g {
 
-class AlertSender : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class AlertSender : public cSimpleModule
 {
     inet::UdpSocket socket;
 
@@ -29,12 +31,12 @@ class AlertSender : public omnetpp::cSimpleModule
     int nextSno_;
     inet::B size_;
 
-    omnetpp::simtime_t stopTime_;
+    simtime_t stopTime_;
 
-    omnetpp::simsignal_t alertSentMsg_;
+    simsignal_t alertSentMsg_;
     // ----------------------------
 
-    omnetpp::cMessage *selfSender_;
+    cMessage *selfSender_;
 
     int localPort_;
     int destPort_;
@@ -50,7 +52,7 @@ class AlertSender : public omnetpp::cSimpleModule
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     // utility: show current statistics above the icon
     virtual void refreshDisplay() const override;

@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * Location Service
  * This class inherits the MECServiceBase module interface for the implementation
@@ -37,7 +39,7 @@ class LocationService : public MecServiceBase2
     LocationResource LocationResource_;
 
     double LocationSubscriptionPeriod_;
-    omnetpp::cMessage *LocationSubscriptionEvent_;
+    cMessage *LocationSubscriptionEvent_;
 
     /*
      * This timer is used to check aperiodic subscriptions, i.e. every period subscription

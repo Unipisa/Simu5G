@@ -25,6 +25,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteTxPdcpEntity;
 class LteRxPdcpEntity;
 
@@ -58,7 +60,7 @@ class PacketFlowManagerBase;
  * that uniquely identifies a connection in the whole network.
  *
  */
-class LtePdcpRrcBase : public omnetpp::cSimpleModule
+class LtePdcpRrcBase : public cSimpleModule
 {
     friend class LteTxPdcpEntity;
     friend class LteRxPdcpEntity;
@@ -96,7 +98,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * Statistics recording
@@ -159,7 +161,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      * @return Direction of traffic
      */
     virtual Direction getDirection() = 0;
-    void setTrafficInformation(omnetpp::cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo);
+    void setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo);
 
     bool isCompressionEnabled();
 
@@ -182,7 +184,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param pkt incoming packet
      */
-    virtual void fromDataPort(omnetpp::cPacket *pkt);
+    virtual void fromDataPort(cPacket *pkt);
 
     /**
      * handler for eutran port
@@ -192,7 +194,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param pkt incoming packet
      */
-    void fromEutranRrcSap(omnetpp::cPacket *pkt);
+    void fromEutranRrcSap(cPacket *pkt);
 
     /*
      * Lower Layer Handlers
@@ -208,7 +210,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param pkt incoming packet
      */
-    virtual void fromLowerLayer(omnetpp::cPacket *pkt);
+    virtual void fromLowerLayer(cPacket *pkt);
 
     /**
      * toDataPort() performs the following steps:
@@ -218,7 +220,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param pkt incoming packet
      */
-    void toDataPort(omnetpp::cPacket *pkt);
+    void toDataPort(cPacket *pkt);
 
     /**
      * handler for tm sap
@@ -228,7 +230,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
      *
      * @param pkt incoming packet
      */
-    void toEutranRrcSap(omnetpp::cPacket *pkt);
+    void toEutranRrcSap(cPacket *pkt);
 
     /*
      * Forwarding Handlers
@@ -242,7 +244,7 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     /*
      * sendToUpperLayer() forwards a PDCP SDU to the IP layer
      */
-    void sendToUpperLayer(omnetpp::cPacket *pkt);
+    void sendToUpperLayer(cPacket *pkt);
 
     /*
      * @author Alessandro Noferi
@@ -274,11 +276,11 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     /// Identifier for this node
     MacNodeId nodeId_;
 
-    omnetpp::cGate *dataPort_[2];
-    omnetpp::cGate *eutranRrcSap_[2];
-    omnetpp::cGate *tmSap_[2];
-    omnetpp::cGate *umSap_[2];
-    omnetpp::cGate *amSap_[2];
+    cGate *dataPort_[2];
+    cGate *eutranRrcSap_[2];
+    cGate *tmSap_[2];
+    cGate *umSap_[2];
+    cGate *amSap_[2];
 
     /**
      * The entities map associate each CID with a PDCP Entity, identified by its ID
@@ -312,10 +314,10 @@ class LtePdcpRrcBase : public omnetpp::cSimpleModule
     virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) {}
 
     // statistics
-    omnetpp::simsignal_t receivedPacketFromUpperLayer;
-    omnetpp::simsignal_t receivedPacketFromLowerLayer;
-    omnetpp::simsignal_t sentPacketToUpperLayer;
-    omnetpp::simsignal_t sentPacketToLowerLayer;
+    simsignal_t receivedPacketFromUpperLayer;
+    simsignal_t receivedPacketFromLowerLayer;
+    simsignal_t sentPacketToUpperLayer;
+    simsignal_t sentPacketToLowerLayer;
 };
 
 class LtePdcpRrcUe : public LtePdcpRrcBase
@@ -342,7 +344,7 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
 class LtePdcpRrcEnb : public LtePdcpRrcBase
 {
   protected:
-    void handleControlInfo(omnetpp::cPacket *upPkt, FlowControlInfo *lteInfo)
+    void handleControlInfo(cPacket *upPkt, FlowControlInfo *lteInfo)
     {
         delete lteInfo;
     }

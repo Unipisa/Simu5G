@@ -16,6 +16,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class DasFilter;
 class LteFeedbackPkt;
 
@@ -28,7 +30,7 @@ class LtePhyEnb : public LtePhyBase
     double bdcUpdateInterval_;
 
     /** Self message to trigger broadcast message sending for handover purposes */
-    omnetpp::cMessage *bdcStarter_;
+    cMessage *bdcStarter_;
 
     /**
      * Pointer to the DAS Filter: used to call das function
@@ -39,8 +41,8 @@ class LtePhyEnb : public LtePhyBase
 
     virtual void initialize(int stage);
 
-    virtual void handleSelfMessage(omnetpp::cMessage *msg);
-    virtual void handleAirFrame(omnetpp::cMessage *msg);
+    virtual void handleSelfMessage(cMessage *msg);
+    virtual void handleAirFrame(cMessage *msg);
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt);

@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class MecOrchestrator;
 class CreateContextAppMessage;
 class UALCMPMessage;
@@ -59,7 +61,7 @@ class UALCMPApp : public MecServiceBase
     virtual void initialize(int stage) override;
     virtual void finish() override;
 
-    virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
+    virtual void handleMessageWhenUp(cMessage *msg) override;
     void handleStartOperation(inet::LifecycleOperation *operation) override;
 
     // GET the list of available MEC app descriptors

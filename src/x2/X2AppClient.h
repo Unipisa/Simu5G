@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class SctpAssociation;
 
 /**
@@ -25,7 +27,7 @@ class SctpAssociation;
 class X2AppClient : public inet::SctpClient
 {
     // reference to the gates
-    omnetpp::cGate *x2ManagerOut_;
+    cGate *x2ManagerOut_;
 
   protected:
 

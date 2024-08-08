@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 // Forward declarations
 class AirFrame;
 
@@ -41,16 +43,16 @@ class IChannelControl
     virtual ~IChannelControl() {}
 
     /** Registers the given radio. If radioInGate==nullptr, the "radioIn" gate is assumed */
-    virtual RadioRef registerRadio(omnetpp::cModule *radioModule, omnetpp::cGate *radioInGate = nullptr) = 0;
+    virtual RadioRef registerRadio(cModule *radioModule, cGate *radioInGate = nullptr) = 0;
 
     /** Unregisters the given radio */
     virtual void unregisterRadio(RadioRef r) = 0;
 
     /** Returns the host module that contains the given radio */
-    virtual omnetpp::cModule *getRadioModule(RadioRef r) const = 0;
+    virtual cModule *getRadioModule(RadioRef r) const = 0;
 
     /** Returns the input gate of the host for receiving AirFrames */
-    virtual omnetpp::cGate *getRadioGate(RadioRef r) const = 0;
+    virtual cGate *getRadioGate(RadioRef r) const = 0;
 
     /** Returns the channel the given radio listens on */
     virtual int getRadioChannel(RadioRef r) const = 0;

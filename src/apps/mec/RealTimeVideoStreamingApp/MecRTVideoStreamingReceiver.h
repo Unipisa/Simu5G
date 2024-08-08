@@ -26,6 +26,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class MecRTVideoStreamingReceiver : public MecAppBase
 {
 
@@ -92,12 +94,12 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     virtual void handleMp1Message(int connId) override {};
     virtual void established(int connId) override {};
     virtual void handleSelfMessage(cMessage *msg) override;
-    virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+    virtual void handleUeMessage(cMessage *msg) override;
 
-    void handleStartMessage(omnetpp::cMessage *msg);
-    void handleStopMessage(omnetpp::cMessage *msg);
-    void handleSessionStartMessage(omnetpp::cMessage *msg);
-    void handleSessionStopMessage(omnetpp::cMessage *msg);
+    void handleStartMessage(cMessage *msg);
+    void handleStopMessage(cMessage *msg);
+    void handleSessionStartMessage(cMessage *msg);
+    void handleSessionStopMessage(cMessage *msg);
 
     double playoutFrame();
     void processPacket(inet::Packet *packet);

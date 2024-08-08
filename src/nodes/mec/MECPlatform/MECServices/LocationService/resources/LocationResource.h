@@ -52,7 +52,7 @@ class LocationResource : public AttributeBase
 
   protected:
     //better mappa <cellID, Cellinfo>
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
     TimeStamp timestamp_;
     std::map<MacCellId, CellInfo *> eNodeBs_;
     std::string baseUri_;

@@ -19,12 +19,14 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class BackgroundCellAmc
 {
   protected:
 
     // reference to the binder
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     McsTable dlMcsTable_;
     McsTable ulMcsTable_;

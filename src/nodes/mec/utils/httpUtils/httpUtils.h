@@ -21,6 +21,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * httpUtils collects all the functions needed to manage HTTP messages:
  * - body parsing
@@ -125,7 +127,7 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
  * @param currentHttpMessage variable for storing the current HTTP message
  * @param messageQueue queue where to insert completed Http Messages
  */
-bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage = nullptr);
+bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage = nullptr);
 
 /*************************************************************************************/
 

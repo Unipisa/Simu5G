@@ -16,6 +16,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef std::vector<LteHarqUnitTx *> UnitVector;
 typedef std::pair<unsigned char, TxHarqPduStatus> UnitStatus;
 typedef std::vector<std::vector<UnitStatus>> BufferStatus;
@@ -29,7 +31,7 @@ typedef std::vector<std::vector<UnitStatus>> BufferStatus;
  * H-ARQ feedback.
  */
 
-class LteHarqProcessTx : omnetpp::noncopyable
+class LteHarqProcessTx : noncopyable
 {
   protected:
 
@@ -113,7 +115,7 @@ class LteHarqProcessTx : omnetpp::noncopyable
      *
      * @return tx time of the oldest unit in this process
      */
-    omnetpp::simtime_t getOldestUnitTxTime();
+    simtime_t getOldestUnitTxTime();
 
     /**
      * Returns a list of ids of ready for retransmission units of
@@ -174,7 +176,7 @@ class LteHarqProcessTx : omnetpp::noncopyable
     bool isUnitReady(Codeword cw);
     unsigned char getTransmissions(Codeword cw);
     int64_t getPduLength(Codeword cw);
-    omnetpp::simtime_t getTxTime(Codeword cw);
+    simtime_t getTxTime(Codeword cw);
     bool isUnitMarked(Codeword cw);
     bool isDropped();
 

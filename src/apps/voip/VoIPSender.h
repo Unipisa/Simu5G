@@ -21,46 +21,48 @@
 
 namespace simu5g {
 
-class VoIPSender : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class VoIPSender : public cSimpleModule
 {
     inet::UdpSocket socket;
 
     //source
-    omnetpp::simtime_t durTalk_;
-    omnetpp::simtime_t durSil_;
+    simtime_t durTalk_;
+    simtime_t durSil_;
     double scaleTalk_;
     double shapeTalk_;
     double scaleSil_;
     double shapeSil_;
     bool isTalk_;
-    omnetpp::cMessage *selfSource_;
+    cMessage *selfSource_;
     //sender
     int iDtalk_;
     int nframes_;
     int iDframe_;
     int nframesTmp_;
     int size_;
-    omnetpp::simtime_t sampling_time;
+    simtime_t sampling_time;
 
     bool silences_;
 
     unsigned int totalSentBytes_;
-    omnetpp::simtime_t warmUpPer_;
+    simtime_t warmUpPer_;
 
-    omnetpp::simsignal_t voIPGeneratedThroughtput_;
+    simsignal_t voIPGeneratedThroughtput_;
     // ----------------------------
 
-    omnetpp::cMessage *selfSender_;
+    cMessage *selfSender_;
 
-    omnetpp::cMessage *initTraffic_;
+    cMessage *initTraffic_;
 
-    omnetpp::simtime_t timestamp_;
+    simtime_t timestamp_;
     int localPort_;
     int destPort_;
     inet::L3Address destAddress_;
 
     void initTraffic();
-    void talkspurt(omnetpp::simtime_t dur);
+    void talkspurt(simtime_t dur);
     void selectPeriodTime();
     void sendVoIPPacket();
 
@@ -72,7 +74,7 @@ class VoIPSender : public omnetpp::cSimpleModule
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
 };
 

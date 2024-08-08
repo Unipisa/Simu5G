@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef std::set<unsigned int> SequenceNumberSet;
 typedef unsigned int BurstId;
 
@@ -46,7 +48,7 @@ typedef unsigned int BurstId;
 class LteRlcUmDataPdu;
 struct StatusDescriptor;
 
-class PacketFlowManagerBase : public omnetpp::cSimpleModule
+class PacketFlowManagerBase : public cSimpleModule
 {
   protected:
 
@@ -60,7 +62,7 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
         bool discardedAtMac;
         bool sentOverTheAir;
         unsigned int pdcpSduSize;
-        omnetpp::simtime_t entryTime;
+        simtime_t entryTime;
     };
 
     DiscardedPkts pktDiscardCounterTotal_; // total discarded packets counter of the node
@@ -109,8 +111,8 @@ class PacketFlowManagerBase : public omnetpp::cSimpleModule
      *
      * Used only by the eNodeB packetFlowManager
      */
-    virtual void insertPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:insertPdcpSdu" << omnetpp::endl; }
-    virtual void receivedPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:receivedPdcpSdu" << omnetpp::endl; }
+    virtual void insertPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:insertPdcpSdu" << endl; }
+    virtual void receivedPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:receivedPdcpSdu" << endl; }
 
     /*
      * This method insert a new rlc seqnum and the corresponding pdcp pdus inside it

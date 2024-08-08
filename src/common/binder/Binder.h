@@ -26,6 +26,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class UeStatsCollector;
 
 /**
@@ -34,7 +36,7 @@ class UeStatsCollector;
  * IP addresses, etc.
  */
 
-class Binder : public omnetpp::cSimpleModule
+class Binder : public cSimpleModule
 {
   private:
 
@@ -46,8 +48,8 @@ class Binder : public omnetpp::cSimpleModule
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
     std::map<MacNodeId, std::string> macNodeIdToModuleName_;
-    std::map<MacNodeId, omnetpp::opp_component_ptr<cModule>> macNodeIdToModuleRef_;
-    std::map<MacNodeId, omnetpp::opp_component_ptr<LteMacBase>> macNodeIdToModule_;
+    std::map<MacNodeId, opp_component_ptr<cModule>> macNodeIdToModuleRef_;
+    std::map<MacNodeId, opp_component_ptr<LteMacBase>> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
     std::map<int, OmnetId> nodeIds_;
@@ -111,9 +113,9 @@ class Binder : public omnetpp::cSimpleModule
     // for each carrier frequency, for both previous and current TTIs, for each RB, stores the UE (nodeId and ref to the PHY module) that transmitted/are transmitting within that RB
     UplinkTransmissionMap ulTransmissionMap_;
     // TTI of the last update of the UL band status
-    omnetpp::simtime_t lastUpdateUplinkTransmissionInfo_;
+    simtime_t lastUpdateUplinkTransmissionInfo_;
     // TTI of the last UL transmission (used for optimization purposes, see initAndResetUlTransmissionInfo() )
-    omnetpp::simtime_t lastUplinkTransmission_;
+    simtime_t lastUplinkTransmission_;
 
     /*
      * X2 Support
@@ -147,7 +149,7 @@ class Binder : public omnetpp::cSimpleModule
   protected:
     virtual void initialize(int stages) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override
+    virtual void handleMessage(cMessage *msg) override
     {
     }
 
@@ -544,7 +546,7 @@ class Binder : public omnetpp::cSimpleModule
     /*
      * Uplink interference support
      */
-    omnetpp::simtime_t getLastUpdateUlTransmissionInfo();
+    simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
     void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir);
     void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir);  // overloaded function for bgUes

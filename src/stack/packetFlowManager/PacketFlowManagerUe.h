@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * This module is responsible for keep trace of all PDCP SDUs.
  * A PDCP SDU passes the following state while it is going down
@@ -64,13 +66,13 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     Delay pdcpDelay;
 
     //debug vars to be deleted
-    omnetpp::cOutVector times_;
+    cOutVector times_;
     std::set<unsigned int> myset;
 
   protected:
 
     virtual void initialize(int stage) override;
-    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
+    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
   public:
     PacketFlowManagerUe();

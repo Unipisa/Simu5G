@@ -19,6 +19,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * This is a very simple application implementing some Device Application functionalities,
  * i.e. instantiation and termination of MEC apps requests.
@@ -44,7 +46,7 @@ class HttpBaseMessage;
 
 enum State { IDLE, START, APPCREATED, CREATING, DELETING };
 
-class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
+class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, public inet::UdpSocket::ICallback
 {
   protected:
 
@@ -57,7 +59,7 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
     HttpBaseMessage *UALCMPMessage;
     std::string UALCMPMessageBuffer;
 
-    omnetpp::cMessage *processedUALCMPMessage;
+    cMessage *processedUALCMPMessage;
 
     int localPort;
 
@@ -77,11 +79,11 @@ class DeviceApp : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallba
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
 
     /* Utility functions */
-    virtual void handleSelfMessage(omnetpp::cMessage *msg);
+    virtual void handleSelfMessage(cMessage *msg);
     virtual void handleUALCMPMessage();
     void sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk);
     void sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk);

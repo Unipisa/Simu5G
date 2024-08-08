@@ -14,6 +14,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 Define_Module(DualConnectivityManager);
 
 void DualConnectivityManager::initialize()
@@ -70,7 +72,7 @@ void DualConnectivityManager::handleX2Message(cMessage *msg)
         return;
     }
     else
-        throw omnetpp::cRuntimeError("DualConnectivityManager::handleX2Message - Message type not valid. Abort.");
+        throw cRuntimeError("DualConnectivityManager::handleX2Message - Message type not valid. Abort.");
 
     delete packet;
 }

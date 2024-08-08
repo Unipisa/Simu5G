@@ -41,13 +41,13 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
     /* Signals initialization: those are used to gather statistics */
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
-        macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputUl");
+        macCellThroughput_ = cComponent::registerSignal("macCellThroughputUl");
         macDelay_ = macUe_registerSignal("macDelayUl");
         macThroughput_ = macUe_registerSignal("macThroughputUl");
     }
     else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
-        macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputDl");
+        macCellThroughput_ = cComponent::registerSignal("macCellThroughputDl");
         macThroughput_ = macUe_registerSignal("macThroughputDl");
         macDelay_ = macUe_registerSignal("macDelayDl");
     }

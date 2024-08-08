@@ -25,9 +25,11 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class EventGenerator;
 
-class MultihopD2D : public omnetpp::cSimpleModule
+class MultihopD2D : public cSimpleModule
 {
     static uint16_t numMultihopD2DApps;  // counter of apps (used for assigning the ids)
 
@@ -44,14 +46,14 @@ class MultihopD2D : public omnetpp::cSimpleModule
     double selfishProbability_;         // if = 0, the node is always collaborative
     int ttl_;                           // if < 0, do not use hops to limit the flooding
     double maxBroadcastRadius_;         // if < 0, do not use radius to limit the flooding
-    omnetpp::simtime_t maxTransmissionDelay_;    // if > 0, when a new message has to be transmitted, choose an offset between 0 and maxTransmissionDelay_
+    simtime_t maxTransmissionDelay_;    // if > 0, when a new message has to be transmitted, choose an offset between 0 and maxTransmissionDelay_
 
     /*
      * Trickle parameters
      */
     bool trickleEnabled_;
     unsigned int k_;
-    omnetpp::simtime_t I_;
+    simtime_t I_;
     std::map<unsigned int, inet::Packet *> last_;
     std::map<unsigned int, unsigned int> counter_;
     /***************************************************/
@@ -63,7 +65,7 @@ class MultihopD2D : public omnetpp::cSimpleModule
     inet::L3Address destAddress_;
     inet::UdpSocket socket;
 
-    omnetpp::cMessage *selfSender_;
+    cMessage *selfSender_;
 
     ModuleRefByPar<EventGenerator> eventGen_;          // reference to the eventGenerator
     ModuleRefByPar<LtePhyBase> ltePhy_;                // reference to the LtePhy
@@ -71,18 +73,18 @@ class MultihopD2D : public omnetpp::cSimpleModule
     MacNodeId lteCellId_;               // LTE Cell Id
 
     // local statistics
-    omnetpp::simsignal_t d2dMultihopGeneratedMsg_;
-    omnetpp::simsignal_t d2dMultihopSentMsg_;
-    omnetpp::simsignal_t d2dMultihopRcvdMsg_;
-    omnetpp::simsignal_t d2dMultihopRcvdDupMsg_;
-    omnetpp::simsignal_t d2dMultihopTrickleSuppressedMsg_;
+    simsignal_t d2dMultihopGeneratedMsg_;
+    simsignal_t d2dMultihopSentMsg_;
+    simsignal_t d2dMultihopRcvdMsg_;
+    simsignal_t d2dMultihopRcvdDupMsg_;
+    simsignal_t d2dMultihopTrickleSuppressedMsg_;
 
     // reference to the statistics manager
     ModuleRefByPar<MultihopD2DStatistics> stat_;
 
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage);
-    virtual void handleMessage(omnetpp::cMessage *msg);
+    virtual void handleMessage(cMessage *msg);
     virtual void finish();
 
     void markAsReceived(uint32_t msgId);      // store the msg id in the set of received messages
@@ -92,9 +94,9 @@ class MultihopD2D : public omnetpp::cSimpleModule
     bool isWithinBroadcastArea(inet::Coord srcCoord, double maxRadius);
 
     virtual void sendPacket();
-    virtual void handleRcvdPacket(omnetpp::cMessage *msg);
-    virtual void handleTrickleTimer(omnetpp::cMessage *msg);
-    virtual void relayPacket(omnetpp::cMessage *msg);
+    virtual void handleRcvdPacket(cMessage *msg);
+    virtual void handleTrickleTimer(cMessage *msg);
+    virtual void relayPacket(cMessage *msg);
 
   public:
     MultihopD2D();

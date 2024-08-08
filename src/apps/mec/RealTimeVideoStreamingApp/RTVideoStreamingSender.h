@@ -127,13 +127,13 @@ class RTVideoStreamingSender : public cSimpleModule
     opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
-    omnetpp::cMessage *mobilityStats_;
+    cMessage *mobilityStats_;
 
-    omnetpp::simsignal_t positionSignalX;
-    omnetpp::simsignal_t positionSignalY;
-    omnetpp::simsignal_t positionSignalZ;
+    simsignal_t positionSignalX;
+    simsignal_t positionSignalY;
+    simsignal_t positionSignalZ;
 
-    omnetpp::simsignal_t velocitySignal;
+    simsignal_t velocitySignal;
     double mobilityUpdateInterval_; // send pos and speed info
 
     FragmentedFrameStatus fragFrameStatus_;

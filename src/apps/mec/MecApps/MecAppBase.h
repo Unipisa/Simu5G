@@ -27,6 +27,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * This is a case class for rapidly implementation a MEC app. It is supposed that the MEC app
  * consumes only one MEC service. It manages socket connections, HTTP message parsing and
@@ -51,7 +53,7 @@ struct HttpMessageStatus
     ProcessingTimeMessage *processMsgTimer = nullptr;
 };
 
-class MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
+class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
     /* TCP sockets are dynamically create by the user according to her needs
@@ -74,15 +76,15 @@ class MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallb
     int servicePort;
 
     // FIXME not used, yet. These structures are supposed to be used
-    omnetpp::cQueue serviceHttpMessages_;
-    omnetpp::cQueue mp1HttpMessages_;
+    cQueue serviceHttpMessages_;
+    cQueue mp1HttpMessages_;
 
     inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
 
-    omnetpp::cMessage *sendTimer;
+    cMessage *sendTimer;
 
     //references to modules
-    inet::ModuleRefByPar<omnetpp::cModule> mecPlatform;
+    inet::ModuleRefByPar<cModule> mecPlatform;
     inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
     int mecAppId;
@@ -94,16 +96,16 @@ class MecAppBase : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallb
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
 
     /* Method to be implemented for real MEC apps */
-    virtual void handleProcessedMessage(omnetpp::cMessage *msg);
-    virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
+    virtual void handleProcessedMessage(cMessage *msg);
+    virtual void handleSelfMessage(cMessage *msg) = 0;
     virtual void handleServiceMessage(int connId) = 0;
     virtual void handleMp1Message(int connId) = 0;
     virtual void handleHttpMessage(int connId) = 0;
-    virtual void handleUeMessage(omnetpp::cMessage *msg) = 0;
+    virtual void handleUeMessage(cMessage *msg) = 0;
     virtual void established(int connId) = 0;
 
     virtual double scheduleNextMsg(cMessage *msg);

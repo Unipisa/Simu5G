@@ -16,6 +16,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LtePhyEnbD2D : public LtePhyEnb
 {
     friend class DasFilter;
@@ -26,7 +28,7 @@ class LtePhyEnbD2D : public LtePhyEnb
 
     virtual void initialize(int stage) override;
     virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt) override;
-    virtual void handleAirFrame(omnetpp::cMessage *msg) override;
+    virtual void handleAirFrame(cMessage *msg) override;
 
   public:
     virtual ~LtePhyEnbD2D();

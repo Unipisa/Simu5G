@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef enum
 {
     CG_DISTANCE,
@@ -76,13 +78,13 @@ class ConflictGraph
 {
 
   protected:
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     // reference to the MAC layer
     LteMacEnbD2D *macEnb_;
 
     // Reference to the CellInfo
-    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
+    opp_component_ptr<CellInfo> cellInfo_;
 
     // Conflict Graph
     CGMatrix conflictGraph_;

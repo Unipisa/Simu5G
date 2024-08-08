@@ -27,6 +27,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * GtpUser is used for building data tunnels between GTP peers.
  * GtpUser can receive two kind of packets:
@@ -34,7 +36,7 @@ namespace simu5g {
  * b) GtpUserMsg from Udp-IP layers.
  *
  */
-class GtpUser : public omnetpp::cSimpleModule
+class GtpUser : public cSimpleModule
 {
     inet::UdpSocket socket_;
     int localPort_;
@@ -58,13 +60,13 @@ class GtpUser : public omnetpp::cSimpleModule
 
     inet::NetworkInterface *ie_;
 
-    omnetpp::opp_component_ptr<cModule> networkNode_;
+    opp_component_ptr<cModule> networkNode_;
 
   protected:
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     // receive an IP Datagram from the traffic filter, encapsulates it in a GTP-U packet then forwards it to the proper next hop
     void handleFromTrafficFlowFilter(inet::Packet *datagram);

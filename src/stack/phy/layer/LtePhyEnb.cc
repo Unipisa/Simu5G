@@ -76,7 +76,7 @@ void LtePhyEnb::initialize(int stage)
 
         // set TX direction
         std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(omnetpp::cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
+        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
         switch (txDirection_) {
             case OMNI: txAngle_ = 0.0;
                 break;

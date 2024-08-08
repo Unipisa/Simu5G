@@ -18,12 +18,14 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 //
 // D2DModeSelectionBase
 // Base class for D2D Mode Selection modules
 // To add a new policy for mode selection, extend this class and redefine pure virtual methods
 //
-class D2DModeSelectionBase : public omnetpp::cSimpleModule
+class D2DModeSelectionBase : public cSimpleModule
 {
 
   protected:
@@ -51,7 +53,7 @@ class D2DModeSelectionBase : public omnetpp::cSimpleModule
     double modeSelectionPeriod_;
 
     // Self message
-    omnetpp::cMessage *modeSelectionTick_;
+    cMessage *modeSelectionTick_;
 
     // run the mode selection algorithm. To be implemented by derived classes
     // it must build a switch list (see above)
@@ -67,7 +69,7 @@ class D2DModeSelectionBase : public omnetpp::cSimpleModule
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     // this method triggers possible switches after handover
     // if handoverCompleted is false, move all the connections for nodeId to IM

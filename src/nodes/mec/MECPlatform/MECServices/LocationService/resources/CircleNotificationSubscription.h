@@ -22,13 +22,15 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteBinder;
 class CircleNotificationSubscription : public SubscriptionBase
 {
   public:
     CircleNotificationSubscription(Binder *binder_);
-    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
-    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, omnetpp::simtime_t lastNot);
+    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, simtime_t lastNot);
     virtual ~CircleNotificationSubscription();
 
     virtual bool fromJson(const nlohmann::ordered_json& json) override;
@@ -39,7 +41,7 @@ class CircleNotificationSubscription : public SubscriptionBase
     virtual bool getCheckImmediate() const { return checkImmediate; }
 
     bool getFirstNotification() const { return firstNotificationSent; }
-    omnetpp::simtime_t getLastoNotification() const { return lastNotification; }
+    simtime_t getLastoNotification() const { return lastNotification; }
 
     std::string getResourceUrl() const { return resourceURL; }
 
@@ -48,7 +50,7 @@ class CircleNotificationSubscription : public SubscriptionBase
   protected:
 
     Binder *binder; //used to retrieve NodeId - Ipv4Address mapping
-    omnetpp::simtime_t lastNotification;
+    simtime_t lastNotification;
     bool firstNotificationSent;
 
     std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area

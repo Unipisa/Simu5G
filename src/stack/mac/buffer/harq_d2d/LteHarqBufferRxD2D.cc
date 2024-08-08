@@ -40,16 +40,16 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
 
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
-        macDelay_ = omnetpp::cComponent::registerSignal("macDelayUl");
-        macThroughput_ = omnetpp::cComponent::registerSignal("macThroughputUl");
-        macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputUl");
+        macDelay_ = cComponent::registerSignal("macDelayUl");
+        macThroughput_ = cComponent::registerSignal("macThroughputUl");
+        macCellThroughput_ = cComponent::registerSignal("macCellThroughputUl");
         macThroughputD2D_ = SIMSIGNAL_NULL;
         macDelayD2D_ = SIMSIGNAL_NULL;
         macCellThroughputD2D_ = SIMSIGNAL_NULL;
     }
     else { // this is a UE
         nodeB_ = getMacByMacNodeId(binder, macOwner_->getMacCellId());
-        macCellThroughput_ = omnetpp::cComponent::registerSignal("macCellThroughputDl");
+        macCellThroughput_ = cComponent::registerSignal("macCellThroughputDl");
         macThroughput_ = macUe_registerSignal("macThroughputDl");
         macDelay_ = macUe_registerSignal("macDelayDl");
 
@@ -57,7 +57,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
         if (macOwner_->isD2DCapable()) {
             macThroughputD2D_ = macUe_registerSignal("macThroughputD2D");
             macDelayD2D_ = macUe_registerSignal("macDelayD2D");
-            macCellThroughputD2D_ = omnetpp::cComponent::registerSignal("macCellThroughputD2D");
+            macCellThroughputD2D_ = cComponent::registerSignal("macCellThroughputD2D");
         }
         else {
             macThroughputD2D_ = SIMSIGNAL_NULL;

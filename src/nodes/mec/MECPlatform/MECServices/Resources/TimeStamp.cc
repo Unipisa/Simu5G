@@ -14,16 +14,18 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 TimeStamp::TimeStamp()
 {
-    seconds_ = omnetpp::simTime().dbl();
+    seconds_ = simTime().dbl();
     nanoSeconds_ = 0;
     valid_ = true;
 }
 
 TimeStamp::TimeStamp(bool valid)
 {
-    seconds_ = omnetpp::simTime().dbl();
+    seconds_ = simTime().dbl();
     nanoSeconds_ = 0;
     valid_ = valid;
 }
@@ -57,7 +59,7 @@ void TimeStamp::setSeconds(int32_t value)
 
 void TimeStamp::setSeconds() // TODO rename
 {
-    seconds_ = omnetpp::simTime().dbl();
+    seconds_ = simTime().dbl();
 }
 
 int32_t TimeStamp::getNanoSeconds() const

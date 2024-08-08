@@ -21,21 +21,23 @@
 
 namespace simu5g {
 
-class AlertReceiver : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class AlertReceiver : public cSimpleModule
 {
     inet::UdpSocket socket;
 
-    omnetpp::simsignal_t alertDelay_;
-    omnetpp::simsignal_t alertRcvdMsg_;
+    simsignal_t alertDelay_;
+    simsignal_t alertRcvdMsg_;
 
-    omnetpp::simtime_t delaySum;
+    simtime_t delaySum;
     long nrReceived;
 
   protected:
 
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     // utility: show current statistics above the icon
     virtual void refreshDisplay() const override;

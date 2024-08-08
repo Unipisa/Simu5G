@@ -83,7 +83,7 @@ void TrafficLightController::initialize(int stage)
     scheduleAt(simTime() + startTime_, stateMsg_);
 }
 
-void TrafficLightController::handleMessage(omnetpp::cMessage *msg)
+void TrafficLightController::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         if (!strcmp(msg->getName(), "changeState")) {
@@ -333,7 +333,7 @@ void TrafficLightController::initDrawLine()
 
 void TrafficLightController::drawRect()
 {
-    omnetpp::cAbstractImageFigure::Rectangle bounds;
+    cAbstractImageFigure::Rectangle bounds;
 
     if (heading_ == inet::deg(90) || heading_ == inet::deg(270)) {
         double start = 0.0;

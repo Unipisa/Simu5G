@@ -18,11 +18,13 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 L2Meas::L2Meas() {
     binder_ = nullptr;
 }
 
-L2Meas::L2Meas(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
+L2Meas::L2Meas(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     auto it = eNodeBs.begin();
     for ( ; it != eNodeBs.end(); ++it) {
         BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>((*it)->getSubmodule("collector"));
@@ -30,7 +32,7 @@ L2Meas::L2Meas(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNod
     }
 }
 
-void L2Meas::addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
+void L2Meas::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     auto it = eNodeBs.begin();
     for ( ; it != eNodeBs.end(); ++it) {
         BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>((*it)->getSubmodule("collector"));
@@ -38,7 +40,7 @@ void L2Meas::addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessI
     }
 }
 
-void L2Meas::addEnodeB(omnetpp::cModule *eNodeB) {
+void L2Meas::addEnodeB(cModule *eNodeB) {
     BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>(eNodeB->getSubmodule("collector"));
     eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
 }

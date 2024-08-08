@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteRlcUm;
 class PacketFlowManagerBase;
 
@@ -48,7 +50,7 @@ class PacketFlowManagerBase;
  *
  * The size of PDUs is signalled by the lower layer
  */
-class UmTxEntity : public omnetpp::cSimpleModule
+class UmTxEntity : public cSimpleModule
 {
     struct FragmentInfo {
         inet::Packet *pkt = nullptr;
@@ -77,7 +79,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
      *
      * @return TRUE if packet was enqueued in SDU buffer
      */
-    bool enque(omnetpp::cPacket *pkt);
+    bool enque(cPacket *pkt);
 
     /**
      * rlcPduMake() creates a PDU having the specified size

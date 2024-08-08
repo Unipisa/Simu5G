@@ -21,6 +21,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class BaseStationStatsCollector;
 class Binder;
 
@@ -34,15 +36,15 @@ class L2Meas : public AttributeBase
 {
   public:
     L2Meas();
-    L2Meas(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    L2Meas(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     virtual ~L2Meas();
 
     void setBinder(Binder *binder) { binder_ = binder; }
 
     nlohmann::ordered_json toJson() const override;
 
-    void addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
-    void addEnodeB(omnetpp::cModule *eNodeB);
+    void addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    void addEnodeB(cModule *eNodeB);
 
     nlohmann::ordered_json toJsonCell(std::vector<MacCellId>& cellsID) const;
     nlohmann::ordered_json toJsonUe(std::vector<inet::Ipv4Address>& uesID) const;
@@ -52,7 +54,7 @@ class L2Meas : public AttributeBase
 
     TimeStamp timestamp_;
     std::map<MacCellId, BaseStationStatsCollector *> eNodeBs_;
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 };
 
 } //namespace

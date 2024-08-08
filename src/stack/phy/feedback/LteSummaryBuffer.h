@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteSummaryBuffer
 {
   protected:
@@ -35,7 +37,7 @@ class LteSummaryBuffer
 
   public:
 
-    LteSummaryBuffer(unsigned char dim, unsigned char cw, unsigned int b, omnetpp::simtime_t lb, omnetpp::simtime_t ub) :
+    LteSummaryBuffer(unsigned char dim, unsigned char cw, unsigned int b, simtime_t lb, simtime_t ub) :
         bufferSize_(dim), totCodewords_(cw), totBands_(b), cumulativeSummary_(cw, b, lb, ub)
     {}
 

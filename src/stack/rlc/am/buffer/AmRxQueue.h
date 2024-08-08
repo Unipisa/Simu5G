@@ -24,7 +24,9 @@
 
 namespace simu5g {
 
-class AmRxQueue : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class AmRxQueue : public cSimpleModule
 {
   protected:
 
@@ -38,13 +40,13 @@ class AmRxQueue : public omnetpp::cSimpleModule
     RlcWindowDesc rxWindowDesc_;
 
     //! Minimum time between two consecutive ack messages
-    omnetpp::simtime_t ackReportInterval_;
+    simtime_t ackReportInterval_;
 
     //! The time when the last ack message was sent.
-    omnetpp::simtime_t lastSentAck_;
+    simtime_t lastSentAck_;
 
     //! Buffer status report Interval
-    omnetpp::simtime_t statusReportInterval_;
+    simtime_t statusReportInterval_;
 
     //! SDU reconstructed at the beginning of the Receiver buffer
     int firstSdu_;
@@ -53,7 +55,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
     TTimer timer_;
 
     //! AM PDU buffer
-    omnetpp::cArray pduBuffer_;
+    cArray pduBuffer_;
 
     //! AM PDU fragment buffer
     //  (stores PDUs of the next SDU if they are shifted out of the PDU buffer before the SDU is completely
@@ -78,14 +80,14 @@ class AmRxQueue : public omnetpp::cSimpleModule
     //Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_;
-    omnetpp::simsignal_t rlcCellPacketLoss_;
-    omnetpp::simsignal_t rlcPacketLoss_;
-    omnetpp::simsignal_t rlcPduPacketLoss_;
-    omnetpp::simsignal_t rlcDelay_;
-    omnetpp::simsignal_t rlcPduDelay_;
-    omnetpp::simsignal_t rlcCellThroughput_;
-    omnetpp::simsignal_t rlcThroughput_;
-    omnetpp::simsignal_t rlcPduThroughput_;
+    simsignal_t rlcCellPacketLoss_;
+    simsignal_t rlcPacketLoss_;
+    simsignal_t rlcPduPacketLoss_;
+    simsignal_t rlcDelay_;
+    simsignal_t rlcPduDelay_;
+    simsignal_t rlcCellThroughput_;
+    simsignal_t rlcThroughput_;
+    simsignal_t rlcPduThroughput_;
 
   public:
 
@@ -97,7 +99,7 @@ class AmRxQueue : public omnetpp::cSimpleModule
     void enque(inet::Packet *pdu);
 
     //! Send a buffer status report to the ACK manager
-    virtual void handleMessage(omnetpp::cMessage *msg);
+    virtual void handleMessage(cMessage *msg);
 
     //initialize
     void initialize();

@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef enum {
     COMP_CLIENT,
     COMP_CLIENT_COORDINATOR,
@@ -33,7 +35,7 @@ typedef enum {
 // Base class for CoMP manager modules.
 // To add a new CoMP algorithm, extend this class and redefine pure virtual methods
 //
-class LteCompManagerBase : public omnetpp::cSimpleModule
+class LteCompManagerBase : public cSimpleModule
 {
 
   protected:
@@ -42,10 +44,10 @@ class LteCompManagerBase : public omnetpp::cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    omnetpp::cGate *x2Manager_[2];
+    cGate *x2Manager_[2];
 
     // reference to the MAC layer
-    omnetpp::opp_component_ptr<LteMacEnb> mac_;
+    opp_component_ptr<LteMacEnb> mac_;
 
     // number of available bands
     int numBands_;
@@ -54,8 +56,8 @@ class LteCompManagerBase : public omnetpp::cSimpleModule
     double coordinationPeriod_;
 
     /// Self messages
-    omnetpp::cMessage *compClientTick_;
-    omnetpp::cMessage *compCoordinatorTick_;
+    cMessage *compClientTick_;
+    cMessage *compCoordinatorTick_;
 
     // Comp Node Type specification (client, client and coordinator, coordinator only)
     CompNodeType nodeType_;
@@ -70,7 +72,7 @@ class LteCompManagerBase : public omnetpp::cSimpleModule
     std::vector<X2NodeId> clientList_;
 
     // statistics
-    omnetpp::simsignal_t compReservedBlocks_;
+    simsignal_t compReservedBlocks_;
 
     void runClientOperations();
     void runCoordinatorOperations();
@@ -91,7 +93,7 @@ class LteCompManagerBase : public omnetpp::cSimpleModule
 
   public:
     virtual void initialize() override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 };
 
 } //namespace

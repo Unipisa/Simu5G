@@ -23,7 +23,9 @@
 
 namespace simu5g {
 
-class LteX2Manager : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class LteX2Manager : public cSimpleModule
 {
 
     // X2 identifier
@@ -46,7 +48,7 @@ class LteX2Manager : public omnetpp::cSimpleModule
 
     void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     virtual void fromStack(inet::Packet *pkt);
     virtual void fromX2(inet::Packet *pkt);

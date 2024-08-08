@@ -19,6 +19,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /// forward declarations
 class LteScheduler;
 class LteAllocationModule;
@@ -72,10 +74,10 @@ class LteSchedulerEnb
     };
 
     // Owner MAC module. Set via initialize().
-    omnetpp::opp_component_ptr<LteMacEnb> mac_;
+    opp_component_ptr<LteMacEnb> mac_;
 
     // Reference to the LTE Binder
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     // System allocator, carries out the block-allocation functions.
     LteAllocationModule *allocator_;
@@ -112,8 +114,8 @@ class LteSchedulerEnb
     unsigned int resourceBlocks_;
 
     /// Statistics
-    omnetpp::simsignal_t avgServedBlocksDl_;
-    omnetpp::simsignal_t avgServedBlocksUl_;
+    simsignal_t avgServedBlocksDl_;
+    simsignal_t avgServedBlocksUl_;
 
     // pre-made BandLimit structure used when the no band limit is given to the scheduler
     std::vector<BandLimit> emptyBandLim_;

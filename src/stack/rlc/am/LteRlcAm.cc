@@ -95,7 +95,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
     send(pkt, up_[OUT_GATE]);
 }
 
-void LteRlcAm::bufferControlPdu(omnetpp::cPacket *pktAux) {
+void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     AmTxQueue *txbuf = getTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());

@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class L2MeasBase
 {
   private:
@@ -31,8 +33,8 @@ class L2MeasBase
     int size_;
     bool movingAverage_;
 
-//        ::omnetpp::cOutVector outVector_;
-//        ::omnetpp::cHistogram histogram_;
+//        ::cOutVector outVector_;
+//        ::cHistogram histogram_;
 
   public:
     L2MeasBase();

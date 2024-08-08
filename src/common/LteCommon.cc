@@ -23,6 +23,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 using namespace inet;
 
 const inet::Protocol LteProtocol::ipv4uu("ipv4uu", "IPv4 (LTE Uu link)");
@@ -480,7 +482,7 @@ CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
     // function GetNextHop returns nodeId
     MacNodeId id = binder->getNextHop(nodeId);
     OmnetId omnetid = binder->getOmnetId(id);
-    omnetpp::cModule *module = getSimulation()->getModule(omnetid);
+    cModule *module = getSimulation()->getModule(omnetid);
     return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
 }
 

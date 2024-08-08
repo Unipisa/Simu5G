@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * This module is responsible for keep trace of all PDCP SDUs.
  * A PDCP SDU passes the following state while it is going down
@@ -142,7 +144,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     /*
      * This method creates a pdcpStatus structure when a pdcpSdu arrives at the PDCP layer.
      */
-    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, omnetpp::simtime_t& arrivalTime);
+    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
     virtual void initialize(int stage) override;
 

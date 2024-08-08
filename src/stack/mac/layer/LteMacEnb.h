@@ -22,6 +22,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class MacBsr;
 class LteAmc;
 class LteSchedulerEnbDl;
@@ -74,7 +76,7 @@ class LteMacEnb : public LteMacBase
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
@@ -100,7 +102,7 @@ class LteMacEnb : public LteMacBase
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(omnetpp::cPacket *pkt) override;
+    virtual void macPduUnmake(cPacket *pkt) override;
 
     /**
      * macSduRequest() sends a message to the RLC layer
@@ -127,13 +129,13 @@ class LteMacEnb : public LteMacBase
      * @param pkt Packet to be buffered
      * @return TRUE if packet was buffered successfully, FALSE otherwise.
      */
-    virtual bool bufferizePacket(omnetpp::cPacket *pkt) override;
+    virtual bool bufferizePacket(cPacket *pkt) override;
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer
      */
-    virtual void handleUpperMessage(omnetpp::cPacket *pkt) override;
+    virtual void handleUpperMessage(cPacket *pkt) override;
 
     /**
      * Main loop
@@ -142,17 +144,17 @@ class LteMacEnb : public LteMacBase
     /**
      * macHandleFeedbackPkt is called every time a feedback pkt arrives on MAC
      */
-    virtual void macHandleFeedbackPkt(omnetpp::cPacket *pkt) override;
+    virtual void macHandleFeedbackPkt(cPacket *pkt) override;
 
     /*
      * Receives and handles RAC requests
      */
-    virtual void macHandleRac(omnetpp::cPacket *pkt) override;
+    virtual void macHandleRac(cPacket *pkt) override;
 
     /*
      * Update UserTxParam stored in every lteMacPdu when an rtx change this information
      */
-    virtual void updateUserTxParam(omnetpp::cPacket *pkt) override;
+    virtual void updateUserTxParam(cPacket *pkt) override;
 
     /**
      * Flush Tx H-ARQ buffers for all users
@@ -197,7 +199,7 @@ class LteMacEnb : public LteMacBase
     virtual IBackgroundTrafficManager *getBackgroundTrafficManager(double carrierFrequency)
     {
         if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
-            throw omnetpp::cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
+            throw cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
         return bgTrafficManager_[carrierFrequency];
     }
 

@@ -25,28 +25,30 @@
 
 namespace simu5g {
 
-class VoDUDPClient : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class VoDUDPClient : public cSimpleModule
 {
     inet::UdpSocket socket;
     std::fstream outfile;
     unsigned int totalRcvdBytes_;
 
   public:
-    omnetpp::simsignal_t tptLayer0_;
-    omnetpp::simsignal_t tptLayer1_;
-    omnetpp::simsignal_t tptLayer2_;
-    omnetpp::simsignal_t tptLayer3_;
-    omnetpp::simsignal_t delayLayer0_;
-    omnetpp::simsignal_t delayLayer1_;
-    omnetpp::simsignal_t delayLayer2_;
-    omnetpp::simsignal_t delayLayer3_;
+    simsignal_t tptLayer0_;
+    simsignal_t tptLayer1_;
+    simsignal_t tptLayer2_;
+    simsignal_t tptLayer3_;
+    simsignal_t delayLayer0_;
+    simsignal_t delayLayer1_;
+    simsignal_t delayLayer2_;
+    simsignal_t delayLayer3_;
 
   protected:
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void finish() override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
     virtual void receiveStream(const VoDPacket *msg);
 };
 

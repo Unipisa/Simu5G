@@ -20,6 +20,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * For each new connection, the MecServiceBase creates a new SocketManager
  * object to manage the state TCP connection by implementing the
@@ -28,13 +30,13 @@ namespace simu5g {
  * and it puts them in the request queue of the server.
  */
 
-class SocketManager : public omnetpp::cSimpleModule, public inet::TcpSocket::ICallback
+class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
     MecServiceBase *service;
     inet::TcpSocket *sock;    // ptr into socketMap managed by TCPSrvHostApp
     HttpBaseMessage *currentHttpMessage;
-    omnetpp::cQueue httpMessageQueue;
+    cQueue httpMessageQueue;
     std::string bufferedData;
 
     // internal: inet::TcpSocket::CallbackInterface methods

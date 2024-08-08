@@ -23,6 +23,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * GtpUserX2 is used for building data tunnels between GTP peers over X2, for handover procedure.
  * GtpUserX2 can receive two kind of packets:
@@ -30,7 +32,7 @@ namespace simu5g {
  * b) GtpUserX2Msg from UDP-IP layers.
  *
  */
-class GtpUserX2 : public omnetpp::cSimpleModule
+class GtpUserX2 : public cSimpleModule
 {
     inet::UdpSocket socket_;
     int localPort_;

@@ -30,7 +30,7 @@ class LteAirFrame;
 class LtePhyBase;
 class Binder;
 
-class LteChannelModel : public omnetpp::cSimpleModule
+class LteChannelModel : public cSimpleModule
 {
   protected:
     // Reference to Binder module

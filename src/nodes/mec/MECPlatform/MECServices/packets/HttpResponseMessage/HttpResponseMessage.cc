@@ -83,7 +83,7 @@ void HttpResponseMessage::setStatus(HttpResponseStatus res) {
             this->status = "HTTP Version Not Supported";
             break;
         default:
-            throw omnetpp::cRuntimeError("Response code not allowed");
+            throw cRuntimeError("Response code not allowed");
     }
 }
 

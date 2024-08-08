@@ -15,6 +15,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 using namespace std;
 
 Define_Module(CellInfo);
@@ -65,7 +67,7 @@ void CellInfo::initialize(int stage)
         numPreferredBands_ = par("numPreferredBands");
 
         if (numRus_ > NUM_RUS)
-            throw omnetpp::cRuntimeError("The number of Antennas specified exceeds the limit of %d", NUM_RUS);
+            throw cRuntimeError("The number of Antennas specified exceeds the limit of %d", NUM_RUS);
 
         cModule *host = inet::getContainingNode(this);
 
@@ -219,7 +221,7 @@ unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %d", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
     return it->second.numBands;
 }
@@ -238,7 +240,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it != carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %d", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %d", carrierFrequency, cellId_);
     else {
         carriersVector_.push_back(carrierFrequency);
 
@@ -300,10 +302,10 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %d", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
     if (index > it->second.numBands)
-        throw omnetpp::cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available band on this carrier [%d]", index, it->second.numBands);
+        throw cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available band on this carrier [%d]", index, it->second.numBands);
 
     return it->second.firstBand + index;
 }
@@ -317,7 +319,7 @@ BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
     }
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %d", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
     return &(it->second.bandLimit);
 }
@@ -326,7 +328,7 @@ unsigned int CellInfo::getCarrierStartingBand(double carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
 
     return it->second.firstBand;
 }
@@ -335,7 +337,7 @@ unsigned int CellInfo::getCarrierLastBand(double carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw omnetpp::cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
 
     return it->second.lastBand;
 }
@@ -355,7 +357,7 @@ SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl
         sf.tdd = true;
         unsigned int numSymbols = rbxDl_ * 2;
         if (tddNumSymbolsDl + tddNumSymbolsUl > numSymbols)
-            throw omnetpp::cRuntimeError("CellInfo::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl, tddNumSymbolsUl);
+            throw cRuntimeError("CellInfo::computeSlotFormat - Number of symbols not valid - DL[%d] UL[%d]", tddNumSymbolsDl, tddNumSymbolsUl);
 
         sf.numDlSymbols = tddNumSymbolsDl;
         sf.numUlSymbols = tddNumSymbolsUl;

@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteMacBase;
 class LteHarqProcessRx;
 
@@ -34,7 +36,7 @@ class LteHarqBufferRx
 {
   protected:
     /// binder module reference
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     /// mac module reference
     LteMacBase *macOwner_;
@@ -54,12 +56,12 @@ class LteHarqBufferRx
     //Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_ = 0;
-    omnetpp::simsignal_t macDelay_;
-    omnetpp::simsignal_t macCellThroughput_;
-    omnetpp::simsignal_t macThroughput_;
+    simsignal_t macDelay_;
+    simsignal_t macCellThroughput_;
+    simsignal_t macThroughput_;
 
     // reference to the eNB module
-    omnetpp::cModule *nodeB_;
+    cModule *nodeB_;
 
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
@@ -158,10 +160,10 @@ class LteHarqBufferRx
      *  It is possible that the source node (e.g., a UE) left the simulation but the
      *  packets form the node still reside in the simulation.
      */
-    virtual omnetpp::simsignal_t macUe_registerSignal(const char *signal)
+    virtual simsignal_t macUe_registerSignal(const char *signal)
     {
         if (macUe_ != nullptr) {
-            return omnetpp::cComponent::registerSignal(signal);
+            return cComponent::registerSignal(signal);
         }
         return 0;
     }
@@ -171,7 +173,7 @@ class LteHarqBufferRx
      *  It is possible that the source node (e.g., a UE) left the simulation but the
      *  packets form the node still reside in the simulation.
      */
-    virtual void macUe_emit(omnetpp::simsignal_t signal, double val)
+    virtual void macUe_emit(simsignal_t signal, double val)
     {
         if (macUe_ != nullptr) {
             macUe_->emit(signal, val);
@@ -185,7 +187,7 @@ class LteHarqBufferRx
      */
     void initMacUe() {
         if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = omnetpp::check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, srcId_));
+            macUe_ = check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, srcId_));
         else
             macUe_ = macOwner_;
     }

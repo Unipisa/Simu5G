@@ -77,7 +77,7 @@ void MecRnisTestApp::finish()
     }
 }
 
-void MecRnisTestApp::handleUeMessage(omnetpp::cMessage *msg)
+void MecRnisTestApp::handleUeMessage(cMessage *msg)
 {
     // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);

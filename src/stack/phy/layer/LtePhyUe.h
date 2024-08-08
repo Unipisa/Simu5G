@@ -24,6 +24,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class DasFilter;
 class LteDlFeedbackGenerator;
 
@@ -37,16 +39,16 @@ class LtePhyUe : public LtePhyBase
     IMobility *masterMobility_;
 
     /** Statistic for distance from serving cell */
-    omnetpp::simsignal_t distance_;
+    simsignal_t distance_;
 
     /** Statistic for serving cell */
-    omnetpp::simsignal_t servingCell_;
+    simsignal_t servingCell_;
 
     /** Self message to trigger handover procedure evaluation */
-    omnetpp::cMessage *handoverStarter_;
+    cMessage *handoverStarter_;
 
     /** Self message to start the handover procedure */
-    omnetpp::cMessage *handoverTrigger_;
+    cMessage *handoverTrigger_;
 
     /** RSSI received from the current serving node */
     double currentMasterRssi_;
@@ -111,7 +113,7 @@ class LtePhyUe : public LtePhyBase
     inet::ModuleRefByPar<IP2Nic> ip2nic_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
-    omnetpp::simtime_t lastFeedback_;
+    simtime_t lastFeedback_;
 
     // support to print averageCqi at the end of the simulation
     std::vector<short int> cqiDlSamples_;
@@ -124,12 +126,12 @@ class LtePhyUe : public LtePhyBase
     bool hasCollector = false;
 
     virtual void initialize(int stage) override;
-    virtual void handleSelfMessage(omnetpp::cMessage *msg) override;
-    virtual void handleAirFrame(omnetpp::cMessage *msg) override;
+    virtual void handleSelfMessage(cMessage *msg) override;
+    virtual void handleAirFrame(cMessage *msg) override;
     virtual void finish() override;
-    virtual void finish(cComponent *component, omnetpp::simsignal_t signalID) override { cIListener::finish(component, signalID); }
+    virtual void finish(cComponent *component, simsignal_t signalID) override { cIListener::finish(component, signalID); }
 
-    virtual void handleUpperMessage(omnetpp::cMessage *msg) override;
+    virtual void handleUpperMessage(cMessage *msg) override;
 
     virtual void emitMobilityStats() override;
 
@@ -158,7 +160,7 @@ class LtePhyUe : public LtePhyBase
         return masterId_;
     }
 
-    omnetpp::simtime_t coherenceTime(double speed)
+    simtime_t coherenceTime(double speed)
     {
         double fd = (speed / SPEED_OF_LIGHT) * carrierFrequency_;
         return 0.1 / fd;

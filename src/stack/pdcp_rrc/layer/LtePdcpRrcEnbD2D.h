@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * @class LtePdcp
  * @brief PDCP Layer
@@ -30,13 +32,13 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
   protected:
 
     virtual void initialize(int stage) override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * handler for data port
      * @param pkt incoming packet
      */
-    virtual void fromDataPort(omnetpp::cPacket *pkt) override;
+    virtual void fromDataPort(cPacket *pkt) override;
 
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 

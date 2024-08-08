@@ -16,6 +16,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteRlcAmPdu : public LteRlcAmPdu_Base
 {
     std::vector<bool> bitmap_;
@@ -51,9 +53,9 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
     virtual void setBitmap(size_t k, bool bitmap_var) override;
     virtual void setBitmapVec(std::vector<bool> bitmap_vec);
 
-    virtual void appendBitmap(bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented"); }
-    virtual void insertBitmap(size_t k, bool bitmap) override { throw omnetpp::cRuntimeError("Method not implemented"); }
-    virtual void eraseBitmap(size_t k)  override { throw omnetpp::cRuntimeError("Method not implemented"); }
+    virtual void appendBitmap(bool bitmap) override { throw cRuntimeError("Method not implemented"); }
+    virtual void insertBitmap(size_t k, bool bitmap) override { throw cRuntimeError("Method not implemented"); }
+    virtual void eraseBitmap(size_t k)  override { throw cRuntimeError("Method not implemented"); }
 
     virtual std::vector<bool> getBitmapVec();
     //sequence check functions

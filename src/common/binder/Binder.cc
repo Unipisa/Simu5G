@@ -21,6 +21,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 using namespace std;
 using namespace inet;
 
@@ -1204,7 +1206,7 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     std::string nodeType;
     if (module->hasPar("nodeType")) {
         nodeType = module->par("nodeType").stdstringValue();
-        return static_cast<RanNodeType>(omnetpp::cEnum::get("simu5g::RanNodeType")->lookup(nodeType.c_str()));
+        return static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeType.c_str()));
     }
     else {
         return UNKNOWN_NODE_TYPE;

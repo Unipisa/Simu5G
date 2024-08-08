@@ -39,6 +39,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class Binder;
 class CellInfo;
 class LteCellInfo;
@@ -76,7 +78,7 @@ class LteProtocol
 #define TTI                0.001
 
 /// Current simulation time
-#define NOW                omnetpp::simTime()
+#define NOW                simTime()
 
 /// Node Id bounds
 #define ENB_MIN_ID         1
@@ -471,7 +473,7 @@ typedef std::list<size_t> RlcSduListSizes;
  * The Mac Sdu List, a list of MAC SDUs
  * contained inside a MAC PDU
  */
-typedef omnetpp::cPacketQueue MacSduList;
+typedef cPacketQueue MacSduList;
 
 /**
  * The Mac Control Elements List, a list
@@ -527,7 +529,7 @@ struct EnbInfo
     LtePhyBase *phy;
     LteMacEnb *mac;
     LteRealisticChannelModel *realChan;
-    omnetpp::opp_component_ptr<omnetpp::cModule> eNodeB;
+    opp_component_ptr<cModule> eNodeB;
     int x2;
 };
 
@@ -538,7 +540,7 @@ struct UeInfo
     MacNodeId id;
     MacNodeId cellId;
     LteRealisticChannelModel *realChan;
-    omnetpp::opp_component_ptr<omnetpp::cModule> ue;
+    opp_component_ptr<cModule> ue;
     LtePhyBase *phy;
 };
 
@@ -600,7 +602,7 @@ typedef std::vector<Pmi> PmiVector;
 typedef std::set<Band> BandSet;
 typedef std::set<Remote> RemoteSet;
 typedef std::map<MacNodeId, bool> ConnectedUesMap;
-typedef std::pair<int, omnetpp::simtime_t> PacketInfo;
+typedef std::pair<int, simtime_t> PacketInfo;
 typedef std::vector<RemoteUnitPhyData> RemoteUnitPhyDataVector;
 typedef std::set<MacNodeId> ActiveUser;
 typedef std::set<MacCid> ActiveSet;
@@ -611,7 +613,7 @@ typedef std::set<MacCid> ActiveSet;
  *
  * Parameters read from xml file are stored in this map.
  */
-typedef std::map<std::string, omnetpp::cMsgPar> ParameterMap;
+typedef std::map<std::string, cMsgPar> ParameterMap;
 
 /*********************
 * Utility functions
@@ -651,10 +653,10 @@ MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info);        // get the CID f
 MacNodeId MacCidToNodeId(MacCid cid);
 LogicalCid MacCidToLcid(MacCid cid);
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId);
-omnetpp::cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
-omnetpp::cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId);
-omnetpp::cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType);
-omnetpp::cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId);
+cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
+cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId);
+cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType);
+cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId);
 LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId);
 FeedbackGeneratorType getFeedbackGeneratorType(std::string s);
 const std::string fbGeneratorTypeToA(FeedbackGeneratorType type);
@@ -669,7 +671,7 @@ bool isMulticastConnection(LteControlInfo *lteInfo);
  * @param xmlData XML parameters config element related to a specific section
  * @param[output] outputMap map to store read parameters
  */
-void getParametersFromXML(omnetpp::cXMLElement *xmlData, ParameterMap& outputMap);
+void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap);
 
 /**
  * Parses a CSV string parameter into an int array.
@@ -694,7 +696,7 @@ void parseStringToIntArray(std::string str, int *values, int dim, int pad);
  *
  * @param mod module whose channels needs initialization
  */
-void initializeAllChannels(omnetpp::cModule *mod);
+void initializeAllChannels(cModule *mod);
 
 void removeAllSimu5GTags(inet::Packet *pkt);
 
@@ -709,7 +711,7 @@ bool checkIfHeaderType(const inet::Packet *pkt, bool checkFirst = false) {
         if (inet::dynamicPtrCast<const T>(chunk)) {
             delete pktAux;
             if (index != 0 && checkFirst)
-                throw omnetpp::cRuntimeError("The header is not the top");
+                throw cRuntimeError("The header is not the top");
             return true;
         }
         index++;

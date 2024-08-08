@@ -23,6 +23,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteHandoverManager;
 
 // a sort of five-tuple with only two elements (a two-tuple...), src and dst addresses
@@ -31,7 +33,7 @@ typedef std::pair<inet::Ipv4Address, inet::Ipv4Address> AddressPair;
 /**
  *
  */
-class IP2Nic : public omnetpp::cSimpleModule
+class IP2Nic : public cSimpleModule
 {
     RanNodeType nodeType_;      // node type: can be ENODEB, GNODEB, UE
 
@@ -124,11 +126,11 @@ class IP2Nic : public omnetpp::cSimpleModule
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
 
-    omnetpp::cGate *stackGateOut_;       // gate connecting IP2Nic module to cellular stack
-    omnetpp::cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
+    cGate *stackGateOut_;       // gate connecting IP2Nic module to cellular stack
+    cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
 
     // corresponding entry for our interface
     inet::NetworkInterface *networkIf;

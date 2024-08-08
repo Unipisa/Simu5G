@@ -23,6 +23,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 // Forward declarations
 class AirFrame;
 
@@ -34,8 +36,8 @@ class AirFrame;
  * interference distance).
  */
 struct IChannelControl::RadioEntry {
-    omnetpp::cModule *radioModule;  // the module that registered this radio interface
-    omnetpp::cGate *radioInGate;  // gate on host module used to receive airframes
+    cModule *radioModule;  // the module that registered this radio interface
+    cGate *radioInGate;  // gate on host module used to receive airframes
     int channel;
     inet::Coord pos; // cached radio position
 
@@ -61,7 +63,7 @@ struct IChannelControl::RadioEntry {
  * @ingroup channelControl
  * @see ChannelAccess
  */
-class ChannelControl : public omnetpp::cSimpleModule, public IChannelControl
+class ChannelControl : public cSimpleModule, public IChannelControl
 {
   protected:
     typedef std::list<RadioEntry> RadioList;
@@ -77,7 +79,7 @@ class ChannelControl : public omnetpp::cSimpleModule, public IChannelControl
     ChannelTransmissionLists transmissions; // indexed by channel number (size=numChannels)
 
     /** used to clear the transmission list from time to time */
-    omnetpp::simtime_t lastOngoingTransmissionsUpdate;
+    simtime_t lastOngoingTransmissionsUpdate;
 
     friend std::ostream& operator<<(std::ostream&, const RadioEntry&);
     friend std::ostream& operator<<(std::ostream&, const TransmissionList&);
@@ -120,16 +122,16 @@ class ChannelControl : public omnetpp::cSimpleModule, public IChannelControl
     virtual ~ChannelControl();
 
     /** Registers the given radio. If radioInGate==NULL, the "radioIn" gate is assumed */
-    virtual RadioRef registerRadio(omnetpp::cModule *radioModule, omnetpp::cGate *radioInGate = nullptr) override;
+    virtual RadioRef registerRadio(cModule *radioModule, cGate *radioInGate = nullptr) override;
 
     /** Unregisters the given radio */
     virtual void unregisterRadio(RadioRef r) override;
 
     /** Returns the host module that contains the given radio */
-    virtual omnetpp::cModule *getRadioModule(RadioRef r) const override { return r->radioModule; }
+    virtual cModule *getRadioModule(RadioRef r) const override { return r->radioModule; }
 
     /** Returns the input gate of the host for receiving AirFrames */
-    virtual omnetpp::cGate *getRadioGate(RadioRef r) const override { return r->radioInGate; }
+    virtual cGate *getRadioGate(RadioRef r) const override { return r->radioInGate; }
 
     /** Returns the channel the given radio listens on */
     virtual int getRadioChannel(RadioRef r) const override { return r->channel; }

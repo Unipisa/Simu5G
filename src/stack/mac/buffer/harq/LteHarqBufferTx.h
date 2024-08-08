@@ -18,13 +18,15 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * NOTA: e' compito del mac ul usare solo il processo di turno, non c'e' nessun controllo.
  * TODO: aggiungere supporto all'uplink: funzioni in cui si specifica il processo da usare
  * TODO: commenti
  */
 
-class LteHarqBufferTx : omnetpp::noncopyable
+class LteHarqBufferTx : noncopyable
 {
   protected:
     LteMacBase *macOwner_;

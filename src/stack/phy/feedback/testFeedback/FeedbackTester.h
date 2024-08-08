@@ -18,18 +18,20 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * TODO
  */
-class FeedbackTester : public omnetpp::cSimpleModule
+class FeedbackTester : public cSimpleModule
 {
-    omnetpp::simtime_t interval_;
-    omnetpp::cMessage *aperiodic_;
+    simtime_t interval_;
+    cMessage *aperiodic_;
     ModuleRefByPar<LteDlFeedbackGenerator> generator_;
 
   protected:
     virtual void initialize() override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 };
 
 } //namespace

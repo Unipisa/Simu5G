@@ -28,20 +28,22 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef enum
 {
     OFF, GREEN, YELLOW, RED
 } TrafficLightState;
 
-class TrafficLightController : public omnetpp::cSimpleModule
+class TrafficLightController : public cSimpleModule
 {
   protected:
     inet::ModuleRefByPar<inet::StationaryMobility> mobility_;   // reference to the mobility module of the traffic light
     double areaWidth_;
     inet::deg heading_;
 
-    omnetpp::cLineFigure *line_;         // draw a line in the GUI representing the length of the queue of cars
-    omnetpp::cRectangleFigure *rect_;    // draw a rect in the GUI representing the area of the queue of cars
+    cLineFigure *line_;         // draw a line in the GUI representing the length of the queue of cars
+    cRectangleFigure *rect_;    // draw a rect in the GUI representing the area of the queue of cars
 
     inet::Coord tlPosition_;               // position of the traffic light
     inet::Coord direction_;                // direction of the traffic light
@@ -55,7 +57,7 @@ class TrafficLightController : public omnetpp::cSimpleModule
     std::set<int> queuedCars_[2];          // two queues, the second one is used when the TL is bidirectional
     bool bidirectional_;                   // if true, cars halt in also in the opposite direction wrt the one of the traffic light
 
-    omnetpp::cMessage *stateMsg_;          // timer regulating the cycles
+    cMessage *stateMsg_;          // timer regulating the cycles
 
     // draw initial line in GUI
     void initDrawLine();
@@ -70,7 +72,7 @@ class TrafficLightController : public omnetpp::cSimpleModule
   public:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     // return the position of the traffic light
     inet::Coord getPosition() { return tlPosition_; }

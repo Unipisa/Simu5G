@@ -13,6 +13,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 Define_Module(BackgroundScheduler);
 
 void BackgroundScheduler::initialize(int stage)
@@ -24,7 +26,7 @@ void BackgroundScheduler::initialize(int stage)
         txPower_ = par("txPower");
 
         std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(omnetpp::cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
+        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
         switch (txDirection_) {
             case OMNI: txAngle_ = 0.0;
                 break;
@@ -48,7 +50,7 @@ void BackgroundScheduler::initialize(int stage)
 
         // TODO: if BackgroundScheduler-interference is disabled, do not send selfMessages
         /* Start TTI tick */
-        ttiTick_ = new omnetpp::cMessage("ttiTick_");
+        ttiTick_ = new cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
         ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex_);
         scheduleAt(NOW + ttiPeriod_, ttiTick_);
@@ -74,7 +76,7 @@ void BackgroundScheduler::initialize(int stage)
     }
 }
 
-void BackgroundScheduler::handleMessage(omnetpp::cMessage *msg)
+void BackgroundScheduler::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         updateAllocation(UL);

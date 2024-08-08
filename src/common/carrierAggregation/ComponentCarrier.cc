@@ -14,6 +14,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 Define_Module(ComponentCarrier);
 
 void ComponentCarrier::initialize()
@@ -23,7 +25,7 @@ void ComponentCarrier::initialize()
     carrierFrequency_ = par("carrierFrequency");
     numerologyIndex_ = par("numerologyIndex");
     if (numerologyIndex_ > 4)
-        throw omnetpp::cRuntimeError("ComponentCarrier::initialize - numerology index [%d] not valid. It must be in the range between 0-4.", numerologyIndex_);
+        throw cRuntimeError("ComponentCarrier::initialize - numerology index [%d] not valid. It must be in the range between 0-4.", numerologyIndex_);
 
     useTdd_ = par("useTdd").boolValue();
     if (useTdd_) {

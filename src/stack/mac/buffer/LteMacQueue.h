@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * @class LteMacQueue
  * @brief Queue for MAC SDU packets
@@ -34,7 +36,7 @@ namespace simu5g {
  * A size equal to 0 means that the size is infinite.
  *
  */
-class LteMacQueue : public omnetpp::cPacketQueue
+class LteMacQueue : public cPacketQueue
 {
   public:
 
@@ -63,7 +65,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return false if queue is full,
      *            true on successful insertion
      */
-    bool pushBack(omnetpp::cPacket *pkt);
+    bool pushBack(cPacket *pkt);
 
     /**
      * pushFront() inserts a new packet in the front
@@ -73,7 +75,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return false if queue is full,
      *            true on successful insertion
      */
-    bool pushFront(omnetpp::cPacket *pkt);
+    bool pushFront(cPacket *pkt);
 
     /**
      * popFront() extracts a packet from the
@@ -82,7 +84,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return nullptr if queue is empty,
      *            pkt on successful operation
      */
-    omnetpp::cPacket *popFront();
+    cPacket *popFront();
 
     /**
      * popFront() extracts a packet from the
@@ -91,7 +93,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      * @return nullptr if queue is empty,
      *            pkt on successful operation
      */
-    omnetpp::cPacket *popBack();
+    cPacket *popBack();
 
     /**
      * getQueueOccupancy() returns the occupancy
@@ -123,7 +125,7 @@ class LteMacQueue : public omnetpp::cPacketQueue
      *
      * @return Hol Timestamp (0 if queue empty)
      */
-    omnetpp::simtime_t getHolTimestamp() const;
+    simtime_t getHolTimestamp() const;
 
     friend std::ostream& operator<<(std::ostream& stream, const LteMacQueue *queue);
 

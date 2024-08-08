@@ -26,6 +26,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class DasFilter;
 class LtePhyUe;
 
@@ -34,7 +36,7 @@ class LtePhyUe;
  * @brief Lte Downlink Feedback Generator
  *
  */
-class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
+class LteDlFeedbackGenerator : public cSimpleModule
 {
     enum FbTimerType
     {
@@ -53,14 +55,14 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
      * for periodic feedback (when calling start() on busy
      * transmission timer we have no operation)
      */
-    omnetpp::simtime_t fbPeriod_;    /// period for Periodic feedback in TTI
-    omnetpp::simtime_t fbDelay_;     /// time interval between sensing and transmission in TTI
+    simtime_t fbPeriod_;    /// period for Periodic feedback in TTI
+    simtime_t fbDelay_;     /// time interval between sensing and transmission in TTI
 
     bool usePeriodic_;      /// true if we want to use also periodic feedback
     TxMode currentTxMode_;  /// transmission mode to use in feedback generation
 
     DasFilter *dasFilter_;  /// reference to das filter
-    omnetpp::opp_component_ptr<CellInfo> cellInfo_; /// reference to cellInfo
+    opp_component_ptr<CellInfo> cellInfo_; /// reference to cellInfo
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<LtePhyUe> phy_;
 
@@ -108,7 +110,7 @@ class LteDlFeedbackGenerator : public omnetpp::cSimpleModule
      * Manage self messages for sensing and transmission.
      * @param msg self message for sensing or transmission
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * Channel sensing

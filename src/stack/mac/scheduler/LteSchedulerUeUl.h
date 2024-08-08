@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteMacUe;
 class LcgScheduler;
 
@@ -29,7 +31,7 @@ class LteSchedulerUeUl
   protected:
 
     // MAC module, queried for parameters
-    omnetpp::opp_component_ptr<LteMacUe> mac_;
+    opp_component_ptr<LteMacUe> mac_;
 
     // Schedule List
     LteMacScheduleList scheduleList_;

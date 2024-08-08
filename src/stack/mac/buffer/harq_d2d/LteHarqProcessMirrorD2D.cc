@@ -13,6 +13,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb *macOwner)
 {
     numUnits_ = numUnits;
@@ -47,7 +49,7 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
             status_[cw] = TXHARQ_PDU_BUFFERED;
 
             // signal the MAC the need for retransmission
-            omnetpp::check_and_cast<LteMacEnb *>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
+            check_and_cast<LteMacEnb *>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
         }
     }
 }

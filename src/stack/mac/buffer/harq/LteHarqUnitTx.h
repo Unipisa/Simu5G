@@ -21,6 +21,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteMacBase;
 
 /**
@@ -36,7 +38,7 @@ class LteMacBase;
  * TXHARQ_PDU_EMPTY:          yes     not present            not ready for tx
  * TXHARQ_PDU_SELECTED:       no      present                will be tx
  */
-class LteHarqUnitTx : omnetpp::noncopyable
+class LteHarqUnitTx : noncopyable
 {
   protected:
 
@@ -61,10 +63,10 @@ class LteHarqUnitTx : omnetpp::noncopyable
     TxHarqPduStatus status_;
 
     /// TTI at which the pdu has been transmitted
-    omnetpp::simtime_t txTime_;
+    simtime_t txTime_;
 
     // reference to the eNB module
-    omnetpp::cModule *nodeB_;
+    cModule *nodeB_;
 
     LteMacBase *macOwner_;
     //used for statistics
@@ -74,23 +76,23 @@ class LteHarqUnitTx : omnetpp::noncopyable
 
     // Statistics
 
-    omnetpp::simsignal_t macCellPacketLoss_;
-    omnetpp::simsignal_t macPacketLoss_;
-    omnetpp::simsignal_t harqErrorRate_;
-    omnetpp::simsignal_t harqErrorRate_1_;
-    omnetpp::simsignal_t harqErrorRate_2_;
-    omnetpp::simsignal_t harqErrorRate_3_;
-    omnetpp::simsignal_t harqErrorRate_4_;
-    omnetpp::simsignal_t harqTxAttempts_;
+    simsignal_t macCellPacketLoss_;
+    simsignal_t macPacketLoss_;
+    simsignal_t harqErrorRate_;
+    simsignal_t harqErrorRate_1_;
+    simsignal_t harqErrorRate_2_;
+    simsignal_t harqErrorRate_3_;
+    simsignal_t harqErrorRate_4_;
+    simsignal_t harqTxAttempts_;
 
     // D2D Statistics
-    omnetpp::simsignal_t macCellPacketLossD2D_;
-    omnetpp::simsignal_t macPacketLossD2D_;
-    omnetpp::simsignal_t harqErrorRateD2D_;
-    omnetpp::simsignal_t harqErrorRateD2D_1_;
-    omnetpp::simsignal_t harqErrorRateD2D_2_;
-    omnetpp::simsignal_t harqErrorRateD2D_3_;
-    omnetpp::simsignal_t harqErrorRateD2D_4_;
+    simsignal_t macCellPacketLossD2D_;
+    simsignal_t macPacketLossD2D_;
+    simsignal_t harqErrorRateD2D_;
+    simsignal_t harqErrorRateD2D_1_;
+    simsignal_t harqErrorRateD2D_2_;
+    simsignal_t harqErrorRateD2D_3_;
+    simsignal_t harqErrorRateD2D_4_;
 
   public:
     /**
@@ -185,7 +187,7 @@ class LteHarqUnitTx : omnetpp::noncopyable
         return pduLength_;
     }
 
-    virtual omnetpp::simtime_t getTxTime()
+    virtual simtime_t getTxTime()
     {
         return txTime_;
     }

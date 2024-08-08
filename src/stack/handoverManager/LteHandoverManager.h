@@ -22,12 +22,14 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class IP2Nic;
 
 //
 // LteHandoverManager
 //
-class LteHandoverManager : public omnetpp::cSimpleModule
+class LteHandoverManager : public cSimpleModule
 {
 
   protected:
@@ -36,7 +38,7 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    omnetpp::cGate *x2Manager_[2];
+    cGate *x2Manager_[2];
 
     // reference to the PDCP layer
     inet::ModuleRefByPar<IP2Nic> ip2nic_;
@@ -44,14 +46,14 @@ class LteHandoverManager : public omnetpp::cSimpleModule
     // flag for seamless/lossless handover
     bool losslessHandover_;
 
-    void handleX2Message(omnetpp::cPacket *pkt);
+    void handleX2Message(cPacket *pkt);
 
   public:
     LteHandoverManager() {}
     virtual ~LteHandoverManager() {}
 
     virtual void initialize() override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     // send handover command on X2 to the eNB
     void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);

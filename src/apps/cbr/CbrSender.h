@@ -23,33 +23,35 @@
 
 namespace simu5g {
 
-class CbrSender : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class CbrSender : public cSimpleModule
 {
     inet::UdpSocket socket;
     //has the sender been initialized?
     bool initialized_;
 
-    omnetpp::cMessage *selfSource_;
+    cMessage *selfSource_;
     //sender
     int nframes_;
     int iDframe_;
     int nframesTmp_;
     int size_;
-    omnetpp::simtime_t sampling_time;
-    omnetpp::simtime_t startTime_;
-    omnetpp::simtime_t finishTime_;
+    simtime_t sampling_time;
+    simtime_t startTime_;
+    simtime_t finishTime_;
 
-    static omnetpp::simsignal_t cbrGeneratedThroughtputSignal_;
-    static omnetpp::simsignal_t cbrGeneratedBytesSignal_;
-    static omnetpp::simsignal_t cbrSentPktSignal_;
+    static simsignal_t cbrGeneratedThroughtputSignal_;
+    static simsignal_t cbrGeneratedBytesSignal_;
+    static simsignal_t cbrSentPktSignal_;
 
     int txBytes_;
     // ----------------------------
 
-    omnetpp::cMessage *selfSender_;
-    omnetpp::cMessage *initTraffic_;
+    cMessage *selfSender_;
+    cMessage *initTraffic_;
 
-    omnetpp::simtime_t timestamp_;
+    simtime_t timestamp_;
     int localPort_;
     int destPort_;
     inet::L3Address destAddress_;
@@ -66,7 +68,7 @@ class CbrSender : public omnetpp::cSimpleModule
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void finish() override;
-    void handleMessage(omnetpp::cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 };
 
 } //namespace

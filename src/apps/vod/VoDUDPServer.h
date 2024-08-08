@@ -27,7 +27,9 @@
 
 namespace simu5g {
 
-class VoDUDPServer : public omnetpp::cSimpleModule
+using namespace omnetpp;
+
+class VoDUDPServer : public cSimpleModule
 {
   protected:
     inet::UdpSocket socket;
@@ -101,8 +103,8 @@ class VoDUDPServer : public omnetpp::cSimpleModule
     void initialize(int stage);
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void finish();
-    virtual void handleMessage(omnetpp::cMessage *);
-    virtual void handleSVCMessage(omnetpp::cMessage *);
+    virtual void handleMessage(cMessage *);
+    virtual void handleSVCMessage(cMessage *);
 };
 
 } //namespace

@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class Binder;
 
 class LteRealisticChannelModel : public LteChannelModel
@@ -128,7 +130,7 @@ class LteRealisticChannelModel : public LteChannelModel
     struct JakesFadingData
     {
         std::vector<double> angleOfArrival;
-        std::vector<omnetpp::simtime_t> delaySpread;
+        std::vector<simtime_t> delaySpread;
     };
 
     // for each node and for each band we store information about jakes fading
@@ -157,11 +159,11 @@ class LteRealisticChannelModel : public LteChannelModel
     bool collectSinrStatistics_;
 
     // statistics
-    static omnetpp::simsignal_t rcvdSinrDl_;
-    static omnetpp::simsignal_t rcvdSinrUl_;
-    static omnetpp::simsignal_t rcvdSinrD2D_;
-    static omnetpp::simsignal_t measuredSinrDl_;
-    static omnetpp::simsignal_t measuredSinrUl_;
+    static simsignal_t rcvdSinrDl_;
+    static simsignal_t rcvdSinrUl_;
+    static simsignal_t rcvdSinrD2D_;
+    static simsignal_t measuredSinrDl_;
+    static simsignal_t measuredSinrUl_;
 
   public:
     virtual void initialize(int stage);
@@ -285,7 +287,7 @@ class LteRealisticChannelModel : public LteChannelModel
      */
     virtual bool isErrorDas(LteAirFrame *frame, UserControlInfo *lteI)
     {
-        throw omnetpp::cRuntimeError("DAS PHY LAYER TO BE IMPLEMENTED");
+        throw cRuntimeError("DAS PHY LAYER TO BE IMPLEMENTED");
         return -1;
     }
 

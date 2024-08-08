@@ -24,6 +24,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class UmTxEntity;
 class UmRxEntity;
 
@@ -48,7 +50,7 @@ class UmRxEntity;
  *   of this header is fixed to 2 bytes.
  *
  */
-class LteRlcUm : public omnetpp::cSimpleModule
+class LteRlcUm : public cSimpleModule
 {
   public:
     virtual ~LteRlcUm()
@@ -62,7 +64,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to forward
      */
-    void sendFragmented(omnetpp::cPacket *pkt);
+    void sendFragmented(cPacket *pkt);
 
     /**
      * sendDefragmented() is invoked by the RXBuffer as a direct method
@@ -71,7 +73,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to forward
      */
-    void sendDefragmented(omnetpp::cPacket *pkt);
+    void sendDefragmented(cPacket *pkt);
 
     /**
      * deleteQueues() must be called on handover
@@ -88,7 +90,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to forward
      */
-    virtual void sendToLowerLayer(omnetpp::cPacket *pkt);
+    virtual void sendToLowerLayer(cPacket *pkt);
 
     /**
      * dropBufferOverflow() is invoked by the TXEntity as a direct method
@@ -96,7 +98,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to be dropped
      */
-    virtual void dropBufferOverflow(omnetpp::cPacket *pkt);
+    virtual void dropBufferOverflow(cPacket *pkt);
 
     virtual void resumeDownstreamInPackets(MacNodeId peerId) {}
 
@@ -122,16 +124,16 @@ class LteRlcUm : public omnetpp::cSimpleModule
 
   protected:
 
-    omnetpp::cGate *up_[2];
-    omnetpp::cGate *down_[2];
+    cGate *up_[2];
+    cGate *down_[2];
 
     // statistics
-    omnetpp::simsignal_t receivedPacketFromUpperLayer;
-    omnetpp::simsignal_t receivedPacketFromLowerLayer;
-    omnetpp::simsignal_t sentPacketToUpperLayer;
-    omnetpp::simsignal_t sentPacketToLowerLayer;
-    omnetpp::simsignal_t rlcPacketLossDl;
-    omnetpp::simsignal_t rlcPacketLossUl;
+    simsignal_t receivedPacketFromUpperLayer;
+    simsignal_t receivedPacketFromLowerLayer;
+    simsignal_t sentPacketToUpperLayer;
+    simsignal_t sentPacketToLowerLayer;
+    simsignal_t rlcPacketLossDl;
+    simsignal_t rlcPacketLossUl;
 
     /**
      * Initialize watches
@@ -146,7 +148,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     // parameters
     bool mapAllLcidsToSingleBearer_;
@@ -190,7 +192,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    virtual void handleUpperMessage(omnetpp::cPacket *pkt);
+    virtual void handleUpperMessage(cPacket *pkt);
 
     /**
      * UM Mode
@@ -207,7 +209,7 @@ class LteRlcUm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    virtual void handleLowerMessage(omnetpp::cPacket *pkt);
+    virtual void handleLowerMessage(cPacket *pkt);
 
     /*
      * Data structures

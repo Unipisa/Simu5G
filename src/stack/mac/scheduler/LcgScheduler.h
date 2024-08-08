@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /// forward declarations
 class LteSchedulerUeUl;
 class LteMacPdu;
@@ -64,10 +66,10 @@ class LcgScheduler
     };
 
     // last execution time
-    omnetpp::simtime_t lastExecutionTime_;
+    simtime_t lastExecutionTime_;
 
     /// MAC module, used to get parameters from NED
-    omnetpp::opp_component_ptr<LteMacUe> mac_;
+    opp_component_ptr<LteMacUe> mac_;
 
     /// Associated LteSchedulerUeUl (it is the one who creates the LteScheduler)
     LteSchedulerUeUl *ueScheduler_;

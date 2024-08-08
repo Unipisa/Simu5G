@@ -13,6 +13,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 Define_Module(ExtCell);
 
 void ExtCell::initialize(int stage)
@@ -22,7 +24,7 @@ void ExtCell::initialize(int stage)
         position_.x = par("position_x");
         position_.y = par("position_y");
         position_.z = par("position_z");
-        if (omnetpp::getEnvir()->isGUI()) {
+        if (getEnvir()->isGUI()) {
             getDisplayString().setTagArg("p", 0, (long)position_.x);
             getDisplayString().setTagArg("p", 1, (long)position_.y);
         }
@@ -31,13 +33,13 @@ void ExtCell::initialize(int stage)
 
         // set TX direction
         std::string txDir = par("txDirection");
-        txDirection_ = static_cast<TxDirectionType>(omnetpp::cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
+        txDirection_ = static_cast<TxDirectionType>(cEnum::get("simu5g::TxDirectionType")->lookup(txDir.c_str()));
         switch (txDirection_) {
             case OMNI: txAngle_ = 0.0;
                 break;
             case ANISOTROPIC: txAngle_ = par("txAngle");
                 break;
-            default: throw omnetpp::cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
+            default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
         }
 
         carrierFrequency_ = par("carrierFrequency").doubleValue();
@@ -62,7 +64,7 @@ void ExtCell::initialize(int stage)
             allocationType_ = FULL_ALLOC;
         }
         else
-            throw omnetpp::cRuntimeError("Unrecognized bandAllocationType: '%s'", allocationType.c_str());
+            throw cRuntimeError("Unrecognized bandAllocationType: '%s'", allocationType.c_str());
 
         // get the allocation parameters
         if (allocationType_ == FULL_ALLOC) {
@@ -85,7 +87,7 @@ void ExtCell::initialize(int stage)
 
             // TODO: if extCell-interference is disabled, do not send selfMessages
             /* Start TTI tick */
-            ttiTick_ = new omnetpp::cMessage("ttiTick_");
+            ttiTick_ = new cMessage("ttiTick_");
             ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
             scheduleAt(NOW + TTI, ttiTick_);
         }
@@ -95,7 +97,7 @@ void ExtCell::initialize(int stage)
     }
 }
 
-void ExtCell::handleMessage(omnetpp::cMessage *msg)
+void ExtCell::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         updateBandStatus();

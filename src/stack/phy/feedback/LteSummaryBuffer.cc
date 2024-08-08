@@ -13,6 +13,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 void LteSummaryBuffer::createSummary(LteFeedback fb) {
     try {
         // RI
@@ -76,7 +78,7 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
         }
     }
     catch (std::exception& e) {
-        throw omnetpp::cRuntimeError("Exception in LteSummaryBuffer::summarize(): %s",
+        throw cRuntimeError("Exception in LteSummaryBuffer::summarize(): %s",
                 e.what());
     }
 }

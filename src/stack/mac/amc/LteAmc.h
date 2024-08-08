@@ -25,6 +25,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /// Forward declaration of AmcPilot class, used by LteAmc.
 class AmcPilot;
 /// Forward declaration of CellInfo class, used by LteAmc.
@@ -43,7 +45,7 @@ typedef std::map<Remote, std::vector<std::vector<LteSummaryBuffer>>> History_;
 class LteAmc
 {
   private:
-    AmcPilot *getAmcPilot(const omnetpp::cPar& amcMode);
+    AmcPilot *getAmcPilot(const cPar& amcMode);
     MacNodeId getNextHop(MacNodeId dst);
 
   public:
@@ -53,9 +55,9 @@ class LteAmc
     void printMuMimoMatrix(const char *s);
 
   protected:
-    omnetpp::opp_component_ptr<LteMacEnb> mac_;
-    omnetpp::opp_component_ptr<Binder> binder_;
-    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
+    opp_component_ptr<LteMacEnb> mac_;
+    opp_component_ptr<Binder> binder_;
+    opp_component_ptr<CellInfo> cellInfo_;
     AmcPilot *pilot_;
     RbAllocationType allocationType_;
     int numBands_;
@@ -94,8 +96,8 @@ class LteAmc
     unsigned int fbhbCapacityDl_;
     unsigned int fbhbCapacityUl_;
     unsigned int fbhbCapacityD2D_;
-    omnetpp::simtime_t lb_;
-    omnetpp::simtime_t ub_;
+    simtime_t lb_;
+    simtime_t ub_;
     double pmiComputationWeight_;
     double cqiComputationWeight_;
     LteMuMimoMatrix muMimoDlMatrix_;

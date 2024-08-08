@@ -22,11 +22,13 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class MultihopD2D;
 
-class EventGenerator : public omnetpp::cSimpleModule
+class EventGenerator : public cSimpleModule
 {
-    omnetpp::cMessage *selfMessage_;
+    cMessage *selfMessage_;
 
     uint32_t eventId_;
     inet::ModuleRefByPar<Binder> binder_;
@@ -34,14 +36,14 @@ class EventGenerator : public omnetpp::cSimpleModule
     bool singleEventSource_;
 
     // store references to the app modules
-    std::vector<omnetpp::opp_component_ptr<MultihopD2D>> appVector_;
+    std::vector<opp_component_ptr<MultihopD2D>> appVector_;
 
     // store LTE IDs of the nodes
     std::set<MacNodeId> lteNodeIdSet_;
 
     // store references to the PHY modules
     // (to speed up position retrieval)
-    std::map<MacNodeId, omnetpp::opp_component_ptr<LtePhyBase>> lteNodePhy_;
+    std::map<MacNodeId, opp_component_ptr<LtePhyBase>> lteNodePhy_;
 
     // notify a node to start an event dissemination
     void notifyEvent();
@@ -49,7 +51,7 @@ class EventGenerator : public omnetpp::cSimpleModule
   protected:
 
     virtual void initialize() override;
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
   public:
     EventGenerator();

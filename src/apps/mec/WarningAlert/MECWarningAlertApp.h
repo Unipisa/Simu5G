@@ -80,12 +80,12 @@ class MECWarningAlertApp : public MecAppBase
     virtual void initialize(int stage) override;
     virtual void finish() override;
 
-    virtual void handleProcessedMessage(omnetpp::cMessage *msg) override;
+    virtual void handleProcessedMessage(cMessage *msg) override;
 
     virtual void handleHttpMessage(int connId) override;
     virtual void handleServiceMessage(int connId) override;
     virtual void handleMp1Message(int connId) override;
-    virtual void handleUeMessage(omnetpp::cMessage *msg) override;
+    virtual void handleUeMessage(cMessage *msg) override;
 
     virtual void modifySubscription();
     virtual void sendSubscription();

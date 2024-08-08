@@ -23,13 +23,15 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 // Forward declarations
 class AirFrame;
 
 //
 // Base class for the PHY layer
 //
-class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
+class ChannelAccess : public cSimpleModule, public cListener
 {
   protected:
     IChannelControl *cc;  // Pointer to the ChannelControl module
@@ -47,7 +49,7 @@ class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
      *
      * ChannelAccess is subscribed to position changes.
      */
-    virtual void receiveSignal(omnetpp::cComponent *source, omnetpp::simsignal_t signalID, omnetpp::cObject *obj, omnetpp::cObject *) override;
+    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
     /** Finds the channelControl module in the network */
     IChannelControl *getChannelControl();
@@ -63,9 +65,9 @@ class ChannelAccess : public omnetpp::cSimpleModule, public omnetpp::cListener
     /** Sends a message to all radios in range */
     virtual void sendToChannel(AirFrame *msg);
 
-    virtual omnetpp::cPar& getChannelControlPar(const char *parName) { return dynamic_cast<omnetpp::cModule *>(cc)->par(parName); }
+    virtual cPar& getChannelControlPar(const char *parName) { return dynamic_cast<cModule *>(cc)->par(parName); }
     const inet::Coord& getRadioPosition() const { return radioPos; }
-    omnetpp::cModule *getHostModule() const { return hostModule; }
+    cModule *getHostModule() const { return hostModule; }
 
     /** Register with ChannelControl and subscribe to hostPos*/
     virtual void initialize(int stage) override;

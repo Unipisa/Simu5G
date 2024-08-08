@@ -24,10 +24,12 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
 typedef std::priority_queue<ScoreDesc> ScoreList;
 
-class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
+class BackgroundScheduler : public cSimpleModule, public cListener
 {
     // base station coordinates
     inet::Coord pos_;
@@ -67,7 +69,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
     inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;
 
     // TTI self message
-    omnetpp::cMessage *ttiTick_;
+    cMessage *ttiTick_;
     double ttiPeriod_;
 
     /*** ALLOCATION MANAGEMENT ***/
@@ -93,7 +95,7 @@ class BackgroundScheduler : public omnetpp::cSimpleModule, public cListener
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
   public:
 

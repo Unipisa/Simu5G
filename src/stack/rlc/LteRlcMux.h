@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * \class LteRLC
  * \brief RLC Layer
@@ -30,7 +32,7 @@ namespace simu5g {
  *   and forwarded to TM/UM/AM modules
  *
  */
-class LteRlcMux : public omnetpp::cSimpleModule
+class LteRlcMux : public cSimpleModule
 {
   public:
     virtual ~LteRlcMux()
@@ -49,7 +51,7 @@ class LteRlcMux : public omnetpp::cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * Statistics recording
@@ -66,7 +68,7 @@ class LteRlcMux : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void rlc2mac(omnetpp::cPacket *pkt);
+    void rlc2mac(cPacket *pkt);
 
     /*
      * Lower Layer Handler
@@ -77,16 +79,16 @@ class LteRlcMux : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void mac2rlc(omnetpp::cPacket *pkt);
+    void mac2rlc(cPacket *pkt);
 
     /*
      * Data structures
      */
 
-    omnetpp::cGate *macSap_[2];
-    omnetpp::cGate *tmSap_[2];
-    omnetpp::cGate *umSap_[2];
-    omnetpp::cGate *amSap_[2];
+    cGate *macSap_[2];
+    cGate *tmSap_[2];
+    cGate *umSap_[2];
+    cGate *amSap_[2];
 };
 
 } //namespace

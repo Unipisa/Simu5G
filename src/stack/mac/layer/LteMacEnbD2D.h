@@ -20,6 +20,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef std::pair<MacNodeId, MacNodeId> D2DPair;
 typedef std::map<D2DPair, LteHarqBufferMirrorD2D *> HarqBuffersMirrorD2D;
 class ConflictGraph;
@@ -45,7 +47,7 @@ class LteMacEnbD2D : public LteMacEnb
     bool reuseD2D_;
     bool reuseD2DMulti_;
 
-    omnetpp::simtime_t conflictGraphUpdatePeriod_;
+    simtime_t conflictGraphUpdatePeriod_;
     double conflictGraphThreshold_;
 
     // handling of D2D mode switch
@@ -65,16 +67,16 @@ class LteMacEnbD2D : public LteMacEnb
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(omnetpp::cPacket *pkt);
+    virtual void macPduUnmake(cPacket *pkt);
 
-    virtual void macHandleFeedbackPkt(omnetpp::cPacket *pkt);
+    virtual void macHandleFeedbackPkt(cPacket *pkt);
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the  lower layer
      */
     virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
 
-    void macHandleD2DModeSwitch(omnetpp::cPacket *pkt);
+    void macHandleD2DModeSwitch(cPacket *pkt);
 
     /**
      * Flush Tx H-ARQ buffers for all users
@@ -82,7 +84,7 @@ class LteMacEnbD2D : public LteMacEnb
     virtual void flushHarqBuffers();
 
     /// Lower Layer Handler
-    virtual void fromPhy(omnetpp::cPacket *pkt);
+    virtual void fromPhy(cPacket *pkt);
 
   public:
 
@@ -99,7 +101,7 @@ class LteMacEnbD2D : public LteMacEnb
      */
     virtual void handleSelfMessage();
 
-    virtual void handleMessage(omnetpp::cMessage *msg);
+    virtual void handleMessage(cMessage *msg);
 
     virtual bool isD2DCapable()
     {

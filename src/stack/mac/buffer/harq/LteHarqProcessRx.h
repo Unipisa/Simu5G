@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef std::pair<unsigned char, RxHarqPduStatus> RxUnitStatus;
 typedef std::vector<std::vector<RxUnitStatus>> RxBufferStatus;
 
@@ -57,10 +59,10 @@ class LteHarqProcessRx
     unsigned char acid_;
 
     /// mac module to manage errors (endSimulation)
-    omnetpp::opp_component_ptr<LteMacBase> macOwner_;
+    opp_component_ptr<LteMacBase> macOwner_;
 
     /// reference to the binder
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     /// Number of (re)transmissions for current pdu (N.B.: values are 1,2,3,4)
     unsigned char transmissions_;

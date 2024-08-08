@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteSchedulingGrant;
 class LteSchedulerUeUl;
 class Binder;
@@ -38,7 +40,7 @@ class LteMacUeD2D : public LteMacUe
     // Multicast D2D BSR handling
     bool bsrD2DMulticastTriggered_;
 
-    omnetpp::simsignal_t rcvdD2DModeSwitchNotification_;
+    simsignal_t rcvdD2DModeSwitchNotification_;
 
     // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
     bool usePreconfiguredTxParams_;
@@ -54,14 +56,14 @@ class LteMacUeD2D : public LteMacUe
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * Main loop
      */
     virtual void handleSelfMessage() override;
 
-    virtual void macHandleGrant(omnetpp::cPacket *pkt) override;
+    virtual void macHandleGrant(cPacket *pkt) override;
 
     /*
      * Checks RAC status
@@ -71,9 +73,9 @@ class LteMacUeD2D : public LteMacUe
     /*
      * Receives and handles RAC responses
      */
-    virtual void macHandleRac(omnetpp::cPacket *pkt) override;
+    virtual void macHandleRac(cPacket *pkt) override;
 
-    void macHandleD2DModeSwitch(omnetpp::cPacket *pkt);
+    void macHandleD2DModeSwitch(cPacket *pkt);
 
     virtual Packet *makeBsr(int size);
 

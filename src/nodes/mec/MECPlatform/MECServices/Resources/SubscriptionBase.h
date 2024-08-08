@@ -22,17 +22,19 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteCellInfo;
 
 class SubscriptionBase
 {
   public:
     SubscriptionBase();
-    SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     virtual ~SubscriptionBase();
 
-    void addEnodeB(std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
-    void addEnodeB(omnetpp::cModule *eNodeB);
+    void addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
+    void addEnodeB(cModule *eNodeB);
 
     virtual void set_links(std::string& link);
 

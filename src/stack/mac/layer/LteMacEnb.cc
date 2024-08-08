@@ -154,7 +154,7 @@ void LteMacEnb::initialize(int stage)
 
         std::string modeString = par("pilotMode").stdstringValue();
 
-        // TODO use omnetpp::cEnum::get("simu5g::PilotComputationModes")->lookup(modeString);
+        // TODO use cEnum::get("simu5g::PilotComputationModes")->lookup(modeString);
         if (modeString == "AVG_CQI")
             amc_->setPilotMode(AVG_CQI);
         else if (modeString == "MAX_CQI")

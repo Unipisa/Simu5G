@@ -20,6 +20,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 typedef std::vector<int> BandStatus;
 
 /* The allocation type defines the interference produced by the ext cell
@@ -31,7 +33,7 @@ typedef enum {
     FULL_ALLOC, RANDOM_ALLOC, CONTIGUOUS_ALLOC
 } BandAllocationType;
 
-class ExtCell : public omnetpp::cSimpleModule
+class ExtCell : public cSimpleModule
 {
     // playground coordinates
     inet::Coord position_;
@@ -62,7 +64,7 @@ class ExtCell : public omnetpp::cSimpleModule
     BandStatus prevBandStatus_;
 
     // TTI self message
-    omnetpp::cMessage *ttiTick_;
+    cMessage *ttiTick_;
 
     /*** ALLOCATION MANAGEMENT ***/
 
@@ -86,7 +88,7 @@ class ExtCell : public omnetpp::cSimpleModule
   protected:
     virtual void initialize(int stage);
     virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 2; }
-    virtual void handleMessage(omnetpp::cMessage *msg);
+    virtual void handleMessage(cMessage *msg);
 
   public:
 

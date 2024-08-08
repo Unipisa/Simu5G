@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * @class LteRlcTm
  * @brief TM Module
@@ -34,7 +36,7 @@ namespace simu5g {
  *   TM mode does not attach any header to the packet.
  *
  */
-class LteRlcTm : public omnetpp::cSimpleModule
+class LteRlcTm : public cSimpleModule
 {
   public:
     LteRlcTm() {}
@@ -46,7 +48,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     virtual void initialize() override;
     virtual void finish() override {}
@@ -62,7 +64,7 @@ class LteRlcTm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleUpperMessage(omnetpp::cPacket *pkt);
+    void handleUpperMessage(cPacket *pkt);
 
     /**
      * handler for traffic coming from
@@ -75,14 +77,14 @@ class LteRlcTm : public omnetpp::cSimpleModule
      *
      * @param pkt packet to process
      */
-    void handleLowerMessage(omnetpp::cPacket *pkt);
+    void handleLowerMessage(cPacket *pkt);
 
     /**
      * Data structures
      */
 
-    omnetpp::cGate *up_[2];
-    omnetpp::cGate *down_[2];
+    cGate *up_[2];
+    cGate *down_[2];
 
     /*
      * Queue for storing PDUs to be delivered to MAC when LteMacSduRequest is received

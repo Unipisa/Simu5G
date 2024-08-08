@@ -321,7 +321,7 @@ void DeviceApp::initialize(int stage) {
     scheduleAt(simTime() + 0.0, msg);
 }
 
-void DeviceApp::handleMessage(omnetpp::cMessage *msg)
+void DeviceApp::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);

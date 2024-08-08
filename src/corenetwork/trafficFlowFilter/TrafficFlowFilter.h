@@ -20,6 +20,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * Objective of the Traffic Flow Filter is mapping IP 4-Tuples to TFT identifiers. This commonly means identifying a bearer and
  * associating it to an ID that will be recognized by the first GTP-U entity
@@ -30,7 +32,7 @@ namespace simu5g {
  * the destination endpoint is always the PGW. However, if the fastForwarding flag is enabled and the destination of the packet
  * is within the same cell, the packet is just relayed to the Radio interface.
  */
-class TrafficFlowFilter : public omnetpp::cSimpleModule
+class TrafficFlowFilter : public cSimpleModule
 {
     // specifies the type of the node that contains this filter (it can be ENB or PGW
     // the filterTable_ will be indexed differently depending on this parameter
@@ -67,7 +69,7 @@ class TrafficFlowFilter : public omnetpp::cSimpleModule
     virtual void initialize(int stage) override;
 
     // TrafficFlowFilter module may receive messages only from the input interface of its compound module
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     // functions for managing filter tables
     TrafficFlowTemplateId findTrafficFlow(inet::L3Address srcAddress, inet::L3Address destAddress);

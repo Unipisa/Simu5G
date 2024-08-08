@@ -45,7 +45,7 @@ class MecRequestBackgroundApp : public MecAppBase
     virtual void handleServiceMessage(int connId) override;
     virtual void handleMp1Message(int connId) override;
 
-    virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+    virtual void handleUeMessage(cMessage *msg) override {};
 
     virtual void established(int connId) override;
 

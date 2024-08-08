@@ -44,7 +44,7 @@ class MecRequestBackgroundGeneratorApp : public MecAppBase
 
     virtual void sendBulkRequest();
 
-    virtual void handleUeMessage(omnetpp::cMessage *msg) override {};
+    virtual void handleUeMessage(cMessage *msg) override {};
 
     virtual void established(int connId) override;
 

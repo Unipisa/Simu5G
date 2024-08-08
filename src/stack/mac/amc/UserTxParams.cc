@@ -55,7 +55,7 @@ void UserTxParams::print(const char *s) const {
         EV << NOW << " " << s << " --------------------------\n";
     }
     catch (std::exception& e) {
-        throw omnetpp::cRuntimeError("Exception in UserTxParams::print(): %s", e.what());
+        throw cRuntimeError("Exception in UserTxParams::print(): %s", e.what());
     }
 }
 

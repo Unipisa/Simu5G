@@ -526,7 +526,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     //=============== ANGULAR ATTENUATION =================
     if (dir == DL) {
         //get tx angle
-        omnetpp::cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -827,7 +827,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
     //=============== ANGULAR ATTENUATION =================
     if (dir == DL) {
         //get tx angle
-        omnetpp::cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -981,7 +981,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
     // ANGULAR ATTENUATION
     if (dir == DL) {
         //get tx angle
-        omnetpp::cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -1146,7 +1146,7 @@ double LteRealisticChannelModel::getReceivedPower_bgUe(double txPower, inet::Coo
     // ANGULAR ATTENUATION
     if (dir == DL) {
         //get tx angle
-        omnetpp::cModule *bsModule = getSimulation()->getModule(binder_->getOmnetId(bsId));
+        cModule *bsModule = getSimulation()->getModule(binder_->getOmnetId(bsId));
         LtePhyBase *phy = bsModule ? check_and_cast<LtePhyBase *>(bsModule->getSubmodule("cellularNic")->getSubmodule("phy")) : nullptr;
 
         if (phy && phy->getTxDirection() == ANISOTROPIC) {

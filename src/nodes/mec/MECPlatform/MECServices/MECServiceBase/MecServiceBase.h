@@ -33,6 +33,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  *
  * This class implements the general structure of a Mec Service. It holds all the TCP connections
@@ -76,7 +78,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     ThreadSet threadSet;
     std::string host_;
     inet::ModuleRefByPar<Binder> binder_;
-    omnetpp::cModule *meHost_;
+    cModule *meHost_;
 
     MecPlatformManager *mecPlatformManager_;
     ServiceRegistry *servRegistry_;
@@ -95,7 +97,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     int numBGApps_; // number of BG apps
     double rho_;
-    omnetpp::simtime_t lastFGRequestArrived_;
+    simtime_t lastFGRequestArrived_;
 
     unsigned int subscriptionId_; // identifier for new subscriptions
 
@@ -106,25 +108,25 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     typedef std::map<unsigned int, SubscriptionBase *> Subscriptions;
     Subscriptions subscriptions_; //list of all active subscriptions
 
-    std::set<omnetpp::cModule *, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
+    std::set<cModule *, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
 
     int requestQueueSize_;
 
     HttpRequestMessage *currentRequestMessageServed_;
 
-    omnetpp::cMessage *requestService_;
+    cMessage *requestService_;
     double requestServiceTime_;
-    omnetpp::cQueue requests_;               // queue that holds incoming requests
+    cQueue requests_;               // queue that holds incoming requests
 
-    omnetpp::cMessage *subscriptionService_;
+    cMessage *subscriptionService_;
     double subscriptionServiceTime_;
     int subscriptionQueueSize_;
     std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events relative to subscriptions
     EventNotification *currentSubscriptionServed_;
 
     // signals for statistics
-    omnetpp::simsignal_t requestQueueSizeSignal_;
-    omnetpp::simsignal_t responseTimeSignal_;
+    simsignal_t requestQueueSizeSignal_;
+    simsignal_t responseTimeSignal_;
 
     /*
      * This method is called for every request in the requests_ queue.
@@ -152,7 +154,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessageWhenUp(omnetpp::cMessage *msg) override;
+    virtual void handleMessageWhenUp(cMessage *msg) override;
     virtual void finish() override;
     virtual void refreshDisplay() const override;
 
@@ -210,7 +212,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
     virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
 
-    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw omnetpp::cRuntimeError("Unexpected data"); }
+    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw cRuntimeError("Unexpected data"); }
     virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
     virtual void socketEstablished(inet::TcpSocket *socket) override {}
     virtual void socketPeerClosed(inet::TcpSocket *socket) override {}

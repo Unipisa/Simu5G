@@ -88,7 +88,7 @@ void MecRTVideoStreamingReceiver::handleMessage(cMessage *msg)
     MecAppBase::handleMessage(msg);
 }
 
-void MecRTVideoStreamingReceiver::handleUeMessage(omnetpp::cMessage *msg)
+void MecRTVideoStreamingReceiver::handleUeMessage(cMessage *msg)
 {
     // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);

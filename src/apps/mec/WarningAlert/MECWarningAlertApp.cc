@@ -82,7 +82,7 @@ void MECWarningAlertApp::finish() {
     }
 }
 
-void MECWarningAlertApp::handleUeMessage(omnetpp::cMessage *msg)
+void MECWarningAlertApp::handleUeMessage(cMessage *msg)
 {
     // determine its source address/port
     auto pk = check_and_cast<Packet *>(msg);

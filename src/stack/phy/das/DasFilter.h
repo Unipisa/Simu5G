@@ -23,6 +23,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LtePhyBase;
 class LtePhyEnb;
 
@@ -148,13 +150,13 @@ class DasFilter
     double rssiThreshold_;
 
     /// Pointer to the Lte Binder
-    omnetpp::opp_component_ptr<Binder> binder_;
+    opp_component_ptr<Binder> binder_;
 
     /// Pointer to the Das filter of the master (used on UEs binded to eNBs)
     DasFilter *das_;
 
     /// Pointer to the Nic
-    omnetpp::opp_component_ptr<LtePhyBase> ltePhy_;
+    opp_component_ptr<LtePhyBase> ltePhy_;
 };
 
 } //namespace

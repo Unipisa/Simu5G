@@ -20,6 +20,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteAirFrame : public LteAirFrame_Base
 {
   protected:
@@ -44,7 +46,7 @@ class LteAirFrame : public LteAirFrame_Base
 
         // copy the attached control info, if any
         if (other.getControlInfo() != nullptr) {
-            UserControlInfo *info = omnetpp::check_and_cast<UserControlInfo *>(other.getControlInfo());
+            UserControlInfo *info = check_and_cast<UserControlInfo *>(other.getControlInfo());
             UserControlInfo *info_dup = info->dup();
             this->setControlInfo(info_dup);
         }

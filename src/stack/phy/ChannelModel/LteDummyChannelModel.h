@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteDummyChannelModel : public LteChannelModel
 {
   private:
@@ -106,7 +108,7 @@ class LteDummyChannelModel : public LteChannelModel
     //TODO
     virtual bool isErrorDas(LteAirFrame *frame, UserControlInfo *lteI)
     {
-        throw omnetpp::cRuntimeError("DAS PHY LAYER TO BE IMPLEMENTED");
+        throw cRuntimeError("DAS PHY LAYER TO BE IMPLEMENTED");
         return false;
     }
 

@@ -258,7 +258,7 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
     std::string portName;
-    omnetpp::cGate *gate;
+    cGate *gate;
     switch (lteInfo->getRlcType()) {
         case UM:
             portName = "UM_Sap$o";

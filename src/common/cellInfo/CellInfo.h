@@ -23,13 +23,15 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class DasFilter;
 
 /**
  * @class CellInfo
  * @brief There is one CellInfo module for each eNB (thus one for each cell). Keeps cross-layer information about the cell
  */
-class CellInfo : public omnetpp::cSimpleModule
+class CellInfo : public cSimpleModule
 {
   private:
     /// reference to the global module binder

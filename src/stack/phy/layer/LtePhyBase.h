@@ -29,6 +29,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * @class LtePhy
  * @brief Physical layer of Lte Nic.
@@ -68,7 +70,7 @@ class LtePhyBase : public ChannelAccess
      */
     static short airFramePriority_;
     /** channel models to use.*/
-    std::map<double, omnetpp::opp_component_ptr<LteChannelModel>> channelModel_;
+    std::map<double, opp_component_ptr<LteChannelModel>> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
@@ -94,7 +96,7 @@ class LtePhyBase : public ChannelAccess
     inet::ModuleRefByPar<Binder> binder_;
 
     /// Reference to CellInfo
-    omnetpp::opp_component_ptr<CellInfo> cellInfo_;
+    opp_component_ptr<CellInfo> cellInfo_;
 
     // used in multicast D2D to prevent a send direct towards out-of-range UEs. Range is expressed via multicastD2DRange_
     bool enableMulticastD2DRangeCheck_;
@@ -132,16 +134,16 @@ class LtePhyBase : public ChannelAccess
     bool isNr_;           // this flag is true if this module is part of the NR stack
 
     //Statistics
-    omnetpp::simsignal_t averageCqiDl_;
-    omnetpp::simsignal_t averageCqiUl_;
-    omnetpp::simsignal_t averageCqiD2D_;
+    simsignal_t averageCqiDl_;
+    simsignal_t averageCqiUl_;
+    simsignal_t averageCqiD2D_;
 
     // User that are trasmitting (uplink)
     //receiveng(downlink) current packet
     MacNodeId connectedNodeId_;
 
     // last time that the node has transmitted (currently, used only by UEs)
-    omnetpp::simtime_t lastActive_;
+    simtime_t lastActive_;
 
   public:
 
@@ -160,7 +162,7 @@ class LtePhyBase : public ChannelAccess
         return primaryChannelModel_;
     }
 
-    const std::map<double, omnetpp::opp_component_ptr<LteChannelModel>> *getChannelModels()
+    const std::map<double, opp_component_ptr<LteChannelModel>> *getChannelModels()
     {
         return &channelModel_;
     }
@@ -225,7 +227,7 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg message received from stack or from air channel
      */
-    virtual void handleMessage(omnetpp::cMessage *msg) override;
+    virtual void handleMessage(cMessage *msg) override;
 
     /**
      * Sends a frame to all NICs in range.
@@ -270,7 +272,7 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg packet received from LteStack
      */
-    virtual void handleUpperMessage(omnetpp::cMessage *msg);
+    virtual void handleUpperMessage(cMessage *msg);
 
     /**
      * Processes messages received from the wireless channel.
@@ -305,9 +307,9 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg LteAirFrame received from the air channel
      */
-    virtual void handleAirFrame(omnetpp::cMessage *msg) = 0;
+    virtual void handleAirFrame(cMessage *msg) = 0;
 
-    virtual void handleSelfMessage(omnetpp::cMessage *msg) = 0;
+    virtual void handleSelfMessage(cMessage *msg) = 0;
 
     virtual void handleControlMsg(LteAirFrame *frame, UserControlInfo *userInfo);
 
@@ -332,7 +334,7 @@ class LtePhyBase : public ChannelAccess
     /**
      * Determine radio gate index of receiving node
      */
-    int getReceiverGateIndex(const omnetpp::cModule *, bool isNr) const;
+    int getReceiverGateIndex(const cModule *, bool isNr) const;
 
   public:
     /*
@@ -342,7 +344,7 @@ class LtePhyBase : public ChannelAccess
     /*
      * Returns the time of the last transmission performed
      */
-    omnetpp::simtime_t getLastActive() { return lastActive_; }
+    simtime_t getLastActive() { return lastActive_; }
     /*
      * Returns the MAC Node Id
      */

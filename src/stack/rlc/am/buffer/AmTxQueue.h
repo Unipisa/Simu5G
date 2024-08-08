@@ -26,6 +26,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * RLC AM Mode Transmission Entity
  *
@@ -119,13 +121,13 @@ class AmTxQueue : public cSimpleModule
     int maxRtx_;
 
     // PDU retransmission timeout
-    omnetpp::simtime_t pduRtxTimeout_;
+    simtime_t pduRtxTimeout_;
 
     // control PDU retransmission timeout
-    omnetpp::simtime_t ctrlPduRtxTimeout_;
+    simtime_t ctrlPduRtxTimeout_;
 
     // Buffer analyze timeout
-    omnetpp::simtime_t bufferStatusTimeout_;
+    simtime_t bufferStatusTimeout_;
 
     //-------------------------------------------------------------------------
 

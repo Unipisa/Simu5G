@@ -18,6 +18,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /*
  * Header file containing some structs used to manage MEC-related information
  */
@@ -31,12 +33,12 @@ enum RlcBurstStatus
 
 struct Delay {
     unsigned int pktCount = 0;
-    omnetpp::simtime_t time = 0;
+    simtime_t time = 0;
 };
 
 struct Throughput {
     unsigned int pktSizeCount = 0;
-    omnetpp::simtime_t time = 0;
+    simtime_t time = 0;
 };
 
 struct DiscardedPkts {

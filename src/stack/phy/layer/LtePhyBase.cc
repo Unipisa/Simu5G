@@ -282,7 +282,7 @@ void LtePhyBase::sendUnicast(LteAirFrame *frame)
     sendDirect(frame, 0, frame->getDuration(), receiver, getReceiverGateIndex(receiver, isNrUe(dest)));
 }
 
-int LtePhyBase::getReceiverGateIndex(const omnetpp::cModule *receiver, bool isNr) const
+int LtePhyBase::getReceiverGateIndex(const cModule *receiver, bool isNr) const
 {
     int gate = (isNr) ? receiver->findGate("nrRadioIn") : receiver->findGate("radioIn");
     if (gate < 0) {

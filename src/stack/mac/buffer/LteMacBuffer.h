@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteMacQueue;
 
 /**
@@ -131,7 +133,7 @@ class LteMacBuffer
      *
      * @return Hol Timestamp (0 if queue empty)
      */
-    omnetpp::simtime_t getHolTimestamp() const;
+    simtime_t getHolTimestamp() const;
 
     /**
      * getProcessed() returns the number of sdus

@@ -19,12 +19,14 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class Binder;
 
 /*
  * This module acts as a descriptor for one Component Carrier
  */
-class ComponentCarrier : public omnetpp::cSimpleModule
+class ComponentCarrier : public cSimpleModule
 {
   protected:
     // Reference to Binder module

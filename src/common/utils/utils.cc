@@ -2,6 +2,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 namespace utils {
 
 std::vector<std::string> splitString(const std::string& str, std::string delim) {
@@ -23,7 +25,7 @@ std::vector<std::string> splitString(const std::string& str, std::string delim) 
     return splitted;
 }
 
-bool cModule_LessId::operator()(const omnetpp::cModule *left, const omnetpp::cModule *right) const
+bool cModule_LessId::operator()(const cModule *left, const cModule *right) const
 {
     return (left != nullptr ? left->getId() : -1) < (right != nullptr ? right->getId() : -1);
 }

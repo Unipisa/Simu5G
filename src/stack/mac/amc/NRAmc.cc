@@ -249,7 +249,7 @@ NRMCSelem NRAmc::getMcsElemPerCqi(Cqi cqi, const Direction dir)
     else if ((dir == UL) || (dir == D2D) || (dir == D2D_MULTI))
         mcsTable = &ulNrMcsTable_;
     else {
-        throw omnetpp::cRuntimeError("NRAmc::getIMcsPerCqi(): Unrecognized direction");
+        throw cRuntimeError("NRAmc::getIMcsPerCqi(): Unrecognized direction");
     }
     CQIelem entry = mcsTable->getCqiElem(cqi);
     LteMod mod = entry.mod_;

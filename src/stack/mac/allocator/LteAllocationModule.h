@@ -19,6 +19,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 class LteMacEnb;
 
 class LteAllocationModule
@@ -30,7 +32,7 @@ class LteAllocationModule
   protected:
 
     /// Owner MAC module
-    omnetpp::opp_component_ptr<LteMacEnb> mac_;
+    opp_component_ptr<LteMacEnb> mac_;
 
     /// Number of bands
     unsigned int bands_;

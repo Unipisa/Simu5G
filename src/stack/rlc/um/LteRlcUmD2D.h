@@ -17,6 +17,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 /**
  * @class LteRlcUmD2D
  * @brief UM Module
@@ -67,7 +69,7 @@ class LteRlcUmD2D : public LteRlcUm
      *
      * @param pkt packet to process
      */
-    virtual void handleLowerMessage(omnetpp::cPacket *pkt) override;
+    virtual void handleLowerMessage(cPacket *pkt) override;
 
     /**
      * deleteQueues() must be called on handover

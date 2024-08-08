@@ -25,6 +25,8 @@
 
 namespace simu5g {
 
+using namespace omnetpp;
+
 namespace Http {
 using namespace inet;
 
@@ -311,7 +313,7 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
     return false;
 }
 
-bool parseReceivedMsg(int socketId, std::string& packet, omnetpp::cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage)
+bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage)
 {
     EV_INFO << "httpUtils::parseReceivedMsg" << endl;
     //std::cout << "MecAppBase::parseReceivedMsg" << std::endl;
