@@ -63,9 +63,9 @@ void BurstSender::initialize(int stage)
 void BurstSender::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "selfBurst"))
+        if (msg == selfBurst_)
             sendBurst();
-        else if (!strcmp(msg->getName(), "selfPacket"))
+        else if (msg == selfPacket_)
             sendPacket();
         else
             initTraffic();

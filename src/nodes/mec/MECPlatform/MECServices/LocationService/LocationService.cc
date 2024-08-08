@@ -86,10 +86,9 @@ bool LocationService::manageSubscription()
 void LocationService::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (msg->isName("subscriptionTimer")) {
+        if (msg == subscriptionTimer_) {
             EV << "subscriptionTimer" << endl;
-            AperiodicSubscriptionTimer *subTimer = check_and_cast<AperiodicSubscriptionTimer *>(msg);
-            std::set<int> subIds = subTimer->getSubIdSet(); // TODO pass it as reference
+            std::set<int> subIds = subscriptionTimer_->getSubIdSet(); // TODO pass it as reference
             for (auto sub : subIds) {
                 if (subscriptions_.find(sub) != subscriptions_.end()) {
                     EV << "subscriptionTimer for subscription: " << sub << endl;
@@ -100,11 +99,11 @@ void LocationService::handleMessage(cMessage *msg)
                 }
                 else {
                     EV << "remove subId " << sub << " from aperiodic trimer" << endl;
-                    subTimer->removeSubId(sub);
+                    subscriptionTimer_->removeSubId(sub);
                 }
             }
-            if (subTimer->getSubIdSetSize() > 0)
-                scheduleAt(simTime() + subTimer->getPeriod(), msg);
+            if (subscriptionTimer_->getSubIdSetSize() > 0)
+                scheduleAt(simTime() + subscriptionTimer_->getPeriod(), subscriptionTimer_);
             return;
         }
     }

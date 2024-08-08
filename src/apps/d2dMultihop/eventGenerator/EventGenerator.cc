@@ -51,7 +51,7 @@ void EventGenerator::initialize()
 void EventGenerator::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "selfMessage"))
+        if (msg == selfMessage_)
             notifyEvent();
         else
             throw cRuntimeError("Unrecognized self message");

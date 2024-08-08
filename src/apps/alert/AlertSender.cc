@@ -92,7 +92,7 @@ void AlertSender::initialize(int stage)
 void AlertSender::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "selfSender"))
+        if (msg == selfSender_)
             sendAlertPacket();
         else
             throw cRuntimeError("AlertSender::handleMessage - Unrecognized self message");

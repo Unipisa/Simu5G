@@ -86,7 +86,7 @@ void TrafficLightController::initialize(int stage)
 void TrafficLightController::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "changeState")) {
+        if (msg == stateMsg_) {
             EV << "TrafficLightController::handleMessage: changeState" << endl;
             if (state_ == OFF) {
                 int state = par("startState");

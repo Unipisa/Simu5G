@@ -117,7 +117,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         // update measurements every feedback period
-        if (!strcmp(msg->getName(), "fbSource")) {
+        if (msg == fbSource_) {
             updateMeasurements();
             scheduleAt(simTime() + fbPeriod_, fbSource_);
             return;
@@ -127,7 +127,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
         if (!enablePeriodicCqiUpdate_ && !computeAvgInterference_ && positionUpdated_)
             updateMeasurements();
 
-        if (!strcmp(msg->getName(), "selfSourceDl")) {
+        if (msg == selfSource_[DL]) {
             unsigned int genBytes = generateTraffic(DL);
             if (genBytes == bufferedBytes_[DL]) {
                 // the UE has become active, signal to the manager
@@ -138,7 +138,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
             simtime_t offset = getNextGenerationTime(DL);
             scheduleAt(simTime() + offset, selfSource_[DL]);
         }
-        else if (!strcmp(msg->getName(), "selfSourceUl")) {
+        else if (msg == selfSource_[UL]) {
             unsigned int genBytes = generateTraffic(UL);
             if (genBytes == bufferedBytes_[UL]) {
                 // the UE has become active, signal to the manager

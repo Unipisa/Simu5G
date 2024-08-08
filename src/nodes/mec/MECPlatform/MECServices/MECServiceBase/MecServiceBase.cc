@@ -157,11 +157,11 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         EV << " MecServiceBase::handleMessageWhenUp - " << msg->getName() << endl;
-        if (strcmp(msg->getName(), "serveSubscription") == 0) {
+        if (msg == subscriptionService_) {
             bool res = manageSubscription();
             scheduleNextEvent(!res);
         }
-        else if (strcmp(msg->getName(), "serveRequest") == 0) {
+        else if (msg == requestService_) {
             bool res = manageRequest();
             scheduleNextEvent(!res);
         }

@@ -71,7 +71,7 @@ void CbrSender::initialize(int stage)
 void CbrSender::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "selfSource")) {
+        if (msg == selfSource_) {
             EV << "CbrSender::handleMessage - now[" << simTime() << "] <= finish[" << finishTime_ << "]" << endl;
             if (simTime() <= finishTime_ || finishTime_ == 0)
                 sendCbrPacket();

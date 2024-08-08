@@ -48,7 +48,7 @@ void D2DModeSelectionBase::initialize(int stage)
 void D2DModeSelectionBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (strcmp(msg->getName(), "modeSelectionTick") == 0) {
+        if (msg == modeSelectionTick_) {
             // run mode selection algorithm
             doModeSelection();
 

@@ -89,11 +89,11 @@ void LteCompManagerBase::initialize()
 void LteCompManagerBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (strcmp(msg->getName(), "compClientTick_") == 0) {
+        if (msg == compClientTick_) {
             runClientOperations();
             scheduleAt(NOW + TTI, msg);
         }
-        else if (strcmp(msg->getName(), "compCoordinatorTick_") == 0) {
+        else if (msg == compCoordinatorTick_) {
             runCoordinatorOperations();
             scheduleAt(NOW + coordinationPeriod_, msg);
         }

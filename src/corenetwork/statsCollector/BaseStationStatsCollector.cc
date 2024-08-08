@@ -119,24 +119,24 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         EV << collectorType_ << "::handleMessage - get " << msg->getName() << "statistics" << endl;
 
-        if (strcmp(msg->getName(), "prbUsage_") == 0) {
+        if (msg == prbUsage_) {
             add_dl_total_prb_usage_cell();
             add_ul_total_prb_usage_cell();
             scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
         }
-        else if (strcmp(msg->getName(), "activeUsers_") == 0) {
+        else if (msg == activeUsers_) {
             add_number_of_active_ue_dl_nongbr_cell();
             add_number_of_active_ue_ul_nongbr_cell();
             scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
 
         }
-        else if (strcmp(msg->getName(), "tPut_") == 0) {
+        else if (msg == tPut_) {
             add_dl_nongbr_throughput_ue_perUser();
             add_ul_nongbr_throughput_ue_perUser();
             scheduleAt(NOW + tPutPeriod_, tPut_);
 
         }
-        else if (strcmp(msg->getName(), "discardRate_") == 0) {
+        else if (msg == discardRate_) {
             add_dl_nongbr_pdr_cell();
             add_ul_nongbr_pdr_cell();
 
@@ -150,7 +150,7 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
             scheduleAt(NOW + discardRatePeriod_, discardRate_);
 
         }
-        else if (strcmp(msg->getName(), "packetDelay_") == 0) {
+        else if (msg == packetDelay_) {
             add_dl_nongbr_delay_perUser();
             add_ul_nongbr_delay_perUser();
 
@@ -158,7 +158,7 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
             resetDelayCounterPerUe();
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
         }
-        else if (strcmp(msg->getName(), "pdcpBytes_") == 0) {
+        else if (msg == pdcpBytes_) {
             add_ul_nongbr_data_volume_ue_perUser();
             add_dl_nongbr_data_volume_ue_perUser();
             resetBytesCountersPerUe();

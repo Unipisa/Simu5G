@@ -73,9 +73,9 @@ void VoIPSender::initialize(int stage)
 void VoIPSender::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (!strcmp(msg->getName(), "selfSender"))
+        if (msg == selfSender_)
             sendVoIPPacket();
-        else if (!strcmp(msg->getName(), "selfSource"))
+        else if (msg == selfSource_)
             selectPeriodTime();
         else
             initTraffic();
