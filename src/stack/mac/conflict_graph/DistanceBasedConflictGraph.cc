@@ -249,7 +249,6 @@ void DistanceBasedConflictGraph::findEdges(const std::vector<CGVertex>& vertices
                     }
                 }
             }
-
         }  // end inner loop
     } // end outer loop
 }

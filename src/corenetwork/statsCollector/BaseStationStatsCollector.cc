@@ -123,7 +123,6 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
             add_number_of_active_ue_dl_nongbr_cell();
             add_number_of_active_ue_ul_nongbr_cell();
             scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
-
         }
         else if (msg == tPut_) {
             add_dl_nongbr_throughput_ue_perUser();

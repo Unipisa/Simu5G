@@ -164,7 +164,6 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         drop(pkt);
 
         delete pkt;
-
     }
     else {
         // process AM PDU

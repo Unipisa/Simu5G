@@ -780,7 +780,6 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
             }
 
             // TODO add delete pkt (memory leak?)
-
         }
 
         EV << "LteMacBuffers : Using old buffer on node: " <<

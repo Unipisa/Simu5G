@@ -399,7 +399,6 @@ History_ *LteAmc::getHistory(Direction dir, double carrierFrequency)
             }
         }
         (*historyMap)[carrierFrequency] = history;
-
     }
     return &(historyMap->at(carrierFrequency));
 }

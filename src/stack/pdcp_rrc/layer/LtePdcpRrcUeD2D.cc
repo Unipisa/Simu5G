@@ -113,7 +113,6 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         EV << "LtePdcpRrcUeD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
-
     }
 
     // assign LCID

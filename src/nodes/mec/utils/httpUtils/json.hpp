@@ -13404,7 +13404,6 @@ class binary_writer
                                 fixed = false;
                                 break;
                         }
-
                     }
                     else
                     {

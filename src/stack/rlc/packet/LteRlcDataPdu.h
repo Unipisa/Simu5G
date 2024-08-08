@@ -180,7 +180,6 @@ class LteRlcUmDataPdu : public LteRlcDataPdu
 {
   private:
     void copy(const LteRlcUmDataPdu& other) {
-
     }
 
   public:

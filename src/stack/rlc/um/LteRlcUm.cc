@@ -313,7 +313,6 @@ void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughtput)
     ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
     if (it == ulThroughput_.end()) {
         ulThroughput_[nodeId] = throughtput;
-
     }
     else {
         it->second.pktSizeCount += throughtput.pktSizeCount;

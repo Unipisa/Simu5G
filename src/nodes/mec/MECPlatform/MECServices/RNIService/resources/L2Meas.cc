@@ -187,7 +187,6 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                 ueArray.push_back(notFound);
             }
         }
-
     }
 
     if (ueArray.size() > 1) {

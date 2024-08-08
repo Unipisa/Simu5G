@@ -85,7 +85,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
             totalPdcpArrived = 0;
             totalPdcpSno = 0;
         }
-
     };
 
     /*

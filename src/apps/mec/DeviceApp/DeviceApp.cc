@@ -122,7 +122,6 @@ void DeviceApp::handleUALCMPMessage()
                         nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
                         packet->insertAtBack(nack);
-
                     }
                     else {
                         appContextUri = contextUri;
@@ -216,7 +215,6 @@ void DeviceApp::handleUALCMPMessage()
                     ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
                     appState = IDLE;
-
                 }
                 else if (response->getCode() == 500) {
                     ack->setResult(false);

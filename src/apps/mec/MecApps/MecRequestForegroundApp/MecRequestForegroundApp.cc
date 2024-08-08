@@ -77,7 +77,6 @@ void MecRequestForegroundApp::established(int connId)
         EV << "MecRequestBackgroundApp::established - serviceSocket" << endl;
         scheduleAt(simTime() + 0, sendFGRequest);
         //scheduleAt(simTime() + exponential(lambda, 2), sendFGRequest);
-
     }
     else {
         throw cRuntimeError("MecRequestBackgroundApp::socketEstablished - Socket %d not recognized", connId);

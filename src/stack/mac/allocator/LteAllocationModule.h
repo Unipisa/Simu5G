@@ -133,7 +133,6 @@ class LteAllocationModule
             availableAntennaSet_.insert(MACRO);
             currentAntenna_ = MACRO;
         }
-
     };
 
     typedef std::map<MacNodeId, AllocatedRbsPerUeInfo> AllocatedRbsPerUeMap;
@@ -169,7 +168,6 @@ class LteAllocationModule
         {
             allocated_ = 0;
         }
-
     };
 
     typedef std::map<Band, AllocatedRbsPerBandInfo> AllocatedRbsPerBandMap;

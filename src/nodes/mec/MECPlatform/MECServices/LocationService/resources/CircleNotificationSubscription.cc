@@ -46,7 +46,7 @@ CircleNotificationSubscription::~CircleNotificationSubscription()
 {
 }
 
-void CircleNotificationSubscription::sendSubscriptionResponse() 
+void CircleNotificationSubscription::sendSubscriptionResponse()
 {
 }
 
@@ -209,7 +209,6 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
         }
 
         //get the current state of the ue
-
     }
     else {
         Http::send400Response(socket_, "enteringLeavingCriteria JSON name is mandatory");//trackingAccuracy is mandatory

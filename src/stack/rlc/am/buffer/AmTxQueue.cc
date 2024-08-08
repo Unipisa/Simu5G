@@ -179,7 +179,6 @@ void AmTxQueue::addPdus()
                     delete lteInfo_;
 
                 lteInfo_ = currentSdu_->getTag<FlowControlInfo>()->dup();
-
             }
             else {
                 // EV << NOW << " AmTxQueue::addPdus   cannot fragment new SDU since fragments do not fit - tx window is full" << std::endl;
@@ -519,7 +518,6 @@ void AmTxQueue::sendPdus(int size) {
         EV << "AmTxQueue::sendPdus sending a PDU of size "
            << pkt->getByteLength() << " (total requested: " << size
            << ")" << std::endl;
-
     }
     else {
         // throw cRuntimeError("AmTxQueue::sendPdus cannot return current head of line PDU - size too small.");

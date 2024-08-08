@@ -29,7 +29,6 @@ void UeStatsCollector::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         collectorType_ = par("collectorType").stringValue();
-
     }
     else if (stage == inet::INITSTAGE_APPLICATION_LAYER) { // same as lteMacUe, when read the interface entry
         Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);

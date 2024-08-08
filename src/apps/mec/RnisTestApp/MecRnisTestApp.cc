@@ -73,7 +73,6 @@ void MecRnisTestApp::finish()
     EV << "MecRnisTestApp::finish()" << endl;
 
     if (gate("socketOut")->isConnected()) {
-
     }
 }
 

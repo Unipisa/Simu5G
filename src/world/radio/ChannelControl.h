@@ -47,7 +47,6 @@ struct IChannelControl::RadioEntry {
             ASSERT(rhs != nullptr);
             return lhs->radioModule->getId() < rhs->radioModule->getId();
         }
-
     };
     // we cache neighbors set in an std::vector, because std::set iteration is slow;
     // std::vector is created and updated on demand

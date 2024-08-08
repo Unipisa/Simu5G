@@ -70,7 +70,6 @@ class LteSchedulerEnb
         {
             Request(0, 0, 0);
         }
-
     };
 
     // Owner MAC module. Set via initialize().

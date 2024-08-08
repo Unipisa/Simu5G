@@ -331,7 +331,6 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
             // debug
             numOfBGReqs = geometric((1 - rho_), 0);
             EV << "MecServiceBase::newRequest - number of BG requests in front of this FG request: " << numOfBGReqs << endl;
-
         }
         else {
             simtime_t deltaTime = simTime() - lastFGRequestArrived_;

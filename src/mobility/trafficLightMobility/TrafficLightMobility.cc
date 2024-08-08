@@ -52,7 +52,6 @@ void TrafficLightMobility::initialize(int stage)
                 break;
             default:
                 throw cRuntimeError("TrafficLightMobility::initialize - initial road index not valid");
-
         }
 
         if (par("updateDisplayString"))
@@ -123,7 +122,6 @@ void TrafficLightMobility::move()
                             double t = dist / speed;
                             elapsedTime = elapsedTime - t;
                             lastPosition += lastVelocity * elapsedTime;
-
                         }
                     }
                     else

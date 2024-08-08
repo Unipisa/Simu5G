@@ -202,7 +202,6 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
             else {
                 pit->second.hasArrivedAll = true;
             }
-
         }
         else {
             pit->second.hasArrivedAll = true;

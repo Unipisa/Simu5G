@@ -73,7 +73,6 @@ void VoDUDPServer::initialize(int stage)
         svcPacket tmp;
         tmp.index = LONG_MAX;
         svcTrace_.push_back(tmp);
-
     }
 
     /* Initialize parameters after the initialize() method */

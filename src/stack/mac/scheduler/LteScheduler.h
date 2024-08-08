@@ -46,7 +46,6 @@ struct SortedDesc
   public:
     SortedDesc()
     {
-
     }
 
     SortedDesc(const T x, const S score)

@@ -256,7 +256,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         desc->burstStatus_[++(desc->burstId_)] = newBurst;
         desc->burstState_ = true;
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu START burst " << desc->burstId_ << " at: " << newBurst.startBurstTransmission << endl;
-
     }
     else if (status == STOP) {
         if (desc->burstState_ == false)
@@ -277,14 +276,12 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         }
         else {
             EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu STOP burst " << desc->burstId_ << " at: " << simTime() << endl;
-
         }
     }
     else if (status == INACTIVE) {
         if (desc->burstState_ == true)
             throw cRuntimeError("%s::insertRlcPdu - node %d and lcid %d . RLC burst status INACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), desc->nodeId_, lcid, desc->burstState_);
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu INACTIVE burst" << endl;
-
     }
     else if (status == ACTIVE) {
         if (desc->burstState_ == false)
@@ -755,7 +752,6 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
 
             it = ulGrants_[nodeId].erase(it);
             return; // it is present only one grant with this grantId for this nodeId
-
         }
         else {
             ++it;

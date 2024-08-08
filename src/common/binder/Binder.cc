@@ -931,7 +931,6 @@ void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned 
 
             // update interference
             bgCellsInterferenceMatrix_[bgTrafficManagerId][extId] = newOverlapPercentage;
-
         }// end ext-cell computation
     }
     else {
@@ -978,7 +977,6 @@ void Binder::updateMutualInterference(unsigned int bgTrafficManagerId, unsigned 
 
                     ++extBgUes_it;
                 }
-
             }// end ext-cell computation
 
             ++bgUes_it;
@@ -1183,7 +1181,6 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             else
                 throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got NRueCollector required for the gNB", ue);
             addUeCollectorToEnodeB(ue, ueColl, newCell);
-
         }
         else if (newCellType == ENODEB) {
             // retrieve NrUeCollector

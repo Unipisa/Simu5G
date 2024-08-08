@@ -327,7 +327,6 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
             buf->popFront();
 
         EV << NOW << "LteMacEnbD2D::clearBsrBuffers - New length is " << buf->getQueueOccupancy() << endl;
-
     }
 }
 

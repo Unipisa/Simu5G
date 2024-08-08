@@ -93,7 +93,6 @@ void LtePhyEnb::initialize(int stage)
         }
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
-
     }
 }
 

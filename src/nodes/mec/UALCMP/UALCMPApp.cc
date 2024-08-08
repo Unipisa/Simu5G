@@ -138,7 +138,6 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
             uri << baseUriQueries_ << "/app_contexts/" << ack->getContextId();
             std::pair<std::string, std::string> locHeader("Location: ", uri.str());
             Http::send201Response(socket, jsonBody.dump().c_str(), locHeader);
-
         }
         else {
             Http::ProblemDetailBase pd;

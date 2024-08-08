@@ -87,7 +87,6 @@ class VoDUDPServer : public cSimpleModule
             currentFrame = -1;
             timestamp = -1;
         }
-
     };
     unsigned int nrec_;
 

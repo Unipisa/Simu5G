@@ -183,7 +183,6 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             stream.readByteRepeatedly('?', remainders.get());
 
             return ackStartPacket;
-
         }
         case 4: // NACK START
         {

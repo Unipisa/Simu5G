@@ -269,7 +269,6 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
         }
         else
             throw cRuntimeError("LteMacBase::bufferizePacket - cannot find mac buffer for cid %d", cid);
-
     }
     /// After bufferization buffers must be synchronized
     assert(mbuf_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());

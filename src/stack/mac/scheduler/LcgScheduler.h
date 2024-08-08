@@ -54,7 +54,6 @@ class LcgScheduler
             x_ = x;
             score_ = score;
         }
-
     };
 
     struct StatusElem

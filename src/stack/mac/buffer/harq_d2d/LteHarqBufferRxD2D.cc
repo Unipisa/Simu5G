@@ -158,7 +158,6 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                     if (info->getDirection() == D2D) {
                         check_and_cast<LteMacEnbD2D *>(nodeB_)->emit(macCellThroughputD2D_, cellTputSample);
                         macUe_emit(macThroughputD2D_, tputSample);
-
                     }
                     else {
                         nodeB_->emit(macCellThroughput_, cellTputSample);

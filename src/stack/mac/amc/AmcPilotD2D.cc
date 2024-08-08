@@ -116,7 +116,6 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
             cellWiseBand++;
             b.insert(cellWiseBand);
         }
-
     }
 
     // Set user transmission parameters

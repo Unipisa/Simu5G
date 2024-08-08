@@ -276,7 +276,6 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
         EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
         temp = packet;
         packet = *storedData + temp;
-
     }
 
     while ((pos = packet.find(delimiter)) != std::string::npos) {

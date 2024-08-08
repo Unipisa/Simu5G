@@ -87,7 +87,6 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
         }
         else
             EV << "LteRlcTm : Received " << pkt->getName() << " but no PDUs buffered - nothing to send to MAC.\n";
-
     }
     else {
         // FIXME: needs to be changed to use inet::Packet

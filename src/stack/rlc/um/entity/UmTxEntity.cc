@@ -166,7 +166,6 @@ void UmTxEntity::rlcPduMake(int pduLength)
             firstIsFragment_ = true;
 
             EV << NOW << " UmTxEntity::rlcPduMake - The new SDU has length " << len << ", left space is " << pduLength << endl;
-
         }
     }
 
@@ -227,13 +226,11 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
                     packetFlowManager_->insertRlcPdu(lcid, rlcPdu, STOP);
                     burstStatus_ = INACTIVE;
-
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - " << burstStatus_ << endl;
 
                     packetFlowManager_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
-
                 }
             }
             else {
@@ -242,14 +239,12 @@ void UmTxEntity::rlcPduMake(int pduLength)
                     EV << NOW << " UmTxEntity::burstStatus - INACTIVE -> ACTIVE" << endl;
                     //start a new burst
                     packetFlowManager_->insertRlcPdu(lcid, rlcPdu, START);
-
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - burstStatus: " << burstStatus_ << endl;
 
                     // burst in still active
                     packetFlowManager_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
-
                 }
             }
         }

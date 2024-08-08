@@ -297,7 +297,6 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
 
                     // send subscription for leaving..
                     modifySubscription();
-
                 }
                 else if (criteria == "Leaving") {
                     EV << "MECWarningAlertApp::handleTcpMsg - Ue left from the danger zone " << endl;
@@ -321,7 +320,6 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
                 inet::Packet *packet = new inet::Packet("WarningAlertPacketInfo");
                 packet->insertAtBack(alert);
                 ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
-
             }
         }
     }
@@ -332,7 +330,6 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
             EV << "MECWarningAlertApp::handleTcpMsg - response 204, removing circle" << rspMsg->getBody() << endl;
             serviceSocket_->close();
             getSimulation()->getSystemModule()->getCanvas()->removeFigure(circle);
-
         }
         else if (rspMsg->getCode() == 201) { // in response to a POST
             nlohmann::json jsonBody;
@@ -364,7 +361,6 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
             circle->setLineWidth(2);
             circle->setLineColor(cFigure::RED);
             getSimulation()->getSystemModule()->getCanvas()->addFigure(circle);
-
         }
     }
 }
@@ -393,7 +389,6 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
             inet::Packet *packet = new inet::Packet("WarningAlertPacketInfo");
             packet->insertAtBack(nack);
             ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
-
         }
     }
 

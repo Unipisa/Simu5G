@@ -334,7 +334,6 @@ void LteAllocatorBestFit::prepareSchedule()
                     newHole = false;
                 }
                 holeLen++;
-
             }
         }
         else {
@@ -374,7 +373,6 @@ void LteAllocatorBestFit::prepareSchedule()
                     newHole = false;
                 }
                 holeLen++;
-
             }
         }
 
