@@ -32,7 +32,6 @@ import org.car2x.veins.base.modules.*;
 module Car extends Ue
 {
     parameters:
-
         @display("i=device/car");
 
         //# Mobility

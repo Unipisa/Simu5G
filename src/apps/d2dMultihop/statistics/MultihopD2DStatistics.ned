@@ -19,7 +19,6 @@ package simu5g.apps.d2dMultihop.statistics;
 simple MultihopD2DStatistics
 {
     parameters:
-
         @signal[d2dMultihopEventDeliveryRatio];
         @statistic[d2dMultihopEventDeliveryRatio](title="Avg delivery ratio within the area"; unit=""; source="d2dMultihopEventDeliveryRatio"; record=mean,sum,min,max);
         @signal[d2dMultihopEventDelay];

@@ -39,7 +39,6 @@ simple MecOrchestrator
         double terminationTime @unit(s) = default(50ms);
 
     gates:
-
         output toUALCMP;
         input fromUALCMP;
 }

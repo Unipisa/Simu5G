@@ -50,7 +50,6 @@ module VirtualisationInfrastructure
         int numExtEthInterfaces = default(0);
 
     gates:
-
         inout ppp[];				// connection with GtpEndpoint and local/external networks
 
         output independentMecAppOut[numIndependentMecApp];			// connection to the ME App input gate

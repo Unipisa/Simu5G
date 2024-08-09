@@ -39,7 +39,6 @@ simple MecRequestApp like IApp
         @signal[recvResponseSno];
         @statistic[recvResponseSno](title="Received Sequence number"; unit=""; source="recvResponseSno"; record=vector);
     gates:
-
         output socketOut;
         input socketIn;
 }

@@ -47,7 +47,6 @@ module MECHost
         object bsList = default([]);
 
     gates:
-
 		//to local radio networks
         inout ppp[];
 

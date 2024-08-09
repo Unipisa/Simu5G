@@ -18,7 +18,6 @@ package simu5g.stack.mac;
 simple LteMacEnb extends LteMacBase
 {
     parameters:
-
         @class("LteMacEnb");
 
         //# volatile xml optSolution = default(xmldoc("solution.sol"));

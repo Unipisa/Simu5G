@@ -40,7 +40,6 @@ module UALCMP
         int numExtEthInterfaces = default(0); //
 
     gates:
-
         //to external networks (internet)
         inout ppp[];
 

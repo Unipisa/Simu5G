@@ -22,7 +22,6 @@ moduleinterface IMEService
         string serviceName;
 
     gates:
-
         input meAppIn[];
         output meAppOut[];
 }

@@ -28,7 +28,6 @@ import simu5g.stack.rlc.LteRlc;
 module LteNicBase extends NetworkInterface like ICellularNic
 {
     parameters:
-
         @class(::inet::NetworkInterface);
         @display("i=block/ifcard;bgb=704,443;bgl=3");
         bool isWireless = true;

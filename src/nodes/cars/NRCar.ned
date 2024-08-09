@@ -32,7 +32,6 @@ import org.car2x.veins.base.modules.*;
 module NRCar extends NRUe
 {
     parameters:
-
         @display("i=device/car");
 
         //# Mobility

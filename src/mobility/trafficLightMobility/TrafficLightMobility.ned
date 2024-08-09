@@ -21,7 +21,6 @@ import inet.mobility.single.LinearMobility;
 simple TrafficLightMobility extends LinearMobility
 {
     parameters:
-
         @class(TrafficLightMobility);
 
         int initialRoadIndex = default(0);
