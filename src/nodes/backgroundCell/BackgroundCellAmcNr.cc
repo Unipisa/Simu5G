@@ -62,7 +62,6 @@ unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Dire
 
     EV << NOW << " BackgroundCellAmcNr::computeBitsPerRbBackground Available space: " << tbs << "\n";
     return tbs;
-
 }
 
 NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)

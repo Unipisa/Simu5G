@@ -44,7 +44,6 @@ void MecRequestBackgroundGeneratorApp::handleServiceMessage(int connId)
     EV << "payload: " << serviceHttpMessage->getBody() << endl;
     if (burstFlag)
         scheduleAt(simTime() + 0, sendBurst);
-
 }
 
 void MecRequestBackgroundGeneratorApp::established(int connId)

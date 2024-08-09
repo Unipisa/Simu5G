@@ -129,7 +129,6 @@ void MeasRepUeSubscription::sendSubscriptionResponse() {
     val[subscriptionType_]["_links"]["self"] = links_;
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
-
 }
 
 void MeasRepUeSubscription::sendNotification(EventNotification *event) {}

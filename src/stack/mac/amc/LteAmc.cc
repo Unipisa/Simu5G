@@ -804,7 +804,6 @@ unsigned int LteAmc::computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blo
     EV << NOW << " LteAmc::computeBitsOnNRbs_MB Available space: " << tbsVect[blocks - 1] << "\n";
 
     return tbsVect[blocks - 1];
-
 }
 
 unsigned int LteAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)

@@ -63,7 +63,6 @@ void ConflictGraph::computeConflictGraph()
     findEdges(vertices);
 
     EV << " ConflictGraph::computeConflictGraph - END " << endl;
-
 }
 
 void ConflictGraph::printConflictGraph()

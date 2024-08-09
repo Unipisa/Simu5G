@@ -16,6 +16,4 @@ simple TrafficGeneratorCbr extends TrafficGeneratorBase
     parameters:
         @display("i=block/source");
         @class("TrafficGeneratorCbr");
-
-
 }

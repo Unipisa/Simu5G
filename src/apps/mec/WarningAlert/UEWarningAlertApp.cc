@@ -156,7 +156,6 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
 
 void UEWarningAlertApp::finish()
 {
-
 }
 
 /*

@@ -392,7 +392,6 @@ void TrafficLightController::drawRect()
 
     if (getSimulation()->getSystemModule()->getCanvas()->findFigure(rect_) == -1)
         getSimulation()->getSystemModule()->getCanvas()->addFigure(rect_);
-
 }
 
 } //namespace

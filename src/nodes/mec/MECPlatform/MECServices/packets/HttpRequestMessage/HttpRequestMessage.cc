@@ -19,7 +19,6 @@ HttpRequestMessage::HttpRequestMessage(const std::string method, const char *nam
     setMethod(method.c_str());
     setContentType("application/json");
     setBody("");
-
 }
 
 HttpRequestMessage::HttpRequestMessage(const char *method, const char *name, short kind)

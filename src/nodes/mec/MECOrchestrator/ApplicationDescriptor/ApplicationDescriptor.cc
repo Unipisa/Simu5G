@@ -87,7 +87,6 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     }
 
     this->printApplicationDescriptor();
-
 }
 
 ApplicationDescriptor::ApplicationDescriptor(const std::string& appDid, const std::string& appName, const std::string& appProvider, const std::string& appInfoName, const std::string& appDescription,

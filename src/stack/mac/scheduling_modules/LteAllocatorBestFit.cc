@@ -58,7 +58,6 @@ void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsign
         }
         // else do not update. The current candidate would satisfy the requested load.
     }
-
 }
 
 bool LteAllocatorBestFit::checkConflict(const CGMatrix *cgMatrix, MacNodeId nodeIdA, MacNodeId nodeIdB)

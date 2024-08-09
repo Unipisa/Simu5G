@@ -64,7 +64,6 @@ void MecRnisTestApp::initialize(int stage)
     // connect with the service registry
     cMessage *msg = new cMessage("connectMp1");
     scheduleAt(simTime() + 0, msg);
-
 }
 
 void MecRnisTestApp::finish()

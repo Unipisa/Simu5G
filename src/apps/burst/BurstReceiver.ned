@@ -28,6 +28,5 @@ simple BurstReceiver like IApp
     gates:
         output socketOut;
         input socketIn;
-
 }
 

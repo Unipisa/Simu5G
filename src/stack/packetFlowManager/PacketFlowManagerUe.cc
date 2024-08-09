@@ -148,7 +148,6 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet *pdcpPkt)
     pktDiscardCounterTotal_.total += 1;
 
     EV_FATAL << NOW << "node id " << desc->nodeId_ - 1025 << " " << pfmType << "::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno << " added. Logicl cid " << lcid << endl;
-
 }
 
 void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
@@ -269,7 +268,6 @@ void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bo
     }
     //remove discarded rlc pdu
     desc->rlcSdusPerPdu_.erase(rlcSno);
-
 }
 
 void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)

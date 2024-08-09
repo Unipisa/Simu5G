@@ -252,7 +252,6 @@ bool LteHarqProcessTx::isHarqProcessActive()
             return true;
     }
     return false;
-
 }
 
 LteHarqProcessTx::~LteHarqProcessTx()

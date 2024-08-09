@@ -992,7 +992,6 @@ double Binder::computeInterferencePercentageDl(double n, double k, unsigned int 
 
     double min = (n < k) ? n : k;
     return (double)min / n;
-
 }
 
 double Binder::computeInterferencePercentageUl(double n, double k, double nTotal, double kTotal)

@@ -69,7 +69,6 @@ void ChannelControl::initialize()
     lastOngoingTransmissionsUpdate = 0;
 
     maxInterferenceDistance = calcInterfDist();
-
 }
 
 /**

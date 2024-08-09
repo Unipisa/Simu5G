@@ -152,7 +152,6 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
 
 void UeRnisTestApp::finish()
 {
-
 }
 
 /*

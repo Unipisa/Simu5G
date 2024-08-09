@@ -254,7 +254,6 @@ nlohmann::ordered_json L2Meas::toJson(std::vector<MacCellId>& cellsID, std::vect
     val["cellUEInfo"] = toJsonUe(uesID)["L2Meas"]["cellUEInfo"];
     l2Meas["L2Meas"] = val;
     return l2Meas;
-
 }
 
 } //namespace

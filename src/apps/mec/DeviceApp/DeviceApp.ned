@@ -35,5 +35,4 @@ simple DeviceApp like IApp
     gates:
         input socketIn @labels(TcpCommand/up);
         output socketOut @labels(TcpCommand/down);
-
 }

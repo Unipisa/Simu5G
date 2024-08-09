@@ -59,7 +59,6 @@ void MecRequestBackgroundApp::initialize(int stage) {
     lambda = par("lambda").doubleValue();
     mecAppId = getId();
     scheduleAt(simTime() + 0, m);
-
 }
 
 void MecRequestBackgroundApp::sendRequest() {

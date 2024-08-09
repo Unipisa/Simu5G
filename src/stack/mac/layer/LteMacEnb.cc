@@ -673,7 +673,6 @@ void LteMacEnb::macPduUnmake(cPacket *pktAux)
 
     ASSERT(pkt->getOwner() == this);
     delete pkt;
-
 }
 
 bool LteMacEnb::bufferizePacket(cPacket *pktAux)

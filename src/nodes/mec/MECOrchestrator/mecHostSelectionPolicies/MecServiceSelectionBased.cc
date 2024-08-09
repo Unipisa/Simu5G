@@ -68,7 +68,6 @@ cModule *MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
         EV << "MecServiceSelectionBased::findBestMecHost - no MEC host found" << endl;
 
     return bestHost;
-
 }
 
 } //namespace

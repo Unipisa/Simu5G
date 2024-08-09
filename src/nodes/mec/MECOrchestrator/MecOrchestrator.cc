@@ -67,7 +67,6 @@ void MecOrchestrator::initialize(int stage)
 
     getConnectedMecHosts();
     onboardApplicationPackages();
-
 }
 
 void MecOrchestrator::handleMessage(cMessage *msg)
@@ -94,7 +93,6 @@ void MecOrchestrator::handleMessage(cMessage *msg)
 
     delete msg;
     return;
-
 }
 
 void MecOrchestrator::handleUALCMPMessage(cMessage *msg)
@@ -317,7 +315,6 @@ void MecOrchestrator::stopMECApp(UALCMPMessage *msg) {
 
     double processingTime = terminationTime;
     scheduleAt(simTime() + processingTime, mecoMsg);
-
 }
 
 void MecOrchestrator::sendDeleteAppContextAck(bool result, unsigned int requestSno, int contextId)

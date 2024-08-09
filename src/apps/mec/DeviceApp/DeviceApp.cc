@@ -332,7 +332,6 @@ void DeviceApp::handleMessage(cMessage *msg)
     else if (UALCMPSocket_.belongsToSocket(msg)) {
         UALCMPSocket_.processMessage(msg);
     }
-
 }
 
 void DeviceApp::connectToUALCMP()

@@ -25,6 +25,5 @@ simple MecPlatformManager
         string serviceRegistryModule = default("^.mecPlatform.serviceRegistry");
         string vimModule = default("^.vim");
         @display("i=block/control");
-
 }
 

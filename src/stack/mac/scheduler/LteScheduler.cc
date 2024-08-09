@@ -44,7 +44,6 @@ void LteScheduler::initializeBandLimit()
         slotRtxBandLimit_.push_back(elem);
         slotReqGrantBandLimit_.push_back(elem);
     }
-
 }
 
 void LteScheduler::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)

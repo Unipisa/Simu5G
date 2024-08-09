@@ -574,7 +574,6 @@ void IP2Nic::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
     }
 
     hoHolding_.erase(ueId);
-
 }
 
 void IP2Nic::triggerHandoverUe(MacNodeId newMasterId, bool isNr)

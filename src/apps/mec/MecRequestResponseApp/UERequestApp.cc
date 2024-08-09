@@ -96,7 +96,6 @@ void UERequestApp::initialize(int stage)
     upLinkTime_ = registerSignal("upLinkTime");
     downLinkTime_ = registerSignal("downLinkTime");
     responseTime_ = registerSignal("responseTime");
-
 }
 
 void UERequestApp::handleMessage(cMessage *msg)
@@ -259,7 +258,6 @@ void UERequestApp::sendRequest()
     start_ = simTime();
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
-
 }
 
 void UERequestApp::handleStopApp(cMessage *msg)
@@ -282,7 +280,6 @@ void UERequestApp::sendStopApp()
     pkt->insertAtBack(req);
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
-
 }
 
 void UERequestApp::recvResponse(cMessage *msg)

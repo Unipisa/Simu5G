@@ -216,7 +216,6 @@ void PacketFlowManagerEnb::receivedPdcpSdu(inet::Packet *pdcpPkt)
     cit->second.totalPdcpSno += 1;
 
     EV << pfmType << "::insertPdcpSdu - UL PDPC sdu bits: " << sduDataVolume_[nodeId].ulBits << " received from node: " << nodeId << endl;
-
 }
 
 void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {

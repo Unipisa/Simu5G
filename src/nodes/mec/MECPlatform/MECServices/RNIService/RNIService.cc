@@ -154,7 +154,6 @@ void RNIService::finish()
 }
 
 RNIService::~RNIService() {
-
 }
 
 } //namespace

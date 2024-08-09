@@ -173,7 +173,6 @@ class LteCellInfo
     @opaque;
     @polymorphic(false);
     @toString(.str());
-
 }
 
 class LteMacEnb
@@ -215,4 +214,3 @@ class ExtCell
     @polymorphic(false);
     @toString(.str());
 }
- 

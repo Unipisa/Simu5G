@@ -17,5 +17,4 @@ simple NRMacUe extends LteMacUeD2D
 {
     parameters:
         @class("NRMacUe");
-
 }
