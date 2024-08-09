@@ -8,7 +8,7 @@
 //
 
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-#include <math.h>       /* pow */
+#include <math.h>       // pow
 #include  <iostream>
 
 namespace simu5g {

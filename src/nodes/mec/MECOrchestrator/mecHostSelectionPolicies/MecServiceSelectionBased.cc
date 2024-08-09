@@ -39,7 +39,7 @@ cModule *MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
         auto mecServices = mecpm->getAvailableMecServices();
         std::string serviceName;
 
-        /* I assume the app requires only one mec service */
+        // I assume the app requires only one mec service
         if (appDesc.getAppServicesRequired().size() > 0) {
             serviceName = appDesc.getAppServicesRequired()[0];
             EV << "MecServiceSelectionBased::findBestMecHost - required Mec Service: " << serviceName << endl;

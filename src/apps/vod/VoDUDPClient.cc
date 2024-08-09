@@ -24,7 +24,7 @@ void VoDUDPClient::initialize(int stage)
 {
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
-    /* Get parameters from INI file */
+    // Get parameters from INI file
     EV << "VoD Client initialized: stage " << stage << endl;
 
     stringstream ss;
@@ -44,7 +44,7 @@ void VoDUDPClient::initialize(int stage)
     string nsOutput = "./Framework/clients/client" + ss.str() + "/nsout.txt";
     outfile.open(nsOutput.c_str(), ios::out);
 
-    if (outfile.bad()) /* File is bad */
+    if (outfile.bad()) // File is bad
         throw cRuntimeError("Error while opening output file (File not found or incorrect type)");
 
     totalRcvdBytes_ = 0;
@@ -68,7 +68,7 @@ void VoDUDPClient::finish()
     outfile.close();
     string startMetrics = par("startMetrics").stringValue();
 
-    /* Parameters to be sent to ana.sh */
+    // Parameters to be sent to ana.sh
 
     string inputFileName = par("vod_trace_file").stringValue();
     string bsePath = par("bsePath").stringValue();

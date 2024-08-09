@@ -86,7 +86,7 @@ void ExtCell::initialize(int stage)
             }
 
             // TODO: if extCell-interference is disabled, do not send selfMessages
-            /* Start TTI tick */
+            // Start TTI tick
             ttiTick_ = new cMessage("ttiTick_");
             ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
             scheduleAt(NOW + TTI, ttiTick_);

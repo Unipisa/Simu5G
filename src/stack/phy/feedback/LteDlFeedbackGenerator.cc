@@ -54,7 +54,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
             masterId_ = networkNode->par("masterId");
         nodeId_ = networkNode->par("macNodeId");
 
-        /** Initialize timers **/
+        // Initialize timers
 
         tPeriodicSensing_ = new TTimer(this);
         tPeriodicSensing_->setTimerId(PERIODIC_SENSING);

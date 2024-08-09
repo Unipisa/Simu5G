@@ -355,28 +355,28 @@ void LteMacBase::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         networkNode_ = getContainingNode(this);
 
-        /* Gates initialization */
+        // Gates initialization
         up_[IN_GATE] = gate("RLC_to_MAC");
         up_[OUT_GATE] = gate("MAC_to_RLC");
         down_[IN_GATE] = gate("PHY_to_MAC");
         down_[OUT_GATE] = gate("MAC_to_PHY");
 
-        /* Create buffers */
+        // Create buffers
         queueSize_ = par("queueSize");
 
-        /* Get reference to binder */
+        // Get reference to binder
         binder_.reference(this, "binderModule", true);
 
         // get the reference to the PHY layer
         phy_ = check_and_cast<LtePhyBase *>(down_[OUT_GATE]->getPathEndGate()->getOwnerModule());
 
-        /* Set the MAC MIB */
+        // Set the MAC MIB
 
         muMimo_ = par("muMimo");
 
         harqProcesses_ = par("harqProcesses");
 
-        /* statistics */
+        // statistics
         statDisplay_ = par("statDisplay");
 
         totalOverflowedBytes_ = 0;
@@ -387,7 +387,7 @@ void LteMacBase::initialize(int stage)
 
         packetFlowManager_.reference(this, "packetFlowManagerModule", false);
 
-        /* register signals */
+        // register signals
         macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");
         macBufferOverflowUl_ = registerSignal("macBufferOverFlowUl");
         if (isD2DCapable())

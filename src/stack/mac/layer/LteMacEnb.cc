@@ -83,7 +83,7 @@ CellInfo *LteMacEnb::getCellInfo()
 
 int LteMacEnb::getNumAntennas()
 {
-    /* Get number of antennas: +1 is for MACRO */
+    // Get number of antennas: +1 is for MACRO
     return cellInfo_->getNumRus() + 1;
 }
 
@@ -135,7 +135,7 @@ void LteMacEnb::initialize(int stage)
 
         cellInfo_.reference(this, "cellInfoModule", true);
 
-        /* Get number of antennas */
+        // Get number of antennas
         numAntennas_ = getNumAntennas();
 
         eNodeBCount = par("eNodeBCount");
@@ -143,7 +143,7 @@ void LteMacEnb::initialize(int stage)
         WATCH_MAP(bsrbuf_);
     }
     else if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT) {
-        /* Create and initialize AMC module */
+        // Create and initialize AMC module
         std::string amcType = par("amcType").stdstringValue();
         if (amcType == "NRAmc")
             amc_ = new NRAmc(this, binder_, cellInfo_, numAntennas_);
@@ -170,7 +170,7 @@ void LteMacEnb::initialize(int stage)
 
         cModule *hostModule = getContainingNode(this);
 
-        /* Insert EnbInfo in the Binder */
+        // Insert EnbInfo in the Binder
         EnbInfo *info = new EnbInfo();
         info->id = nodeId_;            // local MAC ID
         info->nodeType = nodeType_;    // eNB or gNB
@@ -185,14 +185,14 @@ void LteMacEnb::initialize(int stage)
         binder_->registerModule(nodeId_, hostModule);
     }
     else if (stage == inet::INITSTAGE_LINK_LAYER) {
-        /* Create and initialize MAC Downlink scheduler */
+        // Create and initialize MAC Downlink scheduler
         if (enbSchedulerDl_ == nullptr) {
             enbSchedulerDl_ = new LteSchedulerEnbDl();
             (enbSchedulerDl_->resourceBlocks()) = cellInfo_->getNumBands();
             enbSchedulerDl_->initialize(DL, this, binder_);
         }
 
-        /* Create and initialize MAC Uplink scheduler */
+        // Create and initialize MAC Uplink scheduler
         if (enbSchedulerUl_ == nullptr) {
             enbSchedulerUl_ = new LteSchedulerEnbUl();
             (enbSchedulerUl_->resourceBlocks()) = cellInfo_->getNumBands();
@@ -209,7 +209,7 @@ void LteMacEnb::initialize(int stage)
         }
     }
     else if (stage == inet::INITSTAGE_LAST) {
-        /* Start TTI tick */
+        // Start TTI tick
         // the period is equal to the minimum period according to the numerologies used by the carriers in this node
         ttiTick_ = new cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);                                              // TTI TICK after other messages
@@ -818,7 +818,7 @@ void LteMacEnb::handleSelfMessage()
 
     EV << "-----" << "ENB MAIN LOOP -----" << endl;
 
-    /* Reception */
+    // Reception
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
     auto mit = harqRxBuffers_.begin();
@@ -839,7 +839,7 @@ void LteMacEnb::handleSelfMessage()
         }
     }
 
-    /*UPLINK*/
+    // UPLINK
     EV << "============================================== UPLINK ==============================================" << endl;
     // init and reset global allocation information
     if (binder_->getLastUpdateUlTransmissionInfo() < NOW)                                                            // once per TTI, even in case of multicell scenarios
@@ -853,7 +853,7 @@ void LteMacEnb::handleSelfMessage()
     EV << "============================================ END UPLINK ============================================" << endl;
 
     EV << "============================================ DOWNLINK ==============================================" << endl;
-    /*DOWNLINK*/
+    // DOWNLINK
 
     // use this flag to enable/disable scheduling...don't look at me, this is very useful!!!
     bool activation = true;

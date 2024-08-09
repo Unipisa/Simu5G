@@ -260,22 +260,22 @@ LteAmc& LteAmc::operator=(const LteAmc& other)
 
 void LteAmc::initialize()
 {
-    /** Get MacNodeId and MacCellId **/
+    // Get MacNodeId and MacCellId
     nodeId_ = mac_->getMacNodeId();
     cellId_ = mac_->getMacCellId();
 
-    /** Get deployed UEs maps from Binder **/
+    // Get deployed UEs maps from Binder
     dlConnectedUe_ = binder_->getDeployedUes(nodeId_, DL);
     ulConnectedUe_ = binder_->getDeployedUes(nodeId_, UL);
     d2dConnectedUe_ = binder_->getDeployedUes(nodeId_, UL);
 
-    /** Get parameters from cellInfo **/
+    // Get parameters from cellInfo
     numBands_ = cellInfo_->getPrimaryCarrierNumBands();
     mcsScaleDl_ = cellInfo_->getMcsScaleDl();
     mcsScaleUl_ = cellInfo_->getMcsScaleUl();
     mcsScaleD2D_ = cellInfo_->getMcsScaleUl();
 
-    /** Get AMC parameters from MAC module NED **/
+    // Get AMC parameters from MAC module NED
     fbhbCapacityDl_ = mac_->par("fbhbCapacityDl");
     fbhbCapacityUl_ = mac_->par("fbhbCapacityUl");
     fbhbCapacityD2D_ = mac_->par("fbhbCapacityD2D");
@@ -288,7 +288,7 @@ void LteAmc::initialize()
 
     printParameters();
 
-    /** Structures initialization **/
+    // Structures initialization
 
     // Scale MCS Tables
     dlMcsTable_.rescale(mcsScaleDl_);
@@ -310,7 +310,7 @@ void LteAmc::initialize()
     ConnectedUesMap::const_iterator it, et;
     RemoteSet::const_iterator ait, aet;
 
-    /* DOWNLINK */
+    // DOWNLINK
 
     it = dlConnectedUe_.begin();
     et = dlConnectedUe_.end();
@@ -325,7 +325,7 @@ void LteAmc::initialize()
         EV << "Creating UE, id: " << nodeId << ", index: " << dlNodeIndex_[nodeId] << endl;
     }
 
-    /* UPLINK */
+    // UPLINK
     EV << "UL CONNECTED: " << dlConnectedUe_.size() << endl;
 
     it = ulConnectedUe_.begin();
@@ -337,7 +337,7 @@ void LteAmc::initialize()
         ulRevNodeIndex_.push_back(nodeId);
     }
 
-    /* D2D */
+    // D2D
     EV << "D2D CONNECTED: " << d2dConnectedUe_.size() << endl;
 
     it = d2dConnectedUe_.begin();

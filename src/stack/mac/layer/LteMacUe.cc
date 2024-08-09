@@ -120,7 +120,7 @@ void LteMacUe::initialize(int stage)
         else
             nodeId_ = networkNode_->par("macNodeId");
 
-        /* Insert UeInfo in the Binder */
+        // Insert UeInfo in the Binder
         UeInfo *info = new UeInfo();
         info->id = nodeId_;            // local mac ID
         info->cellId = cellId_;        // cell ID
@@ -197,7 +197,7 @@ void LteMacUe::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_LAST) {
 
-        /* Start TTI tick */
+        // Start TTI tick
         ttiTick_ = new cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);    // TTI TICK after other messages
 

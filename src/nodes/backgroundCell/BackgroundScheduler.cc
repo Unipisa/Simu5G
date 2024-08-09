@@ -49,7 +49,7 @@ void BackgroundScheduler::initialize(int stage)
         ulBandAllocation_.resize(numBands_, 0);
 
         // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
-        /* Start TTI tick */
+        // Start TTI tick
         ttiTick_ = new cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
         ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex_);

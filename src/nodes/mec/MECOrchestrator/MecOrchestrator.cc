@@ -98,11 +98,11 @@ void MecOrchestrator::handleUALCMPMessage(cMessage *msg)
 {
     UALCMPMessage *lcmMsg = check_and_cast<UALCMPMessage *>(msg);
 
-    /* Handling CREATE_CONTEXT_APP */
+    // Handling CREATE_CONTEXT_APP
     if (!strcmp(lcmMsg->getType(), CREATE_CONTEXT_APP))
         startMECApp(lcmMsg);
 
-    /* Handling DELETE_CONTEXT_APP */
+    // Handling DELETE_CONTEXT_APP
     else if (!strcmp(lcmMsg->getType(), DELETE_CONTEXT_APP))
         stopMECApp(lcmMsg);
 }
@@ -380,7 +380,7 @@ cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         auto mecServices = mecpm->getAvailableMecServices();
         std::string serviceName;
 
-        /* I assume the app requires only one MEC service */
+        // I assume the app requires only one MEC service
         if (appDesc.getAppServicesRequired().size() > 0) {
             serviceName = appDesc.getAppServicesRequired()[0];
         }

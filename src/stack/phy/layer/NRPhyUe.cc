@@ -433,7 +433,7 @@ void NRPhyUe::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
 
 void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
 {
-    /* Delete MAC Buffers */
+    // Delete MAC Buffers
 
     // delete macBuffer[nodeId_] at old master
     LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, masterId));
@@ -442,7 +442,7 @@ void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this UE
     mac_->deleteQueues(masterId_);
 
-    /* Delete RLC UM Buffers */
+    // Delete RLC UM Buffers
 
     // delete UmTxQueue[nodeId_] at old master
     LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(getRlcByMacNodeId(binder_, masterId, UM));
@@ -451,7 +451,7 @@ void NRPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this UE
     rlcUm_->deleteQueues(nodeId_);
 
-    /* Delete PDCP Entities */
+    // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master
     // in case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
     MacNodeId masterNodeId = binder_->getMasterNode(masterId);

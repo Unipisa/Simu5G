@@ -56,7 +56,7 @@ void VoDUDPServer::initialize(int stage)
             throw cRuntimeError("VoDUDPServer::initialize - only SVC trace is currently available. Abort.");
 
         infile.open(inputFileName.c_str(), ios::in);
-        if (infile.bad()) /* Or the file is bad */
+        if (infile.bad()) // Or the file is bad
             throw cRuntimeError("Error while opening input file (File not found or incorrect type)");
 
         infile.seekg(0, ios::beg);
@@ -75,7 +75,7 @@ void VoDUDPServer::initialize(int stage)
         svcTrace_.push_back(tmp);
     }
 
-    /* Initialize parameters after the initialize() method */
+    // Initialize parameters after the initialize() method
     EV << "VoD Server initialize: Trace: " << inputFileName << " trace type " << traceType << endl;
     cMessage *timer = new cMessage("Timer");
     double start = par("startTime");
@@ -104,7 +104,7 @@ void VoDUDPServer::handleMessage(cMessage *msg)
                 clientAddr.push_back(L3AddressResolver().resolve(token.c_str()));
             }
 
-            /* Register video streams*/
+            // Register video streams
 
             for (const auto & i : clientAddr) {
                 M1Message *M1 = new M1Message();
@@ -133,7 +133,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
     M1Message *msgNew = static_cast<M1Message *>(msg);
     long numPkSentApp = msgNew->getNumPkSent();
     if (svcTrace_[numPkSentApp].index == LONG_MAX) {
-        /* End of file, send finish packet */
+        // End of file, send finish packet
         Packet *fm = new Packet("VoDFinishPacket");
         socket.sendTo(fm, msgNew->getClientAddr(), msgNew->getClientPort());
         return;
@@ -147,7 +147,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
         frame->setFrameSeqNum(seq_num);
         frame->setPayloadTimestamp(simTime());
         frame->setChunkLength(B(svcTrace_[numPkSentApp].length));
-        frame->setFrameLength(svcTrace_[numPkSentApp].length + 2 * sizeof(int)); /* Seq_num plus frame length plus payload */
+        frame->setFrameLength(svcTrace_[numPkSentApp].length + 2 * sizeof(int)); // Seq_num plus frame length plus payload
         frame->setTid(svcTrace_[numPkSentApp].tid);
         frame->setQid(svcTrace_[numPkSentApp].qid);
         frame->addTag<CreationTimeTag>()->setCreationTime(simTime());
@@ -156,7 +156,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
         socket.sendTo(packet, msgNew->getClientAddr(), msgNew->getClientPort());
         numPkSentApp++;
         while (true) {
-            /* Get info about the frame from file */
+            // Get info about the frame from file
 
             if (svcTrace_[numPkSentApp].index == LONG_MAX)
                 break;
@@ -172,7 +172,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
             frame->setFrameSeqNum(seq_num);
             frame->setPayloadTimestamp(simTime());
             frame->setChunkLength(B(svcTrace_[numPkSentApp].length));
-            frame->setFrameLength(svcTrace_[numPkSentApp].length + 2 * sizeof(int)); /* Seq_num plus frame length plus payload */
+            frame->setFrameLength(svcTrace_[numPkSentApp].length + 2 * sizeof(int)); // Seq_num plus frame length plus payload
             frame->addTag<CreationTimeTag>()->setCreationTime(simTime());
             packet->insertAtBack(frame);
             socket.sendTo(packet, msgNew->getClientAddr(), msgNew->getClientPort());

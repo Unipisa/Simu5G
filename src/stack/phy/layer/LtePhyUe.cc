@@ -648,7 +648,7 @@ double LtePhyUe::updateHysteresisTh(double v)
 
 void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
 {
-    /* Delete Mac Buffers */
+    // Delete Mac Buffers
 
     // delete macBuffer[nodeId_] at old master
     LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, masterId));
@@ -657,7 +657,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this ue
     mac_->deleteQueues(masterId_);
 
-    /* Delete Rlc UM Buffers */
+    // Delete Rlc UM Buffers
 
     // delete UmTxQueue[nodeId_] at old master
     LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(getRlcByMacNodeId(binder_, masterId, UM));
@@ -666,7 +666,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete queues for master at this ue
     rlcUm_->deleteQueues(nodeId_);
 
-    /* Delete PDCP Entities */
+    // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master
     LtePdcpRrcEnb *masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(binder_, masterId));
     masterPdcp->deleteEntities(nodeId_);

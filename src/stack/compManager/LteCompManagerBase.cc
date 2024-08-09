@@ -67,7 +67,7 @@ void LteCompManagerBase::initialize()
         if (coordinationPeriod_ < TTI)
             coordinationPeriod_ = TTI;
 
-        /* Start coordinator tick */
+        // Start coordinator tick
         compCoordinatorTick_ = new cMessage("compCoordinatorTick_");
         compCoordinatorTick_->setSchedulingPriority(3);        // compCoordinatorTick_ after slaves' TTI TICK. TODO check if it must be done before or after..
         scheduleAt(NOW + coordinationPeriod_, compCoordinatorTick_);
@@ -79,7 +79,7 @@ void LteCompManagerBase::initialize()
 
         coordinatorId_ = par("coordinatorId");
 
-        /* Start TTI tick */
+        // Start TTI tick
         compClientTick_ = new cMessage("compClientTick_");
         compClientTick_->setSchedulingPriority(2);        // compClientTick_ after MAC's TTI TICK. TODO check if it must be done before or after..
         scheduleAt(NOW + TTI, compClientTick_);
