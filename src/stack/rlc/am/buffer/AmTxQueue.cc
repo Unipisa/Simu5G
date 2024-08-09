@@ -805,7 +805,6 @@ void AmTxQueue::handleMessage(cMessage *msg)
         // delete timer event message.
         delete tmsg;
     }
-    return;
 }
 
 } //namespace

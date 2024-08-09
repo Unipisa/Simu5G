@@ -84,7 +84,6 @@ void LteRlcMux::handleMessage(cMessage *msg)
     else {
         rlc2mac(pkt);
     }
-    return;
 }
 
 void LteRlcMux::finish()

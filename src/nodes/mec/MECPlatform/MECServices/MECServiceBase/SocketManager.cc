@@ -78,7 +78,6 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
         }
     }
     delete msg;
-    return;
 }
 
 void SocketManager::established() {

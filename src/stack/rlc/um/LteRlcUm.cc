@@ -294,7 +294,6 @@ void LteRlcUm::handleMessage(cMessage *msg)
     else if (incoming == down_[IN_GATE]) {
         handleLowerMessage(pkt);
     }
-    return;
 }
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)

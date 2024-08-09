@@ -400,8 +400,6 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
     else if (appState != IDLE) {
         EV << "DeviceApp::sendStartAppContext already sent" << endl;
     }
-
-    return;
 }
 
 void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)

@@ -379,7 +379,6 @@ void LtePdcpRrcBase::handleMessage(cMessage *msg)
     else {
         fromLowerLayer(pkt);
     }
-    return;
 }
 
 LteTxPdcpEntity *LtePdcpRrcBase::getTxEntity(MacCid cid)

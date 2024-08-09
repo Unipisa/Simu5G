@@ -92,7 +92,6 @@ void MecOrchestrator::handleMessage(cMessage *msg)
     }
 
     delete msg;
-    return;
 }
 
 void MecOrchestrator::handleUALCMPMessage(cMessage *msg)

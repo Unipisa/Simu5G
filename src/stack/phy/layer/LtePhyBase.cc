@@ -87,7 +87,6 @@ void LtePhyBase::handleControlMsg(LteAirFrame *frame,
     *(pkt->addTagIfAbsent<UserControlInfo>()) = *userInfo;
     delete userInfo;
     send(pkt, upperGateOut_);
-    return;
 }
 
 LteAirFrame *LtePhyBase::createHandoverMessage()

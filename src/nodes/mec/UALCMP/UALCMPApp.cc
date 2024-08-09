@@ -148,7 +148,6 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
             Http::send500Response(socket, pd.toJson().dump().c_str());
         }
     }
-    return;
 }
 
 void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
@@ -180,7 +179,6 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
             Http::send500Response(socket, pd.toJson().dump().c_str());
         }
     }
-    return;
 }
 
 void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
@@ -375,7 +373,6 @@ CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::js
 
 void UALCMPApp::finish()
 {
-    return;
 }
 
 UALCMPApp::~UALCMPApp()

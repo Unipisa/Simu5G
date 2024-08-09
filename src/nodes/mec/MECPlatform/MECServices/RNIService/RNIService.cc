@@ -150,7 +150,6 @@ void RNIService::handleDELETERequest(const HttpRequestMessage *currentRequestMes
 
 void RNIService::finish()
 {
-    return;
 }
 
 RNIService::~RNIService() {

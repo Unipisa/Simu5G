@@ -430,7 +430,6 @@ void LteMacBase::handleMessage(cMessage *msg)
         nrFromUpper_++;
         fromRlc(pkt);
     }
-    return;
 }
 
 void LteMacBase::insertMacPdu(const inet::Packet *macPdu)

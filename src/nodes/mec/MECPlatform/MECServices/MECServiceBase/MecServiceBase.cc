@@ -434,7 +434,6 @@ void MecServiceBase::handleRequest(inet::TcpSocket *socket) {
 void MecServiceBase::refreshDisplay() const
 {
 // TODO
-    return;
 }
 
 void MecServiceBase::getConnectedBaseStations() {
@@ -452,7 +451,6 @@ void MecServiceBase::getConnectedBaseStations() {
             eNodeB_.insert(bsModule);
         }
     }
-    return;
 }
 
 void MecServiceBase::closeConnection(SocketManager *connection)

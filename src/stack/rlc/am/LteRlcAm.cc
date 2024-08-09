@@ -267,7 +267,6 @@ void LteRlcAm::handleMessage(cMessage *msg)
         EV << NOW << " LteRlcAm : calling handleLowerMessage" << endl;
         handleLowerMessage(pkt);
     }
-    return;
 }
 
 } //namespace

@@ -140,7 +140,6 @@ void LteRlcTm::handleMessage(cMessage *msg)
     else if (incoming == down_[IN_GATE]) {
         handleLowerMessage(pkt);
     }
-    return;
 }
 
 } //namespace

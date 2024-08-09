@@ -111,8 +111,6 @@ void CellInfo::calculateNodePosition(double centerX, double centerY, int nTh,
 
     EV << NOW << " CellInfo::calculateNodePosition: Computed node position "
        << *xPos << " , " << *yPos << std::endl;
-
-    return;
 }
 
 void CellInfo::deployRu(double nodeX, double nodeY, int numRu, int ruRange)
@@ -148,7 +146,6 @@ void CellInfo::calculateMCSScale(double *mcsUl, double *mcsDl)
 
     *mcsUl = ulRbSubcarriers * (ulRbSymbols - ulSigSymbols) - ulPilotRe;
     *mcsDl = dlRbSubCarriers * (dlRbSymbols - dlSigSymbols) - dlPilotRe;
-    return;
 }
 
 void CellInfo::updateMCSScale(double *mcs, double signalRe,
@@ -165,7 +162,6 @@ void CellInfo::updateMCSScale(double *mcs, double signalRe,
     int pilotRe = signalCarriers;
 
     *mcs = rbSubcarriers * (rbSymbols - sigSymbols) - pilotRe;
-    return;
 }
 
 void CellInfo::createAntennaCwMap()
