@@ -12,11 +12,6 @@
 #ifndef __UEREQUESTAPP_H_
 #define __UEREQUESTAPP_H_
 
-#define UEAPP_REQUEST      0
-#define MECAPP_RESPONSE    1
-#define UEAPP_STOP         2
-#define UEAPP_ACK_STOP     3
-
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
@@ -26,6 +21,13 @@
 namespace simu5g {
 
 using namespace omnetpp;
+
+enum {
+    UEAPP_REQUEST   = 0,
+    MECAPP_RESPONSE = 1,
+    UEAPP_STOP      = 2,
+    UEAPP_ACK_STOP  = 3,
+};
 
 class UERequestApp : public cSimpleModule
 {

@@ -12,9 +12,6 @@
 #ifndef _SPLITBEARERSTABLE_H_
 #define _SPLITBEARERSTABLE_H_
 
-/// This is the maximum number of allowed connections * 2
-#define TABLE_SIZE    2048
-
 #include "common/LteCommon.h"
 
 namespace simu5g {
@@ -82,6 +79,10 @@ class SplitBearersTable
         uint16_t typeOfService_;
         int number_;
     };
+
+    /// This is the maximum number of allowed connections * 2
+    static constexpr int TABLE_SIZE = 2048;
+
     /// Hash table of size TABLE_SIZE
     entry_ ht_[TABLE_SIZE];
 };

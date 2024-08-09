@@ -9,8 +9,6 @@
 // and cannot be removed from it.
 //
 
-#define DATAPORT_OUT    "dataPort$o"
-#define DATAPORT_IN     "dataPort$i"
 
 #include <inet/common/ModuleAccess.h>
 #include <inet/networklayer/common/NetworkInterface.h>
@@ -24,6 +22,9 @@ Define_Module(LteX2Manager);
 
 using namespace omnetpp;
 using namespace inet;
+
+constexpr const char *DATAPORT_OUT = "dataPort$o";
+constexpr const char *DATAPORT_IN  = "dataPort$i";
 
 void LteX2Manager::initialize(int stage)
 {
