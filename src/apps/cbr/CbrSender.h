@@ -41,7 +41,7 @@ class CbrSender : public cSimpleModule
     simtime_t startTime_;
     simtime_t finishTime_;
 
-    static simsignal_t cbrGeneratedThroughtputSignal_;
+    static simsignal_t cbrGeneratedThroughputSignal_;
     static simsignal_t cbrGeneratedBytesSignal_;
     static simsignal_t cbrSentPktSignal_;
 

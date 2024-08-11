@@ -26,7 +26,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         lcid = lteInfo->getLcid();
     }
     else
-        throw cRuntimeError("LteRlcUmD2D::getTxBuffer - lteInfo is NULL pointer. Aborting.");
+        throw cRuntimeError("LteRlcUmD2D::getTxBuffer - lteInfo is a NULL pointer. Aborting.");
 
     // Find TXBuffer for this CID
     MacCid cid = idToMacCid(nodeId, lcid);

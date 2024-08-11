@@ -92,7 +92,7 @@ void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNode
     auto dcMsg = inet::makeShared<X2DualConnectivityDataMsg>();
 
     // copy FlowControlInfo Tag to the dcMsg region
-    // this is necessary because otherwise it will be removed (?) during the transmission over the X2
+    // this is necessary because otherwise it will be removed during the transmission over the X2
     auto pktTag = pkt->removeTag<FlowControlInfo>();
     auto dcMsgTag = dcMsg->addTagIfAbsent<FlowControlInfo>();
     *dcMsgTag = *pktTag;

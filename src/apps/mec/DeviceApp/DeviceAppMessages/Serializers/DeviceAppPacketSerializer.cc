@@ -174,7 +174,7 @@ const Ptr<Chunk> DeviceAppMessageSerializer::deserialize(MemoryInputStream& stre
         }
     }
 
-    throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Cancella codice sotto!");
+    throw cRuntimeError("DeviceAppMessageSerializer::deserialize - Delete code below!");
 }
 
 } //namespace

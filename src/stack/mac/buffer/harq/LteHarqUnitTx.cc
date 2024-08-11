@@ -162,7 +162,7 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
             // pdu_ ready for next transmission
             macOwner_->takeObj(pdu_);
             status_ = TXHARQ_PDU_BUFFERED;
-            EV << NOW << " LteHarqUnitTx::pduFeedbackH-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
+            EV << NOW << " LteHarqUnitTx::pduFeedback H-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
                << pdu_->getId() << " set for RTX " << endl;
 
             if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {

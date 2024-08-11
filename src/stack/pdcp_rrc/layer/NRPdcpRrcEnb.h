@@ -33,29 +33,29 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
 
   protected:
 
-    // flag for enabling Dual Connectivity
+    // Flag for enabling Dual Connectivity
     bool dualConnectivityEnabled_;
 
-    // reference to the Dual Connectivity Manager
+    // Reference to the Dual Connectivity Manager
     inet::ModuleRefByPar<DualConnectivityManager> dualConnectivityManager_;
 
     virtual void initialize(int stage);
 
     /**
-     * handler for data port
-     * @param pkt incoming packet
+     * Handler for data port
+     * @param pkt Incoming packet
      */
     virtual void fromDataPort(cPacket *pktAux);
 
     /**
-     * handler for um/am sap
+     * Handler for um/am sap
      *
-     * it performs the following steps:
-     * - decompresses the header, restoring original packet
-     * - decapsulates the packet
-     * - sends the packet to the application layer
+     * It performs the following steps:
+     * - Decompresses the header, restoring the original packet
+     * - Decapsulates the packet
+     * - Sends the packet to the application layer
      *
-     * @param pkt incoming packet
+     * @param pkt Incoming packet
      */
     virtual void fromLowerLayer(cPacket *pkt);
 
@@ -63,12 +63,12 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
 
     /**
      * getEntity() is used to gather the NR PDCP entity
-     * for that LCID. If entity was already present, a reference
-     * is returned, otherwise a new entity is created,
+     * for that LCID. If the entity was already present, a reference
+     * is returned; otherwise, a new entity is created,
      * added to the entities map and a reference is returned as well.
      *
      * @param lcid Logical CID
-     * @return pointer to the PDCP entity for the LCID of the flow
+     * @return Pointer to the PDCP entity for the LCID of the flow
      *
      */
     virtual LteTxPdcpEntity *getTxEntity(MacCid lcid);
@@ -79,10 +79,10 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
      */
     virtual bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
 
-    // send packet to the target node by invoking the Dual Connectivity manager
+    // Send packet to the target node by invoking the Dual Connectivity manager
     virtual void forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode);
 
-    // receive packet from the source node. Called by the Dual Connectivity manager
+    // Receive packet from the source node. Called by the Dual Connectivity manager
     virtual void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode);
 
   public:

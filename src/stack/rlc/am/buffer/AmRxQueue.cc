@@ -33,8 +33,8 @@ AmRxQueue::AmRxQueue() :
     lastSentAck_ = 0;
     firstSdu_ = 0;
 
-    // in order create a back connection (AM CTRL) , a flow control
-    // info for sending ctrl messages to tx entity is required
+    // In order to create a back connection (AM CTRL), a flow control
+    // info for sending control messages to the transmitting entity is required
 
     flowControlInfo_ = nullptr;
 
@@ -43,7 +43,7 @@ AmRxQueue::AmRxQueue() :
 
 void AmRxQueue::initialize()
 {
-    //  loading parameters from NED
+    // Loading parameters from NED
     rxWindowDesc_.windowSize_ = par("rxWindowSize");
     ackReportInterval_ = par("ackReportInterval");
     statusReportInterval_ = par("statusReportInterval");
@@ -55,7 +55,7 @@ void AmRxQueue::initialize()
     binder_.reference(this, "binderModule", true);
     lteRlc_.reference(this, "amModule", true);
 
-    //statistics
+    // Statistics
     LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB) {
@@ -87,7 +87,7 @@ void AmRxQueue::handleMessage(cMessage *msg)
 
     EV << NOW << "AmRxQueue::handleMessage timer event received, sending status report " << endl;
 
-    // signal timer event handled
+    // Signal timer event handled
     timer_.handle();
 
     // Send status report to the AM Tx entity
@@ -195,7 +195,7 @@ void AmRxQueue::enque(Packet *pkt)
     if (pdu->getAmType() != DATA) {
         if ((pdu->getAmType() == ACK)) {
             EV << NOW << " AmRxQueue::enque Received ACK message" << endl;
-            // forwarding ACK to associated transmitting entity
+            // Forwarding ACK to associated transmitting entity
             lteRlc_->routeControlMessage(pkt);
         }
         else if ((pdu->getAmType() == MRW)) {
@@ -205,19 +205,19 @@ void AmRxQueue::enque(Packet *pkt)
             // Move the receiver window
             moveRxWindow(pdu->getLastSn());
 
-            // ACK This message
+            // ACK this message
             auto pktAux = new Packet("rlcAmPdu (MRW ACK)");
 
             auto mrw = makeShared<LteRlcAmPdu>();
             mrw->setAmType(MRW_ACK);
             mrw->setSnoMainPacket(pdu->getSnoMainPacket());
             mrw->setSnoFragment(rxWindowDesc_.firstSeqNum_);
-            // todo setting AM ctrl byte size
+            // TODO: setting AM control byte size
             mrw->setChunkLength(B(RLC_HEADER_AM));
             pktAux->insertAtFront(mrw);
-            // set flowcontrolinfo
+            // Set flow control info
             *pktAux->addTagIfAbsent<FlowControlInfo>() = *flowControlInfo_;
-            // sending control PDU
+            // Sending control PDU
             lteRlc_->bufferControlPdu(pktAux);
             EV << NOW << " AmRxQueue::enque sending MRW_ACK message " << pdu->getSnoMainPacket() << endl;
 
@@ -225,17 +225,17 @@ void AmRxQueue::enque(Packet *pkt)
         }
         else if ((pdu->getAmType() == MRW_ACK)) {
             EV << NOW << " MRW ACK routing to TX entity " << endl;
-            // route message to reverse link TX entity
+            // Route message to reverse link TX entity
             lteRlc_->routeControlMessage(pkt);
         }
         else {
             throw cRuntimeError("RLC AM - Unknown status PDU");
         }
-        // control PDU (not a DATA PDU) - completely processed
+        // Control PDU (not a DATA PDU) - completely processed
         return;
     }
 
-    //If the timer has not been enabled yet, start the timer to handle status report (ACK) messages
+    // If the timer has not been enabled yet, start the timer to handle status report (ACK) messages
     if (timer_.idle()) {
         EV << NOW << " AmRxQueue::enque reporting timer was idle, will fire at " << NOW.dbl() + statusReportInterval_.dbl() << endl;
         timer_.start(statusReportInterval_);
@@ -244,18 +244,18 @@ void AmRxQueue::enque(Packet *pkt)
         EV << NOW << " AmRxQueue::enque reporting timer was already on, will fire at " << NOW.dbl() + timer_.remaining().dbl() << endl;
     }
 
-    // check if we need to extract FlowControlInfo for building up the matrix
+    // Check if we need to extract FlowControlInfo for building up the matrix
     if (flowControlInfo_ == nullptr) {
         auto orig = pkt->getTag<FlowControlInfo>();
-        // make a copy of original control info
+        // Make a copy of the original control info
         flowControlInfo_ = orig->dup();
-        // swap source and destination fields
+        // Swap source and destination fields
         flowControlInfo_->setSourceId(orig->getDestId());
         flowControlInfo_->setSrcAddr(orig->getDstAddr());
         flowControlInfo_->setTypeOfService(orig->getTypeOfService());
         flowControlInfo_->setDestId(orig->getSourceId());
         flowControlInfo_->setDstAddr(orig->getSrcAddr());
-        // set up other field
+        // Set up other fields
         flowControlInfo_->setDirection((orig->getDirection() == DL) ? UL : DL);
     }
 
@@ -307,7 +307,7 @@ void AmRxQueue::enque(Packet *pkt)
             }
             else {
                 throw cRuntimeError("AmRxQueue::enque(): the received PDU at position %d"
-                                    "main SDU %d overlaps with an old one , main SDU %d", index, pdu->getSnoMainPacket(),
+                                    "main SDU %d overlaps with an old one, main SDU %d", index, pdu->getSnoMainPacket(),
                         bufferedpdu->getSnoMainPacket());
             }
         }
@@ -350,7 +350,7 @@ void AmRxQueue::passUp(const int index)
 
         for (int i = 0; i < pduBuffer_.size() && frameBuff.size() < header->getTotalFragments(); i++) {
             auto headerAux = check_and_cast<Packet *>(pduBuffer_.get(auxIndex))->peekAtFront<LteRlcAmPdu>();
-            // duplicate buffered PDU. We cannot detach it from receiver window until a move Rx command is executed.
+            // duplicate buffered PDU. We cannot detach it from the receiver window until a move Rx command is executed.
             if (pkId == headerAux->getSnoMainPacket())
                 frameBuff.push_back(check_and_cast<Packet *>(pduBuffer_.get(auxIndex))->dup());
             auxIndex++;
@@ -423,7 +423,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
     EV << NOW << " AmRxQueue::checkCompleteSdu at position " << index << " for SDU number " << incomingSdu << endl;
 
     if (firstSdu_ == -1) {
-        // this is the first PDU in Rx window of new SDU
+        // this is the first PDU in the Rx window of a new SDU
         firstSdu_ = incomingSdu;
     }
 
@@ -436,7 +436,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
     int tempSdu = -1;
     // Index of the first PDU related to the SDU
     int firstIndex = -1;
-    // If the RLC PDU is whole pass the RLC PDU to the upper layer
+    // If the RLC PDU is whole, pass the RLC PDU to the upper layer
     if (pdu->isWhole()) {
         EV << NOW << " AmRxQueue::checkCompleteSdu - complete SDU has been found (PDU at " << index << " was whole)" << endl;
         passUp(index);
@@ -471,7 +471,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
                         tempSdu = tempPdu->getSnoMainPacket();
 
                         if (tempSdu != incomingSdu)
-                            throw cRuntimeError("AmRxQueue::checkCompleteSdu(): backward search: fragmentation error : the receiver buffer contains parts of different SDUs, PDU seqnum %d", pdu->getSnoFragment());
+                            throw cRuntimeError("AmRxQueue::checkCompleteSdu(): backward search: fragmentation error: the receiver buffer contains parts of different SDUs, PDU seqnum %d", pdu->getSnoFragment());
 
                         if (tempPdu->isFirst()) {
                             // found starting PDU
@@ -482,7 +482,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
                         else if (tempPdu->isLast() || tempPdu->isWhole()) {
                             auto auxPkt = check_and_cast<Packet *>(pduBuffer_.get(i + 1));
                             auto aux = auxPkt->peekAtFront<LteRlcAmPdu>();
-                            throw cRuntimeError("AmRxQueue::checkCompleteSdu(): backward search: sequence error, found last or whole PDU [%d] preceding a middle one [%d], belonging to  SDU [%d], current SDU is [%d]", tempPdu->getSnoFragment(),
+                            throw cRuntimeError("AmRxQueue::checkCompleteSdu(): backward search: sequence error, found last or whole PDU [%d] preceding a middle one [%d], belonging to SDU [%d], current SDU is [%d]", tempPdu->getSnoFragment(),
                                     aux->getSnoFragment(), aux->getSnoMainPacket(), tempSdu);
                         }
                     }
@@ -497,7 +497,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
     }
     if (!bComplete) {
         EV << NOW
-           << " AmRxQueue::checkCompleteSdu - SDU cannot be reconstructed, backward search didn't found any predecessors to PDU at "
+           << " AmRxQueue::checkCompleteSdu - SDU cannot be reconstructed, backward search didn't find any predecessors to PDU at "
            << index << endl;
         return;
     }
@@ -509,8 +509,8 @@ void AmRxQueue::checkCompleteSdu(const int index)
         return;
     }
 
-    EV << NOW << " AmRxQueue::checkCompleteSdu initiating forward search, staring from position " << index + 1 << endl;
-    // Go forward looking for remaining  PDUs
+    EV << NOW << " AmRxQueue::checkCompleteSdu initiating forward search, starting from position " << index + 1 << endl;
+    // Go forward looking for remaining PDUs
 
     for (int i = index + 1; i < (rxWindowDesc_.windowSize_); ++i) {
         if (received_.at(i) == false) {
@@ -543,7 +543,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
 
     // check if all PDUs for this SDU have been received
     if (complete == true) {
-        EV << NOW << " AmRxQueue::checkCompleteSdu - complete SDU has been found after forward search , passing up "
+        EV << NOW << " AmRxQueue::checkCompleteSdu - complete SDU has been found after forward search, passing up "
            << firstIndex << endl;
         passUp(firstIndex);
         return;
@@ -650,10 +650,10 @@ void AmRxQueue::moveRxWindow(const int seqNum)
     int pos = seqNum - rxWindowDesc_.firstSeqNum_;
 
     if (pos <= 0)
-        return;                   // ignore the shift , it is uneffective.
+        return;                   // ignore the shift, it is ineffective.
 
     if (pos > rxWindowDesc_.windowSize_)
-        throw cRuntimeError("AmRxQueue::moveRxWindow(): positions %d win size %d , seq num %d", pos, rxWindowDesc_.windowSize_, seqNum);
+        throw cRuntimeError("AmRxQueue::moveRxWindow(): positions %d win size %d, seq num %d", pos, rxWindowDesc_.windowSize_, seqNum);
 
     // Shift the window and check if a complete SDU is shifted or if
     // part of an SDU is still in the buffer
@@ -722,7 +722,7 @@ AmRxQueue::~AmRxQueue()
         }
     }
 
-    // Remove all PDUs from pending PDU buffer.
+    // Remove all PDUs from the pending PDU buffer.
     for (auto& p: pendingPduBuffer_) {
         delete p;
     }

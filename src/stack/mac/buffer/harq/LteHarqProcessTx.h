@@ -79,9 +79,9 @@ class LteHarqProcessTx : noncopyable
             LteMacBase *dstMac);
 
     /**
-     * Insert a pdu into an H-ARQ unit contained in this process.
+     * Insert a PDU into an H-ARQ unit contained in this process.
      *
-     * @param pdu pdu to be inserted
+     * @param pdu PDU to be inserted
      * @param unitId id of destination unit
      */
     void insertPdu(inet::Packet *pdu, Codeword cw);
@@ -102,40 +102,40 @@ class LteHarqProcessTx : noncopyable
     std::vector<UnitStatus> getProcessStatus();
 
     /**
-     * Checks if this process has one or more H-ARQ unit ready for retransmission.
+     * Checks if this process has one or more H-ARQ units ready for retransmission.
      *
-     * @return true if there is at least one unit ready for rtx, false if none
+     * @return true if there is at least one unit ready for RTX, false if none
      */
     bool hasReadyUnits();
 
     /**
-     * Returns the tx time of the unit which is not retransmitting for
+     * Returns the TX time of the unit which is not retransmitting for
      * the longest period of time, inside this process (the oldest
-     * pdu tx time).
+     * PDU TX time).
      *
-     * @return tx time of the oldest unit in this process
+     * @return TX time of the oldest unit in this process
      */
     simtime_t getOldestUnitTxTime();
 
     /**
-     * Returns a list of ids of ready for retransmission units of
+     * Returns a list of IDs of ready for retransmission units of
      * this process.
      *
-     * @return list of unit ids which are ready for rtx
+     * @return list of unit IDs which are ready for RTX
      */
     CwList readyUnitsIds();
 
     /**
-     * Returns a list of ids of empty units inside this process.
+     * Returns a list of IDs of empty units inside this process.
      *
-     * @return empty units ids list.
+     * @return empty units IDs list.
      */
     CwList emptyUnitsIds();
 
     /**
-     * Returns a list of ids of selected units.
+     * Returns a list of IDs of selected units.
      *
-     * @return selected units ids list.
+     * @return selected units IDs list.
      */
     CwList selectedUnitsIds();
 
@@ -149,14 +149,14 @@ class LteHarqProcessTx : noncopyable
     inet::Packet *getPdu(Codeword cw);
 
     /**
-     * This is necessary because when a pdu is in CORRECT state at the
-     * corresponding H-ARQ rx process, it may be extracted and potentially
-     * deleted, so pdu_ reference cannot be used to retrieve the pdu id
+     * This is necessary because when a PDU is in CORRECT state at the
+     * corresponding H-ARQ RX process, it may be extracted and potentially
+     * deleted, so PDU reference cannot be used to retrieve the PDU ID
      * when feedback is received, because feedback is received 1 TTI after
-     * pdu extraction at rx process!
+     * PDU extraction at the RX process!
      *
-     * @param unitId unit id
-     * @return pdu id
+     * @param unitId unit ID
+     * @return PDU ID
      */
     long getPduId(Codeword cw);
 
@@ -181,11 +181,11 @@ class LteHarqProcessTx : noncopyable
     bool isDropped();
 
     /**
-     * @author Alessandro noferi
+     * @author Alessandro Noferi
      *
      * Check if the process is active
      *
-     * @return true if at least on unit status is not TXHARQ_PDU_EMPTY
+     * @return true if at least one unit status is not TXHARQ_PDU_EMPTY
      */
 
     bool isHarqProcessActive();

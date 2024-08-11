@@ -67,7 +67,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
 
     /*
-     * Different lcid for different directions of the same flow are assigned.
+     * Different LCID for different directions of the same flow are assigned.
      * RLC layer will create different RLC entities for different LCIDs
      */
 

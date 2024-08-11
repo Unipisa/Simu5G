@@ -95,7 +95,7 @@ double NRChannelModel_3GPP38_901::computePenetrationLoss(double threeDimDistance
 
 double NRChannelModel_3GPP38_901::computePathLoss(double threeDimDistance, double twoDimDistance, bool los)
 {
-    //compute attenuation based on selected scenario and based on LOS or NLOS
+    // Compute attenuation based on selected scenario and based on LOS or NLOS
     double pathLoss = 0;
     switch (scenario_) {
         case INDOOR_HOTSPOT:
@@ -125,14 +125,14 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
         threeDimDistance = 10;
 
     if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
-        throw cRuntimeError("Error urban macrocell path loss model is valid for d<5000m only");
+        throw cRuntimeError("Error: Urban macrocell path loss model is valid for d<5000m only");
 
-    // compute penetration loss
+    // Compute penetration loss
     double penetrationLoss = 0.0;
     if (inside_building_)
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
-    // compute break-point distance
+    // Compute break-point distance
     double hEnvir = 0.0;
     double G_2d = (twoDimDistance < 18.0) ? 0 : (5.0 / 4.0) * pow(twoDimDistance / 100.0, 3) * exp(twoDimDistance / 150);
     double C = (hUe_ < 13.0) ? 0 : pow(((hUe_ - 13.0) / 10.0), 1.5) * G_2d;
@@ -151,7 +151,7 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
     double hUe = hUe_ - hEnvir;
     double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
 
-    // compute LOS path loss
+    // Compute LOS path loss
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
         pLoss_los = 28 + 22 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
@@ -163,7 +163,7 @@ double NRChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
     if (los)
         pLoss = pLoss_los;
     else {
-        // compute NLOS path loss
+        // Compute NLOS path loss
         double pLoss_nlos = 13.54 + 39.08 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 0.6 * (hUe_ - 1.5);
         pLoss_nlos += penetrationLoss;
 
@@ -178,20 +178,20 @@ double NRChannelModel_3GPP38_901::computeUrbanMicro(double threeDimDistance, dou
         twoDimDistance = 10;
 
     if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
-        throw cRuntimeError("Error urban microcell path loss model is valid for d<5000m only");
+        throw cRuntimeError("Error: Urban microcell path loss model is valid for d<5000m only");
 
-    // compute penetration loss
+    // Compute penetration loss
     double penetrationLoss = 0.0;
     if (inside_building_)
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
-    // compute break-point distance
+    // Compute break-point distance
     double hEnvir = 1.0;
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
     double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
 
-    // compute LOS path loss
+    // Compute LOS path loss
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
         pLoss_los = 32.4 + 21 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
@@ -203,7 +203,7 @@ double NRChannelModel_3GPP38_901::computeUrbanMicro(double threeDimDistance, dou
     if (los)
         pLoss = pLoss_los;
     else {
-        // compute NLOS path loss
+        // Compute NLOS path loss
         double pLoss_nlos = 35.3 * log10(threeDimDistance) + 22.4 + 21.3 * log10(carrierFrequency_) - 0.3 * (hUe_ - 1.5);
         pLoss_nlos += penetrationLoss;
 
@@ -225,16 +225,16 @@ double NRChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
         if (twoDimDistance > 5000 && !tolerateMaxDistViolation_)
             throw cRuntimeError("Error: NLOS rural macrocell path loss model is valid for d<5000m only");
     }
-    // compute penetration loss
+    // Compute penetration loss
     double penetrationLoss = 0.0;
     if (inside_building_) {
         penetrationLoss = computePenetrationLoss(threeDimDistance);
     }
 
-    // compute break-point distance
+    // Compute break-point distance
     double dbp = 2 * M_PI * hNodeB_ * hUe_ * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
 
-    double h = 5.0; // average building height
+    double h = 5.0; // Average building height
     double A = 0.03 * pow(h, 1.72);
     double B = 0.044 * pow(h, 1.72);
     double min1 = (A < 10) ? A : 10;
@@ -253,7 +253,7 @@ double NRChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
     if (los)
         pLoss = pLoss_los;
     else {
-        double W = 20.0;  // average street width
+        double W = 20.0;  // Average street width
         double pLoss_nlos = 161.04 - 7.1 * log10(W) + 7.5 * log10(h) - (24.37 - 3.7 * pow(h / hNodeB_, 2)) * log10(hNodeB_)
             + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3.0) + 20 * log10(carrierFrequency_)
             - (3.2 * pow((log10(11.75 * hUe_)), 2) - 4.97);
@@ -270,14 +270,14 @@ double NRChannelModel_3GPP38_901::computeIndoor(double threeDimDistance, double 
         threeDimDistance = 1;
 
     if (threeDimDistance > 150 && !tolerateMaxDistViolation_)
-        throw cRuntimeError("Error indoor hotspot path loss model is valid for d<150m only");
+        throw cRuntimeError("Error: Indoor hotspot path loss model is valid for d<150m only");
 
-    // compute penetration loss
+    // Compute penetration loss
     double penetrationLoss = 0.0;
     if (inside_building_)
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
-    // compute LOS path loss
+    // Compute LOS path loss
     double pLoss_los = 32.4 + 17.3 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
     pLoss_los += penetrationLoss;
 
@@ -285,7 +285,7 @@ double NRChannelModel_3GPP38_901::computeIndoor(double threeDimDistance, double 
     if (los)
         pLoss = pLoss_los;
     else {
-        // compute NLOS path loss
+        // Compute NLOS path loss
         double pLoss_nlos = 38.3 * log10(threeDimDistance) + 17.3 + 24.9 * log10(carrierFrequency_);
         pLoss_nlos += penetrationLoss;
 
@@ -331,7 +331,7 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
 {
     ShadowFadingMap *actualShadowingMap;
 
-    if (cqiDl) // if we are computing a DL CQI we need the Shadowing Map stored on the UE side
+    if (cqiDl) // If we are computing a DL CQI we need the Shadowing Map stored on the UE side
         actualShadowingMap = obtainShadowingMap(nodeId);
     else
         actualShadowingMap = &lastComputedSF_;
@@ -341,53 +341,53 @@ double NRChannelModel_3GPP38_901::computeShadowing(double sqrDistance, MacNodeId
 
     double mean = 0;
     double dbp = 0.0;
-    //Get std deviation according to los/nlos and selected scenario
+    // Get std deviation according to los/nlos and selected scenario
 
     double stdDev = getStdDev(sqrDistance < dbp, nodeId);
     double time = 0;
     double space = 0;
     double att;
 
-    // if direction is DOWNLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is myMove_ variable
-    // if direction is UPLINK it means that this module is located in UE stack than
-    // the Move object associated to the UE is move variable
+    // If direction is DOWNLINK it means that this module is located in UE stack than
+    // the Move object associated with the UE is myMove_ variable
+    // If direction is UPLINK it means that this module is located in UE stack than
+    // the Move object associated with the UE is move variable
 
-    // if shadowing for current user has never been computed
+    // If shadowing for current user has never been computed
     if (actualShadowingMap->find(nodeId) == actualShadowingMap->end()) {
-        //Get the log normal shadowing with std deviation stdDev
+        // Get the log normal shadowing with std deviation stdDev
         att = normal(mean, stdDev);
 
-        //store the shadowing attenuation for this user and the temporal mark
+        // Store the shadowing attenuation for this user and the temporal mark
         std::pair<simtime_t, double> tmp(NOW, att);
         (*actualShadowingMap)[nodeId] = tmp;
 
-        //If the shadowing attenuation has been computed at least one time for this user
-        // and the distance traveled by the UE is greated than correlation distance
+        // If the shadowing attenuation has been computed at least one time for this user
+        // and the distance traveled by the UE is greater than correlation distance
     }
     else if ((NOW - actualShadowingMap->at(nodeId).first).dbl() * speed
              > correlationDistance_)
     {
-        //get the temporal mark of the last computed shadowing attenuation
+        // Get the temporal mark of the last computed shadowing attenuation
         time = (NOW - actualShadowingMap->at(nodeId).first).dbl();
 
-        //compute the traveled distance
+        // Compute the traveled distance
         space = time * speed;
 
-        //Compute shadowing with a EAW (Exponential Average Window) (step1)
+        // Compute shadowing with an EAW (Exponential Average Window) (step1)
         double a = exp(-0.5 * (space / correlationDistance_));
 
-        //Get last shadowing attenuation computed
+        // Get last shadowing attenuation computed
         double old = actualShadowingMap->at(nodeId).second;
 
-        //Compute shadowing with a EAW (Exponential Average Window) (step2)
+        // Compute shadowing with an EAW (Exponential Average Window) (step2)
         att = a * old + sqrt(1 - pow(a, 2)) * normal(mean, stdDev);
 
         // Store the new computed shadowing
         std::pair<simtime_t, double> tmp(NOW, att);
         (*actualShadowingMap)[nodeId] = tmp;
 
-        // if the distance traveled by the UE is smaller than correlation distance shadowing attenuation remain the same
+        // If the distance traveled by the UE is smaller than correlation distance shadowing attenuation remains the same
     }
     else {
         att = actualShadowingMap->at(nodeId).second;

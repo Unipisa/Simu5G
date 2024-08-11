@@ -67,7 +67,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
     inet::ModuleRefByPar<LtePhyUe> phy_;
 
     // cellInfo parameters
-    std::map<Remote, int> antennaCws_; /// number of antenna per remote
+    std::map<Remote, int> antennaCws_; /// number of antennas per remote
     int numPreferredBands_;           /// number of preferred bands to use (meaningful only in PREFERRED mode)
     int numBands_;                      /// number of cell bands
 

@@ -38,7 +38,7 @@ void LteMaxCiMultiband::prepareSchedule()
 
     // UsableBands * usableBands;
     if (debug)
-        cout << NOW << " LteMaxCiMultiband::prepareSchedule - Tot Active Connections:" << activeConnectionTempSet_.size() << endl;
+        cout << NOW << " LteMaxCiMultiband::prepareSchedule - Total Active Connections:" << activeConnectionTempSet_.size() << endl;
     for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
         // Current connection.
         cid = *it1;

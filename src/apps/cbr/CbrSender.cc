@@ -21,7 +21,7 @@ Define_Module(CbrSender);
 using namespace inet;
 using namespace std;
 
-simsignal_t CbrSender::cbrGeneratedThroughtputSignal_ = registerSignal("cbrGeneratedThroughtputSignal");
+simsignal_t CbrSender::cbrGeneratedThroughputSignal_ = registerSignal("cbrGeneratedThroughputSignal");
 simsignal_t CbrSender::cbrGeneratedBytesSignal_ = registerSignal("cbrGeneratedBytesSignal");
 simsignal_t CbrSender::cbrSentPktSignal_ = registerSignal("cbrSentPktSignal");
 
@@ -139,7 +139,7 @@ void CbrSender::sendCbrPacket()
 void CbrSender::finish()
 {
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit(cbrGeneratedThroughtputSignal_, txBytes_ / elapsedTime.dbl());
+    emit(cbrGeneratedThroughputSignal_, txBytes_ / elapsedTime.dbl());
 }
 
 } //namespace

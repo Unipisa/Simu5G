@@ -47,13 +47,13 @@ void UmTxEntity::initialize()
     // @author Alessandro Noferi
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB) {
         if (packetFlowManager_) {
-            EV << "UmTxEntity::initialize - RLC layer if of a base station" << endl;
+            EV << "UmTxEntity::initialize - RLC layer is for a base station" << endl;
             ASSERT(check_and_cast<PacketFlowManagerEnb *>(packetFlowManager_.get()));
         }
     }
     else if (mac->getNodeType() == UE) {
         if (packetFlowManager_) {
-            EV << "UmTxEntity::initialize - RLC layer, cast the packetFlowManager " << endl;
+            EV << "UmTxEntity::initialize - RLC layer, casting the packetFlowManager " << endl;
             ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
         }
     }
@@ -62,7 +62,7 @@ void UmTxEntity::initialize()
 
 bool UmTxEntity::enque(cPacket *pkt)
 {
-    EV << NOW << " UmTxEntity::enque - bufferize new SDU  " << endl;
+    EV << NOW << " UmTxEntity::enque - buffering new SDU  " << endl;
     if (queueSize_ == 0 || queueLength_ + pkt->getByteLength() < queueSize_) {
         // Buffer the SDU in the TX buffer
         sduQueue_.insert(pkt);
@@ -156,7 +156,6 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
             // update SDU in the buffer
             int newLength = sduLength - pduLength;
-            // queueLength_ will be adapted when the whole SDU is removed from the queue
 
             EV << NOW << " UmTxEntity::rlcPduMake - Data chunk in the queue is now " << newLength << " bytes, sduSno[" << sduSequenceNumber << "]" << endl;
 
@@ -200,24 +199,25 @@ void UmTxEntity::rlcPduMake(int pduLength)
     /*
      * @author Alessandro Noferi
      *
-     * Notify the packetFlowManager about the new RLC pdu
+     * Notify the packetFlowManager about the new RLC PDU
      * only in UL or DL cases
      */
     if (flowControlInfo_->getDirection() == DL || flowControlInfo_->getDirection() == UL) {
-        // add RLC PDU to flowpacketmanager
+        // add RLC PDU to packetFlowManager
         if (len != 0 && packetFlowManager_ != nullptr) {
             LogicalCid lcid = flowControlInfo_->getLcid();
 
-            /* burst management
+            /*
+             * Burst management.
              *
-             * if the buffer is empty, the burst, if ACTIVE,
-             * now is finished. Tell the flowmanager to STOP
-             * keep trace of burst RLCsm (not the timer). Set burst as INACTIVE
+             * If the buffer is empty, the burst, if ACTIVE,
+             * now is finished. Tell the flow manager to STOP
+             * keep track of burst RLCs (not the timer). Set burst as INACTIVE
              *
              * if the buffer is NOT empty,
              *      if burst is already ACTIVE, do not start the timer T2
              *      if burst is INACTIVE, START the timer T2 and set it as ACTIVE
-             * Tell the flowmanager to keep trace of burst RLCs
+             * Tell the flow manager to keep track of burst RLCs
              */
 
             if (sduQueue_.isEmpty()) {
@@ -243,7 +243,7 @@ void UmTxEntity::rlcPduMake(int pduLength)
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - burstStatus: " << burstStatus_ << endl;
 
-                    // burst in still active
+                    // burst is still active
                     packetFlowManager_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
                 }
             }
@@ -308,7 +308,7 @@ void UmTxEntity::enqueHoldingPackets(cPacket *pkt)
 
 void UmTxEntity::resumeDownstreamInPackets()
 {
-    EV << NOW << " UmTxEntity::resumeDownstreamInPackets - resume buffering incoming downstream packets of the RLC entity associated to the new mode" << endl;
+    EV << NOW << " UmTxEntity::resumeDownstreamInPackets - resume buffering incoming downstream packets of the RLC entity associated with the new mode" << endl;
 
     holdingDownstreamInPackets_ = false;
 
@@ -321,7 +321,7 @@ void UmTxEntity::resumeDownstreamInPackets()
 
         // store the SDU in the TX buffer
         if (enque(pktRlc)) {
-            // create a message so as to notify the MAC layer that the queue contains new data
+            // create a message to notify the MAC layer that the queue contains new data
             auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
             // make a copy of the RLC SDU
             auto pktRlcdup = pktRlc->dup();
@@ -346,16 +346,16 @@ void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
         }
 
         if (clearBuffer) {
-            EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - clear TX buffer of the RLC entity associated to the old mode" << endl;
+            EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - clear TX buffer of the RLC entity associated with the old mode" << endl;
             clearQueue();
         }
         else {
             if (!sduQueue_.isEmpty()) {
-                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - check when TX buffer the RLC entity associated to the old mode becomes empty - queue length[" << sduQueue_.getLength() << "]" << endl;
+                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - check when the TX buffer of the RLC entity associated with the old mode becomes empty - queue length[" << sduQueue_.getLength() << "]" << endl;
                 notifyEmptyBuffer_ = true;
             }
             else {
-                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - TX buffer of the RLC entity associated to the old mode is already empty" << endl;
+                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - TX buffer of the RLC entity associated with the old mode is already empty" << endl;
             }
         }
     }
@@ -366,7 +366,7 @@ void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
         if (!clearBuffer) {
             if (lteRlc_->isEmptyingTxBuffer(flowControlInfo_->getD2dRxPeerId())) {
                 // stop incoming connections, until
-                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - halt incoming downstream connections of the RLC entity associated to the new mode" << endl;
+                EV << NOW << " UmTxEntity::rlcHandleD2DModeSwitch - halt incoming downstream connections of the RLC entity associated with the new mode" << endl;
                 startHoldingDownstreamInPackets();
             }
         }

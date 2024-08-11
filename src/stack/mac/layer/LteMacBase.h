@@ -42,7 +42,7 @@ typedef std::map<MacNodeId, LteHarqBufferTx *> HarqTxBuffers;
 typedef std::map<MacNodeId, LteHarqBufferRx *> HarqRxBuffers;
 
 /*
- * MultiMap associating a LCG group with all connection belonging to it and
+ * MultiMap associating a LCG group with all connections belonging to it and
  * corresponding virtual buffer pointer
  */
 typedef std::pair<MacCid, LteMacBuffer *> CidBufferPair;
@@ -128,7 +128,7 @@ class LteMacBase : public cSimpleModule
     std::map<double, HarqRxBuffers> harqRxBuffers_;
 
     /* Connection Descriptors
-     * Holds flow related infos
+     * Holds flow-related information
      */
     std::map<MacCid, FlowControlInfo> connDesc_;
 
@@ -138,7 +138,7 @@ class LteMacBase : public cSimpleModule
     std::map<MacCid, FlowControlInfo> connDescIn_;
 
     /* LCG to CID and buffers map - used for supporting LCG - based scheduler operations
-     * TODO : delete/update entries on hand-over
+     * TODO: delete/update entries on handover
      */
     LcgMap lcgMap_;
     // Node Type;
@@ -354,15 +354,15 @@ class LteMacBase : public cSimpleModule
     /**
      * Deleting the module
      *
-     * Method is overridden in order to cancel the periodic TTI self-message,
+     * Method is overridden to cancel the periodic TTI self-message,
      * afterwards the deleteModule method of cSimpleModule is called.
      */
     virtual void deleteModule() override;
 
     /**
      * Main loop of the Mac level, calls the scheduler
-     * and every other function every TTI : must be reimplemented
-     * by derivate classes
+     * and every other function every TTI: must be reimplemented
+     * by derived classes
      */
     virtual void handleSelfMessage() = 0;
 
@@ -383,7 +383,7 @@ class LteMacBase : public cSimpleModule
     void sendUpperPackets(cPacket *pkt);
 
     /*
-     * Functions to be redefined by derivated classes
+     * Functions to be redefined by derived classes
      */
 
     virtual void macPduMake(MacCid cid = 0) = 0;
@@ -419,14 +419,14 @@ class LteMacBase : public cSimpleModule
     }
 
     /*
-     * Receives and handles RAC requests (eNodeB implementation)  and responses (LteMacUe implementation)
+     * Receives and handles RAC requests (eNodeB implementation) and responses (LteMacUe implementation)
      */
     virtual void macHandleRac(cPacket *pkt)
     {
     }
 
     /*
-     * Update UserTxParam stored in every lteMacPdu when an rtx change this information
+     * Update UserTxParam stored in every lteMacPdu when an rtx changes this information
      */
     virtual void updateUserTxParam(cPacket *pkt) = 0;
 

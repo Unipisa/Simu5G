@@ -1,7 +1,7 @@
 /**
  * @author Alessandro Noferi
  *
- * This class create and manages HTTP responses packets, i.e.:
+ * This class creates and manages HTTP response packets, i.e.:
  *
  * HTTP/1.1 STATUS \r\n
  * headers[] \r\n
@@ -13,7 +13,7 @@
  * - Content-Type
  * - Connection
  * They are managed by specific setters and getters.
- * It is also possible add other headers via generic method (setHeaderField)
+ * It is also possible to add other headers via a generic method (setHeaderField)
  *
  */
 

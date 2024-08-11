@@ -101,7 +101,7 @@ struct AllocatedRbsPerUeInfo
 typedef std::map<MacNodeId, AllocatedRbsPerUeInfo> AllocatedRbsPerUeMapA;
 
 /**
- *  Type used for discriminates the UEs in the allocation phase.
+ *  Type used to discriminate the UEs in the allocation phase.
  */
 enum AllocationUeType
 {

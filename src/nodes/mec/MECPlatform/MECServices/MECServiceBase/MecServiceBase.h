@@ -37,19 +37,19 @@ using namespace omnetpp;
 
 /**
  *
- * This class implements the general structure of a Mec Service. It holds all the TCP connections
- * with the e.g Mec Applications and manages its lifecycle. It manages Request-Replay and Subscribe-Notify schemes.
- * Every request is inserted in the queue and executed in FIFO order. Also subscription event are queued in a separate queue and
- * have the priority. The execution times are calculated with the calculateRequestServiceTime method.
- * During initialization it saves all the eNodeB/gNodeBs connected to the Mec Host on which the service is running.
+ * This class implements the general structure of an MEC Service. It holds all the TCP connections
+ * with the e.g. MEC Applications and manages its lifecycle. It manages Request-Reply and Subscribe-Notify schemes.
+ * Every request is inserted in the queue and executed in FIFO order. Also, subscription events are queued in a separate queue and
+ * have priority. The execution times are calculated with the calculateRequestServiceTime method.
+ * During initialization, it saves all the eNodeB/gNodeBs connected to the MEC Host on which the service is running.
  *
  * Each connection is managed by the SocketManager object that implements the TcpSocket::CallbackInterface
- * It must be subclassed and only the methods relative to the requests management (e.g handleGETrequest)
+ * It must be subclassed and only the methods related to request management (e.g., handleGETRequest)
  * have to be implemented.
  *
  * Note:
- * currently subscription mode is implemented using the same socket the client used to create the subscription (i.e. the POST request).
- * A more elastic solution, i.e. usage of the endpoint specified in the POST request,  is planned to be implemented soon.
+ * currently, subscription mode is implemented using the same socket that the client used to create the subscription (i.e., the POST request).
+ * A more flexible solution, i.e., usage of the endpoint specified in the POST request, is planned to be implemented soon.
  *
  */
 
@@ -72,7 +72,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
   protected:
     std::string serviceName_;
-    inet::TcpSocket serverSocket; // Used to listen incoming connections
+    inet::TcpSocket serverSocket; // Used to listen to incoming connections
     inet::SocketMap socketMap; // Stores the connections
     typedef std::set<SocketManager *, simu5g::utils::cModule_LessId> ThreadSet;
     ThreadSet threadSet;
@@ -92,8 +92,8 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
      * the current implementation assumes a M/M/1 system
      */
     bool loadGenerator_;
-    double lambda_; // arrival rate of a BG request form a BG app
-    double beta_; // arrival rate of a BG request form a BG app
+    double lambda_; // arrival rate of a BG request from a BG app
+    double beta_; // arrival rate of a BG request from a BG app
 
     int numBGApps_; // number of BG apps
     double rho_;
@@ -101,14 +101,14 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     unsigned int subscriptionId_; // identifier for new subscriptions
 
-    // currently not uses
+    // currently not used
     std::set<std::string> supportedQueryParams_;
     std::set<std::string> supportedSubscriptionParams_;
 
     typedef std::map<unsigned int, SubscriptionBase *> Subscriptions;
-    Subscriptions subscriptions_; //list of all active subscriptions
+    Subscriptions subscriptions_; // list of all active subscriptions
 
-    std::set<cModule *, simu5g::utils::cModule_LessId> eNodeB_;     //eNodeBs connected to the ME Host
+    std::set<cModule *, simu5g::utils::cModule_LessId> eNodeB_;     // eNodeBs connected to the MEC Host
 
     int requestQueueSize_;
 
@@ -121,7 +121,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     cMessage *subscriptionService_;
     double subscriptionServiceTime_;
     int subscriptionQueueSize_;
-    std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events relative to subscriptions
+    std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events related to subscriptions
     EventNotification *currentSubscriptionServed_;
 
     // signals for statistics
@@ -130,7 +130,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     /*
      * This method is called for every request in the requests_ queue.
-     * It check if the receiver is still connected and in case manages the request
+     * It checks if the receiver is still connected and in case manages the request
      */
     virtual bool manageRequest();
 
@@ -140,13 +140,11 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual bool manageSubscription();
 
     /*
-     * This method checks the queues length and in case it simulates a request/subscription
+     * This method checks the queue lengths and in case it simulates a request/subscription
      * execution time.
-     * Subscriptions have precedence wrt requests
+     * Subscriptions have precedence over requests
      *
-     * if parameter is true -> scheduleAt(NOW)
-     * This is
-     *
+     * if the parameter is true -> scheduleAt(NOW)
      *
      * @param now when to send the next event
      */
@@ -159,33 +157,33 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual void refreshDisplay() const override;
 
     /*
-     * This method finds all the BSs connected to the Mec Host hosting the service
+     * This method finds all the BSs connected to the MEC Host hosting the service
      */
     virtual void getConnectedBaseStations();
 
     /*
-     * This method call the handle method according to the HTTP verb
-     * e.g GET --> handleGetRequest()
+     * This method calls the handle method according to the HTTP verb
+     * e.g. GET --> handleGetRequest()
      * These methods have to be implemented by the MEC services
      */
     virtual void handleCurrentRequest(inet::TcpSocket *socket);
 
     /*
      * This method manages the situation of an incoming request when
-     * the request queue is full. It responds with a HTTP 503
+     * the request queue is full. It responds with an HTTP 503
      */
     virtual void handleRequestQueueFull(HttpRequestMessage *msg);
 
     /*
-     * This method calculate the service time of the request based on:
-     *  - the method (e.g. GET POST)
+     * This method calculates the service time of the request based on:
+     *  - the method (e.g., GET, POST)
      *  - the number of parameters
      *  - .ini parameter
      *  - combination of the above
      *
-     * In the base class it returns a Poisson service time with mean
+     * In the base class, it returns a Poisson service time with mean
      * given by an .ini parameter.
-     * The Mec service can implement the calculation as preferred
+     * The MEC service can implement the calculation as preferred
      *
      */
     virtual double calculateRequestServiceTime();
@@ -229,28 +227,28 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
   public:
     /*
-     * This method can be used by a module that want to inform that
-     * something happened, like a value greater than a  threshold
+     * This method can be used by a module that wants to inform that
+     * something happened, like a value greater than a threshold
      * in order to send a subscription
      *
-     * @param event structure to be added in the queue
+     * @param event structure to be added to the queue
      */
     virtual void triggeredEvent(EventNotification *event);
 
     /*
-     * This method adds the request in the requests_ queue
+     * This method adds the request to the requests_ queue
      *
      * @param msg request
      */
     virtual void newRequest(HttpRequestMessage *msg);
 
-    // This method adds the subscription event in the subscriptions_ queue
+    // This method adds the subscription event to the subscriptions_ queue
 
     virtual void newSubscriptionEvent(EventNotification *event);
 
     /*
      * This method handles a request. It parses the payload and in case
-     * calls the correct method (e.g GET, POST)
+     * calls the correct method (e.g., GET, POST)
      * @param socket used to send back the response
      */
     virtual void handleRequest(inet::TcpSocket *socket);
@@ -264,7 +262,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     virtual void closeConnection(SocketManager *connection);
 
-    /* This method can be used by the socketManager class to emit
+    /* This method can be used by the SocketManager class to emit
      * the length of the request queue upon a request arrival
      */
     virtual void emitRequestQueueLength();
@@ -272,7 +270,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     /* This method removes the subscriptions associated
      * with a closed connection
      */
-    virtual void removeSubscritions(int connId);
+    virtual void removeSubscriptions(int connId);
 };
 
 } //namespace

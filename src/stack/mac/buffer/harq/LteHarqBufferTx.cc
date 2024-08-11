@@ -161,7 +161,7 @@ UnitList LteHarqBufferTx::firstAvailable()
 
 UnitList LteHarqBufferTx::getEmptyUnits(unsigned char acid)
 {
-    // TODO add multi CW check and retx checks
+    // TODO add multi CW check and retransmission checks
     UnitList ret;
     ret.first = acid;
     ret.second = (*processes_)[acid]->emptyUnitsIds();
@@ -177,10 +177,10 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
     HarqAcknowledgment harqResult = result ? HARQACK : HARQNACK;
     Codeword cw = fbpkt->getCw();
     unsigned char acid = fbpkt->getAcid();
-    long fbPduId = fbpkt->getFbMacPduId(); // id of the pdu that should receive this fb
+    long fbPduId = fbpkt->getFbMacPduId(); // id of the pdu that should receive this feedback
     long unitPduId = (*processes_)[acid]->getPduId(cw);
 
-    // After handover or a D2D mode switch, the process nay have been dropped. The received feedback must be ignored.
+    // After handover or a D2D mode switch, the process may have been dropped. The received feedback must be ignored.
     if ((*processes_)[acid]->isDropped()) {
         EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << ". The corresponding unit has been "
                                                                         " reset after handover or a D2D mode switch (the contained pdu was dropped). Ignore feedback." << endl;
@@ -189,13 +189,13 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
     }
 
     if (fbPduId != unitPduId) {
-        // fb is not for the pdu in this unit, maybe the addressed one was dropped
-        EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << "Codeword " << cw << " not addressed"
+        // feedback is not for the pdu in this unit, maybe the addressed one was dropped
+        EV << "H-ARQ TX buffer: received pdu for acid " << (int)acid << " Codeword " << cw << " not addressed"
                                                                                              " to the actually contained pdu (maybe it was dropped)" << endl;
         EV << "Received id: " << fbPduId << endl;
         EV << "PDU id: " << unitPduId << endl;
         // todo: comment endsim after tests
-        throw cRuntimeError("H-ARQ TX: fb is not for the pdu in this unit, maybe the addressed one was dropped");
+        throw cRuntimeError("H-ARQ TX: feedback is not for the pdu in this unit, maybe the addressed one was dropped");
     }
 
     /*
@@ -203,7 +203,7 @@ void LteHarqBufferTx::receiveHarqFeedback(Packet *pkt)
      *
      * place this piece of code before:
      * (*processes_)[acid]->pduFeedback(harqResult, cw);
-     * since it delete the pdu
+     * since it deletes the pdu
      */
     if (harqResult == HARQACK) {
         auto macPdu = (*processes_)[acid]->getPdu(cw)->peekAtFront<LteMacPdu>();
@@ -316,7 +316,7 @@ LteHarqProcessTx *LteHarqBufferTx::getSelectedProcess()
     return getProcess(selectedAcid_);
 }
 
-// @author Alessandro noferi
+// @author Alessandro Noferi
 
 bool LteHarqBufferTx::isHarqBufferActive() const {
     for (auto it = processes_->begin(); it != processes_->end(); ++it) {

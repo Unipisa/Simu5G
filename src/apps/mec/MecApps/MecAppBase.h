@@ -30,12 +30,12 @@ namespace simu5g {
 using namespace omnetpp;
 
 /*
- * This is a case class for rapidly implementation a MEC app. It is supposed that the MEC app
+ * This is a case class for rapid implementation of a MEC app. It is supposed that the MEC app
  * consumes only one MEC service. It manages socket connections, HTTP message parsing and
  * simulates processing time to execute block of codes.
- * Use this app when HTTP messages arrives in a synchronous way and so there is not the need of
+ * Use this app when HTTP messages arrive in a synchronous way and so there is not the need of
  * queuing them during other processing.
- * A MECAppBase that store HTTP messages in a queue is planned to be implemented.
+ * A MECAppBase that stores HTTP messages in a queue is planned to be implemented.
  *
  * To develop a real MEC app, it is only necessary to implement the abstract methods related to
  * the logic behavior.
@@ -56,9 +56,9 @@ struct HttpMessageStatus
 class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
-    /* TCP sockets are dynamically create by the user according to her needs
+    /* TCP sockets are dynamically created by the user according to her needs
      * the HttpBaseMessage* will be linked to the userData variable in TCPSocket class
-     * The base implementation already provides on socket to the ServiceRegistry and one socket to a MEC service
+     * The base implementation already provides one socket to the ServiceRegistry and one socket to a MEC service
      * key is the name of the socket, just to std::string,. E.g. LocServiceSocket, RNISSocket
      * NOTE: remember to delete the HttpBaseMessage* pointer!
      */

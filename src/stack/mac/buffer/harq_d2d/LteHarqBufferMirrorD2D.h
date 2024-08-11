@@ -31,7 +31,7 @@ class LteHarqBufferMirrorD2D
     /// number of contained H-ARQ processes
     unsigned int numProc_;
 
-    //Max number of harq retransmission
+    // Max number of HARQ retransmissions
     unsigned char maxHarqRtx_;
 
     /// processes vector

@@ -31,8 +31,8 @@ using namespace omnetpp;
 
 /**
  * GtpUser is used for building data tunnels between GTP peers.
- * GtpUser can receive two kind of packets:
- * a) IP datagram from a trafficFilter. Those packets are labeled with a tftId
+ * GtpUser can receive two kinds of packets:
+ * a) IP datagram from a traffic filter. These packets are labeled with a tftId
  * b) GtpUserMsg from Udp-IP layers.
  *
  */

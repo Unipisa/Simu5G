@@ -48,7 +48,7 @@ void GtpUser::initialize(int stage)
 
     // find the address of the core network gateway
     if (ownerType_ != PGW && ownerType_ != UPF) {
-        // check if this is a gNB connected as secondary node
+        // check if this is a gNB connected as a secondary node
         bool connectedBS = isBaseStation(ownerType_) && networkNode_->gate("ppp$o")->isConnected();
 
         if (connectedBS || ownerType_ == UPF_MEC) {
@@ -105,13 +105,13 @@ void GtpUser::handleMessage(cMessage *msg)
     if (msg->arrivedOn("trafficFlowFilterGate")) {
         EV << "GtpUser::handleMessage - message from trafficFlowFilter" << endl;
 
-        // forward the encapsulated Ipv4 datagram
+        // forward the encapsulated IPv4 datagram
         handleFromTrafficFlowFilter(check_and_cast<Packet *>(msg));
     }
     else if (msg->arrivedOn("socketIn")) {
-        EV << "GtpUser::handleMessage - message from udp layer" << endl;
+        EV << "GtpUser::handleMessage - message from UDP layer" << endl;
         Packet *packet = check_and_cast<Packet *>(msg);
-        PacketPrinter printer; // turns packets into human readable strings
+        PacketPrinter printer; // turns packets into human-readable strings
         printer.printPacket(EV, packet); // print to standard output
 
         handleFromUdp(packet);
@@ -125,19 +125,19 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
      * based on the trafficFlowId found by the TrafficFlowFilter:
      * 1) tftId == -2, the destination does not belong to the simulation anymore
      *    --> delete the packet
-     * 2) tftId -- 0, we are on a BS and the destination is a UE under the same gNB
+     * 2) tftId == 0, we are on a BS and the destination is a UE under the same gNB
      *    --> forward the packet to the local LTE/NR NIC
      * 3) tftId == -1, destination is outside the radio network
      *    --> tunnel the packet towards the CN gateway
-     * 3) tftId == -3, destination is a MEC host
-     *    3a) the MEC host is inside the same core network
+     * 4) tftId == -3, destination is a MEC host
+     *    4a) the MEC host is inside the same core network
      *        --> tunnel the packet towards the MEC host
-     *    3b) the MEC host is inside another core network
+     *    4b) the MEC host is inside another core network
      *        --> tunnel the packet towards the CN gateway
-     * 4) otherwise, destination is a UE
-     *    4a) the UE is inside the same network
+     * 5) otherwise, destination is a UE
+     *    5a) the UE is inside the same network
      *        --> tunnel the packet towards its serving BS
-     *    4b) the UE is inside another network
+     *    5b) the UE is inside another network
      *        --> tunnel the packet towards the CN gateway
      */
 
@@ -148,7 +148,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     if (flowId == -2) {
         // the destination has been removed from the simulation. Delete datagram
-        EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Delete packet." << endl;
+        EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Deleting packet." << endl;
         delete datagram;
         return;
     }
@@ -187,7 +187,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
             tunnelPeerAddress = binder_->getUpfFromMecHost(inet::L3Address(destAddr));
         }
         else { // send to a BS
-               // check if the destination is within the same core network
+            // check if the destination is within the same core network
 
             // get the symbolic IP address of the tunnel destination ID
             // then obtain the address via IPvXAddressResolver
@@ -206,7 +206,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
      * The following cases can occur:
      * 1) the packet has been received by a BS (this GtpUser module is inside a BS)
      *    --> the destination is for sure a UE served by this BS, hence we decapsulate the packet and deliver it locally
-     * 2) the packet has been received by a MecHost (this GtpUser module is inside a MEC host's UPF)
+     * 2) the packet has been received by a MEC host (this GtpUser module is inside a MEC host's UPF)
      *    --> the destination is for sure the MEC host, hence we decapsulate the packet and deliver it locally
      * 3) the packet has been received by a "border" PGW/UPF (this GtpUser is inside a PGW/UPF)
      *    3a) the destination of the packet is NOT a UE

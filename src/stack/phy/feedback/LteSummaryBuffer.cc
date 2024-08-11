@@ -39,7 +39,7 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
                 unsigned int n = cqi.size();
                 for (Codeword cw = 0; cw < n; ++cw)
                     for (Band i = 0; i < totBands_; ++i)
-                        cumulativeSummary_.setCqi(cqi.at(cw), cw, i); // ripete lo stesso wb cqi su ogni banda della stessa cw
+                        cumulativeSummary_.setCqi(cqi.at(cw), cw, i); // repeats the same wb cqi on each band of the same cw
             }
             if (fb.hasPreferredCqi()) { // Preferred-band
                 CqiVector cqi(fb.getPreferredCqi());
@@ -48,11 +48,11 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
                 BandSet::iterator et = bands.end();
                 for (Codeword cw = 0; cw < n; ++cw)
                     for (BandSet::iterator it = bands.begin(); it != et; ++it)
-                        cumulativeSummary_.setCqi(cqi.at(cw), cw, *it); // mette lo stesso cqi solo sulle bande preferite della stessa cw
+                        cumulativeSummary_.setCqi(cqi.at(cw), cw, *it); // puts the same cqi only on the preferred bands of the same cw
             }
         }
 
-        // Per il PMI si comporta in modo analogo
+        // For the PMI it behaves similarly
 
         // PMI
         if (fb.hasBandPmi()) { // Per-band

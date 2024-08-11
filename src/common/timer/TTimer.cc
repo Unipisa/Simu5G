@@ -99,7 +99,7 @@ void TMultiTimer::handle(unsigned int event)
     if (directList_.begin() == directList_.end())
         throw cRuntimeError("TMultiTimer::handle(): The list is empty");
 
-    // Note that, the first element in the map is the element with the
+    // Note that the first element in the map is the element with the
     // lowest key value
     direct = directList_.begin();
 
@@ -113,7 +113,7 @@ void TMultiTimer::handle(unsigned int event)
     // Remove the element from the direct list (i.e. pop front)
     directList_.erase(direct);
 
-    // reschedule the timer to manage the earliest event, if any
+    // Re-schedule the timer to manage the earliest event, if any
     if (directList_.empty())
         busy_ = false;
     else {
@@ -151,7 +151,7 @@ void TMultiTimer::remove(const unsigned int event)
     if (dIt == directList_.begin()) {
         // Remove the Event from the direct list
         directList_.erase(dIt);
-        // Remove the event from the connected simpleModule .
+        // Remove the event from the connected simpleModule.
         module_->cancelAndDelete(intr_);
 
         if (directList_.empty())

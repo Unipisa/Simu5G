@@ -39,16 +39,16 @@ class AmRxQueue : public cSimpleModule
     //! Receiver window descriptor
     RlcWindowDesc rxWindowDesc_;
 
-    //! Minimum time between two consecutive ack messages
+    //! Minimum time between two consecutive ACK messages
     simtime_t ackReportInterval_;
 
-    //! The time when the last ack message was sent.
+    //! The time when the last ACK message was sent.
     simtime_t lastSentAck_;
 
-    //! Buffer status report Interval
+    //! Buffer status report interval
     simtime_t statusReportInterval_;
 
-    //! SDU reconstructed at the beginning of the Receiver buffer
+    //! SDU reconstructed at the beginning of the receiver buffer
     int firstSdu_;
 
     //! Timer to manage the buffer status report
@@ -62,18 +62,18 @@ class AmRxQueue : public cSimpleModule
     //   received and can be passed to the upper layer)
     std::deque<inet::Packet *> pendingPduBuffer_;
 
-    //! AM PDU Received vector
+    //! AM PDU received vector
     /** For each AM PDU a received status variable is kept.
      */
     std::vector<bool> received_;
 
-    //! AM PDU Discarded Vector
+    //! AM PDU discarded vector
     /** For each AM PDU a discarded status variable is kept.
      */
     std::vector<bool> discarded_;
 
     /*
-     * FlowControlInfo matrix : used for CTRL messages generation
+     * FlowControlInfo matrix: used for CTRL messages generation
      */
     FlowControlInfo *flowControlInfo_;
 
@@ -107,14 +107,14 @@ class AmRxQueue : public cSimpleModule
   protected:
 
     //! Send the RLC SDU stored in the buffer to the upper layer
-    /** Note that, the buffer contains a set of RLC PDU. At most,
+    /** Note that, the buffer contains a set of RLC PDUs. At most,
      *  one RLC SDU can be in the buffer!
      */
     void deque();
 
     //! Pass an SDU to the upper layer (RLC receiver)
     /** @param <index> index The index of the first PDU related to
-     *  the target SDU (i.e.) the SDU that has been completely received
+     *  the target SDU (i.e. the SDU that has been completely received)
      */
     void passUp(const int index);
 
@@ -122,15 +122,15 @@ class AmRxQueue : public cSimpleModule
     //! completely received
     void checkCompleteSdu(const int index);
 
-    //! send buffer status report to the ACK manager
+    //! Send buffer status report to the ACK manager
     void sendStatusReport();
 
-    //! Compute the shift of the rx window
+    //! Compute the shift of the RX window
     int computeWindowShift() const;
 
-    //! Move the rx window
-    /** Shift the rx window. The number of position to shift is
-     *  given by  seqNum - current rx first seqnum.
+    //! Move the RX window
+    /** Shift the RX window. The number of positions to shift is
+     *  given by seqNum - current RX first seqnum.
      */
     void moveRxWindow(const int seqNum);
 

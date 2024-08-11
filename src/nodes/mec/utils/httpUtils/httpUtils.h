@@ -27,7 +27,7 @@ using namespace omnetpp;
  * httpUtils collects all the functions needed to manage HTTP messages:
  * - body parsing
  * - header parsing
- * - send HTTP messages (both requests and responds)
+ * - send HTTP messages (both requests and responses)
  *
  */
 
@@ -77,18 +77,18 @@ struct ProblemDetailBase
 /**************************** HTTP MESSAGE PARSING ******************************
 * The management of HTTP messages as raw bytes is due to the fact that the      *
 * simulator can also run in emulation mode and the ExtLowerInterface modules    *
-* treats incoming packets as raw bytes. For now, a better management using the  *
+* treat incoming packets as raw bytes. For now, a better management using the  *
 * INET framework has not been found, so the following set of functions to parse *
 * strings into HttpBaseMessage is used.                                         *
 ********************************************************************************/
 
 /*
  * This function parses a string containing the HTTP header and returns a
- * HttpMessage according to if it is a request or a response.
+ * HttpMessage according to whether it is a request or a response.
  *
  * @param header - string representing the header of the HTTP message
  * @return HttpBaseMessage pointer to a new HTTP message with a field
- * named HttpRequestState that label the correctness of the message
+ * named HttpRequestState that labels the correctness of the message
  */
 HttpBaseMessage *parseHeader(const std::string& header);
 
@@ -121,9 +121,9 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
  * addition of the management of TCP segments containing more than one HTTP message.
  * Every completed HTTP message is queued in the messageQueue.
  *
- * @param socketId needed to know to who send back the response
+ * @param socketId needed to know to whom to send back the response
  * @param packet raw bytes as string of the incoming message
- * @param storedDatapointer to a variable where to store undefined data (e.g. segmented header)
+ * @param storedData pointer to a variable where to store undefined data (e.g. segmented header)
  * @param currentHttpMessage variable for storing the current HTTP message
  * @param messageQueue queue where to insert completed Http Messages
  */
@@ -139,14 +139,14 @@ void sendPacket(const char *pck, inet::TcpSocket *socket);
  */
 bool checkHttpVersion(std::string& httpVersion);
 /*
- * This function checks the method use in the HTTP request.
+ * This function checks the method used in the HTTP request.
  * Supported methods: GET, POST, PUT, DELETE
  */
 bool checkHttpRequestMethod(const std::string& method);
 
 /*
- * Self explained functions to send HTTP requests and responses.
- * Other modules should uses only:
+ * Self-explanatory functions to send HTTP requests and responses.
+ * Other modules should use only:
  * send***Response (with *** the code) for responses
  * and
  * send***Request (with *** the method) for requests

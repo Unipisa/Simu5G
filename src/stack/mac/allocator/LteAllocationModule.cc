@@ -120,7 +120,7 @@ void LteAllocationModule::reset(const unsigned int resourceBlocks, const unsigne
 
 void LteAllocationModule::configureOFDMplane(const Plane plane)
 {
-    // check if an OFDMA space exists with given plane ID
+    // check if an OFDMA space exists with the given plane ID
     if (totalRbsMatrix_.size() < (unsigned int)(plane + 1)) {
         // here we have to add missing planes to the OFDMA space and create the MACRO antenna entry for this plane
         totalRbsMatrix_.resize(plane + 1);
@@ -136,7 +136,7 @@ void LteAllocationModule::configureOFDMplane(const Plane plane)
         freeRbsMatrix_.at(plane).resize(MACRO + 1);
         freeRbsMatrix_.at(plane).at(MACRO).resize(bands_, 0);
 
-        // we set newly created OFDMA space equal to its peer space
+        // we set the newly created OFDMA space equal to its peer space
         totalRbsMatrix_[plane][MACRO] = totalRbsMatrix_[MAIN_PLANE][MACRO];
 
         usedInLastSlot_ = true;
@@ -146,8 +146,8 @@ void LteAllocationModule::configureOFDMplane(const Plane plane)
 void LteAllocationModule::setRemoteAntenna(const Plane plane, const Remote antenna)
 {
     /**
-     * Check if antenna already exists in given OFDMA space,
-     * otherwise creates all antennas between last one and given one.
+     * Check if an antenna already exists in the given OFDMA space,
+     * otherwise creates all antennas between the last one and the given one.
      */
     for (int i = totalRbsMatrix_.at(plane).size(); i < antenna + 1; ++i) {
         // here we have to add missing antennas to the given plane and to set the number of RB for each antenna in this plane
@@ -185,14 +185,14 @@ bool LteAllocationModule::configureMuMimoPeering(const MacNodeId nodeId, const M
     allocatedRbsUe_[nodeId].secondaryUser_ = false; // primary MU-MIMO user
     allocatedRbsUe_[peer].secondaryUser_ = true;   // secondary MU-MIMO user
 
-    // set the peer's antennas  to the main user's one.
+    // set the peer's antennas to the main user's ones.
     RemoteSet peerAntennas = allocatedRbsUe_.at(nodeId).availableAntennaSet_;
     allocatedRbsUe_[peer].availableAntennaSet_ = peerAntennas;
 
     // check if the mirror MIMO plane has to be created.
     configureOFDMplane(MU_MIMO_PLANE);
 
-    // for each antenna of main user, create a mirror MU-MIMO antenna space for peer user
+    // for each antenna of the main user, create a mirror MU-MIMO antenna space for the peer user
     RemoteSet::iterator it = peerAntennas.begin(), et = peerAntennas.end();
     for ( ; it != et; ++it) {
         setRemoteAntenna(MU_MIMO_PLANE, *it);
@@ -220,7 +220,7 @@ MacNodeId LteAllocationModule::getMuMimoPeer(const MacNodeId nodeId) const
 unsigned int LteAllocationModule::computeTotalRbs()
 {
     // The amount of available blocks in all the OFDM spaces is obtained from the overall
-    // amount of RBs in every plane of every antenna, decreased by the number of the allocated blocks
+    // amount of RBs in every plane of every antenna, decreased by the number of allocated blocks
 
     int resourceBlocks = 0;
     int allocatedBlocks = 0;
@@ -236,7 +236,7 @@ unsigned int LteAllocationModule::computeTotalRbs()
 
     int availableBlocks = resourceBlocks - allocatedBlocks;
 
-    // available blocks MUST be a non negative amount
+    // available blocks MUST be a non-negative amount
     if (availableBlocks < 0)
         throw cRuntimeError("LteAllocator::checkOFDMspace(): Negative OFDM space");
 
@@ -268,7 +268,7 @@ unsigned int LteAllocationModule::getAllocatedBlocks(Plane plane, const Remote a
     return allocatedRbsPerBand_[plane][antenna][band].allocated_;
 }
 
-unsigned int LteAllocationModule::getInterferringBlocks(Plane plane, const Remote antenna, const Band band)
+unsigned int LteAllocationModule::getInterferingBlocks(Plane plane, const Remote antenna, const Band band)
 {
     if (!prevAllocatedRbsPerBand_.empty())
         return prevAllocatedRbsPerBand_[plane][antenna][band].allocated_;
@@ -278,7 +278,7 @@ unsigned int LteAllocationModule::getInterferringBlocks(Plane plane, const Remot
 
 unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const Plane plane, const Band band)
 {
-    // compute available blocks on all antennas for given user and plane.
+    // compute available blocks on all antennas for the given user and plane.
     RemoteSet antennas = allocatedRbsUe_.at(nodeId).availableAntennaSet_;
     RemoteSet::iterator it = antennas.begin(), et = antennas.end();
 
@@ -294,7 +294,7 @@ unsigned int LteAllocationModule::availableBlocks(const MacNodeId nodeId, const 
 bool LteAllocationModule::addBlocks(const Band band, const MacNodeId nodeId, const unsigned int blocks,
         const unsigned int bytes)
 {
-    //  all antennas for given user and plane.
+    // all antennas for the given user and plane.
     RemoteSet antennas = allocatedRbsUe_.at(nodeId).availableAntennaSet_;
     RemoteSet::iterator it = antennas.begin(), et = antennas.end();
     bool ret = false;
@@ -368,7 +368,7 @@ unsigned int LteAllocationModule::removeBlocks(const Remote antenna, const Band 
         return 0;
     }
 
-    // retrieving user's plane
+    // Retrieving user's plane
     Plane plane = getOFDMPlane(nodeId);
 
     unsigned int toDrain = allocatedRbsPerBand_[plane][antenna][band].ueAllocatedRbsMap_[nodeId];
@@ -377,7 +377,7 @@ unsigned int LteAllocationModule::removeBlocks(const Remote antenna, const Band 
     if (toDrain == 0)
         return toDrain;
 
-    // Note the removal on the allocator structures
+    // Note the removal in the allocator structures
     allocatedRbsPerBand_[plane][antenna][band].allocated_ -= toDrain;
     allocatedRbsUe_[nodeId].allocatedBlocks_ -= toDrain;
 
@@ -385,10 +385,10 @@ unsigned int LteAllocationModule::removeBlocks(const Remote antenna, const Band 
     allocatedRbsUe_[nodeId].allocatedBytes_ = 0;
     allocatedRbsPerBand_[plane][antenna][band].ueAllocatedRbsMap_[nodeId] = 0;
 
-    // drop the allocation list
+    // Drop the allocation list
     allocatedRbsUe_[nodeId].allocationMap_[antenna][band].clear();
 
-    // update the allocatedBlocks counter
+    // Update the allocatedBlocks counter
     allocatedRbsMatrix_[plane][antenna] -= toDrain;
 
     usedInLastSlot_ = true;
@@ -401,7 +401,7 @@ unsigned int LteAllocationModule::removeBlocks(const Remote antenna, const Band 
 
 unsigned int LteAllocationModule::rbOccupation(const MacNodeId nodeId, RbMap& rbMap)
 {
-    // compute allocated blocks on all antennas for given user and logical band.
+    // Compute allocated blocks on all antennas for the given user and logical band.
     RemoteSet antennas = allocatedRbsUe_.at(nodeId).availableAntennaSet_;
     auto it = antennas.begin(), et = antennas.end();
 

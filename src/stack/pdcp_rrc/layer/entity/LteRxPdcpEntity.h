@@ -28,9 +28,7 @@ using namespace inet;
  * @class LteRxPdcpEntity
  * @brief Entity for PDCP Layer
  *
- * This is the PDCP RX entity of LTE Stack.
- *
- *
+ * This is the PDCP RX entity of the LTE Stack.
  */
 class LteRxPdcpEntity : public cSimpleModule
 {
@@ -58,9 +56,9 @@ class LteRxPdcpEntity : public cSimpleModule
      * @author Alessandro Noferi
      *
      * This method is used with NRRxPdcpEntity that has
-     * sdu buffer. In particular it used when the
+     * an SDU buffer. In particular, it is used when the
      * RNI service requests the number of active users
-     * in UL, that also count buffered UL data in pdpc.
+     * in UL, that also counts buffered UL data in PDCP.
      */
     virtual bool isEmpty() const { return true; }
 };

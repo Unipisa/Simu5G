@@ -59,7 +59,7 @@ class LteHandoverManager : public cSimpleModule
     void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
 
     // receive handover command on X2 from the source eNB
-    void receiveHandoverCommand(MacNodeId ueId, MacNodeId eEnb, bool startHo);
+    void receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
 
     // send an IP datagram to the X2 Manager
     void forwardDataToTargetEnb(inet::Packet *datagram, MacNodeId targetEnb);

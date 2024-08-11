@@ -47,7 +47,7 @@ class BackgroundCellChannelModel : public cSimpleModule
     // distance from the building wall
     double inside_distance_;
 
-    // Average street's wide
+    // Average street's width
     double wStreet_;
 
     // scenario
@@ -80,13 +80,13 @@ class BackgroundCellChannelModel : public cSimpleModule
     //if true, shadowing is enabled
     bool shadowing_;
 
-    //Enabale disable fading
+    //Enable or disable fading
     bool fading_;
 
     //Number of fading paths in jakes fading
     int fadingPaths_;
 
-    //avg delay spred in jakes fading
+    //avg delay spread in jakes fading
     double delayRMS_;
 
     // enable/disable intercell interference computation
@@ -139,7 +139,7 @@ class BackgroundCellChannelModel : public cSimpleModule
     //enable or disable the dynamic computation of LOS NLOS probability for each user
     bool dynamicLos_;
 
-    //if dynamicLos is false this boolean is initialized to true if all user will be in LOS or false otherwise
+    //if dynamicLos is false this boolean is initialized to true if all users will be in LOS or false otherwise
     bool fixedLos_;
     /*
      * Compute Attenuation caused by pathloss and shadowing (optional)
@@ -167,21 +167,21 @@ class BackgroundCellChannelModel : public cSimpleModule
      */
     double computeUrbanMicro(double distance, bool los);
     /*
-     * compute scenario for Urban Macro cell
+     * Compute attenuation for Urban Macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double distance, bool los);
     /*
-     * compute scenario for Sub Urban Macro cell
+     * Compute attenuation for Sub Urban Macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
     double computeSubUrbanMacro(double distance, double& dbp, bool los);
     /*
-     * Compute scenario for rural macro cell
+     * Compute attenuation for rural macro cell
      *
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
@@ -207,15 +207,15 @@ class BackgroundCellChannelModel : public cSimpleModule
      *
      * @param speed speed of UE
      * @param nodeid mac node id of UE
-     * @param band logical bend id
+     * @param band logical band id
      * @param cqiDl if true, the jakesMap in the UE side should be used
      * @param isBgUe if true, this is called for a background UE
      */
-    double jakesFading(MacNodeId noedId, double speed, unsigned int band, unsigned int numBands);
+    double jakesFading(MacNodeId nodeId, double speed, unsigned int band, unsigned int numBands);
     /*
      * Compute LOS probability
      *
-     * @param d between UE and eNodeB
+     * @param d distance between UE and eNodeB
      * @param nodeid mac node id of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
@@ -238,7 +238,7 @@ class BackgroundCellChannelModel : public cSimpleModule
     double computeCorrelationDistance(const MacNodeId nodeId, const inet::Coord coord);
 
     /*
-     * update base point if distance to previous value is greater than the
+     * update base point if the distance to the previous value is greater than the
      * correlationDistance_
      */
     void updateCorrelationDistance(const MacNodeId nodeId, const inet::Coord coord);
@@ -270,7 +270,7 @@ class BackgroundCellChannelModel : public cSimpleModule
     void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }
 
     /*
-     * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     * Compute SINR for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
      */
     virtual std::vector<double> getSINR(MacNodeId bgUeId, inet::Coord bgUePos, TrafficGeneratorBase *bgUe, BackgroundScheduler *bgScheduler, Direction dir);
 

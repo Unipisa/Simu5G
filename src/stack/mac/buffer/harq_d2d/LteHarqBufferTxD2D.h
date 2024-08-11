@@ -18,9 +18,9 @@
 namespace simu5g {
 
 /*
- * NOTA: e' compito del mac ul usare solo il processo di turno, non c'e' nessun controllo.
- * TODO: aggiungere supporto all'uplink: funzioni in cui si specifica il processo da usare
- * TODO: commenti
+ * NOTE: it is the MAC's responsibility to use only the process in turn, there is no control.
+ * TODO: add support for the uplink: functions in which the process to use is specified
+ * TODO: comments
  */
 
 class LteHarqBufferTxD2D : public LteHarqBufferTx

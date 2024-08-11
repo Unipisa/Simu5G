@@ -43,8 +43,8 @@ class LteRlcAm : public cSimpleModule
     typedef std::map<MacCid, AmRxQueue *> AmRxBuffers;
 
     /**
-     * The buffers map associate each CID with
-     * a TX/RX Buffer , identified by its ID
+     * The buffers map associates each CID with
+     * a TX/RX Buffer, identified by its ID
      */
 
     AmTxBuffers txBuffers_;
@@ -83,7 +83,7 @@ class LteRlcAm : public cSimpleModule
      * getTxBuffer() is used by the sender to gather the TXBuffer
      * for that CID. If TXBuffer was already present, a reference
      * is returned, otherwise a new TXBuffer is created,
-     * added to the tx_buffers map and a reference is returned aswell.
+     * added to the tx_buffers map and a reference is returned as well.
      *
      * @param lcid Logical Connection ID
      * @param nodeId MAC Node Id
@@ -96,7 +96,7 @@ class LteRlcAm : public cSimpleModule
      * getRxBuffer() is used by the receiver to gather the RXBuffer
      * for that CID. If RXBuffer was already present, a reference
      * is returned, otherwise a new RXBuffer is created,
-     * added to the rx_buffers map and a reference is returned aswell.
+     * added to the rx_buffers map and a reference is returned as well.
      *
      * @param lcid Logical Connection ID
      * @param nodeId MAC Node Id
@@ -111,9 +111,9 @@ class LteRlcAm : public cSimpleModule
      *
      * handleUpperMessage() performs the following tasks:
      * - Adds the RLC-Am header to the packet, containing
-     *   the CID, the Traffic Type and the Sequence NAmber
+     *   the CID, the Traffic Type and the Sequence Number
      *   of the packet (extracted from the IP Datagram)
-     * - Search (or add) the proper TXBuffer, depending
+     * - Searches (or adds) the proper TXBuffer, depending
      *   on the packet CID
      * - Calls the TXBuffer, that from now on takes
      *   care of the packet
@@ -130,7 +130,7 @@ class LteRlcAm : public cSimpleModule
      *
      * handleLowerMessage() performs the following task:
      *
-     * - Search (or add) the proper RXBuffer, depending
+     * - Searches (or adds) the proper RXBuffer, depending
      *   on the packet CID
      * - Calls the RXBuffer, that from now on takes
      *   care of the packet
@@ -144,9 +144,9 @@ class LteRlcAm : public cSimpleModule
      * handler for control messages coming
      * from receiver AM entities
      *
-     *   routeControlMessage() performs the following task:
-     * - Search the proper TXBuffer, depending
-     *   on the packet CID and deliver the control packet to it
+     * routeControlMessage() performs the following task:
+     * - Searches the proper TXBuffer, depending
+     *   on the packet CID and delivers the control packet to it
      *
      * @param pkt packet to process
      */
@@ -154,8 +154,8 @@ class LteRlcAm : public cSimpleModule
 
     /**
      * sendFragmented() is invoked by the TXBuffer as a direct method
-     * call and used to forward fragments to lower layers. This is needed
-     * since the TXBuffer himself has no output gates
+     * call and is used to forward fragments to lower layers. This is needed
+     * since the TXBuffer itself has no output gates
      *
      * @param pkt packet to forward
      */
@@ -163,7 +163,7 @@ class LteRlcAm : public cSimpleModule
 
     /**
      * bufferControlPdu() is invoked by the RXBuffer as a direct method
-     * call and used to forward control packets to be sent down upon
+     * call and is used to forward control packets to be sent down upon
      * the next MAC request.
      *
      * @param pkt packet to buffer
@@ -172,8 +172,8 @@ class LteRlcAm : public cSimpleModule
 
     /**
      * sendDefragmented() is invoked by the RXBuffer as a direct method
-     * call and used to forward fragments to upper layers. This is needed
-     * since the RXBuffer himself has no output gates
+     * call and is used to forward fragments to upper layers. This is needed
+     * since the RXBuffer itself has no output gates
      *
      * @param pkt packet to forward
      */

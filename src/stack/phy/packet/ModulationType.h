@@ -30,7 +30,7 @@ namespace simu5g {
 
 enum ModulationClass {
     /** Modulation class unknown or unspecified. A WifiMode with this
-       WifiModulationClass has not been properly initialised. */
+       WifiModulationClass has not been properly initialized. */
     MOD_CLASS_UNKNOWN = 0,
     /** Infrared (IR) (Clause 16) */
     MOD_CLASS_IR,
@@ -71,7 +71,7 @@ enum CodeRate {
 };
 
 /**
- * \brief represent a single transmission mode
+ * \brief Represents a single transmission mode
  *
  * A WifiMode is implemented by a single integer which is used
  * to lookup in a global array the characteristics of the
@@ -95,7 +95,7 @@ class ModulationType
      * If a transmission mode uses 1/2 FEC, and if its
      * data rate is 3Mbs, the phy rate is 6Mbs
      */
-    /// MANDATORY it is necessary set the dataRate before the codeRate
+    /// MANDATORY it is necessary to set the dataRate before the codeRate
     void setCodeRate(enum CodeRate cRate)
     {
         codeRate = cRate;

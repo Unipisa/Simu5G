@@ -33,7 +33,7 @@ void ComponentCarrier::initialize()
         tddNumSymbolsUl_ = par("tddNumSymbolsUl");
     }
 
-    // register the carrier to the binder
+    // Register the carrier to the binder
     binder_->registerCarrier(carrierFrequency_, numBands_, numerologyIndex_, useTdd_, tddNumSymbolsDl_, tddNumSymbolsUl_);
 }
 

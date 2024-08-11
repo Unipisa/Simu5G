@@ -32,7 +32,7 @@ class TrafficLightMobility : public LinearMobility
 {
   protected:
     rad heading_;                                        // current heading
-    deg current_heading_deg_normalized_;                 // adjust the heading after the boarder between 0 and 360 deg
+    deg current_heading_deg_normalized_;                 // adjust the heading between 0 and 360 deg
     std::vector<TrafficLightController *> trafficLights_; // references to the traffic lights affecting this mobility module
 
     bool enableTurns_; // flag for enabling random turns at a traffic light
@@ -44,7 +44,7 @@ class TrafficLightMobility : public LinearMobility
     /** @brief Move the host*/
     virtual void move() override;
 
-    // this method returns the angle in degrees of the orientation of the car
+    // this method returns the angle in degrees of the orientation of the vehicle
     virtual double getOrientationAngleDegree();
 
   public:

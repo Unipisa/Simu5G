@@ -28,10 +28,10 @@ using namespace inet;
  * @class LteTxPdcpEntity
  * @brief Entity for PDCP Layer
  *
- * This is the PDCP entity of LTE Stack.
+ * This is the PDCP entity of the LTE Stack.
  *
- * PDCP entity performs the following tasks:
- * - mantain numbering of one logical connection
+ * The PDCP entity performs the following tasks:
+ * - maintain numbering of one logical connection
  *
  */
 class LteTxPdcpEntity : public cSimpleModule

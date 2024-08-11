@@ -25,12 +25,12 @@ ServiceRegistry::ServiceRegistry() {
     supportedQueryParams_.insert("app_list");
     supportedQueryParams_.insert("app_contexts");
     mecServices_.clear();
-    uuidBase = "123e4567-e89b-12d3-a456-4266141"; // last 5 digits are missing and used to create uniquely id in a quicker way
-    servIdCounter = 10000; // incremented every new service and concatenate it to the uuidBase
+    uuidBase = "123e4567-e89b-12d3-a456-4266141"; // last 5 digits are missing and used to create unique id in a quicker way
+    servIdCounter = 10000; // incremented for every new service and concatenated to the uuidBase
 }
 
 ServiceRegistry::~ServiceRegistry() {
-    // TODO Auto-generated destructor stub
+    // TODO: Auto-generated destructor stub
 }
 
 void ServiceRegistry::initialize(int stage)
@@ -67,14 +67,14 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
     EV << "ServiceRegistry::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
-    // check it is a GET for a query or a subscription
+    // check if it is a GET for a query or a subscription
     if (uri == (baseUriQueries_ + "/services")) { //queries
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
         if (!params.empty()) {
             std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
-             * supported paramater:
+             * supported parameters:
              * - ser_instance_id
              * - ser_name
              */
@@ -84,13 +84,13 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
 
             for (const auto& queryParam : queryParameters) {
                 if (queryParam.rfind("ser_instance_id", 0) == 0) { // cell_id=par1,par2
-                    EV << "ServiceRegistry::handleGETReques - parameters: " << endl;
+                    EV << "ServiceRegistry::handleGETRequest - parameters: " << endl;
                     auto params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
-                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
                     for (const auto& pit : splittedParams) {
                         EV << "ser_instance_id: " << pit << endl;
                         ser_instance_id.push_back(pit);
@@ -98,7 +98,7 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
                 }
                 else if (queryParam.rfind("ser_name", 0) == 0) {
                     auto params = simu5g::utils::splitString(queryParam, "=");
-                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    auto splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
                     for (const auto& pit : splittedParams) {
                         EV << "ser_name: " << pit << endl;
                         ser_name.push_back(pit);
@@ -119,7 +119,7 @@ void ServiceRegistry::handleGETRequest(const HttpRequestMessage *currentRequestM
                 }
             }
 
-            // TODO add for for serviceid!
+            // TODO: add for serviceid!
             Http::send200Response(socket, jsonResBody.dump().c_str());
         }
         else { //no query params
@@ -143,7 +143,7 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 {
     for (const auto& serv : mecServices_) {
         if (serv.getName() == servDesc.name && serv.getMecHost() == servDesc.mecHostname) {
-            throw cRuntimeError("ServiceRegistry::registerMeService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
+            throw cRuntimeError("ServiceRegistry::registerMecService - %s is already present in MEC host %s!", servDesc.name.c_str(), servDesc.mecHostname.c_str());
         }
     }
 
@@ -163,7 +163,7 @@ void ServiceRegistry::registerMecService(const ServiceDescriptor& servDesc)
 
     mecServices_.push_back(servInfo);
 
-    EV << "ServiceRegistry::registerMeService - " << servInfo.toJson().dump(2) << "\nadded!" << endl;
+    EV << "ServiceRegistry::registerMecService - " << servInfo.toJson().dump(2) << "\nadded!" << endl;
 }
 
 const std::vector<ServiceInfo> *ServiceRegistry::getAvailableMecServices() const

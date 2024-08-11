@@ -31,7 +31,7 @@ using namespace omnetpp;
  *   This mode is only used for control traffic, and
  *   the corresponding port is therefore accessed only from
  *   the RRC layer. Traffic on this port is simply forwarded
- *   to lower layer on ports BCCH/PCCH/CCCH
+ *   to lower layers on ports BCCH/PCCH/CCCH
  *
  *   TM mode does not attach any header to the packet.
  *
@@ -45,8 +45,8 @@ class LteRlcTm : public cSimpleModule
 
   protected:
     /**
-     * Analyze gate of incoming packet
-     * and call proper handler
+     * Analyzes gate of incoming packet
+     * and calls proper handler
      */
     virtual void handleMessage(cMessage *msg) override;
 
@@ -55,25 +55,25 @@ class LteRlcTm : public cSimpleModule
 
   private:
     /**
-     * handler for traffic coming
+     * Handler for traffic coming
      * from the upper layer (RRC)
      *
-     * handleUpperMessage() simply forwards packet to lower layers.
+     * handleUpperMessage() simply forwards packets to lower layers.
      * An empty header is added so that the encapsulation
-     * level is the same for all packets transversing the stack
+     * level is the same for all packets traversing the stack
      *
      * @param pkt packet to process
      */
     void handleUpperMessage(cPacket *pkt);
 
     /**
-     * handler for traffic coming from
+     * Handler for traffic coming from
      * lower layer
      *
      * handleLowerMessage() is the function that takes care
      * of TM traffic coming from lower layer.
      * After decapsulating the fictitious
-     * header, packet is simply forwarded to the upper layer
+     * header, the packet is simply forwarded to the upper layer
      *
      * @param pkt packet to process
      */

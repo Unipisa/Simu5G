@@ -49,17 +49,17 @@ void TrafficFlowFilter::initialize(int stage)
          * @author Alessandro Noferi
          *
          */
-        // obtain the IP address of externel MEC applications (if any)
+        // obtain the IP address of external MEC applications (if any)
 
         std::string extAddress = getContainingNode(this)->par("extMeAppsAddress").stringValue();
         if (!extAddress.empty()) {
             std::vector<std::string> extAdd = cStringTokenizer(extAddress.c_str(), "/").asVector();
             if (extAdd.size() != 2) {
-                throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be like address/mask");
+                throw cRuntimeError("TrafficFlowFilter::initialize - Bad extMeApps parameter. It must be in the format address/mask");
             }
             meAppsExtAddress_ = inet::L3AddressResolver().resolve(extAdd[0].c_str());
             meAppsExtAddressMask_ = atoi(extAdd[1].c_str());
-            EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddres: " << meAppsExtAddress_.str() << "/" << meAppsExtAddressMask_ << endl;
+            EV << "TrafficFlowFilter::initialize - emulation support:  meAppsExtAddress: " << meAppsExtAddress_.str() << "/" << meAppsExtAddressMask_ << endl;
         }
     }
 
@@ -77,7 +77,7 @@ void TrafficFlowFilter::initialize(int stage)
     }
     //end mec
 
-    // register service processing IP-packets on the LTE Uu Link
+    // register service processing IP packets on the LTE Uu Link
     auto gateIn = gate("internetFilterGateIn");
     registerProtocol(LteProtocol::ipv4uu, gateIn, SP_INDICATION);
     registerProtocol(LteProtocol::ipv4uu, gateIn, SP_CONFIRM);
@@ -126,7 +126,7 @@ void TrafficFlowFilter::handleMessage(cMessage *msg)
     // search within tftTable the proper entry for this destination
     TrafficFlowTemplateId tftId = findTrafficFlow(srcAddr, destAddr);   // search for the tftId in the binder
 
-    // add control info to the normal ip datagram. This info will be read by the GTP-U application
+    // add control info to the normal IP datagram. This info will be read by the GTP-U application
     auto tftInfo = pkt->addTag<TftControlInfo>();
     tftInfo->setTft(tftId);
 

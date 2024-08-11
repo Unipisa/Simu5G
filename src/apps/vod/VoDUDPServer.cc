@@ -56,7 +56,7 @@ void VoDUDPServer::initialize(int stage)
             throw cRuntimeError("VoDUDPServer::initialize - only SVC trace is currently available. Abort.");
 
         infile.open(inputFileName.c_str(), ios::in);
-        if (infile.bad()) /* Or file is bad */
+        if (infile.bad()) /* Or the file is bad */
             throw cRuntimeError("Error while opening input file (File not found or incorrect type)");
 
         infile.seekg(0, ios::beg);
@@ -156,7 +156,7 @@ void VoDUDPServer::handleSVCMessage(cMessage *msg)
         socket.sendTo(packet, msgNew->getClientAddr(), msgNew->getClientPort());
         numPkSentApp++;
         while (true) {
-            /* Get infos about the frame from file */
+            /* Get info about the frame from file */
 
             if (svcTrace_[numPkSentApp].index == LONG_MAX)
                 break;

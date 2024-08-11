@@ -48,7 +48,7 @@ void BackgroundScheduler::initialize(int stage)
         ulPrevBandAllocation_.resize(numBands_, 0);
         ulBandAllocation_.resize(numBands_, 0);
 
-        // TODO: if BackgroundScheduler-interference is disabled, do not send selfMessages
+        // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
         /* Start TTI tick */
         ttiTick_ = new cMessage("ttiTick_");
         ttiTick_->setSchedulingPriority(1);        // TTI TICK after other messages
@@ -90,7 +90,7 @@ void BackgroundScheduler::handleMessage(cMessage *msg)
 void BackgroundScheduler::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *)
 {
     if (signalID == inet::IMobility::mobilityStateChangedSignal) {
-        // this is a HACK to prevent the bgBaseStation to change its position when its background UEs change theirs
+        // this is a HACK to prevent the bgBaseStation from changing its position when its background UEs change theirs
         // this would happen because the background UEs' mobility module is a submodule of the bgBaseStation
         if (this->getParentModule() != source->getParentModule())
             return;

@@ -103,7 +103,7 @@ bool LteMacQueue::isEnqueueablePacket(Packet *pkt) {
      * For UM: The new UM implementation introduced in commit 9ab9b71c5358a70278e2fbd51bf33a9d1d81cb86
      *         by G. Nardini only sends SDUs upon MAC SDU request. All SDUs are
      *         accepted as long as the MAC queue size is not exceeded.
-     * For TM: No fragments are to be checked, anyways.
+     * For TM: No fragments are to be checked, anyway.
      */
     if (pdu != nullptr) { // for AM we need to check if all fragments will fit
         if (pdu->getTotalFragments() > 1) {
@@ -111,7 +111,7 @@ bool LteMacQueue::isEnqueueablePacket(Packet *pkt) {
             bool allFragsWillFit = (remainingFrags * pkt->getByteLength()) + getByteLength() < queueSize_;
             bool enqueable = (pdu->getSnoMainPacket() != lastUnenqueueableMainSno) && allFragsWillFit;
             if (allFragsWillFit && !enqueable) {
-                EV_DEBUG << "PDU would fit but discarded frags before - rejecting fragment: " << pdu->getSnoMainPacket() << ":" << pdu->getSnoFragment() << std::endl;
+                EV_DEBUG << "PDU would fit but discarded fragments before - rejecting fragment: " << pdu->getSnoMainPacket() << ":" << pdu->getSnoFragment() << std::endl;
             }
             if (!enqueable) {
                 lastUnenqueueableMainSno = pdu->getSnoMainPacket();

@@ -36,7 +36,7 @@ class AssociateId : public AttributeBase
     /// AssociateId members
 
     /// <summary>
-    /// Numeric value (0-255) corresponding to specified type of identifier
+    /// Numeric value (0-255) corresponding to the specified type of identifier
     /// </summary>
 
     void setAssociateId(const mec::AssociateId& associateId);

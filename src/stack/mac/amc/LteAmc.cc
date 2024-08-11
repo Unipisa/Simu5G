@@ -38,7 +38,7 @@ AmcPilot *LteAmc::getAmcPilot(const cPar& p)
         return new AmcPilotAuto(binder_, this);
     if (strcmp(s, "D2D") == 0)
         return new AmcPilotD2D(binder_, this);
-    throw cRuntimeError("Amc Pilot not recognized");
+    throw cRuntimeError("AMC Pilot not recognized");
 }
 
 MacNodeId LteAmc::getNextHop(MacNodeId dst)
@@ -82,7 +82,7 @@ void LteAmc::printParameters()
 void LteAmc::printFbhb(Direction dir)
 {
     EV << "###################################" << endl;
-    EV << "# AMC FeedBack Historical Base (" << dirToA(dir) << ")" << endl;
+    EV << "# AMC Feedback Historical Base (" << dirToA(dir) << ")" << endl;
     EV << "###################################" << endl;
 
     std::map<double, History_> *history;
@@ -125,7 +125,7 @@ void LteAmc::printFbhb(Direction dir)
                     txMode = TxMode(t);
                     t++;
 
-                    // Print only non empty feedback summary! (all cqi are != NOSIGNALCQI)
+                    // Print only non-empty feedback summary! (all cqi are != NOSIGNALCQI)
                     Cqi testCqi = ((*txit).get()).getCqi(Codeword(0), Band(0));
                     if (testCqi == NOSIGNALCQI)
                         continue;
@@ -173,7 +173,7 @@ void LteAmc::printTxParams(Direction dir, double carrierFrequency)
     for ( ; it != et; it++) {
         EV << "Ue index: " << index << ", MacNodeId: " << (*revIndex)[index] << endl;
 
-        // Print only non empty user transmission parameters
+        // Print only non-empty user transmission parameters
         // testCqi = (*it).readCqiVector().at(0);
         //if(testCqi!=0)
         (*it).print("info");
@@ -290,7 +290,7 @@ void LteAmc::initialize()
 
     /** Structures initialization **/
 
-    // Scale Mcs Tables
+    // Scale MCS Tables
     dlMcsTable_.rescale(mcsScaleDl_);
     ulMcsTable_.rescale(mcsScaleUl_);
     d2dMcsTable_.rescale(mcsScaleD2D_);
@@ -305,7 +305,7 @@ void LteAmc::initialize()
 
     /**
      * Preparing iterators.
-     * Note: at initialization ALL dlConnectedUe_ and ulConnectedUs_ elements are TRUE.
+     * Note: at initialization ALL dlConnectedUe_ and ulConnectedUe_ elements are TRUE.
      */
     ConnectedUesMap::const_iterator it, et;
     RemoteSet::const_iterator ait, aet;
@@ -460,7 +460,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
     EV << "index: " << index << endl;
 
     if (history->find(peerId) == history->end()) {
-        // initialize new history for this peering UE
+        // initialize new history for this peer UE
         History_ newHist;
 
         ConnectedUesMap::const_iterator it, et;
@@ -487,7 +487,7 @@ const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMo
 {
     MacNodeId nh = getNextHop(id);
     if (id != nh)
-        EV << NOW << " LteAmc::getFeedback detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::getFeedback detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
     if (dir != DL && dir != UL)
@@ -504,11 +504,11 @@ const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, T
     MacNodeId nh = getNextHop(id);
 
     if (id != nh)
-        EV << NOW << " LteAmc::getFeedbackD2D detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::getFeedbackD2D detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
     if (peerId == 0) {
-        // we returns the first feedback stored in the structure
+        // we return the first feedback stored in the structure
         std::map<MacNodeId, History_>::iterator it = d2dFeedbackHistory_.at(carrierFrequency).begin();
         for ( ; it != d2dFeedbackHistory_.at(carrierFrequency).end(); ++it) {
             if (it->first == 0) // skip fake UE 0
@@ -554,10 +554,10 @@ bool LteAmc::existTxParams(MacNodeId id, const Direction dir, double carrierFreq
 {
     MacNodeId nh = getNextHop(id);
     if (id != nh)
-        EV << NOW << " LteAmc::existTxparams detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::existTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
-    std::map<double, std::vector<UserTxParams>> *txParams = (dir == DL) ? &dlTxParams_ : (dir == UL) ? &ulTxParams_ : (dir == D2D) ? &d2dTxParams_ : throw cRuntimeError("LteAmc::existTxparams(): Unrecognized direction");
+    std::map<double, std::vector<UserTxParams>> *txParams = (dir == DL) ? &dlTxParams_ : (dir == UL) ? &ulTxParams_ : (dir == D2D) ? &d2dTxParams_ : throw cRuntimeError("LteAmc::existTxParams(): Unrecognized direction");
     if (txParams->find(carrierFrequency) == txParams->end())
         return false;
 
@@ -570,15 +570,15 @@ const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserT
 {
     MacNodeId nh = getNextHop(id);
     if (id != nh)
-        EV << NOW << " LteAmc::setTxParams detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::setTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
     info.isSet() = true;
 
     /**
      * NOTE: if the antenna set has not been explicitly written in UserTxParams
-     * by the AMC pilot, this antennas set contains only MACRO
-     * (this is done setting MACRO in UserTxParams constructor)
+     * by the AMC pilot, this antenna set contains only MACRO
+     * (this is done by setting MACRO in UserTxParams constructor)
      */
 
     // DEBUG
@@ -613,7 +613,7 @@ const UserTxParams& LteAmc::computeTxParams(MacNodeId id, const Direction dir, d
 
     MacNodeId nh = getNextHop(id);
     if (id != nh)
-        EV << NOW << " LteAmc::computeTxParams detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::computeTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
     const UserTxParams& info = pilot_->computeTxParams(id, dir, carrierFrequency);
@@ -734,14 +734,14 @@ unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, unsigned int block
 
 unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
-    EV << NOW << " LteAmc::blocks2bytes Node " << id << ", Band " << b << ", Codeword " << cw << ",  direction " << dirToA(dir) << ", blocks " << blocks << "\n";
+    EV << NOW << " LteAmc::blocks2bytes Node " << id << ", Band " << b << ", Codeword " << cw << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
 
     unsigned int bits = computeBitsOnNRbs(id, b, cw, blocks, dir, carrierFrequency);
     unsigned int bytes = bits / 8;
 
     // DEBUG
     EV << NOW << " LteAmc::blocks2bytes Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bits Available space: " << bits << "\n";
+    EV << NOW << " LteAmc::blocks2bytes Available space: " << bits << "\n";
     EV << NOW << " LteAmc::blocks2bytes Available space: " << bytes << "\n";
 
     return bytes;
@@ -749,7 +749,7 @@ unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsig
 
 unsigned int LteAmc::computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
-    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Node " << id << ", Band " << b << ",  direction " << dirToA(dir) << ", blocks " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Node " << id << ", Band " << b << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
 
     unsigned int bits = computeBitsOnNRbs_MB(id, b, blocks, dir, carrierFrequency);
     unsigned int bytes = bits / 8;
@@ -891,7 +891,7 @@ const UserTxParams& LteAmc::getTxParams(MacNodeId id, const Direction dir, doubl
 {
     MacNodeId nh = getNextHop(id);
     if (id != nh)
-        EV << NOW << " LteAmc::getTxParams detected " << nh << " as nexthop for " << id << "\n";
+        EV << NOW << " LteAmc::getTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
     if (dir == DL)
@@ -991,7 +991,7 @@ const unsigned int *LteAmc::readTbsVect(Cqi cqi, unsigned int layers, Direction 
             break;
         }
         case _256QAM: {
-            throw cRuntimeError("LteAmc::readTbsVect(): Modulation _256AM not handled.");
+            throw cRuntimeError("LteAmc::readTbsVect(): Modulation _256QAM not handled.");
         }
     }
     return tbsVect;
@@ -1033,7 +1033,7 @@ Cqi LteAmc::readWbCqi(const CqiVector& cqi)
 
     // when casting a double to an unsigned int value, consider the closest one
 
-    // is the module lower than the half of the divisor ? ceil, otherwise floor
+    // is the module lower than the half of the divisor? ceil, otherwise floor
     cqiMean = (double)(cqiCounter % bands) > (double)bands / 2.0 ? cqiCounter / bands + 1 : cqiCounter / bands;
 
     EV << "LteAmc::getWbCqi - Cqi mean " << cqiMean << " minimum " << cqiMin << " maximum " << cqiMax << endl;
@@ -1105,7 +1105,7 @@ Pmi LteAmc::readWbPmi(const PmiVector& pmi)
 
     // when casting a double to an unsigned int value, consider the closest one
 
-    // is the module lower than the half of the divisor ? ceil, otherwise floor
+    // is the module lower than the half of the divisor? ceil, otherwise floor
     pmiMean = (double)(pmiCounter % bands) > (double)bands / 2.0 ? pmiCounter / bands + 1 : pmiCounter / bands;
 
     // the 0.0 weight is used in order to obtain the mean
@@ -1177,7 +1177,7 @@ void LteAmc::detachUser(MacNodeId nodeId, Direction dir)
         else {
             throw cRuntimeError("LteAmc::detachUser(): Unrecognized direction");
         }
-        // UE is no more connected
+        // UE is no longer connected
         (*connectedUe).at(nodeId) = false;
 
         // clear feedback data from history
@@ -1412,7 +1412,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
 
     EV << "Id: " << nodeId << endl;
     EV << "Index: " << nodeIndex << endl;
-    EV << "Reverse index: " << revIndex << " (should be the same of ID)" << endl;
+    EV << "Reverse index: " << revIndex << " (should be the same as ID)" << endl;
     EV << "Is connected: " << (isConnected ? "TRUE" : "FALSE") << endl;
 
     if (!isConnected)
@@ -1440,7 +1440,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
                 EV << "Remote: " << dasToA(*it) << endl;
                 feedback = (hit->second).at(*it).at(nodeIndex);
                 for (int i = 0; i < numTxModes; i++) {
-                    // Print only non empty feedback summary! (all cqi are != NOSIGNALCQI)
+                    // Print only non-empty feedback summary! (all cqi are != NOSIGNALCQI)
                     Cqi testCqi = (feedback.at(i).get()).getCqi(Codeword(0), Band(0));
                     if (testCqi == NOSIGNALCQI)
                         continue;
@@ -1466,7 +1466,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
                     EV << "Remote: " << dasToA(*it) << endl;
                     feedback = (*d2dHistory).at(*it).at(nodeIndex);
                     for (int i = 0; i < numTxModes; i++) {
-                        // Print only non empty feedback summary! (all cqi are != NOSIGNALCQI)
+                        // Print only non-empty feedback summary! (all cqi are != NOSIGNALCQI)
                         Cqi testCqi = (feedback.at(i).get()).getCqi(Codeword(0), Band(0));
                         if (testCqi == NOSIGNALCQI)
                             continue;

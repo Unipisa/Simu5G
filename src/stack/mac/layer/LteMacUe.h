@@ -35,10 +35,10 @@ class LteMacUe : public LteMacBase
     // one per carrier
     std::map<double, LteSchedulerUeUl *> lcgScheduler_;
 
-    // configured grant - one each codeword
+    // configured grant - one for each codeword
     std::map<double, inet::IntrusivePtr<const LteSchedulingGrant>> schedulingGrant_;
 
-    /// List of scheduled connection for this UE
+    /// List of scheduled connections for this UE
     std::map<double, LteMacScheduleList *> scheduleList_;
 
     // current H-ARQ process counter
@@ -94,12 +94,12 @@ class LteMacUe : public LteMacBase
     simsignal_t cqiDlSiso4_;
 
     /**
-     * Reads MAC parameters for ue and performs initialization.
+     * Reads MAC parameters for UE and performs initialization.
      */
     virtual void initialize(int stage) override;
 
     /**
-     * Analyze gate of incoming packet
+     * Analyze gate of incoming packets
      * and call proper handler
      */
     virtual void handleMessage(cMessage *msg) override;
@@ -162,7 +162,7 @@ class LteMacUe : public LteMacBase
      */
     virtual void checkRAC();
     /*
-     * Update UserTxParam stored in every lteMacPdu when an rtx change this information
+     * Update UserTxParam stored in every lteMacPdu when an RTX changes this information
      */
     virtual void updateUserTxParam(cPacket *pkt) override;
 

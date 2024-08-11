@@ -30,7 +30,7 @@ using namespace inet;
 
 /**
  * The UeStatsCollector retrieves some L2 measures used for the RNI service of
- * the MEC framework. In particular it retrieves packet delays and discard rate.
+ * the MEC framework. In particular, it retrieves packet delays and discard rates.
  *
  * It is managed by the eNodeBStatsCollector modules. The latter has timers that
  * periodically calculate the measures.
@@ -74,7 +74,7 @@ class UeStatsCollector : public cSimpleModule
 
     // packet delay
     void add_ul_nongbr_delay_ue();
-    void add_dl_nongbr_delay_ue(double value);// called by the eNodeBCollector
+    void add_dl_nongbr_delay_ue(double value); // called by the eNodeBCollector
 
     // packet discard rate
     void add_ul_nongbr_pdr_ue();
@@ -88,14 +88,14 @@ class UeStatsCollector : public cSimpleModule
     void add_ul_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
     void add_dl_nongbr_data_volume_ue(unsigned int value); // called by the eNodeBCollector
 
-    void resetDelayCounter(); // reset structures to calculate the measure
+    void resetDelayCounter(); // reset structures to calculate the measures
 
-    /* thie method is used by the eNodeBStatsCollector to calculate
+    /* this method is used by the eNodeBStatsCollector to calculate
      * packet discard rate per cell
      */
     DiscardedPkts getULDiscardedPkt();
 
-    // getters to retrieve L2 measures (e.g from RNI service)
+    // getters to retrieve L2 measures (e.g. from RNI service)
 
     // packet delay getters
     int get_ul_nongbr_delay_ue();

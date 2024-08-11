@@ -36,7 +36,7 @@ using namespace omnetpp;
  * @brief Physical layer of Lte Nic.
  *
  * This class implements the physical layer of the Lte Nic.
- * It contains methods to manage analog models and decider.
+ * It contains methods to manage analog models and the decider.
  *
  * The module receives packets from the LteStack and
  * sends them to the air channel, encapsulated in LteAirFrames.
@@ -138,8 +138,8 @@ class LtePhyBase : public ChannelAccess
     simsignal_t averageCqiUl_;
     simsignal_t averageCqiD2D_;
 
-    // User that are trasmitting (uplink)
-    //receiveng(downlink) current packet
+    // Users that are transmitting (uplink)
+    // receiving (downlink) current packet
     MacNodeId connectedNodeId_;
 
     // last time that the node has transmitted (currently, used only by UEs)
@@ -209,7 +209,7 @@ class LtePhyBase : public ChannelAccess
      * the decider and statistics.
      *
      * In stage 0 gets gates' IDs and a pointer to the world module.
-     * It also get the CRNTI from RRC layer and initializes statistics
+     * It also gets the CRNTI from the RRC layer and initializes statistics
      * to be watched.
      * In stage 1 parses the xml file to fill the #analogModel list and
      * assign the #lteDecider_ pointer.
@@ -244,7 +244,7 @@ class LtePhyBase : public ChannelAccess
     virtual void sendMulticast(LteAirFrame *frame);
 
     /**
-     * Sends a frame uniquely to the dest specified in carried control info.
+     * Sends a frame uniquely to the destination specified in carried control info.
      *
      * Delay is calculated based on sender's and receiver's positions.
      */
@@ -253,7 +253,7 @@ class LtePhyBase : public ChannelAccess
     /**
      * @brief Called when a mobilityStateChanged signal is received.
      *
-     * Emit statistics related to the serving cell
+     * Emits statistics related to the serving cell
      */
     virtual void emitMobilityStats() override {}
 
@@ -267,7 +267,7 @@ class LtePhyBase : public ChannelAccess
      *
      * The message is encapsulated into an LteAirFrame to which
      * a Signal object containing info about TX power, bit-rate and
-     * move pattern is attached.
+     * movement pattern is attached.
      * The LteAirFrame is then sent to the wireless channel.
      *
      * @param msg packet received from LteStack
@@ -283,18 +283,18 @@ class LtePhyBase : public ChannelAccess
      * TODO Needs Work
      *
      * #####################################################################
-     * This function handles the Airframe by performing following steps:
+     * This function handles the Airframe by performing the following steps:
      * - If airframe is a broadcast/feedback packet and host is
-     *   an UE attached to eNB or eNB calls the appropriate
+     *   a UE attached to eNB or eNB, calls the appropriate
      *   function of the DAS filter
      * - If airframe is received by a UE attached to a Relay
      *   it leaves the received signal unchanged
      * - If airframe is received by eNodeB it performs a loop over
-     *   the remoteset written inside the control info and for each
+     *   the remote set written inside the control info and for each
      *   Remote changes the destination (current move variable) with
      *   the remote one before calling filterSignal().
      * - If airframe is received by UE attached to eNB it performs a loop over
-     *   the remoteset written inside the control info and for each
+     *   the remote set written inside the control info and for each
      *   Remote changes the source (written inside the signal) with
      *   the remote one before calling filterSignal().
      * At the end only one packet is delivered to the upper layer
@@ -303,7 +303,7 @@ class LtePhyBase : public ChannelAccess
      * The analogModels prepared during the initialization phase are
      * applied to the Signal object carried with the received LteAirFrame.
      * Then the decider processes the frame which is sent out to #upperGateOut_
-     * gate along with the decider's result (attached as a control info).
+     * gate along with the decider's result (attached as control info).
      *
      * @param msg LteAirFrame received from the air channel
      */
@@ -332,7 +332,7 @@ class LtePhyBase : public ChannelAccess
     LteAmc *getAmcModule(MacNodeId id);
 
     /**
-     * Determine radio gate index of receiving node
+     * Determine radio gate index of the receiving node
      */
     int getReceiverGateIndex(const cModule *, bool isNr) const;
 

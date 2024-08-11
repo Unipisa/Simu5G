@@ -103,8 +103,8 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
     for (auto ipAddress: uesID) {
 
         /*
-         * an UE can be connected to both eNB and gNB (at the same time)
-         * I decided to report both the structures.
+         * An UE can be connected to both eNB and gNB (at the same time)
+         * I decided to report both structures.
          *
          *
          */
@@ -134,7 +134,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                 }
             }
             if (!found) {
-                // ETSI sandBox does not return anything in case the ip is not valid
+                // ETSI sandbox does not return anything in case the ip is not valid
                 std::string notFound = "Address: " + ipAddress.str() + " Not found.";
                 ueArray.push_back(notFound);
             }

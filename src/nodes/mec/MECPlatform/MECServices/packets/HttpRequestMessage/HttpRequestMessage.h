@@ -1,7 +1,7 @@
 /**
  * @author Alessandro Noferi
  *
- * This class create and manages HTTP requests packets, i.e.:
+ * This class creates and manages HTTP request packets, i.e.:
  *
  * METHOD uri HTTP/1.1 \r\n
  * headers[] \r\n
@@ -12,7 +12,7 @@
  * The required headers for our scope are:
  * - Content-Type
  * They are managed by specific setters and getters.
- * It is also possible add other headers via generic method (setHeaderField)
+ * It is also possible to add other headers via a generic method (setHeaderField)
  *
  */
 

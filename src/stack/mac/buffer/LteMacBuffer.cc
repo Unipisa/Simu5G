@@ -63,7 +63,7 @@ void LteMacBuffer::pushFront(PacketInfo pkt)
 PacketInfo LteMacBuffer::popFront()
 {
     if (queueLength_ <= 0)
-        throw cRuntimeError("Packet queue empty");
+        throw cRuntimeError("Packet queue is empty");
 
     PacketInfo pkt = Queue_.front();
     Queue_.pop_front();
@@ -76,7 +76,7 @@ PacketInfo LteMacBuffer::popFront()
 PacketInfo LteMacBuffer::popBack()
 {
     if (queueLength_ <= 0)
-        throw cRuntimeError("Packet queue empty");
+        throw cRuntimeError("Packet queue is empty");
 
     PacketInfo pkt = Queue_.back();
     Queue_.pop_back();
@@ -88,14 +88,14 @@ PacketInfo LteMacBuffer::popBack()
 PacketInfo& LteMacBuffer::front()
 {
     if (queueLength_ <= 0)
-        throw cRuntimeError("Packet queue empty");
+        throw cRuntimeError("Packet queue is empty");
     return Queue_.front();
 }
 
 PacketInfo LteMacBuffer::back() const
 {
     if (queueLength_ <= 0)
-        throw cRuntimeError("Packet queue empty");
+        throw cRuntimeError("Packet queue is empty");
     return Queue_.back();
 }
 
@@ -107,7 +107,7 @@ void LteMacBuffer::setProcessed(unsigned int i)
 simtime_t LteMacBuffer::getHolTimestamp() const
 {
     if (queueLength_ <= 0)
-        throw cRuntimeError("Packet queue empty");
+        throw cRuntimeError("Packet queue is empty");
     return Queue_.front().second;
 }
 

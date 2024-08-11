@@ -30,7 +30,7 @@ void UeStatsCollector::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         collectorType_ = par("collectorType").stringValue();
     }
-    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) { // same as lteMacUe, when read the interface entry
+    else if (stage == inet::INITSTAGE_APPLICATION_LAYER) { // same as lteMacUe, when reading the interface entry
         Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
 
         mac_.reference(this, "macModule", true);
@@ -39,9 +39,9 @@ void UeStatsCollector::initialize(int stage)
 
         /*
          * Get packetFlowManager if present.
-         * When the ue has both Lte and NR nic, two UeStatsCollector are created.
-         * So each of them have to get the correct reference of the packetFlowManager,
-         * since they are splitted, too.
+         * When the UE has both Lte and NR NIC, two UeStatsCollector are created.
+         * So each of them has to get the correct reference of the packetFlowManager,
+         * since they are split, too.
          */
 
         bool isNr_ = (std::string(getContainingNicModule(mac_)->getComponentType()->getName()) == "NRNicUe");

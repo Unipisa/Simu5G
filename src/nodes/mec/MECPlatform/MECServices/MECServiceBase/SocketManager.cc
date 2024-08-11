@@ -34,7 +34,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
 
     /**
      * This block of code inserts fictitious requests to load the server without the need to
-     * instantiate and manage MEC apps. A  fictitious request contains the number of requests
+     * instantiate and manage MEC apps. A fictitious request contains the number of requests
      * to insert in the request queue:
      *    BulkRequest: #reqNum
      */
@@ -43,7 +43,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
         std::string size = simu5g::utils::splitString(packet, ": ")[1];
         int requests = std::stoi(size);
         if (requests < 0)
-            throw cRuntimeError("Number of request must be non negative");
+            throw cRuntimeError("Number of requests must be non-negative");
         EV << " of size " << requests << endl;
         if (requests == 0) {
             return;
@@ -88,21 +88,21 @@ void SocketManager::peerClosed()
 {
     EV << "Closed connection from: " << sock->getRemoteAddress() << std::endl;
     sock->setState(inet::TcpSocket::PEER_CLOSED);
-    service->removeSubscritions(sock->getSocketId()); // if any
+    service->removeSubscriptions(sock->getSocketId()); // if any
 }
 
 void SocketManager::closed()
 {
     EV << "Removed socket of: " << sock->getRemoteAddress() << " from map" << std::endl;
     sock->setState(inet::TcpSocket::CLOSED);
-    service->removeSubscritions(sock->getSocketId());
+    service->removeSubscriptions(sock->getSocketId());
     service->closeConnection(this);
 }
 
 void SocketManager::failure(int code)
 {
     EV << "Socket of: " << sock->getRemoteAddress() << " failed. Code: " << code << std::endl;
-    service->removeSubscritions(sock->getSocketId());
+    service->removeSubscriptions(sock->getSocketId());
     service->removeConnection(this);
 }
 

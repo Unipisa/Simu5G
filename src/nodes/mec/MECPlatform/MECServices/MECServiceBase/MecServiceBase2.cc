@@ -31,7 +31,7 @@ void MecServiceBase2::initialize(int stage)
              * check if the system is stable.
              * For M/M/1 --> rho (lambda_/mu) < 1
              * If arrivals come from multiple independent exponential sources:
-             * (numBGApps*lambda_)/mu) < 1
+             * (numBGApps * lambda_) / mu < 1
              */
             double lambdaT = lambda_ * (numBGApps_ + 1);
             rho_ = lambdaT * requestServiceTime_;

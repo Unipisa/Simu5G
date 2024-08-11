@@ -34,7 +34,7 @@ class LteAmc;
  *
  * This is the base class for all AMC pilots.
  * If you want to add a new AMC pilot, you have to subclass
- * from this class and to implement the computeTxParams method
+ * from this class and implement the computeTxParams method
  * according to your policy.
  */
 class AmcPilot

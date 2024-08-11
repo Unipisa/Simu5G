@@ -45,7 +45,7 @@ void LteFeedbackComputationRealistic::generateBaseFeedback(int numBands, int num
     std::vector<CqiVector> cqiTmp2;
     CqiVector cqiTmp;
     if (txmode == OL_SPATIAL_MULTIPLEXING) {
-        //if rank is 1 SMUX is not a valid choice as Tx Mode
+        // If rank is 1, SMUX is not a valid choice as Tx Mode
         if (fb.getRankIndicator() < 2)
             return;
         layer = fb.getRankIndicator();
@@ -130,37 +130,37 @@ LteFeedbackDoubleVector LteFeedbackComputationRealistic::computeFeedback(Feedbac
         std::map<Remote, int> antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
         std::vector<double> snr, MacNodeId id)
 {
-    //add enodeB to the number of antenna
+    // Add enodeB to the number of antennas
     numRus++;
     // New Feedback
     LteFeedbackDoubleVector fbvv;
     fbvv.resize(numRus);
-    //resize all the vectors
+    // Resize all the vectors
     for (int i = 0; i < numRus; i++)
         fbvv[i].resize(DL_NUM_TXMODE);
-    //for each Remote
+    // For each Remote
     for (int j = 0; j < numRus; j++) {
         LteFeedback fb;
-        //for each txmode we generate a feedback exclude MU_MIMO because it is threated as siso
+        // For each txmode we generate a feedback excluding MU_MIMO because it is treated as SISO
         for (int z = 0; z < DL_NUM_TXMODE - 1; z++) {
-            //reset the feedback object
+            // Reset the feedback object
             fb.reset();
             fb.setTxMode((TxMode)z);
             unsigned int rank = 1;
             if (z == OL_SPATIAL_MULTIPLEXING)
                 rank = computeRank(id);
             if ((z == OL_SPATIAL_MULTIPLEXING && rank > 1) || z == TRANSMIT_DIVERSITY || z == SINGLE_ANTENNA_PORT0) {
-                //set the rank
+                // Set the rank
                 fb.setRankIndicator(rank);
-                //set the remote
+                // Set the remote
                 fb.setAntenna((Remote)j);
-                //set the pmi
+                // Set the PMI
                 fb.setWideBandPmi(intuniform(getEnvir()->getRNG(0), 1, pow(rank, (double)2)));
-                //generate feedback for txmode z
+                // Generate feedback for txmode z
                 generateBaseFeedback(numBands_, numPreferredBands, fb, fbType, antennaCws[(Remote)j], rbAllocationType,
                         (TxMode)z, snr);
             }
-            // add the feedback to the feedback structure
+            // Add the feedback to the feedback structure
             LteFeedback fb2 = fb;
             if (z == SINGLE_ANTENNA_PORT0) {
                 fb2.setTxMode(MULTI_USER);
@@ -179,10 +179,10 @@ LteFeedbackVector LteFeedbackComputationRealistic::computeFeedback(const Remote 
 {
     // New Feedback
     LteFeedbackVector fbv;
-    //resize
+    // Resize
     fbv.resize(DL_NUM_TXMODE);
     LteFeedback fb;
-    //for each txmode we generate a feedback
+    // For each txmode we generate a feedback
     for (int z = 0; z < DL_NUM_TXMODE; z++) {
         fb.reset();
         fb.setTxMode((TxMode)z);
@@ -190,17 +190,17 @@ LteFeedbackVector LteFeedbackComputationRealistic::computeFeedback(const Remote 
         if (z == OL_SPATIAL_MULTIPLEXING)
             rank = computeRank(id);
         if ((z == OL_SPATIAL_MULTIPLEXING && rank > 1) || z == TRANSMIT_DIVERSITY || z == SINGLE_ANTENNA_PORT0) {
-            //set the rank
+            // Set the rank
             fb.setRankIndicator(rank);
-            //set the remote
+            // Set the remote
             fb.setAntenna(remote);
-            //set the pmi
+            // Set the PMI
             fb.setWideBandPmi(intuniform(getEnvir()->getRNG(0), 1, pow(rank, (double)2)));
-            //generate feedback for txmode z
+            // Generate feedback for txmode z
             generateBaseFeedback(numBands_, numPreferredBands, fb, fbType, antennaCws, rbAllocationType, (TxMode)z,
                     snr);
         }
-        // add the feedback to the feedback structure
+        // Add the feedback to the feedback structure
         LteFeedback fb2 = fb;
         if (z == SINGLE_ANTENNA_PORT0) {
             fb2.setTxMode(MULTI_USER);
@@ -219,24 +219,24 @@ LteFeedback LteFeedbackComputationRealistic::computeFeedback(const Remote remote
     // New Feedback
     LteFeedback fb;
     unsigned int rank = 1;
-    // set the rank for all the tx mode except for SISO, and Tx div
+    // Set the rank for all the tx mode except for SISO and Tx diversity
     if (txmode == OL_SPATIAL_MULTIPLEXING || txmode == CL_SPATIAL_MULTIPLEXING || txmode == MULTI_USER) {
         // Compute Rank Index
         rank = computeRank(id);
         if (rank < 2 && (txmode == OL_SPATIAL_MULTIPLEXING || txmode == CL_SPATIAL_MULTIPLEXING))
             return fb;
-        //Set Rank
+        // Set Rank
         fb.setRankIndicator(rank);
     }
     else
         fb.setRankIndicator(rank);
-    //set the remote in feedback object
+    // Set the remote in the feedback object
     fb.setAntenna(remote);
     fb.setTxMode(txmode);
     generateBaseFeedback(numBands_, numPreferredBands, fb, fbType, antennaCws, rbAllocationType, txmode, snr);
-    // set pmi only for cl smux and mumimo
+    // Set PMI only for CL SMUX and MUMIMO
     if (txmode == CL_SPATIAL_MULTIPLEXING || txmode == MULTI_USER) {
-        //Set PMI
+        // Set PMI
         fb.setWideBandPmi(intuniform(getEnvir()->getRNG(0), 1, pow(rank, (double)2)));
     }
     return fb;

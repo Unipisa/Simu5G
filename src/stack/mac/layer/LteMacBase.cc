@@ -87,8 +87,8 @@ void LteMacBase::sendLowerPackets(cPacket *pkt)
 }
 
 /*
- * Ue with nodeId left the simulation. Ensure that no
- * signales will be emitted via the deleted node.
+ * UE with nodeId left the simulation. Ensure that no
+ * signals will be emitted via the deleted node.
  */
 void LteMacBase::unregisterHarqBufferRx(MacNodeId nodeId) {
 
@@ -115,7 +115,7 @@ void LteMacBase::fromRlc(cPacket *pkt)
  */
 void LteMacBase::fromPhy(cPacket *pktAux)
 {
-    // TODO: harq test (comment fromPhy: it has only to pass pdus to proper rx buffer and
+    // TODO: HARQ test (comment fromPhy: it has only to pass PDUs to the proper RX buffer and
     // to manage H-ARQ feedback)
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
@@ -134,31 +134,31 @@ void LteMacBase::fromPhy(cPacket *pktAux)
         HarqTxBuffers::iterator htit = harqTxBuffers_[carrierFreq].find(src);
         EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received HARQ Feedback pkt" << endl;
         if (htit == harqTxBuffers_[carrierFreq].end()) {
-            // if a feedback arrives, a tx buffer must exists (unless it is an handover scenario
-            // where the harq buffer was deleted but a feedback was in transit)
+            // if a feedback arrives, a TX buffer must exist (unless it is a handover scenario
+            // where the HARQ buffer was deleted but a feedback was in transit)
             // this case must be taken care of
 
             if (binder_->hasUeHandoverTriggered(nodeId_) || binder_->hasUeHandoverTriggered(src))
                 return;
 
-            throw cRuntimeError("Mac::fromPhy(): Received feedback for an unexisting H-ARQ tx buffer");
+            throw cRuntimeError("Mac::fromPhy(): Received feedback for a non-existing H-ARQ TX buffer");
         }
 
         auto hfbpkt = pkt->peekAtFront<LteHarqFeedback>();
         htit->second->receiveHarqFeedback(pkt);
     }
     else if (userInfo->getFrameType() == FEEDBACKPKT) {
-        //Feedback pkt
+        // Feedback pkt
         EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received feedback pkt" << endl;
         macHandleFeedbackPkt(pkt);
     }
     else if (userInfo->getFrameType() == GRANTPKT) {
-        //Scheduling Grant
+        // Scheduling Grant
         EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received Scheduling Grant pkt" << endl;
         macHandleGrant(pkt);
     }
     else if (userInfo->getFrameType() == DATAPKT) {
-        // data packet: insert in proper rx buffer
+        // data packet: insert in proper RX buffer
         EV << NOW << " Mac::fromPhy: node " << nodeId_ << " Received DATA packet" << endl;
 
         auto pduAux = pkt->peekAtFront<LteMacPdu>();
@@ -199,11 +199,11 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
 
-    pkt->setTimestamp();        // Add timestamp with current time to packet
+    pkt->setTimestamp();        // Add timestamp with current time to the packet
 
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
-    // obtain the cid from the packet informations
+    // obtain the CID from the packet information
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // build the virtual packet corresponding to this incoming packet
@@ -211,7 +211,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
 
     LteMacBuffers::iterator it = mbuf_.find(cid);
     if (it == mbuf_.end()) {
-        // Queue not found for this cid: create
+        // Queue not found for this CID: create
         LteMacQueue *queue = new LteMacQueue(queueSize_);
         take(queue);
         LteMacBuffer *vqueue = new LteMacBuffer();
@@ -221,16 +221,16 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
         mbuf_[cid] = queue;
         macBuffers_[cid] = vqueue;
 
-        // make a copy of lte control info and store it to traffic descriptors map
+        // make a copy of LTE control info and store it in the traffic descriptors map
         FlowControlInfo toStore(*lteInfo);
         connDesc_[cid] = toStore;
-        // register connection to lcg map.
+        // register connection to LCG map.
         LteTrafficClass tClass = (LteTrafficClass)lteInfo->getTraffic();
 
         lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
 
         EV << "LteMacBuffers : Using new buffer on node: " <<
-            MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+            MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
     else {
@@ -264,11 +264,11 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
             vqueue->pushBack(vpkt);
 
             EV << "LteMacBuffers : Using old buffer on node: " <<
-                MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+                MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
                 queue->getQueueSize() - queue->getByteLength() << "\n";
         }
         else
-            throw cRuntimeError("LteMacBase::bufferizePacket - cannot find mac buffer for cid %d", cid);
+            throw cRuntimeError("LteMacBase::bufferizePacket - cannot find MAC buffer for CID %d", cid);
     }
     /// After bufferization buffers must be synchronized
     assert(mbuf_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());
@@ -286,7 +286,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
                 delete pkt;
             }
             delete mit->second;        // Delete Queue
-            mit = mbuf_.erase(mit);    // Delete Elem
+            mit = mbuf_.erase(mit);    // Delete Element
         }
         else {
             ++mit;
@@ -297,7 +297,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
             while (!vit->second->isEmpty())
                 vit->second->popFront();
             delete vit->second;        // Delete Queue
-            vit = macBuffers_.erase(vit);        // Delete Elem
+            vit = macBuffers_.erase(vit);        // Delete Element
         }
         else {
             ++vit;
@@ -311,7 +311,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
         for (hit = mtit->second.begin(); hit != mtit->second.end(); ) {
             if (hit->first == nodeId) {
                 delete hit->second; // Delete Queue
-                hit = mtit->second.erase(hit); // Delete Elem
+                hit = mtit->second.erase(hit); // Delete Element
             }
             else {
                 ++hit;
@@ -325,7 +325,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
         for (hit2 = mrit->second.begin(); hit2 != mrit->second.end(); ) {
             if (hit2->first == nodeId) {
                 delete hit2->second; // Delete Queue
-                hit2 = mrit->second.erase(hit2); // Delete Elem
+                hit2 = mrit->second.erase(hit2); // Delete Element
             }
             else {
                 ++hit2;
@@ -333,7 +333,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
         }
     }
 
-    // TODO remove traffic descriptor and lcg entry
+    // TODO remove traffic descriptor and LCG entry
 }
 
 void LteMacBase::decreaseNumerologyPeriodCounter()
@@ -370,7 +370,7 @@ void LteMacBase::initialize(int stage)
         // get the reference to the PHY layer
         phy_ = check_and_cast<LtePhyBase *>(down_[OUT_GATE]->getPathEndGate()->getOwnerModule());
 
-        /* Set The MAC MIB */
+        /* Set the MAC MIB */
 
         muMimo_ = par("muMimo");
 

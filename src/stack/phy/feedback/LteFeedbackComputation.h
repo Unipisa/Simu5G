@@ -24,10 +24,10 @@ class LteFeedbackComputation
     /**
      * Interface for Feedback computation
      *
-     * @param Feedback type (Wideband, allbands ecc)
+     * @param Feedback type (Wideband, all bands, etc.)
      * @param RbAllocationType Allocation type (distributed or localized)
-     * @param Txmode current txmode
-     * @param number of codeword for each antenna
+     * @param Txmode current tx mode
+     * @param number of codewords for each antenna
      * @param Number of preferred bands
      * @return Vector of Vector of LteFeedback indexes: Ru and Txmode
      */
@@ -39,10 +39,10 @@ class LteFeedbackComputation
      * Interface for Feedback computation
      *
      * @param Remote antenna remote
-     * @param Feedback type (Wideband, allbands ecc)
+     * @param Feedback type (Wideband, all bands, etc.)
      * @param RbAllocationType Allocation type (distributed or localized)
-     * @param Txmode current txmode
-     * @param number of codeword for the selected antenna
+     * @param Txmode current tx mode
+     * @param number of codewords for the selected antenna
      * @param Number of preferred bands
      * @return Vector of LteFeedback indexes: Txmode
      */
@@ -54,11 +54,11 @@ class LteFeedbackComputation
      * Interface for Feedback computation
      *
      * @param Remote antenna remote
-     * @param Selected Txmode txmode
+     * @param Selected Txmode tx mode
      * @param Remote antenna remote
-     * @param Feedback type (Wideband, allbands ecc)
+     * @param Feedback type (Wideband, all bands, etc.)
      * @param RbAllocationType Allocation type (distributed or localized)
-     * @param number of codeword for the selected antenna
+     * @param number of codewords for the selected antenna
      * @param Number of preferred bands
      * @return  LteFeedback
      */

@@ -79,7 +79,7 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
     MacNodeId destId;
 
     // the direction of the incoming connection is a D2D_MULTI one if the application is of the same type,
-    // else the direction will be selected according to the current status of the UE, i.e. D2D or UL
+    // else the direction will be selected according to the current status of the UE, i.e., D2D or UL
     if (destAddr.isMulticast()) {
         binder_->addD2DMulticastTransmitter(nodeId);
 
@@ -88,7 +88,7 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
         // assign a multicast group id
         // multicast IP addresses are 224.0.0.0/4.
         // We consider the host part of the IP address (the remaining 28 bits) as identifier of the group,
-        // so as it is univocally determined for the whole network
+        // so it is univocally determined for the whole network
         uint32_t address = Ipv4Address(lteInfo->getDstAddr()).getInt();
         uint32_t mask = ~((uint32_t)255 << 28);      // 0000 1111 1111 1111
         uint32_t groupId = address & mask;
@@ -108,7 +108,7 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
                 lteInfo->setD2dRxPeerId(0);
             }
 
-            // set actual flow direction based (D2D/UL) based on the current mode (DM/IM) of this peering
+            // set actual flow direction based (D2D/UL) based on the current mode (DM/IM) of this pairing
             lteInfo->setDirection(getDirection(nodeId, destId));
         }
         else { // the destination is outside the LTE network
@@ -125,8 +125,8 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
 
     /*
-     * Different lcid for different directions of the same flow are assigned.
-     * RLC layer will create different RLC entities for different LCIDs
+     * Different LCIDs for different directions of the same flow are assigned.
+     * The RLC layer will create different RLC entities for different LCIDs
      */
 
     LogicalCid mylcid;
@@ -218,7 +218,7 @@ void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
     for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
             (tit->second)->deleteModule();  // Delete Entity
-            tit = txEntities_.erase(tit);       // Delete Elem
+            tit = txEntities_.erase(tit);       // Delete Element
         }
         else {
             ++tit;
@@ -227,7 +227,7 @@ void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
             (rit->second)->deleteModule();  // Delete Entity
-            rit = rxEntities_.erase(rit);       // Delete Elem
+            rit = rxEntities_.erase(rit);       // Delete Element
         }
         else {
             ++rit;

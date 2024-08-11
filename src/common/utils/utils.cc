@@ -18,8 +18,8 @@ std::vector<std::string> splitString(const std::string& str, std::string delim) 
         last = next + delim.size();
     }
 
-    // add the last token only if  the delim is at the end of the str
-    // otherwise an empty string would be added
+    // add the last token only if the delim is at the end of the str
+    // otherwise, an empty string would be added
     if (last != str.size())
         splitted.push_back(str.substr(last, next - last)); // last token
     return splitted;

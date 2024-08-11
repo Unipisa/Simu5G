@@ -108,7 +108,7 @@ bool LteScheduler::scheduleRetransmissions()
 
     if (!skip) {
         // reset the band limit vector used for retransmissions
-        // TODO do this only when it was actually used in previous slot
+        // TODO do this only when it was actually used in the previous slot
         for (unsigned int i = 0; i < bandLimit_->size(); i++) {
             // copy the element
             slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
@@ -126,7 +126,7 @@ bool LteScheduler::scheduleRetransmissions()
             // if the bandlimit was not reset for foreground UEs, do it here
             if (skip) {
                 // reset the band limit vector used for retransmissions
-                // TODO do this only when it was actually used in previous slot
+                // TODO do this only when it was actually used in the previous slot
                 for (unsigned int i = 0; i < bandLimit_->size(); i++) {
                     // copy the element
                     slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
@@ -142,7 +142,7 @@ bool LteScheduler::scheduleRetransmissions()
 bool LteScheduler::scheduleRacRequests()
 {
     // reset the band limit vector used for rac
-    // TODO do this only when it was actually used in previous slot
+    // TODO do this only when it was actually used in the previous slot
     for (unsigned int i = 0; i < bandLimit_->size(); i++) {
         // copy the element
         slotRacBandLimit_[i].band_ = bandLimit_->at(i).band_;

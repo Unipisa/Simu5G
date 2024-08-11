@@ -75,7 +75,7 @@ void X2AppServer::handleMessage(cMessage *msg)
 
         Packet *pkt = check_and_cast<Packet *>(msg);
 
-        // generate a Sctp packet and sent to lower layer
+        // generate an SCTP packet and send it to the lower layer
         generateAndSend(pkt);
     }
     else {

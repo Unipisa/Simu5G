@@ -27,7 +27,7 @@ DistanceBasedConflictGraph::DistanceBasedConflictGraph(Binder *binder, LteMacEnb
 {
     d2dDbmThreshold_ = d2dMultiTxDbmThreshold_ = d2dMultiInterfDbmThreshold_ = dbmThresh;
 
-    // non-initialized values
+    // uninitialized values
     d2dInterferenceRadius_ = -1.0;
     d2dMultiTransmissionRadius_ = -1.0;
     d2dMultiInterferenceRadius_ = -1.0;
@@ -182,7 +182,7 @@ void DistanceBasedConflictGraph::findEdges(const std::vector<CGVertex>& vertices
             else if (v1.isMulticast() && !v2.isMulticast()) { // check P2MP-P2P conflict
                 // obtain the position of v1's transmitter
                 Coord v1SenderCoord = cellInfo_->getUePosition(v1.srcId);
-                // obtain the position of v2's receiveer
+                // obtain the position of v2's receiver
                 Coord v2DestCoord = cellInfo_->getUePosition(v2.dstId);
 
                 double distance = v1SenderCoord.distance(v2DestCoord);

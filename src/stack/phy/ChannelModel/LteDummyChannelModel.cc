@@ -30,8 +30,8 @@ std::vector<double> LteDummyChannelModel::getSINR(LteAirFrame *frame, UserContro
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake SINR is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake SINR is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -39,8 +39,8 @@ std::vector<double> LteDummyChannelModel::getRSRP(LteAirFrame *frame, UserContro
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake RSRP is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake RSRP is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -48,8 +48,8 @@ std::vector<double> LteDummyChannelModel::getSINR_bgUe(LteAirFrame *frame, UserC
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake SINR is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake SINR is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -69,8 +69,8 @@ std::vector<double> LteDummyChannelModel::getSINR_D2D(LteAirFrame *frame, UserCo
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake SINR is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake SINR is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -78,8 +78,8 @@ std::vector<double> LteDummyChannelModel::getSINR_D2D(LteAirFrame *frame, UserCo
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake SINR is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake SINR is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -87,8 +87,8 @@ std::vector<double> LteDummyChannelModel::getSIR(LteAirFrame *frame, UserControl
 {
     std::vector<double> tmp;
     tmp.push_back(10000);
-    // fake SIR is needed by das (to decide which antenna set are used by the terminal)
-    // and handhover function to decide if the terminal should trigger the hanhover
+    // fake SIR is needed by DAS (to decide which antenna set is used by the terminal)
+    // and handover function to decide if the terminal should trigger the handover
     return tmp;
 }
 
@@ -96,14 +96,14 @@ bool LteDummyChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     // Number of RTX
     unsigned char nTx = lteInfo->getTxNumber();
-    //Consistency check
+    // Consistency check
     if (nTx == 0)
         throw cRuntimeError("Number of tx should not be 0");
 
-    // compute packet error rate according to number of retransmission
-    // and the harq reduction parameter
+    // compute packet error rate according to number of retransmissions
+    // and the HARQ reduction parameter
     double totalPer = per_ * pow(harqReduction_, nTx - 1);
-    //Throw random variable
+    // Throw random variable
     double er = uniform(0.0, 1.0);
 
     if (er <= totalPer) {
@@ -122,14 +122,14 @@ bool LteDummyChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *lteI
 {
     // Number of RTX
     unsigned char nTx = lteInfo->getTxNumber();
-    //Consistency check
+    // Consistency check
     if (nTx == 0)
         throw cRuntimeError("Number of tx should not be 0");
 
-    // compute packet error rate according to number of retransmission
-    // and the harq reduction parameter
+    // compute packet error rate according to number of retransmissions
+    // and the HARQ reduction parameter
     double totalPer = per_ * pow(harqReduction_, nTx - 1);
-    //Throw random variable
+    // Throw random variable
     double er = uniform(0.0, 1.0);
 
     if (er <= totalPer) {

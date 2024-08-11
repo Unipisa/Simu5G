@@ -47,7 +47,7 @@ void LteCompManagerProportional::provisionalSchedule()
         Band band = 0;
         bytesPerBlock = mac_->getAmc()->computeBytesOnNRbs(ueId, band, cw,
                 blocks, dir, primaryCarrierFrequency); // The index of the band is useless
-        EV << NOW << " LteCompManagerProportional::provisionalSchedule - Per il nodo: " << ueId << " sono disponibili: " << bytesPerBlock << " bytes in un blocco" << endl;
+        EV << NOW << " LteCompManagerProportional::provisionalSchedule - For the node: " << ueId << " available: " << bytesPerBlock << " bytes in one block" << endl;
 
         // Compute the number of blocks required to satisfy the UE's buffer
         unsigned int reqBlocks;
@@ -55,7 +55,7 @@ void LteCompManagerProportional::provisionalSchedule()
             reqBlocks = 0;
         else
             reqBlocks = (queueLength + bytesPerBlock - 1) / bytesPerBlock;
-        EV << NOW << " LteCompManagerProportional::provisionalSchedule - Per il nodo: " << ueId << " sono necessari: " << reqBlocks << " blocchi" << endl;
+        EV << NOW << " LteCompManagerProportional::provisionalSchedule - For the node: " << ueId << " required: " << reqBlocks << " blocks" << endl;
 
         provisionedBlocks_ += reqBlocks;
     }
@@ -172,7 +172,7 @@ void LteCompManagerProportional::handleClientRequest(inet::Ptr<X2CompMsg> compMs
         X2CompProportionalRequestIE *requestIe = check_and_cast<X2CompProportionalRequestIE *>(ie);
         unsigned int reqBlocks = requestIe->getNumBlocks();
 
-        EV << "LteCompManagerProportional::handleClientRequest: " << this->getFullPath() << "received request from " << sourceId << " for " << reqBlocks << " blocks." << std::endl;
+        EV << "LteCompManagerProportional::handleClientRequest: " << this->getFullPath() << " received request from " << sourceId << " for " << reqBlocks << " blocks." << std::endl;
 
         // update map entry for this node
         if (reqBlocksMap_.find(sourceId) == reqBlocksMap_.end())
@@ -197,7 +197,7 @@ void LteCompManagerProportional::handleCoordinatorReply(inet::Ptr<X2CompMsg> com
         std::vector<CompRbStatus> allowedBlocksMap = replyIe->getAllowedBlocksMap();
         UsableBands usableBands = parseAllowedBlocksMap(allowedBlocksMap);
 
-        EV << "at" << this->getFullPath() << " LteCompManagerProportional::handleCoordinatorReply: " << usableBands.size() << " bands usable." << std::endl;
+        EV << "At " << this->getFullPath() << " LteCompManagerProportional::handleCoordinatorReply: " << usableBands.size() << " bands usable." << std::endl;
 
         setUsableBands(usableBands);
 

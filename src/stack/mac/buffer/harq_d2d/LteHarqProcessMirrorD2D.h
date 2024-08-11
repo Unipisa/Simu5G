@@ -19,8 +19,8 @@
 namespace simu5g {
 
 /*
- * LteHarqProcessMirrorD2D stores the status of one H-ARQ "mirror" process
- * It contains a vector that keeps the status of each unit (there is one unit per codeword)
+ * LteHarqProcessMirrorD2D stores the status of one H-ARQ "mirror" process.
+ * It contains a vector that keeps the status of each unit (there is one unit per codeword).
  */
 class LteHarqProcessMirrorD2D
 {
@@ -30,7 +30,7 @@ class LteHarqProcessMirrorD2D
     /// bytelength of contained pdus
     std::vector<int64_t> pduLength_;
 
-    /// Number of (re)transmissions per unit (N.B.: values are 1,2,3,4)
+    /// Number of (re)transmissions per unit (N.B.: values are 1, 2, 3, 4)
     std::vector<unsigned char> transmissions_;
 
     // number of units

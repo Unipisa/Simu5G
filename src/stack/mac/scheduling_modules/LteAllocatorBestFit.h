@@ -35,7 +35,7 @@ class LteAllocatorBestFit : public virtual LteScheduler
     ConflictGraph *conflictGraph_;
 
     /**
-     * e.g. allocatedRbsBand_ [ <plane> ] [ <antenna> ] [ <band> ] give the the amount of blocks allocated for each UE
+     * e.g. allocatedRbsBand_ [ <plane> ] [ <antenna> ] [ <band> ] gives the amount of blocks allocated for each UE
      */
     std::vector<std::vector<AllocatedRbsPerBandMapA>> allocatedRbsPerBand_;
 
@@ -49,11 +49,11 @@ class LteAllocatorBestFit : public virtual LteScheduler
      */
     std::vector<std::vector<unsigned int>> allocatedRbsMatrix_;
 
-    // Map that specify ,for each NodeId,wich bands are free and wich are not
+    // Map that specifies, for each NodeId, which bands are free and which are not
     std::map<MacNodeId, std::map<Band, bool>> perUEbandStatusMap_;
 
     typedef std::pair<AllocationUeType, std::set<MacNodeId>> AllocationType_Set;
-    // Map that specify which bands can(non exclusive bands-D2D) or cannot(exlcusive bands-CELL) be shared
+    // Map that specifies which bands can (non-exclusive bands-D2D) or cannot (exclusive bands-CELL) be shared
     std::map<Band, AllocationType_Set> bandStatusMap_;
 
     /**

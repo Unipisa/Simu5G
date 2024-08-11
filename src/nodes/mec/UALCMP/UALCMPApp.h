@@ -25,12 +25,12 @@ class UALCMPMessage;
 
 //
 // This module implements (part of) the mx2 reference point a device app uses to
-// request lyfecycle operations of a MEC app (i.e. instantation, termination, relocation).
+// request lifecycle operations of a MEC app (i.e. instantiation, termination, relocation).
 // This API follows the ETSI MEC specification of ETSI GS MEC 016 V2.2.1 (2020-04) and in
 // particular:
 //   - GET /app_list Retrieve available application information.
 //   - POST /app_contexts For requesting the creation of a new application context.
-//   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context
+//   - DELETE /app_contexts/{contextId} For requesting the deletion of an existing application context
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 
@@ -50,7 +50,7 @@ class UALCMPApp : public MecServiceBase
     bool scheduledSubscription;
     inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator_; // reference to the MecOrchestrator used to get AppList
 
-    unsigned int requestSno;    // counter to keep trace of the requests
+    unsigned int requestSno;    // counter to keep track of the requests
     std::map<unsigned int, LcmRequestStatus> pendingRequests;
 
   public:

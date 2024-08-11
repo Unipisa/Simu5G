@@ -95,7 +95,7 @@ void LteMaxCiComp::prepareSchedule()
         }
         if (cqiNull)
             continue;
-        //no more free cw
+        // no more free cw
         if (eNbScheduler_->allocatedCws(nodeId) == codeword)
             continue;
 
@@ -118,7 +118,7 @@ void LteMaxCiComp::prepareSchedule()
         // current user bytes per slot
         byPs = (blocks > 0) ? (availableBytes / blocks) : 0;
 
-        // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long term rate
+        // Create a new score descriptor for the connection, where the score is equal to the ratio between bytes per slot and long-term rate
         ScoreDesc desc(cid, byPs);
         // insert the cid score
         score.push(desc);

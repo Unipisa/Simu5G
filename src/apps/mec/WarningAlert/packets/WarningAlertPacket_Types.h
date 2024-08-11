@@ -16,7 +16,7 @@ constexpr const char* START_WARNING = "StartWarning";
 constexpr const char* START_ACK = "StartAck";
 constexpr const char* START_NACK = "StartNack";
 
-constexpr const char* STOP_WARNING = "StoptWarning";
+constexpr const char* STOP_WARNING = "StopWarning";
 constexpr const char* STOP_ACK = "StopAck";
 constexpr const char* STOP_NACK = "StopNack";
 

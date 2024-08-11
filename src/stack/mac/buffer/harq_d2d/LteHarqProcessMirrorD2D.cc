@@ -35,7 +35,7 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
     transmissions_[cw]++;
 
     if (harqAck == HARQACK) {
-        // pdu has been sent and received correctly
+        // PDU has been sent and received correctly
         transmissions_[cw] = 0;
         status_[cw] = TXHARQ_PDU_EMPTY;
     }
@@ -45,10 +45,10 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
             status_[cw] = TXHARQ_PDU_EMPTY;
         }
         else {
-            // pdu_ ready for next transmission
+            // PDU ready for next transmission
             status_[cw] = TXHARQ_PDU_BUFFERED;
 
-            // signal the MAC the need for retransmission
+            // Signal the MAC the need for retransmission
             check_and_cast<LteMacEnb *>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
         }
     }

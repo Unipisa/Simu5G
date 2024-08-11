@@ -32,7 +32,7 @@ LteHarqProcessRxD2D::~LteHarqProcessRxD2D()
 Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
 {
     if (!isEvaluated(cw))
-        throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
+        throw cRuntimeError("Cannot send feedback for a PDU not in EVALUATING state");
 
     Packet *pkt = nullptr;
 
@@ -63,7 +63,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
     if (!result_.at(cw)) {
         if (pduInfo->getDirection() == D2D_MULTI) {
             // if the PDU belongs to a multicast/broadcast connection, then reset the codeword, since there will be no retransmission
-            EV << NOW << " LteHarqProcessRxD2D::createFeedback - pdu for cw " << cw << " belonged to a multicast/broadcast connection. Resetting cw " << endl;
+            EV << NOW << " LteHarqProcessRxD2D::createFeedback - PDU for CW " << cw << " belonged to a multicast/broadcast connection. Resetting CW " << endl;
             delete pdu_.at(cw);
             pdu_.at(cw) = nullptr;
             resetCodeword(cw);
@@ -72,9 +72,9 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
             // NACK will be sent
             status_.at(cw) = RXHARQ_PDU_CORRUPTED;
 
-            EV << "LteHarqProcessRx::createFeedback - tx number " << (unsigned int)transmissions_ << endl;
+            EV << "LteHarqProcessRx::createFeedback - TX number " << (unsigned int)transmissions_ << endl;
             if (transmissions_ == (maxHarqRtx_ + 1)) {
-                EV << NOW << " LteHarqProcessRxD2D::createFeedback - max number of tx reached for cw " << cw << ". Resetting cw" << endl;
+                EV << NOW << " LteHarqProcessRxD2D::createFeedback - max number of TX reached for CW " << cw << ". Resetting CW" << endl;
 
                 // purge PDU
                 purgeCorruptedPdu(cw);
@@ -98,7 +98,7 @@ Packet *LteHarqProcessRxD2D::createFeedback(Codeword cw)
 Packet *LteHarqProcessRxD2D::createFeedbackMirror(Codeword cw)
 {
     if (!isEvaluated(cw))
-        throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
+        throw cRuntimeError("Cannot send feedback for a PDU not in EVALUATING state");
 
     auto pduInfo = pdu_.at(cw)->getTag<UserControlInfo>();
     auto pdu = pdu_.at(cw)->peekAtFront<LteMacPdu>();

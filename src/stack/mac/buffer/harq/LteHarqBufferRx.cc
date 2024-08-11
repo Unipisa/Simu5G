@@ -38,7 +38,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
         processes_[i] = new LteHarqProcessRx(i, macOwner_, binder);
     }
 
-    /* Signals initialization: those are used to gather statistics */
+    /* Signals initialization: these are used to gather statistics */
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
         macCellThroughput_ = cComponent::registerSignal("macCellThroughputUl");
@@ -61,16 +61,16 @@ void LteHarqBufferRx::insertPdu(Codeword cw, inet::Packet *pkt)
 
     MacNodeId srcId = uInfo->getSourceId();
     if (macOwner_->isHarqReset(srcId)) {
-        // if the HARQ processes have been aborted during this TTI (e.g. due to a D2D mode switch),
+        // if the HARQ processes have been aborted during this TTI (e.g., due to a D2D mode switch),
         // incoming packets should not be accepted
         delete pkt;
         return;
     }
     unsigned char acid = uInfo->getAcid();
-    // TODO add codeword to inserPdu
+    // TODO add codeword to insertPdu
     processes_[acid]->insertPdu(cw, pkt);
     // debug output
-    EV << "H-ARQ RX: new pdu (id " << pdu->getId()
+    EV << "H-ARQ RX: new PDU (id " << pdu->getId()
        << " ) inserted into process " << (int)acid << endl;
 }
 
@@ -87,7 +87,7 @@ void LteHarqBufferRx::sendFeedback()
                 const char *r = hfb->getResult() ? "ACK" : "NACK";
                 EV << "H-ARQ RX: feedback sent to TX process "
                    << (int)hfb->getAcid() << " Codeword  " << (int)cw
-                   << "of node with id "
+                   << " of node with id "
                    << uInfo->getDestId()
                    << " result: " << r << endl;
 
@@ -105,11 +105,11 @@ unsigned int LteHarqBufferRx::purgeCorruptedPdus()
     for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
             if (processes_[i]->getUnitStatus(cw) == RXHARQ_PDU_CORRUPTED) {
-                EV << "LteHarqBufferRx::purgeCorruptedPdus - purged pdu with acid " << i << endl;
+                EV << "LteHarqBufferRx::purgeCorruptedPdus - purged PDU with acid " << i << endl;
                 // purge PDU
                 processes_[i]->purgeCorruptedPdu(cw);
                 processes_[i]->resetCodeword(cw);
-                //increment purged PDUs counter
+                // increment purged PDUs counter
                 ++purged;
             }
         }
@@ -152,9 +152,9 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 ret.push_back(pktTemp);
                 acid = i;
 
-                EV << "LteHarqBufferRx::extractCorrectPdus H-ARQ RX: pdu (id " << ret.back()->getId()
+                EV << "LteHarqBufferRx::extractCorrectPdus H-ARQ RX: PDU (id " << ret.back()->getId()
                    << " ) extracted from process " << (int)acid
-                   << "to be sent upper" << endl;
+                   << " to be sent upper" << endl;
             }
         }
     }
@@ -186,7 +186,7 @@ UnitList LteHarqBufferRx::firstAvailable()
 
 UnitList LteHarqBufferRx::getEmptyUnits(unsigned char acid)
 {
-    // TODO add multi CW check and retx checks
+    // TODO add multi CW check and reTx checks
     UnitList ret;
     ret.first = acid;
     ret.second = processes_[acid]->emptyUnitsIds();
@@ -214,7 +214,7 @@ LteHarqBufferRx::~LteHarqBufferRx()
     macOwner_ = nullptr;
 }
 
-// @author Alessandro noferi
+// @author Alessandro Noferi
 
 bool LteHarqBufferRx::isHarqBufferActive() const {
     for (auto it = processes_.begin(); it != processes_.end(); ++it) {

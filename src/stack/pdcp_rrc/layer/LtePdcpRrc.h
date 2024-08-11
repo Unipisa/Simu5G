@@ -40,23 +40,23 @@ class PacketFlowManagerBase;
  *
  * TODO REVIEW COMMENTS
  *
- * This is the PDCP/RRC layer of LTE Stack.
+ * This is the PDCP/RRC layer of the LTE Stack.
  *
- * PDCP part performs the following tasks:
+ * The PDCP part performs the following tasks:
  * - Header compression/decompression
  * - association of the terminal with its eNodeB, thus storing its MacNodeId.
  *
- * The PDCP layer attaches an header to the packet. The size
- * of this header is fixed to 2 bytes.
+ * The PDCP layer attaches a header to the packet. The size
+ * of this header is fixed at 2 bytes.
  *
- * RRC part performs the following actions:
+ * The RRC part performs the following actions:
  * - Binding the Local IP Address of this Terminal with
- *   its module id (MacNodeId) by telling these informations
- *   to the oracle
+ *   its module id (MacNodeId) by informing these details
+ *   to the oracle.
  * - Assign a Logical Connection IDentifier (LCID)
- *   for each connection request (coming from PDCP)
+ *   for each connection request (coming from PDCP).
  *
- * The couple < MacNodeId, LogicalCID > constitute the CID,
+ * The couple < MacNodeId, LogicalCID > constitutes the CID,
  * that uniquely identifies a connection in the whole network.
  *
  */
@@ -132,7 +132,7 @@ class LtePdcpRrcBase : public cSimpleModule
     /**
      * headerDecompress(): Performs header decompression.
      * At the moment, if header compression is enabled,
-     * simply restores original packet size
+     * simply restores the original packet size
      *
      * @param Packet packet to decompress
      */
@@ -143,7 +143,7 @@ class LtePdcpRrcBase : public cSimpleModule
      */
 
     /**
-     * getDestId() retrieves the id of destination node according
+     * getDestId() retrieves the id of the destination node according
      * to the following rules:
      * - On UE use masterId
      * - On ENODEB:
@@ -190,7 +190,7 @@ class LtePdcpRrcBase : public cSimpleModule
      * handler for eutran port
      *
      * fromEutranRrcSap() receives data packets from eutran
-     * and sends it on a special LCID, over TM
+     * and sends them on a special LCID, over TM
      *
      * @param pkt incoming packet
      */
@@ -204,7 +204,7 @@ class LtePdcpRrcBase : public cSimpleModule
      * handler for um/am sap
      *
      * toDataPort() performs the following steps:
-     * - decompresses the header, restoring original packet
+     * - decompresses the header, restoring the original packet
      * - decapsulates the packet
      * - sends the packet to the application layer
      *
@@ -214,7 +214,7 @@ class LtePdcpRrcBase : public cSimpleModule
 
     /**
      * toDataPort() performs the following steps:
-     * - decompresses the header, restoring original packet
+     * - decompresses the header, restoring the original packet
      * - decapsulates the packet
      * - sends the PDCP SDU to the IP layer
      *
@@ -249,7 +249,7 @@ class LtePdcpRrcBase : public cSimpleModule
     /*
      * @author Alessandro Noferi
      *
-     * reference to the packetFlowManager to do notifications
+     * reference to the PacketFlowManager to do notifications
      * about PDCP packets
      */
     inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
@@ -283,7 +283,7 @@ class LtePdcpRrcBase : public cSimpleModule
     cGate *amSap_[2];
 
     /**
-     * The entities map associate each CID with a PDCP Entity, identified by its ID
+     * The entities map associates each CID with a PDCP Entity, identified by its ID
      */
     typedef std::map<MacCid, LteTxPdcpEntity *> PdcpTxEntities;
     typedef std::map<MacCid, LteRxPdcpEntity *> PdcpRxEntities;
@@ -292,9 +292,9 @@ class LtePdcpRrcBase : public cSimpleModule
 
     /**
      * getTxEntity() and getRxEntity() are used to gather the PDCP entity
-     * for that LCID. If entity was already present, a reference
-     * is returned, otherwise a new entity is created,
-     * added to the entities map and a reference is returned as well.
+     * for that LCID. If the entity was already present, a reference
+     * is returned; otherwise, a new entity is created,
+     * added to the entities map, and a reference is returned as well.
      *
      * @param lcid Logical CID
      * @return pointer to the PDCP entity for the CID of the flow
@@ -332,7 +332,7 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
 
     Direction getDirection()
     {
-        // Data coming from Dataport on UE are always Uplink
+        // Data coming from DataPort on UE are always Uplink
         return UL;
     }
 
@@ -351,9 +351,9 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
 
     virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     {
-        // dest id
+        // destination id
         MacNodeId destId = binder_->getMacNodeId(inet::Ipv4Address(lteInfo->getDstAddr()));
-        // master of this ue (myself)
+        // master of this UE (myself)
         MacNodeId master = binder_->getNextHop(destId);
         if (master != nodeId_) {
             destId = master;
@@ -365,13 +365,13 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
                 destId = master;
             }
         }
-        // else ue is directly attached
+        // else UE is directly attached
         return destId;
     }
 
     Direction getDirection()
     {
-        // Data coming from Dataport on ENB are always Downlink
+        // Data coming from DataPort on ENB are always Downlink
         return DL;
     }
 

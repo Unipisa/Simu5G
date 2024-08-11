@@ -58,9 +58,9 @@ void UeRnisTestApp::initialize(int stage)
     period_ = par("period");
     int localPort = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    const char *sourceSimbolicAddress = getParentModule()->getFullName();
-    const char *deviceSimbolicAppAddress = (char *)par("deviceAppAddress").stringValue();
-    deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress);
+    const char *sourceSymbolicAddress = getParentModule()->getFullName();
+    const char *deviceSymbolicAppAddress = (char *)par("deviceAppAddress").stringValue();
+    deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSymbolicAppAddress);
 
     //binding socket
     socket.setOutputGate(gate("socketOut"));
@@ -83,8 +83,8 @@ void UeRnisTestApp::initialize(int stage)
     scheduleAt(simTime() + startTime, selfStart_);
 
     //testing
-    EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str() << "]" << endl;
-    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSimbolicAppAddress << " [" << deviceAppAddress_.str() << "]" << endl;
+    EV << "UeRnisTestApp::initialize - sourceAddress: " << sourceSymbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSymbolicAddress).str() << "]" << endl;
+    EV << "UeRnisTestApp::initialize - destAddress: " << deviceSymbolicAppAddress << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "UeRnisTestApp::initialize - binding to port: local:" << localPort << " , dest:" << deviceAppPort_ << endl;
 }
 
@@ -117,9 +117,9 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
 
         /*
          * From Device app
-         * device app usually runs in the UE (loopback), but it could also run in other places
+         * The device app usually runs in the UE (loopback), but it could also run in other places
          */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
+        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) handleAckStartMecApp(msg);
 
@@ -134,7 +134,7 @@ void UeRnisTestApp::handleMessage(cMessage *msg)
             auto mePkt = packet->peekAtFront<RnisTestAppPacket>();
             if (!strcmp(mePkt->getType(), RNIS_INFO)) handleInfoMecApp(msg);
             else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_NACK)) {
-                EV << "UeRnisTestApp::handleMessage - MEC app did not started correctly, trying to start again" << endl;
+                EV << "UeRnisTestApp::handleMessage - MEC app did not start correctly, trying to start again" << endl;
             }
             else if (!strcmp(mePkt->getType(), START_QUERY_RNIS_ACK)) {
                 EV << "UeRnisTestApp::handleMessage - MEC app started correctly" << endl;
@@ -159,7 +159,7 @@ void UeRnisTestApp::finish()
  */
 void UeRnisTestApp::sendStartMecApp()
 {
-    EV << "UeRnisTestApp::sendStopMecApp - Sending " << START_MEAPP << " type packet\n";
+    EV << "UeRnisTestApp::sendStartMecApp - Sending " << START_MECAPP << " type packet\n";
 
     inet::Packet *packet = new inet::Packet("DeviceAppStartPacket");
     auto start = inet::makeShared<DeviceAppStartPacket>();
@@ -188,7 +188,7 @@ void UeRnisTestApp::sendStartMecApp()
 
 void UeRnisTestApp::sendStopMecApp()
 {
-    EV << "UeRnisTestApp::sendStopMecApp - Sending " << STOP_MEAPP << " type packet\n";
+    EV << "UeRnisTestApp::sendStopMecApp - Sending " << STOP_MECAPP << " type packet\n";
 
     inet::Packet *packet = new inet::Packet("DeviceAppStopPacket");
     auto stop = inet::makeShared<DeviceAppStopPacket>();

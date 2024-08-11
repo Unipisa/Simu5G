@@ -172,10 +172,10 @@ void LteMacEnb::initialize(int stage)
 
         /* Insert EnbInfo in the Binder */
         EnbInfo *info = new EnbInfo();
-        info->id = nodeId_;            // local mac ID
+        info->id = nodeId_;            // local MAC ID
         info->nodeType = nodeType_;    // eNB or gNB
-        info->type = MACRO_ENB;        // eNb Type
-        info->init = false;            // flag for phy initialization
+        info->type = MACRO_ENB;        // eNB Type
+        info->init = false;            // flag for PHY initialization
         info->eNodeB = hostModule;  // reference to the eNodeB module
         binder_->addEnbInfo(info);
 
@@ -248,17 +248,17 @@ void LteMacEnb::macSduRequest()
 {
     EV << "----- START LteMacEnb::macSduRequest -----\n";
 
-    // Ask for a MAC sdu for each scheduled user on each carrier and each codeword
+    // Ask for a MAC SDU for each scheduled user on each carrier and each codeword
     std::map<double, LteMacScheduleList>::iterator cit;
     for (cit = scheduleListDl_->begin(); cit != scheduleListDl_->end(); cit++) { // loop on carriers
 
         LteMacScheduleList::const_iterator it;
-        for (it = cit->second.begin(); it != cit->second.end(); it++) { // loop on cids
+        for (it = cit->second.begin(); it != cit->second.end(); it++) { // loop on CIDs
             MacCid destCid = it->first.first;
             // Codeword cw = it->first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
-            // for each band, count the number of bytes allocated for this ue (dovrebbe essere per cid)
+            // for each band, count the number of bytes allocated for this UE (should be by CID)
             unsigned int allocatedBytes = 0;
             int numBands = cellInfo_->getNumBands();
             for (Band b = 0; b < numBands; b++) {
@@ -278,7 +278,7 @@ void LteMacEnb::macSduRequest()
             pkt->insertAtFront(macSduRequest);
             if (queueSize_ != 0 && queueSize_ < macSduRequest->getSduSize()) {
                 throw cRuntimeError("LteMacEnb::macSduRequest: configured queueSize too low - requested SDU will not fit in queue!"
-                                    " (queue size: %d, sdu request requires: %d)", queueSize_, macSduRequest->getSduSize());
+                                    " (queue size: %d, SDU request requires: %d)", queueSize_, macSduRequest->getSduSize());
             }
             auto tag = pkt->addTag<FlowControlInfo>();
             *tag = connDesc_[destCid];
@@ -293,7 +293,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
     LteMacBufferMap::iterator it = bsrbuf_.find(cid);
     if (it == bsrbuf_.end()) {
         if (bsr->getSize() > 0) {
-            // Queue not found for this cid: create
+            // Queue not found for this CID: create
             LteMacBuffer *bsrqueue = new LteMacBuffer();
 
             PacketInfo vpkt(bsr->getSize(), bsr->getTimestamp());
@@ -301,7 +301,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
             bsrbuf_[cid] = bsrqueue;
 
             EV << "LteBsrBuffers : Added new BSR buffer for node: "
-               << MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid)
+               << MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid)
                << " Current BSR size: " << bsr->getSize() << "\n";
 
             // signal backlog to Uplink scheduler
@@ -323,7 +323,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
             bsrqueue->pushBack(queuedBsr);
 
             EV << "LteBsrBuffers : Using old buffer for node: " << MacCidToNodeId(
-                    cid) << " for Lcid: " << MacCidToLcid(cid)
+                    cid) << " for LCID: " << MacCidToLcid(cid)
                << " Current BSR size: " << bsr->getSize() << "\n";
 
             // signal backlog to Uplink scheduler
@@ -335,7 +335,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
                 bsrqueue->popFront();
 
             EV << "LteBsrBuffers : Using old buffer for node: " << MacCidToNodeId(
-                    cid) << " for Lcid: " << MacCidToLcid(cid)
+                    cid) << " for LCID: " << MacCidToLcid(cid)
                << " - now empty" << "\n";
         }
     }
@@ -366,47 +366,47 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
                 granted = it->second;
 
-                // removing visited element from scheduleList.
+                // Removing the visited element from scheduleList.
                 carrierScheduleList.erase(it);
             }
             else
                 throw cRuntimeError("LteMacEnb::sendGrants - schedule list is empty.");
 
             if (granted > 0) {
-                // increment number of allocated Cw
+                // Increment the number of allocated Cw
                 ++codewords;
             }
             else {
-                // active cw becomes the "other one"
+                // Active cw becomes the "other one"
                 cw = otherCw;
             }
 
             std::pair<unsigned int, Codeword> otherPair(nodeId, otherCw);
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
-                // increment number of allocated Cw
+                // Increment the number of allocated Cw
                 ++codewords;
 
-                // removing visited element from scheduleList.
+                // Removing the visited element from scheduleList.
                 carrierScheduleList.erase(ot);
             }
 
             if (granted == 0)
-                continue; // avoiding transmission of 0 grant (0 grant should not be created)
+                continue; // Avoiding transmission of 0 grant (0 grant should not be created)
 
             EV << NOW << " LteMacEnb::sendGrants Node[" << getMacNodeId() << "] - "
                << granted << " blocks to grant for user " << nodeId << " on "
                << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << cit->first << "]" << endl;
 
-            // TODO: change to tag instead chunk
-            // TODO Grant is set aperiodic as default
+            // TODO: change to tag instead of chunk
+            // TODO: Grant is set as aperiodic by default
             auto pkt = new Packet("LteGrant");
 
             auto grant = makeShared<LteSchedulingGrant>();
             grant->setDirection(UL);
             grant->setCodewords(codewords);
 
-            // set total granted blocks
+            // Set total granted blocks
             grant->setTotalGrantedBlocks(granted);
 
             pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
@@ -414,20 +414,20 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
             pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(GRANTPKT);
             pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(cit->first);
 
-            // get and set the user's UserTxParams
+            // Get and set the user's UserTxParams
             const UserTxParams& ui = getAmc()->computeTxParams(nodeId, UL, cit->first);
             UserTxParams *txPara = new UserTxParams(ui);
             grant->setUserTxParams(txPara);
 
-            // acquiring remote antennas set from user info
+            // Acquiring remote antennas set from user info
             const std::set<Remote>& antennas = ui.readAntennaSet();
             std::set<Remote>::const_iterator antenna_it, antenna_et = antennas.end();
 
-            // get bands for this carrier
+            // Get bands for this carrier
             const unsigned int firstBand = cellInfo_->getCarrierStartingBand(cit->first);
             const unsigned int lastBand = cellInfo_->getCarrierLastBand(cit->first);
 
-            //  HANDLE MULTICW
+            // HANDLE MULTICW
             for ( ; cw < codewords; ++cw) {
                 unsigned int grantedBytes = 0;
 
@@ -462,9 +462,9 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
              *   per the scheduling grant provided
              */
             if (packetFlowManager_ != nullptr)
-                packetFlowManager_->grantSent(nodeId, grant->getGrandId());
+                packetFlowManager_->grantSent(nodeId, grant->getGrantId());
 
-            // send grant to PHY layer
+            // Send grant to PHY layer
             sendLowerPackets(pkt);
         }
     }
@@ -472,7 +472,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
 void LteMacEnb::macHandleRac(cPacket *pktAux)
 {
-    EV << NOW << " LteMacEnb::macHandleRac" << endl;
+    EV << NOW << "LteMacEnb::macHandleRac" << endl;
 
     auto pkt = check_and_cast<Packet *>(pktAux);
 
@@ -481,7 +481,7 @@ void LteMacEnb::macHandleRac(cPacket *pktAux)
 
     enbSchedulerUl_->signalRac(uinfo->getSourceId(), uinfo->getCarrierFrequency());
 
-    // TODO all RACs are marked are successful
+    // TODO: all RACs are marked as successful
     racPkt->setSuccess(true);
     pkt->insertAtFront(racPkt);
 
@@ -496,11 +496,11 @@ void LteMacEnb::macPduMake(MacCid cid)
 {
     EV << "----- START LteMacEnb::macPduMake -----\n";
     // Finalizes the scheduling decisions according to the schedule list,
-    // detaching sdus from real buffers.
+    // detaching SDUs from real buffers.
 
     macPduList_.clear();
 
-    //  Build a MAC pdu for each scheduled user on each codeword
+    // Build a MAC PDU for each scheduled user on each codeword
     std::map<double, LteMacScheduleList>::iterator cit = scheduleListDl_->begin();
     for ( ; cit != scheduleListDl_->end(); ++cit) {
         double carrierFreq = cit->first;
@@ -512,7 +512,7 @@ void LteMacEnb::macPduMake(MacCid cid)
             if (destCid != cid)
                 continue;
 
-            // check whether the RLC has sent some data. If not, skip
+            // Check whether the RLC has sent some data. If not, skip
             // (e.g. because the size of the MAC PDU would contain only MAC header - MAC SDU requested size = 0B)
             if (mbuf_[destCid]->getQueueLength() == 0)
                 break;
@@ -570,7 +570,7 @@ void LteMacEnb::macPduMake(MacCid cid)
             while (sduPerCid > 0) {
                 if ((mbuf_[destCid]->getQueueLength()) < (int)sduPerCid) {
                     throw cRuntimeError("Abnormal queue length detected while building MAC PDU for cid %d "
-                                        "Queue real SDU length is %d  while scheduled SDUs are %d",
+                                        "Queue real SDU length is %d while scheduled SDUs are %d",
                             destCid, mbuf_[destCid]->getQueueLength(), sduPerCid);
                 }
 
@@ -616,16 +616,16 @@ void LteMacEnb::macPduMake(MacCid cid)
 
             auto macPacket = pit->second;
             auto header = macPacket->peekAtFront<LteMacPdu>();
-            EV << "LteMacBase: pduMaker created PDU: " << macPacket->str() << endl;
+            EV << "LteMacBase: PDU Maker created PDU: " << macPacket->str() << endl;
 
-            // pdu transmission here (if any)
+            // PDU transmission here (if any)
             if (txList.second.empty()) {
-                EV << "macPduMake() : no available process for this MAC pdu in TxHarqBuffer" << endl;
+                EV << "macPduMake() : no available process for this MAC PDU in TxHarqBuffer" << endl;
                 delete macPacket;
             }
             else {
                 if (txList.first == HARQ_NONE)
-                    throw cRuntimeError("LteMacBase: pduMaker sending to uncorrect void H-ARQ process. Aborting");
+                    throw cRuntimeError("LteMacBase: PDU Maker sending to an incorrect void H-ARQ process. Aborting");
                 txBuf->insertPdu(txList.first, cw, macPacket);
             }
         }
@@ -642,7 +642,7 @@ void LteMacEnb::macPduUnmake(cPacket *pktAux)
      * @author Alessandro Noferi
      * Notify the pfm about the successful arrival of a TB from a UE.
      * From ETSI TS 138314 V16.0.0 (2020-07)
-     * tSucc: the point in time when the MAS SDU i was received successfully by the network
+     * tSucc: the point in time when the MAC SDU i was received successfully by the network
      */
     auto userInfo = pkt->getTag<UserControlInfo>();
 
@@ -656,13 +656,13 @@ void LteMacEnb::macPduUnmake(cPacket *pktAux)
         take(upPkt);
 
         // TODO: upPkt->info()
-        EV << "LteMacBase: pduUnmaker extracted SDU" << endl;
+        EV << "LteMacBase: PDU Unmaker extracted SDU" << endl;
         sendUpperPackets(upPkt);
     }
 
     while (macPkt->hasCe()) {
         // Extract CE
-        // TODO: vedere se bsr  per cid o lcid
+        // TODO: see if BSR for CID or LCID
         MacBsr *bsr = check_and_cast<MacBsr *>(macPkt->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
         MacCid cid = idToMacCid(lteInfo->getSourceId(), 0);
@@ -688,7 +688,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
 
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
-    // obtain the cid from the packet informations
+    // obtain the cid from the packet information
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // this packet is used to signal the arrival of new data in the RLC buffers
@@ -706,7 +706,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
             vqueue->pushBack(vpkt);
             macBuffers_[cid] = vqueue;
 
-            // make a copy of lte control info and store it to traffic descriptors map
+            // make a copy of lte control info and store it to the traffic descriptors map
             FlowControlInfo toStore(*lteInfo);
             connDesc_[cid] = toStore;
             // register connection to lcg map.
@@ -739,7 +739,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
         return true; // this is only a new packet indication - only buffered in virtual queue
     }
 
-    // this is a MAC SDU, bufferize it in the MAC buffer
+    // this is a MAC SDU, buffer it in the MAC buffer
 
     LteMacBuffers::iterator it = mbuf_.find(cid);
     if (it == mbuf_.end()) {
@@ -759,7 +759,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
         LteMacQueue *queue = it->second;
 
         if (!queue->pushBack(pkt)) {
-            // unable to buffer packet (packet is not enqueued and will be dropped): update statistics
+            // unable to buffer the packet (packet is not enqueued and will be dropped): update statistics
             EV << "LteMacBuffers : queue" << cid << " is full - cannot buffer packet " << pkt->getId() << "\n";
 
             totalOverflowedBytes_ += pkt->getByteLength();
@@ -797,15 +797,15 @@ void LteMacEnb::handleUpperMessage(cPacket *pktAux)
 
     bool isLteRlcPduNewData = checkIfHeaderType<LteRlcPduNewData>(pkt);
 
-    bool packetIsBuffered = bufferizePacket(pkt);  // will buffer (or destroy if queue is full)
+    bool packetIsBuffered = bufferizePacket(pkt);  // will buffer (or destroy if the queue is full)
 
     if (!isLteRlcPduNewData && packetIsBuffered) {
-        // new MAC SDU has been received (was requested by MAC, no need to notify scheduler)
-        // creates pdus from schedule list and puts them in harq buffers
+        // new MAC SDU has been received (was requested by MAC, no need to notify the scheduler)
+        // creates PDUs from the schedule list and puts them in HARQ buffers
         macPduMake(cid);
     }
     else if (isLteRlcPduNewData) {
-        // new data - inform scheduler of active connection
+        // new data - inform scheduler of the active connection
         enbSchedulerDl_->backlog(cid);
     }
 }
@@ -820,7 +820,7 @@ void LteMacEnb::handleSelfMessage()
 
     /* Reception */
 
-    // extract pdus from all harqrxbuffers and pass them to unmaker
+    // extract PDUs from all HARQ RX buffers and pass them to unmaker
     auto mit = harqRxBuffers_.begin();
     auto met = harqRxBuffers_.end();
     for ( ; mit != met; mit++) {
@@ -875,7 +875,7 @@ void LteMacEnb::handleSelfMessage()
     }
     EV << "========================================== END DOWNLINK ============================================" << endl;
 
-    // purge from corrupted PDUs all Rx H-HARQ buffers for all users
+    // purge from corrupted PDUs all RX HARQ buffers for all users
     for (mit = harqRxBuffers_.begin(); mit != met; mit++) {
         if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
             continue;
@@ -886,7 +886,7 @@ void LteMacEnb::handleSelfMessage()
             hit->second->purgeCorruptedPdus();
     }
 
-    // Message that triggers flushing of Tx H-ARQ buffers for all users
+    // Message that triggers flushing of TX HARQ buffers for all users
     // This way, flushing is performed after the (possible) reception of new MAC PDUs
     cMessage *flushHarqMsg = new cMessage("flushHarqMsg");
     flushHarqMsg->setSchedulingPriority(1);        // after other messages
@@ -1011,7 +1011,7 @@ unsigned int LteMacEnb::getDlBandStatus(Band b)
 
 unsigned int LteMacEnb::getDlPrevBandStatus(Band b)
 {
-    unsigned int i = enbSchedulerDl_->getInterferringBlocks(MAIN_PLANE, MACRO, b);
+    unsigned int i = enbSchedulerDl_->getInterferingBlocks(MAIN_PLANE, MACRO, b);
     return i;
 }
 
@@ -1039,8 +1039,8 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
     /*
      * According to ETSI 136 314:
-     * Active UEs in DL are users whre there is
-     * buffered data in MAC RLC PDCP, plus data in HARQ
+     * Active UEs in DL are users where there is
+     * buffered data in MAC, RLC, and PDCP, plus data in HARQ
      * transmissions not yet terminated.
      */
     if (dir == DL) {
@@ -1065,7 +1065,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             }
         }
 
-        // every time a RLC SDU enters the layer, a newPktData is sent to
+        // every time an RLC SDU enters the layer, a newPktData is sent to
         // mac to inform the presence of data in RLC.
         auto vit = macBuffers_.begin();
         auto eit = macBuffers_.end();
@@ -1075,7 +1075,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
     }
     else if (dir == UL) {
-        // extract pdus from all harqrxbuffers and pass them to unmaker
+        // extract PDUs from all harqRxBuffers and pass them to unmaker
         for (const auto& mit : harqRxBuffers_) {
             for (const auto& elem : mit.second) {
                 if (elem.second->isHarqBufferActive()) {
@@ -1084,7 +1084,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
             }
         }
 
-        // check the presence of um
+        // check the presence of UM
         LteRlcUm *rlcUm = inet::findModuleFromPar<LteRlcUm>(par("rlcUmModule"), this);
         if (rlcUm != nullptr) {
             std::set<MacNodeId> activeRlcUe;
@@ -1095,8 +1095,8 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
 
         /*
-         * if the pdcp layer is NRPdcpRrc and isDualConnectivityEnabled
-         * also pdpd layer can have sdu buffered
+         * If the PDCP layer is NRPdcpRrc and isDualConnectivityEnabled,
+         * the PDCP layer can also have SDUs buffered.
          */
 
         NRPdcpRrcEnb *nrPdpc;

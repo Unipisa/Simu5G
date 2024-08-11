@@ -36,7 +36,7 @@ class LteX2Manager : public cSimpleModule
 
     // "interface table" for data gates
     // for each X2 message type, this map stores the index of the gate vector data
-    // where the destination of that msg is connected to
+    // where the destination of that message is connected to
     std::map<LteX2MessageType, int> dataInterfaceTable_;
 
     // "interface table" for x2 gates

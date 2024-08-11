@@ -46,8 +46,8 @@ class TTimer : public cObject
     }
 
     /*! Start the timer. The timer is now busy.
-     * If the timer has been already started, then probably there is
-     * a programming error. Thus, we abort execution immediately.
+     * If the timer has already been started, then there is
+     * probably a programming error. Thus, we abort execution immediately.
      * @param t interval before timer is triggered
      */
     void start(simtime_t t);
@@ -127,7 +127,7 @@ class TTimer : public cObject
     //! Used for scheduling an event into the Omnet++ event scheduler
     TTimerMsg *intr_;
 
-    //! True if the the timer has been already started.
+    //! True if the timer has already been started.
     bool busy_;
 
     //! Last time the timer was started.
@@ -143,7 +143,7 @@ class TTimer : public cObject
  *  A multi-timer is a timer that handles many events. Events are just added
  *  to the multi-timer, which will dispatch them all when needed.
  *  To distinguish between different events, the module handler will receive a message
- *  with an event id specified by user.
+ *  with an event id specified by the user.
  */
 class TMultiTimer : public cObject
 {
@@ -187,7 +187,7 @@ class TMultiTimer : public cObject
         this->timerId_ = timerId_;
     }
 
-    /*! Remove an event. Note that event id are assumed to be unique
+    /*! Remove an event. Note that event ids are assumed to be unique
      *
      * @param event event to be removed
      */
@@ -245,7 +245,7 @@ class TMultiTimer : public cObject
     //! Event iterator
     typedef std::multimap<const simtime_t, const unsigned int>::iterator Event_it;
 
-    //! The removable list. Each event id matches with a iterator.
+    //! The removable list. Each event id matches with an iterator.
     std::map<const unsigned int, const Event_it> reverseList_;
 
     //! Direct list iterator type

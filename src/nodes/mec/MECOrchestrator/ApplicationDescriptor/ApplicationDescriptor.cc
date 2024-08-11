@@ -59,9 +59,9 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     }
 
     /*
-     * There could exists mec services implemented as simple omnet++ modules, that communicate with the mec application
-     * through omnet-like messages. The application descriptor JSON file has a section to take in to account them.
-     * The list can be still found in the service registry
+     * There could exist MEC services implemented as simple OMNeT++ modules, that communicate with the MEC application
+     * through OMNeT-like messages. The application descriptor JSON file has a section to take them into account.
+     * The list can still be found in the service registry
      */
 
     if (jsonFile.contains("omnetppServiceRequired")) {
@@ -73,7 +73,7 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
 
     /*
      * If the application descriptor refers to a MEC application running outside the simulator, i.e. emulation mode,
-     * the fields address and port refers to the endpoint to communicate with the MEC application
+     * the fields address and port refer to the endpoint to communicate with the MEC application
      */
     if (jsonFile.contains("emulatedMecApplication")) {
         isEmulated = true;

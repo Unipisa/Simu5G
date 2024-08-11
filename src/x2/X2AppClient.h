@@ -22,7 +22,7 @@ using namespace omnetpp;
 class SctpAssociation;
 
 /**
- * Implements the X2AppClient simple module. See the NED file for more info.
+ * Implements the X2AppClient simple module. See the NED file for more information.
  */
 class X2AppClient : public inet::SctpClient
 {

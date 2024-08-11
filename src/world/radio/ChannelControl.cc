@@ -74,7 +74,7 @@ void ChannelControl::initialize()
 /**
  * Calculation of the interference distance based on the transmitter
  * power, wavelength, pathloss coefficient and a threshold for the
- * minimal receive Power
+ * minimal receive power
  *
  * You may want to overwrite this function in order to do your own
  * interference calculation
@@ -83,17 +83,17 @@ double ChannelControl::calcInterfDist()
 {
     double interfDistance;
 
-    //the carrier frequency used
+    // the carrier frequency used
     double carrierFrequency = par("carrierFrequency");
-    //maximum transmission power possible
+    // maximum transmission power possible
     double pMax = par("pMax");
-    //signal attenuation threshold
+    // signal attenuation threshold
     double sat = par("sat");
-    //path loss coefficient
+    // path loss coefficient
     double alpha = par("alpha");
 
     double waveLength = (SPEED_OF_LIGHT / carrierFrequency);
-    //minimum power level to be able to physically receive a signal
+    // minimum power level to be able to physically receive a signal
     double minReceivePower = pow(10.0, sat / 10.0);
 
     interfDistance = pow(waveLength * waveLength * pMax
@@ -203,7 +203,7 @@ void ChannelControl::updateConnections(RadioRef h)
 void ChannelControl::checkChannel(int channel)
 {
     if (channel >= numChannels || channel < 0)
-        error("Invalid channel, must above 0 and below %d", numChannels);
+        error("Invalid channel, must be above 0 and below %d", numChannels);
 }
 
 void ChannelControl::setRadioPosition(RadioRef r, const inet::Coord& pos)

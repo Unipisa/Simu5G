@@ -23,14 +23,14 @@ class LteMacBase;
 class LteHarqProcessRx;
 
 /**
- * H-ARQ RX buffer: messages coming from phy are stored in H-ARQ RX buffer.
- * When a new pdu is inserted, it is in EVALUATING state meaning that the hardware is
+ * H-ARQ RX buffer: messages coming from PHY are stored in the H-ARQ RX buffer.
+ * When a new PDU is inserted, it is in EVALUATING state, meaning that the hardware is
  * checking its correctness.
- * A feedback is sent after the pdu has been evaluated (HARQ_FB_EVALUATION_INTERVAL), and
- * in case of ACK the pdu moves to CORRECT state, else it is dropped from the process.
- * The operations of checking if a pdu is ready for feedback and if it is in correct state are
- * done in the extractCorrectPdu method which must be called at every tti (it must be part
- * of the mac main loop).
+ * A feedback is sent after the PDU has been evaluated (HARQ_FB_EVALUATION_INTERVAL), and
+ * in case of ACK, the PDU moves to CORRECT state; otherwise, it is dropped from the process.
+ * The operations of checking if a PDU is ready for feedback and if it is in the correct state are
+ * done in the extractCorrectPdu method, which must be called at every TTI (it must be part
+ * of the MAC main loop).
  */
 class LteHarqBufferRx
 {
@@ -38,13 +38,13 @@ class LteHarqBufferRx
     /// binder module reference
     opp_component_ptr<Binder> binder_;
 
-    /// mac module reference
+    /// MAC module reference
     LteMacBase *macOwner_;
 
     /// number of contained H-ARQ processes
     unsigned int numHarqProcesses_;
 
-    /// id of the source node for which this buffer has been created
+    /// ID of the source node for which this buffer has been created
     MacNodeId srcId_;
 
     /// processes vector
@@ -53,7 +53,7 @@ class LteHarqBufferRx
     /// flag for multicast flows
     bool isMulticast_;
 
-    //Statistics
+    // Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_ = 0;
     simsignal_t macDelay_;
@@ -73,18 +73,18 @@ class LteHarqBufferRx
     LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId);
 
     /**
-     * Insertion of a new pdu coming from phy layer into
+     * Insertion of a new PDU coming from PHY layer into
      * RX H-ARQ buffer.
      *
-     * @param pdu to be inserted
+     * @param PDU to be inserted
      */
     virtual void insertPdu(Codeword cw, inet::Packet *pkt);
 
     /**
      * Sends feedback for all processes which are older than
-     * HARQ_FB_EVALUATION_INTERVAL, then extract the pdu in correct state (if any)
+     * HARQ_FB_EVALUATION_INTERVAL, then extracts the PDU in correct state (if any)
      *
-     * @return uncorrupted pdus or empty list if none
+     * @return uncorrupted PDUs or empty list if none
      */
     virtual std::list<inet::Packet *> extractCorrectPdus();
 
@@ -113,14 +113,14 @@ class LteHarqBufferRx
     RxBufferStatus getBufferStatus();
 
     /**
-     * Returns a pair with h-arq process id and a list of its empty {RXHARQ_PDU_EMPTY} units to be used for reception of new H-arq sub-bursts.
+     * Returns a pair with H-ARQ process ID and a list of its empty {RXHARQ_PDU_EMPTY} units to be used for reception of new H-ARQ sub-bursts.
      *
-     * @return  a list of acid and their units  to be used for reception
+     * @return a list of acid and their units to be used for reception
      */
     UnitList firstAvailable();
 
     /*
-     * Returns a pair with the specified h-arq process id and a list of its empty units to be used for reception.
+     * Returns a pair with the specified H-ARQ process ID and a list of its empty units to be used for reception.
      */
     UnitList getEmptyUnits(unsigned char acid);
 
@@ -137,7 +137,7 @@ class LteHarqBufferRx
     }
 
     /**
-     * @author Alessandro noferi
+     * @author Alessandro Noferi
      *
      * Check if the buffer is active
      *
@@ -150,15 +150,15 @@ class LteHarqBufferRx
 
   protected:
     /**
-     * Checks for all processes if the pdu has been evaluated and sends
+     * Checks for all processes if the PDU has been evaluated and sends
      * feedback if affirmative.
      */
     virtual void sendFeedback();
 
     /**
      *  Only register signals from macUe_ if the node still exists.
-     *  It is possible that the source node (e.g., a UE) left the simulation but the
-     *  packets form the node still reside in the simulation.
+     *  It is possible that the source node (e.g., a UE) left the simulation, but the
+     *  packets from the node still reside in the simulation.
      */
     virtual simsignal_t macUe_registerSignal(const char *signal)
     {
@@ -170,8 +170,8 @@ class LteHarqBufferRx
 
     /**
      *  Only emit signals from macUe_ if the node still exists.
-     *  It is possible that the source node (e.g., a UE) left the simulation but the
-     *  packets form the node still reside in the simulation.
+     *  It is possible that the source node (e.g., a UE) left the simulation, but the
+     *  packets from the node still reside in the simulation.
      */
     virtual void macUe_emit(simsignal_t signal, double val)
     {

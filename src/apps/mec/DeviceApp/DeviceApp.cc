@@ -117,7 +117,7 @@ void DeviceApp::handleUALCMPMessage()
                         //connection info
                         nack->setResult(false);
                         // TODO add reason?
-                        throw cRuntimeError("201 vuoto");
+                        throw cRuntimeError("201 empty");
                         nack->setChunkLength(inet::B(2)); //just code and data length = 0
                         nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 

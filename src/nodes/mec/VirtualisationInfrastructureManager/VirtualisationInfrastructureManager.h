@@ -36,13 +36,13 @@ using namespace omnetpp;
 
 struct mecAppEntry
 {
-    int meAppGateIndex;         //map key
+    int meAppGateIndex;         // map key
     int serviceIndex;           // OMNeT service index
-    cModule *meAppModule;       //for MEC app termination
-    inet::L3Address ueAddress;  //for downstream using UDP Socket
+    cModule *meAppModule;       // for MEC app termination
+    inet::L3Address ueAddress;  // for downstream using UDP Socket
     int uePort;
-    int ueAppID;                //for identifying the UEApp
-    int meAppPort;              //socket port of the MEC app
+    int ueAppID;                // for identifying the UEApp
+    int meAppPort;              // socket port of the MEC app
     ResourceDescriptor resources;
 };
 
@@ -62,7 +62,7 @@ enum SchedulingMode { SEGREGATION, FAIR_SHARING };
 // VirtualisationInfrastructureManager
 //
 //  Simple Module for handling the availability of virtualised resources on the MEC host.
-//  From  ETSI GS MEC 003, it is responsible for allocating, managing and releasing virtualised
+//  From ETSI GS MEC 003, it is responsible for allocating, managing and releasing virtualised
 //  resources of the virtualisation infrastructure;
 //
 
@@ -137,9 +137,9 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     bool terminateEmulatedMEApp(DeleteAppMessage *);
 
     /*
-     * This method is called by the MEC apps that wants to simulate
-     * processing time for execute a number of instructions.
-     * This method allow two type of scheduling:
+     * This method is called by the MEC apps that want to simulate
+     * processing time for executing a number of instructions.
+     * This method allows two types of scheduling:
      *  - Segregation: where the MEC app obtains exactly the amount of computing resources
      *  it has stipulated at the time of admission control, even when no other MEC apps
      *  are running concurrently;
@@ -159,7 +159,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
     /*
      * Methods called by MEC apps deployed through INI and not by UEs. Such MEC apps
-     * are usually used to load the computations resources of the MEC host and
+     * are usually used to load the computing resources of the MEC host and
      * the MEC services and are not managed by the MEC orchestrator.
      * By calling these methods, it is possible to allocate (and deallocate) MEC host
      * resources.

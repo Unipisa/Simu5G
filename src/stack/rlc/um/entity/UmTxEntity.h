@@ -32,23 +32,23 @@ class PacketFlowManagerBase;
  * @brief Transmission entity for UM
  *
  * This module is used to segment and/or concatenate RLC SDUs
- * in UM mode at RLC layer of the LTE stack.It operates in
+ * in UM mode at RLC layer of the LTE stack. It operates in
  * the following way:
  *
- * - When a RLC SDU is received from upper layer:
+ * - When an RLC SDU is received from the upper layer:
  *    a) the RLC SDU is buffered;
  *    b) the arrival of new data is notified to the lower layer.
  *
- * - When lower layer requests for a RLC PDU, this module invokes
+ * - When the lower layer requests an RLC PDU, this module invokes
  *   the rlcPduMake() function that builds a new SDU by segmenting
  *   and/or concatenating original SDUs stored in the buffer.
- *   Additional information are added to the SDU in order to allow
- *   the receiving RLC entity to rebuild the original SDUs
+ *   Additional information is added to the SDU in order to allow
+ *   the receiving RLC entity to rebuild the original SDUs.
  *
- * - The newly created SDU is encapsulated into a RLC PDU and sent
- *   to the lower layer
+ * - The newly created SDU is encapsulated into an RLC PDU and sent
+ *   to the lower layer.
  *
- * The size of PDUs is signalled by the lower layer
+ * The size of PDUs is signaled by the lower layer.
  */
 class UmTxEntity : public cSimpleModule
 {
@@ -77,7 +77,7 @@ class UmTxEntity : public cSimpleModule
      * Enqueues an upper layer packet into the SDU buffer
      * @param pkt the packet to be enqueued
      *
-     * @return TRUE if packet was enqueued in SDU buffer
+     * @return TRUE if the packet was enqueued in the SDU buffer
      */
     bool enque(cPacket *pkt);
 
@@ -85,14 +85,14 @@ class UmTxEntity : public cSimpleModule
      * rlcPduMake() creates a PDU having the specified size
      * and sends it to the lower layer
      *
-     * @param size of a pdu
+     * @param size of a PDU
      */
     void rlcPduMake(int pduSize);
 
     void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo; }
     FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
-    // force the sequence number to assume the sno passed as argument
+    // force the sequence number to assume the sno passed as an argument
     void setNextSequenceNumber(unsigned int nextSno) { sno_ = nextSno; }
 
     // remove the last SDU from the queue
@@ -104,13 +104,13 @@ class UmTxEntity : public cSimpleModule
     // set holdingDownstreamInPackets_
     void startHoldingDownstreamInPackets() { holdingDownstreamInPackets_ = true; }
 
-    // return true is the entity is not buffering in the TX queue
+    // return true if the entity is not buffering in the TX queue
     bool isHoldingDownstreamInPackets();
 
     // store the packet in the holding buffer
     void enqueHoldingPackets(inet::cPacket *pkt);
 
-    // resume sending packets in the downstream
+    // resume sending packets downstream
     void resumeDownstreamInPackets();
 
     // return the value of notifyEmptyBuffer_
@@ -131,11 +131,11 @@ class UmTxEntity : public cSimpleModule
      * @author Alessandro Noferi
      *
      * reference to packetFlowManager in order to be able
-     * to count discarded and packet delay
+     * to count discarded packets and packet delay
      *
      * Be sure to control every time if it is null, this module
-     * it is not mandatory for a correct network simulation.
-     * It is use useful e.g for RNI service within MEC
+     * is not mandatory for a correct network simulation.
+     * It is useful, e.g., for RNI service within MEC
      */
     inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
 
@@ -158,12 +158,12 @@ class UmTxEntity : public cSimpleModule
     bool firstIsFragment_;
 
     /*
-     * If true, the entity check when the queue becomes empty
+     * If true, the entity checks when the queue becomes empty
      */
     bool notifyEmptyBuffer_;
 
     /*
-     * If true, the entity temporarily store incoming SDUs in the holding queue (useful at D2D mode switching)
+     * If true, the entity temporarily stores incoming SDUs in the holding queue (useful at D2D mode switching)
      */
     bool holdingDownstreamInPackets_;
 

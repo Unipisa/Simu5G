@@ -33,7 +33,7 @@ class LteMaxCiOptMB : public virtual LteScheduler
 
     UsableBandList usableBands_;
 
-    // read the CQIs and queue infos for each user and build an optimization problem
+    // read the CQIs and queue information for each user and build an optimization problem
     void generateProblem();
 
     // call the interactive solver

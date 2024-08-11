@@ -67,7 +67,7 @@ class X2InformationElement : public X2InformationElement_Base
 
     // field getter/setter methods
     virtual X2InformationElementType getType() const { return type_; }
-    // return length (in B)
+    // return length (in bytes)
     virtual int64_t getLength() const { return length_; }
 };
 

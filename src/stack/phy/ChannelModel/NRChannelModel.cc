@@ -29,7 +29,7 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
     double movement = .0;
     double speed = .0;
 
-    //COMPUTE 3D and 2D DISTANCE between ue and eNodeB
+    // COMPUTE 3D and 2D DISTANCE between UE and eNodeB
     double threeDimDistance = phy_->getCoord().distance(coord);
     double twoDimDistance = getTwoDimDistance(phy_->getCoord(), coord);
 
@@ -38,31 +38,31 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
     else
         speed = computeSpeed(nodeId, coord);
 
-    //If traveled distance is greater than correlation distance UE could have changed its state and
-    // its visibility from eNodeb, hence it is correct to recompute the los probability
+    // If the traveled distance is greater than the correlation distance, the UE could have changed its state and
+    // its visibility from the eNodeB, hence it is correct to recompute the LOS probability.
     if (movement > correlationDistance_
         || losMap_.find(nodeId) == losMap_.end())
     {
         computeLosProbability(twoDimDistance, nodeId);
     }
 
-    //compute attenuation based on selected scenario and based on LOS or NLOS
+    // compute attenuation based on selected scenario and based on LOS or NLOS
     bool los = losMap_[nodeId];
     double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
 
-    //    Applying shadowing only if it is enabled by configuration
-    //    log-normal shadowing (not available for background UEs)
+    // Applying shadowing only if it is enabled by configuration
+    // log-normal shadowing (not available for background UEs)
     if (nodeId < BGUE_MIN_ID && shadowing_)
         attenuation += computeShadowing(twoDimDistance, nodeId, speed, cqiDl);
 
     // update current user position
 
-    //if sender is a eNodeB
+    // if sender is an eNodeB
     if (dir == DL)
-        //store the position of user
+        // store the position of user
         updatePositionHistory(nodeId, phy_->getCoord());
     else
-        //sender is an UE
+        // sender is a UE
         updatePositionHistory(nodeId, coord);
 
     EV << "NRChannelModel::getAttenuation - computed attenuation at distance " << threeDimDistance << " for eNb is " << attenuation << endl;
@@ -131,7 +131,7 @@ void NRChannelModel::computeLosProbability(double d, MacNodeId nodeId)
 
 double NRChannelModel::computePathLoss(double threeDimDistance, double twoDimDistance, bool los)
 {
-    //compute attenuation based on selected scenario and based on LOS or NLOS
+    // compute attenuation based on selected scenario and based on LOS or NLOS
     double pathLoss = 0;
     switch (scenario_) {
         case INDOOR_HOTSPOT:
@@ -157,13 +157,13 @@ double NRChannelModel::computeIndoor(double threeDimDistance, double twoDimDista
     double a, b;
     if (los) {
         if (twoDimDistance > 150 || twoDimDistance < 3)
-            throw cRuntimeError("Error LOS indoor path loss model is valid for 3<d<150");
+            throw cRuntimeError("Error: LOS indoor path loss model is valid for 3<d<150");
         a = 16.9;
         b = 32.8;
     }
     else {
         if (twoDimDistance > 250 || twoDimDistance < 6)
-            throw cRuntimeError("Error NLOS indoor path loss model is valid for 6<d<250");
+            throw cRuntimeError("Error: NLOS indoor path loss model is valid for 6<d<250");
         a = 43.3;
         b = 11.5;
     }
@@ -179,7 +179,7 @@ double NRChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimD
         if (tolerateMaxDistViolation_)
             return ATT_MAXDISTVIOLATED;
         else
-            throw cRuntimeError("Error urban microcell path loss model is valid for d<5000 m");
+            throw cRuntimeError("Error: urban microcell path loss model is valid for d<5000 m");
     }
 
     // compute break-point distance
@@ -202,7 +202,7 @@ double NRChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimD
         if (tolerateMaxDistViolation_)
             twoDimDistance = 2000.0;
         else
-            throw cRuntimeError("Error NLOS urban microcell path loss model is valid for d<2000 m");
+            throw cRuntimeError("Error: NLOS urban microcell path loss model is valid for d<2000 m");
     }
 
     double pLoss_nlos = 36.7 * log10(threeDimDistance) + 22.7
@@ -223,7 +223,7 @@ double NRChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
         if (tolerateMaxDistViolation_)
             return ATT_MAXDISTVIOLATED;
         else
-            throw cRuntimeError("Error LOS urban macrocell path loss model is valid for d<5000 m");
+            throw cRuntimeError("Error: LOS urban macrocell path loss model is valid for d<5000 m");
     }
 
     // compute penetration loss
@@ -293,7 +293,7 @@ double NRChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
             if (tolerateMaxDistViolation_)
                 return ATT_MAXDISTVIOLATED;
             else
-                throw cRuntimeError("Error rural macrocell path loss model is valid for d < 10000 m");
+                throw cRuntimeError("Error: rural macrocell path loss model is valid for d < 10000 m");
         }
 
         double dbp = 2 * M_PI * hNodeB_ * hUe_ * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
@@ -317,7 +317,7 @@ double NRChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
         if (tolerateMaxDistViolation_)
             return ATT_MAXDISTVIOLATED;
         else
-            throw cRuntimeError("Error NLOS rural macrocell path loss model is valid for d<5000 m");
+            throw cRuntimeError("Error: NLOS rural macrocell path loss model is valid for d<5000 m");
     }
 
     double pLoss_nlos = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
@@ -346,11 +346,11 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 
     std::vector<double> fadingAttenuation;
 
-    //compute distance for each cell
+    // compute distance for each cell
     while (it != list.end()) {
         // get external cell position
         c = (*it)->getPosition();
-        // computer distance between UE and the ext cell
+        // compute distance between UE and the ext cell
         threeDimDist = coord.distance(c);
         twoDimDist = getTwoDimDistance(coord, c);
 
@@ -416,17 +416,17 @@ double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double tw
 {
     computeSpeed(nodeId, phy_->getCoord());
 
-    //compute attenuation based on selected scenario and based on LOS or NLOS
+    // Compute attenuation based on selected scenario and based on LOS or NLOS
     bool los = losMap_[nodeId];
 
     if (!enable_extCell_los_)
         los = false;
 
-    //TODO Apply shadowing to each interfering extCell signal
+    // TODO Apply shadowing to each interfering extCell signal
     double attenuation = computePathLoss(threeDimDistance, twoDimDistance, los);
 
-    //    Applying shadowing only if it is enabled by configuration
-    //    log-normal shadowing
+    // Applying shadowing only if it is enabled by configuration
+    // Log-normal shadowing
     if (shadowing_) {
         double att;
 

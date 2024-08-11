@@ -64,8 +64,8 @@ void MecRequestBackgroundApp::initialize(int stage) {
 void MecRequestBackgroundApp::sendRequest() {
 
     /*
-     * For a background mec application application, I send the request as a bulkrequest.
-     * This allow the service to only count the foreground requests, since they emit
+     * For a background mec application, I send the request as a bulk request.
+     * This allows the service to only count the foreground requests, since they emit
      * the signal queuedRequests.
      *
      */

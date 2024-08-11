@@ -72,7 +72,7 @@ class IChannelControl
     /** Called from ChannelAccess, to transmit a frame to the radios in range, on the frame's channel */
     virtual void sendToChannel(RadioRef srcRadio, AirFrame *airFrame) = 0;
 
-    /** Returns the maximal interference distance*/
+    /** Returns the maximal interference distance */
     virtual double getInterferenceRange(RadioRef r) = 0;
 
     /** Disable the reception in the reference module */
@@ -81,7 +81,7 @@ class IChannelControl
     /** Enable the reception in the reference module */
     virtual void enableReception(RadioRef r) = 0;
 
-    /** Returns propagation speed of the signal in meter/sec */
+    /** Returns propagation speed of the signal in meters/sec */
     virtual double getPropagationSpeed() = 0;
 };
 

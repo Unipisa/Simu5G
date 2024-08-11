@@ -34,11 +34,11 @@ static int parseInt(const char *s, int defaultValue)
     return *endptr == '\0' ? value : defaultValue;
 }
 
-// the destructor unregister the radio module
+// the destructor unregisters the radio module
 ChannelAccess::~ChannelAccess()
 {
     if (cc != nullptr && myRadioRef != nullptr) {
-        // check if channel control exist
+        // check if channel control exists
         IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
         if (cc)
             cc->unregisterRadio(myRadioRef);
@@ -47,7 +47,7 @@ ChannelAccess::~ChannelAccess()
 }
 
 /**
- * Upon initialization ChannelAccess registers the nic parent module
+ * Upon initialization, ChannelAccess registers the NIC parent module
  * to have all its connections handled by ChannelControl
  */
 void ChannelAccess::initialize(int stage)
@@ -95,7 +95,7 @@ IChannelControl *ChannelAccess::getChannelControl()
 {
     IChannelControl *cc = dynamic_cast<IChannelControl *>(getSimulation()->findModuleByPath("channelControl"));
     if (!cc)
-        throw cRuntimeError("Could not find ChannelControl module with name 'channelControl' in the toplevel network.");
+        throw cRuntimeError("Could not find ChannelControl module with name 'channelControl' in the top-level network.");
     return cc;
 }
 

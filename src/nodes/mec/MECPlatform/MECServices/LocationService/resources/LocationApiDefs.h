@@ -21,11 +21,11 @@ namespace simu5g {
 
 namespace LocationUtils {
 
-/* From: RESTful Network APIforTerminal Location
+/* From: RESTful Network API for Terminal Location
  * section 5.2.3.1
  */
 enum EnteringLeavingCriteria { Entering, Leaving };
-/* From: RESTful Network APIforTerminal Location
+/* From: RESTful Network API for Terminal Location
  * section 5.2.3.2
  */
 enum DistanceCriteria { AllWithinDistance, AnyWithinDistance, AllBeyondDistance, AnyBeyondDistance };

@@ -38,7 +38,7 @@ class CbrReceiver : public cSimpleModule
     static simsignal_t cbrFrameLossSignal_;
     static simsignal_t cbrFrameDelaySignal_;
     static simsignal_t cbrJitterSignal_;
-    static simsignal_t cbrReceivedThroughtput_;
+    static simsignal_t cbrReceivedThroughput_;
     static simsignal_t cbrReceivedBytesSignal_;
 
     simsignal_t cbrRcvdPkt_;

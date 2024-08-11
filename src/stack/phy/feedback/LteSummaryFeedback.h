@@ -48,7 +48,7 @@ class LteSummaryFeedback
     bool valid_;
 
     /** Calculate the confidence factor.
-     *  @param n the feedback age in tti
+     *  @param n the feedback age in TTI
      */
     double confidence(simtime_t creationTime) const;
 
@@ -76,14 +76,14 @@ class LteSummaryFeedback
     {
         ri_ = ri;
         tRi_ = simTime();
-        //set cw
+        // set CW
         totCodewords_ = ri > 1 ? 2 : 1;
     }
 
     //! Set single-codeword/single-band CQI.
     void setCqi(Cqi cqi, Codeword cw, Band band)
     {
-        // note: it is impossible to receive cqi == 0!
+        // note: it is impossible to receive CQI == 0!
         cqi_[cw][band] = cqi;
         tCqi_[cw][band] = simTime();
         valid_ = true;

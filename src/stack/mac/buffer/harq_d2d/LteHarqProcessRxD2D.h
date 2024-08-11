@@ -18,9 +18,9 @@
 namespace simu5g {
 
 /**
- * H-ARQ RX processes contain pdus received from phy layer for which
+ * H-ARQ RX processes contain PDUs received from the PHY layer for which
  * H-ARQ feedback must be sent.
- * These pdus must be evaluated using H-ARQ correction functions.
+ * These PDUs must be evaluated using H-ARQ correction functions.
  * H-ARQ RX process state machine has three states:
  * RXHARQ_PDU_EMPTY
  * RXHARQ_PDU_EVALUATING
@@ -39,14 +39,14 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
     LteHarqProcessRxD2D(unsigned char acid, LteMacBase *owner, Binder *binder);
 
     /**
-     * Creates a feedback message based on the evaluation result for this pdu.
+     * Creates a feedback message based on the evaluation result for this PDU.
      *
      * @return feedback message to be sent.
      */
     virtual inet::Packet *createFeedback(Codeword cw);
 
     /**
-     * Creates a feedback message based on the evaluation result for this pdu.
+     * Creates a feedback message based on the evaluation result for this PDU.
      * This is the feedback sent to the eNB
      * @return feedback message to be sent.
      */

@@ -30,7 +30,7 @@ LteMaxCiOptMB::LteMaxCiOptMB(Binder *binder) : LteScheduler(binder)
 }
 
 /*
- * Given N bands, 2^N possible band configuration are obtained, each one describing a
+ * Given N bands, 2^N possible band configurations are obtained, each one describing a
  * possible combination of active bands.
  *
  * example of band configuration for three bands
@@ -53,7 +53,7 @@ LteMaxCiOptMB::LteMaxCiOptMB(Binder *binder) : LteScheduler(binder)
  *    the band id into the "cqiPerConfigMatrix" structure ( < ueID , minBandId >
  *  - generate the optimization problem storing it into the file specified by "problemFile_"
  *
- *  NOTE: bands ID starts from 0, while Band Configuration starts from 1 ( power of two stuffs, easy to handle. You are an adult anyway )
+ *  NOTE: bands ID starts from 0, while Band Configuration starts from 1 ( power of two stuff, easy to handle. You are an adult anyway )
  */
 void LteMaxCiOptMB::generateProblem()
 {
@@ -83,7 +83,7 @@ void LteMaxCiOptMB::generateProblem()
         EV << NOW << " LteMaxCiOptMB::generateProblem - No Available RBs" << endl;
         return;
     }
-    // number of possible combination of bands
+    // number of possible combinations of bands
     int totBandConfig = pow(2, numBands) - 1;
 
     double MAX_RATE = 100 * numBands;
@@ -128,7 +128,7 @@ void LteMaxCiOptMB::generateProblem()
         // ***** END debug *****
 
         /*
-         *  TODO this function can be implemente more efficiently by:
+         *  TODO this function can be implemented more efficiently by:
          *  - sorting the bands by CQI value
          *  - for each bandConfig, browse the sorted list and select the first CQI whose band belongs to the bandConfig
          */
@@ -378,7 +378,7 @@ void LteMaxCiOptMB::prepareSchedule()
     applyScheduling();
 }
 
-// TODO use the XML built in functions
+// TODO use the XML built-in functions
 void LteMaxCiOptMB::readSolution()
 {
     std::ifstream file;
@@ -426,7 +426,7 @@ void LteMaxCiOptMB::readSolution()
 
         if (limit == -1) {
             usableBands_[ueId].push_back(bandLimit.band_);
-            EV << " LteMaxCiOptMB::readSolution - Adding usable band[" << bandLimit.band_ << "] for UE[" << ueId << "]" << endl;
+            EV << " LteMaxCiOptMB::readSolution - Adding usable band[" << bandLimit.band_ << "] for UE[" << ueId << "]" << std::endl;
         }
     }
 
@@ -447,7 +447,7 @@ void LteMaxCiOptMB::launchProblem()
     if (fp != nullptr) {
         cmd << "\"set logfile *\" \"read " << problemFile_ << " lp\" \"optimize\" ";
         cmd << "\"write " << solutionFile_ << "\" \"y\" ";
-        cmd << " > /dev/null" << endl;
+        cmd << " > /dev/null" << std::endl;
         fprintf(fp, "%s", cmd.str().c_str());
 
         fclose(fp);
@@ -475,19 +475,19 @@ void LteMaxCiOptMB::applyScheduling()
         bool eligible = true;
         unsigned int granted = requestGrant(ueCid, 4294967295U, terminate, active, eligible, &schedulingDecision_[ueId]);
 
-        EV << NOW << "LteMaxCiMultiband::schedule granted " << granted << " bytes to UE" << ueId << endl;
+        EV << NOW << "LteMaxCiMultiband::schedule granted " << granted << " bytes to UE" << ueId << std::endl;
 
         // Exit immediately if the terminate flag is set.
         if (terminate) break;
 
         // Pop the descriptor from the score list if the active or eligible flag are clear.
         if (!active || !eligible) {
-            EV << NOW << "LteMaxCiMultiband::schedule  UE " << ueId << " was found ineligible" << endl;
+            EV << NOW << "LteMaxCiMultiband::schedule  UE " << ueId << " was found ineligible" << std::endl;
         }
 
         // Set the connection as inactive if indicated by the grant ().
         if (!active) {
-            EV << NOW << "LteMaxCiMultiband::schedule scheduling UE " << ueId << " set to inactive " << endl;
+            EV << NOW << "LteMaxCiMultiband::schedule scheduling UE " << ueId << " set to inactive " << std::endl;
             carrierActiveConnectionSet_.erase(ueCid);
             activeConnectionTempSet_.erase(ueCid);
         }

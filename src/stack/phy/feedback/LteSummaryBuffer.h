@@ -23,7 +23,7 @@ using namespace omnetpp;
 class LteSummaryBuffer
 {
   protected:
-    //! Buffer dimension
+    //! Buffer size
     unsigned char bufferSize_;
     //! The buffer
     std::list<LteFeedback> buffer_;

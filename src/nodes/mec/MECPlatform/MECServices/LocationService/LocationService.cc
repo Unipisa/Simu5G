@@ -62,7 +62,7 @@ bool LocationService::manageSubscription()
     int subId = currentSubscriptionServed_->getSubId();
     if (subscriptions_.find(subId) != subscriptions_.end()) {
         EV << "LocationService::manageSubscription() - subscription with id: " << subId << " found" << endl;
-        SubscriptionBase *sub = subscriptions_[subId];//upcasting (getSubscriptionType is in Subscriptionbase)
+        SubscriptionBase *sub = subscriptions_[subId];//upcasting (getSubscriptionType is in SubscriptionBase)
         sub->sendNotification(currentSubscriptionServed_);
         if (currentSubscriptionServed_ != nullptr)
             delete currentSubscriptionServed_;
@@ -92,13 +92,13 @@ void LocationService::handleMessage(cMessage *msg)
             for (auto sub : subIds) {
                 if (subscriptions_.find(sub) != subscriptions_.end()) {
                     EV << "subscriptionTimer for subscription: " << sub << endl;
-                    SubscriptionBase *subscription = subscriptions_[sub];//upcasting (getSubscriptionType is in Subscriptionbase)
+                    SubscriptionBase *subscription = subscriptions_[sub];//upcasting (getSubscriptionType is in SubscriptionBase)
                     EventNotification *event = subscription->handleSubscription();
                     if (event != nullptr)
                         newSubscriptionEvent(event);
                 }
                 else {
-                    EV << "remove subId " << sub << " from aperiodic trimer" << endl;
+                    EV << "remove subId " << sub << " from aperiodic timer" << endl;
                     subscriptionTimer_->removeSubId(sub);
                 }
             }
@@ -121,7 +121,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
         if (!params.empty()) {
             std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
-             * supported paramater:
+             * supported parameters:
              * - ue_ipv4_address
              * - accessPointId
              */
@@ -135,13 +135,13 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
             std::vector<std::string> splittedParams;
             for ( ; it != end; ++it) {
                 if (it->rfind("accessPointId", 0) == 0) { // accessPointId=par1,par2
-                    EV << "LocationService::handleGETReques - parameters: " << endl;
+                    EV << "LocationService::handleGETRequest - parameters: " << endl;
                     params = simu5g::utils::splitString(*it, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for ( ; pit != pend; ++pit) {
@@ -151,7 +151,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
                 }
                 else if (it->rfind("address", 0) == 0) {
                     params = simu5g::utils::splitString(*it, "=");
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for ( ; pit != pend; ++pit) {
@@ -173,15 +173,15 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
 
             //send response
             if (!ues.empty() && !cellIds.empty()) {
-                EV << "LocationService::handleGETReques - toJson(cellIds, ues) " << endl;
+                EV << "LocationService::handleGETRequest - toJson(cellIds, ues) " << endl;
                 Http::send200Response(socket, LocationResource_.toJson(cellIds, ues).dump(0).c_str());
             }
             else if (ues.empty() && !cellIds.empty()) {
-                EV << "LocationService::handleGETReques - toJson(cellIds) " << endl;
+                EV << "LocationService::handleGETRequest - toJson(cellIds) " << endl;
                 Http::send200Response(socket, LocationResource_.toJsonCell(cellIds).dump(0).c_str());
             }
             else if (!ues.empty() && cellIds.empty()) {
-                EV << "LocationService::handleGETReques - toJson(ues) " << endl;
+                EV << "LocationService::handleGETRequest - toJson(ues) " << endl;
                 Http::send200Response(socket, LocationResource_.toJsonUe(ues).dump(0).c_str());
             }
             else {
@@ -189,7 +189,7 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
             }
         }
         else { //no query params
-            EV << "LocationService::handleGETReques - toJson() " << endl;
+            EV << "LocationService::handleGETRequest - toJson() " << endl;
             Http::send200Response(socket, LocationResource_.toJson().dump(0).c_str());
             return;
         }
@@ -265,7 +265,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
     // uri must be in form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
-    // find_last_of does not take in to account if the uri has a last /
+    // find_last_of does not take into account if the uri has a last /
     // in this case subscriptionType would be empty and the baseUri == uri
     // by the way the next if statement solves this problem
 
@@ -291,7 +291,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
             }
             CircleNotificationSubscription *sub = (CircleNotificationSubscription *)it->second;
             int id = sub->getSubscriptionId();
-            CircleNotificationSubscription *newSubscription = new CircleNotificationSubscription(binder_, id, socket, baseSubscriptionLocation_, eNodeB_, sub->getFirstNotification(), sub->getLastoNotification());
+            CircleNotificationSubscription *newSubscription = new CircleNotificationSubscription(binder_, id, socket, baseSubscriptionLocation_, eNodeB_, sub->getFirstNotification(), sub->getLastNotification());
             bool res = newSubscription->fromJson(jsonBody);
             if (res == true) {
                 nlohmann::ordered_json response = jsonBody;
@@ -314,20 +314,20 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
 void LocationService::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
     EV << "LocationService::handleDELETERequest" << endl;
-    // uri must be in form example/location/v2/subscriptions/sub_type/subId
+    // URI must be in the form example/location/v2/subscriptions/sub_type/subId
     // or
     // example/location/v2/subscriptions/type/sub_type/subId
     std::string uri = currentRequestMessageServed->getUri();
     std::size_t lastPart = uri.find_last_of("/");
-    // find_last_of does not take in to account if the uri has a last /
+    // find_last_of does not take into account if the URI has a last /
     // in this case subscriptionType would be empty and the baseUri == uri
-    // by the way the next if statement solve this problem
+    // by the way, the next if statement solves this problem
     std::string baseUri = uri.substr(0, lastPart);
     std::string ssubId = uri.substr(lastPart + 1);
 
     EV << "baseuri: " << baseUri << endl;
 
-    // it has to be managed the case when the sub is /area/circle (it has two slashes)
+    // it has to be managed the case when the subscription is /area/circle (it has two slashes)
     if (baseUri == (baseUriSubscriptions_ + "/area/circle")) {
         int subId = std::stoi(ssubId);
         Subscriptions::iterator it = subscriptions_.find(subId);

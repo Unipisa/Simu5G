@@ -75,7 +75,7 @@ class IP2Nic : public cSimpleModule
     bool dualConnectivityEnabled_;
 
     // for each connection exploiting Split Bearer,
-    // keep trace of the number of packets sent down to the PDCP
+    // keep track of the number of packets sent down to the PDCP
     SplitBearersTable *sbTable_;
 
   protected:

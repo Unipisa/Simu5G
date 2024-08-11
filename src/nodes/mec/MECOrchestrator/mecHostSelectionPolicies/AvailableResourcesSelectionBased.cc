@@ -26,12 +26,12 @@ cModule *AvailableResourcesSelectionBased::findBestMecHost(const ApplicationDesc
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
         if (!res) {
-            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] has not got enough resources. Searching again..." << endl;
+            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] does not have enough resources. Searching again..." << endl;
             continue;
         }
         if (vim->getAvailableResources().cpu > maxCpuSpeed) {
-            // Temporally select this mec host as the best
-            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporally chosen as best MEC host. Available resources: " << endl;
+            // Temporarily select this mec host as the best
+            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporarily chosen as best MEC host. Available resources: " << endl;
             vim->printResources();
             bestHost = mecHost;
             maxCpuSpeed = vim->getAvailableResources().cpu;

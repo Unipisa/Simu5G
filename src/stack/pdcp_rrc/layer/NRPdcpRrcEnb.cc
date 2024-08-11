@@ -36,7 +36,7 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayer, pktAux);
 
-    // Control Informations
+    // Control Information
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     setTrafficInformation(pkt, lteInfo);
@@ -65,14 +65,14 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
         lteInfo->setD2dRxPeerId(0);
     }
 
-    // Cid Request
+    // CID Request
     EV << "NRPdcpRrcEnb : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
        << " , ToS: " << lteInfo->getTypeOfService()
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
 
     /*
-     * Different lcid for different directions of the same flow are assigned.
+     * Different LCID for different directions of the same flow are assigned.
      * RLC layer will create different RLC entities for different LCIDs
      */
 
@@ -94,7 +94,7 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
     // obtain CID
     MacCid cid = idToMacCid(destId, mylcid);
 
-    EV << "NRPdcpRrcEnb : Assigned Lcid: " << mylcid << " [CID: " << cid << "]\n";
+    EV << "NRPdcpRrcEnb : Assigned LCID: " << mylcid << " [CID: " << cid << "]\n";
     EV << "NRPdcpRrcEnb : Assigned Node ID: " << nodeId_ << "\n";
     EV << "NRPdcpRrcEnb : dest ID: " << destId << "\n";
 
@@ -138,7 +138,7 @@ MacNodeId NRPdcpRrcEnb::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     else
         destId = binder_->getMacNodeId(Ipv4Address(lteInfo->getDstAddr()));
 
-    // master of this ue
+    // master of this UE
     MacNodeId master = binder_->getNextHop(destId);
     if (master != nodeId_) {
         destId = master;
@@ -150,7 +150,7 @@ MacNodeId NRPdcpRrcEnb::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
             destId = master;
         }
     }
-    // else ue is directly attached
+    // else UE is directly attached
     return destId;
 }
 

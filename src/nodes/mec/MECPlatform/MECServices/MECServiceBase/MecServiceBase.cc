@@ -279,7 +279,7 @@ void MecServiceBase::scheduleNextEvent(bool now)
         if (now)
             scheduleAt(simTime() + 0, subscriptionService_);
         else {
-            //calculate the serviceTime base on the type | parameters
+            //calculate the serviceTime based on the type | parameters
             double serviceTime = calculateRequestServiceTime(); //must be >0
             EV << "MecServiceBase::scheduleNextEvent- request service time: " << serviceTime << endl;
             scheduleAt(simTime() + serviceTime, requestService_);
@@ -317,11 +317,11 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
 
     /*
      * If the loadGenerator flag is active, it means that arriving FG requests
-     * needs to wait until other requests (i.e. background requests (BG)) have been served.
+     * need to wait until other requests (i.e. background requests (BG)) have been served.
      * Our implementation assumes BG requests arrive exponentially, but you can
      * manage the load generation as you prefer.
      *
-     * When the FG request queue is empty, upon a FG arrive the number of requests
+     * When the FG request queue is empty, upon a FG arrival the number of requests
      * already in the system is calculated supposing a M/M/1 system with service mu.
      */
     if (loadGenerator_) {
@@ -334,7 +334,7 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
         }
         else {
             simtime_t deltaTime = simTime() - lastFGRequestArrived_;
-            numOfBGReqs = poisson(deltaTime.dbl() * numBGApps_ * lambda_, 0); // BG requests arrived in period of time deltaTime
+            numOfBGReqs = poisson(deltaTime.dbl() * numBGApps_ * lambda_, 0); // BG requests arrived in the period of time deltaTime
             // debug
             EV << "MecServiceBase::newRequest - number of BG requests between this and the last FG request: " << numOfBGReqs << endl;
         }
@@ -385,7 +385,7 @@ double MecServiceBase::calculateRequestServiceTime()
 {
     double time;
     /*
-     * Manage the case it is a background request
+     * Manage the case if it is a background request
      */
     if (currentRequestMessageServed_->isBackgroundRequest()) {
         time = exponential(requestServiceTime_, REQUEST_RNG);
@@ -413,11 +413,11 @@ void MecServiceBase::handleRequest(inet::TcpSocket *socket) {
         if (std::strcmp(currentRequestMessageServed_->getMethod(), "GET") == 0) {
             handleGETRequest(currentRequestMessageServed_, socket); // pass URI
         }
-        else if (std::strcmp(currentRequestMessageServed_->getMethod(), "POST") == 0) { //subscription
+        else if (std::strcmp(currentRequestMessageServed_->getMethod(), "POST") == 0) { // subscription
             handlePOSTRequest(currentRequestMessageServed_, socket); // pass URI
         }
         else if (std::strcmp(currentRequestMessageServed_->getMethod(), "PUT") == 0) {
-            handlePUTRequest(currentRequestMessageServed_, socket);// pass URI
+            handlePUTRequest(currentRequestMessageServed_, socket); // pass URI
         }
         else if (std::strcmp(currentRequestMessageServed_->getMethod(), "DELETE") == 0) {
             handleDELETERequest(currentRequestMessageServed_, socket); // pass URI
@@ -440,7 +440,7 @@ void MecServiceBase::getConnectedBaseStations() {
 
     EV << "MecServiceBase::getConnectedBaseStations" << endl;
 
-    //getting the list of BS associated to this mec system from NED
+    // getting the list of BS associated with this MEC system from NED
     if (meHost_->hasPar("bsList")) {
         auto bsList = check_and_cast<cValueArray *>(meHost_->par("bsList").objectValue());
         for (int i = 0; i < bsList->size(); i++) {
@@ -518,7 +518,7 @@ void MecServiceBase::emitRequestQueueLength()
     // emit(requestQueueSizeSignal_, requests_.getLength());
 }
 
-void MecServiceBase::removeSubscritions(int connId)
+void MecServiceBase::removeSubscriptions(int connId)
 {
     Subscriptions::iterator it = subscriptions_.begin();
     while (it != subscriptions_.end()) {

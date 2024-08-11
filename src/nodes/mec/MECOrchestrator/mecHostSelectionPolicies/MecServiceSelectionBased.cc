@@ -27,12 +27,12 @@ cModule *MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
         if (!res) {
-            EV << "MecServiceSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] has not got enough resources. Searching again..." << endl;
+            EV << "MecServiceSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] does not have enough resources. Searching again..." << endl;
             continue;
         }
 
-        // Temporally select this mec host as the best
-        EV << "MecServiceSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporally chosen as bet MEC host, checking for the required MEC services.." << endl;
+        // Temporarily select this mec host as the best
+        EV << "MecServiceSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporarily chosen as the best MEC host, checking for the required MEC services.." << endl;
         bestHost = mecHost;
 
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(mecHost->getSubmodule("mecPlatformManager"));
@@ -45,7 +45,7 @@ cModule *MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
             EV << "MecServiceSelectionBased::findBestMecHost - required Mec Service: " << serviceName << endl;
         }
         else {
-            EV << "MecServiceSelectionBased::findBestMecHost - the Mec App does not require any MEC service. Choose the temporary Mec Host as the best one" << endl;
+            EV << "MecServiceSelectionBased::findBestMecHost - the Mec App does not require any MEC service. Choosing the temporary Mec Host as the best one" << endl;
             found = true;
             break;
         }
@@ -63,7 +63,7 @@ cModule *MecServiceSelectionBased::findBestMecHost(const ApplicationDescriptor& 
     }
 
     if (bestHost != nullptr && !found)
-        EV << "MecServiceSelectionBased::findBestMecHost - The best Mec Host hasn't got the required service. Best MEC host: " << bestHost << endl;
+        EV << "MecServiceSelectionBased::findBestMecHost - The best Mec Host does not have the required service. Best MEC host: " << bestHost << endl;
     else if (bestHost == nullptr)
         EV << "MecServiceSelectionBased::findBestMecHost - no MEC host found" << endl;
 

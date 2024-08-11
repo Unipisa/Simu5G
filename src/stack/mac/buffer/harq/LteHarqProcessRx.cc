@@ -45,20 +45,20 @@ void LteHarqProcessRx::insertPdu(Codeword cw, Packet *pkt)
 
     EV << "LteHarqProcessRx::insertPdu - ndi is " << ndi << endl;
     if (ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY))
-        throw cRuntimeError("New data arriving in busy harq process -- this should not happen");
+        throw cRuntimeError("New data arriving in busy HARQ process -- this should not happen");
 
     if (!ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY) && !(status_.at(cw) == RXHARQ_PDU_CORRUPTED))
         throw cRuntimeError(
-                "Trying to insert macPdu in non-empty rx harq process: Node %d acid %d, codeword %d, ndi %d, status %d",
+                "Trying to insert macPdu in non-empty RX HARQ process: Node %d acid %d, codeword %d, ndi %d, status %d",
                 macOwner_->getMacNodeId(), acid_, cw, ndi, status_.at(cw));
 
-    // deallocate corrupted pdu received in previous transmissions
+    // deallocate corrupted PDU received in previous transmissions
     if (pdu_.at(cw) != nullptr) {
         macOwner_->dropObj(pdu_.at(cw));
         delete pdu_.at(cw);
     }
 
-    // store new received pdu
+    // store new received PDU
     pdu_.at(cw) = pkt;
     result_.at(cw) = lteInfo->getDeciderResult();
     status_.at(cw) = RXHARQ_PDU_EVALUATING;
@@ -88,12 +88,12 @@ bool LteHarqProcessRx::isEvaluated(Codeword cw)
 Packet *LteHarqProcessRx::createFeedback(Codeword cw)
 {
     if (!isEvaluated(cw))
-        throw cRuntimeError("Cannot send feedback for a pdu not in EVALUATING state");
+        throw cRuntimeError("Cannot send feedback for a PDU not in EVALUATING state");
 
     auto pduInfo = pdu_.at(cw)->getTag<UserControlInfo>();
     auto pdu = pdu_.at(cw)->peekAtFront<LteMacPdu>();
 
-    // TODO : Change to Tag (allows length 0)
+    // TODO: Change to Tag (allows length 0)
     auto fb = makeShared<LteHarqFeedback>();
     fb->setAcid(acid_);
     fb->setCw(cw);
@@ -144,9 +144,9 @@ bool LteHarqProcessRx::isCorrect(Codeword cw)
 Packet *LteHarqProcessRx::extractPdu(Codeword cw)
 {
     if (!isCorrect(cw))
-        throw cRuntimeError("Cannot extract pdu if the state is not CORRECT");
+        throw cRuntimeError("Cannot extract PDU if the state is not CORRECT");
 
-    // temporary copy of pdu pointer because reset NULLs it, and I need to return it
+    // temporary copy of PDU pointer because reset NULLs it, and I need to return it
     auto pkt = pdu_.at(cw);
     auto pdu = pkt->peekAtFront<LteMacPdu>();
     pdu_.at(cw) = nullptr;
@@ -235,14 +235,14 @@ CwList LteHarqProcessRx::emptyUnitsIds()
     return ul;
 }
 
-// @author Alessandro noferi
+// @author Alessandro Noferi
 bool LteHarqProcessRx::isHarqProcessActive()
 {
     std::vector<RxUnitStatus> ues = getProcessStatus();
     auto it = ues.begin();
     auto end = ues.end();
 
-    // when a process is active? (ask professor)
+    // When a process is active? (ask professor)
     for ( ; it != end; ++it) {
         if ((*it).second != RXHARQ_PDU_EMPTY)
             return true;

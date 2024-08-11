@@ -20,15 +20,15 @@ namespace simu5g {
  * @class SplitBearersTable
  * @brief Hash table to keep track of connections
  *
- * This is an hash table used by the RRC layer
+ * This is a hash table used by the RRC layer
  * to assign CIDs to different connections.
  * The table is in the format:
  *  _____________________________________________
  * | srcAddr | dstAddr | typeOfService | number
  *
- * A 4-tuple is used to check if connection was already
- * established and return the number of sent packets, otherwise a
- * new entry is added to the table
+ * A 4-tuple is used to check if the connection was already
+ * established and return the number of sent packets; otherwise, a
+ * new entry is added to the table.
  */
 class SplitBearersTable
 {
@@ -39,7 +39,7 @@ class SplitBearersTable
     /**
      * find_entry() checks if an entry is in the
      * table and, if found, increments the number and returns it
-     * @return number of number fiels in hash table:
+     * @return number of number fields in hash table:
      *             - -1 if no entry was found
      *             - number if it was found
      */

@@ -43,22 +43,18 @@ LcgScheduler::~LcgScheduler()
 
 ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction grantDir)
 {
-    /* clean up old schedule decisions
-       for each cid, this map will store the the amount of sent data (in SDUs)
-     */
+    // Clean up old schedule decisions.
+    // For each cid, this map will store the amount of sent data (in SDUs).
     scheduleList_.clear();
 
-    /* clean up old schedule decisions
-       for each cid, this map will store the the amount of sent data (in bytes, useful for macSduRequest)
-     */
+    // Clean up old schedule decisions.
+    // For each cid, this map will store the amount of sent data (in bytes, useful for macSduRequest).
     scheduledBytesList_.clear();
 
-    /*
-     * Clean up scheduling support status map
-     */
+    // Clean up scheduling support status map
     statusMap_.clear();
 
-    // If true, assure a minimum reserved rate to all connection (LCP first
+    // If true, assure a minimum reserved rate to all connections (LCP first
     // phase), if false, provide a best effort service (LCP second phase)
     bool priorityService = true;
 
@@ -102,9 +98,9 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
         }
         // -------------------------------------------------------------------------------------------------- //
 
-        //! FIXME Allocation of the same resource to flows with same priority not implemented
+        //! FIXME Allocation of the same resource to flows with the same priority not implemented
         for (it = it_pair.first; it != et; ++it) {
-            // processing all connections of same traffic class
+            // processing all connections of the same traffic class
 
             // get the connection virtual buffer
             LteMacBuffer *vQueue = it->second.second;
@@ -119,14 +115,14 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             FlowControlInfo connDesc = mac_->getConnDesc().at(cid);
             // TODO get the QoS parameters
 
-            // connection must have the same direction of the grant
+            // connection must have the same direction as the grant
             if (connDesc.getDirection() != grantDir)
                 continue;
 
             unsigned int toServe = queueLength;
             // Check whether the virtual buffer is empty
             if (queueLength == 0) {
-                EV << "LcgScheduler::schedule scheduled connection is no more active " << endl;
+                EV << "LcgScheduler::schedule scheduled connection is no longer active " << endl;
                 continue; // go to next connection
             }
             else {
@@ -170,7 +166,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
                 EV << NOW << " LcgScheduler::schedule Bucket size: " << bucket << " bytes (max size " << maximumBucketSize << " bytes) - BEFORE SERVICE " << endl;
 
-                // if the connection started before last scheduling event , use the
+                // if the connection started before the last scheduling event, use the
                 // global time interval
                 if (lastExecutionTime_ > 0) { // TODO desc->parameters_.startTime_) {
                     // PBR*(n*TTI) where n is the number of TTI from last update

@@ -130,7 +130,7 @@ class LteAmc
     const LteSummaryFeedback& getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency);
     const LteSummaryFeedback& getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency);
 
-    //used when is necessary to know if the requested feedback exists or not
+    //used when it is necessary to know if the requested feedback exists or not
     // LteSummaryFeedback getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir,bool& valid);
 
     MacNodeId computeMuMimoPairing(const MacNodeId nodeId, Direction dir = DL);
@@ -161,7 +161,7 @@ class LteAmc
     unsigned int getItbsPerCqi(Cqi cqi, const Direction dir);
 
     /*
-     * Access the correct itbs2tbs conversion table given cqi and layer numer
+     * Access the correct itbs2tbs conversion table given cqi and layer number
      */
     const unsigned int *readTbsVect(Cqi cqi, unsigned int layers, Direction dir);
 

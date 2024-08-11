@@ -143,7 +143,7 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
             Http::ProblemDetailBase pd;
             pd.type = "Request not succesfully completed";
             pd.title = "CreateContext request result";
-            pd.detail = "the Mec system was not able to instantiate the mec application";
+            pd.detail = "the MEC system was not able to instantiate the MEC application";
             pd.status = "500";
             Http::send500Response(socket, pd.toJson().dump().c_str());
         }
@@ -174,7 +174,7 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
             Http::ProblemDetailBase pd;
             pd.type = "Request not succesfully completed";
             pd.title = "DeleteContext request result";
-            pd.detail = "the Mec system was not able to terminate the mec application";
+            pd.detail = "the MEC system was not able to terminate the MEC application";
             pd.status = "500";
             Http::send500Response(socket, pd.toJson().dump().c_str());
         }
@@ -193,7 +193,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
         if (!params.empty()) {
             std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
-             * supported paramater:
+             * supported parameter:
              * - appName
              */
 
@@ -212,7 +212,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
                         Http::send400Response(socket);
                         return;
                     }
-                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can an array, e.g param=v1,v2,v3
+                    splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
                     std::vector<std::string>::iterator pit = splittedParams.begin();
                     std::vector<std::string>::iterator pend = splittedParams.end();
                     for ( ; pit != pend; ++pit) {
@@ -272,7 +272,7 @@ void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessag
             Http::send400Response(socket); // bad body JSON
             return;
         }
-        // Parse the JSON  body to organize the App instantion
+        // Parse the JSON body to organize the App instantiation
         CreateContextAppMessage *createContext = parseContextCreateRequest(jsonBody);
         if (createContext != nullptr) {
             createContext->setType(CREATE_CONTEXT_APP);
@@ -347,7 +347,7 @@ CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::js
 
     std::string devAppId = jsonBody["associateDevAppId"];
 
-    // the mec app package is already onboarded (from the device application pov)
+    // the MEC app package is already onboarded (from the device application pov)
     if (appInfo.contains("appDId")) {
         CreateContextAppMessage *createContext = new CreateContextAppMessage();
         createContext->setOnboarded(true);
@@ -356,7 +356,7 @@ CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::js
         createContext->setAppDId(appDId.c_str());
         return createContext;
     }
-    // the mec app package is not onboarded, but the uri of the app package is provided
+    // the MEC app package is not onboarded, but the uri of the app package is provided
     else if (appInfo.contains("appPackageSource")) {
         CreateContextAppMessage *createContext = new CreateContextAppMessage();
         createContext->setOnboarded(false);
@@ -366,7 +366,7 @@ CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::js
         return createContext;
     }
     else {
-        // neither the two is present and this is not allowed
+        // neither of the two is present and this is not allowed
         return nullptr;
     }
 }

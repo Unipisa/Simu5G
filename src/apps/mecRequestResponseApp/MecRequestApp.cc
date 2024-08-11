@@ -40,8 +40,8 @@ void MecRequestApp::initialize(int stage)
     localPort_ = par("localPort");
     destPort_ = par("destPort");
     sourceSymbolicAddress_ = (char *)getContainingNode(this)->getFullName();
-    const char *destSimbolicAddress = (char *)par("destAddress").stringValue();
-    destAddress_ = inet::L3AddressResolver().resolve(destSimbolicAddress);
+    const char *destSymbolicAddress = (char *)par("destAddress").stringValue();
+    destAddress_ = inet::L3AddressResolver().resolve(destSymbolicAddress);
 
     //binding socket UDP
     socket.setOutputGate(gate("socketOut"));
@@ -95,7 +95,7 @@ void MecRequestApp::handleMessage(cMessage *msg)
             delete migrationTimer;
         }
         else
-            throw cRuntimeError("MecRequestApp::handleMessage - \tWARNING: Unrecognized self message");
+            throw cRuntimeError("MecRequestApp::handleMessage - WARNING: Unrecognized self message");
     }
     // Receiver Side
     else {

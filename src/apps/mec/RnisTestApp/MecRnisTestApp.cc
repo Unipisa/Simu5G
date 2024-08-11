@@ -130,7 +130,7 @@ void MecRnisTestApp::handleUeMessage(cMessage *msg)
             std::ofstream myfile;
             myfile.open("example.txt", std::ios::app);
             if (myfile.is_open()) {
-                myfile << "[" << NOW << "] MecRnisTestApp - Received STOP message from UE, stop querying the RNIS\n";
+                myfile << "[" << NOW << "] MecRnisTestApp - Received STOP message from UE, stopping querying the RNIS\n";
                 myfile.close();
             }
         }
@@ -196,7 +196,7 @@ void MecRnisTestApp::established(int connId)
         EV << "MecRnisTestApp::established - connection to the RNIService done... sending ACK to the UE" << endl;
 
         // the connectService message is scheduled after a start mec app from the UE app, so I can
-        // response to her here, once the socket is established
+        // respond to her here, once the socket is established
         auto ack = inet::makeShared<RnisTestAppPacket>();
         ack->setType(START_QUERY_RNIS_ACK);
         ack->setChunkLength(inet::B(2));
@@ -233,7 +233,7 @@ void MecRnisTestApp::handleHttpMessage(int connId)
 
 void MecRnisTestApp::handleMp1Message(int connId)
 {
-    // for now I only have just one Service Registry
+    // for now I only have one Service Registry
     HttpMessageStatus *msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
     mp1HttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
     EV << "MecRnisTestApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
@@ -320,12 +320,12 @@ void MecRnisTestApp::handleSelfMessage(cMessage *msg)
     else if (strcmp(msg->getName(), "connectService") == 0) {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
         if (!serviceAddress.isUnspecified() && serviceSocket_->getState() != inet::TcpSocket::CONNECTED) {
-            EV << "MecRnisTestApp::handleSelfMessage - socket has been already created... now connecting to the RNIService" << endl;
+            EV << "MecRnisTestApp::handleSelfMessage - socket has already been created... now connecting to the RNIService" << endl;
             connect(serviceSocket_, serviceAddress, servicePort);
         }
         else {
             if (serviceAddress.isUnspecified())
-                EV << "MecRnisTestApp::handleSelfMessage - service IP address is  unspecified (maybe response from the service registry is arriving)" << endl;
+                EV << "MecRnisTestApp::handleSelfMessage - service IP address is unspecified (maybe response from the service registry is arriving)" << endl;
             else if (serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
                 EV << "MecRnisTestApp::handleSelfMessage - service socket is already connected" << endl;
 
@@ -335,7 +335,7 @@ void MecRnisTestApp::handleSelfMessage(cMessage *msg)
             auto nack = inet::makeShared<RnisTestAppStartPacket>();
 
             // the connectService message is scheduled after a start mec app from the UE app, so I can
-            // response to her here
+            // respond to her here
             nack->setType(START_QUERY_RNIS_NACK);
             nack->setChunkLength(inet::B(2));
             packet->insertAtBack(nack);

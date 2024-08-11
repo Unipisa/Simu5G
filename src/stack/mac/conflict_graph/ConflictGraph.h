@@ -26,7 +26,7 @@ typedef enum
 } CGType;
 
 /*
- * Define the structure for graph's vertices
+ * Define the structure for graph vertices
  */
 struct CGVertex
 {
@@ -69,7 +69,7 @@ class LteMacEnbD2D;
  *  \brief Define the manager of the conflict graph (CG) for resource allocation purposes.
  *
  *  This module maintains all the information about the building of the conflict graph among UEs
- *  for enabling frequency reuse during resource allocation of D2D-capable UEs (i.e. conflicting
+ *  to enable frequency reuse during resource allocation of D2D-capable UEs (i.e. conflicting
  *  UEs should not be allocated on the same resource block).
  *  This module builds a directed CG where vertices are UEs and there is an edge between UE a and
  *  UE b when the power perceived by b from a is above a certain threshold.
@@ -80,7 +80,7 @@ class ConflictGraph
   protected:
     opp_component_ptr<Binder> binder_;
 
-    // reference to the MAC layer
+    // Reference to the MAC layer
     LteMacEnbD2D *macEnb_;
 
     // Reference to the CellInfo

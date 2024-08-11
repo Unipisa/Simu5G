@@ -24,7 +24,7 @@ using namespace omnetpp;
 
 typedef std::vector<int> BandStatus;
 
-/* The allocation type defines the interference produced by the ext cell
+/* The allocation type defines the interference produced by the external cell
  * - FULL_ALLOC: the cell allocates all RBs in the frame
  * - RANDOM_ALLOC: the cell allocates X RBs, which are chosen randomly
  * - CONTIGUOUS_ALLOC: the cell allocates X contiguous RBs, starting from a given RB
@@ -35,28 +35,28 @@ typedef enum {
 
 class ExtCell : public cSimpleModule
 {
-    // playground coordinates
+    // Playground coordinates
     inet::Coord position_;
 
-    // id among all the external cells
+    // ID among all the external cells
     int id_;
 
-    // tx power
+    // TX power
     double txPower_;
 
-    // tx direction
+    // TX direction
     TxDirectionType txDirection_;
 
-    // tx angle
+    // TX angle
     double txAngle_;
 
-    // carrier frequency
+    // Carrier frequency
     double carrierFrequency_;
 
-    // number of logical bands
+    // Number of logical bands
     unsigned int numBands_;
 
-    // reference to the binder
+    // Reference to the binder
     inet::ModuleRefByPar<Binder> binder_;
 
     // Current and previous band occupation status. Used for interference computation
@@ -71,17 +71,17 @@ class ExtCell : public cSimpleModule
     // Allocation Type for this cell
     BandAllocationType allocationType_;
 
-    // percentage of RBs allocated by the ext cell
-    // used for RANDOM_ALLOC and CONTIGUOUS ALLOC allocation types
+    // Percentage of RBs allocated by the external cell
+    // Used for RANDOM_ALLOC and CONTIGUOUS_ALLOC allocation types
     double bandUtilization_;
 
-    // index of the first allocated RB for CONTIGUOUS_ALLOC allocation type
+    // Index of the first allocated RB for CONTIGUOUS_ALLOC allocation type
     int startingOffset_;
 
-    // update the band status. Called at each TTI (not used for FULL_ALLOC)
+    // Update the band status. Called at each TTI (not used for FULL_ALLOC)
     void updateBandStatus();
 
-    // move the current status in the prevBandStatus structure and reset the former
+    // Move the current status in the prevBandStatus structure and reset the former
     void resetBandStatus();
     /*****************************/
 
@@ -112,7 +112,7 @@ class ExtCell : public cSimpleModule
 
     int getPrevBandStatus(int band) { return prevBandStatus_.at(band); }
 
-    // set the band utilization percentage
+    // Set the band utilization percentage
     void setBandUtilization(double bandUtilization);
 };
 

@@ -17,7 +17,7 @@
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "nodes/mec/utils/MecCommon.h"
-#include "common/binder/Binder.h"           //to handle Car dynamically leaving the Network
+#include "common/binder/Binder.h"           //to handle cars dynamically leaving the Network
 
 //UDP SOCKET for INET COMMUNICATION WITH UE APPs
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -39,13 +39,13 @@ struct mecAppMapEntry
     int contextId;
     std::string appDId;
     std::string mecAppName;
-    std::string mecAppIsntanceId;
+    std::string mecAppInstanceId;
     int mecUeAppID;         //ID
     cModule *mecHost; // reference to the mecHost where the mec app has been deployed
-    cModule *vim;       // for virtualisationInfrastructureManager methods
+    cModule *vim;       // for VirtualisationInfrastructureManager methods
     cModule *mecpm;     // for mecPlatformManager methods
 
-    std::string ueSymbolicAddres;
+    std::string ueSymbolicAddress;
     inet::L3Address ueAddress;  //for downstream using UDP Socket
     int uePort;
     inet::L3Address mecAppAddress;  //for downstream using UDP Socket
@@ -64,7 +64,7 @@ class SelectionPolicyBase;
 
 //
 // This module implements the MEC orchestrator of a MEC system.
-// It does not follow ETSI compliant APIs, but the it handles the lifecycle operations
+// It does not follow ETSI compliant APIs, but it handles the lifecycle operations
 // of the standard by using OMNeT++ features.
 // Communications with the LCM proxy occur via connections, while the MEC hosts associated with
 // the MEC system (and the MEC orchestrator) are managed with the mecHostList parameter.
@@ -93,7 +93,7 @@ class MecOrchestrator : public cSimpleModule
 
     std::vector<cModule *> mecHosts;
 
-    //storing the UEApp and MEApp informations
+    //storing the UEApp and MEApp information
     //key = contextId - value mecAppMapEntry
     std::map<int, mecAppMapEntry> meAppMap;
     std::map<std::string, ApplicationDescriptor> mecApplicationDescriptors_;
@@ -141,10 +141,10 @@ class MecOrchestrator : public cSimpleModule
 
     /*
      * This method selects the most suitable MEC host where to deploy the MEC app.
-     * The policies for the choice of the MEC host refer both from computation requirements
+     * The policies for the choice of the MEC host refer both to computation requirements
      * and required MEC services.
      *
-     * The current implementations of the method selects the MEC host based on the availability of the
+     * The current implementations of the method select the MEC host based on the availability of the
      * required resources and the MEC host that also runs the required MEC service (if any) has precedence
      * among the others.
      *
@@ -155,7 +155,7 @@ class MecOrchestrator : public cSimpleModule
     cModule *findBestMecHost(const ApplicationDescriptor&);
 
     /*
-     * MEC hosts associated to the MEC system are configured through the mecHostList NED parameter.
+     * MEC hosts associated with the MEC system are configured through the mecHostList NED parameter.
      * This method gets the references to them.
      */
     void getConnectedMecHosts();

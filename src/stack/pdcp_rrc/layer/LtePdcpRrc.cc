@@ -161,7 +161,7 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
 
     MacNodeId destId = getDestId(lteInfo);
 
-    // Cid Request
+    // CID Request
     EV << "LteRrc : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
        << " ToS: " << lteInfo->getTypeOfService() << " ]\n";
@@ -283,12 +283,12 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
      *
      * Since the other methods, e.g. fromData, are overridden
      * in many classes, this method is the only one used by
-     * all the classes (except the NRPdcpUe that it has its
+     * all the classes (except the NRPdcpUe that has its
      * own sendToLowerLayer method).
      * So, the notification about the new PDCP to the pfm
      * is done here.
      *
-     * packets send in D2D mode are not considered
+     * packets sent in D2D mode are not considered
      */
 
     if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
@@ -387,7 +387,6 @@ LteTxPdcpEntity *LtePdcpRrcBase::getTxEntity(MacCid cid)
     PdcpTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end()) {
         // Not found: create
-        // Not found: create
         std::stringstream buf;
         // FIXME HERE
 
@@ -454,7 +453,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
     for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
             tit->second->deleteModule();  // Delete Entity
-            tit = txEntities_.erase(tit);       // Delete Elem
+            tit = txEntities_.erase(tit);       // Delete Element
         }
         else {
             ++tit;
@@ -463,7 +462,7 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
             rit->second->deleteModule();  // Delete Entity
-            rit = rxEntities_.erase(rit);       // Delete Elem
+            rit = rxEntities_.erase(rit);       // Delete Element
         }
         else {
             ++rit;
@@ -479,11 +478,11 @@ void LtePdcpRrcUe::deleteEntities(MacNodeId nodeId)
     // delete all connections TODO: check this (for NR dual connectivity)
     for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         tit->second->deleteModule();  // Delete Entity
-        tit = txEntities_.erase(tit);       // Delete Elem
+        tit = txEntities_.erase(tit);       // Delete Element
     }
     for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         rit->second->deleteModule();  // Delete Entity
-        rit = rxEntities_.erase(rit);       // Delete Elem
+        rit = rxEntities_.erase(rit);       // Delete Element
     }
 }
 
@@ -491,7 +490,7 @@ void LtePdcpRrcUe::initialize(int stage)
 {
     LtePdcpRrcBase::initialize(stage);
     if (stage == inet::INITSTAGE_NETWORK_LAYER) {
-        // refresh value, the parameter maybe changed between INITSTAGE_LOCAL and INITSTAGE_NETWORK_LAYER
+        // refresh value, the parameter may have changed between INITSTAGE_LOCAL and INITSTAGE_NETWORK_LAYER
         nodeId_ = getContainingNode(this)->par("macNodeId");
     }
 }

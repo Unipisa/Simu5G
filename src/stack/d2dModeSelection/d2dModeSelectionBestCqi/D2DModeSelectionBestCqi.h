@@ -26,7 +26,7 @@ class D2DModeSelectionBestCqi : public D2DModeSelectionBase
 
   protected:
 
-    // run the mode selection algorithm
+    // Execute the mode selection algorithm
     virtual void doModeSelection();
 
   public:

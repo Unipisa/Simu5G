@@ -43,7 +43,7 @@ enum LteAmType
 struct RlcFragDesc
 {
     /*!
-     * Main SDU size (bytes) - the size of  the SDU to be fragmented
+     * Main SDU size (bytes) - the size of the SDU to be fragmented
      */
     int sduSize_;
 
@@ -59,12 +59,12 @@ struct RlcFragDesc
     int totalFragments_;
 
     /*!
-     * the fragments of current SDU already added to transmission window
+     * the fragments of the current SDU already added to the transmission window
      */
     int fragCounter_;
 
     /*!
-     * the first fragment SN of current SDU
+     * the first fragment SN of the current SDU
      */
     int firstSn_;
 
@@ -75,7 +75,7 @@ struct RlcFragDesc
     }
 
     /*
-     * Configures the fragmentation descriptor for working on SDU of size sduSize
+     * Configures the fragmentation descriptor for working on an SDU of size sduSize
      */
 
     void startFragmentation(unsigned int sduSize, unsigned int firstFragment)
@@ -86,7 +86,7 @@ struct RlcFragDesc
     }
 
     /*
-     * resets the fragmentation descriptor for working on SDU of size sduSize - frag unit is left untouched.
+     * resets the fragmentation descriptor for working on an SDU of size sduSize - frag unit is left untouched.
      */
 
     void resetFragmentation()
@@ -98,7 +98,7 @@ struct RlcFragDesc
     }
 
     /*
-     * adds a fragment to created ones. if last is added, returns true
+     * adds a fragment to the created ones. if the last is added, returns true
      */
 
     bool addFragment()
@@ -114,7 +114,7 @@ struct RlcWindowDesc
   public:
     //! Sequence number of the first PDU in the TxWindow
     unsigned int firstSeqNum_;
-    //! Sequence number of current PDU in the TxWindow
+    //! Sequence number of the current PDU in the TxWindow
     unsigned int seqNum_;
     //! Size of the transmission window
     unsigned int windowSize_;
@@ -156,7 +156,7 @@ enum RlcAmTimerType
  */
 
 // FI field of the RLC PDU (3GPP TS 36.322)
-// It specifies whether the PDU starts/ends with the first/last byte of a SDU
+// It specifies whether the PDU starts/ends with the first/last byte of an SDU
 //  - 00: First and last chunk of the PDU are complete SDUs
 //  - 01: First chunk is a complete SDU, last chunk is a fragment
 //  - 10: First chunk is a fragment, last chunk is a complete SDU

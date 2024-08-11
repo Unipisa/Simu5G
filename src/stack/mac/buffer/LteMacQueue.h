@@ -24,7 +24,7 @@ using namespace omnetpp;
  * @class LteMacQueue
  * @brief Queue for MAC SDU packets
  *
- * The Queue registers the following informations:
+ * The Queue registers the following information:
  * - Packets
  * - Occupation (in bytes)
  * - Maximum size
@@ -32,7 +32,7 @@ using namespace omnetpp;
  * - Head Of Line Timestamp
  *
  * The Queue size can be configured, and packets are
- * dropped if stored packets exceeds the queue size
+ * dropped if stored packets exceed the queue size
  * A size equal to 0 means that the size is infinite.
  *
  */
@@ -49,7 +49,7 @@ class LteMacQueue : public cPacketQueue
     virtual ~LteMacQueue() {}
 
     /**
-     * Copy Constructors
+     * Copy Constructor
      */
 
     LteMacQueue(const LteMacQueue& queue);
@@ -87,7 +87,7 @@ class LteMacQueue : public cPacketQueue
     cPacket *popFront();
 
     /**
-     * popFront() extracts a packet from the
+     * popBack() extracts a packet from the
      * back of the queue.
      *
      * @return nullptr if queue is empty,
@@ -123,7 +123,7 @@ class LteMacQueue : public cPacketQueue
      * getHolTimestamp() returns the timestamp
      * of the Head Of Line (front) packet of the queue
      *
-     * @return Hol Timestamp (0 if queue empty)
+     * @return Hol Timestamp (0 if queue is empty)
      */
     simtime_t getHolTimestamp() const;
 

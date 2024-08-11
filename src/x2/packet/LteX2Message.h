@@ -110,8 +110,8 @@ class LteX2Message : public LteX2Message_Base
     }
 
     /**
-     * pushIe() stores a IE inside the
-     * X2 IE list in back position and update msg length
+     * pushIe() stores an IE inside the
+     * X2 IE list in back position and updates msg length
      *
      * @param ie IE to store
      */
@@ -125,7 +125,7 @@ class LteX2Message : public LteX2Message_Base
     }
 
     /**
-     * popIe() pops a IE from front of
+     * popIe() pops an IE from the front of
      * the IE list and returns it
      *
      * @return popped IE
@@ -142,7 +142,7 @@ class LteX2Message : public LteX2Message_Base
 
     /**
      * hasIe() verifies if there are other
-     * IEs inside the ie list
+     * IEs inside the IE list
      *
      * @return true if list is not empty, false otherwise
      */

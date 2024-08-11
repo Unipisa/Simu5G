@@ -19,20 +19,20 @@ namespace simu5g {
 
 /**
  * @class RemoteAntennaSet
- * @brief Class containing all physical antenna infos
+ * @brief Class containing all physical antenna information
  *
- * This class stores all informations regarding the
+ * This class stores all information regarding the
  * Remote Antenna Set (RAS) of an eNB, that is, the
  * physical information of all its remotes.
  *
  * The RAS is a vector of remotes, and for each remote
- * we store the couple <position, transmit power>.
+ * we store the pair <position, transmit power>.
  *
  */
 class RemoteAntennaSet
 {
   private:
-    /// Remote Antenna physical informations
+    /// Remote Antenna physical information
     struct RemoteAntenna
     {
         /// Position
@@ -61,14 +61,14 @@ class RemoteAntennaSet
      * antenna for the eNB with all its physical properties
      *
      * @param ruX Remote Antenna coordinate along X
-     * @param ruX Remote Antenna coordinate along Y
+     * @param ruY Remote Antenna coordinate along Y
      * @param ruPow Remote Antenna transmit power
      */
     void addRemoteAntenna(double ruX, double ruY, double ruPow);
 
     /**
      * getAntennaCoord() is used by the phy to find
-     * the Coordinates of a given antenna
+     * the coordinates of a given antenna
      *
      * @param remote i-th physical antenna index
      * @return i-th antenna coordinates

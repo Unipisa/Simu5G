@@ -63,7 +63,7 @@ LocationResource::~LocationResource() {}
 
 UserInfo LocationResource::getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellId) const
 {
-    // throw exeption if macNodeId does no exist?
+    // throw exception if macNodeId does not exist?
     inet::Ipv4Address ipAddress = binder_->getIPv4Address(nodeId);
     std::string refUrl = baseUri_ + "?address=acr:" + ipAddress.str();
     inet::Coord speed = LocationUtils::getSpeed(binder_, nodeId);
@@ -74,7 +74,7 @@ UserInfo LocationResource::getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellI
 
 User LocationResource::getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const
 {
-    // throw exeption if macNodeId does no exist?
+    // throw exception if macNodeId does not exist?
     inet::Ipv4Address ipAddress = binder_->getIPv4Address(nodeId);
     std::string refUrl = baseUri_ + "/users?address=acr:" + ipAddress.str();
     User ueInfo = User(ipAddress, cellId, refUrl);
@@ -87,9 +87,9 @@ nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, 
     EV << "LocationResource::toJson() - gnb" << it->first << endl;
 
     /*
-     * this structure take trace of the UE already counted.
+     * this structure takes trace of the UE already counted.
      * Each UE can have two MacNodeId, so it would be counted twice.
-     * The uniqueness of the ip address allow to avoid count twice
+     * The uniqueness of the ip address allows us to avoid counting twice.
      */
     std::set<inet::Ipv4Address> addressess;
     const std::map<MacNodeId, inet::Coord> *uePositionList;

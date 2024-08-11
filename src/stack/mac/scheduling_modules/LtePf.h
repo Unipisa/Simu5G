@@ -33,7 +33,7 @@ class LtePf : public LteScheduler
     //! Smoothing factor for proportional fair scheduler.
     double pfAlpha_;
 
-    //! Small number to slightly blur away scores.
+    //! Small number to slightly blur scores.
     const double scoreEpsilon_;
 
   public:

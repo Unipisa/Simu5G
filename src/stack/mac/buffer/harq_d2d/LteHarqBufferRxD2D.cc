@@ -36,7 +36,7 @@ LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Bind
         processes_[i] = new LteHarqProcessRxD2D(i, macOwner_, binder);
     }
 
-    /* Signals initialization: those are used to gather statistics */
+    /* Signals initialization: these are used to gather statistics */
 
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
@@ -84,7 +84,7 @@ void LteHarqBufferRxD2D::insertPdu(Codeword cw, Packet *pkt)
     // TODO add codeword to insertPdu
     processes_[acid]->insertPdu(cw, pkt);
     // debug output
-    EV << "H-ARQ RX: new pdu (id " << pdu->getId() << " ) inserted into process " << (int)acid << endl;
+    EV << "H-ARQ RX: new PDU (id " << pdu->getId() << " ) inserted into process " << (int)acid << endl;
 }
 
 void LteHarqBufferRxD2D::sendFeedback()
@@ -96,7 +96,7 @@ void LteHarqBufferRxD2D::sendFeedback()
                 auto pkt = check_and_cast<LteHarqProcessRxD2D *>(processes_[i])->createFeedbackMirror(cw);
                 if (pkt == nullptr) {
                     EV << NOW << "LteHarqBufferRxD2D::sendFeedback - cw " << cw << " of process " << i
-                       << " contains a pdu belonging to a multicast/broadcast connection. Don't send feedback mirror." << endl;
+                       << " contains a PDU belonging to a multicast/broadcast connection. Don't send feedback mirror." << endl;
                 }
                 else {
                     macOwner_->sendLowerPackets(pkt);
@@ -106,7 +106,7 @@ void LteHarqBufferRxD2D::sendFeedback()
 
                 if (pktHbf == nullptr) {
                     EV << NOW << "LteHarqBufferRxD2D::sendFeedback - cw " << cw << " of process " << i
-                       << " contains a pdu belonging to a multicast/broadcast connection. Don't send feedback." << endl;
+                       << " contains a PDU belonging to a multicast/broadcast connection. Don't send feedback." << endl;
                     continue;
                 }
 
@@ -116,7 +116,7 @@ void LteHarqBufferRxD2D::sendFeedback()
                 const char *r = hfb->getResult() ? "ACK" : "NACK";
                 EV << "H-ARQ RX: feedback sent to TX process "
                    << (int)hfb->getAcid() << " Codeword  " << (int)cw
-                   << "of node with id "
+                   << " of node with id "
                    << cInfo->getDestId()
                    << " result: " << r << endl;
 
@@ -168,9 +168,9 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 ret.push_back(temp);
                 acid = i;
 
-                EV << "LteHarqBufferRxD2D::extractCorrectPdus H-ARQ RX: pdu (id " << ret.back()->getId()
+                EV << "LteHarqBufferRxD2D::extractCorrectPdus H-ARQ RX: PDU (id " << ret.back()->getId()
                    << " ) extracted from process " << (int)acid
-                   << "to be sent upper" << endl;
+                   << " to be sent upper" << endl;
             }
         }
     }

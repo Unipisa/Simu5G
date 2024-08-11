@@ -53,7 +53,7 @@ class LtePhyUe : public LtePhyBase
     /** RSSI received from the current serving node */
     double currentMasterRssi_;
 
-    /** ID of not-master node from wich highest RSSI was received */
+    /** ID of the not-master node from which the highest RSSI was received */
     MacNodeId candidateMasterId_;
 
     /** Highest RSSI received from not-master node */
@@ -66,15 +66,15 @@ class LtePhyUe : public LtePhyBase
     double hysteresisTh_;
 
     /**
-     * Value used to divide currentMasterRssi_ and create an hysteresisTh_
+     * Value used to divide currentMasterRssi_ and create a hysteresisTh_
      * Use zero to have hysteresisTh_ == 0.
      */
     // TODO: bring it to ned par!
     double hysteresisFactor_;
 
     /**
-     * Time interval elapsing from the reception of first handover broadcast message
-     * to the beginning of handover procedure.
+     * Time interval elapsing from the reception of the first handover broadcast message
+     * to the beginning of the handover procedure.
      * It must be a small number greater than 0 to ensure that all broadcast messages
      * are received before evaluating handover.
      * Note that broadcast messages for handover are always received at the very same time
@@ -83,12 +83,12 @@ class LtePhyUe : public LtePhyBase
     // TODO: bring it to ned par!
     double handoverDelta_;
 
-    // time for completion of the handover procedure
+    // Time for completion of the handover procedure
     double handoverLatency_;
     double handoverDetachment_;
     double handoverAttachment_;
 
-    // lower threshold of RSSI for detachment
+    // Lower threshold of RSSI for detachment
     double minRssi_;
 
     /**
@@ -97,7 +97,7 @@ class LtePhyUe : public LtePhyBase
     bool enableHandover_;
 
     /**
-     * Pointer to the DAS Filter: used to call das function
+     * Pointer to the DAS Filter: used to call DAS functions
      * when receiving broadcasts and to retrieve physical
      * antenna properties on packet reception
      */
@@ -115,7 +115,7 @@ class LtePhyUe : public LtePhyBase
 
     simtime_t lastFeedback_;
 
-    // support to print averageCqi at the end of the simulation
+    // Support to print average CQI at the end of the simulation
     std::vector<short int> cqiDlSamples_;
     std::vector<short int> cqiUlSamples_;
     unsigned int cqiDlSum_;
@@ -152,7 +152,7 @@ class LtePhyUe : public LtePhyBase
     virtual ~LtePhyUe();
     DasFilter *getDasFilter();
     /**
-     * Send Feedback, called by feedback generator in DL
+     * Send feedback, called by feedback generator in DL
      */
     virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
     MacNodeId getMasterId() const

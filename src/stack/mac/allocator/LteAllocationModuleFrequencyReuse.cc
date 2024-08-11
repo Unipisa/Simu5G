@@ -35,7 +35,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
     }
 
     for (unsigned int band = 0; band < bands_; band++) {
-        // Skip allocation if the band is untouchable (this means that the informations are already allocated)
+        // Skip allocation if the band is untouchable (this means that the information is already allocated)
         if (untouchableBands->find(band) == untouchableBands->end()) {
             // Copy the ueAllocatedRbsMap
             auto it_ext = allocatedRbsPerBand[plane][antenna][band].ueAllocatedRbsMap_.begin();
@@ -66,7 +66,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
 
     auto it_rbsB = NodeIdRbsBytesMap.begin();
     while (it_rbsB != NodeIdRbsBytesMap.end()) {
-        // Skip allocation if the band is untouchable (this means that the informations are already allocated)
+        // Skip allocation if the band is untouchable (this means that the information is already allocated)
         if (untouchableBands->find(it_rbsB->first.second) == untouchableBands->end()) {
             allocatedRbsUe_[it_rbsB->first.first].ueAllocatedRbsMap_[antenna][it_rbsB->first.second] = it_rbsB->second.first; //Blocks
             allocatedRbsUe_[it_rbsB->first.first].allocatedBlocks_ += it_rbsB->second.first; //Blocks

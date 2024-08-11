@@ -74,21 +74,21 @@ class LteChannelModel : public cSimpleModule
     virtual void setPhy(LtePhyBase *phy) { phy_ = phy; }
 
     /*
-     * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
-     * after that it throws a random number in order to check if this packet will be corrupted or not
+     * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
+     * After that, it generates a random number to check if this packet will be corrupted or not
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual bool isError(LteAirFrame *frame, UserControlInfo *lteI) = 0;
     //TODO NOT IMPLEMENTED YET
     virtual bool isErrorDas(LteAirFrame *frame, UserControlInfo *lteI) = 0;
     /*
-     * Compute Attenuation caused by pathloss and shadowing (optional)
+     * Compute Attenuation caused by path loss and shadowing (optional)
      *
-     * @param nodeid mac node id of UE
+     * @param nodeId MAC node ID of UE
      * @param dir traffic direction
-     * @param move position of end point comunication (if dir==UL is the position of UE else is the position of eNodeB)
+     * @param move position of end-point communication (if dir==UL is the position of UE else is the position of eNodeB)
      */
     virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) = 0;
     /*
@@ -99,58 +99,58 @@ class LteChannelModel : public cSimpleModule
      */
     virtual double computePathLoss(double distance, double dbp, bool los) = 0;
     /*
-     * Compute sir for each band for user nodeId according to multipath fading
+     * Compute SIR for each band for user nodeId according to multipath fading
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getSIR(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
-     * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     * Compute SINR for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
-     * Compute sinr for each band for a background UE according to pathloss
+     * Compute SINR for each band for a background UE according to path loss
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
 
     /*
-     * Compute received power for a background UE according to pathloss
+     * Compute received power for a background UE according to path loss
      *
      */
     virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) = 0;
 
     /*
-     * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
-     * after that it throws a random number in order to check if this packet will be corrupted or not
+     * Compute the error probability of the transmitted packet according to CQI used, TX mode, and the received power
+     * After that, it generates a random number to check if this packet will be corrupted or not
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      * @param rsrpVector the received signal for each RB, if it has already been computed
      */
     virtual bool isError_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, const std::vector<double>& rsrpVector) = 0;
     /*
-     * Compute Received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     * Compute received useful signal for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) = 0;
     /*
-     * Compute Received useful signal for D2D transmissions
+     * Compute received useful signal for D2D transmissions
      */
     virtual std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) = 0;
     /*
-     * Compute sinr (D2D) for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
+     * Compute SINR (D2D) for each band for user nodeId according to path loss, shadowing (optional), and multipath fading
      *
      * @param frame pointer to the packet
-     * @param lteinfo pointer to the user control info
+     * @param lteInfo pointer to the user control info
      */
     virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, MacNodeId peerUeId, inet::Coord peerUeCoord, MacNodeId enbId = 0) = 0;
     virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector) = 0;

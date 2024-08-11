@@ -30,7 +30,7 @@ void LteRlcMux::rlc2mac(cPacket *pkt)
 }
 
 /*
- * Lower layer handler
+ * Lower Layer handler
  */
 
 void LteRlcMux::mac2rlc(cPacket *pktAux)

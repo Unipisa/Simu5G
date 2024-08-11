@@ -151,7 +151,7 @@ class CircularList
         --size_;
     }
 
-    //! Erases the element specified (eventually the current positions is shifted)
+    //! Erases the specified element (eventually the current position is shifted)
     void eraseElem(T& t)
     {
         if (size_ == 0)
@@ -187,7 +187,7 @@ class CircularList
     /*!
        If the size is 0, then the return value is not meaningful, and
        may also crash program execution. We use an assert here since
-       we do not want to use exception, which would be the right thing to do.
+       we do not want to use exceptions, which would be the right thing to do.
      */
     const T& current() const
     {

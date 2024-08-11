@@ -46,13 +46,13 @@ struct FragmentedFrameStatus {
 };
 
 /**
- * This is a UE app that asks to a Device App to instantiate the MECRTVideoStreamingReceiver app
+ * This is a UE app that asks a Device App to instantiate the MECRTVideoStreamingReceiver app
  * @author Alessandro Noferi
  */
 
 class RTVideoStreamingSender : public cSimpleModule
 {
-    //communication to device app and Mec app
+    //communication to device app and MEC app
     inet::UdpSocket socket;
 
     int size_;
@@ -103,7 +103,7 @@ class RTVideoStreamingSender : public cSimpleModule
     cMessage *_nextFrame;
 
     /**
-     * The initial delay of the mpeg video.
+     * The initial delay of the MPEG video.
      */
     double _initialDelay;
 
@@ -114,7 +114,7 @@ class RTVideoStreamingSender : public cSimpleModule
 
     /**
      * The number of the current frame. Needed for calculating
-     * the rtp time stamp in the rtp data packets.
+     * the RTP time stamp in the RTP data packets.
      */
     unsigned long _frameNumber;
     unsigned long _sequenceNumber;
@@ -123,7 +123,7 @@ class RTVideoStreamingSender : public cSimpleModule
 
     bool sendAllOnOneTime_;
 
-    // mobility informations
+    // mobility information
     opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
@@ -134,7 +134,7 @@ class RTVideoStreamingSender : public cSimpleModule
     simsignal_t positionSignalZ;
 
     simsignal_t velocitySignal;
-    double mobilityUpdateInterval_; // send pos and speed info
+    double mobilityUpdateInterval_; // send position and speed info
 
     FragmentedFrameStatus fragFrameStatus_;
 
@@ -152,7 +152,7 @@ class RTVideoStreamingSender : public cSimpleModule
     // communication with device app
     void sendStartMECApp();
     void sendStopMECApp();
-    // communication with mec app
+    // communication with MEC app
     void sendMessage();
     void sendStartMessage();
     void sendStopMessage();

@@ -138,7 +138,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
 
     /*
      * @author Alessandro Noferi
-     * Notify the pfm about the successful arrival of a TB from a UE.
+     * Notify the packet flow manager about the successful arrival of a TB from a UE.
      * From ETSI TS 138314 V16.0.0 (2020-07)
      *   tSucc: the point in time when the MAC SDU i was received successfully by the network
      */
@@ -170,7 +170,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
 
     while (macPkt->hasCe()) {
         // Extract CE
-        // TODO: vedere se   per cid o lcid
+        // TODO: see if for cid or lcid
         MacBsr *bsr = check_and_cast<MacBsr *>(macPkt->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
         LogicalCid lcid = lteInfo->getLcid();  // one of SHORT_BSR or D2D_MULTI_SHORT_BSR
@@ -290,13 +290,13 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
 
             /*
              * @author Alessandro Noferi
-             * Notify the pfm about the successful arrival of a TB from a UE.
+             * Notify the packet flow manager about the successful arrival of a TB from a UE.
              * From ETSI TS 138314 V16.0.0 (2020-07)
              *   tSched: the point in time when the UL MAC SDU i is scheduled as
              *   per the scheduling grant provided
              */
             if (packetFlowManager_ != nullptr)
-                packetFlowManager_->grantSent(nodeId, grant->getGrandId());
+                packetFlowManager_->grantSent(nodeId, grant->getGrantId());
 
             // send grant to PHY layer
             pkt->insertAtFront(grant);
@@ -545,7 +545,7 @@ void LteMacEnbD2D::flushHarqBuffers()
  */
 void LteMacEnbD2D::fromPhy(cPacket *pktAux)
 {
-    // TODO: harq test (comment fromPhy: it has only to pass pdus to proper rx buffer and
+    // TODO: harq test (commenting fromPhy: it has only to pass PDUs to the proper RX buffer and
     // to manage H-ARQ feedback)
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto userInfo = pkt->getTag<UserControlInfo>();
@@ -560,7 +560,7 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
             return;
         }
 
-        // H-ARQ feedback, send it to mirror buffer of the D2D pair
+        // H-ARQ feedback, send it to the mirror buffer of the D2D pair
         auto mfbpkt = pkt->peekAtFront<LteHarqFeedbackMirror>();
         MacNodeId d2dSender = mfbpkt->getD2dSenderId();
         MacNodeId d2dReceiver = mfbpkt->getD2dReceiverId();
@@ -568,8 +568,8 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
         HarqBuffersMirrorD2D::iterator hit = harqBuffersMirrorD2D_[carrierFrequency].find(pair);
         EV << NOW << "LteMacEnbD2D::fromPhy - node " << nodeId_ << " Received HARQ Feedback pkt (mirrored)" << endl;
         if (hit == harqBuffersMirrorD2D_[carrierFrequency].end()) {
-            // if a feedback arrives, a buffer should exists (unless it is an handover scenario
-            // where the harq buffer was deleted but a feedback was in transit)
+            // if feedback arrives, a buffer should exist (unless it is a handover scenario
+            // where the HARQ buffer was deleted but feedback was in transit)
             // this case must be taken care of
             if (binder_->hasUeHandoverTriggered(src))
                 return;

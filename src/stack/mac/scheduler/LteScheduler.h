@@ -78,7 +78,7 @@ class LteScheduler
     //! Set of active connections.
     ActiveSet *activeConnectionSet_;
 
-    //! General Active set. Temporary variable used in the two phase scheduling operations
+    //! General Active set. Temporary variable used in the two-phase scheduling operations
     ActiveSet activeConnectionTempSet_;
 
     //! Per-carrier Active set. Temporary variable used for storing the set of connections allowed in this carrier
@@ -102,10 +102,10 @@ class LteScheduler
     /// Cid List
     typedef std::list<MacCid> CidList;
 
-    //! numerology index of the component carrier it has to schedule
+    //! Numerology index of the component carrier it has to schedule
     unsigned int numerologyIndex_;
 
-    //! timers for handling scheduling period of this scheduler
+    //! Timers for handling scheduling period of this scheduler
     unsigned int maxSchedulingPeriodCounter_;
     unsigned int currentSchedulingPeriodCounter_;
 
@@ -167,7 +167,7 @@ class LteScheduler
     // Scheduling functions ********************************************************************
 
     /**
-     * The schedule function is splitted in two phases
+     * The schedule function is split into two phases
      *  - in the first phase, carried out by the prepareSchedule(),
      *    the computation of the algorithm on temporary structures is performed
      *  - in the second phase, carried out by the storeSchedule(),
@@ -176,7 +176,7 @@ class LteScheduler
      * In this way, if in the environment there's a special module which wants to execute
      * more schedulers, compare them and pick a single one, the execSchedule() of each
      * scheduler is executed, but only the storeSchedule() of the picked one will be executed.
-     * The schedule() simply call the sequence of execSchedule() and storeSchedule().
+     * The schedule() simply calls the sequence of execSchedule() and storeSchedule().
      */
 
     virtual void schedule();
@@ -191,16 +191,16 @@ class LteScheduler
 
     // *****************************************************************************************
 
-    /// performs request of grant to the eNbScheduler
+    /// Performs request of grant to the eNbScheduler
     virtual unsigned int requestGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, std::vector<BandLimit> *bandLim = nullptr);
 
-    /// performs request of background grant to the eNbScheduler
+    /// Performs request of background grant to the eNbScheduler
     virtual unsigned int requestGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, std::vector<BandLimit> *bandLim = nullptr);
 
-    /// calls eNbScheduler::rtxschedule()
+    /// Calls eNbScheduler::rtxschedule()
     virtual bool scheduleRetransmissions();
 
-    /// calls LteSchedulerEnbUl::racschedule()
+    /// Calls LteSchedulerEnbUl::racschedule()
     virtual bool scheduleRacRequests();
 
     virtual void notifyActiveConnection(MacCid activeCid)
@@ -214,8 +214,8 @@ class LteScheduler
   protected:
 
     /*
-     * prepare the set of active connections on this carrier
-     * used by scheduling modules
+     * Prepare the set of active connections on this carrier
+     * Used by scheduling modules
      */
     void buildCarrierActiveConnectionSet();
 

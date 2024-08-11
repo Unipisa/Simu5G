@@ -66,7 +66,7 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
 
     /**
      * getEntity() is used to gather the NR PDCP entity
-     * for that LCID. If entity was already present, a reference
+     * for that LCID. If the entity was already present, a reference
      * is returned, otherwise a new entity is created,
      * added to the entities map and a reference is returned as well.
      *

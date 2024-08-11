@@ -545,7 +545,7 @@ struct UeInfo
 };
 
 /**********************************
- * Background UEs avg Cqi support *
+ * Background UEs avg CQI support *
  *********************************/
 struct BgTrafficManagerInfo
 {
@@ -690,7 +690,7 @@ void parseStringToIntArray(std::string str, int *values, int dim, int pad);
 /**
  * Initializes module's channels
  *
- * A dinamically created node needs its channels to be initialized, this method
+ * A dynamically created node needs its channels to be initialized, this method
  * runs through all a module's and its submodules' channels recursively and
  * initializes all channels.
  *
@@ -728,7 +728,7 @@ std::vector<T> getTagsWithInherit(inet::Packet *pkt)
     if (tags.getNumTags() == 0)
         return t;
 
-    // check if exist tag of that is derived from this.
+    // check if a tag that is derived from this exists.
     //
     for (int i = 0; i < tags.getNumTags(); i++) {
         auto tag = tags.getTagForUpdate(i);

@@ -71,7 +71,7 @@ void RTVideoStreamingSender::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    //retrieving car cModule
+    // retrieving car cModule
     ue = getContainingNode(this);
 
     // UE app <--> Device App info
@@ -82,7 +82,7 @@ void RTVideoStreamingSender::initialize(int stage)
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress_);
 
     mtu_ = 1500;
-    //binding socket
+    // binding socket
     socket.setOutputGate(gate("socketOut"));
     socket.bind(localPort_);
 
@@ -90,16 +90,16 @@ void RTVideoStreamingSender::initialize(int stage)
     if (tos != -1)
         socket.setTos(tos);
 
-    //retrieving mobility module
+    // retrieving mobility module
     mobility.reference(this, "mobilityModule", true);
 
     mecAppName = par("mecAppName").stringValue();
 
-    //retrieve parameters for the app
+    // retrieve parameters for the app
     size_ = par("packetSize");
     lifeCyclePeriod_ = par("period");
 
-    // fileName of file to be transmitted
+    // fileName of the file to be transmitted
     // nullptr or "" means this system acts only as a receiver
     fileName = par("fileName").stringValue();
     openFileStream();
@@ -107,9 +107,9 @@ void RTVideoStreamingSender::initialize(int stage)
 
     sendAllOnOneTime_ = par("sendAllOnOneTime").boolValue();
 
-    //initializing the auto-scheduling messages
+    // initializing the auto-scheduling messages
     selfRTVideoStreamingAppStart_ = new cMessage("selfRTVideoStreamingAppStart", KIND_SELF_RT_VIDEO_STREAMING_APP_START);
-    selfRTVideoStreamingAppStop_ = new cMessage("selfRTVideoStreamingAppAppStop", KIND_SELF_RT_VIDEO_STREAMING_APP_STOP);
+    selfRTVideoStreamingAppStop_ = new cMessage("selfRTVideoStreamingAppStop", KIND_SELF_RT_VIDEO_STREAMING_APP_STOP);
 
     selfMecAppStart_ = new cMessage("selfMecAppStart", KIND_SELF_MEC_APP_START);
     selfMecAppStop_ = new cMessage("selfMecAppStop", KIND_SELF_MEC_APP_STOP);
@@ -119,13 +119,13 @@ void RTVideoStreamingSender::initialize(int stage)
 
     _nextFrame = new cMessage("nextFrame", KIND_SELF_NEXT_FRAME);
 
-    //starting RTVideoStreamingSender
+    // starting RTVideoStreamingSender
     simtime_t startTime = par("startTime");
 
     EV << "RTVideoStreamingSender::initialize - starting sendStartMECApp() in " << startTime << " seconds " << endl;
     scheduleAt(simTime() + startTime, selfMecAppStart_);
 
-    //testing
+    // testing
     EV << "RTVideoStreamingSender::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str() << "]" << endl;
     EV << "RTVideoStreamingSender::initialize - destAddress: " << deviceSimbolicAppAddress_ << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "RTVideoStreamingSender::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
@@ -169,7 +169,7 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
                 break;
             case KIND_SELF_SESSION_START:
                 sendSessionStartMessage();
-                // reschedule for pks losses
+                // reschedule for packet losses
                 scheduleAt(simTime() + lifeCyclePeriod_, selfSessionStart_);
                 break;
             case KIND_SELF_SESSION_STOP:
@@ -192,7 +192,7 @@ void RTVideoStreamingSender::handleMessage(cMessage *msg)
          * From Device app
          * device app usually runs in the UE (loopback), but it could also run in other places
          */
-        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
+        if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) {
                 handleAckStartMECApp(msg);
@@ -255,7 +255,7 @@ void RTVideoStreamingSender::sendStartMECApp()
     inet::Packet *packet = new inet::Packet("RTVideoStreamingSenderPacketStart");
     auto start = inet::makeShared<DeviceAppStartPacket>();
 
-    //instantiation requirements and info
+    // instantiation requirements and info
     start->setType(START_MECAPP);
     start->setMecAppName(mecAppName.c_str());
 
@@ -266,18 +266,18 @@ void RTVideoStreamingSender::sendStartMECApp()
 
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
 
-    //rescheduling
+    // rescheduling
     scheduleAt(simTime() + lifeCyclePeriod_, selfMecAppStart_);
 }
 
 void RTVideoStreamingSender::sendStopMECApp()
 {
-    EV << "RTVideoStreamingSender::sendStopMECApp - Sending " << STOP_MEAPP << " type RTVideoStreamingSender\n";
+    EV << "RTVideoStreamingSender::sendStopMECApp - Sending " << STOP_MECAPP << " type RTVideoStreamingSender\n";
 
     inet::Packet *packet = new inet::Packet("DeviceAppStopPacket");
     auto stop = inet::makeShared<DeviceAppStopPacket>();
 
-    //termination requirements and info
+    // termination requirements and info
     stop->setType(STOP_MECAPP);
 
     stop->setChunkLength(inet::B(size_));
@@ -286,7 +286,7 @@ void RTVideoStreamingSender::sendStopMECApp()
     packet->insertAtBack(stop);
     socket.sendTo(packet, deviceAppAddress_, deviceAppPort_);
 
-    //rescheduling
+    // rescheduling
     if (selfMecAppStop_->isScheduled())
         cancelEvent(selfMecAppStop_);
     scheduleAt(simTime() + lifeCyclePeriod_, selfMecAppStop_);
@@ -334,7 +334,7 @@ void RTVideoStreamingSender::sendStopMessage()
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
     EV << "RTVideoStreamingSender::sendStopMessageToMecApp() - stop Message sent to the MEC app" << endl;
 
-    //cancell all timers, i I want to stop the mec app
+    // cancel all timers, if I want to stop the MEC app
     cancelEvent(selfSessionStart_);
     cancelEvent(selfSessionStop_);
     cancelEvent(_nextFrame);
@@ -358,7 +358,7 @@ void RTVideoStreamingSender::sendSessionStopMessage()
 
 void RTVideoStreamingSender::sendMessage() {
 
-    // send star monitoring message to the MEC application
+    // send start monitoring message to the MEC application
 
     EV_TRACE << "RTVideoStreamingSender::sendMessageToMECApp() " << endl;
     // read next frame line
@@ -374,7 +374,7 @@ void RTVideoStreamingSender::sendMessage() {
         _inputFileStream.get(description, 100, '\n'); // the function sets the eofbit flag.
         EV << "RTVideoStreamingSender::sendPacket - new frame of size: " << bits << " bits, description " << description << " bytes eof " << _inputFileStream.eof() << endl;
         if (_inputFileStream.eof()) {
-            EV << "RTVideoStreamingSender::sendMessage - file ended, start reading from begin" << endl;
+            EV << "RTVideoStreamingSender::sendMessage - file ended, start reading from the beginning" << endl;
             _inputFileStream.clear();
             _inputFileStream.seekg(0, _inputFileStream.beg);
 
@@ -418,7 +418,7 @@ void RTVideoStreamingSender::sendMessage() {
                 break;
         }
 
-        // send the frame all on once
+        // send the frame all at once
         if (sendAllOnOneTime_) {
             bool first = true;
             int maxDataSize = 0;
@@ -432,7 +432,7 @@ void RTVideoStreamingSender::sendMessage() {
                 mpegHeader->setType(RTVIDEOSTREAMING_SEGMENT);
                 const auto& mpegPayload = makeShared<ByteCountChunk>();
 
-                // the only mpeg information we know is the picture type
+                // the only MPEG information we know is the picture type
                 mpegHeader->setPictureType(pictureType);
 
                 if (first) {
@@ -449,7 +449,7 @@ void RTVideoStreamingSender::sendMessage() {
 
                 if (bytesRemaining > maxDataSize) {
                     // we do not know where slices in the
-                    // mpeg picture begin
+                    // MPEG picture begin
                     // so we simulate by assuming a slice
                     // has a length of 64 bytes
 
@@ -496,10 +496,10 @@ void RTVideoStreamingSender::sendMessage() {
             fragFrameStatus_.frameNumber = frameNum;
             fragFrameStatus_.frameSize = bytesRemaining;
 
-            int maxDataSize = mtu_ - 4 - 20 - 8; // FIXME rtp header = 12B (fixed), rtpCarHeader is 4B
+            int maxDataSize = mtu_ - 4 - 20 - 8; // FIXME RTP header = 12B (fixed), rtpCarHeader is 4B
             int numberOfFragments = ceil((double)bytesRemaining / maxDataSize);
             fragFrameStatus_.numberOfFragments = numberOfFragments;
-            fragFrameStatus_.remainingFragments = numberOfFragments - 1; //since I send the first one now
+            fragFrameStatus_.remainingFragments = numberOfFragments - 1; // since I send the first one now
             fragFrameStatus_.bytesPerPacket = maxDataSize;
             fragFrameStatus_.remainingFrameBytes = fragFrameStatus_.frameSize - fragFrameStatus_.bytesPerPacket;
 
@@ -524,7 +524,7 @@ void RTVideoStreamingSender::sendMessage() {
         }
     }
     else {
-        // send a fragment of a a frame
+        // send a fragment of a frame
         Packet *packet = new Packet("RealTimeVideoStreamingAppSegment");
         packet->addTagIfAbsent<CreationTimeTag>()->setCreationTime(simTime());
 
@@ -574,9 +574,9 @@ void RTVideoStreamingSender::handleAckStartMECApp(cMessage *msg)
         mecAppPort_ = pkt->getPort();
         EV << "RTVideoStreamingSender::handleAckStartMECApp - Received " << pkt->getType() << " type RTVideoStreamingSender. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
         cancelEvent(selfMecAppStart_);
-        // send start video streaming req to the MEC App
+        // send start video streaming request to the MEC App
         sendSessionStartMessage();
-        // reschdule in case of pkt lost
+        // reschedule in case of packet lost
         scheduleAt(simTime() + lifeCyclePeriod_, selfSessionStart_);
 
         // schedule stop mec app
@@ -609,7 +609,7 @@ void RTVideoStreamingSender::handleAckStopMECApp(cMessage *msg)
 
 void RTVideoStreamingSender::handleStartNack(cMessage *msg)
 {
-    EV << "RTVideoStreamingSender::handleStartNack - MEC app did not started correctly, trying to start again" << endl;
+    EV << "RTVideoStreamingSender::handleStartNack - MEC app did not start correctly, trying to start again" << endl;
 }
 
 void RTVideoStreamingSender::handleStartAck(cMessage *msg)
@@ -618,13 +618,13 @@ void RTVideoStreamingSender::handleStartAck(cMessage *msg)
 
 void RTVideoStreamingSender::handleStopNack(cMessage *msg)
 {
-    EV << "RTVideoStreamingSender::handleStopNack - MEC app did not started correctly, trying to start again" << endl;
+    EV << "RTVideoStreamingSender::handleStopNack - MEC app did not stop correctly, trying to stop again" << endl;
 }
 
 void RTVideoStreamingSender::handleStopAck(cMessage *msg)
 {
     EV << "RTVideoStreamingSender::handleStopAck" << endl;
-    //send stop metc app to device app
+    // send stop MEC app to device app
     sendStopMECApp();
     if (selfRTVideoStreamingAppStop_->isScheduled()) {
         cancelEvent(selfRTVideoStreamingAppStop_);
@@ -638,7 +638,7 @@ void RTVideoStreamingSender::handleStartSessionAck(cMessage *msg)
     cancelEvent(selfSessionStart_);
     sendMessage();
 
-    //schedule stop session
+    // schedule stop session
     if (!selfSessionStop_->isScheduled()) {
         double sessionDuration = par("sessionDuration").doubleValue();
         scheduleAt(simTime() + sessionDuration, selfSessionStop_);
@@ -658,8 +658,8 @@ void RTVideoStreamingSender::handleStopSessionAck(cMessage *msg)
 
     sessionId_++;
 
-    _frameNumber = 0; //reset frame
-    //schedule stop session
+    _frameNumber = 0; // reset frame
+    // schedule stop session
     if (!selfSessionStart_->isScheduled()) {
         double periodBetweenSession = par("periodBetweenSession").doubleValue();
         scheduleAt(simTime() + periodBetweenSession, selfSessionStart_);

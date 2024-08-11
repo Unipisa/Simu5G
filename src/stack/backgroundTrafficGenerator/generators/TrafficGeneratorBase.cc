@@ -99,7 +99,7 @@ void TrafficGeneratorBase::initialize(int stage)
                 cqi_[UL] = floor(cqiUl);
         }
 
-        // register to get a notification when position changes
+        // register to get a notification when positions change
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;
 
@@ -123,7 +123,7 @@ void TrafficGeneratorBase::handleMessage(cMessage *msg)
             return;
         }
 
-        // if periodic CQI update is disabled, and CQI was not estimated using avg interference, then update SINR when the UE changed its position
+        // if periodic CQI update is disabled, and CQI was not estimated using average interference, then update SINR when the UE changed its position
         if (!enablePeriodicCqiUpdate_ && !computeAvgInterference_ && positionUpdated_)
             updateMeasurements();
 

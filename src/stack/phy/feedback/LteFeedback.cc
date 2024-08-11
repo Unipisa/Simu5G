@@ -37,7 +37,7 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
     EV << NOW << " " << s << "         LteFeedback\n";
     EV << NOW << " " << s << " CellId: " << cellId << "\n";
     EV << NOW << " " << s << " NodeId: " << nodeId << "\n";
-    EV << NOW << " " << s << " Antenna: " << dasToA(getAntennaId()) << "\n"; // XXX Generoso
+    EV << NOW << " " << s << " Antenna: " << dasToA(getAntennaId()) << "\n"; // XXX Generous
     EV << NOW << " " << s << " Direction: " << dirToA(dir) << "\n";
     EV << NOW << " " << s << " -------------------------\n";
     EV << NOW << " " << s << " TxMode: " << txModeToA(getTxMode()) << "\n";

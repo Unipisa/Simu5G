@@ -21,7 +21,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
 
     // Check if user transmission parameters have been already allocated
     if (amc_->existTxParams(id, dir, carrierFrequency)) {
-        EV << NOW << " AmcPilot" << getName() << "::computeTxParams The Information for this user have been already assigned \n";
+        EV << NOW << " AmcPilot" << getName() << "::computeTxParams The information for this user has already been assigned \n";
         return amc_->getTxParams(id, dir, carrierFrequency);
     }
 
@@ -221,7 +221,7 @@ std::vector<Cqi> AmcPilotAuto::getMultiBandCqi(MacNodeId id, const Direction dir
 
 void AmcPilotAuto::setUsableBands(MacNodeId id, UsableBands usableBands)
 {
-    EV << NOW << " AmcPilotAuto::setUsableBands - setting Usable bands: for node " << id << " [";
+    EV << NOW << " AmcPilotAuto::setUsableBands - setting usable bands: for node " << id << " [";
     for (unsigned short usableBand : usableBands) {
         EV << usableBand << ",";
     }
@@ -236,7 +236,7 @@ void AmcPilotAuto::setUsableBands(MacNodeId id, UsableBands usableBands)
 
 bool AmcPilotAuto::getUsableBands(MacNodeId id, UsableBands *& uBands)
 {
-    EV << NOW << " AmcPilotAuto::getUsableBands - getting Usable bands for node " << id;
+    EV << NOW << " AmcPilotAuto::getUsableBands - getting usable bands for node " << id;
 
     bool found = false;
     UsableBandsList::iterator it = usableBandsList_.find(id);

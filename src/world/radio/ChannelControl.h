@@ -48,7 +48,7 @@ struct IChannelControl::RadioEntry {
             return lhs->radioModule->getId() < rhs->radioModule->getId();
         }
     };
-    // we cache neighbors set in an std::vector, because std::set iteration is slow;
+    // we cache neighbors set in a std::vector, because std::set iteration is slow;
     // std::vector is created and updated on demand
     std::set<RadioRef, Compare> neighbors; // cached neighbor list
     std::vector<RadioRef> neighborList;
@@ -86,7 +86,7 @@ class ChannelControl : public cSimpleModule, public IChannelControl
     /** Set debugging for the basic module*/
     bool coreDebug;
 
-    /** the biggest interference distance in the network.*/
+    /** the maximum interference distance in the network.*/
     double maxInterferenceDistance;
 
     /** the number of controlled channels */
@@ -98,7 +98,7 @@ class ChannelControl : public cSimpleModule, public IChannelControl
     /** Calculate interference distance*/
     virtual double calcInterfDist();
 
-    /** Reads init parameters and calculates a maximal interference distance*/
+    /** Reads init parameters and calculates a maximum interference distance*/
     virtual void initialize() override;
 
     /** Throws away expired transmissions. */
@@ -150,7 +150,7 @@ class ChannelControl : public cSimpleModule, public IChannelControl
     /** Called from ChannelAccess, to transmit a frame to the radios in range, on the frame's channel */
     virtual void sendToChannel(RadioRef srcRadio, AirFrame *airFrame) override;
 
-    /** Returns the maximal interference distance*/
+    /** Returns the maximum interference distance*/
     virtual double getInterferenceRange(RadioRef r) override { return maxInterferenceDistance; }
 
     /** Disable the reception in the reference module */
@@ -159,7 +159,7 @@ class ChannelControl : public cSimpleModule, public IChannelControl
     /** Enable the reception in the reference module */
     virtual void enableReception(RadioRef r) override { r->isActive = true; };
 
-    /** Returns propagation speed of the signal in meter/sec */
+    /** Returns propagation speed of the signal in meters/sec */
     virtual double getPropagationSpeed() override { return SPEED_OF_LIGHT; }
 };
 

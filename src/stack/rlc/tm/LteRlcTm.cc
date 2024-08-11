@@ -60,7 +60,7 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     else
         emit(rlcPacketLossUl, 0.0);
 
-    // create a message so as to notify the MAC layer that the queue contains new data
+    // create a message to notify the MAC layer that the queue contains new data
     auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
     // make a copy of the RLC SDU
     // the MAC will only be interested in the size of this packet

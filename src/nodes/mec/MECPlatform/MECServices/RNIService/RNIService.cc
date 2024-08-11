@@ -35,7 +35,7 @@ RNIService::RNIService():L2MeasResource_() {
     baseUriSubscriptions_ = "/example/rni/v2/subscriptions";
     supportedQueryParams_.insert("cell_id");
     supportedQueryParams_.insert("ue_ipv4_address");
-    // supportedQueryParams_s_.insert("ue_ipv6_address");
+    // supportedQueryParams_.insert("ue_ipv6_address");
 }
 
 void RNIService::initialize(int stage)
@@ -55,14 +55,14 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
 {
     std::string uri = currentRequestMessageServed->getUri();
 
-    // check it is a GET for a query or a subscription
+    // check if it is a GET for a query or a subscription
     if (uri == (baseUriQueries_ + "/layer2_meas")) { //queries
         std::string params = currentRequestMessageServed->getParameters();
         //look for query parameters
         if (!params.empty()) {
             std::vector<std::string> queryParameters = simu5g::utils::splitString(params, "&");
             /*
-             * supported paramater:
+             * supported parameters:
              * - cell_id
              * - ue_ipv4_address
              * - ue_ipv6_address // not implemented yet

@@ -54,7 +54,7 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
 
     // Check if user transmission parameters have been already allocated
     if (amc_->existTxParams(id, dir, carrierFrequency)) {
-        EV << NOW << " AmcPilot" << getName() << "::computeTxParams The Information for this user have been already assigned" << endl;
+        EV << NOW << " AmcPilot" << getName() << "::computeTxParams The information for this user has already been assigned" << endl;
         return amc_->getTxParams(id, dir, carrierFrequency);
     }
     // TODO make it configurable from NED
@@ -71,7 +71,7 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
     // know which UE will be addressed in this transmission. Which feedback should it select?
     // This is an open issue.
     // Here, we will get the feedback of the first peer in the map. However, algorithms may be
-    // designed to solve this problem
+    // designed to solve this problem.
 
     MacNodeId peerId = 0;  // FIXME this way, the getFeedbackD2D() function will return the first feedback available
 
@@ -112,7 +112,7 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
             }
 
             // add (all) bands to the bandset
-            // TODO check if you want to add only the bands with CQI equel to the MIN/MAX
+            // TODO check if you want to add only the bands with CQI equal to the MIN/MAX
             cellWiseBand++;
             b.insert(cellWiseBand);
         }

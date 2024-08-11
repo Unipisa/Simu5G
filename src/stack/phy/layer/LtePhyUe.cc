@@ -272,14 +272,14 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
             cancelEvent(handoverStarter_);
         }
         else {
-            // broadcast from another master with higher rssi
+            // broadcast from another master with higher RSSI
             candidateMasterId_ = lteInfo->getSourceId();
             candidateMasterRssi_ = rssi;
             hysteresisTh_ = updateHysteresisTh(rssi);
             binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
 
             // schedule self message to evaluate handover parameters after
-            // all broadcast messages are arrived
+            // all broadcast messages have arrived
             if (!handoverStarter_->isScheduled()) {
                 // all broadcast messages are scheduled at the very same time, a small delta
                 // guarantees the ones belonging to the same turn have been received
@@ -298,9 +298,9 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
                 if (candidateMasterId_ == masterId_) { // trigger detachment
                     candidateMasterId_ = 0;
                     currentMasterRssi_ = -999.0;
-                    candidateMasterRssi_ = -999.0; // set candidate rssi very bad we currently do not have any.
+                    candidateMasterRssi_ = -999.0; // set candidate RSSI very bad as we currently do not have any.
                                                    // this ensures that each candidate with is at least as 'bad'
-                                                   // as the minRssi_ has a change.
+                                                   // as the minRssi_ has a chance.
 
                     hysteresisTh_ = updateHysteresisTh(0);
                     binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
@@ -325,9 +325,9 @@ void LtePhyUe::triggerHandover()
 
     EV << "####Handover starting:####" << endl;
     EV << "current master: " << masterId_ << endl;
-    EV << "current rssi: " << currentMasterRssi_ << endl;
+    EV << "current RSSI: " << currentMasterRssi_ << endl;
     EV << "candidate master: " << candidateMasterId_ << endl;
-    EV << "candidate rssi: " << candidateMasterRssi_ << endl;
+    EV << "candidate RSSI: " << candidateMasterRssi_ << endl;
     EV << "############" << endl;
 
     if (candidateMasterRssi_ == 0)
@@ -574,7 +574,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
 
     auto pkt = check_and_cast<inet::Packet *>(frame->decapsulate());
 
-    // here frame has to be destroyed since it is no more useful
+    // here frame has to be destroyed since it is no longer useful
     delete frame;
 
     // attach the decider result to the packet as control info
@@ -788,7 +788,7 @@ double LtePhyUe::getVarianceCqi(Direction dir)
 void LtePhyUe::finish()
 {
     if (getSimulation()->getSimulationStage() != CTX_FINISH) {
-        // do this only at deletion of the module during the simulation
+        // do this only during the deletion of the module during the simulation
 
         // do this only if this PHY layer is connected to a serving base station
         if (masterId_ > 0) {

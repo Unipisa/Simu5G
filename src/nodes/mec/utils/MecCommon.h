@@ -99,7 +99,7 @@ namespace mec {
  *
  * type:
  *      0 = reserved.
- *      1 = UE_IPv4_ADDRESS.
+ *      1 = UE_IPV4_ADDRESS.
  *      2 = UE_IPV6_ADDRESS.
  *      3 = NATED_IP_ADDRESS.
  *      4 = GTP_TEID.
@@ -126,10 +126,10 @@ struct Plmn
 };
 
 /*
- * E-UTRAN CelI Global Identifier as defined in ETSI TS 136 413
+ * E-UTRAN Cell Global Identifier as defined in ETSI TS 136 413
  *
  *  plmn: Public Land Mobile Network Identity.
- *  cellid: E-UTRAN CelI Global Identifier (CellId in our case)
+ *  cellid: E-UTRAN Cell Global Identifier (CellId in our case)
  *
  */
 struct Ecgi
@@ -140,8 +140,8 @@ struct Ecgi
 
 struct Timestamp
 {
-    int secods;
-    int nanoSecods;
+    int seconds;
+    int nanoSeconds;
 };
 
 } // namespace mec

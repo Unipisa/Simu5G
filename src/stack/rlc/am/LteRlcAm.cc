@@ -176,7 +176,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
             return;
         }
 
-        // Extract informations from fragment
+        // Extract information from fragment
         AmRxQueue *rxbuf = getRxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
         drop(pkt);
 
@@ -194,7 +194,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
     for (tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
             delete tit->second; // Delete Queue
-            tit = txBuffers_.erase(tit); // Delete Elem
+            tit = txBuffers_.erase(tit); // Delete Element
         }
         else {
             ++tit;
@@ -203,7 +203,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
     for (rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
             delete rit->second; // Delete Queue
-            rit = rxBuffers_.erase(rit); // Delete Elem
+            rit = rxBuffers_.erase(rit); // Delete Element
         }
         else {
             ++rit;
@@ -222,7 +222,7 @@ void LteRlcAm::indicateNewDataToMac(cPacket *pktAux) {
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
 
-    // create a message so as to notify the MAC layer that the queue contains new data
+    // create a message to notify the MAC layer that the queue contains new data
     // (MAC is only interested in FlowControlInfo tag and size)
 
     auto newData = new Packet("AM-NewData");

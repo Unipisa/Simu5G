@@ -63,7 +63,7 @@ class LteMacEnbD2D : public LteMacEnb
      *
      * On ENB it also extracts the BSR Control Element
      * and stores it in the BSR buffer (for the cid from
-     * which packet was received)
+     * which the packet was received)
      *
      * @param pkt container packet
      */
@@ -72,7 +72,7 @@ class LteMacEnbD2D : public LteMacEnb
     virtual void macHandleFeedbackPkt(cPacket *pkt);
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
-     * It sends them to the  lower layer
+     * It sends them to the lower layer
      */
     virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
 
@@ -127,7 +127,7 @@ class LteMacEnbD2D : public LteMacEnb
      * deleteQueues() on ENB performs actions
      * from base classes and also deletes mirror buffers
      *
-     * @param nodeId id of node performig handover
+     * @param nodeId id of node performing handover
      */
     virtual void deleteQueues(MacNodeId nodeId);
 

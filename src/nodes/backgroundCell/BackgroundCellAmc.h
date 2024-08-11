@@ -47,7 +47,7 @@ class BackgroundCellAmc
     unsigned int getItbsPerCqi(Cqi cqi, const Direction dir);
 
     /*
-     * Access the correct itbs2tbs conversion table given cqi and layer numer
+     * Access the correct itbs2tbs conversion table given cqi and number of layers
      */
     const unsigned int *readTbsVect(Cqi cqi, unsigned int layers, Direction dir);
 

@@ -31,7 +31,7 @@ using namespace inet;
 
 /**
  * This is the statistic collector of an eNodeB/gNodeB. It stores all the attributes of the RNI
- * service Layer2Meaurements resource. The RNI service will call its methods in order to
+ * service Layer2Measurements resource. The RNI service will call its methods in order to
  * respond to requests.
  * It holds a map structure with all the UeCollectors of the UEs connected to the
  * eNodeB/gNodeB
@@ -68,7 +68,7 @@ class BaseStationStatsCollector : public cSimpleModule
     L2MeasBase dl_nongbr_pdr_cell;
     L2MeasBase ul_nongbr_pdr_cell;
 
-    // TODO insert signals for oMNeT++ statistics
+    // TODO insert signals for OMNeT++ statistics
 
     /*
      * timers:
@@ -77,7 +77,7 @@ class BaseStationStatsCollector : public cSimpleModule
      * - Discard rate
      * - Packet delay
      * - PDCP bytes
-     * - scheduled tput
+     * - scheduled throughput
      */
 
     cMessage *prbUsage_;
@@ -115,7 +115,7 @@ class BaseStationStatsCollector : public cSimpleModule
     /*
      * addUeCollector adds the UE collector to the list;
      * Called during UE initialization and after handover
-     * where the UE moves to the eNobeB/gNodeB of this BaseStationStatsCollector
+     * where the UE moves to the eNodeB/gNodeB of this BaseStationStatsCollector
      * @param id of the UE to add
      * @param ueCollector pointer to the ueStatsCollector
      */
@@ -124,14 +124,14 @@ class BaseStationStatsCollector : public cSimpleModule
     /*
      * removeUeCollector removes the UE collector from the list;
      * Called during UE termination and after handover
-     * where the UE moves to another eNobeB/gNodeB
+     * where the UE moves to another eNodeB/gNodeB
      * @param id of the UE to remove
      */
     void removeUeCollector(MacNodeId id);
 
     /*
      * getUeCollector returns:
-     *  - the UeStatsCollector of an UE;
+     *  - the UeStatsCollector of a UE;
      *  - nullptr if nodeId is not present
      *
      * @param id relative to a UeStatsCollector
@@ -140,8 +140,8 @@ class BaseStationStatsCollector : public cSimpleModule
     UeStatsCollectorMap *getCollectorMap();
 
     /*
-     * hasUeCollector returns true if the EnodeB
-     * associated to this BaseStationStatsCollector
+     * hasUeCollector returns true if the eNodeB
+     * is associated with this BaseStationStatsCollector
      *
      * @param id relative to a UeStatsCollector
      */
@@ -164,7 +164,7 @@ class BaseStationStatsCollector : public cSimpleModule
     void add_number_of_active_ue_ul_nongbr_cell();
 
     /*
-     * t indicates the packet discard rate in percentage of the
+     * It indicates the packet discard rate in percentage of the
      * UL/DL non-GBR traffic in a cell, as defined in ETSI
      * TS 136 314
      */

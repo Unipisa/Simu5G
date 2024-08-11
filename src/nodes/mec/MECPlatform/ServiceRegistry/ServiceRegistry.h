@@ -23,10 +23,10 @@ namespace simu5g {
 
 // This module aims to provide essential functionalities of the Service Registry entity of
 // the MEC architecture (ETSI GS MEC 003).
-// Service discovery is available via REST api, according to the ETSI GS MEC 011
-// Each Service Registry maintains the MEC service end point of each MEC service in the
+// Service discovery is available via REST API, according to the ETSI GS MEC 011
+// Each Service Registry maintains the MEC service endpoint of each MEC service in the
 // MEC system.
-// Mec services register themself with:
+// MEC services register themselves with:
 //  - ServiceName -> IpAddress and port
 
 class ServiceRegistry : public MecServiceBase
@@ -36,11 +36,11 @@ class ServiceRegistry : public MecServiceBase
     std::vector<ServiceInfo> mecServices_;
 
     /*
-     * To be ETSI compliant. Each MEC service has a uuid. This implementation does not
+     * To be ETSI compliant. Each MEC service has a UUID. This implementation does not
      * take into account this information, i.e. service discovery is only available via
      * service name. It is used only in the responses.
-     * uuidBase is fixed at 123e4567-e89b-12d3-a456-4266141, with the  last5 digits
-     * used to create uniquely id in a quicker way through the servIdCounter
+     * uuidBase is fixed at 123e4567-e89b-12d3-a456-4266141, with the last 5 digits
+     * used to create a unique id in a quicker way through the servIdCounter
      */
     std::string uuidBase;
     int servIdCounter;
@@ -59,7 +59,7 @@ class ServiceRegistry : public MecServiceBase
 
     /*
      * This method is used to retrieve all the MEC services in the MEC platform where the
-     * Service registry runs. It use mainly used by the MEC
+     * Service Registry runs. It is mainly used by the MEC
      */
     const std::vector<ServiceInfo> *getAvailableMecServices() const;
 

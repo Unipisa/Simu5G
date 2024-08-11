@@ -68,9 +68,9 @@ bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
         sample = 1;
         if (transmissions_ == (maxHarqRtx_ + 1)) {
             // discard
-            EV << NOW << " LteHarqUnitTxD2D::pduFeedback H-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
+            EV << NOW << " LteHarqUnitTxD2D::pduFeedback H-ARQ process " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
                << pdu_->getId() << " discarded "
-                                "(max retransmissions reached) : " << maxHarqRtx_ << endl;
+                                "(max retransmissions reached): " << maxHarqRtx_ << endl;
             removeAllSimu5GTags(pdu_);
             resetUnit();
             reset = true;
@@ -79,12 +79,12 @@ bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
             // pdu_ ready for next transmission
             macOwner_->takeObj(pdu_);
             status_ = TXHARQ_PDU_BUFFERED;
-            EV << NOW << " LteHarqUnitTxD2D::pduFeedbackH-ARQ process  " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
+            EV << NOW << " LteHarqUnitTxD2D::pduFeedback H-ARQ process " << (unsigned int)acid_ << " Codeword " << cw_ << " PDU "
                << pdu_->getId() << " set for RTX " << endl;
         }
     }
     else {
-        throw cRuntimeError("LteHarqUnitTxD2D::pduFeedback unknown feedback received from process %d , Codeword %d", acid_, cw_);
+        throw cRuntimeError("LteHarqUnitTxD2D::pduFeedback unknown feedback received from process %d, Codeword %d", acid_, cw_);
     }
 
     LteMacBase *ue;
@@ -159,7 +159,7 @@ bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
 Packet *LteHarqUnitTxD2D::extractPdu()
 {
     if (!(status_ == TXHARQ_PDU_SELECTED))
-        throw cRuntimeError("Trying to extract macPdu from not selected H-ARQ unit");
+        throw cRuntimeError("Trying to extract macPdu from non-selected H-ARQ unit");
 
     txTime_ = NOW;
     transmissions_++;

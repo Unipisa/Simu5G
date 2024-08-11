@@ -30,9 +30,9 @@ void LteDrr::prepareSchedule()
 
         MacNodeId nodeId = MacCidToNodeId(cid);
 
-        // check if node is still a valid node in the simulation - might have been dynamically removed
+        // Check if node is still a valid node in the simulation - might have been dynamically removed.
         if (binder_->getOmnetId(nodeId) == 0) {
-            activeTempList_.erase();          // remove from the active list
+            activeTempList_.erase();          // Remove from the active list.
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
             EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no OmnetId in Binder known.";
@@ -70,17 +70,17 @@ void LteDrr::prepareSchedule()
 
         // Update the number of eligible connections.
         if (!eligibleFlag || !activeFlag) {
-            eligible--;              // decrement the number of eligible conns
-            desc.eligible_ = false;  // this queue is not eligible for service
+            eligible--;              // Decrement the number of eligible connections.
+            desc.eligible_ = false;  // This queue is not eligible for service.
         }
 
-        // Remove the queue if it has become inactiveList_.
+        // Remove the queue if it has become inactive.
         if (!activeFlag) {
-            activeTempList_.erase();          // remove from the active list
+            activeTempList_.erase();          // Remove from the active list.
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
-            desc.deficit_ = 0;       // reset the deficit to zero
-            desc.active_ = false;   // set this descriptor as inactive
+            desc.deficit_ = 0;       // Reset the deficit to zero.
+            desc.active_ = false;   // Set this descriptor as inactive.
             desc.addQuantum_ = true;
 
             // If scheduling is going to stop and the current queue has not
@@ -160,7 +160,7 @@ void LteDrr::updateSchedulingInfo()
             minSize = 160; /*pars.maxBurst_;*/
 
         // Compute the quanta. If descriptors do not exist they are created.
-        // The values of the other fields, e.g. active status, are not changed.
+        // The values of the other fields, e.g., active status, are not changed.
 
         drrMap_[cid].quantum_ = (unsigned int)(ceil((/*pars.minReservedRate_*/ 500 / minRate) * minSize));
         drrMap_[cid].eligible_ = eligible;
@@ -170,7 +170,7 @@ void LteDrr::updateSchedulingInfo()
 void LteDrr::notifyActiveConnection(MacCid cid)
 {
     EV << NOW << "LteDrr::notify CID: " << cid << endl;
-    //this is a mirror structure of activelist, used by all the modules that want to know the list of active users
+    // This is a mirror structure of the active list, used by all the modules that want to know the list of active users.
 
     bool alreadyIn = false;
     activeList_.find(cid, alreadyIn);

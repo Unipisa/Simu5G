@@ -53,7 +53,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     MacNodeId destId;
 
     // the direction of the incoming connection is a D2D_MULTI one if the application is of the same type,
-    // else the direction will be selected according to the current status of the UE, i.e. D2D or UL
+    // else the direction will be selected according to the current status of the UE, i.e., D2D or UL
     if (destAddr.isMulticast()) {
         binder_->addD2DMulticastTransmitter(nodeId_);
 
@@ -62,7 +62,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         // assign a multicast group id
         // multicast IP addresses are 224.0.0.0/4.
         // We consider the host part of the IP address (the remaining 28 bits) as identifier of the group,
-        // so as it is univocally determined for the whole network
+        // so as it is uniquely determined for the whole network
         uint32_t address = Ipv4Address(lteInfo->getDstAddr()).getInt();
         uint32_t mask = ~((uint32_t)255 << 28);      // 0000 1111 1111 1111
         uint32_t groupId = address & mask;

@@ -24,8 +24,8 @@ using namespace omnetpp;
  * \class LteRLC
  * \brief RLC Layer
  *
- * This is the Muxer of RLC layer of LTE Stack.
- * It has the function of muxing/demuxing traffic:
+ * This is the Muxer of the RLC layer of the LTE Stack.
+ * It has the function of multiplexing/demultiplexing traffic:
  * - Traffic coming from TM/UM/AM modules is decoded
  *   and forwarded to MAC layer ports
  * - Traffic coming from MAC layer is decoded
@@ -43,7 +43,7 @@ class LteRlcMux : public cSimpleModule
 
     /**
      * Initialize class structures
-     * gatemap and delay
+     * gate map and delay
      */
     virtual void initialize() override;
 
@@ -64,7 +64,7 @@ class LteRlcMux : public cSimpleModule
      */
 
     /**
-     * handler for rlc2mac packets
+     * Handler for rlc2mac packets
      *
      * @param pkt packet to process
      */
@@ -75,7 +75,7 @@ class LteRlcMux : public cSimpleModule
      */
 
     /**
-     * handler for mac2rlc packets
+     * Handler for mac2rlc packets
      *
      * @param pkt packet to process
      */

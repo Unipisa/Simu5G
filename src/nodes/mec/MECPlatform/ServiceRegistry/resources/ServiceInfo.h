@@ -42,7 +42,7 @@ class ServiceInfo : public AttributeBase
 
   private:
     std::string serInstanceId_; // Identifier of the service instance assigned by the MEPM/MEC platform.
-                                // For the uniqueness UUID format is recommended.
+                                // For uniqueness, UUID format is recommended.
     std::string serName_;
     std::string mecHost_;
     CategoryRef serCategory_;

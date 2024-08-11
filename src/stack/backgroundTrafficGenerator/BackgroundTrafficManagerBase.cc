@@ -81,7 +81,7 @@ void BackgroundTrafficManagerBase::initialize(int stage)
 
 void BackgroundTrafficManagerBase::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage()) { // this is a activeUeNotification message
+    if (msg->isSelfMessage()) { // this is an activeUeNotification message
         ActiveUeNotification *notification = check_and_cast<ActiveUeNotification *>(msg);
 
         // add the bg UE to the list of active UEs in x slots

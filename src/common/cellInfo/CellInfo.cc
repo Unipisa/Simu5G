@@ -67,11 +67,11 @@ void CellInfo::initialize(int stage)
         numPreferredBands_ = par("numPreferredBands");
 
         if (numRus_ > NUM_RUS)
-            throw cRuntimeError("The number of Antennas specified exceeds the limit of %d", NUM_RUS);
+            throw cRuntimeError("The number of antennas specified exceeds the limit of %d", NUM_RUS);
 
         cModule *host = inet::getContainingNode(this);
 
-        // register the containing eNB  to the binder
+        // register the containing eNB to the binder
         cellId_ = host->par("macCellId");
 
         int ruRange = par("ruRange");
@@ -132,7 +132,7 @@ void CellInfo::deployRu(double nodeX, double nodeY, int numRu, int ruRange)
 
 void CellInfo::calculateMCSScale(double *mcsUl, double *mcsDl)
 {
-    // RBsubcarriers * (TTISymbols - SignallingSymbols) - pilotREs
+    // RB subcarriers * (TTI Symbols - Signalling Symbols) - pilot REs
     int ulRbSubcarriers = par("rbyUl");
     int dlRbSubCarriers = par("rbyDl");
     int ulRbSymbols = par("rbxUl");
@@ -151,7 +151,7 @@ void CellInfo::calculateMCSScale(double *mcsUl, double *mcsDl)
 void CellInfo::updateMCSScale(double *mcs, double signalRe,
         double signalCarriers, Direction dir)
 {
-    // RBsubcarriers * (TTISymbols - SignallingSymbols) - pilotREs
+    // RB subcarriers * (TTI Symbols - Signalling Symbols) - pilot REs
 
     int rbSubcarriers = (dir == DL) ? par("rbyDl") : par("rbyUl");
     int rbSymbols = (dir == DL) ? par("rbxDl") : par("rbxUl");
@@ -191,7 +191,7 @@ void CellInfo::detachUser(MacNodeId nodeId)
 
 void CellInfo::attachUser(MacNodeId nodeId)
 {
-    // add UE to cellInfo's structures (lambda maps)
+    // add UE to cellInfo structures (lambda maps)
     // position will be added by the eNB while computing feedback
 
     int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
@@ -301,7 +301,7 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
         throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %d", carrierFrequency, cellId_);
 
     if (index > it->second.numBands)
-        throw cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available band on this carrier [%d]", index, it->second.numBands);
+        throw cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available bands on this carrier [%d]", index, it->second.numBands);
 
     return it->second.firstBand + index;
 }
@@ -344,7 +344,7 @@ SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl
     if (!useTdd) {
         sf.tdd = false;
 
-        // these values are not used when tdd is false
+        // these values are not used when TDD is false
         sf.numDlSymbols = 0;
         sf.numUlSymbols = 0;
         sf.numFlexSymbols = 0;

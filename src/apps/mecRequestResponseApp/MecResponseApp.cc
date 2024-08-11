@@ -87,7 +87,7 @@ void MecResponseApp::sendResponse(cMessage *msg)
     strcpy(reqSourceAddress, pkt->getSrcAddress());
     int reqSourcePort = pkt->getSrcPort();
 
-    EV << simTime() << "MecResponseApp::sendResponse - Send response for packet with number " << pkt->getSno() << " to " << reqSourceAddress << "(port " << reqSourcePort << ")" << endl;
+    EV << simTime() << "MecResponseApp::sendResponse - Sending response for packet with number " << pkt->getSno() << " to " << reqSourceAddress << "(port " << reqSourcePort << ")" << endl;
 
     respPkt->setRespTimestamp(simTime().dbl());
     respPkt->setSrcAddress(pkt->getDestAddress());

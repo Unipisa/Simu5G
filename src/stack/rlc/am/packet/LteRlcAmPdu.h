@@ -58,7 +58,7 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
     virtual void eraseBitmap(size_t k)  override { throw cRuntimeError("Method not implemented"); }
 
     virtual std::vector<bool> getBitmapVec();
-    //sequence check functions
+    // sequence check functions
     virtual bool isWhole() const;
     virtual bool isFirst() const;
     virtual bool isMiddle() const;

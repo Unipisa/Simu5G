@@ -116,7 +116,7 @@ class LteSchedulerEnb
     simsignal_t avgServedBlocksDl_;
     simsignal_t avgServedBlocksUl_;
 
-    // pre-made BandLimit structure used when the no band limit is given to the scheduler
+    // pre-made BandLimit structure used when no band limit is given to the scheduler
     std::vector<BandLimit> emptyBandLim_;
 
     // @author Alessandro Noferi
@@ -208,7 +208,7 @@ class LteSchedulerEnb
     /*
      * Returns the amount of blocks allocated on a logical band
      */
-    unsigned int getInterferringBlocks(Plane plane, const Remote antenna, const Band band);
+    unsigned int getInterferingBlocks(Plane plane, const Remote antenna, const Band band);
 
     /**
      * Returns the number of available blocks for the UE on the given antenna
@@ -228,7 +228,7 @@ class LteSchedulerEnb
 
     /**
      * Schedules retransmission for the Harq Process of the given UE on a set of logical bands.
-     * Each band has also assigned a band limit amount of bytes: no more than the specified
+     * Each band also has an assigned limit amount of bytes: no more than the specified
      * amount will be served on the given band for the acid.
      *
      * @param nodeId The node ID
@@ -238,17 +238,17 @@ class LteSchedulerEnb
      * @return The allocated bytes. 0 if retransmission was not possible
      */
     virtual unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
-            std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limibBl = false) = 0;
+            std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false) = 0;
 
     virtual unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
             Remote antenna = MACRO, bool limitBl = false) = 0;
 
     /**
-     * Schedules capacity for a given connection without effectively perform the operation on the
+     * Schedules capacity for a given connection without effectively performing the operation on the
      * real downlink/uplink buffer: instead, it performs the operation on a virtual buffer,
      * which is used during the finalize() operation in order to commit the decision performed
      * by the grant function.
-     * Each band has also assigned a band limit amount of bytes: no more than the
+     * Each band also has an assigned limit amount of bytes: no more than the
      * specified amount will be served on the given band for the cid
      *
      * @param cid Identifier of the connection that is granted capacity
@@ -258,7 +258,7 @@ class LteSchedulerEnb
      * @param terminate Set to true if scheduling has to stop now
      * @param active Set to false if the current queue becomes inactive
      * @param eligible Set to false if the current queue becomes ineligible
-     * @param limitBl if true bandLim vector express the limit of allocation for each band in block
+     * @param limitBl if true bandLim vector express the limit of allocation for each band in blocks
      * @return The number of bytes that have been actually granted.
      */
     virtual unsigned int scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency,
@@ -276,7 +276,7 @@ class LteSchedulerEnb
   protected:
 
     /**
-     * Checks Harq Descriptors and return the first free codeword.
+     * Checks Harq Descriptors and returns the first free codeword.
      *
      * @param id
      * @param cw
@@ -293,13 +293,13 @@ class LteSchedulerEnb
      */
 
     /**
-     * Updates current schedule list with RAC requests (only for UL).
+     * Updates the current schedule list with RAC requests (only for UL).
      * @return TRUE if OFDM space is exhausted.
      */
     virtual bool racschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) = 0;
 
     /**
-     * Updates current schedule list with HARQ retransmissions.
+     * Updates the current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
     virtual bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) = 0;
@@ -325,12 +325,12 @@ class LteSchedulerEnb
     void initializeAllocator();
 
     /**
-     * Reset the blocks-related structures allocation
+     * Resets the blocks-related structures allocation
      */
     void resetAllocator();
 
     /**
-     * Returns the available space for a given user, antenna, logical band and codeword, in bytes.
+     * Returns the available space for a given user, antenna, logical band, and codeword, in bytes.
      *
      * @param id MAC node Id
      * @param antenna antenna
@@ -340,7 +340,7 @@ class LteSchedulerEnb
      */
     unsigned int availableBytes(const MacNodeId id, const Remote antenna, Band b, Codeword cw, Direction dir, double carrierFrequency, int limit = -1);
     /**
-     * Returns the available space for a given (background) user, antenna, logical band and codeword, in bytes.
+     * Returns the available space for a given (background) user, antenna, logical band, and codeword, in bytes.
      *
      * @param id MAC node Id
      * @param antenna antenna

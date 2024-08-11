@@ -23,7 +23,7 @@ class UserInfo : public AttributeBase
 {
   public:
     /**
-     * the constructor takes a vector of the eNodeBs connected to the MeHost
+     * The constructor takes a vector of the eNodeBs connected to the MeHost
      * and creates a CellInfo object
      */
     UserInfo();

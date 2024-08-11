@@ -50,7 +50,7 @@ void LteHandoverManager::handleMessage(cMessage *msg)
     cGate *incoming = pkt->getArrivalGate();
     if (incoming == x2Manager_[IN_GATE]) {
         // incoming data from X2 Manager
-        EV << "LteHandoverManager::handleMessage - Received message from X2 manager" << endl;
+        EV << "LteHandoverManager::handleMessage - Received message from X2 Manager" << endl;
         handleX2Message(pkt);
     }
     else
@@ -110,7 +110,7 @@ void LteHandoverManager::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool
 
 void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
 {
-    EV << NOW << " LteHandoverManager::receivedHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
+    EV << NOW << " LteHandoverManager::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
     // send command to IP2Nic
     if (startHo)

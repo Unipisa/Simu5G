@@ -20,7 +20,7 @@ Define_Module(ExtCell);
 void ExtCell::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        // get coord
+        // get coordinates
         position_.x = par("position_x");
         position_.y = par("position_y");
         position_.z = par("position_z");

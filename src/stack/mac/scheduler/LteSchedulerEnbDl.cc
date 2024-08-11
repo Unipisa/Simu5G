@@ -25,16 +25,16 @@ bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, double carr
     if (harqTxBuff == nullptr)                              // a new HARQ buffer will be created at transmission
         return true;
 
-    // check if harq buffer have already been created for this node
+    // check if HARQ buffer has already been created for this node
     if (harqTxBuff->find(id) != harqTxBuff->end()) {
         LteHarqBufferTx *dlHarq = harqTxBuff->at(id);
         UnitList freeUnits = dlHarq->firstAvailable();
 
         if (freeUnits.first != HARQ_NONE) {
             if (freeUnits.second.empty())
-                // there is a process currently selected for user <id> , but all of its cws have been already used.
+                // there is a process currently selected for user <id>, but all of its codewords have already been used.
                 return false;
-            // retrieving the cw index
+            // retrieving the codeword index
             cw = freeUnits.second.front();
             // DEBUG check
             if (cw > MAX_CODEWORDS)
@@ -59,7 +59,7 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
     Codeword remappedCw = (codewords == 1) ? 0 : cw;
 
     if (bandLim == nullptr) {
-        // Create a vector of band limit using all bands
+        // Create a vector of band limits using all bands
         bandLim = &tempBandLim;
         bandLim->clear();
 
@@ -161,7 +161,7 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
         }
 
         unsigned int available = 0;
-        // if a codeword has been already scheduled for retransmission, limit available blocks to what's been  allocated on that codeword
+        // if a codeword has been already scheduled for retransmission, limit available blocks to what's been allocated on that codeword
         if ((allocatedCw != 0)) {
             // get band allocated blocks
             int b1 = allocator_->getBlocks(antenna, b, nodeId);
@@ -229,13 +229,13 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
 
     EV << NOW << " LteSchedulerEnbDl::rtxAcid HARQ Process " << (int)acid << "  codeword  " << cw << " marking for retransmission " << endl;
 
-    // if allocated codewords is not MAX_CODEWORDS, then there's another allocated codeword , update the codewords variable :
+    // if allocated codewords is not MAX_CODEWORDS, then there's another allocated codeword, update the codewords variable :
 
     if (allocatedCw != 0) {
-        // TODO fixme this only works if MAX_CODEWORDS ==2
+        // TODO fixme this only works if MAX_CODEWORDS == 2
         --codewords;
         if (codewords <= 0)
-            throw cRuntimeError("LteSchedulerEnbDl::rtxAcid(): erroneus codeword count %d", codewords);
+            throw cRuntimeError("LteSchedulerEnbDl::rtxAcid(): erroneous codeword count %d", codewords);
     }
 
     // signal a retransmission
@@ -272,7 +272,7 @@ unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
-            // FIXME: bandlim is never deleted
+            // FIXME: bandLim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
@@ -300,7 +300,7 @@ unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
         // bytes which blocks from the preceding vector are supposed to satisfy
         std::vector<unsigned int> assignedBytes;
 
-        // end loop signal [same as bytes>0, but more secure]
+        // end loop signal [same as bytes > 0, but more secure]
         bool finish = false;
         // for each band
         unsigned int size = bandLim->size();
@@ -320,7 +320,7 @@ unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
             EV << NOW << " LteSchedulerEnbDl::scheduleBgRtx Available: " << bandAvailableBytes << " bytes" << endl;
 
             unsigned int servedBytes = 0;
-            // there's no room on current band for serving the entire request
+            // there's no room on the current band for serving the entire request
             if (bandAvailableBytes < toServe) {
                 // record the amount of served bytes
                 servedBytes = bandAvailableBytes;
@@ -404,7 +404,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
 
             OmnetId id = binder_->getOmnetId(nodeId);
             if (id == 0) {
-                // UE has left the simulation, erase HARQ-queue
+                // UE has left the simulation, erase HARQ queue
                 it = harqQueues->erase(it);
                 if (it == et)
                     break;
@@ -415,15 +415,15 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
             std::vector<LteHarqProcessTx *> *processes = currHarq->getHarqProcesses();
 
             // Get user transmission parameters
-            const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);// get the user info
+            const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency); // get the user info
             // TODO SK Get the number of codewords - FIX with correct mapping
-            unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
+            unsigned int codewords = txParams.getLayers().size(); // get the number of available codewords
 
             EV << NOW << " LteSchedulerEnbDl::rtxschedule  UE: " << nodeId << endl;
             // get the number of HARQ processes
             unsigned int process = 0;
             unsigned int maxProcesses = currHarq->getNumProcesses();
-            for (process = 0; process < maxProcesses; ++process ) {
+            for (process = 0; process < maxProcesses; ++process) {
                 // for each HARQ process
                 LteHarqProcessTx *currProc = (*processes)[process];
 
@@ -446,7 +446,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                     // Get the bandLimit for the current user
                     bool ret = getBandLimit(&usableBands, nodeId);
                     if (ret)
-                        bandLim = &usableBands;                                                   // TODO fix this, must be combined with the bandlimit of the carrier
+                        bandLim = &usableBands;                                                   // TODO fix this, must be combined with the band limit of the carrier
                     else
                         bandLim = nullptr;
 

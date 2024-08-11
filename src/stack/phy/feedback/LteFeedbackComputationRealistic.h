@@ -21,15 +21,15 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
 {
     // Channel matrix struct
     std::map<MacNodeId, Lambda> *lambda_;
-    //Target Bler
+    // Target BLER
     double targetBler_;
-    //Number of logical bands
+    // Number of logical bands
     unsigned int numBands_;
-    //Lambda threshold
+    // Lambda threshold
     double lambdaMinTh_;
     double lambdaMaxTh_;
     double lambdaRatioTh_;
-    //pointer to pisadata
+    // Pointer to Pisa data
     PhyPisaData *phyPisaData_;
 
     std::vector<double> baseMin_;
@@ -37,10 +37,10 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
   protected:
     // Rank computation
     unsigned int computeRank(MacNodeId id);
-    // Generate base feedback for all types of feedback(allbands, preferred, wideband)
+    // Generate base feedback for all types of feedback (all bands, preferred, wideband)
     void generateBaseFeedback(int numBands, int numPreferredBands, LteFeedback& fb, FeedbackType fbType, int cw,
             RbAllocationType rbAllocationType, TxMode txmode, std::vector<double> snr);
-    // Get cqi from BLer Curves
+    // Get CQI from BLER Curves
     Cqi getCqi(TxMode txmode, double snr);
     double meanSnr(std::vector<double> snr);
 

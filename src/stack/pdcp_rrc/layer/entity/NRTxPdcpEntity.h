@@ -20,13 +20,13 @@ namespace simu5g {
 class LtePdcpRrcBase;
 
 /**
- * @class NRPdcpEntity
+ * @class NRTxPdcpEntity
  * @brief Entity for New Radio PDCP Layer
  *
  * This is the PDCP entity of LTE/NR Stack.
  *
  * PDCP entity performs the following tasks:
- * - mantain numbering of one logical connection
+ * - maintain numbering of one logical connection
  *
  */
 class NRTxPdcpEntity : public LteTxPdcpEntity

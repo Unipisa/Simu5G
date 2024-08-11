@@ -17,7 +17,7 @@ using namespace omnetpp;
 
 /**
  * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
- * This table contains value taken from the table 7.2.3-1 (TS 36.213)
+ * This table contains values taken from table 7.2.3-1 (TS 36.213)
  */
 const CQIelem cqiTable[] =
 {
@@ -41,7 +41,7 @@ const CQIelem cqiTable[] =
 
 /**
  * <MCS Index> , <Modulation> , <I-TBS> , <threshold>
- * This table contains value taken from (TS 36.213)
+ * This table contains values taken from (TS 36.213)
  */
 McsTable::McsTable()
 {
@@ -79,7 +79,7 @@ McsTable::McsTable()
 void McsTable::rescale(double scale)
 {
     if (scale <= 0)
-        throw cRuntimeError("Bad Rescaling value: %f", scale);
+        throw cRuntimeError("Bad rescaling value: %f", scale);
 
     for (auto & i : table) {
         i.threshold_ *= (168.0 / scale);
@@ -325,15 +325,15 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
     }
     else {
         switch (txMode) {
-            // SISO and MU-MIMO supports only rank 1 transmission (1 layer)
+            // SISO and MU-MIMO support only rank 1 transmission (1 layer)
             case SINGLE_ANTENNA_PORT0:
             case SINGLE_ANTENNA_PORT5:
-            case MULTI_USER: 
+            case MULTI_USER:
                 res.push_back(1);
                 break;
 
             // TX Diversity uses a number of layers equal to antennaPorts
-            case TRANSMIT_DIVERSITY: 
+            case TRANSMIT_DIVERSITY:
                 res.push_back(antennaPorts);
                 break;
 
@@ -360,7 +360,7 @@ std::vector<unsigned char> cwMapping(const TxMode& txMode, const Rank& ri, const
                 break;
             }
 
-            default: 
+            default:
                 res.push_back(1);
                 break;
         }

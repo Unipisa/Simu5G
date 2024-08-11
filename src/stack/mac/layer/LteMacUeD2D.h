@@ -42,13 +42,13 @@ class LteMacUeD2D : public LteMacUe
 
     simsignal_t rcvdD2DModeSwitchNotification_;
 
-    // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
+    // if true, use the preconfigured TX params for transmission, else use those signaled by the eNB
     bool usePreconfiguredTxParams_;
     UserTxParams *preconfiguredTxParams_;
     UserTxParams *getPreconfiguredTxParams();  // build and return new user tx params
 
     /**
-     * Reads MAC parameters for ue and performs initialization.
+     * Reads MAC parameters for the UE and performs initialization.
      */
     virtual void initialize(int stage) override;
 

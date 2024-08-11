@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _HTTREQUESTMESSAGESERIALIZER_H_
-#define _HTTREQUESTMESSAGESERIALIZER_H_
+#ifndef _HTTPREQUESTMESSAGESERIALIZER_H_
+#define _HTTPREQUESTMESSAGESERIALIZER_H_
 
 #include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 

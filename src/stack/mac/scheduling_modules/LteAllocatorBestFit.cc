@@ -26,7 +26,7 @@ LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder)
 void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsigned int holeLen, unsigned int req)
 {
     if (holeLen > req) {
-        // this hole would satisfy requested load
+        // this hole would satisfy the requested load
         if (!candidate.greater) {
             // The current candidate would not satisfy the requested load.
             // The hole is a better candidate. Update
@@ -45,7 +45,7 @@ void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsign
         }
     }
     else {
-        // this hole would NOT satisfy requested load
+        // this hole would NOT satisfy the requested load
         if (!candidate.greater) {
             // The current candidate would not satisfy the requested load.
             // compare the length of the hole with that of the best candidate
@@ -145,8 +145,8 @@ void LteAllocatorBestFit::prepareSchedule()
         // Check whether the virtual buffer is empty
         if (conn->isEmpty()) {
             // The BSR buffer for this node is empty. Abort scheduling for the node: no data to transmit.
-            EV << "LteAllocatorBestFit:: scheduled connection is no more active . Exiting grant " << endl;
-            // The BSR buffer for this node is empty so the connection is no more active.
+            EV << "LteAllocatorBestFit:: scheduled connection is no longer active. Exiting grant " << endl;
+            // The BSR buffer for this node is empty so the connection is no longer active.
             inactive_connections.insert(cid);
             continue;
         }
@@ -251,7 +251,7 @@ void LteAllocatorBestFit::prepareSchedule()
         unsigned int req_Bytes1RB = 0;
         req_Bytes1RB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, 0, cw, 1, dir, carrierFrequency_); // The band (here equals to 0) is useless
 
-        // This calculus is for coherence with the allocation done in the ScheduleGrant function
+        // This calculation is for coherence with the allocation done in the ScheduleGrant function
         req_RBs = (vQueueFrontSize + req_Bytes1RB - 1) / req_Bytes1RB;
 
         // Get the total number of bands
@@ -266,7 +266,7 @@ void LteAllocatorBestFit::prepareSchedule()
 
         // Scan the RBs and find the best candidate "hole" to allocate the UE
         // We need to allocate RBs in the hole with the minimum length, such that the request is satisfied
-        // If satisfying the request is not possible, then allocate RBs in the hole the maximum length
+        // If satisfying the request is not possible, then allocate RBs in the hole with the maximum length
         Candidate candidate;
         candidate.index = 0;
         candidate.len = 0;
@@ -277,7 +277,7 @@ void LteAllocatorBestFit::prepareSchedule()
         Band holeIndex = 0;
         unsigned int holeLen = 0;
 
-        // frequency reuse-enabled connection are allocated starting from the beginning of the subframe,
+        // frequency reuse-enabled connections are allocated starting from the beginning of the subframe,
         // whereas non-reuse-enabled ones are allocated from the end of the subframe
 
         bool enableFrequencyReuse = (reuseD2D && dir == D2D) || (reuseD2DMulti && dir == D2D_MULTI);
@@ -287,7 +287,7 @@ void LteAllocatorBestFit::prepareSchedule()
             // Check if the allocation is possible starting from the first unallocated band
             for ( band = firstUnallocatedBand; band < numBands; band++ ) {
                 bool jump_band = false;
-                // Jump to the next band if this have been already allocated to this node
+                // Jump to the next band if this has already been allocated to this node
                 if (alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end())
                     jump_band = true;
                 /*
@@ -342,7 +342,7 @@ void LteAllocatorBestFit::prepareSchedule()
 
             // Check if the allocation is possible starting from the first unallocated band (going back)
             for ( band = firstUnallocatedBandIM; band >= 0; band-- ) {
-                // Jump to the next band if this have been already allocated
+                // Jump to the next band if this has already been allocated
                 if (alreadyAllocatedBands.find(band) != alreadyAllocatedBands.end())
                     jump_band = true;
                 /*
@@ -405,8 +405,8 @@ void LteAllocatorBestFit::prepareSchedule()
             }
         }
 
-        // If the booked request are sufficient to serve entirely or
-        // partially a BSR (at least a RB) do the allocation
+        // If the booked request is sufficient to serve entirely or
+        // partially a BSR (at least an RB) do the allocation
         if (blocks <= req_RBs && blocks != 0) {
             // Going here means that there's room for allocation (here's the true allocation)
             std::sort(bookedBands.begin(), bookedBands.end());
@@ -461,7 +461,7 @@ void LteAllocatorBestFit::initAndReset()
     // Clear and reinitialize the allocatedBlocks structures and set available planes to 1 (just the main OFDMA space)
     allocatedRbsPerBand_.clear();
     allocatedRbsPerBand_.resize(MAIN_PLANE + 1);
-    // set the available antennas of MAIN plane to 1 (just MACRO antenna)
+    // Set the available antennas of the MAIN plane to 1 (just MACRO antenna)
     allocatedRbsPerBand_.at(MAIN_PLANE).resize(MACRO + 1);
 
     allocatedRbsUe_.clear();
@@ -469,7 +469,7 @@ void LteAllocatorBestFit::initAndReset()
     // Clear the OFDMA allocated blocks and set available planes to 1 (just the main OFDMA space)
     allocatedRbsMatrix_.clear();
     allocatedRbsMatrix_.resize(MAIN_PLANE + 1);
-    // set the available antennas of MAIN plane to 1 (just MACRO antenna)
+    // Set the available antennas of the MAIN plane to 1 (just MACRO antenna)
     allocatedRbsMatrix_.at(MAIN_PLANE).resize(MACRO + 1, 0);
 
     // Clear the perUEbandStatusMap
@@ -478,7 +478,7 @@ void LteAllocatorBestFit::initAndReset()
     // Clear the bandStatusMap
     bandStatusMap_.clear();
     int numbands = eNbScheduler_->mac_->getAmc()->getSystemNumBands();
-    //Set all bands to non-exclusive
+    // Set all bands to non-exclusive
     for (int i = 0; i < numbands; i++) {
         bandStatusMap_[i].first = UNUSED;
     }

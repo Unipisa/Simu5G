@@ -22,10 +22,10 @@ using namespace omnetpp;
 
 /**
  * An LteHarqUnit is an HARQ mac pdu container,
- * an harqBuffer is made of harq processes which is made of harq units.
+ * a harqBuffer is made of harq processes which are made of harq units.
  *
  * LteHarqUnit manages transmissions and retransmissions.
- * Contained PDU may be in one of four status:
+ * Contained PDU may be in one of four statuses:
  *
  *                            IDLE       PDU                    READY
  * TXHARQ_PDU_BUFFERED:        no        present locally        ready for rtx
@@ -65,8 +65,8 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
     /**
      * Returns the macPdu to be sent and increments transmissions_ counter.
      *
-     * The H-ARQ process containing this unit, must call this method in order
-     * to extract the pdu the Mac layer will send.
+     * The H-ARQ process containing this unit must call this method in order
+     * to extract the PDU the Mac layer will send.
      * Before extraction, control info is updated with transmission counter and ndi.
      */
     virtual inet::Packet *extractPdu();

@@ -25,7 +25,7 @@ void VoDUDPClient::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
     /* Get parameters from INI file */
-    EV << "VoD Client initialize: stage " << stage << endl;
+    EV << "VoD Client initialized: stage " << stage << endl;
 
     stringstream ss;
     ss << getId();
@@ -68,7 +68,7 @@ void VoDUDPClient::finish()
     outfile.close();
     string startMetrics = par("startMetrics").stringValue();
 
-    /* Parameters to be sended to ana.sh */
+    /* Parameters to be sent to ana.sh */
 
     string inputFileName = par("vod_trace_file").stringValue();
     string bsePath = par("bsePath").stringValue();
@@ -94,7 +94,7 @@ void VoDUDPClient::finish()
             + " " + origVideoSvc + " " + decPath + " " + pb.str()
             + " " + avipluginPath + " " + ss.str() + " " + nf.str();
 
-        // Bin FPS NumPkt frame configurabili
+        // Bin FPS Configurable NumPkt frame
         string plot = "./Framework/plot.py 25 ./Framework/clients/client" + ss.str()
             + "/output/nsoutput.txt-plos ./Framework/clients/client" + ss.str()
             + "/output/nsoutput.txt-psnr 25 " + nf.str() + " " + npktf.str() + " " + ss.str();

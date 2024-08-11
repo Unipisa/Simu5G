@@ -27,11 +27,11 @@ void BackgroundTrafficManager::initialize(int stage)
         phy_.reference(this, "phyModule", true);
     }
     if (stage == inet::INITSTAGE_PHYSICAL_LAYER) {
-        // get the reference to the MAC layer
-        mac_.reference(this, "macModule", true); // TODO mac_ used in BackgroundTrafficManagerBase
+        // Get the reference to the MAC layer
+        mac_.reference(this, "macModule", true); // TODO: mac_ used in BackgroundTrafficManagerBase
     }
     if (stage == inet::INITSTAGE_LAST - 1) {
-        // get the reference to the channel model for the given carrier
+        // Get the reference to the channel model for the given carrier
         bsTxPower_ = phy_->getTxPwr();
         bsCoord_ = phy_->getCoord();
         channelModel_ = phy_->getChannelModel(carrierFrequency_);
@@ -52,11 +52,11 @@ unsigned int BackgroundTrafficManager::getNumBands()
 
 std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower)
 {
-    // this is a fictitious frame that needs to compute the SINR
+    // This is a fictitious frame that we need to compute the SINR
     LteAirFrame *frame = new LteAirFrame("bgUeSinrComputationFrame");
     UserControlInfo *cInfo = new UserControlInfo();
 
-    // build a control info
+    // Build a control info
     cInfo->setSourceId(BGUE_MIN_ID + bgUeIndex);  // MacNodeId for the bgUe
     cInfo->setDestId(mac_->getMacNodeId());  // ID of the e/gNodeB
     cInfo->setFrameType(FEEDBACKPKT);
@@ -70,7 +70,7 @@ std::vector<double> BackgroundTrafficManager::getSINR(int bgUeIndex, Direction d
 
     std::vector<double> snr = channelModel_->getSINR_bgUe(frame, cInfo);
 
-    // free memory
+    // Free memory
     delete frame;
     delete cInfo;
 
@@ -82,7 +82,7 @@ unsigned int BackgroundTrafficManager::getBackloggedUeBytesPerBlock(MacNodeId bg
     int index = bgUeId - BGUE_MIN_ID;
     Cqi cqi = bgUe_.at(index)->getCqi(dir);
 
-    // get bytes per block based on CQI
+    // Get bytes per block based on CQI
     return mac_->getAmc()->computeBitsPerRbBackground(cqi, dir, carrierFrequency_) / 8;
 }
 

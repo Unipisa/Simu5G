@@ -73,12 +73,12 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
      * Support to average CQI computation *
      * ***********************************/
 
-    // average load for avg interference computation
+    // average load for average interference computation
     double avgCellLoad_;
     std::vector<double> avgUeLoad_;
 
-    // do preliminary actions to enable avg cqi computation
-    // this is called by the initalize() in the INITSTAGE_PHYSICAL_LAYER
+    // do preliminary actions to enable average cqi computation
+    // this is called by the initialize() in the INITSTAGE_PHYSICAL_LAYER
     virtual void initializeAvgInterferenceComputation();
 
     /*************************************/
@@ -129,7 +129,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false);
     std::list<int>::const_iterator getBackloggedUesEnd(Direction dir, bool rtx = false);
 
-    // returns the begin (end) iterator of the vector of backlogged UEs hat are waiting for RAC handshake to finish
+    // returns the begin (end) iterator of the vector of backlogged UEs that are waiting for RAC handshake to finish
     std::list<int>::const_iterator getWaitingForRacUesBegin();
     std::list<int>::const_iterator getWaitingForRacUesEnd();
 

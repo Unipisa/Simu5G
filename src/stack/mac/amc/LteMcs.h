@@ -38,15 +38,15 @@ struct CQIelem
 
 /**
  * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
- * This table contains value taken from the table 7.2.3-1 (TS 36.213)
+ * This table contains values taken from table 7.2.3-1 (TS 36.213)
  */
 extern const CQIelem cqiTable[];
 
 struct MCSelem
 {
     LteMod mod_;       /// modulation
-    Tbs iTbs_;         /// iTbs
-    double threshold_; /// coderate threshold
+    Tbs iTbs_;         /// iTBS
+    double threshold_; /// code rate threshold
 
     MCSelem(LteMod mod = _QPSK, Tbs iTbs = 0, double threshold = 0.0)
     {
@@ -59,7 +59,7 @@ struct MCSelem
 
 /**
  * <MCS Index> , <Modulation> , <I-TBS> , <threshold>
- * This table contains value taken from (TS 36.213)
+ * This table contains values taken from (TS 36.213)
  */
 class McsTable
 {
@@ -102,8 +102,8 @@ extern const unsigned int itbs2tbs_64qam8[][110];
 /**
  * @param mod The modulation.
  * @param txMode The transmission mode.
- * @param txMode The number of layers.
- * @param dir The link direction.
+ * @param layers The number of layers.
+ * @param itbs The information block size.
  * @return A row of table 3-2 or table 3-3 specific for the given iTBS.
  */
 const unsigned int *itbs2tbs(LteMod mod, TxMode txMode, unsigned char layers, unsigned char itbs);

@@ -77,7 +77,7 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
     for (Codeword cw = 0; cw < codewords; ++cw) {
         unsigned int availableBytes = grant->getGrantedCwBytes(cw);
 
-        EV << NOW << " LteSchedulerUeUl::schedule - Node " << mac_->getMacNodeId() << " available data from grant are "
+        EV << NOW << " LteSchedulerUeUl::schedule - Node " << mac_->getMacNodeId() << " available data from grant is "
            << " blocks " << availableBlocks << " [" << availableBytes << " - Bytes]  on codeword " << cw << endl;
 
         // per codeword LCP scheduler invocation
@@ -121,7 +121,7 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
             mac_->getLowestBackloggedFlow(lowestBackloggedFlow, lowestBackloggedPriority);
         }
 
-        // TODO make use of above values
+        // TODO make use of the above values
     }
     return &scheduleList_;
 }

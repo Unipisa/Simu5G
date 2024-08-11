@@ -98,7 +98,7 @@ Ecgi RNICellInfo::getEcgi() const
     return ecgi_;
 }
 
-nlohmann::ordered_json RNICellInfo::toJson() const 
+nlohmann::ordered_json RNICellInfo::toJson() const
 {
     nlohmann::ordered_json val = toJsonCell();
     return val;

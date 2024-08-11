@@ -18,7 +18,7 @@
 namespace simu5g {
 
 /*
- *  From RESTful Network APIforTerminal Location
+ *  From RESTful Network API for Terminal Location
  *  section 5.2.2.3
  *
  * attributes           optional
@@ -30,7 +30,7 @@ namespace simu5g {
  * link                   yes
  *
  */
-class SubscriptioNotification : public AttributeBase
+class SubscriptionNotification : public AttributeBase
 {
   protected:
     std::string callbackData;

@@ -38,7 +38,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
     // Write information into the ControlInfo object
     lteInfo->setSequenceNumber(sno_++); // set sequence number for this PDCP SDU.
 
-    // set source and dest IDs
+    // set source and destination IDs
     setIds(lteInfo);
 
     // PDCP Packet creation
@@ -79,7 +79,7 @@ void LteTxPdcpEntity::deliverPdcpPdu(Packet *pdcpPkt)
 
 void LteTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
 {
-    lteInfo->setSourceId(pdcp_->getNodeId());   // TODO CHANGE HERE!!! Must be the NR node ID if this is a NR connection
+    lteInfo->setSourceId(pdcp_->getNodeId());   // TODO CHANGE HERE!!! Must be the NR node ID if this is an NR connection
 
     if (lteInfo->getMulticastGroupId() > 0)                                               // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
         lteInfo->setDestId(pdcp_->getNodeId());

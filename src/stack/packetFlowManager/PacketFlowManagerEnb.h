@@ -25,25 +25,25 @@ namespace simu5g {
 using namespace omnetpp;
 
 /*
- * This module is responsible for keep trace of all PDCP SDUs.
- * A PDCP SDU passes the following state while it is going down
+ * This module is responsible for keeping track of all PDCP SDUs.
+ * A PDCP SDU passes through the following states while it is going down
  * through the LTE NIC layers:
  *
  * PDCP SDU
  * few operations
  * PDCP PDU
  * RLC SDU
- * RLC PDU or fragmented in more then one RLC PDUs
+ * RLC PDU or fragmented into more than one RLC PDU
  * MAC SDU
  * inserted into one TB
  * MAC PDU (aka TB)
  *
- * Each PDCP has its own seq number, managed by the corresponding LCID
+ * Each PDCP has its own sequence number, managed by the corresponding LCID
  *
  * The main functions of this module are:
  *  - detect PDCP SDU discarded (no part transmitted)
- *  - calculate the delay time of a pkt, from PDCP SDU to last Harq ACK of the
- *    corresponding seq number.
+ *  - calculate the delay time of a packet, from PDCP SDU to last Harq ACK of the
+ *    corresponding sequence number.
  */
 
 class LteRlcUmDataPdu;
@@ -58,10 +58,10 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     };
 
     struct BurstStatus {
-        std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative Rlc sdu size
-        simtime_t startBurstTransmission; // instant of the first trasmission of the burst
-        unsigned int burstSize; // PDCP sdu size of the burst
-        bool isComplited;
+        std::map<unsigned int, unsigned int> rlcPdu; // RLC PDU of the burst and the relative RLC SDU size
+        simtime_t startBurstTransmission; // moment of the first transmission of the burst
+        unsigned int burstSize; // PDCP SDU size of the burst
+        bool isCompleted;
     };
 
     struct PacketLoss {
@@ -78,7 +78,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
             totalPdcpSno = 0;
         }
 
-        // resets the counters at the end of each period, i.e lastPdcpSno remains
+        // resets the counters at the end of each period, i.e., lastPdcpSno remains
         void reset()
         {
             totalLossPdcp = 0;
@@ -88,15 +88,15 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     };
 
     /*
-     * The node can have different active connections (lcid) at the same time, hence we need to
+     * The node can have different active connections (LCID) at the same time, hence we need to
      * maintain the status for each of them
      */
     struct StatusDescriptor {
-        MacNodeId nodeId_; // dest node of this lcid
+        MacNodeId nodeId_; // destination node of this LCID
         bool burstState_; // control variable that controls one burst active at a time
         BurstId burstId_; // separates the bursts
-        std::map<unsigned int, PdcpStatus> pdcpStatus_; // a pdcp pdu can be fragmented in many rlc that could be sent and ack in different time (this prevent early remove on ack)
-        std::map<BurstId, BurstStatus> burstStatus_; // for each burst, stores relative infos
+        std::map<unsigned int, PdcpStatus> pdcpStatus_; // a PDCP PDU can be fragmented into many RLC PDUs that could be sent and acknowledged at different times (this prevents early removal on acknowledgment)
+        std::map<BurstId, BurstStatus> burstStatus_; // for each burst, stores relative information
         std::map<unsigned int, SequenceNumberSet> rlcPdusPerSdu_;  // for each RLC SDU, stores the RLC PDUs where the former was fragmented
         std::map<unsigned int, SequenceNumberSet> rlcSdusPerPdu_;  // for each RLC PDU, stores the included RLC SDUs
         std::map<unsigned int, SequenceNumberSet> macSdusPerPdu_;  // for each MAC PDU, stores the included MAC SDUs (should be a 1:1 association)
@@ -104,7 +104,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     };
 
     typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
-    ConnectionMap connectionMap_; // lcid to the corresponding StatusDescriptor
+    ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
 
     LtePdcpRrcEnb *pdcp_;
 
@@ -119,29 +119,29 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     ULGrants ulGrants_;
     packetLossRateMap packetLossRate_;
-    delayMap pdcpDelay_; // map that sums all the delay times of a dest NodeId (UE) and the corresponding counter
-    throughputMap pdcpThroughput_; // map that sums all the bytes sent by a dest NodeId (UE) and the corresponding time elapsed
+    delayMap pdcpDelay_; // map that sums all the delay times of a destination NodeId (UE) and the corresponding counter
+    throughputMap pdcpThroughput_; // map that sums all the bytes sent by a destination NodeId (UE) and the corresponding time elapsed
     pktDiscardMap pktDiscardCounterPerUe_;
     dataVolume sduDataVolume_;
-    short int harqProcesses_; // number of harq processes
+    short int harqProcesses_; // number of HARQ processes
 
-    // debug var that calculates DL delay of a UE (with id 2053)
+    // debug variable that calculates DL delay of a UE (with id 2053)
     // used to evaluate the delay with respect to the one reported by Simu5G
     cOutVector timesUe_;
 
     /*
-     * This method checks if a PDCP PDU of a Lcid is part of a burst of data.
-     * In a positive case, according to the ack boolen its size it is counted in the
-     * total og burst size.
-     * It is called by macPduArrived (ack true) and rlcPduDsicard (ack false)
-     * @param desc lcid descriptor
-     * @param pdcpSno pdcp sequence number
-     * @bool ack pdcp pdcp arrived flag
+     * This method checks if a PDCP PDU of a LCID is part of a burst of data.
+     * In a positive case, according to the ack boolean its size is counted in the
+     * total of the burst size.
+     * It is called by macPduArrived (ack true) and rlcPduDiscarded (ack false)
+     * @param desc LCID descriptor
+     * @param pdcpSno PDCP sequence number
+     * @bool ack PDCP acknowledgment flag
      */
     void removePdcpBurstRLC(StatusDescriptor *desc, unsigned int rlcSno, bool ack);
 
     /*
-     * This method creates a pdcpStatus structure when a pdcpSdu arrives at the PDCP layer.
+     * This method creates a pdcpStatus structure when a PDCP SDU arrives at the PDCP layer.
      */
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
@@ -149,11 +149,11 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
   public:
     PacketFlowManagerEnb();
-    // return true if a structure for this lcid is present
+    // return true if a structure for this LCID is present
     virtual bool checkLcid(LogicalCid lcid) override;
-    // initialize a new structure for this lcid
+    // initialize a new structure for this LCID
     virtual void initLcid(LogicalCid lcid, MacNodeId nodeId) override;
-    // reset the structure for this lcid
+    // reset the structure for this LCID
     virtual void clearLcid(LogicalCid lcid) override;
     // reset structures for all connections
     virtual void clearAllLcid() override;
@@ -166,29 +166,29 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     virtual void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
 
     /*
-     * This method checks if the HARQ acSequenceNumberSetk relative to a macPduId acknowledges an ENTIRE
-     * pdcp sdu
+     * This method checks if the HARQ acknowledgment relative to a macPduId acknowledges an ENTIRE
+     * PDCP SDU
      * @param lcid
-     * @param macPduId Omnet id of the mac pdu
+     * @param macPduId Omnet ID of the MAC PDU
      */
     virtual void macPduArrived(inet::Ptr<const LteMacPdu>) override;
 
     virtual void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;
 
     /*
-     * This method is called after maxHarqTrasmission of a MAC PDU ID has been
-     * reached. The PDCP, RLC, sno referred to the macPdu are cleared from the
+     * This method is called after maxHarqTransmission of a MAC PDU ID has been
+     * reached. The PDCP, RLC, SN referred to the macPdu are cleared from the
      * data structures
      * @param lcid
-     * @param macPduId Omnet id of the mac pdu to be discarded
+     * @param macPduId Omnet ID of the MAC PDU to be discarded
      */
     virtual void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
 
     /*
-     * This method is used to take trace of all discarded RLC pdus. If all rlc pdus
-     * that compose a PCDP SDU have been discarded the discarded counters are updated
+     * This method is used to keep track of all discarded RLC PDUs. If all RLC PDUs
+     * that compose a PDCP SDU have been discarded the discarded counters are updated
      * @param lcid
-     * @param rlcSno sequence number of the rlc pdu
+     * @param rlcSno sequence number of the RLC PDU
      * @param fromMac used when this method is called by discardMacPdu
      */
     virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
@@ -199,7 +199,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     /*
      * invoked by the MAC layer to notify that harqProcId is completed.
-     * This method need to go back up the chain of sequence numbers to identify which
+     * This method needs to go back up the chain of sequence numbers to identify which
      * PDCP SDUs have been transmitted in this process.
      */
     // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId);
@@ -211,7 +211,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     virtual void deleteUe(MacNodeId id);
 
     /*
-     * The methods are called per specific UE
+     * The methods are called for a specific UE
      */
 
     virtual uint64_t getDataVolume(MacNodeId nodeId, Direction dir);

@@ -100,7 +100,7 @@ HttpBaseMessage *parseHeader(const std::string& data)
             }
             else if (uriParams.size() == 1) {
                 // debug
-                EV << "httpUtils::parseHeader - There are not parameters" << endl;
+                EV << "httpUtils::parseHeader - There are no parameters" << endl;
                 httpRequest->setUri(uriParams[0].c_str());
             }
             else {
@@ -126,24 +126,24 @@ HttpBaseMessage *parseHeader(const std::string& data)
             line = simu5g::utils::splitString(*it, ": ");
             if (line.size() == 2) {
                 if (line[0] == "Content-Length") {
-                    EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                     httpRequest->setContentLength(std::stoi(line[1]));
                     httpRequest->setRemainingDataToRecv(std::stoi(line[1]));
                 }
                 else if (line[0] == "Content-Type") {
-                    EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                     httpRequest->setContentType(line[1].c_str());
                 }
                 else if (line[0] == "Host") {
-                    EV << "httpUtili::parseHeader - Host: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Host: " << line[1] << endl;
                     httpRequest->setHost(line[1].c_str());
                 }
                 else if (line[0] == "Connection") {
-                    EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                     httpRequest->setConnection(line[1].c_str());
                 }
                 else {
-                    EV << "httpUtili::parseHeader - Header: " << line[1] << ": " << line[0] << endl;
+                    EV << "httpUtils::parseHeader - Header: " << line[1] << ": " << line[0] << endl;
                     httpRequest->setHeaderField(line[0], line[1]);
                 }
             }
@@ -155,21 +155,21 @@ HttpBaseMessage *parseHeader(const std::string& data)
         httpRequest->setState(CORRECT);
         return httpRequest;
     }
-    // its a response
+    // it's a response
     else {
-        EV << "httUtils::parseHeader - It is a response" << endl;
+        EV << "httpUtils::parseHeader - It is a response" << endl;
         HttpResponseMessage *httpResponse = new HttpResponseMessage();
         httpResponse->setType(RESPONSE);
 
         if (line.size() < 3 || line.size() > 5) {
-            EV << "httUtils::parseHeader - BAD_RES_LINE" << endl;
+            EV << "httpUtils::parseHeader - BAD_RES_LINE" << endl;
             httpResponse->setState(BAD_RES_LINE);
             return httpResponse;
         }
 
         // response line is: HTTPversion code reason
         if (!checkHttpVersion(line[0])) {
-            EV << "httUtils::parseHeader - BAD_HTTP" << endl;
+            EV << "httpUtils::parseHeader - BAD_HTTP" << endl;
             httpResponse->setState(BAD_HTTP);
             return httpResponse;
         }
@@ -186,27 +186,27 @@ HttpBaseMessage *parseHeader(const std::string& data)
         }
 
         httpResponse->setStatus(reason.c_str());
-        EV << "httUtils::parseHeader - code " << httpResponse->getCode() << endl;
+        EV << "httpUtils::parseHeader - code " << httpResponse->getCode() << endl;
 
         // read for headers
         for (++it; it != lines.end(); ++it) {
             line = simu5g::utils::splitString(*it, ": ");
             if (line.size() == 2) {
                 if (line[0] == "Content-Length") {
-                    EV << "httpUtili::parseHeader - Content-Length: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Content-Length: " << line[1] << endl;
                     httpResponse->setContentLength(std::stoi(line[1]));
                     httpResponse->setRemainingDataToRecv(std::stoi(line[1]));
                 }
                 else if (line[0] == "Content-Type") {
-                    EV << "httpUtili::parseHeader - Content-Type: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Content-Type: " << line[1] << endl;
                     httpResponse->setContentType(line[1].c_str());
                 }
                 else if (line[0] == "Connection") {
-                    EV << "httpUtili::parseHeader - Connection: " << line[1] << endl;
+                    EV << "httpUtils::parseHeader - Connection: " << line[1] << endl;
                     httpResponse->setConnection(line[1].c_str());
                 }
                 else {
-                    EV << "httpUtili::parseHeader - Header: " << line[1] << ": " << line[0] << endl;
+                    EV << "httpUtils::parseHeader - Header: " << line[1] << ": " << line[0] << endl;
                     httpResponse->setHeaderField(line[0], line[1]);
                 }
             }
@@ -223,7 +223,7 @@ HttpBaseMessage *parseHeader(const std::string& data)
 HttpMsgState parseTcpData(std::string *data, HttpBaseMessage *httpMessage)
 {
     if (httpMessage == nullptr)
-        throw cRuntimeError("httpUtils parseTcpData - httpMessage must be not null");
+        throw cRuntimeError("httpUtils parseTcpData - httpMessage must not be null");
 
     httpMessage->setIsReceivingMsg(true);
     addBodyChunk(data, httpMessage);
@@ -279,7 +279,7 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
     }
 
     while ((pos = packet.find(delimiter)) != std::string::npos) {
-        EV << "MecAppBase::parseReceivedMsgn - new HTTP message" << endl;
+        EV << "MecAppBase::parseReceivedMsg - new HTTP message" << endl;
         header = packet.substr(0, pos);
         packet.erase(0, pos + delimiter.length()); //remove header
         *currentHttpMessage = Http::parseHeader(header);
@@ -300,12 +300,12 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
     }
 
     /*
-     * If I did not find the  delimiter ("\r\n\r\n")
+     * If I did not find the delimiter ("\r\n\r\n")
      * it could mean that the HTTP message is fragmented at the header, so the data
      * should be saved and aggregated with the subsequent fragmented
      */
     if (packet.length() != 0) {
-        EV << "MecAppBase::parseReceivedMsgn - stored data: " << packet << endl;
+        EV << "MecAppBase::parseReceivedMsg - stored data: " << packet << endl;
         *storedData = packet;
         return false;
     }
@@ -360,7 +360,7 @@ bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, s
     if (storedData->length() > 0) {
         // EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
         //std::cout << "MecAppBase::parseReceivedMsg - buffered data" << std::endl;
-        //std::cout << "MecAppBase::parseReceivedMsgbuffered data aprim" << *storedData  << std::endl;
+        //std::cout << "MecAppBase::parseReceivedMsg buffered data" << *storedData  << std::endl;
 
         temp = packet;
         packet = *storedData + temp;
@@ -394,7 +394,7 @@ bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, s
     }
 
     /*
-     * If I did not find the  delimiter ("\r\n\r\n")
+     * If I did not find the delimiter ("\r\n\r\n")
      * it could mean that the HTTP message is fragmented at the header, so the data
      * should be saved and aggregated with the subsequent fragmented
      */

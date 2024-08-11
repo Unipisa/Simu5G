@@ -30,7 +30,7 @@ using namespace omnetpp;
  * app has it own device app) and it interfaces with the UALCM proxy via the RESTful API.
  *
  * TCP socket management is minimal, it send requests only if the socket is connected and
- * responds with nacks (withe reason to the UE app) if not.
+ * responds with nacks (with reason to the UE app) if not.
  *
  * Communication with the UE app occurs via set of OMNeT++ messages:
  *  - request instantation of a MEC app

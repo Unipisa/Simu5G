@@ -20,14 +20,14 @@ namespace simu5g {
  * @class ConnectionsTable
  * @brief Hash table to keep track of connections
  *
- * This is an hash table used by the RRC layer
+ * This is a hash table used by the RRC layer
  * to assign CIDs to different connections.
  * The table is in the format:
  *  ______________________________________________________
  * | srcAddr | dstAddr | typeOfService | Direction | LCID |
  *
- * A 4-tuple (plus direction) is used to check if connection was already
- * established and return the proper LCID, otherwise a
+ * A 4-tuple (plus direction) is used to check if a connection was already
+ * established and return the proper LCID; otherwise, a
  * new entry is added to the table
  */
 class ConnectionsTable
@@ -87,7 +87,7 @@ class ConnectionsTable
   private:
     /**
      * hash_func() calculates the hash function used
-     * by this structure. At the moment it's simply an OR
+     * by this structure. At the moment, it's simply an OR
      * operation between all fields of the 4-tuple
      *
      * @param srcAddr part of 4-tuple
@@ -98,7 +98,7 @@ class ConnectionsTable
 
     /**
      * hash_func() calculates the hash function used
-     * by this structure. At the moment it's simply an OR
+     * by this structure. At the moment, it's simply an OR
      * operation between all fields of the 4-tuple
      *
      * @param srcAddr part of 4-tuple

@@ -30,7 +30,7 @@ class LtePhyEnb;
 
 /**
  * @class DasFilter
- * @brief Class containing all infos to handle DAS
+ * @brief Class containing all information to handle DAS
  *
  * This is the DAS filter, performing the following tasks:
  * - Report Set handling (for LteFeedback).
@@ -43,7 +43,7 @@ class LtePhyEnb;
  * - On UEs attached to eNodeBs:
  *   - Retrieves the Remote Antenna Set from the master
  *   - Reads broadcast packet to find out which Antennas
- *     he can be associated with (the Reporting Set)
+ *     it can be associated with (the Reporting Set)
  *
  * The "Reporting set" generation is made by checking if
  * the rssi for a given Antenna is above a certain threshold
@@ -97,7 +97,7 @@ class DasFilter
      * it is used by eNB so that UEs can retrieve the master eNB Antenna
      * Physical properties
      *
-     * @return RemoteAntennaSet associated to the module
+     * @return RemoteAntennaSet associated with the module
      */
     RemoteAntennaSet *getRemoteAntennaSet() const;
 
@@ -143,7 +143,7 @@ class DasFilter
      */
     RemoteAntennaSet *ruSet_;
 
-    /// Set of antennas that feedback generator needs to report
+    /// Set of antennas that the feedback generator needs to report
     RemoteSet reportingSet_;
 
     /// Rssi Threshold for Antenna association
@@ -152,7 +152,7 @@ class DasFilter
     /// Pointer to the Lte Binder
     opp_component_ptr<Binder> binder_;
 
-    /// Pointer to the Das filter of the master (used on UEs binded to eNBs)
+    /// Pointer to the Das filter of the master (used on UEs bound to eNBs)
     DasFilter *das_;
 
     /// Pointer to the Nic

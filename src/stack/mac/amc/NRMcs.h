@@ -23,7 +23,7 @@ namespace simu5g {
 struct NRMCSelem
 {
     LteMod mod_;       /// modulation (Qm)
-    double coderate_;  /// coderate (R)
+    double coderate_;  /// code rate (R)
 
     NRMCSelem(LteMod mod = _QPSK, double coderate = 0.0)
     {
@@ -34,8 +34,8 @@ struct NRMCSelem
 };
 
 /**
- * <MCS Index> , <Modulation> , <coderate>
- * This table contains value taken from table 5.1.3.1-1 and 5.1.3.1-2 (TS 38.214)
+ * <MCS Index> , <Modulation> , <code rate>
+ * This table contains values taken from tables 5.1.3.1-1 and 5.1.3.1-2 (TS 38.214)
  */
 class NRMcsTable
 {
@@ -45,7 +45,7 @@ class NRMcsTable
 
     /**
      * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
-     * This table contains value taken from the table 7.2.3-1 (TS 38.214)
+     * This table contains values taken from table 7.2.3-1 (TS 38.214)
      */
     CQIelem cqiTable[MAXCQI + 1];
 

@@ -18,7 +18,7 @@ using namespace omnetpp;
 
 /**
  * <MCS Index> , <Modulation> , <I-TBS> , <threshold>
- * This table contains value taken from (TS 36.213)
+ * This table contains values taken from (TS 36.213)
  */
 NRMcsTable::NRMcsTable(bool extended)
 {

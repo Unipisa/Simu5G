@@ -163,20 +163,20 @@ class UmRxEntity : public cSimpleModule
         ENQUE, REORDERING
     };
 
-    bool isBurst_; // a burst h started last TTI
+    bool isBurst_; // a burst has started last TTI
     bool t2Set_; // used to save t2
     unsigned int totalBits_; // total bytes during the burst
-    unsigned int ttiBits_; // bytes during this tti
+    unsigned int ttiBits_; // bytes during this TTI
     simtime_t t2_; // point in time the burst begins
-    simtime_t t1_; // point in time last pkt sent during burst
+    simtime_t t1_; // point in time last packet sent during burst
 
     /*
-     * This method is used to manage a burst and calculate the UL tput of a UE
+     * This method is used to manage a burst and calculate the UL throughput of a UE
      * It is called at the end of each TTI period and at the end of a t_reordering
-     * period. Only the EnodeB needs to manage the buffer, since only it has to
-     * calculate UL tput.
+     * period. Only the eNB needs to manage the buffer, since only it has to
+     * calculate UL throughput.
      *
-     * @param event specifies when it is called, i.e after TTI or after timer reoridering
+     * @param event specifies when it is called, i.e. after TTI or after timer reordering
      */
     void handleBurst(BurstCheck event);
 

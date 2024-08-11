@@ -60,7 +60,7 @@ void IP2Nic::initialize(int stage)
             sbTable_ = new SplitBearersTable();
 
         if (nodeType_ == ENODEB || nodeType_ == GNODEB) {
-            // TODO not so elegant
+            // TODO: not so elegant
             cModule *bs = getContainingNode(this);
             MacNodeId masterId = bs->par("masterId");
             MacNodeId cellId = binder_->registerNode(bs, nodeType_, masterId);
@@ -88,7 +88,7 @@ void IP2Nic::initialize(int stage)
             registerInterface();
         }
         else {
-            throw cRuntimeError("unhandled node type: %i", nodeType_);
+            throw cRuntimeError("Unhandled node type: %i", nodeType_);
         }
     }
     else if (stage == inet::INITSTAGE_STATIC_ROUTING) {
@@ -98,7 +98,7 @@ void IP2Nic::initialize(int stage)
             // otherwise we are not able to reach devices outside the cellular network
             if (NOW > 0) {
                 /**
-                 * TODO:might need a bit more care, if interface has changed, the query might, too
+                 * TODO: might need a bit more care, if the interface has changed, the query might, too
                  */
                 IIpv4RoutingTable *irt = getModuleFromPar<IIpv4RoutingTable>(
                         par("routingTableModule"), this);
@@ -211,7 +211,7 @@ void IP2Nic::toStackUe(Packet *pkt)
     int headerSize = ipHeader->getHeaderLength().get();
     int transportProtocol = ipHeader->getProtocolId();
 
-    // TODO Add support to IPv6 (=> see L3Tools.cc of INET)
+    // TODO: Add support for IPv6 (=> see L3Tools.cc of INET)
 
     // inspect packet depending on the transport protocol type
     // TODO: needs refactoring (redundant code, see toStackBs())
@@ -238,7 +238,7 @@ void IP2Nic::toStackUe(Packet *pkt)
         delete pkt;
     }
 
-    //** Send datagram to lte stack or LteIp peer **
+    //** Send datagram to LTE stack or LteIp peer **
     send(pkt, stackGateOut_);
 }
 
@@ -271,7 +271,7 @@ void IP2Nic::fromIpBs(Packet *pkt)
     // Remove InterfaceReq Tag (we already are on an interface now)
     pkt->removeTagIfPresent<InterfaceReq>();
 
-    // TODO Add support to Ipv6
+    // TODO: Add support for IPv6
     auto ipHeader = pkt->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = ipHeader->getDestAddress();
 
@@ -284,7 +284,7 @@ void IP2Nic::fromIpBs(Packet *pkt)
         return;
     }
 
-    // handle incoming packets destined to UEs that is completing handover
+    // handle incoming packets destined to UEs that are completing handover
     if (hoHolding_.find(destId) != hoHolding_.end()) {
         // hold packets until handover is complete
         if (hoFromIp_.find(destId) == hoFromIp_.end()) {
@@ -369,9 +369,9 @@ void IP2Nic::registerInterface()
 
     networkIf = getContainingNicModule(this);
     networkIf->setInterfaceName(par("interfaceName").stdstringValue().c_str());
-    // TODO configure MTE size from NED
+    // TODO: configure MTE size from NED
     networkIf->setMtu(1500);
-    //disable broadcast (not supported in cellularNic), enable multicast
+    // Disable broadcast (not supported in cellular NIC), enable multicast
     networkIf->setBroadcast(false);
     networkIf->setMulticast(true);
     networkIf->setLoopback(false);
@@ -410,13 +410,13 @@ void IP2Nic::registerMulticastGroups()
 
 bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
 {
-    // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
+    // In the current version, the IP2Nic module of the master eNB (the UE) selects which path
     // to follow based on the Type of Service (TOS) field:
     // - use master eNB if tos < 10
     // - use secondary gNB if 10 <= tos < 20
     // - use split bearer if tos >= 20
     //
-    // To change the policy, change the implementation of the Ip2Nic::markPacket() function
+    // To change the policy, change the implementation of the IP2Nic::markPacket() function
     //
     // TODO use a better policy
     // TODO make it configurable from INI or XML?
@@ -517,7 +517,7 @@ void IP2Nic::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
 
 void IP2Nic::receiveTunneledPacketOnHandover(Packet *datagram, MacNodeId sourceEnb)
 {
-    EV << "IP2lte::receiveTunneledPacketOnHandover - received packet via X2 from " << sourceEnb << endl;
+    EV << "IP2Nic::receiveTunneledPacketOnHandover - received packet via X2 from " << sourceEnb << endl;
     const auto& hdr = datagram->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = hdr->getDestAddress();
     MacNodeId destId = binder_->getMacNodeId(destAddr);

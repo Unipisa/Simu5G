@@ -56,7 +56,7 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
 
     EV << firstNotificationSent << " last " << lastNotification << " now " << simTime() << " frequency" << frequency << endl;
     if (firstNotificationSent && (simTime() - lastNotification) <= frequency) {
-        EV << "CircleNotificationSubscription::sendNotification - notification event occured near the last one. Frequency for notifications is: " << frequency << endl;
+        EV << "CircleNotificationSubscription::sendNotification - notification event occurred near the last one. Frequency for notifications is: " << frequency << endl;
         return;
     }
 
@@ -125,7 +125,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
             callbackData = callbackReference["callbackData"];
         if (callbackReference.contains("notifyURL")) {
             notifyURL = callbackReference["notifyURL"];
-            // parse it to retreive the resource uri and
+            // parse it to retrieve the resource uri and
             // the host
             std::size_t found = notifyURL.find("/");
             if (found != std::string::npos) {
@@ -228,10 +228,10 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                  */
 
                 if (id == 0 || !findUe(id)) {
-                    EV << "IP NON ESISTE" << endl;
+                    EV << "IP DOES NOT EXIST" << endl;
                     Http::send400Response(socket_); //address is mandatory
                     return false;
-                    //TODO cosa fare in caso in cui un address non esiste?
+                    //TODO what to do in case an address does not exist?
                 }
                 else {
                     // set the initial state
@@ -249,7 +249,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
             std::string add = jsonBody["address"];
             MacNodeId id = binder->getMacNodeId(inet::Ipv4Address(add.c_str()));
             if (id == 0 || !findUe(id)) {
-                EV << "IP NON ESISTE" << endl;
+                EV << "IP DOES NOT EXIST" << endl;
             }
             else {
                 // set the initial state
@@ -278,7 +278,7 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
     std::map<MacNodeId, bool>::iterator it = users.begin();
     for ( ; it != users.end(); ++it) {
         bool found = false;
-        //check if the use is under one of the Enodeb connected to the Mehost
+        //check if the user is under one of the EnodeB connected to the Mehost
 
         if (!findUe(it->first))
             continue; // TODO manage what to do
@@ -288,7 +288,7 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
         if (actionCriteria == LocationUtils::Entering) {
             if (coord.distance(center) <= radius && it->second == false) {
                 it->second = true;
-                EV << "dentro" << endl;
+                EV << "inside" << endl;
                 found = true;
             }
             else if (coord.distance(center) >= radius) {
@@ -298,7 +298,7 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
         else {
             if (coord.distance(center) >= radius && it->second == true) {
                 it->second = false;
-                EV << "fuori" << endl;
+                EV << "outside" << endl;
                 found = true;
             }
             else if (coord.distance(center) <= radius) {

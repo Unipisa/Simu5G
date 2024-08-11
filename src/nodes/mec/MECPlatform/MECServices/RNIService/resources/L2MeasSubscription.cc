@@ -29,13 +29,13 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
         subscriptionType_ = "L2MeasurementSubscription";
     }
     else {
-        Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
+        Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 attribute
         return false;
     }
 
     nlohmann::ordered_json jsonBody = body["L2MeasurementSubscription"];
 
-    // add basis information
+    // add basic information
     bool result = SubscriptionBase::fromJson(jsonBody);
     // add information relative to this type of subscription
     if (result) {
@@ -43,7 +43,7 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
 
         if (!jsonBody.contains("filterCriteria") || jsonBody["filterCriteria"].is_array()) {
             std::cout << "1" << std::endl;
-            Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 att
+            Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 attribute
             return false;
         }
 
@@ -54,13 +54,13 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
             if (filterCriteria["appInstanceId"].is_array()) {
                 std::cout << "2" << std::endl;
 
-                Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 att
+                Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 attribute
                 return false;
             }
-            filterCriteria_.appIstanceId = filterCriteria["appInstanceId"];
+            filterCriteria_.appInstanceId = filterCriteria["appInstanceId"];
         }
 
-        //check ues filter
+        //check users filter
         if (filterCriteria.contains("associateId")) {
             if (filterCriteria["associateId"].is_array()) {
                 std::cout << "3" << std::endl;
@@ -106,7 +106,7 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
 
         //check trigger filter
         if (filterCriteria.contains("trigger")) {
-            //check if it is event trigger and notify, based on the state of the ues e cells
+            //check if it is event trigger and notify, based on the state of the users and cells
         }
 
         nlohmann::ordered_json response = body;

@@ -30,7 +30,7 @@ class LteMacBuffer
   public:
     /**
      * Constructor initializes
-     * the  list
+     * the list
      */
     LteMacBuffer();
     ~LteMacBuffer();
@@ -44,8 +44,8 @@ class LteMacBuffer
     LteMacBuffer *dup() const;
 
     /**
-     * pushBack() inserts a new  packet
-     * in the back of the queue (standard operation)
+     * pushBack() inserts a new packet
+     * at the back of the queue (standard operation)
      *
      * @param pkt packet to insert
      */
@@ -53,14 +53,14 @@ class LteMacBuffer
 
     /**
      * pushFront() inserts a new
-     * packet in the front of the queue
+     * packet at the front of the queue
      *
      * @param pkt packet to insert
      */
     void pushFront(PacketInfo pkt);
 
     /**
-     * popFront() extracts a  packet from the
+     * popFront() extracts a packet from the
      * front of the queue (standard operation).
      * NOTE: This function increases the processed_ variable.
      *
@@ -70,7 +70,7 @@ class LteMacBuffer
     PacketInfo popFront();
 
     /**
-     * popBack() extracts a  packet from the
+     * popBack() extracts a packet from the
      * back of the queue.
      *
      * @return zero-size packet if queue is empty,
@@ -79,7 +79,7 @@ class LteMacBuffer
     PacketInfo popBack();
 
     /**
-     * front() returns the  packet in front
+     * front() returns the packet in front
      * of the queue without performing actual extraction.
      *
      * @return zero-size packet if queue is empty,
@@ -88,11 +88,11 @@ class LteMacBuffer
     PacketInfo& front();
 
     /**
-     * front() returns the  packet in back
+     * back() returns the packet at the back
      * of the queue without performing actual extraction.
      *
      * @return nullptr if queue is empty,
-     *            pointer to  pkt on successful operation
+     *            pointer to pkt on successful operation
      */
     PacketInfo back() const;
 
@@ -114,7 +114,7 @@ class LteMacBuffer
 
     /**
      * getQueueLength() returns the number
-     * of  packets in the queue
+     * of packets in the queue
      *
      * @return #packets in queue
      */
@@ -129,23 +129,23 @@ class LteMacBuffer
     /**
      * getHolTimestamp() returns the timestamp
      * of the Head Of Line (front)
-     *  packet of the queue
+     * packet of the queue
      *
      * @return Hol Timestamp (0 if queue empty)
      */
     simtime_t getHolTimestamp() const;
 
     /**
-     * getProcessed() returns the number of sdus
+     * getProcessed() returns the number of SDUs
      * processed by the scheduler. It is assumed that
-     * the scheduler processes packets only from front of the queue
+     * the scheduler processes packets only from the front of the queue
      *
-     * @return Number of processed sdus
+     * @return Number of processed SDUs
      */
     unsigned int getProcessed() const;
 
     /**
-     * Get direct (readonly) access to pdu list
+     * Get direct (readonly) access to PDU list
      */
     const std::list<PacketInfo> *getPacketlist() const;
 
@@ -158,10 +158,10 @@ class LteMacBuffer
     /// Occupancy of the whole buffer
     unsigned int queueOccupancy_;
 
-    /// Number of queued  packets
+    /// Number of queued packets
     int queueLength_;
 
-    /// List of  packets
+    /// List of packets
     std::list<PacketInfo> Queue_;
 };
 

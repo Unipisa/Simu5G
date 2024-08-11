@@ -27,7 +27,7 @@ using namespace omnetpp;
 //
 // simple module implementing the MEC platform manager (MECPM) entity of a
 // MEC system. It does not follow the ETSI specs, but acts only as a
-// passtrhrough between the MEC orchestrator and the MEC host modules
+// passthrough between the MEC orchestrator and the MEC host modules
 //
 // The mecOrchestrator module is used to link the MECPM with the MEC orchestrator
 
@@ -49,7 +49,7 @@ class MecPlatformManager : public cSimpleModule
     virtual void handleMessage(cMessage *) {}
     virtual void finish() {}
 
-    /* instancing the requested MECApp
+    /* instantiating the requested MECApp
      *
      * The argument is a message even if it is called as a direct method call from the
      * MEC orchestrator. It could be useful in the future if the MECPM were enriched
@@ -64,7 +64,7 @@ class MecPlatformManager : public cSimpleModule
     // instantiating the MEC app
     MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *);
     bool instantiateEmulatedMEApp(CreateAppMessage *);
-    // terminating the correspondent MEC app
+    // terminating the corresponding MEC app
     bool terminateMEApp(DeleteAppMessage *);
     bool terminateEmulatedMEApp(DeleteAppMessage *);
 

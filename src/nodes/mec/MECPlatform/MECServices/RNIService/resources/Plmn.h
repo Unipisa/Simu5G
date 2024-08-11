@@ -25,7 +25,7 @@ class Plmn : public AttributeBase
     std::string mcc_; // 3 decimal digits
     std::string mnc_; // 2 or 3 decimal digits
 
-    nlohmann::ordered_json toJsonCell() const; //should be private?
+    nlohmann::ordered_json toJsonCell() const; // should this be private?
     /* data */
 
   public:

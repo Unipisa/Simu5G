@@ -137,7 +137,7 @@ void VoIPReceiver::playout(bool finish)
     sample = ((double)channelLoss / (double)n_frames);
     emit(voIPFrameLossSignal_, sample);
 
-    //Vector for managing duplicates
+    // Vector for managing duplicates
     std::vector<bool> isArrived;
     isArrived.resize(n_frames, false);
 
@@ -159,7 +159,7 @@ void VoIPReceiver::playout(bool finish)
             EV << "VoIPReceiver::playout - Jitter measured: " << last_jitter << " TALK[" << pPacket->getIDtalk() << "] - FRAME[" << IDframe << "]\n";
 
         if (IDframe < n_frames) {
-            //Duplicates management
+            // Duplicates management
             if (isArrived[IDframe]) {
                 // avoid printing during finish (as it will print to the standard output)
                 if (!finish)
@@ -189,7 +189,7 @@ void VoIPReceiver::playout(bool finish)
                     }
                     --mBufferSpace_;
 
-                    //duplicates management
+                    // duplicates management
                     isArrived[IDframe] = true;
 
                     mPlayoutQueue_.push_back(pPacket);

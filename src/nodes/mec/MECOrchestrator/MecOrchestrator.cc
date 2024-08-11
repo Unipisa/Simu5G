@@ -27,7 +27,7 @@
 #include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/AvailableResourcesSelectionBased.h"
 #include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecHostSelectionBased.h"
 
-//emulation debug
+// Emulation debug
 #include <iostream>
 
 namespace simu5g {
@@ -44,7 +44,7 @@ MecOrchestrator::MecOrchestrator()
 void MecOrchestrator::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
-    // avoid multiple initializations
+    // Avoid multiple initializations
     if (stage != inet::INITSTAGE_LOCAL)
         return;
     EV << "MecOrchestrator::initialize - stage " << stage << endl;
@@ -85,7 +85,7 @@ void MecOrchestrator::handleMessage(cMessage *msg)
                 sendDeleteAppContextAck(meoMsg->getSuccess(), meoMsg->getRequestId(), meoMsg->getContextId());
         }
     }
-    // handle message from the LCM proxy
+    // Handle message from the LCM proxy
     else if (msg->arrivedOn("fromUALCMP")) {
         EV << "MecOrchestrator::handleMessage - " << msg->getName() << endl;
         handleUALCMPMessage(msg);
@@ -113,24 +113,24 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
 
     EV << "MecOrchestrator::createMeApp - processing... request id: " << contAppMsg->getRequestId() << endl;
 
-    //retrieve UE App ID
+    // Retrieve UE App ID
     int ueAppID = atoi(contAppMsg->getDevAppId());
 
     /*
-     * The Mec orchestrator has to decide where to deploy the MEC application.
-     * - It checks if the MEC app has been already deployed
-     * - It selects the most suitable MEC host     *
+     * The MEC orchestrator has to decide where to deploy the MEC application.
+     * - It checks if the MEC app has already been deployed
+     * - It selects the most suitable MEC host
      */
 
     for (const auto& contextApp : meAppMap) {
         /*
          * TODO
-         * set the check to provide multi UE to one mec application scenario.
+         * set the check to provide multi UE to one MEC application scenario.
          * For now the scenario is one to one, since the device application ID is used
          */
         if (contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId == contAppMsg->getAppDId()) {
-            //Sending ACK to the UEApp to confirm the instantiation in case of previous ack lost!
-            //testing
+            // Sending ACK to the UEApp to confirm the instantiation in case the previous ack was lost!
+            // Testing
             EV << "MecOrchestrator::startMECApp - \tWARNING: required MEC App instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
             EV << "MecOrchestrator::startMECApp  - sending ackMEAppPacket with " << ACK_CREATE_CONTEXT_APP << endl;
             sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
@@ -142,7 +142,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
     double processingTime = 0.0;
 
     if (contAppMsg->getOnboarded() == false) {
-        // onboard app descriptor
+        // Onboard app descriptor
         EV << "MecOrchestrator::startMECApp - onboarding appDescriptor from: " << contAppMsg->getAppPackagePath() << endl;
         const ApplicationDescriptor& appDesc = onboardApplicationPackage(contAppMsg->getAppPackagePath());
         appDid = appDesc.getAppDId();
@@ -173,10 +173,10 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         createAppMsg->setRequiredRam(desc.getVirtualResources().ram);
         createAppMsg->setRequiredDisk(desc.getVirtualResources().disk);
 
-        // This field is useful for mec services no etsi mec compliant (e.g. omnet++ like)
-        // In such case, the vim has to connect the gates between the mec application and the service
+        // This field is useful for MEC services not ETSI MEC compliant (e.g. OMNeT++ like)
+        // In such cases, the VIM must connect the gates between the MEC application and the service
 
-        // insert OMNeT like services, only one is supported, for now
+        // Insert OMNeT like services, only one is supported for now
         if (!desc.getOmnetppServiceRequired().empty())
             createAppMsg->setRequiredService(desc.getOmnetppServiceRequired().c_str());
         else
@@ -184,7 +184,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
 
         createAppMsg->setContextId(contextIdCounter);
 
-        // add the new mec app in the map structure
+        // Add the new MEC app in the map structure
         mecAppMapEntry newMecApp;
         newMecApp.appDId = appDid;
         newMecApp.mecUeAppID = ueAppID;
@@ -197,10 +197,10 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(newMecApp.mecpm);
 
         /*
-         * If the application descriptor refers to a simulated mec app, the system eventually instances the mec app object.
-         * If the application descriptor refers to a mec application running outside the simulator, i.e emulation mode,
-         * the system allocates the resources, without instantiate any module.
-         * The application descriptor contains the address and port information to communicate with the mec application
+         * If the application descriptor refers to a simulated MEC app, the system eventually instantiates the MEC app object.
+         * If the application descriptor refers to a MEC application running outside the simulator, i.e., emulation mode,
+         * the system allocates the resources without instantiating any module.
+         * The application descriptor contains the address and port information to communicate with the MEC application.
          */
 
         MecAppInstanceInfo *appInfo = nullptr;
@@ -215,7 +215,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
             appInfo->instanceId = "emulated_" + desc.getAppName();
             newMecApp.isEmulated = true;
 
-            // register the address of the MEC app to the Binder, so as the GTP knows the endpoint (UPF_MEC) where to forward packets to
+            // Register the address of the MEC app to the Binder, so the GTP knows the endpoint (UPF_MEC) where to forward packets to
             inet::L3Address gtpAddress = inet::L3AddressResolver().resolve(newMecApp.mecHost->getSubmodule("upf_mec")->getFullPath().c_str());
             binder_->registerMecHostUpfAddress(appInfo->endPoint.addr, gtpAddress);
         }
@@ -239,7 +239,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
 
         newMecApp.mecAppAddress = appInfo->endPoint.addr;
         newMecApp.mecAppPort = appInfo->endPoint.port;
-        newMecApp.mecAppIsntanceId = appInfo->instanceId;
+        newMecApp.mecAppInstanceId = appInfo->instanceId;
         newMecApp.contextId = contextIdCounter;
         meAppMap[contextIdCounter] = newMecApp;
 
@@ -257,7 +257,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         delete appInfo;
     }
     else {
-        //throw cRuntimeError("MecOrchestrator::startMECApp - A suitable MEC host has not been selected");
+        // throw cRuntimeError("MecOrchestrator::startMECApp - A suitable MEC host has not been selected");
         EV << "MecOrchestrator::startMECApp - A suitable MEC host has not been selected" << endl;
         MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
         msg->setType(CREATE_CONTEXT_APP);
@@ -275,15 +275,15 @@ void MecOrchestrator::stopMECApp(UALCMPMessage *msg) {
 
     int contextId = contAppMsg->getContextId();
     EV << "MecOrchestrator::stopMECApp - processing contextId: " << contextId << endl;
-    // checking if ueAppIdToMeAppMapKey entry map does exist
+    // Checking if ueAppIdToMeAppMapKey entry map does exist
     if (meAppMap.empty() || (meAppMap.find(contextId) == meAppMap.end())) {
-        // maybe it has already been deleted
-        EV << "MecOrchestrator::stopMECApp - \tWARNING Mec Application [" << meAppMap[contextId].mecUeAppID << "] not found!" << endl;
+        // Maybe it has already been deleted
+        EV << "MecOrchestrator::stopMECApp - \tWARNING MEC Application [" << meAppMap[contextId].mecUeAppID << "] not found!" << endl;
         sendDeleteAppContextAck(false, contAppMsg->getRequestId(), contextId);
         return;
     }
 
-    // call the methods of resource manager and virtualization infrastructure of the selected mec host to deallocate the resources
+    // Call the methods of resource manager and virtualization infrastructure of the selected MEC host to deallocate the resources
 
     MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(meAppMap[contextId].mecpm);
     DeleteAppMessage *deleteAppMsg = new DeleteAppMessage();
@@ -303,12 +303,12 @@ void MecOrchestrator::stopMECApp(UALCMPMessage *msg) {
     mecoMsg->setRequestId(contAppMsg->getRequestId());
     mecoMsg->setContextId(contAppMsg->getContextId());
     if (isTerminated) {
-        EV << "MecOrchestrator::stopMECApp - mec Application [" << meAppMap[contextId].mecUeAppID << "] removed" << endl;
+        EV << "MecOrchestrator::stopMECApp - MEC Application [" << meAppMap[contextId].mecUeAppID << "] removed" << endl;
         meAppMap.erase(contextId);
         mecoMsg->setSuccess(true);
     }
     else {
-        EV << "MecOrchestrator::stopMECApp - mec Application [" << meAppMap[contextId].mecUeAppID << "] not removed" << endl;
+        EV << "MecOrchestrator::stopMECApp - MEC Application [" << meAppMap[contextId].mecUeAppID << "] not removed" << endl;
         mecoMsg->setSuccess(false);
     }
 
@@ -343,7 +343,7 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
 
         ack->setSuccess(true);
         ack->setContextId(contextId);
-        ack->setAppInstanceId(mecAppStatus.mecAppIsntanceId.c_str());
+        ack->setAppInstanceId(mecAppStatus.mecAppInstanceId.c_str());
         ack->setRequestId(requestSno);
         std::stringstream uri;
 
@@ -360,7 +360,7 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
 
 cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
-    EV << "MecOrchestrator::findBestMecHost - finding best MecHost..." << endl;
+    EV << "MecOrchestrator::findBestMecHost - finding best MEC host..." << endl;
     cModule *bestHost = nullptr;
 
     for (auto mecHost : mecHosts) {
@@ -368,19 +368,19 @@ cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
         if (!res) {
-            EV << "MecOrchestrator::findBestMecHost - MEC host []" << mecHost << " has not got enough resources. Searching again..." << endl;
+            EV << "MecOrchestrator::findBestMecHost - MEC host [" << mecHost->getName() << "] has not got enough resources. Searching again..." << endl;
             continue;
         }
 
-        // Temporally select this mec host as the best
-        EV << "MecOrchestrator::findBestMecHost - MEC host []" << mecHost << " temporally chosen as bet MEC host, checking for the required MEC services.." << endl;
+        // Temporarily select this MEC host as the best
+        EV << "MecOrchestrator::findBestMecHost - MEC host [" << mecHost->getName() << "] temporarily chosen as best MEC host, checking for the required MEC services.." << endl;
         bestHost = mecHost;
 
         MecPlatformManager *mecpm = check_and_cast<MecPlatformManager *>(mecHost->getSubmodule("mecPlatformManager"));
         auto mecServices = mecpm->getAvailableMecServices();
         std::string serviceName;
 
-        /* I assume the app requires only one mec service */
+        /* I assume the app requires only one MEC service */
         if (appDesc.getAppServicesRequired().size() > 0) {
             serviceName = appDesc.getAppServicesRequired()[0];
         }
@@ -396,7 +396,7 @@ cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         }
     }
     if (bestHost != nullptr)
-        EV << "MecOrchestrator::findBestMecHost - best MEC host: " << bestHost << endl;
+        EV << "MecOrchestrator::findBestMecHost - best MEC host: " << bestHost->getName() << endl;
     else
         EV << "MecOrchestrator::findBestMecHost - no MEC host found" << endl;
 
@@ -407,7 +407,7 @@ void MecOrchestrator::getConnectedMecHosts()
 {
     EV << "MecOrchestrator::getConnectedMecHosts - mecHostList: " << par("mecHostList").str() << endl;
 
-    //getting the list of mec hosts associated to this mec system from parameter
+    // Getting the list of MEC hosts associated with this MEC system from parameter
     auto mecHostList = check_and_cast<cValueArray *>(par("mecHostList").objectValue());
     if (mecHostList->size() > 0) {
         for (int i = 0; i < mecHostList->size(); i++) {
@@ -428,7 +428,6 @@ const ApplicationDescriptor& MecOrchestrator::onboardApplicationPackage(const ch
     ApplicationDescriptor appDesc(fileName);
     if (mecApplicationDescriptors_.find(appDesc.getAppDId()) != mecApplicationDescriptors_.end()) {
         EV << "MecOrchestrator::onboardApplicationPackages() - Application descriptor with appName [" << fileName << "] is already present.\n" << endl;
-//                            "Duplicate appDId or application package already onboarded?", fileName);
     }
     else {
         mecApplicationDescriptors_[appDesc.getAppDId()] = appDesc; // add to the mecApplicationDescriptors_
@@ -452,7 +451,7 @@ void MecOrchestrator::registerMecService(ServiceDescriptor& serviceDescriptor) c
 
 void MecOrchestrator::onboardApplicationPackages()
 {
-    //getting the list of mec hosts associated to this mec system from parameter
+    // Getting the list of MEC hosts associated with this MEC system from parameter
     auto mecApplicationPackageList = check_and_cast<cValueArray *>(par("mecApplicationPackageList").objectValue());
     if (mecApplicationPackageList->size() > 0) {
         for (int i = 0; i < mecApplicationPackageList->size(); i++) {

@@ -33,7 +33,7 @@ class LocationResource : public AttributeBase
 {
   public:
     /**
-     * the constructor takes a vector of te eNodeBs connceted to the MeHost
+     * The constructor takes a vector of the eNodeBs connected to the MeHost
      * and creates a CellInfo object
      */
     LocationResource();
@@ -51,7 +51,7 @@ class LocationResource : public AttributeBase
     nlohmann::ordered_json toJson(std::vector<MacNodeId>& cellsID, std::vector<inet::Ipv4Address>& uesID) const;
 
   protected:
-    //better mappa <cellID, Cellinfo>
+    // better to map <cellID, CellInfo>
     opp_component_ptr<Binder> binder_;
     TimeStamp timestamp_;
     std::map<MacCellId, CellInfo *> eNodeBs_;

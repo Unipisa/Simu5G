@@ -22,16 +22,16 @@ bool NRSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carri
     if (harqRxBuff == nullptr)                              // a new HARQ buffer will be created at reception
         return true;
 
-    // check if harq buffer have already been created for this node
+    // check if HARQ buffer has already been created for this node
     if (harqRxBuff->find(id) != harqRxBuff->end()) {
         LteHarqBufferRx *ulHarq = harqRxBuff->at(id);
         UnitList freeUnits = ulHarq->firstAvailable();
 
         if (freeUnits.first != HARQ_NONE) {
             if (freeUnits.second.empty())
-                // there is a process currently selected for user <id> , but all of its cws have been already used.
+                // there is a process currently selected for user <id>, but all of its CWs have already been used.
                 return false;
-            // retrieving the cw index
+            // retrieving the CW index
             cw = freeUnits.second.front();
             // DEBUG check
             if (cw > MAX_CODEWORDS)
@@ -91,7 +91,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                         if (allocatedCws_[nodeId] == codewords)
                             break;
 
-                        // skip processes which are not in rtx status
+                        // skip processes which are not in RTX status
                         if (currProc->getUnitStatus(cw) != RXHARQ_PDU_CORRUPTED) {
                             EV << NOW << " NRSchedulerGnbUl::rtxschedule UE " << nodeId << " - detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
                             continue;
@@ -99,7 +99,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
 
                         // if the process is in CORRUPTED state, then schedule a retransmission for this process
 
-                        // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
+                        // FIXME PERFORMANCE: check for RTX status before calling rtxAcid
 
                         // perform a retransmission on available codewords for the selected acid
                         unsigned int rtxBytes = schedulePerAcidRtx(nodeId, carrierFrequency, cw, process, bandLim);
@@ -144,7 +144,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                     unsigned int codewords = txParams.getLayers().size();// get the number of available codewords
                     unsigned int allocatedBytes = 0;
 
-                    // TODO handle the codewords join case (size of(cw0+cw1) < currentTbs && currentLayers ==1)
+                    // TODO handle the codewords join case (size of(cw0+cw1) < currentTBS && currentLayers ==1)
 
                     EV << NOW << " NRSchedulerGnbUl::rtxschedule D2D TX UE: " << senderId << " - RX UE: " << destId << endl;
 
@@ -162,13 +162,13 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                             EV << NOW << " NRSchedulerGnbUl::rtxschedule process " << process << endl;
                             EV << NOW << " NRSchedulerGnbUl::rtxschedule ------- CODEWORD " << cw << endl;
 
-                            // skip processes which are not in rtx status
+                            // skip processes which are not in RTX status
                             if (currProc->getUnitStatus(cw) != TXHARQ_PDU_BUFFERED) {
                                 EV << NOW << " NRSchedulerGnbUl::rtxschedule D2D UE: " << senderId << " detected Acid: " << process << " in status " << currProc->getUnitStatus(cw) << endl;
                                 continue;
                             }
 
-                            // FIXME PERFORMANCE: check for rtx status before calling rtxAcid
+                            // FIXME PERFORMANCE: check for RTX status before calling rtxAcid
 
                             // perform a retransmission on available codewords for the selected acid
                             unsigned int rtxBytes = schedulePerAcidRtxD2D(destId, senderId, carrierFrequency, cw, process, bandLim);

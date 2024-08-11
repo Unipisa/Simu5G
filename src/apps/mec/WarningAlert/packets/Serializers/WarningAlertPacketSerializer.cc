@@ -17,7 +17,7 @@
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
 
-#include <iostream> // used to debug in emulation
+#include <iostream> // used for debugging in emulation
 
 namespace simu5g {
 
@@ -127,7 +127,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
 
             std::vector<std::string> coords = cStringTokenizer((char *)&bytes[0], ",").asVector();
             if (coords.size() != 3)
-                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - start application message must be in form x,y,radius. But is %s", data.c_str());
+                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - start application message must be in the form x,y,radius. But is %s", data.c_str());
 
             double x = std::stod(coords[0]);
             double y = std::stod(coords[1]);
@@ -159,7 +159,7 @@ const Ptr<Chunk> WarningAlertPacketSerializer::deserialize(MemoryInputStream& st
             std::vector<std::string> coords = cStringTokenizer((char *)&bytes[0], ",").asVector();
 
             if (coords.size() != 2)
-                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - WARNING application message must be in form x,y. But is %s", data.c_str());
+                throw cRuntimeError("WarningAlertPacketSerializer::deserialize - WARNING application message must be in the form x,y. But is %s", data.c_str());
             alertPacket->setDanger(res);
             alertPacket->setPositionX(std::stod(coords[0]));
             alertPacket->setPositionY(std::stod(coords[1]));

@@ -44,7 +44,7 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
     stream.writeByte(type);
     stream.writeUint32Be(msg->getSourceId());
     stream.writeUint32Be(msg->getDestinationId());
-    // note: length does not need to be serialized - is calculated during deserialization
+    // note: length does not need to be serialized - it is calculated during deserialization
 
     // serialization of list containing the information elements
     X2InformationElementsList ieList = msg->getIeList();
@@ -107,7 +107,7 @@ const Ptr<Chunk> LteX2MsgSerializer::deserialize(MemoryInputStream& stream) cons
             msg = makeShared<X2HandoverControlMsg>();
             break;
         default:
-            throw cRuntimeError("LteX2MsgSerializer::deserialize of X2 message type ist not implemented!");
+            throw cRuntimeError("LteX2MsgSerializer::deserialize of X2 message type is not implemented!");
     }
 
     msg->setSourceId(stream.readUint32Be());

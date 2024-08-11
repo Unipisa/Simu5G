@@ -33,7 +33,7 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
     // pop PDCP header
     pkt->popAtFront<LtePdcpPdu>();
 
-    // TODO NRRxentity could delete this packet in handlePdcpSdu()...
+    // TODO NRRxEntity could delete this packet in handlePdcpSdu()...
     auto lteInfo = pkt->getTag<FlowControlInfo>();
     if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
         PacketFlowManagerBase *flowManager = pdcp_->getPacketFlowManager();

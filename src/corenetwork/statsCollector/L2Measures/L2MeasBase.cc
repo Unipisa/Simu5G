@@ -54,11 +54,11 @@ int L2MeasBase::computeMean()
 {
     if (index_ == 0)
         return 0;
-    if (!movingAverage_ && size_ < period_) // no enough data
+    if (!movingAverage_ && size_ < period_) // not enough data
         return 0;
     else {
         int mean = floor(sum_ / size_);
-        return mean < 0 ? 0 : mean; // round could returns -0.00 -> -1
+        return mean < 0 ? 0 : mean; // round could return -0.00 -> -1
     }
 }
 

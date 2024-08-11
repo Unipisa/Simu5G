@@ -55,7 +55,7 @@ void MECWarningAlertApp::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    //retrieving parameters
+    // retrieving parameters
     size_ = par("packetSize");
 
     // set Udp Socket
@@ -64,7 +64,7 @@ void MECWarningAlertApp::initialize(int stage)
     localUePort = par("localUePort");
     ueSocket.bind(localUePort);
 
-    //testing
+    // testing
     EV << "MECWarningAlertApp::initialize - Mec application " << getClassName() << " with mecAppId[" << mecAppId << "] has started!" << endl;
 
     mp1Socket_ = addNewSocket();
@@ -93,7 +93,7 @@ void MECWarningAlertApp::handleUeMessage(cMessage *msg)
 
     if (strcmp(mecPk->getType(), START_WARNING) == 0) {
         /*
-         * Read center and radius from message
+         * Read center and radius from the message
          */
         EV << "MECWarningAlertApp::handleUeMessage - WarningStartPacket arrived" << endl;
         auto warnPk = dynamicPtrCast<const WarningStartPacket>(mecPk);
@@ -170,7 +170,7 @@ void MECWarningAlertApp::sendSubscription()
         std::ofstream myfile;
         myfile.open("example.txt", std::ios::app);
         if (myfile.is_open()) {
-            myfile << "[" << NOW << "] MEWarningAlertApp - Sent POST circleNotificationSubscription the Location Service \n";
+            myfile << "[" << NOW << "] MEWarningAlertApp - Sent POST circleNotificationSubscription to the Location Service \n";
             myfile.close();
         }
     }
@@ -199,7 +199,7 @@ void MECWarningAlertApp::established(int connId)
     else if (connId == serviceSocket_->getSocketId()) {
         EV << "MECWarningAlertApp::established - serviceSocket" << endl;
         // the connectService message is scheduled after a start mec app from the UE app, so I can
-        // response to her here, once the socket is established
+        // respond to her here, once the socket is established
         auto ack = inet::makeShared<WarningAppPacket>();
         ack->setType(START_ACK);
         ack->setChunkLength(inet::B(2));
@@ -283,14 +283,14 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
                 alert->setType(WARNING_ALERT);
 
                 if (criteria == "Entering") {
-                    EV << "MECWarningAlertApp::handleTcpMsg - Ue is Entered in the danger zone " << endl;
+                    EV << "MECWarningAlertApp::handleTcpMsg - UE has entered the danger zone " << endl;
                     alert->setDanger(true);
 
                     if (par("logger").boolValue()) {
                         ofstream myfile;
                         myfile.open("example.txt", ios::app);
                         if (myfile.is_open()) {
-                            myfile << "[" << NOW << "] MEWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE's entered the red zone! \n";
+                            myfile << "[" << NOW << "] MECWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE has entered the red zone! \n";
                             myfile.close();
                         }
                     }
@@ -299,13 +299,13 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
                     modifySubscription();
                 }
                 else if (criteria == "Leaving") {
-                    EV << "MECWarningAlertApp::handleTcpMsg - Ue left from the danger zone " << endl;
+                    EV << "MECWarningAlertApp::handleTcpMsg - UE has left the danger zone " << endl;
                     alert->setDanger(false);
                     if (par("logger").boolValue()) {
                         ofstream myfile;
                         myfile.open("example.txt", ios::app);
                         if (myfile.is_open()) {
-                            myfile << "[" << NOW << "] MEWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE's exited the red zone! \n";
+                            myfile << "[" << NOW << "] MECWarningAlertApp - Received circleNotificationSubscription notification from Location Service. UE has exited the red zone! \n";
                             myfile.close();
                         }
                     }
@@ -348,9 +348,9 @@ void MECWarningAlertApp::handleServiceMessage(int connId)
                 EV << "1" << endl;
                 return;
             }
-            // find_last_of does not take in to account if the uri has a last /
+            // find_last_of does not take into account if the uri has a last /
             // in this case subscriptionType would be empty and the baseUri == uri
-            // by the way the next if statement solve this problem
+            // by the way the next if statement solves this problem
             std::string baseUri = resourceUri.substr(0, lastPart);
             //save the id
             subId = resourceUri.substr(lastPart + 1);
@@ -378,12 +378,12 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
         }
         else {
             if (serviceAddress.isUnspecified())
-                EV << "MECWarningAlertApp::handleSelfMessage - service IP address is  unspecified (maybe response from the service registry is arriving)" << endl;
+                EV << "MECWarningAlertApp::handleSelfMessage - service IP address is unspecified (maybe response from the service registry is arriving)" << endl;
             else if (serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
                 EV << "MECWarningAlertApp::handleSelfMessage - service socket is already connected" << endl;
             auto nack = inet::makeShared<WarningAppPacket>();
             // the connectService message is scheduled after a start mec app from the UE app, so I can
-            // response to her here
+            // respond to her here
             nack->setType(START_NACK);
             nack->setChunkLength(inet::B(2));
             inet::Packet *packet = new inet::Packet("WarningAlertPacketInfo");

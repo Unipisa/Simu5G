@@ -33,10 +33,10 @@ namespace simu5g {
 using namespace omnetpp;
 
 /**
- * This is a UE app that asks to a Device App to instantiate the MECWarningAlertApp.
- * After a successful response, it asks to the MEC app to be notified when the car
- * enters a circle zone described by x,y center position and the radius. When a danger
- * event arrives, the car colors becomes red.
+ * This is a UE app that asks a Device App to instantiate the MECWarningAlertApp.
+ * After a successful response, it asks the MEC app to be notified when the car
+ * enters a circular zone described by x,y center position and the radius. When a danger
+ * event arrives, the car color becomes red.
  *
  * The event behavior flow of the app is:
  * 1) send create MEC app to the Device App
@@ -67,7 +67,7 @@ class UEWarningAlertApp : public cSimpleModule
 
     std::string mecAppName;
 
-    // mobility informations
+    // mobility information
     opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
@@ -84,7 +84,7 @@ class UEWarningAlertApp : public cSimpleModule
 
     cMessage *selfMecAppStart_;
 
-    // uses to write in a log a file
+    // used to write in a log file
     bool log;
 
   public:

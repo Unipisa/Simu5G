@@ -25,7 +25,7 @@ class Ecgi : public AttributeBase
     MacCellId cellId_;
     Plmn plmn_;
 
-    nlohmann::ordered_json toJsonCell() const; //should be private?
+    nlohmann::ordered_json toJsonCell() const; //should this be private?
 
   public:
     Ecgi();

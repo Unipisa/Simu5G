@@ -74,7 +74,7 @@ class Binder : public cSimpleModule
     // list of all UEs. Used for inter-cell interference evaluation
     std::vector<UeInfo *> ueList_;
 
-    // list of all background traffic manager. Used for background UEs CQI computation
+    // list of all background traffic managers. Used for background UEs CQI computation
     std::vector<BgTrafficManagerInfo *> bgTrafficManagerList_;
 
     typedef std::map<unsigned int, std::map<unsigned int, double>> BgInterferenceMatrix;
@@ -239,7 +239,7 @@ class Binder : public cSimpleModule
      * Registers a node to the global Binder module.
      *
      * The binder assigns an IP address to the node, from which it is derived
-     * an unique macNodeId.
+     * a unique macNodeId.
      * The node registers its moduleId (omnet ID), and if it's a UE,
      * it registers also the association with its master node.
      *
@@ -268,7 +268,7 @@ class Binder : public cSimpleModule
     void registerNextHop(MacNodeId masterId, MacNodeId slaveId);
 
     /**
-     * registerNextHop() is called on handovers to sychronize
+     * registerNextHop() is called on handovers to synchronize
      * the nextHop table:
      *
      * It unregisters the slave from its old master
@@ -603,12 +603,12 @@ class Binder : public cSimpleModule
     double computeRequestedRbsFromSinr(double sinr, double reqLoad);
 
     /*
-     * @author Alessandro Noferi.
+     * author Alessandro Noferi.
      *
      * UeStatsCollector management
      */
 
-    /* this method adds the UeStastCollector reference to the baseStationStatsCollector
+    /* this method adds the UeStatsCollector reference to the baseStationStatsCollector
      * structure.
      * @params:
      *  ue: MacNodeId of the ue
@@ -617,7 +617,7 @@ class Binder : public cSimpleModule
      */
     void addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector, MacCellId cell);
 
-    /* this method moves the UeStastCollector reference between the eNB/gNB's baseStationStatsCollector
+    /* this method moves the UeStatsCollector reference between the eNB/gNB's baseStationStatsCollector
      * structure.
      * @params:
      *  ue: MacNodeId of the ue

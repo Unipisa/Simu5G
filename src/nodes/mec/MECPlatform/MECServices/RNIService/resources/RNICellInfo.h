@@ -28,7 +28,7 @@ class RNICellInfo : public AttributeBase
     BaseStationStatsCollector *collector_; // it has the cellCollector and the map <Ipue -> uecollector>
     Ecgi ecgi_;
 
-    nlohmann::ordered_json toJsonCell() const; //should be private?
+    nlohmann::ordered_json toJsonCell() const; // should this be private?
 
   public:
     RNICellInfo();

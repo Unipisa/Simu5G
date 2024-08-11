@@ -23,8 +23,8 @@ namespace simu5g {
 using namespace omnetpp;
 
 /**
- * Objective of the Traffic Flow Filter is mapping IP 4-Tuples to TFT identifiers. This commonly means identifying a bearer and
- * associating it to an ID that will be recognized by the first GTP-U entity
+ * The objective of the Traffic Flow Filter is to map IP 4-Tuples to TFT identifiers. This commonly means identifying a bearer and
+ * associating it with an ID that will be recognized by the first GTP-U entity.
  *
  * This simplified traffic filter queries the Binder to find the destination of the packet.
  * It resides at both the eNodeB and the PGW. At the PGW, when a packet comes to the traffic flow filter, the latter finds the
@@ -34,7 +34,7 @@ using namespace omnetpp;
  */
 class TrafficFlowFilter : public cSimpleModule
 {
-    // specifies the type of the node that contains this filter (it can be ENB or PGW
+    // specifies the type of the node that contains this filter (it can be ENB or PGW)
     // the filterTable_ will be indexed differently depending on this parameter
     CoreNodeType ownerType_;
 
@@ -52,10 +52,10 @@ class TrafficFlowFilter : public cSimpleModule
 
     // === MEC support === //
 
-    //only if owner type is ENB or GNB
+    // only if owner type is ENB or GNB
     std::string meHost;
     inet::L3Address meHostAddress;
-    //only if owner type is GTPENDPOINT
+    // only if owner type is GTPENDPOINT
     inet::L3Address eNodeBAddress;
 
     //@author Alessandro Noferi
@@ -68,7 +68,7 @@ class TrafficFlowFilter : public cSimpleModule
     virtual int numInitStages() const override { return inet::INITSTAGE_LAST + 1; }
     virtual void initialize(int stage) override;
 
-    // TrafficFlowFilter module may receive messages only from the input interface of its compound module
+    // The TrafficFlowFilter module may receive messages only from the input interface of its compound module
     virtual void handleMessage(cMessage *msg) override;
 
     // functions for managing filter tables

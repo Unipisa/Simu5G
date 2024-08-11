@@ -23,16 +23,16 @@ class NRChannelModel : public LteRealisticChannelModel
     virtual void initialize(int stage);
 
     /*
-     * Compute Attenuation caused by pathloss and shadowing (optional)
+     * Compute attenuation caused by path loss and shadowing (optional)
      *
-     * @param nodeid mac node id of UE
+     * @param nodeId MAC node ID of UE
      * @param dir traffic direction
-     * @param coord position of end point comunication (if dir==UL is the position of UE else is the position of gNodeB)
+     * @param coord position of end point communication (if dir==UL it is the position of UE else it is the position of gNodeB)
      */
     virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
 
     /*
-     *  Compute Attenuation caused by transmission direction
+     *  Compute attenuation caused by transmission direction
      *
      * @param angle angle
      */
@@ -41,16 +41,16 @@ class NRChannelModel : public LteRealisticChannelModel
     /*
      * Compute LOS probability (taken from TR 36.873)
      *
-     * @param d between UE and gNodeB
-     * @param nodeid mac node id of UE
+     * @param d distance between UE and gNodeB
+     * @param nodeId MAC node ID of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
 
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
-     * @param 3d_distance between UE and gNodeB (3D)
-     * @param 2d_distance between UE and gNodeB (2D)
+     * @param threeDimDistance distance between UE and gNodeB (3D)
+     * @param twoDimDistance distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
     virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
@@ -58,7 +58,7 @@ class NRChannelModel : public LteRealisticChannelModel
     /*
      * 3D-InH path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeIndoor(double threeDimDistance, double twoDimDistance, bool los);
@@ -66,7 +66,7 @@ class NRChannelModel : public LteRealisticChannelModel
     /*
      * 3D-UMi path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los);
@@ -74,7 +74,7 @@ class NRChannelModel : public LteRealisticChannelModel
     /*
      * 3D-UMa path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los);
@@ -82,19 +82,19 @@ class NRChannelModel : public LteRealisticChannelModel
     /*
      * 3D-RMa path loss model (taken from TR 36.873)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los);
 
     /*
-     * evaluates total interference from external cells seen from the spot given by coord
+     * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
     virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference);
 
     /*
-     * compute attenuation due to path loss and shadowing
+     * Compute attenuation due to path loss and shadowing
      * @return attenuation expressed in dBm
      */
     double computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId);

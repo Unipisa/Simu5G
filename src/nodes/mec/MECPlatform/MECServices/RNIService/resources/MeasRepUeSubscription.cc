@@ -25,18 +25,18 @@ MeasRepUeSubscription::~MeasRepUeSubscription() {}
 
 bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
 {
-    if (body.contains("MeasRepUeSubcription")) { // mandatory attribute
+    if (body.contains("MeasRepUeSubscription")) { // mandatory attribute
 
-        subscriptionType_ = "MeasRepUeSubcription";
+        subscriptionType_ = "MeasRepUeSubscription";
     }
     else {
         Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
         return false;
     }
 
-    nlohmann::ordered_json jsonBody = body["MeasRepUeSubcription"];
+    nlohmann::ordered_json jsonBody = body["MeasRepUeSubscription"];
 
-    // add basis information
+    // add basic information
     bool result = SubscriptionBase::fromJson(jsonBody);
     // add information relative to this type of subscription
     if (result) {
@@ -58,7 +58,7 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
                 Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 att
                 return false;
             }
-            filterCriteria_.appIstanceId = filterCriteria["appInstanceId"];
+            filterCriteria_.appInstanceId = filterCriteria["appInstanceId"];
         }
 
         //check ues filter
@@ -66,13 +66,13 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
             if (filterCriteria["associateId"].is_array()) {
                 std::cout << "3" << std::endl;
 
-                Http::send400Response(socket_); // only one ip
+                Http::send400Response(socket_); // only one id
                 return false;
             }
             else {
                 if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
-                    filterCriteria_.associteId_.setType(filterCriteria["associateId"]["type"]);
-                    filterCriteria_.associteId_.setValue(filterCriteria["associateId"]["value"]);
+                    filterCriteria_.associateId_.setType(filterCriteria["associateId"]["type"]);
+                    filterCriteria_.associateId_.setValue(filterCriteria["associateId"]["value"]);
                 }
             }
         }
@@ -108,7 +108,7 @@ bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
         //check trigger filter
         if (filterCriteria.contains("trigger")) {
             std::string trigger = filterCriteria["trigger"];
-            //check if it is event trigger and notify, based on the state of the ues e cells
+            //check if it is event trigger and notify, based on the state of the ues and cells
         }
 
         nlohmann::ordered_json response = body;
@@ -127,7 +127,7 @@ void MeasRepUeSubscription::sendSubscriptionResponse() {
     nlohmann::ordered_json val;
     val[subscriptionType_]["callbackReference"] = callbackReference_;
     val[subscriptionType_]["_links"]["self"] = links_;
-    val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
+    val[subscriptionType_]["filterCriteria"] = filterCriteria_.associateId_.toJson();
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
 }
 

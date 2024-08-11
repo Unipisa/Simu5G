@@ -143,7 +143,7 @@ void TrafficLightMobility::move()
 
     Coord dummyCoord;
     handleIfOutside(REFLECT, dummyCoord, lastVelocity, heading_);
-    //if heading < 0 --> abs , sum 180 and normalize to 360
+    //if heading < 0 --> abs, sum 180 and normalize to 360
     if (heading_ < rad(0)) {
         double angle = M_PI / 2;
         if (std::abs(deg(heading_).get()) == 270 || std::abs(deg(heading_).get()) == 90)

@@ -23,14 +23,14 @@ namespace simu5g {
  *
  * Class derived from base class contained
  * in msg declaration: define common fields for UM/AM PDU
- * A Data PDU contains a list of SDUs: a SDU can be
+ * A Data PDU contains a list of SDUs: an SDU can be
  * a whole SDU or a fragment
  */
 class LteRlcDataPdu : public LteRlcDataPdu_Base
 {
   private:
     void copy(const LteRlcDataPdu& other) {
-        // "the copy constructor of a container should dup() the owned objects and take() the copies"
+        // "The copy constructor of a container should dup() the owned objects and take() the copies"
         sduList_.clear();
         RlcSduList::const_iterator sit;
         for (sit = other.sduList_.begin(); sit != other.sduList_.end(); ++sit) {
@@ -51,7 +51,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     RlcSduList sduList_;
     RlcSduListSizes sduSizes_;
 
-    // number of SDU stored in the message
+    // number of SDUs stored in the message
     unsigned int numSdu_;
 
     // define the segmentation info for the PDU
@@ -113,7 +113,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
 
     unsigned int getNumSdu() const { return numSdu_; }
 
-    // @author Alessandro noferi
+    // @author Alessandro Noferi
     virtual const RlcSduList *getRlcSduList()
     {
         return &sduList_;
@@ -126,7 +126,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
 
     /**
      * pushSdu() gets ownership of the packet
-     * and stores it inside the rlc sdu list
+     * and stores it inside the RLC SDU list
      * in back position
      *
      * @param pkt packet to store
@@ -150,8 +150,8 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     }
 
     /**
-     * popSdu() pops a packet from front of
-     * the sdu list and drops ownership before
+     * popSdu() pops a packet from the front of
+     * the SDU list and drops ownership before
      * returning it
      *
      * @return popped packet

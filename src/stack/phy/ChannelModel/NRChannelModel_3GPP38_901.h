@@ -18,7 +18,7 @@ namespace simu5g {
 
 // NRChannelModel_3GPP38_901
 //
-// This channel model implements path loss, LOS probability and shadowing according to
+// This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
 //     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
@@ -29,10 +29,10 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
     virtual void initialize(int stage);
 
     /*
-     * Compute LOS probability (taken from TR TR 38.901)
+     * Compute LOS probability (taken from TR 38.901)
      *
-     * @param d between UE and gNodeB
-     * @param nodeid mac node id of UE
+     * @param d distance between UE and gNodeB
+     * @param nodeId mac node id of UE
      */
     void computeLosProbability(double d, MacNodeId nodeId);
 
@@ -40,15 +40,15 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
      * Compute the building penetration loss for indoor UE
      * See section 7.4.3 of TR 38.901
      *
-     * @param 3d_distance between UE and gNodeB (3D)
+     * @param threeDimDistance distance between UE and gNodeB (3D)
      */
     virtual double computePenetrationLoss(double threeDimDistance);
 
     /*
      * Compute the path-loss attenuation according to the selected scenario
      *
-     * @param 3d_distance between UE and gNodeB (3D)
-     * @param 2d_distance between UE and gNodeB (2D)
+     * @param threeDimDistance distance between UE and gNodeB (3D)
+     * @param twoDimDistance distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
     virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
@@ -56,7 +56,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
     /*
      * UMa path loss model (taken from TR 38.901)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los);
@@ -64,7 +64,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
     /*
      * UMi path loss model (taken from TR 38.901)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los);
@@ -72,7 +72,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
     /*
      * UMa path loss model (taken from TR 38.901)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los);
@@ -80,24 +80,24 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
     /*
      * InH path loss model (taken from TR 38.901)
      *
-     * @param distance between UE and gNodeB
+     * @param threeDimDistance distance between UE and gNodeB
      * @param los line-of-sight flag
      */
     double computeIndoor(double threeDimDistance, double twoDimDistance, bool los);
 
     /*
-     * compute std deviation of shadowing according to scenario and visibility
+     * Compute std deviation of shadowing according to scenario and visibility
      *
-     * @param distance between UE and gNodeB
-     * @param nodeid mac node id of UE
+     * @param sqrDistance distance between UE and gNodeB
+     * @param nodeId mac node id of UE
      */
     double getStdDev(bool dist, MacNodeId nodeId);
 
     /*
      * Compute shadowing
      *
-     * @param distance between UE and gNodeB
-     * @param nodeid mac node id of UE
+     * @param sqrDistance distance between UE and gNodeB
+     * @param nodeId mac node id of UE
      * @param speed speed of UE
      */
     virtual double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl);

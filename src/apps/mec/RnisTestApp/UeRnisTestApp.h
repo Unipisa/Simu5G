@@ -29,27 +29,27 @@ using namespace omnetpp;
 // This UE app asks the Device App to instantiate a MecRnisTestApp.
 // After the MEC app has been initialized, the UE app requests the MEC app to
 // periodically query the RNI Service.
-// When the UE app received the requested info from the MEC app, it just outputs
+// When the UE app receives the requested info from the MEC app, it simply outputs
 // that in the Qtenv log (set the logger parameter to dump the output to a file).
 // If the period is set to 0, then only one query is requested.
 //
 class UeRnisTestApp : public cSimpleModule
 {
 
-    //communication to device app and mec app
+    // Communication to device app and MEC app
     inet::UdpSocket socket;
 
     simtime_t period_;
     int deviceAppPort_;
     inet::L3Address deviceAppAddress_;
 
-    // MEC application endPoint (returned by the device app)
+    // MEC application end point (returned by the device app)
     inet::L3Address mecAppAddress_;
     int mecAppPort_;
 
     std::string mecAppName;
 
-    //scheduling
+    // Scheduling
     enum MsgKind {
         KIND_SELF_START = 1000,
         KIND_SELF_STOP,
@@ -61,7 +61,7 @@ class UeRnisTestApp : public cSimpleModule
 
     cMessage *selfMecAppStart_;
 
-    // uses to write in a log a file
+    // Used to write in a log file
     bool log;
 
   public:

@@ -19,7 +19,7 @@ using namespace inet;
 simsignal_t CbrReceiver::cbrFrameLossSignal_ = registerSignal("cbrFrameLossSignal");
 simsignal_t CbrReceiver::cbrFrameDelaySignal_ = registerSignal("cbrFrameDelaySignal");
 simsignal_t CbrReceiver::cbrJitterSignal_ = registerSignal("cbrJitterSignal");
-simsignal_t CbrReceiver::cbrReceivedThroughtput_ = registerSignal("cbrReceivedThroughtputSignal");
+simsignal_t CbrReceiver::cbrReceivedThroughput_ = registerSignal("cbrReceivedThroughputSignal");
 simsignal_t CbrReceiver::cbrReceivedBytesSignal_ = registerSignal("cbrReceivedBytesSignal");
 
 void CbrReceiver::initialize(int stage)
@@ -79,7 +79,7 @@ void CbrReceiver::finish()
     emit(cbrFrameLossSignal_, lossRate);
 
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit(cbrReceivedThroughtput_, recvBytes_ / elapsedTime.dbl());
+    emit(cbrReceivedThroughput_, recvBytes_ / elapsedTime.dbl());
 }
 
 } //namespace

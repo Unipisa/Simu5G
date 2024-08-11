@@ -26,7 +26,7 @@ LteHarqProcessTxD2D::LteHarqProcessTxD2D(Binder *binder, unsigned char acid, uns
     numEmptyUnits_ = numUnits; //++ @ insert, -- @ unit reset (ack or fourth nack)
     numSelected_ = 0; //++ @ markSelected and insert, -- @ extract/sendDown
 
-    // H-ARQ unit istances
+    // H-ARQ unit instances
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
         (*units_)[i] = new LteHarqUnitTxD2D(binder, acid, i, macOwner_, dstMac);
     }
@@ -39,7 +39,7 @@ LteHarqProcessTxD2D::~LteHarqProcessTxD2D()
 Packet *LteHarqProcessTxD2D::extractPdu(Codeword cw)
 {
     if (numSelected_ == 0)
-        throw cRuntimeError("H-ARQ TX process: cannot extract pdu: numSelected = 0 ");
+        throw cRuntimeError("H-ARQ TX process: cannot extract PDU: numSelected = 0 ");
 
     numSelected_--;
     Packet *pkt = (*units_)[cw]->extractPdu();
@@ -50,7 +50,7 @@ Packet *LteHarqProcessTxD2D::extractPdu(Codeword cw)
     auto info = infoVec.front();
 
     if (info.getDirection() == D2D_MULTI) {
-        // if the pdu is for a multicast/broadcast connection, the selected unit has been emptied
+        // if the PDU is for a multicast/broadcast connection, the selected unit has been emptied
         numEmptyUnits_++;
     }
     return pkt;

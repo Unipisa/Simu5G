@@ -23,7 +23,7 @@ namespace simu5g {
  * @brief Lte MAC Pdu
  *
  * Class derived from base class contained
- * in msg declaration: adds the sdu and control elements list
+ * in msg declaration: adds the SDU and control elements list
  * TODO: Add Control Elements
  */
 class LteMacPdu : public LteMacPdu_Base
@@ -92,8 +92,8 @@ class LteMacPdu : public LteMacPdu_Base
         /*
          * @author Alessandro Noferi
          *
-         * getChunkId returns and int (static var in chunk.h)
-         * TODO think about create our own static variable
+         * getChunkId returns an int (static var in chunk.h)
+         * TODO think about creating our own static variable
          */
         macPduId_ = getChunkId();
     }
@@ -144,7 +144,7 @@ class LteMacPdu : public LteMacPdu_Base
     virtual ~LteMacPdu()
     {
         // delete the SDU queue
-        // (since it is derived of cPacketQueue, it will automatically delete all contained SDUs)
+        // (since it is derived from cPacketQueue, it will automatically delete all contained SDUs)
         drop(sduList_);
         delete sduList_;
 
@@ -201,7 +201,7 @@ class LteMacPdu : public LteMacPdu_Base
 
     /**
      * pushSdu() gets ownership of the packet
-     * and stores it inside the mac sdu list
+     * and stores it inside the MAC SDU list
      * in back position
      *
      * @param pkt packet to store
@@ -218,8 +218,8 @@ class LteMacPdu : public LteMacPdu_Base
     }
 
     /**
-     * popSdu() pops a packet from front of
-     * the sdu list and drops ownership before
+     * popSdu() pops a packet from the front of
+     * the SDU list and drops ownership before
      * returning it
      *
      * @return popped packet
@@ -236,9 +236,9 @@ class LteMacPdu : public LteMacPdu_Base
 
     /**
      * hasSdu() verifies if there are other
-     * SDUs inside the sdu list
+     * SDUs inside the SDU list
      *
-     * @return true if list is not empty, false otherwise
+     * @return true if the list is not empty, false otherwise
      */
     virtual bool hasSdu() const
     {
@@ -257,7 +257,7 @@ class LteMacPdu : public LteMacPdu_Base
     }
 
     /**
-     * popCe() pops a CE from front of
+     * popCe() pops a CE from the front of
      * the CE list and returns it
      *
      * @return popped CE
@@ -271,9 +271,9 @@ class LteMacPdu : public LteMacPdu_Base
 
     /**
      * hasCe() verifies if there are other
-     * CEs inside the ce list
+     * CEs inside the CE list
      *
-     * @return true if list is not empty, false otherwise
+     * @return true if the list is not empty, false otherwise
      */
     virtual bool hasCe() const
     {

@@ -89,7 +89,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     //retrieve the set of free gates
     for (int i = 0; i < maxMECApps; i++)
         freeGates.push_back(i);
-//    ------------------------------------
+    //------------------------------------
     interfaceTable = check_and_cast<inet::InterfaceTable *>(virtualisationInfr->getSubmodule("interfaceTable"));
 
     /*
@@ -107,7 +107,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     }
     mecAppPortCounter = 4001;
 
-    //reserve resources of the bgApps!
+    //reserve resources of the background apps!
     reserveResourcesBGApps();
 }
 
@@ -127,7 +127,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
     if (currentMEApps < maxMECApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
         //creating ueAppIdToMeAppMapKey map entry
-        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - ueAppIdToMeAppMapKey[" << ueAppID << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - ueAppIdToMeAppMapKey[" << ueAppID << "]" << endl;
         int key = ueAppID;
 
         double ram = msg->getRequiredRam();
@@ -137,7 +137,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         if (isAllocable(ram, disk, cpu))
             allocateResources(ram, disk, cpu);
         else {
-            EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - Mec Application with required resources:\n" <<
+            EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - MEC Application with required resources:\n" <<
                 "ram: " << ram << endl <<
                 "disk: " << disk << endl <<
                 "cpu: " << cpu << endl <<
@@ -207,7 +207,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         if (isAllocable(ram, disk, cpu))
             allocateResources(ram, disk, cpu);
         else {
-            EV << "VirtualisationInfrastructureManager::instantiateMEApp - Mec Applciation with required resources:\n" <<
+            EV << "VirtualisationInfrastructureManager::instantiateMEApp - MEC Application with required resources:\n" <<
                 "ram: " << ram << endl <<
                 "disk: " << disk << endl <<
                 "cpu: " << cpu << endl <<
@@ -274,7 +274,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         // add gates to the 'at' layer and connect them to the virtualisationInfr gates
         cModule *at = virtualisationInfr->getSubmodule("at");
         if (at == nullptr)
-            throw cRuntimeError("at module, i.e. message dispatcher for SAP between application and transport layer non found");
+            throw cRuntimeError("at module, i.e. message dispatcher for SAP between application and transport layer not found");
 
         cGate *newAtInGate = at->getOrCreateFirstUnconnectedGate("in", 0, false, true);
         cGate *newAtOutGate = at->getOrCreateFirstUnconnectedGate("out", 0, false, true);
@@ -289,25 +289,25 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         /*
          * @author Alessandro Noferi
          *
-         * with the new MecApp management (i.e. they are directly connected to the transport layer)
-         * it is the MecApp itself that looks for the MeService through the ServiceRegistry module present in the
-         * MePlatform.
+         * with the new MEC App management (i.e. they are directly connected to the transport layer)
+         * it is the MEC App itself that looks for the ME Service through the ServiceRegistry module present in the
+         * MEC Platform.
          *
-         * This is true for MEC services etsi complaint, but for omnet-like services the classic method is used
-         * if there is a service required: link the MECApp to MECPLATFORM to MECSERVICE
+         * This is true for MEC services ETPS compliant, but for OMNeT-like services the classic method is used
+         * if there is a service required: link the MEC App to MEC PLATFORM to ME SERVICE
          */
 
         if (serviceIndex >= 0) {
             EV << "VirtualisationInfrastructureManager::instantiateMEApp - Connecting to the: " << msg->getRequiredService() << endl;
-            //connecting MEPlatform gates to the MEApp gates
+            //connecting ME Platform gates to the ME App gates
             mecPlatform->gate("meAppOut", index)->connectTo(module->gate("mePlatformIn"));
             module->gate("mePlatformOut")->connectTo(mecPlatform->gate("meAppIn", index));
 
-            //connecting internal MEPlatform gates to the required MEService gates
+            //connecting internal ME Platform gates to the required ME Service gates
             (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mecPlatform->gate("meAppOut", index));
             mecPlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
         }
-        else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO omnet++-like MECServices required!" << endl;
+        else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO OMNeT++-like MEC Services required!" << endl;
 
         module->buildInside();
         module->scheduleStart(simTime());
@@ -316,7 +316,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         currentMEApps++;
 
         //testing
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp - " << module->getName() << " instanced!" << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp - " << module->getName() << " instantiated!" << endl;
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
         instanceInfo->status = true;
@@ -340,7 +340,7 @@ bool VirtualisationInfrastructureManager::terminateEmulatedMEApp(DeleteAppMessag
         currentMEApps--;
         EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
-        //deallocte resources
+        //deallocate resources
         deallocateResources(mecAppMap[key].resources.ram, mecAppMap[key].resources.disk, mecAppMap[key].resources.cpu);
 
         //update map
@@ -371,7 +371,7 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage *msg)
 
         //Sending ACK_STOP_MEAPP to the UEApp
 
-        //before to remove the map entry!
+        //before removing the map entry!
         int index = mecAppMap[key].meAppGateIndex;
         int serviceIndex = mecAppMap[key].serviceIndex;
 
@@ -389,7 +389,7 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage *msg)
             mecPlatform->gate("meAppIn", index)->disconnect();
         }
 
-        //deallocte resources
+        //deallocate resources
         deallocateResources(mecAppMap[key].resources.ram, mecAppMap[key].resources.disk, mecAppMap[key].resources.cpu);
 
         //update map

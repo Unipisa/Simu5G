@@ -23,7 +23,7 @@ using namespace omnetpp;
  * Location Service
  * This class inherits the MECServiceBase module interface for the implementation
  * of the Location Service defined in ETSI GS MEC 013 Location API.
- * In particular, the current available functionalities are:
+ * In particular, the currently available functionalities are:
  *  - get the current location of a UE (or a group of UEs)
  *  - get the current location of a Base Station (or a group of Base Stations)
  *  - circle notification subscription
@@ -44,7 +44,7 @@ class LocationService : public MecServiceBase2
     /*
      * This timer is used to check aperiodic subscriptions, i.e. every period subscription
      * states are checked. For example, in the circle notification subscriptions, the timer is used
-     * to check if the UE enters/leaves the circle area    *
+     * to check if the UE enters/leaves the circle area.
      */
     AperiodicSubscriptionTimer *subscriptionTimer_;
 

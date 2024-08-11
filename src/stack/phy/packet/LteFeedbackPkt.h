@@ -31,13 +31,13 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
     }
 
   protected:
-    // vector of vector with RU and TxMode as indexes
+    // vector of vectors with RU and TxMode as indexes
     LteFeedbackDoubleVector lteFeedbackDoubleVectorDl_;
-    // vector of vector with RU and TxMode as indexes
+    // vector of vectors with RU and TxMode as indexes
     LteFeedbackDoubleVector lteFeedbackDoubleVectorUl_;
-    // map of vector of vector with peering UE, RU and TxMode as indexes
+    // map of vectors of vectors with peering UEs, RUs, and TxModes as indexes
     std::map<MacNodeId, LteFeedbackDoubleVector> lteFeedbackMapDoubleVectorD2D_;
-    //MacNodeId of the source
+    // MacNodeId of the source
     MacNodeId sourceNodeId_;
 
   public:

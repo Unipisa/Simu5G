@@ -64,7 +64,7 @@ void VoIPSender::initialize(int stage)
 
     totalSentBytes_ = 0;
     warmUpPer_ = getSimulation()->getWarmupPeriod();
-    voIPGeneratedThroughtput_ = registerSignal("voIPGeneratedThroughput");
+    voIPGeneratedThroughput_ = registerSignal("voIPGeneratedThroughput");
 
     initTraffic_ = new cMessage("initTraffic");
     initTraffic();
@@ -181,7 +181,7 @@ void VoIPSender::sendVoIPPacket()
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
     if (interval > 0.0) {
         double tputSample = (double)totalSentBytes_ / interval;
-        emit(voIPGeneratedThroughtput_, tputSample);
+        emit(voIPGeneratedThroughput_, tputSample);
     }
 
     if (nframesTmp_ > 0)

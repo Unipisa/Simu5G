@@ -115,9 +115,9 @@ void LteX2Manager::fromStack(Packet *pkt)
         return;
     }
 
-    // If the message is carrying data, send to the GTPUserX2 module
+    // If the message is carrying data, send it to the GTPUserX2 module
     // (GTPUserX2 module will tunnel this datagram towards the target eNB)
-    // otherwise it is a X2 control message and sent to the x2 peer
+    // otherwise it is an X2 control message and is sent to the x2 peer
     DestinationIdList destList = x2Info->getDestIdList();
     for (auto targetEnb : destList) {
         auto pktDuplicate = pkt->dup();
@@ -148,7 +148,7 @@ void LteX2Manager::fromX2(Packet *pkt)
     LteX2MessageType msgType = x2msg->getType();
 
     if (msgType == X2_UNKNOWN_MSG) {
-        EV << " LteX2Manager::fromX2 - Unknown type of the X2 message. Discard." << endl;
+        EV << "LteX2Manager::fromX2 - Unknown type of the X2 message. Discard." << endl;
         return;
     }
 

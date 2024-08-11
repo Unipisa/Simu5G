@@ -24,17 +24,17 @@ using namespace omnetpp;
 
 /*
  * For each new connection, the MecServiceBase creates a new SocketManager
- * object to manage the state TCP connection by implementing the
+ * object to manage the state of the TCP connection by implementing the
  * inet::TcpSocket::CallbackInterface interface.
  * It reassembles (if necessary) HTTP packets sent by the MEC application
- * and it puts them in the request queue of the server.
+ * and puts them in the request queue of the server.
  */
 
 class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
     MecServiceBase *service;
-    inet::TcpSocket *sock;    // ptr into socketMap managed by TCPSrvHostApp
+    inet::TcpSocket *sock;    // pointer into socketMap managed by TCPSrvHostApp
     HttpBaseMessage *currentHttpMessage;
     cQueue httpMessageQueue;
     std::string bufferedData;
@@ -68,7 +68,7 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
     virtual MecServiceBase *getHostModule() { return service; }
 
     /**
-     * Called when connection is established. To be redefined.
+     * Called when the connection is established. To be redefined.
      */
     virtual void established();
 
@@ -78,7 +78,7 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
     virtual void dataArrived(inet::Packet *msg, bool urgent);
 
     /*
-     * Called when the client closes the connection. By default it closes
+     * Called when the client closes the connection. By default, it closes
      * our side too, but it can be redefined to do something different.
      */
     virtual void peerClosed();
@@ -90,14 +90,14 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
     virtual void closed();
 
     /*
-     * Called when the connection breaks (TCP error). By default it deletes
+     * Called when the connection breaks (TCP error). By default, it deletes
      * this thread, but it can be redefined to do something different.
      */
     virtual void failure(int code);
 
     /*
      * Called when a status arrives in response to getSocket()->getStatus().
-     * By default it deletes the status object, redefine it to add code
+     * By default, it deletes the status object; redefine it to add code
      * to examine the status.
      */
     virtual void statusArrived(inet::TcpStatusInfo *status) { delete status; }

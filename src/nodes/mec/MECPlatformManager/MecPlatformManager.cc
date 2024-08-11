@@ -34,11 +34,11 @@ void MecPlatformManager::initialize(int stage)
 
     mecOrchestrator.reference(this, "mecOrchestrator", false);
     if (!mecOrchestrator) {
-        EV << "MecPlatformManager::initialize - Mec Orchestrator [" << par("mecOrchestrator").str() << "] not found" << endl;
+        EV << "MecPlatformManager::initialize - MEC Orchestrator [" << par("mecOrchestrator").str() << "] not found" << endl;
     }
 }
 
-// instancing the requested MEApp (called by handleResource)
+// instancing the requested MECApp (called by handleResource)
 MecAppInstanceInfo *MecPlatformManager::instantiateMEApp(CreateAppMessage *msg)
 {
     MecAppInstanceInfo *res = vim->instantiateMEApp(msg);
@@ -60,7 +60,7 @@ bool MecPlatformManager::terminateEmulatedMEApp(DeleteAppMessage *msg)
     return res;
 }
 
-// terminating the correspondent MEApp (called by handleResource)
+// terminating the corresponding MECApp (called by handleResource)
 bool MecPlatformManager::terminateMEApp(DeleteAppMessage *msg)
 {
     bool res = vim->terminateMEApp(msg);

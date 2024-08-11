@@ -27,7 +27,7 @@ BackgroundCellAmc::BackgroundCellAmc(Binder *binder)
 
     calculateMcsScale();
 
-    // Scale Mcs Tables
+    // Scale MCS Tables
     dlMcsTable_.rescale(mcsScaleDl_);
     ulMcsTable_.rescale(mcsScaleUl_);
     d2dMcsTable_.rescale(mcsScaleD2D_);
@@ -93,7 +93,7 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     LteMod mod = entry.mod_;
     double rate = entry.rate_;
 
-    // Select the ranges for searching in the McsTable.
+    // Select the ranges for searching in the MCS table.
     unsigned int min = 0; // _QPSK
     unsigned int max = 9; // _QPSK
     if (mod == _16QAM) {
@@ -109,7 +109,7 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     MCSelem elem = mcsTable->at(min);
     unsigned int iTbs = elem.iTbs_;
 
-    // Search in the McsTable from min to max until the rate exceeds
+    // Search in the MCS table from min to max until the rate exceeds
     // the threshold in an entry of the table.
     for (unsigned int i = min; i <= max; i++) {
         elem = mcsTable->at(i);

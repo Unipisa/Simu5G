@@ -157,7 +157,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         return direction_;
     }
 
-    unsigned int getGrandId() const
+    unsigned int getGrantId() const
     {
         return grantId;
     }

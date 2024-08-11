@@ -26,7 +26,7 @@ namespace simu5g {
  */
 class LteSchedulerEnbDl : public LteSchedulerEnb
 {
-    // XXX debug: to call grant from mac
+    // XXX debug: to call grant from MAC
     friend class LteMacEnb;
 
   protected:
@@ -34,7 +34,7 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
     //---------------------------------------------
 
     /**
-     * Checks Harq Descriptors and return the first free codeword.
+     * Checks HARQ descriptors and returns the first free codeword.
      *
      * @param id
      * @param cw
@@ -58,9 +58,9 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
     virtual bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr);
 
     /**
-     * Schedules retransmission for the Harq Process of the given UE on a set of logical bands.
+     * Schedules retransmission for the HARQ process of the given UE on a set of logical bands.
      * Each band has also assigned a band limit amount of bytes: no more than the specified
-     * amount will be served on the given band for the acid.
+     * amount will be served on the given band for the ACID.
      *
      * @param nodeId The node ID
      * @param cw The codeword used to serve the acid process

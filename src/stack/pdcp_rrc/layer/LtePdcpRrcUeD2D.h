@@ -23,7 +23,7 @@ using namespace omnetpp;
  * @class LtePdcp
  * @brief PDCP Layer
  *
- * This is the PDCP/RRC layer of LTE Stack (with D2D support).
+ * This is the PDCP/RRC layer of the LTE Stack (with D2D support).
  *
  */
 class LtePdcpRrcUeD2D : public LtePdcpRrcUe
@@ -38,8 +38,8 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
 
     virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
-    using LtePdcpRrcUe::getDirection;  // base class variant: return direction for comm. with eNB
-    // additional getDirection method determining if D2D comm. is available to a specific destination
+    using LtePdcpRrcUe::getDirection;  // base class variant: return direction for communication with eNB
+    // additional getDirection method determining if D2D communication is available to a specific destination
     Direction getDirection(MacNodeId destId)
     {
         if (binder_->getD2DCapability(nodeId_, destId) && binder_->getD2DMode(nodeId_, destId) == DM)

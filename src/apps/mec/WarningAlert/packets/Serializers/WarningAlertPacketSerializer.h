@@ -22,7 +22,7 @@ using namespace inet;
  * Converts between ApplicationPacket and binary (network byte order) application packet.
  *
  * This serializer works for all the WarningAppPacket packets.
- * The structure of a WarningAppPacket packets is the following:
+ * The structure of a WarningAppPacket packet is the following:
  * - packet type code
  * - length of the subsequent package size
  * - data

@@ -47,7 +47,7 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     double txAngle_;
 
     // if true, this is a NR base station
-    // if false, this is a LTE base station
+    // if false, this is an LTE base station
     bool isNr_;
 
     // numerology

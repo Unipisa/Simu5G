@@ -438,7 +438,7 @@ MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info)
 }
 
 /*
- * Obtain the MacNodeId of an UE from packet control info
+ * Obtain the MacNodeId of a UE from packet control info
  */
 MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
 {
@@ -478,7 +478,7 @@ LogicalCid MacCidToLcid(MacCid cid)
 
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
 {
-    // Check if is an eNodeB
+    // Check if it is an eNodeB
     // function GetNextHop returns nodeId
     MacNodeId id = binder->getNextHop(nodeId);
     OmnetId omnetid = binder->getOmnetId(id);

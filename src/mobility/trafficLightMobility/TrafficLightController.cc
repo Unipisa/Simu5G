@@ -126,14 +126,14 @@ bool TrafficLightController::isTrafficLightRed(int carId, inet::Coord carPositio
         std::set<int>& queue = (!reverseDir) ? queuedCars_[0] : queuedCars_[1];
         //check if the car is already queued
         if (queue.find(carId) != queue.end()) {
-            EV << "TrafficLightController::isTrafficLightRed - The car is already in the queue of the RED trafficLight" << endl;
+            EV << "TrafficLightController::isTrafficLightRed - The car is already in the queue of the RED traffic light" << endl;
             return true;
         }
 
         if (isInTrafficLightArea(carPosition, carDirection)) {
             EV << "TrafficLightController::isTrafficLightRed - check distance" << endl;
             EV << "distance: " << carPosition.distance(tlPosition_) << " queue length " << (queue.size() + 1) * meanCarLength_ << endl;
-            EV << "TrafficLightController::isTrafficLightRed - The car is in the queue of the RED trafficLight" << endl;
+            EV << "TrafficLightController::isTrafficLightRed - The car is in the queue of the RED traffic light" << endl;
             queue.insert(carId);
 
             //increase the line
@@ -213,7 +213,7 @@ bool TrafficLightController::isInStraightLine(inet::Coord carPosition)
     int dy1 = tempPoint.y - carPosition.y;
 
 
-    // TODO does this only works for 0, 90, 180 and 270 degrees?
+    // TODO does this only work for 0, 90, 180 and 270 degrees?
     if (dx1 * dy != dy1 * dx)
         return false;
     else
@@ -222,9 +222,9 @@ bool TrafficLightController::isInStraightLine(inet::Coord carPosition)
 
 bool TrafficLightController::isInTrafficLightArea(inet::Coord carPosition, inet::deg carDirection)
 {
-    /** check direction of the tl (vertical or horizonal)
-     * check if the car is around the tl:
-     *   - check the boarders of the area
+    /** check direction of the traffic light (vertical or horizontal)
+     * check if the car is around the traffic light:
+     *   - check the borders of the area
      *   - check the length of the queued cars
      * e.g. :
      *    |-------TF-------|
@@ -232,7 +232,7 @@ bool TrafficLightController::isInTrafficLightArea(inet::Coord carPosition, inet:
      *    |                |
      *    |                |
      *    |                |
-     *    |__qued cars_____|
+     *    |__queued cars___|
      *
      *
      *    or
@@ -354,7 +354,7 @@ void TrafficLightController::drawRect()
         else if (!bidirectional_ && heading_.get() == 270) {
             end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
-        EV << "drawing rect " << heading_.get() << endl;
+        EV << "drawing rectangle " << heading_.get() << endl;
         bounds.x = tlPosition_.x - areaWidth_;
         bounds.y = tlPosition_.y - start;
         bounds.width = 2 * areaWidth_;
@@ -379,7 +379,7 @@ void TrafficLightController::drawRect()
         else if (!bidirectional_ && heading_.get() == 180) {
             end = meanCarLength_ * (queuedCars_[0].size() + 1);
         }
-        EV << "drawing rect " << heading_.get() << endl;
+        EV << "drawing rectangle " << heading_.get() << endl;
         bounds.y = tlPosition_.y - areaWidth_;
         bounds.x = tlPosition_.x - start;
         bounds.height = 2 * areaWidth_;

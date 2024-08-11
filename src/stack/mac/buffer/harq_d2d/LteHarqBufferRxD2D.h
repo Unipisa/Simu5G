@@ -22,13 +22,13 @@ class LteHarqProcessRxD2D;
 
 /**
  * H-ARQ RX buffer for D2D: messages coming from phy are stored in H-ARQ RX buffer.
- * When a new pdu is inserted, it is in EVALUATING state meaning that the hardware is
+ * When a new PDU is inserted, it is in EVALUATING state meaning that the hardware is
  * checking its correctness.
- * A feedback is sent after the pdu has been evaluated (HARQ_FB_EVALUATION_INTERVAL), and
- * in case of ACK the pdu moves to CORRECT state, else it is dropped from the process.
- * The operations of checking if a pdu is ready for feedback and if it is in correct state are
- * done in the extractCorrectPdu mehtod which must be called at every tti (it must be part
- * of the mac main loop).
+ * A feedback is sent after the PDU has been evaluated (HARQ_FB_EVALUATION_INTERVAL), and
+ * in case of ACK the PDU moves to CORRECT state, else it is dropped from the process.
+ * The operations of checking if a PDU is ready for feedback and if it is in correct state are
+ * done in the extractCorrectPdu method which must be called at every TTI (it must be part
+ * of the MAC main loop).
  */
 class LteHarqBufferRxD2D : public LteHarqBufferRx
 {
@@ -40,7 +40,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
     inet::simsignal_t macThroughputD2D_;
 
     /**
-     * Checks for all processes if the pdu has been evaluated and sends
+     * Checks for all processes if the PDU has been evaluated and sends
      * feedback if affirmative.
      */
     virtual void sendFeedback();
@@ -49,7 +49,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
     LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast = false);
 
     /*
-     * Insertion of a new pdu coming from phy layer into
+     * Insertion of a new PDU coming from PHY layer into
      * RX H-ARQ buffer.
      *
      * @param pdu to be inserted
@@ -58,9 +58,9 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
 
     /**
      * Sends feedback for all processes which are older than
-     * HARQ_FB_EVALUATION_INTERVAL, then extract the pdu in correct state (if any)
+     * HARQ_FB_EVALUATION_INTERVAL, then extracts the PDU in correct state (if any)
      *
-     * @return uncorrupted pdus or empty list if none
+     * @return uncorrupted PDUs or empty list if none
      */
     virtual std::list<inet::Packet *> extractCorrectPdus();
 

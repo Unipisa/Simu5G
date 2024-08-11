@@ -111,7 +111,7 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
 
 bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
-    EV << "Received control pkt " << endl;
+    EV << "Received control packet " << endl;
     MacNodeId senderMacNodeId = lteinfo->getSourceId();
     if (binder_->getOmnetId(senderMacNodeId) == 0) {
         EV << "Sender (" << senderMacNodeId << ") does not exist anymore!" << std::endl;
@@ -130,7 +130,7 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
         handleControlMsg(frame, lteinfo);
         return true;
     }
-    //handle feedback pkt
+    //handle feedback packet
     if (lteinfo->getFrameType() == FEEDBACKPKT) {
         handleFeedbackPkt(lteinfo, frame);
         delete frame;
@@ -195,9 +195,9 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
         return;
     }
 
-    //handle all control pkt
+    //handle all control packets
     if (handleControlPkt(lteInfo, frame))
-        return; // If frame contain a control pkt no further action is needed
+        return; // If frame contains a control packet no further action is needed
 
     bool result = true;
     RemoteSet r = lteInfo->getUserTxParams()->readAntennaSet();
@@ -253,7 +253,7 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
     EV << NOW << " LtePhyEnb::requestFeedback " << endl;
     LteFeedbackDoubleVector fb;
 
-    // select the correct channel model according to the carrier freq
+    // select the correct channel model according to the carrier frequency
     LteChannelModel *channelModel = getChannelModel(lteinfo->getCarrierFrequency());
 
     //get UE Position
@@ -263,12 +263,12 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
     std::vector<double> snr;
     auto header = pktAux->removeAtFront<LteFeedbackPkt>();
 
-    //Apply analog model (pathloss)
+    //Apply analog model (path loss)
     //Get snr for UL direction
     if (channelModel != nullptr)
         snr = channelModel->getSINR(frame, lteinfo);
     else
-        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is a null pointer. Abort");
 
     FeedbackRequest req = lteinfo->feedbackReq;
     //Feedback computation
@@ -326,14 +326,14 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
             if (channelModel != nullptr)
                 snr = channelModel->getSINR(frame, lteinfo);
             else
-                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is a null pointer. Abort");
         }
         else
             header->setLteFeedbackDoubleVectorDl(fb);
     }
     EV << "LtePhyEnb::requestFeedback : Pisa Feedback Generated for nodeId: "
        << nodeId_ << " with generator type "
-       << fbGeneratorTypeToA(req.genType) << " Fb size: " << fb.size()
+       << fbGeneratorTypeToA(req.genType) << " Feedback size: " << fb.size()
        << " Carrier: " << lteinfo->getCarrierFrequency() << endl;
 
     pktAux->insertAtFront(header);
@@ -372,14 +372,14 @@ void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,
                         for (kt = vec.begin(); kt != vec.end(); ++kt) {
                             for (i = 0, ht = kt->begin(); ht != kt->end();
                                  ++ht, i++)
-                                EV << "Banda " << i << " Cqi " << *ht << endl;
+                                EV << "Band " << i << " CQI " << *ht << endl;
                         }
                     }
                     else if (jt->hasWbCqi()) {
                         CqiVector v = jt->getWbCqi();
                         CqiVector::iterator ht = v.begin();
                         for ( ; ht != v.end(); ++ht)
-                            EV << "wb cqi " << *ht << endl;
+                            EV << "wideband CQI " << *ht << endl;
                     }
                     if (jt->hasRankIndicator()) {
                         EV << "Rank " << jt->getRankIndicator() << endl;
@@ -398,7 +398,7 @@ LteFeedbackComputation *LtePhyEnb::getFeedbackComputationFromName(std::string na
 {
     ParameterMap::iterator it;
     if (name == "REAL") {
-        //default value
+        // default value
         double targetBler = 0.1;
         double lambdaMinTh = 0.02;
         double lambdaMaxTh = 0.2;

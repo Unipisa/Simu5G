@@ -45,7 +45,7 @@ class ChannelAccess : public cSimpleModule, public cListener
     virtual ~ChannelAccess();
 
     /**
-     * @brief Called by the signalling mechanism to inform of changes.
+     * @brief Called by the signaling mechanism to inform of changes.
      *
      * ChannelAccess is subscribed to position changes.
      */
@@ -57,7 +57,7 @@ class ChannelAccess : public cSimpleModule, public cListener
     /**
      * @brief Called when a mobilityStateChanged signal is received.
      *
-     * Make the PHY layer emit statistics related to the serving cell
+     * Makes the PHY layer emit statistics related to the serving cell
      */
     virtual void emitMobilityStats() {}
 

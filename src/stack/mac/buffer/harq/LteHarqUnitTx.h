@@ -27,10 +27,10 @@ class LteMacBase;
 
 /**
  * An LteHarqUnit is an HARQ mac pdu container,
- * an harqBuffer is made of harq processes which is made of harq units.
+ * a harqBuffer is made of harq processes which are made of harq units.
  *
  * LteHarqUnit manages transmissions and retransmissions.
- * Contained PDU may be in one of four status:
+ * Contained PDU may be in one of four statuses:
  *
  *                            IDLE    PDU                    READY
  * TXHARQ_PDU_BUFFERED:       no      present locally        ready for rtx
@@ -71,7 +71,7 @@ class LteHarqUnitTx : noncopyable
     LteMacBase *macOwner_;
     //used for statistics
     LteMacBase *dstMac_;
-    //Maximum number of H-ARQ retransmission
+    //Maximum number of H-ARQ retransmissions
     unsigned int maxHarqRtx_;
 
     // Statistics
@@ -114,14 +114,14 @@ class LteHarqUnitTx : noncopyable
 
     /**
      * Transition from BUFFERED to SELECTED status: the pdu will be extracted when the
-     * buffer will be inspected.
+     * buffer is inspected.
      */
     virtual void markSelected();
 
     /**
      * Returns the macPdu to be sent and increments transmissions_ counter.
      *
-     * The H-ARQ process containing this unit, must call this method in order
+     * The H-ARQ process containing this unit must call this method in order
      * to extract the pdu the Mac layer will send.
      * Before extraction, control info is updated with transmission counter and ndi.
      */
@@ -148,12 +148,12 @@ class LteHarqUnitTx : noncopyable
     /**
      * If, after evaluating the pdu, it cannot be retransmitted because there isn't
      * enough frame space, a selfNack can be issued to advance the unit status.
-     * This avoids a big pdu that cannot be retransmitted (because the channel changed),
-     * to lock an H-ARQ unit indefinitely.
+     * This avoids a large pdu that cannot be retransmitted (because the channel changed),
+     * from locking an H-ARQ unit indefinitely.
      * Must simulate selection, extraction and nack reception.
      * N.B.: txTime is also updated so firstReadyForRtx returns a different pdu
      *
-     * @result true if the unit reset as effect of self nack, false otherwise
+     * @result true if the unit reset as a result of self nack, false otherwise
      */
     virtual bool selfNack();
 

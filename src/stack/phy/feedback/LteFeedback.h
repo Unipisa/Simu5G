@@ -86,7 +86,7 @@ class LteFeedback
         return !(status_);
     }
 
-    //! Return true if is periodic.
+    //! Return true if it is periodic.
     bool isPeriodicFeedback() const
     {
         return periodicFeedback_;
@@ -292,7 +292,7 @@ class LteFeedback
         status_ |= PREFERRED_PMI;
     }
 
-    //! Set the per preferred bands. Invoke this function everytime you invoke setPreferredCqi().
+    //! Set the per preferred bands. Invoke this function every time you invoke setPreferredCqi().
     void setPreferredBands(const BandSet preferredBands)
     {
         preferredBands_ = preferredBands;
@@ -330,8 +330,8 @@ class LteFeedback
 /**
  * @class LteMuMimoMatrix
  *
- * MU-MIMO compatibility matrix structure .
- * it holds MU-MIMO pairings computed by the MU-MIMO matching function
+ * MU-MIMO compatibility matrix structure.
+ * It holds MU-MIMO pairings computed by the MU-MIMO matching function.
  */
 class LteMuMimoMatrix
 {

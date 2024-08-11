@@ -44,8 +44,8 @@ using namespace omnetpp;
 //  4) send the alert event to the UE app
 //  5) (optional) receive stop from the UE app
 //
-// TCP socket management is not fully controlled. It is assumed that connections works
-// at the first time (The scenarios used to test the app are simple). If a deeper control
+// TCP socket management is not fully controlled. It is assumed that connections work
+// the first time (The scenarios used to test the app are simple). If a deeper control
 // is needed, feel free to improve it.
 
 //

@@ -23,7 +23,7 @@ using namespace omnetpp;
  * @class LtePdcp
  * @brief PDCP Layer
  *
- * This is the PDCP/RRC layer of LTE Stack (with D2D support).
+ * This is the PDCP/RRC layer of the LTE Stack (with D2D support).
  *
  */
 class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb

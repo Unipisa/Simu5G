@@ -41,7 +41,7 @@ class CircleNotificationSubscription : public SubscriptionBase
     virtual bool getCheckImmediate() const { return checkImmediate; }
 
     bool getFirstNotification() const { return firstNotificationSent; }
-    simtime_t getLastoNotification() const { return lastNotification; }
+    simtime_t getLastNotification() const { return lastNotification; }
 
     std::string getResourceUrl() const { return resourceURL; }
 
@@ -49,15 +49,15 @@ class CircleNotificationSubscription : public SubscriptionBase
 
   protected:
 
-    Binder *binder; //used to retrieve NodeId - Ipv4Address mapping
+    Binder *binder; // used to retrieve NodeId - Ipv4Address mapping
     simtime_t lastNotification;
     bool firstNotificationSent;
 
-    std::map<MacNodeId, bool> users; // optional: NO the bool is the last position wrt the area
+    std::map<MacNodeId, bool> users; // optional: NO the bool is the last position with respect to the area
 
-    std::vector<TerminalLocation> terminalLocations; //it stores the user that entered or exited the area
+    std::vector<TerminalLocation> terminalLocations; // it stores the user that entered or exited the area
 
-    //callbackReference
+    // callbackReference
     std::string callbackData; // optional: YES
     std::string notifyURL; // optional: NO
 
@@ -75,7 +75,7 @@ class CircleNotificationSubscription : public SubscriptionBase
     double radius; // optional: NO
 
     int trackingAccuracy = 0; // optional: NO
-    LocationUtils::EnteringLeavingCriteria actionCriteria;// optional: NO
+    LocationUtils::EnteringLeavingCriteria actionCriteria; // optional: NO
 
 };
 

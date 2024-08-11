@@ -26,7 +26,7 @@ class L2MeasSubscription : public SubscriptionBase
 {
 
     struct FilterCriteriaL2Meas {
-        std::string appIstanceId;
+        std::string appInstanceId; // Fixed spelling from appIstanceId to appInstanceId
         AssociateId associteId_;
         Ecgi ecgi;
     };

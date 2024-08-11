@@ -43,7 +43,7 @@ class TrafficLightController : public cSimpleModule
     inet::deg heading_;
 
     cLineFigure *line_;         // draw a line in the GUI representing the length of the queue of cars
-    cRectangleFigure *rect_;    // draw a rect in the GUI representing the area of the queue of cars
+    cRectangleFigure *rect_;    // draw a rectangle in the GUI representing the area of the queue of cars
 
     inet::Coord tlPosition_;               // position of the traffic light
     inet::Coord direction_;                // direction of the traffic light
@@ -54,14 +54,14 @@ class TrafficLightController : public cSimpleModule
     double meanCarLength_;                 // average length of the cars (useful to select the halt position)
     std::string startColor_;               // initial color
     TrafficLightState state_;              // current color of the traffic light
-    std::set<int> queuedCars_[2];          // two queues, the second one is used when the TL is bidirectional
-    bool bidirectional_;                   // if true, cars halt in also in the opposite direction wrt the one of the traffic light
+    std::set<int> queuedCars_[2];          // two queues, the second one is used when the traffic light is bidirectional
+    bool bidirectional_;                   // if true, cars stop also in the opposite direction with respect to the one of the traffic light
 
     cMessage *stateMsg_;          // timer regulating the cycles
 
     // draw initial line in GUI
     void initDrawLine();
-    //draw initial rect in GUI
+    // draw initial rectangle in GUI
     void drawRect();
 
     bool isInTrafficLightArea(inet::Coord carPosition, inet::deg heading);
@@ -80,10 +80,10 @@ class TrafficLightController : public cSimpleModule
     // check if the car is in the area of the traffic light (when in RED state)
     bool isTrafficLightRed(int carId, inet::Coord carPosition, inet::deg heading);
 
-    // check if the car is line with the traffic light
+    // check if the car is in line with the traffic light
     bool isInStraightLine(inet::Coord carPosition);
 
-    // check if the car is approaching the traffic light, i.e. it is in straight line and moving towards the traffic light
+    // check if the car is approaching the traffic light, i.e., it is in a straight line and moving towards the traffic light
     bool isApproaching(inet::Coord carPosition, inet::deg carDirection);
 
     TrafficLightController();

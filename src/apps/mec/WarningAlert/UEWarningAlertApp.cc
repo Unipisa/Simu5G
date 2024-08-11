@@ -138,7 +138,7 @@ void UEWarningAlertApp::handleMessage(cMessage *msg)
             auto mePkt = packet->peekAtFront<WarningAppPacket>();
             if (!strcmp(mePkt->getType(), WARNING_ALERT)) handleInfoMEWarningAlertApp(msg);
             else if (!strcmp(mePkt->getType(), START_NACK)) {
-                EV << "UEWarningAlertApp::handleMessage - MEC app did not started correctly, trying to start again" << endl;
+                EV << "UEWarningAlertApp::handleMessage - MEC app did not start correctly, trying to start again" << endl;
             }
             else if (!strcmp(mePkt->getType(), START_ACK)) {
                 EV << "UEWarningAlertApp::handleMessage - MEC app started correctly" << endl;
@@ -273,7 +273,7 @@ void UEWarningAlertApp::sendMessageToMECApp() {
     }
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
-    EV << "UEWarningAlertApp::sendMessageToMECApp() - start Message sent to the MEC app" << endl;
+    EV << "UEWarningAlertApp::sendMessageToMECApp() - Start message sent to the MEC app" << endl;
 }
 
 void UEWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)

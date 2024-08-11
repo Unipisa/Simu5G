@@ -30,11 +30,11 @@ struct PdcpRxWindowDesc
 
     //! Size of the reception window
     unsigned int windowSize_;
-    //! Sno of the next SDU expected to be received (RX_NEXT)
+    //! SN of the next SDU expected to be received (RX_NEXT)
     unsigned int rxNext_;
-    //! Sno of the first SDU not delivered to upper layer (RX_DELIV)
+    //! SN of the first SDU not delivered to the upper layer (RX_DELIV)
     unsigned int rxDeliv_;
-    //! Sno of the SDU following the SDU that triggered t_reordering (RX_REORD)
+    //! SN of the SDU following the SDU that triggered t_reordering (RX_REORD)
     unsigned int rxReord_;
 
     void clear(unsigned int i = 0)
@@ -68,7 +68,7 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
 {
   protected:
 
-    // if true, deliver packets to upper layer without reordering
+    // if true, deliver packets to the upper layer without reordering
     // NOTE: reordering can apply for Split Bearers only
     bool outOfOrderDelivery_;
 
@@ -81,10 +81,10 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
     // State variables
     PdcpRxWindowDesc rxWindowDesc_;
 
-    // Timer to manage reordering of the PDUs
+    // Timer to manage the reordering of the PDUs
     TTimer t_reordering_;
 
-    // Timeout for above timer
+    // Timeout for the above timer
     double timeout_;
 
     // handler for PDCP SDU

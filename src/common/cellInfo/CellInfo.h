@@ -123,7 +123,7 @@ class CellInfo : public cSimpleModule
      * Deploys remote antennas.
      *
      * This is a virtual deployment: the cellInfo needs only to inform
-     * the eNB nic module about the position of the deployed antennas and
+     * the eNB NIC module about the position of the deployed antennas and
      * their TX power. These parameters are configured via the cellInfo, but
      * no NED module is created here.
      *
@@ -154,7 +154,7 @@ class CellInfo : public cSimpleModule
      * @param[out] xPos calculated x coordinate
      * @param[out] yPos calculated y coordinate
      */
-    // Used by remote Units only
+    // Used by remote units only
     void calculateNodePosition(double centerX, double centerY, int nTh,
             int totalNodes, int range, double startingAngle, double *xPos,
             double *yPos);
@@ -337,7 +337,7 @@ class CellInfo : public cSimpleModule
 
     NumerologyIndex getMaxNumerologyIndex() { return maxNumerologyIndex_; }
 
-    // convert a carrier-local band index to a cellwise band index
+    // convert a carrier-local band index to a cellwide band index
     unsigned int getCellwiseBand(double carrierFrequency, Band index);
 
     // returns the number of bands for the primary cell

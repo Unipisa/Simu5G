@@ -37,13 +37,13 @@ class TimeStamp : public AttributeBase
     nlohmann::ordered_json toJson() const override;
 
     /// <summary>
-    /// The seconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC
+    /// The seconds part of the time. Time is defined as Unix time since January 1, 1970, 00:00:00 UTC
     /// </summary>
     int32_t getSeconds() const;
     void setSeconds(int32_t value);
     void setSeconds();
     /// <summary>
-    /// The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC
+    /// The nanoseconds part of the time. Time is defined as Unix time since January 1, 1970, 00:00:00 UTC
     /// </summary>
     int32_t getNanoSeconds() const;
     void setNanoSeconds(int32_t value);

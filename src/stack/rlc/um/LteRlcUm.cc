@@ -29,7 +29,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 
         /**
          * Note: Simu5G currently determines the LCID based
-         * on the src/dst ip addresses and TOS field and uses separate
+         * on the src/dst IP addresses and TOS field and uses separate
          * RLC entities for each of them. In order to evaluate the effect of using
          * only a single UM LCID and a single bearer, this parameter allows to
          * use only a single UM TxEntity, as it would be with a single bearer.
@@ -165,14 +165,14 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
 
     if (txbuf->isHoldingDownstreamInPackets()) {
         // do not store in the TX buffer and do not signal the MAC layer
-        EV << "LteRlcUm::handleUpperMessage - Enque packet " << rlcPkt->getClassName() << " into the Holding Buffer\n";
+        EV << "LteRlcUm::handleUpperMessage - Enqueue packet " << rlcPkt->getClassName() << " into the Holding Buffer\n";
         txbuf->enqueHoldingPackets(pkt);
     }
     else {
         if (txbuf->enque(pkt)) {
-            EV << "LteRlcUm::handleUpperMessage - Enque packet " << rlcPkt->getClassName() << " into the Tx Buffer\n";
+            EV << "LteRlcUm::handleUpperMessage - Enqueue packet " << rlcPkt->getClassName() << " into the Tx Buffer\n";
 
-            // create a message so as to notify the MAC layer that the queue contains new data
+            // create a message to notify the MAC layer that the queue contains new data
             auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
             // make a copy of the RLC SDU
             auto pktDup = pkt->dup();
@@ -213,12 +213,12 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
     else {
         emit(receivedPacketFromLowerLayer, pkt);
 
-        // Extract informations from fragment
+        // Extract information from fragment
         UmRxEntity *rxbuf = getRxBuffer(lteInfo);
         drop(pkt);
 
         // Bufferize PDU
-        EV << "LteRlcUm::handleLowerMessage - Enque packet " << pkt->getName() << " into the Rx Buffer\n";
+        EV << "LteRlcUm::handleLowerMessage - Enqueue packet " << pkt->getName() << " into the Rx Buffer\n";
         rxbuf->enque(pkt);
     }
 }
@@ -236,19 +236,19 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE
-    for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
+    for (tit = txEntities_.begin(); tit != txEntities_.end();) {
         if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(tit->first) == nodeId)) {
             tit->second->deleteModule(); // Delete Entity
-            tit = txEntities_.erase(tit);    // Delete Elem
+            tit = txEntities_.erase(tit);    // Delete Element
         }
         else {
             ++tit;
         }
     }
-    for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
+    for (rit = rxEntities_.begin(); rit != rxEntities_.end();) {
         if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(rit->first) == nodeId)) {
             rit->second->deleteModule(); // Delete Entity
-            rit = rxEntities_.erase(rit);    // Delete Elem
+            rit = rxEntities_.erase(rit);    // Delete Element
         }
         else {
             ++rit;
@@ -300,22 +300,22 @@ void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     UmRxEntities::const_iterator it = rxEntities_.begin();
     UmRxEntities::const_iterator end = rxEntities_.end();
-    for ( ; it != end; ++it) {
+    for (; it != end; ++it) {
         MacNodeId nodeId = MacCidToNodeId(it->first);
         if ((ueSet->find(nodeId) == ueSet->end()) && !it->second->isEmpty())
             ueSet->insert(nodeId);
     }
 }
 
-void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughtput)
+void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughput)
 {
     ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
     if (it == ulThroughput_.end()) {
-        ulThroughput_[nodeId] = throughtput;
+        ulThroughput_[nodeId] = throughput;
     }
     else {
-        it->second.pktSizeCount += throughtput.pktSizeCount;
-        it->second.time += throughtput.time;
+        it->second.pktSizeCount += throughput.pktSizeCount;
+        it->second.time += throughput.time;
     }
 }
 

@@ -31,7 +31,7 @@ class LteDrr : public LteScheduler
         unsigned int quantum_;
         //! Deficit, in bytes.
         unsigned int deficit_;
-        //! Flag indicating whether the connection consumed all the previous quantum and need another one
+        //! Flag indicating whether the connection consumed all the previous quantum and needs another one.
         bool addQuantum_;
         //! True if this descriptor is in the active list.
         bool active_;
@@ -52,16 +52,16 @@ class LteDrr : public LteScheduler
     typedef std::map<MacCid, DrrDesc> DrrDescMap;
     typedef CircularList<MacCid> ActiveList;
 
-    //! Deficit round-robin Active List
+    //! Deficit round-robin Active List.
     ActiveList activeList_;
 
-    //! Deficit round-robin Active List. Temporary variable used in the two phase scheduling operations
+    //! Deficit round-robin Active List. Temporary variable used in the two-phase scheduling operations.
     ActiveList activeTempList_;
 
     //! Deficit round-robin descriptor per-connection map.
     DrrDescMap drrMap_;
 
-    //! Deficit round-robin descriptor per-connection map. Temporary variable used in the two phase scheduling operations
+    //! Deficit round-robin descriptor per-connection map. Temporary variable used in the two-phase scheduling operations.
     DrrDescMap drrTempMap_;
 
   public:

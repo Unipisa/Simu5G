@@ -49,7 +49,7 @@ void MecRTVideoStreamingReceiver::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    //retrieving parameters
+    // retrieving parameters
     size_ = par("packetSize");
 
     // set Udp Socket
@@ -58,7 +58,7 @@ void MecRTVideoStreamingReceiver::initialize(int stage)
     localUePort = par("localUePort");
     ueSocket.bind(localUePort);
 
-    //testing
+    // testing
     EV << "MecRTVideoStreamingReceiver::initialize - Mec application " << getClassName() << " with mecAppId[" << mecAppId << "] has started!" << endl;
 
     dropPackets_ = true;
@@ -247,10 +247,10 @@ void MecRTVideoStreamingReceiver::handleSessionStopMessage(cMessage *msg)
 
 double MecRTVideoStreamingReceiver::playoutFrame()
 {
-    /* It should be displayed the first frame in the map (ordered by timestamp).
+    /* It should display the first frame in the map (ordered by timestamp).
      * This function gets the first frame in the map and checks if the playout time
-     * corresponds with the actual time (or the difference is less than en epsilon that
-     * takes into account roundings.
+     * corresponds with the actual time (or the difference is less than an epsilon that
+     * takes into account rounding.
      */
 
     double percentage = 0.;
@@ -264,11 +264,11 @@ double MecRTVideoStreamingReceiver::playoutFrame()
     }
     else {
         auto firstFrame = playoutBuffer_.begin();
-        // check the its playout time
+        // check its playout time
         EV << "MecRTVideoStreamingReceiver::playoutFrame() - frame[" << firstFrame->second.frameNumber << "]" << endl;
 
         /**
-         * This flag register the first available frame to be displayed.
+         * This flag registers the first available frame to be displayed.
          */
         if (firstFrameDisplayed == false) {
             firstFrameDisplayed = true;
@@ -312,7 +312,7 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
     simtime_t creationTime = header->getTag<CreationTimeTag>()->getCreationTime();
 
     if (dropPackets_) {
-        EV << "MecRTVideoStreamingReceiver::processPacket - application parameters are not configured, yet. Discarding this packet" << endl;
+        EV << "MecRTVideoStreamingReceiver::processPacket - application parameters are not configured yet. Discarding this packet" << endl;
         delete packet;
         return;
     }
@@ -333,10 +333,10 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
      *  - buffer the frame as normal.
      *
      * If the simulation time is **higher** than the expected start of the playout video
-     * AND no frames arrived before:
-     *  - check if the frame is older than 50ms, and if true drop the packet, If it is not
+     * AND no frames have arrived before:
+     *  - check if the frame is older than 50ms, and if true drop the packet. If it is not
      *    buffer the frames as normal. This is useful to start displaying only new frames, to
-     *    support a more real time approach     *
+     *    support a more real-time approach.
      */
 
     if (frameNumber <= lastFrameDisplayed_) {

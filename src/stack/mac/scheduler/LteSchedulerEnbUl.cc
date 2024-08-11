@@ -26,7 +26,7 @@ bool LteSchedulerEnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carr
     if (harqRxBuff == nullptr)                              // a new HARQ buffer will be created at reception
         return true;
 
-    // check if harq buffer have already been created for this node
+    // check if harq buffer has already been created for this node
     if (harqRxBuff->find(id) != harqRxBuff->end()) {
         LteHarqBufferRx *ulHarq = harqRxBuff->at(id);
 
@@ -59,7 +59,7 @@ void LteSchedulerEnbUl::updateHarqDescs()
                 // updating current acid id
                 currentStatus->second = (currentStatus->second + 1) % (it->second->getProcesses());
 
-                EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << "NEW Current Process is " << (unsigned int)currentStatus->second << "(total harq processes " << it->second->getProcesses() << ")" << endl;
+                EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " NEW Current Process is " << (unsigned int)currentStatus->second << "(total harq processes " << it->second->getProcesses() << ")" << endl;
             }
             else {
                 EV << NOW << "LteSchedulerEnbUl::updateHarqDescs UE " << it->first << " initialized the H-ARQ status " << endl;
@@ -94,7 +94,7 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
             std::string bands_msg = "BAND_LIMIT_SPECIFIED";
             if (bandLim == nullptr) {
                 // Create a vector of band limit using all bands
-                // FIXME: bandlim is never deleted
+                // FIXME: bandLim is never deleted
 
                 // for each band of the band vector provided
                 for (unsigned int i = 0; i < numBands; i++) {
@@ -133,7 +133,7 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
             }
 
             // FIXME default behavior
-            //try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
+            // try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
 
             const unsigned int cw = 0;
             const unsigned int blocks = 1;
@@ -230,7 +230,7 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
         }
 
         // FIXME default behavior
-        //try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
+        // try to allocate one block to selected UE on at least one logical band of MACRO antenna, first codeword
 
         const unsigned int cw = 0;
         const unsigned int blocks = 1;
@@ -469,8 +469,8 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
         tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
-            // Create a vector of band limit using all bands
-            // FIXME: bandlim is never deleted
+            // Create a vector of band limits using all bands
+            // FIXME: bandLim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
@@ -547,7 +547,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
             Band b = bandLim->at(i).band_;
             int limit = bandLim->at(i).limit_.at(cw);
 
-            // TODO add support to multi CW
+            // TODO add support for multi CW
 //                    ((allocatedCw == MAX_CODEWORDS) ? availableBytes(nodeId,antenna, b, cw) : mac_->getAmc()->blocks2bytes(nodeId, b, cw, allocator_->getBlocks(antenna,b,nodeId) , direction_));    // available space
             unsigned int bandAvailableBytes = availableBytes(nodeId, antenna, b, cw, direction_, carrierFrequency);
 
@@ -642,7 +642,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeI
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
-            // FIXME: bandlim is never deleted
+            // FIXME: bandLim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided
@@ -728,8 +728,8 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeI
             Band b = bandLim->at(i).band_;
             int limit = bandLim->at(i).limit_.at(cw);
 
-            // TODO add support to multi CW
-            //unsigned int bandAvailableBytes = // if a codeword has been already scheduled for retransmission, limit available blocks to what's been  allocated on that codeword
+            // TODO add support for multi CW
+            //unsigned int bandAvailableBytes = // if a codeword has been already scheduled for retransmission, limit available blocks to what's been allocated on that codeword
             //((allocatedCw == MAX_CODEWORDS) ? availableBytes(nodeId,antenna, b, cw) : mac_->getAmc()->blocks2bytes(nodeId, b, cw, allocator_->getBlocks(antenna,b,nodeId) , direction_));    // available space
             unsigned int bandAvailableBytes = availableBytes(senderId, antenna, b, cw, dir, carrierFrequency);
 
@@ -831,7 +831,7 @@ unsigned int LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
         tempBandLim.clear();
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
-            // FIXME: bandlim is never deleted
+            // FIXME: bandLim is never deleted
 
             unsigned int numBands = mac_->getCellInfo()->getNumBands();
             // for each band of the band vector provided

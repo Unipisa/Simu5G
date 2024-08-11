@@ -33,7 +33,7 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     //---------------------------------------------
 
     /**
-     * Checks Harq Descriptors and return the first free codeword.
+     * Checks Harq Descriptors and returns the first free codeword.
      *
      * @param id
      * @param cw
@@ -41,10 +41,10 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      */
     virtual bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency);
 
-    //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UES.
+    //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UEs.
     std::map<double, HarqStatus> harqStatus_;
 
-    //! RAC requests flags: signals whether an UE shall be granted the RAC allocation
+    //! RAC request flags: signals whether a UE shall be granted the RAC allocation
     std::map<double, RacStatus> racStatus_;
 
   public:

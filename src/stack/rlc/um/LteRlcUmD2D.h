@@ -46,7 +46,7 @@ class LteRlcUmD2D : public LteRlcUm
      * getTxBuffer() is used by the sender to gather the TXBuffer
      * for that CID. If TXBuffer was already present, a reference
      * is returned, otherwise a new TXBuffer is created,
-     * added to the tx_buffers map and a reference is returned aswell.
+     * added to the tx_buffers map and a reference is returned as well.
      *
      * @param lteInfo flow-related info
      * @return pointer to the TXBuffer for the CID of the flow
@@ -60,11 +60,11 @@ class LteRlcUmD2D : public LteRlcUm
      * handler for traffic coming from
      * lower layer (DTCH, MTCH, MCCH).
      *
-     * handleLowerMessage() performs the following task:
+     * handleLowerMessage() performs the following tasks:
      *
      * - Search (or add) the proper RXBuffer, depending
      *   on the packet CID
-     * - Calls the RXBuffer, that from now on takes
+     * - Calls the RXBuffer, which from now on takes
      *   care of the packet
      *
      * @param pkt packet to process

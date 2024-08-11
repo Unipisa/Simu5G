@@ -48,7 +48,7 @@ void GtpUserX2::handleMessage(cMessage *msg)
         handleFromStack(pkt);
     }
     else if (msg->arrivedOn("socketIn")) {
-        EV << "GtpUserX2::handleMessage - message from udp layer" << endl;
+        EV << "GtpUserX2::handleMessage - message from UDP layer" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         handleFromUdp(pkt);
     }

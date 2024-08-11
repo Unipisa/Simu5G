@@ -33,7 +33,7 @@ void NRMacUe::handleSelfMessage()
 {
     EV << "----- UE MAIN LOOP -----" << endl;
 
-    // extract pdus from all harqrxbuffers and pass them to unmaker
+    // extract PDUs from all HARQ RX buffers and pass them to unmaker
     std::map<double, HarqRxBuffers>::iterator mit = harqRxBuffers_.begin();
     std::map<double, HarqRxBuffers>::iterator met = harqRxBuffers_.end();
     for ( ; mit != met; mit++) {
@@ -57,7 +57,7 @@ void NRMacUe::handleSelfMessage()
     EV << NOW << "NRMacUe::handleSelfMessage " << nodeId_ << " - HARQ process " << (unsigned int)currentHarq_ << endl;
 
     // no grant available - if user has backlogged data, it will trigger scheduling request
-    // no harq counter is updated since no transmission is sent.
+    // no HARQ counter is updated since no transmission is sent.
 
     bool noSchedulingGrants = true;
     auto git = schedulingGrant_.begin();
@@ -73,7 +73,7 @@ void NRMacUe::handleSelfMessage()
     if (noSchedulingGrants) {
         EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
         checkRAC();
-        // TODO ensure all operations done  before return ( i.e. move H-ARQ rx purge before this point)
+        // TODO ensure all operations done before return (i.e. move H-ARQ RX purge before this point)
     }
     else {
         bool periodicGrant = false;
@@ -123,7 +123,7 @@ void NRMacUe::handleSelfMessage()
         if (!firstTx) {
             EV << "\t currentHarq_ counter initialized " << endl;
             firstTx = true;
-            // the gNb will receive the first pdu in 2 TTI, thus initializing acid to 0
+            // the gNb will receive the first PDU in 2 TTI, thus initializing acid to 0
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
 
@@ -148,7 +148,7 @@ void NRMacUe::handleSelfMessage()
                 for (unsigned int proc = 0; proc < numProcesses; proc++) {
                     LteHarqProcessTx *currProc = currHarq->getProcess(proc);
 
-                    // check if the current process has unit ready for retx
+                    // check if the current process has unit ready for retransmission
                     bool ready = currProc->hasReadyUnits();
                     CwList cwListRetx = currProc->readyUnitsIds();
 
@@ -178,7 +178,7 @@ void NRMacUe::handleSelfMessage()
                 }
             }
         }
-        // if no retx is needed, proceed with normal scheduling
+        // if no retransmission is needed, proceed with normal scheduling
         if (!retx) {
             emptyScheduleList_ = true;
             std::map<double, LteSchedulerUeUl *>::iterator sit;
@@ -232,9 +232,9 @@ void NRMacUe::handleSelfMessage()
                 BufferStatus harqStatus = currHarq->getBufferStatus();
                 BufferStatus::iterator jt = harqStatus.begin(), jet = harqStatus.end();
 
-                EV << "\t cicloOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
+                EV << "\t cycleOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
                 for ( ; jt != jet; ++jt) {
-                    EV << "\t\t cicloInner " << cntInner << " - jt->size=" << jt->size()
+                    EV << "\t\t cycleInner " << cntInner << " - jt->size=" << jt->size()
                        << " - statusCw(0/1)=" << jt->at(0).second << "/" << jt->at(1).second << endl;
                 }
             }
@@ -242,7 +242,7 @@ void NRMacUe::handleSelfMessage()
     }
     //======================== END DEBUG ==========================
 
-    // update current harq process id, if needed
+    // update current HARQ process id, if needed
     if (requestedSdus_ == 0) {
         EV << NOW << " NRMacUe::handleSelfMessage - incrementing counter for HARQ processes " << (unsigned int)currentHarq_ << " --> " << (currentHarq_ + 1) % harqProcesses_ << endl;
         currentHarq_ = (currentHarq_ + 1) % harqProcesses_;
@@ -274,7 +274,7 @@ int NRMacUe::macSduRequest()
             allocatedBytes.push_back(git->second->getGrantedCwBytes(cw));
     }
 
-    // Ask for a MAC sdu for each scheduled user on each codeword
+    // Ask for a MAC SDU for each scheduled user on each codeword
     std::map<double, LteMacScheduleList *>::iterator cit = scheduleList_.begin();
     for ( ; cit != scheduleList_.end(); ++cit) {
         // skip if this is not the turn of this carrier
@@ -297,7 +297,7 @@ int NRMacUe::macSduRequest()
             else {
                 allocatedBytes[cw] -= bit->second;
 
-                EV << NOW << " NRMacUe::macSduRequest - cid[" << destCid << "] - sdu size[" << bit->second << "B] - " << allocatedBytes[cw] << " bytes left on codeword " << cw << endl;
+                EV << NOW << " NRMacUe::macSduRequest - cid[" << destCid << "] - SDU size[" << bit->second << "B] - " << allocatedBytes[cw] << " bytes left on codeword " << cw << endl;
 
                 // send the request message to the upper layer
                 // TODO: Replace by tag
@@ -363,7 +363,7 @@ void NRMacUe::macPduMake(MacCid cid)
                 }
 
                 if (sizeBsr > 0) {
-                    // Call the appropriate function for make a BSR for a D2D communication
+                    // Call the appropriate function for making a BSR for D2D communication
                     Packet *macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
                     if (info != nullptr) {
@@ -385,10 +385,10 @@ void NRMacUe::macPduMake(MacCid cid)
                         else
                             macPduList_[channelModel->getCarrierFrequency()][std::pair<MacNodeId, Codeword>(getMacCellId(), 0)] = macPktBsr;
                         bsrAlreadyMade = true;
-                        EV << "NRMacUe::macPduMake - BSR D2D created with size " << sizeBsr << "created" << endl;
+                        EV << "NRMacUe::macPduMake - BSR D2D created with size " << sizeBsr << " created" << endl;
                     }
 
-                    bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevent the UE to send an unnecessary RAC request
+                    bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevents the UE from sending an unnecessary RAC request
                 }
                 else {
                     bsrD2DMulticastTriggered_ = false;
@@ -450,7 +450,7 @@ void NRMacUe::macPduMake(MacCid cid)
                     macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(SHORT_BSR));
                     macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
 
-                    macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrandId());
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrantId());
 
                     if (usePreconfiguredTxParams_)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());
@@ -556,8 +556,8 @@ void NRMacUe::macPduMake(MacCid cid)
             // BSR related operations
 
                // according to the TS 36.321 v8.7.0, when there are uplink resources assigned to the UE, a BSR
-               // has to be send even if there is no data in the user's queues. In few words, a BSR is always
-               // triggered and has to be send when there are enough resources
+               // has to be sent even if there is no data in the user's queues. In few words, a BSR is always
+               // triggered and has to be sent when there are enough resources
 
                // TODO implement differentiated BSR attach
                //
@@ -634,7 +634,7 @@ void NRMacUe::macPduMake(MacCid cid)
                 EV << "NRMacUe::macPduMake - BSR created with size " << size << endl;
             }
 
-            if (bsrAlreadyMade && size > 0) { // this prevent the UE to send an unnecessary RAC request
+            if (bsrAlreadyMade && size > 0) { // this prevents the UE from sending an unnecessary RAC request
                 bsrRtxTimer_ = bsrRtxTimerStart_;
             }
             else
