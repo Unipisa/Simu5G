@@ -101,7 +101,7 @@ class UmRxEntity : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
 
     // reference to eNB for statistic purpose
-    cModule *nodeB_;
+    cModule *nodeB_ = nullptr;
 
     // Node id of the owner module
     MacNodeId ownerNodeId_;
@@ -137,12 +137,12 @@ class UmRxEntity : public cSimpleModule
     } buffered_;
 
     // Sequence number of the last SDU delivered to the upper layer
-    unsigned int lastSnoDelivered_;
+    unsigned int lastSnoDelivered_ = 0;
 
     // Sequence number of the last correctly reassembled PDU
-    unsigned int lastPduReassembled_;
+    unsigned int lastPduReassembled_ = 0;
 
-    bool init_;
+    bool init_ = false;
 
     // If true, the next PDU and the corresponding SDUs are considered in order
     // (modify the lastPduReassembled_ and lastSnoDelivered_ counters)
@@ -163,10 +163,10 @@ class UmRxEntity : public cSimpleModule
         ENQUE, REORDERING
     };
 
-    bool isBurst_; // a burst has started last TTI
-    bool t2Set_; // used to save t2
-    unsigned int totalBits_; // total bytes during the burst
-    unsigned int ttiBits_; // bytes during this TTI
+    bool isBurst_ = false; // a burst has started last TTI
+    bool t2Set_ = false; // used to save t2
+    unsigned int totalBits_ = 0; // total bytes during the burst
+    unsigned int ttiBits_ = 0; // bytes during this TTI
     simtime_t t2_; // point in time the burst begins
     simtime_t t1_; // point in time last packet sent during burst
 

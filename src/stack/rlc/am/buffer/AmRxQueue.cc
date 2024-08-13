@@ -28,7 +28,7 @@ unsigned int AmRxQueue::totalCellRcvdBytes_ = 0;
 AmRxQueue::AmRxQueue() :
     // In order to create a back connection (AM CTRL), a flow control
     // info for sending control messages to the transmitting entity is required
-    lastSentAck_(0), firstSdu_(0), timer_(this), flowControlInfo_(nullptr)
+    lastSentAck_(0),  timer_(this)
 {
     rxWindowDesc_.firstSeqNum_ = 0;
     rxWindowDesc_.seqNum_ = 0;

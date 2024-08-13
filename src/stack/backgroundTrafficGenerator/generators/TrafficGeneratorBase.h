@@ -68,7 +68,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     double lossRate_[2];
 
     // message for scheduling CQI reporting
-    cMessage *fbSource_;
+    cMessage *fbSource_ = nullptr;
 
     /*
      * STATUS

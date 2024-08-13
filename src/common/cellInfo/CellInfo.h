@@ -56,14 +56,14 @@ class CellInfo : public cSimpleModule
     double pgnMaxY_;
 
     /// x eNB position
-    double nodeX_;
+    double nodeX_ = 0;
     /// y eNB position
-    double nodeY_;
+    double nodeY_ = 0;
     /// z eNB position
-    double nodeZ_;
+    double nodeZ_ = 0;
 
     /// Number of DAS RU
-    int numRus_;
+    int numRus_ = 0;
     /// Remote and its CW
     std::map<Remote, int> antennaCws_;
 
@@ -91,22 +91,22 @@ class CellInfo : public cSimpleModule
     /// number of signaling symbols for RB, UL
     int signalUl_;
     /// MCS scale UL
-    double mcsScaleUl_;
+    double mcsScaleUl_ = 0;
     /// MCS scale DL
-    double mcsScaleDl_;
+    double mcsScaleDl_ = 0;
 
     /*
      * Carrier Aggregation support
      */
     // total number of logical bands *in this cell* (sum of bands used by carriers enabled in this cell)
-    unsigned int numBands_;
+    unsigned int numBands_ = 0;
     CarrierInfoMap carrierMap_;
 
     // store the carrier frequencies used by this cell
     std::vector<double> carriersVector_;
 
     // max numerology index used in this cell
-    NumerologyIndex maxNumerologyIndex_;
+    NumerologyIndex maxNumerologyIndex_ = 0;
     /************************************/
 
     // Position of each UE

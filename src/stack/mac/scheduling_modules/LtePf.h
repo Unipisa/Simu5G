@@ -34,7 +34,7 @@ class LtePf : public LteScheduler
     double pfAlpha_;
 
     //! Small number to slightly blur scores.
-    const double scoreEpsilon_;
+    const double scoreEpsilon_ = 0.000001;
 
   public:
 
@@ -55,7 +55,7 @@ class LtePf : public LteScheduler
 
     LtePf(Binder *binder, double pfAlpha) :
         LteScheduler(binder),
-        pfAlpha_(pfAlpha), scoreEpsilon_(0.000001)
+        pfAlpha_(pfAlpha)
     {
     }
 

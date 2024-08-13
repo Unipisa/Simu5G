@@ -24,7 +24,7 @@ Define_Module(TrafficLightController);
 
 using namespace omnetpp;
 
-TrafficLightController::TrafficLightController() : line_(nullptr), stateMsg_(nullptr)
+TrafficLightController::TrafficLightController()
 {
 }
 

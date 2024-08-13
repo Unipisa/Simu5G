@@ -40,7 +40,7 @@ class MultihopD2D : public cSimpleModule
         KIND_TRICKLE_TIMER
     };
     uint16_t senderAppId_;             // unique identifier of the application within the network
-    uint16_t localMsgId_;              // least-significant bits for the identifier of the next message
+    uint16_t localMsgId_ = 0;          // least-significant bits for the identifier of the next message
     inet::B msgSize_;
 
     double selfishProbability_;         // if = 0, the node is always collaborative
@@ -65,7 +65,7 @@ class MultihopD2D : public cSimpleModule
     inet::L3Address destAddress_;
     inet::UdpSocket socket;
 
-    cMessage *selfSender_;
+    cMessage *selfSender_ = nullptr;
 
     ModuleRefByPar<EventGenerator> eventGen_;          // reference to the eventGenerator
     ModuleRefByPar<LtePhyBase> ltePhy_;                // reference to the LtePhy

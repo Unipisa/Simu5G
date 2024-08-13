@@ -28,7 +28,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteSchedulerEnb::LteSchedulerEnb() : mac_(nullptr), allocator_(nullptr), direction_(DL), vbuf_(nullptr), harqTxBuffers_(nullptr), harqRxBuffers_(nullptr), resourceBlocks_(0), utilization_(0)
+LteSchedulerEnb::LteSchedulerEnb() : mac_(nullptr)
 {
 }
 

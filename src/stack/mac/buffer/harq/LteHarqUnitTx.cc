@@ -18,7 +18,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 LteHarqUnitTx::LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw,
-        LteMacBase *macOwner, LteMacBase *dstMac) : pdu_(nullptr), pduId_(-1), acid_(acid), cw_(cw), transmissions_(0), status_(TXHARQ_PDU_EMPTY), txTime_(0), macOwner_(macOwner), dstMac_(dstMac), maxHarqRtx_(macOwner->par("maxHarqRtx"))
+        LteMacBase *macOwner, LteMacBase *dstMac) :  acid_(acid), cw_(cw),  txTime_(0), macOwner_(macOwner), dstMac_(dstMac), maxHarqRtx_(macOwner->par("maxHarqRtx"))
 {
 
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {

@@ -28,11 +28,11 @@ class BurstSender : public cSimpleModule
 {
     UdpSocket socket;
     // has the sender been initialized?
-    bool initialized_;
+    bool initialized_ = false;
 
     // timers
-    cMessage *selfBurst_;
-    cMessage *selfPacket_;
+    cMessage *selfBurst_ = nullptr;
+    cMessage *selfPacket_ = nullptr;
 
     // sender
     int idBurst_;
@@ -47,8 +47,8 @@ class BurstSender : public cSimpleModule
     simsignal_t burstSentPkt_;
     // ----------------------------
 
-    cMessage *selfSender_;
-    cMessage *initTraffic_;
+    cMessage *selfSender_ = nullptr;
+    cMessage *initTraffic_ = nullptr;
 
     simtime_t timestamp_;
     int localPort_;

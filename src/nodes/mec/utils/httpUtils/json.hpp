@@ -12606,7 +12606,7 @@ class json_ref
     json_ref(value_type&& value)
         : owned_value(std::move(value))
         , value_ref(&owned_value)
-        , is_rvalue(true)
+         
     {}
 
     json_ref(const value_type& value)
@@ -12617,7 +12617,7 @@ class json_ref
     json_ref(std::initializer_list<json_ref> init)
         : owned_value(init)
         , value_ref(&owned_value)
-        , is_rvalue(true)
+         
     {}
 
     template <
@@ -12626,7 +12626,7 @@ class json_ref
     json_ref(Args && ... args)
         : owned_value(std::forward<Args>(args)...)
         , value_ref(&owned_value)
-        , is_rvalue(true)
+         
     {}
 
     // class should be movable only

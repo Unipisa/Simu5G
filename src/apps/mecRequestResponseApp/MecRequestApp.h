@@ -42,7 +42,7 @@ class MecRequestApp : public cSimpleModule
     bool enableMigration_;
 
     // scheduling
-    cMessage *selfSender_;
+    cMessage *selfSender_ = nullptr;
 
     static simsignal_t requestSize_;
     static simsignal_t requestRTT_;

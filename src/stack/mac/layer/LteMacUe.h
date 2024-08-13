@@ -42,7 +42,7 @@ class LteMacUe : public LteMacBase
     std::map<double, LteMacScheduleList *> scheduleList_;
 
     // current H-ARQ process counter
-    unsigned char currentHarq_;
+    unsigned char currentHarq_ = 0;
 
     // periodic grant handling - one per carrier
     std::map<double, unsigned int> periodCounter_;
@@ -55,7 +55,7 @@ class LteMacUe : public LteMacBase
 
     // RAC Handling variables
 
-    bool racRequested_;
+    bool racRequested_ = false;
     unsigned int racBackoffTimer_;
     unsigned int maxRacTryouts_;
     unsigned int currentRacTry_;
@@ -66,7 +66,7 @@ class LteMacUe : public LteMacBase
     unsigned int raRespWinStart_;
 
     unsigned int bsrRtxTimer_;
-    unsigned int bsrRtxTimerStart_;
+    unsigned int bsrRtxTimerStart_ = 40;
 
     // BSR handling
     bool bsrTriggered_;

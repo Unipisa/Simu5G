@@ -34,14 +34,14 @@ class AirFrame;
 class ChannelAccess : public cSimpleModule, public cListener
 {
   protected:
-    IChannelControl *cc;  // Pointer to the ChannelControl module
-    IChannelControl::RadioRef myRadioRef;  // Identifies this radio in the ChannelControl module
-    cModule *hostModule;    // the host that contains this radio model
+    IChannelControl *cc = nullptr;  // Pointer to the ChannelControl module
+    IChannelControl::RadioRef myRadioRef = nullptr;  // Identifies this radio in the ChannelControl module
+    cModule *hostModule = nullptr;    // the host that contains this radio model
     inet::Coord radioPos;  // the physical position of the radio (derived from display string or from mobility models)
     bool positionUpdateArrived;
 
   public:
-    ChannelAccess() : cc(nullptr), myRadioRef(nullptr), hostModule(nullptr) {}
+    ChannelAccess()  {}
     virtual ~ChannelAccess();
 
     /**

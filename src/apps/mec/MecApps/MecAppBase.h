@@ -65,8 +65,8 @@ class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
     inet::SocketMap sockets_;
 
     cQueue packetQueue_;
-    cMessage *currentProcessedMsg_;
-    cMessage *processMessage_;
+    cMessage *currentProcessedMsg_ = nullptr;
+    cMessage *processMessage_ = nullptr;
 
     // endpoint for contacting the Service Registry
     inet::L3Address mp1Address;
@@ -81,7 +81,7 @@ class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
 
     inet::ModuleRefByPar<VirtualisationInfrastructureManager> vim;
 
-    cMessage *sendTimer;
+    cMessage *sendTimer = nullptr;
 
     //references to modules
     inet::ModuleRefByPar<cModule> mecPlatform;

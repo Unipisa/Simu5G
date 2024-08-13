@@ -26,7 +26,7 @@ class PhyPisaData
     double blerCurves_[3][15][49];
     std::vector<double> channel_;
 
-    int blerShift_;
+    int blerShift_ = 0;
 
   public:
     PhyPisaData();

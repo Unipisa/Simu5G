@@ -30,14 +30,14 @@ class LtePhyEnb : public LtePhyBase
     double bdcUpdateInterval_;
 
     /** Self-message to trigger broadcast message sending for handover purposes */
-    cMessage *bdcStarter_;
+    cMessage *bdcStarter_ = nullptr;
 
     /**
      * Pointer to the DAS Filter: used to call DAS functions
      * when receiving broadcasts and to retrieve physical
      * antenna properties on packet reception
      */
-    DasFilter *das_;
+    DasFilter *das_ = nullptr;
 
     virtual void initialize(int stage);
 

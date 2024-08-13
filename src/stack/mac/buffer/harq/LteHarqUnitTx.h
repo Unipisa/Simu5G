@@ -43,10 +43,10 @@ class LteHarqUnitTx : noncopyable
   protected:
 
     /// Carried sub-burst
-    Packet *pdu_;
+    Packet *pdu_ = nullptr;
 
     /// Omnet ID of the pdu
-    long pduId_;
+    long pduId_ = -1;
 
     /// PDU size in bytes
     int64_t pduLength_;
@@ -58,9 +58,9 @@ class LteHarqUnitTx : noncopyable
     Codeword cw_;
 
     /// Number of (re)transmissions for current pdu (N.B.: values are 1,2,3,4)
-    unsigned char transmissions_;
+    unsigned char transmissions_ = 0;
 
-    TxHarqPduStatus status_;
+    TxHarqPduStatus status_ = TXHARQ_PDU_EMPTY;
 
     /// TTI at which the pdu has been transmitted
     simtime_t txTime_;

@@ -52,23 +52,23 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     RlcSduListSizes sduSizes_;
 
     // number of SDUs stored in the message
-    unsigned int numSdu_;
+    unsigned int numSdu_ = 0;
 
     // define the segmentation info for the PDU
-    FramingInfo fi_;
+    FramingInfo fi_ = 0;
 
     // Sequence number of the PDU
-    unsigned int pduSequenceNumber_;
+    unsigned int pduSequenceNumber_ = 0;
 
     // Length of the PDU
-    int64_t rlcPduLength_;
+    int64_t rlcPduLength_ = 0;
 
   public:
 
     /**
      * Constructor
      */
-    LteRlcDataPdu() : LteRlcDataPdu_Base(), numSdu_(0), fi_(0), pduSequenceNumber_(0), rlcPduLength_(0)
+    LteRlcDataPdu() : LteRlcDataPdu_Base()
     {
         this->setChunkLength(inet::b(1));
     }

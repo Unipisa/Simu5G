@@ -17,7 +17,7 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
-LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction) : mac_(mac), bands_(0), dir_(direction), usedInLastSlot_(false)
+LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction) : mac_(mac), dir_(direction)
 {
 }
 

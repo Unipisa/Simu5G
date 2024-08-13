@@ -23,7 +23,7 @@ Define_Module(LtePhyEnb);
 using namespace omnetpp;
 using namespace inet;
 
-LtePhyEnb::LtePhyEnb() : bdcStarter_(nullptr), das_(nullptr)
+LtePhyEnb::LtePhyEnb()
 {
 }
 

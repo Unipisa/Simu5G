@@ -24,16 +24,16 @@ class MecRequestBackgroundGeneratorApp : public MecAppBase
   protected:
 
     int numberOfApplications_;    // requests to send in this session
-    cMessage *burstTimer;
-    cMessage *burstPeriod;
+    cMessage *burstTimer = nullptr;
+    cMessage *burstPeriod = nullptr;
     bool burstFlag;
-    cMessage *sendBurst;
+    cMessage *sendBurst = nullptr;
 
-    inet::TcpSocket *serviceSocket_;
-    inet::TcpSocket *mp1Socket_;
+    inet::TcpSocket *serviceSocket_ = nullptr;
+    inet::TcpSocket *mp1Socket_ = nullptr;
 
-    HttpBaseMessage *mp1HttpMessage;
-    HttpBaseMessage *serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage = nullptr;
+    HttpBaseMessage *serviceHttpMessage = nullptr;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
 

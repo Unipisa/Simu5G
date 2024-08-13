@@ -31,7 +31,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-MecServiceBase::MecServiceBase() : meHost_(nullptr), mecPlatformManager_(nullptr), servRegistry_(nullptr), loadGenerator_(false), rho_(0), lastFGRequestArrived_(0), subscriptionId_(0), currentRequestMessageServed_(nullptr), currentSubscriptionServed_(nullptr)
+MecServiceBase::MecServiceBase() :  lastFGRequestArrived_(0)
 {
 }
 

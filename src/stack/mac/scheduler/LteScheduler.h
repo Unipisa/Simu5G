@@ -74,7 +74,7 @@ class LteScheduler
     Direction direction_;
 
     //! Set of active connections.
-    ActiveSet *activeConnectionSet_;
+    ActiveSet *activeConnectionSet_ = nullptr;
 
     //! General Active set. Temporary variable used in the two-phase scheduling operations
     ActiveSet activeConnectionTempSet_;
@@ -112,7 +112,7 @@ class LteScheduler
     /**
      * Default constructor.
      */
-    LteScheduler(Binder *binder) : binder_(binder), activeConnectionSet_(nullptr)
+    LteScheduler(Binder *binder) : binder_(binder)
     {
     }
 

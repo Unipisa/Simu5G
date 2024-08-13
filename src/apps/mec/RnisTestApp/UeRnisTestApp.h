@@ -56,10 +56,10 @@ class UeRnisTestApp : public cSimpleModule
         KIND_SELF_MEC_APP_START,
     };
 
-    cMessage *selfStart_;
-    cMessage *selfStop_;
+    cMessage *selfStart_ = nullptr;
+    cMessage *selfStop_ = nullptr;
 
-    cMessage *selfMecAppStart_;
+    cMessage *selfMecAppStart_ = nullptr;
 
     // Used to write in a log file
     bool log;

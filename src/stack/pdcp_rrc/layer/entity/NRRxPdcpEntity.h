@@ -29,7 +29,7 @@ struct PdcpRxWindowDesc
   public:
 
     //! Size of the reception window
-    unsigned int windowSize_;
+    unsigned int windowSize_ = 16;
     //! SN of the next SDU expected to be received (RX_NEXT)
     unsigned int rxNext_;
     //! SN of the first SDU not delivered to the upper layer (RX_DELIV)
@@ -44,7 +44,7 @@ struct PdcpRxWindowDesc
         rxReord_ = i;
     }
 
-    PdcpRxWindowDesc() : windowSize_(16) // TODO make it configurable
+    PdcpRxWindowDesc()
     {
         clear();
     }

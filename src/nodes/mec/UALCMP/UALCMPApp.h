@@ -47,10 +47,10 @@ class UALCMPApp : public MecServiceBase
         nlohmann::json appCont; // for POST the app context used in the request is sent back with new fields (according to the result)
     };
 
-    bool scheduledSubscription;
+    bool scheduledSubscription = false;
     inet::ModuleRefByPar<MecOrchestrator> mecOrchestrator_; // reference to the MecOrchestrator used to get AppList
 
-    unsigned int requestSno;    // counter to keep track of the requests
+    unsigned int requestSno = 0;    // counter to keep track of the requests
     std::map<unsigned int, LcmRequestStatus> pendingRequests;
 
   public:

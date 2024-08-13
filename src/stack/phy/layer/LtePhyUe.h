@@ -33,10 +33,10 @@ class LtePhyUe : public LtePhyBase
 {
   protected:
     /** Master MacNodeId */
-    MacNodeId masterId_;
+    MacNodeId masterId_ = 0;
 
     /** Reference to master node's mobility module */
-    IMobility *masterMobility_;
+    IMobility *masterMobility_ = nullptr;
 
     /** Statistic for distance from serving cell */
     simsignal_t distance_;
@@ -45,10 +45,10 @@ class LtePhyUe : public LtePhyBase
     simsignal_t servingCell_;
 
     /** Self message to trigger handover procedure evaluation */
-    cMessage *handoverStarter_;
+    cMessage *handoverStarter_ = nullptr;
 
     /** Self message to start the handover procedure */
-    cMessage *handoverTrigger_;
+    cMessage *handoverTrigger_ = nullptr;
 
     /** RSSI received from the current serving node */
     double currentMasterRssi_;
@@ -118,10 +118,10 @@ class LtePhyUe : public LtePhyBase
     // Support to print average CQI at the end of the simulation
     std::vector<short int> cqiDlSamples_;
     std::vector<short int> cqiUlSamples_;
-    unsigned int cqiDlSum_;
-    unsigned int cqiUlSum_;
-    unsigned int cqiDlCount_;
-    unsigned int cqiUlCount_;
+    unsigned int cqiDlSum_ = 0;
+    unsigned int cqiUlSum_ = 0;
+    unsigned int cqiDlCount_ = 0;
+    unsigned int cqiUlCount_ = 0;
 
     bool hasCollector = false;
 

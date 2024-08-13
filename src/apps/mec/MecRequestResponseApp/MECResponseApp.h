@@ -34,16 +34,16 @@ using namespace omnetpp;
 class MECResponseApp : public MecAppBase
 {
   protected:
-    inet::TcpSocket *mp1Socket_;
-    inet::TcpSocket *serviceSocket_;
+    inet::TcpSocket *mp1Socket_ = nullptr;
+    inet::TcpSocket *serviceSocket_ = nullptr;
 
     inet::UdpSocket ueAppSocket_;
     int localUePort_;
 
     HttpBaseMessage *mp1HttpMessage;
 
-    cMessage *currentRequestfMsg_;
-    cMessage *processingTimer_;
+    cMessage *currentRequestfMsg_ = nullptr;
+    cMessage *processingTimer_ = nullptr;
     simtime_t msgArrived_;
     simtime_t getRequestSent_;
     simtime_t getRequestArrived_;

@@ -40,7 +40,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
 
   protected:
 
-    const UserTxParams *userTxParams;
+    const UserTxParams *userTxParams = nullptr;
     RbMap grantedBlocks;
     std::vector<unsigned int> grantedCwBytes;
     Direction direction_;
@@ -49,7 +49,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
   public:
 
     LteSchedulingGrant() :
-        LteSchedulingGrant_Base(), userTxParams(nullptr), grantId(getChunkId())
+        LteSchedulingGrant_Base(),  grantId(getChunkId())
     {
         grantedCwBytes.resize(MAX_CODEWORDS);
     }

@@ -82,14 +82,14 @@ class RTVideoStreamingSender : public cSimpleModule
         KIND_SELF_MOBILITY_STATS,
     };
 
-    cMessage *selfRTVideoStreamingAppStart_;
-    cMessage *selfRTVideoStreamingAppStop_;
+    cMessage *selfRTVideoStreamingAppStart_ = nullptr;
+    cMessage *selfRTVideoStreamingAppStop_ = nullptr;
 
-    cMessage *selfMecAppStart_;
-    cMessage *selfMecAppStop_;
+    cMessage *selfMecAppStart_ = nullptr;
+    cMessage *selfMecAppStop_ = nullptr;
 
-    cMessage *selfSessionStart_;
-    cMessage *selfSessionStop_;
+    cMessage *selfSessionStart_ = nullptr;
+    cMessage *selfSessionStop_ = nullptr;
 
     inet::UdpSocket videoStreamSocket_;
 
@@ -100,7 +100,7 @@ class RTVideoStreamingSender : public cSimpleModule
     std::ifstream _inputFileStream;
 
     int mtu_;
-    cMessage *_nextFrame;
+    cMessage *_nextFrame = nullptr;
 
     /**
      * The initial delay of the MPEG video.
@@ -116,10 +116,10 @@ class RTVideoStreamingSender : public cSimpleModule
      * The number of the current frame. Needed for calculating
      * the RTP time stamp in the RTP data packets.
      */
-    unsigned long _frameNumber;
-    unsigned long _sequenceNumber;
+    unsigned long _frameNumber = 0;
+    unsigned long _sequenceNumber = 0;
 
-    int sessionId_;
+    int sessionId_ = 0;
 
     bool sendAllOnOneTime_;
 

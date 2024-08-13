@@ -38,10 +38,10 @@ class LteTxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpRrcBase *pdcp_;
+    LtePdcpRrcBase *pdcp_ = nullptr;
 
     // next sequence number to be assigned
-    unsigned int sno_;
+    unsigned int sno_ = 0;
 
     // deliver the PDCP PDU to the lower layer
     virtual void deliverPdcpPdu(Packet *pdcpPkt);

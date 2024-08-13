@@ -23,11 +23,11 @@ class X2HandoverCommandIE : public X2InformationElement
 {
   protected:
 
-    bool startHandover_;
-    MacNodeId ueId_;      // ID of the user performing the handover
+    bool startHandover_ = false;
+    MacNodeId ueId_ = 0;      // ID of the user performing the handover
 
   public:
-    X2HandoverCommandIE() : startHandover_(false), ueId_(0)
+    X2HandoverCommandIE()
     {
         type_ = X2_HANDOVER_CMD_IE;
         length_ = sizeof(MacNodeId) + sizeof(uint8_t);

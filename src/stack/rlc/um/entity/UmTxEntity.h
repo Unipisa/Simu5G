@@ -63,7 +63,7 @@ class UmTxEntity : public cSimpleModule
     std::deque<inet::Packet *> *fragments = nullptr;
 
   public:
-    UmTxEntity() : flowControlInfo_(nullptr)
+    UmTxEntity()
     {
     }
 
@@ -144,7 +144,7 @@ class UmTxEntity : public cSimpleModule
      * Flow-related info.
      * Initialized with the control info of the first packet of the flow
      */
-    FlowControlInfo *flowControlInfo_;
+    FlowControlInfo *flowControlInfo_ = nullptr;
 
     /*
      * The SDU enqueue buffer.

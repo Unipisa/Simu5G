@@ -70,7 +70,7 @@ class MECWarningAlertApp : public MecAppBase
     std::string subId;
 
     // circle danger zone
-    cOvalFigure *circle;
+    cOvalFigure *circle = nullptr;
     double centerPositionX;
     double centerPositionY;
     double radius;

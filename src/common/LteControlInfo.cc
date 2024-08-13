@@ -25,7 +25,7 @@ UserControlInfo::~UserControlInfo()
 }
 
 UserControlInfo::UserControlInfo() :
-    UserControlInfo_Base(), userTxParams(nullptr)
+    UserControlInfo_Base()
 {
 }
 

@@ -59,8 +59,8 @@ class UERequestApp : public cSimpleModule
         KIND_SEND_REQUEST,
         KIND_UN_BLOCKING_MSG
     };
-    cMessage *selfStart_;
-    cMessage *selfStop_;
+    cMessage *selfStart_ = nullptr;
+    cMessage *selfStop_ = nullptr;
     cMessage *sendRequest_;
     cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
 

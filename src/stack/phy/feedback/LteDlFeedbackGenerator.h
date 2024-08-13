@@ -72,9 +72,9 @@ class LteDlFeedbackGenerator : public cSimpleModule
     int numBands_;                      /// number of cell bands
 
     // Timers
-    TTimer *tPeriodicSensing_;
-    TTimer *tPeriodicTx_;
-    TTimer *tAperiodicTx_;
+    TTimer *tPeriodicSensing_ = nullptr;
+    TTimer *tPeriodicTx_ = nullptr;
+    TTimer *tAperiodicTx_ = nullptr;
 
     // Feedback Maps
     //typedef std::map<Remote,LteFeedback> FeedbackMap_;

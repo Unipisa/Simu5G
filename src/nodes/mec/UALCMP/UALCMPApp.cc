@@ -41,7 +41,7 @@ namespace simu5g {
 
 Define_Module(UALCMPApp);
 
-UALCMPApp::UALCMPApp() : scheduledSubscription(false), requestSno(0)
+UALCMPApp::UALCMPApp()
 {
     baseUriQueries_ = "/example/dev_app/v1";
     baseUriSubscriptions_ = baseUriQueries_;

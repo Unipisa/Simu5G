@@ -33,9 +33,9 @@ using namespace omnetpp;
 class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
 {
   protected:
-    MecServiceBase *service;
-    inet::TcpSocket *sock;    // pointer into socketMap managed by TCPSrvHostApp
-    HttpBaseMessage *currentHttpMessage;
+    MecServiceBase *service = nullptr;
+    inet::TcpSocket *sock = nullptr;    // pointer into socketMap managed by TCPSrvHostApp
+    HttpBaseMessage *currentHttpMessage = nullptr;
     cQueue httpMessageQueue;
     std::string bufferedData;
 
@@ -51,7 +51,7 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
 
   public:
 
-    SocketManager() : service(nullptr), sock(nullptr), currentHttpMessage(nullptr) { }
+    SocketManager()  { }
     virtual ~SocketManager() { delete sock; }
 
     // internal: called by TCPSrvHostApp after creating this module

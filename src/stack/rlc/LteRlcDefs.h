@@ -50,7 +50,7 @@ struct RlcFragDesc
     /*!
      * Fragmentation Unit (bytes) - the size of fragments the SDU will be divided into
      */
-    int fragUnit_;
+    int fragUnit_ = 0;
 
     /*!
      * the number of fragments the SDU will be partitioned into
@@ -68,7 +68,7 @@ struct RlcFragDesc
      */
     int firstSn_;
 
-    RlcFragDesc() : fragUnit_(0)
+    RlcFragDesc()
     {
         resetFragmentation();
     }
@@ -112,13 +112,13 @@ struct RlcWindowDesc
 {
   public:
     //! Sequence number of the first PDU in the TxWindow
-    unsigned int firstSeqNum_;
+    unsigned int firstSeqNum_ = 0;
     //! Sequence number of the current PDU in the TxWindow
-    unsigned int seqNum_;
+    unsigned int seqNum_ = 0;
     //! Size of the transmission window
-    unsigned int windowSize_;
+    unsigned int windowSize_ = 0;
 
-    RlcWindowDesc() : firstSeqNum_(0), seqNum_(0), windowSize_(0)
+    RlcWindowDesc()
     {
     }
 
@@ -130,11 +130,11 @@ struct RlcWindowDesc
 struct MrwDesc
 {
     //! MRW current Sequence Number
-    unsigned int mrwSeqNum_;
+    unsigned int mrwSeqNum_ = 0;
     //! Last MRW Sequence Number
-    unsigned int lastMrw_;
+    unsigned int lastMrw_ = 0;
 
-    MrwDesc() : mrwSeqNum_(0), lastMrw_(0)
+    MrwDesc()
     {
     }
 
@@ -172,7 +172,7 @@ struct RlcUmRxWindowDesc
     //! Sequence number of PDU following the highest sequence number in the RxWindow
     unsigned int highestReceivedSno_;    // VR(UH)
     //! Size of the reception window
-    unsigned int windowSize_;
+    unsigned int windowSize_ = 0;
 
     void clear(unsigned int i = 0)
     {
@@ -182,7 +182,7 @@ struct RlcUmRxWindowDesc
         highestReceivedSno_ = i;
     }
 
-    RlcUmRxWindowDesc() : windowSize_(0)
+    RlcUmRxWindowDesc()
     {
          // the window size must not be cleared
         clear();

@@ -66,13 +66,13 @@ class VoDUDPServer : public cSimpleModule
 
     struct svcPacket
     {
-        int tid;
-        int lid;
-        int qid;
-        int length;
-        int frameNumber;
-        int timestamp;
-        int currentFrame;
+        int tid = -1;
+        int lid = -1;
+        int qid = -1;
+        int length = -1;
+        int frameNumber = -1;
+        int timestamp = -1;
+        int currentFrame = -1;
         std::string memoryAdd;
         std::string isDiscardable;
         std::string isTruncatable;
@@ -80,7 +80,7 @@ class VoDUDPServer : public cSimpleModule
         std::string frameType;
         long int index;
 
-        svcPacket() : tid(-1), lid(-1), qid(-1), length(-1), frameNumber(-1), timestamp(-1), currentFrame(-1) {
+        svcPacket()  {
 
         }
     };

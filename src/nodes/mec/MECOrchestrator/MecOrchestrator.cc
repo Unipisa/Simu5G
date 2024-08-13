@@ -34,7 +34,7 @@ namespace simu5g {
 
 Define_Module(MecOrchestrator);
 
-MecOrchestrator::MecOrchestrator() : mecHostSelectionPolicy_(nullptr)
+MecOrchestrator::MecOrchestrator()
 {
 }
 

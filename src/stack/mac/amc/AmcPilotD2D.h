@@ -22,8 +22,8 @@ namespace simu5g {
  */
 class AmcPilotD2D : public AmcPilot
 {
-    bool usePreconfiguredTxParams_;
-    UserTxParams *preconfiguredTxParams_;
+    bool usePreconfiguredTxParams_ = false;
+    UserTxParams *preconfiguredTxParams_ = nullptr;
 
   public:
 
@@ -32,7 +32,7 @@ class AmcPilotD2D : public AmcPilot
      * @param amc LteAmc owner module
      */
     AmcPilotD2D(Binder *binder, LteAmc *amc) :
-        AmcPilot(binder, amc), usePreconfiguredTxParams_(false), preconfiguredTxParams_(nullptr)
+        AmcPilot(binder, amc)
     {
         name_ = "D2D";
         mode_ = MIN_CQI;

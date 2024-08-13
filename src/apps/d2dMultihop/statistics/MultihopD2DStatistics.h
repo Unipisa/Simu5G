@@ -52,11 +52,11 @@ class MultihopD2DStatistics : public cSimpleModule
     // for each event, store the number of transmissions/duplicates/suppressions
     struct TransmissionInfo
     {
-        unsigned int numSent_;
-        unsigned int numSuppressed_;
-        unsigned int numDuplicates_;
+        unsigned int numSent_ = 0;
+        unsigned int numSuppressed_ = 0;
+        unsigned int numDuplicates_ = 0;
 
-        TransmissionInfo() : numSent_(0), numSuppressed_(0), numDuplicates_(0) { }
+        TransmissionInfo()  { }
     };
     std::map<unsigned short, TransmissionInfo> eventTransmissionInfo_;
 

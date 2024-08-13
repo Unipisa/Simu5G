@@ -63,14 +63,14 @@ class LteFeedback
     BandSet preferredBands_;
 
     //! Current status.
-    unsigned int status_;
+    unsigned int status_ = EMPTY;
     //! Current transmission mode.
-    TxMode txMode_;
+    TxMode txMode_ = SINGLE_ANTENNA_PORT0;
 
     //! Periodicity of the feedback message.
-    bool periodicFeedback_;
+    bool periodicFeedback_ = true;
     //! \test DAS SUPPORT - Antenna identifier
-    Remote remoteAntennaId_;
+    Remote remoteAntennaId_ = MACRO;
 
   public:
 
@@ -339,7 +339,7 @@ class LteMuMimoMatrix
 
   protected:
     MuMatrix muMatrix_;
-    MacNodeId maxNodeId_;
+    MacNodeId maxNodeId_ = 0;
 
     MacNodeId toNodeId(unsigned int i)
     {
@@ -352,7 +352,7 @@ class LteMuMimoMatrix
     }
 
   public:
-    LteMuMimoMatrix() : maxNodeId_(0)
+    LteMuMimoMatrix()
     {
     }
 

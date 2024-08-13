@@ -28,11 +28,11 @@ class CircularList
     typename std::list<T>::iterator cur_;
 
     //! Number of elements.
-    unsigned int size_;
+    unsigned int size_ = 0;
 
   public:
     //! Create an empty circular list.
-    CircularList() : cur_(list_.begin()), size_(0)
+    CircularList() : cur_(list_.begin())
     {
     }
 

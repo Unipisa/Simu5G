@@ -49,7 +49,7 @@ class AmRxQueue : public cSimpleModule
     simtime_t statusReportInterval_;
 
     //! SDU reconstructed at the beginning of the receiver buffer
-    int firstSdu_;
+    int firstSdu_ = 0;
 
     //! Timer to manage the buffer status report
     TTimer timer_;
@@ -75,7 +75,7 @@ class AmRxQueue : public cSimpleModule
     /*
      * FlowControlInfo matrix: used for CTRL messages generation
      */
-    FlowControlInfo *flowControlInfo_;
+    FlowControlInfo *flowControlInfo_ = nullptr;
 
     //Statistics
     static unsigned int totalCellRcvdBytes_;

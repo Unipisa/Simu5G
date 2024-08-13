@@ -28,18 +28,18 @@ class LteDrr : public LteScheduler
     struct DrrDesc
     {
         //! DRR quantum, in bytes.
-        unsigned int quantum_;
+        unsigned int quantum_ = 0;
         //! Deficit, in bytes.
-        unsigned int deficit_;
+        unsigned int deficit_ = 0;
         //! Flag indicating whether the connection consumed all the previous quantum and needs another one.
-        bool addQuantum_;
+        bool addQuantum_ = true;
         //! True if this descriptor is in the active list.
-        bool active_;
+        bool active_ = false;
         //! True if this connection is eligible for service.
-        bool eligible_;
+        bool eligible_ = false;
 
         //! Create an inactive DRR descriptor.
-        DrrDesc() : quantum_(0), deficit_(0), addQuantum_(true), active_(false), eligible_(false)
+        DrrDesc()
         {
         }
     };

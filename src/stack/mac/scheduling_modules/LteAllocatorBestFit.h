@@ -32,7 +32,7 @@ class LteAllocatorBestFit : public virtual LteScheduler
     typedef SortedDesc<MacCid, unsigned int> ScoreDesc;
     typedef std::priority_queue<ScoreDesc> ScoreList;
 
-    ConflictGraph *conflictGraph_;
+    ConflictGraph *conflictGraph_ = nullptr;
 
     /**
      * e.g. allocatedRbsBand_ [ <plane> ] [ <antenna> ] [ <band> ] gives the amount of blocks allocated for each UE

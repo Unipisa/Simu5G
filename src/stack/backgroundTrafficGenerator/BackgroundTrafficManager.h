@@ -42,7 +42,7 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
     inet::ModuleRefByPar<LtePhyEnb> phy_;
 
     // reference to the channel model for the given carrier
-    LteChannelModel *channelModel_;
+    LteChannelModel *channelModel_ = nullptr;
 
   protected:
     virtual void initialize(int stage);

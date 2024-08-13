@@ -16,10 +16,10 @@ namespace simu5g {
 using namespace omnetpp;
 
 LteHarqProcessTx::LteHarqProcessTx(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses,
-        LteMacBase *macOwner, LteMacBase *dstMac) : macOwner_(macOwner), acid_(acid), dropped_(false),
-        numEmptyUnits_(numUnits), //++ @ insert, -- @ unit reset (ack or fourth nack)
-        numHarqUnits_(numUnits), numProcesses_(numProcesses),
-        numSelected_(0) //++ @ markSelected and insert, -- @ extract/sendDown
+        LteMacBase *macOwner, LteMacBase *dstMac) : macOwner_(macOwner), numProcesses_(numProcesses), numHarqUnits_(numUnits),
+        acid_(acid),
+        numEmptyUnits_(numUnits), numSelected_(0),
+        dropped_(false)
 {
     units_ = new UnitVector(numUnits);
 

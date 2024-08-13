@@ -78,10 +78,10 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     ThreadSet threadSet;
     std::string host_;
     inet::ModuleRefByPar<Binder> binder_;
-    cModule *meHost_;
+    cModule *meHost_ = nullptr;
 
-    MecPlatformManager *mecPlatformManager_;
-    ServiceRegistry *servRegistry_;
+    MecPlatformManager *mecPlatformManager_ = nullptr;
+    ServiceRegistry *servRegistry_ = nullptr;
 
     std::string baseUriQueries_;
     std::string baseUriSubscriptions_;
@@ -91,15 +91,15 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
      * Load generator variables
      * the current implementation assumes a M/M/1 system
      */
-    bool loadGenerator_;
+    bool loadGenerator_ = false;
     double lambda_; // arrival rate of a BG request from a BG app
     double beta_; // arrival rate of a BG request from a BG app
 
     int numBGApps_; // number of BG apps
-    double rho_;
+    double rho_ = 0;
     simtime_t lastFGRequestArrived_;
 
-    unsigned int subscriptionId_; // identifier for new subscriptions
+    unsigned int subscriptionId_ = 0; // identifier for new subscriptions
 
     // currently not used
     std::set<std::string> supportedQueryParams_;
@@ -112,7 +112,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     int requestQueueSize_;
 
-    HttpRequestMessage *currentRequestMessageServed_;
+    HttpRequestMessage *currentRequestMessageServed_ = nullptr;
 
     cMessage *requestService_;
     double requestServiceTime_;
@@ -122,7 +122,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     double subscriptionServiceTime_;
     int subscriptionQueueSize_;
     std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events related to subscriptions
-    EventNotification *currentSubscriptionServed_;
+    EventNotification *currentSubscriptionServed_ = nullptr;
 
     // signals for statistics
     simsignal_t requestQueueSizeSignal_;

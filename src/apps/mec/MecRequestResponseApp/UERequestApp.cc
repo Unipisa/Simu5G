@@ -32,7 +32,7 @@ using namespace std;
 
 Define_Module(UERequestApp);
 
-UERequestApp::UERequestApp() : selfStart_(nullptr), selfStop_(nullptr)
+UERequestApp::UERequestApp()
 {
 }
 

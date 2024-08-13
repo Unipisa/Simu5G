@@ -38,20 +38,20 @@ class LteX2Message : public LteX2Message_Base
   protected:
 
     /// type of the X2 message
-    LteX2MessageType type_;
+    LteX2MessageType type_ = X2_UNKNOWN_MSG;
 
     /// List of X2 IEs
     X2InformationElementsList ieList_;
 
     /// Size of the X2 message
-    int64_t msgLength_;
+    int64_t msgLength_ = 0;
 
   public:
 
     /**
      * Constructor
      */
-    LteX2Message() : LteX2Message_Base(), type_(X2_UNKNOWN_MSG), msgLength_(0)
+    LteX2Message() : LteX2Message_Base()
     {
     }
 

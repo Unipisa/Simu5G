@@ -18,7 +18,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder), conflictGraph_(nullptr)
+LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder)
 {
 }
 

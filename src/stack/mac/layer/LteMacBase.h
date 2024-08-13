@@ -99,7 +99,7 @@ class LteMacBase : public cSimpleModule
     cMessage *ttiTick_;
 
     /// TTI for this node
-    double ttiPeriod_;
+    double ttiPeriod_ = TTI;
 
     /// MacNodeId
     MacNodeId nodeId_;
@@ -172,10 +172,10 @@ class LteMacBase : public cSimpleModule
     uint64_t nrToLower_;
 
     // support to print harqErrorRate at the end of the simulation
-    unsigned int totalHarqErrorRateDlSum_;
-    unsigned int totalHarqErrorRateUlSum_;
-    unsigned int totalHarqErrorRateDlCount_;
-    unsigned int totalHarqErrorRateUlCount_;
+    unsigned int totalHarqErrorRateDlSum_ = 0;
+    unsigned int totalHarqErrorRateUlSum_ = 0;
+    unsigned int totalHarqErrorRateDlCount_ = 0;
+    unsigned int totalHarqErrorRateUlCount_ = 0;
 
   public:
 

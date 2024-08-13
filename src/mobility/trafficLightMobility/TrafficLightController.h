@@ -42,8 +42,8 @@ class TrafficLightController : public cSimpleModule
     double areaWidth_;
     inet::deg heading_;
 
-    cLineFigure *line_;         // draw a line in the GUI representing the length of the queue of cars
-    cRectangleFigure *rect_;    // draw a rectangle in the GUI representing the area of the queue of cars
+    cLineFigure *line_ = nullptr;          // draw a line in the GUI representing the length of the queue of cars
+    cRectangleFigure *rect_;               // draw a rectangle in the GUI representing the area of the queue of cars
 
     inet::Coord tlPosition_;               // position of the traffic light
     inet::Coord direction_;                // direction of the traffic light
@@ -57,7 +57,7 @@ class TrafficLightController : public cSimpleModule
     std::set<int> queuedCars_[2];          // two queues, the second one is used when the traffic light is bidirectional
     bool bidirectional_;                   // if true, cars stop also in the opposite direction with respect to the one of the traffic light
 
-    cMessage *stateMsg_;          // timer regulating the cycles
+    cMessage *stateMsg_ = nullptr;         // timer regulating the cycles
 
     // draw initial line in GUI
     void initDrawLine();

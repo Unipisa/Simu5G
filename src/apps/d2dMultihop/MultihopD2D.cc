@@ -29,7 +29,7 @@ using namespace inet;
 
 uint16_t MultihopD2D::numMultihopD2DApps = 0;
 
-MultihopD2D::MultihopD2D() : senderAppId_(numMultihopD2DApps++), localMsgId_(0), selfSender_(nullptr)
+MultihopD2D::MultihopD2D() : senderAppId_(numMultihopD2DApps++)
 {
 }
 

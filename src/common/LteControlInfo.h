@@ -31,7 +31,7 @@ class UserControlInfo : public UserControlInfo_Base
 {
   protected:
 
-    const UserTxParams *userTxParams;
+    const UserTxParams *userTxParams = nullptr;
     RbMap grantedBlocks;
     /** @brief The movement of the sending host.*/
     //Move senderMovement;

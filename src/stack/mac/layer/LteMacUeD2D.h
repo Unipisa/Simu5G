@@ -36,15 +36,15 @@ class LteMacUeD2D : public LteMacUe
     bool emptyScheduleList_;
 
     // RAC Handling variables
-    bool racD2DMulticastRequested_;
+    bool racD2DMulticastRequested_ = false;
     // Multicast D2D BSR handling
-    bool bsrD2DMulticastTriggered_;
+    bool bsrD2DMulticastTriggered_ = false;
 
     simsignal_t rcvdD2DModeSwitchNotification_;
 
     // if true, use the preconfigured TX params for transmission, else use those signaled by the eNB
     bool usePreconfiguredTxParams_;
-    UserTxParams *preconfiguredTxParams_;
+    UserTxParams *preconfiguredTxParams_ = nullptr;
     UserTxParams *getPreconfiguredTxParams();  // build and return new user tx params
 
     /**

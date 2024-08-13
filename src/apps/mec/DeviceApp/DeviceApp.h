@@ -56,10 +56,10 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     inet::L3Address UALCMPAddress;
     int UALCMPPort;
 
-    HttpBaseMessage *UALCMPMessage;
+    HttpBaseMessage *UALCMPMessage = nullptr;
     std::string UALCMPMessageBuffer;
 
-    cMessage *processedUALCMPMessage;
+    cMessage *processedUALCMPMessage = nullptr;
 
     int localPort;
 

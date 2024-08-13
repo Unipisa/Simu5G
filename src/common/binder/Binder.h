@@ -92,7 +92,7 @@ class Binder : public cSimpleModule
      * Carrier Aggregation support
      */
     // total number of logical bands in the system. These bands
-    unsigned int totalBands_;
+    unsigned int totalBands_ = 0;
     CarrierInfoMap componentCarriers_;
 
     // for each carrier, store the UEs that are able to use it
@@ -156,7 +156,7 @@ class Binder : public cSimpleModule
     virtual void finish() override;
 
   public:
-    Binder() : totalBands_(0), lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
+    Binder() :  lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
     {
         macNodeIdCounter_[0] = ENB_MIN_ID;
         macNodeIdCounter_[1] = UE_MIN_ID;

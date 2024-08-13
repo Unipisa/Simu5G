@@ -28,7 +28,7 @@ class TTimer : public cObject
      * @param module - the connected module
      * @return the idle timer
      */
-    TTimer(cSimpleModule *module) : timerId_(0), module_(module), busy_(false), start_(0), expire_(0)
+    TTimer(cSimpleModule *module) :  module_(module),  start_(0), expire_(0)
     {
     }
 
@@ -114,7 +114,7 @@ class TTimer : public cObject
 
   protected:
     //!Timer identifier - will be inserted in each timer-generated message
-    unsigned int timerId_;
+    unsigned int timerId_ = 0;
 
     //! Object for handling the event.
     cSimpleModule *module_;
@@ -123,7 +123,7 @@ class TTimer : public cObject
     TTimerMsg *intr_;
 
     //! True if the timer has already been started.
-    bool busy_;
+    bool busy_ = false;
 
     //! Last time the timer was started.
     simtime_t start_;
@@ -144,7 +144,7 @@ class TMultiTimer : public cObject
 {
   public:
     //! Build an idle multi-timer.
-    TMultiTimer(cSimpleModule *module) : timerId_(0), module_(module), busy_(false)
+    TMultiTimer(cSimpleModule *module) :  module_(module)
     {
     }
 
@@ -218,7 +218,7 @@ class TMultiTimer : public cObject
 
   protected:
     //!Timer identifier - will be inserted in each timer-generated message
-    unsigned int timerId_;
+    unsigned int timerId_ = 0;
 
     //! Object for handling the event.
     opp_component_ptr<cSimpleModule> module_;
@@ -227,7 +227,7 @@ class TMultiTimer : public cObject
     TMultiTimerMsg *intr_;
 
     //! True if there is at least one scheduled event.
-    bool busy_;
+    bool busy_ = false;
 
     //! The event list.
     /** More than one event can have the same finish time.

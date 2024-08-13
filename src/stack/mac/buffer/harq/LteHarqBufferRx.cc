@@ -23,7 +23,7 @@ unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 using namespace omnetpp;
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
-        MacNodeId srcId) : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), isMulticast_(false), totalRcvdBytes_(0)
+        MacNodeId srcId) : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), isMulticast_(false)
 {
     initMacUe();
     processes_.resize(numHarqProcesses_);

@@ -38,13 +38,13 @@ class LteMacEnb : public LteMacBase
     inet::ModuleRefByPar<CellInfo> cellInfo_;
 
     /// Lte AMC module
-    LteAmc *amc_;
+    LteAmc *amc_ = nullptr;
 
     /// Number of antennas (MACRO included)
-    int numAntennas_;
+    int numAntennas_ = 0;
 
     /// List of scheduled users (one per carrier) - Downlink
-    std::map<double, LteMacScheduleList> *scheduleListDl_;
+    std::map<double, LteMacScheduleList> *scheduleListDl_ = nullptr;
 
     int eNodeBCount;
 
@@ -57,10 +57,10 @@ class LteMacEnb : public LteMacBase
     LteMacBufferMap bsrbuf_;
 
     /// Lte Mac Scheduler - Downlink
-    LteSchedulerEnbDl *enbSchedulerDl_;
+    LteSchedulerEnbDl *enbSchedulerDl_ = nullptr;
 
     /// Lte Mac Scheduler - Uplink
-    LteSchedulerEnbUl *enbSchedulerUl_;
+    LteSchedulerEnbUl *enbSchedulerUl_ = nullptr;
 
     /// Maps to keep track of nodes that need a retransmission to be scheduled
     std::map<double, int> needRtxDl_;

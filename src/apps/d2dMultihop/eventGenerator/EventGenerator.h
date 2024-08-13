@@ -28,9 +28,9 @@ class MultihopD2D;
 
 class EventGenerator : public cSimpleModule
 {
-    cMessage *selfMessage_;
+    cMessage *selfMessage_ = nullptr;
 
-    uint32_t eventId_;
+    uint32_t eventId_ = 0;
     inet::ModuleRefByPar<Binder> binder_;
 
     bool singleEventSource_;

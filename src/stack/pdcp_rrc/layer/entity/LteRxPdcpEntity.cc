@@ -16,7 +16,7 @@ namespace simu5g {
 
 Define_Module(LteRxPdcpEntity);
 
-LteRxPdcpEntity::LteRxPdcpEntity() : pdcp_(nullptr)
+LteRxPdcpEntity::LteRxPdcpEntity()
 {
 }
 

@@ -35,7 +35,7 @@ class VoIPSender : public cSimpleModule
     double scaleSil_;
     double shapeSil_;
     bool isTalk_;
-    cMessage *selfSource_;
+    cMessage *selfSource_ = nullptr;
     //sender
     int iDtalk_;
     int nframes_;
@@ -52,7 +52,7 @@ class VoIPSender : public cSimpleModule
     simsignal_t voIPGeneratedThroughput_;
     // ----------------------------
 
-    cMessage *selfSender_;
+    cMessage *selfSender_ = nullptr;
 
     cMessage *initTraffic_;
 

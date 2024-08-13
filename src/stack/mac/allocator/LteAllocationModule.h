@@ -35,13 +35,13 @@ class LteAllocationModule
     opp_component_ptr<LteMacEnb> mac_;
 
     /// Number of bands
-    unsigned int bands_;
+    unsigned int bands_ = 0;
 
     /// Operational Direction. Set via initialize().
     Direction dir_;
 
     /// Flag that indicates when the data structures need to be reset in the next slot
-    bool usedInLastSlot_;
+    bool usedInLastSlot_ = false;
 
     /*
      * We will consider the following two planes
@@ -98,15 +98,15 @@ class LteAllocationModule
     struct AllocatedRbsPerUeInfo
     {
         /// Stores the amount of blocks allocated in every band by the structure UE
-        unsigned int allocatedBlocks_;
+        unsigned int allocatedBlocks_ = 0;
         /// Stores the amount of bytes allocated to every UE in the structure band
-        unsigned int allocatedBytes_;
+        unsigned int allocatedBytes_ = 0;
 
         // if false this user is not using MU-MIMO
-        bool muMimoEnabled_;
+        bool muMimoEnabled_ = false;
         // if false this user transmits on MAIN_PLANE, otherwise it is considered as secondary
-        bool secondaryUser_;
-        MacNodeId peerId_;
+        bool secondaryUser_ = false;
+        MacNodeId peerId_ = 0;
 
         // amount of blocks allocated for this UE for each remote and for each band
         std::map<Remote, PerBandAllocatedRbsMap> ueAllocatedRbsMap_;
@@ -119,11 +119,11 @@ class LteAllocationModule
         RemoteSet availableAntennaSet_;
 
         // first available antenna
-        Remote currentAntenna_;
+        Remote currentAntenna_ = MACRO;
 
       public:
 
-        AllocatedRbsPerUeInfo() : allocatedBlocks_(0), allocatedBytes_(0), muMimoEnabled_(false), secondaryUser_(false), peerId_(0), currentAntenna_(MACRO)
+        AllocatedRbsPerUeInfo()
         {
             availableAntennaSet_.insert(MACRO);
         }
@@ -156,9 +156,9 @@ class LteAllocationModule
         UeAllocatedBytesMap ueAllocatedBytesMap_;
 
         /// Stores the amount of blocks allocated to every UE in the structure band
-        unsigned int allocated_;
+        unsigned int allocated_ = 0;
 
-        AllocatedRbsPerBandInfo() : allocated_(0)
+        AllocatedRbsPerBandInfo()
         {
         }
     };

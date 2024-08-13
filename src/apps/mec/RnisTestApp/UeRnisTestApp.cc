@@ -32,7 +32,7 @@ using namespace std;
 
 Define_Module(UeRnisTestApp);
 
-UeRnisTestApp::UeRnisTestApp() : selfStart_(nullptr), selfStop_(nullptr), selfMecAppStart_(nullptr) {
+UeRnisTestApp::UeRnisTestApp()  {
 }
 
 UeRnisTestApp::~UeRnisTestApp() {

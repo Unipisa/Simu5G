@@ -82,7 +82,7 @@ class MecOrchestrator : public cSimpleModule
     friend class AvailableResourcesSelectionBased;
     friend class MecHostSelectionBased;
 
-    SelectionPolicyBase *mecHostSelectionPolicy_;
+    SelectionPolicyBase *mecHostSelectionPolicy_ = nullptr;
 
     //------------------------------------
     //Binder module

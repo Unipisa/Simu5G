@@ -34,7 +34,7 @@ class LteRxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpRrcBase *pdcp_;
+    LtePdcpRrcBase *pdcp_ = nullptr;
 
     // Logical CID for this connection
     LogicalCid lcid_;

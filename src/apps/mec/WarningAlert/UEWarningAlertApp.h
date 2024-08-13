@@ -79,8 +79,8 @@ class UEWarningAlertApp : public cSimpleModule
         KIND_SELF_MEC_APP_START,
     };
 
-    cMessage *selfStart_;
-    cMessage *selfStop_;
+    cMessage *selfStart_ = nullptr;
+    cMessage *selfStop_ = nullptr;
 
     cMessage *selfMecAppStart_;
 

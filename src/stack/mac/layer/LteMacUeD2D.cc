@@ -27,7 +27,7 @@ Define_Module(LteMacUeD2D);
 
 using namespace inet;
 
-LteMacUeD2D::LteMacUeD2D() : LteMacUe(), racD2DMulticastRequested_(false), bsrD2DMulticastTriggered_(false), preconfiguredTxParams_(nullptr)
+LteMacUeD2D::LteMacUeD2D() : LteMacUe()
 {
 }
 

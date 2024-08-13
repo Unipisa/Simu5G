@@ -72,7 +72,7 @@ class LteMacPdu : public LteMacPdu_Base
     MacControlElementsList ceList_;
 
     /// Length of the PDU
-    int64_t macPduLength_;
+    int64_t macPduLength_ = 0;
 
     /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
     int64_t macPduId_;
@@ -83,7 +83,7 @@ class LteMacPdu : public LteMacPdu_Base
     /**
      * Constructor
      */
-    LteMacPdu() : LteMacPdu_Base(), sduList_(new cPacketQueue("SDU List")), macPduLength_(0)
+    LteMacPdu() : LteMacPdu_Base(), sduList_(new cPacketQueue("SDU List"))
     {
         macPduId_ = numMacPdus_++;
 

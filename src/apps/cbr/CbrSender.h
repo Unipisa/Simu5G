@@ -29,9 +29,9 @@ class CbrSender : public cSimpleModule
 {
     inet::UdpSocket socket;
     //has the sender been initialized?
-    bool initialized_;
+    bool initialized_ = false;
 
-    cMessage *selfSource_;
+    cMessage *selfSource_ = nullptr;
     //sender
     int nframes_;
     int iDframe_;
@@ -48,7 +48,7 @@ class CbrSender : public cSimpleModule
     int txBytes_;
     // ----------------------------
 
-    cMessage *selfSender_;
+    cMessage *selfSender_ = nullptr;
     cMessage *initTraffic_;
 
     simtime_t timestamp_;

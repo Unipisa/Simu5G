@@ -24,9 +24,9 @@ class DistanceBasedConflictGraph : public ConflictGraph
     double d2dMultiInterfDbmThreshold_;
 
     // distance-based thresholds
-    double d2dInterferenceRadius_;
-    double d2dMultiTransmissionRadius_;
-    double d2dMultiInterferenceRadius_;
+    double d2dInterferenceRadius_ = -1.0;
+    double d2dMultiTransmissionRadius_ = -1.0;
+    double d2dMultiInterferenceRadius_ = -1.0;
 
     // utility function to convert a distance to dBm according to the channel model
     double getDbmFromDistance(double distance);

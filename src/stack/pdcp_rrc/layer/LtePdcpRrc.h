@@ -268,7 +268,7 @@ class LtePdcpRrcBase : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
 
     /// Connection Identifier
-    LogicalCid lcid_;
+    LogicalCid lcid_ = 1;
 
     /// Hash Table used for CID <-> Connection mapping
     ConnectionsTable *ht_;

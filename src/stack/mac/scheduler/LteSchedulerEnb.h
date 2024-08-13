@@ -76,13 +76,13 @@ class LteSchedulerEnb
     opp_component_ptr<Binder> binder_;
 
     // System allocator, carries out the block-allocation functions.
-    LteAllocationModule *allocator_;
+    LteAllocationModule *allocator_ = nullptr;
 
     // Scheduling agent. One per carrier
     std::vector<LteScheduler *> scheduler_;
 
     // Operational Direction. Set via initialize().
-    Direction direction_;
+    Direction direction_ = DL;
 
     //! Set of active connections.
     ActiveSet activeConnectionSet_;
@@ -94,20 +94,20 @@ class LteSchedulerEnb
     LteMacAllocatedCws allocatedCws_;
 
     // Pointer to downlink virtual buffers (that are in LteMacBase)
-    LteMacBufferMap *vbuf_;
+    LteMacBufferMap *vbuf_ = nullptr;
 
     // Pointer to uplink virtual buffers (that are in LteMacBase)
     LteMacBufferMap *bsrbuf_;
 
     // Pointer to Harq Tx Buffers (that are in LteMacBase)
-    std::map<double, HarqTxBuffers> *harqTxBuffers_;
+    std::map<double, HarqTxBuffers> *harqTxBuffers_ = nullptr;
 
     // Pointer to Harq Rx Buffers (that are in LteMacBase)
-    std::map<double, HarqRxBuffers> *harqRxBuffers_;
+    std::map<double, HarqRxBuffers> *harqRxBuffers_ = nullptr;
 
     /// Total available resource blocks (switch on direction)
     /// Initialized by LteMacEnb::handleSelfMessage() using resourceBlocks()
-    unsigned int resourceBlocks_;
+    unsigned int resourceBlocks_ = 0;
 
     /// Statistics
     simsignal_t avgServedBlocksDl_;
@@ -117,7 +117,7 @@ class LteSchedulerEnb
     std::vector<BandLimit> emptyBandLim_;
 
     // @author Alessandro Noferi
-    double utilization_; // it records the utilization in the last TTI
+    double utilization_ = 0; // it records the utilization in the last TTI
 
   public:
 

@@ -80,12 +80,12 @@ class BaseStationStatsCollector : public cSimpleModule
      * - scheduled throughput
      */
 
-    cMessage *prbUsage_;
-    cMessage *activeUsers_;
-    cMessage *discardRate_;
-    cMessage *packetDelay_;
-    cMessage *pdcpBytes_;
-    cMessage *tPut_;
+    cMessage *prbUsage_ = nullptr;
+    cMessage *activeUsers_ = nullptr;
+    cMessage *discardRate_ = nullptr;
+    cMessage *packetDelay_ = nullptr;
+    cMessage *pdcpBytes_ = nullptr;
+    cMessage *tPut_ = nullptr;
 
     double prbUsagePeriod_;
     double activeUsersPeriod_;

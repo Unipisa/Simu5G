@@ -28,7 +28,7 @@ class AlertSender : public cSimpleModule
     inet::UdpSocket socket;
 
     //sender
-    int nextSno_;
+    int nextSno_ = 0;
     inet::B size_;
 
     simtime_t stopTime_;
@@ -36,7 +36,7 @@ class AlertSender : public cSimpleModule
     simsignal_t alertSentMsg_;
     // ----------------------------
 
-    cMessage *selfSender_;
+    cMessage *selfSender_ = nullptr;
 
     int localPort_;
     int destPort_;
