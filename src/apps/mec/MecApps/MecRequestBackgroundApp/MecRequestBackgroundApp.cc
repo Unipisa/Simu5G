@@ -28,15 +28,8 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp() {
     cancelAndDelete(burstTimer);
 }
 
-MecRequestBackgroundApp::MecRequestBackgroundApp()
+MecRequestBackgroundApp::MecRequestBackgroundApp() : burstTimer(nullptr), burstPeriod(nullptr), sendBurst(nullptr), serviceSocket_(nullptr), mp1Socket_(nullptr), mp1HttpMessage(nullptr), serviceHttpMessage(nullptr)
 {
-    burstTimer = nullptr;
-    burstPeriod = nullptr;
-    sendBurst = nullptr;
-    serviceSocket_ = nullptr;
-    mp1Socket_ = nullptr;
-    mp1HttpMessage = nullptr;
-    serviceHttpMessage = nullptr;
 }
 
 void MecRequestBackgroundApp::handleServiceMessage(int connId)

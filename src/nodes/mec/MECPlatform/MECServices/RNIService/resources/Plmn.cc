@@ -13,11 +13,8 @@
 
 namespace simu5g {
 
-Plmn::Plmn()
+Plmn::Plmn() : mcc_("001"), mnc_("01") // test mcc and mnc
 {
-    // test mcc and mnc
-    mcc_ = "001";
-    mnc_ = "01";
 }
 
 Plmn::Plmn(const std::string& mcc, const std::string& mnc)

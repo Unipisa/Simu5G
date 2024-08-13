@@ -32,12 +32,10 @@ class AmcPilotD2D : public AmcPilot
      * @param amc LteAmc owner module
      */
     AmcPilotD2D(Binder *binder, LteAmc *amc) :
-        AmcPilot(binder, amc)
+        AmcPilot(binder, amc), usePreconfiguredTxParams_(false), preconfiguredTxParams_(nullptr)
     {
         name_ = "D2D";
         mode_ = MIN_CQI;
-        usePreconfiguredTxParams_ = false;
-        preconfiguredTxParams_ = nullptr;
     }
 
     /**

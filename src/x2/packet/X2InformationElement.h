@@ -41,7 +41,7 @@ class X2InformationElement : public X2InformationElement_Base
   public:
 
     X2InformationElement() : X2InformationElement_Base() {}
-    X2InformationElement(X2InformationElementType type) : X2InformationElement_Base() { type_ = type; }
+    X2InformationElement(X2InformationElementType type) : X2InformationElement_Base(), type_(type) { }
 
     virtual ~X2InformationElement() {}
 

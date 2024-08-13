@@ -60,11 +60,8 @@ class AmcPilot
      * Constructor
      * @param amc LteAmc owner module
      */
-    AmcPilot(Binder *binder, LteAmc *amc)
+    AmcPilot(Binder *binder, LteAmc *amc) : binder_(binder), amc_(amc), name_("NONE")
     {
-        binder_ = binder;
-        amc_ = amc;
-        name_ = "NONE";
     }
 
     /**

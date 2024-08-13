@@ -156,15 +156,11 @@ class Binder : public cSimpleModule
     virtual void finish() override;
 
   public:
-    Binder()
+    Binder() : totalBands_(0), lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
     {
         macNodeIdCounter_[0] = ENB_MIN_ID;
         macNodeIdCounter_[1] = UE_MIN_ID;
         macNodeIdCounter_[2] = NR_UE_MIN_ID;
-
-        totalBands_ = 0;
-        lastUpdateUplinkTransmissionInfo_ = 0.0;
-        lastUplinkTransmission_ = 0.0;
     }
 
     unsigned int getTotalBands()

@@ -28,13 +28,8 @@ class TTimer : public cObject
      * @param module - the connected module
      * @return the idle timer
      */
-    TTimer(cSimpleModule *module)
+    TTimer(cSimpleModule *module) : timerId_(0), module_(module), busy_(false), start_(0), expire_(0)
     {
-        module_ = module;
-        busy_ = false;
-        start_ = 0;
-        expire_ = 0;
-        timerId_ = 0;
     }
 
     /*! Do nothing.
@@ -149,11 +144,8 @@ class TMultiTimer : public cObject
 {
   public:
     //! Build an idle multi-timer.
-    TMultiTimer(cSimpleModule *module)
+    TMultiTimer(cSimpleModule *module) : timerId_(0), module_(module), busy_(false)
     {
-        module_ = module;
-        busy_ = false;
-        timerId_ = 0;
     }
 
     //! Do nothing.

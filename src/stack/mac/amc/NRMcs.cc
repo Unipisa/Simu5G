@@ -21,9 +21,8 @@ using namespace omnetpp;
  * This table contains values taken from (TS 36.213)
  */
 NRMcsTable::NRMcsTable(bool extended)
+    : extended_(extended) // make it configurable
 {
-    extended_ = extended;  // make it configurable
-
     if (!extended) {
         cqiTable[0] = CQIelem(_QPSK, 0.0);
         cqiTable[1] = CQIelem(_QPSK, 78.0);

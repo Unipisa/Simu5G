@@ -80,12 +80,8 @@ class VoDUDPServer : public cSimpleModule
         std::string frameType;
         long int index;
 
-        svcPacket() {
-            tid = lid = qid = -1;
-            length = -1;
-            frameNumber = -1;
-            currentFrame = -1;
-            timestamp = -1;
+        svcPacket() : tid(-1), lid(-1), qid(-1), length(-1), frameNumber(-1), timestamp(-1), currentFrame(-1) {
+
         }
     };
     unsigned int nrec_;

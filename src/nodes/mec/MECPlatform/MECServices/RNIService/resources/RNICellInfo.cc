@@ -14,21 +14,20 @@
 
 namespace simu5g {
 
-RNICellInfo::RNICellInfo() 
+RNICellInfo::RNICellInfo()
 {
 }
 
-RNICellInfo::RNICellInfo(BaseStationStatsCollector *eNodeB) 
+RNICellInfo::RNICellInfo(BaseStationStatsCollector *eNodeB) : collector_(eNodeB)
 {
-    collector_ = eNodeB;
     ecgi_.setEcgi(collector_->getEcgi());
 }
 
-RNICellInfo::~RNICellInfo() 
+RNICellInfo::~RNICellInfo()
 {
 }
 
-nlohmann::ordered_json RNICellInfo::toJsonCell() const 
+nlohmann::ordered_json RNICellInfo::toJsonCell() const
 {
     nlohmann::ordered_json val;
     val["ecgi"] = ecgi_.toJson();

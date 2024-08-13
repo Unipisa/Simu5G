@@ -48,10 +48,8 @@ struct SortedDesc
     {
     }
 
-    SortedDesc(const T x, const S score)
+    SortedDesc(const T x, const S score) : x_(x), score_(score)
     {
-        x_ = x;
-        score_ = score;
     }
 
 };
@@ -114,10 +112,8 @@ class LteScheduler
     /**
      * Default constructor.
      */
-    LteScheduler(Binder *binder)
+    LteScheduler(Binder *binder) : binder_(binder), activeConnectionSet_(nullptr)
     {
-        activeConnectionSet_ = nullptr;
-        binder_ = binder;
     }
 
     /**

@@ -14,14 +14,12 @@
 namespace simu5g {
 
 CurrentLocation::CurrentLocation() {};
-CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords, const TimeStamp& ts): coords(coords), timeStamp(ts)
+CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords, const TimeStamp& ts): accuracy(accuracy), coords(coords), timeStamp(ts)
 {
-    this->accuracy = accuracy;
 }
 
-CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords): coords(coords)
+CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords): accuracy(accuracy), coords(coords)
 {
-    this->accuracy = accuracy;
     timeStamp.setSeconds();
 }
 

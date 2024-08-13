@@ -27,12 +27,10 @@ class X2HandoverCommandIE : public X2InformationElement
     MacNodeId ueId_;      // ID of the user performing the handover
 
   public:
-    X2HandoverCommandIE()
+    X2HandoverCommandIE() : startHandover_(false), ueId_(0)
     {
         type_ = X2_HANDOVER_CMD_IE;
         length_ = sizeof(MacNodeId) + sizeof(uint8_t);
-        startHandover_ = false;
-        ueId_ = 0;
     }
 
     X2HandoverCommandIE(const X2HandoverCommandIE& other) :

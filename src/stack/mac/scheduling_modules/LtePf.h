@@ -55,10 +55,8 @@ class LtePf : public LteScheduler
 
     LtePf(Binder *binder, double pfAlpha) :
         LteScheduler(binder),
-        scoreEpsilon_(0.000001)
+        pfAlpha_(pfAlpha), scoreEpsilon_(0.000001)
     {
-        pfAlpha_ = pfAlpha;
-        pfRate_.clear();
     }
 
 };

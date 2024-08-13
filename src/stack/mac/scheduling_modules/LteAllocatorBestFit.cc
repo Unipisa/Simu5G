@@ -18,9 +18,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder)
+LteAllocatorBestFit::LteAllocatorBestFit(Binder *binder) : LteScheduler(binder), conflictGraph_(nullptr)
 {
-    conflictGraph_ = nullptr;
 }
 
 void LteAllocatorBestFit::checkHole(Candidate& candidate, Band holeIndex, unsigned int holeLen, unsigned int req)

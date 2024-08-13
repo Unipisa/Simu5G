@@ -123,15 +123,9 @@ class LteAllocationModule
 
       public:
 
-        AllocatedRbsPerUeInfo()
+        AllocatedRbsPerUeInfo() : allocatedBlocks_(0), allocatedBytes_(0), muMimoEnabled_(false), secondaryUser_(false), peerId_(0), currentAntenna_(MACRO)
         {
-            allocatedBlocks_ = 0;
-            allocatedBytes_ = 0;
-            peerId_ = 0;
-            muMimoEnabled_ = false;
-            secondaryUser_ = false;
             availableAntennaSet_.insert(MACRO);
-            currentAntenna_ = MACRO;
         }
     };
 
@@ -164,9 +158,8 @@ class LteAllocationModule
         /// Stores the amount of blocks allocated to every UE in the structure band
         unsigned int allocated_;
 
-        AllocatedRbsPerBandInfo()
+        AllocatedRbsPerBandInfo() : allocated_(0)
         {
-            allocated_ = 0;
         }
     };
 

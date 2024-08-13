@@ -32,10 +32,8 @@ using namespace inet;
 // (transport, network and ROHC header, i.e. minimum is 3 Bytes)
 #define MIN_COMPRESSED_HEADER_SIZE    B(3)
 
-LtePdcpRrcBase::LtePdcpRrcBase()
+LtePdcpRrcBase::LtePdcpRrcBase() : lcid_(1), ht_(new ConnectionsTable())
 {
-    ht_ = new ConnectionsTable();
-    lcid_ = 1;
 }
 
 LtePdcpRrcBase::~LtePdcpRrcBase()

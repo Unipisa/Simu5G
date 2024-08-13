@@ -32,10 +32,8 @@ class CircularList
 
   public:
     //! Create an empty circular list.
-    CircularList()
+    CircularList() : cur_(list_.begin()), size_(0)
     {
-        size_ = 0;
-        cur_ = list_.begin();
     }
 
     //! Do nothing.
@@ -44,12 +42,9 @@ class CircularList
     }
 
     //! Copy constructor
-    CircularList(const CircularList<T>& cl)
+    CircularList(const CircularList<T>& cl) : list_(cl.list_), cur_(list_.begin()), size_(cl.size_)
     {
-        list_ = cl.list_;
-        size_ = cl.size_;
         typename std::list<T>::const_iterator it = cl.list_.begin();
-        cur_ = list_.begin();
         if (size_ != 0) {
             while (it != cl.cur_) {
                 ++it;

@@ -25,10 +25,8 @@ struct NRMCSelem
     LteMod mod_;       /// modulation (Qm)
     double coderate_;  /// code rate (R)
 
-    NRMCSelem(LteMod mod = _QPSK, double coderate = 0.0)
+    NRMCSelem(LteMod mod = _QPSK, double coderate = 0.0) : mod_(mod), coderate_(coderate)
     {
-        mod_ = mod;
-        coderate_ = coderate;
     }
 
 };

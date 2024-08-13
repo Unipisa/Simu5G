@@ -28,10 +28,8 @@ struct CQIelem
     double rate_;
 
     /// Constructor, with default set to "out of range CQI"
-    CQIelem(LteMod mod = _QPSK, double rate = 0.0)
+    CQIelem(LteMod mod = _QPSK, double rate = 0.0) : mod_(mod), rate_(rate)
     {
-        mod_ = mod;
-        rate_ = rate;
     }
 
 };
@@ -48,11 +46,8 @@ struct MCSelem
     Tbs iTbs_;         /// iTBS
     double threshold_; /// code rate threshold
 
-    MCSelem(LteMod mod = _QPSK, Tbs iTbs = 0, double threshold = 0.0)
+    MCSelem(LteMod mod = _QPSK, Tbs iTbs = 0, double threshold = 0.0) : mod_(mod), iTbs_(iTbs), threshold_(threshold)
     {
-        mod_ = mod;
-        iTbs_ = iTbs;
-        threshold_ = threshold;
     }
 
 };

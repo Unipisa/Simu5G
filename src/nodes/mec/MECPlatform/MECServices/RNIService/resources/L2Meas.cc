@@ -20,8 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-L2Meas::L2Meas() {
-    binder_ = nullptr;
+L2Meas::L2Meas() : binder_(nullptr) {
 }
 
 L2Meas::L2Meas(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {

@@ -15,9 +15,8 @@ namespace simu5g {
 
 Define_Module(BackgroundTrafficManager);
 
-BackgroundTrafficManager::BackgroundTrafficManager()
+BackgroundTrafficManager::BackgroundTrafficManager() : channelModel_(nullptr)
 {
-    channelModel_ = nullptr;
 }
 
 void BackgroundTrafficManager::initialize(int stage)

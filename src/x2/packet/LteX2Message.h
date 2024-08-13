@@ -51,11 +51,8 @@ class LteX2Message : public LteX2Message_Base
     /**
      * Constructor
      */
-    LteX2Message() : LteX2Message_Base()
+    LteX2Message() : LteX2Message_Base(), type_(X2_UNKNOWN_MSG), msgLength_(0)
     {
-        type_ = X2_UNKNOWN_MSG;
-        ieList_.clear();
-        msgLength_ = 0;
     }
 
     /*

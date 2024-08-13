@@ -16,12 +16,8 @@ namespace simu5g {
 using namespace omnetpp;
 
 User::User():timestamp_() {}
-User::User(const inet::Ipv4Address& address, const MacCellId accessPointId, const std::string& resourceUrl, int zoneId):timestamp_()
+User::User(const inet::Ipv4Address& address, const MacCellId accessPointId, const std::string& resourceUrl, int zoneId):timestamp_(), address_(address), zoneId_(zoneId), accessPointId_(accessPointId), resourceUrl_(resourceUrl)
 {
-    address_ = address;
-    accessPointId_ = accessPointId;
-    resourceUrl_ = resourceUrl;
-    zoneId_ = zoneId;
 }
 
 nlohmann::ordered_json User::toJson() const

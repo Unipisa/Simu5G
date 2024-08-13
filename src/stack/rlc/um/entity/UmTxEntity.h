@@ -63,9 +63,8 @@ class UmTxEntity : public cSimpleModule
     std::deque<inet::Packet *> *fragments = nullptr;
 
   public:
-    UmTxEntity()
+    UmTxEntity() : flowControlInfo_(nullptr)
     {
-        flowControlInfo_ = nullptr;
     }
 
     virtual ~UmTxEntity()

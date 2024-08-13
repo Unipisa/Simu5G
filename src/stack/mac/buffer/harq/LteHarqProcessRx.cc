@@ -21,18 +21,12 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqProcessRx::LteHarqProcessRx(unsigned char acid, LteMacBase *owner, Binder *binder)
+LteHarqProcessRx::LteHarqProcessRx(unsigned char acid, LteMacBase *owner, Binder *binder) : acid_(acid), macOwner_(owner), binder_(binder), transmissions_(0), maxHarqRtx_(owner->par("maxHarqRtx")), harqFbEvaluationTimer_(owner->par("harqFbEvaluationTimer"))
 {
     pdu_.resize(MAX_CODEWORDS, nullptr);
     status_.resize(MAX_CODEWORDS, RXHARQ_PDU_EMPTY);
     rxTime_.resize(MAX_CODEWORDS, 0);
     result_.resize(MAX_CODEWORDS, false);
-    acid_ = acid;
-    macOwner_ = owner;
-    transmissions_ = 0;
-    maxHarqRtx_ = owner->par("maxHarqRtx");
-    harqFbEvaluationTimer_ = owner->par("harqFbEvaluationTimer");
-    binder_ = binder;
 }
 
 void LteHarqProcessRx::insertPdu(Codeword cw, Packet *pkt)

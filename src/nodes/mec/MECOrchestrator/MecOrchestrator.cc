@@ -34,11 +34,8 @@ namespace simu5g {
 
 Define_Module(MecOrchestrator);
 
-MecOrchestrator::MecOrchestrator()
+MecOrchestrator::MecOrchestrator() : mecHostSelectionPolicy_(nullptr)
 {
-    meAppMap.clear();
-    mecApplicationDescriptors_.clear();
-    mecHostSelectionPolicy_ = nullptr;
 }
 
 void MecOrchestrator::initialize(int stage)

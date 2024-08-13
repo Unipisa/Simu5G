@@ -32,12 +32,8 @@ Define_Module(MECResponseApp);
 using namespace inet;
 using namespace omnetpp;
 
-MECResponseApp::MECResponseApp() : MecAppBase()
+MECResponseApp::MECResponseApp() : MecAppBase(), mp1Socket_(nullptr), serviceSocket_(nullptr), currentRequestfMsg_(nullptr), processingTimer_(nullptr)
 {
-    mp1Socket_ = nullptr;
-    serviceSocket_ = nullptr;
-    currentRequestfMsg_ = nullptr;
-    processingTimer_ = nullptr;
 }
 
 MECResponseApp::~MECResponseApp()

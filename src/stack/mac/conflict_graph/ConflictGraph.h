@@ -48,10 +48,8 @@ struct CGVertex
     }
 
   public:
-    CGVertex(MacNodeId src = 0, MacNodeId dst = 0)
+    CGVertex(MacNodeId src = 0, MacNodeId dst = 0) : srcId(src), dstId(dst)
     {
-        srcId = src;
-        dstId = dst;
     }
 
     bool isMulticast() const

@@ -55,12 +55,8 @@ class LteSummaryFeedback
   public:
 
     //! Create an empty feedback message.
-    LteSummaryFeedback(unsigned char cw, unsigned int b, simtime_t lb, simtime_t ub)
+    LteSummaryFeedback(unsigned char cw, unsigned int b, simtime_t lb, simtime_t ub) : confidenceLowerBound_(lb), confidenceUpperBound_(ub), totCodewords_(cw), logicalBandsTot_(b)
     {
-        totCodewords_ = cw;
-        logicalBandsTot_ = b;
-        confidenceLowerBound_ = lb;
-        confidenceUpperBound_ = ub;
         reset();
     }
 

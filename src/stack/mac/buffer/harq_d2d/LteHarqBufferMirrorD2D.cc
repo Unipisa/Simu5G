@@ -16,12 +16,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb *macOwner)
+LteHarqBufferMirrorD2D::LteHarqBufferMirrorD2D(unsigned int numProc, unsigned char maxHarqRtx, LteMacEnb *macOwner) : numProc_(numProc), maxHarqRtx_(maxHarqRtx), macOwner_(macOwner)
 {
-    numProc_ = numProc;
-    maxHarqRtx_ = maxHarqRtx;
     processes_.resize(numProc_, nullptr);
-    macOwner_ = macOwner;
     for (unsigned int i = 0; i < numProc_; i++)
         processes_[i] = new LteHarqProcessMirrorD2D(MAX_CODEWORDS, maxHarqRtx_, macOwner);
 }

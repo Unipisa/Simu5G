@@ -21,10 +21,8 @@ BackgroundCellAmc::~BackgroundCellAmc()
 {
 }
 
-BackgroundCellAmc::BackgroundCellAmc(Binder *binder)
+BackgroundCellAmc::BackgroundCellAmc(Binder *binder) : binder_(binder)
 {
-    binder_ = binder;
-
     calculateMcsScale();
 
     // Scale MCS Tables

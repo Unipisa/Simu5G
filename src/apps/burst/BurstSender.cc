@@ -19,13 +19,8 @@ namespace simu5g {
 
 Define_Module(BurstSender);
 
-BurstSender::BurstSender()
+BurstSender::BurstSender() : initialized_(false), selfBurst_(nullptr), selfPacket_(nullptr), selfSender_(nullptr), initTraffic_(nullptr)
 {
-    initialized_ = false;
-    initTraffic_ = nullptr;
-    selfSender_ = nullptr;
-    selfBurst_ = nullptr;
-    selfPacket_ = nullptr;
 }
 
 BurstSender::~BurstSender()

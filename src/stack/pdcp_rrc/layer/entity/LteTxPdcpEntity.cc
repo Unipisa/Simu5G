@@ -16,10 +16,8 @@ namespace simu5g {
 
 Define_Module(LteTxPdcpEntity);
 
-LteTxPdcpEntity::LteTxPdcpEntity()
+LteTxPdcpEntity::LteTxPdcpEntity() : pdcp_(nullptr), sno_(0)
 {
-    pdcp_ = nullptr;
-    sno_ = 0;
 }
 
 void LteTxPdcpEntity::initialize()

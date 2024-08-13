@@ -15,9 +15,8 @@
 
 namespace simu5g {
 
-MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator)
+MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator), mecHostIndex_(index)
 {
-    mecHostIndex_ = index;
 }
 
 cModule *MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)

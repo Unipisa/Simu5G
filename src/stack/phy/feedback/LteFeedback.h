@@ -352,9 +352,8 @@ class LteMuMimoMatrix
     }
 
   public:
-    LteMuMimoMatrix()
+    LteMuMimoMatrix() : maxNodeId_(0)
     {
-        maxNodeId_ = 0;
     }
 
     void initialize(MacNodeId node)

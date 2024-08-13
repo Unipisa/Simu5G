@@ -21,17 +21,8 @@ using namespace std;
 
 Define_Module(CellInfo);
 
-CellInfo::CellInfo()
+CellInfo::CellInfo() : ruSet_(new RemoteAntennaSet()), nodeX_(0), nodeY_(0), nodeZ_(0), numRus_(0), mcsScaleUl_(0), mcsScaleDl_(0), numBands_(0), maxNumerologyIndex_(0)
 {
-    nodeX_ = 0;
-    nodeY_ = 0;
-    nodeZ_ = 0;
-    mcsScaleDl_ = 0;
-    mcsScaleUl_ = 0;
-    numRus_ = 0;
-    ruSet_ = new RemoteAntennaSet();
-    numBands_ = 0;
-    maxNumerologyIndex_ = 0;
 }
 
 CellInfo::~CellInfo()

@@ -17,10 +17,8 @@ EventNotification::EventNotification()
 {
 }
 
-EventNotification::EventNotification(const std::string& type, int subId)
+EventNotification::EventNotification(const std::string& type, int subId) : type_(type), subId_(subId)
 {
-    type_ = type;
-    subId_ = subId;
 }
 
 int EventNotification::getSubId() const

@@ -32,9 +32,7 @@ using namespace std;
 
 Define_Module(UEWarningAlertApp);
 
-UEWarningAlertApp::UEWarningAlertApp() {
-    selfStart_ = nullptr;
-    selfStop_ = nullptr;
+UEWarningAlertApp::UEWarningAlertApp() : selfStart_(nullptr), selfStop_(nullptr) {
 }
 
 UEWarningAlertApp::~UEWarningAlertApp() {

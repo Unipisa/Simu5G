@@ -49,11 +49,9 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
   public:
 
     LteSchedulingGrant() :
-        LteSchedulingGrant_Base()
+        LteSchedulingGrant_Base(), userTxParams(nullptr), grantId(getChunkId())
     {
-        userTxParams = nullptr;
         grantedCwBytes.resize(MAX_CODEWORDS);
-        grantId = getChunkId();
     }
 
     ~LteSchedulingGrant()

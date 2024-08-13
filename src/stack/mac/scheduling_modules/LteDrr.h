@@ -39,13 +39,8 @@ class LteDrr : public LteScheduler
         bool eligible_;
 
         //! Create an inactive DRR descriptor.
-        DrrDesc()
+        DrrDesc() : quantum_(0), deficit_(0), addQuantum_(true), active_(false), eligible_(false)
         {
-            quantum_ = 0;
-            deficit_ = 0;
-            addQuantum_ = true;
-            active_ = false;
-            eligible_ = false;
         }
     };
 

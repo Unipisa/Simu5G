@@ -15,10 +15,8 @@
 
 namespace simu5g {
 
-AssociateId::AssociateId()
+AssociateId::AssociateId() : type_(""), value_("")
 {
-    type_ = "";
-    value_ = "";
 }
 
 AssociateId::AssociateId(std::string& type, std::string& value)

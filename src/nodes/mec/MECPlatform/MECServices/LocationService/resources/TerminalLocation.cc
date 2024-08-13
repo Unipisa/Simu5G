@@ -15,10 +15,8 @@ namespace simu5g {
 
 TerminalLocation::TerminalLocation() {};
 TerminalLocation::TerminalLocation(const std::string& address, const std::string& locationRetrievalStatus, const CurrentLocation& currentLocation):
-    currentLocation(currentLocation)
+    address(address), locationRetrievalStatus(locationRetrievalStatus), currentLocation(currentLocation)
 {
-    this->address = address;
-    this->locationRetrievalStatus = locationRetrievalStatus;
 }
 
 TerminalLocation::~TerminalLocation() {}

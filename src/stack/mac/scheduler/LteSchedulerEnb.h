@@ -59,11 +59,8 @@ class LteSchedulerEnb
         unsigned int bytes_;
         unsigned int blocks_;
 
-        Request(Band b, unsigned int bytes, unsigned int blocks)
+        Request(Band b, unsigned int bytes, unsigned int blocks) : b_(b), bytes_(bytes), blocks_(blocks)
         {
-            b_ = b;
-            bytes_ = bytes;
-            blocks_ = blocks;
         }
 
         Request()

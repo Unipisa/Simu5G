@@ -4,27 +4,21 @@
 
 namespace simu5g {
 
-HttpRequestMessage::HttpRequestMessage(const char *name, short kind)
+HttpRequestMessage::HttpRequestMessage(const char *name, short kind) : isBackgroundRequest_(false), isLastBackgroundRequest_(false)
 {
-    isBackgroundRequest_ = false;
-    isLastBackgroundRequest_ = false;
     setContentType("application/json");
     setBody("");
 }
 
-HttpRequestMessage::HttpRequestMessage(const std::string method, const char *name, short kind)
+HttpRequestMessage::HttpRequestMessage(const std::string method, const char *name, short kind) : isBackgroundRequest_(false), isLastBackgroundRequest_(false)
 {
-    isBackgroundRequest_ = false;
-    isLastBackgroundRequest_ = false;
     setMethod(method.c_str());
     setContentType("application/json");
     setBody("");
 }
 
-HttpRequestMessage::HttpRequestMessage(const char *method, const char *name, short kind)
+HttpRequestMessage::HttpRequestMessage(const char *method, const char *name, short kind) : isBackgroundRequest_(false), isLastBackgroundRequest_(false)
 {
-    isBackgroundRequest_ = false;
-    isLastBackgroundRequest_ = false;
     setMethod(method);
     setContentType("application/json");
     setBody("");

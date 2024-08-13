@@ -15,12 +15,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteMacBuffer::LteMacBuffer()
+LteMacBuffer::LteMacBuffer() : processed_(0), queueOccupancy_(0), queueLength_(0)
 {
-    queueOccupancy_ = 0;
-    queueLength_ = 0;
-    processed_ = 0;
-    Queue_.clear();
 }
 
 LteMacBuffer::LteMacBuffer(const LteMacQueue& queue)
@@ -30,7 +26,7 @@ LteMacBuffer::LteMacBuffer(const LteMacQueue& queue)
 
 LteMacBuffer::~LteMacBuffer()
 {
-    Queue_.clear();
+
 }
 
 LteMacBuffer& LteMacBuffer::operator=(const LteMacBuffer& queue)

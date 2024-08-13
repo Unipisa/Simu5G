@@ -19,14 +19,15 @@ Define_Module(ServiceRegistry);
 
 using namespace omnetpp;
 
-ServiceRegistry::ServiceRegistry() {
+ServiceRegistry::ServiceRegistry() :
+    uuidBase("123e4567-e89b-12d3-a456-4266141"), // last 5 digits are missing and used to create unique id in a quicker way
+    servIdCounter(10000) // incremented for every new service and concatenated to the uuidBase
+{
     baseUriQueries_ = "/example/mec_service_mgmt/v1";
     baseUriSubscriptions_ = baseUriQueries_;
     supportedQueryParams_.insert("app_list");
     supportedQueryParams_.insert("app_contexts");
     mecServices_.clear();
-    uuidBase = "123e4567-e89b-12d3-a456-4266141"; // last 5 digits are missing and used to create unique id in a quicker way
-    servIdCounter = 10000; // incremented for every new service and concatenated to the uuidBase
 }
 
 ServiceRegistry::~ServiceRegistry() {

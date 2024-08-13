@@ -90,16 +90,8 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
 }
 
 ApplicationDescriptor::ApplicationDescriptor(const std::string& appDid, const std::string& appName, const std::string& appProvider, const std::string& appInfoName, const std::string& appDescription,
-        const ResourceDescriptor& resources, std::vector<std::string> appServicesRequired, std::vector<std::string> appServicesProduced)
+        const ResourceDescriptor& resources, std::vector<std::string> appServicesRequired, std::vector<std::string> appServicesProduced) : appDId_(appDid), appName_(appName), appProvider_(appProvider), appInfoName_(appInfoName), appDescription_(appDescription), virtualResourceDescritor_(resources), appServicesRequired_(appServicesRequired), appServicesProduced_(appServicesProduced)
 {
-    appDId_ = appDid;
-    appName_ = appName;
-    appProvider_ = appProvider;
-    appInfoName_ = appInfoName;
-    appDescription_ = appDescription;
-    virtualResourceDescritor_ = resources;
-    appServicesRequired_ = appServicesRequired;
-    appServicesProduced_ = appServicesProduced;
 }
 
 nlohmann::ordered_json ApplicationDescriptor::toAppInfo() const

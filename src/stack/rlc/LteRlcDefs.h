@@ -68,9 +68,8 @@ struct RlcFragDesc
      */
     int firstSn_;
 
-    RlcFragDesc()
+    RlcFragDesc() : fragUnit_(0)
     {
-        fragUnit_ = 0;
         resetFragmentation();
     }
 
@@ -119,11 +118,8 @@ struct RlcWindowDesc
     //! Size of the transmission window
     unsigned int windowSize_;
 
-    RlcWindowDesc()
+    RlcWindowDesc() : firstSeqNum_(0), seqNum_(0), windowSize_(0)
     {
-        seqNum_ = 0;
-        firstSeqNum_ = 0;
-        windowSize_ = 0;
     }
 
 };
@@ -138,10 +134,8 @@ struct MrwDesc
     //! Last MRW Sequence Number
     unsigned int lastMrw_;
 
-    MrwDesc()
+    MrwDesc() : mrwSeqNum_(0), lastMrw_(0)
     {
-        mrwSeqNum_ = 0;
-        lastMrw_ = 0;
     }
 
 };
@@ -188,9 +182,9 @@ struct RlcUmRxWindowDesc
         highestReceivedSno_ = i;
     }
 
-    RlcUmRxWindowDesc()
+    RlcUmRxWindowDesc() : windowSize_(0)
     {
-        windowSize_ = 0;  // the window size must not be cleared
+         // the window size must not be cleared
         clear();
     }
 

@@ -68,13 +68,9 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     /**
      * Constructor
      */
-    LteRlcDataPdu() : LteRlcDataPdu_Base()
+    LteRlcDataPdu() : LteRlcDataPdu_Base(), numSdu_(0), fi_(0), pduSequenceNumber_(0), rlcPduLength_(0)
     {
         this->setChunkLength(inet::b(1));
-        numSdu_ = 0;
-        pduSequenceNumber_ = 0;
-        fi_ = 0;
-        rlcPduLength_ = 0;
     }
 
     virtual ~LteRlcDataPdu()

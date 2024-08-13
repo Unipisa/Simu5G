@@ -17,12 +17,8 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
-LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction)
+LteAllocationModule::LteAllocationModule(LteMacEnb *mac, Direction direction) : mac_(mac), bands_(0), dir_(direction), usedInLastSlot_(false)
 {
-    mac_ = mac;
-    dir_ = direction;
-    bands_ = 0;
-    usedInLastSlot_ = false;
 }
 
 void LteAllocationModule::init(const unsigned int resourceBlocks, const unsigned int bands)

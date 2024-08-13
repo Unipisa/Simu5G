@@ -23,14 +23,10 @@ Define_Module(LtePhyUe);
 
 using namespace inet;
 
-LtePhyUe::LtePhyUe()
+LtePhyUe::LtePhyUe() : masterId_(0), masterMobility_(nullptr), handoverStarter_(nullptr), handoverTrigger_(nullptr),
+    cqiDlSum_(0), cqiUlSum_(0),
+    cqiDlCount_(0), cqiUlCount_(0)
 {
-    handoverStarter_ = nullptr;
-    handoverTrigger_ = nullptr;
-    cqiDlSum_ = cqiUlSum_ = 0;
-    cqiDlCount_ = cqiUlCount_ = 0;
-    masterMobility_ = nullptr;
-    masterId_ = 0;
 }
 
 LtePhyUe::~LtePhyUe()

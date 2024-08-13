@@ -15,14 +15,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferTx::LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
+LteHarqBufferTx::LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac) : macOwner_(owner), numProc_(numProc), numEmptyProc_(numProc), selectedAcid_(HARQ_NONE), nodeId_(dstMac->getMacNodeId())
 {
-    numProc_ = numProc;
-    macOwner_ = owner;
-    nodeId_ = dstMac->getMacNodeId();
-    selectedAcid_ = HARQ_NONE;
     processes_ = new std::vector<LteHarqProcessTx *>(numProc);
-    numEmptyProc_ = numProc;
     for (unsigned int i = 0; i < numProc_; i++) {
         (*processes_)[i] = new LteHarqProcessTx(binder, i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
     }

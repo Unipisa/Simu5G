@@ -22,14 +22,8 @@ namespace simu5g {
 using namespace omnetpp;
 
 Define_Module(BaseStationStatsCollector);
-BaseStationStatsCollector::BaseStationStatsCollector()
+BaseStationStatsCollector::BaseStationStatsCollector() : prbUsage_(nullptr), activeUsers_(nullptr), discardRate_(nullptr), packetDelay_(nullptr), pdcpBytes_(nullptr), tPut_(nullptr)
 {
-    prbUsage_ = nullptr;
-    activeUsers_ = nullptr;
-    discardRate_ = nullptr;
-    packetDelay_ = nullptr;
-    pdcpBytes_ = nullptr;
-    tPut_ = nullptr;
 }
 
 BaseStationStatsCollector::~BaseStationStatsCollector()

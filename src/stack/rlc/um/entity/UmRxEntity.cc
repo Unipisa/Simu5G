@@ -24,23 +24,13 @@ unsigned int UmRxEntity::totalCellPduRcvdBytes_ = 0;
 unsigned int UmRxEntity::totalCellRcvdBytes_ = 0;
 
 UmRxEntity::UmRxEntity() :
-    t_reordering_(this)
+    nodeB_(nullptr), t_reordering_(this), lastSnoDelivered_(0), lastPduReassembled_(0), init_(false), isBurst_(false), t2Set_(false), totalBits_(0), ttiBits_(0), t2_(0), t1_(0)
 {
     t_reordering_.setTimerId(REORDERING_T);
     buffered_.pkt = nullptr;
     buffered_.size = 0;
-    lastSnoDelivered_ = 0;
-    lastPduReassembled_ = 0;
-    nodeB_ = nullptr;
-    init_ = false;
 
     // @author Alessandro Noferi
-    isBurst_ = false;
-    t2Set_ = false;
-    totalBits_ = 0;
-    ttiBits_ = 0;
-    t2_ = 0;
-    t1_ = 0;
 //    ttiT2_ = 0;
 //    ttiT1_ = 0;
 //    lastTTI_ = 0;

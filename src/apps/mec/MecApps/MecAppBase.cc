@@ -23,11 +23,8 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
-MecAppBase::MecAppBase()
+MecAppBase::MecAppBase() : currentProcessedMsg_(nullptr), processMessage_(nullptr), sendTimer(nullptr)
 {
-    sendTimer = nullptr;
-    processMessage_ = nullptr;
-    currentProcessedMsg_ = nullptr;
 }
 
 MecAppBase::~MecAppBase()

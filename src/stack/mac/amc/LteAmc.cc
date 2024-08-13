@@ -193,12 +193,8 @@ void LteAmc::printMuMimoMatrix(const char *s)
 * PUBLIC FUNCTIONS
 ********************/
 
-LteAmc::LteAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas)
+LteAmc::LteAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas) : mac_(mac), binder_(binder), cellInfo_(cellInfo), numAntennas_(numAntennas)
 {
-    mac_ = mac;
-    binder_ = binder;
-    cellInfo_ = cellInfo;
-    numAntennas_ = numAntennas;
     initialize();
 }
 

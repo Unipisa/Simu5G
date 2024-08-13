@@ -17,9 +17,8 @@ namespace simu5g {
 
 Define_Module(VirtualisationInfrastructureManager);
 
-VirtualisationInfrastructureManager::VirtualisationInfrastructureManager()
+VirtualisationInfrastructureManager::VirtualisationInfrastructureManager() : currentMEApps(0)
 {
-    currentMEApps = 0;
 }
 
 void VirtualisationInfrastructureManager::initialize(int stage)

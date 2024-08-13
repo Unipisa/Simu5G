@@ -144,16 +144,8 @@ class ModulationType
 
     void setIsMandatory(bool val) { isMandatory = val; }
     bool getIsMandatory() { return isMandatory; }
-    ModulationType()
+    ModulationType() : isMandatory(false), bandwidth(0), codeRate(CODE_RATE_UNDEFINED), dataRate(0), phyRate(0), constellationSize(0), modulationClass(MOD_CLASS_UNKNOWN), frequency(2400)
     {
-        isMandatory = false;
-        bandwidth = 0;
-        codeRate = CODE_RATE_UNDEFINED;
-        dataRate = 0;
-        phyRate = 0;
-        constellationSize = 0;
-        modulationClass = MOD_CLASS_UNKNOWN;
-        frequency = 2400;
     }
 
     bool operator==(const ModulationType& b)

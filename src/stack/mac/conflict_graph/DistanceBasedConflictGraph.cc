@@ -23,14 +23,12 @@ using namespace omnetpp;
  * \brief class constructor;
  */
 DistanceBasedConflictGraph::DistanceBasedConflictGraph(Binder *binder, LteMacEnbD2D *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh)
-    : ConflictGraph(binder, macEnb, reuseD2D, reuseD2DMulti)
-{
-    d2dDbmThreshold_ = d2dMultiTxDbmThreshold_ = d2dMultiInterfDbmThreshold_ = dbmThresh;
-
+    : ConflictGraph(binder, macEnb, reuseD2D, reuseD2DMulti),
     // uninitialized values
-    d2dInterferenceRadius_ = -1.0;
-    d2dMultiTransmissionRadius_ = -1.0;
-    d2dMultiInterferenceRadius_ = -1.0;
+    d2dDbmThreshold_(dbmThresh), d2dMultiTxDbmThreshold_(dbmThresh), d2dMultiInterfDbmThreshold_(dbmThresh),
+    d2dInterferenceRadius_(-1.0), d2dMultiTransmissionRadius_(-1.0), d2dMultiInterferenceRadius_(-1.0)
+{
+
 }
 
 void DistanceBasedConflictGraph::setThresholds(double d2dInterferenceRadius, double d2dMultiTransmissionRadius, double d2dMultiInterferenceRadius)

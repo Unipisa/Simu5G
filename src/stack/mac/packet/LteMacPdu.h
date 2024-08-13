@@ -83,11 +83,10 @@ class LteMacPdu : public LteMacPdu_Base
     /**
      * Constructor
      */
-    LteMacPdu() : LteMacPdu_Base()
+    LteMacPdu() : LteMacPdu_Base(), sduList_(new cPacketQueue("SDU List")), macPduLength_(0)
     {
         macPduId_ = numMacPdus_++;
-        macPduLength_ = 0;
-        sduList_ = new cPacketQueue("SDU List");
+
         take(sduList_);
         /*
          * @author Alessandro Noferi

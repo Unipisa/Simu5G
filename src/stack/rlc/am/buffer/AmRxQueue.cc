@@ -26,18 +26,12 @@ using namespace omnetpp;
 unsigned int AmRxQueue::totalCellRcvdBytes_ = 0;
 
 AmRxQueue::AmRxQueue() :
-    timer_(this)
+    // In order to create a back connection (AM CTRL), a flow control
+    // info for sending control messages to the transmitting entity is required
+    lastSentAck_(0), firstSdu_(0), timer_(this), flowControlInfo_(nullptr)
 {
     rxWindowDesc_.firstSeqNum_ = 0;
     rxWindowDesc_.seqNum_ = 0;
-    lastSentAck_ = 0;
-    firstSdu_ = 0;
-
-    // In order to create a back connection (AM CTRL), a flow control
-    // info for sending control messages to the transmitting entity is required
-
-    flowControlInfo_ = nullptr;
-
     timer_.setTimerId(BUFFERSTATUS_T);
 }
 

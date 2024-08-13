@@ -13,10 +13,8 @@
 
 namespace simu5g {
 
-EndPointInfo::EndPointInfo(const std::string& host, int port)
+EndPointInfo::EndPointInfo(const std::string& host, int port) : host_(host), port_(port)
 {
-    host_ = host;
-    port_ = port;
 }
 
 nlohmann::ordered_json EndPointInfo::toJson() const

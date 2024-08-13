@@ -49,10 +49,8 @@ class LcgScheduler
         }
 
       public:
-        SortedDesc(const T x, const S score)
+        SortedDesc(const T x, const S score) : x_(x), score_(score)
         {
-            x_ = x;
-            score_ = score;
         }
     };
 

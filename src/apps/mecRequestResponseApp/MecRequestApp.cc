@@ -19,8 +19,7 @@ simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
 
 Define_Module(MecRequestApp);
 
-MecRequestApp::MecRequestApp() {
-    selfSender_ = nullptr;
+MecRequestApp::MecRequestApp() : selfSender_(nullptr) {
 }
 
 MecRequestApp::~MecRequestApp() {

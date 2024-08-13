@@ -385,16 +385,14 @@ struct BandLimit
     /// Limit of bytes (per codeword) which can be requested for the current band
     std::vector<int> limit_;
 
-    BandLimit()
+    BandLimit() : band_(0)
     {
-        band_ = 0;
         limit_.resize(MAX_CODEWORDS, -1);
     }
 
     // default "from Band" constructor
-    BandLimit(Band b)
+    BandLimit(Band b) : band_(b)
     {
-        band_ = b;
         limit_.resize(MAX_CODEWORDS, -1);
     }
 

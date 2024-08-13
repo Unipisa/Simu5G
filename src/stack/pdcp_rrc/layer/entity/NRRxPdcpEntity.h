@@ -44,9 +44,8 @@ struct PdcpRxWindowDesc
         rxReord_ = i;
     }
 
-    PdcpRxWindowDesc()
+    PdcpRxWindowDesc() : windowSize_(16) // TODO make it configurable
     {
-        windowSize_ = 16;  // TODO make it configurable
         clear();
     }
 

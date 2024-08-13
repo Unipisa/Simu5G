@@ -13,9 +13,8 @@
 
 namespace simu5g {
 
-Ecgi::Ecgi() : plmn_()
+Ecgi::Ecgi() : cellId_(-1), plmn_()
 {
-    cellId_ = -1;
 }
 
 Ecgi::Ecgi(MacCellId cellId) : plmn_()
