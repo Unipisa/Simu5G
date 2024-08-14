@@ -150,7 +150,6 @@ class LtePhyBase : public ChannelAccess
     /**
      * Constructor
      */
-    LtePhyBase();
 
     /**
      * Destructor

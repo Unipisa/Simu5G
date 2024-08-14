@@ -68,7 +68,6 @@ class EventNotification;
 class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
   public:
-    MecServiceBase();
 
   protected:
     std::string serviceName_;
@@ -97,7 +96,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     int numBGApps_; // number of BG apps
     double rho_ = 0;
-    simtime_t lastFGRequestArrived_;
+    simtime_t lastFGRequestArrived_ = 0;
 
     unsigned int subscriptionId_ = 0; // identifier for new subscriptions
 

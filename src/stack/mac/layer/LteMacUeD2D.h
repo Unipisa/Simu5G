@@ -91,7 +91,6 @@ class LteMacUeD2D : public LteMacUe
     virtual void macPduMake(MacCid cid = 0) override;
 
   public:
-    LteMacUeD2D();
     virtual ~LteMacUeD2D();
 
     virtual bool isD2DCapable() override

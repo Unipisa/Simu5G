@@ -19,9 +19,6 @@ namespace simu5g {
 
 Define_Module(BurstSender);
 
-BurstSender::BurstSender()
-{
-}
 
 BurstSender::~BurstSender()
 {

@@ -30,9 +30,6 @@ Define_Module(MecRTVideoStreamingReceiver);
 using namespace inet;
 using namespace omnetpp;
 
-MecRTVideoStreamingReceiver::MecRTVideoStreamingReceiver() : MecAppBase(),  ueAppModule_(nullptr)
-{
-}
 
 MecRTVideoStreamingReceiver::~MecRTVideoStreamingReceiver()
 {

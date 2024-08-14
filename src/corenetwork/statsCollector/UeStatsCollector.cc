@@ -21,9 +21,6 @@ namespace simu5g {
 
 Define_Module(UeStatsCollector);
 
-UeStatsCollector::UeStatsCollector()
-{
-}
 
 void UeStatsCollector::initialize(int stage)
 {

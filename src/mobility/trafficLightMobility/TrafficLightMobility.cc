@@ -17,9 +17,6 @@ namespace simu5g {
 
 Define_Module(TrafficLightMobility);
 
-TrafficLightMobility::TrafficLightMobility()
-{
-}
 
 void TrafficLightMobility::initialize(int stage)
 {

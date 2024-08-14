@@ -34,7 +34,6 @@ class HttpResponseMessageSerializer : public FieldsChunkSerializer
     virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
 
   public:
-    HttpResponseMessageSerializer() : FieldsChunkSerializer() {}
 };
 
 } //namespace

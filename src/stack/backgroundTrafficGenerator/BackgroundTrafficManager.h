@@ -52,7 +52,6 @@ class BackgroundTrafficManager : public BackgroundTrafficManagerBase
     virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
 
   public:
-    BackgroundTrafficManager();
 
     // get the number of RBs
     virtual unsigned int getNumBands();

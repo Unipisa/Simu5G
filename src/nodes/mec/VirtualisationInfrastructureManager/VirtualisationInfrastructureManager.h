@@ -126,7 +126,6 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     SchedulingMode scheduling; // SEGREGATION or FAIR_SHARING
 
   public:
-    VirtualisationInfrastructureManager();
 
     // instancing the requested MEC App (called by MECPM)
     MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *);

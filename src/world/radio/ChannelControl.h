@@ -117,7 +117,6 @@ class ChannelControl : public cSimpleModule, public IChannelControl
     virtual RadioRef lookupRadio(cModule *radioModule);
 
   public:
-    ChannelControl();
     virtual ~ChannelControl();
 
     /** Registers the given radio. If radioInGate==NULL, the "radioIn" gate is assumed */

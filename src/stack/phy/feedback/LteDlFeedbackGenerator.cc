@@ -183,9 +183,6 @@ void LteDlFeedbackGenerator::sensing(FbPeriodicity per)
 *    PUBLIC FUNCTIONS
 ***************************/
 
-LteDlFeedbackGenerator::LteDlFeedbackGenerator()
-{
-}
 
 LteDlFeedbackGenerator::~LteDlFeedbackGenerator()
 {

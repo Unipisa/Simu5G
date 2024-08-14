@@ -89,7 +89,6 @@ class UEWarningAlertApp : public cSimpleModule
 
   public:
     ~UEWarningAlertApp();
-    UEWarningAlertApp();
 
   protected:
 

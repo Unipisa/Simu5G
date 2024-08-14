@@ -13,9 +13,6 @@
 
 namespace simu5g {
 
-AttributeBase::AttributeBase()
-{
-}
 
 AttributeBase::~AttributeBase()
 {

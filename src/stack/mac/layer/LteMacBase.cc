@@ -29,9 +29,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteMacBase::LteMacBase()
-{
-}
 
 LteMacBase::~LteMacBase()
 {

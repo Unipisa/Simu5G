@@ -68,7 +68,6 @@ class VoIPSender : public cSimpleModule
 
   public:
     ~VoIPSender();
-    VoIPSender();
 
   protected:
 

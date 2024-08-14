@@ -148,7 +148,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     virtual void initialize(int stage) override;
 
   public:
-    PacketFlowManagerEnb();
     // return true if a structure for this LCID is present
     virtual bool checkLcid(LogicalCid lcid) override;
     // initialize a new structure for this LCID

@@ -63,9 +63,6 @@ class UmTxEntity : public cSimpleModule
     std::deque<inet::Packet *> *fragments = nullptr;
 
   public:
-    UmTxEntity()
-    {
-    }
 
     virtual ~UmTxEntity()
     {

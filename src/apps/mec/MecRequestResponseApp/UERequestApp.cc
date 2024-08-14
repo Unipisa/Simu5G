@@ -32,9 +32,6 @@ using namespace std;
 
 Define_Module(UERequestApp);
 
-UERequestApp::UERequestApp()
-{
-}
 
 UERequestApp::~UERequestApp()
 {

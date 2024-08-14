@@ -73,7 +73,6 @@ class UERequestApp : public cSimpleModule
 
   public:
     ~UERequestApp();
-    UERequestApp();
 
   protected:
 

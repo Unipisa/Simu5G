@@ -15,9 +15,6 @@ namespace simu5g {
 
 Define_Module(NRRxPdcpEntity);
 
-NRRxPdcpEntity::NRRxPdcpEntity() : t_reordering_(this)
-{
-}
 
 NRRxPdcpEntity::~NRRxPdcpEntity()
 {

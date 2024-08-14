@@ -19,11 +19,6 @@ namespace simu5g {
 Define_Module(LtePhyUeD2D);
 using namespace inet;
 
-LtePhyUeD2D::LtePhyUeD2D()
-{
-    handoverStarter_ = nullptr;
-    handoverTrigger_ = nullptr;
-}
 
 LtePhyUeD2D::~LtePhyUeD2D()
 {

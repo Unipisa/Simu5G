@@ -66,7 +66,7 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     simtime_t lastfragment_;
 
     // reference to the UE app module, for statistic purposes (statistics will be recorded at the UE side)
-    opp_component_ptr<cModule> ueAppModule_;
+    opp_component_ptr<cModule> ueAppModule_ = nullptr;
 
     // signals
     simsignal_t e2eDelaySegment_;
@@ -105,7 +105,6 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     void processPacket(inet::Packet *packet);
 
   public:
-    MecRTVideoStreamingReceiver();
     virtual ~MecRTVideoStreamingReceiver();
 };
 

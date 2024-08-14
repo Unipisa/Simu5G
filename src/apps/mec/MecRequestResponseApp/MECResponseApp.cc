@@ -32,9 +32,6 @@ Define_Module(MECResponseApp);
 using namespace inet;
 using namespace omnetpp;
 
-MECResponseApp::MECResponseApp() : MecAppBase()
-{
-}
 
 MECResponseApp::~MECResponseApp()
 {

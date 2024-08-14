@@ -75,7 +75,6 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
   public:
-    PacketFlowManagerUe();
     // return true if a structure for this LCID is present
     virtual bool checkLcid(LogicalCid lcid) override;
     // initialize a new structure for this LCID

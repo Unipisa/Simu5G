@@ -31,9 +31,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-MecServiceBase::MecServiceBase() :  lastFGRequestArrived_(0)
-{
-}
 
 void MecServiceBase::initialize(int stage)
 {

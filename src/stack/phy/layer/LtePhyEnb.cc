@@ -23,9 +23,6 @@ Define_Module(LtePhyEnb);
 using namespace omnetpp;
 using namespace inet;
 
-LtePhyEnb::LtePhyEnb()
-{
-}
 
 LtePhyEnb::~LtePhyEnb()
 {

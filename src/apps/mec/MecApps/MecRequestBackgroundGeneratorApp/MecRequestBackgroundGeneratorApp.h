@@ -51,7 +51,6 @@ class MecRequestBackgroundGeneratorApp : public MecAppBase
     virtual void finish() override;
 
   public:
-    MecRequestBackgroundGeneratorApp();
     virtual ~MecRequestBackgroundGeneratorApp();
 };
 

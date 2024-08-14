@@ -61,7 +61,6 @@ class BurstSender : public cSimpleModule
 
   public:
     ~BurstSender();
-    BurstSender();
 
   protected:
 

@@ -19,7 +19,6 @@ namespace simu5g {
 class LteFeedbackComputation
 {
   public:
-    LteFeedbackComputation();
     virtual ~LteFeedbackComputation();
     /**
      * Interface for Feedback computation

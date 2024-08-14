@@ -18,9 +18,6 @@ namespace simu5g {
 
 Define_Module(MecPlatformManager);
 
-MecPlatformManager::MecPlatformManager()
-{
-}
 
 void MecPlatformManager::initialize(int stage)
 {

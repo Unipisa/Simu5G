@@ -19,8 +19,6 @@ simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
 
 Define_Module(MecRequestApp);
 
-MecRequestApp::MecRequestApp()  {
-}
 
 MecRequestApp::~MecRequestApp() {
     cancelAndDelete(selfSender_);

@@ -54,7 +54,6 @@ class EventGenerator : public cSimpleModule
     virtual void handleMessage(cMessage *msg) override;
 
   public:
-    EventGenerator();
     ~EventGenerator();
 
     void computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNodeId sourceId, double maxBroadcastRadius = -1.0);

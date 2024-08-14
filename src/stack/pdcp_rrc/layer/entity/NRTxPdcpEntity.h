@@ -40,7 +40,6 @@ class NRTxPdcpEntity : public LteTxPdcpEntity
 
   public:
 
-    NRTxPdcpEntity();
     virtual ~NRTxPdcpEntity();
 
     virtual void initialize();

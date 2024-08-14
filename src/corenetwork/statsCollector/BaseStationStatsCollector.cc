@@ -22,9 +22,6 @@ namespace simu5g {
 using namespace omnetpp;
 
 Define_Module(BaseStationStatsCollector);
-BaseStationStatsCollector::BaseStationStatsCollector()
-{
-}
 
 BaseStationStatsCollector::~BaseStationStatsCollector()
 {

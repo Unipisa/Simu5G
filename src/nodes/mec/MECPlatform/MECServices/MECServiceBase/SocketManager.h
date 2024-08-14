@@ -51,7 +51,6 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
 
   public:
 
-    SocketManager()  { }
     virtual ~SocketManager() { delete sock; }
 
     // internal: called by TCPSrvHostApp after creating this module

@@ -96,7 +96,6 @@ class MECWarningAlertApp : public MecAppBase
     virtual void established(int connId) override;
 
   public:
-    MECWarningAlertApp();
     virtual ~MECWarningAlertApp();
 
 };

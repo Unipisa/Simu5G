@@ -41,7 +41,6 @@ class ChannelAccess : public cSimpleModule, public cListener
     bool positionUpdateArrived;
 
   public:
-    ChannelAccess()  {}
     virtual ~ChannelAccess();
 
     /**

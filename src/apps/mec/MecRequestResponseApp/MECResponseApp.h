@@ -95,7 +95,6 @@ class MECResponseApp : public MecAppBase
     virtual void socketClosed(inet::TcpSocket *socket) override;
 
   public:
-    MECResponseApp();
     virtual ~MECResponseApp();
 };
 

@@ -47,7 +47,6 @@ class MecRequestForegroundApp : public MecAppBase
     virtual void sendRequest();
 
   public:
-    MecRequestForegroundApp() {}
     virtual ~MecRequestForegroundApp();
 
 };

@@ -41,9 +41,6 @@ std::ostream& operator<<(std::ostream& os, const ChannelControl::TransmissionLis
     return os;
 }
 
-ChannelControl::ChannelControl()
-{
-}
 
 ChannelControl::~ChannelControl()
 {

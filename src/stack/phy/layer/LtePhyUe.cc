@@ -23,9 +23,6 @@ Define_Module(LtePhyUe);
 
 using namespace inet;
 
-LtePhyUe::LtePhyUe()
-{
-}
 
 LtePhyUe::~LtePhyUe()
 {

@@ -30,7 +30,6 @@ class D2DModeSelectionBestCqi : public D2DModeSelectionBase
     virtual void doModeSelection();
 
   public:
-    D2DModeSelectionBestCqi() {}
     virtual ~D2DModeSelectionBestCqi() {}
 
     virtual void initialize(int stage);

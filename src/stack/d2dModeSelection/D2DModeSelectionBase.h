@@ -64,7 +64,6 @@ class D2DModeSelectionBase : public cSimpleModule
     void sendModeSwitchNotifications();
 
   public:
-    D2DModeSelectionBase() {}
     virtual ~D2DModeSelectionBase() {}
 
     virtual void initialize(int stage) override;

@@ -75,7 +75,6 @@ class LteFeedback
   public:
 
     //! Create an empty feedback message.
-    LteFeedback();
 
     //! Reset this feedback message as empty.
     void reset();
@@ -352,9 +351,6 @@ class LteMuMimoMatrix
     }
 
   public:
-    LteMuMimoMatrix()
-    {
-    }
 
     void initialize(MacNodeId node)
     {

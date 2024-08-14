@@ -86,7 +86,6 @@ class TrafficLightController : public cSimpleModule
     // check if the car is approaching the traffic light, i.e., it is in a straight line and moving towards the traffic light
     bool isApproaching(inet::Coord carPosition, inet::deg carDirection);
 
-    TrafficLightController();
     ~TrafficLightController();
 };
 

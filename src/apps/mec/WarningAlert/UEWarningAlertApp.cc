@@ -32,8 +32,6 @@ using namespace std;
 
 Define_Module(UEWarningAlertApp);
 
-UEWarningAlertApp::UEWarningAlertApp()  {
-}
 
 UEWarningAlertApp::~UEWarningAlertApp() {
     cancelAndDelete(selfStart_);

@@ -61,7 +61,6 @@ class CbrSender : public cSimpleModule
 
   public:
     ~CbrSender();
-    CbrSender();
 
   protected:
 

@@ -127,7 +127,6 @@ class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
     virtual void socketDeleted(inet::TcpSocket *socket) override {}
 
   public:
-    MecAppBase();
     virtual ~MecAppBase();
 
 };

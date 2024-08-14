@@ -19,9 +19,6 @@ Define_Module(EventGenerator);
 
 using namespace omnetpp;
 
-EventGenerator::EventGenerator()
-{
-}
 
 EventGenerator::~EventGenerator()
 {

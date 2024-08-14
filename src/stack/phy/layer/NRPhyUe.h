@@ -36,7 +36,6 @@ class NRPhyUe : public LtePhyUeD2D
     void deleteOldBuffers(MacNodeId masterId);
 
   public:
-    NRPhyUe();
     virtual ~NRPhyUe();
 };
 

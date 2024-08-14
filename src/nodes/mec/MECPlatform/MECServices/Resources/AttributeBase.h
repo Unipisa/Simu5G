@@ -23,7 +23,6 @@ namespace simu5g {
 class AttributeBase
 {
   public:
-    AttributeBase();
     virtual ~AttributeBase();
     virtual nlohmann::ordered_json toJson() const = 0;
     static std::string toJson(const std::string& value);

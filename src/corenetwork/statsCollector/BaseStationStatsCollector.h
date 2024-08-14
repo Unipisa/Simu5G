@@ -95,7 +95,6 @@ class BaseStationStatsCollector : public cSimpleModule
     double tPutPeriod_;
 
   public:
-    BaseStationStatsCollector();
     virtual ~BaseStationStatsCollector();
 
     const mec::Ecgi& getEcgi() const;

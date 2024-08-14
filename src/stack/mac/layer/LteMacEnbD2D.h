@@ -88,7 +88,6 @@ class LteMacEnbD2D : public LteMacEnb
 
   public:
 
-    LteMacEnbD2D();
     virtual ~LteMacEnbD2D();
 
     /**

@@ -81,7 +81,7 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
     PdcpRxWindowDesc rxWindowDesc_;
 
     // Timer to manage the reordering of the PDUs
-    TTimer t_reordering_;
+    TTimer t_reordering_ = TTimer(this);
 
     // Timeout for the above timer
     double timeout_;
@@ -91,7 +91,6 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
 
   public:
 
-    NRRxPdcpEntity();
     virtual ~NRRxPdcpEntity();
 
     virtual void initialize();

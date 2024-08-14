@@ -57,7 +57,6 @@ class LtePhyEnb : public LtePhyBase
     virtual void emitDistanceFromMaster() {}
 
   public:
-    LtePhyEnb();
     virtual ~LtePhyEnb();
 
 };

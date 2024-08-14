@@ -49,7 +49,6 @@ class LteHandoverManager : public cSimpleModule
     void handleX2Message(cPacket *pkt);
 
   public:
-    LteHandoverManager() {}
     virtual ~LteHandoverManager() {}
 
     virtual void initialize() override;

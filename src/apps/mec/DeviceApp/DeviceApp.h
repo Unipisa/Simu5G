@@ -106,7 +106,6 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     virtual void socketClosed(inet::UdpSocket *socket) override;
 
   public:
-    DeviceApp();
     virtual ~DeviceApp();
 
 };

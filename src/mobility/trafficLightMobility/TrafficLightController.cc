@@ -24,9 +24,6 @@ Define_Module(TrafficLightController);
 
 using namespace omnetpp;
 
-TrafficLightController::TrafficLightController()
-{
-}
 
 TrafficLightController::~TrafficLightController() {
     cancelAndDelete(stateMsg_);

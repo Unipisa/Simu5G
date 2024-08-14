@@ -144,9 +144,6 @@ class ModulationType
 
     void setIsMandatory(bool val) { isMandatory = val; }
     bool getIsMandatory() { return isMandatory; }
-    ModulationType()
-    {
-    }
 
     bool operator==(const ModulationType& b)
     {

@@ -28,7 +28,7 @@ class TTimer : public cObject
      * @param module - the connected module
      * @return the idle timer
      */
-    TTimer(cSimpleModule *module) :  module_(module),  start_(0), expire_(0)
+    explicit TTimer(cSimpleModule *module) :  module_(module),  start_(0), expire_(0)
     {
     }
 

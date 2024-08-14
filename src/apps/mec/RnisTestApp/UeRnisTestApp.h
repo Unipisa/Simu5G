@@ -66,7 +66,6 @@ class UeRnisTestApp : public cSimpleModule
 
   public:
     ~UeRnisTestApp();
-    UeRnisTestApp();
 
   protected:
 

@@ -30,9 +30,6 @@ using namespace inet;
 using namespace omnetpp;
 Define_Module(DeviceApp);
 
-DeviceApp::DeviceApp()
-{
-}
 
 DeviceApp::~DeviceApp()
 {

@@ -19,9 +19,6 @@ using namespace omnetpp;
 
 short LtePhyBase::airFramePriority_ = 10;
 
-LtePhyBase::LtePhyBase()
-{
-}
 
 LtePhyBase::~LtePhyBase()
 {

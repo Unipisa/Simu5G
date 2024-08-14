@@ -37,7 +37,6 @@ class L2MeasBase
 //        ::cHistogram histogram_;
 
   public:
-    L2MeasBase();
     virtual void init(std::string name, int period, bool movingAverage);
     virtual ~L2MeasBase();
     virtual void addValue(double value);

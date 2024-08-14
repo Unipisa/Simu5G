@@ -28,7 +28,6 @@ class LteX2MsgSerializer : public inet::FieldsChunkSerializer
     virtual const inet::Ptr<inet::Chunk> deserialize(inet::MemoryInputStream& stream) const override;
 
   public:
-    LteX2MsgSerializer() : FieldsChunkSerializer() {}
 };
 
 } //namespace

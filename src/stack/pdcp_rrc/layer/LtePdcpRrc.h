@@ -72,7 +72,6 @@ class LtePdcpRrcBase : public cSimpleModule
     /**
      * Initializes the connection table
      */
-    LtePdcpRrcBase();
 
     /**
      * Cleans the connection table
@@ -271,7 +270,7 @@ class LtePdcpRrcBase : public cSimpleModule
     LogicalCid lcid_ = 1;
 
     /// Hash Table used for CID <-> Connection mapping
-    ConnectionsTable *ht_;
+    ConnectionsTable *ht_ = new ConnectionsTable();
 
     /// Identifier for this node
     MacNodeId nodeId_;

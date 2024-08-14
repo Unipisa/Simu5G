@@ -72,7 +72,6 @@ class MecRnisTestApp : public MecAppBase
     virtual void established(int connId) override;
 
   public:
-    MecRnisTestApp();
     virtual ~MecRnisTestApp();
 
 };

@@ -148,7 +148,6 @@ class LtePhyUe : public LtePhyBase
     virtual void doHandover();
 
   public:
-    LtePhyUe();
     virtual ~LtePhyUe();
     DasFilter *getDasFilter();
     /**

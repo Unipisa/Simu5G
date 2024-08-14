@@ -32,8 +32,6 @@ using namespace std;
 
 Define_Module(UeRnisTestApp);
 
-UeRnisTestApp::UeRnisTestApp()  {
-}
 
 UeRnisTestApp::~UeRnisTestApp() {
     cancelAndDelete(selfStart_);

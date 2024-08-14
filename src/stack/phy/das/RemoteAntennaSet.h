@@ -47,9 +47,6 @@ class RemoteAntennaSet
 
   public:
     /// Constructor
-    RemoteAntennaSet()
-    {
-    }
 
     /// Destructor
     ~RemoteAntennaSet()

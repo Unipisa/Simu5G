@@ -28,9 +28,6 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp() {
     cancelAndDelete(burstTimer);
 }
 
-MecRequestBackgroundApp::MecRequestBackgroundApp()
-{
-}
 
 void MecRequestBackgroundApp::handleServiceMessage(int connId)
 {

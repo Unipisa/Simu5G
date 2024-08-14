@@ -48,7 +48,6 @@ class TrafficLightMobility : public LinearMobility
     virtual double getOrientationAngleDegree();
 
   public:
-    TrafficLightMobility();
     void getTrafficLights();
 };
 

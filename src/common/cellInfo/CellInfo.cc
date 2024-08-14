@@ -21,9 +21,6 @@ using namespace std;
 
 Define_Module(CellInfo);
 
-CellInfo::CellInfo() : ruSet_(new RemoteAntennaSet())
-{
-}
 
 CellInfo::~CellInfo()
 {

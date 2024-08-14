@@ -140,7 +140,6 @@ class RTVideoStreamingSender : public cSimpleModule
 
   public:
     ~RTVideoStreamingSender();
-    RTVideoStreamingSender();
 
   protected:
 

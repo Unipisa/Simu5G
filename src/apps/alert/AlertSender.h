@@ -46,7 +46,6 @@ class AlertSender : public cSimpleModule
 
   public:
     ~AlertSender();
-    AlertSender();
 
   protected:
 

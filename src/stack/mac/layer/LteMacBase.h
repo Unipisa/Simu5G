@@ -182,7 +182,6 @@ class LteMacBase : public cSimpleModule
     /**
      * Initializes MAC Buffers
      */
-    LteMacBase();
 
     /**
      * Deletes MAC Buffers

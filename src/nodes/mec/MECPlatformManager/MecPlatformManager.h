@@ -42,7 +42,6 @@ class MecPlatformManager : public cSimpleModule
     inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
   public:
-    MecPlatformManager();
 
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage);

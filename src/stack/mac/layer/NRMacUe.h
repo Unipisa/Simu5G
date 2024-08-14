@@ -45,7 +45,6 @@ class NRMacUe : public LteMacUeD2D
     virtual void macPduMake(MacCid cid = 0);
 
   public:
-    NRMacUe();
     virtual ~NRMacUe();
 };
 

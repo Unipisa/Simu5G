@@ -43,9 +43,6 @@ double BackgroundTrafficManagerBase::getCqiFromTable(double snr)
     return 15;
 }
 
-BackgroundTrafficManagerBase::BackgroundTrafficManagerBase()
-{
-}
 
 void BackgroundTrafficManagerBase::initialize(int stage)
 {

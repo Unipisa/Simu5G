@@ -39,7 +39,6 @@ using namespace omnetpp;
 class LteRlcTm : public cSimpleModule
 {
   public:
-    LteRlcTm() {}
 
     virtual ~LteRlcTm() {}
 

@@ -21,9 +21,6 @@ Define_Module(VoDUDPServer);
 using namespace std;
 using namespace inet;
 
-VoDUDPServer::VoDUDPServer()
-{
-}
 
 VoDUDPServer::~VoDUDPServer()
 {

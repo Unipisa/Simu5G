@@ -31,11 +31,9 @@ using namespace std;
 
 Define_Module(RTVideoStreamingSender);
 
-RTVideoStreamingSender::RTVideoStreamingSender()  {
 
 
 
-}
 
 RTVideoStreamingSender::~RTVideoStreamingSender() {
     cancelAndDelete(selfRTVideoStreamingAppStart_);

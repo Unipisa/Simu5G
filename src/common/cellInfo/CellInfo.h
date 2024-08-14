@@ -38,7 +38,7 @@ class CellInfo : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
 
     /// Remote Antennas for eNB
-    RemoteAntennaSet *ruSet_;
+    RemoteAntennaSet *ruSet_ = new RemoteAntennaSet();
 
     /// Cell Id
     MacCellId cellId_;
@@ -163,7 +163,6 @@ class CellInfo : public cSimpleModule
 
   public:
 
-    CellInfo();
 
     MacCellId getMacCellId()
     {

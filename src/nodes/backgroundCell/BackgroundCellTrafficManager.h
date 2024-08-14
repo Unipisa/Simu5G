@@ -41,7 +41,6 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
 
   public:
-    BackgroundCellTrafficManager();
     virtual ~BackgroundCellTrafficManager();
     virtual void initialize(int stage);
 

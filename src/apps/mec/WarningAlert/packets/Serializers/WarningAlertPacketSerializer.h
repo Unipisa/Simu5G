@@ -43,7 +43,6 @@ class WarningAlertPacketSerializer : public FieldsChunkSerializer
     virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
 
   public:
-    WarningAlertPacketSerializer() : FieldsChunkSerializer() {}
 };
 
 } //namespace

@@ -24,11 +24,6 @@ namespace simu5g {
 
 Define_Module(PacketFlowManagerUe);
 
-PacketFlowManagerUe::PacketFlowManagerUe()
-{
-    connectionMap_.clear();
-    pdcpDelay = { 0, 0 };
-}
 
 PacketFlowManagerUe::~PacketFlowManagerUe()
 {

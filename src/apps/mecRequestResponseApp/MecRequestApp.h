@@ -50,7 +50,6 @@ class MecRequestApp : public cSimpleModule
 
   public:
     ~MecRequestApp();
-    MecRequestApp();
 
   protected:
 

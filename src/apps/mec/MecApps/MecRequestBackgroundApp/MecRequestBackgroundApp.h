@@ -54,7 +54,6 @@ class MecRequestBackgroundApp : public MecAppBase
     virtual void finish() override;
 
   public:
-    MecRequestBackgroundApp();
     virtual ~MecRequestBackgroundApp();
 };
 

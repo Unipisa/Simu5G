@@ -49,7 +49,6 @@ class DeviceAppMessageSerializer : public inet::FieldsChunkSerializer
     virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
 
   public:
-    DeviceAppMessageSerializer() : FieldsChunkSerializer() {}
 };
 
 } //namespace
