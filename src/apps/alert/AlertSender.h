@@ -33,7 +33,7 @@ class AlertSender : public cSimpleModule
 
     simtime_t stopTime_;
 
-    simsignal_t alertSentMsg_;
+    static simsignal_t alertSentMsg_;
     // ----------------------------
 
     cMessage *selfSender_ = nullptr;

@@ -29,6 +29,14 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+// register signals
+simsignal_t LteMacBase::macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");
+simsignal_t LteMacBase::macBufferOverflowUl_ = registerSignal("macBufferOverFlowUl");
+simsignal_t LteMacBase::macBufferOverflowD2D_ = registerSignal("macBufferOverFlowD2D");
+simsignal_t LteMacBase::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteMacBase::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteMacBase::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteMacBase::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
 LteMacBase::~LteMacBase()
 {
@@ -377,16 +385,6 @@ void LteMacBase::initialize(int stage)
         nrToLower_ = 0;
 
         packetFlowManager_.reference(this, "packetFlowManagerModule", false);
-
-        // register signals
-        macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");
-        macBufferOverflowUl_ = registerSignal("macBufferOverFlowUl");
-        if (isD2DCapable())
-            macBufferOverflowD2D_ = registerSignal("macBufferOverFlowD2D");
-        receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-        receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-        sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-        sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
         WATCH(queueSize_);
         WATCH(nodeId_);

@@ -39,10 +39,10 @@ class LtePhyUe : public LtePhyBase
     IMobility *masterMobility_ = nullptr;
 
     /** Statistic for distance from serving cell */
-    simsignal_t distance_;
+    static simsignal_t distance_;
 
     /** Statistic for serving cell */
-    simsignal_t servingCell_;
+    static simsignal_t servingCell_;
 
     /** Self message to trigger handover procedure evaluation */
     cMessage *handoverStarter_ = nullptr;

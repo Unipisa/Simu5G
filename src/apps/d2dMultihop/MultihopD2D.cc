@@ -29,6 +29,13 @@ using namespace inet;
 
 uint16_t MultihopD2D::numMultihopD2DApps = 0;
 
+// local statistics
+simsignal_t MultihopD2D::d2dMultihopGeneratedMsg_ = registerSignal("d2dMultihopGeneratedMsg");
+simsignal_t MultihopD2D::d2dMultihopSentMsg_ = registerSignal("d2dMultihopSentMsg");
+simsignal_t MultihopD2D::d2dMultihopRcvdMsg_ = registerSignal("d2dMultihopRcvdMsg");
+simsignal_t MultihopD2D::d2dMultihopRcvdDupMsg_ = registerSignal("d2dMultihopRcvdDupMsg");
+simsignal_t MultihopD2D::d2dMultihopTrickleSuppressedMsg_ = registerSignal("d2dMultihopTrickleSuppressedMsg");
+
 MultihopD2D::MultihopD2D() : senderAppId_(numMultihopD2DApps++)
 {
 }
@@ -103,14 +110,6 @@ void MultihopD2D::initialize(int stage)
         // register to the event generator
         eventGen_.reference(this, "eventGeneratorModule", true);
         eventGen_->registerNode(this, lteNodeId_);
-
-        // local statistics
-        d2dMultihopGeneratedMsg_ = registerSignal("d2dMultihopGeneratedMsg");
-        d2dMultihopSentMsg_ = registerSignal("d2dMultihopSentMsg");
-        d2dMultihopRcvdMsg_ = registerSignal("d2dMultihopRcvdMsg");
-        d2dMultihopRcvdDupMsg_ = registerSignal("d2dMultihopRcvdDupMsg");
-        if (trickleEnabled_)
-            d2dMultihopTrickleSuppressedMsg_ = registerSignal("d2dMultihopTrickleSuppressedMsg");
 
         // global statistics recorder
         stat_.reference(this, "multihopD2DStatisticsModule", true);

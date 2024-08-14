@@ -32,6 +32,12 @@ using namespace std;
 
 Define_Module(UERequestApp);
 
+// register signals for stats
+simsignal_t UERequestApp::processingTime_ = registerSignal("processingTime");
+simsignal_t UERequestApp::serviceResponseTime_ = registerSignal("serviceResponseTime");
+simsignal_t UERequestApp::upLinkTime_ = registerSignal("upLinkTime");
+simsignal_t UERequestApp::downLinkTime_ = registerSignal("downLinkTime");
+simsignal_t UERequestApp::responseTime_ = registerSignal("responseTime");
 
 UERequestApp::~UERequestApp()
 {
@@ -84,13 +90,6 @@ void UERequestApp::initialize(int stage)
 
     //testing
     EV << "UERequestApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
-
-    // register signals for stats
-    processingTime_ = registerSignal("processingTime");
-    serviceResponseTime_ = registerSignal("serviceResponseTime");
-    upLinkTime_ = registerSignal("upLinkTime");
-    downLinkTime_ = registerSignal("downLinkTime");
-    responseTime_ = registerSignal("responseTime");
 }
 
 void UERequestApp::handleMessage(cMessage *msg)

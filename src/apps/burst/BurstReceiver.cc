@@ -15,6 +15,9 @@ namespace simu5g {
 
 Define_Module(BurstReceiver);
 
+simsignal_t BurstReceiver::burstRcvdPkt_ = registerSignal("burstRcvdPkt");
+simsignal_t BurstReceiver::burstPktDelay_ = registerSignal("burstPktDelay");
+
 void BurstReceiver::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
@@ -25,9 +28,6 @@ void BurstReceiver::initialize(int stage)
         numReceived_ = 0;
 
         recvBytes_ = 0;
-
-        burstRcvdPkt_ = registerSignal("burstRcvdPkt");
-        burstPktDelay_ = registerSignal("burstPktDelay");
     }
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         int port = par("localPort");

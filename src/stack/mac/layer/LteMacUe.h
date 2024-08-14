@@ -72,26 +72,26 @@ class LteMacUe : public LteMacBase
     bool bsrTriggered_;
 
     // statistics
-    simsignal_t cqiDlSpmux0_;
-    simsignal_t cqiDlSpmux1_;
-    simsignal_t cqiDlSpmux2_;
-    simsignal_t cqiDlSpmux3_;
-    simsignal_t cqiDlSpmux4_;
-    simsignal_t cqiDlTxDiv0_;
-    simsignal_t cqiDlTxDiv1_;
-    simsignal_t cqiDlTxDiv2_;
-    simsignal_t cqiDlTxDiv3_;
-    simsignal_t cqiDlTxDiv4_;
-    simsignal_t cqiDlMuMimo0_;
-    simsignal_t cqiDlMuMimo1_;
-    simsignal_t cqiDlMuMimo2_;
-    simsignal_t cqiDlMuMimo3_;
-    simsignal_t cqiDlMuMimo4_;
-    simsignal_t cqiDlSiso0_;
-    simsignal_t cqiDlSiso1_;
-    simsignal_t cqiDlSiso2_;
-    simsignal_t cqiDlSiso3_;
-    simsignal_t cqiDlSiso4_;
+    static simsignal_t cqiDlSpmux0_;
+    static simsignal_t cqiDlSpmux1_;
+    static simsignal_t cqiDlSpmux2_;
+    static simsignal_t cqiDlSpmux3_;
+    static simsignal_t cqiDlSpmux4_;
+    static simsignal_t cqiDlTxDiv0_;
+    static simsignal_t cqiDlTxDiv1_;
+    static simsignal_t cqiDlTxDiv2_;
+    static simsignal_t cqiDlTxDiv3_;
+    static simsignal_t cqiDlTxDiv4_;
+    static simsignal_t cqiDlMuMimo0_;
+    static simsignal_t cqiDlMuMimo1_;
+    static simsignal_t cqiDlMuMimo2_;
+    static simsignal_t cqiDlMuMimo3_;
+    static simsignal_t cqiDlMuMimo4_;
+    static simsignal_t cqiDlSiso0_;
+    static simsignal_t cqiDlSiso1_;
+    static simsignal_t cqiDlSiso2_;
+    static simsignal_t cqiDlSiso3_;
+    static simsignal_t cqiDlSiso4_;
 
     /**
      * Reads MAC parameters for UE and performs initialization.

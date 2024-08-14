@@ -28,6 +28,10 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+// Initialize statistics
+simsignal_t LteSchedulerEnb::avgServedBlocksDl_ = cComponent::registerSignal("avgServedBlocksDl");
+simsignal_t LteSchedulerEnb::avgServedBlocksUl_ = cComponent::registerSignal("avgServedBlocksUl");
+
 LteSchedulerEnb::LteSchedulerEnb() : mac_(nullptr)
 {
 }
@@ -50,8 +54,6 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     harqRxBuffers_ = other.harqRxBuffers_;
     resourceBlocks_ = other.resourceBlocks_;
 
-    avgServedBlocksDl_ = other.avgServedBlocksDl_;
-    avgServedBlocksUl_ = other.avgServedBlocksUl_;
     emptyBandLim_ = other.emptyBandLim_;
 
     // Copy schedulers
@@ -120,10 +122,6 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
         allocator_ = new LteAllocationModule(mac_, direction_);
 
     initializeAllocator();
-
-    // Initialize statistics
-    avgServedBlocksDl_ = cComponent::registerSignal("avgServedBlocksDl");
-    avgServedBlocksUl_ = cComponent::registerSignal("avgServedBlocksUl");
 }
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)

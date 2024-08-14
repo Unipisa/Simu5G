@@ -17,6 +17,10 @@ using namespace omnetpp;
 
 Define_Module(BackgroundScheduler);
 
+// statistics
+simsignal_t BackgroundScheduler::bgAvgServedBlocksDl_ = registerSignal("bgAvgServedBlocksDl");
+simsignal_t BackgroundScheduler::bgAvgServedBlocksUl_ = registerSignal("bgAvgServedBlocksUl");
+
 void BackgroundScheduler::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
@@ -57,10 +61,6 @@ void BackgroundScheduler::initialize(int stage)
 
         // register to get a notification when position changes
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
-
-        // statistics
-        bgAvgServedBlocksDl_ = registerSignal("bgAvgServedBlocksDl");
-        bgAvgServedBlocksUl_ = registerSignal("bgAvgServedBlocksUl");
     }
     if (stage == inet::INITSTAGE_LOCAL + 1) {
         binder_.reference(this, "binderModule", true);

@@ -19,6 +19,10 @@ using namespace omnetpp;
 
 short LtePhyBase::airFramePriority_ = 10;
 
+//Statistics
+simsignal_t LtePhyBase::averageCqiDl_ = registerSignal("averageCqiDl");
+simsignal_t LtePhyBase::averageCqiUl_ = registerSignal("averageCqiUl");
+simsignal_t LtePhyBase::averageCqiD2D_ = registerSignal("averageCqiD2D");
 
 
 void LtePhyBase::initialize(int stage)

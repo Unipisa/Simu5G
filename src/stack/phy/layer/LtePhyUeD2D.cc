@@ -25,7 +25,6 @@ void LtePhyUeD2D::initialize(int stage)
 {
     LtePhyUe::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        averageCqiD2D_ = registerSignal("averageCqiD2D");
         d2dTxPower_ = par("d2dTxPower");
         d2dMulticastEnableCaptureEffect_ = par("d2dMulticastCaptureEffect");
         d2dDecodingTimer_ = nullptr;

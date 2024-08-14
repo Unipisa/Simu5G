@@ -50,14 +50,14 @@ class VoIPReceiver : public cSimpleModule
     unsigned int totalRcvdBytes_;
     simtime_t warmUpPer_;
 
-    simsignal_t voIPFrameLossSignal_;
-    simsignal_t voIPFrameDelaySignal_;
-    simsignal_t voIPPlayoutDelaySignal_;
-    simsignal_t voIPMosSignal_;
-    simsignal_t voIPTaildropLossSignal_;
-    simsignal_t voIPPlayoutLossSignal_;
-    simsignal_t voIPJitterSignal_;
-    simsignal_t voIPReceivedThroughput_;
+    static simsignal_t voIPFrameLossSignal_;
+    static simsignal_t voIPFrameDelaySignal_;
+    static simsignal_t voIPPlayoutDelaySignal_;
+    static simsignal_t voIPMosSignal_;
+    static simsignal_t voIPTaildropLossSignal_;
+    static simsignal_t voIPPlayoutLossSignal_;
+    static simsignal_t voIPJitterSignal_;
+    static simsignal_t voIPReceivedThroughput_;
 
     virtual void finish() override;
 

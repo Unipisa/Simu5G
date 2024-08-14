@@ -19,6 +19,7 @@ namespace simu5g {
 
 Define_Module(BurstSender);
 
+simsignal_t BurstSender::burstSentPkt_ = registerSignal("burstSentPkt");
 
 BurstSender::~BurstSender()
 {
@@ -43,8 +44,6 @@ void BurstSender::initialize(int stage)
         intraBurstTime_ = par("intraBurstTime");
         localPort_ = par("localPort");
         destPort_ = par("destPort");
-
-        burstSentPkt_ = registerSignal("burstSentPkt");
     }
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         initTraffic_ = new cMessage("initTraffic");

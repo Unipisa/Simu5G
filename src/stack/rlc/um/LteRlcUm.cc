@@ -20,6 +20,12 @@ Define_Module(LteRlcUm);
 
 using namespace omnetpp;
 
+// statistics
+simsignal_t LteRlcUm::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteRlcUm::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteRlcUm::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteRlcUm::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
+
 UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId = 0;
@@ -270,12 +276,6 @@ void LteRlcUm::initialize(int stage)
 
         // parameters
         mapAllLcidsToSingleBearer_ = par("mapAllLcidsToSingleBearer");
-
-        // statistics
-        receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-        receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-        sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-        sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
         WATCH_MAP(txEntities_);
         WATCH_MAP(rxEntities_);

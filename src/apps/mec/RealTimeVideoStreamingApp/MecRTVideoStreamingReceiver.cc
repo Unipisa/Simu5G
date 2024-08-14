@@ -30,6 +30,17 @@ Define_Module(MecRTVideoStreamingReceiver);
 using namespace inet;
 using namespace omnetpp;
 
+simsignal_t MecRTVideoStreamingReceiver::e2eDelaySegment_ = registerSignal("rtVideoStreamingEnd2endDelaySegment");
+simsignal_t MecRTVideoStreamingReceiver::segmentSize_ = registerSignal("rtVideoStreamingSegmentPacketSize");
+simsignal_t MecRTVideoStreamingReceiver::frameSize_ = registerSignal("rtVideoStreamingFrameSize");
+simsignal_t MecRTVideoStreamingReceiver::playoutBufferLength_ = registerSignal("rtVideoStreamingPlayoutBufferLength");
+simsignal_t MecRTVideoStreamingReceiver::playoutDelayTime_ = registerSignal("rtVideoStreamingPlayoutDelay");
+simsignal_t MecRTVideoStreamingReceiver::playoutDelayTimeAll_ = registerSignal("rtVideoStreamingPlayoutDelayAll");
+simsignal_t MecRTVideoStreamingReceiver::segmentLoss_ = registerSignal("rtVideoStreamingSegmentLoss");
+simsignal_t MecRTVideoStreamingReceiver::interArrTime_ = registerSignal("rtVideoStreamingInterArrivalTimeSegment");
+simsignal_t MecRTVideoStreamingReceiver::frameDisplayed_ = registerSignal("rtVideoStreamingFramesDisplayed");
+simsignal_t MecRTVideoStreamingReceiver::startSession_ = registerSignal("rtVideoStreamingStartSession");
+simsignal_t MecRTVideoStreamingReceiver::stopSession_ = registerSignal("rtVideoStreamingStopSession");
 
 MecRTVideoStreamingReceiver::~MecRTVideoStreamingReceiver()
 {
@@ -93,19 +104,6 @@ void MecRTVideoStreamingReceiver::handleUeMessage(cMessage *msg)
     // register statistics: they will be recorded at the UE side
     if (ueAppModule_ == nullptr) {
         ueAppModule_ = L3AddressResolver().findHostWithAddress(ueAppAddress)->getSubmodule("app", 1);
-
-        e2eDelaySegment_ = registerSignal("rtVideoStreamingEnd2endDelaySegment");
-        segmentSize_ = registerSignal("rtVideoStreamingSegmentPacketSize");
-        frameSize_ = registerSignal("rtVideoStreamingFrameSize");
-        playoutBufferLength_ = registerSignal("rtVideoStreamingPlayoutBufferLength");
-        playoutDelayTime_ = registerSignal("rtVideoStreamingPlayoutDelay");
-        playoutDelayTimeAll_ = registerSignal("rtVideoStreamingPlayoutDelayAll");
-        segmentLoss_ = registerSignal("rtVideoStreamingSegmentLoss");
-        interArrTime_ = registerSignal("rtVideoStreamingInterArrivalTimeSegment");
-        frameDisplayed_ = registerSignal("rtVideoStreamingFramesDisplayed");
-
-        startSession_ = registerSignal("rtVideoStreamingStartSession");
-        stopSession_ = registerSignal("rtVideoStreamingStopSession");
     }
 
     auto mecPk = pk->peekAtFront<RealTimeVideoStreamingAppPacket>();

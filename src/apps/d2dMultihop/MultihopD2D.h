@@ -73,11 +73,11 @@ class MultihopD2D : public cSimpleModule
     MacNodeId lteCellId_;               // LTE Cell Id
 
     // local statistics
-    simsignal_t d2dMultihopGeneratedMsg_;
-    simsignal_t d2dMultihopSentMsg_;
-    simsignal_t d2dMultihopRcvdMsg_;
-    simsignal_t d2dMultihopRcvdDupMsg_;
-    simsignal_t d2dMultihopTrickleSuppressedMsg_;
+    static simsignal_t d2dMultihopGeneratedMsg_;
+    static simsignal_t d2dMultihopSentMsg_;
+    static simsignal_t d2dMultihopRcvdMsg_;
+    static simsignal_t d2dMultihopRcvdDupMsg_;
+    static simsignal_t d2dMultihopTrickleSuppressedMsg_;
 
     // reference to the statistics manager
     ModuleRefByPar<MultihopD2DStatistics> stat_;

@@ -20,6 +20,14 @@ Define_Module(LteRlcTm);
 
 using namespace omnetpp;
 
+// statistics
+simsignal_t LteRlcTm::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteRlcTm::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteRlcTm::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteRlcTm::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteRlcTm::rlcPacketLossDl = registerSignal("rlcPacketLossDl");
+simsignal_t LteRlcTm::rlcPacketLossUl = registerSignal("rlcPacketLossUl");
+
 void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayer, pktAux);
@@ -117,14 +125,6 @@ void LteRlcTm::initialize()
     down_[OUT_GATE] = gate("TM_Sap_down$o");
 
     queueSize_ = par("queueSize");
-
-    // statistics
-    receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-    receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-    sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-    sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
-    rlcPacketLossDl = registerSignal("rlcPacketLossDl");
-    rlcPacketLossUl = registerSignal("rlcPacketLossUl");
 }
 
 void LteRlcTm::handleMessage(cMessage *msg)

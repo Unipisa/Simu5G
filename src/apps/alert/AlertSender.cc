@@ -22,6 +22,7 @@ namespace simu5g {
 Define_Module(AlertSender);
 using namespace inet;
 
+simsignal_t AlertSender::alertSentMsg_ = registerSignal("alertSentMsg");
 
 AlertSender::~AlertSender()
 {
@@ -67,8 +68,6 @@ void AlertSender::initialize(int stage)
     }
 
     // -------------------- //
-
-    alertSentMsg_ = registerSignal("alertSentMsg");
 
     EV << "AlertSender::initialize - binding to port: local:" << localPort_ << " , dest:" << destPort_ << endl;
 

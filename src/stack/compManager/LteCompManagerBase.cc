@@ -18,6 +18,9 @@ namespace simu5g {
 using namespace omnetpp;
 using namespace inet;
 
+// statistics
+simsignal_t LteCompManagerBase::compReservedBlocks_ = registerSignal("compReservedBlocks");
+
 void LteCompManagerBase::initialize()
 {
     // get the node id
@@ -74,9 +77,6 @@ void LteCompManagerBase::initialize()
     }
 
     if (nodeType_ != COMP_COORDINATOR) {
-        // statistics
-        compReservedBlocks_ = registerSignal("compReservedBlocks");
-
         coordinatorId_ = par("coordinatorId");
 
         // Start TTI tick

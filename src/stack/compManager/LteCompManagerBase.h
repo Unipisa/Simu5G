@@ -72,7 +72,7 @@ class LteCompManagerBase : public cSimpleModule
     std::vector<X2NodeId> clientList_;
 
     // statistics
-    simsignal_t compReservedBlocks_;
+    static simsignal_t compReservedBlocks_;
 
     void runClientOperations();
     void runCoordinatorOperations();

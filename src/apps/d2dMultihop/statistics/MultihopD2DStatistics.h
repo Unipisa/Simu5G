@@ -61,13 +61,13 @@ class MultihopD2DStatistics : public cSimpleModule
     std::map<unsigned short, TransmissionInfo> eventTransmissionInfo_;
 
     // statistics
-    simsignal_t d2dMultihopEventDelay_;           // average reception delay of one event within the target area
-    simsignal_t d2dMultihopEventDelay95Per_;      // latency required to cover the 95% of nodes within the target area
-    simsignal_t d2dMultihopEventDeliveryRatio_;   // percentage of nodes covered within the target area
-    simsignal_t d2dMultihopEventSentMsg_;         // number of transmitted messages for broadcasting an event within the target area
-    simsignal_t d2dMultihopEventTrickleSuppressedMsg_;   // number of message relaying suppressed by the Trickle algorithm (if enabled)
-    simsignal_t d2dMultihopEventRcvdDupMsg_;      // number of duplicates within the target area
-    simsignal_t d2dMultihopEventCompleteDeliveries_;    // percentage of clusters completely-covered within the target area
+    static simsignal_t d2dMultihopEventDelay_;           // average reception delay of one event within the target area
+    static simsignal_t d2dMultihopEventDelay95Per_;      // latency required to cover the 95% of nodes within the target area
+    static simsignal_t d2dMultihopEventDeliveryRatio_;   // percentage of nodes covered within the target area
+    static simsignal_t d2dMultihopEventSentMsg_;         // number of transmitted messages for broadcasting an event within the target area
+    static simsignal_t d2dMultihopEventTrickleSuppressedMsg_;   // number of message relaying suppressed by the Trickle algorithm (if enabled)
+    static simsignal_t d2dMultihopEventRcvdDupMsg_;      // number of duplicates within the target area
+    static simsignal_t d2dMultihopEventCompleteDeliveries_;    // percentage of clusters completely-covered within the target area
 
   protected:
 

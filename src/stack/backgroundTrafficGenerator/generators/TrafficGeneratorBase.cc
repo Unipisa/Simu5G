@@ -17,6 +17,14 @@ namespace simu5g {
 
 Define_Module(TrafficGeneratorBase);
 
+// statistics
+simsignal_t TrafficGeneratorBase::bgMeasuredSinrDl_ = registerSignal("bgMeasuredSinrDl");
+simsignal_t TrafficGeneratorBase::bgMeasuredSinrUl_ = registerSignal("bgMeasuredSinrUl");
+simsignal_t TrafficGeneratorBase::bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
+simsignal_t TrafficGeneratorBase::bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
+simsignal_t TrafficGeneratorBase::bgHarqErrorRateDl_ = registerSignal("bgHarqErrorRateDl");
+simsignal_t TrafficGeneratorBase::bgHarqErrorRateUl_ = registerSignal("bgHarqErrorRateUl");
+
 TrafficGeneratorBase::TrafficGeneratorBase()
 {
     selfSource_[DL] = selfSource_[UL] = nullptr;
@@ -101,14 +109,6 @@ void TrafficGeneratorBase::initialize(int stage)
         // register to get a notification when positions change
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
         positionUpdated_ = true;
-
-        // statistics
-        bgMeasuredSinrDl_ = registerSignal("bgMeasuredSinrDl");
-        bgMeasuredSinrUl_ = registerSignal("bgMeasuredSinrUl");
-        bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
-        bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
-        bgHarqErrorRateDl_ = registerSignal("bgHarqErrorRateDl");
-        bgHarqErrorRateUl_ = registerSignal("bgHarqErrorRateUl");
     }
 }
 

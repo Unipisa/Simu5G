@@ -134,9 +134,9 @@ class LtePhyBase : public ChannelAccess
     bool isNr_;           // this flag is true if this module is part of the NR stack
 
     //Statistics
-    simsignal_t averageCqiDl_;
-    simsignal_t averageCqiUl_;
-    simsignal_t averageCqiD2D_;
+    static simsignal_t averageCqiDl_;
+    static simsignal_t averageCqiUl_;
+    static simsignal_t averageCqiD2D_;
 
     // Users that are transmitting (uplink)
     // receiving (downlink) current packet

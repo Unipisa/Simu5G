@@ -18,6 +18,15 @@ Define_Module(VoIPReceiver);
 using namespace std;
 using namespace inet;
 
+simsignal_t VoIPReceiver::voIPFrameLossSignal_ = registerSignal("voIPFrameLoss");
+simsignal_t VoIPReceiver::voIPFrameDelaySignal_ = registerSignal("voIPFrameDelay");
+simsignal_t VoIPReceiver::voIPPlayoutDelaySignal_ = registerSignal("voIPPlayoutDelay");
+simsignal_t VoIPReceiver::voIPMosSignal_ = registerSignal("voIPMos");
+simsignal_t VoIPReceiver::voIPTaildropLossSignal_ = registerSignal("voIPTaildropLoss");
+simsignal_t VoIPReceiver::voIPJitterSignal_ = registerSignal("voIPJitter");
+simsignal_t VoIPReceiver::voIPPlayoutLossSignal_ = registerSignal("voIPPlayoutLoss");
+simsignal_t VoIPReceiver::voIPReceivedThroughput_ = registerSignal("voIPReceivedThroughput");
+
 VoIPReceiver::~VoIPReceiver()
 {
     while (!mPlayoutQueue_.empty()) {
@@ -56,15 +65,6 @@ void VoIPReceiver::initialize(int stage)
 
     totalRcvdBytes_ = 0;
     warmUpPer_ = getSimulation()->getWarmupPeriod();
-
-    voIPFrameLossSignal_ = registerSignal("voIPFrameLoss");
-    voIPFrameDelaySignal_ = registerSignal("voIPFrameDelay");
-    voIPPlayoutDelaySignal_ = registerSignal("voIPPlayoutDelay");
-    voIPMosSignal_ = registerSignal("voIPMos");
-    voIPTaildropLossSignal_ = registerSignal("voIPTaildropLoss");
-    voIPJitterSignal_ = registerSignal("voIPJitter");
-    voIPPlayoutLossSignal_ = registerSignal("voIPPlayoutLoss");
-    voIPReceivedThroughput_ = registerSignal("voIPReceivedThroughput");
 }
 
 void VoIPReceiver::handleMessage(cMessage *msg)

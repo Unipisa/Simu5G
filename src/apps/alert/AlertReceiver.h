@@ -27,8 +27,8 @@ class AlertReceiver : public cSimpleModule
 {
     inet::UdpSocket socket;
 
-    simsignal_t alertDelay_;
-    simsignal_t alertRcvdMsg_;
+    static simsignal_t alertDelay_;
+    static simsignal_t alertRcvdMsg_;
 
     simtime_t delaySum;
     long nrReceived;

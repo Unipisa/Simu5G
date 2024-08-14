@@ -23,6 +23,8 @@ Define_Module(LtePhyUe);
 
 using namespace inet;
 
+simsignal_t LtePhyUe::distance_ = registerSignal("distance");
+simsignal_t LtePhyUe::servingCell_ = registerSignal("servingCell");
 
 LtePhyUe::~LtePhyUe()
 {
@@ -55,11 +57,6 @@ void LtePhyUe::initialize(int stage)
 
         dasRssiThreshold_ = 1.0e-5;
         das_ = new DasFilter(this, binder_, nullptr, dasRssiThreshold_);
-
-        distance_ = registerSignal("distance");
-        servingCell_ = registerSignal("servingCell");
-        averageCqiDl_ = registerSignal("averageCqiDl");
-        averageCqiUl_ = registerSignal("averageCqiUl");
 
         hasCollector = par("hasCollector");
 

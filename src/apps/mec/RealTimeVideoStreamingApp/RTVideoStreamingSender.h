@@ -129,11 +129,11 @@ class RTVideoStreamingSender : public cSimpleModule
     inet::Coord position;
     cMessage *mobilityStats_;
 
-    simsignal_t positionSignalX;
-    simsignal_t positionSignalY;
-    simsignal_t positionSignalZ;
+    static simsignal_t positionSignalX;
+    static simsignal_t positionSignalY;
+    static simsignal_t positionSignalZ;
 
-    simsignal_t velocitySignal;
+    static simsignal_t velocitySignal;
     double mobilityUpdateInterval_; // send position and speed info
 
     FragmentedFrameStatus fragFrameStatus_;

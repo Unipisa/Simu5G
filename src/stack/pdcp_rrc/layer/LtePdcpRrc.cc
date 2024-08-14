@@ -32,6 +32,11 @@ using namespace inet;
 // (transport, network and ROHC header, i.e. minimum is 3 Bytes)
 #define MIN_COMPRESSED_HEADER_SIZE    B(3)
 
+// statistics
+simsignal_t LtePdcpRrcBase::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LtePdcpRrcBase::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LtePdcpRrcBase::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
+simsignal_t LtePdcpRrcBase::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
 {
@@ -331,12 +336,6 @@ void LtePdcpRrcBase::initialize(int stage)
         }
 
         nodeId_ = getContainingNode(this)->par("macNodeId");
-
-        // statistics
-        receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-        receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-        sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-        sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
 
         packetFlowManager_.reference(this, "packetFlowManagerModule", false);
         NRpacketFlowManager_.reference(this, "nrPacketFlowManagerModule", false);

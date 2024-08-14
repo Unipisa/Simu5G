@@ -65,11 +65,11 @@ class UERequestApp : public cSimpleModule
     cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
 
     // signals for statistics
-    simsignal_t processingTime_;
-    simsignal_t serviceResponseTime_;
-    simsignal_t upLinkTime_;
-    simsignal_t downLinkTime_;
-    simsignal_t responseTime_;
+    static simsignal_t processingTime_;
+    static simsignal_t serviceResponseTime_;
+    static simsignal_t upLinkTime_;
+    static simsignal_t downLinkTime_;
+    static simsignal_t responseTime_;
 
   public:
     ~UERequestApp();

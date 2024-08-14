@@ -27,6 +27,7 @@ Define_Module(LteMacUeD2D);
 
 using namespace inet;
 
+simsignal_t LteMacUeD2D::rcvdD2DModeSwitchNotification_ = registerSignal("rcvdD2DModeSwitchNotification");
 
 LteMacUeD2D::~LteMacUeD2D()
 {
@@ -48,8 +49,6 @@ void LteMacUeD2D::initialize(int stage)
         std::string pdcpType = pdcpRrc->getComponentType()->getName();
         if (pdcpType != "LtePdcpRrcUeD2D" && pdcpType != "NRPdcpRrcUe")
             throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpRrcUeD2D or NRPdcpRrcUe. Aborting", pdcpType.c_str());
-
-        rcvdD2DModeSwitchNotification_ = registerSignal("rcvdD2DModeSwitchNotification");
     }
     if (stage == inet::INITSTAGE_NETWORK_LAYER) {
         // get parameters

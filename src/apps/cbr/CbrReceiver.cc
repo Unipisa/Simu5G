@@ -21,6 +21,7 @@ simsignal_t CbrReceiver::cbrFrameDelaySignal_ = registerSignal("cbrFrameDelaySig
 simsignal_t CbrReceiver::cbrJitterSignal_ = registerSignal("cbrJitterSignal");
 simsignal_t CbrReceiver::cbrReceivedThroughput_ = registerSignal("cbrReceivedThroughputSignal");
 simsignal_t CbrReceiver::cbrReceivedBytesSignal_ = registerSignal("cbrReceivedBytesSignal");
+simsignal_t CbrReceiver::cbrRcvdPkt_ = registerSignal("cbrRcvdPkt");
 
 void CbrReceiver::initialize(int stage)
 {
@@ -30,7 +31,6 @@ void CbrReceiver::initialize(int stage)
         mInit_ = true;
         numReceived_ = 0;
         recvBytes_ = 0;
-        cbrRcvdPkt_ = registerSignal("cbrRcvdPkt");
     }
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         int port = par("localPort");

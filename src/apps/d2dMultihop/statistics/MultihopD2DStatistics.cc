@@ -18,16 +18,17 @@ Define_Module(MultihopD2DStatistics);
 
 using namespace omnetpp;
 
+// register statistics
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDeliveryRatio_ = registerSignal("d2dMultihopEventDeliveryRatio");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDelay_ = registerSignal("d2dMultihopEventDelay");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDelay95Per_ = registerSignal("d2dMultihopEventDelay95Per");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventSentMsg_ = registerSignal("d2dMultihopEventSentMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventTrickleSuppressedMsg_ = registerSignal("d2dMultihopEventTrickleSuppressedMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventRcvdDupMsg_ = registerSignal("d2dMultihopEventRcvdDupMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventCompleteDeliveries_ = registerSignal("d2dMultihopEventCompleteDeliveries");
+
 void MultihopD2DStatistics::initialize()
 {
-    // register statistics
-    d2dMultihopEventDeliveryRatio_ = registerSignal("d2dMultihopEventDeliveryRatio");
-    d2dMultihopEventDelay_ = registerSignal("d2dMultihopEventDelay");
-    d2dMultihopEventDelay95Per_ = registerSignal("d2dMultihopEventDelay95Per");
-    d2dMultihopEventSentMsg_ = registerSignal("d2dMultihopEventSentMsg");
-    d2dMultihopEventTrickleSuppressedMsg_ = registerSignal("d2dMultihopEventTrickleSuppressedMsg");
-    d2dMultihopEventRcvdDupMsg_ = registerSignal("d2dMultihopEventRcvdDupMsg");
-    d2dMultihopEventCompleteDeliveries_ = registerSignal("d2dMultihopEventCompleteDeliveries");
 }
 
 void MultihopD2DStatistics::recordNewBroadcast(unsigned int msgId, UeSet& destinations)

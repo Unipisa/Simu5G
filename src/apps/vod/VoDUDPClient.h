@@ -34,14 +34,14 @@ class VoDUDPClient : public cSimpleModule
     unsigned int totalRcvdBytes_;
 
   public:
-    simsignal_t tptLayer0_;
-    simsignal_t tptLayer1_;
-    simsignal_t tptLayer2_;
-    simsignal_t tptLayer3_;
-    simsignal_t delayLayer0_;
-    simsignal_t delayLayer1_;
-    simsignal_t delayLayer2_;
-    simsignal_t delayLayer3_;
+    static simsignal_t tptLayer0_;
+    static simsignal_t tptLayer1_;
+    static simsignal_t tptLayer2_;
+    static simsignal_t tptLayer3_;
+    static simsignal_t delayLayer0_;
+    static simsignal_t delayLayer1_;
+    static simsignal_t delayLayer2_;
+    static simsignal_t delayLayer3_;
 
   protected:
 

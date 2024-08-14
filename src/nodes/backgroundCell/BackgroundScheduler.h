@@ -89,8 +89,8 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     /*****************************/
 
     // statistics
-    simsignal_t bgAvgServedBlocksDl_;
-    simsignal_t bgAvgServedBlocksUl_;
+    static simsignal_t bgAvgServedBlocksDl_;
+    static simsignal_t bgAvgServedBlocksUl_;
 
   protected:
     virtual void initialize(int stage) override;

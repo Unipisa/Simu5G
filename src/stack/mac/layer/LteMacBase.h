@@ -69,13 +69,13 @@ class LteMacBase : public cSimpleModule
   protected:
 
     unsigned int totalOverflowedBytes_;
-    simsignal_t macBufferOverflowDl_;
-    simsignal_t macBufferOverflowUl_;
-    simsignal_t macBufferOverflowD2D_;
-    simsignal_t receivedPacketFromUpperLayer;
-    simsignal_t receivedPacketFromLowerLayer;
-    simsignal_t sentPacketToUpperLayer;
-    simsignal_t sentPacketToLowerLayer;
+    static simsignal_t macBufferOverflowDl_;
+    static simsignal_t macBufferOverflowUl_;
+    static simsignal_t macBufferOverflowD2D_;
+    static simsignal_t receivedPacketFromUpperLayer;
+    static simsignal_t receivedPacketFromLowerLayer;
+    static simsignal_t sentPacketToUpperLayer;
+    static simsignal_t sentPacketToLowerLayer;
 
     /*
      * Data Structures

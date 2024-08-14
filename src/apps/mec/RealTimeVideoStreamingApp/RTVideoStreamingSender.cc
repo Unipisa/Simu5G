@@ -31,9 +31,10 @@ using namespace std;
 
 Define_Module(RTVideoStreamingSender);
 
-
-
-
+simsignal_t RTVideoStreamingSender::velocitySignal = registerSignal("velocity");
+simsignal_t RTVideoStreamingSender::positionSignalX = registerSignal("positionX");
+simsignal_t RTVideoStreamingSender::positionSignalY = registerSignal("positionY");
+simsignal_t RTVideoStreamingSender::positionSignalZ = registerSignal("positionZ");
 
 RTVideoStreamingSender::~RTVideoStreamingSender() {
     cancelAndDelete(selfRTVideoStreamingAppStart_);
@@ -120,10 +121,6 @@ void RTVideoStreamingSender::initialize(int stage)
 
     mobilityUpdateInterval_ = 1.0;
 
-    velocitySignal = registerSignal("velocity");
-    positionSignalX = registerSignal("positionX");
-    positionSignalY = registerSignal("positionY");
-    positionSignalZ = registerSignal("positionZ");
     mobilityStats_ = new cMessage("mobilityStats", KIND_SELF_MOBILITY_STATS);
     scheduleAfter(mobilityUpdateInterval_, mobilityStats_);
 }

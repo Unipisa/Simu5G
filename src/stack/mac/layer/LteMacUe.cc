@@ -38,6 +38,30 @@ Define_Module(LteMacUe);
 using namespace inet;
 using namespace omnetpp;
 
+simsignal_t LteMacUe::cqiDlMuMimo0_ = registerSignal("cqiDlMuMimo0");
+simsignal_t LteMacUe::cqiDlMuMimo1_ = registerSignal("cqiDlMuMimo1");
+simsignal_t LteMacUe::cqiDlMuMimo2_ = registerSignal("cqiDlMuMimo2");
+simsignal_t LteMacUe::cqiDlMuMimo3_ = registerSignal("cqiDlMuMimo3");
+simsignal_t LteMacUe::cqiDlMuMimo4_ = registerSignal("cqiDlMuMimo4");
+
+simsignal_t LteMacUe::cqiDlTxDiv0_ = registerSignal("cqiDlTxDiv0");
+simsignal_t LteMacUe::cqiDlTxDiv1_ = registerSignal("cqiDlTxDiv1");
+simsignal_t LteMacUe::cqiDlTxDiv2_ = registerSignal("cqiDlTxDiv2");
+simsignal_t LteMacUe::cqiDlTxDiv3_ = registerSignal("cqiDlTxDiv3");
+simsignal_t LteMacUe::cqiDlTxDiv4_ = registerSignal("cqiDlTxDiv4");
+
+simsignal_t LteMacUe::cqiDlSpmux0_ = registerSignal("cqiDlSpmux0");
+simsignal_t LteMacUe::cqiDlSpmux1_ = registerSignal("cqiDlSpmux1");
+simsignal_t LteMacUe::cqiDlSpmux2_ = registerSignal("cqiDlSpmux2");
+simsignal_t LteMacUe::cqiDlSpmux3_ = registerSignal("cqiDlSpmux3");
+simsignal_t LteMacUe::cqiDlSpmux4_ = registerSignal("cqiDlSpmux4");
+
+simsignal_t LteMacUe::cqiDlSiso0_ = registerSignal("cqiDlSiso0");
+simsignal_t LteMacUe::cqiDlSiso1_ = registerSignal("cqiDlSiso1");
+simsignal_t LteMacUe::cqiDlSiso2_ = registerSignal("cqiDlSiso2");
+simsignal_t LteMacUe::cqiDlSiso3_ = registerSignal("cqiDlSiso3");
+simsignal_t LteMacUe::cqiDlSiso4_ = registerSignal("cqiDlSiso4");
+
 LteMacUe::LteMacUe() : LteMacBase(),
     bsrTriggered_(false),
     debugHarq_(false), firstTx(false),
@@ -70,29 +94,6 @@ void LteMacUe::initialize(int stage)
 {
     LteMacBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        cqiDlMuMimo0_ = registerSignal("cqiDlMuMimo0");
-        cqiDlMuMimo1_ = registerSignal("cqiDlMuMimo1");
-        cqiDlMuMimo2_ = registerSignal("cqiDlMuMimo2");
-        cqiDlMuMimo3_ = registerSignal("cqiDlMuMimo3");
-        cqiDlMuMimo4_ = registerSignal("cqiDlMuMimo4");
-
-        cqiDlTxDiv0_ = registerSignal("cqiDlTxDiv0");
-        cqiDlTxDiv1_ = registerSignal("cqiDlTxDiv1");
-        cqiDlTxDiv2_ = registerSignal("cqiDlTxDiv2");
-        cqiDlTxDiv3_ = registerSignal("cqiDlTxDiv3");
-        cqiDlTxDiv4_ = registerSignal("cqiDlTxDiv4");
-
-        cqiDlSpmux0_ = registerSignal("cqiDlSpmux0");
-        cqiDlSpmux1_ = registerSignal("cqiDlSpmux1");
-        cqiDlSpmux2_ = registerSignal("cqiDlSpmux2");
-        cqiDlSpmux3_ = registerSignal("cqiDlSpmux3");
-        cqiDlSpmux4_ = registerSignal("cqiDlSpmux4");
-
-        cqiDlSiso0_ = registerSignal("cqiDlSiso0");
-        cqiDlSiso1_ = registerSignal("cqiDlSiso1");
-        cqiDlSiso2_ = registerSignal("cqiDlSiso2");
-        cqiDlSiso3_ = registerSignal("cqiDlSiso3");
-        cqiDlSiso4_ = registerSignal("cqiDlSiso4");
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
         if (strcmp(getFullName(), "nrMac") == 0)

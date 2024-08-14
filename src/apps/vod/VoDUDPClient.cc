@@ -20,6 +20,16 @@ using namespace inet;
 
 Define_Module(VoDUDPClient);
 
+simsignal_t VoDUDPClient::tptLayer0_ = registerSignal("VoDTptLayer0");
+simsignal_t VoDUDPClient::tptLayer1_ = registerSignal("VoDTptLayer1");
+simsignal_t VoDUDPClient::tptLayer2_ = registerSignal("VoDTptLayer2");
+simsignal_t VoDUDPClient::tptLayer3_ = registerSignal("VoDTptLayer3");
+
+simsignal_t VoDUDPClient::delayLayer0_ = registerSignal("VoDDelayLayer0");
+simsignal_t VoDUDPClient::delayLayer1_ = registerSignal("VoDDelayLayer1");
+simsignal_t VoDUDPClient::delayLayer2_ = registerSignal("VoDDelayLayer2");
+simsignal_t VoDUDPClient::delayLayer3_ = registerSignal("VoDDelayLayer3");
+
 void VoDUDPClient::initialize(int stage)
 {
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
@@ -51,16 +61,6 @@ void VoDUDPClient::initialize(int stage)
 
     cMessage *timer = new cMessage("Timer");
     scheduleAt(simTime(), timer);
-
-    tptLayer0_ = registerSignal("VoDTptLayer0");
-    tptLayer1_ = registerSignal("VoDTptLayer1");
-    tptLayer2_ = registerSignal("VoDTptLayer2");
-    tptLayer3_ = registerSignal("VoDTptLayer3");
-
-    delayLayer0_ = registerSignal("VoDDelayLayer0");
-    delayLayer1_ = registerSignal("VoDDelayLayer1");
-    delayLayer2_ = registerSignal("VoDDelayLayer2");
-    delayLayer3_ = registerSignal("VoDDelayLayer3");
 }
 
 void VoDUDPClient::finish()

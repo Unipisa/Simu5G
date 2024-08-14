@@ -17,6 +17,9 @@ namespace simu5g {
 Define_Module(AlertReceiver);
 using namespace inet;
 
+simsignal_t AlertReceiver::alertDelay_ = registerSignal("alertDelay");
+simsignal_t AlertReceiver::alertRcvdMsg_ = registerSignal("alertRcvdMsg");
+
 void AlertReceiver::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
@@ -46,9 +49,6 @@ void AlertReceiver::initialize(int stage)
 
         // -------------------- //
     }
-
-    alertDelay_ = registerSignal("alertDelay");
-    alertRcvdMsg_ = registerSignal("alertRcvdMsg");
 
     nrReceived = 0;
     delaySum = 0;

@@ -31,6 +31,8 @@ namespace simu5g {
 
 using namespace omnetpp;
 
+simsignal_t MecServiceBase::requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+simsignal_t MecServiceBase::responseTimeSignal_ = registerSignal("responseTime");
 
 void MecServiceBase::initialize(int stage)
 {
@@ -53,9 +55,6 @@ void MecServiceBase::initialize(int stage)
         EV << "MecServiceBase::initialize - mean subscription service time " << subscriptionServiceTime_ << endl;
 
         EV << "MecServiceBase::initialize" << endl;
-
-        requestQueueSizeSignal_ = registerSignal("requestQueueSize");
-        responseTimeSignal_ = registerSignal("responseTime");
 
         binder_.reference(this, "binderModule", true);
 
