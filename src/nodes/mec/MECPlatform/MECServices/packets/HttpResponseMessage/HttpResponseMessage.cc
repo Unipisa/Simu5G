@@ -51,8 +51,8 @@ void HttpResponseMessage::setStatus(HttpResponseStatus res) {
             this->status = "No Content";
             break;
         case (BAD_REQ):
-            this->code = 200;
-            this->status = "BadRequest";
+            this->code = 400;
+            this->status = "Bad Request";
             break;
         case (UNAUTH):
             this->code = 401;
