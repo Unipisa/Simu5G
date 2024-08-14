@@ -141,7 +141,7 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
         }
         else {
             Http::ProblemDetailBase pd;
-            pd.type = "Request not succesfully completed";
+            pd.type = "Request not successfully completed";
             pd.title = "CreateContext request result";
             pd.detail = "the MEC system was not able to instantiate the MEC application";
             pd.status = "500";
@@ -172,7 +172,7 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
             Http::send204Response(socket);
         else {
             Http::ProblemDetailBase pd;
-            pd.type = "Request not succesfully completed";
+            pd.type = "Request not successfully completed";
             pd.title = "DeleteContext request result";
             pd.detail = "the MEC system was not able to terminate the MEC application";
             pd.status = "500";

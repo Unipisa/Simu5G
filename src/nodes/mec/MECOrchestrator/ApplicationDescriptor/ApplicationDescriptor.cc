@@ -108,7 +108,7 @@ nlohmann::ordered_json ApplicationDescriptor::toAppInfo() const
     appInfo["appDId"] = appDId_;
     appInfo["appName"] = appName_;
     appInfo["appProvider"] = appProvider_;
-    appInfo["appDescrition"] = appDescription_;
+    appInfo["appDescription"] = appDescription_;
 
     appInfo["appCharcs"]["memory"] = virtualResourceDescritor_.ram;
     appInfo["appCharcs"]["storage"] = virtualResourceDescritor_.disk;
