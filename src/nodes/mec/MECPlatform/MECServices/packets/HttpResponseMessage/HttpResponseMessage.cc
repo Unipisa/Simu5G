@@ -110,7 +110,7 @@ std::string HttpResponseMessage::getPayload() const {
 
     if (!headerFields_.empty()) {
         for (const auto& headerField : headerFields_) {
-            payload += headerField.first + headerField.second + crlf;
+            payload += headerField.first + ": " + headerField.second + crlf; // Added colon separator
         }
     }
     payload += crlf + body.str();
