@@ -23,9 +23,6 @@ RNICellInfo::RNICellInfo(BaseStationStatsCollector *eNodeB) : collector_(eNodeB)
     ecgi_.setEcgi(collector_->getEcgi());
 }
 
-RNICellInfo::~RNICellInfo()
-{
-}
 
 nlohmann::ordered_json RNICellInfo::toJsonCell() const
 {

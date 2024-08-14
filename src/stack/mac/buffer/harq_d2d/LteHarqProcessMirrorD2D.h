@@ -51,7 +51,6 @@ class LteHarqProcessMirrorD2D
     void markSelected(Codeword cw) { status_[cw] = TXHARQ_PDU_SELECTED; }
     void markWaiting(Codeword cw) { status_[cw] = TXHARQ_PDU_WAITING; }
     int64_t getPduLength(Codeword cw) { return pduLength_[cw]; }
-    virtual ~LteHarqProcessMirrorD2D();
 };
 
 } //namespace

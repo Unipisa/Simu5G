@@ -20,9 +20,6 @@ using namespace omnetpp;
 short LtePhyBase::airFramePriority_ = 10;
 
 
-LtePhyBase::~LtePhyBase()
-{
-}
 
 void LtePhyBase::initialize(int stage)
 {

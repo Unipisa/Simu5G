@@ -32,7 +32,6 @@ Ecgi::Ecgi(const mec::Ecgi ecgi)
     setEcgi(ecgi);
 }
 
-Ecgi::~Ecgi() {}
 
 void Ecgi::setCellId(MacCellId cellId)
 {

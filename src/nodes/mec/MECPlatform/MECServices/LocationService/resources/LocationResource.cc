@@ -56,7 +56,6 @@ void LocationResource::setBaseUri(const std::string& baseUri)
     baseUri_ = baseUri;
 }
 
-LocationResource::~LocationResource() {}
 
 UserInfo LocationResource::getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellId) const
 {

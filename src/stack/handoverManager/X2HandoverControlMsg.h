@@ -36,7 +36,6 @@ class X2HandoverControlMsg : public LteX2Message
 
     virtual X2HandoverControlMsg *dup() const;
 
-    virtual ~X2HandoverControlMsg();
 };
 
 } //namespace

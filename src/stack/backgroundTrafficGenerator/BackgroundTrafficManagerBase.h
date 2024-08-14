@@ -97,7 +97,6 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     // define functions for interactions with the NIC
 
   public:
-    virtual ~BackgroundTrafficManagerBase() {}
 
     // set carrier frequency
     void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }

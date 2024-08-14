@@ -44,7 +44,6 @@ class DualConnectivityManager : public cSimpleModule
     void handleX2Message(cMessage *msg);
 
   public:
-    virtual ~DualConnectivityManager() {}
 
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);

@@ -23,7 +23,6 @@ class LocationInfo : public AttributeBase
     LocationInfo();
     LocationInfo(const inet::Coord& coordinates, const inet::Coord& speed);
     LocationInfo(const inet::Coord& coordinates);
-    virtual ~LocationInfo();
     nlohmann::ordered_json toJson() const override;
 
   private:

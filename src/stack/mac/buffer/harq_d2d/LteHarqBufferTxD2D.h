@@ -45,7 +45,6 @@ class LteHarqBufferTxD2D : public LteHarqBufferTx
      */
     virtual void receiveHarqFeedback(LteHarqFeedback *fbpkt);
 
-    virtual ~LteHarqBufferTxD2D();
 };
 
 } //namespace

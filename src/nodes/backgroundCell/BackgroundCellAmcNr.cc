@@ -17,9 +17,6 @@
 namespace simu5g {
 
 using namespace omnetpp;
-BackgroundCellAmcNr::~BackgroundCellAmcNr()
-{
-}
 
 BackgroundCellAmcNr::BackgroundCellAmcNr(Binder *binder) : BackgroundCellAmc(binder)
 {

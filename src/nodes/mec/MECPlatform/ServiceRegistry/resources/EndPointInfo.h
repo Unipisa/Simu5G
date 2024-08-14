@@ -25,7 +25,6 @@ class EndPointInfo : public AttributeBase
   public:
     EndPointInfo() {};
     EndPointInfo(const std::string& host, int port);
-    ~EndPointInfo() {};
     nlohmann::ordered_json toJson() const;
 };
 

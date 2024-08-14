@@ -143,7 +143,6 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     double getDelayStats();
     void resetDelayCounter();
 
-    virtual ~PacketFlowManagerUe();
     virtual void finish() override;
 
 };
@@ -151,4 +150,3 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 } //namespace
 
 #endif
-

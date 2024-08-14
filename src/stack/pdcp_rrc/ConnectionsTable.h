@@ -34,7 +34,6 @@ class ConnectionsTable
 {
   public:
     ConnectionsTable();
-    virtual ~ConnectionsTable();
 
     /**
      * find_entry() checks if an entry is in the

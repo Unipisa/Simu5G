@@ -32,9 +32,6 @@ LteHarqProcessTxD2D::LteHarqProcessTxD2D(Binder *binder, unsigned char acid, uns
     }
 }
 
-LteHarqProcessTxD2D::~LteHarqProcessTxD2D()
-{
-}
 
 Packet *LteHarqProcessTxD2D::extractPdu(Codeword cw)
 {

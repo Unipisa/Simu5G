@@ -28,9 +28,6 @@ ServiceRegistry::ServiceRegistry()
     mecServices_.clear();
 }
 
-ServiceRegistry::~ServiceRegistry() {
-    // TODO: Auto-generated destructor stub
-}
 
 void ServiceRegistry::initialize(int stage)
 {

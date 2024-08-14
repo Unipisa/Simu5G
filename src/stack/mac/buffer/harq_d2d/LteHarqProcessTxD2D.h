@@ -39,7 +39,6 @@ class LteHarqProcessTxD2D : public LteHarqProcessTx
      */
     LteHarqProcessTxD2D(Binder *binder, unsigned char acid, unsigned int numUnits, unsigned int numProcesses, LteMacBase *macOwner, LteMacBase *dstMac);
     virtual Packet *extractPdu(Codeword cw);
-    virtual ~LteHarqProcessTxD2D();
 };
 
 } //namespace

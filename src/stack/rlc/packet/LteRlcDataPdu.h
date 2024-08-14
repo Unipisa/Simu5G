@@ -186,7 +186,6 @@ class LteRlcUmDataPdu : public LteRlcDataPdu
         this->setChunkLength(inet::B(rlcPduLength_));
     }
 
-    virtual ~LteRlcUmDataPdu() {}
 
     LteRlcUmDataPdu(const LteRlcUmDataPdu& other) : LteRlcDataPdu(other)
     {
@@ -248,7 +247,6 @@ class LteRlcAmDataPdu : public LteRlcDataPdu
         return *this;
     }
 
-    virtual ~LteRlcAmDataPdu() {}
 
     void setPollStatus(bool p) { pollStatus_ = p; }
     bool getPollStatus() const { return pollStatus_; }

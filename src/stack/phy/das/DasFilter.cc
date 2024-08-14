@@ -20,10 +20,6 @@ DasFilter::DasFilter(LtePhyBase *ltePhy, Binder *binder,
 {
 }
 
-DasFilter::~DasFilter()
-{
-    ruSet_ = nullptr;
-}
 
 void DasFilter::setMasterRuSet(MacNodeId masterId)
 {

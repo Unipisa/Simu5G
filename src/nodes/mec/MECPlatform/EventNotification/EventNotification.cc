@@ -42,9 +42,6 @@ void EventNotification::setType(const std::string& type)
     type_ = type;
 }
 
-EventNotification::~EventNotification() {
-    // TODO Auto-generated destructor stub
-}
 
 } //namespace
 

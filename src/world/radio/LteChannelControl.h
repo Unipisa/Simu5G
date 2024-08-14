@@ -33,7 +33,6 @@ class LteChannelControl : public ChannelControl
     virtual void initialize();
 
   public:
-    virtual ~LteChannelControl();
 
     /** Called from ChannelAccess to transmit a frame to all the radios in range on the frame's channel */
     virtual void sendToChannel(RadioRef srcRadio, AirFrame *airFrame);

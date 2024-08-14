@@ -52,7 +52,6 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
      */
     virtual inet::Packet *createFeedbackMirror(Codeword cw);
 
-    virtual ~LteHarqProcessRxD2D();
 };
 
 } //namespace

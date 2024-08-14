@@ -63,7 +63,6 @@ class LteHarqBufferMirrorD2D
     unsigned int getProcesses() { return numProc_; }
     void markSelectedAsWaiting();
 
-    virtual ~LteHarqBufferMirrorD2D();
 };
 
 } //namespace

@@ -50,9 +50,6 @@ class NRMcsTable
     NRMCSelem table[CQI2ITBSSIZE];
 
     NRMcsTable(bool extended = true);
-    ~NRMcsTable()
-    {
-    }
 
     CQIelem getCqiElem(int i)
     {

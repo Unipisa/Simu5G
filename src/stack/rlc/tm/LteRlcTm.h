@@ -40,7 +40,6 @@ class LteRlcTm : public cSimpleModule
 {
   public:
 
-    virtual ~LteRlcTm() {}
 
   protected:
     /**

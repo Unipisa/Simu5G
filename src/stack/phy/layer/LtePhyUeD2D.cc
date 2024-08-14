@@ -20,9 +20,6 @@ Define_Module(LtePhyUeD2D);
 using namespace inet;
 
 
-LtePhyUeD2D::~LtePhyUeD2D()
-{
-}
 
 void LtePhyUeD2D::initialize(int stage)
 {

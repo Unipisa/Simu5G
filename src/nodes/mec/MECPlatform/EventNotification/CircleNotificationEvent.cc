@@ -27,9 +27,6 @@ const std::vector<TerminalLocation>& CircleNotificationEvent::getTerminalLocatio
     return terminalLocations_;
 }
 
-CircleNotificationEvent::~CircleNotificationEvent() {
-    // TODO Auto-generated destructor stub
-}
 
 } //namespace
 

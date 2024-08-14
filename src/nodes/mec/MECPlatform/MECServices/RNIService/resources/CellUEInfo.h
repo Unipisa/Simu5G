@@ -38,7 +38,6 @@ class CellUEInfo : public AttributeBase
     CellUEInfo(UeStatsCollector *ueCollector, const Ecgi& ecgi);
     CellUEInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi);
 
-    virtual ~CellUEInfo();
 
     nlohmann::ordered_json toJson() const override;
 };

@@ -46,7 +46,6 @@ class LteMacQueue : public cPacketQueue
      */
     LteMacQueue(int queueSize);
 
-    virtual ~LteMacQueue() {}
 
     /**
      * Copy Constructor

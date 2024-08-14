@@ -22,9 +22,6 @@ CreateContextAppMessage::CreateContextAppMessage(const CreateContextAppMessage& 
     copy(other);
 }
 
-CreateContextAppMessage::~CreateContextAppMessage()
-{
-}
 
 CreateContextAppMessage& CreateContextAppMessage::operator=(const CreateContextAppMessage& other)
 {

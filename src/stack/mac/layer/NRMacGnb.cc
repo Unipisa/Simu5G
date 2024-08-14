@@ -20,9 +20,6 @@ NRMacGnb::NRMacGnb() : LteMacEnbD2D()
     nodeType_ = GNODEB;
 }
 
-NRMacGnb::~NRMacGnb()
-{
-}
 
 void NRMacGnb::initialize(int stage)
 {

@@ -50,7 +50,6 @@ class X2CompRequestIE : public X2InformationElement
         return new X2CompRequestIE(*this);
     }
 
-    virtual ~X2CompRequestIE() {}
 };
 
 } //namespace

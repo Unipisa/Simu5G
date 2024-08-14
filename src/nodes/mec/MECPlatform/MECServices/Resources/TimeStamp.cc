@@ -26,7 +26,6 @@ TimeStamp::TimeStamp(bool valid) : nanoSeconds_(0), valid_(valid)
     seconds_ = simTime().dbl();
 }
 
-TimeStamp::~TimeStamp() {}
 
 bool TimeStamp::isValid() const
 {

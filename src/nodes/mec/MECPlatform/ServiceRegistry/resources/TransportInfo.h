@@ -29,7 +29,6 @@ class TransportInfo : public AttributeBase
   public:
     TransportInfo() {}
     TransportInfo(const std::string& id, const std::string& name, const std::string& type, const std::string& protocol, const EndPointInfo& endPoint);
-    ~TransportInfo() {}
     nlohmann::ordered_json toJson() const;
 };
 

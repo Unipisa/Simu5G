@@ -37,7 +37,6 @@ class L2Meas : public AttributeBase
   public:
     L2Meas();
     L2Meas(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
-    virtual ~L2Meas();
 
     void setBinder(Binder *binder) { binder_ = binder; }
 

@@ -40,7 +40,6 @@ class IChannelControl
     typedef std::list<AirFrame *> TransmissionList;
 
   public:
-    virtual ~IChannelControl() {}
 
     /** Registers the given radio. If radioInGate==nullptr, the "radioIn" gate is assumed */
     virtual RadioRef registerRadio(cModule *radioModule, cGate *radioInGate = nullptr) = 0;

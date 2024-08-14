@@ -38,7 +38,6 @@ class LocationResource : public AttributeBase
      */
     LocationResource();
     LocationResource(std::string& baseUri, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, Binder *binder);
-    virtual ~LocationResource();
 
     nlohmann::ordered_json toJson() const override;
 

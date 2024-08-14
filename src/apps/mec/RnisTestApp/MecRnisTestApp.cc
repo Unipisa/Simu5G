@@ -35,9 +35,6 @@ using namespace inet;
 using namespace omnetpp;
 
 
-MecRnisTestApp::~MecRnisTestApp()
-{
-}
 
 void MecRnisTestApp::initialize(int stage)
 {

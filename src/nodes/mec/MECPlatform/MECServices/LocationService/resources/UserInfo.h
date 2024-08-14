@@ -30,7 +30,6 @@ class UserInfo : public AttributeBase
     UserInfo(const LocationInfo& location, const inet::Ipv4Address& address, const MacCellId accessPointId_, const std::string& resourceUrl_, int zoneId = 0);
     UserInfo(const inet::Coord& location, const inet::Coord& speed, const inet::Ipv4Address& address, const MacCellId accessPointId_, const std::string& resourceUrl, int zoneId = 0);
 
-    virtual ~UserInfo() {}
 
     inet::Ipv4Address getIpv4Address() const { return address_; }
 

@@ -53,7 +53,6 @@ class LteCompManagerProportional : public LteCompManagerBase
     UsableBands parseAllowedBlocksMap(std::vector<CompRbStatus>& allowedBlocksMap);
 
   public:
-    virtual ~LteCompManagerProportional() {}
 
     virtual void initialize();
 };

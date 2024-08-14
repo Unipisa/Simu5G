@@ -25,7 +25,6 @@ LocationInfo::LocationInfo(const inet::Coord& coordinates) : coordinates_(coordi
 {
 }
 
-LocationInfo::~LocationInfo() {}
 
 nlohmann::ordered_json LocationInfo::toJson() const
 {

@@ -31,9 +31,6 @@ AssociateId::AssociateId(mec::AssociateId& associateId)
     setValue(associateId.value);
 }
 
-AssociateId::~AssociateId()
-{
-}
 
 nlohmann::ordered_json AssociateId::toJson() const
 {

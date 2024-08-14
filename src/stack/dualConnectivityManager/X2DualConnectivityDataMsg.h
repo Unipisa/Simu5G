@@ -36,7 +36,6 @@ class X2DualConnectivityDataMsg : public LteX2Message
 
     virtual X2DualConnectivityDataMsg *dup() const;
 
-    virtual ~X2DualConnectivityDataMsg();
 };
 
 //Register_Class(X2DualConnectivityDataMsg);

@@ -47,7 +47,6 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
   public:
     LteFeedbackComputationRealistic(Binder *binder, double targetBler, std::map<MacNodeId, Lambda> *lambda, double lambdaMinTh,
             double lambdaMaxTh, double lambdaRatioTh, unsigned int numBands);
-    virtual ~LteFeedbackComputationRealistic();
 
     virtual LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,
             TxMode currentTxMode,

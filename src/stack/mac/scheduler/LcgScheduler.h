@@ -94,7 +94,6 @@ class LcgScheduler
     /**
      * Destructor.
      */
-    virtual ~LcgScheduler();
 
     /**
      * Initializes the LteScheduler.

@@ -56,9 +56,6 @@ void LteRxPdcpEntity::handlePdcpSdu(Packet *pkt)
     pdcp_->toDataPort(pkt);
 }
 
-LteRxPdcpEntity::~LteRxPdcpEntity()
-{
-}
 
 } //namespace
 

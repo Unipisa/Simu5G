@@ -54,9 +54,6 @@ class LteRlcAm : public cSimpleModule
     cGate *down_[2];
 
   public:
-    virtual ~LteRlcAm()
-    {
-    }
 
   protected:
 

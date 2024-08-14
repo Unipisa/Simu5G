@@ -36,7 +36,6 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
 
   public:
     BackgroundCellAmcNr(Binder *binder);
-    virtual ~BackgroundCellAmcNr();
 
     virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
 };

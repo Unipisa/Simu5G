@@ -40,7 +40,6 @@ class TerminalLocation : public AttributeBase
   public:
     TerminalLocation();
     TerminalLocation(const std::string& address, const std::string& locationRetrievalStatus, const CurrentLocation& currentLocation);
-    ~TerminalLocation();
     nlohmann::ordered_json toJson() const;
 };
 

@@ -19,7 +19,6 @@ TerminalLocation::TerminalLocation(const std::string& address, const std::string
 {
 }
 
-TerminalLocation::~TerminalLocation() {}
 nlohmann::ordered_json TerminalLocation::toJson() const
 {
     nlohmann::ordered_json val;

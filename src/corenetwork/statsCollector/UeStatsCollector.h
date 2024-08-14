@@ -67,7 +67,6 @@ class UeStatsCollector : public cSimpleModule
     bool handover_;
 
   public:
-    virtual ~UeStatsCollector() {}
 
     // methods to update L2 measures
 

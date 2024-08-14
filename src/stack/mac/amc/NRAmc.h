@@ -41,7 +41,6 @@ class NRAmc : public LteAmc
     NRMcsTable d2dNrMcsTable_;
 
     NRAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas);
-    virtual ~NRAmc();
 
     NRMCSelem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 

@@ -29,9 +29,6 @@ using namespace omnetpp;
 class LteRlcUmD2D : public LteRlcUm
 {
   public:
-    virtual ~LteRlcUmD2D()
-    {
-    }
 
     virtual void resumeDownstreamInPackets(MacNodeId peerId) override;
     virtual bool isEmptyingTxBuffer(MacNodeId peerId) override;

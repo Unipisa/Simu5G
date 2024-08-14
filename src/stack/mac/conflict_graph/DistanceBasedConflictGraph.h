@@ -37,7 +37,6 @@ class DistanceBasedConflictGraph : public ConflictGraph
 
   public:
     DistanceBasedConflictGraph(Binder *binder, LteMacEnbD2D *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh);
-    virtual ~DistanceBasedConflictGraph() {}
 
     // set distance thresholds
     void setThresholds(double d2dInterferenceRadius = -1.0, double d2dMultiTransmissionRadius = -1.0, double d2dMultiInterferenceRadius = -1.0);

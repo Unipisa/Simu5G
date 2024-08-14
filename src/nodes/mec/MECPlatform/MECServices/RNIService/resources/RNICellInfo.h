@@ -33,7 +33,6 @@ class RNICellInfo : public AttributeBase
   public:
     RNICellInfo();
     RNICellInfo(BaseStationStatsCollector *eNodeB);
-    virtual ~RNICellInfo();
 
     UeStatsCollectorMap *getCollectorMap() const;
 

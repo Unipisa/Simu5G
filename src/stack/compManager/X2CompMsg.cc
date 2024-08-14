@@ -39,7 +39,6 @@ X2CompMsg& X2CompMsg::operator=(const X2CompMsg& other)
 
 X2CompMsg *X2CompMsg::dup() const { return new X2CompMsg(*this); }
 
-X2CompMsg::~X2CompMsg() {}
 
 } //namespace
 

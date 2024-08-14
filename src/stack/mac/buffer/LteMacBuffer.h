@@ -33,7 +33,6 @@ class LteMacBuffer
      * the list
      */
     LteMacBuffer();
-    ~LteMacBuffer();
 
     /**
      * Copy Constructors

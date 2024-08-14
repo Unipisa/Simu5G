@@ -28,7 +28,6 @@ class User : public AttributeBase
     User();
     User(const inet::Ipv4Address& address, const MacCellId accessPointId, const std::string& resourceUrl, int zoneId = 0);
 
-    virtual ~User() {}
 
     inet::Ipv4Address getIpv4Address() const { return address_; }
 

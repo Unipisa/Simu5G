@@ -49,9 +49,6 @@ class RemoteAntennaSet
     /// Constructor
 
     /// Destructor
-    ~RemoteAntennaSet()
-    {
-    }
 
     /**
      * addRemoteAntenna() is called by das to add a new

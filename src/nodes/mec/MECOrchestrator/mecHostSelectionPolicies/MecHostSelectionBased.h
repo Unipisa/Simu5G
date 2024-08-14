@@ -26,7 +26,6 @@ class MecHostSelectionBased : public SelectionPolicyBase
 
   public:
     MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index);
-    virtual ~MecHostSelectionBased() {}
 };
 
 } //namespace

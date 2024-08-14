@@ -68,9 +68,6 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
     delete fbpkt;
 }
 
-LteHarqBufferTxD2D::~LteHarqBufferTxD2D()
-{
-}
 
 } //namespace
 

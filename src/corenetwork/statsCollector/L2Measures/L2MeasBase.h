@@ -38,7 +38,6 @@ class L2MeasBase
 
   public:
     virtual void init(std::string name, int period, bool movingAverage);
-    virtual ~L2MeasBase();
     virtual void addValue(double value);
     virtual int computeMean();
     virtual int getMean();

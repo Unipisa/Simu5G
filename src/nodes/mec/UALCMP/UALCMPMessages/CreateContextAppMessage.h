@@ -27,7 +27,6 @@ class CreateContextAppMessage : public CreateContextApp
   public:
     CreateContextAppMessage(const char *name = nullptr, short kind = 0);
     CreateContextAppMessage(const CreateContextAppMessage& other);
-    virtual ~CreateContextAppMessage();
     CreateContextAppMessage& operator=(const CreateContextAppMessage& other);
     virtual CreateContextAppMessage *dup() const override { return new CreateContextAppMessage(*this); }
 

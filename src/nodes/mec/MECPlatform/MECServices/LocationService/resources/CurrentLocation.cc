@@ -23,7 +23,6 @@ CurrentLocation::CurrentLocation(double accuracy, const inet::Coord& coords): ac
     timeStamp.setSeconds();
 }
 
-CurrentLocation::~CurrentLocation() {}
 
 nlohmann::ordered_json CurrentLocation::toJson() const
 {

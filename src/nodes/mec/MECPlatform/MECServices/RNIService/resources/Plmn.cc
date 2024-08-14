@@ -23,7 +23,6 @@ Plmn::Plmn(const std::string& mcc, const std::string& mnc)
     setMnc(mnc);
 }
 
-Plmn::~Plmn() {}
 
 void Plmn::setMcc(const std::string& mcc)
 {

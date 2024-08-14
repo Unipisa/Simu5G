@@ -29,7 +29,6 @@ namespace simu5g {
 class IBackgroundTrafficManager
 {
   public:
-    virtual ~IBackgroundTrafficManager() {}
 
     // Set carrier frequency
     virtual void setCarrierFrequency(double carrierFrequency) = 0;

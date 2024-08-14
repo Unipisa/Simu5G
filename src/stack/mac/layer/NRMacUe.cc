@@ -22,9 +22,6 @@ namespace simu5g {
 Define_Module(NRMacUe);
 
 
-NRMacUe::~NRMacUe()
-{
-}
 
 void NRMacUe::handleSelfMessage()
 {

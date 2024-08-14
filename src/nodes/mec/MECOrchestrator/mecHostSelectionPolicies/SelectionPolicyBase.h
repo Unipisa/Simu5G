@@ -29,7 +29,6 @@ class SelectionPolicyBase
 
   public:
     SelectionPolicyBase(MecOrchestrator *mecOrchestrator) : mecOrchestrator_(mecOrchestrator) {}
-    virtual ~SelectionPolicyBase() {}
 };
 
 } //namespace

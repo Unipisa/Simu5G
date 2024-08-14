@@ -16,9 +16,6 @@ namespace simu5g {
 Define_Module(NRRxPdcpEntity);
 
 
-NRRxPdcpEntity::~NRRxPdcpEntity()
-{
-}
 
 void NRRxPdcpEntity::initialize()
 {

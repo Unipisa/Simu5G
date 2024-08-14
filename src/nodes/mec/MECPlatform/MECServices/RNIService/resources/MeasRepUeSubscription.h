@@ -34,7 +34,6 @@ class MeasRepUeSubscription : public SubscriptionBase
   public:
     MeasRepUeSubscription();
     MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
-    virtual ~MeasRepUeSubscription();
     virtual bool fromJson(const nlohmann::ordered_json& json) override;
     virtual void sendSubscriptionResponse() override;
     virtual void sendNotification(EventNotification *event) override;

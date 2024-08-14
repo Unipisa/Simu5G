@@ -25,7 +25,6 @@ class AvailableResourcesSelectionBased : public SelectionPolicyBase
 
   public:
     AvailableResourcesSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}
-    virtual ~AvailableResourcesSelectionBased() {}
 };
 
 } //namespace

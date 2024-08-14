@@ -27,9 +27,6 @@ namespace simu5g {
 //Define_Module(PacketFlowManagerBase);
 
 
-PacketFlowManagerBase::~PacketFlowManagerBase()
-{
-}
 
 void PacketFlowManagerBase::initialize(int stage)
 {

@@ -31,7 +31,6 @@ class LtePhyEnbD2D : public LtePhyEnb
     virtual void handleAirFrame(cMessage *msg) override;
 
   public:
-    virtual ~LtePhyEnbD2D();
 
 };
 

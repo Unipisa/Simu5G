@@ -35,9 +35,6 @@ using namespace omnetpp;
 class LteRlcMux : public cSimpleModule
 {
   public:
-    virtual ~LteRlcMux()
-    {
-    }
 
   protected:
 

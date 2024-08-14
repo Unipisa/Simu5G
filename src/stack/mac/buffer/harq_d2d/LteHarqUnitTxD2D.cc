@@ -41,9 +41,6 @@ LteHarqUnitTxD2D::LteHarqUnitTxD2D(Binder *binder, unsigned char acid, Codeword 
     }
 }
 
-LteHarqUnitTxD2D::~LteHarqUnitTxD2D()
-{
-}
 
 bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
 {

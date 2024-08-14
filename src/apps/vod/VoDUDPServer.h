@@ -91,7 +91,6 @@ class VoDUDPServer : public cSimpleModule
     std::vector<svcPacket> svcTrace_;
 
   public:
-    virtual ~VoDUDPServer();
 
   protected:
     void initialize(int stage);

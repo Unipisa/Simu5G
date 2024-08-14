@@ -57,7 +57,6 @@ class DasFilter
             RemoteAntennaSet *ruSet, double rssiThreshold);
 
     /// Destructor: deallocates the Remote Antenna Set
-    virtual ~DasFilter();
 
     /**
      * addRemoteAntenna() is called by the cellInfo to add a new

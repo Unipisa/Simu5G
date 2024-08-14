@@ -81,10 +81,6 @@ void ConnectionsTable::create_entry(uint32_t srcAddr, uint32_t dstAddr, uint16_t
     ht_[hashIndex].lcid_ = lcid;
 }
 
-ConnectionsTable::~ConnectionsTable()
-{
-    memset(ht_, 0xFF, sizeof(struct entry_) * TABLE_SIZE);
-}
 
 } //namespace
 

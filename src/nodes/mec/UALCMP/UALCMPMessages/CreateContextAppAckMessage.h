@@ -27,7 +27,6 @@ class CreateContextAppAckMessage : public CreateContextAppAck
   public:
     CreateContextAppAckMessage(const char *name = nullptr, short kind = 0);
     CreateContextAppAckMessage(const CreateContextAppAckMessage& other);
-    virtual ~CreateContextAppAckMessage();
     CreateContextAppAckMessage& operator=(const CreateContextAppAckMessage& other);
     virtual CreateContextAppAckMessage *dup() const override { return new CreateContextAppAckMessage(*this); }
 

@@ -25,7 +25,6 @@ class MecServiceSelectionBased : public SelectionPolicyBase
 
   public:
     MecServiceSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}
-    virtual ~MecServiceSelectionBased() {}
 };
 
 } //namespace

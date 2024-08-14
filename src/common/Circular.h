@@ -37,9 +37,6 @@ class CircularList
     }
 
     //! Do nothing.
-    ~CircularList()
-    {
-    }
 
     //! Copy constructor
     CircularList(const CircularList<T>& cl) : list_(cl.list_), cur_(list_.begin()), size_(cl.size_)

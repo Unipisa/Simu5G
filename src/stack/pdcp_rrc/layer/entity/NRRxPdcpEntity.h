@@ -91,7 +91,6 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
 
   public:
 
-    virtual ~NRRxPdcpEntity();
 
     virtual void initialize();
 

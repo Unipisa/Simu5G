@@ -82,9 +82,6 @@ void LteTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
         lteInfo->setDestId(pdcp_->getDestId(lteInfo));
 }
 
-LteTxPdcpEntity::~LteTxPdcpEntity()
-{
-}
 
 } //namespace
 

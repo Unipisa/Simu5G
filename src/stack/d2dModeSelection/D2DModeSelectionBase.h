@@ -64,7 +64,6 @@ class D2DModeSelectionBase : public cSimpleModule
     void sendModeSwitchNotifications();
 
   public:
-    virtual ~D2DModeSelectionBase() {}
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

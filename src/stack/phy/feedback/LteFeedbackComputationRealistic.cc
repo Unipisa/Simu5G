@@ -25,10 +25,6 @@ LteFeedbackComputationRealistic::LteFeedbackComputationRealistic(Binder *binder,
     baseMin_.resize(phyPisaData_->nMcs(), 2);
 }
 
-LteFeedbackComputationRealistic::~LteFeedbackComputationRealistic()
-{
-    // TODO Auto-generated destructor stub
-}
 
 void LteFeedbackComputationRealistic::generateBaseFeedback(int numBands, int numPreferredBands, LteFeedback& fb,
         FeedbackType fbType, int cw, RbAllocationType rbAllocationType, TxMode txmode, std::vector<double> snr)

@@ -26,9 +26,6 @@ void L2MeasBase::init(std::string name, int period, bool movingAverage)
     movingAverage_ = movingAverage;
 }
 
-L2MeasBase::~L2MeasBase()
-{
-}
 
 void L2MeasBase::addValue(double value) {
     lastValue_ = (int)value;

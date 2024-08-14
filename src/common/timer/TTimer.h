@@ -36,9 +36,6 @@ class TTimer : public cObject
      *
      * @return
      */
-    ~TTimer()
-    {
-    }
 
     /*! Start the timer. The timer is now busy.
      * If the timer has already been started, then there is
@@ -149,9 +146,6 @@ class TMultiTimer : public cObject
     }
 
     //! Do nothing.
-    virtual ~TMultiTimer()
-    {
-    }
 
     /*! Add an event to the multi-timer, with a specified parameter.
      *

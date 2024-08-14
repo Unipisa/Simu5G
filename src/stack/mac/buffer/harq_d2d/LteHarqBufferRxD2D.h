@@ -64,7 +64,6 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
      */
     virtual std::list<inet::Packet *> extractCorrectPdus();
 
-    virtual ~LteHarqBufferRxD2D();
 };
 
 } //namespace

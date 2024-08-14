@@ -25,13 +25,6 @@ namespace simu5g {
 Define_Module(PacketFlowManagerEnb);
 
 
-PacketFlowManagerEnb::~PacketFlowManagerEnb()
-{
-    connectionMap_.clear();
-    pktDiscardCounterPerUe_.clear();
-    pdcpDelay_.clear();
-    pdcpThroughput_.clear();
-}
 
 void PacketFlowManagerEnb::initialize(int stage)
 {

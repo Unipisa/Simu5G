@@ -63,9 +63,6 @@ class McsTable
     MCSelem table[CQI2ITBSSIZE];
 
     McsTable();
-    ~McsTable()
-    {
-    }
 
     /// MCS table seek operator
     MCSelem& at(Tbs tbs)

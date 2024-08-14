@@ -34,9 +34,6 @@ CircleNotificationSubscription::CircleNotificationSubscription(Binder *binder_, 
     baseResLocation_ += "area/circle";
 }
 
-CircleNotificationSubscription::~CircleNotificationSubscription()
-{
-}
 
 void CircleNotificationSubscription::sendSubscriptionResponse()
 {

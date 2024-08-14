@@ -27,9 +27,6 @@ using namespace omnetpp;
 using namespace inet;
 
 
-LteMacEnbD2D::~LteMacEnbD2D()
-{
-}
 
 void LteMacEnbD2D::initialize(int stage)
 {

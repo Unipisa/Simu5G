@@ -234,7 +234,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     virtual double getThroughputStatsPerUe(MacNodeId id);
     virtual void resetThroughputCounterPerUe(MacNodeId id);
-    virtual ~PacketFlowManagerEnb();
     virtual void finish() override;
 };
 

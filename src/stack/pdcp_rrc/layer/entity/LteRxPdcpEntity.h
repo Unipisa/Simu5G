@@ -44,7 +44,6 @@ class LteRxPdcpEntity : public cSimpleModule
 
   public:
 
-    virtual ~LteRxPdcpEntity();
 
     virtual void initialize();
 

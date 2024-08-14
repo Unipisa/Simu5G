@@ -52,9 +52,6 @@ class LteMacSduRequest : public LteMacSduRequest_Base
     /**
      * Destructor
      */
-    virtual ~LteMacSduRequest()
-    {
-    }
 
     LteMacSduRequest(const LteMacSduRequest& other) :
         LteMacSduRequest_Base(other)

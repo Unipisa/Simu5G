@@ -50,7 +50,6 @@ class LtePhyUeD2D : public LtePhyUe
     virtual void doHandover();
 
   public:
-    virtual ~LtePhyUeD2D();
 
     virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
     virtual double getTxPwr(Direction dir = UNKNOWN_DIRECTION)

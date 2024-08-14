@@ -31,7 +31,6 @@ class Plmn : public AttributeBase
   public:
     Plmn();
     Plmn(const std::string& mcc, const std::string& mnc);
-    virtual ~Plmn();
 
     void setMcc(const std::string& mcc);
     void setMnc(const std::string& mnc);

@@ -14,9 +14,6 @@
 namespace simu5g {
 
 
-AttributeBase::~AttributeBase()
-{
-}
 
 std::string AttributeBase::toJson(const std::string& value)
 {

@@ -29,7 +29,6 @@ class AssociateId : public AttributeBase
     AssociateId(std::string& type, std::string& value);
     AssociateId(mec::AssociateId& associateId);
 
-    virtual ~AssociateId();
 
     nlohmann::ordered_json toJson() const override;
     /////////////////////////////////////////////

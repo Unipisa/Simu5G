@@ -22,9 +22,6 @@ CreateContextAppAckMessage::CreateContextAppAckMessage(const CreateContextAppAck
     copy(other);
 }
 
-CreateContextAppAckMessage::~CreateContextAppAckMessage()
-{
-}
 
 CreateContextAppAckMessage& CreateContextAppAckMessage::operator=(const CreateContextAppAckMessage& other)
 {

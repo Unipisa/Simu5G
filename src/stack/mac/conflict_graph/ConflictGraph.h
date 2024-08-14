@@ -100,7 +100,6 @@ class ConflictGraph
   public:
 
     ConflictGraph(Binder *binder, LteMacEnbD2D *macEnb, bool reuseD2D, bool reuseD2DMulti);
-    virtual ~ConflictGraph();
 
     // compute Conflict Graph
     void computeConflictGraph();

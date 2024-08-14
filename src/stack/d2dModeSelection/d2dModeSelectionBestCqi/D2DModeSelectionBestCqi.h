@@ -30,7 +30,6 @@ class D2DModeSelectionBestCqi : public D2DModeSelectionBase
     virtual void doModeSelection();
 
   public:
-    virtual ~D2DModeSelectionBestCqi() {}
 
     virtual void initialize(int stage);
     virtual void doModeSwitchAtHandover(MacNodeId nodeId, bool handoverCompleted);

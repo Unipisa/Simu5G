@@ -28,7 +28,6 @@ CellUEInfo::CellUEInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi):
     associateId_.setAssociateId(ueCollector->getAssociateId());
 }
 
-CellUEInfo::~CellUEInfo() {}
 
 nlohmann::ordered_json CellUEInfo::toJson() const
 {

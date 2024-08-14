@@ -171,7 +171,6 @@ class PacketFlowManagerBase : public cSimpleModule
     virtual unsigned int getNextRlcSno() { return nextRlcSno_; }
     virtual unsigned int getNextPdcpSno() { return nextPdcpSno_; }
 
-    virtual ~PacketFlowManagerBase();
     virtual void finish();
 
 };

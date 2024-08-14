@@ -50,7 +50,6 @@ class LteTxPdcpEntity : public cSimpleModule
 
   public:
 
-    virtual ~LteTxPdcpEntity();
 
     virtual void initialize();
 

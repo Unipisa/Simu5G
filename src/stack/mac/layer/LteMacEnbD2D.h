@@ -88,7 +88,6 @@ class LteMacEnbD2D : public LteMacEnb
 
   public:
 
-    virtual ~LteMacEnbD2D();
 
     /**
      * Reads MAC parameters for ue and performs initialization.

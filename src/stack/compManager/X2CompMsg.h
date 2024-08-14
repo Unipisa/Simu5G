@@ -37,7 +37,6 @@ class X2CompMsg : public LteX2Message
 
     virtual X2CompMsg *dup() const;
 
-    virtual ~X2CompMsg();
 };
 
 } //namespace

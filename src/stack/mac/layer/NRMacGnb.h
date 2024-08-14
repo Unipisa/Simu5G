@@ -23,7 +23,6 @@ class NRMacGnb : public LteMacEnbD2D
   public:
 
     NRMacGnb();
-    virtual ~NRMacGnb();
 
     /**
      * Reads MAC parameters and performs initialization.

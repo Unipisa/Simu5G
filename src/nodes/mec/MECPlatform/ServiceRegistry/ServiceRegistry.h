@@ -47,7 +47,6 @@ class ServiceRegistry : public MecServiceBase
 
   public:
     ServiceRegistry();
-    virtual ~ServiceRegistry();
 
     /*
      * This method is used to register the presence of a MEC service in the MEC system.

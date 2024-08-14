@@ -53,7 +53,6 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
         return new X2CompProportionalRequestIE(*this);
     }
 
-    virtual ~X2CompProportionalRequestIE() {}
 
     // getter/setter methods
     void setNumBlocks(unsigned int numBlocks) { numBlocks_ = numBlocks; }

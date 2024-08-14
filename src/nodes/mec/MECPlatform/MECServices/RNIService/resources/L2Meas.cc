@@ -44,7 +44,6 @@ void L2Meas::addEnodeB(cModule *eNodeB) {
     eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
 }
 
-L2Meas::~L2Meas() {}
 
 nlohmann::ordered_json L2Meas::toJson() const {
     nlohmann::ordered_json val;

@@ -24,10 +24,7 @@ LteMacBuffer::LteMacBuffer(const LteMacQueue& queue)
     operator=(queue);
 }
 
-LteMacBuffer::~LteMacBuffer()
-{
 
-}
 
 LteMacBuffer& LteMacBuffer::operator=(const LteMacBuffer& queue)
 {

@@ -43,7 +43,6 @@ class RNIService : public MecServiceBase2
     virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
     virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
-    virtual ~RNIService();
 
 };
 

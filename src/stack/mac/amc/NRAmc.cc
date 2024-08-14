@@ -25,9 +25,6 @@ NRAmc::NRAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas
 {
 }
 
-NRAmc::~NRAmc()
-{
-}
 
 unsigned int NRAmc::getSymbolsPerSlot(double carrierFrequency, Direction dir)
 {

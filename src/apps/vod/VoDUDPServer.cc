@@ -22,9 +22,6 @@ using namespace std;
 using namespace inet;
 
 
-VoDUDPServer::~VoDUDPServer()
-{
-}
 
 void VoDUDPServer::initialize(int stage)
 {

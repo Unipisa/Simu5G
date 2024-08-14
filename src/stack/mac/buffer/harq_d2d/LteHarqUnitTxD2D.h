@@ -71,7 +71,6 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
      */
     virtual inet::Packet *extractPdu();
 
-    virtual ~LteHarqUnitTxD2D();
 };
 
 } //namespace

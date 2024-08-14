@@ -53,9 +53,6 @@ class UmRxEntity;
 class LteRlcUm : public cSimpleModule
 {
   public:
-    virtual ~LteRlcUm()
-    {
-    }
 
     /**
      * sendFragmented() is invoked by the TXBuffer as a direct method
