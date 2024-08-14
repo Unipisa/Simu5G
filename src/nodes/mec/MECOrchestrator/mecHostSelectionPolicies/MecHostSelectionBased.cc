@@ -26,7 +26,7 @@ cModule *MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& app
     cModule *bestHost = nullptr;
 
     int size = mecOrchestrator_->mecHosts.size();
-    if (size < mecHostIndex_) {
+    if (size <= mecHostIndex_) {
         EV << "MecHostSelectionBased::findBestMecHost - No Mec Host with index [" << mecHostIndex_ << "] found" << endl;
     }
     else {
