@@ -64,7 +64,7 @@ void DeviceApp::handleUALCMPMessage()
                         }
                     }
 
-                    if (found == false) {
+                    if (!found) {
                         EV << "DeviceApp::handleUALCMPMessage: application descriptor for appName: " << appName << " not found." << endl;
                         jsonRequestBody["associateDevAppId"] = std::to_string(getId());
                         jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";

@@ -163,10 +163,10 @@ bool LteAllocationModule::configureMuMimoPeering(const MacNodeId nodeId, const M
 {
     //---------- Peering availability Check ----------
     // peer user already set for the specified nodeId
-    if (allocatedRbsUe_[nodeId].muMimoEnabled_ == true)
+    if (allocatedRbsUe_[nodeId].muMimoEnabled_)
         return false;
     // peer user already set for the specified peer
-    if (allocatedRbsUe_[peer].muMimoEnabled_ == true)
+    if (allocatedRbsUe_[peer].muMimoEnabled_)
         return false;
 
     //---- If we reach this point, we can use MuMimo peering by setting the allocator properly ----

@@ -57,7 +57,7 @@ class HttpRequestMessage : public HttpRequestMessage_m
     virtual void setBackGroundRequest(bool bgReq) { isBackgroundRequest_ = bgReq; }
     virtual void setLastBackGroundRequest(bool bgReq)
     {
-        if (bgReq == true)
+        if (bgReq)
             isBackgroundRequest_ = true;
         isLastBackgroundRequest_ = bgReq;
     }

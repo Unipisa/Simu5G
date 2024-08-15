@@ -536,7 +536,7 @@ void AmRxQueue::checkCompleteSdu(const int index)
     }
 
     // check if all PDUs for this SDU have been received
-    if (complete == true) {
+    if (complete) {
         EV << NOW << " AmRxQueue::checkCompleteSdu - complete SDU has been found after forward search, passing up "
            << firstIndex << endl;
         passUp(firstIndex);

@@ -265,7 +265,7 @@ double MecRTVideoStreamingReceiver::playoutFrame()
         /**
          * This flag registers the first available frame to be displayed.
          */
-        if (firstFrameDisplayed == false) {
+        if (!firstFrameDisplayed) {
             firstFrameDisplayed = true;
             lastFrameDisplayed_ = firstFrame->second.frameNumber - 1;
             expectedFrameDisplayed_ = firstFrame->second.frameNumber;

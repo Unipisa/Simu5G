@@ -342,7 +342,7 @@ void AmTxQueue::checkForMrw()
         }
     }
 
-    if (toMove == true) {
+    if (toMove) {
         int lastSn = txWindowDesc_.firstSeqNum_ + lastPdu;
 
         EV << NOW << " AmTxQueue::checkForMrw  detected a shift from " << lastSn << endl;

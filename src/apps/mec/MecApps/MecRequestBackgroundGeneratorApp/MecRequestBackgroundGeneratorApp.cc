@@ -139,7 +139,7 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage) {
                 throw cRuntimeError("MecRequestBackgroundGeneratorApp::initialize - vim is null!");
             if (par("allocateHostResources").boolValue()) {
                 bool res = vim->registerMecApp(getId(), requiredRam, requiredDisk, requiredCpu);
-                if (res == false) {
+                if (!res) {
                     EV << "MecRequestBackgroundGeneratorApp::initialize - MecRequestBackgroundGeneratorApp [" << mecAppId << "]  cannot be instantiated" << endl;
                 }
             }
@@ -174,7 +174,7 @@ void MecRequestBackgroundGeneratorApp::finish()
         throw cRuntimeError("MecRequestBackgroundGeneratorApp::initialize - vim is null!");
     if (par("allocateHostResources").boolValue()) {
         bool res = vim->deRegisterMecApp(mecAppId);
-        if (res == false) {
+        if (!res) {
             EV << "MecRequestBackgroundGeneratorApp::finish - MEC host did not deallocate MecRequestBackgroundGeneratorApp [" << mecAppId << "] resources" << endl;
         }
     }

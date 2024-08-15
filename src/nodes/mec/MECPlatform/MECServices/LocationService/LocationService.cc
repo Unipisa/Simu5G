@@ -293,7 +293,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
             int id = sub->getSubscriptionId();
             CircleNotificationSubscription *newSubscription = new CircleNotificationSubscription(binder_, id, socket, baseSubscriptionLocation_, eNodeB_, sub->getFirstNotification(), sub->getLastNotification());
             bool res = newSubscription->fromJson(jsonBody);
-            if (res == true) {
+            if (res) {
                 nlohmann::ordered_json response = jsonBody;
                 std::string resourceUrl = newSubscription->getResourceUrl();
                 response["circleNotificationSubscription"]["resourceURL"] = resourceUrl;

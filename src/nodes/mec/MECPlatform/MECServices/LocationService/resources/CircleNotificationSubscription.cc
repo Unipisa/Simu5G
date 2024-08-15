@@ -77,7 +77,7 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
 
     // update last notification sent
     lastNotification = simTime();
-    if (firstNotificationSent == false)
+    if (!firstNotificationSent)
         firstNotificationSent = true;
 }
 
