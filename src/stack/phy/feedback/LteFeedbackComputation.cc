@@ -19,7 +19,6 @@ LteFeedbackComputation::LteFeedbackComputation()
 
 LteFeedbackComputation::~LteFeedbackComputation()
 {
-    // TODO Auto-generated destructor stub
 }
 
 } //namespace

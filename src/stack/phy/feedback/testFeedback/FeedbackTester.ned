@@ -12,9 +12,6 @@
 
 package simu5g.stack.phy.feedback.testFeedback;
 
-//
-// TODO auto-generated module
-//
 simple FeedbackTester
 {
     double interval @unit(s) = default(1ms);

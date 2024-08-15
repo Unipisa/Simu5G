@@ -2665,7 +2665,6 @@ PhyPisaData::PhyPisaData()
 
 PhyPisaData::~PhyPisaData()
 {
-    // TODO Auto-generated destructor stub
 }
 
 double PhyPisaData::getChannel(unsigned int i)
