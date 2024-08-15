@@ -183,6 +183,7 @@ class LteAllocationModule
     LteAllocationModule(LteMacEnb *mac, const Direction direction);
 
     /// Destructor.
+    virtual ~LteAllocationModule() {}
 
     // init Allocation Module structure
     void init(const unsigned int resourceBlocks, const unsigned int bands);

@@ -31,6 +31,7 @@ class AttributeBase
     static double toJson(double value);
     static bool toJson(bool value);
     static nlohmann::ordered_json toJson(AttributeBase& content);
+    virtual ~AttributeBase() {}
 };
 
 } //namespace

@@ -84,6 +84,7 @@ class UserTxParams
         restoreDefaultValues();
     }
 
+    virtual ~UserTxParams() {}
 
     //! Reset to default values.
     void restoreDefaultValues()

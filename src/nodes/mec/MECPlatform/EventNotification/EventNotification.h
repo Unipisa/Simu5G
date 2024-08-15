@@ -20,6 +20,7 @@ class EventNotification
   public:
     EventNotification();
     EventNotification(const std::string& type, int subId);
+    virtual ~EventNotification() {}
 
     // setters
     virtual int getSubId() const;

@@ -119,6 +119,9 @@ class LteScheduler
     /**
      * Destructor.
      */
+    virtual ~LteScheduler()
+    {
+    }
 
     /**
      * Initializes the LteScheduler.
