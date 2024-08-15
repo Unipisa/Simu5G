@@ -38,30 +38,6 @@ Define_Module(LteMacUe);
 using namespace inet;
 using namespace omnetpp;
 
-simsignal_t LteMacUe::cqiDlMuMimo0_ = registerSignal("cqiDlMuMimo0");
-simsignal_t LteMacUe::cqiDlMuMimo1_ = registerSignal("cqiDlMuMimo1");
-simsignal_t LteMacUe::cqiDlMuMimo2_ = registerSignal("cqiDlMuMimo2");
-simsignal_t LteMacUe::cqiDlMuMimo3_ = registerSignal("cqiDlMuMimo3");
-simsignal_t LteMacUe::cqiDlMuMimo4_ = registerSignal("cqiDlMuMimo4");
-
-simsignal_t LteMacUe::cqiDlTxDiv0_ = registerSignal("cqiDlTxDiv0");
-simsignal_t LteMacUe::cqiDlTxDiv1_ = registerSignal("cqiDlTxDiv1");
-simsignal_t LteMacUe::cqiDlTxDiv2_ = registerSignal("cqiDlTxDiv2");
-simsignal_t LteMacUe::cqiDlTxDiv3_ = registerSignal("cqiDlTxDiv3");
-simsignal_t LteMacUe::cqiDlTxDiv4_ = registerSignal("cqiDlTxDiv4");
-
-simsignal_t LteMacUe::cqiDlSpmux0_ = registerSignal("cqiDlSpmux0");
-simsignal_t LteMacUe::cqiDlSpmux1_ = registerSignal("cqiDlSpmux1");
-simsignal_t LteMacUe::cqiDlSpmux2_ = registerSignal("cqiDlSpmux2");
-simsignal_t LteMacUe::cqiDlSpmux3_ = registerSignal("cqiDlSpmux3");
-simsignal_t LteMacUe::cqiDlSpmux4_ = registerSignal("cqiDlSpmux4");
-
-simsignal_t LteMacUe::cqiDlSiso0_ = registerSignal("cqiDlSiso0");
-simsignal_t LteMacUe::cqiDlSiso1_ = registerSignal("cqiDlSiso1");
-simsignal_t LteMacUe::cqiDlSiso2_ = registerSignal("cqiDlSiso2");
-simsignal_t LteMacUe::cqiDlSiso3_ = registerSignal("cqiDlSiso3");
-simsignal_t LteMacUe::cqiDlSiso4_ = registerSignal("cqiDlSiso4");
-
 LteMacUe::LteMacUe() : LteMacBase(),
     bsrTriggered_(false),
     debugHarq_(false), firstTx(false),
