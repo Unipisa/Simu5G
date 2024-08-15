@@ -23,8 +23,6 @@ namespace simu5g {
  */
 class NRSchedulerGnbUl : public LteSchedulerEnbUl
 {
-  protected:
-
   public:
 
     // does nothing with asynchronous H-ARQ

@@ -55,9 +55,6 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
 
     // handler for mode switch signal
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
-
-  public:
-
 };
 
 } //namespace

@@ -56,8 +56,6 @@ class DasFilter
     DasFilter(LtePhyBase *ltePhy, Binder *binder,
             RemoteAntennaSet *ruSet, double rssiThreshold);
 
-    /// Destructor: deallocates the Remote Antenna Set
-
     /**
      * addRemoteAntenna() is called by the cellInfo to add a new
      * antenna for the eNB with all its physical properties

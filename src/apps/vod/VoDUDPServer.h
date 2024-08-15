@@ -90,8 +90,6 @@ class VoDUDPServer : public cSimpleModule
 
     std::vector<svcPacket> svcTrace_;
 
-  public:
-
   protected:
     void initialize(int stage);
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }

@@ -37,7 +37,6 @@ class LteMacBuffer
     /**
      * Copy Constructors
      */
-
     LteMacBuffer(const LteMacQueue& queue);
     LteMacBuffer& operator=(const LteMacBuffer& queue);
     LteMacBuffer *dup() const;

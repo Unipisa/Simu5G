@@ -46,9 +46,6 @@ class RemoteAntennaSet
     std::vector<RemoteAntenna> remoteAntennaSet_;
 
   public:
-    /// Constructor
-
-    /// Destructor
 
     /**
      * addRemoteAntenna() is called by das to add a new

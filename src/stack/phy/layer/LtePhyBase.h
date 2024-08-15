@@ -147,14 +147,6 @@ class LtePhyBase : public ChannelAccess
 
   public:
 
-    /**
-     * Constructor
-     */
-
-    /**
-     * Destructor
-     */
-
     const LteChannelModel *getPrimaryChannelModel()
     {
         return primaryChannelModel_;

@@ -28,8 +28,6 @@ class VoipPacketSerializer : public inet::FieldsChunkSerializer
   protected:
     virtual void serialize(inet::MemoryOutputStream& stream, const inet::Ptr<const inet::Chunk>& chunk) const override;
     virtual const inet::Ptr<inet::Chunk> deserialize(inet::MemoryInputStream& stream) const override;
-
-  public:
 };
 
 } //namespace

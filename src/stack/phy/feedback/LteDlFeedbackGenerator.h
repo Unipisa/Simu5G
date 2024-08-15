@@ -121,10 +121,6 @@ class LteDlFeedbackGenerator : public cSimpleModule
   public:
 
     /**
-     * Constructor
-     */
-
-    /**
      * Destructor
      */
     ~LteDlFeedbackGenerator();

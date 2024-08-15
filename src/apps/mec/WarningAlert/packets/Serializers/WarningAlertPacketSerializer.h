@@ -41,8 +41,6 @@ class WarningAlertPacketSerializer : public FieldsChunkSerializer
   protected:
     virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
     virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
-
-  public:
 };
 
 } //namespace

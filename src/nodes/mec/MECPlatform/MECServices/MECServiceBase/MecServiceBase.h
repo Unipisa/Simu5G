@@ -67,8 +67,6 @@ class EventNotification;
 
 class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICallback
 {
-  public:
-
   protected:
     std::string serviceName_;
     inet::TcpSocket serverSocket; // Used to listen to incoming connections

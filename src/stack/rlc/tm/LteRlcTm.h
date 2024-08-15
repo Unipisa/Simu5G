@@ -38,9 +38,6 @@ using namespace omnetpp;
  */
 class LteRlcTm : public cSimpleModule
 {
-  public:
-
-
   protected:
     /**
      * Analyzes gate of incoming packet

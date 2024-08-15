@@ -53,8 +53,6 @@ class LteRlcAm : public cSimpleModule
     cGate *up_[2];
     cGate *down_[2];
 
-  public:
-
   protected:
 
     /**

@@ -191,8 +191,6 @@ class LteHarqProcessTx : noncopyable
     bool isHarqProcessActive();
 
     virtual ~LteHarqProcessTx();
-
-  protected:
 };
 
 } //namespace

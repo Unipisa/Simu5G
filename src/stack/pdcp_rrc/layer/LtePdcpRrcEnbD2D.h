@@ -41,9 +41,6 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
     virtual void fromDataPort(cPacket *pkt) override;
 
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
-
-  public:
-
 };
 
 } //namespace

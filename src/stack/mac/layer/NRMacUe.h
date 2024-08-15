@@ -43,8 +43,6 @@ class NRMacUe : public LteMacUeD2D
      * containing the size of its buffer (for that CID)
      */
     virtual void macPduMake(MacCid cid = 0);
-
-  public:
 };
 
 } //namespace

@@ -32,11 +32,6 @@ class TTimer : public cObject
     {
     }
 
-    /*! Do nothing.
-     *
-     * @return
-     */
-
     /*! Start the timer. The timer is now busy.
      * If the timer has already been started, then there is
      * probably a programming error. Thus, we abort execution immediately.
@@ -144,8 +139,6 @@ class TMultiTimer : public cObject
     TMultiTimer(cSimpleModule *module) :  module_(module)
     {
     }
-
-    //! Do nothing.
 
     /*! Add an event to the multi-timer, with a specified parameter.
      *

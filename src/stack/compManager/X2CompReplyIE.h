@@ -22,8 +22,6 @@ namespace simu5g {
 //
 class X2CompReplyIE : public X2InformationElement
 {
-  protected:
-
   public:
     X2CompReplyIE()
     {

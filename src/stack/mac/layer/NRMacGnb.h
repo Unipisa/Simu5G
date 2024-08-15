@@ -18,8 +18,6 @@ namespace simu5g {
 
 class NRMacGnb : public LteMacEnbD2D
 {
-  protected:
-
   public:
 
     NRMacGnb();

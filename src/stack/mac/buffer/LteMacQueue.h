@@ -50,7 +50,6 @@ class LteMacQueue : public cPacketQueue
     /**
      * Copy Constructor
      */
-
     LteMacQueue(const LteMacQueue& queue);
     LteMacQueue& operator=(const LteMacQueue& queue);
     LteMacQueue *dup() const;

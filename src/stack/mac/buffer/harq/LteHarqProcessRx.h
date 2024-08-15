@@ -184,8 +184,6 @@ class LteHarqProcessRx
     bool isHarqProcessActive();
 
     virtual ~LteHarqProcessRx();
-
-  protected:
 };
 
 } //namespace
