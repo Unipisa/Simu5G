@@ -42,7 +42,7 @@ network MultiOperator
         int numUe_B = default(1);
         int numBgCells = default(0);
         bool enableMecOperatorB = default(true);
-        @display("i=block/network2;bgb=1627.08,801.255;bgi=background/pisa");
+        @display("i=block/network2;bgb=1627,801;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
@@ -57,69 +57,69 @@ network MultiOperator
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         router: Router {
-            @display("p=750,73.395");
+            @display("p=750,73");
         }
         upf_A: Upf {
-            @display("p=625,173.29375");
+            @display("p=625,173");
         }
         upf_B: Upf {
-            @display("p=875,173.29375");
+            @display("p=875,173");
         }
         iUpf_A: Upf {
-            @display("p=623.8575,281.3475");
+            @display("p=623,281");
         }
         iUpf_B: Upf {
-            @display("p=874.6237,281.3475");
+            @display("p=874,281");
         }
         gnb_A1: gNodeB {
-            @display("p=274.365,454.54498;is=vl");
+            @display("p=274,454;is=vl");
         }
         gnb_A2: gNodeB {
-            @display("p=797.15125,452.60248;is=vl");
+            @display("p=800,452;is=vl");
         }
         gnb_A3: gNodeB {
-            @display("p=1245.6763,452.60248;is=vl");
+            @display("p=1245,452;is=vl");
         }
         gnb_B1: gNodeB {
-            @display("p=330.33,514.605;is=vl");
+            @display("p=330,514;is=vl");
         }
         gnb_B2: gNodeB {
-            @display("p=848.12,513.765;is=vl");
+            @display("p=848,513;is=vl");
         }
         gnb_B3: gNodeB {
-            @display("p=1304.7999,513.765;is=vl");
+            @display("p=1304,513;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=138.635,629.97375;is=vl");
+            @display("p=138,630;is=vl");
         }
         ue_A[numUe_A]: NRUe {
-            @display("p=717.64,691.1362");
+            @display("p=717,691");
         }
         ue_B[numUe_B]: NRUe {
-            @display("p=937.825,691.1362");
+            @display("p=937,691");
         }
 
         //# MEC modules
         mecHost_A: MECHost {
-            @display("p=273.1925,281.3475");
+            @display("p=273,281");
         }
         mecHost_B: MECHost if enableMecOperatorB {
-            @display("p=1245.6763,281.3475");
+            @display("p=1245,281");
         }
         mecOrchestrator_A: MecOrchestrator {
-            @display("p=273.1925,73.395");
+            @display("p=273,73");
         }
         mecOrchestrator_B: MecOrchestrator if enableMecOperatorB {
-            @display("p=1245.6763,73.395");
+            @display("p=1245,73");
         }
         ualcmp_A: UALCMP {
-            @display("p=489.3,73.395");
+            @display("p=490,73");
         }
         ualcmp_B: UALCMP if enableMecOperatorB {
-            @display("p=1027.53,73.395");
+            @display("p=1027,73");
         }
 
     connections:

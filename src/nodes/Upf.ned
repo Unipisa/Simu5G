@@ -28,7 +28,7 @@ import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 module Upf extends NetworkLayerNodeBase
 {
     parameters:
-        @display("bgb=1348.9225,1103.51;i=abstract/switch");
+        @display("bgb=1348,1103;i=abstract/switch");
         @figure[applicationLayer](type=rectangle; pos=250,6; size=1000,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
         @figure[applicationLayer.title](type=text; pos=1245,11; anchor=ne; text="application layer");
         @figure[transportLayer](type=rectangle; pos=250,156; size=1000,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
@@ -64,7 +64,7 @@ module Upf extends NetworkLayerNodeBase
         }
         tn: MessageDispatcher {
             parameters:
-                @display("p=750,296;b=1000,5,,,,1");
+                @display("p=750,300;b=1000,5,,,,1");
         }
         at: MessageDispatcher {
             parameters:

@@ -23,7 +23,7 @@ import simu5g.nodes.mec.MECPlatform.ServiceRegistry.ServiceRegistry;
 module MECPlatform
 {
     parameters:
-        @display("bgb=479.95752,187.19751;i=block/cogwheel");
+        @display("bgb=480,187;i=block/cogwheel");
 
         //# Number of MEC Services available
         int numMecServices = default(0);
@@ -34,11 +34,11 @@ module MECPlatform
     submodules:
 
         serviceRegistry: ServiceRegistry {
-            @display("p=94.302505,78.82");
+            @display("p=94,78");
         }
 
         mecService[numMecServices]: <> like IApp {
-            @display("p=319.5025,78.82,row,140");
+            @display("p=320,78,row,140");
         }
 
     connections allowunconnected:

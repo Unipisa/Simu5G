@@ -28,50 +28,50 @@ import simu5g.world.radio.LteChannelControl;
 network RnisTest
 {
     parameters:
-        @display("i=block/network2;bgb=811.0225,507.6475;bgi=background/pisa");
+        @display("i=block/network2;bgb=811,507;bgi=background/pisa");
 
         int numUes = default(1);
 
     submodules:
 
         routingRecorder: RoutingTableRecorder {
-            @display("p=690,104.88;is=s");
+            @display("p=690,104;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=690,184.92;is=s");
+            @display("p=690,184;is=s");
         }
         channelControl: LteChannelControl {
-            @display("p=690,24.84;is=s");
+            @display("p=690,24;is=s");
         }
         binder: Binder {
-            @display("p=690,264.96;is=s");
+            @display("p=690,264;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=691.38,342.24;is=s");
+            @display("p=691,342;is=s");
         }
         upf: Upf {
-            @display("p=545.0638,249.77875");
+            @display("p=545,250");
         }
         iUpf: Upf {
-            @display("p=352.92624,249.77875");
+            @display("p=352,250");
         }
         gNodeB1: gNodeB {
             @display("p=140,250;is=vl");
         }
         ue[numUes]: NRUe {
-            @display("p=237.64375,310.45377");
+            @display("p=237,310");
         }
         //# MEC module
         mecHost: MECHost {
-            @display("p=352.92624,145.62;is=l");
+            @display("p=352,145;is=l");
         }
 
         mecOrchestrator: MecOrchestrator {
-            @display("p=544.0525,63.70875;is=l");
+            @display("p=544,63;is=l");
         }
 
         ualcmp: UALCMP {
-            @display("p=545.0638,158.76625;i=device/smallrouter");
+            @display("p=545,158;i=device/smallrouter");
         }
 
 

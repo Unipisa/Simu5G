@@ -34,7 +34,7 @@ network MultiMecHost
     parameters:
         int numUe = default(1);
         int numBgCells = default(0);
-        @display("i=block/network2;bgb=1088.032,678.896;bgi=background/pisa");
+        @display("i=block/network2;bgb=1088,678;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
@@ -49,42 +49,42 @@ network MultiMecHost
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         upf: Upf {
-            @display("p=499.59,131.04");
+            @display("p=500,131");
         }
         iUpf1: Upf {
-            @display("p=389.025,247.06499");
+            @display("p=390,247");
         }
         iUpf2: Upf {
-            @display("p=603.33,247.06499");
+            @display("p=603,247");
         }
         gnb1: gNodeB {
-            @display("p=249.795,395.85;is=vl");
+            @display("p=250,395;is=vl");
         }
         gnb2: gNodeB {
-            @display("p=749.385,397.215;is=vl");
+            @display("p=749,400;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=249.795,577.39496;is=vl");
+            @display("p=250,577;is=vl");
         }
         ue[numUe]: NRUe {
-            @display("p=499.59,481.845");
+            @display("p=500,481");
         }
 
         //# MEC modules
         mecHost1: MECHost {
-            @display("p=248.43,247.06499");
+            @display("p=248,247");
         }
         mecHost2: MECHost {
-            @display("p=748.01996,247.06499");
+            @display("p=748,247");
         }
         mecOrchestrator: MecOrchestrator {
-            @display("p=249.795,73.71");
+            @display("p=250,73");
         }
         ualcmp: UALCMP {
-            @display("p=389.025,73.71");
+            @display("p=390,73");
         }
 
     connections:

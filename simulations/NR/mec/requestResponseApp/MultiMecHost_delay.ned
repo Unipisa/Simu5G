@@ -37,7 +37,7 @@ network MultiMecHost_delay
         double routersDelay @unit(m) = default(0m);
 //        volatile double routersDelay @unit(m) = default(normal(2m, 0.8m));
 
-        @display("i=block/network2;bgb=1088.032,678.896;");//bgi=background/pisa");
+        @display("i=block/network2;bgb=1088,678;");//bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
@@ -52,42 +52,42 @@ network MultiMecHost_delay
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         upf: Upf {
-            @display("p=495,132.405");
+            @display("p=495,132");
         }
         iUpf1: Upf {
-            @display("p=400,247.06499");
+            @display("p=400,247");
         }
         iUpf2: Upf {
-            @display("p=590,247.06499");
+            @display("p=590,247");
         }
         gnb1: gNodeB {
-            @display("p=283.91998,421.785;is=vl");
+            @display("p=283,421;is=vl");
         }
         gnb2: gNodeB {
-            @display("p=749.385,397.215;is=vl");
+            @display("p=749,400;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=79.17,576.02997;is=vl");
+            @display("p=80,576;is=vl");
         }
         ue[numUe]: NRUe {
-            @display("p=353.535,481.845");
+            @display("p=353,481");
         }
 
         //# MEC modules
         mecHost1: MECHost {
-            @display("p=248.43,247.06499");
+            @display("p=248,247");
         }
         mecHost2: MECHost {
-            @display("p=748.01996,247.06499");
+            @display("p=748,247");
         }
         mecOrchestrator: MecOrchestrator {
-            @display("p=749.385,132.405");
+            @display("p=749,132");
         }
         ualcmp: UALCMP {
-            @display("p=603.33,131.04");
+            @display("p=603,131");
         }
 
     connections:

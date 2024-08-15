@@ -36,7 +36,7 @@ module NRUe extends Ue
     submodules:
         //# UeStatsCollector - for MEC
         NRueCollector: NRueStatsCollector if hasRNISupport {
-            @display("p=127.296,506.53198;is=s");
+            @display("p=127,506;is=s");
         }
 
     connections allowunconnected:

@@ -63,30 +63,30 @@ module VirtualisationInfrastructure
     submodules:
 
         interfaceTable: InterfaceTable {
-            @display("p=61.344,74.976;is=s");
+            @display("p=61,74;is=s");
         }
 
         //#
         //# link-layer modules
         //#
         pppIf[sizeof(ppp)]: PppInterface {
-            @display("p=736.2375,660.075");
+            @display("p=736,660");
         }
 
         // ethernet interface used for communicating with external applications in emulation mode
         extEth[numExtEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=326.6525,660.075,row,150;q=txQueue");
+                @display("p=326,660,row,150;q=txQueue");
         }
         encap: <default("EthernetEncapsulation")> like IEthernetLayer if typename != "" {
             parameters:
                 registerProtocol = true;
-                @display("p=326.6525,511.135");
+                @display("p=326,511");
         }
 
         lo: <default("LoopbackInterface")> like ILoopbackInterface {
             parameters:
-                @display("p=548.37,660.075,row,150");
+                @display("p=548,660,row,150");
         }
 
         //#
@@ -94,18 +94,18 @@ module VirtualisationInfrastructure
         //#
         ipv4: <default("Ipv4NetworkLayer")> like INetworkLayer if hasIpv4 {
             parameters:
-                @display("p=420.28,372.88;q=queue");
+                @display("p=420,372;q=queue");
         }
         ipv6: <default("Ipv6NetworkLayer")> like INetworkLayer if hasIpv6 {
             parameters:
-                @display("p=657.28,374.46;q=queue");
+                @display("p=657,374;q=queue");
         }
 
         //#
         //# Transport layer modules and corresponding application modules
         //#
         udp: Udp {
-            @display("p=459,217");
+            @display("p=460,217");
         }
 
         tcp: Tcp {
@@ -120,7 +120,7 @@ module VirtualisationInfrastructure
         // message dispatcher for SAP between transport and network layer
         tn: MessageDispatcher {
             parameters:
-                @display("p=550,296;b=600,5,,,,1");
+                @display("p=550,300;b=600,5,,,,1");
         }
         // message dispatcher for SAP to link layer
         nl: MessageDispatcher {

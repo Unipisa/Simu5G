@@ -25,7 +25,7 @@ package simu5g.nodes.mec.MECOrchestrator;
 simple MecOrchestrator
 {
     parameters:
-        @display("i=device/mainframe;bgb=1006.50995,692.76");
+        @display("i=device/mainframe;bgb=1006,692");
         string binderModule = default("binder");
 
         string selectionPolicy @enum(MecHostBased,MecServiceBased,AvailableResourcesBased) = default("MecServiceBased"); // available policies: "MecHostBased", "MecServiceBased", "AvailableResourcesBased"

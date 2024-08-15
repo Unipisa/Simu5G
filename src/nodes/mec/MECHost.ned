@@ -62,17 +62,17 @@ module MECHost
 
         mecPlatform: MECPlatform {
             parameters:
-                @display("p=573.535,158.12999");
+                @display("p=573,158");
         }
 
         mecPlatformManager: MecPlatformManager {
             parameters:
-                @display("p=865.94995,116.715;is=m");
+                @display("p=865,116;is=m");
         }
 
         vim: VirtualisationInfrastructureManager {
             parameters:
-                @display("p=865.94995,224.64499;is=m");
+                @display("p=865,224;is=m");
         }
 
         // UPF module used to connect the MEC host to the 5G Core Network (either a BS or a UPF)
@@ -83,11 +83,11 @@ module MECHost
         }
 
         bgApp[numBGMecApp]: BackgroundApp {
-            @display("p=865.94995,326.3,row,140");
+            @display("p=865,326,row,140");
         }
 
         independentMecApp[numIndependentMecApp]: <> like IApp {
-            @display("p=371.47998,156.875,row,140");
+            @display("p=371,156,row,140");
         }
 
     connections allowunconnected:

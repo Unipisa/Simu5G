@@ -34,40 +34,40 @@ network ExtServerExample
 {
     parameters:
         int numExtCells = default(0);
-        @display("i=block/network2;bgb=796,554.7125;bgi=background/pisa");
+        @display("i=block/network2;bgb=800,554;bgi=background/pisa");
     submodules:
         routingRecorder: RoutingTableRecorder {
-            @display("p=73.38125,130.59375;is=s");
+            @display("p=73,130;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=73.38125,72.1375");
+            @display("p=73,72");
         }
         channelControl: LteChannelControl {
-            @display("p=70.89375,189.05;is=s");
+            @display("p=70,190;is=s");
         }
         binder: Binder {
-            @display("p=73.38125,261.1875;is=s");
+            @display("p=73,261;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=72.54,335.916;is=s");
+            @display("p=72,335;is=s");
         }
         router: Router {
-            @display("p=223.875,175.36874;i=device/smallrouter");
+            @display("p=223,175;i=device/smallrouter");
         }
         upf: Upf {
-            @display("p=460.1875,174.125");
+            @display("p=460,174");
         }
         gnb: gNodeB {
-            @display("p=671.625,174.125;is=vl");
+            @display("p=671,174;is=vl");
         }
         ue1: NRUe {
-            @display("p=699.732,309.132");
+            @display("p=700,309");
         }
         ue2: NRUe {
-            @display("p=636.12,309.132");
+            @display("p=636,309");
         }
         extCell[numExtCells]: ExtCell {
-            @display("p=671.625,432.82498;is=vl");
+            @display("p=671,432;is=vl");
         }
     connections allowunconnected:
         router.pppg++ <--> Eth10G <--> upf.filterGate;

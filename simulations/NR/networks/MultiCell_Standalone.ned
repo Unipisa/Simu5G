@@ -33,7 +33,7 @@ network MultiCell_Standalone
     parameters:
         int numUe = default(1);
         int numBgCells = default(0);
-        @display("i=block/network2;bgb=1088.032,678.896;bgi=background/pisa");
+        @display("i=block/network2;bgb=1088,678;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
             @display("p=50,25;is=s");
@@ -48,13 +48,13 @@ network MultiCell_Standalone
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         server: StandardHost {
             @display("p=212,118;is=n;i=device/server");
         }
         router: Router {
-            @display("p=351.81198,115.771996;i=device/smallrouter");
+            @display("p=351,115;i=device/smallrouter");
         }
         upf: Upf {
             @display("p=500,115");
@@ -66,13 +66,13 @@ network MultiCell_Standalone
             @display("p=250,300;is=vl");
         }
         gnb2: gNodeB {
-            @display("p=750,300.556;is=vl");
+            @display("p=750,300;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=249.528,483.31998;is=vl");
+            @display("p=250,483;is=vl");
         }
         ue[numUe]: NRUe {
-            @display("p=499.056,428.244");
+            @display("p=500,428");
         }
     connections:
 

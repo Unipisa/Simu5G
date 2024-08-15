@@ -39,48 +39,48 @@ network UrbanNetwork
     submodules:
 
         channelControl: LteChannelControl {
-            @display("p=114.647995,32.596;is=s");
+            @display("p=114,32;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=114.647995,82.052;is=s");
+            @display("p=114,82;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=115.771996,143.872;is=s");
+            @display("p=115,143;is=s");
         }
         binder: Binder {
-            @display("p=115.0551,242.22125;is=s");
+            @display("p=115,242;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=114.647995,337.19998;is=s");
+            @display("p=114,337;is=s");
         }
 
         //# traffic lights
         tl1: TrafficLight {
-            @display("p=496.34155,2026.3016");
+            @display("p=500,2026");
         }
         tl2: TrafficLight {
-            @display("p=997.80005,2026.3016");
+            @display("p=1000,2026");
         }
         tl3: TrafficLight {
-            @display("p=1499.2585,2026.3016");
+            @display("p=1500,2026");
         }
         tl4: TrafficLight {
-            @display("p=496.34155,2026.3016");
+            @display("p=500,2026");
         }
         tl5: TrafficLight {
-            @display("p=997.80005,2026.3016");
+            @display("p=1000,2026");
         }
         tl6: TrafficLight {
-            @display("p=1499.2585,2026.3016");
+            @display("p=1500,2026");
         }
 
         //# CN modules
 
         upf: Upf {
-            @display("p=997.80005,1050");
+            @display("p=1000,1050");
         }
         iUpf: Upf {
-            @display("p=997.80005,1200");
+            @display("p=1000,1200");
         }
 
         //# MEC modules
@@ -107,11 +107,11 @@ network UrbanNetwork
         }
 
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=1971.0754,1498.744;is=l");
+            @display("p=1971,1498;is=l");
         }
 
         ue[numUe]: NRUe {
-            @display("p=199.56001,2026.3016");
+            @display("p=200,2026");
         }
 
     connections:

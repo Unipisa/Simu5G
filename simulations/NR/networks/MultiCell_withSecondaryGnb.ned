@@ -39,46 +39,46 @@ network MultiCell_withSecondaryGnb
         @display("i=block/network2;bgb=1100,800;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=104.52,62.712;is=s");
+            @display("p=104,62;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=106.128,131.856;is=s");
+            @display("p=106,131;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=50.993748,172.88126");
+            @display("p=50,172");
         }
         binder: Binder {
-            @display("p=106.128,334.464;is=s");
+            @display("p=106,334;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=106.128,418.08;is=s");
+            @display("p=106,418;is=s");
         }
         server: StandardHost {
-            @display("p=273.36002,48.24;is=n;i=device/server");
+            @display("p=273,48;is=n;i=device/server");
         }
         router: Router {
-            @display("p=393.96,46.632;i=device/smallrouter");
+            @display("p=393,46;i=device/smallrouter");
         }
         pgw: PgwStandard {
-            @display("p=529.8375,49.75;is=n");
+            @display("p=530,49;is=n");
         }
         masterEnb1: eNodeB {
-            @display("p=363.175,277.35626;is=vl");
+            @display("p=363,277;is=vl");
         }
         secondaryGnb1: gNodeB {
-            @display("p=527.35,461.43124;is=vl");
+            @display("p=527,461;is=vl");
         }
         masterEnb2: eNodeB {
-            @display("p=692.76874,277.35626;is=vl");
+            @display("p=692,277;is=vl");
         }
         secondaryGnb2: gNodeB {
-            @display("p=856.9437,461.43124;is=vl");
+            @display("p=856,461;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=998.568,107.736;is=vl");
+            @display("p=1000,107;is=vl");
         }
         ue[numUe]: NRUe {
-            @display("p=526.10626,334.56876");
+            @display("p=526,334");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

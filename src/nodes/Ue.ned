@@ -35,7 +35,7 @@ module Ue
 {
     parameters:
         @networkNode();
-        @display("i=device/pocketpc;bgb=858.888,659.568");
+        @display("i=device/pocketpc;bgb=858,659");
         @figure[applicationLayer](type=rectangle; pos=250,6; size=600,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
         @figure[applicationLayer.title](type=text; pos=845,11; anchor=ne; text="application layer");
         @figure[transportLayer](type=rectangle; pos=250,156; size=600,130; fillColor=#ff0000; lineColor=#808080; cornerRadius=5; fillOpacity=0.1);
@@ -87,10 +87,10 @@ module Ue
 
     submodules:
         interfaceTable: InterfaceTable {
-            @display("p=127.368004,257.868;is=s");
+            @display("p=127,257;is=s");
         }
         mobility: <default("StationaryMobility")> like IMobility {
-            @display("p=127.368004,172.26001;is=s");
+            @display("p=127,172;is=s");
         }
 
         //# layer submodules (must be ordered from lower to upper layers)
@@ -98,22 +98,22 @@ module Ue
         //# link layer
         lo[numLoInterfaces]: <default("LoopbackInterface")> like ILoopbackInterface {
             parameters:
-                @display("p=503.736,589.50397,row,150");
+                @display("p=503,590,row,150");
         }
         cellularNic: <default("LteNicUe")> like ICellularNic {
             nodeType = parent.nodeType;
-            @display("p=355.152,589.50397");
+            @display("p=355,589");
         }
 
         //# ethernet interface used for communicating with external applications in emulation mode
         eth[numEthInterfaces]: <default("ExtLowerEthernetInterface")> like IEthernetInterface {
             parameters:
-                @display("p=674.06396,589.50397,row,150;q=txQueue");
+                @display("p=674,590,row,150;q=txQueue");
         }
         encap: <default("EthernetEncapsulation")> like IEthernetLayer if typename != "" {
             parameters:
                 registerProtocol = true;
-                @display("p=674.06396,496.488");
+                @display("p=674,500");
         }
 
         //# network layer
@@ -142,7 +142,7 @@ module Ue
 
         //# app layer
         app[numApps]: <> like IApp {
-            @display("p=374.47998,72.479996,row,140");
+            @display("p=374,72,row,140");
         }
 
         //# message dispatcher for SAP between application and transport layer
@@ -153,7 +153,7 @@ module Ue
         //# message dispatcher for SAP between transport and network layer
         tn: MessageDispatcher {
             parameters:
-                @display("p=550,296;b=600,5,,,,1");
+                @display("p=550,300;b=600,5,,,,1");
         }
         //# message dispatcher for SAP to link layer
         nl: MessageDispatcher {
@@ -162,12 +162,12 @@ module Ue
         }
         //# PcapRecorders
         pcapRecorder[numPcapRecorders]: PcapRecorder {
-            @display("p=126.84,346.69598,r,10");
+            @display("p=126,346,r,10");
         }
 
         //# UeStatsCollector - for MEC
         ueCollector: UeStatsCollector if hasRNISupport {
-            @display("p=126.84,588.296;is=s");
+            @display("p=126,588;is=s");
         }
 
     connections allowunconnected:

@@ -44,7 +44,7 @@ network SingleCell_D2D
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         server: StandardHost {
             @display("p=212,118;is=n;i=device/server");
@@ -53,10 +53,10 @@ network SingleCell_D2D
             @display("p=321,136;i=device/smallrouter");
         }
         pgw: PgwStandard {
-            @display("p=519,175;is=l");
+            @display("p=520,175;is=l");
         }
         eNB: eNodeB {
-            @display("p=391,259;is=vl");
+            @display("p=391,260;is=vl");
         }
         ueCell[numUeCell]: Ue {
             @display("p=292,367");
@@ -65,7 +65,7 @@ network SingleCell_D2D
             @display("p=477,367");
         }
         ueD2DRx[numUeD2DRx]: Ue {
-            @display("p=544,299");
+            @display("p=544,300");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

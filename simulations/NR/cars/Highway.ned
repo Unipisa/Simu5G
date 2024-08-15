@@ -57,7 +57,7 @@ network Highway
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         server: StandardHost {
             @display("p=660,136;is=n;i=device/server");

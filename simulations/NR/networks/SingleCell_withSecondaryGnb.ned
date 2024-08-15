@@ -39,40 +39,40 @@ network SingleCell_withSecondaryGnb
         @display("i=block/network2;bgb=991,558;bgi=background/pisa");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=87.0625,24.875;is=s");
+            @display("p=87,24;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=88.30625,85.81875;is=s");
+            @display("p=88,85;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
             @display("p=50,125");
         }
         binder: Binder {
-            @display("p=88.30625,230.09375;is=s");
+            @display("p=88,230;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=88.30625,289.79376;is=s");
+            @display("p=88,290;is=s");
         }
         server: StandardHost {
-            @display("p=210.19374,63.431248;is=n;i=device/server");
+            @display("p=210,63;is=n;i=device/server");
         }
         router: Router {
-            @display("p=361.93124,62.1875;i=device/smallrouter");
+            @display("p=361,62;i=device/smallrouter");
         }
         pgw: PgwStandard {
-            @display("p=524.8625,63.431248;is=l");
+            @display("p=524,63;is=l");
         }
         masterEnb: eNodeB {
-            @display("p=527.35,277.35626;is=vl");
+            @display("p=527,277;is=vl");
         }
         secondaryGnb: gNodeB {
-            @display("p=726.35,277.35626;is=vl");
+            @display("p=726,277;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=910.425,98.25625;is=vl");
+            @display("p=910,98;is=vl");
         }
         ue[numUe]: NRUe {
-            @display("p=628.09375,411.68124");
+            @display("p=628,411");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;

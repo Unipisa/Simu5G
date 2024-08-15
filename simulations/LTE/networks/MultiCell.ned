@@ -43,7 +43,7 @@ network MultiCell
             @display("p=50,175;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         server: StandardHost {
             @display("p=212,118;is=n;i=device/server");
@@ -55,7 +55,7 @@ network MultiCell
             @display("p=321,136;i=device/smallrouter");
         }
         eNodeB1: eNodeB {
-            @display("p=391,259;is=vl");
+            @display("p=391,260;is=vl");
         }
         eNodeB2: eNodeB {
             @display("p=760,125;is=vl");
@@ -67,7 +67,7 @@ network MultiCell
             @display("p=477,363");
         }
         ue21: Ue {
-            @display("p=789,280");
+            @display("p=790,280");
         }
         ue22: Ue {
             @display("p=915,183");

@@ -32,49 +32,49 @@ network ExtMecAppExample
         double playgroundSizeX @unit(m); // x size of the area the nodes are in (in meters)
         double playgroundSizeY @unit(m); // y size of the area the nodes are in (in meters)
         double playgroundSizeZ @unit(m); // z size of the area the nodes are in (in meters)
-        @display("bgb=805.92,499.56");
+        @display("bgb=805,500");
 
     submodules:
         routingRecorder: RoutingTableRecorder {
-            @display("p=690,104.88;is=s");
+            @display("p=690,104;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=556.1875,34.3825");
+            @display("p=556,34");
         }
         channelControl: LteChannelControl {
-            @display("p=690,24.84;is=s");
+            @display("p=690,24;is=s");
         }
         binder: Binder {
-            @display("p=474.27625,34.3825;is=s");
+            @display("p=474,34;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=368.095,34.3825;is=s");
+            @display("p=368,34;is=s");
         }
         upf: Upf {
-            @display("p=419.66876,259.89127");
+            @display("p=420,259");
         }
         iUpf: Upf {
-            @display("p=277.0825,259.89127");
+            @display("p=277,259");
         }
         gNodeB1: gNodeB {
-            @display("p=137.53,259.89127;is=vl");
+            @display("p=137,260;is=vl");
         }
 
         //# MEC modules
         mecHost1: MECHost {
-            @display("p=277.0825,158.76625;is=l");
+            @display("p=277,158;is=l");
         }
 
         mecOrchestrator: MecOrchestrator {
-            @display("p=520.79376,158.76625;is=l");
+            @display("p=520,158;is=l");
         }
 
         ualcmp: UALCMP {
-            @display("p=419.66876,157.755;i=device/smallrouter");
+            @display("p=420,157;i=device/smallrouter");
         }
 
         ue: NRUe {
-            @display("p=51.57375,259.89127");
+            @display("p=51,259");
         }
 
     connections allowunconnected:

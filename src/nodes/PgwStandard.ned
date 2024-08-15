@@ -46,7 +46,7 @@ module PgwStandard extends NetworkLayerNodeBase
         }
         udp: Udp {
             parameters:
-                @display("p=329,206");
+                @display("p=330,206");
         }
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
@@ -59,7 +59,7 @@ module PgwStandard extends NetworkLayerNodeBase
         }
         tn: MessageDispatcher {
             parameters:
-                @display("p=750,296;b=1000,5,,,,1");
+                @display("p=750,300;b=1000,5,,,,1");
         }
         at: MessageDispatcher {
             parameters:

@@ -36,19 +36,19 @@ network MultiCell_D2DMultihop
         @display("i=block/network2;bgb=2000,500;");
     submodules:
         channelControl: LteChannelControl {
-            @display("p=89.55,24.875;is=s");
+            @display("p=90,24;is=s");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=90.79375,70.89375;is=s");
+            @display("p=90,70;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=90.79375,121.8875");
+            @display("p=90,121");
         }
         binder: Binder {
-            @display("p=90.79375,171.6375;is=s");
+            @display("p=90,171;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=50.993748,258.7;is=s");
+            @display("p=50,258;is=s");
         }
         server: StandardHost {
             @display("p=500,50;is=n;i=device/server");
@@ -57,19 +57,19 @@ network MultiCell_D2DMultihop
             @display("p=750,50;i=device/smallrouter");
         }
         router1: Router {
-            @display("p=199,194.025;i=device/smallrouter");
+            @display("p=200,194;i=device/smallrouter");
         }
         router2: Router {
-            @display("p=599.4875,194.025;i=device/smallrouter");
+            @display("p=600,194;i=device/smallrouter");
         }
         router3: Router {
-            @display("p=999.975,194.025;i=device/smallrouter");
+            @display("p=1000,194;i=device/smallrouter");
         }
         router4: Router {
-            @display("p=1399.2188,194.025;i=device/smallrouter");
+            @display("p=1400,194;i=device/smallrouter");
         }
         router5: Router {
-            @display("p=1799.7062,194.025;i=device/smallrouter");
+            @display("p=1800,194;i=device/smallrouter");
         }
         pgw: PgwStandard {
             @display("p=1000,50;is=l");
@@ -105,10 +105,10 @@ network MultiCell_D2DMultihop
             @display("p=1900,450;is=s");
         }
         eventGenerator: EventGenerator {
-            @display("p=90.79375,222.63124;is=s");
+            @display("p=90,222;is=s");
         }
         d2dMultihopStatistics: MultihopD2DStatistics {
-            @display("p=90.79375,272.38126;is=s");
+            @display("p=90,272;is=s");
         }
     connections:
         router1.pppg++ <--> Eth10G <--> eNodeB1.ppp;

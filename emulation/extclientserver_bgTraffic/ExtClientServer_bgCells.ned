@@ -32,41 +32,41 @@ import simu5g.world.radio.LteChannelControl;
 network ExtClientServer_bgCells
 {
     parameters:
-        @display("i=block/network2;bgb=796,554.7125;bgi=background/pisa");
+        @display("i=block/network2;bgb=800,554;bgi=background/pisa");
 
         // number of BG cells
         int numBgCells = default(0);
 
     submodules:
         routingRecorder: RoutingTableRecorder {
-            @display("p=73.38125,130.59375;is=s");
+            @display("p=73,130;is=s");
         }
         configurator: Ipv4NetworkConfigurator {
-            @display("p=73.38125,72.1375");
+            @display("p=73,72");
         }
         channelControl: LteChannelControl {
-            @display("p=70.89375,189.05;is=s");
+            @display("p=70,190;is=s");
         }
         binder: Binder {
-            @display("p=73.38125,261.1875;is=s");
+            @display("p=73,261;is=s");
         }
         carrierAggregation: CarrierAggregation {
-            @display("p=72.54,343.728;is=s");
+            @display("p=72,343;is=s");
         }
         router: Router {
-            @display("p=223.875,175.36874;i=device/smallrouter");
+            @display("p=223,175;i=device/smallrouter");
         }
         upf: Upf {
-            @display("p=460.1875,174.125");
+            @display("p=460,174");
         }
         gnb: gNodeB {
-            @display("p=671.625,174.125;is=vl");
+            @display("p=671,174;is=vl");
         }
         bgCell[numBgCells]: BackgroundCell {
-            @display("p=670.716,440.81998;is=vl");
+            @display("p=670,440;is=vl");
         }
         ue: NRUe {
-            @display("p=670.716,309.132");
+            @display("p=670,309");
         }
 
     connections allowunconnected:
