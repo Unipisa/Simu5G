@@ -33,9 +33,6 @@ class LteHarqProcessMirrorD2D
     /// Number of (re)transmissions per unit (N.B.: values are 1, 2, 3, 4)
     std::vector<unsigned char> transmissions_;
 
-    // number of units
-    unsigned int numUnits_;
-
     // max number of transmissions
     unsigned char maxTransmissions_;
 

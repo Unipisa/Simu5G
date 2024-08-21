@@ -59,8 +59,6 @@ class CellInfo : public cSimpleModule
     double nodeX_ = 0;
     /// y eNB position
     double nodeY_ = 0;
-    /// z eNB position
-    double nodeZ_ = 0;
 
     /// Number of DAS RU
     int numRus_ = 0;

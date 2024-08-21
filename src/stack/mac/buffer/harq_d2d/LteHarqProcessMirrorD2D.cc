@@ -15,7 +15,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb *macOwner) : numUnits_(numUnits), maxTransmissions_(maxTransmissions), macOwner_(macOwner)
+LteHarqProcessMirrorD2D::LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char maxTransmissions, LteMacEnb *macOwner) : maxTransmissions_(maxTransmissions), macOwner_(macOwner)
 {
     status_.resize(numUnits, TXHARQ_PDU_EMPTY);
     pduLength_.resize(numUnits, 0);

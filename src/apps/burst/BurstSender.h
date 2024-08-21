@@ -47,7 +47,6 @@ class BurstSender : public cSimpleModule
     static simsignal_t burstSentPktSignal_;
     // ----------------------------
 
-    cMessage *selfSender_ = nullptr;
     cMessage *initTraffic_ = nullptr;
 
     simtime_t timestamp_;

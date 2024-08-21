@@ -24,7 +24,6 @@ using namespace omnetpp;
 using namespace inet;
 
 constexpr const char *DATAPORT_OUT = "dataPort$o";
-constexpr const char *DATAPORT_IN  = "dataPort$i";
 
 void LteX2Manager::initialize(int stage)
 {

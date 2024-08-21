@@ -37,9 +37,6 @@ class LteHarqBufferMirrorD2D
     /// processes vector
     std::vector<LteHarqProcessMirrorD2D *> processes_;
 
-    // reference to the MAC module
-    LteMacEnb *macOwner_;
-
   public:
 
     /**

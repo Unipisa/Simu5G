@@ -166,7 +166,6 @@ class UmRxEntity : public cSimpleModule
     };
 
     bool isBurst_ = false; // a burst has started last TTI
-    bool t2Set_ = false; // used to save t2
     unsigned int totalBits_ = 0; // total bytes during the burst
     unsigned int ttiBits_ = 0; // bytes during this TTI
     simtime_t t2_; // point in time the burst begins
