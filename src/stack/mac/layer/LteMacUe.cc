@@ -38,13 +38,7 @@ Define_Module(LteMacUe);
 using namespace inet;
 using namespace omnetpp;
 
-LteMacUe::LteMacUe() : LteMacBase(),
-    bsrTriggered_(false),
-    debugHarq_(false), firstTx(false),
-     requestedSdus_(0),
-    // TODO: setup from NED
-    racBackoffTimer_(0), maxRacTryouts_(0), currentRacTry_(0), minRacBackoff_(0), maxRacBackoff_(1),
-    raRespTimer_(0), raRespWinStart_(3), bsrRtxTimer_(0)
+LteMacUe::LteMacUe()
 {
     nodeType_ = UE;
 
