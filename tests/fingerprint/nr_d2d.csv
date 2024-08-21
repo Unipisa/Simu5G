@@ -1,7 +1,7 @@
 # workingdir,                        args,                                            simtimelimit,    fingerprint
-/simulations/NR/d2d/,              -f omnetpp.ini -c SinglePair-UDP-D2D -r 0,              5s,         6bf4-9eec/tplx;24f0-ba9f/tls, PASS,
-/simulations/NR/d2d/,              -f omnetpp.ini -c SinglePair-UDP-Infra -r 0,            5s,         038d-7c5a/tplx;d721-0a70/tls, PASS,
-/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-D2D -r 0,           5s,         dfea-7d65/tplx;b799-bbfd/tls, PASS,
-/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-Infra -r 0,         5s,         98f1-cdb4/tplx;e685-7c56/tls, PASS,
-/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-D2D-wReuse -r 0,    5s,         e1b2-0a80/tplx;b471-ebef/tls, PASS,
+/simulations/NR/d2d/,              -f omnetpp.ini -c SinglePair-UDP-D2D -r 0,              5s,         6bf4-9eec/tplx;89a6-2e28/tls, PASS,
+/simulations/NR/d2d/,              -f omnetpp.ini -c SinglePair-UDP-Infra -r 0,            5s,         038d-7c5a/tplx;ad8c-ebec/tls, PASS,
+/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-D2D -r 0,           5s,         dfea-7d65/tplx;08ba-7a66/tls, PASS,
+/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-Infra -r 0,         5s,         98f1-cdb4/tplx;1387-2f0d/tls, PASS,
+/simulations/NR/d2d/,              -f omnetpp.ini -c MultiplePairs-UDP-D2D-wReuse -r 0,    5s,         e1b2-0a80/tplx;eda5-6ae6/tls, PASS,
 
