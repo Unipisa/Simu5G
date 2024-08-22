@@ -55,7 +55,7 @@ void LteMaxCi::prepareSchedule()
         // Compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
@@ -100,7 +100,7 @@ void LteMaxCi::prepareSchedule()
         // is done by this module itself, so that backgroundTrafficManager is transparent to the scheduling policy in use
 
         IBackgroundTrafficManager *bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
-        std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_),
+        auto it = bgTrafficManager->getBackloggedUesBegin(direction_),
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_);
 
         int bgUeIndex;

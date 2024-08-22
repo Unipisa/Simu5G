@@ -298,8 +298,8 @@ void LteRlcUm::handleMessage(cMessage *msg)
 
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    UmRxEntities::const_iterator it = rxEntities_.begin();
-    UmRxEntities::const_iterator end = rxEntities_.end();
+    auto it = rxEntities_.begin();
+    auto end = rxEntities_.end();
     for (; it != end; ++it) {
         MacNodeId nodeId = MacCidToNodeId(it->first);
         if ((ueSet->find(nodeId) == ueSet->end()) && !it->second->isEmpty())

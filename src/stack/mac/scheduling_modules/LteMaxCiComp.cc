@@ -86,7 +86,7 @@ void LteMaxCiComp::prepareSchedule()
         // compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {

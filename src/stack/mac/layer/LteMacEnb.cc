@@ -194,7 +194,7 @@ void LteMacEnb::initialize(int stage)
         }
 
         const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
-        CarrierInfoMap::const_iterator it = carriers->begin();
+        auto it = carriers->begin();
         int i = 0;
         for ( ; it != carriers->end(); ++it, ++i) {
             double carrierFrequency = it->second.carrierFrequency;
@@ -211,7 +211,7 @@ void LteMacEnb::initialize(int stage)
         scheduleAt(NOW + ttiPeriod_, ttiTick_);
 
         const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
-        CarrierInfoMap::const_iterator it = carriers->begin();
+        auto it = carriers->begin();
         for ( ; it != carriers->end(); ++it) {
             // set periodicity for this carrier according to its numerology
             NumerologyPeriodCounter info;

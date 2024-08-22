@@ -116,8 +116,8 @@ void BackgroundScheduler::updateAllocation(Direction dir)
         std::list<MacNodeId> servedRac;
 
         // handle RAC
-        std::list<int>::const_iterator rit = bgTrafficManager_->getWaitingForRacUesBegin();
-        std::list<int>::const_iterator ret = bgTrafficManager_->getWaitingForRacUesEnd();
+        auto rit = bgTrafficManager_->getWaitingForRacUesBegin();
+        auto ret = bgTrafficManager_->getWaitingForRacUesEnd();
 
         for ( ; rit != ret; ++rit) {
             // if there is still space
@@ -155,8 +155,8 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
     // --- schedule retransmissions --- //
     std::map<MacNodeId, unsigned int> rtxScheduledBgUes;
-    std::list<int>::const_iterator rit = bgTrafficManager_->getBackloggedUesBegin(dir, true);
-    std::list<int>::const_iterator ret = bgTrafficManager_->getBackloggedUesEnd(dir, true);
+    auto rit = bgTrafficManager_->getBackloggedUesBegin(dir, true);
+    auto ret = bgTrafficManager_->getBackloggedUesEnd(dir, true);
     for ( ; rit != ret; ++rit) {
         // if there is still space
         if (b >= numBands_) {
@@ -198,8 +198,8 @@ void BackgroundScheduler::updateAllocation(Direction dir)
     // sort backlogged UEs (MaxC/I)
     ScoreList score;
     MacCid bgCid;
-    std::list<int>::const_iterator it = bgTrafficManager_->getBackloggedUesBegin(dir);
-    std::list<int>::const_iterator et = bgTrafficManager_->getBackloggedUesEnd(dir);
+    auto it = bgTrafficManager_->getBackloggedUesBegin(dir);
+    auto et = bgTrafficManager_->getBackloggedUesEnd(dir);
     for ( ; it != et; ++it) {
         // if there is still space
         if (b >= numBands_) {

@@ -39,7 +39,7 @@ class CircularList
     //! Copy constructor
     CircularList(const CircularList<T>& cl) : list_(cl.list_), cur_(list_.begin()), size_(cl.size_)
     {
-        typename std::list<T>::const_iterator it = cl.list_.begin();
+        auto it = cl.list_.begin();
         if (size_ != 0) {
             while (it != cl.cur_) {
                 ++it;
@@ -53,7 +53,7 @@ class CircularList
     {
         list_ = cl.list_;
         size_ = cl.size_;
-        typename std::list<T>::const_iterator it = cl.list_.begin();
+        auto it = cl.list_.begin();
         cur_ = list_.begin();
         if (size_ != 0) {
             while (it != cl.cur_) {

@@ -101,15 +101,15 @@ void LteAmc::printFbhb(Direction dir)
     }
 
     // preparing iterators
-    std::map<double, History_>::const_iterator hit = history->begin();
-    std::map<double, History_>::const_iterator het = history->end();
+    auto hit = history->begin();
+    auto het = history->end();
     std::vector<std::vector<LteSummaryBuffer>>::const_iterator uit, uet;
     std::vector<LteSummaryBuffer>::const_iterator txit, txet;
 
     for ( ; hit != het; hit++) { // for each antenna
         EV << simTime() << " # Carrier: " << hit->first << "\n";
-        History_::const_iterator it = hit->second.begin();
-        History_::const_iterator et = hit->second.end();
+        auto it = hit->second.begin();
+        auto et = hit->second.end();
         for ( ; it != et; ++it) {
             EV << simTime() << " # Remote: " << dasToA(it->first) << "\n";
             uit = (hit->second).at(it->first).begin();

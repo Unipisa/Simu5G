@@ -90,14 +90,14 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
         if (sdus.empty())
             continue;
 
-        std::map<MacCid, unsigned int>::const_iterator it = sdus.begin(), et = sdus.end();
+        auto it = sdus.begin(), et = sdus.end();
         for ( ; it != et; ++it) {
             // set schedule list entry
             std::pair<MacCid, Codeword> schedulePair(it->first, cw);
             scheduleList_[schedulePair] = it->second;
         }
 
-        std::map<MacCid, unsigned int>::const_iterator bit = bytes.begin(), bet = bytes.end();
+        auto bit = bytes.begin(), bet = bytes.end();
         for ( ; bit != bet; ++bit) {
             // set schedule list entry
             std::pair<MacCid, Codeword> schedulePair(bit->first, cw);

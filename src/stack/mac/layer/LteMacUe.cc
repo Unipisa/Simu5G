@@ -168,7 +168,7 @@ void LteMacUe::initialize(int stage)
             // for each numerology available in this UE, set the corresponding timers
             const std::set<NumerologyIndex> *numerologyIndexSet = binder_->getUeNumerologyIndex(nodeId_);
             if (numerologyIndexSet != nullptr) {
-                std::set<NumerologyIndex>::const_iterator it = numerologyIndexSet->begin();
+                auto it = numerologyIndexSet->begin();
                 for ( ; it != numerologyIndexSet->end(); ++it) {
                     // set periodicity for this carrier according to its numerology
                     NumerologyPeriodCounter info;
@@ -222,7 +222,7 @@ int LteMacUe::macSduRequest()
 
             std::pair<MacCid, Codeword> key(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit->first]->getScheduledBytesList();
-            LteMacScheduleList::const_iterator bit = scheduledBytesList->find(key);
+            auto bit = scheduledBytesList->find(key);
 
             // consume bytes on this codeword
             if (bit == scheduledBytesList->end())
@@ -1017,7 +1017,7 @@ bool LteMacUe::getHighestBackloggedFlow(MacCid& cid, unsigned int& priority)
     // TODO : implement priorities and LCGs
     // search in virtual buffer structures
 
-    LteMacBufferMap::const_iterator it = macBuffers_.begin(), et = macBuffers_.end();
+    auto it = macBuffers_.begin(), et = macBuffers_.end();
     for ( ; it != et; ++it) {
         if (!it->second->isEmpty()) {
             cid = it->first;

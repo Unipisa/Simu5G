@@ -63,12 +63,12 @@ bool LteAllocatorBestFit::checkConflict(const CGMatrix *cgMatrix, MacNodeId node
 {
     bool conflict = false;
 
-    CGMatrix::const_iterator it = cgMatrix->begin(), et = cgMatrix->end();
+    auto it = cgMatrix->begin(), et = cgMatrix->end();
     for ( ; it != et; ++it) {
         if (it->first.srcId != nodeIdA)
             continue;
 
-        std::map<CGVertex, bool>::const_iterator conf_it = it->second.begin(), conf_et = it->second.end();
+        auto conf_it = it->second.begin(), conf_et = it->second.end();
         for ( ; conf_it != conf_et; ++conf_it) {
             if (conf_it->first.srcId != nodeIdB)
                 continue;
@@ -160,7 +160,7 @@ void LteAllocatorBestFit::prepareSchedule()
         // Compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {

@@ -69,7 +69,7 @@ void LtePf::prepareSchedule()
         unsigned int codeword = info.getLayers().size();
         if (eNbScheduler_->allocatedCws(nodeId) == codeword)
             continue;
-        std::set<Band>::const_iterator it = bands.begin(), et = bands.end();
+        auto it = bands.begin(), et = bands.end();
 
         std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
 

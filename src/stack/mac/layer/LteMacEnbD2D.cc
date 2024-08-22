@@ -252,7 +252,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
 
             // acquiring remote antennas set from user info
             const std::set<Remote>& antennas = ui.readAntennaSet();
-            std::set<Remote>::const_iterator antenna_it = antennas.begin(),
+            auto antenna_it = antennas.begin(),
                                              antenna_et = antennas.end();
 
             // get bands for this carrier

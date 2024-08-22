@@ -283,7 +283,7 @@ int NRMacUe::macSduRequest()
 
             std::pair<MacCid, Codeword> key(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit->first]->getScheduledBytesList();
-            LteMacScheduleList::const_iterator bit = scheduledBytesList->find(key);
+            auto bit = scheduledBytesList->find(key);
 
             // consume bytes on this codeword
             if (bit == scheduledBytesList->end())

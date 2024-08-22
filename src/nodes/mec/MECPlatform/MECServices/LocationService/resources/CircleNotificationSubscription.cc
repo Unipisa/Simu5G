@@ -312,7 +312,7 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
 
 bool CircleNotificationSubscription::findUe(MacNodeId nodeId)
 {
-    std::map<MacCellId, CellInfo *>::const_iterator eit = eNodeBs_.begin();
+    auto eit = eNodeBs_.begin();
     std::map<MacNodeId, inet::Coord>::const_iterator pit;
     // const std::map<MacNodeId, inet::Coord>* uePositionList;
     for ( ; eit != eNodeBs_.end(); ++eit) {

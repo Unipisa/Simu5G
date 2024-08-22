@@ -60,7 +60,7 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    CarrierInfoMap::const_iterator it = carriers->begin();
+    auto it = carriers->begin();
     LteScheduler *newSched = nullptr;
     for ( ; it != carriers->end(); ++it) {
         newSched = getScheduler(discipline);
@@ -105,7 +105,7 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
 
     LteScheduler *newSched = nullptr;
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    CarrierInfoMap::const_iterator it = carriers->begin();
+    auto it = carriers->begin();
     for ( ; it != carriers->end(); ++it) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
@@ -967,14 +967,14 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     // Get a reference to the beginning and the end of the map which stores the blocks allocated
     // by each UE in each Band. In this case, the pair of iterators which refers
     // to the per-Band (first key) per-Ue (second key) map is requested
-    std::vector<std::vector<unsigned int>>::const_iterator planeIt =
+    auto planeIt =
         allocator_->getAllocatedBlocksBegin();
 
     double allocatedBlocks = 0;
     unsigned int antenna = 0;
 
-    std::vector<unsigned int>::const_iterator antennaIt = planeIt->begin();
-    std::vector<unsigned int>::const_iterator antennaItEnd = planeIt->end();
+    auto antennaIt = planeIt->begin();
+    auto antennaItEnd = planeIt->end();
 
     // For each antenna (MACRO/RUs)
     for ( ; antennaIt != antennaItEnd; ++antennaIt) {

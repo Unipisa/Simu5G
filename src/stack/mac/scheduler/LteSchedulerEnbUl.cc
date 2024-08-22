@@ -198,7 +198,7 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
     std::list<MacNodeId> servedRac;
 
     IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
-    std::list<int>::const_iterator it = bgTrafficManager->getWaitingForRacUesBegin(),
+    auto it = bgTrafficManager->getWaitingForRacUesBegin(),
                                    et = bgTrafficManager->getWaitingForRacUesEnd();
 
     // Get number of logical bands
@@ -428,7 +428,7 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
         // --- Schedule RTX for background UEs --- //
         std::map<int, unsigned int> bgScheduledRtx;
         IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
-        std::list<int>::const_iterator it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
+        auto it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_, true);
         for ( ; it != et; ++it) {
             int bgUeIndex = *it;

@@ -245,8 +245,8 @@ bool LteHarqProcessTx::isDropped()
 bool LteHarqProcessTx::isHarqProcessActive()
 {
     std::vector<UnitStatus> ues = getProcessStatus();
-    std::vector<UnitStatus>::const_iterator it = ues.begin();
-    std::vector<UnitStatus>::const_iterator end = ues.end();
+    auto it = ues.begin();
+    auto end = ues.end();
 
     // When is a process active? (ask professor)
     for ( ; it != end; ++it) {

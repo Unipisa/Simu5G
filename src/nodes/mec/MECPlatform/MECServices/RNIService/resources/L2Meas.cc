@@ -55,11 +55,11 @@ nlohmann::ordered_json L2Meas::toJson() const {
         val["timestamp"] = timestamp_.toJson();
     }
 
-    std::map<MacCellId, BaseStationStatsCollector *>::const_iterator it = eNodeBs_.begin();
+    auto it = eNodeBs_.begin();
     for ( ; it != eNodeBs_.end(); ++it) {
         UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
-        UeStatsCollectorMap::const_iterator uit = ueMap->begin();
-        UeStatsCollectorMap::const_iterator end = ueMap->end();
+        auto uit = ueMap->begin();
+        auto end = ueMap->end();
         for ( ; uit != end; ++uit) {
             CellUEInfo cellUeInfo = CellUEInfo(uit->second, it->second->getEcgi());
             ueArray.push_back(cellUeInfo.toJson());
@@ -209,7 +209,7 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
         val["timestamp"] = timestamp_.toJson();
     }
 
-    std::vector<MacCellId>::const_iterator cid = cellsID.begin();
+    auto cid = cellsID.begin();
     std::map<MacCellId, BaseStationStatsCollector *>::const_iterator it;
     for ( ; cid != cellsID.end(); ++cid) {
         it = eNodeBs_.find(*cid);
@@ -218,8 +218,8 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
             cellArray.push_back(cellInfo.toJson());
 
             UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
-            UeStatsCollectorMap::const_iterator uit = ueMap->begin();
-            UeStatsCollectorMap::const_iterator end = ueMap->end();
+            auto uit = ueMap->begin();
+            auto end = ueMap->end();
             for ( ; uit != end; ++uit) {
                 CellUEInfo cellUeInfo = CellUEInfo(uit->second, it->second->getEcgi());
                 ueArray.push_back(cellUeInfo.toJson());

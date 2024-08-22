@@ -662,7 +662,7 @@ void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned i
             bsit->second.rlcPdu.erase(rlcpit);
             if (bsit->second.rlcPdu.empty() && bsit->second.isCompleted) {
                 // compute throughput
-                throughputMap::iterator tit = pdcpThroughput_.find(desc->nodeId_);
+                auto tit = pdcpThroughput_.find(desc->nodeId_);
                 if (tit == pdcpThroughput_.end()) {
                     pdcpThroughput_.insert(std::pair<unsigned int, Throughput>(desc->nodeId_, { 0, 0 }));
                     tit = pdcpThroughput_.find(desc->nodeId_);
@@ -746,7 +746,7 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
 
 double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
 {
-    delayMap::iterator it = pdcpDelay_.find(id);
+    auto it = pdcpDelay_.find(id);
     if (it == pdcpDelay_.end()) {
         // this may occur after a handover, when data structures are cleared
         EV_FATAL << NOW << " " << pfmType << "::getDelayStatsPerUe - Delay Stats for Node Id " << id << " not present." << endl;
@@ -780,7 +780,7 @@ double PacketFlowManagerEnb::getUlDelayStatsPerUe(MacNodeId id)
 
 void PacketFlowManagerEnb::resetDelayCounterPerUe(MacNodeId id)
 {
-    delayMap::iterator it = pdcpDelay_.find(id);
+    auto it = pdcpDelay_.find(id);
     if (it == pdcpDelay_.end()) {
         // this may occur after a handover, when data structures are cleared
         EV_FATAL << NOW << " " << pfmType << "::resetDelayCounterPerUe - Delay Stats for Node Id " << id << " not present." << endl;
@@ -804,7 +804,7 @@ void PacketFlowManagerEnb::resetUlDelayCounterPerUe(MacNodeId id)
 
 double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
 {
-    throughputMap::iterator it = pdcpThroughput_.find(id);
+    auto it = pdcpThroughput_.find(id);
     if (it == pdcpThroughput_.end()) {
         // this may occur after a handover, when data structures are cleared
         EV_FATAL << NOW << " " << pfmType << "::getThroughputStatsPerUe - Throughput Stats for Node Id " << id << " not present." << endl;
@@ -822,7 +822,7 @@ double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
 
 void PacketFlowManagerEnb::resetThroughputCounterPerUe(MacNodeId id)
 {
-    throughputMap::iterator it = pdcpThroughput_.find(id);
+    auto it = pdcpThroughput_.find(id);
     if (it == pdcpThroughput_.end()) {
         EV_FATAL << NOW << " " << pfmType << "::resetThroughputCounterPerUe - Throughput Stats for Node Id " << id << " not present." << endl;
         return;
