@@ -76,7 +76,7 @@ void LteMaxCiComp::prepareSchedule()
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
-        if (nodeId == 0 || id == 0) {
+        if (nodeId == MacNodeId(0) || id == 0) {
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);

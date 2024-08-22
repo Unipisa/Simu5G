@@ -419,8 +419,8 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     // true if we are computing a CQI for the DL direction
     bool cqiDl = false;
 
-    MacNodeId ueId = 0;
-    MacNodeId eNbId = 0;
+    MacNodeId ueId = MacNodeId(0);
+    MacNodeId eNbId = MacNodeId(0);
 
     Direction dir = (Direction)lteInfo->getDirection();
 
@@ -720,8 +720,8 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
     // true if we are computing a CQI for the DL direction
     bool cqiDl = false;
 
-    MacNodeId ueId = 0;
-    MacNodeId eNbId = 0;
+    MacNodeId ueId = MacNodeId(0);
+    MacNodeId eNbId = MacNodeId(0);
 
     Direction dir = (Direction)lteInfo->getDirection();
 
@@ -1589,7 +1589,7 @@ std::vector<double> LteRealisticChannelModel::getSIR(LteAirFrame *frame,
 
     Direction dir = (Direction)lteInfo->getDirection();
 
-    MacNodeId id = 0;
+    MacNodeId id = MacNodeId(0);
     double speed = 0.0;
 
     // if direction is DL
@@ -1787,7 +1787,7 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
         || txmode == OL_SPATIAL_MULTIPLEXING)
     {
         // compare lambda min (smaller eigenvalues of channel matrix) with the threshold used to compute the rank
-        if (binder_->phyPisaData.getLambda(id, 1) < lambdaMinTh_)
+        if (binder_->phyPisaData.getLambda(num(id), 1) < lambdaMinTh_)
             return false;
     }
 
@@ -1950,7 +1950,7 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *
         || txmode == OL_SPATIAL_MULTIPLEXING)
     {
         // compare lambda min (smaller eigenvalues of channel matrix) with the threshold used to compute the rank
-        if (binder_->phyPisaData.getLambda(id, 1) < lambdaMinTh_)
+        if (binder_->phyPisaData.getLambda(num(id), 1) < lambdaMinTh_)
             return false;
     }
     // SINR vector(one SINR value for each band)
@@ -1958,8 +1958,7 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *
     if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI) {
         MacNodeId peerUeMacNodeId = lteInfo->getDestId();
         Coord peerCoord = phy_->getCoord();
-        // TODO get an appropriate way to get EnbId
-        MacNodeId enbId = 1;
+        MacNodeId enbId = MacNodeId(1); // TODO get an appropriate way to get EnbId
 
         if (lteInfo->getDirection() == D2D) {
             snrV = getSINR_D2D(frame, lteInfo, peerUeMacNodeId, peerCoord, enbId);

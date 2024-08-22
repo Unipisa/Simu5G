@@ -39,7 +39,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
     if (TxMode(txMode) == MULTI_USER) // Initialize MuMiMoMatrix
         amc_->muMimoMatrixInit(dir, id);
 
-    sfb.print(0, id, dir, txMode, "AmcPilotAuto::computeTxParams");
+    sfb.print(MacNodeId(0), id, dir, txMode, "AmcPilotAuto::computeTxParams");
 
     // get a vector of  CQI over first CW
     std::vector<Cqi> summaryCqi = sfb.getCqi(0);

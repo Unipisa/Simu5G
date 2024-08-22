@@ -79,8 +79,8 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     BandStatus prevBandStatus_[2];
 
     // for the UL, we need to store which UE uses which block
-    std::vector<int> ulBandAllocation_;
-    std::vector<int> ulPrevBandAllocation_;
+    std::vector<MacNodeId> ulBandAllocation_;
+    std::vector<MacNodeId> ulPrevBandAllocation_;
 
     // update the band status. Called at each TTI (not used for FULL_ALLOC)
     virtual void updateAllocation(Direction dir);

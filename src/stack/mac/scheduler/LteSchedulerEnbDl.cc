@@ -481,7 +481,7 @@ bool LteSchedulerEnbDl::rtxscheduleBackground(double carrierFrequency, BandLimit
     EV << NOW << " LteSchedulerEnbDl::rtxscheduleBackground Cell:  " << mac_->getMacCellId() << " Direction: " << (direction_ == DL ? "DL" : "UL") << endl;
 
     // --- Schedule RTX for background UEs --- //
-    std::map<int, unsigned int> bgScheduledRtx;
+    std::map<MacNodeId, unsigned int> bgScheduledRtx;
     IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
     auto it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                    et = bgTrafficManager->getBackloggedUesEnd(direction_, true);

@@ -23,7 +23,7 @@ void DualConnectivityManager::initialize()
     pdcp_.reference(this, "pdcpRrcModule", true);
 
     // get the node id
-    nodeId_ = inet::getContainingNode(this)->par("macCellId");
+    nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macCellId").intValue());
 
     // get reference to the gates
     x2Manager_[IN_GATE] = gate("x2ManagerIn");

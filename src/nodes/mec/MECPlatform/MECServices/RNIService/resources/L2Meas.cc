@@ -112,12 +112,12 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
 
         // TODO REORGANIZE CODE!!
 
-        if (lteNodeId == 0 && nrNodeId == 0) {
+        if (lteNodeId == MacNodeId(0) && nrNodeId == MacNodeId(0)) {
             std::string notFound = "Address: " + ipAddress.str() + " Not found.";
             ueArray.push_back(notFound);
             break;
         }
-        else if (lteNodeId != 0 && lteNodeId == nrNodeId) { //only nr
+        else if (lteNodeId != MacNodeId(0) && lteNodeId == nrNodeId) { //only nr
             found = false;
             eit = eNodeBs_.begin();
             for ( ; eit != eNodeBs_.end(); ++eit) {
@@ -137,7 +137,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                 ueArray.push_back(notFound);
             }
         }
-        else if (lteNodeId != 0 && nrNodeId == 0) { //only lte
+        else if (lteNodeId != MacNodeId(0) && nrNodeId == MacNodeId(0)) { //only lte
             found = false;
             eit = eNodeBs_.begin();
             for ( ; eit != eNodeBs_.end(); ++eit) {
@@ -156,7 +156,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                 ueArray.push_back(notFound);
             }
         }
-        else if (lteNodeId != nrNodeId && nrNodeId != 0 && lteNodeId != 0) { // both lte and nr
+        else if (lteNodeId != nrNodeId && nrNodeId != MacNodeId(0) && lteNodeId != MacNodeId(0)) { // both lte and nr
             found = false;
             eit = eNodeBs_.begin();
             for ( ; eit != eNodeBs_.end(); ++eit) {

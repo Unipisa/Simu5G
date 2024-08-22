@@ -24,7 +24,7 @@ simsignal_t LteCompManagerBase::compReservedBlocksSignal_ = registerSignal("comp
 void LteCompManagerBase::initialize()
 {
     // get the node id
-    nodeId_ = inet::getContainingNode(this)->par("macCellId");
+    nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macCellId").intValue());
 
     // get reference to the binder
     Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
@@ -61,9 +61,8 @@ void LteCompManagerBase::initialize()
     if (nodeType_ != COMP_CLIENT) {
         // get the list of slave nodes
         auto clients = check_and_cast<cValueArray *>(par("clientList").objectValue())->asIntVector();
-        clientList_.resize(clients.size());
-        for (unsigned int i = 0; i < clients.size(); i++)
-            clientList_[i] = clients[i];
+        for (int client : clients)
+            clientList_.push_back(X2NodeId(client));
 
         // get coordination period
         coordinationPeriod_ = par("coordinationPeriod").doubleValue();
@@ -77,7 +76,7 @@ void LteCompManagerBase::initialize()
     }
 
     if (nodeType_ != COMP_COORDINATOR) {
-        coordinatorId_ = par("coordinatorId");
+        coordinatorId_ = X2NodeId(par("coordinatorId").intValue());
 
         // Start TTI tick
         compClientTick_ = new cMessage("compClientTick_");
@@ -199,7 +198,7 @@ void LteCompManagerBase::sendCoordinatorReply(X2NodeId clientId, X2CompReplyIE *
 
     if (clientId == nodeId_) {
         if (nodeType_ != COMP_CLIENT_COORDINATOR)
-            throw cRuntimeError("LteCompManagerBase::sendCoordinatorReply - Node %d cannot send reply to itself, since it is not the coordinator", clientId);
+            throw cRuntimeError("LteCompManagerBase::sendCoordinatorReply - node %hu cannot send reply to itself, since it is not the coordinator", clientId);
 
         compMsg->setSourceId(nodeId_);
         handleCoordinatorReply(compMsg);

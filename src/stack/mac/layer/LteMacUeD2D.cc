@@ -54,7 +54,7 @@ void LteMacUeD2D::initialize(int stage)
         // get parameters
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
 
-        if (cellId_ > 0) {
+        if (cellId_ > MacNodeId(0)) { //TODO !=0 ?
             preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
@@ -333,7 +333,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                //                    pdu = new LteMacPdu();
                //
                //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Long BSR...\n",NOW,nodeId);
+               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Long BSR...\n",NOW,nodeId);
                //
                //                // create a full BSR
                //                pdu->ctrlPush(fullBufferStatusReport());
@@ -353,7 +353,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                //                    pdu = new LteMacPdu();
                //
                //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Short/Truncated BSR...\n",NOW,nodeId);
+               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Short/Truncated BSR...\n",NOW,nodeId);
                //
                //                // create a short BSR
                //                pdu->ctrlPush(shortBufferStatusReport(highestBackloggedFlow));
@@ -382,7 +382,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                //            pdu->error() = false;
                //
                //            if(LteDebug::trace("LteSchedulerUeUl::schedule"))
-               //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, creating uplink PDU.\n", NOW, nodeId);
+               //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, creating uplink PDU.\n", NOW, nodeId);
                //
                //        }
 
@@ -919,7 +919,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                         EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - interrupting H-ARQ processes" << endl;
 
                         // Interrupt H-ARQ processes for SL
-                        unsigned int id = peerId;
+                        MacNodeId id = peerId;
                         std::map<double, HarqTxBuffers>::iterator mtit;
                         for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
                             HarqTxBuffers::iterator hit = mtit->second.find(id);
@@ -998,7 +998,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 if (oldDirection != newDirection) {
                     if (switchPkt->getInterruptHarq()) {
                         // Interrupt H-ARQ processes for SL
-                        unsigned int id = peerId;
+                        MacNodeId id = peerId;
                         std::map<double, HarqRxBuffers>::iterator mrit;
                         for (mrit = harqRxBuffers_.begin(); mrit != harqRxBuffers_.end(); ++mrit) {
                             HarqRxBuffers::iterator hit = mrit->second.find(id);
@@ -1048,7 +1048,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
 void LteMacUeD2D::doHandover(MacNodeId targetEnb)
 {
-    if (targetEnb == 0)
+    if (targetEnb == MacNodeId(0))
         enb_ = nullptr;
     else {
         if (preconfiguredTxParams_ != nullptr)

@@ -49,10 +49,10 @@ void LteDlFeedbackGenerator::initialize(int stage)
         cModule *networkNode = getContainingNode(this);
         // TODO: find a more elegant way
         if (strcmp(getFullName(), "nrDlFbGen") == 0)
-            masterId_ = networkNode->par("nrMasterId");
+            masterId_ = MacNodeId(networkNode->par("nrMasterId").intValue());
         else
-            masterId_ = networkNode->par("masterId");
-        nodeId_ = networkNode->par("macNodeId");
+            masterId_ = MacNodeId(networkNode->par("masterId").intValue());
+        nodeId_ = MacNodeId(networkNode->par("macNodeId").intValue());
 
         // Initialize timers
 
@@ -76,7 +76,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " init" << endl;
 
-        if (masterId_ > 0)                             // only if not detached
+        if (masterId_ > MacNodeId(0))   //TODO !=0???                          // only if not detached
             initCellInfo();
 
         phy_.reference(this, "phyModule", true);
@@ -93,7 +93,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
            << " feedback computation initialize" << endl;
         WATCH(numBands_);
         WATCH(numPreferredBands_);
-        if (masterId_ > 0 && usePeriodic_) {
+        if (masterId_ > MacNodeId(0) && usePeriodic_) {  //TODO !=0 ?
             tPeriodicSensing_->start(0);
         }
     }
@@ -242,7 +242,7 @@ void LteDlFeedbackGenerator::handleHandover(MacCellId newEnbId)
 {
     Enter_Method("LteDlFeedbackGenerator::handleHandover()");
     masterId_ = newEnbId;
-    if (masterId_ != 0) {
+    if (masterId_ != MacNodeId(0)) {
         initCellInfo();
         EV << NOW << " LteDlFeedbackGenerator::handleHandover - Master ID updated to " << masterId_ << endl;
         if (tPeriodicSensing_->idle())                                         // resume feedback

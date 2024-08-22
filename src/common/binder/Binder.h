@@ -52,7 +52,7 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, opp_component_ptr<LteMacBase>> macNodeIdToModule_;
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
-    std::map<int, OmnetId> nodeIds_;
+    std::map<MacNodeId, OmnetId> nodeIds_;
 
     // stores the IP address of the MEC hosts in the simulation
     std::set<inet::L3Address> mecHostAddress_;
@@ -85,7 +85,8 @@ class Binder : public cSimpleModule
     // maximum data rate achievable in one RB (NED parameter)
     double maxDataRatePerRb_;
 
-    MacNodeId macNodeIdCounter_[3]; // MacNodeId Counter
+    //TODO perhaps split the next one into 3 distinct variables, named after roles?
+    unsigned int macNodeIdCounter_[3]; // MacNodeId Counter
     DeployedUesMap dMap_; // DeployedUes --> Master Mapping
 
     /*
@@ -158,9 +159,9 @@ class Binder : public cSimpleModule
   public:
     Binder() :  lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
     {
-        macNodeIdCounter_[0] = ENB_MIN_ID;
-        macNodeIdCounter_[1] = UE_MIN_ID;
-        macNodeIdCounter_[2] = NR_UE_MIN_ID;
+        macNodeIdCounter_[0] = num(ENB_MIN_ID);
+        macNodeIdCounter_[1] = num(UE_MIN_ID);
+        macNodeIdCounter_[2] = num(NR_UE_MIN_ID);
     }
 
     unsigned int getTotalBands()
@@ -244,7 +245,7 @@ class Binder : public cSimpleModule
      * @param masterId id of the master of this node, 0 if none (node is an eNB)
      * @return macNodeId assigned to the module
      */
-    MacNodeId registerNode(cModule *module, RanNodeType type, MacNodeId masterId = 0, bool registerNr = false);
+    MacNodeId registerNode(cModule *module, RanNodeType type, MacNodeId masterId = MacNodeId(0), bool registerNr = false);
 
     /**
      * Un-registers a node from the global Binder module.
@@ -296,8 +297,8 @@ class Binder : public cSimpleModule
     /*
      * get iterators for the list of nodes
      */
-    std::map<int, OmnetId>::const_iterator getNodeIdListBegin();
-    std::map<int, OmnetId>::const_iterator getNodeIdListEnd();
+    std::map<MacNodeId, OmnetId>::const_iterator getNodeIdListBegin();
+    std::map<MacNodeId, OmnetId>::const_iterator getNodeIdListEnd();
 
     /**
      * getMacNodeIdFromOmnetId() returns the MacNodeId of the module
@@ -344,11 +345,11 @@ class Binder : public cSimpleModule
     MacNodeId getMacNodeId(inet::Ipv4Address address)
     {
         if (macNodeIdToIPAddress_.find(address) == macNodeIdToIPAddress_.end())
-            return 0;
+            return MacNodeId(0);
         MacNodeId nodeId = macNodeIdToIPAddress_[address];
 
         // if the UE is disconnected (its master node is 0), check the NR node Id
-        if (getNextHop(nodeId) == 0)
+        if (getNextHop(nodeId) == MacNodeId(0))
             return getNrMacNodeId(address);
         return nodeId;
     }
@@ -362,7 +363,7 @@ class Binder : public cSimpleModule
     MacNodeId getNrMacNodeId(inet::Ipv4Address address)
     {
         if (nrMacNodeIdToIPAddress_.find(address) == nrMacNodeIdToIPAddress_.end())
-            return 0;
+            return MacNodeId(0);
         return nrMacNodeIdToIPAddress_[address];
     }
 

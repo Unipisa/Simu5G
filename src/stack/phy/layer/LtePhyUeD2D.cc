@@ -72,7 +72,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     LteAirFrame *frame = check_and_cast<LteAirFrame *>(msg);
     EV << "LtePhyUeD2D: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
-    int sourceId = lteInfo->getSourceId();
+    MacNodeId sourceId = lteInfo->getSourceId();
     if (binder_->getOmnetId(sourceId) == 0) {
         // Source has left the simulation.
         delete msg;
@@ -151,7 +151,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
     // This is a DATA packet.
 
-    if (masterId_ == 0) {
+    if (masterId_ == MacNodeId(0)) {
         // UE is not (anymore) associated with any eNB/gNB and all harqBuffers are already deleted.
         // Handing this data packet to the MAC layer will lead to null pointers.
         EV << "LtePhyUeD2D: UE " << nodeId_ << " received data packet while not associated with any base station. (masterId " << masterId_ << "). Drop it." << endl;
@@ -239,7 +239,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
 void LtePhyUeD2D::triggerHandover()
 {
-    if (masterId_ != 0) {
+    if (masterId_ != MacNodeId(0)) {
         // Stop active D2D flows (go back to Infrastructure mode).
         // Currently, DM is possible only for UEs served by the same cell.
 
@@ -254,12 +254,12 @@ void LtePhyUeD2D::triggerHandover()
 void LtePhyUeD2D::doHandover()
 {
     // AMC calls.
-    if (masterId_ != 0) {
+    if (masterId_ != MacNodeId(0)) {
         LteAmc *oldAmc = getAmcModule(masterId_);
         oldAmc->detachUser(nodeId_, D2D);
     }
 
-    if (candidateMasterId_ != 0) {
+    if (candidateMasterId_ != MacNodeId(0)) {
         LteAmc *newAmc = getAmcModule(candidateMasterId_);
         assert(newAmc != nullptr);
         newAmc->attachUser(nodeId_, D2D);
@@ -267,7 +267,7 @@ void LtePhyUeD2D::doHandover()
 
     LtePhyUe::doHandover();
 
-    if (candidateMasterId_ != 0) {
+    if (candidateMasterId_ != MacNodeId(0)) {
         // Send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover).
         cMessage *msg = new cMessage("doModeSwitchAtHandover");
         msg->setSchedulingPriority(10);

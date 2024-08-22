@@ -67,15 +67,15 @@ void LteMacUe::initialize(int stage)
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
         if (strcmp(getFullName(), "nrMac") == 0)
-            cellId_ = networkNode_->par("nrMasterId");
+            cellId_ = MacNodeId(networkNode_->par("nrMasterId").intValue());
         else
-            cellId_ = networkNode_->par("masterId");
+            cellId_ = MacNodeId(networkNode_->par("masterId").intValue());
     }
     else if (stage == INITSTAGE_NETWORK_LAYER) {
         if (strcmp(getFullName(), "nrMac") == 0)
-            nodeId_ = networkNode_->par("nrMacNodeId");
+            nodeId_ = MacNodeId(networkNode_->par("nrMacNodeId").intValue());
         else
-            nodeId_ = networkNode_->par("macNodeId");
+            nodeId_ = MacNodeId(networkNode_->par("macNodeId").intValue());
 
         // Insert UeInfo in the Binder
         UeInfo *info = new UeInfo();
@@ -87,7 +87,7 @@ void LteMacUe::initialize(int stage)
 
         binder_->addUeInfo(info);
 
-        if (cellId_ > 0) {
+        if (cellId_ > MacNodeId(0)) {  //TODO !=0 ?
             LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, cellId_))->getAmc();
             amc->attachUser(nodeId_, UL);
             amc->attachUser(nodeId_, DL);
@@ -124,18 +124,16 @@ void LteMacUe::initialize(int stage)
                 EV << "I am a UE with node id: " << nodeId_ << " and the base station with id: " << cellId_ << " has a different type" << endl;
                 // TODO: is this a valid check or is the collector module possible here:    ASSERT(par("collectorModule").isEmptyString());
             }
-
-            ////
         }
 
         // find interface entry and use its address
         NetworkInterface *iface = findContainingNicModule(this);
         if (iface == nullptr)
-            throw new cRuntimeError("no interface entry for lte interface - cannot bind node %i", nodeId_);
+            throw new cRuntimeError("no interface entry for lte interface - cannot bind node id [%hu]", nodeId_);
 
         auto ipv4if = iface->getProtocolData<Ipv4InterfaceData>();
         if (ipv4if == nullptr)
-            throw new cRuntimeError("no Ipv4 interface data - cannot bind node %i", nodeId_);
+            throw new cRuntimeError("no Ipv4 interface data - cannot bind node id [%hu]", nodeId_);
         binder_->setMacNodeId(ipv4if->getIPAddress(), nodeId_);
 
         // for emulation mode
@@ -502,7 +500,7 @@ void LteMacUe::macPduMake(MacCid cid)
             //                    pdu = new LteMacPdu();
             //
             //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-            //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Long BSR...\n",NOW,nodeId);
+            //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Long BSR...\n",NOW,nodeId);
             //
             //                // create a full BSR
             //                pdu->ctrlPush(fullBufferStatusReport());
@@ -522,7 +520,7 @@ void LteMacUe::macPduMake(MacCid cid)
             //                    pdu = new LteMacPdu();
             //
             //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-            //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Short/Truncated BSR...\n",NOW,nodeId);
+            //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Short/Truncated BSR...\n",NOW,nodeId);
             //
             //                // create a short BSR
             //                pdu->ctrlPush(shortBufferStatusReport(highestBackloggedFlow));
@@ -551,7 +549,7 @@ void LteMacUe::macPduMake(MacCid cid)
             //            pdu->error() = false;
             //
             //            if(LteDebug::trace("LteSchedulerUeUl::schedule"))
-            //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, creating uplink PDU.\n", NOW, nodeId);
+            //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, creating uplink PDU.\n", NOW, nodeId);
             //
             //        }
 

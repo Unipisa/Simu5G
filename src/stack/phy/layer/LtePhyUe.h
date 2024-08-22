@@ -33,7 +33,7 @@ class LtePhyUe : public LtePhyBase
 {
   protected:
     /** Master MacNodeId */
-    MacNodeId masterId_ = 0;
+    MacNodeId masterId_ = MacNodeId(0);
 
     /** Reference to master node's mobility module */
     IMobility *masterMobility_ = nullptr;

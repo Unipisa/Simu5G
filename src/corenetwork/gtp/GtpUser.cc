@@ -58,9 +58,9 @@ void GtpUser::initialize(int stage)
     }
 
     if (isBaseStation(ownerType_))
-        myMacNodeID = networkNode_->par("macNodeId");
+        myMacNodeID = MacNodeId(networkNode_->par("macNodeId").intValue());
     else
-        myMacNodeID = 0;
+        myMacNodeID = MacNodeId(0);
 
     ie_ = detectInterface();
 }
@@ -191,7 +191,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
             // get the symbolic IP address of the tunnel destination ID
             // then obtain the address via IPvXAddressResolver
-            const char *symbolicName = binder_->getModuleNameByMacNodeId(flowId);
+            const char *symbolicName = binder_->getModuleNameByMacNodeId(MacNodeId(flowId));
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << symbolicName << endl;
             tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
         }
@@ -250,7 +250,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
     }
     else if (ownerType_ == PGW || ownerType_ == UPF) {
         MacNodeId destId = binder_->getMacNodeId(destAddr);
-        if (destId != 0) { // final destination is a UE
+        if (destId != MacNodeId(0)) { // final destination is a UE
             MacNodeId destMaster = binder_->getNextHop(destId);
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)

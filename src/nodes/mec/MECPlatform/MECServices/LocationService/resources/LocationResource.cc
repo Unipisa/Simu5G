@@ -175,16 +175,13 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
     nlohmann::ordered_json LocationResource;
     nlohmann::ordered_json ueArray;
 
-    auto cid = cellsID.begin();
-    std::map<MacCellId, CellInfo *>::const_iterator it;
-
-    for ( ; cid != cellsID.end(); ++cid) {
-        it = eNodeBs_.find(*cid);
+    for (auto cid : cellsID) {
+        auto it = eNodeBs_.find(cid);
         if (it != eNodeBs_.end()) {
             ueArray.push_back(getUserListPerCell(it));
         }
         else {
-            std::string notFound = "AccessPointId: " + std::to_string(*cid) + " Not found.";
+            std::string notFound = "AccessPointId " + std::to_string(num(cid)) + " not found.";
             ueArray.push_back(notFound);
         }
     }

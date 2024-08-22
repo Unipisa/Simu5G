@@ -74,7 +74,7 @@ void DistanceBasedConflictGraph::findVertices(std::vector<CGVertex>& vertices)
     if (reuseD2DMulti_) { // get point-to-multipoint transmitters
         std::set<MacNodeId>& multicastTransmitterSet = binder_->getD2DMulticastTransmitters();
         for (auto it = multicastTransmitterSet.begin(), et = multicastTransmitterSet.end(); it != et; ++it) {
-            CGVertex v(*it, 0);   // create a "fake" link
+            CGVertex v(*it, MacNodeId(0));   // create a "fake" link
             vertices.push_back(v);
         }
     }

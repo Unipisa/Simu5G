@@ -37,7 +37,7 @@ void LteMaxCi::prepareSchedule()
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
-        if (nodeId == 0 || id == 0) {
+        if (nodeId == MacNodeId(0) || id == 0) {
             // Node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
@@ -114,7 +114,7 @@ void LteMaxCi::prepareSchedule()
             // The cid for a background UE is a 32-bit integer composed as:
             // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
             // - the least significant 16 bits are set to 0 (lcid=0)
-            bgCid = bgUeId << 16;
+            bgCid = num(bgUeId) << 16;
 
             bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 

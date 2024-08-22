@@ -11,6 +11,7 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
+import common.LteCommon;
 
 namespace simu5g;
 
@@ -22,15 +23,10 @@ namespace simu5g;
 class LteX2Message extends inet::FieldsChunk
 {
     @customize(true);
-    chunkLength = inet::B(11); // FIXME needs to be checked: 
+    chunkLength = inet::B(11); // FIXME needs to be checked:
                                // realistic chunk length without X2 information elements?
-                               // Must at least be 11 Bytes for serialization: 
+                               // Must at least be 11 Bytes for serialization:
                                // Type (1 B), sourceId (4 B), destinationId (4 B), IE list size (2 B))
-    unsigned int sourceId;
-    unsigned int destinationId;
-}
-
-class X2InformationElement
-{
-    @customize(true);
+    MacNodeId sourceId;
+    MacNodeId destinationId;
 }

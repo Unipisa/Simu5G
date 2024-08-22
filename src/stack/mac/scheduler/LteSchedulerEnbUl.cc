@@ -198,15 +198,13 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
     std::list<MacNodeId> servedRac;
 
     IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
-    auto it = bgTrafficManager->getWaitingForRacUesBegin(),
-                                   et = bgTrafficManager->getWaitingForRacUesEnd();
 
     // Get number of logical bands
     unsigned int numBands = mac_->getCellInfo()->getNumBands();
 
-    for ( ; it != et; ++it) {
+    for (auto it = bgTrafficManager->getWaitingForRacUesBegin(), et = bgTrafficManager->getWaitingForRacUesEnd(); it != et; ++it) {
         // get current nodeId
-        MacNodeId bgUeId = *it + BGUE_MIN_ID;
+        MacNodeId bgUeId = BGUE_MIN_ID + *it;
 
         EV << NOW << " LteSchedulerEnbUl::racscheduleBackground handling RAC for node " << bgUeId << endl;
 
@@ -279,7 +277,7 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                 // get current nodeId
                 MacNodeId nodeId = it->first;
 
-                if (nodeId == 0) {
+                if (nodeId == MacNodeId(0)) {
                     // UE has left the simulation - erase queue and continue
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
@@ -344,12 +342,12 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                     MacNodeId senderId = (it_d2d->first).first; // Transmitter
                     MacNodeId destId = (it_d2d->first).second;  // Receiver
 
-                    if (senderId == 0 || binder_->getOmnetId(senderId) == 0) {
+                    if (senderId == MacNodeId(0) || binder_->getOmnetId(senderId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
                     }
-                    if (destId == 0 || binder_->getOmnetId(destId) == 0) {
+                    if (destId == MacNodeId(0) || binder_->getOmnetId(destId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
@@ -426,7 +424,7 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(double carrierFrequency, BandLimit
         EV << NOW << " LteSchedulerEnbUl::rtxscheduleBackground eNodeB: " << mac_->getMacCellId() << " Direction: " << (direction_ == UL ? "UL" : "DL") << endl;
 
         // --- Schedule RTX for background UEs --- //
-        std::map<int, unsigned int> bgScheduledRtx;
+        std::map<MacNodeId, unsigned int> bgScheduledRtx;
         IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
         auto it = bgTrafficManager->getBackloggedUesBegin(direction_, true),
                                        et = bgTrafficManager->getBackloggedUesEnd(direction_, true);

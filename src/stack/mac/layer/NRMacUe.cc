@@ -562,7 +562,7 @@ void NRMacUe::macPduMake(MacCid cid)
                //                    pdu = new LteMacPdu();
                //
                //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Long BSR...\n",NOW,nodeId);
+               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Long BSR...\n",NOW,nodeId);
                //
                //                // create a full BSR
                //                pdu->ctrlPush(fullBufferStatusReport());
@@ -582,7 +582,7 @@ void NRMacUe::macPduMake(MacCid cid)
                //                    pdu = new LteMacPdu();
                //
                //                if(LteDebug::trace("LteSchedulerUeUl::schedule") || LteDebug::trace("LteSchedulerUeUl::schedule@bsrTracing"))
-               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, sending a Short/Truncated BSR...\n",NOW,nodeId);
+               //                    fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, sending a Short/Truncated BSR...\n",NOW,nodeId);
                //
                //                // create a short BSR
                //                pdu->ctrlPush(shortBufferStatusReport(highestBackloggedFlow));
@@ -611,7 +611,7 @@ void NRMacUe::macPduMake(MacCid cid)
                //            pdu->error() = false;
                //
                //            if(LteDebug::trace("LteSchedulerUeUl::schedule"))
-               //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - Node %d, creating uplink PDU.\n", NOW, nodeId);
+               //                fprintf(stderr, "%.9f LteSchedulerUeUl::schedule - node %hu, creating uplink PDU.\n", NOW, nodeId);
                //
                //        } */
 

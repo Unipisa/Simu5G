@@ -24,7 +24,7 @@ class X2HandoverCommandIE : public X2InformationElement
   protected:
 
     bool startHandover_ = false;
-    MacNodeId ueId_ = 0;      // ID of the user performing the handover
+    MacNodeId ueId_ = MacNodeId(0);      // ID of the user performing the handover
 
   public:
     X2HandoverCommandIE()

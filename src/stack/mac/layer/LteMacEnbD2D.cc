@@ -209,7 +209,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
                 cw = otherCw;
             }
 
-            std::pair<unsigned int, Codeword> otherPair(nodeId, otherCw);
+            std::pair<MacCid, Codeword> otherPair(num(nodeId), otherCw);  // note: MacNodeId used as MacCid
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // increment number of allocated Cw

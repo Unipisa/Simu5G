@@ -11,22 +11,23 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
+import common.LteCommon;
 
 namespace simu5g;
 
 //
 // Packet used by the ~MecRequestRequestPacket and ~MecRequestResponsePacket modules.
 //
-class MecRequestResponsePacket extends inet::FieldsChunk 
+class MecRequestResponsePacket extends inet::FieldsChunk
 {
     unsigned int sno;
-     
+
     double reqTimestamp;
     double respTimestamp;
 
-    int bsId;
+    MacNodeId bsId;
     int appId;
-    
+
     string srcAddress;
     int srcPort;
     string destAddress;

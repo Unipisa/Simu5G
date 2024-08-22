@@ -70,12 +70,12 @@ void Binder::registerCarrierUe(double carrierFrequency, unsigned int numerologyI
     }
     ueNumerologyIndex_[ueId].insert(numerologyIndex);
 
-    if (ueMaxNumerologyIndex_.size() <= ueId) {
-        ueMaxNumerologyIndex_.resize(ueId + 1);
-        ueMaxNumerologyIndex_[ueId] = numerologyIndex;
+    if (ueMaxNumerologyIndex_.size() <= num(ueId)) {
+        ueMaxNumerologyIndex_.resize(num(ueId) + 1);
+        ueMaxNumerologyIndex_[num(ueId)] = numerologyIndex;
     }
     else
-        ueMaxNumerologyIndex_[ueId] = (numerologyIndex > ueMaxNumerologyIndex_[ueId]) ? numerologyIndex : ueMaxNumerologyIndex_[ueId];
+        ueMaxNumerologyIndex_[num(ueId)] = (numerologyIndex > ueMaxNumerologyIndex_[num(ueId)]) ? numerologyIndex : ueMaxNumerologyIndex_[num(ueId)];
 }
 
 const UeSet& Binder::getCarrierUeSet(double carrierFrequency)
@@ -89,7 +89,7 @@ const UeSet& Binder::getCarrierUeSet(double carrierFrequency)
 
 NumerologyIndex Binder::getUeMaxNumerologyIndex(MacNodeId ueId)
 {
-    return ueMaxNumerologyIndex_[ueId];
+    return ueMaxNumerologyIndex_[num(ueId)];
 }
 
 const std::set<NumerologyIndex> *Binder::getUeNumerologyIndex(MacNodeId ueId)
@@ -150,8 +150,7 @@ void Binder::unregisterNode(MacNodeId id)
     }
 
     // iterate all nodeIds and find HarqRx buffers dependent on 'id'
-    std::map<int, OmnetId>::iterator idIter;
-    for (idIter = nodeIds_.begin(); idIter != nodeIds_.end(); idIter++) {
+    for (auto idIter = nodeIds_.begin(); idIter != nodeIds_.end(); idIter++) {
         LteMacBase *mac = getMacFromMacNodeId(idIter->first);
         mac->unregisterHarqBufferRx(id);
     }
@@ -187,16 +186,16 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
 {
     Enter_Method_Silent("registerNode");
 
-    MacNodeId macNodeId = -1;
+    MacNodeId macNodeId = MacNodeId(0);
 
     if (type == UE) {
         if (!registerNr)
-            macNodeId = macNodeIdCounter_[1]++;
+            macNodeId = MacNodeId(macNodeIdCounter_[1]++);
         else
-            macNodeId = macNodeIdCounter_[2]++;
+            macNodeId = MacNodeId(macNodeIdCounter_[2]++);
     }
     else if (type == ENODEB || type == GNODEB) {
-        macNodeId = macNodeIdCounter_[0]++;
+        macNodeId = MacNodeId(macNodeIdCounter_[0]++);
     }
 
     EV << "Binder : Assigning to module " << module->getName()
@@ -208,15 +207,15 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
     nodeIds_[macNodeId] = module->getId();
 
     if (!registerNr)
-        module->par("macNodeId") = macNodeId;
+        module->par("macNodeId") = num(macNodeId);
     else
-        module->par("nrMacNodeId") = macNodeId;
+        module->par("nrMacNodeId") = num(macNodeId);
 
     if (type == UE) {
         registerNextHop(masterId, macNodeId);
     }
     else if (type == ENODEB || type == GNODEB) {
-        module->par("macCellId") = macNodeId;
+        module->par("macCellId") = num(macNodeId);
         registerNextHop(macNodeId, macNodeId);
         registerMasterNode(masterId, macNodeId);
     }
@@ -234,30 +233,29 @@ void Binder::registerNextHop(MacNodeId masterId, MacNodeId slaveId)
         dMap_[masterId][slaveId] = true;
     }
 
-    if (nextHop_.size() <= slaveId)
-        nextHop_.resize(slaveId + 1);
-    nextHop_[slaveId] = masterId;
+    if (nextHop_.size() <= num(slaveId))
+        nextHop_.resize(num(slaveId) + 1);
+    nextHop_[num(slaveId)] = masterId;
 }
 
 void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
 {
     Enter_Method_Silent("registerMasterNode");
-    EV << "Binder : Registering slave " << slaveId << " to master "
-       << masterId << "\n";
+    EV << "Binder : Registering slave " << slaveId << " to master " << masterId << "\n";
 
-    if (secondaryNodeToMasterNode_.size() <= slaveId)
-        secondaryNodeToMasterNode_.resize(slaveId + 1);
+    if (secondaryNodeToMasterNode_.size() <= num(slaveId))
+        secondaryNodeToMasterNode_.resize(num(slaveId) + 1);
 
-    if (masterId == 0)                         // this node is a master itself
+    if (masterId == MacNodeId(0))                         // this node is a master itself
         masterId = slaveId;
-    secondaryNodeToMasterNode_[slaveId] = masterId;
+    secondaryNodeToMasterNode_[num(slaveId)] = masterId;
 }
 
 void Binder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         phyPisaData.setBlerShift(par("blerShift"));
-        networkName_ = std::string(getSystemModule()->getName());
+        networkName_ = getSystemModule()->getName();
     }
 
     if (stage == inet::INITSTAGE_LAST) {
@@ -293,7 +291,7 @@ void Binder::finish()
             if (info->id < NR_UE_MIN_ID)
                 continue;
 
-            int cellId = info->cellId;
+            MacNodeId cellId = info->cellId;
             int ueIndex = info->ue->getIndex();
 
             // get HARQ error rate
@@ -308,7 +306,7 @@ void Binder::finish()
             double cqiVarianceDl = phyUe->getVarianceCqi(DL);
             double cqiVarianceUl = phyUe->getVarianceCqi(UL);
 
-            if (info->cellId == 1) {
+            if (info->cellId == MacNodeId(1)) {  //TODO magic number
                 // the UE belongs to the central cell
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.rtxRateUl = " << harqErrorRateUl << "\n";
@@ -321,7 +319,7 @@ void Binder::finish()
                 ss.clear();
             }
             else {
-                int bgCellId = cellId - 2;
+                MacNodeId bgCellId = cellId - 2;
 
                 // the UE belongs to a background cell
                 ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.rtxRateDl = " << harqErrorRateDl << "\n";
@@ -345,44 +343,42 @@ void Binder::finish()
 void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 {
     Enter_Method_Silent("unregisterNextHop");
-    EV << "Binder : Unregistering slave " << slaveId << " from master "
-       << masterId << "\n";
+    EV << "Binder : Unregistering slave " << slaveId << " from master " << masterId << "\n";
     dMap_[masterId][slaveId] = false;
 
-    if (nextHop_.size() <= slaveId)
+    if (nextHop_.size() <= num(slaveId))
         return;
-    nextHop_[slaveId] = 0;
+    nextHop_[num(slaveId)] = MacNodeId(0);
 }
 
 OmnetId Binder::getOmnetId(MacNodeId nodeId)
 {
-    std::map<int, OmnetId>::iterator it = nodeIds_.find(nodeId);
+    auto it = nodeIds_.find(nodeId);
     if (it != nodeIds_.end())
         return it->second;
     return 0;
 }
 
-std::map<int, OmnetId>::const_iterator Binder::getNodeIdListBegin()
+std::map<MacNodeId, OmnetId>::const_iterator Binder::getNodeIdListBegin()
 {
     return nodeIds_.begin();
 }
 
-std::map<int, OmnetId>::const_iterator Binder::getNodeIdListEnd()
+std::map<MacNodeId, OmnetId>::const_iterator Binder::getNodeIdListEnd()
 {
     return nodeIds_.end();
 }
 
 MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
-    std::map<int, OmnetId>::iterator it;
-    for (it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
+    for (auto it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
         if (it->second == id)
             return it->first;
-    return 0;
+    return MacNodeId(0);
 }
 
 LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 {
-    if (id == 0)
+    if (id == MacNodeId(0))
         return nullptr;
 
     LteMacBase *mac;
@@ -399,17 +395,17 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 MacNodeId Binder::getNextHop(MacNodeId slaveId)
 {
     Enter_Method_Silent("getNextHop");
-    if (slaveId >= nextHop_.size())
-        throw cRuntimeError("Binder::getNextHop(): bad slave id %d", slaveId);
-    return nextHop_[slaveId];
+    if (num(slaveId) >= nextHop_.size())
+        throw cRuntimeError("Binder::getNextHop(): bad slave id %hu", slaveId);
+    return nextHop_[num(slaveId)];
 }
 
 MacNodeId Binder::getMasterNode(MacNodeId slaveId)
 {
     Enter_Method_Silent("getMasterNode");
-    if (slaveId >= secondaryNodeToMasterNode_.size())
-        throw cRuntimeError("Binder::getMasterNode(): bad slave id %d", slaveId);
-    return secondaryNodeToMasterNode_[slaveId];
+    if (num(slaveId) >= secondaryNodeToMasterNode_.size())
+        throw cRuntimeError("Binder::getMasterNode(): bad slave id %hu", slaveId);
+    return secondaryNodeToMasterNode_[num(slaveId)];
 }
 
 void Binder::registerMecHost(const inet::L3Address& mecHostAddress)
@@ -573,7 +569,7 @@ void Binder::registerX2Port(X2NodeId nodeId, int port)
 int Binder::getX2Port(X2NodeId nodeId)
 {
     if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end())
-        throw cRuntimeError("Binder::getX2Port - No ports available on node %d", nodeId);
+        throw cRuntimeError("Binder::getX2Port - No ports available on node %hu", nodeId);
 
     int port = x2ListeningPorts_[nodeId].front();
     x2ListeningPorts_[nodeId].pop_front();
@@ -607,16 +603,16 @@ Cqi Binder::medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
 
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
-        throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %d Dst %d", src, dst);
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+        throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %hu Dst %hu", src, dst);
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
     if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end()) {
         LteMacBase *dstMac = getMacFromMacNodeId(dst);
         if (dstMac->isD2DCapable()) {
             // set the initial mode
-            if (nextHop_[src] == nextHop_[dst]) {
+            if (nextHop_[num(src)] == nextHop_[num(dst)]) {
                 // if served by the same cell, then the mode is selected according to the corresponding parameter
                 LteMacBase *srcMac = getMacFromMacNodeId(src);
                 inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
@@ -646,9 +642,9 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 
 bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
-        throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %d Dst %d", src, dst);
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+        throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %hu Dst %hu", src, dst);
 
     // if the entry is missing, returns false
     if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end())
@@ -665,9 +661,9 @@ std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
 
 LteD2DMode Binder::getD2DMode(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= macNodeIdCounter_[1] && src < NR_UE_MIN_ID) || src >= macNodeIdCounter_[2]
-        || dst < UE_MIN_ID || (dst >= macNodeIdCounter_[1] && dst < NR_UE_MIN_ID) || dst >= macNodeIdCounter_[2])
-        throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %d Dst %d", src, dst);
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+        throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %hu Dst %hu", src, dst);
 
     return d2dPeeringMap_[src][dst];
 }
@@ -1121,7 +1117,7 @@ void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector,
             enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
             if (enbColl->hasUeCollector(ue)) {
                 EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << (*it)->id << "]" << endl;
-                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%d] already present in eNodeB [%d]", ue, (*it)->id);
+                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%hu] already present in eNodeB [%hu]", ue, (*it)->id);
             }
         }
         else {
@@ -1160,11 +1156,11 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             enbColl->removeUeCollector(ue);
         }
         else {
-            throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%d] not present in eNodeB [%d]", ue, oldCell);
+            throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%hu] not present in eNodeB [%hu]", ue, oldCell);
         }
     }
     else {
-        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%d]", oldCell);
+        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%hu]", oldCell);
     }
     // If the two base stations are the same type, just move the collector
     if (oldCellType == newCellType) {
@@ -1177,7 +1173,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             if (ueModule->findSubmodule("NRueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got NRueCollector required for the gNB", ue);
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got NRueCollector required for the gNB", ue);
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else if (newCellType == ENODEB) {
@@ -1186,11 +1182,11 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             if (ueModule->findSubmodule("ueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%d] has not got ueCollector required for the eNB", ue);
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got ueCollector required for the eNB", ue);
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else {
-            throw cRuntimeError("LteBinder::moveUeCollector - The new cell is not a cell [%d]", newCellType);
+            throw cRuntimeError("LteBinder::moveUeCollector - The new cell is not a cell [%u]", newCellType);
         }
     }
 }

@@ -8,7 +8,9 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
+
 import inet.common.TagBase;
+import common.LteCommon;
 
 cplusplus {{
     #include "common/LteCommon.h"
@@ -29,9 +31,9 @@ class DestinationIdList { @existingClass; }
 // It is attached to the X2InformationElement and contains:
 // - The X2 ID of the source eNodeB
 // - The X2 IDs of the destination eNodeBs (as a user can send an InformationElement to several peers)
-// - a 'init' flag: if set, the X2 Manager uses the IE and the incoming gate to register the user module  
+// - a 'init' flag: if set, the X2 Manager uses the IE and the incoming gate to register the user module
 //                  into its internal data structures. This allows the X2 Manager to know which user is
-//                  connected to which gate, so as to forward messages coming from X2 to the correct 
+//                  connected to which gate, so as to forward messages coming from X2 to the correct
 //                  user module.
 
 //
@@ -39,12 +41,12 @@ class DestinationIdList { @existingClass; }
 //
 // This class contains:
 // - Source X2 ID
-// - List of destionation IDs
+// - List of destination IDs
 // - init flag
 //
 class X2ControlInfoTag extends inet::TagBase {
-	uint16 sourceId;                          // Source X2NodeId
+	MacNodeId sourceId;                       // Source X2NodeId
     DestinationIdList destIdList;             // List of destination X2NodeId
-    
+
     bool init = false;
 }

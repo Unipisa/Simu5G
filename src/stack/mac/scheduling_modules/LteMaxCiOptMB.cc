@@ -406,7 +406,7 @@ void LteMaxCiOptMB::readSolution()
 
         // read UE id and Band ID
         ue = line.substr(pos + 5, 4);
-        int ueId = atoi(ue.c_str());
+        MacNodeId ueId = MacNodeId(atoi(ue.c_str()));
         band = line.substr(pos + 10, 1);
         int bandId = atoi(band.c_str());
 
@@ -428,7 +428,7 @@ void LteMaxCiOptMB::readSolution()
         }
     }
 
-    int ueId;
+    MacNodeId ueId;
 
     UsableBandList::iterator itUsable = usableBands_.begin(),
                              etUsable = usableBands_.end();

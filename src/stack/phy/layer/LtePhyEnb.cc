@@ -48,8 +48,9 @@ void LtePhyEnb::initialize(int stage)
 
     if (stage == inet::INITSTAGE_LOCAL) {
         // get local id
-        nodeId_ = hostModule->par("macNodeId");
+        nodeId_ = MacNodeId(hostModule->par("macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
+
         cellInfo_ = getCellInfo(binder_, nodeId_);
         if (cellInfo_ != nullptr) {
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));

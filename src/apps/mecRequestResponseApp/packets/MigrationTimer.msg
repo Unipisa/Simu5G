@@ -12,7 +12,7 @@
 namespace simu5g;
 
 message MigrationTimer
-{       
+{
     unsigned int oldAppId;
     unsigned int newAppId;
 }

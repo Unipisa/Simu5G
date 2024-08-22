@@ -62,10 +62,10 @@ void IP2Nic::initialize(int stage)
         if (nodeType_ == ENODEB || nodeType_ == GNODEB) {
             // TODO: not so elegant
             cModule *bs = getContainingNode(this);
-            MacNodeId masterId = bs->par("masterId");
+            MacNodeId masterId = MacNodeId(bs->par("masterId").intValue());
             MacNodeId cellId = binder_->registerNode(bs, nodeType_, masterId);
             nodeId_ = cellId;
-            nrNodeId_ = 0;
+            nrNodeId_ = MacNodeId(0);
         }
     }
     else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT) {
@@ -75,15 +75,15 @@ void IP2Nic::initialize(int stage)
         else if (nodeType_ == UE) {
             cModule *ue = getContainingNode(this);
 
-            masterId_ = ue->par("masterId");
+            masterId_ = MacNodeId(ue->par("masterId").intValue());
             nodeId_ = binder_->registerNode(ue, nodeType_, masterId_);
 
             if (ue->hasPar("nrMasterId") && ue->par("nrMasterId").intValue() != 0) { // register also the NR MacNodeId
-                nrMasterId_ = ue->par("nrMasterId");
+                nrMasterId_ = MacNodeId(ue->par("nrMasterId").intValue());
                 nrNodeId_ = binder_->registerNode(ue, nodeType_, nrMasterId_, true);
             }
             else
-                nrNodeId_ = 0;
+                nrNodeId_ = MacNodeId(0);
 
             registerInterface();
         }
@@ -193,7 +193,7 @@ void IP2Nic::fromIpUe(Packet *datagram)
         ueHoldFromIp_.push_back(datagram);
     }
     else {
-        if (masterId_ == 0 && nrMasterId_ == 0) { // UE is detached
+        if (masterId_ == MacNodeId(0) && nrMasterId_ == MacNodeId(0)) { // UE is detached
             EV << "IP2Nic::fromIpUe - UE is not attached to any serving node. Delete packet." << endl;
             delete datagram;
         }
@@ -403,7 +403,7 @@ void IP2Nic::registerMulticastGroups()
         uint32_t groupId = address & mask;
         binder_->registerMulticastGroup(nodeId_, groupId);
         // register also the NR stack, if any
-        if (nrNodeId_ > 0)
+        if (nrNodeId_ > MacNodeId(0))
             binder_->registerMulticastGroup(nrNodeId_, groupId);
     }
 }
@@ -424,8 +424,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
     if (nodeType_ == ENODEB || nodeType_ == GNODEB) {
         MacNodeId ueId = binder_->getMacNodeId((Ipv4Address)ci->getDstAddr());
         MacNodeId nrUeId = binder_->getNrMacNodeId((Ipv4Address)ci->getDstAddr());
-        bool ueLteStack = (binder_->getNextHop(ueId) > 0);
-        bool ueNrStack = (binder_->getNextHop(nrUeId) > 0);
+        bool ueLteStack = (binder_->getNextHop(ueId) > MacNodeId(0));  //TODO use "!=" ?
+        bool ueNrStack = (binder_->getNextHop(nrUeId) > MacNodeId(0)); //TODO use "!=" ?
 
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20) { // use split bearer TODO fix threshold
             // even packets go through the LTE eNodeB
@@ -457,8 +457,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
     }
 
     if (nodeType_ == UE) {
-        bool ueLteStack = (binder_->getNextHop(nodeId_) > 0);
-        bool ueNrStack = (binder_->getNextHop(nrNodeId_) > 0);
+        bool ueLteStack = (binder_->getNextHop(nodeId_) > MacNodeId(0)); //TODO use "!=" ?
+        bool ueNrStack = (binder_->getNextHop(nrNodeId_) > MacNodeId(0)); //TODO use "!=" ?
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20) { // use split bearer TODO fix threshold
             int sentPackets;
             if ((sentPackets = sbTable_->find_entry(ci->getSrcAddr(), ci->getDstAddr(), ci->getTypeOfService())) < 0)
@@ -470,9 +470,9 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
                 ci->setUseNR(true);
         }
         else {
-            if (masterId_ == 0 && nrMasterId_ != 0)
+            if (masterId_ == MacNodeId(0) && nrMasterId_ != MacNodeId(0))
                 ci->setUseNR(true);
-            else if (masterId_ != 0 && nrMasterId_ == 0)
+            else if (masterId_ != MacNodeId(0) && nrMasterId_ == MacNodeId(0))
                 ci->setUseNR(false);
             else {
                 // both != 0
@@ -495,7 +495,7 @@ void IP2Nic::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
     if (!hoManager_)
         hoManager_.reference(this, "handoverManagerModule", true);
 
-    if (targetEnb != 0)
+    if (targetEnb != MacNodeId(0))
         hoManager_->sendHandoverCommand(ueId, targetEnb, true);
 }
 
@@ -580,7 +580,7 @@ void IP2Nic::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
 {
     EV << NOW << " IP2Nic::triggerHandoverUe - start holding packets" << endl;
 
-    if (newMasterId != 0) {
+    if (newMasterId != MacNodeId(0)) {
         ueHold_ = true;
         if (isNr)
             nrMasterId_ = newMasterId;
@@ -589,9 +589,9 @@ void IP2Nic::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
     }
     else {
         if (isNr)
-            nrMasterId_ = 0;
+            nrMasterId_ = MacNodeId(0);
         else
-            masterId_ = 0;
+            masterId_ = MacNodeId(0);
     }
 }
 
@@ -599,7 +599,7 @@ void IP2Nic::signalHandoverCompleteUe(bool isNr)
 {
     Enter_Method("signalHandoverCompleteUe");
 
-    if ((!isNr && masterId_ != 0) || (isNr && nrMasterId_ != 0)) {
+    if ((!isNr && masterId_ != MacNodeId(0)) || (isNr && nrMasterId_ != MacNodeId(0))) {
         // send held packets
         while (!ueHoldFromIp_.empty()) {
             auto pkt = ueHoldFromIp_.front();

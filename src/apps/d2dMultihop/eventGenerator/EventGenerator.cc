@@ -62,7 +62,7 @@ void EventGenerator::notifyEvent()
     if (!singleEventSource_) {
         // select a second originator, close to the first one
 
-        LtePhyBase *uePhy = lteNodePhy_[r + UE_MIN_ID];
+        LtePhyBase *uePhy = lteNodePhy_[MacNodeId(r + num(UE_MIN_ID))];
         inet::Coord uePos = uePhy->getCoord();
 
         // get references to all UEs in the cell
@@ -71,7 +71,7 @@ void EventGenerator::notifyEvent()
         // find all UEs within a 20m-radius
         std::vector<MacNodeId> tmp;
         for (MacNodeId nodeId : lteNodeIdSet_) {
-            if (r + UE_MIN_ID != nodeId) {
+            if (UE_MIN_ID + r != nodeId) {
                 LtePhyBase *phy = lteNodePhy_[nodeId];
                 inet::Coord pos = phy->getCoord();
                 double d = uePos.distance(pos);

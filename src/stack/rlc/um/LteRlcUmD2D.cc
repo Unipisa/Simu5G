@@ -19,7 +19,7 @@ using namespace omnetpp;
 
 UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
-    MacNodeId nodeId = 0;
+    MacNodeId nodeId = MacNodeId(0);
     LogicalCid lcid = 0;
     if (lteInfo != nullptr) {
         nodeId = ctrlInfoToUeId(lteInfo);
@@ -34,7 +34,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
     UmTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end()) {
         // Not found: create
-        MacNodeId d2dPeer = 0;
+        MacNodeId d2dPeer = MacNodeId(0);
         std::stringstream buf;
 
         buf << "UmTxEntity Lcid: " << lcid;
@@ -52,7 +52,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
             " for node: " << nodeId << " for Lcid: " << lcid << "\n";
 
         // store per-peer map
-        if (d2dPeer != 0)
+        if (d2dPeer != MacNodeId(0))
             perPeerTxEntities_[d2dPeer].insert(txEnt);
 
         if (isEmptyingTxBuffer(d2dPeer))
@@ -107,7 +107,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
 void LteRlcUmD2D::resumeDownstreamInPackets(MacNodeId peerId)
 {
-    if (peerId == 0 || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
+    if (peerId == MacNodeId(0) || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return;
 
     auto it = perPeerTxEntities_.at(peerId).begin();
@@ -122,7 +122,7 @@ bool LteRlcUmD2D::isEmptyingTxBuffer(MacNodeId peerId)
 {
     EV << NOW << " LteRlcUmD2D::isEmptyingTxBuffer - peerId " << peerId << endl;
 
-    if (peerId == 0 || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
+    if (peerId == MacNodeId(0) || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return false;
 
     auto it = perPeerTxEntities_.at(peerId).begin();

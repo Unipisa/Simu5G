@@ -57,10 +57,10 @@ void MecResponseApp::handleRequest(cMessage *msg)
     EV << simTime() << "MecResponseApp::handleRequest - Received packet with number " << reqPkt->getSno() << ": delay: " << delay << endl;
 
     unsigned int ueAppId = reqPkt->getAppId();
-    unsigned ueBsId = reqPkt->getBsId();
+    MacNodeId ueBsId = reqPkt->getBsId();
 
     double responseTime = 0.0;
-    if (ueAppId != ueBsId) {
+    if (ueAppId != num(ueBsId)) {  //TODO type mismatch
         // add delay
         responseTime += uniform(0.015, 0.035);
     }

@@ -43,7 +43,7 @@ void LteHarqProcessRx::insertPdu(Codeword cw, Packet *pkt)
 
     if (!ndi && !(status_.at(cw) == RXHARQ_PDU_EMPTY) && !(status_.at(cw) == RXHARQ_PDU_CORRUPTED))
         throw cRuntimeError(
-                "Trying to insert macPdu in non-empty RX HARQ process: Node %d acid %d, codeword %d, ndi %d, status %d",
+                "Trying to insert macPdu in non-empty RX HARQ process: node %hu acid %d, codeword %d, ndi %d, status %d",
                 macOwner_->getMacNodeId(), acid_, cw, ndi, status_.at(cw));
 
     // deallocate corrupted PDU received in previous transmissions

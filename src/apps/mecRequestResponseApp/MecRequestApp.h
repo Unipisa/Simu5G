@@ -36,7 +36,7 @@ class MecRequestApp : public cSimpleModule
     inet::ModuleRefByPar<NRPhyUe> nrPhy_;
 
     unsigned int sno_;
-    unsigned int bsId_;
+    MacNodeId bsId_;
     unsigned int appId_;
 
     bool enableMigration_;

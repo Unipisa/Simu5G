@@ -51,17 +51,17 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
     virtual LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,
             TxMode currentTxMode,
             std::map<Remote, int> antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype,
-            int numRus, std::vector<double> snr, MacNodeId id = 0);
+            int numRus, std::vector<double> snr, MacNodeId id = MacNodeId(0));
 
     virtual LteFeedbackVector computeFeedback(const Remote remote, FeedbackType fbType,
             RbAllocationType rbAllocationType, TxMode currentTxMode,
             int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-            std::vector<double> snr, MacNodeId id = 0);
+            std::vector<double> snr, MacNodeId id = MacNodeId(0));
 
     virtual LteFeedback computeFeedback(const Remote remote, TxMode txmode, FeedbackType fbType,
             RbAllocationType rbAllocationType,
             int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-            std::vector<double> snr, MacNodeId id = 0);
+            std::vector<double> snr, MacNodeId id = MacNodeId(0));
 };
 
 } //namespace

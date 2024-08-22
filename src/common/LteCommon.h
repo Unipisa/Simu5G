@@ -80,14 +80,15 @@ class LteProtocol
 /// Current simulation time
 #define NOW                simTime()
 
+//TODO constexpr!
 /// Node Id bounds
-#define ENB_MIN_ID         1
-#define ENB_MAX_ID         1023
-#define BGUE_ID            1024
-#define UE_MIN_ID          1025
-#define NR_UE_MIN_ID       2049
-#define BGUE_MIN_ID        4097
-#define UE_MAX_ID          65535
+#define ENB_MIN_ID         MacNodeId(1)
+#define ENB_MAX_ID         MacNodeId(1023)
+#define BGUE_ID            MacNodeId(1024)
+#define UE_MIN_ID          MacNodeId(1025)
+#define NR_UE_MIN_ID       MacNodeId(2049)
+#define BGUE_MIN_ID        MacNodeId(4097)
+#define UE_MAX_ID          MacNodeId(65535)
 
 /// Max Number of Codewords
 #define MAX_CODEWORDS      2
@@ -96,13 +97,30 @@ class LteProtocol
 #define LTE_QCI_CLASSES    9
 
 /// MAC node ID
-typedef unsigned short MacNodeId;
+enum class MacNodeId : unsigned short {};  // emulate "strong typedef" with enum class
+constexpr MacNodeId MAC_NODE_ID_NONE = MacNodeId(0);
+
+// Facilitates finding places where the numeric value of MacNodeId is used
+inline unsigned short num(MacNodeId id) { return static_cast<unsigned short>(id); }
+
+inline std::ostream& operator<<(std::ostream& os, MacNodeId id) { os << static_cast<unsigned short>(id); return os; }
+
+// The following operators are mostly for simplifying comparisons and transformations involving UE_MIN_ID and similar constants
+inline bool operator<(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) < static_cast<unsigned short>(b); }
+inline bool operator>(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) > static_cast<unsigned short>(b); }
+inline bool operator<=(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) <= static_cast<unsigned short>(b); }
+inline bool operator>=(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) >= static_cast<unsigned short>(b); }
+inline MacNodeId operator+(MacNodeId a, unsigned int b) { return MacNodeId(static_cast<unsigned short>(a) + b); }
+inline MacNodeId operator-(MacNodeId a, unsigned int b) { return MacNodeId(static_cast<unsigned short>(a) - b); }
+inline MacNodeId operator-(unsigned int a, MacNodeId b) { return MacNodeId(a - static_cast<unsigned short>(b)); }
+inline unsigned short operator-(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) - static_cast<unsigned short>(b); }
+
 
 /// Cell node ID. It is numerically equal to eNodeB MAC node ID.
-typedef unsigned short MacCellId;
+typedef MacNodeId MacCellId;
 
 /// X2 node ID. It is equal to the eNodeB MAC Cell ID
-typedef unsigned short X2NodeId;
+typedef MacNodeId X2NodeId;
 
 /// Omnet Node Id
 typedef unsigned int OmnetId;

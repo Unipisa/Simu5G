@@ -27,7 +27,7 @@ MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     MacNodeId destId = binder_->getMacNodeId(destAddr);
 
     // check if the destination is inside the LTE network
-    if (destId == 0 || getDirection(destId) == UL) { // if not, the packet is destined to the eNB
+    if (destId == MacNodeId(0) || getDirection(destId) == UL) { // if not, the packet is destined to the eNB
         // UE is subject to handovers: master may change
         return binder_->getNextHop(lteInfo->getSourceId());
     }
@@ -70,7 +70,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     }
     else {
         destId = binder_->getMacNodeId(destAddr);
-        if (destId != 0) { // the destination is a UE within the LTE network
+        if (destId != MacNodeId(0)) { // the destination is a UE within the LTE network
             if (binder_->checkD2DCapability(nodeId_, destId)) {
                 // this way, we record the ID of the endpoints even if the connection is currently in IM
                 // this is useful for mode switching
@@ -78,8 +78,8 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
                 lteInfo->setD2dRxPeerId(destId);
             }
             else {
-                lteInfo->setD2dTxPeerId(0);
-                lteInfo->setD2dRxPeerId(0);
+                lteInfo->setD2dTxPeerId(MacNodeId(0));
+                lteInfo->setD2dRxPeerId(MacNodeId(0));
             }
 
             // set actual flow direction based (D2D/UL) based on the current mode (DM/IM) of this peering
@@ -87,8 +87,8 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         }
         else { // the destination is outside the LTE network
             lteInfo->setDirection(UL);
-            lteInfo->setD2dTxPeerId(0);
-            lteInfo->setD2dRxPeerId(0);
+            lteInfo->setD2dTxPeerId(MacNodeId(0));
+            lteInfo->setD2dRxPeerId(MacNodeId(0));
         }
     }
 

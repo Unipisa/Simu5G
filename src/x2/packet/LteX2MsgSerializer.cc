@@ -42,8 +42,8 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
         throw cRuntimeError("LteX2MsgSerializer::serialize of X2 message type is not implemented!");
 
     stream.writeByte(type);
-    stream.writeUint32Be(msg->getSourceId());
-    stream.writeUint32Be(msg->getDestinationId());
+    stream.writeUint32Be(num(msg->getSourceId()));
+    stream.writeUint32Be(num(msg->getDestinationId()));
     // note: length does not need to be serialized - it is calculated during deserialization
 
     // serialization of list containing the information elements
@@ -71,7 +71,7 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
             case X2_HANDOVER_CMD_IE: {
                 X2HandoverCommandIE *handoverCmd = check_and_cast<X2HandoverCommandIE *>(ie);
                 stream.writeByte(handoverCmd->isStartHandover());
-                stream.writeUint16Be(handoverCmd->getUeId());
+                stream.writeUint16Be(num(handoverCmd->getUeId()));
                 break;
             }
             default:
@@ -110,8 +110,8 @@ const Ptr<Chunk> LteX2MsgSerializer::deserialize(MemoryInputStream& stream) cons
             throw cRuntimeError("LteX2MsgSerializer::deserialize of X2 message type is not implemented!");
     }
 
-    msg->setSourceId(stream.readUint32Be());
-    msg->setDestinationId(stream.readUint32Be());
+    msg->setSourceId(MacNodeId(stream.readUint32Be()));
+    msg->setDestinationId(MacNodeId(stream.readUint32Be()));
     int32_t nrElements = stream.readUint16Be();
     for (int32_t i = 0; i < nrElements; i++) {
         X2InformationElement *ie;
@@ -140,7 +140,7 @@ const Ptr<Chunk> LteX2MsgSerializer::deserialize(MemoryInputStream& stream) cons
                 auto handoverCmd = new X2HandoverCommandIE();
                 if (stream.readByte() != 0)
                     handoverCmd->setStartHandover();
-                handoverCmd->setUeId(stream.readUint16Be());
+                handoverCmd->setUeId(MacNodeId(stream.readUint16Be()));
                 ie = handoverCmd;
                 break;
             }

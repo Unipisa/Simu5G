@@ -13,11 +13,11 @@
 
 namespace simu5g {
 
-Ecgi::Ecgi() : cellId_(-1), plmn_()
+Ecgi::Ecgi()
 {
 }
 
-Ecgi::Ecgi(MacCellId cellId) : plmn_()
+Ecgi::Ecgi(MacCellId cellId)
 {
     setCellId(cellId);
 }
@@ -31,7 +31,6 @@ Ecgi::Ecgi(const mec::Ecgi ecgi)
 {
     setEcgi(ecgi);
 }
-
 
 void Ecgi::setCellId(MacCellId cellId)
 {

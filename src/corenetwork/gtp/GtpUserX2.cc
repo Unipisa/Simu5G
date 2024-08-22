@@ -58,8 +58,8 @@ void GtpUserX2::handleFromStack(Packet *pkt)
 {
     // extract destination from the message
     auto x2Msg = pkt->peekAtFront<LteX2Message>();
-    X2NodeId destId = x2Msg->getDestinationId();
-    X2NodeId srcId = x2Msg->getSourceId();
+    X2NodeId destId = MacNodeId(x2Msg->getDestinationId());
+    X2NodeId srcId = MacNodeId(x2Msg->getSourceId());
     EV << "GtpUserX2::handleFromStack - Received a LteX2Message with destId[" << destId << "]" << endl;
 
     auto gtpMsg = makeShared<GtpUserMsg>();

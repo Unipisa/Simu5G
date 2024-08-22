@@ -22,7 +22,7 @@ namespace simu5g {
 class Ecgi : public AttributeBase
 {
   protected:
-    MacCellId cellId_;
+    MacCellId cellId_ = MacCellId(-1);
     Plmn plmn_;
 
     nlohmann::ordered_json toJsonCell() const; //should this be private?

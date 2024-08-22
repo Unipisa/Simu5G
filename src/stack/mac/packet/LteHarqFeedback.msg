@@ -11,6 +11,7 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
+import common.LteCommon;
 
 namespace simu5g;
 
@@ -32,11 +33,11 @@ class LteHarqFeedback extends inet::FieldsChunk
 class LteHarqFeedbackMirror extends LteHarqFeedback
 {
     d2dFeedback = true;
-    
+
     // Id of the D2D Transmitter
-    long d2dSenderId;
+    MacNodeId d2dSenderId;
     // Id of the D2D Receiver
-    long d2dReceiverId;   
+    MacNodeId d2dReceiverId;
     // Length (in bytes) of the corresponding PDU
     long pduLength;
 }

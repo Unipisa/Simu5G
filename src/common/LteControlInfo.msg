@@ -10,8 +10,8 @@
 //
 
 import inet.common.INETDefs;
-import common.LteCommon;
 import inet.common.TagBase;
+import common.LteCommon;
 
 namespace simu5g;
 
@@ -52,11 +52,11 @@ enum LteTrafficClass;
 class LteControlInfo extends inet::TagBase {
     //# Information shared between FlowControlInfo and UserControlInfo
 
-    uint16 sourceId;                                     // Source MacNodeId
-    uint16 destId;                                       // Destination MacNodeId
+    MacNodeId sourceId;                                  // Source MacNodeId
+    MacNodeId destId;                                    // Destination MacNodeId
     unsigned short direction enum(Direction);            // Traffic Direction (UL, DL, D2D)
-    uint16 d2dTxPeerId;
-    uint16 d2dRxPeerId;
+    MacNodeId d2dTxPeerId;
+    MacNodeId d2dRxPeerId;
 
     //# Traffic Control Information
 
@@ -70,10 +70,10 @@ class LteControlInfo extends inet::TagBase {
     //# Connection Information
 
     uint16 lcid;                                        // Logical Connection Identifier
-    int32 multicastGroupId = -1;                        // Identifier for a multicast group (it is in range [0:[2^28)-1] ) 
+    int32 multicastGroupId = -1;                        // Identifier for a multicast group (it is in range [0:[2^28)-1] )
                                                         // For unicast communications, this field is -1
-      
-                                                          
+
+
 }
 
 //
@@ -133,7 +133,7 @@ class UserControlInfo extends LteControlInfo {
     double d2dTxPower;                                 //D2D Transmission Power (used for feedback reporting of D2D links
     // blocks granted on all Remotes, all Bands
     unsigned int totalGrantedBlocks;
-    
+
     unsigned int grantId;		// grantId related to the grand that allowed the sending of a MEC PDU (used only for MAC PDU sent by UEs)
 
     //#

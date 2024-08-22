@@ -61,8 +61,8 @@ void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
         lteInfo->setD2dRxPeerId(destId);
     }
     else {
-        lteInfo->setD2dTxPeerId(0);
-        lteInfo->setD2dRxPeerId(0);
+        lteInfo->setD2dTxPeerId(MacNodeId(0));
+        lteInfo->setD2dRxPeerId(MacNodeId(0));
     }
 
     // CID Request

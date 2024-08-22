@@ -49,8 +49,8 @@ void BackgroundScheduler::initialize(int stage)
         prevBandStatus_[UL].resize(numBands_, 0);
         bandStatus_[DL].resize(numBands_, 0);
         prevBandStatus_[DL].resize(numBands_, 0);
-        ulPrevBandAllocation_.resize(numBands_, 0);
-        ulBandAllocation_.resize(numBands_, 0);
+        ulPrevBandAllocation_.resize(numBands_, MacNodeId(0));
+        ulBandAllocation_.resize(numBands_, MacNodeId(0));
 
         // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
         // Start TTI tick
@@ -218,7 +218,7 @@ void BackgroundScheduler::updateAllocation(Direction dir)
         // the cid for a background UE is a 32bit integer composed as:
         // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
         // - the least significant 16 bits are set to 0 (lcid=0)
-        bgCid = bgUeId << 16;
+        bgCid = num(bgUeId) << 16;
 
         bytesPerBlock = bgTrafficManager_->getBackloggedUeBytesPerBlock(bgUeId, dir);
 
@@ -237,7 +237,7 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
-        bgUeId = current.x_ >> 16;
+        bgUeId = MacNodeId(current.x_ >> 16);
         bytesPerBlock = current.score_;
 
         unsigned int buffer = bgTrafficManager_->getBackloggedUeBuffer(bgUeId, dir);
@@ -278,7 +278,7 @@ void BackgroundScheduler::resetAllocation(Direction dir)
         bandStatus_[dir][i] = 0;
         if (dir == UL) {
             ulPrevBandAllocation_[i] = ulBandAllocation_[i];
-            ulBandAllocation_[i] = 0;
+            ulBandAllocation_[i] = MacNodeId(0);
         }
     }
 }

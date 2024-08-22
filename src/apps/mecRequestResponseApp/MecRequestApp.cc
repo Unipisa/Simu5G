@@ -73,8 +73,8 @@ void MecRequestApp::handleMessage(cMessage *msg)
             // update BS ID
             if (enableMigration_ && bsId_ != nrPhy_->getMasterId()) {
                 MigrationTimer *migrationTimer = new MigrationTimer("migrationTimer");
-                migrationTimer->setOldAppId(bsId_);
-                migrationTimer->setNewAppId(nrPhy_->getMasterId());
+                migrationTimer->setOldAppId(num(bsId_));
+                migrationTimer->setNewAppId(num(nrPhy_->getMasterId()));
 
                 double migrationTime = uniform(20, 30);
                 scheduleAt(simTime() + migrationTime, migrationTimer);

@@ -123,7 +123,7 @@ void LteMacEnb::initialize(int stage)
 {
     LteMacBase::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
-        nodeId_ = networkNode_->par("macNodeId");
+        nodeId_ = MacNodeId(networkNode_->par("macNodeId").intValue());
 
         cellId_ = nodeId_;
 
@@ -348,7 +348,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
             Codeword cw = 0, otherCw = 0;
             MacCid cid = 0;
-            MacNodeId nodeId = 0;
+            MacNodeId nodeId = MacNodeId(0);
             unsigned int codewords = 0;
             unsigned int granted = 0;
             if (it != carrierScheduleList.end()) {
@@ -375,7 +375,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
                 cw = otherCw;
             }
 
-            std::pair<unsigned int, Codeword> otherPair(nodeId, otherCw);
+            std::pair<MacCid, Codeword> otherPair(num(nodeId), otherCw); // note: MacNodeId used as MacCid
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // Increment the number of allocated Cw

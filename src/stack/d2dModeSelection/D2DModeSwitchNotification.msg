@@ -15,11 +15,10 @@ import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
-//packet D2DModeSwitchNotification
 class D2DModeSwitchNotification extends inet::FieldsChunk
 {
     chunkLength = inet::B(1); // TODO: size 0
-    unsigned int peerId;
+    MacNodeId peerId;
     bool txSide;
     LteD2DMode oldMode;
     LteD2DMode newMode;
