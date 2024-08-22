@@ -43,9 +43,6 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
 {
     UserControlInfo *lteInfo = check_and_cast<UserControlInfo *>(msg->removeControlInfo());
 
-    if (useBattery_) {
-        //TODO BatteryAccess::drawCurrent(rxAmount_, 0);
-    }
     connectedNodeId_ = masterId_;
     LteAirFrame *frame = check_and_cast<LteAirFrame *>(msg);
     EV << "NRPhyUe: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;

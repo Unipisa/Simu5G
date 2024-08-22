@@ -46,7 +46,6 @@ void LtePhyUe::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         isNr_ = false;        // this might be true only if this module is a NrPhyUe
         nodeType_ = UE;
-        useBattery_ = false;  // disabled
         enableHandover_ = par("enableHandover");
         handoverLatency_ = par("handoverLatency").doubleValue();
         handoverDetachment_ = handoverLatency_ / 2.0;                      // TODO: make this configurable from NED
@@ -465,9 +464,6 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
 {
     UserControlInfo *lteInfo = dynamic_cast<UserControlInfo *>(msg->removeControlInfo());
 
-    if (useBattery_) {
-        //TODO BatteryAccess::drawCurrent(rxAmount_, 0);
-    }
     connectedNodeId_ = masterId_;
     LteAirFrame *frame = check_and_cast<LteAirFrame *>(msg);
     EV << "LtePhy: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;

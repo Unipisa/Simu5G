@@ -105,11 +105,6 @@ class LtePhyUe : public LtePhyBase
     // TODO: bring it to ned par!
     double dasRssiThreshold_;
 
-    /** set to false if a battery is not present in module or must have infinite capacity */
-    bool useBattery_;
-    double txAmount_;    // drawn current amount for tx operations (mA)
-    double rxAmount_;    // drawn current amount for rx operations (mA)
-
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlcUm_;
     inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
