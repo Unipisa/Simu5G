@@ -1,4 +1,4 @@
-//
+	//
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
@@ -49,20 +49,14 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
             return;
         }
         for (int i = 0; i < requests; ++i) {
-            if (i == requests - 1) {
-                HttpRequestMessage *req = new HttpRequestMessage();
+            HttpRequestMessage *req = new HttpRequestMessage();
+            req->setSockId(sock->getSocketId());
+            req->setState(CORRECT);
+            if (i == requests - 1)
                 req->setLastBackGroundRequest(true);
-                req->setSockId(sock->getSocketId());
-                req->setState(CORRECT);
-                service->newRequest(req); //use it to send back response message (only for the last message)
-            }
-            else {
-                HttpRequestMessage *req = new HttpRequestMessage();
+            else
                 req->setBackGroundRequest(true);
-                req->setSockId(sock->getSocketId());
-                req->setState(CORRECT);
-                service->newRequest(req);
-            }
+            service->newRequest(req);
         }
         delete msg;
         return;
