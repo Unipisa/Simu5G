@@ -29,9 +29,9 @@ typedef std::vector<int> BandStatus;
  * - RANDOM_ALLOC: the cell allocates X RBs, which are chosen randomly
  * - CONTIGUOUS_ALLOC: the cell allocates X contiguous RBs, starting from a given RB
  */
-typedef enum {
+enum BandAllocationType {
     FULL_ALLOC, RANDOM_ALLOC, CONTIGUOUS_ALLOC
-} BandAllocationType;
+};
 
 class ExtCell : public cSimpleModule
 {

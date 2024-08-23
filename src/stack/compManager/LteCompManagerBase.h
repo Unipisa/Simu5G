@@ -24,11 +24,11 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-typedef enum {
+enum CompNodeType {
     COMP_CLIENT,
     COMP_CLIENT_COORDINATOR,
     COMP_COORDINATOR
-} CompNodeType;
+};
 
 //
 // LteCompManagerBase
@@ -37,9 +37,7 @@ typedef enum {
 //
 class LteCompManagerBase : public cSimpleModule
 {
-
   protected:
-
     // X2 identifier
     X2NodeId nodeId_;
 

@@ -19,11 +19,11 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-typedef enum
+enum CGType
 {
     CG_DISTANCE,
     CG_UNKNOWN
-} CGType;
+};
 
 /*
  * Define the structure for graph vertices
