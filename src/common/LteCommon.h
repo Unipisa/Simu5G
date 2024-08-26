@@ -80,16 +80,6 @@ class LteProtocol
 /// Current simulation time
 #define NOW                simTime()
 
-//TODO constexpr!
-/// Node Id bounds
-#define ENB_MIN_ID         MacNodeId(1)
-#define ENB_MAX_ID         MacNodeId(1023)
-#define BGUE_ID            MacNodeId(1024)
-#define UE_MIN_ID          MacNodeId(1025)
-#define NR_UE_MIN_ID       MacNodeId(2049)
-#define BGUE_MIN_ID        MacNodeId(4097)
-#define UE_MAX_ID          MacNodeId(65535)
-
 /// Max Number of Codewords
 #define MAX_CODEWORDS      2
 
@@ -98,7 +88,6 @@ class LteProtocol
 
 /// MAC node ID
 enum class MacNodeId : unsigned short {};  // emulate "strong typedef" with enum class
-constexpr MacNodeId MAC_NODE_ID_NONE = MacNodeId(0);
 
 // Facilitates finding places where the numeric value of MacNodeId is used
 inline unsigned short num(MacNodeId id) { return static_cast<unsigned short>(id); }
@@ -114,6 +103,16 @@ inline MacNodeId operator+(MacNodeId a, unsigned int b) { return MacNodeId(stati
 inline MacNodeId operator-(MacNodeId a, unsigned int b) { return MacNodeId(static_cast<unsigned short>(a) - b); }
 inline MacNodeId operator-(unsigned int a, MacNodeId b) { return MacNodeId(a - static_cast<unsigned short>(b)); }
 inline unsigned short operator-(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) - static_cast<unsigned short>(b); }
+
+/// Node Id bounds
+constexpr MacNodeId NODEID_NONE  = MacNodeId(0);
+constexpr MacNodeId ENB_MIN_ID   = MacNodeId(1);
+constexpr MacNodeId ENB_MAX_ID   = MacNodeId(1023);
+constexpr MacNodeId BGUE_ID      = MacNodeId(1024);
+constexpr MacNodeId UE_MIN_ID    = MacNodeId(1025);
+constexpr MacNodeId NR_UE_MIN_ID = MacNodeId(2049);
+constexpr MacNodeId BGUE_MIN_ID  = MacNodeId(4097);
+constexpr MacNodeId UE_MAX_ID    = MacNodeId(65535);
 
 
 /// Cell node ID. It is numerically equal to eNodeB MAC node ID.
