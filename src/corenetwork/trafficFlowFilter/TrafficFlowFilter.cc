@@ -158,8 +158,8 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     }
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
-    destId = (destId != MacNodeId(0)) ? destId : binder_->getNrMacNodeId(destAddress.toIpv4());
-    if (destId == MacNodeId(0)) {
+    destId = (destId != NODEID_NONE) ? destId : binder_->getNrMacNodeId(destAddress.toIpv4());
+    if (destId == NODEID_NONE) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is not a UE. ";
         if (ownerType_ == UPF || ownerType_ == PGW) {
             EV << "Remove packet from the simulation." << endl;
@@ -172,7 +172,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     }
 
     MacNodeId destBS = binder_->getNextHop(destId);
-    if (destBS == MacNodeId(0)) {
+    if (destBS == NODEID_NONE) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
         return -2;   // the destination UE is not attached to any nodeB
     }

@@ -60,7 +60,7 @@ void GtpUser::initialize(int stage)
     if (isBaseStation(ownerType_))
         myMacNodeID = MacNodeId(networkNode_->par("macNodeId").intValue());
     else
-        myMacNodeID = MacNodeId(0);
+        myMacNodeID = NODEID_NONE;
 
     ie_ = detectInterface();
 }
@@ -250,7 +250,7 @@ void GtpUser::handleFromUdp(Packet *pkt)
     }
     else if (ownerType_ == PGW || ownerType_ == UPF) {
         MacNodeId destId = binder_->getMacNodeId(destAddr);
-        if (destId != MacNodeId(0)) { // final destination is a UE
+        if (destId != NODEID_NONE) { // final destination is a UE
             MacNodeId destMaster = binder_->getNextHop(destId);
 
             // check if the destination belongs to the same core network (for multi-operator scenarios)

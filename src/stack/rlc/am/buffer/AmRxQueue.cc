@@ -129,7 +129,7 @@ void AmRxQueue::discard(const int sn)
 
     Direction dir = UNKNOWN_DIRECTION;
 
-    MacNodeId dstId = MacNodeId(0), srcId = MacNodeId(0);
+    MacNodeId dstId = NODEID_NONE, srcId = NODEID_NONE;
 
     for (int i = 0; i <= index; ++i) {
         discarded_.at(i) = true;

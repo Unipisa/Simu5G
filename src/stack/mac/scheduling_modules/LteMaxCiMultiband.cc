@@ -45,7 +45,7 @@ void LteMaxCiMultiband::prepareSchedule()
 
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
-        if (nodeId == MacNodeId(0) || id == 0) {
+        if (nodeId == NODEID_NONE || id == 0) {
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);

@@ -419,8 +419,8 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     // true if we are computing a CQI for the DL direction
     bool cqiDl = false;
 
-    MacNodeId ueId = MacNodeId(0);
-    MacNodeId eNbId = MacNodeId(0);
+    MacNodeId ueId = NODEID_NONE;
+    MacNodeId eNbId = NODEID_NONE;
 
     Direction dir = (Direction)lteInfo->getDirection();
 
@@ -720,8 +720,8 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
     // true if we are computing a CQI for the DL direction
     bool cqiDl = false;
 
-    MacNodeId ueId = MacNodeId(0);
-    MacNodeId eNbId = MacNodeId(0);
+    MacNodeId ueId = NODEID_NONE;
+    MacNodeId eNbId = NODEID_NONE;
 
     Direction dir = (Direction)lteInfo->getDirection();
 
@@ -1589,7 +1589,7 @@ std::vector<double> LteRealisticChannelModel::getSIR(LteAirFrame *frame,
 
     Direction dir = (Direction)lteInfo->getDirection();
 
-    MacNodeId id = MacNodeId(0);
+    MacNodeId id = NODEID_NONE;
     double speed = 0.0;
 
     // if direction is DL

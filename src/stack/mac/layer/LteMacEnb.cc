@@ -348,7 +348,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
             Codeword cw = 0, otherCw = 0;
             MacCid cid = 0;
-            MacNodeId nodeId = MacNodeId(0);
+            MacNodeId nodeId = NODEID_NONE;
             unsigned int codewords = 0;
             unsigned int granted = 0;
             if (it != carrierScheduleList.end()) {

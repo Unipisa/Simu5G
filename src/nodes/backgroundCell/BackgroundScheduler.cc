@@ -49,8 +49,8 @@ void BackgroundScheduler::initialize(int stage)
         prevBandStatus_[UL].resize(numBands_, 0);
         bandStatus_[DL].resize(numBands_, 0);
         prevBandStatus_[DL].resize(numBands_, 0);
-        ulPrevBandAllocation_.resize(numBands_, MacNodeId(0));
-        ulBandAllocation_.resize(numBands_, MacNodeId(0));
+        ulPrevBandAllocation_.resize(numBands_, NODEID_NONE);
+        ulBandAllocation_.resize(numBands_, NODEID_NONE);
 
         // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
         // Start TTI tick
@@ -278,7 +278,7 @@ void BackgroundScheduler::resetAllocation(Direction dir)
         bandStatus_[dir][i] = 0;
         if (dir == UL) {
             ulPrevBandAllocation_[i] = ulBandAllocation_[i];
-            ulBandAllocation_[i] = MacNodeId(0);
+            ulBandAllocation_[i] = NODEID_NONE;
         }
     }
 }

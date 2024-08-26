@@ -73,14 +73,14 @@ const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction d
     // Here, we will get the feedback of the first peer in the map. However, algorithms may be
     // designed to solve this problem.
 
-    MacNodeId peerId = MacNodeId(0);  // FIXME this way, the getFeedbackD2D() function will return the first feedback available
+    MacNodeId peerId = NODEID_NONE;  // FIXME this way, the getFeedbackD2D() function will return the first feedback available
 
     const LteSummaryFeedback& sfb = (dir == UL || dir == DL) ? amc_->getFeedback(id, MACRO, txMode, dir, carrierFrequency) : amc_->getFeedbackD2D(id, MACRO, txMode, peerId, carrierFrequency);
 
     if (TxMode(txMode) == MULTI_USER) // Initialize MuMiMoMatrix
         amc_->muMimoMatrixInit(dir, id);
 
-    sfb.print(MacNodeId(0), id, dir, txMode, "AmcPilotD2D::computeTxParams");
+    sfb.print(NODEID_NONE, id, dir, txMode, "AmcPilotD2D::computeTxParams");
 
     // get a vector of  CQI over first CW
     std::vector<Cqi> summaryCqi = sfb.getCqi(0);

@@ -32,7 +32,7 @@ class NRPhyUe : public LtePhyUeD2D
     virtual void doHandover();
 
     // force handover to the given target node (0 means forcing detachment)
-    virtual void forceHandover(MacNodeId targetMasterNode = MacNodeId(0), double targetMasterRssi = 0.0);
+    virtual void forceHandover(MacNodeId targetMasterNode = NODEID_NONE, double targetMasterRssi = 0.0);
     void deleteOldBuffers(MacNodeId masterId);
 };
 

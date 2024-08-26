@@ -28,7 +28,7 @@ simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacket
 
 UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
-    MacNodeId nodeId = MacNodeId(0);
+    MacNodeId nodeId = NODEID_NONE;
     LogicalCid lcid = 0;
     if (lteInfo != nullptr) {
         nodeId = ctrlInfoToUeId(lteInfo);

@@ -158,7 +158,7 @@ void LtePhyUe::initialize(int stage)
 
             // binder calls
             // if dynamicCellAssociation selected a different master
-            if (candidateMasterId_ != MacNodeId(0) && candidateMasterId_ != masterId_) {
+            if (candidateMasterId_ != NODEID_NONE && candidateMasterId_ != masterId_) {
                 binder_->unregisterNextHop(masterId_, nodeId_);
                 binder_->registerNextHop(candidateMasterId_, nodeId_);
             }
@@ -177,7 +177,7 @@ void LtePhyUe::initialize(int stage)
         das_->setMasterRuSet(masterId_);
         emit(servingCellSignal_, (long)masterId_);
 
-        if (masterId_ == MacNodeId(0))
+        if (masterId_ == NODEID_NONE)
             masterMobility_ = nullptr;
         else {
             cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
@@ -186,7 +186,7 @@ void LtePhyUe::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION) {
         // get cellInfo at this stage because the next hop of the node is registered in the IP2Nic module at the INITSTAGE_NETWORK_LAYER
-        if (masterId_ > MacNodeId(0)) {
+        if (masterId_ > NODEID_NONE) {
             cellInfo_ = getCellInfo(binder_, nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             if (cellInfo_ != nullptr) {
@@ -284,7 +284,7 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
             }
             else { // lost connection from current master
                 if (candidateMasterId_ == masterId_) { // trigger detachment
-                    candidateMasterId_ = MacNodeId(0);
+                    candidateMasterId_ = NODEID_NONE;
                     currentMasterRssi_ = -999.0;
                     candidateMasterRssi_ = -999.0; // set candidate RSSI very bad as we currently do not have any.
                                                    // this ensures that each candidate with is at least as 'bad'
@@ -320,7 +320,7 @@ void LtePhyUe::triggerHandover()
 
     if (candidateMasterRssi_ == 0)
         EV << NOW << " LtePhyUe::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << masterId_ << ". Now detaching... " << endl;
-    else if (masterId_ == MacNodeId(0))
+    else if (masterId_ == NODEID_NONE)
         EV << NOW << " LtePhyUe::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateMasterId_ << "... " << endl;
     else
         EV << NOW << " LtePhyUe::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateMasterId_ << "... " << endl;
@@ -332,15 +332,15 @@ void LtePhyUe::triggerHandover()
     binder_->removeHandoverTriggered(nodeId_);
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
-    if (masterId_ != MacNodeId(0) && candidateMasterId_ != MacNodeId(0)) {
+    if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
         IP2Nic *enbIp2Nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2Nic->triggerHandoverSource(nodeId_, candidateMasterId_);
     }
 
     double handoverLatency;
-    if (masterId_ == MacNodeId(0))                                                // attachment only
+    if (masterId_ == NODEID_NONE)                                                // attachment only
         handoverLatency = handoverAttachment_;
-    else if (candidateMasterId_ == MacNodeId(0))                                                // detachment only
+    else if (candidateMasterId_ == NODEID_NONE)                                                // detachment only
         handoverLatency = handoverDetachment_;
     else
         handoverLatency = handoverDetachment_ + handoverAttachment_;
@@ -354,7 +354,7 @@ void LtePhyUe::doHandover()
     // if masterId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
     // if candidateMasterId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
 
-    if (masterId_ != MacNodeId(0)) {
+    if (masterId_ != NODEID_NONE) {
         // Delete Old Buffers
         deleteOldBuffers(masterId_);
 
@@ -364,7 +364,7 @@ void LtePhyUe::doHandover()
         oldAmc->detachUser(nodeId_, DL);
     }
 
-    if (candidateMasterId_ != MacNodeId(0)) {
+    if (candidateMasterId_ != NODEID_NONE) {
         LteAmc *newAmc = getAmcModule(candidateMasterId_);
         assert(newAmc != nullptr);
         newAmc->attachUser(nodeId_, UL);
@@ -372,10 +372,10 @@ void LtePhyUe::doHandover()
     }
 
     // binder calls
-    if (masterId_ != MacNodeId(0))
+    if (masterId_ != NODEID_NONE)
         binder_->unregisterNextHop(masterId_, nodeId_);
 
-    if (candidateMasterId_ != MacNodeId(0)) {
+    if (candidateMasterId_ != NODEID_NONE) {
         binder_->registerNextHop(candidateMasterId_, nodeId_);
         das_->setMasterRuSet(candidateMasterId_);
     }
@@ -400,7 +400,7 @@ void LtePhyUe::doHandover()
         hostModule->par("masterId").setIntValue(num(masterId_));
 
     // update reference to master node's mobility module
-    if (masterId_ == MacNodeId(0))
+    if (masterId_ == NODEID_NONE)
         masterMobility_ = nullptr;
     else {
         cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
@@ -408,10 +408,10 @@ void LtePhyUe::doHandover()
     }
 
     // update cellInfo
-    if (masterId_ != MacNodeId(0))
+    if (masterId_ != NODEID_NONE)
         cellInfo_->detachUser(nodeId_);
 
-    if (candidateMasterId_ != MacNodeId(0)) {
+    if (candidateMasterId_ != NODEID_NONE) {
         CellInfo *oldCellInfo = cellInfo_;
         LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(candidateMasterId_))->getSubmodule("cellularNic")->getSubmodule("mac"));
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
@@ -431,7 +431,7 @@ void LtePhyUe::doHandover()
     // collect stat
     emit(servingCellSignal_, (long)masterId_);
 
-    if (masterId_ == MacNodeId(0))
+    if (masterId_ == NODEID_NONE)
         EV << NOW << " LtePhyUe::doHandover - UE " << nodeId_ << " detached from the network" << endl;
     else
         EV << NOW << " LtePhyUe::doHandover - UE " << nodeId_ << " has completed handover to eNB " << masterId_ << "... " << endl;
@@ -441,7 +441,7 @@ void LtePhyUe::doHandover()
     ip2nic_->signalHandoverCompleteUe();
 
     // inform the eNB's IP2Nic module to forward data to the target eNB
-    if (oldMaster != MacNodeId(0) && candidateMasterId_ != MacNodeId(0)) {
+    if (oldMaster != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
         IP2Nic *enbIp2Nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2Nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
     }
@@ -779,7 +779,7 @@ void LtePhyUe::finish()
         // do this only during the deletion of the module during the simulation
 
         // do this only if this PHY layer is connected to a serving base station
-        if (masterId_ > MacNodeId(0)) {  //TODO !=0 ???
+        if (masterId_ > NODEID_NONE) {  //TODO !=0 ???
             // clear buffers
             deleteOldBuffers(masterId_);
 

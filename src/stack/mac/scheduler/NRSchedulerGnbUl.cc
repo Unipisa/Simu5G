@@ -55,7 +55,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                 // get current nodeId
                 MacNodeId nodeId = it->first;
 
-                if (nodeId == MacNodeId(0)) {
+                if (nodeId == NODEID_NONE) {
                     // UE has left the simulation - erase queue and continue
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
@@ -125,12 +125,12 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                     MacNodeId senderId = (it_d2d->first).first; // Transmitter
                     MacNodeId destId = (it_d2d->first).second;  // Receiver
 
-                    if (senderId == MacNodeId(0) || binder_->getOmnetId(senderId) == 0) {
+                    if (senderId == NODEID_NONE || binder_->getOmnetId(senderId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
                     }
-                    if (destId == MacNodeId(0) || binder_->getOmnetId(destId) == 0) {
+                    if (destId == NODEID_NONE || binder_->getOmnetId(destId) == 0) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;

@@ -245,7 +245,7 @@ class Binder : public cSimpleModule
      * @param masterId id of the master of this node, 0 if none (node is an eNB)
      * @return macNodeId assigned to the module
      */
-    MacNodeId registerNode(cModule *module, RanNodeType type, MacNodeId masterId = MacNodeId(0), bool registerNr = false);
+    MacNodeId registerNode(cModule *module, RanNodeType type, MacNodeId masterId = NODEID_NONE, bool registerNr = false);
 
     /**
      * Un-registers a node from the global Binder module.
@@ -345,11 +345,11 @@ class Binder : public cSimpleModule
     MacNodeId getMacNodeId(inet::Ipv4Address address)
     {
         if (macNodeIdToIPAddress_.find(address) == macNodeIdToIPAddress_.end())
-            return MacNodeId(0);
+            return NODEID_NONE;
         MacNodeId nodeId = macNodeIdToIPAddress_[address];
 
         // if the UE is disconnected (its master node is 0), check the NR node Id
-        if (getNextHop(nodeId) == MacNodeId(0))
+        if (getNextHop(nodeId) == NODEID_NONE)
             return getNrMacNodeId(address);
         return nodeId;
     }
@@ -363,7 +363,7 @@ class Binder : public cSimpleModule
     MacNodeId getNrMacNodeId(inet::Ipv4Address address)
     {
         if (nrMacNodeIdToIPAddress_.find(address) == nrMacNodeIdToIPAddress_.end())
-            return MacNodeId(0);
+            return NODEID_NONE;
         return nrMacNodeIdToIPAddress_[address];
     }
 

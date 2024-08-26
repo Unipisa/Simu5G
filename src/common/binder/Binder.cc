@@ -186,7 +186,7 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
 {
     Enter_Method_Silent("registerNode");
 
-    MacNodeId macNodeId = MacNodeId(0);
+    MacNodeId macNodeId = NODEID_NONE;
 
     if (type == UE) {
         if (!registerNr)
@@ -246,7 +246,7 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     if (secondaryNodeToMasterNode_.size() <= num(slaveId))
         secondaryNodeToMasterNode_.resize(num(slaveId) + 1);
 
-    if (masterId == MacNodeId(0))                         // this node is a master itself
+    if (masterId == NODEID_NONE)                         // this node is a master itself
         masterId = slaveId;
     secondaryNodeToMasterNode_[num(slaveId)] = masterId;
 }
@@ -348,7 +348,7 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 
     if (nextHop_.size() <= num(slaveId))
         return;
-    nextHop_[num(slaveId)] = MacNodeId(0);
+    nextHop_[num(slaveId)] = NODEID_NONE;
 }
 
 OmnetId Binder::getOmnetId(MacNodeId nodeId)
@@ -373,12 +373,12 @@ MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
     for (auto it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
         if (it->second == id)
             return it->first;
-    return MacNodeId(0);
+    return NODEID_NONE;
 }
 
 LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 {
-    if (id == MacNodeId(0))
+    if (id == NODEID_NONE)
         return nullptr;
 
     LteMacBase *mac;

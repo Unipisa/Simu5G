@@ -152,7 +152,7 @@ class LteChannelModel : public cSimpleModule
      * @param frame pointer to the packet
      * @param lteInfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, MacNodeId peerUeId, inet::Coord peerUeCoord, MacNodeId enbId = MacNodeId(0)) = 0;
+    virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo, MacNodeId peerUeId, inet::Coord peerUeCoord, MacNodeId enbId = NODEID_NONE) = 0;
     virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector) = 0;
 
     virtual bool isUplinkInterferenceEnabled() { return false; }

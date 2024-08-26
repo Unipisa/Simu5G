@@ -338,7 +338,7 @@ class LteMuMimoMatrix
 
   protected:
     MuMatrix muMatrix_;
-    MacNodeId maxNodeId_ = MacNodeId(0);
+    MacNodeId maxNodeId_ = NODEID_NONE;
 
     MacNodeId toNodeId(unsigned int i)
     {
@@ -355,7 +355,7 @@ class LteMuMimoMatrix
     void initialize(MacNodeId node)
     {
         muMatrix_.clear();
-        muMatrix_.resize(toIndex(node) + 1, MacNodeId(0));
+        muMatrix_.resize(toIndex(node) + 1, NODEID_NONE);
     }
 
     void addPair(MacNodeId id1, MacNodeId id2)

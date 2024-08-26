@@ -54,7 +54,7 @@ void LteMacUeD2D::initialize(int stage)
         // get parameters
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
 
-        if (cellId_ > MacNodeId(0)) { //TODO !=0 ?
+        if (cellId_ > NODEID_NONE) { //TODO !=0 ?
             preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
@@ -1048,7 +1048,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
 void LteMacUeD2D::doHandover(MacNodeId targetEnb)
 {
-    if (targetEnb == MacNodeId(0))
+    if (targetEnb == NODEID_NONE)
         enb_ = nullptr;
     else {
         if (preconfiguredTxParams_ != nullptr)

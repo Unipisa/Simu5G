@@ -216,7 +216,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
                  * OR make a 400 response telling one address is not available?
                  */
 
-                if (id == MacNodeId(0) || !findUe(id)) {
+                if (id == NODEID_NONE || !findUe(id)) {
                     EV << "IP DOES NOT EXIST" << endl;
                     Http::send400Response(socket_); //address is mandatory
                     return false;
@@ -237,7 +237,7 @@ bool CircleNotificationSubscription::fromJson(const nlohmann::ordered_json& body
         else {
             std::string add = jsonBody["address"];
             MacNodeId id = binder->getMacNodeId(inet::Ipv4Address(add.c_str()));
-            if (id == MacNodeId(0) || !findUe(id)) {
+            if (id == NODEID_NONE || !findUe(id)) {
                 EV << "IP DOES NOT EXIST" << endl;
             }
             else {

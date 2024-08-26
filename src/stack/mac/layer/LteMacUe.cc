@@ -87,7 +87,7 @@ void LteMacUe::initialize(int stage)
 
         binder_->addUeInfo(info);
 
-        if (cellId_ > MacNodeId(0)) {  //TODO !=0 ?
+        if (cellId_ > NODEID_NONE) {  //TODO !=0 ?
             LteAmc *amc = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, cellId_))->getAmc();
             amc->attachUser(nodeId_, UL);
             amc->attachUser(nodeId_, DL);

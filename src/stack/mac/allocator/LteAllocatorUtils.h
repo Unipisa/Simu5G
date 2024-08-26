@@ -67,7 +67,7 @@ struct AllocatedRbsPerUeInfo
     bool muMimoEnabled_ = false;
     // if false this user transmits on MAIN_PLANE, otherwise it is considered as secondary
     bool secondaryUser_ = false;
-    MacNodeId peerId_ = MacNodeId(0);
+    MacNodeId peerId_ = NODEID_NONE;
 
     // amount of blocks allocated for this UE for each remote and for each band
     std::map<Remote, PerBandAllocatedRbsMapA> ueAllocatedRbsMap_;

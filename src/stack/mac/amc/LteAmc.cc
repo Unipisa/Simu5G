@@ -131,7 +131,7 @@ void LteAmc::printFbhb(Direction dir)
                         continue;
 
                     EV << "@TxMode " << txMode << endl;
-                    ((*txit).get()).print(MacNodeId(0), (*revIndex)[i], dir, txMode, "LteAmc::printAmcFbhb");
+                    ((*txit).get()).print(NODEID_NONE, (*revIndex)[i], dir, txMode, "LteAmc::printAmcFbhb");
                 }
                 i++;
             }
@@ -476,7 +476,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
     // DEBUG
     EV << "PeerId: " << peerId << ", Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
-    fb.print(MacNodeId(0), id, D2D, "LteAmc::pushFeedbackD2D");
+    fb.print(NODEID_NONE, id, D2D, "LteAmc::pushFeedbackD2D");
 }
 
 const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency)
@@ -503,11 +503,11 @@ const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, T
         EV << NOW << " LteAmc::getFeedbackD2D detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
-    if (peerId == MacNodeId(0)) {
+    if (peerId == NODEID_NONE) {
         // we return the first feedback stored in the structure
         std::map<MacNodeId, History_>::iterator it = d2dFeedbackHistory_.at(carrierFrequency).begin();
         for ( ; it != d2dFeedbackHistory_.at(carrierFrequency).end(); ++it) {
-            if (it->first == MacNodeId(0)) // skip fake UE 0
+            if (it->first == NODEID_NONE) // skip fake UE 0
                 continue;
 
             if (binder_->getD2DCapability(id, it->first)) {
@@ -517,8 +517,8 @@ const LteSummaryFeedback& LteAmc::getFeedbackD2D(MacNodeId id, Remote antenna, T
         }
 
         // default feedback: when there is no feedback from peers yet (NOSIGNALCQI)
-        if (peerId == MacNodeId(0))
-            return d2dFeedbackHistory_.at(carrierFrequency).at(MacNodeId(0)).at(MACRO).at(0).at(txMode).get();
+        if (peerId == NODEID_NONE)
+            return d2dFeedbackHistory_.at(carrierFrequency).at(NODEID_NONE).at(MACRO).at(0).at(txMode).get();
     }
     return d2dFeedbackHistory_.at(carrierFrequency).at(peerId).at(antenna).at(d2dNodeIndex_.at(id)).at(txMode).get();
 }
@@ -1193,7 +1193,7 @@ void LteAmc::detachUser(MacNodeId nodeId, Direction dir)
             for ( ; hit != het; ++hit) {
                 std::map<MacNodeId, History_>::iterator ht = hit->second.begin();
                 for ( ; ht != hit->second.end(); ++ht) {
-                    if (ht->first == MacNodeId(0))                                          // skip fake UE 0
+                    if (ht->first == NODEID_NONE)                                          // skip fake UE 0
                         continue;
 
                     History_ *d2dHistory = &(ht->second);
@@ -1301,7 +1301,7 @@ void LteAmc::attachUser(MacNodeId nodeId, Direction dir)
             for ( ; hit != het; ++hit) {
                 std::map<MacNodeId, History_>::iterator ht = hit->second.begin();
                 for ( ; ht != hit->second.end(); ++ht) {
-                    if (ht->first == MacNodeId(0))                                          // skip fake UE 0
+                    if (ht->first == NODEID_NONE)                                          // skip fake UE 0
                         continue;
 
                     History_ *d2dHistory = &(ht->second);
@@ -1345,7 +1345,7 @@ void LteAmc::attachUser(MacNodeId nodeId, Direction dir)
             std::map<double, std::map<MacNodeId, History_>>::iterator het = d2dHistory->end();
             for ( ; hit != het; ++hit) {
                 History_ hist;
-                (hit->second)[MacNodeId(0)] = hist;
+                (hit->second)[NODEID_NONE] = hist;
                 std::map<MacNodeId, History_>::iterator ht = hit->second.begin();
                 for ( ; ht != hit->second.end(); ++ht) {
                     History_ *d2dHistory = &(ht->second);
@@ -1440,7 +1440,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
                     if (testCqi == NOSIGNALCQI)
                         continue;
 
-                    feedback.at(i).get().print(MacNodeId(0), nodeId, dir, TxMode(i), "LteAmc::testUe");
+                    feedback.at(i).get().print(NODEID_NONE, nodeId, dir, TxMode(i), "LteAmc::testUe");
                 }
             }
         }
@@ -1466,7 +1466,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
                         if (testCqi == NOSIGNALCQI)
                             continue;
 
-                        feedback.at(i).get().print(MacNodeId(0), nodeId, dir, TxMode(i), "LteAmc::testUe");
+                        feedback.at(i).get().print(NODEID_NONE, nodeId, dir, TxMode(i), "LteAmc::testUe");
                     }
                 }
             }
