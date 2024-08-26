@@ -186,7 +186,7 @@ void LtePhyUe::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION) {
         // get cellInfo at this stage because the next hop of the node is registered in the IP2Nic module at the INITSTAGE_NETWORK_LAYER
-        if (masterId_ > NODEID_NONE) {
+        if (masterId_ != NODEID_NONE) {
             cellInfo_ = getCellInfo(binder_, nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             if (cellInfo_ != nullptr) {
@@ -779,7 +779,7 @@ void LtePhyUe::finish()
         // do this only during the deletion of the module during the simulation
 
         // do this only if this PHY layer is connected to a serving base station
-        if (masterId_ > NODEID_NONE) {  //TODO !=0 ???
+        if (masterId_ != NODEID_NONE) {
             // clear buffers
             deleteOldBuffers(masterId_);
 

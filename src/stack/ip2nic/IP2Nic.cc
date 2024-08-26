@@ -403,7 +403,7 @@ void IP2Nic::registerMulticastGroups()
         uint32_t groupId = address & mask;
         binder_->registerMulticastGroup(nodeId_, groupId);
         // register also the NR stack, if any
-        if (nrNodeId_ > NODEID_NONE)
+        if (nrNodeId_ != NODEID_NONE)
             binder_->registerMulticastGroup(nrNodeId_, groupId);
     }
 }
@@ -424,8 +424,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
     if (nodeType_ == ENODEB || nodeType_ == GNODEB) {
         MacNodeId ueId = binder_->getMacNodeId((Ipv4Address)ci->getDstAddr());
         MacNodeId nrUeId = binder_->getNrMacNodeId((Ipv4Address)ci->getDstAddr());
-        bool ueLteStack = (binder_->getNextHop(ueId) > NODEID_NONE);  //TODO use "!=" ?
-        bool ueNrStack = (binder_->getNextHop(nrUeId) > NODEID_NONE); //TODO use "!=" ?
+        bool ueLteStack = (binder_->getNextHop(ueId) != NODEID_NONE);
+        bool ueNrStack = (binder_->getNextHop(nrUeId) != NODEID_NONE);
 
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20) { // use split bearer TODO fix threshold
             // even packets go through the LTE eNodeB
@@ -457,8 +457,8 @@ bool IP2Nic::markPacket(inet::Ptr<FlowControlInfo> ci)
     }
 
     if (nodeType_ == UE) {
-        bool ueLteStack = (binder_->getNextHop(nodeId_) > NODEID_NONE); //TODO use "!=" ?
-        bool ueNrStack = (binder_->getNextHop(nrNodeId_) > NODEID_NONE); //TODO use "!=" ?
+        bool ueLteStack = (binder_->getNextHop(nodeId_) != NODEID_NONE);
+        bool ueNrStack = (binder_->getNextHop(nrNodeId_) != NODEID_NONE);
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && ci->getTypeOfService() >= 20) { // use split bearer TODO fix threshold
             int sentPackets;
             if ((sentPackets = sbTable_->find_entry(ci->getSrcAddr(), ci->getDstAddr(), ci->getTypeOfService())) < 0)

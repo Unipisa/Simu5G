@@ -76,7 +76,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " init" << endl;
 
-        if (masterId_ > NODEID_NONE)   //TODO !=0???                          // only if not detached
+        if (masterId_ != NODEID_NONE)                          // only if not detached
             initCellInfo();
 
         phy_.reference(this, "phyModule", true);
@@ -93,7 +93,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
            << " feedback computation initialize" << endl;
         WATCH(numBands_);
         WATCH(numPreferredBands_);
-        if (masterId_ > NODEID_NONE && usePeriodic_) {  //TODO !=0 ?
+        if (masterId_ != NODEID_NONE && usePeriodic_) {
             tPeriodicSensing_->start(0);
         }
     }

@@ -54,7 +54,7 @@ void LteMacUeD2D::initialize(int stage)
         // get parameters
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
 
-        if (cellId_ > NODEID_NONE) { //TODO !=0 ?
+        if (cellId_ != NODEID_NONE) {
             preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
