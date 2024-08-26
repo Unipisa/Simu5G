@@ -21,12 +21,18 @@ LteHarqProcessTx::LteHarqProcessTx(Binder *binder, unsigned char acid, unsigned 
         numEmptyUnits_(numUnits), numSelected_(0),
         dropped_(false)
 {
-    units_ = new UnitVector(numUnits);
+    units_.resize(numUnits);
 
     // H-ARQ unit instances
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
-        (*units_)[i] = new LteHarqUnitTx(binder, acid, i, macOwner_, dstMac);
+        units_[i] = new LteHarqUnitTx(binder, acid, i, macOwner_, dstMac);
     }
+}
+
+LteHarqProcessTx::~LteHarqProcessTx()
+{
+    for (auto unit : units_)
+        delete unit;
 }
 
 std::vector<UnitStatus> LteHarqProcessTx::getProcessStatus()
@@ -45,7 +51,7 @@ void LteHarqProcessTx::insertPdu(Packet *pkt, Codeword cw)
     auto pdu = pkt->peekAtFront<LteMacPdu>();
     numEmptyUnits_--;
     numSelected_++;
-    (*units_)[cw]->insertPdu(pkt);
+    units_[cw]->insertPdu(pkt);
     dropped_ = false;
 }
 
@@ -55,7 +61,7 @@ void LteHarqProcessTx::markSelected(Codeword cw)
         throw cRuntimeError("H-ARQ TX process: cannot select another unit because they are all already selected");
 
     numSelected_++;
-    (*units_)[cw]->markSelected();
+    units_[cw]->markSelected();
 }
 
 Packet *LteHarqProcessTx::extractPdu(Codeword cw)
@@ -64,14 +70,14 @@ Packet *LteHarqProcessTx::extractPdu(Codeword cw)
         throw cRuntimeError("H-ARQ TX process: cannot extract pdu: numSelected = 0 ");
 
     numSelected_--;
-    auto pdu = (*units_)[cw]->extractPdu();
+    auto pdu = units_[cw]->extractPdu();
     auto tmp = pdu->peekAtFront<LteMacPdu>();
     return pdu;
 }
 
 bool LteHarqProcessTx::pduFeedback(HarqAcknowledgment fb, Codeword cw)
 {
-    bool reset = (*units_)[cw]->pduFeedback(fb);
+    bool reset = units_[cw]->pduFeedback(fb);
 
     if (reset) {
         numEmptyUnits_++;
@@ -83,7 +89,7 @@ bool LteHarqProcessTx::pduFeedback(HarqAcknowledgment fb, Codeword cw)
 
 bool LteHarqProcessTx::selfNack(Codeword cw)
 {
-    bool reset = (*units_)[cw]->selfNack();
+    bool reset = units_[cw]->selfNack();
 
     if (reset) {
         numEmptyUnits_++;
@@ -96,7 +102,7 @@ bool LteHarqProcessTx::selfNack(Codeword cw)
 bool LteHarqProcessTx::hasReadyUnits()
 {
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
-        if ((*units_)[i]->isReady())
+        if (units_[i]->isReady())
             return true;
     }
     return false;
@@ -107,8 +113,8 @@ simtime_t LteHarqProcessTx::getOldestUnitTxTime()
     simtime_t oldestTxTime = NOW + 1;
     simtime_t curTxTime = 0;
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
-        if ((*units_)[i]->isReady()) {
-            curTxTime = (*units_)[i]->getTxTime();
+        if (units_[i]->isReady()) {
+            curTxTime = units_[i]->getTxTime();
             if (curTxTime < oldestTxTime) {
                 oldestTxTime = curTxTime;
             }
@@ -122,7 +128,7 @@ CwList LteHarqProcessTx::readyUnitsIds()
     CwList ul;
 
     for (Codeword i = 0; i < numHarqUnits_; i++) {
-        if ((*units_)[i]->isReady()) {
+        if (units_[i]->isReady()) {
             ul.push_back(i);
         }
     }
@@ -133,7 +139,7 @@ CwList LteHarqProcessTx::emptyUnitsIds()
 {
     CwList ul;
     for (Codeword i = 0; i < numHarqUnits_; i++) {
-        if ((*units_)[i]->isEmpty()) {
+        if (units_[i]->isEmpty()) {
             ul.push_back(i);
         }
     }
@@ -144,7 +150,7 @@ CwList LteHarqProcessTx::selectedUnitsIds()
 {
     CwList ul;
     for (Codeword i = 0; i < numHarqUnits_; i++) {
-        if ((*units_)[i]->isMarked()) {
+        if (units_[i]->isMarked()) {
             ul.push_back(i);
         }
     }
@@ -158,19 +164,19 @@ bool LteHarqProcessTx::isEmpty()
 
 Packet *LteHarqProcessTx::getPdu(Codeword cw)
 {
-    auto temp = (*units_)[cw]->getPdu()->peekAtFront<LteMacPdu>();
-    return (*units_)[cw]->getPdu();
+    auto temp = units_[cw]->getPdu()->peekAtFront<LteMacPdu>();
+    return units_[cw]->getPdu();
 }
 
 long LteHarqProcessTx::getPduId(Codeword cw)
 {
-    return (*units_)[cw]->getMacPduId();
+    return units_[cw]->getMacPduId();
 }
 
 void LteHarqProcessTx::forceDropProcess()
 {
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
-        (*units_)[i]->forceDropUnit();
+        units_[i]->forceDropUnit();
     }
     numEmptyUnits_ = numHarqUnits_;
     numSelected_ = 0;
@@ -179,10 +185,10 @@ void LteHarqProcessTx::forceDropProcess()
 
 bool LteHarqProcessTx::forceDropUnit(Codeword cw)
 {
-    if ((*units_)[cw]->isMarked())
+    if (units_[cw]->isMarked())
         numSelected_--;
 
-    (*units_)[cw]->forceDropUnit();
+    units_[cw]->forceDropUnit();
     numEmptyUnits_++;
 
     // empty process?
@@ -191,43 +197,43 @@ bool LteHarqProcessTx::forceDropUnit(Codeword cw)
 
 TxHarqPduStatus LteHarqProcessTx::getUnitStatus(Codeword cw)
 {
-    return (*units_)[cw]->getStatus();
+    return units_[cw]->getStatus();
 }
 
 void LteHarqProcessTx::dropPdu(Codeword cw)
 {
-    (*units_)[cw]->dropPdu();
+    units_[cw]->dropPdu();
     numEmptyUnits_++;
 }
 
 bool LteHarqProcessTx::isUnitEmpty(Codeword cw)
 {
-    return (*units_)[cw]->isEmpty();
+    return units_[cw]->isEmpty();
 }
 
 bool LteHarqProcessTx::isUnitReady(Codeword cw)
 {
-    return (*units_)[cw]->isReady();
+    return units_[cw]->isReady();
 }
 
 unsigned char LteHarqProcessTx::getTransmissions(Codeword cw)
 {
-    return (*units_)[cw]->getTransmissions();
+    return units_[cw]->getTransmissions();
 }
 
 int64_t LteHarqProcessTx::getPduLength(Codeword cw)
 {
-    return (*units_)[cw]->getPduLength();
+    return units_[cw]->getPduLength();
 }
 
 simtime_t LteHarqProcessTx::getTxTime(Codeword cw)
 {
-    return (*units_)[cw]->getTxTime();
+    return units_[cw]->getTxTime();
 }
 
 bool LteHarqProcessTx::isUnitMarked(Codeword cw)
 {
-    return (*units_)[cw]->isMarked();
+    return units_[cw]->isMarked();
 }
 
 bool LteHarqProcessTx::isDropped()
@@ -248,17 +254,6 @@ bool LteHarqProcessTx::isHarqProcessActive()
             return true;
     }
     return false;
-}
-
-LteHarqProcessTx::~LteHarqProcessTx()
-{
-    for (auto it = units_->begin(); it != units_->end(); ++it)
-        delete *it;
-
-    units_->clear();
-    delete units_;
-    units_ = nullptr;
-    macOwner_ = nullptr;
 }
 
 } //namespace

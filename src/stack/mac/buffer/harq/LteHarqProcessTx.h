@@ -39,7 +39,7 @@ class LteHarqProcessTx : noncopyable
     LteMacBase *macOwner_;
 
     /// contained units vector
-    UnitVector *units_;
+    UnitVector units_;
 
     /// total number of processes in this H-ARQ buffer
     unsigned int numProcesses_;

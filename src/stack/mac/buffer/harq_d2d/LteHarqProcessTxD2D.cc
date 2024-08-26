@@ -20,18 +20,16 @@ LteHarqProcessTxD2D::LteHarqProcessTxD2D(Binder *binder, unsigned char acid, uns
 {
     macOwner_ = macOwner;
     acid_ = acid;
-    numHarqUnits_ = numUnits;
-    units_ = new UnitVector(numUnits);
     numProcesses_ = numProcesses;
     numEmptyUnits_ = numUnits; //++ @ insert, -- @ unit reset (ack or fourth nack)
     numSelected_ = 0; //++ @ markSelected and insert, -- @ extract/sendDown
 
-    // H-ARQ unit instances
+    // H-ARQ unit instances (overwrite the items the base class allocated)
     for (unsigned int i = 0; i < numHarqUnits_; i++) {
-        (*units_)[i] = new LteHarqUnitTxD2D(binder, acid, i, macOwner_, dstMac);
+        delete units_[i];
+        units_[i] = new LteHarqUnitTxD2D(binder, acid, i, macOwner_, dstMac);
     }
 }
-
 
 Packet *LteHarqProcessTxD2D::extractPdu(Codeword cw)
 {
@@ -39,7 +37,7 @@ Packet *LteHarqProcessTxD2D::extractPdu(Codeword cw)
         throw cRuntimeError("H-ARQ TX process: cannot extract PDU: numSelected = 0 ");
 
     numSelected_--;
-    Packet *pkt = (*units_)[cw]->extractPdu();
+    Packet *pkt = units_[cw]->extractPdu();
     auto pdu = pkt->peekAtFront<LteMacPdu>();
     auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
     if (infoVec.empty())
