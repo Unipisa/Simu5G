@@ -34,7 +34,7 @@ void NRPdcpRrcEnb::initialize(int stage)
  */
 void NRPdcpRrcEnb::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     // Control Information
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
@@ -117,7 +117,7 @@ void NRPdcpRrcEnb::fromLowerLayer(cPacket *pktAux)
         return;
     }
 
-    emit(receivedPacketFromLowerLayer, pkt);
+    emit(receivedPacketFromLowerLayerSignal_, pkt);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 

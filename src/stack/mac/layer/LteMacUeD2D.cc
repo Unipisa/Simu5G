@@ -27,7 +27,7 @@ Define_Module(LteMacUeD2D);
 
 using namespace inet;
 
-simsignal_t LteMacUeD2D::rcvdD2DModeSwitchNotification_ = registerSignal("rcvdD2DModeSwitchNotification");
+simsignal_t LteMacUeD2D::rcvdD2DModeSwitchNotificationSignal_ = registerSignal("rcvdD2DModeSwitchNotification");
 
 LteMacUeD2D::~LteMacUeD2D()
 {
@@ -442,7 +442,7 @@ void LteMacUeD2D::handleMessage(cMessage *msg)
                 " from port " << pkt->getArrivalGate()->getName() << endl;
 
             // message from PHY_to_MAC gate (from the lower layer)
-            emit(receivedPacketFromLowerLayer, pkt);
+            emit(receivedPacketFromLowerLayerSignal_, pkt);
 
             // call handler
             macHandleD2DModeSwitch(pkt);
@@ -875,7 +875,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
     LteD2DMode oldMode = switchPkt->getOldMode();
 
     if (txSide) {
-        emit(rcvdD2DModeSwitchNotification_, (long)1);
+        emit(rcvdD2DModeSwitchNotificationSignal_, (long)1);
 
         Direction newDirection = (newMode == DM) ? D2D : UL;
         Direction oldDirection = (oldMode == DM) ? D2D : UL;

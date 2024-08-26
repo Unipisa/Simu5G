@@ -13,7 +13,7 @@
 
 namespace simu5g {
 
-simsignal_t MecResponseApp::recvRequestSno_ = registerSignal("recvRequestSno");
+simsignal_t MecResponseApp::recvRequestSnoSignal_ = registerSignal("recvRequestSno");
 
 Define_Module(MecResponseApp);
 
@@ -74,7 +74,7 @@ void MecResponseApp::handleRequest(cMessage *msg)
 
     scheduleAt(simTime() + responseTime, packet);
 
-    emit(recvRequestSno_, (long)reqPkt->getSno());
+    emit(recvRequestSnoSignal_, (long)reqPkt->getSno());
 }
 
 void MecResponseApp::sendResponse(cMessage *msg)

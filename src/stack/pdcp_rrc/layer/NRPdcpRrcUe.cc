@@ -63,7 +63,7 @@ MacNodeId NRPdcpRrcUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
  */
 void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     // Control Information
     auto pkt = check_and_cast<Packet *>(pktAux);
@@ -256,7 +256,7 @@ void NRPdcpRrcUe::sendToLowerLayer(Packet *pkt)
         // Send message
         send(pkt, (lteInfo->getRlcType() == UM ? nrUmSap_[OUT_GATE] : nrAmSap_[OUT_GATE]));
 
-        emit(sentPacketToLowerLayer, pkt);
+        emit(sentPacketToLowerLayerSignal_, pkt);
     }
     else
         LtePdcpRrcBase::sendToLowerLayer(pkt);

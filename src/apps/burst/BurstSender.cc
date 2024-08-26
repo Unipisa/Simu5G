@@ -19,7 +19,7 @@ namespace simu5g {
 
 Define_Module(BurstSender);
 
-simsignal_t BurstSender::burstSentPkt_ = registerSignal("burstSentPkt");
+simsignal_t BurstSender::burstSentPktSignal_ = registerSignal("burstSentPkt");
 
 BurstSender::~BurstSender()
 {
@@ -129,7 +129,7 @@ void BurstSender::sendPacket()
 
     socket.sendTo(packet, destAddress_, destPort_);
 
-    emit(burstSentPkt_, (long)msgId);
+    emit(burstSentPktSignal_, (long)msgId);
 
     idFrame_++;
     if (idFrame_ < burstSize_)

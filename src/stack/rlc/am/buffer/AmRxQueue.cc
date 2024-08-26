@@ -53,24 +53,24 @@ void AmRxQueue::initialize()
     LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB) {
-        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossUl");
-        rlcPacketLoss_ = registerSignal("rlcPacketLossUl");
-        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossUl");
-        rlcDelay_ = registerSignal("rlcDelayUl");
-        rlcThroughput_ = registerSignal("rlcThroughputUl");
-        rlcPduDelay_ = registerSignal("rlcPduDelayUl");
-        rlcPduThroughput_ = registerSignal("rlcPduThroughputUl");
-        rlcCellThroughput_ = registerSignal("rlcCellThroughputUl");
+        rlcCellPacketLossSignal_ = registerSignal("rlcCellPacketLossUl");
+        rlcPacketLossSignal_ = registerSignal("rlcPacketLossUl");
+        rlcPduPacketLossSignal_ = registerSignal("rlcPduPacketLossUl");
+        rlcDelaySignal_ = registerSignal("rlcDelayUl");
+        rlcThroughputSignal_ = registerSignal("rlcThroughputUl");
+        rlcPduDelaySignal_ = registerSignal("rlcPduDelayUl");
+        rlcPduThroughputSignal_ = registerSignal("rlcPduThroughputUl");
+        rlcCellThroughputSignal_ = registerSignal("rlcCellThroughputUl");
     }
     else {
-        rlcPacketLoss_ = registerSignal("rlcPacketLossDl");
-        rlcPduPacketLoss_ = registerSignal("rlcPduPacketLossDl");
-        rlcDelay_ = registerSignal("rlcDelayDl");
-        rlcThroughput_ = registerSignal("rlcThroughputDl");
-        rlcPduDelay_ = registerSignal("rlcPduDelayDl");
-        rlcPduThroughput_ = registerSignal("rlcPduThroughputDl");
-        rlcCellThroughput_ = registerSignal("rlcCellThroughputDl");
-        rlcCellPacketLoss_ = registerSignal("rlcCellPacketLossDl");
+        rlcPacketLossSignal_ = registerSignal("rlcPacketLossDl");
+        rlcPduPacketLossSignal_ = registerSignal("rlcPduPacketLossDl");
+        rlcDelaySignal_ = registerSignal("rlcDelayDl");
+        rlcThroughputSignal_ = registerSignal("rlcThroughputDl");
+        rlcPduDelaySignal_ = registerSignal("rlcPduDelayDl");
+        rlcPduThroughputSignal_ = registerSignal("rlcPduThroughputDl");
+        rlcCellThroughputSignal_ = registerSignal("rlcCellThroughputDl");
+        rlcCellPacketLossSignal_ = registerSignal("rlcCellPacketLossDl");
     }
 }
 
@@ -168,12 +168,12 @@ void AmRxQueue::discard(const int sn)
         // UE module
         cModule *ue = getRlcByMacNodeId(binder_, (dir == DL ? dstId : srcId), UM);
         if (ue != nullptr)
-            ue->emit(rlcPacketLoss_, 1.0);
+            ue->emit(rlcPacketLossSignal_, 1.0);
 
         // NODEB
         cModule *nodeb = getRlcByMacNodeId(binder_, (dir == DL ? srcId : dstId), UM);
         if (nodeb != nullptr)
-            nodeb->emit(rlcCellPacketLoss_, 1.0);
+            nodeb->emit(rlcCellPacketLossSignal_, 1.0);
     }
 }
 
@@ -390,13 +390,13 @@ void AmRxQueue::passUp(const int index)
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
     if (nodeb != nullptr) {
-        nodeb->emit(rlcCellThroughput_, cellTputSample);
-        nodeb->emit(rlcCellPacketLoss_, 0.0);
+        nodeb->emit(rlcCellThroughputSignal_, cellTputSample);
+        nodeb->emit(rlcCellPacketLossSignal_, 0.0);
     }
     if (ue != nullptr) {
-        ue->emit(rlcThroughput_, tputSample);
-        ue->emit(rlcDelay_, delay);
-        ue->emit(rlcPacketLoss_, 0.0);
+        ue->emit(rlcThroughputSignal_, tputSample);
+        ue->emit(rlcDelaySignal_, delay);
+        ue->emit(rlcPacketLossSignal_, 0.0);
     }
 
     // Get the SDU and pass it to the upper layers - PDU // SDU // PDCPPDU

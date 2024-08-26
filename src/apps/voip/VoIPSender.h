@@ -49,7 +49,7 @@ class VoIPSender : public cSimpleModule
     unsigned int totalSentBytes_;
     simtime_t warmUpPer_;
 
-    static simsignal_t voIPGeneratedThroughput_;
+    static simsignal_t voIPGeneratedThroughputSignal_;
     // ----------------------------
 
     cMessage *selfSender_ = nullptr;

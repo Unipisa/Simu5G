@@ -18,12 +18,12 @@ namespace simu5g {
 Define_Module(TrafficGeneratorBase);
 
 // statistics
-simsignal_t TrafficGeneratorBase::bgMeasuredSinrDl_ = registerSignal("bgMeasuredSinrDl");
-simsignal_t TrafficGeneratorBase::bgMeasuredSinrUl_ = registerSignal("bgMeasuredSinrUl");
-simsignal_t TrafficGeneratorBase::bgAverageCqiDl_ = registerSignal("bgAverageCqiDl");
-simsignal_t TrafficGeneratorBase::bgAverageCqiUl_ = registerSignal("bgAverageCqiUl");
-simsignal_t TrafficGeneratorBase::bgHarqErrorRateDl_ = registerSignal("bgHarqErrorRateDl");
-simsignal_t TrafficGeneratorBase::bgHarqErrorRateUl_ = registerSignal("bgHarqErrorRateUl");
+simsignal_t TrafficGeneratorBase::bgMeasuredSinrDlSignal_ = registerSignal("bgMeasuredSinrDl");
+simsignal_t TrafficGeneratorBase::bgMeasuredSinrUlSignal_ = registerSignal("bgMeasuredSinrUl");
+simsignal_t TrafficGeneratorBase::bgAverageCqiDlSignal_ = registerSignal("bgAverageCqiDl");
+simsignal_t TrafficGeneratorBase::bgAverageCqiUlSignal_ = registerSignal("bgAverageCqiUl");
+simsignal_t TrafficGeneratorBase::bgHarqErrorRateDlSignal_ = registerSignal("bgHarqErrorRateDl");
+simsignal_t TrafficGeneratorBase::bgHarqErrorRateUlSignal_ = registerSignal("bgHarqErrorRateUl");
 
 TrafficGeneratorBase::TrafficGeneratorBase()
 {
@@ -251,9 +251,9 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
 
     // this simulates a transmission, so emit CQI statistic
     if (dir == DL)
-        emit(bgAverageCqiDl_, (long)cqi_[DL]);
+        emit(bgAverageCqiDlSignal_, (long)cqi_[DL]);
     else
-        emit(bgAverageCqiUl_, (long)cqi_[UL]);
+        emit(bgAverageCqiUlSignal_, (long)cqi_[UL]);
 
     // "schedule" a retransmission with the given probability
     double err = uniform(0.0, 1.0);
@@ -264,15 +264,15 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
         scheduleAt(NOW + rtxDelay_[dir], rtxNotification);
 
         if (dir == DL)
-            emit(bgHarqErrorRateDl_, 1.0);
+            emit(bgHarqErrorRateDlSignal_, 1.0);
         else
-            emit(bgHarqErrorRateUl_, 1.0);
+            emit(bgHarqErrorRateUlSignal_, 1.0);
     }
     else {
         if (dir == DL)
-            emit(bgHarqErrorRateDl_, 0.0);
+            emit(bgHarqErrorRateDlSignal_, 0.0);
         else
-            emit(bgHarqErrorRateUl_, 0.0);
+            emit(bgHarqErrorRateUlSignal_, 0.0);
     }
 
     return (!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir];
@@ -290,9 +290,9 @@ void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalI
 void TrafficGeneratorBase::collectMeasuredSinr(double sample, Direction dir)
 {
     if (dir == DL)
-        emit(bgMeasuredSinrDl_, sample);
+        emit(bgMeasuredSinrDlSignal_, sample);
     else
-        emit(bgMeasuredSinrUl_, sample);
+        emit(bgMeasuredSinrUlSignal_, sample);
 }
 
 } //namespace

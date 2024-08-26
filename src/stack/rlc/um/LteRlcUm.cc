@@ -21,10 +21,10 @@ Define_Module(LteRlcUm);
 using namespace omnetpp;
 
 // statistics
-simsignal_t LteRlcUm::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LteRlcUm::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LteRlcUm::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-simsignal_t LteRlcUm::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteRlcUm::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteRlcUm::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteRlcUm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
 UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
@@ -126,7 +126,7 @@ void LteRlcUm::sendDefragmented(cPacket *pkt)
     EV << "LteRlcUm : Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
     send(pkt, up_[OUT_GATE]);
 
-    emit(sentPacketToUpperLayer, pkt);
+    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
@@ -137,7 +137,7 @@ void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
     pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
     EV << "LteRlcUm : Sending packet " << pktAux->getName() << " to port UM_Sap_down$o\n";
     send(pktAux, down_[OUT_GATE]);
-    emit(sentPacketToLowerLayer, pkt);
+    emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
 void LteRlcUm::dropBufferOverflow(cPacket *pktAux)
@@ -151,7 +151,7 @@ void LteRlcUm::dropBufferOverflow(cPacket *pktAux)
 
 void LteRlcUm::handleUpperMessage(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
@@ -217,7 +217,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         delete pkt;
     }
     else {
-        emit(receivedPacketFromLowerLayer, pkt);
+        emit(receivedPacketFromLowerLayerSignal_, pkt);
 
         // Extract information from fragment
         UmRxEntity *rxbuf = getRxBuffer(lteInfo);

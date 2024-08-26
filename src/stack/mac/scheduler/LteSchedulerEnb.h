@@ -110,8 +110,8 @@ class LteSchedulerEnb
     unsigned int resourceBlocks_ = 0;
 
     /// Statistics
-    static simsignal_t avgServedBlocksDl_;
-    static simsignal_t avgServedBlocksUl_;
+    static simsignal_t avgServedBlocksDlSignal_;
+    static simsignal_t avgServedBlocksUlSignal_;
 
     // pre-made BandLimit structure used when no band limit is given to the scheduler
     std::vector<BandLimit> emptyBandLim_;

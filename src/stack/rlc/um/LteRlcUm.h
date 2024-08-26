@@ -125,12 +125,12 @@ class LteRlcUm : public cSimpleModule
     cGate *down_[2];
 
     // statistics
-    static simsignal_t receivedPacketFromUpperLayer;
-    static simsignal_t receivedPacketFromLowerLayer;
-    static simsignal_t sentPacketToUpperLayer;
-    static simsignal_t sentPacketToLowerLayer;
-    static simsignal_t rlcPacketLossDl;
-    static simsignal_t rlcPacketLossUl;
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
+    static simsignal_t rlcPacketLossDlSignal_;
+    static simsignal_t rlcPacketLossUlSignal_;
 
     /**
      * Initialize watches

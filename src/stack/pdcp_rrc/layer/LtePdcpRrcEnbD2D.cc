@@ -28,7 +28,7 @@ using namespace inet;
  */
 void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     // Control Information
     auto pkt = check_and_cast<Packet *>(pktAux);

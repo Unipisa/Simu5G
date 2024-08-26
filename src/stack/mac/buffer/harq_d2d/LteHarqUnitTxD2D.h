@@ -38,13 +38,13 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
   protected:
 
     // D2D Statistics
-    static simsignal_t macCellPacketLossD2D_;
-    static simsignal_t macPacketLossD2D_;
-    static simsignal_t harqErrorRateD2D_;
-    static simsignal_t harqErrorRateD2D_1_;
-    static simsignal_t harqErrorRateD2D_2_;
-    static simsignal_t harqErrorRateD2D_3_;
-    static simsignal_t harqErrorRateD2D_4_;
+    static simsignal_t macCellPacketLossD2DSignal_;
+    static simsignal_t macPacketLossD2DSignal_;
+    static simsignal_t harqErrorRateD2DSignal_;
+    static simsignal_t harqErrorRateD2D_1Signal_;
+    static simsignal_t harqErrorRateD2D_2Signal_;
+    static simsignal_t harqErrorRateD2D_3Signal_;
+    static simsignal_t harqErrorRateD2D_4Signal_;
 
   public:
     /**

@@ -19,7 +19,7 @@ using namespace omnetpp;
 using namespace inet;
 
 // statistics
-simsignal_t LteCompManagerBase::compReservedBlocks_ = registerSignal("compReservedBlocks");
+simsignal_t LteCompManagerBase::compReservedBlocksSignal_ = registerSignal("compReservedBlocks");
 
 void LteCompManagerBase::initialize()
 {

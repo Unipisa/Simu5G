@@ -26,7 +26,7 @@ class MecResponseApp : public cSimpleModule
     inet::UdpSocket socket;
     double coreNetworkDelay_;
 
-    static simsignal_t recvRequestSno_;
+    static simsignal_t recvRequestSnoSignal_;
 
   protected:
 

@@ -22,7 +22,7 @@ namespace simu5g {
 Define_Module(AlertSender);
 using namespace inet;
 
-simsignal_t AlertSender::alertSentMsg_ = registerSignal("alertSentMsg");
+simsignal_t AlertSender::alertSentMsgSignal_ = registerSignal("alertSentMsg");
 
 AlertSender::~AlertSender()
 {
@@ -110,7 +110,7 @@ void AlertSender::sendAlertPacket()
     socket.sendTo(packet, destAddress_, destPort_);
     nextSno_++;
 
-    emit(alertSentMsg_, (long)1);
+    emit(alertSentMsgSignal_, (long)1);
 
     simtime_t d = simTime() + par("period");
     if (stopTime_ <= SIMTIME_ZERO || d < stopTime_) {

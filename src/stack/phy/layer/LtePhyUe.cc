@@ -23,8 +23,8 @@ Define_Module(LtePhyUe);
 
 using namespace inet;
 
-simsignal_t LtePhyUe::distance_ = registerSignal("distance");
-simsignal_t LtePhyUe::servingCell_ = registerSignal("servingCell");
+simsignal_t LtePhyUe::distanceSignal_ = registerSignal("distance");
+simsignal_t LtePhyUe::servingCellSignal_ = registerSignal("servingCell");
 
 LtePhyUe::~LtePhyUe()
 {
@@ -60,7 +60,7 @@ void LtePhyUe::initialize(int stage)
 
         hasCollector = par("hasCollector");
 
-        if (!hasListeners(averageCqiDl_))
+        if (!hasListeners(averageCqiDlSignal_))
             error("no phy listeners");
 
         WATCH(nodeType_);
@@ -175,7 +175,7 @@ void LtePhyUe::initialize(int stage)
         EV << "LtePhyUe::initialize - Attaching to eNodeB " << masterId_ << endl;
 
         das_->setMasterRuSet(masterId_);
-        emit(servingCell_, (long)masterId_);
+        emit(servingCellSignal_, (long)masterId_);
 
         if (masterId_ == 0)
             masterMobility_ = nullptr;
@@ -429,7 +429,7 @@ void LtePhyUe::doHandover()
     fbGen_->handleHandover(masterId_);
 
     // collect stat
-    emit(servingCell_, (long)masterId_);
+    emit(servingCellSignal_, (long)masterId_);
 
     if (masterId_ == 0)
         EV << NOW << " LtePhyUe::doHandover - UE " << nodeId_ << " detached from the network" << endl;
@@ -523,7 +523,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
         if (lteInfo->getUserTxParams()->readCqiVector().size() == 1)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
-        emit(averageCqiDl_, cqi);
+        emit(averageCqiDlSignal_, cqi);
         recordCqi(cqi, DL);
     }
     // apply decider to received packet
@@ -603,11 +603,11 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     if (lteInfo->getFrameType() == DATAPKT && lteInfo->getUserTxParams() != nullptr) {
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[lteInfo->getCw()];
         if (lteInfo->getDirection() == UL) {
-            emit(averageCqiUl_, cqi);
+            emit(averageCqiUlSignal_, cqi);
             recordCqi(cqi, UL);
         }
         else if (lteInfo->getDirection() == D2D)
-            emit(averageCqiD2D_, cqi);
+            emit(averageCqiD2DSignal_, cqi);
     }
 
     LtePhyBase::handleUpperMessage(msg);
@@ -616,13 +616,13 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
 void LtePhyUe::emitMobilityStats()
 {
     // emit serving cell id
-    emit(servingCell_, (long)masterId_);
+    emit(servingCellSignal_, (long)masterId_);
 
     if (masterMobility_) {
         // emit distance from current serving cell
         inet::Coord masterPos = masterMobility_->getCurrentPosition();
         double distance = getRadioPosition().distance(masterPos);
-        emit(distance_, distance);
+        emit(distanceSignal_, distance);
     }
 }
 

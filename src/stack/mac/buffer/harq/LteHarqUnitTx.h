@@ -76,23 +76,23 @@ class LteHarqUnitTx : noncopyable
 
     // Statistics
 
-    simsignal_t macCellPacketLoss_;
-    simsignal_t macPacketLoss_;
-    simsignal_t harqErrorRate_;
-    simsignal_t harqErrorRate_1_;
-    simsignal_t harqErrorRate_2_;
-    simsignal_t harqErrorRate_3_;
-    simsignal_t harqErrorRate_4_;
-    simsignal_t harqTxAttempts_;
+    simsignal_t macCellPacketLossSignal_;
+    simsignal_t macPacketLossSignal_;
+    simsignal_t harqErrorRateSignal_;
+    simsignal_t harqErrorRate_1Signal_;
+    simsignal_t harqErrorRate_2Signal_;
+    simsignal_t harqErrorRate_3Signal_;
+    simsignal_t harqErrorRate_4Signal_;
+    simsignal_t harqTxAttemptsSignal_;
 
     // D2D Statistics
-    simsignal_t macCellPacketLossD2D_;
-    simsignal_t macPacketLossD2D_;
-    simsignal_t harqErrorRateD2D_;
-    simsignal_t harqErrorRateD2D_1_;
-    simsignal_t harqErrorRateD2D_2_;
-    simsignal_t harqErrorRateD2D_3_;
-    simsignal_t harqErrorRateD2D_4_;
+    simsignal_t macCellPacketLossD2DSignal_;
+    simsignal_t macPacketLossD2DSignal_;
+    simsignal_t harqErrorRateD2DSignal_;
+    simsignal_t harqErrorRateD2D_1Signal_;
+    simsignal_t harqErrorRateD2D_2Signal_;
+    simsignal_t harqErrorRateD2D_3Signal_;
+    simsignal_t harqErrorRateD2D_4Signal_;
 
   public:
     /**

@@ -44,9 +44,9 @@ class MecRequestApp : public cSimpleModule
     // scheduling
     cMessage *selfSender_ = nullptr;
 
-    static simsignal_t requestSize_;
-    static simsignal_t requestRTT_;
-    static simsignal_t recvResponseSno_;
+    static simsignal_t requestSizeSignal_;
+    static simsignal_t requestRTTSignal_;
+    static simsignal_t recvResponseSnoSignal_;
 
   public:
     ~MecRequestApp();

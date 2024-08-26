@@ -93,12 +93,12 @@ class LteRlcTm : public cSimpleModule
     int queueSize_;
 
     // statistics
-    static inet::simsignal_t receivedPacketFromUpperLayer;
-    static inet::simsignal_t receivedPacketFromLowerLayer;
-    static inet::simsignal_t sentPacketToUpperLayer;
-    static inet::simsignal_t sentPacketToLowerLayer;
-    static inet::simsignal_t rlcPacketLossDl;
-    static inet::simsignal_t rlcPacketLossUl;
+    static inet::simsignal_t receivedPacketFromUpperLayerSignal_;
+    static inet::simsignal_t receivedPacketFromLowerLayerSignal_;
+    static inet::simsignal_t sentPacketToUpperLayerSignal_;
+    static inet::simsignal_t sentPacketToLowerLayerSignal_;
+    static inet::simsignal_t rlcPacketLossDlSignal_;
+    static inet::simsignal_t rlcPacketLossUlSignal_;
 };
 
 } //namespace

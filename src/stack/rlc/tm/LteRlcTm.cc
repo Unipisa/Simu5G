@@ -21,16 +21,16 @@ Define_Module(LteRlcTm);
 using namespace omnetpp;
 
 // statistics
-simsignal_t LteRlcTm::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LteRlcTm::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LteRlcTm::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-simsignal_t LteRlcTm::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
-simsignal_t LteRlcTm::rlcPacketLossDl = registerSignal("rlcPacketLossDl");
-simsignal_t LteRlcTm::rlcPacketLossUl = registerSignal("rlcPacketLossUl");
+simsignal_t LteRlcTm::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteRlcTm::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteRlcTm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteRlcTm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteRlcTm::rlcPacketLossDlSignal_ = registerSignal("rlcPacketLossDl");
+simsignal_t LteRlcTm::rlcPacketLossUlSignal_ = registerSignal("rlcPacketLossUl");
 
 void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTag<FlowControlInfo>();
@@ -42,9 +42,9 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 
         // statistics: packet was lost
         if (lteInfo->getDirection() == DL)
-            emit(rlcPacketLossDl, 1.0);
+            emit(rlcPacketLossDlSignal_, 1.0);
         else
-            emit(rlcPacketLossUl, 1.0);
+            emit(rlcPacketLossUlSignal_, 1.0);
 
         drop(pkt);
         delete pkt;
@@ -64,9 +64,9 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 
     // statistics: packet was not lost
     if (lteInfo->getDirection() == DL)
-        emit(rlcPacketLossDl, 0.0);
+        emit(rlcPacketLossDlSignal_, 0.0);
     else
-        emit(rlcPacketLossUl, 0.0);
+        emit(rlcPacketLossUlSignal_, 0.0);
 
     // create a message to notify the MAC layer that the queue contains new data
     auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
@@ -76,19 +76,19 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     pktDup->insertAtFront(newDataPkt);
 
     EV << "LteRlcTm::handleUpperMessage - Sending message " << newDataPkt->getName() << " to port TM_Sap_down$o\n";
-    emit(sentPacketToLowerLayer, pktDup);
+    emit(sentPacketToLowerLayerSignal_, pktDup);
     send(pktDup, down_[OUT_GATE]);
 }
 
 void LteRlcTm::handleLowerMessage(cPacket *pkt)
 {
-    emit(receivedPacketFromLowerLayer, pkt);
+    emit(receivedPacketFromLowerLayerSignal_, pkt);
 
     if (strcmp(pkt->getName(), "LteMacSduRequest") == 0) {
         if (queuedPdus_.getLength() > 0) {
             auto rlcPduPkt = queuedPdus_.pop();
             EV << "LteRlcTm : Received " << pkt->getName() << " - sending packet " << rlcPduPkt->getName() << " to port TM_Sap_down$o\n";
-            emit(sentPacketToLowerLayer, pkt);
+            emit(sentPacketToLowerLayerSignal_, pkt);
             drop(rlcPduPkt);
 
             send(rlcPduPkt, down_[OUT_GATE]);
@@ -105,7 +105,7 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
         delete upPkt;
 
         EV << "LteRlcTm : Sending packet " << upUpPkt->getName() << " to port TM_Sap_up$o\n";
-        emit(sentPacketToUpperLayer, upUpPkt);
+        emit(sentPacketToUpperLayerSignal_, upUpPkt);
         send(upUpPkt, up_[OUT_GATE]);
     }
 

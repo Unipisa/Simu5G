@@ -29,8 +29,8 @@ namespace simu5g {
 using namespace omnetpp;
 
 // Initialize statistics
-simsignal_t LteSchedulerEnb::avgServedBlocksDl_ = cComponent::registerSignal("avgServedBlocksDl");
-simsignal_t LteSchedulerEnb::avgServedBlocksUl_ = cComponent::registerSignal("avgServedBlocksUl");
+simsignal_t LteSchedulerEnb::avgServedBlocksDlSignal_ = cComponent::registerSignal("avgServedBlocksDl");
+simsignal_t LteSchedulerEnb::avgServedBlocksUlSignal_ = cComponent::registerSignal("avgServedBlocksUl");
 
 LteSchedulerEnb::LteSchedulerEnb() : mac_(nullptr)
 {
@@ -961,7 +961,7 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
 {
     if (sleep) {
         if (direction_ == DL)
-            mac_->emit(avgServedBlocksDl_, (long)0);
+            mac_->emit(avgServedBlocksDlSignal_, (long)0);
         return;
     }
     // Get a reference to the beginning and the end of the map which stores the blocks allocated
@@ -989,9 +989,9 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     utilization_ /= (((double)(antenna)) * ((double)resourceBlocks_));
 
     if (direction_ == DL)
-        mac_->emit(avgServedBlocksDl_, allocatedBlocks);
+        mac_->emit(avgServedBlocksDlSignal_, allocatedBlocks);
     else if (direction_ == UL)
-        mac_->emit(avgServedBlocksUl_, allocatedBlocks);
+        mac_->emit(avgServedBlocksUlSignal_, allocatedBlocks);
     else
         throw cRuntimeError("LteSchedulerEnb::resourceBlockStatistics(): Unrecognized direction %d", direction_);
 }

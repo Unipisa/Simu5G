@@ -19,13 +19,13 @@ Define_Module(MultihopD2DStatistics);
 using namespace omnetpp;
 
 // register statistics
-simsignal_t MultihopD2DStatistics::d2dMultihopEventDeliveryRatio_ = registerSignal("d2dMultihopEventDeliveryRatio");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventDelay_ = registerSignal("d2dMultihopEventDelay");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventDelay95Per_ = registerSignal("d2dMultihopEventDelay95Per");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventSentMsg_ = registerSignal("d2dMultihopEventSentMsg");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventTrickleSuppressedMsg_ = registerSignal("d2dMultihopEventTrickleSuppressedMsg");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventRcvdDupMsg_ = registerSignal("d2dMultihopEventRcvdDupMsg");
-simsignal_t MultihopD2DStatistics::d2dMultihopEventCompleteDeliveries_ = registerSignal("d2dMultihopEventCompleteDeliveries");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDeliveryRatioSignal_ = registerSignal("d2dMultihopEventDeliveryRatio");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDelaySignal_ = registerSignal("d2dMultihopEventDelay");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventDelay95PerSignal_ = registerSignal("d2dMultihopEventDelay95Per");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventSentMsgSignal_ = registerSignal("d2dMultihopEventSentMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventTrickleSuppressedMsgSignal_ = registerSignal("d2dMultihopEventTrickleSuppressedMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventRcvdDupMsgSignal_ = registerSignal("d2dMultihopEventRcvdDupMsg");
+simsignal_t MultihopD2DStatistics::d2dMultihopEventCompleteDeliveriesSignal_ = registerSignal("d2dMultihopEventCompleteDeliveries");
 
 void MultihopD2DStatistics::initialize()
 {
@@ -131,7 +131,7 @@ void MultihopD2DStatistics::finish()
             if (jt->second.hops_ >= 0) {
                 if (jt->second.hops_ >= 1) {
                     sortedDelays.push_back(jt->second.delay_);
-                    emit(d2dMultihopEventDelay_, jt->second.delay_);
+                    emit(d2dMultihopEventDelaySignal_, jt->second.delay_);
 
                     if (jt->second.delay_ > maxDelay)
                         maxDelay = jt->second.delay_;
@@ -144,24 +144,24 @@ void MultihopD2DStatistics::finish()
             continue;
 
         double deliveryRatio = (double)deliveredMsgCounter / eit->second.size();
-        emit(d2dMultihopEventDeliveryRatio_, deliveryRatio);
+        emit(d2dMultihopEventDeliveryRatioSignal_, deliveryRatio);
 
         // cluster complete covered with a delivery
         int completeDelivery = (deliveredMsgCounter == eit->second.size()) ? 1 : 0;
-        emit(d2dMultihopEventCompleteDeliveries_, completeDelivery);
+        emit(d2dMultihopEventCompleteDeliveriesSignal_, completeDelivery);
 
         // sort the delays and get the percentile you desire
         std::sort(sortedDelays.begin(), sortedDelays.end());
         unsigned int numElements = sortedDelays.size();
         unsigned int index95Percentile = (double)numElements * 0.95;
-        emit(d2dMultihopEventDelay95Per_, sortedDelays[index95Percentile]);
+        emit(d2dMultihopEventDelay95PerSignal_, sortedDelays[index95Percentile]);
     }
 
     std::map<unsigned short, TransmissionInfo>::iterator eventInfoIt = eventTransmissionInfo_.begin();
     for ( ; eventInfoIt != eventTransmissionInfo_.end(); ++eventInfoIt) {
-        emit(d2dMultihopEventSentMsg_, (long)eventInfoIt->second.numSent_);
-        emit(d2dMultihopEventTrickleSuppressedMsg_, (long)eventInfoIt->second.numSuppressed_);
-        emit(d2dMultihopEventRcvdDupMsg_, (long)eventInfoIt->second.numDuplicates_);
+        emit(d2dMultihopEventSentMsgSignal_, (long)eventInfoIt->second.numSent_);
+        emit(d2dMultihopEventTrickleSuppressedMsgSignal_, (long)eventInfoIt->second.numSuppressed_);
+        emit(d2dMultihopEventRcvdDupMsgSignal_, (long)eventInfoIt->second.numDuplicates_);
     }
 }
 

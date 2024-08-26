@@ -13,9 +13,9 @@
 
 namespace simu5g {
 
-simsignal_t MecRequestApp::requestSize_ = registerSignal("requestSize");
-simsignal_t MecRequestApp::requestRTT_ = registerSignal("requestRTT");
-simsignal_t MecRequestApp::recvResponseSno_ = registerSignal("recvResponseSno");
+simsignal_t MecRequestApp::requestSizeSignal_ = registerSignal("requestSize");
+simsignal_t MecRequestApp::requestRTTSignal_ = registerSignal("requestRTT");
+simsignal_t MecRequestApp::recvResponseSnoSignal_ = registerSignal("recvResponseSno");
 
 Define_Module(MecRequestApp);
 
@@ -117,7 +117,7 @@ void MecRequestApp::sendRequest()
 
     // read next packet size
     int size = par("packetSize");
-    emit(requestSize_, (long)size);
+    emit(requestSizeSignal_, (long)size);
 
     inet::Packet *packet = new inet::Packet("MecRequestResponsePacket");
     auto reqPkt = makeShared<MecRequestResponsePacket>();
@@ -152,8 +152,8 @@ void MecRequestApp::recvResponse(cMessage *msg)
     EV << "MecRequestApp::recvResponse - sno[" << sno << "] rtt[" << rtt << "]" << endl;
 
     // emit statistics
-    emit(requestRTT_, rtt);
-    emit(recvResponseSno_, (long)sno);
+    emit(requestRTTSignal_, rtt);
+    emit(recvResponseSnoSignal_, (long)sno);
 }
 
 } //namespace

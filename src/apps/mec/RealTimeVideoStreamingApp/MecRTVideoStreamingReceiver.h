@@ -69,19 +69,19 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     opp_component_ptr<cModule> ueAppModule_ = nullptr;
 
     // signals
-    static simsignal_t e2eDelaySegment_;
-    static simsignal_t interArrTime_;
-    static simsignal_t segmentSize_;
-    static simsignal_t frameSize_;
-    static simsignal_t frameDisplayed_;
+    static simsignal_t e2eDelaySegmentSignal_;
+    static simsignal_t interArrTimeSignal_;
+    static simsignal_t segmentSizeSignal_;
+    static simsignal_t frameSizeSignal_;
+    static simsignal_t frameDisplayedSignal_;
 
-    static simsignal_t playoutBufferLength_;
-    static simsignal_t playoutDelayTime_;
-    static simsignal_t playoutDelayTimeAll_;
-    static simsignal_t segmentLoss_;
+    static simsignal_t playoutBufferLengthSignal_;
+    static simsignal_t playoutDelayTimeSignal_;
+    static simsignal_t playoutDelayTimeAllSignal_;
+    static simsignal_t segmentLossSignal_;
 
-    static simsignal_t startSession_;
-    static simsignal_t stopSession_;
+    static simsignal_t startSessionSignal_;
+    static simsignal_t stopSessionSignal_;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

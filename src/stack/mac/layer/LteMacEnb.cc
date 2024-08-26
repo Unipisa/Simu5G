@@ -760,9 +760,9 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
             double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
             if (lteInfo->getDirection() == DL)
-                emit(macBufferOverflowDl_, sample);
+                emit(macBufferOverflowDlSignal_, sample);
             else
-                emit(macBufferOverflowUl_, sample);
+                emit(macBufferOverflowUlSignal_, sample);
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
             // @author Alessandro Noferi

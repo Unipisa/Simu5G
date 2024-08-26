@@ -158,11 +158,11 @@ class LteRealisticChannelModel : public LteChannelModel
     bool collectSinrStatistics_;
 
     // Statistics
-    static simsignal_t rcvdSinrDl_;
-    static simsignal_t rcvdSinrUl_;
-    static simsignal_t rcvdSinrD2D_;
-    static simsignal_t measuredSinrDl_;
-    static simsignal_t measuredSinrUl_;
+    static simsignal_t rcvdSinrDlSignal_;
+    static simsignal_t rcvdSinrUlSignal_;
+    static simsignal_t rcvdSinrD2DSignal_;
+    static simsignal_t measuredSinrDlSignal_;
+    static simsignal_t measuredSinrUlSignal_;
 
   public:
     virtual void initialize(int stage);

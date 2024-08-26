@@ -17,8 +17,8 @@ namespace simu5g {
 Define_Module(AlertReceiver);
 using namespace inet;
 
-simsignal_t AlertReceiver::alertDelay_ = registerSignal("alertDelay");
-simsignal_t AlertReceiver::alertRcvdMsg_ = registerSignal("alertRcvdMsg");
+simsignal_t AlertReceiver::alertDelaySignal_ = registerSignal("alertDelay");
+simsignal_t AlertReceiver::alertRcvdMsgSignal_ = registerSignal("alertRcvdMsg");
 
 void AlertReceiver::initialize(int stage)
 {
@@ -66,8 +66,8 @@ void AlertReceiver::handleMessage(cMessage *msg)
 
     // emit statistics
     simtime_t delay = simTime() - alert->getPayloadTimestamp();
-    emit(alertDelay_, delay);
-    emit(alertRcvdMsg_, (long)1);
+    emit(alertDelaySignal_, delay);
+    emit(alertRcvdMsgSignal_, (long)1);
     nrReceived++;
     delaySum += delay;
 

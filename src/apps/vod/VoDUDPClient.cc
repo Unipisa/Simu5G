@@ -20,15 +20,15 @@ using namespace inet;
 
 Define_Module(VoDUDPClient);
 
-simsignal_t VoDUDPClient::tptLayer0_ = registerSignal("VoDTptLayer0");
-simsignal_t VoDUDPClient::tptLayer1_ = registerSignal("VoDTptLayer1");
-simsignal_t VoDUDPClient::tptLayer2_ = registerSignal("VoDTptLayer2");
-simsignal_t VoDUDPClient::tptLayer3_ = registerSignal("VoDTptLayer3");
+simsignal_t VoDUDPClient::tptLayer0Signal_ = registerSignal("VoDTptLayer0");
+simsignal_t VoDUDPClient::tptLayer1Signal_ = registerSignal("VoDTptLayer1");
+simsignal_t VoDUDPClient::tptLayer2Signal_ = registerSignal("VoDTptLayer2");
+simsignal_t VoDUDPClient::tptLayer3Signal_ = registerSignal("VoDTptLayer3");
 
-simsignal_t VoDUDPClient::delayLayer0_ = registerSignal("VoDDelayLayer0");
-simsignal_t VoDUDPClient::delayLayer1_ = registerSignal("VoDDelayLayer1");
-simsignal_t VoDUDPClient::delayLayer2_ = registerSignal("VoDDelayLayer2");
-simsignal_t VoDUDPClient::delayLayer3_ = registerSignal("VoDDelayLayer3");
+simsignal_t VoDUDPClient::delayLayer0Signal_ = registerSignal("VoDDelayLayer0");
+simsignal_t VoDUDPClient::delayLayer1Signal_ = registerSignal("VoDDelayLayer1");
+simsignal_t VoDUDPClient::delayLayer2Signal_ = registerSignal("VoDDelayLayer2");
+simsignal_t VoDUDPClient::delayLayer3Signal_ = registerSignal("VoDDelayLayer3");
 
 void VoDUDPClient::initialize(int stage)
 {
@@ -158,20 +158,20 @@ void VoDUDPClient::receiveStream(const VoDPacket *msg)
     totalRcvdBytes_ += msg->getFrameLength();
     double tputSample = (double)totalRcvdBytes_ / (simTime() - getSimulation()->getWarmupPeriod());
     if (layer == 0) {
-        emit(tptLayer0_, tputSample);
-        emit(delayLayer0_, delay.dbl());
+        emit(tptLayer0Signal_, tputSample);
+        emit(delayLayer0Signal_, delay.dbl());
     }
     else if (layer == 1) {
-        emit(tptLayer1_, tputSample);
-        emit(delayLayer1_, delay.dbl());
+        emit(tptLayer1Signal_, tputSample);
+        emit(delayLayer1Signal_, delay.dbl());
     }
     else if (layer == 2) {
-        emit(tptLayer2_, tputSample);
-        emit(delayLayer2_, delay.dbl());
+        emit(tptLayer2Signal_, tputSample);
+        emit(delayLayer2Signal_, delay.dbl());
     }
     else if (layer == 3) {
-        emit(tptLayer3_, tputSample);
-        emit(delayLayer3_, delay.dbl());
+        emit(tptLayer3Signal_, tputSample);
+        emit(delayLayer3Signal_, delay.dbl());
     }
 }
 

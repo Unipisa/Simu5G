@@ -18,8 +18,8 @@ using namespace omnetpp;
 Define_Module(BackgroundScheduler);
 
 // statistics
-simsignal_t BackgroundScheduler::bgAvgServedBlocksDl_ = registerSignal("bgAvgServedBlocksDl");
-simsignal_t BackgroundScheduler::bgAvgServedBlocksUl_ = registerSignal("bgAvgServedBlocksUl");
+simsignal_t BackgroundScheduler::bgAvgServedBlocksDlSignal_ = registerSignal("bgAvgServedBlocksDl");
+simsignal_t BackgroundScheduler::bgAvgServedBlocksUlSignal_ = registerSignal("bgAvgServedBlocksUl");
 
 void BackgroundScheduler::initialize(int stage)
 {
@@ -264,9 +264,9 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
     // emit statistics
     if (dir == DL)
-        emit(bgAvgServedBlocksDl_, (long)b);
+        emit(bgAvgServedBlocksDlSignal_, (long)b);
     else
-        emit(bgAvgServedBlocksUl_, (long)b);
+        emit(bgAvgServedBlocksUlSignal_, (long)b);
 
     EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
 }

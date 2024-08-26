@@ -32,12 +32,12 @@ using namespace inet;
 using namespace omnetpp;
 Define_Module(LteRealisticChannelModel);
 
-simsignal_t LteRealisticChannelModel::rcvdSinrDl_ = registerSignal("rcvdSinrDl");
-simsignal_t LteRealisticChannelModel::rcvdSinrUl_ = registerSignal("rcvdSinrUl");
-simsignal_t LteRealisticChannelModel::rcvdSinrD2D_ = registerSignal("rcvdSinrD2D");
+simsignal_t LteRealisticChannelModel::rcvdSinrDlSignal_ = registerSignal("rcvdSinrDl");
+simsignal_t LteRealisticChannelModel::rcvdSinrUlSignal_ = registerSignal("rcvdSinrUl");
+simsignal_t LteRealisticChannelModel::rcvdSinrD2DSignal_ = registerSignal("rcvdSinrD2D");
 
-simsignal_t LteRealisticChannelModel::measuredSinrDl_ = registerSignal("measuredSinrDl");
-simsignal_t LteRealisticChannelModel::measuredSinrUl_ = registerSignal("measuredSinrUl");
+simsignal_t LteRealisticChannelModel::measuredSinrDlSignal_ = registerSignal("measuredSinrDl");
+simsignal_t LteRealisticChannelModel::measuredSinrUlSignal_ = registerSignal("measuredSinrUl");
 
 void LteRealisticChannelModel::initialize(int stage)
 {
@@ -681,9 +681,9 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
         LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(getPhyByMacNodeId(binder_, ueId))->getChannelModel(lteInfo->getCarrierFrequency());
 
         if (dir == DL) // we are on the UE
-            ueChannelModel->emit(measuredSinrDl_, sumSnr / usedRBs);
+            ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
         else
-            ueChannelModel->emit(measuredSinrUl_, sumSnr / usedRBs);
+            ueChannelModel->emit(measuredSinrUlSignal_, sumSnr / usedRBs);
     }
 
     // if sender is an eNodeB
@@ -1882,12 +1882,12 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
     // emit SINR statistic
     if (collectSinrStatistics_ && usedRBs > 0) {
         if (dir == DL) // we are on the UE
-            emit(rcvdSinrDl_, sumSnr / usedRBs);
+            emit(rcvdSinrDlSignal_, sumSnr / usedRBs);
         else {
             // we are on the BS, so we need to retrieve the channel model of the sender
             // XXX I know, there might be a faster way...
             LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(getPhyByMacNodeId(binder_, id))->getChannelModel(lteInfo->getCarrierFrequency());
-            ueChannelModel->emit(rcvdSinrUl_, sumSnr / usedRBs);
+            ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
         }
     }
 
@@ -2048,7 +2048,7 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *
 
     // emit SINR statistic
     if (collectSinrStatistics_ && usedRBs > 0)
-        emit(rcvdSinrD2D_, sumSnr / usedRBs);
+        emit(rcvdSinrD2DSignal_, sumSnr / usedRBs);
 
     if (er <= totalPer) {
         EV << "This is NOT your lucky day (" << er << " < " << totalPer << ") -> do not receive." << endl;

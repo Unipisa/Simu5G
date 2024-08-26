@@ -25,7 +25,7 @@ simsignal_t VoIPReceiver::voIPMosSignal_ = registerSignal("voIPMos");
 simsignal_t VoIPReceiver::voIPTaildropLossSignal_ = registerSignal("voIPTaildropLoss");
 simsignal_t VoIPReceiver::voIPJitterSignal_ = registerSignal("voIPJitter");
 simsignal_t VoIPReceiver::voIPPlayoutLossSignal_ = registerSignal("voIPPlayoutLoss");
-simsignal_t VoIPReceiver::voIPReceivedThroughput_ = registerSignal("voIPReceivedThroughput");
+simsignal_t VoIPReceiver::voIPReceivedThroughputSignal_ = registerSignal("voIPReceivedThroughput");
 
 VoIPReceiver::~VoIPReceiver()
 {
@@ -94,7 +94,7 @@ void VoIPReceiver::handleMessage(cMessage *msg)
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
     if (interval > 0.0) {
         double tputSample = (double)totalRcvdBytes_ / interval;
-        emit(voIPReceivedThroughput_, tputSample);
+        emit(voIPReceivedThroughputSignal_, tputSample);
     }
 
     // emit frame delay

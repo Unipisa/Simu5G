@@ -313,10 +313,10 @@ class LtePdcpRrcBase : public cSimpleModule
     virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) {}
 
     // statistics
-    static simsignal_t receivedPacketFromUpperLayer;
-    static simsignal_t receivedPacketFromLowerLayer;
-    static simsignal_t sentPacketToUpperLayer;
-    static simsignal_t sentPacketToLowerLayer;
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
 };
 
 class LtePdcpRrcUe : public LtePdcpRrcBase

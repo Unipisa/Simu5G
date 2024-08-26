@@ -96,12 +96,12 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     Cqi cqi_[2];
 
     // statistics
-    static simsignal_t bgMeasuredSinrDl_;
-    static simsignal_t bgMeasuredSinrUl_;
-    static simsignal_t bgAverageCqiDl_;
-    static simsignal_t bgAverageCqiUl_;
-    static simsignal_t bgHarqErrorRateDl_;
-    static simsignal_t bgHarqErrorRateUl_;
+    static simsignal_t bgMeasuredSinrDlSignal_;
+    static simsignal_t bgMeasuredSinrUlSignal_;
+    static simsignal_t bgAverageCqiDlSignal_;
+    static simsignal_t bgAverageCqiUlSignal_;
+    static simsignal_t bgHarqErrorRateDlSignal_;
+    static simsignal_t bgHarqErrorRateUlSignal_;
 
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return inet::INITSTAGE_SINGLE_MOBILITY + 1; }

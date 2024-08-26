@@ -217,7 +217,7 @@ UsableBands LteCompManagerProportional::parseAllowedBlocksMap(std::vector<CompRb
         }
     }
 
-    emit(compReservedBlocks_, reservedBlocks);
+    emit(compReservedBlocksSignal_, reservedBlocks);
 
     return usableBands;
 }

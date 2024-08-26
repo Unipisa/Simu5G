@@ -30,13 +30,13 @@ namespace simu5g {
 using namespace omnetpp;
 
 // register signals
-simsignal_t LteMacBase::macBufferOverflowDl_ = registerSignal("macBufferOverFlowDl");
-simsignal_t LteMacBase::macBufferOverflowUl_ = registerSignal("macBufferOverFlowUl");
-simsignal_t LteMacBase::macBufferOverflowD2D_ = registerSignal("macBufferOverFlowD2D");
-simsignal_t LteMacBase::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LteMacBase::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LteMacBase::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-simsignal_t LteMacBase::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
+simsignal_t LteMacBase::macBufferOverflowDlSignal_ = registerSignal("macBufferOverFlowDl");
+simsignal_t LteMacBase::macBufferOverflowUlSignal_ = registerSignal("macBufferOverFlowUl");
+simsignal_t LteMacBase::macBufferOverflowD2DSignal_ = registerSignal("macBufferOverFlowD2D");
+simsignal_t LteMacBase::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LteMacBase::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LteMacBase::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LteMacBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
 LteMacBase::~LteMacBase()
 {
@@ -72,7 +72,7 @@ void LteMacBase::sendUpperPackets(cPacket *pkt)
     // Send message
     send(pkt, up_[OUT_GATE]);
     nrToUpper_++;
-    emit(sentPacketToUpperLayer, pkt);
+    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 void LteMacBase::sendLowerPackets(cPacket *pkt)
@@ -82,7 +82,7 @@ void LteMacBase::sendLowerPackets(cPacket *pkt)
     updateUserTxParam(pkt);
     send(pkt, down_[OUT_GATE]);
     nrToLower_++;
-    emit(sentPacketToLowerLayer, pkt);
+    emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
 /*
@@ -245,13 +245,13 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
             totalOverflowedBytes_ += pkt->getByteLength();
             double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
             if (lteInfo->getDirection() == DL) {
-                emit(macBufferOverflowDl_, sample);
+                emit(macBufferOverflowDlSignal_, sample);
             }
             else if (lteInfo->getDirection() == UL) {
-                emit(macBufferOverflowUl_, sample);
+                emit(macBufferOverflowUlSignal_, sample);
             }
             else { // D2D
-                emit(macBufferOverflowD2D_, sample);
+                emit(macBufferOverflowD2DSignal_, sample);
             }
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
@@ -409,13 +409,13 @@ void LteMacBase::handleMessage(cMessage *msg)
 
     if (incoming == down_[IN_GATE]) {
         // message from PHY_to_MAC gate (from lower layer)
-        emit(receivedPacketFromLowerLayer, pkt);
+        emit(receivedPacketFromLowerLayerSignal_, pkt);
         nrFromLower_++;
         fromPhy(pkt);
     }
     else {
         // message from RLC_to_MAC gate (from upper layer)
-        emit(receivedPacketFromUpperLayer, pkt);
+        emit(receivedPacketFromUpperLayerSignal_, pkt);
         nrFromUpper_++;
         fromRlc(pkt);
     }

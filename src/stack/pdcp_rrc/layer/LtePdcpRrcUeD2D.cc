@@ -40,7 +40,7 @@ MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
  */
 void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     // Control Information
     auto pkt = check_and_cast<Packet *>(pktAux);

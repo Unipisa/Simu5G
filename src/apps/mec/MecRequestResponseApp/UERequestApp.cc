@@ -33,11 +33,11 @@ using namespace std;
 Define_Module(UERequestApp);
 
 // register signals for stats
-simsignal_t UERequestApp::processingTime_ = registerSignal("processingTime");
-simsignal_t UERequestApp::serviceResponseTime_ = registerSignal("serviceResponseTime");
-simsignal_t UERequestApp::upLinkTime_ = registerSignal("upLinkTime");
-simsignal_t UERequestApp::downLinkTime_ = registerSignal("downLinkTime");
-simsignal_t UERequestApp::responseTime_ = registerSignal("responseTime");
+simsignal_t UERequestApp::processingTimeSignal_ = registerSignal("processingTime");
+simsignal_t UERequestApp::serviceResponseTimeSignal_ = registerSignal("serviceResponseTime");
+simsignal_t UERequestApp::upLinkTimeSignal_ = registerSignal("upLinkTime");
+simsignal_t UERequestApp::downLinkTimeSignal_ = registerSignal("downLinkTime");
+simsignal_t UERequestApp::responseTimeSignal_ = registerSignal("responseTime");
 
 UERequestApp::~UERequestApp()
 {
@@ -294,11 +294,11 @@ void UERequestApp::recvResponse(cMessage *msg)
         "responseTime [" << respTime << "ms]" << endl;
 
     //emit stats
-    emit(upLinkTime_, upLinkDelay);
-    emit(downLinkTime_, downLinkDelay);
-    emit(processingTime_, res->getProcessingTime());
-    emit(serviceResponseTime_, res->getServiceResponseTime());
-    emit(responseTime_, respTime);
+    emit(upLinkTimeSignal_, upLinkDelay);
+    emit(downLinkTimeSignal_, downLinkDelay);
+    emit(processingTimeSignal_, res->getProcessingTime());
+    emit(serviceResponseTimeSignal_, res->getServiceResponseTime());
+    emit(responseTimeSignal_, respTime);
 
     delete packet;
 

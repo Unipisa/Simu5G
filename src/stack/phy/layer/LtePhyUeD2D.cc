@@ -182,7 +182,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
         if (lteInfo->getDirection() == DL) {
-            emit(averageCqiDl_, cqi);
+            emit(averageCqiDlSignal_, cqi);
             recordCqi(cqi, DL);
         }
     }
@@ -296,11 +296,11 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
     if (lteInfo->getFrameType() == DATAPKT && lteInfo->getUserTxParams() != nullptr) {
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[lteInfo->getCw()];
         if (lteInfo->getDirection() == UL) {
-            emit(averageCqiUl_, cqi);
+            emit(averageCqiUlSignal_, cqi);
             recordCqi(cqi, UL);
         }
         else if (lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)
-            emit(averageCqiD2D_, cqi);
+            emit(averageCqiD2DSignal_, cqi);
     }
 
     EV << NOW << " LtePhyUeD2D::handleUpperMessage - message from stack" << endl;

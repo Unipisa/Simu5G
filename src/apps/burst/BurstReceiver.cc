@@ -15,8 +15,8 @@ namespace simu5g {
 
 Define_Module(BurstReceiver);
 
-simsignal_t BurstReceiver::burstRcvdPkt_ = registerSignal("burstRcvdPkt");
-simsignal_t BurstReceiver::burstPktDelay_ = registerSignal("burstPktDelay");
+simsignal_t BurstReceiver::burstRcvdPktSignal_ = registerSignal("burstRcvdPkt");
+simsignal_t BurstReceiver::burstPktDelaySignal_ = registerSignal("burstPktDelay");
 
 void BurstReceiver::initialize(int stage)
 {
@@ -52,8 +52,8 @@ void BurstReceiver::handleMessage(cMessage *msg)
     simtime_t delay = simTime() - burstHeader->getPayloadTimestamp();
     EV << "BurstReceiver::handleMessage - Packet received: FRAME[" << burstHeader->getMsgId() << "] with delay[" << delay << "]" << endl;
 
-    emit(burstPktDelay_, delay);
-    emit(burstRcvdPkt_, (long)burstHeader->getMsgId());
+    emit(burstPktDelaySignal_, delay);
+    emit(burstRcvdPktSignal_, (long)burstHeader->getMsgId());
 
     delete msg;
 }

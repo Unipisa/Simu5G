@@ -30,17 +30,17 @@ Define_Module(MecRTVideoStreamingReceiver);
 using namespace inet;
 using namespace omnetpp;
 
-simsignal_t MecRTVideoStreamingReceiver::e2eDelaySegment_ = registerSignal("rtVideoStreamingEnd2endDelaySegment");
-simsignal_t MecRTVideoStreamingReceiver::segmentSize_ = registerSignal("rtVideoStreamingSegmentPacketSize");
-simsignal_t MecRTVideoStreamingReceiver::frameSize_ = registerSignal("rtVideoStreamingFrameSize");
-simsignal_t MecRTVideoStreamingReceiver::playoutBufferLength_ = registerSignal("rtVideoStreamingPlayoutBufferLength");
-simsignal_t MecRTVideoStreamingReceiver::playoutDelayTime_ = registerSignal("rtVideoStreamingPlayoutDelay");
-simsignal_t MecRTVideoStreamingReceiver::playoutDelayTimeAll_ = registerSignal("rtVideoStreamingPlayoutDelayAll");
-simsignal_t MecRTVideoStreamingReceiver::segmentLoss_ = registerSignal("rtVideoStreamingSegmentLoss");
-simsignal_t MecRTVideoStreamingReceiver::interArrTime_ = registerSignal("rtVideoStreamingInterArrivalTimeSegment");
-simsignal_t MecRTVideoStreamingReceiver::frameDisplayed_ = registerSignal("rtVideoStreamingFramesDisplayed");
-simsignal_t MecRTVideoStreamingReceiver::startSession_ = registerSignal("rtVideoStreamingStartSession");
-simsignal_t MecRTVideoStreamingReceiver::stopSession_ = registerSignal("rtVideoStreamingStopSession");
+simsignal_t MecRTVideoStreamingReceiver::e2eDelaySegmentSignal_ = registerSignal("rtVideoStreamingEnd2endDelaySegment");
+simsignal_t MecRTVideoStreamingReceiver::segmentSizeSignal_ = registerSignal("rtVideoStreamingSegmentPacketSize");
+simsignal_t MecRTVideoStreamingReceiver::frameSizeSignal_ = registerSignal("rtVideoStreamingFrameSize");
+simsignal_t MecRTVideoStreamingReceiver::playoutBufferLengthSignal_ = registerSignal("rtVideoStreamingPlayoutBufferLength");
+simsignal_t MecRTVideoStreamingReceiver::playoutDelayTimeSignal_ = registerSignal("rtVideoStreamingPlayoutDelay");
+simsignal_t MecRTVideoStreamingReceiver::playoutDelayTimeAllSignal_ = registerSignal("rtVideoStreamingPlayoutDelayAll");
+simsignal_t MecRTVideoStreamingReceiver::segmentLossSignal_ = registerSignal("rtVideoStreamingSegmentLoss");
+simsignal_t MecRTVideoStreamingReceiver::interArrTimeSignal_ = registerSignal("rtVideoStreamingInterArrivalTimeSegment");
+simsignal_t MecRTVideoStreamingReceiver::frameDisplayedSignal_ = registerSignal("rtVideoStreamingFramesDisplayed");
+simsignal_t MecRTVideoStreamingReceiver::startSessionSignal_ = registerSignal("rtVideoStreamingStartSession");
+simsignal_t MecRTVideoStreamingReceiver::stopSessionSignal_ = registerSignal("rtVideoStreamingStopSession");
 
 MecRTVideoStreamingReceiver::~MecRTVideoStreamingReceiver()
 {
@@ -198,7 +198,7 @@ void MecRTVideoStreamingReceiver::handleSessionStartMessage(cMessage *msg)
 
         scheduleAfter(initialPlayoutDelay, displayFrame);
         startPkt->setType(START_RTVIDEOSTREAMING_SESSION_ACK);
-        ueAppModule_->emit(startSession_, simTime());
+        ueAppModule_->emit(startSessionSignal_, simTime());
     }
 
     inet::Packet *packet = new inet::Packet("RealTimeVideoStreamingAppPacket");
@@ -222,7 +222,7 @@ void MecRTVideoStreamingReceiver::handleSessionStopMessage(cMessage *msg)
     else {
         stopped = true;
         cancelEvent(displayFrame);
-        ueAppModule_->emit(stopSession_, simTime());
+        ueAppModule_->emit(stopSessionSignal_, simTime());
 
         // clear structures
         playoutBuffer_.clear();
@@ -278,7 +278,7 @@ double MecRTVideoStreamingReceiver::playoutFrame()
 
             int segmentPacketLost = firstFrame->second.numberOfFragments - firstFrame->second.numberOfFragmentsReceived;
             if (segmentPacketLost > 0) {
-                ueAppModule_->emit(segmentLoss_, segmentPacketLost);
+                ueAppModule_->emit(segmentLossSignal_, segmentPacketLost);
             }
             lastFrameDisplayed_ = firstFrame->second.frameNumber;
             playoutBuffer_.erase(firstFrame);
@@ -294,8 +294,8 @@ double MecRTVideoStreamingReceiver::playoutFrame()
     }
 
     expectedFrameDisplayed_++;
-    ueAppModule_->emit(frameSize_, frameSize);
-    ueAppModule_->emit(frameDisplayed_, percentage);
+    ueAppModule_->emit(frameSizeSignal_, frameSize);
+    ueAppModule_->emit(frameDisplayedSignal_, percentage);
     return percentage;
 }
 
@@ -310,14 +310,14 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
         return;
     }
 
-    ueAppModule_->emit(e2eDelaySegment_, simTime() - creationTime);
+    ueAppModule_->emit(e2eDelaySegmentSignal_, simTime() - creationTime);
     if (lastfragment_ != 0) {
-        ueAppModule_->emit(interArrTime_, simTime() - lastfragment_);
+        ueAppModule_->emit(interArrTimeSignal_, simTime() - lastfragment_);
     }
 
     lastfragment_ = simTime();
     int frameNumber = header->getFrameNumber();
-    ueAppModule_->emit(segmentSize_, header->getPayloadLength());
+    ueAppModule_->emit(segmentSizeSignal_, header->getPayloadLength());
     EV << "MecRTVideoStreamingReceiver::processPacket - received packet with seqNum [" << header->getSequenceNumber() << "] of frame [" << frameNumber << "] and delay " << simTime() - creationTime << " s" << endl;
 
     /*
@@ -350,7 +350,7 @@ void MecRTVideoStreamingReceiver::processPacket(Packet *packet)
 
             playoutBuffer_.insert({ frameNumber, newFrame });
             int size = playoutBuffer_.size();
-            ueAppModule_->emit(playoutBufferLength_, size);
+            ueAppModule_->emit(playoutBufferLengthSignal_, size);
 
             EV << "MecRTVideoStreamingReceiver::processPacket - store new frame [" << newFrame.frameNumber << "], packet with seqNum [" << header->getSequenceNumber() << "] contains "
                << header->getPayloadLength() << " bytes.\nThe current size of the frame is " << newFrame.currentSize << " of "

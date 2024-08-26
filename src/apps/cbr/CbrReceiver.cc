@@ -19,9 +19,9 @@ using namespace inet;
 simsignal_t CbrReceiver::cbrFrameLossSignal_ = registerSignal("cbrFrameLossSignal");
 simsignal_t CbrReceiver::cbrFrameDelaySignal_ = registerSignal("cbrFrameDelaySignal");
 simsignal_t CbrReceiver::cbrJitterSignal_ = registerSignal("cbrJitterSignal");
-simsignal_t CbrReceiver::cbrReceivedThroughput_ = registerSignal("cbrReceivedThroughputSignal");
+simsignal_t CbrReceiver::cbrReceivedThroughputSignal_ = registerSignal("cbrReceivedThroughputSignal");
 simsignal_t CbrReceiver::cbrReceivedBytesSignal_ = registerSignal("cbrReceivedBytesSignal");
-simsignal_t CbrReceiver::cbrRcvdPkt_ = registerSignal("cbrRcvdPkt");
+simsignal_t CbrReceiver::cbrRcvdPktSignal_ = registerSignal("cbrRcvdPkt");
 
 void CbrReceiver::initialize(int stage)
 {
@@ -65,7 +65,7 @@ void CbrReceiver::handleMessage(cMessage *msg)
 
     EV << "CbrReceiver::handleMessage - Packet received: FRAME[" << cbrHeader->getIDframe() << "/" << cbrHeader->getNframes() << "] with delay[" << delay << "]" << endl;
 
-    emit(cbrRcvdPkt_, (long)cbrHeader->getIDframe());
+    emit(cbrRcvdPktSignal_, (long)cbrHeader->getIDframe());
 
     delete msg;
 }
@@ -79,7 +79,7 @@ void CbrReceiver::finish()
     emit(cbrFrameLossSignal_, lossRate);
 
     simtime_t elapsedTime = simTime() - getSimulation()->getWarmupPeriod();
-    emit(cbrReceivedThroughput_, recvBytes_ / elapsedTime.dbl());
+    emit(cbrReceivedThroughputSignal_, recvBytes_ / elapsedTime.dbl());
 }
 
 } //namespace

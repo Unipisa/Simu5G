@@ -33,10 +33,10 @@ using namespace inet;
 #define MIN_COMPRESSED_HEADER_SIZE    B(3)
 
 // statistics
-simsignal_t LtePdcpRrcBase::receivedPacketFromUpperLayer = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LtePdcpRrcBase::receivedPacketFromLowerLayer = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LtePdcpRrcBase::sentPacketToUpperLayer = registerSignal("sentPacketToUpperLayer");
-simsignal_t LtePdcpRrcBase::sentPacketToLowerLayer = registerSignal("sentPacketToLowerLayer");
+simsignal_t LtePdcpRrcBase::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LtePdcpRrcBase::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LtePdcpRrcBase::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LtePdcpRrcBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
 {
@@ -151,7 +151,7 @@ void LtePdcpRrcBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlIn
 
 void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
 {
-    emit(receivedPacketFromUpperLayer, pktAux);
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     // Control Information
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
@@ -212,7 +212,7 @@ void LtePdcpRrcBase::fromEutranRrcSap(cPacket *pkt)
 void LtePdcpRrcBase::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
-    emit(receivedPacketFromLowerLayer, pkt);
+    emit(receivedPacketFromLowerLayerSignal_, pkt);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
@@ -237,7 +237,7 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
 
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
-    emit(sentPacketToUpperLayer, pkt);
+    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 void LtePdcpRrcBase::toEutranRrcSap(cPacket *pkt)
@@ -298,7 +298,7 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
 
     // Send message
     send(pkt, gate);
-    emit(sentPacketToLowerLayer, pkt);
+    emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
 void LtePdcpRrcBase::sendToUpperLayer(cPacket *pkt)
@@ -307,7 +307,7 @@ void LtePdcpRrcBase::sendToUpperLayer(cPacket *pkt)
 
     // Send message
     send(pkt, dataPort_[OUT_GATE]);
-    emit(sentPacketToUpperLayer, pkt);
+    emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
 /*

@@ -30,11 +30,11 @@ using namespace inet;
 uint16_t MultihopD2D::numMultihopD2DApps = 0;
 
 // local statistics
-simsignal_t MultihopD2D::d2dMultihopGeneratedMsg_ = registerSignal("d2dMultihopGeneratedMsg");
-simsignal_t MultihopD2D::d2dMultihopSentMsg_ = registerSignal("d2dMultihopSentMsg");
-simsignal_t MultihopD2D::d2dMultihopRcvdMsg_ = registerSignal("d2dMultihopRcvdMsg");
-simsignal_t MultihopD2D::d2dMultihopRcvdDupMsg_ = registerSignal("d2dMultihopRcvdDupMsg");
-simsignal_t MultihopD2D::d2dMultihopTrickleSuppressedMsg_ = registerSignal("d2dMultihopTrickleSuppressedMsg");
+simsignal_t MultihopD2D::d2dMultihopGeneratedMsgSignal_ = registerSignal("d2dMultihopGeneratedMsg");
+simsignal_t MultihopD2D::d2dMultihopSentMsgSignal_ = registerSignal("d2dMultihopSentMsg");
+simsignal_t MultihopD2D::d2dMultihopRcvdMsgSignal_ = registerSignal("d2dMultihopRcvdMsg");
+simsignal_t MultihopD2D::d2dMultihopRcvdDupMsgSignal_ = registerSignal("d2dMultihopRcvdDupMsg");
+simsignal_t MultihopD2D::d2dMultihopTrickleSuppressedMsgSignal_ = registerSignal("d2dMultihopTrickleSuppressedMsg");
 
 MultihopD2D::MultihopD2D() : senderAppId_(numMultihopD2DApps++)
 {
@@ -196,8 +196,8 @@ void MultihopD2D::sendPacket()
     stat_->recordReception(lteNodeId_, msgId, 0.0, 0);
     markAsRelayed(msgId);
 
-    emit(d2dMultihopGeneratedMsg_, (long)1);
-    emit(d2dMultihopSentMsg_, (long)1);
+    emit(d2dMultihopGeneratedMsgSignal_, (long)1);
+    emit(d2dMultihopSentMsgSignal_, (long)1);
 }
 
 void MultihopD2D::handleRcvdPacket(cMessage *msg)
@@ -218,7 +218,7 @@ void MultihopD2D::handleRcvdPacket(cMessage *msg)
         // do not need to relay the message again
         EV << "MultihopD2D::handleRcvdPacket - The message has already been received, counter = " << counter_[msgId] << endl;
 
-        emit(d2dMultihopRcvdDupMsg_, (long)1);
+        emit(d2dMultihopRcvdDupMsgSignal_, (long)1);
         stat_->recordDuplicateReception(msgId);
         delete pPacket;
     }
@@ -241,7 +241,7 @@ void MultihopD2D::handleRcvdPacket(cMessage *msg)
 
         // emit statistics
         simtime_t delay = simTime() - mhop->getPayloadTimestamp();
-        emit(d2dMultihopRcvdMsg_, (long)1);
+        emit(d2dMultihopRcvdMsgSignal_, (long)1);
         stat_->recordReception(lteNodeId_, msgId, delay, mhop->getHops());
 
         // === decide whether to relay the message === //
@@ -300,7 +300,7 @@ void MultihopD2D::handleTrickleTimer(cMessage *msg)
     else {
         EV << "MultihopD2D::handleTrickleTimer - suppressed message, counter[" << counter_[msgId] << "] k[" << k_ << "]" << endl;
         stat_->recordSuppressedMessage(msgId);
-        emit(d2dMultihopTrickleSuppressedMsg_, (long)1);
+        emit(d2dMultihopTrickleSuppressedMsgSignal_, (long)1);
     }
     delete msg;
 }
@@ -345,7 +345,7 @@ void MultihopD2D::relayPacket(cMessage *msg)
 
     markAsRelayed(dst->getMsgid());    // mark the message as relayed
 
-    emit(d2dMultihopSentMsg_, (long)1);
+    emit(d2dMultihopSentMsgSignal_, (long)1);
     stat_->recordSentMessage(dst->getMsgid());
 
     delete pPacket;

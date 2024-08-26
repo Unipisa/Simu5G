@@ -23,36 +23,36 @@ LteHarqUnitTx::LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw,
 
     if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB) {
         nodeB_ = macOwner_;
-        macPacketLoss_ = cComponent::registerSignal("macPacketLossDl");
-        macCellPacketLoss_ = cComponent::registerSignal("macCellPacketLossDl");
-        harqErrorRate_ = cComponent::registerSignal("harqErrorRateDl");
-        harqErrorRate_1_ = cComponent::registerSignal("harqErrorRate_1st_Dl");
-        harqErrorRate_2_ = cComponent::registerSignal("harqErrorRate_2nd_Dl");
-        harqErrorRate_3_ = cComponent::registerSignal("harqErrorRate_3rd_Dl");
-        harqErrorRate_4_ = cComponent::registerSignal("harqErrorRate_4th_Dl");
-        harqTxAttempts_ = cComponent::registerSignal("harqTxAttemptsDl");
+        macPacketLossSignal_ = cComponent::registerSignal("macPacketLossDl");
+        macCellPacketLossSignal_ = cComponent::registerSignal("macCellPacketLossDl");
+        harqErrorRateSignal_ = cComponent::registerSignal("harqErrorRateDl");
+        harqErrorRate_1Signal_ = cComponent::registerSignal("harqErrorRate_1st_Dl");
+        harqErrorRate_2Signal_ = cComponent::registerSignal("harqErrorRate_2nd_Dl");
+        harqErrorRate_3Signal_ = cComponent::registerSignal("harqErrorRate_3rd_Dl");
+        harqErrorRate_4Signal_ = cComponent::registerSignal("harqErrorRate_4th_Dl");
+        harqTxAttemptsSignal_ = cComponent::registerSignal("harqTxAttemptsDl");
     }
     else { // UE
         nodeB_ = getMacByMacNodeId(binder, macOwner_->getMacCellId());
         if (dstMac_ == nodeB_) { // UL
-            macPacketLoss_ = cComponent::registerSignal("macPacketLossUl");
-            macCellPacketLoss_ = cComponent::registerSignal("macCellPacketLossUl");
-            harqErrorRate_ = cComponent::registerSignal("harqErrorRateUl");
-            harqErrorRate_1_ = cComponent::registerSignal("harqErrorRate_1st_Ul");
-            harqErrorRate_2_ = cComponent::registerSignal("harqErrorRate_2nd_Ul");
-            harqErrorRate_3_ = cComponent::registerSignal("harqErrorRate_3rd_Ul");
-            harqErrorRate_4_ = cComponent::registerSignal("harqErrorRate_4th_Ul");
-            harqTxAttempts_ = cComponent::registerSignal("harqTxAttemptsUl");
+            macPacketLossSignal_ = cComponent::registerSignal("macPacketLossUl");
+            macCellPacketLossSignal_ = cComponent::registerSignal("macCellPacketLossUl");
+            harqErrorRateSignal_ = cComponent::registerSignal("harqErrorRateUl");
+            harqErrorRate_1Signal_ = cComponent::registerSignal("harqErrorRate_1st_Ul");
+            harqErrorRate_2Signal_ = cComponent::registerSignal("harqErrorRate_2nd_Ul");
+            harqErrorRate_3Signal_ = cComponent::registerSignal("harqErrorRate_3rd_Ul");
+            harqErrorRate_4Signal_ = cComponent::registerSignal("harqErrorRate_4th_Ul");
+            harqTxAttemptsSignal_ = cComponent::registerSignal("harqTxAttemptsUl");
         }
         else {
-            macPacketLoss_ = 0;
-            macCellPacketLoss_ = 0;
-            harqErrorRate_ = 0;
-            harqErrorRate_1_ = 0;
-            harqErrorRate_2_ = 0;
-            harqErrorRate_3_ = 0;
-            harqErrorRate_4_ = 0;
-            harqTxAttempts_ = 0;
+            macPacketLossSignal_ = 0;
+            macCellPacketLossSignal_ = 0;
+            harqErrorRateSignal_ = 0;
+            harqErrorRate_1Signal_ = 0;
+            harqErrorRate_2Signal_ = 0;
+            harqErrorRate_3Signal_ = 0;
+            harqErrorRate_4Signal_ = 0;
+            harqTxAttemptsSignal_ = 0;
         }
     }
 }
@@ -179,22 +179,22 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
     // emit H-ARQ statistics
     switch (ntx) {
         case 1:
-            ue->emit(harqErrorRate_1_, sample);
+            ue->emit(harqErrorRate_1Signal_, sample);
             break;
         case 2:
-            ue->emit(harqErrorRate_2_, sample);
+            ue->emit(harqErrorRate_2Signal_, sample);
             break;
         case 3:
-            ue->emit(harqErrorRate_3_, sample);
+            ue->emit(harqErrorRate_3Signal_, sample);
             break;
         case 4:
-            ue->emit(harqErrorRate_4_, sample);
+            ue->emit(harqErrorRate_4Signal_, sample);
             break;
         default:
             break;
     }
 
-    ue->emit(harqErrorRate_, sample);
+    ue->emit(harqErrorRateSignal_, sample);
 
     if (ntx < 4)
         ue->recordHarqErrorRate(sample, (Direction)dir);
@@ -202,11 +202,11 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
         ue->recordHarqErrorRate(0, (Direction)dir);
 
     if (a == HARQACK)
-        ue->emit(harqTxAttempts_, ntx);
+        ue->emit(harqTxAttemptsSignal_, ntx);
 
     if (reset) {
-        ue->emit(macPacketLoss_, sample);
-        nodeB_->emit(macCellPacketLoss_, sample);
+        ue->emit(macPacketLossSignal_, sample);
+        nodeB_->emit(macCellPacketLossSignal_, sample);
     }
 
     return reset;

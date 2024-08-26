@@ -153,7 +153,7 @@ void NRPhyUe::handleAirFrame(cMessage *msg)
             cw = 0;
         double cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
         if (lteInfo->getDirection() == DL) {
-            emit(averageCqiDl_, cqi);
+            emit(averageCqiDlSignal_, cqi);
             recordCqi(cqi, DL);
         }
     }
@@ -392,7 +392,7 @@ void NRPhyUe::doHandover()
     fbGen_->handleHandover(masterId_);
 
     // collect stat
-    emit(servingCell_, (long)masterId_);
+    emit(servingCellSignal_, (long)masterId_);
 
     if (masterId_ == 0)
         EV << NOW << " NRPhyUe::doHandover - UE " << nodeId_ << " detached from the network" << endl;
