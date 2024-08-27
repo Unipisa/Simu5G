@@ -615,19 +615,18 @@ void IP2Nic::signalHandoverCompleteUe(bool isNr)
 
 IP2Nic::~IP2Nic()
 {
-    std::map<MacNodeId, IpDatagramQueue>::iterator it;
-    for (it = hoFromX2_.begin(); it != hoFromX2_.end(); ++it) {
-        while (!it->second.empty()) {
-            Packet *pkt = it->second.front();
-            it->second.pop_front();
+    for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
+        while (!ipDatagramQueue.empty()) {
+            Packet *pkt = ipDatagramQueue.front();
+            ipDatagramQueue.pop_front();
             delete pkt;
         }
     }
 
-    for (it = hoFromIp_.begin(); it != hoFromIp_.end(); ++it) {
-        while (!it->second.empty()) {
-            Packet *pkt = it->second.front();
-            it->second.pop_front();
+    for (auto &[macNodeId, ipDatagramQueue] : hoFromIp_) {
+        while (!ipDatagramQueue.empty()) {
+            Packet *pkt = ipDatagramQueue.front();
+            ipDatagramQueue.pop_front();
             delete pkt;
         }
     }

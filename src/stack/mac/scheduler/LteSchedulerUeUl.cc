@@ -90,18 +90,16 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
         if (sdus.empty())
             continue;
 
-        auto it = sdus.begin(), et = sdus.end();
-        for ( ; it != et; ++it) {
+        for (const auto& [cid, sdu] : sdus) {
             // set schedule list entry
-            std::pair<MacCid, Codeword> schedulePair(it->first, cw);
-            scheduleList_[schedulePair] = it->second;
+            std::pair<MacCid, Codeword> schedulePair(cid, cw);
+            scheduleList_[schedulePair] = sdu;
         }
 
-        auto bit = bytes.begin(), bet = bytes.end();
-        for ( ; bit != bet; ++bit) {
+        for (const auto& [cid, byte] : bytes) {
             // set schedule list entry
-            std::pair<MacCid, Codeword> schedulePair(bit->first, cw);
-            scheduledBytesList_[schedulePair] = bit->second;
+            std::pair<MacCid, Codeword> schedulePair(cid, cw);
+            scheduledBytesList_[schedulePair] = byte;
         }
 
         MacCid highestBackloggedFlow = 0;

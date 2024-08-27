@@ -83,8 +83,8 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
 LteSchedulerEnb::~LteSchedulerEnb()
 {
     delete allocator_;
-    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
-        delete *it;
+    for (auto* item : scheduler_)
+        delete item;
 }
 
 void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
@@ -126,8 +126,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
 
 void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumerologyIndex)
 {
-    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
-        (*it)->initializeSchedulerPeriodCounter(maxNumerologyIndex);
+    for (const auto& schedulerItem : scheduler_)
+        schedulerItem->initializeSchedulerPeriodCounter(maxNumerologyIndex);
 }
 
 std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
@@ -135,8 +135,8 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
     EV << "LteSchedulerEnb::schedule performed by Node: " << mac_->getMacNodeId() << endl;
 
     // clearing structures for new scheduling
-    for (auto lit = scheduleList_.begin(); lit != scheduleList_.end(); ++lit)
-        lit->second.clear();
+    for (auto & [key, value] : scheduleList_)
+        value.clear();
     allocatedCws_.clear();
 
     // clean the allocator
@@ -144,8 +144,8 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
 
     // schedule one carrier at a time
     LteScheduler *scheduler = nullptr;
-    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it) {
-        scheduler = *it;
+    for (auto & schedulerPtr : scheduler_) {
+        scheduler = schedulerPtr;
         EV << "LteSchedulerEnb::schedule carrier [" << scheduler->getCarrierFrequency() << "]" << endl;
 
         unsigned int counter = scheduler->decreaseSchedulerPeriodCounter();
@@ -799,8 +799,8 @@ void LteSchedulerEnb::backlog(MacCid cid)
     EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
     activeConnectionSet_.insert(cid);
 
-    for (auto it = scheduler_.begin(); it != scheduler_.end(); ++it)
-        (*it)->notifyActiveConnection(cid);
+    for (auto* schedulerItem : scheduler_)
+        schedulerItem->notifyActiveConnection(cid);
 }
 
 unsigned int LteSchedulerEnb::readPerUeAllocatedBlocks(const MacNodeId nodeId,
@@ -839,15 +839,14 @@ unsigned int LteSchedulerEnb::readRbOccupation(const MacNodeId id, double carrie
     // Parse rbMap according to the carrier
     Band startingBand = mac_->getCellInfo()->getCarrierStartingBand(carrierFrequency);
     Band lastBand = mac_->getCellInfo()->getCarrierLastBand(carrierFrequency);
-    auto it = tmpRbMap.begin(), et = tmpRbMap.end();
-    for ( ; it != et; ++it) {
+    for (const auto& [bandKey, bandValue] : tmpRbMap) {
         std::map<Band, unsigned int> remoteEntry;
         unsigned int i = 0;
         for (Band b = startingBand; b <= lastBand; b++) {
-            remoteEntry[i] = tmpRbMap[it->first][b];
+            remoteEntry[i] = tmpRbMap[bandKey][b];
             i++;
         }
-        rbMap[it->first] = remoteEntry;
+        rbMap[bandKey] = remoteEntry;
     }
 
     return ret;
@@ -1003,10 +1002,8 @@ ActiveSet *LteSchedulerEnb::readActiveConnections()
 
 void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
 {
-    ActiveSet::iterator it = activeConnectionSet_.begin();
-    ActiveSet::iterator et = activeConnectionSet_.end();
     MacCid cid;
-    for ( ; it != et; ) {
+    for (auto it = activeConnectionSet_.begin(); it != activeConnectionSet_.end(); ) {
         cid = *it;
         if (MacCidToNodeId(cid) == nodeId) {
             EV << NOW << "LteSchedulerEnb::removeActiveConnections CID removed " << cid << endl;

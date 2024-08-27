@@ -39,14 +39,12 @@ void UserTxParams::print(const char *s) const {
         EV << NOW << " " << s << " PMI: " << pmi_ << "\n";
 
         //*** Bands ********************************************
-        auto it = allowedBands_.begin();
-        auto et = allowedBands_.end();
-
         EV << NOW << " " << s << " Bands = {";
-        if (it != et) {
+        if (!allowedBands_.empty()) {
+            auto it = allowedBands_.begin();
             EV << *it;
             ++it;
-            for ( ; it != et; ++it)
+            for ( ; it != allowedBands_.end(); ++it)
                 EV << ", " << *it;
         }
         EV << "}\n";

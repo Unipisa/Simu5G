@@ -66,14 +66,11 @@ void LteMaxCiComp::prepareSchedule()
 
     // Build the score list by cycling through the active connections.
     ScoreList score;
-    MacCid cid = 0;
     unsigned int blocks = 0;
     unsigned int byPs = 0;
 
-    for (unsigned int it1 : carrierActiveConnectionSet_) {
+    for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        cid = it1;
-
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {
@@ -86,7 +83,6 @@ void LteMaxCiComp::prepareSchedule()
         // compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
@@ -99,18 +95,15 @@ void LteMaxCiComp::prepareSchedule()
         if (eNbScheduler_->allocatedCws(nodeId) == codeword)
             continue;
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
-
-        // compute score based on total available bytes
         unsigned int availableBlocks = 0;
         unsigned int availableBytes = 0;
         // for each antenna
-        for ( ; antennaIt != antennaEt; ++antennaIt) {
+        for (const Remote& antenna : info.readAntennaSet()) {
             // for each logical band
-            for ( ; it != et; ++it) {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
+            for (const Band& band : bands) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, antenna, band);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, direction_, carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, band, blocks, direction_, carrierFrequency_);
             }
         }
 

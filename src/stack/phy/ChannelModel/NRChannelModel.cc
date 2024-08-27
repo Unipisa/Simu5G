@@ -334,7 +334,6 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 
     // get external cell list
     ExtCellList list = binder_->getExtCellList(carrierFrequency);
-    ExtCellList::iterator it = list.begin();
 
     Coord c;
     double threeDimDist, // meters
@@ -347,9 +346,9 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
     std::vector<double> fadingAttenuation;
 
     // compute distance for each cell
-    while (it != list.end()) {
+    for (const auto& extCell : list) {
         // get external cell position
-        c = (*it)->getPosition();
+        c = extCell->getPosition();
         // compute distance between UE and the ext cell
         threeDimDist = coord.distance(c);
         twoDimDist = getTwoDimDistance(coord, c);
@@ -362,7 +361,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
         att = computeExtCellPathLoss(threeDimDist, twoDimDist, nodeId);
 
         //=============== ANGULAR ATTENUATION =================
-        if ((*it)->getTxDirection() == OMNI) {
+        if (extCell->getTxDirection() == OMNI) {
             angularAtt = 0;
         }
         else {
@@ -370,7 +369,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
             double ueAngle = computeAngle(c, coord);
 
             // compute the reception angle between ue and eNb
-            double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
+            double recvAngle = fabs(extCell->getTxAngle() - ueAngle);
 
             if (recvAngle > 180)
                 recvAngle = 360 - recvAngle;
@@ -384,20 +383,20 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
 
         // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
         // compute and linearize received power
-        recvPwrDBm = (*it)->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+        recvPwrDBm = extCell->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
         recvPwr = dBmToLinear(recvPwrDBm);
 
-        int numBands = std::min(numBands_, (*it)->getNumBands());
+        int numBands = std::min(numBands_, extCell->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
 
         // add interference in those bands where the ext cell is active
         for (unsigned int i = 0; i < numBands; i++) {
             int occ;
             if (isCqi) { // check slot occupation for this TTI
-                occ = (*it)->getBandStatus(i);
+                occ = extCell->getBandStatus(i);
             }
             else {      // error computation. We need to check the slot occupation of the previous TTI
-                occ = (*it)->getPrevBandStatus(i);
+                occ = extCell->getPrevBandStatus(i);
             }
 
             // if the ext cell is active, add interference
@@ -405,8 +404,6 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
                 (*interference)[i] += recvPwr;
             }
         }
-
-        it++;
     }
 
     return true;

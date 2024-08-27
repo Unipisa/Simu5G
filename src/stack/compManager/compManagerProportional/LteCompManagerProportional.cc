@@ -71,18 +71,16 @@ void LteCompManagerProportional::doCoordination()
     offset_.clear();
 
     unsigned int requestsSum = 0;
-    std::map<X2NodeId, unsigned int>::iterator it = reqBlocksMap_.begin();
-    for ( ; it != reqBlocksMap_.end(); ++it)
-        requestsSum += it->second;
+    for (const auto& [nodeId, reqCount] : reqBlocksMap_)
+        requestsSum += reqCount;
 
     // assign a number of blocks that is proportional to the requests received from each eNB
     unsigned int totalReservedBlocks = 0;
     std::vector<double> reservation;
     reservation.clear();
-    for (it = reqBlocksMap_.begin(); it != reqBlocksMap_.end(); ++it) {
+    for (const auto& [nodeId, req] : reqBlocksMap_) {
 
         // requests from the current node
-        unsigned int req = it->second;
 
         // compute the number of blocks to reserve
         double percentage;
@@ -122,9 +120,8 @@ X2CompProportionalReplyIE *LteCompManagerProportional::buildCoordinatorReply(X2N
     // find the correct entry in the partitioning vector
     bool found = false;
     unsigned int index = 0;
-    std::map<X2NodeId, unsigned int>::iterator it = reqBlocksMap_.begin();
-    for ( ; it != reqBlocksMap_.end(); ++it) {
-        if (it->first == clientId) {
+    for (const auto& [key, value] : reqBlocksMap_) {
+        if (key == clientId) {
             found = true;
             break;
         }

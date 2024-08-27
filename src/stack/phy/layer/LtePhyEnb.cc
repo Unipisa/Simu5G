@@ -287,27 +287,23 @@ void LtePhyEnb::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, Pa
                     lteinfo->getSourceId());
         }
         else if (req.genType == REAL) {
-            RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
-            for (it = das_->getReportingSet().begin();
-                 it != das_->getReportingSet().end(); ++it)
+            for (const auto &remote : das_->getReportingSet())
             {
-                fb[(*it)].resize((int)txmode);
-                fb[(*it)][(int)txmode] =
-                    lteFeedbackComputation_->computeFeedback(*it, txmode,
-                            type, rbtype, antennaCws[*it], numPreferredBand,
+                fb[remote].resize((int)txmode);
+                fb[remote][(int)txmode] =
+                    lteFeedbackComputation_->computeFeedback(remote, txmode,
+                            type, rbtype, antennaCws[remote], numPreferredBand,
                             REAL, nRus, snr, lteinfo->getSourceId());
             }
         }
         // the reports are computed only for the antenna in the reporting set
         else if (req.genType == DAS_AWARE) {
-            RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
-            for (it = das_->getReportingSet().begin();
-                 it != das_->getReportingSet().end(); ++it)
+            for (const auto &remote : das_->getReportingSet())
             {
-                fb[(*it)] = lteFeedbackComputation_->computeFeedback(*it, type,
-                        rbtype, txmode, antennaCws[*it], numPreferredBand,
+                fb[remote] = lteFeedbackComputation_->computeFeedback(remote, type,
+                        rbtype, txmode, antennaCws[remote], numPreferredBand,
                         DAS_AWARE, nRus, snr, lteinfo->getSourceId());
             }
         }
@@ -351,34 +347,28 @@ void LtePhyEnb::handleFeedbackPkt(UserControlInfo *lteinfo,
         // DEBUG
         bool debug = false;
         if (debug) {
-            LteFeedbackDoubleVector::iterator it;
-            LteFeedbackVector::iterator jt;
             LteFeedbackDoubleVector vec = header->getLteFeedbackDoubleVectorDl();
-            for (it = vec.begin(); it != vec.end(); ++it) {
-                for (jt = it->begin(); jt != it->end(); ++jt) {
+            for (const auto& feedbackDouble : vec) {
+                for (const auto& feedback : feedbackDouble) {
                     MacNodeId id = lteinfo->getSourceId();
                     EV << endl << "Node:" << id << endl;
-                    TxMode t = jt->getTxMode();
+                    TxMode t = feedback.getTxMode();
                     EV << "TXMODE: " << txModeToA(t) << endl;
-                    if (jt->hasBandCqi()) {
-                        std::vector<CqiVector> vec = jt->getBandCqi();
-                        std::vector<CqiVector>::iterator kt;
-                        CqiVector::iterator ht;
-                        int i;
-                        for (kt = vec.begin(); kt != vec.end(); ++kt) {
-                            for (i = 0, ht = kt->begin(); ht != kt->end();
-                                 ++ht, i++)
-                                EV << "Band " << i << " CQI " << *ht << endl;
+                    if (feedback.hasBandCqi()) {
+                        const std::vector<CqiVector>& bandCqiVec = feedback.getBandCqi();
+                        for (const auto& bandCqi : bandCqiVec) {
+                            int i;
+                            for (i = 0; i < bandCqi.size(); ++i)
+                                EV << "Band " << i << " CQI " << bandCqi[i] << endl;
                         }
                     }
-                    else if (jt->hasWbCqi()) {
-                        CqiVector v = jt->getWbCqi();
-                        CqiVector::iterator ht = v.begin();
-                        for ( ; ht != v.end(); ++ht)
-                            EV << "wideband CQI " << *ht << endl;
+                    else if (feedback.hasWbCqi()) {
+                        const CqiVector& widebandCqi = feedback.getWbCqi();
+                        for (const auto& cqi : widebandCqi)
+                            EV << "wideband CQI " << cqi << endl;
                     }
-                    if (jt->hasRankIndicator()) {
-                        EV << "Rank " << jt->getRankIndicator() << endl;
+                    if (feedback.hasRankIndicator()) {
+                        EV << "Rank " << feedback.getRankIndicator() << endl;
                     }
                 }
             }

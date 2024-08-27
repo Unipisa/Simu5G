@@ -70,27 +70,23 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
                     lteinfo->getSourceId());
         }
         else if (req.genType == REAL) {
-            RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
-            for (it = das_->getReportingSet().begin();
-                 it != das_->getReportingSet().end(); ++it)
+            for (const auto& reporting : das_->getReportingSet())
             {
-                fb[(*it)].resize((int)txmode);
-                fb[(*it)][(int)txmode] =
-                    lteFeedbackComputation_->computeFeedback(*it, txmode,
-                            type, rbtype, antennaCws[*it], numPreferredBand,
+                fb[reporting].resize((int)txmode);
+                fb[reporting][(int)txmode] =
+                    lteFeedbackComputation_->computeFeedback(reporting, txmode,
+                            type, rbtype, antennaCws[reporting], numPreferredBand,
                             REAL, nRus, snr, lteinfo->getSourceId());
             }
         }
         // The reports are computed only for the antennas in the reporting set
         else if (req.genType == DAS_AWARE) {
-            RemoteSet::iterator it;
             fb.resize(das_->getReportingSet().size());
-            for (it = das_->getReportingSet().begin();
-                 it != das_->getReportingSet().end(); ++it)
+            for (const auto& reporting : das_->getReportingSet())
             {
-                fb[(*it)] = lteFeedbackComputation_->computeFeedback(*it, type,
-                        rbtype, txmode, antennaCws[*it], numPreferredBand,
+                fb[reporting] = lteFeedbackComputation_->computeFeedback(reporting, type,
+                        rbtype, txmode, antennaCws[reporting], numPreferredBand,
                         DAS_AWARE, nRus, snr, lteinfo->getSourceId());
             }
         }
@@ -113,14 +109,13 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
             if (enableD2DCqiReporting_) {
                 // Compute D2D feedback for all possible peering UEs
                 std::vector<UeInfo *> *ueList = binder_->getUeList();
-                std::vector<UeInfo *>::iterator it = ueList->begin();
-                for ( ; it != ueList->end(); ++it) {
-                    MacNodeId peerId = (*it)->id;
+                for (const auto& ueInfo : *ueList) {
+                    MacNodeId peerId = ueInfo->id;
                     if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
                         // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)
 
                         // Retrieve the position of the peer
-                        Coord peerCoord = (*it)->phy->getCoord();
+                        Coord peerCoord = ueInfo->phy->getCoord();
 
                         // Get SINR for this link
                         if (channelModel != nullptr)
@@ -140,7 +135,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
             dir = UNKNOWN_DIRECTION;
         }
     }
-    EV << "LtePhyEnb::requestFeedback : Feedback Generated for nodeId: "
+    EV << "LtePhyEn::requestFeedback : Feedback Generated for nodeId: "
        << nodeId_ << " with generator type "
        << fbGeneratorTypeToA(req.genType) << " Fb size: " << fb.size()
        << " Carrier: " << lteinfo->getCarrierFrequency() << endl;

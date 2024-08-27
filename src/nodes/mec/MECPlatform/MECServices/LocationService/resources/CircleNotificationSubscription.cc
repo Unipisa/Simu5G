@@ -59,11 +59,10 @@ void CircleNotificationSubscription::sendNotification(EventNotification *event)
     val["link"]["href"] = resourceURL;
     val["link"]["rel"] = subscriptionType_;
 
-    // std::vector<TerminalLocation>::const_iterator it = terminalLocations.begin();
     std::vector<TerminalLocation> terminalLoc = circleEvent->getTerminalLocations();
 
-    for (auto it : terminalLoc) {
-        terminalLocationArray.push_back(it.toJson());
+    for (const auto& terminalLocation : terminalLoc) {
+        terminalLocationArray.push_back(terminalLocation.toJson());
     }
     if (terminalLocationArray.size() > 1)
         val["terminalLocationList"] = terminalLocationArray;
@@ -264,41 +263,40 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
 {
     EV << "CircleNotificationSubscription::handleSubscription()" << endl;
     terminalLocations.clear();
-    std::map<MacNodeId, bool>::iterator it = users.begin();
-    for ( ; it != users.end(); ++it) {
+    for (auto &[macNodeId, isInside] : users) {
         bool found = false;
         //check if the user is under one of the EnodeB connected to the Mehost
 
-        if (!findUe(it->first))
+        if (!findUe(macNodeId))
             continue; // TODO manage what to do
-        inet::Coord coord = LocationUtils::getCoordinates(binder, it->first);
+        inet::Coord coord = LocationUtils::getCoordinates(binder, macNodeId);
         inet::Coord center = inet::Coord(latitude, longitude, 0.);
 
         if (actionCriteria == LocationUtils::Entering) {
-            if (coord.distance(center) <= radius && it->second == false) {
-                it->second = true;
+            if (coord.distance(center) <= radius && !isInside) {
+                isInside = true;
                 EV << "inside" << endl;
                 found = true;
             }
             else if (coord.distance(center) >= radius) {
-                it->second = false;
+                isInside = false;
             }
         }
         else {
-            if (coord.distance(center) >= radius && it->second == true) {
-                it->second = false;
+            if (coord.distance(center) >= radius && isInside) {
+                isInside = false;
                 EV << "outside" << endl;
                 found = true;
             }
             else if (coord.distance(center) <= radius) {
-                it->second = true;
+                isInside = true;
             }
         }
 
         if (found) {
             std::string status = "Retrieved";
             CurrentLocation location(100, coord);
-            TerminalLocation user(binder->getIPv4Address(it->first).str(), status, location);
+            TerminalLocation user(binder->getIPv4Address(macNodeId).str(), status, location);
             terminalLocations.push_back(user);
         }
     }
@@ -312,11 +310,8 @@ EventNotification *CircleNotificationSubscription::handleSubscription()
 
 bool CircleNotificationSubscription::findUe(MacNodeId nodeId)
 {
-    auto eit = eNodeBs_.begin();
-    std::map<MacNodeId, inet::Coord>::const_iterator pit;
-    // const std::map<MacNodeId, inet::Coord>* uePositionList;
-    for ( ; eit != eNodeBs_.end(); ++eit) {
-        inet::Coord uePos = eit->second->getUePosition(nodeId);
+    for (const auto& [cellId, cellInfo] : eNodeBs_) {
+        inet::Coord uePos = cellInfo->getUePosition(nodeId);
         if (uePos != inet::Coord::ZERO) {
             return true;
         }

@@ -28,27 +28,23 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
         // CQI
         if (fb.hasBandCqi()) { // Per-band
             std::vector<CqiVector> cqi = fb.getBandCqi();
-            unsigned int n = cqi.size();
-            for (Codeword cw = 0; cw < n; ++cw)
+            for (Codeword cw = 0; cw < cqi.size(); ++cw)
                 for (Band i = 0; i < totBands_; ++i)
                     cumulativeSummary_.setCqi(cqi.at(cw).at(i), cw, i);
         }
         else {
             if (fb.hasWbCqi()) { // Wide-band
                 CqiVector cqi(fb.getWbCqi());
-                unsigned int n = cqi.size();
-                for (Codeword cw = 0; cw < n; ++cw)
+                for (Codeword cw = 0; cw < cqi.size(); ++cw)
                     for (Band i = 0; i < totBands_; ++i)
                         cumulativeSummary_.setCqi(cqi.at(cw), cw, i); // repeats the same wb cqi on each band of the same cw
             }
             if (fb.hasPreferredCqi()) { // Preferred-band
                 CqiVector cqi(fb.getPreferredCqi());
                 BandSet bands(fb.getPreferredBands());
-                unsigned int n = cqi.size();
-                BandSet::iterator et = bands.end();
-                for (Codeword cw = 0; cw < n; ++cw)
-                    for (BandSet::iterator it = bands.begin(); it != et; ++it)
-                        cumulativeSummary_.setCqi(cqi.at(cw), cw, *it); // puts the same cqi only on the preferred bands of the same cw
+                for (Codeword cw = 0; cw < cqi.size(); ++cw)
+                    for (const auto& band : bands)
+                        cumulativeSummary_.setCqi(cqi.at(cw), cw, band); // puts the same cqi only on the preferred bands of the same cw
             }
         }
 
@@ -71,9 +67,8 @@ void LteSummaryBuffer::createSummary(LteFeedback fb) {
                 // Preferred-band
                 Pmi pmi(fb.getPreferredPmi());
                 BandSet bands(fb.getPreferredBands());
-                BandSet::iterator et = bands.end();
-                for (BandSet::iterator it = bands.begin(); it != et; ++it)
-                    cumulativeSummary_.setPmi(pmi, *it);
+                for (const auto& band : bands)
+                    cumulativeSummary_.setPmi(pmi, band);
             }
         }
     }

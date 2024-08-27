@@ -368,14 +368,11 @@ void LtePhyUeD2D::storeAirFrame(LteAirFrame *newFrame)
 
         // Get the average RSRP on the RBs allocated for the transmission
         RbMap rbmap = newInfo->getGrantedBlocks();
-        RbMap::iterator it;
-        std::map<Band, unsigned int>::iterator jt;
         // For each Remote unit used to transmit the packet
-        for (it = rbmap.begin(); it != rbmap.end(); ++it) {
+        for (const auto &[remoteUnit, rbList] : rbmap) {
             // For each logical band used to transmit the packet
-            for (jt = it->second.begin(); jt != it->second.end(); ++jt) {
-                Band band = jt->first;
-                if (jt->second == 0) // This Rb is not allocated
+            for (const auto &[band, allocation] : rbList) {
+                if (allocation == 0) // This Rb is not allocated
                     continue;
 
                 sum += rsrpVector.at(band);

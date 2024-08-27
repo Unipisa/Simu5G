@@ -19,8 +19,8 @@ using namespace omnetpp;
 SubscriptionBase::SubscriptionBase() {}
 
 SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
-    for (auto it = eNodeBs.begin(); it != eNodeBs.end(); ++it) {
-        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for (cModule *eNodeB : eNodeBs) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     }
     subscriptionId_ = subId;
@@ -30,8 +30,8 @@ SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, 
 }
 
 void SubscriptionBase::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
-    for (auto it = eNodeBs.begin(); it != eNodeBs.end(); ++it) {
-        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for (auto* module : eNodeBs) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>(module->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
         EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
     }

@@ -45,9 +45,9 @@ MultihopD2D::~MultihopD2D()
     cancelAndDelete(selfSender_);
 
     if (trickleEnabled_) {
-        for (auto it = last_.begin(); it != last_.end(); ++it)
-            if (it->second != nullptr)
-                delete it->second;
+        for (auto& pair : last_)
+            if (pair.second != nullptr)
+                delete pair.second;
         last_.clear();
     }
 }

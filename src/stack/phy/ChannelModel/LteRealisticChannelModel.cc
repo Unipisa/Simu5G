@@ -1812,19 +1812,17 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
     double bler = 0;
     std::vector<double> totalbler;
     double finalSuccess = 1;
-    RbMap::iterator it;
-    std::map<Band, unsigned int>::iterator jt;
 
     // for statistical purposes
     double sumSnr = 0.0;
     int usedRBs = 0;
 
     // for each Remote unit used to transmit the packet
-    for (it = rbmap.begin(); it != rbmap.end(); ++it) {
+    for (const auto &[remoteUnit, rbList] : rbmap) {
         // for each logical band used to transmit the packet
-        for (jt = it->second.begin(); jt != it->second.end(); ++jt) {
+        for (const auto &[band, allocation] : rbList) {
             // this Rb is not allocated
-            if (jt->second == 0)
+            if (allocation == 0)
                 continue;
 
             // check the antenna used in Das
@@ -1832,18 +1830,18 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
                  || lteInfo->getTxMode() == OL_SPATIAL_MULTIPLEXING)
                 && rbmap.size() > 1)
                 // we consider only the snr associated with the LB used
-                if (it->first != lteInfo->getCw())
+                if (remoteUnit != lteInfo->getCw())
                     continue;
 
             // Get the Bler
             if (cqi == 0 || cqi > 15)
-                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, jt->second, cw, nTx);
+                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, nTx);
 
             // for statistical purposes
-            sumSnr += snrV[jt->first];
+            sumSnr += snrV[band];
             usedRBs++;
 
-            int snr = snrV[jt->first];// XXX because jt->first is a Band (=unsigned short)
+            int snr = snrV[band];// XXX because band is a Band (=unsigned short)
             if (snr < binder_->phyPisaData.minSnr())
                 return false;
             else if (snr > binder_->phyPisaData.maxSnr())
@@ -1856,13 +1854,13 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
 
             double success = 1 - bler;
             // compute the success probability according to the number of RB used
-            double successPacket = pow(success, (double)jt->second);
+            double successPacket = pow(success, (double)allocation);
             // compute the success probability according to the number of LB used
             finalSuccess *= successPacket;
 
             EV << " LteRealisticChannelModel::error direction " << dirToA(dir)
-               << " node " << id << " remote unit " << dasToA((*it).first)
-               << " Band " << (*jt).first << " SNR " << snr << " CQI " << cqi
+               << " node " << id << " remote unit " << dasToA(remoteUnit)
+               << " Band " << band << " SNR " << snr << " CQI " << cqi
                << " BLER " << bler << " success probability " << successPacket
                << " total success probability " << finalSuccess << endl;
         }
@@ -1979,36 +1977,34 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *
     double bler = 0;
     std::vector<double> totalbler;
     double finalSuccess = 1;
-    RbMap::iterator it;
-    std::map<Band, unsigned int>::iterator jt;
 
     // for statistical purposes
     double sumSnr = 0.0;
     int usedRBs = 0;
 
     // for each Remote unit used to transmit the packet
-    for (it = rbmap.begin(); it != rbmap.end(); ++it) {
+    for (const auto& [remoteUnitId, resourceBlocks] : rbmap) {
         // for each logical band used to transmit the packet
-        for (jt = it->second.begin(); jt != it->second.end(); ++jt) {
+        for (const auto& [band, allocation] : resourceBlocks) {
             // this Rb is not allocated
-            if (jt->second == 0) continue;
+            if (allocation == 0) continue;
 
             // check the antenna used in Das
             if ((lteInfo->getTxMode() == CL_SPATIAL_MULTIPLEXING
                  || lteInfo->getTxMode() == OL_SPATIAL_MULTIPLEXING)
                 && rbmap.size() > 1)
                 // we consider only the snr associated with the LB used
-                if (it->first != lteInfo->getCw()) continue;
+                if (remoteUnitId != lteInfo->getCw()) continue;
 
             // Get the Bler
             if (cqi == 0 || cqi > 15)
-                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, jt->second, cw, nTx);
+                throw cRuntimeError("A packet has been transmitted with a cqi equal to 0 or greater than 15 cqi:%d txmode:%d dir:%d rb:%d cw:%d rtx:%d", cqi, lteInfo->getTxMode(), dir, band, cw, nTx);
 
             // for statistical purposes
-            sumSnr += snrV[jt->first];
+            sumSnr += snrV[band];
             usedRBs++;
 
-            int snr = snrV[jt->first];// XXX because jt->first is a Band (=unsigned short)
+            int snr = snrV[band];// XXX because band is a Band (=unsigned short)
             if (snr < 1)                           // XXX it was < 0
                 return false;
             else if (snr > binder_->phyPisaData.maxSnr())
@@ -2021,14 +2017,14 @@ bool LteRealisticChannelModel::isError_D2D(LteAirFrame *frame, UserControlInfo *
 
             double success = 1 - bler;
             // compute the success probability according to the number of RB used
-            double successPacket = pow(success, (double)jt->second);
+            double successPacket = pow(success, (double)allocation);
 
             // compute the success probability according to the number of LB used
             finalSuccess *= successPacket;
 
             EV << " LteRealisticChannelModel::error direction " << dirToA(dir)
-               << " node " << id << " remote unit " << dasToA((*it).first)
-               << " Band " << (*jt).first << " SNR " << snr << " CQI " << cqi
+               << " node " << id << " remote unit " << dasToA(remoteUnitId)
+               << " Band " << band << " SNR " << snr << " CQI " << cqi
                << " BLER " << bler << " success probability " << successPacket
                << " total success probability " << finalSuccess << endl;
         }
@@ -2354,7 +2350,6 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
 
     // get external cell list
     ExtCellList list = binder_->getExtCellList(carrierFrequency);
-    ExtCellList::iterator it = list.begin();
 
     Coord c;
     double dist, // meters
@@ -2364,9 +2359,9 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
            angularAtt; // dBm
 
     //compute distance for each cell
-    while (it != list.end()) {
+    for (auto& extCell : list) {
         // get external cell position
-        c = (*it)->getPosition();
+        c = extCell->getPosition();
         // compute distance between UE and the ext cell
         dist = coord.distance(c);
 
@@ -2378,7 +2373,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
         att = computeExtCellPathLoss(dist, nodeId);
 
         //=============== ANGULAR ATTENUATION =================
-        if ((*it)->getTxDirection() == OMNI) {
+        if (extCell->getTxDirection() == OMNI) {
             angularAtt = 0;
         }
         else {
@@ -2386,7 +2381,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
             double ueAngle = computeAngle(c, coord);
 
             // compute the reception angle between ue and eNb
-            double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
+            double recvAngle = fabs(extCell->getTxAngle() - ueAngle);
 
             if (recvAngle > 180)
                 recvAngle = 360 - recvAngle;
@@ -2400,20 +2395,20 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
 
         // TODO do we need to use (- cableLoss_ + antennaGainEnB_) in ext cells too?
         // compute and linearize received power
-        recvPwrDBm = (*it)->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+        recvPwrDBm = extCell->getTxPower() - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
         recvPwr = dBmToLinear(recvPwrDBm);
 
-        unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
+        unsigned int numBands = std::min(numBands_, extCell->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
 
         // add interference in those bands where the ext cell is active
         for (unsigned int i = 0; i < numBands; i++) {
             int occ;
             if (isCqi) { // check slot occupation for this TTI
-                occ = (*it)->getBandStatus(i);
+                occ = extCell->getBandStatus(i);
             }
             else {      // error computation. We need to check the slot occupation of the previous TTI
-                occ = (*it)->getPrevBandStatus(i);
+                occ = extCell->getPrevBandStatus(i);
             }
 
             // if the ext cell is active, add interference
@@ -2421,8 +2416,6 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
                 (*interference)[i] += recvPwr;
             }
         }
-
-        it++;
     }
 
     return true;

@@ -245,12 +245,10 @@ bool LteHarqProcessTx::isDropped()
 bool LteHarqProcessTx::isHarqProcessActive()
 {
     std::vector<UnitStatus> ues = getProcessStatus();
-    auto it = ues.begin();
-    auto end = ues.end();
 
     // When is a process active? (ask professor)
-    for ( ; it != end; ++it) {
-        if ((*it).second != TXHARQ_PDU_EMPTY)
+    for (const auto& status : ues) {
+        if (status.second != TXHARQ_PDU_EMPTY)
             return true;
     }
     return false;

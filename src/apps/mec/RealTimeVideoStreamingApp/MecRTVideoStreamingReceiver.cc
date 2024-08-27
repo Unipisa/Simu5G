@@ -256,40 +256,40 @@ double MecRTVideoStreamingReceiver::playoutFrame()
         lastFrameDisplayed_++;
     }
     else {
-        auto firstFrame = playoutBuffer_.begin();
+        auto& [frameNumber, frameData] = *playoutBuffer_.begin();
         // check its playout time
-        EV << "MecRTVideoStreamingReceiver::playoutFrame() - frame[" << firstFrame->second.frameNumber << "]" << endl;
+        EV << "MecRTVideoStreamingReceiver::playoutFrame() - frame[" << frameData.frameNumber << "]" << endl;
 
         /**
          * This flag registers the first available frame to be displayed.
          */
         if (!firstFrameDisplayed) {
             firstFrameDisplayed = true;
-            lastFrameDisplayed_ = firstFrame->second.frameNumber - 1;
-            expectedFrameDisplayed_ = firstFrame->second.frameNumber;
+            lastFrameDisplayed_ = frameData.frameNumber - 1;
+            expectedFrameDisplayed_ = frameData.frameNumber;
         }
 
-        if (firstFrame->second.frameNumber == expectedFrameDisplayed_) {
-            EV << "tpCarProfilePayload99Receiver::playoutFrame - current frame size: " << firstFrame->second.currentSize << endl;
-            EV << "tpCarProfilePayload99Receiver::playoutFrame - total frame size: " << firstFrame->second.frameSize << endl;
-            percentage = (double)firstFrame->second.currentSize / firstFrame->second.frameSize;
-            frameSize = firstFrame->second.currentSize;
-            EV << "MecRTVideoStreamingReceiver::playoutFrame() - frame with seqNumber [" << firstFrame->second.frameNumber << "] with percentage of " << percentage * 100 << "%" << endl;
+        if (frameData.frameNumber == expectedFrameDisplayed_) {
+            EV << "tpCarProfilePayload99Receiver::playoutFrame - current frame size: " << frameData.currentSize << endl;
+            EV << "tpCarProfilePayload99Receiver::playoutFrame - total frame size: " << frameData.frameSize << endl;
+            percentage = (double)frameData.currentSize / frameData.frameSize;
+            frameSize = frameData.currentSize;
+            EV << "MecRTVideoStreamingReceiver::playoutFrame() - frame with seqNumber [" << frameData.frameNumber << "] with percentage of " << percentage * 100 << "%" << endl;
 
-            int segmentPacketLost = firstFrame->second.numberOfFragments - firstFrame->second.numberOfFragmentsReceived;
+            int segmentPacketLost = frameData.numberOfFragments - frameData.numberOfFragmentsReceived;
             if (segmentPacketLost > 0) {
                 ueAppModule_->emit(segmentLossSignal_, segmentPacketLost);
             }
-            lastFrameDisplayed_ = firstFrame->second.frameNumber;
-            playoutBuffer_.erase(firstFrame);
+            lastFrameDisplayed_ = frameData.frameNumber;
+            playoutBuffer_.erase(playoutBuffer_.begin());
         }
-        else if (firstFrame->second.frameNumber > expectedFrameDisplayed_) {
+        else if (frameData.frameNumber > expectedFrameDisplayed_) {
             // for now it is a debug
-            EV << "The expected frame with number [" << expectedFrameDisplayed_ << "] is missing, the first frame number in the buffer has number [" << firstFrame->second.frameNumber << "]" << endl;
+            EV << "The expected frame with number [" << expectedFrameDisplayed_ << "] is missing, the first frame number in the buffer has number [" << frameData.frameNumber << "]" << endl;
         }
-        else if (firstFrame->second.frameNumber < expectedFrameDisplayed_) {
+        else if (frameData.frameNumber < expectedFrameDisplayed_) {
             // for now it is a debug
-            throw cRuntimeError("The first frame in the buffer has a frame number [%d] lower than the expected one [%d]. This should not happen.", firstFrame->second.frameNumber, expectedFrameDisplayed_);
+            throw cRuntimeError("The first frame in the buffer has a frame number [%d] lower than the expected one [%d]. This should not happen.", frameData.frameNumber, expectedFrameDisplayed_);
         }
     }
 

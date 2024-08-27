@@ -63,17 +63,15 @@ bool LteAllocatorBestFit::checkConflict(const CGMatrix *cgMatrix, MacNodeId node
 {
     bool conflict = false;
 
-    auto it = cgMatrix->begin(), et = cgMatrix->end();
-    for ( ; it != et; ++it) {
-        if (it->first.srcId != nodeIdA)
+    for (const auto &[key, value] : *cgMatrix) {
+        if (key.srcId != nodeIdA)
             continue;
 
-        auto conf_it = it->second.begin(), conf_et = it->second.end();
-        for ( ; conf_it != conf_et; ++conf_it) {
-            if (conf_it->first.srcId != nodeIdB)
+        for (const auto &[confKey, confValue] : value) {
+            if (confKey.srcId != nodeIdB)
                 continue;
 
-            if (conf_it->second) {
+            if (confValue) {
                 conflict = true;
                 break;
             }
@@ -160,7 +158,6 @@ void LteAllocatorBestFit::prepareSchedule()
         // Compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
@@ -177,17 +174,17 @@ void LteAllocatorBestFit::prepareSchedule()
             continue;
         }
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
         // Compute score based on total available bytes
         unsigned int availableBlocks = 0;
         unsigned int availableBytes = 0;
+
         // For each antenna
-        for ( ; antennaIt != antennaEt; ++antennaIt) {
+        for (const Remote& antenna : info.readAntennaSet()) {
             // For each logical band
-            for ( ; it != et; ++it) {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
+            for (const Band& band : bands) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, antenna, band);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, band, blocks, dir, carrierFrequency_);
             }
         }
 
@@ -247,8 +244,7 @@ void LteAllocatorBestFit::prepareSchedule()
         unsigned int req_RBs = 0;
 
         // Calculate the number of Bytes available in a block
-        unsigned int req_Bytes1RB = 0;
-        req_Bytes1RB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, 0, cw, 1, dir, carrierFrequency_); // The band (here equals to 0) is useless
+        unsigned int req_Bytes1RB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, 0, cw, 1, dir, carrierFrequency_); // The band (here equals to 0) is useless
 
         // This calculation is for coherence with the allocation done in the ScheduleGrant function
         req_RBs = (vQueueFrontSize + req_Bytes1RB - 1) / req_Bytes1RB;
@@ -301,10 +297,7 @@ void LteAllocatorBestFit::prepareSchedule()
                  * (i.e. there's an edge in the conflict graph)
                  */
                 // scan the nodes already allocated on this band
-                std::set<MacNodeId>::iterator it = bandStatusMap_[band].second.begin();
-                std::set<MacNodeId>::iterator et = bandStatusMap_[band].second.end();
-                for ( ; it != et; ++it) {
-                    MacNodeId allocatedNodeId = *it;
+                for (const MacNodeId& allocatedNodeId : bandStatusMap_[band].second) {
                     if (checkConflict(cgMatrix, nodeId, allocatedNodeId)) {
                         jump_band = true;
                         break;
@@ -485,9 +478,9 @@ void LteAllocatorBestFit::initAndReset()
 
 void LteAllocatorBestFit::setAllocationType(std::vector<Band> bookedBands, AllocationUeType type, MacNodeId nodeId)
 {
-    for (auto it = bookedBands.begin(); it != bookedBands.end(); ++it) {
-        bandStatusMap_[*it].first = type;
-        bandStatusMap_[*it].second.insert(nodeId);
+    for (const auto& band : bookedBands) {
+        bandStatusMap_[band].first = type;
+        bandStatusMap_[band].second.insert(nodeId);
     }
 }
 

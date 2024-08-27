@@ -52,8 +52,8 @@ double DasFilter::receiveBroadcast(LteAirFrame *frame, UserControlInfo *lteInfo)
         else
             rssiV = channelModel->getSINR(frame, lteInfo);
         double rssi = 0;
-        for (auto it = rssiV.begin(); it != rssiV.end(); ++it)
-            rssi += *it;
+        for (const auto& value : rssiV)
+            rssi += value;
         rssi /= rssiV.size();
         //EV << "Sender Position: (" << senderPos.getX() << "," << senderPos.getY() << ")\n";
         //EV << "My Position: (" << myPos.getX() << "," << myPos.getY() << ")\n";

@@ -71,8 +71,8 @@ class LteX2Message : public LteX2Message_Base
         // perform deep-copy of element list
         msgLength_ = other.msgLength_;
         ieList_.clear();
-        for (auto it = other.ieList_.begin(); it != other.ieList_.end(); ++it) {
-            ieList_.push_back((*it)->dup());
+        for (const auto& ie : other.ieList_) {
+            ieList_.push_back(ie->dup());
         }
 
         return *this;

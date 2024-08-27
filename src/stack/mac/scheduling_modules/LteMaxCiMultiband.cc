@@ -24,7 +24,6 @@ bool debug = false;
 void LteMaxCiMultiband::prepareSchedule()
 {
     activeConnectionTempSet_ = *activeConnectionSet_;
-    MacCid cid;
     unsigned int byPs = 0;
     ScoreList score;
 
@@ -39,10 +38,8 @@ void LteMaxCiMultiband::prepareSchedule()
     // UsableBands * usableBands;
     if (debug)
         cout << NOW << " LteMaxCiMultiband::prepareSchedule - Total Active Connections:" << activeConnectionTempSet_.size() << endl;
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ++it1 ) {
+    for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        cid = *it1;
-
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {

@@ -64,22 +64,20 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
         }
     }
 
-    auto it_rbsB = NodeIdRbsBytesMap.begin();
-    while (it_rbsB != NodeIdRbsBytesMap.end()) {
+    for (const auto &[key, value] : NodeIdRbsBytesMap) {
         // Skip allocation if the band is untouchable (this means that the information is already allocated)
-        if (untouchableBands->find(it_rbsB->first.second) == untouchableBands->end()) {
-            allocatedRbsUe_[it_rbsB->first.first].ueAllocatedRbsMap_[antenna][it_rbsB->first.second] = it_rbsB->second.first; //Blocks
-            allocatedRbsUe_[it_rbsB->first.first].allocatedBlocks_ += it_rbsB->second.first; //Blocks
-            allocatedRbsUe_[it_rbsB->first.first].allocatedBytes_ += it_rbsB->second.second; //Bytes
+        if (untouchableBands->find(key.second) == untouchableBands->end()) {
+            allocatedRbsUe_[key.first].ueAllocatedRbsMap_[antenna][key.second] = value.first; //Blocks
+            allocatedRbsUe_[key.first].allocatedBlocks_ += value.first; //Blocks
+            allocatedRbsUe_[key.first].allocatedBytes_ += value.second; //Bytes
 
             // Creates and store the allocation Elem
             AllocationElem elem;
-            elem.resourceBlocks_ = it_rbsB->second.first;
-            elem.bytes_ = it_rbsB->second.second;
+            elem.resourceBlocks_ = value.first;
+            elem.bytes_ = value.second;
 
-            allocatedRbsUe_[it_rbsB->first.first].allocationMap_[antenna][it_rbsB->first.second].push_back(elem);
+            allocatedRbsUe_[key.first].allocationMap_[antenna][key.second].push_back(elem);
         }
-        it_rbsB++;
     }
 
     usedInLastSlot_ = true;

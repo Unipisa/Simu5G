@@ -74,36 +74,30 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
             typedef std::map<std::string, std::vector<std::string>> queryMap;
             queryMap queryParamsMap; // e.g cell_id -> [0, 1]
 
-            std::vector<std::string>::iterator it = queryParameters.begin();
-            std::vector<std::string>::iterator end = queryParameters.end();
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;
-            for ( ; it != end; ++it) {
-                if (it->rfind("cell_id", 0) == 0) { // cell_id=par1,par2
-                    params = simu5g::utils::splitString(*it, "=");
+            for (const auto &queryParam : queryParameters) {
+                if (queryParam.rfind("cell_id", 0) == 0) { // cell_id=par1,par2
+                    params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
                     splittedParams = simu5g::utils::splitString(params[1], ",");
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        cellIds.push_back((MacNodeId)std::stoi(*pit));
+                    for (const auto &cellIdParam : splittedParams) {
+                        cellIds.push_back((MacNodeId)std::stoi(cellIdParam));
                     }
                 }
-                else if (it->rfind("ue_ipv4_address", 0) == 0) {
+                else if (queryParam.rfind("ue_ipv4_address", 0) == 0) {
                     // TO DO manage acr:10.12
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
                     splittedParams = simu5g::utils::splitString(params[1], ",");
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit)
-                        ues.push_back(inet::Ipv4Address((*pit).c_str()));
+                    for (const auto &ueAddress : splittedParams)
+                        ues.push_back(inet::Ipv4Address(ueAddress.c_str()));
                 }
                 else { // bad parameters
                     Http::send400Response(socket);

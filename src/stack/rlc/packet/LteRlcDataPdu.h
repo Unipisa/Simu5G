@@ -32,9 +32,8 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     void copy(const LteRlcDataPdu& other) {
         // "The copy constructor of a container should dup() the owned objects and take() the copies"
         sduList_.clear();
-        RlcSduList::const_iterator sit;
-        for (sit = other.sduList_.begin(); sit != other.sduList_.end(); ++sit) {
-            auto newPkt = (*sit)->dup();
+        for (const auto& sdu : other.sduList_) {
+            auto newPkt = sdu->dup();
             take(newPkt);
             sduList_.push_back(newPkt);
         }
@@ -76,9 +75,8 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     virtual ~LteRlcDataPdu()
     {
         // Needs to delete all contained packets
-        RlcSduList::iterator sit;
-        for (sit = sduList_.begin(); sit != sduList_.end(); sit++)
-            dropAndDelete(*sit);
+        for (auto& sdu : sduList_)
+            dropAndDelete(sdu);
     }
 
     LteRlcDataPdu(const LteRlcDataPdu& other) : LteRlcDataPdu_Base(other)

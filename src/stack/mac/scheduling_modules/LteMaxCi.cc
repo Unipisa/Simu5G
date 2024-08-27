@@ -25,16 +25,11 @@ void LteMaxCi::prepareSchedule()
 
     // Build the score list by cycling through the active connections.
     ScoreList score;
-    MacCid cid = 0;
     unsigned int blocks = 0;
     unsigned int byPs = 0;
 
-    for ( ActiveSet::iterator it1 = carrierActiveConnectionSet_.begin(); it1 != carrierActiveConnectionSet_.end(); ) {
+    for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        cid = *it1;
-
-        ++it1;
-
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {
@@ -55,7 +50,6 @@ void LteMaxCi::prepareSchedule()
         // Compute available blocks for the current user
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         const std::set<Band>& bands = info.readBands();
-        auto it = bands.begin(), et = bands.end();
         unsigned int codeword = info.getLayers().size();
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
@@ -68,18 +62,15 @@ void LteMaxCi::prepareSchedule()
         if (eNbScheduler_->allocatedCws(nodeId) == codeword)
             continue;
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
-
-        // Compute score based on total available bytes
         unsigned int availableBlocks = 0;
         unsigned int availableBytes = 0;
         // For each antenna
-        for ( ; antennaIt != antennaEt; ++antennaIt) {
+        for (const auto& antenna : info.readAntennaSet()) {
             // For each logical band
-            for ( ; it != et; ++it) {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
+            for (const auto& band : bands) {
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, antenna, band);
                 availableBlocks += blocks;
-                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
+                availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, band, blocks, dir, carrierFrequency_);
             }
         }
 
@@ -100,23 +91,16 @@ void LteMaxCi::prepareSchedule()
         // is done by this module itself, so that backgroundTrafficManager is transparent to the scheduling policy in use
 
         IBackgroundTrafficManager *bgTrafficManager = eNbScheduler_->mac_->getBackgroundTrafficManager(carrierFrequency_);
-        auto it = bgTrafficManager->getBackloggedUesBegin(direction_),
-                                       et = bgTrafficManager->getBackloggedUesEnd(direction_);
-
-        int bgUeIndex;
-        int bytesPerBlock;
-        MacNodeId bgUeId;
-        MacCid bgCid;
-        for ( ; it != et; ++it) {
-            bgUeIndex = *it;
-            bgUeId = BGUE_MIN_ID + bgUeIndex;
+        for (auto it = bgTrafficManager->getBackloggedUesBegin(direction_); it != bgTrafficManager->getBackloggedUesEnd(direction_); ++it) {
+            int bgUeIndex = *it;
+            MacNodeId bgUeId = BGUE_MIN_ID + bgUeIndex;
 
             // The cid for a background UE is a 32-bit integer composed as:
             // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
             // - the least significant 16 bits are set to 0 (lcid=0)
-            bgCid = num(bgUeId) << 16;
+            MacCid bgCid = num(bgUeId) << 16;
 
-            bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
+            int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 
             ScoreDesc bgDesc(bgCid, bytesPerBlock);
             score.push(bgDesc);

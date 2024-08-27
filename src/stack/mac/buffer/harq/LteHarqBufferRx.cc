@@ -202,8 +202,8 @@ RxBufferStatus LteHarqBufferRx::getBufferStatus()
 
 LteHarqBufferRx::~LteHarqBufferRx()
 {
-    for (auto it = processes_.begin(); it != processes_.end(); ++it)
-        delete *it;
+    for (auto* process : processes_)
+        delete process;
     processes_.clear();
     macOwner_ = nullptr;
 }
@@ -211,8 +211,8 @@ LteHarqBufferRx::~LteHarqBufferRx()
 // @author Alessandro Noferi
 
 bool LteHarqBufferRx::isHarqBufferActive() const {
-    for (auto it = processes_.begin(); it != processes_.end(); ++it) {
-        if ((*it)->isHarqProcessActive()) {
+    for (const auto& process : processes_) {
+        if (process->isHarqProcessActive()) {
             return true;
         }
     }

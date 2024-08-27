@@ -430,11 +430,9 @@ void LteMaxCiOptMB::readSolution()
 
     MacNodeId ueId;
 
-    UsableBandList::iterator itUsable = usableBands_.begin(),
-                             etUsable = usableBands_.end();
-    for ( ; itUsable != etUsable; ++itUsable ) {
-        ueId = itUsable->first;
-        eNbScheduler_->mac_->getAmc()->setPilotUsableBands(ueId, itUsable->second);
+    for (const auto& [id, bands] : usableBands_) {
+        ueId = id;
+        eNbScheduler_->mac_->getAmc()->setPilotUsableBands(ueId, bands);
     }
 }
 

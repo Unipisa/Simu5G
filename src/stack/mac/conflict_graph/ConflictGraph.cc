@@ -64,28 +64,25 @@ void ConflictGraph::printConflictGraph()
     }
 
     EV << "              ";
-    CGMatrix::iterator it = conflictGraph_.begin(), et = conflictGraph_.end();
-    for ( ; it != et; ++it) {
-        if (it->first.isMulticast())
-            EV << "| (" << it->first.srcId << ", *  ) ";
+    for (const auto& [key, value] : conflictGraph_) {
+        if (key.isMulticast())
+            EV << "| (" << key.srcId << ", *  ) ";
         else
-            EV << "| (" << it->first.srcId << "," << it->first.dstId << ") ";
+            EV << "| (" << key.srcId << "," << key.dstId << ") ";
     }
     EV << endl;
 
-    it = conflictGraph_.begin();
-    for ( ; it != et; ++it) {
-        if (it->first.isMulticast())
-            EV << "| (" << it->first.srcId << ", *  ) ";
+    for (const auto& [key, value] : conflictGraph_) {
+        if (key.isMulticast())
+            EV << "| (" << key.srcId << ", *  ) ";
         else
-            EV << "| (" << it->first.srcId << "," << it->first.dstId << ") ";
-        std::map<CGVertex, bool>::iterator jt = it->second.begin();
-        for ( ; jt != it->second.end(); ++jt) {
-            if (it->first == jt->first) {
+            EV << "| (" << key.srcId << "," << key.dstId << ") ";
+        for (const auto& [innerKey, innerValue] : value) {
+            if (key == innerKey) {
                 EV << "|      -      ";
             }
             else {
-                EV << "|      " << jt->second << "      ";
+                EV << "|      " << innerValue << "      ";
             }
         }
         EV << endl;

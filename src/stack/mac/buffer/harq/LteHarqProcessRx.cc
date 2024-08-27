@@ -233,12 +233,10 @@ CwList LteHarqProcessRx::emptyUnitsIds()
 bool LteHarqProcessRx::isHarqProcessActive()
 {
     std::vector<RxUnitStatus> ues = getProcessStatus();
-    auto it = ues.begin();
-    auto end = ues.end();
 
     // When a process is active? (ask professor)
-    for ( ; it != end; ++it) {
-        if ((*it).second != RXHARQ_PDU_EMPTY)
+    for (const auto& status : ues) {
+        if (status.second != RXHARQ_PDU_EMPTY)
             return true;
     }
     return false;

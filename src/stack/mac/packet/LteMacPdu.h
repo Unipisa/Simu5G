@@ -36,13 +36,13 @@ class LteMacPdu : public LteMacPdu_Base
         // duplicate MacControlElementsList (includes BSRs)
         ceList_ = std::list<MacControlElement *> ();
         MacControlElementsList otherCeList = other.ceList_;
-        for (auto cit = otherCeList.begin(); cit != otherCeList.end(); cit++) {
-            MacBsr *bsr = dynamic_cast<MacBsr *>(*cit);
+        for (auto* ce : otherCeList) {
+            MacBsr *bsr = dynamic_cast<MacBsr *>(ce);
             if (bsr) {
                 ceList_.push_back(new MacBsr(*bsr));
             }
             else {
-                ceList_.push_back(new MacControlElement(**cit));
+                ceList_.push_back(new MacControlElement(*ce));
             }
         }
         // duplication of the SDU queue duplicates all packets but not
@@ -147,8 +147,8 @@ class LteMacPdu : public LteMacPdu_Base
         drop(sduList_);
         delete sduList_;
 
-        for (auto cit = ceList_.begin(); cit != ceList_.end(); cit++) {
-            delete *cit;
+        for (auto* ce : ceList_) {
+            delete ce;
         }
     }
 
