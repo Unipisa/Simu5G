@@ -105,7 +105,7 @@ class MecOrchestrator : public cSimpleModule
     double terminationTime;
 
   public:
-    const ApplicationDescriptor *getApplicationDescriptorByAppName(std::string& appName) const;
+    const ApplicationDescriptor *getApplicationDescriptorByAppName(const std::string& appName) const;
     const std::map<std::string, ApplicationDescriptor> *getApplicationDescriptors() const { return &mecApplicationDescriptors_; }
 
     /*

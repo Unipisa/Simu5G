@@ -459,7 +459,7 @@ void MecOrchestrator::onboardApplicationPackages()
     }
 }
 
-const ApplicationDescriptor *MecOrchestrator::getApplicationDescriptorByAppName(std::string& appName) const
+const ApplicationDescriptor *MecOrchestrator::getApplicationDescriptorByAppName(const std::string& appName) const
 {
     for (const auto& appDesc : mecApplicationDescriptors_) {
         if (appDesc.second.getAppName() == appName)
