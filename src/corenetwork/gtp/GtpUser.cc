@@ -94,7 +94,7 @@ CoreNodeType GtpUser::selectOwnerType(const char *type)
     else if (strcmp(type, "UPF_MEC") == 0)
         return UPF_MEC;
 
-    error("GtpUser::selectOwnerType - unknown owner type [%s]. Aborting...", type);
+    throw cRuntimeError("GtpUser::selectOwnerType - unknown owner type [%s]. Aborting...", type);
 
     // you should not be here
     return ENB;

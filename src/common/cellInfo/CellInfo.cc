@@ -84,7 +84,7 @@ void CellInfo::calculateNodePosition(double centerX, double centerY, int nTh,
         double *yPos)
 {
     if (totalNodes == 0)
-        error("CellInfo::calculateNodePosition: divide by 0");
+        throw cRuntimeError("CellInfo::calculateNodePosition: divide by 0");
     // radians (minus sign because position 0,0 is top-left, not bottom-left)
     double theta = -startingAngle * M_PI / 180;
 

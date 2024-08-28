@@ -61,7 +61,7 @@ void LtePhyUe::initialize(int stage)
         hasCollector = par("hasCollector");
 
         if (!hasListeners(averageCqiDlSignal_))
-            error("no phy listeners");
+            throw cRuntimeError("no phy listeners");
 
         WATCH(nodeType_);
         WATCH(masterId_);

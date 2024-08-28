@@ -35,7 +35,7 @@ void LteDlFeedbackGenerator::initialize(int stage)
         fbPeriod_ = (simtime_t)(int(par("fbPeriod")) * TTI);// TTI -> seconds
         fbDelay_ = (simtime_t)(int(par("fbDelay")) * TTI);// TTI -> seconds
         if (fbPeriod_ <= fbDelay_) {
-            error("Feedback Period MUST be greater than Feedback Delay");
+            throw cRuntimeError("Feedback Period MUST be greater than Feedback Delay");
         }
         fbType_ = getFeedbackType(par("feedbackType").stringValue());
         rbAllocationType_ = getRbAllocationType(
