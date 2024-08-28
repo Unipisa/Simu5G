@@ -37,7 +37,7 @@ class LocationResource : public AttributeBase
      * and creates a CellInfo object
      */
     LocationResource();
-    LocationResource(std::string& baseUri, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, Binder *binder);
+    LocationResource(const std::string& baseUri, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, Binder *binder);
 
     nlohmann::ordered_json toJson() const override;
 

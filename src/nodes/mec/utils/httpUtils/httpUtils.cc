@@ -46,7 +46,7 @@ void sendPacket(const char *payload, inet::TcpSocket *socket) {
     EV << "Http Utils - sendPacket" << endl;
 }
 
-bool checkHttpVersion(std::string& httpVersion) {
+bool checkHttpVersion(const std::string& httpVersion) {
     // HTTP/1.1 or HTTP/2
     return httpVersion == "HTTP/1.1" || httpVersion == "HTTP/2";
 }

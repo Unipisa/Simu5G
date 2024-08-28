@@ -76,7 +76,7 @@ bool SubscriptionBase::fromJson(const nlohmann::ordered_json& jsonBody)
     return true;
 }
 
-void SubscriptionBase::set_links(std::string& link)
+void SubscriptionBase::set_links(const std::string& link)
 {
     links_ = link + "sub" + std::to_string(subscriptionId_);
 }

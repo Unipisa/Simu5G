@@ -137,7 +137,7 @@ void sendPacket(const char *pck, inet::TcpSocket *socket);
  * This function checks the version of the HTTP protocol used.
  * Supported versions: 1.1 and 2
  */
-bool checkHttpVersion(std::string& httpVersion);
+bool checkHttpVersion(const std::string& httpVersion);
 /*
  * This function checks the method used in the HTTP request.
  * Supported methods: GET, POST, PUT, DELETE

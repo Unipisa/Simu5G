@@ -19,7 +19,7 @@ AssociateId::AssociateId() : type_(""), value_("")
 {
 }
 
-AssociateId::AssociateId(std::string& type, std::string& value)
+AssociateId::AssociateId(const std::string& type, const std::string& value)
 {
     setType(type);
     setValue(value);

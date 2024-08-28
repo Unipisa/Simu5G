@@ -26,7 +26,7 @@ class AssociateId : public AttributeBase
 {
   public:
     AssociateId();
-    AssociateId(std::string& type, std::string& value);
+    AssociateId(const std::string& type, const std::string& value);
     AssociateId(mec::AssociateId& associateId);
 
 

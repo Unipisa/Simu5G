@@ -36,7 +36,7 @@ class SubscriptionBase
     void addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     void addEnodeB(cModule *eNodeB);
 
-    virtual void set_links(std::string& link);
+    virtual void set_links(const std::string& link);
 
     virtual bool fromJson(const nlohmann::ordered_json& json);
     virtual void sendSubscriptionResponse() = 0;
