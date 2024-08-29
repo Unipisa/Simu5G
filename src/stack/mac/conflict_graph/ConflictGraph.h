@@ -107,7 +107,7 @@ class ConflictGraph
     // print Conflict Graph - for debug
     void printConflictGraph();
 
-    const CGMatrix *getConflictGraph() { return &conflictGraph_; }
+    const CGMatrix *getConflictMatrix() const { return &conflictGraph_; }
 };
 
 } //namespace

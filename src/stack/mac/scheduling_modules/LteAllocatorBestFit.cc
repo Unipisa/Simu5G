@@ -101,7 +101,7 @@ void LteAllocatorBestFit::prepareSchedule()
     if (reuseD2D || reuseD2DMulti) {
         if (conflictGraph_ == nullptr)
             throw cRuntimeError("LteAllocatorBestFit::prepareSchedule - conflictGraph is a NULL pointer");
-        cgMatrix = conflictGraph_->getConflictGraph();
+        cgMatrix = conflictGraph_->getConflictMatrix();
     }
 
     // Get the bands occupied by RAC and RTX
