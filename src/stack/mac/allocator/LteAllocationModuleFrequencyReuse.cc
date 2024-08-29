@@ -25,8 +25,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
 {
     const Plane plane = MAIN_PLANE;
     const Remote antenna = MACRO;
-    std::map<std::pair<MacNodeId, Band>, std::pair<unsigned int, unsigned int>> NodeIdRbsBytesMap;
-    NodeIdRbsBytesMap.clear();
+    std::map<std::pair<MacNodeId, Band>, std::pair<unsigned int, unsigned int>> nodeIdRbsBytesMap;
 
     std::set<Band> tempBand;
     if (untouchableBands == nullptr)
@@ -52,7 +51,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
                 // Creates a pair for the blocks and bytes values
                 std::pair<unsigned int, unsigned int> Value_pair(it_ext->second, it2_ext->second);
                 //Store the nodeId RBs
-                NodeIdRbsBytesMap[Key_pair] = Value_pair;
+                nodeIdRbsBytesMap[Key_pair] = Value_pair;
                 it_ext++;
                 it2_ext++;
             }
@@ -64,7 +63,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
         }
     }
 
-    for (const auto &[key, value] : NodeIdRbsBytesMap) {
+    for (const auto &[key, value] : nodeIdRbsBytesMap) {
         // Skip allocation if the band is untouchable (this means that the information is already allocated)
         if (untouchableBands->find(key.second) == untouchableBands->end()) {
             allocatedRbsUe_[key.first].ueAllocatedRbsMap_[antenna][key.second] = value.first; //Blocks
