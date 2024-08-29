@@ -27,12 +27,10 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
     const Remote antenna = MACRO;
     std::map<std::pair<MacNodeId, Band>, std::pair<unsigned int, unsigned int>> NodeIdRbsBytesMap;
     NodeIdRbsBytesMap.clear();
-    // Create an empty vector
-    if (untouchableBands == nullptr) {
-        std::set<Band> tempBand;
+
+    std::set<Band> tempBand;
+    if (untouchableBands == nullptr)
         untouchableBands = &tempBand;
-        untouchableBands->clear();
-    }
 
     for (unsigned int band = 0; band < bands_; band++) {
         // Skip allocation if the band is untouchable (this means that the information is already allocated)
