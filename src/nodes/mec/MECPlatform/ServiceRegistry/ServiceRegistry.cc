@@ -25,7 +25,6 @@ ServiceRegistry::ServiceRegistry()
     baseUriSubscriptions_ = baseUriQueries_;
     supportedQueryParams_.insert("app_list");
     supportedQueryParams_.insert("app_contexts");
-    mecServices_.clear();
 }
 
 

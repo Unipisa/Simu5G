@@ -114,11 +114,10 @@ void MultihopD2DStatistics::recordDuplicateReception(unsigned int msgId)
 
 void MultihopD2DStatistics::finish()
 {
-    std::vector<simtime_t> sortedDelays;
 
     // scan structures and emit average statistics
     for (const auto& [eventId, deliveryStatus] : eventDeliveryInfo_) {
-        sortedDelays.clear();
+        std::vector<simtime_t> sortedDelays;
 
         unsigned int deliveredMsgCounter = 0;
         simtime_t maxDelay = 0.0;

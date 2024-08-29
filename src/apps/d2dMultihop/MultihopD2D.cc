@@ -48,7 +48,6 @@ MultihopD2D::~MultihopD2D()
         for (auto& pair : last_)
             if (pair.second != nullptr)
                 delete pair.second;
-        last_.clear();
     }
 }
 

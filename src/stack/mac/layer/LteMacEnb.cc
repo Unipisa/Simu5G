@@ -61,7 +61,6 @@ LteMacEnb::~LteMacEnb()
 
     for (auto &[key, value] : bsrbuf_)
         delete value;
-    bsrbuf_.clear();
 }
 
 /***********************

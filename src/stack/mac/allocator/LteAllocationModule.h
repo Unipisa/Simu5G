@@ -318,7 +318,6 @@ class LteAllocationModule
     virtual std::set<Band> getAllocatorOccupiedBands()
     {
         std::set<Band> bandVector;
-        bandVector.clear();
         return bandVector;
     }
 

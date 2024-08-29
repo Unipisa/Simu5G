@@ -268,7 +268,6 @@ unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
             return 0;
 
         BandLimitVector tempBandLim;
-        tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands

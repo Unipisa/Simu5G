@@ -84,7 +84,6 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
             const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, UL, carrierFrequency);    // get the user info
             const std::set<Band>& allowedBands = txParams.readBands();
             BandLimitVector tempBandLim;
-            tempBandLim.clear();
             std::string bands_msg = "BAND_LIMIT_SPECIFIED";
             if (bandLim == nullptr) {
                 // Create a vector of band limit using all bands
@@ -203,7 +202,6 @@ void LteSchedulerEnbUl::racscheduleBackground(unsigned int& racAllocatedBlocks, 
         EV << NOW << " LteSchedulerEnbUl::racscheduleBackground handling RAC for node " << bgUeId << endl;
 
         BandLimitVector tempBandLim;
-        tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
@@ -445,7 +443,6 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
         const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);    // get the user info
         const std::set<Band>& allowedBands = txParams.readBands();
         BandLimitVector tempBandLim;
-        tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limits using all bands
@@ -617,7 +614,6 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeI
         const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir, carrierFrequency);    // get the user info
         const std::set<Band>& allowedBands = txParams.readBands();
         BandLimitVector tempBandLim;
-        tempBandLim.clear();
         std::string bands_msg = "BAND_LIMIT_SPECIFIED";
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
@@ -807,7 +803,6 @@ unsigned int LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
         RbMap allocatedRbMap;
 
         BandLimitVector tempBandLim;
-        tempBandLim.clear();
         if (bandLim == nullptr) {
             // Create a vector of band limit using all bands
             // FIXME: bandLim is never deleted

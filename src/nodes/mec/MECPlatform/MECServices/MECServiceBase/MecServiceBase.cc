@@ -495,7 +495,6 @@ MecServiceBase::~MecServiceBase() {
         std::cout << serviceName_ << " Deleting subscription with id: " << subscription->getSubscriptionId() << std::endl;
         delete subscription;
     }
-    subscriptions_.clear();
     std::cout << "~" << serviceName_ << " Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
 

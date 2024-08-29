@@ -67,9 +67,6 @@ ApplicationDescriptor::ApplicationDescriptor(const char *fileName)
     if (jsonFile.contains("omnetppServiceRequired")) {
         omnetppServiceRequired_ = jsonFile["omnetppServiceRequired"];
     }
-    else {
-        omnetppServiceRequired_.clear();
-    }
 
     /*
      * If the application descriptor refers to a MEC application running outside the simulator, i.e. emulation mode,

@@ -86,7 +86,6 @@ std::set<Band> LteAllocationModuleFrequencyReuse::getAllocatorOccupiedBands()
 {
     // TODO add support for logical band different from the number of real bands
     std::set<Band> vectorBand;
-    vectorBand.clear();
     for (unsigned int i = 0; i < bands_; i++) {
         if (allocatedRbsPerBand_[MAIN_PLANE][MACRO][i].allocated_ > 0) vectorBand.insert(i);
     }

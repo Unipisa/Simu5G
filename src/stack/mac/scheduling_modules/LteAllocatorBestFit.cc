@@ -129,7 +129,6 @@ void LteAllocatorBestFit::prepareSchedule()
 
     // Set for deleting inactive connections
     ActiveSet inactive_connections;
-    inactive_connections.clear();
 
     for (unsigned int it1 : carrierActiveConnectionSet_) {
         // Current connection.
@@ -257,7 +256,6 @@ void LteAllocatorBestFit::prepareSchedule()
         int band = 0;
         // Create the set for booked bands
         std::vector<Band> bookedBands;
-        bookedBands.clear();
 
         // Scan the RBs and find the best candidate "hole" to allocate the UE
         // We need to allocate RBs in the hole with the minimum length, such that the request is satisfied

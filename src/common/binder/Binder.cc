@@ -311,7 +311,6 @@ void Binder::finish()
                 ss << "*.gnb.cellularNic.bgTrafficGenerator[0].bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
 
                 toPrint = ss.str();
-                ss.clear();
             }
             else {
                 MacNodeId bgCellId = cellId - 2;
@@ -325,7 +324,6 @@ void Binder::finish()
                 ss << "*.bgCell[" << bgCellId << "].bgTrafficGenerator.bgUE[" << ueIndex << "].generator.cqiStddevUl = " << sqrt(cqiVarianceUl) << "\n";
 
                 toPrint = ss.str();
-                ss.clear();
             }
 
             out << toPrint;

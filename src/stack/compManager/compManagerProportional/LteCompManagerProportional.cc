@@ -77,7 +77,6 @@ void LteCompManagerProportional::doCoordination()
     // assign a number of blocks that is proportional to the requests received from each eNB
     unsigned int totalReservedBlocks = 0;
     std::vector<double> reservation;
-    reservation.clear();
     for (const auto& [nodeId, req] : reqBlocksMap_) {
 
         // requests from the current node
@@ -142,7 +141,6 @@ X2CompProportionalReplyIE *LteCompManagerProportional::buildCoordinatorReply(X2N
     std::vector<CompRbStatus> allowedBlocks;
 
     // set "numBlocks" contiguous blocks for this node
-    allowedBlocks.clear();
     allowedBlocks.resize(numBands_, NOT_AVAILABLE_RB);
     unsigned int lb = band;
     unsigned int ub = band + numBlocks;

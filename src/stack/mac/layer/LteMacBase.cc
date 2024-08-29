@@ -44,8 +44,6 @@ LteMacBase::~LteMacBase()
         delete buffer;
     for (auto& [key, buffer] : macBuffers_)
         delete buffer;
-    mbuf_.clear();
-    macBuffers_.clear();
 
     for (auto& [key, txBuffers] : harqTxBuffers_)
         for (auto& [key, buffer] : txBuffers)
@@ -54,9 +52,6 @@ LteMacBase::~LteMacBase()
     for (auto& [key, rxBuffers] : harqRxBuffers_)
         for (auto& [key, buffer] : rxBuffers)
             delete buffer;
-
-    harqTxBuffers_.clear();
-    harqRxBuffers_.clear();
 }
 
 void LteMacBase::sendUpperPackets(cPacket *pkt)

@@ -31,7 +31,6 @@ LocationService::LocationService() {
     baseUriSubscriptions_ = "/example/location/v2/subscriptions";
     baseSubscriptionLocation_ = host_ + baseUriSubscriptions_ + "/";
     subscriptionId_ = 0;
-    subscriptions_.clear();
     supportedQueryParams_.insert("address");
     supportedQueryParams_.insert("latitude");
     supportedQueryParams_.insert("longitude");

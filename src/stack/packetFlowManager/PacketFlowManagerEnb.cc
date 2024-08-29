@@ -54,17 +54,10 @@ void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
     newDesc.nodeId_ = nodeId;
     newDesc.burstId_ = 0;
     newDesc.burstState_ = false;
-    newDesc.pdcpStatus_.clear();
-    newDesc.rlcPdusPerSdu_.clear();
-    newDesc.rlcSdusPerPdu_.clear();
-    newDesc.macSdusPerPdu_.clear();
-    //newDesc.macPduPerProcess_.resize(harqProcesses_, 0);
 
     BurstStatus newBurstStatus;
     newBurstStatus.burstSize = 0;
-    newBurstStatus.rlcPdu.clear();
     newBurstStatus.startBurstTransmission = -1;
-    newDesc.burstStatus_.clear();
 
     connectionMap_[lcid] = newDesc;
     EV_FATAL << NOW << " node id " << nodeId << " " << pfmType << "::initLcid - initialized lcid " << lcid << endl;
@@ -555,14 +548,12 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
                     }
                 }
             }
-            nit->second.clear();
             desc->rlcSdusPerPdu_.erase(nit); // erase RLC PDU SN
             // update next sno
             nextRlcSno_ = rlcPduSno + 1;
             removePdcpBurstRLC(desc, rlcPduSno, true); // check if the pdcp is part of a burst
         }
 
-        mit->second.clear();
         desc->macSdusPerPdu_.erase(mit); // erase MAC PDU ID
     }
 }
@@ -606,7 +597,6 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
             discardRlcPdu(lcid, sn, true);
         }
 
-        mit->second.clear();
         desc->macSdusPerPdu_.erase(mit); // erase MAC PDU ID
     }
 }

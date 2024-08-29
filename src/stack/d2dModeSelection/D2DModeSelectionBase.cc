@@ -22,8 +22,6 @@ using namespace omnetpp;
 void D2DModeSelectionBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        switchList_.clear();
-
         // get reference to mac layer
         mac_.reference(this, "macModule", true);
 

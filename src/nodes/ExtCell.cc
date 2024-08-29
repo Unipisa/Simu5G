@@ -68,9 +68,6 @@ void ExtCell::initialize(int stage)
 
         // get the allocation parameters
         if (allocationType_ == FULL_ALLOC) {
-            bandStatus_.clear();
-            prevBandStatus_.clear();
-
             // mark all RBs as occupied
             bandStatus_.resize(numBands_, 1);
             prevBandStatus_.resize(numBands_, 1);
@@ -140,7 +137,6 @@ void ExtCell::updateBandStatus()
 
 void ExtCell::resetBandStatus()
 {
-    prevBandStatus_.clear();
     prevBandStatus_ = bandStatus_;
 
     bandStatus_.clear();
