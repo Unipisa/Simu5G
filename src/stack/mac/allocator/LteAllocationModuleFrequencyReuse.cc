@@ -23,7 +23,7 @@ LteAllocationModuleFrequencyReuse::LteAllocationModuleFrequencyReuse(LteMacEnb *
 
 void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<AllocatedRbsPerBandMapA>> allocatedRbsPerBand, std::set<Band> *untouchableBands)
 {
-    Plane plane = MAIN_PLANE;
+    const Plane plane = MAIN_PLANE;
     const Remote antenna = MACRO;
     std::map<std::pair<MacNodeId, Band>, std::pair<unsigned int, unsigned int>> NodeIdRbsBytesMap;
     NodeIdRbsBytesMap.clear();
@@ -38,14 +38,16 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
         // Skip allocation if the band is untouchable (this means that the information is already allocated)
         if (untouchableBands->find(band) == untouchableBands->end()) {
             // Copy the ueAllocatedRbsMap
-            auto it_ext = allocatedRbsPerBand[plane][antenna][band].ueAllocatedRbsMap_.begin();
-            auto et_ext = allocatedRbsPerBand[plane][antenna][band].ueAllocatedRbsMap_.end();
-            auto it2_ext = allocatedRbsPerBand[plane][antenna][band].ueAllocatedBytesMap_.begin();
-            auto et2_ext = allocatedRbsPerBand[plane][antenna][band].ueAllocatedBytesMap_.end();
+            auto& allocInfo = allocatedRbsPerBand[plane][antenna][band];
+            auto it_ext = allocInfo.ueAllocatedRbsMap_.begin();
+            auto et_ext = allocInfo.ueAllocatedRbsMap_.end();
+            auto it2_ext = allocInfo.ueAllocatedBytesMap_.begin();
+            auto et2_ext = allocInfo.ueAllocatedBytesMap_.end();
 
+            auto& storedAllocInfo = allocatedRbsPerBand_[plane][antenna][band];
             while (it_ext != et_ext && it2_ext != et2_ext) {
-                allocatedRbsPerBand_[plane][antenna][band].ueAllocatedRbsMap_[it_ext->first] = it_ext->second;    // Blocks
-                allocatedRbsPerBand_[plane][antenna][band].ueAllocatedBytesMap_[it_ext->first] = it2_ext->second; // Bytes
+                storedAllocInfo.ueAllocatedRbsMap_[it_ext->first] = it_ext->second;    // Blocks
+                storedAllocInfo.ueAllocatedBytesMap_[it_ext->first] = it2_ext->second; // Bytes
 
                 // Creates a pair (a key) for the Map
                 std::pair<MacNodeId, Band> Key_pair(it_ext->first, band);
@@ -57,9 +59,9 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
                 it2_ext++;
             }
             // Copy the allocatedRbsPerBand
-            allocatedRbsPerBand_[plane][antenna][band].allocated_ = allocatedRbsPerBand[plane][antenna][band].allocated_;
+            storedAllocInfo.allocated_ = allocInfo.allocated_;
 
-            if (allocatedRbsPerBand[plane][antenna][band].allocated_ > 0)
+            if (allocInfo.allocated_ > 0)
                 allocatedRbsMatrix_[MAIN_PLANE][MACRO]++;
         }
     }
