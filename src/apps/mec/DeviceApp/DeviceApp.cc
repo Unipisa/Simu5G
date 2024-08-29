@@ -484,7 +484,7 @@ void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bo
 
     delete msg;
 
-    bool res = Http::parseReceivedMsg(packet, &UALCMPMessageBuffer, &UALCMPMessage);
+    bool res = Http::parseReceivedMsg(packet, UALCMPMessageBuffer, UALCMPMessage);
     if (res) {
         EV << "DeviceApp::socketDataArrived - schedule processedUALCMPMessage" << endl;
         UALCMPMessage->setSockId(UALCMPSocket_.getSocketId());

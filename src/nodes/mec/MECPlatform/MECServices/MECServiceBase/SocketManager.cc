@@ -63,7 +63,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
     }
     // ########################
 
-    bool res = Http::parseReceivedMsg(sock->getSocketId(), packet, httpMessageQueue, &bufferedData, &currentHttpMessage);
+    bool res = Http::parseReceivedMsg(sock->getSocketId(), packet, httpMessageQueue, bufferedData, currentHttpMessage);
 
     if (res) {
         while (!httpMessageQueue.isEmpty()) {

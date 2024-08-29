@@ -92,26 +92,27 @@ struct ProblemDetailBase
  */
 HttpBaseMessage *parseHeader(const std::string& header);
 
+HttpMsgState parseTcpData(std::string& data, HttpBaseMessage *httpMessage);
+
 /*
  * This function adds body content (using addBodyChunk)  to a fragmented HTTP Message
  * @param data - string representing the body of a fragmented HTTP Message
  * @param httpMessage - HttpBaseMessage of the current message
  * @return HttpMsgState - state of the HTTP message
  */
-HttpMsgState parseTcpData(std::string *data, HttpBaseMessage *httpMessage);
-void addBodyChunk(std::string *data, HttpBaseMessage *httpMessage);
+void addBodyChunk(std::string& data, HttpBaseMessage *httpMessage);
 
 /*
  * This function parses an incoming message by calling the above functions,
  * i.e. parseHeader and parseTcpData.
  *
- * @param packet raw bytes as string of the incoming message
+ * @param inPacket raw bytes as string of the incoming message
  * @param storedData pointer to a variable where to store undefined data (e.g. segmented header)
  * @param currentHttpMessage variable for storing the current HTTP message
  * @return bool - if true the currentHttpMessage is completed and ready to be
  * processed by the application
  */
-bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMessage **currentHttpMessage);
+bool parseReceivedMsg(const std::string& inPacket, std::string& storedData, HttpBaseMessage *& currentHttpMessage);
 
 /*
  *  WARNING: This function is not used in our scenarios, so it is not fully tested
@@ -122,12 +123,12 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
  * Every completed HTTP message is queued in the messageQueue.
  *
  * @param socketId needed to know to whom to send back the response
- * @param packet raw bytes as string of the incoming message
- * @param storedData pointer to a variable where to store undefined data (e.g. segmented header)
+ * @param inPacket raw bytes as string of the incoming message
+ * @param storedData reference to a variable where to store undefined data (e.g. segmented header)
  * @param currentHttpMessage variable for storing the current HTTP message
  * @param messageQueue queue where to insert completed Http Messages
  */
-bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage = nullptr);
+bool parseReceivedMsg(int socketId, const std::string& inPacket, cQueue& messageQueue, std::string& storedData, HttpBaseMessage *& currentHttpMessage);
 
 /*************************************************************************************/
 

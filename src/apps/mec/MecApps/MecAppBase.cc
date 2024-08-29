@@ -173,7 +173,7 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
     std::string packet(bytes.begin(), bytes.end());
     HttpMessageStatus *msgStatus = (HttpMessageStatus *)socket->getUserData();
 
-    bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, &(msgStatus->bufferedData), &(msgStatus->currentMessage));
+    bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, msgStatus->bufferedData, msgStatus->currentMessage);
     if (res) {
         if (vim == nullptr)
             throw cRuntimeError("MecAppBase::socketDataArrived - vim is null!");

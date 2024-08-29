@@ -220,7 +220,7 @@ HttpBaseMessage *parseHeader(const std::string& data)
     }
 }
 
-HttpMsgState parseTcpData(std::string *data, HttpBaseMessage *httpMessage)
+HttpMsgState parseTcpData(std::string& data, HttpBaseMessage *httpMessage)
 {
     if (httpMessage == nullptr)
         throw cRuntimeError("httpUtils parseTcpData - httpMessage must not be null");
@@ -228,28 +228,29 @@ HttpMsgState parseTcpData(std::string *data, HttpBaseMessage *httpMessage)
     httpMessage->setIsReceivingMsg(true);
     addBodyChunk(data, httpMessage);
 
-    if (data->length() == 0 && httpMessage->getRemainingDataToRecv() == 0)
+    if (data.length() == 0 && httpMessage->getRemainingDataToRecv() == 0)
         return COMPLETE_NO_DATA;
-    else if (data->length() > 0 && httpMessage->getRemainingDataToRecv() == 0)
+    else if (data.length() > 0 && httpMessage->getRemainingDataToRecv() == 0)
         return COMPLETE_DATA; // there is a new message
-    else if (data->length() == 0 && httpMessage->getRemainingDataToRecv() > 0)
+    else if (data.length() == 0 && httpMessage->getRemainingDataToRecv() > 0)
         return INCOMPLETE_NO_DATA; //
-    else if (data->length() >= 0 && httpMessage->getRemainingDataToRecv() > 0)
+    else if (data.length() >= 0 && httpMessage->getRemainingDataToRecv() > 0)
         return INCOMPLETE_DATA; // this should not happen
     else {
-        throw cRuntimeError("httpUtils parseTcpData - something went wrong: data length: %lu and remaining data to receive: %d", data->length(), httpMessage->getRemainingDataToRecv());
+        throw cRuntimeError("httpUtils parseTcpData - something went wrong: data length: %lu and remaining data to receive: %d", data.length(), httpMessage->getRemainingDataToRecv());
     }
 }
 
-bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMessage **currentHttpMessage)
+bool parseReceivedMsg(const std::string& inPacket, std::string& storedData, HttpBaseMessage *& currentHttpMessage)
 {
     EV_INFO << "httpUtils::parseReceivedMsg- start..." << endl;
     std::string delimiter = "\r\n\r\n";
     size_t pos = 0;
     std::string header;
-    if (*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg()) {
+    std::string packet(inPacket);
+    if (currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg()) {
         EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
-        Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+        Http::HttpMsgState res = Http::parseTcpData(packet, currentHttpMessage);
         switch (res) {
             case (Http::COMPLETE_NO_DATA):
                 EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
@@ -272,19 +273,19 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
      */
 
     std::string temp;
-    if (storedData->length() > 0) {
+    if (storedData.length() > 0) {
         EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
         temp = packet;
-        packet = *storedData + temp;
+        packet = storedData + temp;
     }
 
     while ((pos = packet.find(delimiter)) != std::string::npos) {
         EV << "MecAppBase::parseReceivedMsg - new HTTP message" << endl;
         header = packet.substr(0, pos);
         packet.erase(0, pos + delimiter.length()); //remove header
-        *currentHttpMessage = Http::parseHeader(header);
+        currentHttpMessage = Http::parseHeader(header);
 
-        Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+        Http::HttpMsgState res = Http::parseTcpData(packet, currentHttpMessage);
 
         switch (res) {
             case (Http::COMPLETE_NO_DATA):
@@ -306,13 +307,13 @@ bool parseReceivedMsg(std::string& packet, std::string *storedData, HttpBaseMess
      */
     if (packet.length() != 0) {
         EV << "MecAppBase::parseReceivedMsg - stored data: " << packet << endl;
-        *storedData = packet;
+        storedData = packet;
         return false;
     }
     return false;
 }
 
-bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, std::string *storedData, HttpBaseMessage **currentHttpMessage)
+bool parseReceivedMsg(int socketId, const std::string& inPacket, cQueue& messageQueue, std::string& storedData, HttpBaseMessage *& currentHttpMessage)
 {
     EV_INFO << "httpUtils::parseReceivedMsg" << endl;
     //std::cout << "MecAppBase::parseReceivedMsg" << std::endl;
@@ -321,26 +322,27 @@ bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, s
     std::string delimiter = "\r\n\r\n";
     size_t pos = 0;
     std::string header;
+    std::string packet(inPacket);
     bool completeMsg = false;
 
     // continue receiving the message
-    if (*currentHttpMessage != nullptr && (*currentHttpMessage)->isReceivingMsg()) {
+    if (currentHttpMessage != nullptr && currentHttpMessage->isReceivingMsg()) {
         // EV << "MecAppBase::parseReceivedMsg - Continue receiving data for the current HttpMessage" << endl;
-        Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+        Http::HttpMsgState res = Http::parseTcpData(packet, currentHttpMessage);
         switch (res) {
             case (Http::COMPLETE_NO_DATA):
                 // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-                (*currentHttpMessage)->setSockId(socketId);
-                messageQueue.insert(*currentHttpMessage);
+                currentHttpMessage->setSockId(socketId);
+                messageQueue.insert(currentHttpMessage);
                 completeMsg = true;
-                *currentHttpMessage = nullptr;
+                currentHttpMessage = nullptr;
                 return completeMsg;
             case (Http::COMPLETE_DATA):
                 // EV << "MecAppBase::parseReceivedMsg - passing HttpMessage to application: " << res << endl;
-                (*currentHttpMessage)->setSockId(socketId);
-                messageQueue.insert(*currentHttpMessage);
+                currentHttpMessage->setSockId(socketId);
+                messageQueue.insert(currentHttpMessage);
                 completeMsg = true;
-                *currentHttpMessage = nullptr;
+                currentHttpMessage = nullptr;
                 break;
             case (Http::INCOMPLETE_DATA):
                 throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
@@ -357,34 +359,34 @@ bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, s
      */
 
     std::string temp;
-    if (storedData->length() > 0) {
+    if (storedData.length() > 0) {
         // EV << "MecAppBase::parseReceivedMsg - buffered data" << endl;
         //std::cout << "MecAppBase::parseReceivedMsg - buffered data" << std::endl;
-        //std::cout << "MecAppBase::parseReceivedMsg buffered data" << *storedData  << std::endl;
+        //std::cout << "MecAppBase::parseReceivedMsg buffered data" << storedData  << std::endl;
 
         temp = packet;
-        packet = *storedData + temp;
-        storedData->clear();
+        packet = storedData + temp;
+        storedData.clear();
     }
 
     while ((pos = packet.find(delimiter)) != std::string::npos) {
         header = packet.substr(0, pos);
         packet.erase(0, pos + delimiter.length()); //remove header
-        *currentHttpMessage = Http::parseHeader(header);
+        currentHttpMessage = Http::parseHeader(header);
 
-        Http::HttpMsgState res = Http::parseTcpData(&packet, *currentHttpMessage);
+        Http::HttpMsgState res = Http::parseTcpData(packet, currentHttpMessage);
         switch (res) {
             case (Http::COMPLETE_NO_DATA):
-                (*currentHttpMessage)->setSockId(socketId);
-                messageQueue.insert(*currentHttpMessage);
+                currentHttpMessage->setSockId(socketId);
+                messageQueue.insert(currentHttpMessage);
                 completeMsg = true;
-                *currentHttpMessage = nullptr;
+                currentHttpMessage = nullptr;
                 return completeMsg;
             case (Http::COMPLETE_DATA):
-                (*currentHttpMessage)->setSockId(socketId);
-                messageQueue.insert(*currentHttpMessage);
+                currentHttpMessage->setSockId(socketId);
+                messageQueue.insert(currentHttpMessage);
                 completeMsg = true;
-                *currentHttpMessage = nullptr;
+                currentHttpMessage = nullptr;
                 break;
             case (Http::INCOMPLETE_DATA):
                 throw cRuntimeError("httpUtils parseReceivedMsg - current Http Message is incomplete, but there is still data to read");
@@ -399,15 +401,15 @@ bool parseReceivedMsg(int socketId, std::string& packet, cQueue& messageQueue, s
      * should be saved and aggregated with the subsequent fragmented
      */
     if (packet.length() != 0) {
-        *storedData = packet;
+        storedData = packet;
         return completeMsg;
     }
-    return completeMsg = true;
+    return true;
 }
 
-void addBodyChunk(std::string *data, HttpBaseMessage *httpMessage)
+void addBodyChunk(std::string& data, HttpBaseMessage *httpMessage)
 {
-    int len = data->length();
+    int len = data.length();
     int remainingLength = httpMessage->getRemainingDataToRecv();
     if (remainingLength == 0 && len == 0) {
         EV << "httpUtils::addBodyChunk - no body" << endl;
@@ -418,16 +420,16 @@ void addBodyChunk(std::string *data, HttpBaseMessage *httpMessage)
     if (httpMessage->getType() == RESPONSE) {
         EV << "httpUtils::addBodyChunk - RESPONSE " << endl;
         HttpResponseMessage *resp = dynamic_cast<HttpResponseMessage *>(httpMessage);
-        resp->addBodyChunk(data->substr(0, remainingLength));
+        resp->addBodyChunk(data.substr(0, remainingLength));
     }
     else if (httpMessage->getType() == REQUEST) {
         EV << "httpUtils::addBodyChunk - REQUEST " << endl;
         HttpRequestMessage *resp = dynamic_cast<HttpRequestMessage *>(httpMessage);
-        resp->addBodyChunk(data->substr(0, remainingLength));
+        resp->addBodyChunk(data.substr(0, remainingLength));
     }
 
-    data->erase(0, remainingLength);
-    httpMessage->setRemainingDataToRecv(remainingLength - (len - data->length()));
+    data.erase(0, remainingLength);
+    httpMessage->setRemainingDataToRecv(remainingLength - (len - data.length()));
     EV << "httpUtils - addBodyChunk: Remaining bytes: " << httpMessage->getRemainingDataToRecv() << endl;
 }
 
