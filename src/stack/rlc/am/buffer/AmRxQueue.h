@@ -80,14 +80,15 @@ class AmRxQueue : public cSimpleModule
     //Statistics
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalRcvdBytes_;
-    simsignal_t rlcCellPacketLossSignal_;
-    simsignal_t rlcPacketLossSignal_;
-    simsignal_t rlcPduPacketLossSignal_;
-    simsignal_t rlcDelaySignal_;
-    simsignal_t rlcPduDelaySignal_;
-    simsignal_t rlcCellThroughputSignal_;
-    simsignal_t rlcThroughputSignal_;
-    simsignal_t rlcPduThroughputSignal_;
+    Direction dir_ = UNKNOWN_DIRECTION;
+    static simsignal_t rlcCellPacketLossSignal_[2];
+    static simsignal_t rlcPacketLossSignal_[2];
+    static simsignal_t rlcPduPacketLossSignal_[2];
+    static simsignal_t rlcDelaySignal_[2];
+    static simsignal_t rlcPduDelaySignal_[2];
+    static simsignal_t rlcCellThroughputSignal_[2];
+    static simsignal_t rlcThroughputSignal_[2];
+    static simsignal_t rlcPduThroughputSignal_[2];
 
   public:
 

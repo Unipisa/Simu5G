@@ -25,6 +25,15 @@ using namespace omnetpp;
 
 unsigned int AmRxQueue::totalCellRcvdBytes_ = 0;
 
+simsignal_t AmRxQueue::rlcCellPacketLossSignal_[2] = { registerSignal("rlcCellPacketLossDl"), registerSignal("rlcCellPacketLossUl") };
+simsignal_t AmRxQueue::rlcPacketLossSignal_[2] = { registerSignal("rlcPacketLossDl"), registerSignal("rlcPacketLossUl") };
+simsignal_t AmRxQueue::rlcPduPacketLossSignal_[2] = { registerSignal("rlcPduPacketLossDl"), registerSignal("rlcPduPacketLossUl") };
+simsignal_t AmRxQueue::rlcDelaySignal_[2] = { registerSignal("rlcDelayDl"), registerSignal("rlcDelayUl") };
+simsignal_t AmRxQueue::rlcThroughputSignal_[2] = { registerSignal("rlcThroughputDl"), registerSignal("rlcThroughputUl") };
+simsignal_t AmRxQueue::rlcPduDelaySignal_[2] = { registerSignal("rlcPduDelayDl"), registerSignal("rlcPduDelayUl") };
+simsignal_t AmRxQueue::rlcPduThroughputSignal_[2] = { registerSignal("rlcPduThroughputDl"), registerSignal("rlcPduThroughputUl") };
+simsignal_t AmRxQueue::rlcCellThroughputSignal_[2] = { registerSignal("rlcCellThroughputDl"), registerSignal("rlcCellThroughputUl") };
+
 AmRxQueue::AmRxQueue() :
     // In order to create a back connection (AM CTRL), a flow control
     // info for sending control messages to the transmitting entity is required
@@ -53,24 +62,10 @@ void AmRxQueue::initialize()
     LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB) {
-        rlcCellPacketLossSignal_ = registerSignal("rlcCellPacketLossUl");
-        rlcPacketLossSignal_ = registerSignal("rlcPacketLossUl");
-        rlcPduPacketLossSignal_ = registerSignal("rlcPduPacketLossUl");
-        rlcDelaySignal_ = registerSignal("rlcDelayUl");
-        rlcThroughputSignal_ = registerSignal("rlcThroughputUl");
-        rlcPduDelaySignal_ = registerSignal("rlcPduDelayUl");
-        rlcPduThroughputSignal_ = registerSignal("rlcPduThroughputUl");
-        rlcCellThroughputSignal_ = registerSignal("rlcCellThroughputUl");
+        dir_ = UL;
     }
     else {
-        rlcPacketLossSignal_ = registerSignal("rlcPacketLossDl");
-        rlcPduPacketLossSignal_ = registerSignal("rlcPduPacketLossDl");
-        rlcDelaySignal_ = registerSignal("rlcDelayDl");
-        rlcThroughputSignal_ = registerSignal("rlcThroughputDl");
-        rlcPduDelaySignal_ = registerSignal("rlcPduDelayDl");
-        rlcPduThroughputSignal_ = registerSignal("rlcPduThroughputDl");
-        rlcCellThroughputSignal_ = registerSignal("rlcCellThroughputDl");
-        rlcCellPacketLossSignal_ = registerSignal("rlcCellPacketLossDl");
+        dir_ = DL;
     }
 }
 
@@ -168,12 +163,12 @@ void AmRxQueue::discard(const int sn)
         // UE module
         cModule *ue = getRlcByMacNodeId(binder_, (dir == DL ? dstId : srcId), UM);
         if (ue != nullptr)
-            ue->emit(rlcPacketLossSignal_, 1.0);
+            ue->emit(rlcPacketLossSignal_[dir_], 1.0);
 
         // NODEB
         cModule *nodeb = getRlcByMacNodeId(binder_, (dir == DL ? srcId : dstId), UM);
         if (nodeb != nullptr)
-            nodeb->emit(rlcCellPacketLossSignal_, 1.0);
+            nodeb->emit(rlcCellPacketLossSignal_[dir_], 1.0);
     }
 }
 
@@ -390,13 +385,13 @@ void AmRxQueue::passUp(const int index)
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
     if (nodeb != nullptr) {
-        nodeb->emit(rlcCellThroughputSignal_, cellTputSample);
-        nodeb->emit(rlcCellPacketLossSignal_, 0.0);
+        nodeb->emit(rlcCellThroughputSignal_[dir_], cellTputSample);
+        nodeb->emit(rlcCellPacketLossSignal_[dir_], 0.0);
     }
     if (ue != nullptr) {
-        ue->emit(rlcThroughputSignal_, tputSample);
-        ue->emit(rlcDelaySignal_, delay);
-        ue->emit(rlcPacketLossSignal_, 0.0);
+        ue->emit(rlcThroughputSignal_[dir_], tputSample);
+        ue->emit(rlcDelaySignal_[dir_], delay);
+        ue->emit(rlcPacketLossSignal_[dir_], 0.0);
     }
 
     // Get the SDU and pass it to the upper layers - PDU // SDU // PDCPPDU

@@ -114,29 +114,29 @@ bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
     else {
         switch (ntx) {
             case 1:
-                ue->emit(harqErrorRate_1Signal_, sample);
+                ue->emit(harqErrorRate_1Signal_[dir_], sample);
                 break;
             case 2:
-                ue->emit(harqErrorRate_2Signal_, sample);
+                ue->emit(harqErrorRate_2Signal_[dir_], sample);
                 break;
             case 3:
-                ue->emit(harqErrorRate_3Signal_, sample);
+                ue->emit(harqErrorRate_3Signal_[dir_], sample);
                 break;
             case 4:
-                ue->emit(harqErrorRate_4Signal_, sample);
+                ue->emit(harqErrorRate_4Signal_[dir_], sample);
                 break;
             default:
                 break;
         }
 
-        ue->emit(harqErrorRateSignal_, sample);
+        ue->emit(harqErrorRateSignal_[dir_], sample);
 
         if (a == HARQACK)
-            ue->emit(harqTxAttemptsSignal_, ntx);
+            ue->emit(harqTxAttemptsSignal_[dir_], ntx);
 
         if (reset) {
-            ue->emit(macPacketLossSignal_, sample);
-            nodeB_->emit(macCellPacketLossSignal_, sample);
+            ue->emit(macPacketLossSignal_[dir_], sample);
+            nodeB_->emit(macCellPacketLossSignal_[dir_], sample);
         }
     }
 

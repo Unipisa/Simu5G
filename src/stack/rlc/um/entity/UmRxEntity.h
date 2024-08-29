@@ -75,23 +75,25 @@ class UmRxEntity : public cSimpleModule
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalPduRcvdBytes_;
     unsigned int totalRcvdBytes_;
-    simsignal_t rlcCellPacketLossSignal_;
-    simsignal_t rlcPacketLossSignal_;
-    simsignal_t rlcPduPacketLossSignal_;
-    simsignal_t rlcDelaySignal_;
-    simsignal_t rlcPduDelaySignal_;
-    simsignal_t rlcCellThroughputSignal_;
-    simsignal_t rlcThroughputSignal_;
-    simsignal_t rlcPduThroughputSignal_;
-    simsignal_t rlcPacketLossTotalSignal_;
+    Direction dir_ = UNKNOWN_DIRECTION;
+    static simsignal_t rlcCellPacketLossSignal_[2];
+    static simsignal_t rlcPacketLossSignal_[2];
+    static simsignal_t rlcPduPacketLossSignal_[2];
+    static simsignal_t rlcDelaySignal_[2];
+    static simsignal_t rlcPduDelaySignal_[2];
+    static simsignal_t rlcCellThroughputSignal_[2];
+    static simsignal_t rlcThroughputSignal_[2];
+    static simsignal_t rlcPduThroughputSignal_[2];
+
+    static simsignal_t rlcPacketLossTotalSignal_;
 
     // statistics for D2D
-    simsignal_t rlcPacketLossD2DSignal_;
-    simsignal_t rlcPduPacketLossD2DSignal_;
-    simsignal_t rlcDelayD2DSignal_;
-    simsignal_t rlcPduDelayD2DSignal_;
-    simsignal_t rlcThroughputD2DSignal_;
-    simsignal_t rlcPduThroughputD2DSignal_;
+    static simsignal_t rlcPacketLossD2DSignal_;
+    static simsignal_t rlcPduPacketLossD2DSignal_;
+    static simsignal_t rlcDelayD2DSignal_;
+    static simsignal_t rlcPduDelayD2DSignal_;
+    static simsignal_t rlcThroughputD2DSignal_;
+    static simsignal_t rlcPduThroughputD2DSignal_;
 
     // buffered fragments
     std::deque<inet::Packet *> *fragments = nullptr;
