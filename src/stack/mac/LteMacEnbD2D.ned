@@ -13,11 +13,10 @@
 package simu5g.stack.mac;
 
 //
-// Medium Access Control (MAC) layer of the evolved NodeB (eNodeB) for Device-to-Device (D2D) communication.
-// This module manages the MAC layer functionalities for eNodeBs, including scheduling, resource allocation, 
-// and Hybrid Automatic Repeat Request (HARQ) processes. It enhances the 5G network by enabling direct 
-// communication between UEs, improving spectral efficiency, and supporting advanced services such as 
-// ultra-reliable low latency communications (URLLC).
+// This module extends LTE MAC functionalies at the eNodeB side to support device-to-device (D2D) 
+// communications. Specifically, it enhances resource allocation procedures to enable direct
+// communications between User Equipments (UEs), i.e., to allocate resources for D2D transmissions.
+// Network-assisted D2D is only implemented (out-of-coverage D2D is not supported).
 //
 simple LteMacEnbD2D extends LteMacEnb
 {

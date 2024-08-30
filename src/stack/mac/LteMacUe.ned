@@ -13,14 +13,12 @@
 package simu5g.stack.mac;
 
 //
-// User Equipment (UE) Medium Access Control (MAC) layer of Long-Term Evolution (LTE) stack
-//
-// This module manages the Medium Access Control (MAC) layer functionalities for User Equipment (UE) 
-// within the LTE network. It is responsible for essential MAC operations like scheduling, buffer 
-// management, and handling uplink/downlink transmissions. This includes interacting with the 
-// physical layer (PHY) and Radio Link Control (RLC) layer to ensure efficient data transfer over the 
-// LTE network. The LteMacUe module is crucial for supporting various network services and 
-// maintaining high-performance communications in the 5G ecosystem.
+// This module extends the ~LteMacBase module by providing the specific MAC functions
+// at the User Equipment (UE) side. 
+// For uplink connections, this module takes care of starting the Random Access procedure (RAC)
+// and sending Buffer Status Reports (BSRs) to the eNodeBs. Once it receives an uplink scheduling
+// grant from the eNodeB, it is responsible for managing the local connections' scheduler and 
+// building MAC Protocol Data Units (PDUs) to be sent to the physical layer.
 //
 simple LteMacUe extends LteMacBase
 {

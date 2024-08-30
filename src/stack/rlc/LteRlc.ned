@@ -17,6 +17,7 @@ package simu5g.stack.rlc;
 // It provides mechanisms for end-to-end connectivity over the radio interface. Depending on
 // the mode, this layer can provide segmentation/concatenation, in-sequence delivery
 // and retransmission of PDUs. 
+// Currently, only Unacknowledged Mode (UM) has been implemented.
 //
 module LteRlc
 {

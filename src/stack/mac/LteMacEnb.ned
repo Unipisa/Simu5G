@@ -13,11 +13,14 @@
 package simu5g.stack.mac;
 
 //
-// Medium Access Control (MAC) layer for the evolved Node B (eNodeB) in an LTE network.
-// This module is responsible for managing all data transmission aspects at the 
-// MAC sublayer within the eNodeB, including scheduling, resource allocation, 
-// and handling of data flow between the physical layer and upper layers. It aims 
-// to provide efficient, fair, and reliable communication for connected user equipments (UEs).
+// This module extends the ~LteMacBase module by providing the specific MAC functions
+// at the eNodeB side. Specifically, it initializes and manages the scheduling classes that are 
+// responsible for resource allocation operaions in both uplink and downlink directions.
+// It also manages the Random Access procedure (RAC) and reception of Buffer Status 
+// Reports (BSRs) from UEs, as well as the transmission of scheduling grants to UEs allocated
+// in the uplink bandwidth. For downlink connections, it notifies the Radio Link Control (RLC)
+// layer when it is ready to receive MAC Service Data Units (SDUs) in order to build MAC
+// Protocol Data Units (PDUs) and transmit them to the physical layer.
 //
 simple LteMacEnb extends LteMacBase
 {
