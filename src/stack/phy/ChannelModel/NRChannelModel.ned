@@ -12,7 +12,6 @@
 package simu5g.stack.phy.ChannelModel;
 
 
-// NRChannelModel_3GPP38_901
 //
 // This channel model implements path loss, LOS probability and shadowing according to
 // the following specifications:

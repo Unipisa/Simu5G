@@ -11,7 +11,12 @@
 
 package simu5g.stack.phy.ChannelModel;
 
-
+//
+// This is the base module for deriving more realistic models of the radio channel.
+// It mostly provides the initialization of parameters such as the reference to the
+// Component Carrier (CC) - and its related parameters - associated to the channel
+// model itself.
+//
 simple LteChannelModel like ILteChannelModel
 {
     parameters:

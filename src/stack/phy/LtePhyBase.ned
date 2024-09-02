@@ -13,7 +13,14 @@
 package simu5g.stack.phy;
 
 //
-// Base LtePhy module of PHY Layer
+// Base module for the Physical (PHY) layer of the LTE protocol stack.
+//
+// This module provides the common functionalities for PHY operations at both the 
+// eNodeB and User Equipment (UE) side, such as the initialization of ChannelModel 
+// module instances, one for each Carrier Component (CC) supported by the node, and 
+// the transmission of frames over the radio.
+// It provides parameters to configure the transmission power and direction of the
+// node, as well as to enable/disable the handover procedures.
 //
 simple LtePhyBase like ILtePhy
 {

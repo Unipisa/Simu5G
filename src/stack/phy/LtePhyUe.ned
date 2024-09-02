@@ -13,8 +13,13 @@
 package simu5g.stack.phy;
 
 //
-// User Equipment LtePhy module of PHY Layer
-//
+// This module extends the ~LtePhyBase module by providing the specific PHY functions
+// at the User Equipment (UE) side. It takes care of checking if a frame received on the air interface
+// comes from the serving eNodeB (eNB), and provides the functions to manage the handover procedure,
+// including the periodic measurment of the channel condition for detecting when the handover has to
+// take place. If enabled, the selection of the serving eNB at initialization is done dynamically
+// based on radio conditions.
+// 
 simple LtePhyUe extends LtePhyBase
 {
     parameters:

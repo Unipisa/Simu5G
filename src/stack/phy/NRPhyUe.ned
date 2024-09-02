@@ -11,8 +11,12 @@
 
 
 package simu5g.stack.phy;
+
 //
-// NR Phy module of PHY Layer
+// This module provides the functionalities for the Physical (PHY) layer of the
+// NewRadio (NR) protocol stack at the User Equipment (UE) side. In particular, 
+// it takes care of handling transmission/reception of frames over the radio and 
+// handover procedures when using the NR technology.
 //
 simple NRPhyUe extends LtePhyUeD2D
 {

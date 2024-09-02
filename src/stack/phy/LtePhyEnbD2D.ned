@@ -13,7 +13,9 @@
 package simu5g.stack.phy;
 
 //
-// eNodeB LtePhy module of PHY Layer with support for D2D
+// This module extends LTE PHY functionalies at the eNodeB side to support device-to-device (D2D) 
+// communications. Specifically, it enables the computation of Channel Status Information (CSI) related
+// to the D2D link between two UEs (which still need to be stored at the eNodeB for scheduling purposes).
 //
 simple LtePhyEnbD2D extends LtePhyEnb
 {
