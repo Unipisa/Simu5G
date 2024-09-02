@@ -15,7 +15,11 @@ package simu5g.stack.rlc;
 //
 // Interface module for the Unacknowledged Mode (UM) of the Radio Link Control (RLC) layer
 // It defines gates to the Packet Data Convergence Protocol (PDCP) module and the ~LteRlcMux
-// module
+// module. UM enables segmentatio and/or concatenation of RLC Service Data Units (SDUs) before 
+// transmission according to the size of RLC Protocol Data Unit (PDU) decided by the Medium Access 
+// Control (MAC) layer. At the receiving side, RLC SDUs are reassembled before they are
+// forwarded to the Packet Data Convergence Protocol (PDCP) layer. In-sequence delivery of 
+// RLC SDUs is also guaranteed.
 //
 moduleinterface ILteRlcUm
 {

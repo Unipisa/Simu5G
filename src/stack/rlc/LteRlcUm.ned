@@ -17,7 +17,9 @@ package simu5g.stack.rlc;
 // Radio Link Control (RLC) layer. 
 // Transmitting- and receiving-side functionalities are provided by ~UmTxEntity and
 // ~UmRxEntity submodules, respectively. The latter are created dynamically whenever
-// a new connection is detected.
+// a new connection is detected. This module is responsible to identify the flow a 
+// RLC Service Data Unit (SDU) or Protocol Data Unit (PDU) belongs to and hand it to 
+// the corresponding transmitting or receiving entity for further processing. 
 //
 simple LteRlcUm like ILteRlcUm
 {

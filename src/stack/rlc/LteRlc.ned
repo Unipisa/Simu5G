@@ -14,9 +14,11 @@ package simu5g.stack.rlc;
 
 //
 // The LteRlc module implements the functionalities of the Radio Link Control (RLC) layer. 
-// It provides mechanisms for end-to-end connectivity over the radio interface. Depending on
-// the mode, this layer can provide segmentation/concatenation, in-sequence delivery
-// and retransmission of PDUs. 
+// It provides mechanisms for end-to-end connectivity over the radio interface.  It 
+// sends/receives RLC Service Data Units (SDUs) to/from the Packet Data Convergence 
+// Protocol (PDCP) layer, and sends/received RLC Protocol Data Units (PDUs) to/from the 
+// Medium Access Control (MAC) layer. Depending on the mode, this layer can provide 
+// segmentation/concatenation, in-sequence delivery and retransmission of PDUs. 
 // Currently, only Unacknowledged Mode (UM) has been implemented.
 //
 module LteRlc

@@ -18,7 +18,7 @@ package simu5g.stack.rlc;
 // It stores packets coming from the Packet Data Convergence Protocol (PDCP) layer 
 // into a transmission buffer and, upon the notification of a transmission opportunity 
 // from the Medium Access Control (MAC) layer, it sends down a RLC Protocol Data Unit 
-// (PDU) of the appropriate size (possibly performind segmentation and/or concatentation)
+// (PDU) of the appropriate size (possibly performing segmentation and/or concatentation)
 //
 simple UmTxEntity
 {
