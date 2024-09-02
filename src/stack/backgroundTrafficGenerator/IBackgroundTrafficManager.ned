@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -19,7 +18,7 @@ package simu5g.stack.backgroundTrafficGenerator;
 // within the simulation. Implementing modules can specify various traffic 
 // models and strategies for generating and managing background traffic, 
 // which can be used to test network performance and behavior under different 
-// traffic conditions.
+// traffic conditions with minimal impact on the simulator performance.
 //
 moduleinterface IBackgroundTrafficManager
 {
