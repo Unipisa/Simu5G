@@ -268,18 +268,18 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
         auto freqIt = harqRxBuffers_->find(carrierFrequency);
         if (freqIt != harqRxBuffers_->end()) {
             auto& rxBufferForCarrierFrequency = freqIt->second;
-            for (auto it = rxBufferForCarrierFrequency.begin(); it != rxBufferForCarrierFrequency.end(); ++it) {
+            for (auto it = rxBufferForCarrierFrequency.begin(); it != rxBufferForCarrierFrequency.end(); ) {
                 // get current nodeId
                 MacNodeId nodeId = it->first;
 
                 if (nodeId == NODEID_NONE) {
                     // UE has left the simulation - erase queue and continue
-                    rxBufferForCarrierFrequency.erase(it);
+                    it = rxBufferForCarrierFrequency.erase(it);
                     continue;
                 }
                 OmnetId id = binder_->getOmnetId(nodeId);
                 if (id == 0) {
-                    rxBufferForCarrierFrequency.erase(it);
+                    it = rxBufferForCarrierFrequency.erase(it);
                     continue;
                 }
 
@@ -297,8 +297,10 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                         break;
                     }
                 }
-                if (skip)
+                if (skip) {
+                    ++it;
                     continue;
+                }
 
                 // Get user transmission parameters
                 const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);// get the user info
@@ -320,6 +322,7 @@ bool LteSchedulerEnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                     }
                 }
                 EV << NOW << "LteSchedulerEnbUl::rtxschedule UE " << nodeId << " allocated bytes : " << allocatedBytes << endl;
+                ++it;
             }
         }
         if (mac_->isD2DCapable()) {
