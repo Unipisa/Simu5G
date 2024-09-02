@@ -11,6 +11,17 @@
 
 package simu5g.common.carrierAggregation;
 
+//
+// This module acts as a collector of information concerning one Component
+// Carrier (CC) of a Carrier Aggregation (CA)-enabled 4G/5G network.
+// The module is assigned a carrier frequency (which also acts as unique identifier
+// for the CC in the system), a bandwidth and a numerology index (in the range 0-4).
+// It can be configured with either Frequency Division Duplex (FDD) or Time
+// Division Duplex (TDD) mode. In the latter case, the number of uplink and
+// downlink symbols per slot can be chosen (the sum of uplink and downlink symbols 
+// must be smaller than or equal to 14, which is the total number of symbols in one
+// slot).
+//
 simple ComponentCarrier
 {
     parameters:

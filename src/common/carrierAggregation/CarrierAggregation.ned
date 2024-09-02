@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,9 +12,13 @@
 package simu5g.common.carrierAggregation;
 
 //
-// This module represents the carrier aggregation functionality used in gNodeBs and UEs.
-// It allows the configuration of multiple component carriers (CCs) to aggregate bandwidth
-// and improve the overall data rates and network performance.
+// This module implements the Carrier Aggregation (CA) functionality used at the 
+// Medium Access Control (MAC) layer of e/gNodeBs and UEs. CA allows multiple spectra - 
+// called Component Carriers (CCs) - to be aggregated in order to increase the overall
+// available bandwidth of the system. Each CC is implemented as a submodule and can be 
+// configured independently from each other. e/gNodeB and UE can be configured to use 
+// one or more CCs among the ones configured in this module. 
+// There must be one (and only one) instance of this module in the network.
 //
 module CarrierAggregation
 {
