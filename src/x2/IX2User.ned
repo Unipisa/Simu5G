@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,12 +12,9 @@
 package simu5g.x2;
 
 //
-// The `X2User` module interface is a foundational component in the Simu5G framework,
-// providing the necessary parameters and gate definitions for modules that need to 
-// communicate with the X2 Manager. It is designed to standardize the communication 
-// protocols between different modules and the X2 Manager, ensuring efficient and 
-// reliable data exchange in LTE network simulations. The module comes with a 
-// predefined display icon for easy visualization.
+// This module interface provides the basic structure for submodules of the LTE/NR protocol 
+// stack that need to interact with the ~LteX2Manager to use X2 communication to accomplish
+// their task, such as handover, dual connectivity and Coordinated MultiPoint.
 //
 moduleinterface IX2User
 {

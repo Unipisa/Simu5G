@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,12 +12,11 @@
 package simu5g.x2;
 
 //
-// LteX2Manager
-//
-// The LteX2Manager module enables communication between LTE eNodeBs using the X2 interface. 
-// It facilitates the interaction between X2 user modules and X2Apps, which manage the 
-// communication with peer eNodeBs. To leverage the X2 interface in a new module, 
-// connect it to the dataPort gate of the LteX2Manager.
+// This module acts as a pluggable interface for submodules of the e/gNodeB's LTE/NR protocol 
+// stack implementing functionalities that need to use the X2 interface for communicating with 
+// peering e/gNodeBs, such as handover, dual connectivity and Coordinated MultiPoint (CoMP). 
+// This module provides an easier interface to such submodules by hiding the details of X2Apps, 
+// which in turn are the modules responsible for the actual communication via the X2 interface.
 //
 simple LteX2Manager
 {

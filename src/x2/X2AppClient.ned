@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,12 +13,15 @@ package simu5g.x2;
 
 import inet.applications.sctpapp.SctpClient;
 
-// X2AppClient
 //
-// This module extends the SctpClient application, by adding
-// an output gate to send messages to the X2 Manager and
-// manages the connection initiation towards the peer's
-// server module based on the configuration specified in .ini file.
+// This module extends the INET's SctpClient application, by adding
+// an output gate to send messages to the ~LteX2Manager and
+// manages the connection initiation towards the peer's server module
+// based on the configuration specified in .ini file.
+// Once the connection has been established, it receives messages
+// from the peer's server module and forwards them to the ~LteX2Manager
+// module for further processing and redirection to the intended submodule
+// of the LTE/NR protocol stack
 //
 simple X2AppClient extends SctpClient
 {
