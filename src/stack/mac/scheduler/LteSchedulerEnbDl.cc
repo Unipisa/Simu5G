@@ -398,7 +398,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
         std::vector<BandLimit> usableBands;
 
         // examination of HARQ process in rtx status, adding them to scheduling list
-        for ( ; it != et; ++it) {
+        for ( ; it != et; ) {
             // For each UE
             MacNodeId nodeId = it->first;
 
@@ -406,10 +406,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
             if (id == 0) {
                 // UE has left the simulation, erase HARQ queue
                 it = harqQueues->erase(it);
-                if (it == et)
-                    break;
-                else
-                    continue;
+                continue;
             }
             LteHarqBufferTx *currHarq = it->second;
             std::vector<LteHarqProcessTx *> *processes = currHarq->getHarqProcesses();
@@ -465,6 +462,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
                     }
                 }
             }
+            ++it;
         }
     }
 
