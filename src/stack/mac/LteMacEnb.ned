@@ -14,8 +14,9 @@ package simu5g.stack.mac;
 
 //
 // This module extends the ~LteMacBase module by providing the specific MAC functions
-// at the eNodeB side. Specifically, it initializes and manages the scheduling classes that are 
-// responsible for resource allocation operaions in both uplink and downlink directions.
+// at the eNodeB side. Specifically, it initializes and manages the scheduling classes  
+// responsible for resource allocation operaions in both uplink and downlink directions,
+// also supporting Carrier Aggregation (CA). 
 // It also manages the Random Access procedure (RAC) and reception of Buffer Status 
 // Reports (BSRs) from UEs, as well as the transmission of scheduling grants to UEs allocated
 // in the uplink bandwidth. For downlink connections, it notifies the Radio Link Control (RLC)
