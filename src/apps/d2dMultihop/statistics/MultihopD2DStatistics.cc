@@ -38,26 +38,24 @@ void MultihopD2DStatistics::recordNewBroadcast(unsigned int msgId, UeSet& destin
     if (eventDeliveryInfo_.find(eventId) == eventDeliveryInfo_.end()) {
         // initialize record for this message
         DeliveryStatus tmp;
-        UeSet::iterator it = destinations.begin();
-        for ( ; it != destinations.end(); ++it) {
+        for (const auto& destination : destinations) {
             ReceptionStatus status;
             status.delay_ = -1.0;
             status.hops_ = -1;
-            tmp.insert(std::pair<MacNodeId, ReceptionStatus>(*it, status));
+            tmp.insert(std::pair<MacNodeId, ReceptionStatus>(destination, status));
         }
         std::pair<unsigned short, DeliveryStatus> p(eventId, tmp);
         eventDeliveryInfo_.insert(p);
     }
     else {
         DeliveryStatus entry = eventDeliveryInfo_.at(eventId);
-        UeSet::iterator it = destinations.begin();
-        for ( ; it != destinations.end(); ++it) {
-            if (eventDeliveryInfo_[eventId].find(*it) == eventDeliveryInfo_[eventId].end()) {
+        for (const auto& destination : destinations) {
+            if (eventDeliveryInfo_[eventId].find(destination) == eventDeliveryInfo_[eventId].end()) {
                 // the UE is not in the map
                 ReceptionStatus status;
                 status.delay_ = -1.0;
                 status.hops_ = -1;
-                eventDeliveryInfo_[eventId].insert(std::pair<MacNodeId, ReceptionStatus>(*it, status));
+                eventDeliveryInfo_[eventId].insert(std::pair<MacNodeId, ReceptionStatus>(destination, status));
             }
         }
     }
@@ -119,22 +117,20 @@ void MultihopD2DStatistics::finish()
     std::vector<simtime_t> sortedDelays;
 
     // scan structures and emit average statistics
-    std::map<unsigned short, DeliveryStatus>::iterator eit = eventDeliveryInfo_.begin();
-    for ( ; eit != eventDeliveryInfo_.end(); ++eit) {
+    for (const auto& [eventId, deliveryStatus] : eventDeliveryInfo_) {
         sortedDelays.clear();
 
         unsigned int deliveredMsgCounter = 0;
         simtime_t maxDelay = 0.0;
-        DeliveryStatus::iterator jt = eit->second.begin();
-        for ( ; jt != eit->second.end(); ++jt) {
+        for (const auto& [nodeId, receptionStatus] : deliveryStatus) {
             // for each message, insert all delays in this vector
-            if (jt->second.hops_ >= 0) {
-                if (jt->second.hops_ >= 1) {
-                    sortedDelays.push_back(jt->second.delay_);
-                    emit(d2dMultihopEventDelaySignal_, jt->second.delay_);
+            if (receptionStatus.hops_ >= 0) {
+                if (receptionStatus.hops_ >= 1) {
+                    sortedDelays.push_back(receptionStatus.delay_);
+                    emit(d2dMultihopEventDelaySignal_, receptionStatus.delay_);
 
-                    if (jt->second.delay_ > maxDelay)
-                        maxDelay = jt->second.delay_;
+                    if (receptionStatus.delay_ > maxDelay)
+                        maxDelay = receptionStatus.delay_;
                 }
                 deliveredMsgCounter++;
             }
@@ -143,11 +139,11 @@ void MultihopD2DStatistics::finish()
         if (sortedDelays.empty())
             continue;
 
-        double deliveryRatio = (double)deliveredMsgCounter / eit->second.size();
+        double deliveryRatio = (double)deliveredMsgCounter / deliveryStatus.size();
         emit(d2dMultihopEventDeliveryRatioSignal_, deliveryRatio);
 
         // cluster complete covered with a delivery
-        int completeDelivery = (deliveredMsgCounter == eit->second.size()) ? 1 : 0;
+        int completeDelivery = (deliveredMsgCounter == deliveryStatus.size()) ? 1 : 0;
         emit(d2dMultihopEventCompleteDeliveriesSignal_, completeDelivery);
 
         // sort the delays and get the percentile you desire
@@ -157,11 +153,10 @@ void MultihopD2DStatistics::finish()
         emit(d2dMultihopEventDelay95PerSignal_, sortedDelays[index95Percentile]);
     }
 
-    std::map<unsigned short, TransmissionInfo>::iterator eventInfoIt = eventTransmissionInfo_.begin();
-    for ( ; eventInfoIt != eventTransmissionInfo_.end(); ++eventInfoIt) {
-        emit(d2dMultihopEventSentMsgSignal_, (long)eventInfoIt->second.numSent_);
-        emit(d2dMultihopEventTrickleSuppressedMsgSignal_, (long)eventInfoIt->second.numSuppressed_);
-        emit(d2dMultihopEventRcvdDupMsgSignal_, (long)eventInfoIt->second.numDuplicates_);
+    for (const auto& [eventId, transmissionInfo] : eventTransmissionInfo_) {
+        emit(d2dMultihopEventSentMsgSignal_, (long)transmissionInfo.numSent_);
+        emit(d2dMultihopEventTrickleSuppressedMsgSignal_, (long)transmissionInfo.numSuppressed_);
+        emit(d2dMultihopEventRcvdDupMsgSignal_, (long)transmissionInfo.numDuplicates_);
     }
 }
 

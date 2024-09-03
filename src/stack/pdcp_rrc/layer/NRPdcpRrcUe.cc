@@ -210,28 +210,24 @@ LteRxPdcpEntity *NRPdcpRrcUe::getRxEntity(MacCid cid)
 
 void NRPdcpRrcUe::deleteEntities(MacNodeId nodeId)
 {
-    PdcpTxEntities::iterator tit;
-    PdcpRxEntities::iterator rit;
-
     // delete connections related to the given master nodeB only
     // (the UE might have dual connectivity enabled)
-    for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
+    for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
-            (tit->second)->deleteModule();  // Delete Entity
+            tit->second->deleteModule();  // Delete Entity
             tit = txEntities_.erase(tit);       // Delete Element
         }
         else {
             ++tit;
         }
     }
-    for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
+    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
-            (rit->second)->deleteModule();  // Delete Entity
+            rit->second->deleteModule();  // Delete Entity
             rit = rxEntities_.erase(rit);       // Delete Element
         }
-        else {
+        else
             ++rit;
-        }
     }
 }
 

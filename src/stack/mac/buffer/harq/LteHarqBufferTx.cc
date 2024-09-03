@@ -90,8 +90,8 @@ void LteHarqBufferTx::markSelected(UnitList unitIds, unsigned char availableTbs)
     }
     else {
         // all units are marked
-        for (auto it = cwList.begin(); it != cwList.end(); it++) {
-            (*processes_)[acid]->markSelected(*it);
+        for (const auto& cw : cwList) {
+            (*processes_)[acid]->markSelected(cw);
         }
     }
 
@@ -227,15 +227,15 @@ void LteHarqBufferTx::sendSelectedDown()
     }
 
     CwList ul = (*processes_)[selectedAcid_]->selectedUnitsIds();
-    for (auto it = ul.begin(); it != ul.end(); it++) {
-        auto pkt = (*processes_)[selectedAcid_]->extractPdu(*it);
+    for (const auto& id : ul) {
+        auto pkt = (*processes_)[selectedAcid_]->extractPdu(id);
         auto pduToSend = pkt->peekAtFront<LteMacPdu>();
         auto cinfo = pkt->getTag<UserControlInfo>();
         macOwner_->sendLowerPackets(pkt);
 
         // debug output
         EV << "\t H-ARQ TX: pdu (id " << pduToSend->getId() << " ) extracted from process " << (int)selectedAcid_ << " "
-                                                                                                                     "codeword " << (int)*it << " for node with id " << cinfo->getDestId() << endl;
+                "codeword " << (int)id << " for node with id " << cinfo->getDestId() << endl;
     }
     selectedAcid_ = HARQ_NONE;
 }
@@ -245,8 +245,8 @@ void LteHarqBufferTx::dropProcess(unsigned char acid)
     // pdus can be dropped only if the unit is in BUFFERED state.
     CwList ul = (*processes_)[acid]->readyUnitsIds();
 
-    for (auto it = ul.begin(); it != ul.end(); it++) {
-        (*processes_)[acid]->dropPdu(*it);
+    for (auto& id : ul) {
+        (*processes_)[acid]->dropPdu(id);
     }
     // if a process contains units in BUFFERED state, then all units of this
     // process are either empty or in BUFFERED state (ready).
@@ -258,8 +258,8 @@ void LteHarqBufferTx::selfNack(unsigned char acid, Codeword cw)
     bool reset = false;
     CwList ul = (*processes_)[acid]->readyUnitsIds();
 
-    for (auto it = ul.begin(); it != ul.end(); it++) {
-        reset = (*processes_)[acid]->selfNack(*it);
+    for (const auto& unitId : ul) {
+        reset = (*processes_)[acid]->selfNack(unitId);
     }
     if (reset)
         numEmptyProc_++;
@@ -338,8 +338,8 @@ bool LteHarqBufferTx::isInUnitList(unsigned char acid, Codeword cw, UnitList uni
     if (acid != unitIds.first)
         return false;
 
-    for (auto it = unitIds.second.begin(); it != unitIds.second.end(); it++) {
-        if (cw == *it) {
+    for (const auto& codeword : unitIds.second) {
+        if (cw == codeword) {
             return true;
         }
     }

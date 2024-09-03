@@ -129,33 +129,27 @@ void LocationService::handleGETRequest(const HttpRequestMessage *currentRequestM
             std::vector<MacCellId> cellIds;
             std::vector<inet::Ipv4Address> ues;
 
-            std::vector<std::string>::iterator it = queryParameters.begin();
-            std::vector<std::string>::iterator end = queryParameters.end();
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;
-            for ( ; it != end; ++it) {
-                if (it->rfind("accessPointId", 0) == 0) { // accessPointId=par1,par2
+            for (const auto& queryParam : queryParameters) {
+                if (queryParam.rfind("accessPointId", 0) == 0) { // accessPointId=par1,par2
                     EV << "LocationService::handleGETRequest - parameters: " << endl;
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
                     splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        EV << "cellId: " << *pit << endl;
-                        cellIds.push_back((MacCellId)std::stoi(*pit));
+                    for (const auto& cellIdStr : splittedParams) {
+                        EV << "cellId: " << cellIdStr << endl;
+                        cellIds.push_back((MacCellId)std::stoi(cellIdStr));
                     }
                 }
-                else if (it->rfind("address", 0) == 0) {
-                    params = simu5g::utils::splitString(*it, "=");
+                else if (queryParam.rfind("address", 0) == 0) {
+                    params = simu5g::utils::splitString(queryParam, "=");
                     splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        std::vector<std::string> address = simu5g::utils::splitString((*pit), ":");
+                    for (const auto& addressStr : splittedParams) {
+                        std::vector<std::string> address = simu5g::utils::splitString(addressStr, ":");
                         if (address.size() != 2) { //must be param=acr:values
                             Http::send400Response(socket);
                             return;

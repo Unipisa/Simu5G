@@ -353,14 +353,9 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
 
     // get the PDCP SDUs fragmented in this RLC PDU
     SequenceNumberSet pdcpSnoSet = desc->rlcSdusPerPdu_.find(rlcSno)->second;
-    auto sit = pdcpSnoSet.begin();
-    std::map<unsigned int, PdcpStatus>::iterator pit;
-    std::map<unsigned int, SequenceNumberSet>::iterator rit;
-    for ( ; sit != pdcpSnoSet.end(); ++sit) {
-        unsigned int pdcpSno = *sit;
-
+    for (const auto& pdcpSno : pdcpSnoSet) {
         // find sdu -> rlc for this pdcp
-        rit = desc->rlcPdusPerSdu_.find(pdcpSno);
+        auto rit = desc->rlcPdusPerSdu_.find(pdcpSno);
         if (rit == desc->rlcPdusPerSdu_.end())
             throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] with lcid [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno, lcid);
 
@@ -368,7 +363,7 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
         rit->second.erase(rlcSno);
 
         // set this pdcp sdu as discarded, flag use in macPduArrive to not take into account this pdcp
-        pit = desc->pdcpStatus_.find(pdcpSno);
+        auto pit = desc->pdcpStatus_.find(pdcpSno);
         if (pit == desc->pdcpStatus_.end())
             throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] already present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
 
@@ -447,12 +442,10 @@ void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
             // set the pdcp pdus related to this RLC as sent over the air since this method is called after the MAC ID
             // has been inserted in the HARQBuffer
             SequenceNumberSet pdcpSet = tit->second;
-            auto pit = pdcpSet.begin();
-            std::map<unsigned int, PdcpStatus>::iterator sdit;
-            for ( ; pit != pdcpSet.end(); ++pit) {
-                sdit = desc->pdcpStatus_.find(*pit);
+            for (const auto& pdcpSno : pdcpSet) {
+                auto sdit = desc->pdcpStatus_.find(pdcpSno);
                 if (sdit == desc->pdcpStatus_.end())
-                    throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen. Abort", pfmType.c_str(), *pit);
+                    throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
                 sdit->second.sentOverTheAir = true;
             }
         }
@@ -474,8 +467,6 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         int lcid = lteInfo->getLcid();
         auto cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
-            // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::macPduArrived - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
             return;
         }
@@ -501,12 +492,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         // === STEP 2 ========================================================== //
         // === for each RLC PDU SN, recover the set of RLC SDU (PDCP PDU) SN === //
 
-        auto it = rlcSnoSet.begin();
-
-        for ( ; it != rlcSnoSet.end(); ++it) {
-            // for each RLC PDU
-            unsigned int rlcPduSno = *it;
-
+        for (const auto& rlcPduSno : rlcSnoSet) {
             EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::macPduArrived - --> RLC PDU [" << rlcPduSno << "], which contains:" << endl;
 
             auto nit = desc->rlcSdusPerPdu_.find(rlcPduSno);
@@ -519,19 +505,13 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
             // === remove the above RLC PDU SN. If the set becomes empty, compute the delay if     === //
             // === all PDCP PDU fragments have been transmitted                                    === //
 
-            auto jt = pdcpSnoSet.begin();
-            for ( ; jt != pdcpSnoSet.end(); ++jt) {
-                // for each RLC SDU (PDCP PDU), get the set of RLC PDUs where it is included
-                unsigned int pdcpPduSno = *jt;
-
+            for (const auto& pdcpPduSno : pdcpSnoSet) {
                 EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "]" << endl;
 
                 auto oit = desc->rlcPdusPerSdu_.find(pdcpPduSno);
                 if (oit == desc->rlcPdusPerSdu_.end())
                     throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d not present for logical CID %d. Aborting", pfmType.c_str(), pdcpPduSno, lcid);
 
-                // oit->second is the set of RLC PDU in which the PDCP PDU is contained
-                // the RLC PDU SN must be present in the set
                 auto kt = oit->second.find(rlcPduSno);
                 if (kt == oit->second.end())
                     throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present in the set of PDCP PDU SN %d for logical CID %d. Aborting", pfmType.c_str(), pdcpPduSno, rlcPduSno, lcid);
@@ -545,11 +525,10 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                 // check whether the set is now empty
                 if (desc->rlcPdusPerSdu_[pdcpPduSno].empty()) {
-                    // set the time for pdcpPduSno
                     if (pit->second.entryTime == 0)
                         throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d of Lcid %d has no entry time timestamp, this should not happen. Aborting", pfmType.c_str(), pdcpPduSno, lcid);
 
-                    if (pit->second.hasArrivedAll && !pit->second.discardedAtRlc && !pit->second.discardedAtMac) { // the whole current pdcp seqNum has been received by the UE
+                    if (pit->second.hasArrivedAll && !pit->second.discardedAtRlc && !pit->second.discardedAtMac) {
                         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "] has been completely sent, remove from PDCP buffer" << endl;
 
                         auto dit = pdcpDelay_.find(desc->nodeId_);
@@ -560,7 +539,6 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                         double time = (simTime() - pit->second.entryTime).dbl();
 
-                        // uncomment this to register DL delays
                         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::macPduArrived - PDCP PDU " << pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s" << endl;
 
                         dit->second.time += (simTime() - pit->second.entryTime);
@@ -605,20 +583,14 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
 
         auto cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
-            // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::notifyHarqProcess - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::discardMacPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
             return;
         }
 
-        // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::discardMacPdu - MAC PDU " << macPduId << " of lcid " << lcid << " arrived." << endl;
 
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::discardMacPdu - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
-
-        // === STEP 1 ==================================================== //
-        // === recover the set of RLC PDU SN from the above MAC PDU ID === //
 
         if (macPduId == 0) {
             EV << NOW << " " << pfmType << "::discardMacPdu - The process does not contain entire SDUs" << endl;
@@ -630,12 +602,8 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
             throw cRuntimeError("%s::discardMacPdu - MAC PDU ID %d not present for logical CID %d. Aborting", pfmType.c_str(), macPduId, lcid);
         SequenceNumberSet rlcSnoSet = mit->second;
 
-        // === STEP 2 ========================================================== //
-        // === for each RLC PDU SN, recover the set of RLC SDU (PDCP PDU) SN === //
-
-        auto it = rlcSnoSet.begin();
-        for ( ; it != rlcSnoSet.end(); ++it) {
-            discardRlcPdu(lcid, *it, true);
+        for (const auto& sn : rlcSnoSet) {
+            discardRlcPdu(lcid, sn, true);
         }
 
         mit->second.clear();
@@ -650,29 +618,27 @@ void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned i
     // it has been assumed that the bursts are quickly emptied so the operation
     // is not computationally heavy
     // the other solution is to create <rlcPdu, burst_id> map
-    std::map<BurstId, BurstStatus>::iterator bsit = desc->burstStatus_.begin();
-    std::map<unsigned int, unsigned int>::iterator rlcpit;
-    for ( ; bsit != desc->burstStatus_.end(); ++bsit) {
-        rlcpit = bsit->second.rlcPdu.find(rlcSno);
-        if (rlcpit != bsit->second.rlcPdu.end()) {
+    for (auto &[burstId, burstStatus] : desc->burstStatus_) {
+        auto rlcpit = burstStatus.rlcPdu.find(rlcSno);
+        if (rlcpit != burstStatus.rlcPdu.end()) {
             if (ack) {
                 // if arrived, sum it to the thpVolDl
-                bsit->second.burstSize += rlcpit->second;
+                burstStatus.burstSize += rlcpit->second;
             }
-            bsit->second.rlcPdu.erase(rlcpit);
-            if (bsit->second.rlcPdu.empty() && bsit->second.isCompleted) {
+            burstStatus.rlcPdu.erase(rlcpit);
+            if (burstStatus.rlcPdu.empty() && burstStatus.isCompleted) {
                 // compute throughput
                 auto tit = pdcpThroughput_.find(desc->nodeId_);
                 if (tit == pdcpThroughput_.end()) {
                     pdcpThroughput_.insert(std::pair<MacNodeId, Throughput>(desc->nodeId_, { 0, 0 }));
                     tit = pdcpThroughput_.find(desc->nodeId_);
                 }
-                tit->second.pktSizeCount += bsit->second.burstSize; //*8 --> bits
-                tit->second.time += (simTime() - bsit->second.startBurstTransmission);
-                double tp = ((double)bsit->second.burstSize) / (simTime() - bsit->second.startBurstTransmission).dbl();
+                tit->second.pktSizeCount += burstStatus.burstSize; //*8 --> bits
+                tit->second.time += (simTime() - burstStatus.startBurstTransmission);
+                double tp = ((double)burstStatus.burstSize) / (simTime() - burstStatus.startBurstTransmission).dbl();
 
-                EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::removePdcpBurst Burst " << bsit->first << " length " << simTime() - bsit->second.startBurstTransmission << "s, with size " << bsit->second.burstSize << "B -> tput: " << tp << " B/s" << endl;
-                desc->burstStatus_.erase(bsit); // remove emptied burst
+                EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::removePdcpBurst Burst " << burstId << " length " << simTime() - burstStatus.startBurstTransmission << "s, with size " << burstStatus.burstSize << "B -> tput: " << tp << " B/s" << endl;
+                desc->burstStatus_.erase(burstId); // remove emptied burst
             }
             break;
         }
@@ -736,8 +702,7 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
 
             it = ulGrants_[nodeId].erase(it);
             return; // it is present only one grant with this grantId for this nodeId
-        }
-        else {
+        } else {
             ++it;
         }
     }
@@ -836,13 +801,12 @@ void PacketFlowManagerEnb::deleteUe(MacNodeId nodeId)
      * all structures with MacNodeId id
      * all lcids belonging to MacNodeId id
      */
-    auto connIt = connectionMap_.begin();
-    while (connIt != connectionMap_.end()) {
-        if (connIt->second.nodeId_ == nodeId) {
-            connIt = connectionMap_.erase(connIt);
+    for (auto it = connectionMap_.begin(); it != connectionMap_.end(); ) {
+        if (it->second.nodeId_ == nodeId) {
+            it = connectionMap_.erase(it);
         }
         else {
-            ++connIt;
+            ++it;
         }
     }
 

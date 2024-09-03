@@ -87,13 +87,11 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
 
 bool TMultiTimer::busy(unsigned int event) const
 {
-    return (reverseList_.find(event) != reverseList_.end());
+    return reverseList_.find(event) != reverseList_.end();
 }
 
 void TMultiTimer::handle(unsigned int event)
 {
-    iterator_d direct;
-
     // retrieve the earliest event to dispatch
 
     if (directList_.begin() == directList_.end())
@@ -101,51 +99,40 @@ void TMultiTimer::handle(unsigned int event)
 
     // Note that the first element in the map is the element with the
     // lowest key value
-    direct = directList_.begin();
-
-    // Retrieve the Event ID
-    unsigned int element = direct->second;
+    auto [time, element] = *directList_.begin();
 
     // Remove the event from the reverse list, element will contain the
     // reverse list key.
     reverseList_.erase(element);
 
     // Remove the element from the direct list (i.e. pop front)
-    directList_.erase(direct);
+    directList_.erase(directList_.begin());
 
     // Re-schedule the timer to manage the earliest event, if any
     if (directList_.empty())
         busy_ = false;
     else {
-        direct = directList_.begin();
-
-        simtime_t time = direct->first;
-        unsigned int event = direct->second;
+        auto [nextTime, nextEvent] = *directList_.begin();
 
         intr_ = new TMultiTimerMsg("timer");
         intr_->setTimerId(timerId_);
         intr_->setType(TTMULTI);
-        intr_->setEvent(event);
-        module_->scheduleAt(time, intr_);
+        intr_->setEvent(nextEvent);
+        module_->scheduleAt(nextTime, intr_);
     }
 }
 
 void TMultiTimer::remove(const unsigned int event)
 {
-    // Iterator to Reverse List
-    iterator_r rIt;
     // Search for the element to be removed.
-    rIt = reverseList_.find(event);
+    auto rIt = reverseList_.find(event);
 
     if (rIt == reverseList_.end())
         throw cRuntimeError("TMultiTimer::remove(): element %d not found", event);
 
-    // Iterator to Direct List
-    iterator_d dIt;
-
     // Save the Event Id. It will be used to remove an element in the
     // direct List.
-    dIt = (rIt->second);
+    auto dIt = rIt->second;
 
     // Check if the event to be removed is the next in the event scheduler
     if (dIt == directList_.begin()) {
@@ -157,8 +144,7 @@ void TMultiTimer::remove(const unsigned int event)
         if (directList_.empty())
             busy_ = false;
         else {
-            simtime_t time = directList_.begin()->first;
-            unsigned int event = directList_.begin()->second;
+            auto [time, event] = *directList_.begin();
             intr_ = new TMultiTimerMsg("timer");
             intr_->setTimerId(timerId_);
             intr_->setType(TTMULTI);

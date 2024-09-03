@@ -188,10 +188,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 
 void LteRlcAm::deleteQueues(MacNodeId nodeId)
 {
-    AmTxBuffers::iterator tit;
-    AmRxBuffers::iterator rit;
-
-    for (tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
+    for (auto tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
             delete tit->second; // Delete Queue
             tit = txBuffers_.erase(tit); // Delete Element
@@ -200,7 +197,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
             ++tit;
         }
     }
-    for (rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
+    for (auto rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
             delete rit->second; // Delete Queue
             rit = rxBuffers_.erase(rit); // Delete Element

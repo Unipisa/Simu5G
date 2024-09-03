@@ -30,12 +30,7 @@ void LtePf::prepareSchedule()
     // Build the score list by cycling through the active connections.
     ScoreList score;
 
-    ActiveSet::iterator cidIt = carrierActiveConnectionSet_.begin();
-    ActiveSet::iterator cidEt = carrierActiveConnectionSet_.end();
-
-    for ( ; cidIt != cidEt; ) {
-        MacCid cid = *cidIt;
-        ++cidIt;
+    for (const auto& cid : carrierActiveConnectionSet_) {
         MacNodeId nodeId = MacCidToNodeId(cid);
         OmnetId id = binder_->getOmnetId(nodeId);
         grantedBytes_[cid] = 0;
@@ -156,13 +151,7 @@ void LtePf::commitSchedule()
 {
     unsigned int total = eNbScheduler_->resourceBlocks_;
 
-    std::map<MacCid, unsigned int>::iterator it = grantedBytes_.begin();
-    std::map<MacCid, unsigned int>::iterator et = grantedBytes_.end();
-
-    for ( ; it != et; ++it) {
-        MacCid cid = it->first;
-        unsigned int granted = it->second;
-
+    for (const auto& [cid, granted] : grantedBytes_) {
         EV << NOW << " LtePf::storeSchedule @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
         EV << NOW << " LtePf::storeSchedule CID: " << cid << endl;
         EV << NOW << " LtePf::storeSchedule Direction: " << ((direction_ == DL) ? "DL" : "UL") << endl;

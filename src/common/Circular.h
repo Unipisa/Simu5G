@@ -88,12 +88,12 @@ class CircularList
     {
         if (size_ == 0)
             return false;
-        typename std::list<T>::iterator it;
-        for (it = list_.begin(); it != list_.end() && *it != t; ++it) {
+        for (const auto& element : list_) {
+            if (element == t) {
+                return true;
+            }
         }
-        if (it == list_.end())
-            return false;
-        return true;
+        return false;
     }
 
     //! Finds an element in the list and return it.
@@ -106,15 +106,14 @@ class CircularList
             valid = false;
             return t;
         }
-        typename std::list<T>::iterator it;
-        for (it = list_.begin(); it != list_.end() && *it != t; ++it) {
+        for (const auto& element : list_) {
+            if (element == t) {
+                valid = true;
+                return const_cast<T&>(element);
+            }
         }
-        if (it == list_.end()) {
-            valid = false;
-            return t;
-        }
-        valid = true;
-        return *it;
+        valid = false;
+        return t;
     }
 
     //! Insert a new element before the current position.
@@ -146,18 +145,20 @@ class CircularList
     {
         if (size_ == 0)
             return;
-        typename std::list<T>::iterator it;
-        for (it = list_.begin(); it != list_.end() && *it != t; ++it) {
+        for (auto it = list_.begin(); it != list_.end();) {
+            if (*it == t) {
+                if (cur_ == it) {
+                    cur_++;
+                    if (cur_ == list_.end())
+                        cur_ = list_.begin();
+                }
+                it = list_.erase(it);
+                --size_;
+                return;
+            } else {
+                ++it;
+            }
         }
-        if (cur_ == list_.end())
-            return;
-        if (cur_ == it) {
-            cur_++;
-            if (cur_ == list_.end())
-                cur_ = list_.begin();
-        }
-        list_.erase(it);
-        --size_;
     }
 
     //! Goes back to the beginning of the circular list

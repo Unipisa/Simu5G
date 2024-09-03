@@ -135,12 +135,9 @@ void EventGenerator::registerNode(MultihopD2D *app, MacNodeId lteNodeId)
 
 void EventGenerator::unregisterNode(MultihopD2D *app, MacNodeId lteNodeId)
 {
-    for (auto it = appVector_.begin(); it != appVector_.end(); ++it) {
-        if (it->get() == app) { // compare pointers
-            appVector_.erase(it);
-            break;
-        }
-    }
+    auto it = std::find(appVector_.begin(), appVector_.end(), opp_component_ptr<MultihopD2D>(app));
+    if (it != appVector_.end())
+        appVector_.erase(it);
 
     auto sit = lteNodeIdSet_.find(lteNodeId);
     if (sit != lteNodeIdSet_.end())

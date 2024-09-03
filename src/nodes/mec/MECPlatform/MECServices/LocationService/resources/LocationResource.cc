@@ -23,17 +23,15 @@ LocationResource::LocationResource() : binder_(nullptr) {
 }
 
 LocationResource::LocationResource(const std::string& baseUri, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, Binder *binder) : binder_(binder), baseUri_(baseUri) {
-    auto it = eNodeBs.begin();
-    for ( ; it != eNodeBs.end(); ++it) {
-        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for (auto* eNodeB : eNodeBs) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>((eNodeB)->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
     }
 }
 
 void LocationResource::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
-    auto it = eNodeBs.begin();
-    for ( ; it != eNodeBs.end(); ++it) {
-        CellInfo *cellInfo = check_and_cast<CellInfo *>((*it)->getSubmodule("cellInfo"));
+    for (auto& eNodeB : eNodeBs) {
+        CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
         eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
         EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
     }
@@ -112,10 +110,9 @@ nlohmann::ordered_json LocationResource::toJson() const {
     nlohmann::ordered_json val;
     nlohmann::ordered_json userList;
     nlohmann::ordered_json ueArray;
-    auto it = eNodeBs_.begin();
 
-    for ( ; it != eNodeBs_.end(); ++it) {
-        ueArray.push_back(getUserListPerCell(it));
+    for (auto it = eNodeBs_.begin(); it != eNodeBs_.end(); ++it) {
+        ueArray.push_back(getUserListPerCell(it));  //TODO why does getUserListPerCell() take an iterator?
     }
 
     if (ueArray.size() > 1) {
@@ -134,20 +131,14 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
     nlohmann::ordered_json val;
     nlohmann::ordered_json ueArray;
 
-    auto uit = uesID.begin();
-    std::map<MacCellId, CellInfo *>::const_iterator eit;
-    std::map<MacNodeId, inet::Coord>::const_iterator pit;
-    const std::map<MacNodeId, inet::Coord> *uePositionList;
-    bool found = false;
-    for ( ; uit != uesID.end(); ++uit) {
-        MacNodeId nodeId = binder_->getMacNodeId(*uit);
-        found = false;
-        eit = eNodeBs_.begin();
-        for ( ; eit != eNodeBs_.end(); ++eit) {
-            uePositionList = eit->second->getUePositionList();
-            pit = uePositionList->find(nodeId);
+    for (const auto& ueId : uesID) {
+        MacNodeId nodeId = binder_->getMacNodeId(ueId);
+        bool found = false;
+        for (const auto& [macCellId, eNodeB] : eNodeBs_) {
+            const std::map<MacNodeId, inet::Coord>* uePositionList = eNodeB->getUePositionList();
+            auto pit = uePositionList->find(nodeId);
             if (pit != uePositionList->end()) {
-                UserInfo ueInfo = getUserInfoByNodeId(pit->first, eit->first);
+                UserInfo ueInfo = getUserInfoByNodeId(pit->first, macCellId);
                 if (ueInfo.getIpv4Address() != inet::Ipv4Address::UNSPECIFIED_ADDRESS)
                     ueArray.push_back(ueInfo.toJson());
                 found = true;
@@ -155,7 +146,7 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
             }
         }
         if (!found) {
-            std::string notFound = "Address: " + (*uit).str() + " Not found.";
+            std::string notFound = "Address: " + ueId.str() + " Not found.";
             ueArray.push_back(notFound);
         }
     }
@@ -181,7 +172,7 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
             ueArray.push_back(getUserListPerCell(it));
         }
         else {
-            std::string notFound = "AccessPointId " + std::to_string(num(cid)) + " not found.";
+            std::string notFound = "AccessPointId " + std::to_string(num(cid)) + " Not found.";
             ueArray.push_back(notFound);
         }
     }

@@ -339,10 +339,8 @@ void LteMacEnbD2D::deleteQueues(MacNodeId nodeId)
 void LteMacEnbD2D::deleteHarqBuffersMirrorD2D(MacNodeId nodeId)
 {
     // delete all "mirror" buffers that have nodeId as sender or receiver
-    std::map<double, HarqBuffersMirrorD2D>::iterator mit;
-    for (mit = harqBuffersMirrorD2D_.begin(); mit != harqBuffersMirrorD2D_.end(); ++mit) {
-        HarqBuffersMirrorD2D::iterator it = mit->second.begin(), et = mit->second.end();
-        for ( ; it != et; ) {
+    for (auto mit = harqBuffersMirrorD2D_.begin(); mit != harqBuffersMirrorD2D_.end(); ++mit) {
+        for (auto  it = mit->second.begin(); it != mit->second.end(); ) {
             // get current nodeIDs
             MacNodeId senderId = (it->first).first; // Transmitter
             MacNodeId destId = (it->first).second;  // Receiver
@@ -361,10 +359,8 @@ void LteMacEnbD2D::deleteHarqBuffersMirrorD2D(MacNodeId nodeId)
 void LteMacEnbD2D::deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer)
 {
     // delete all "mirror" buffers that have nodeId as sender or receiver
-    std::map<double, HarqBuffersMirrorD2D>::iterator mit;
-    for (mit = harqBuffersMirrorD2D_.begin(); mit != harqBuffersMirrorD2D_.end(); ++mit) {
-        HarqBuffersMirrorD2D::iterator it = mit->second.begin(), et = mit->second.end();
-        for ( ; it != et; ) {
+    for (auto mit = harqBuffersMirrorD2D_.begin(); mit != harqBuffersMirrorD2D_.end(); ++mit) {
+        for (auto it = mit->second.begin(); it != mit->second.end(); ) {
             // get current nodeIDs
             MacNodeId senderId = (it->first).first; // Transmitter
             MacNodeId destId = (it->first).second;  // Receiver

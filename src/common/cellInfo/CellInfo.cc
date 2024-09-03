@@ -194,9 +194,8 @@ unsigned int CellInfo::getNumBands()
 unsigned int CellInfo::getPrimaryCarrierNumBands()
 {
     unsigned int primaryCarrierNumBands = 0;
-    auto it = carrierMap_.begin();
-    if (it != carrierMap_.end())
-        primaryCarrierNumBands = it->second.numBands;
+    if (!carrierMap_.empty())
+        primaryCarrierNumBands = carrierMap_.begin()->second.numBands;
 
     return primaryCarrierNumBands;
 }
@@ -213,9 +212,8 @@ unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
 double CellInfo::getPrimaryCarrierFrequency()
 {
     double primaryCarrierFrequency = 0.0;
-    auto it = carrierMap_.begin();
-    if (it != carrierMap_.end())
-        primaryCarrierFrequency = it->first;
+    if (!carrierMap_.empty())
+        primaryCarrierFrequency = carrierMap_.begin()->first;
 
     return primaryCarrierFrequency;
 }

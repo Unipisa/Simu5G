@@ -142,14 +142,10 @@ void AmRxQueue::discard(const int sn)
             dstId = ci->getDestId();
             srcId = ci->getSourceId();
             // Erase element from pendingPduBuffer_ (if it is within the buffer)
-            for (auto it = pendingPduBuffer_.begin(); it != pendingPduBuffer_.end(); ) {
-                if (*it == pkt) {
-                    it = pendingPduBuffer_.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
+            auto it = std::find(pendingPduBuffer_.begin(), pendingPduBuffer_.end(), pkt);
+            if (it != pendingPduBuffer_.end())
+                pendingPduBuffer_.erase(it);
+
             delete pkt;
             ++discarded;
         }

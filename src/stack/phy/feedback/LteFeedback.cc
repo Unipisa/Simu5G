@@ -70,11 +70,11 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
         unsigned int codewords = cqi.size();
         for (Codeword cw = 0; cw < codewords; ++cw) {
             EV << NOW << " " << s << " Band CQI[" << cw << "] = {";
-            unsigned int bands = cqi[0].size();
+            unsigned int bands = cqi[cw].size();
             if (bands > 0) {
-                EV << cqi.at(cw).at(0);
+                EV << cqi[cw].at(0);
                 for (Band b = 1; b < bands; ++b)
-                    EV << ", " << cqi.at(cw).at(b);
+                    EV << ", " << cqi[cw].at(b);
             }
             EV << "}\n";
         }
@@ -104,14 +104,11 @@ void LteFeedback::print(MacCellId cellId, MacNodeId nodeId, Direction dir,
 
     if (hasPreferredCqi() || hasPreferredPmi()) {
         BandSet band = getPreferredBands();
-        BandSet::iterator it = band.begin();
-        BandSet::iterator et = band.end();
         EV << NOW << " " << s << " Preferred Bands = {";
-        if (it != et) {
-            EV << *it;
-            it++;
-            for ( ; it != et; ++it)
-                EV << ", " << *it;
+        const char *sep = "";
+        for (const auto& b : band) {
+            EV << sep << b;
+            sep = ", ";
         }
         EV << "}\n";
     }

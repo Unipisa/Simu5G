@@ -76,16 +76,11 @@ void D2DModeSelectionBase::doModeSwitchAtHandover(MacNodeId nodeId, bool handove
         newMode = IM;
 
     switchList_.clear();
-    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>>::iterator it = peeringModeMap_->begin();
-    for ( ; it != peeringModeMap_->end(); ++it) {
-        MacNodeId srcId = it->first;
-        std::map<MacNodeId, LteD2DMode>::iterator jt = it->second.begin();
-        for ( ; jt != it->second.end(); ++jt) {
-            MacNodeId dstId = jt->first;
+    for (auto& [srcId, peerModes] : *peeringModeMap_) {
+        for (const auto& [dstId, oldMode] : peerModes) {
             if (srcId != nodeId && dstId != nodeId)
                 continue;
 
-            LteD2DMode oldMode = jt->second;
             if (oldMode == newMode)
                 continue;
 
@@ -103,7 +98,7 @@ void D2DModeSelectionBase::doModeSwitchAtHandover(MacNodeId nodeId, bool handove
             switchList_.push_back(info);
 
             // update peering map
-            jt->second = newMode;
+            peerModes.at(dstId) = newMode;
 
             EV << NOW << " D2DModeSelectionBase::doModeSwitchAtHandover - Flow: " << srcId << " --> " << dstId << " [" << d2dModeToA(newMode) << "]" << endl;
         }
@@ -117,12 +112,11 @@ void D2DModeSelectionBase::doModeSwitchAtHandover(MacNodeId nodeId, bool handove
 
 void D2DModeSelectionBase::sendModeSwitchNotifications()
 {
-    SwitchList::iterator it = switchList_.begin();
-    for ( ; it != switchList_.end(); ++it) {
-        MacNodeId srcId = it->flow.first;
-        MacNodeId dstId = it->flow.second;
-        LteD2DMode oldMode = it->oldMode;
-        LteD2DMode newMode = it->newMode;
+    for (const auto& switchItem : switchList_) {
+        MacNodeId srcId = switchItem.flow.first;
+        MacNodeId dstId = switchItem.flow.second;
+        LteD2DMode oldMode = switchItem.oldMode;
+        LteD2DMode newMode = switchItem.newMode;
 
         check_and_cast<LteMacEnbD2D *>(mac_.get())->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
     }

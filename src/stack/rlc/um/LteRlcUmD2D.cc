@@ -110,11 +110,9 @@ void LteRlcUmD2D::resumeDownstreamInPackets(MacNodeId peerId)
     if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return;
 
-    auto it = perPeerTxEntities_.at(peerId).begin();
-    auto et = perPeerTxEntities_.at(peerId).end();
-    for ( ; it != et; ++it) {
-        if ((*it)->isHoldingDownstreamInPackets())
-            (*it)->resumeDownstreamInPackets();
+    for (auto& txEntity : perPeerTxEntities_.at(peerId)) {
+        if (txEntity->isHoldingDownstreamInPackets())
+            txEntity->resumeDownstreamInPackets();
     }
 }
 
@@ -125,10 +123,8 @@ bool LteRlcUmD2D::isEmptyingTxBuffer(MacNodeId peerId)
     if (peerId == NODEID_NONE || (perPeerTxEntities_.find(peerId) == perPeerTxEntities_.end()))
         return false;
 
-    auto it = perPeerTxEntities_.at(peerId).begin();
-    auto et = perPeerTxEntities_.at(peerId).end();
-    for ( ; it != et; ++it) {
-        if ((*it)->isEmptyingBuffer()) {
+    for (auto& entity : perPeerTxEntities_.at(peerId)) {
+        if (entity->isEmptyingBuffer()) {
             EV << NOW << " LteRlcUmD2D::isEmptyingTxBuffer - found " << endl;
             return true;
         }
@@ -138,16 +134,13 @@ bool LteRlcUmD2D::isEmptyingTxBuffer(MacNodeId peerId)
 
 void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
 {
-    UmTxEntities::iterator tit;
-    UmRxEntities::iterator rit;
-
     RanNodeType nodeType;
     std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
     nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE
-    for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
+    for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         // if the entity refers to a D2D_MULTI connection, do not erase it
         if (tit->second->isD2DMultiConnection()) {
             ++tit;
@@ -167,7 +160,7 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
     // no need to delete pointed objects (they were already deleted in the previous for loop)
     perPeerTxEntities_.clear();
 
-    for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
+    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         // if the entity refers to a D2D_MULTI connection, do not erase it
         if (rit->second->isD2DMultiConnection()) {
             ++rit;

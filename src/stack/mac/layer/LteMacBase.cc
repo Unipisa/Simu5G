@@ -40,27 +40,20 @@ simsignal_t LteMacBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPack
 
 LteMacBase::~LteMacBase()
 {
-    LteMacBuffers::iterator mit;
-    LteMacBufferMap::iterator vit;
-    for (mit = mbuf_.begin(); mit != mbuf_.end(); mit++)
-        delete mit->second;
-    for (vit = macBuffers_.begin(); vit != macBuffers_.end(); vit++)
-        delete vit->second;
+    for (auto& [key, buffer] : mbuf_)
+        delete buffer;
+    for (auto& [key, buffer] : macBuffers_)
+        delete buffer;
     mbuf_.clear();
     macBuffers_.clear();
 
-    std::map<double, HarqTxBuffers>::iterator mtit;
-    std::map<double, HarqRxBuffers>::iterator mrit;
-    HarqTxBuffers::iterator htit;
-    HarqRxBuffers::iterator hrit;
+    for (auto& [key, txBuffers] : harqTxBuffers_)
+        for (auto& [key, buffer] : txBuffers)
+            delete buffer;
 
-    for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit)
-        for (htit = mtit->second.begin(); htit != mtit->second.end(); ++htit)
-            delete htit->second;
-
-    for (mrit = harqRxBuffers_.begin(); mrit != harqRxBuffers_.end(); ++mrit)
-        for (hrit = mrit->second.begin(); hrit != mrit->second.end(); ++hrit)
-            delete hrit->second;
+    for (auto& [key, rxBuffers] : harqRxBuffers_)
+        for (auto& [key, buffer] : rxBuffers)
+            delete buffer;
 
     harqTxBuffers_.clear();
     harqRxBuffers_.clear();
@@ -91,9 +84,7 @@ void LteMacBase::sendLowerPackets(cPacket *pkt)
  */
 void LteMacBase::unregisterHarqBufferRx(MacNodeId nodeId) {
 
-    auto hit = harqRxBuffers_.begin();
-    for ( ; hit != harqRxBuffers_.end(); ++hit) {
-        auto harqRxBuffers = hit->second;
+    for (auto& [key, harqRxBuffers] : harqRxBuffers_) {
         auto it = harqRxBuffers.find(nodeId);
         if (it != harqRxBuffers.end()) {
             it->second->unregister_macUe();
@@ -276,9 +267,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
 
 void LteMacBase::deleteQueues(MacNodeId nodeId)
 {
-    LteMacBuffers::iterator mit;
-    LteMacBufferMap::iterator vit;
-    for (mit = mbuf_.begin(); mit != mbuf_.end(); ) {
+    for (auto mit = mbuf_.begin(); mit != mbuf_.end(); ) {
         if (MacCidToNodeId(mit->first) == nodeId) {
             while (!mit->second->isEmpty()) {
                 cPacket *pkt = mit->second->popFront();
@@ -291,7 +280,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
             ++mit;
         }
     }
-    for (vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
+    for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
         if (MacCidToNodeId(vit->first) == nodeId) {
             while (!vit->second->isEmpty())
                 vit->second->popFront();
@@ -304,13 +293,11 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
     }
 
     // delete H-ARQ buffers
-    std::map<double, HarqTxBuffers>::iterator mtit;
-    for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-        HarqTxBuffers::iterator hit;
-        for (hit = mtit->second.begin(); hit != mtit->second.end(); ) {
+    for (auto& [key, harqBuffers] : harqTxBuffers_) {
+        for (auto hit = harqBuffers.begin(); hit != harqBuffers.end(); ) {
             if (hit->first == nodeId) {
                 delete hit->second; // Delete Queue
-                hit = mtit->second.erase(hit); // Delete Element
+                hit = harqBuffers.erase(hit); // Delete Element
             }
             else {
                 ++hit;
@@ -318,13 +305,11 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
         }
     }
 
-    std::map<double, HarqRxBuffers>::iterator mrit;
-    for (mrit = harqRxBuffers_.begin(); mrit != harqRxBuffers_.end(); ++mrit) {
-        HarqRxBuffers::iterator hit2;
-        for (hit2 = mrit->second.begin(); hit2 != mrit->second.end(); ) {
+    for (auto& [key, harqBuffers] : harqRxBuffers_) {
+        for (auto hit2 = harqBuffers.begin(); hit2 != harqBuffers.end(); ) {
             if (hit2->first == nodeId) {
                 delete hit2->second; // Delete Queue
-                hit2 = mrit->second.erase(hit2); // Delete Element
+                hit2 = harqBuffers.erase(hit2); // Delete Element
             }
             else {
                 ++hit2;
@@ -337,12 +322,11 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
 
 void LteMacBase::decreaseNumerologyPeriodCounter()
 {
-    std::map<NumerologyIndex, NumerologyPeriodCounter>::iterator it = numerologyPeriodCounter_.begin();
-    for ( ; it != numerologyPeriodCounter_.end(); ++it) {
-        if (it->second.current == 0) // reset
-            it->second.current = it->second.max - 1;
+    for (auto& [index, counter] : numerologyPeriodCounter_) {
+        if (counter.current == 0) // reset
+            counter.current = counter.max - 1;
         else
-            it->second.current--;
+            counter.current--;
     }
 }
 

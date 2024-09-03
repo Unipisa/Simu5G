@@ -197,25 +197,21 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
 
             std::vector<std::string> appNames;
 
-            std::vector<std::string>::iterator it = queryParameters.begin();
-            std::vector<std::string>::iterator end = queryParameters.end();
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;
 
-            for ( ; it != end; ++it) {
-                if (it->rfind("appName", 0) == 0) { // cell_id=par1,par2
+            for (const auto& queryParam : queryParameters) {
+                if (queryParam.rfind("appName", 0) == 0) { // cell_id=par1,par2
                     EV << "UALCMPApp::handleGETRequest - parameters: " << endl;
-                    params = simu5g::utils::splitString(*it, "=");
+                    params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
                         return;
                     }
                     splittedParams = simu5g::utils::splitString(params[1], ","); //it can be an array, e.g param=v1,v2,v3
-                    std::vector<std::string>::iterator pit = splittedParams.begin();
-                    std::vector<std::string>::iterator pend = splittedParams.end();
-                    for ( ; pit != pend; ++pit) {
-                        EV << "appName: " << *pit << endl;
-                        appNames.push_back(*pit);
+                    for (const auto& appName : splittedParams) {
+                        EV << "appName: " << appName << endl;
+                        appNames.push_back(appName);
                     }
                 }
                 else { // bad parameters
@@ -227,7 +223,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
             nlohmann::ordered_json appList;
 
             // construct the result based on the appName vector
-            for (auto appName : appNames) {
+            for (const auto& appName : appNames) {
                 const ApplicationDescriptor *appDesc = mecOrchestrator_->getApplicationDescriptorByAppName(appName);
                 if (appDesc != nullptr) {
                     appList["appList"].push_back(appDesc->toAppInfo());
@@ -239,9 +235,8 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
         else { //no query params
             nlohmann::ordered_json appList;
             auto appDescs = mecOrchestrator_->getApplicationDescriptors();
-            auto it = appDescs->begin();
-            for ( ; it != appDescs->end(); ++it) {
-                appList["appList"].push_back(it->second.toAppInfo());
+            for (const auto& [key, appDesc] : *appDescs) {
+                appList["appList"].push_back(appDesc.toAppInfo());
             }
 
             Http::send200Response(socket, appList.dump().c_str());

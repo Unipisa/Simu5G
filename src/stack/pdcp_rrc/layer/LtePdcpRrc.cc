@@ -440,23 +440,21 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    PdcpTxEntities::iterator tit;
-    PdcpRxEntities::iterator rit;
-
     // delete connections related to the given UE
-    for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
+    for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
         if (MacCidToNodeId(tit->first) == nodeId) {
-            tit->second->deleteModule();  // Delete Entity
-            tit = txEntities_.erase(tit);       // Delete Element
+            tit->second->deleteModule();
+            tit = txEntities_.erase(tit);
         }
         else {
             ++tit;
         }
     }
-    for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
+
+    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
         if (MacCidToNodeId(rit->first) == nodeId) {
-            rit->second->deleteModule();  // Delete Entity
-            rit = rxEntities_.erase(rit);       // Delete Element
+            rit->second->deleteModule();
+            rit = rxEntities_.erase(rit);
         }
         else {
             ++rit;
@@ -466,18 +464,16 @@ void LtePdcpRrcEnb::deleteEntities(MacNodeId nodeId)
 
 void LtePdcpRrcUe::deleteEntities(MacNodeId nodeId)
 {
-    PdcpTxEntities::iterator tit;
-    PdcpRxEntities::iterator rit;
-
     // delete all connections TODO: check this (for NR dual connectivity)
-    for (tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        tit->second->deleteModule();  // Delete Entity
-        tit = txEntities_.erase(tit);       // Delete Element
+    for (auto& [txId, txEntity] : txEntities_) {
+        txEntity->deleteModule();  // Delete Entity
     }
-    for (rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        rit->second->deleteModule();  // Delete Entity
-        rit = rxEntities_.erase(rit);       // Delete Element
+    txEntities_.clear(); // Clear all entities after deletion
+
+    for (auto& [rxId, rxEntity] : rxEntities_) {
+        rxEntity->deleteModule();  // Delete Entity
     }
+    rxEntities_.clear(); // Clear all entities after deletion
 }
 
 void LtePdcpRrcUe::initialize(int stage)

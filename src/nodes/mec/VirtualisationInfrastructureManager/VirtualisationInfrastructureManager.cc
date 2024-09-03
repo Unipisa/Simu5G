@@ -300,10 +300,13 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
             module->gate("mePlatformOut")->connectTo(mecPlatform->gate("meAppIn", index));
 
             //connecting internal ME Platform gates to the required ME Service gates
-            (meServices.at(serviceIndex))->gate("meAppOut", index)->connectTo(mecPlatform->gate("meAppOut", index));
-            mecPlatform->gate("meAppIn", index)->connectTo((meServices.at(serviceIndex))->gate("meAppIn", index));
+            cModule *meService = meServices.at(serviceIndex);
+            meService->gate("meAppOut", index)->connectTo(mecPlatform->gate("meAppOut", index));
+            mecPlatform->gate("meAppIn", index)->connectTo(meService->gate("meAppIn", index));
         }
-        else EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO OMNeT++-like MEC Services required!" << endl;
+        else {
+            EV << "VirtualisationInfrastructureManager::instantiateMEApp - NO OMNeT++-like MEC Services required!" << endl;
+        }
 
         module->buildInside();
         module->scheduleStart(simTime());
@@ -408,8 +411,8 @@ int VirtualisationInfrastructureManager::findService(const char *serviceName) {
         return NO_SERVICE;
 
     auto it = meServices.begin();
-    for ( ; it != meServices.end(); ++it) {
-        if (!strcmp((*it)->getClassName(), serviceName))
+    for (auto service : meServices) {
+        if (!strcmp(service->getClassName(), serviceName))
             break;
     }
     if (it == meServices.end())

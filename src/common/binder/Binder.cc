@@ -139,8 +139,7 @@ void Binder::unregisterNode(MacNodeId id)
 {
     EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
 
-    std::map<Ipv4Address, MacNodeId>::iterator it;
-    for (it = macNodeIdToIPAddress_.begin(); it != macNodeIdToIPAddress_.end(); ) {
+    for (auto it = macNodeIdToIPAddress_.begin(); it != macNodeIdToIPAddress_.end(); ) {
         if (it->second == id) {
             it = macNodeIdToIPAddress_.erase(it);
         }
@@ -150,8 +149,8 @@ void Binder::unregisterNode(MacNodeId id)
     }
 
     // iterate all nodeIds and find HarqRx buffers dependent on 'id'
-    for (auto idIter = nodeIds_.begin(); idIter != nodeIds_.end(); idIter++) {
-        LteMacBase *mac = getMacFromMacNodeId(idIter->first);
+    for (const auto& [nodeId, omnetId] : nodeIds_) {
+        LteMacBase *mac = getMacFromMacNodeId(nodeId);
         mac->unregisterHarqBufferRx(id);
     }
 
@@ -168,8 +167,7 @@ void Binder::unregisterNode(MacNodeId id)
     for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
         for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
             for (auto& ues : bands) { // all Ue's in each block
-                auto itr = ues.begin();
-                while (itr != ues.end()) {
+                for(auto itr = ues.begin(); itr != ues.end(); ) {
                     if (itr->nodeId == id) {
                         itr = ues.erase(itr);
                     }
@@ -282,11 +280,8 @@ void Binder::finish()
         std::ofstream out(outputFilename);
 
         std::string toPrint;
-        std::vector<UeInfo *>::iterator it = ueList_.begin(), et = ueList_.end();
-        for ( ; it != et; ++it) {
+        for (UeInfo *info : ueList_) {
             std::stringstream ss;
-
-            UeInfo *info = *it;
 
             if (info->id < NR_UE_MIN_ID)
                 continue;
@@ -370,9 +365,9 @@ std::map<MacNodeId, OmnetId>::const_iterator Binder::getNodeIdListEnd()
 }
 
 MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
-    for (auto it = nodeIds_.begin(); it != nodeIds_.end(); ++it )
-        if (it->second == id)
-            return it->first;
+    for (const auto& [macNodeId, omnetId] : nodeIds_)
+        if (omnetId == id)
+            return macNodeId;
     return NODEID_NONE;
 }
 
@@ -473,10 +468,10 @@ void Binder::initAndResetUlTransmissionInfo()
         return;
     }
 
-    for (auto& entry : ulTransmissionMap_) {
+    for (auto& [timeSlot, transmissions] : ulTransmissionMap_) {
         // the second element (i.e., referring to the old time slot) becomes the first element
-        if (!(entry.second.empty()))
-            entry.second.erase(entry.second.begin());
+        if (!transmissions.empty())
+            transmissions.erase(transmissions.begin());
     }
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
@@ -503,10 +498,9 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     }
 
     // for each allocated band, store the UE info
-    for (auto it = rbMap[antenna].begin(), et = rbMap[antenna].end(); it != et; ++it) {
-        Band b = it->first;
-        if (it->second > 0)
-            ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
+    for (const auto& [band, allocation] : rbMap[antenna]) {
+        if (allocation > 0)
+            ulTransmissionMap_[carrierFreq][CURR_TTI][band].push_back(info);
     }
 
     lastUplinkTransmission_ = NOW;
@@ -534,11 +528,9 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     }
 
     // for each allocated band, store the UE info
-    std::map<Band, unsigned int>::iterator it = rbMap[antenna].begin(), et = rbMap[antenna].end();
-    for ( ; it != et; ++it) {
-        Band b = it->first;
-        if (it->second > 0)
-            ulTransmissionMap_[carrierFreq][CURR_TTI][b].push_back(info);
+    for (const auto& [band, allocation] : rbMap[antenna]) {
+        if (allocation > 0)
+            ulTransmissionMap_[carrierFreq][CURR_TTI][band].push_back(info);
     }
 
     lastUplinkTransmission_ = NOW;
@@ -678,8 +670,8 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
     if (d2dPeeringMap_[nodeId].begin() == d2dPeeringMap_[nodeId].end())
         return false;
 
-    for (auto it = d2dPeeringMap_[nodeId].begin(); it != d2dPeeringMap_[nodeId].end(); ++it) {
-        if (it->second == IM)
+    for (const auto& [peerId, mode] : d2dPeeringMap_[nodeId]) {
+        if (mode == IM)
             return false;
     }
     return true;
@@ -1106,22 +1098,21 @@ double Binder::computeRequestedRbsFromSinr(double sinr, double reqLoad)
 void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector, MacNodeId cell)
 {
     EV << "LteBinder::addUeCollector" << endl;
-    std::vector<EnbInfo *>::iterator it = enbList_.begin(), end = enbList_.end();
     cModule *enb = nullptr;
     BaseStationStatsCollector *enbColl = nullptr;
 
     // Check if the collector is already present in a cell
-    for ( ; it != end; ++it) {
-        enb = (*it)->eNodeB;
+    for (auto & enbInfo : enbList_) {
+        enb = enbInfo->eNodeB;
         if (enb->getSubmodule("collector") != nullptr) {
             enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
             if (enbColl->hasUeCollector(ue)) {
-                EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << (*it)->id << "]" << endl;
-                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%hu] already present in eNodeB [%hu]", num(ue), num((*it)->id));
+                EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << enbInfo->id << "]" << endl;
+                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%hu] already present in eNodeB [%hu]", num(ue), num(enbInfo->id));
             }
         }
         else {
-            EV << "LteBinder::addUeCollector - eNodeB [" << (*it)->id << "] does not have the eNodeBStatsCollector" << endl;
+            EV << "LteBinder::addUeCollector - eNodeB [" << enbInfo->id << "] does not have the eNodeBStatsCollector" << endl;
         }
     }
 

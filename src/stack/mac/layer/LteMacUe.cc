@@ -48,14 +48,12 @@ LteMacUe::LteMacUe()
 
 LteMacUe::~LteMacUe()
 {
-    std::map<double, LteSchedulerUeUl *>::iterator sit;
-    for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit)
-        delete sit->second;
+    for (auto &[key, scheduler] : lcgScheduler_)
+        delete scheduler;
 
-    auto git = schedulingGrant_.begin();
-    for ( ; git != schedulingGrant_.end(); ++git) {
-        if (git->second != nullptr) {
-            git->second = nullptr;
+    for (auto &[key, grant] : schedulingGrant_) {
+        if (grant != nullptr) {
+            grant = nullptr;
         }
     }
 }
@@ -1030,8 +1028,7 @@ bool LteMacUe::getLowestBackloggedFlow(MacCid& cid, unsigned int& priority)
 {
     // TODO : optimize if inefficient
     // TODO : implement priorities and LCGs
-    LteMacBufferMap::const_reverse_iterator it = macBuffers_.rbegin(), et = macBuffers_.rend();
-    for ( ; it != et; ++it) {
+    for (LteMacBufferMap::const_reverse_iterator it = macBuffers_.rbegin(); it != macBuffers_.rend(); ++it) {
         if (!it->second->isEmpty()) {
             cid = it->first;
             // TODO priority = something;
@@ -1051,9 +1048,7 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    LteMacBuffers::iterator mit;
-    LteMacBufferMap::iterator vit;
-    for (mit = mbuf_.begin(); mit != mbuf_.end(); ) {
+    for (auto mit = mbuf_.begin(); mit != mbuf_.end(); ) {
         while (!mit->second->isEmpty()) {
             cPacket *pkt = mit->second->popFront();
             delete pkt;
@@ -1061,7 +1056,7 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
         delete mit->second;        // Delete Queue
         mit = mbuf_.erase(mit);        // Delete Element
     }
-    for (vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
+    for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
         while (!vit->second->isEmpty())
             vit->second->popFront();
         delete vit->second;                  // Delete Queue
@@ -1069,21 +1064,17 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
     }
 
     // delete H-ARQ buffers
-    std::map<double, HarqTxBuffers>::iterator mtit;
-    for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-        HarqTxBuffers::iterator hit;
-        for (hit = mtit->second.begin(); hit != mtit->second.end(); ) {
+    for (auto& [key, buffer] : harqTxBuffers_) {
+        for (auto hit = buffer.begin(); hit != buffer.end(); ) {
             delete hit->second; // Delete Queue
-            hit = mtit->second.erase(hit); // Delete Element
+            hit = buffer.erase(hit); // Delete Element
         }
     }
 
-    std::map<double, HarqRxBuffers>::iterator mrit;
-    for (mrit = harqRxBuffers_.begin(); mrit != harqRxBuffers_.end(); ++mrit) {
-        HarqRxBuffers::iterator hit2;
-        for (hit2 = mrit->second.begin(); hit2 != mrit->second.end(); ) {
+    for (auto& [key, buffer] : harqRxBuffers_) {
+        for (auto hit2 = buffer.begin(); hit2 != buffer.end(); ) {
             delete hit2->second; // Delete Queue
-            hit2 = mrit->second.erase(hit2); // Delete Element
+            hit2 = buffer.erase(hit2); // Delete Element
         }
     }
 

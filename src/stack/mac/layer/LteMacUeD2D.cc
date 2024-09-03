@@ -955,8 +955,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - clearing LCG map" << endl;
 
                     // Remove entry from lcgMap
-                    LcgMap::iterator lt = lcgMap_.begin();
-                    for ( ; lt != lcgMap_.end(); ) {
+                    for (auto lt = lcgMap_.begin(); lt != lcgMap_.end(); ) {
                         if (lt->second.first == cid) {
                             lt = lcgMap_.erase(lt);
                         }

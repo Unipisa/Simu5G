@@ -1002,9 +1002,8 @@ ActiveSet *LteSchedulerEnb::readActiveConnections()
 
 void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
 {
-    MacCid cid;
     for (auto it = activeConnectionSet_.begin(); it != activeConnectionSet_.end(); ) {
-        cid = *it;
+        MacCid cid = *it;
         if (MacCidToNodeId(cid) == nodeId) {
             EV << NOW << "LteSchedulerEnb::removeActiveConnections CID removed " << cid << endl;
             it = activeConnectionSet_.erase(it);

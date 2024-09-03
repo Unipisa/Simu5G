@@ -15,6 +15,7 @@
  **************************************************************************/
 
 #include <cassert>
+#include <algorithm>
 
 #include <inet/common/INETMath.h>
 
@@ -123,27 +124,26 @@ ChannelControl::RadioRef ChannelControl::registerRadio(cModule *radio, cGate *ra
     return &radios.back(); // last element
 }
 
-void ChannelControl::unregisterRadio(RadioRef r)
+void ChannelControl::unregisterRadio(RadioRef radio)
 {
     Enter_Method_Silent();
-    for (RadioList::iterator it = radios.begin(); it != radios.end(); it++) {
-        if (it->radioModule == r->radioModule) {
-            RadioRef radioToRemove = &*it;
-            // erase radio from all registered radios' neighbor list
-            for (auto & radio : radios) {
-                RadioRef otherRadio = &radio;
-                otherRadio->neighbors.erase(radioToRemove);
-                otherRadio->isNeighborListValid = false;
-                radioToRemove->isNeighborListValid = false;
-            }
+    auto radioIt = std::find_if(radios.begin(), radios.end(), [radio](const RadioEntry& r) {
+        return r.radioModule == radio->radioModule;
+    });
 
-            // erase radio from registered radios
-            radios.erase(it);
-            return;
-        }
+    if (radioIt == radios.end())
+        throw cRuntimeError("unregisterRadio failed: no such radio");
+
+    // erase radio from all registered radios' neighbor list
+    RadioRef radioToRemove = &(*radioIt);
+    for (auto & otherRadio : radios) {
+        otherRadio.neighbors.erase(radioToRemove);
+        otherRadio.isNeighborListValid = false;
+        radioToRemove->isNeighborListValid = false;
     }
 
-    throw cRuntimeError("unregisterRadio failed: no such radio");
+    // erase radio from registered radios
+    radios.erase(radioIt);
 }
 
 ChannelControl::RadioRef ChannelControl::lookupRadio(cModule *radio)
@@ -160,8 +160,8 @@ const ChannelControl::RadioRefVector& ChannelControl::getNeighbors(RadioRef h)
     Enter_Method_Silent();
     if (!h->isNeighborListValid) {
         h->neighborList.clear();
-        for (std::set<RadioRef, RadioEntry::Compare>::iterator it = h->neighbors.begin(); it != h->neighbors.end(); it++)
-            h->neighborList.push_back(*it);
+        for (const auto& neighbor : h->neighbors)
+            h->neighborList.push_back(neighbor);
         h->isNeighborListValid = true;
     }
     return h->neighborList;
@@ -254,10 +254,10 @@ void ChannelControl::addOngoingTransmission(RadioRef h, AirFrame *frame)
 void ChannelControl::purgeOngoingTransmissions()
 {
     for (int i = 0; i < numChannels; i++) {
-        for (TransmissionList::iterator it = transmissions[i].begin(); it != transmissions[i].end(); ) {
-            TransmissionList::iterator curr = it;
+        for (auto it = transmissions[i].begin(); it != transmissions[i].end(); ) {
+            auto curr = it;
             AirFrame *frame = *it;
-            it++;
+            ++it;
 
             if (frame->getTimestamp() + frame->getDuration() + TRANSMISSION_PURGE_INTERVAL < simTime()) {
                 delete frame;

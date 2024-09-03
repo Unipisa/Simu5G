@@ -59,9 +59,8 @@ LteMacEnb::~LteMacEnb()
     delete enbSchedulerDl_;
     delete enbSchedulerUl_;
 
-    LteMacBufferMap::iterator bit;
-    for (bit = bsrbuf_.begin(); bit != bsrbuf_.end(); bit++)
-        delete bit->second;
+    for (auto &[key, value] : bsrbuf_)
+        delete value;
     bsrbuf_.clear();
 }
 
