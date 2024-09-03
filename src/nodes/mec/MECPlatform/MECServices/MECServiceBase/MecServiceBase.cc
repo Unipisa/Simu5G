@@ -473,9 +473,7 @@ void MecServiceBase::finish()
 }
 
 MecServiceBase::~MecServiceBase() {
-    std::cout << "~" << serviceName_ << std::endl;
     // remove and delete threads
-
     cancelAndDelete(requestService_);
     cancelAndDelete(subscriptionService_);
     delete currentRequestMessageServed_;
@@ -490,12 +488,9 @@ MecServiceBase::~MecServiceBase() {
         subscriptionEvents_.pop();
         delete notEv;
     }
-    std::cout << "~" << serviceName_ << " Subscriptions list length: " << subscriptions_.size() << std::endl;
     for (auto &[subscriptionId, subscription] : subscriptions_) {
-        std::cout << serviceName_ << " Deleting subscription with id: " << subscription->getSubscriptionId() << std::endl;
         delete subscription;
     }
-    std::cout << "~" << serviceName_ << " Subscriptions list length: " << subscriptions_.size() << std::endl;
 }
 
 void MecServiceBase::emitRequestQueueLength()
