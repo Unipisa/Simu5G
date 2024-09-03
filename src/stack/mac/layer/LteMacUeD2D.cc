@@ -151,7 +151,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         if (channelModel == nullptr)
                             throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
-                            macPduList_[channelModel->getCarrierFrequency()][std::pair<MacNodeId, Codeword>(getMacCellId(), 0)] = macPktBsr;
+                            macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
                         bsrAlreadyMade = true;
                         EV << "LteMacUeD2D::macPduMake - BSR D2D created with size " << sizeBsr << " bytes created" << endl;
                     }
@@ -186,7 +186,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 MacNodeId destId = lteInfo->getDestId();
                 Direction dir = (Direction)lteInfo->getDirection();
 
-                std::pair<MacNodeId, Codeword> pktId = std::pair<MacNodeId, Codeword>(destId, cw);
+                std::pair<MacNodeId, Codeword> pktId = {destId, cw};
                 unsigned int sduPerCid = it->second;
 
                 if (sduPerCid == 0 && !bsrTriggered_ && !bsrD2DMulticastTriggered_)

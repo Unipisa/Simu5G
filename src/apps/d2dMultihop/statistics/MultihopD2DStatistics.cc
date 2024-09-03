@@ -42,7 +42,7 @@ void MultihopD2DStatistics::recordNewBroadcast(unsigned int msgId, UeSet& destin
             ReceptionStatus status;
             status.delay_ = -1.0;
             status.hops_ = -1;
-            tmp.insert(std::pair<MacNodeId, ReceptionStatus>(destination, status));
+            tmp.insert({destination, status});
         }
         std::pair<unsigned short, DeliveryStatus> p(eventId, tmp);
         eventDeliveryInfo_.insert(p);
@@ -55,7 +55,7 @@ void MultihopD2DStatistics::recordNewBroadcast(unsigned int msgId, UeSet& destin
                 ReceptionStatus status;
                 status.delay_ = -1.0;
                 status.hops_ = -1;
-                eventDeliveryInfo_[eventId].insert(std::pair<MacNodeId, ReceptionStatus>(destination, status));
+                eventDeliveryInfo_[eventId].insert({destination, status});
             }
         }
     }

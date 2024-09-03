@@ -158,7 +158,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         newAppEntry.resources.disk = disk;
         newAppEntry.resources.cpu = cpu;
 
-        mecAppMap.insert(std::pair<int, mecAppEntry>(key, newAppEntry));
+        mecAppMap.insert({key, newAppEntry});
 
         currentMEApps++;
 
@@ -235,7 +235,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         newAppEntry.resources.disk = disk;
         newAppEntry.resources.cpu = cpu;
 
-        mecAppMap.insert(std::pair<int, mecAppEntry>(key, newAppEntry));
+        mecAppMap.insert({key, newAppEntry});
 
         //displaying ME App dynamically created (after 70 they will overlap..)
         std::stringstream display;

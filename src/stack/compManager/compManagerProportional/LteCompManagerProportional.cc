@@ -171,7 +171,7 @@ void LteCompManagerProportional::handleClientRequest(inet::Ptr<X2CompMsg> compMs
 
         // update map entry for this node
         if (reqBlocksMap_.find(sourceId) == reqBlocksMap_.end())
-            reqBlocksMap_.insert(std::pair<X2NodeId, unsigned int>(sourceId, reqBlocks));
+            reqBlocksMap_.insert({sourceId, reqBlocks});
         else
             reqBlocksMap_[sourceId] = reqBlocks;
 

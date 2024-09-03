@@ -58,8 +58,7 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
     // add the event to the priority queue, along with its argument
     // We use the enhanced version of insert. A suggestion to the
     // position is given (i.e. the last element).
-    rIt = directList_.insert(directList_.end(),
-            std::pair<simtime_t, unsigned int>((NOW + time), event));
+    rIt = directList_.insert(directList_.end(), { (NOW + time), event });
 
     // add the information to the reverse List
     // If the element already exists abort

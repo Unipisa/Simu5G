@@ -51,7 +51,7 @@ void LteAllocationModuleFrequencyReuse::storeAllocation(std::vector<std::vector<
                 // Creates a pair for the blocks and bytes values
                 std::pair<unsigned int, unsigned int> Value_pair(it_ext->second, it2_ext->second);
                 //Store the nodeId RBs
-                nodeIdRbsBytesMap[Key_pair] = Value_pair;
+                nodeIdRbsBytesMap.insert({Key_pair, Value_pair});
                 it_ext++;
                 it2_ext++;
             }

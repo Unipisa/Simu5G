@@ -21,7 +21,7 @@ SubscriptionBase::SubscriptionBase() {}
 SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     for (cModule *eNodeB : eNodeBs) {
         CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
-        eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
+        eNodeBs_.insert({cellInfo->getMacCellId(), cellInfo});
     }
     subscriptionId_ = subId;
     socket_ = socket;
@@ -32,14 +32,14 @@ SubscriptionBase::SubscriptionBase(unsigned int subId, inet::TcpSocket *socket, 
 void SubscriptionBase::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     for (auto* module : eNodeBs) {
         CellInfo *cellInfo = check_and_cast<CellInfo *>(module->getSubmodule("cellInfo"));
-        eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
+        eNodeBs_.insert({cellInfo->getMacCellId(), cellInfo});
         EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
     }
 }
 
 void SubscriptionBase::addEnodeB(cModule *eNodeB) {
     CellInfo *cellInfo = check_and_cast<CellInfo *>(eNodeB->getSubmodule("cellInfo"));
-    eNodeBs_.insert(std::pair<MacCellId, CellInfo *>(cellInfo->getMacCellId(), cellInfo));
+    eNodeBs_.insert({cellInfo->getMacCellId(), cellInfo});
     EV << "LocationResource::addEnodeB with cellId: " << cellInfo->getMacCellId() << endl;
     EV << "LocationResource::addEnodeB - added eNodeB: " << cellInfo->getMacCellId() << endl;
 }

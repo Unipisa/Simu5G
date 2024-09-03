@@ -231,7 +231,7 @@ void AmcPilotAuto::setUsableBands(MacNodeId id, UsableBands usableBands)
     // if usable bands for this node are already set, delete it (probably unnecessary)
     if (it != usableBandsList_.end())
         usableBandsList_.erase(id);
-    usableBandsList_.insert(std::pair<MacNodeId, UsableBands>(id, usableBands));
+    usableBandsList_.insert({id, usableBands});
 }
 
 bool AmcPilotAuto::getUsableBands(MacNodeId id, UsableBands *& uBands)

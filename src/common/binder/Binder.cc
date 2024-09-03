@@ -734,8 +734,7 @@ void Binder::removeUeHandoverTriggered(MacNodeId nodeId)
 
 void Binder::addHandoverTriggered(MacNodeId nodeId, MacNodeId srcId, MacNodeId destId)
 {
-    std::pair<MacNodeId, MacNodeId> p(srcId, destId);
-    handoverTriggered_[nodeId] = p;
+    handoverTriggered_[nodeId] = {srcId, destId};
 }
 
 const std::pair<MacNodeId, MacNodeId> *Binder::getHandoverTriggered(MacNodeId nodeId)

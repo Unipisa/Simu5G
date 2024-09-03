@@ -216,7 +216,7 @@ int LteMacUe::macSduRequest()
             Codeword cw = it->first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
-            std::pair<MacCid, Codeword> key(destCid, cw);
+            auto key = std::make_pair(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit->first]->getScheduledBytesList();
             auto bit = scheduledBytesList->find(key);
 
@@ -382,7 +382,7 @@ void LteMacUe::macPduMake(MacCid cid)
             // from a UE perspective, the destId is always the one of the eNB
             MacNodeId destId = getMacCellId();
 
-            std::pair<MacNodeId, Codeword> pktId = std::pair<MacNodeId, Codeword>(destId, cw);
+            std::pair<MacNodeId, Codeword> pktId = {destId, cw};
             unsigned int sduPerCid = it->second;
 
             if (macPduList_.find(carrierFreq) == macPduList_.end()) {

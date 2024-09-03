@@ -194,7 +194,7 @@ void BaseStationStatsCollector::resetBytesCountersPerUe()
 void BaseStationStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector *ueCollector)
 {
     if (ueCollectors_.find(id) == ueCollectors_.end()) {
-        ueCollectors_.insert(std::pair<MacNodeId, UeStatsCollector *>(id, ueCollector));
+        ueCollectors_.insert({id, ueCollector});
     }
     else {
         throw cRuntimeError("%s::addUeCollector - UeStatsCollector already present for UE node id [%hu]", collectorType_.c_str(), num(id));

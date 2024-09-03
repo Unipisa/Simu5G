@@ -511,7 +511,7 @@ void LteMacEnb::macPduMake(MacCid cid)
 
             Codeword cw = it->first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
-            std::pair<MacNodeId, Codeword> pktId = std::pair<MacNodeId, Codeword>(destId, cw);
+            std::pair<MacNodeId, Codeword> pktId = {destId, cw};
             unsigned int sduPerCid = it->second;
             unsigned int grantedBlocks = 0;
             TxMode txmode;
@@ -897,9 +897,7 @@ void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, D
     if (needRtx->find(carrierFrequency) == needRtx->end()) {
         if (!rtx)
             return;
-
-        std::pair<double, int> p(carrierFrequency, 0);
-        needRtx->insert(p);
+        needRtx->insert({carrierFrequency, 0});
     }
 
     if (!rtx)

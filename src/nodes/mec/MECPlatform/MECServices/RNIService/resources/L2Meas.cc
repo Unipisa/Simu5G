@@ -26,20 +26,20 @@ L2Meas::L2Meas() : binder_(nullptr) {
 L2Meas::L2Meas(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     for (auto *module : eNodeBs) {
         BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>(module->getSubmodule("collector"));
-        eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
+        eNodeBs_.insert({collector->getCellId(), collector});
     }
 }
 
 void L2Meas::addEnodeB(std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) {
     for (cModule* module : eNodeBs) {
         BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>(module->getSubmodule("collector"));
-        eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
+        eNodeBs_.insert({collector->getCellId(), collector});
     }
 }
 
 void L2Meas::addEnodeB(cModule *eNodeB) {
     BaseStationStatsCollector *collector = check_and_cast<BaseStationStatsCollector *>(eNodeB->getSubmodule("collector"));
-    eNodeBs_.insert(std::pair<MacCellId, BaseStationStatsCollector *>(collector->getCellId(), collector));
+    eNodeBs_.insert({collector->getCellId(), collector});
 }
 
 
