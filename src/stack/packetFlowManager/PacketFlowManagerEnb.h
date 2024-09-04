@@ -108,21 +108,13 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     LtePdcpRrcEnb *pdcp_;
 
-    typedef std::map<MacNodeId, PacketLoss> packetLossRateMap;
-    typedef std::map<MacNodeId, DataVolume> dataVolume; // discard counter per NodeId (UE)
-    typedef std::map<MacNodeId, DiscardedPkts> pktDiscardMap; // discard counter per NodeId (UE)
-    typedef std::map<MacNodeId, Delay> delayMap;
-    typedef std::map<MacNodeId, Throughput> throughputMap;
-    typedef std::map<MacNodeId, std::vector<Grant>> ULGrants;
-
     std::map<MacNodeId, Delay> ULPktDelay_;
-
-    ULGrants ulGrants_;
-    packetLossRateMap packetLossRate_;
-    delayMap pdcpDelay_; // map that sums all the delay times of a destination NodeId (UE) and the corresponding counter
-    throughputMap pdcpThroughput_; // map that sums all the bytes sent by a destination NodeId (UE) and the corresponding time elapsed
-    pktDiscardMap pktDiscardCounterPerUe_;
-    dataVolume sduDataVolume_;
+    std::map<MacNodeId, std::vector<Grant>> ulGrants_;
+    std::map<MacNodeId, PacketLoss> packetLossRate_;
+    std::map<MacNodeId, Delay> pdcpDelay_; // map that sums all the delay times of a destination NodeId (UE) and the corresponding counter
+    std::map<MacNodeId, Throughput> pdcpThroughput_; // map that sums all the bytes sent by a destination NodeId (UE) and the corresponding time elapsed
+    std::map<MacNodeId, DiscardedPkts> pktDiscardCounterPerUe_; // discard counter per NodeId (UE)
+    std::map<MacNodeId, DataVolume> sduDataVolume_;
     short int harqProcesses_; // number of HARQ processes
 
     // debug variable that calculates DL delay of a UE (with id 2053)
