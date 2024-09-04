@@ -17,7 +17,7 @@
 #include <map>
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 #include "nodes/mec/utils/MecCommon.h"
-#include "../../RNIService/resources/Ecgi.h"
+#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
 #include "AssociateId.h"
 
 namespace simu5g {

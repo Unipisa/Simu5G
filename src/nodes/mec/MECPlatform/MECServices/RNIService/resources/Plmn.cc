@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "../../RNIService/resources/Plmn.h"
+#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Plmn.h"
 
 namespace simu5g {
 

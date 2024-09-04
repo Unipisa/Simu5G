@@ -11,8 +11,8 @@
 
 #include "apps/mec/WarningAlert/UEWarningAlertApp.h"
 
-#include "../DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "../DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"

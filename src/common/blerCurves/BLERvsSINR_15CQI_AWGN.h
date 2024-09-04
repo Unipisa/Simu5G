@@ -22,9 +22,6 @@
 #ifndef BLERVSSINR_15CQI_AWGN_H_
 #define BLERVSSINR_15CQI_AWGN_H_
 
-//#include "../../protocolStack/mac/AMCModule.h"
-//#include "../../load-parameters.h"
-
 #include <iostream>
 
 namespace simu5g {

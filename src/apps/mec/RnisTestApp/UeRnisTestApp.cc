@@ -11,8 +11,8 @@
 
 #include "apps/mec/RnisTestApp/UeRnisTestApp.h"
 
-#include "../DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "../DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_Types.h"

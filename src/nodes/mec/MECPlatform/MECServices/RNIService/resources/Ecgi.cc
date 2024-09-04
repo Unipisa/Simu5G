@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "../../RNIService/resources/Ecgi.h"
+#include "Ecgi.h"
 
 namespace simu5g {
 
