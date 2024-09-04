@@ -198,7 +198,7 @@ void LteCompManagerBase::sendCoordinatorReply(X2NodeId clientId, X2CompReplyIE *
 
     if (clientId == nodeId_) {
         if (nodeType_ != COMP_CLIENT_COORDINATOR)
-            throw cRuntimeError("LteCompManagerBase::sendCoordinatorReply - node %hu cannot send reply to itself, since it is not the coordinator", clientId);
+            throw cRuntimeError("LteCompManagerBase::sendCoordinatorReply - node %hu cannot send reply to itself, since it is not the coordinator", num(clientId));
 
         compMsg->setSourceId(nodeId_);
         handleCoordinatorReply(compMsg);

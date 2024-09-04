@@ -103,7 +103,7 @@ void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int p
     // if pdcpStatus_ already present, error
     std::map<unsigned int, PdcpStatus>::iterator it = desc->pdcpStatus_.find(pdcp);
     if (it != desc->pdcpStatus_.end())
-        throw cRuntimeError("%s::initPdcpStatus - PdcpStatus for PDCP sno [%d] already present for node %hu, this should not happen. Abort", pfmType.c_str(), pdcp, desc->nodeId_);
+        throw cRuntimeError("%s::initPdcpStatus - PdcpStatus for PDCP sno [%d] already present for node %hu, this should not happen. Abort", pfmType.c_str(), pdcp, num(desc->nodeId_));
 
     PdcpStatus newpdcpStatus;
 
@@ -232,7 +232,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
     if (status == START) {
         if (desc->burstState_ == true)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status START incompatible with local status %d. Aborting", pfmType.c_str(), desc->nodeId_, lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status START incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         BurstStatus newBurst;
         newBurst.isCompleted = false;
         newBurst.startBurstTransmission = simTime();
@@ -243,7 +243,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
     else if (status == STOP) {
         if (desc->burstState_ == false)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status STOP incompatible with local status %d. Aborting", pfmType.c_str(), desc->nodeId_, lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status STOP incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         desc->burstStatus_[desc->burstId_].isCompleted = true;
         desc->burstState_ = false;
 
@@ -264,15 +264,15 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
     else if (status == INACTIVE) {
         if (desc->burstState_ == true)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status INACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), desc->nodeId_, lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status INACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu INACTIVE burst" << endl;
     }
     else if (status == ACTIVE) {
         if (desc->burstState_ == false)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status ACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), desc->nodeId_, lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status ACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         auto bsit = desc->burstStatus_.find(desc->burstId_);
         if (bsit == desc->burstStatus_.end())
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), desc->nodeId_, lcid);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid);
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu ACTIVE burst " << desc->burstId_ << endl;
     }
     else {
@@ -328,7 +328,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
 
         auto bsit = desc->burstStatus_.find(desc->burstId_);
         if (bsit == desc->burstStatus_.end())
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), desc->nodeId_, lcid);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid);
         // add rlc to rlc set of the burst and the size
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu - lcid[" << lcid << "], insert RLC SDU of size " << rlcSduSize << endl;
 
@@ -718,7 +718,7 @@ void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
     Grant grant = { grantId, simTime() };
     for (const auto& grant : ulGrants_[nodeId]) {
         if (grant.grantId == grantId)
-            throw cRuntimeError("%s::grantSent - grant [%d] for nodeId [%hu] already present", pfmType.c_str(), grantId, nodeId);
+            throw cRuntimeError("%s::grantSent - grant [%d] for nodeId [%hu] already present", pfmType.c_str(), grantId, num(nodeId));
     }
     EV_FATAL << NOW << " " << pfmType << "::grantSent - Added grant " << grantId << " for nodeId " << nodeId << endl;
     ulGrants_[nodeId].push_back(grant);
@@ -741,7 +741,7 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
             ++it;
         }
     }
-    throw cRuntimeError("%s::ulMacPduArrived - grant [%d] for nodeId [%hu] not present", pfmType.c_str(), grantId, nodeId);
+    throw cRuntimeError("%s::ulMacPduArrived - grant [%d] for nodeId [%hu] not present", pfmType.c_str(), grantId, num(nodeId));
 }
 
 double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)

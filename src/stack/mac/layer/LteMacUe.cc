@@ -129,11 +129,11 @@ void LteMacUe::initialize(int stage)
         // find interface entry and use its address
         NetworkInterface *iface = findContainingNicModule(this);
         if (iface == nullptr)
-            throw new cRuntimeError("no interface entry for lte interface - cannot bind node id [%hu]", nodeId_);
+            throw new cRuntimeError("no interface entry for lte interface - cannot bind node id [%hu]", num(nodeId_));
 
         auto ipv4if = iface->getProtocolData<Ipv4InterfaceData>();
         if (ipv4if == nullptr)
-            throw new cRuntimeError("no Ipv4 interface data - cannot bind node id [%hu]", nodeId_);
+            throw new cRuntimeError("no Ipv4 interface data - cannot bind node id [%hu]", num(nodeId_));
         binder_->setMacNodeId(ipv4if->getIPAddress(), nodeId_);
 
         // for emulation mode

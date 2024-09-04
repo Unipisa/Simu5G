@@ -396,7 +396,7 @@ MacNodeId Binder::getNextHop(MacNodeId slaveId)
 {
     Enter_Method_Silent("getNextHop");
     if (num(slaveId) >= nextHop_.size())
-        throw cRuntimeError("Binder::getNextHop(): bad slave id %hu", slaveId);
+        throw cRuntimeError("Binder::getNextHop(): bad slave id %hu", num(slaveId));
     return nextHop_[num(slaveId)];
 }
 
@@ -404,7 +404,7 @@ MacNodeId Binder::getMasterNode(MacNodeId slaveId)
 {
     Enter_Method_Silent("getMasterNode");
     if (num(slaveId) >= secondaryNodeToMasterNode_.size())
-        throw cRuntimeError("Binder::getMasterNode(): bad slave id %hu", slaveId);
+        throw cRuntimeError("Binder::getMasterNode(): bad slave id %hu", num(slaveId));
     return secondaryNodeToMasterNode_[num(slaveId)];
 }
 
@@ -569,7 +569,7 @@ void Binder::registerX2Port(X2NodeId nodeId, int port)
 int Binder::getX2Port(X2NodeId nodeId)
 {
     if (x2ListeningPorts_.find(nodeId) == x2ListeningPorts_.end())
-        throw cRuntimeError("Binder::getX2Port - No ports available on node %hu", nodeId);
+        throw cRuntimeError("Binder::getX2Port - No ports available on node %hu", num(nodeId));
 
     int port = x2ListeningPorts_[nodeId].front();
     x2ListeningPorts_[nodeId].pop_front();
@@ -605,7 +605,7 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
         || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
-        throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %hu Dst %hu", src, dst);
+        throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
     if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end()) {
@@ -644,7 +644,7 @@ bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
         || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
-        throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %hu Dst %hu", src, dst);
+        throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     // if the entry is missing, returns false
     if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end())
@@ -663,7 +663,7 @@ LteD2DMode Binder::getD2DMode(MacNodeId src, MacNodeId dst)
 {
     if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
         || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
-        throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %hu Dst %hu", src, dst);
+        throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     return d2dPeeringMap_[src][dst];
 }
@@ -1117,7 +1117,7 @@ void Binder::addUeCollectorToEnodeB(MacNodeId ue, UeStatsCollector *ueCollector,
             enbColl = check_and_cast<BaseStationStatsCollector *>(enb->getSubmodule("collector"));
             if (enbColl->hasUeCollector(ue)) {
                 EV << "LteBinder::addUeCollector - UeCollector for node [" << ue << "] already present in eNodeB [" << (*it)->id << "]" << endl;
-                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%hu] already present in eNodeB [%hu]", ue, (*it)->id);
+                throw cRuntimeError("LteBinder::addUeCollector - UeCollector for node [%hu] already present in eNodeB [%hu]", num(ue), num((*it)->id));
             }
         }
         else {
@@ -1156,11 +1156,11 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             enbColl->removeUeCollector(ue);
         }
         else {
-            throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%hu] not present in eNodeB [%hu]", ue, oldCell);
+            throw cRuntimeError("LteBinder::moveUeCollector - UeStatsCollector of node [%hu] not present in eNodeB [%hu]", num(ue), num(oldCell));
         }
     }
     else {
-        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%hu]", oldCell);
+        throw cRuntimeError("LteBinder::moveUeCollector - eNodeBStatsCollector not present in eNodeB [%hu]", num(oldCell));
     }
     // If the two base stations are the same type, just move the collector
     if (oldCellType == newCellType) {
@@ -1173,7 +1173,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             if (ueModule->findSubmodule("NRueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got NRueCollector required for the gNB", ue);
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got NRueCollector required for the gNB", num(ue));
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else if (newCellType == ENODEB) {
@@ -1182,7 +1182,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             if (ueModule->findSubmodule("ueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got ueCollector required for the eNB", ue);
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got ueCollector required for the eNB", num(ue));
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else {

@@ -205,7 +205,7 @@ unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %hu", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
 
     return it->second.numBands;
 }
@@ -224,7 +224,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it != carrierMap_.end())
-        throw cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %hu", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %hu", carrierFrequency, num(cellId_));
     else {
         carriersVector_.push_back(carrierFrequency);
 
@@ -286,7 +286,7 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %hu", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
 
     if (index > it->second.numBands)
         throw cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available bands on this carrier [%d]", index, it->second.numBands);
@@ -303,7 +303,7 @@ BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
     }
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %hu", carrierFrequency, cellId_);
+        throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
 
     return &(it->second.bandLimit);
 }

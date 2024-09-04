@@ -197,7 +197,7 @@ void BaseStationStatsCollector::addUeCollector(MacNodeId id, UeStatsCollector *u
         ueCollectors_.insert(std::pair<MacNodeId, UeStatsCollector *>(id, ueCollector));
     }
     else {
-        throw cRuntimeError("%s::addUeCollector - UeStatsCollector already present for UE node id [%hu]", collectorType_.c_str(), id);
+        throw cRuntimeError("%s::addUeCollector - UeStatsCollector already present for UE node id [%hu]", collectorType_.c_str(), num(id));
     }
 }
 
@@ -210,7 +210,7 @@ void BaseStationStatsCollector::removeUeCollector(MacNodeId id)
         packetFlowManager_->deleteUe(id);
     }
     else {
-        throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE node id [%hu]", collectorType_.c_str(), id);
+        throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE node id [%hu]", collectorType_.c_str(), num(id));
     }
 }
 
@@ -221,7 +221,7 @@ UeStatsCollector *BaseStationStatsCollector::getUeCollector(MacNodeId id)
         return it->second;
     }
     else {
-        throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE node id [%hu]", collectorType_.c_str(), id);
+        throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE node id [%hu]", collectorType_.c_str(), num(id));
     }
 }
 

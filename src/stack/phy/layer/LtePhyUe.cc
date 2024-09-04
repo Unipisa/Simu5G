@@ -585,7 +585,7 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     MacNodeId dest = lteInfo->getDestId();
     if (dest != masterId_) {
         // UE is not sending to its master!!
-        throw cRuntimeError("LtePhyUe::handleUpperMessage  Ue preparing to send message to %hu instead of its master (%hu)", dest, masterId_);
+        throw cRuntimeError("LtePhyUe::handleUpperMessage  Ue preparing to send message to %hu instead of its master (%hu)", num(dest), num(masterId_));
     }
 
     double carrierFreq = lteInfo->getCarrierFrequency();
