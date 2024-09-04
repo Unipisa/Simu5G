@@ -37,11 +37,9 @@ void PacketFlowManagerEnb::initialize(int stage)
     }
 }
 
-bool PacketFlowManagerEnb::checkLcid(LogicalCid lcid)
+bool PacketFlowManagerEnb::hasLcid(LogicalCid lcid)
 {
-    if (connectionMap_.find(lcid) == connectionMap_.end())
-        return false;
-    return true;
+    return connectionMap_.find(lcid) != connectionMap_.end();
 }
 
 void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)

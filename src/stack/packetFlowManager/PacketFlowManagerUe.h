@@ -76,7 +76,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 
   public:
     // return true if a structure for this LCID is present
-    virtual bool checkLcid(LogicalCid lcid) override;
+    virtual bool hasLcid(LogicalCid lcid) override;
     // initialize a new structure for this LCID
     virtual void initLcid(LogicalCid lcid, MacNodeId nodeId) override;
     // reset the structure for this LCID

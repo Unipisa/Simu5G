@@ -85,7 +85,7 @@ class PacketFlowManagerBase : public cSimpleModule
 
 
     // return true if a structure for this lcid is present
-    virtual bool checkLcid(LogicalCid lcid) = 0;
+    virtual bool hasLcid(LogicalCid lcid) = 0;
     /*
      * initialize a new structure for this lcid
      * abstract since in eNodeB case, it initializes

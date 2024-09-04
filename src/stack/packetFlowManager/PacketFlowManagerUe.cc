@@ -33,11 +33,9 @@ void PacketFlowManagerUe::initialize(int stage)
     }
 }
 
-bool PacketFlowManagerUe::checkLcid(LogicalCid lcid)
+bool PacketFlowManagerUe::hasLcid(LogicalCid lcid)
 {
-    if (connectionMap_.find(lcid) == connectionMap_.end())
-        return false;
-    return true;
+    return connectionMap_.find(lcid) != connectionMap_.end();
 }
 
 void PacketFlowManagerUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
