@@ -45,13 +45,9 @@ void TMultiTimer::add(const simtime_t time, const unsigned int event)
 {
     simtime_t remaining = 1;
 
-    // Create an iterator to the multimap element.
-    iterator_d it;
-
     // retrieve the event expire time
     if (busy_) {
-        it = directList_.begin();
-        remaining = (it->first - NOW);
+        remaining = directList_.begin()->first - NOW;
     }
 
     Event_it rIt;

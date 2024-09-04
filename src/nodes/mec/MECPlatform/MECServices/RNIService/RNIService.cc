@@ -71,8 +71,7 @@ void RNIService::handleGETRequest(const HttpRequestMessage *currentRequestMessag
             std::vector<MacNodeId> cellIds;
             std::vector<inet::Ipv4Address> ues;
 
-            typedef std::map<std::string, std::vector<std::string>> queryMap;
-            queryMap queryParamsMap; // e.g cell_id -> [0, 1]
+            std::map<std::string, std::vector<std::string>> queryParamsMap; // e.g cell_id -> [0, 1]
 
             std::vector<std::string> params;
             std::vector<std::string> splittedParams;

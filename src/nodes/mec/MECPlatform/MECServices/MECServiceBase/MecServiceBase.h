@@ -56,8 +56,6 @@ using namespace omnetpp;
 #define REQUEST_RNG         0
 #define SUBSCRIPTION_RNG    1
 
-typedef std::map<std::string, std::string> reqMap;
-
 class SocketManager;
 class SubscriptionBase;
 class HttpRequestMessage;

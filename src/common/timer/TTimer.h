@@ -226,12 +226,6 @@ class TMultiTimer : public cObject
 
     //! The removable list. Each event id matches with an iterator.
     std::map<const unsigned int, const Event_it> reverseList_;
-
-    //! Direct list iterator type
-    typedef std::multimap<const simtime_t, const unsigned int>::iterator iterator_d;
-
-    //! Reverse list iterator type
-    typedef std::map<const unsigned int, const Event_it>::iterator iterator_r;
 };
 
 } //namespace
