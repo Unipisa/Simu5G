@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -10,17 +9,21 @@
 // and cannot be removed from it.
 //
 
-
 package simu5g.apps.mec.DeviceApp;
 
 import inet.applications.contract.IApp;
 
 //
-// This module defines the DeviceApp, responsible for instantiating and terminating MEC applications 
-// upon requests from UE applications. It acts as a mediator between the UE apps and the MEC platform, 
-// handling messages for starting and stopping MEC applications, and responding with acknowledgment or 
-// failure messages. The module uses both UDP and TCP communication for interacting with UE apps 
-// and the MEC Application Lifecycle Management Proxy (UALCMP), respectively.
+// This module models the Device App entity defined by the ETSI Multi-access Edge Computing (MEC)
+// specifications. The Device App can be instantiated on a User Equipment (UE) that wants to 
+// dynamically instantiate a MEC application in a MEC system. It establishes a TCP connection with
+// the User App Lifecycle Management Proxy (UALCMP) entity (see the ~UALCMP module) and, upon 
+// reception of a MEC application instantiation from another UE application, it sends a message to 
+// the UALCMP including the URI of the MEC application to be instantiated. Once the confirmation of 
+// successful instantiation has been received, the Device App sends an acknowledgment to the UE 
+// application that requested it. Likewise, 
+// this module is responsible to request the deletion of the MEC application from the MEC system upon
+// explicit request from the UE application.
 //
 simple DeviceApp like IApp
 {

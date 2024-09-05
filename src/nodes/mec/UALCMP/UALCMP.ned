@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -20,13 +19,13 @@ import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 
 //
-// This module facilitates communication between a device application and a MEC orchestrator,
-// enabling lifecycle operations such as instantiation, termination, and relocation of MEC applications.
-// Conforming to the ETSI MEC standard (ETSI GS MEC 016 V2.2.1), it supports three primary endpoints:
-//   1. GET /app_list: Retrieve available MEC application information.
-//   2. POST /app_contexts: Request the creation of a new MEC application context.
-//   3. DELETE /app_contexts/{contextId}: Request the deletion of an existing MEC application context.
-// The module relies on OMNeT++ messaging and connections for interfacing with the MEC orchestrator.
+// This module represents a host performing the operations of the User Application Lifecycle Management
+// Proxy (UALCMP) defined by the ETSI Multi-access Edge Computing (MEC) specifications. It includes a 
+// full network protocol stack and a ~UalcmpApp application module that implements the logic of the 
+// UALCMP entity. It is normally connected directly to a MEC orchestrator, and forwards to it the 
+// creation/deletion requests from User Equipments' Device App modules. It can be configured to receive
+// packets from a real, external Device App application via the external Ethernet interface submodule.
+// ethernet interface so that it ca 
 //
 module UALCMP
 {

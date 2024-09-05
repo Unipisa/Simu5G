@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,11 +13,9 @@ package simu5g.nodes.mec.VirtualisationInfrastructureManager;
 
 
 //
-// VirtualisationInfrastructureManager
-//
-// Simple Module for handling the availability of virtualised resources on the MEC host.
-// From  ETSI GS MEC 003, it is responsible for allocating, managing and releasing virtualised
-// resources of the virtualisation infrastructure;
+// This module is responsible for keeping track of the computing resources currently allocated
+// to MEC applications hosted by a MEC host. It is also used by MEC application in case they 
+// want to compute a processing delay based on the such resource usage.
 //
 simple VirtualisationInfrastructureManager
 {

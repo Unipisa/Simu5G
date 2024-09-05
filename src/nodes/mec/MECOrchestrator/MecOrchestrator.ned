@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,13 +12,12 @@
 package simu5g.nodes.mec.MECOrchestrator;
 
 //
-// This module oversees the MEC orchestrator's functionalities within a MEC system.
-// Not adhering strictly to ETSI standard APIs, it leverages OMNeT++ features to manage the lifecycle operations of MEC applications.
-// It communicates with the LCM proxy via connections and is configured to administer MEC hosts associated with the MEC system based on parameters.
-// Key functionalities provided include:
-//   - MEC app instantiation
-//   - MEC app termination
-//   - MEC app run-time onboarding
+// This module models the MEC orchestrator's functionalities within a Multi-access Edge 
+// Computing (MEC) system. Specifically, it manages the dynamic instantiation and 
+// termination of MEC applications on the MEC hosts belonging to the MEC system. Upon
+// reception of MEC app instantiation request from the ~UALCMP module, this module is
+// responsible to select the MEC host the MEC application is to be instantiated, according
+// to a configurable policy.
 //
 simple MecOrchestrator
 {

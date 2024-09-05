@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,23 +14,15 @@ package simu5g.nodes.mec.UALCMP;
 import inet.applications.contract.IApp;
 
 //
-// This module implements (part of) the mx2 reference point a device app uses to
-// request lyfecycle operations of a MEC app (i.e. instantation, termination, relocation).
-// This API follows the ETSI MEC specification of ETSI GS MEC 016 V2.2.1 (2020-04) and in
-// particular:
-//   - GET /app_list Retrieve available application information.
-//   - POST /app_contexts For requesting the creation of a new application context.
-//   - DELETE /app_contexts/{contextId}  For requesting the deletion of an existing application context
-//
-// Communications with the MEC orchestrator occur via OMNeT connections and messages
-//
-// This module facilitates communication between a device application and a MEC orchestrator,
-// enabling lifecycle operations such as instantiation, termination, and relocation of MEC applications.
-// Conforming to the ETSI MEC standard (ETSI GS MEC 016 V2.2.1), it supports three primary endpoints:
-//   1. GET /app_list: Retrieve available MEC application information.
-//   2. POST /app_contexts: Request the creation of a new MEC application context.
-//   3. DELETE /app_contexts/{contextId}: Request the deletion of an existing MEC application context.
-// The module relies on OMNeT++ messaging and connections for interfacing with the MEC orchestrator.
+// This module implements (part of) the Mx2 reference point defined by the ETSI GS MEC 
+// 016 V2.2.1 (2020-04) specification. A ~DeviceApp application module can use this API to
+// request MEC app lyfecycle operations (i.e., instantation, termination, relocation).
+// In particular, it provides the following methods:
+//   - GET /app_list: to retrieve information about available applications
+//   - POST /app_contexts: to request the creation of a new application context
+//   - DELETE /app_contexts/{contextId}: to request the deletion of an existing application context
+// The application communicates directly with the MEC orchestrator without going through the
+// protocol stack of the ~UALCMP module.
 //
 simple UALCMPApp like IApp
 {
