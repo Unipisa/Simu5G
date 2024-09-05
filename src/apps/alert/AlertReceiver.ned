@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,12 +14,10 @@ package simu5g.apps.alert;
 import inet.applications.contract.IApp;
 
 //
-// This module is responsible for receiving alert messages in a network.
-// It binds to a specified port, listens for incoming alert packets, and
-// processes them. The module also supports multicast by joining local
-// multicast groups and optionally setting a specific multicast interface
-// for sending packets. It keeps track of statistics like the delay of
-// received alerts and the count of alerts received.
+// This module receives alert messages sent by nodes running an ~AlertSender
+// application. It listens for incoming packets and logs them upon their arrival.
+// It records end-to-end delay statistics. The module also supports multicast by
+// joining local multicast groups.
 //
 simple AlertReceiver like IApp
 {

@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,9 +14,11 @@ package simu5g.apps.voip;
 import inet.applications.contract.IApp;
 
 //
-// VoIPReceiver is a simple module that receives VoIP packets over a UDP
-// connection. It measures and records important metrics such as frame loss,
-// delay, jitter, MOS (Mean Opinion Score), and received throughput.
+// This module represents a model for the receiver of Voice-over-IP (VoIP) traffic.
+// It receives packets sent by a ~VoIPSender application via UDP, and records statistics
+// such as packet loss, end-to-end latency, jitter, and throughput. Moreover, it computes
+// and emits a MOS (Mean Opinion Score) value, representing the Quality-of-Experience of 
+// the end users.
 //
 simple VoIPReceiver like IApp
 {

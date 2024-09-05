@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,10 +14,10 @@ package simu5g.apps.voip;
 import inet.applications.contract.IApp;
 
 //
-// This module represents a VoIP (Voice over IP) traffic sender implementation for the Simu5G suite.
-// It generates voice packets based on talk and silence periods modeled by the Weibull distribution.
-// The generated packets are then sent over UDP to a specified destination address and port.
-// Various parameters allow customization of packet size, talk and silence durations, and the handling of silences.
+// This module represents a model for the sender of Voice-over-IP (VoIP) traffic.
+// It generates packets by alterneting "talkspurts" and "silence" periods, whose respective
+// duration is modeled by a Weibull distribution. During talkspurts, fixed-size packets are
+// generated periodically, and sent over UDP to a specified destination address and port.
 //
 simple VoIPSender like IApp
 {

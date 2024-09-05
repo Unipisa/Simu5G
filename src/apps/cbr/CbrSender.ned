@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,13 +13,12 @@ package simu5g.apps.cbr;
 
 import inet.applications.contract.IApp;
 
-
 //
-// Simple module for generating Constant Bit Rate (CBR) traffic. The CbrSender
+// Simple module for generating Constant Bit Rate (CBR) traffic. This module
 // periodically sends packets with a specified size to a destination address
-// and port. The intervals between packets and the duration of the traffic stream
-// can be configured. The module is capable of emitting statistics related to
-// throughput, packet generation, and bytes sent during the simulation.
+// and port. The intervals between packets and the overall duration of the
+// communication is configurable. The module emits statistics related to 
+// (generated) throughput and amount of bytes sent.
 //
 simple CbrSender like IApp
 {

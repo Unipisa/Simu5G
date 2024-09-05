@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,10 +14,15 @@ package simu5g.apps.mecRequestResponseApp;
 import inet.applications.contract.IApp;
 
 //
-// MecResponseApp module is responsible for handling request packets and sending
-// response packets in a Mobile Edge Computing (MEC) environment. It ensures
-// that response times are simulated based on network and computational delays,
-// and provides statistics for received sequence numbers.
+// This module provides a simplified model of an edge application, and it is intended
+// to run in a (edge) host associated to a base station. It receives requests from a
+// User Equipment (UE) application, e.g. a ~MecRequestApp, and sends a response after 
+// some processing time. The latter is computed based on the size of request packet
+// and a value representing the computation capabilities of the node hosting this
+// application module.
+// If the UE sending the request is not served by the base station associated to this
+// application, then an additional delay to the response is considered, i.e. representing
+// the time needed to traverse the cellular core network.
 //
 simple MecResponseApp like IApp
 {

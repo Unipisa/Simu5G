@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,23 +13,22 @@ package simu5g.apps.d2dMultihop;
 
 import inet.applications.contract.IApp;
 
-
 //
-// This module implements an application for disseminating event's notificaitons,
+// This module implements an application for disseminating event's notifications,
 // using multihop D2D transmissions. New messages are generated upon the reception
-// of external events, signaled by the EventGenerator module. The application
+// of external events, signaled by the ~EventGenerator module. The application
 // sends the message to an IP multicast address, which is then mapped to D2D
-// multicast transmission mode. When the application receives a message, it can
-// relay it to the same IP multicast address, in order to extend the coverage
-// of the D2D transmission.
+// multicast transmission mode within the LTE/NR protocol stack. When the application 
+// receives a message, it can relay it to the same IP multicast address, in order 
+// to extend the coverage of the D2D transmission.
 // To avoid flooding, two mechanims can be used:
 // - specifying a time-to-live (TTL) for the message, which is decreased every time
-//   the message is relayed;
-// - specifying a target broadcast radius for the message: a node relays the message
+//   the message is relayed by a UE;
+// - specifying a target broadcast radius for the message: a UE relays the message
 //   only if it is located within a configurable distance from the originator.
 //
 // Moreover, if Trickle suppression mechanism is enabled, the application avoids
-// to relay a message when more than k duplicates have already been received.
+// to relay a message when more than 'k' duplicates have already been received.
 //
 // Every message originated by a node is associated to a *target area*, i.e. the
 // set of nodes that should receive the notification. This is used for gathering

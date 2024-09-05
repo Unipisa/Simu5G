@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,11 +14,11 @@ package simu5g.apps.alert;
 import inet.applications.contract.IApp;
 
 //
-// The AlertSender module generates periodic alert messages and sends them to a specified multicast
-// group or a unicast destination. It supports parameters for configuring packet size, transmission
-// period, start and stop times, destination address and port, and various socket options. This module
-// can be used in simulations requiring periodic alert generation such as in vehicular networks or
-// IoT scenarios.
+// This module generates periodic alert messages and sends them to a specified multicast
+// group or a unicast destination. Packet size, transmission period, start and stop times
+// are configurable using the corresponding parameters. The destination address must be a
+// multicast IP address. This module can be used in simulations requiring periodic alert
+// generation via device-to-device (D2D) communications, e.g., vehicular networks.
 //
 simple AlertSender like IApp
 {
