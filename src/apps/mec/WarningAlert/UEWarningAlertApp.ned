@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -16,19 +15,14 @@ package simu5g.apps.mec.WarningAlert;
 import inet.applications.contract.IApp;
 
 
- //
- // This is a UE app that asks to a Device App to instantiate the MECWarningAlertApp.
- // After a successful response, it asks to the MEC app to be notified when the car
- // enters a circle zone described by x,y center position and the radius. When a danger
- // event arrives, the car colors becomes red.
- //
- //  The event behavior flow of the app is:
- //  1) send create MEC app to the Device App
- //  2.1) ACK --> send coordinates to MEC app
- //  2.2) NACK --> do nothing
- //  3) wait for danger events
- //  4) send delete MEC app to the Device App
- //
+//
+// This application is to be instantiated at the UE side. It requires that a ~DeviceApp is
+// also instantiated at the UE. This module requests the ~DeviceApp to instantiate a 
+// ~MECWarningAlertApp in the MEC system.
+// Once the peer MEC application is up and running, this module sends a message to the MEC
+// application, requesting the latter to be notified when the UE running this module enters
+// a circular area defined by its (configurable) center and radius. 
+//
 simple UEWarningAlertApp like IApp
 {
     parameters:

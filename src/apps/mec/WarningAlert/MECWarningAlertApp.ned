@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -14,18 +13,13 @@ package simu5g.apps.mec.WarningAlert;
 
 import simu5g.apps.mec.MecApps.MecAppBase;
 
-//
-// This is a simple MEC app that receives the coordinates and the radius from the UE app
-// and subscribes to the CircleNotificationSubscription of the Location Service. The latter
-// periodically checks if the UE is inside/outside the area and sends a notification to the
-// MEC App. It then notifies the UE.
-//
-//  The event behavior flow of the app is:
-//  1) receive coordinates from the UE app
-//  2) subscribe to the circleNotificationSubscription
-//  3) receive the notification
-//  4) send the alert event to the UE app
-//  5) (optional) receive stop from the UE app
+// 
+// This module is an application that is dynamically instantiated on a MEC host upon request
+// from a ~UEWarningAlertApp, via a ~DeviceApp.
+// It receives requests from the UE to be notified when it enters a circular area defined by
+// its center and radius. This is accomplised by subscribing to the ~LocationService made 
+// available by the MEC Host. This module receives a notification by the Location Service when
+// the UE enters/exits the area and, in turn, sends a message to the UE.
 //
 simple MECWarningAlertApp extends MecAppBase
 {

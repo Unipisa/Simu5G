@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -16,12 +15,10 @@ import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.ServiceRegistry.ServiceRegistry;
 
 //
-// This module represents the MEC (Multi-access Edge Computing) platform component
-// as specified in the ETSI MEC architecture (ETSI GS MEC 003). It serves as a compound
-// module housing various MEC services and a service registry. The MEC platform facilitates
-// the deployment and execution of MEC applications and services in a virtualized
-// environment, enabling low-latency and high-bandwidth access to resources for
-// end-user applications.
+// This module represents the MEC Platform entity inside a ~MECHost, as specified in the 
+// ETSI MEC architecture (ETSI GS MEC 003). It includes the MEC services made available to
+// MEC applications instantiated within the MEC Host, as well as the ~ServiceRegistry. 
+// The type and number of available MEC services can be configured. 
 //
 module MECPlatform
 {

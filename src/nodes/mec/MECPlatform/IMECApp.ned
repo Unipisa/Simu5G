@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,11 +12,10 @@
 package simu5g.nodes.mec.MECPlatform;
 
 //
-// This module interface defines the basic structure of a Mobile Edge Computing (MEC)
-// application within the Simu5G framework. It includes parameters for identifying
-// the MEC app instance, network addressing, and resource requirements. MEC 
-// applications implementing this interface interact with other components in 
-// the MEC platform to provide edge services.
+// This module interface defines the module structure to be implemented by every
+// MEC Application supporting the standard lifecycle management via ~UALCMP and
+// ~MecOrchestrator (i.e., MEC applications that can be instantiated dynamically 
+// by User Equipments). See, for example, ~MECResponseApp module.
 //
 moduleinterface IMECApp
 {

@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -24,10 +23,14 @@ import inet.transportlayer.udp.Udp;
 
 //
 // This module represents the Virtualisation Infrastructure in a MEC host.
-// It includes various protocol layers (application, transport, network, link)
-// and associated modules for handling traffic and resource management in the network.
-// The module connects to MEC applications and services to support virtual resource allocation, 
-// service registration, and communication within the MEC environment.
+// It takes care of forwarding packets coming from the 5G core network to the 
+// appropriate MEC applications, after applying the processing of all the necessary
+// network protocol layers.
+// Optionally, it can hosts "independent" MEC applications, i.e. applications that 
+// are statically created at initialization, without going through the normal 
+// lifecycle (i.e., through the UALCMP and MEC orchestrator).
+// It provides the external interface to communicate with emulated MEC applications, 
+// running outside the simulation environment.
 //
 module VirtualisationInfrastructure
 {

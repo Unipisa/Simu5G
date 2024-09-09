@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,11 +14,13 @@ package simu5g.apps.mec.MecRequestResponseApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 
-//
-// This module implements a Mobile Edge Computing (MEC) application that processes
-// incoming requests from User Equipment (UE) applications. It establishes connection
-// with a service registry to retrieve the necessary service endpoints and communicate
-// through TCP and UDP sockets to handle requests, send responses, and process service messages.
+// 
+// This module is an application that is dynamically instantiated on a MEC host upon request
+// from a ~UERequestApp, via a ~DeviceApp.
+// Upon reception of a request from the UE, it queries the ~LocationService to obtain some
+// information (not used, it is just to "waste" some time), and sends a response message to the 
+// UE after some computation time that depends on the current resource utilization at the 
+// MEC host.
 //
 simple MECResponseApp extends MecAppBase
 {
