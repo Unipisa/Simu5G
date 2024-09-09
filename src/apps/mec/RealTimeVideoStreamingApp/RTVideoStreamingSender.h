@@ -61,9 +61,6 @@ class RTVideoStreamingSender : public cSimpleModule
     int deviceAppPort_;
     inet::L3Address deviceAppAddress_;
 
-    char *sourceSimbolicAddress;            //Ue[x]
-    char *deviceSimbolicAppAddress_;        //meHost.virtualisationInfrastructure
-
     // MEC application endPoint (returned by the device app)
     inet::L3Address mecAppAddress_;
     int mecAppPort_;
