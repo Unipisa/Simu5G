@@ -57,8 +57,8 @@ void UEWarningAlertApp::initialize(int stage)
     period_ = par("period");
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
-    sourceSimbolicAddress = (char *)ue->getFullName();
-    deviceSimbolicAppAddress_ = (char *)par("deviceAppAddress").stringValue();
+    const char *sourceSimbolicAddress = ue->getFullName();
+    const char *deviceSimbolicAppAddress_ = par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSimbolicAppAddress_);
 
     //binding socket
