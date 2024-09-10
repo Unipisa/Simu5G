@@ -21,7 +21,7 @@ simple VoDUDPClient like IApp
     parameters:
         int localPort;
         double startStreamTime @unit("s") = default(0s);
-        string startMetrics = default("off");
+        bool startMetrics = default(false);
         string vod_trace_file;
         string bsePath = default("");
         string origVideoYuv = default("");

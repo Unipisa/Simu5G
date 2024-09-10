@@ -66,7 +66,7 @@ void VoDUDPClient::initialize(int stage)
 void VoDUDPClient::finish()
 {
     outfile.close();
-    string startMetrics = par("startMetrics").stringValue();
+    bool startMetrics = par("startMetrics");
 
     // Parameters to be sent to ana.sh
 
@@ -81,7 +81,7 @@ void VoDUDPClient::finish()
     int numPktPerFrame = par("numPktPerFrame");
     int numFrame = par("numFrame");
 
-    if (startMetrics == "on") {
+    if (startMetrics) {
         stringstream ss, nf, pb, npktf;
         ss << getId();
         pb << playbackSize;
