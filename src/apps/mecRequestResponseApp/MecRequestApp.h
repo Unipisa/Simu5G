@@ -30,7 +30,7 @@ class MecRequestApp : public cSimpleModule
     simtime_t period_;
     int localPort_;
     int destPort_;
-    char *sourceSymbolicAddress_;
+    std::string sourceSymbolicAddress_;
     inet::L3Address destAddress_;
 
     inet::ModuleRefByPar<NRPhyUe> nrPhy_;

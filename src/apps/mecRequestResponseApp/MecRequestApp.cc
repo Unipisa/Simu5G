@@ -36,7 +36,7 @@ void MecRequestApp::initialize(int stage)
     period_ = par("period");
     localPort_ = par("localPort");
     destPort_ = par("destPort");
-    sourceSymbolicAddress_ = (char *)getContainingNode(this)->getFullName();
+    sourceSymbolicAddress_ = getContainingNode(this)->getFullName();
     const char *destSymbolicAddress = (char *)par("destAddress").stringValue();
     destAddress_ = inet::L3AddressResolver().resolve(destSymbolicAddress);
 
@@ -126,7 +126,7 @@ void MecRequestApp::sendRequest()
     reqPkt->setBsId(bsId_);
     reqPkt->setReqTimestamp(simTime().dbl());
     reqPkt->setChunkLength(B(size));
-    reqPkt->setSrcAddress(sourceSymbolicAddress_);
+    reqPkt->setSrcAddress(sourceSymbolicAddress_.c_str());
     reqPkt->setSrcPort(localPort_);
     reqPkt->setDestAddress(destAddress_.str().c_str());
     reqPkt->setDestPort(destPort_);
