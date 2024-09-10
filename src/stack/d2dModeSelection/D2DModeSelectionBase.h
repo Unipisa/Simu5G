@@ -14,7 +14,7 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/layer/LteMacEnbD2D.h"
 
 namespace simu5g {
 
@@ -44,7 +44,7 @@ class D2DModeSelectionBase : public cSimpleModule
     std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *peeringModeMap_;
 
     // reference to the MAC layer
-    inet::ModuleRefByPar<LteMacEnb> mac_;
+    inet::ModuleRefByPar<LteMacEnbD2D> mac_;
 
     // reference to the binder
     inet::ModuleRefByPar<Binder> binder_;

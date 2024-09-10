@@ -10,7 +10,6 @@
 //
 
 #include "stack/d2dModeSelection/D2DModeSelectionBase.h"
-#include "stack/mac/layer/LteMacEnbD2D.h"
 
 namespace simu5g {
 
@@ -116,7 +115,7 @@ void D2DModeSelectionBase::sendModeSwitchNotifications()
         LteD2DMode oldMode = switchItem.oldMode;
         LteD2DMode newMode = switchItem.newMode;
 
-        check_and_cast<LteMacEnbD2D *>(mac_.get())->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
+        mac_->sendModeSwitchNotification(srcId, dstId, oldMode, newMode);
     }
 }
 
