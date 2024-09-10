@@ -94,8 +94,8 @@ class VoDUDPServer : public cSimpleModule
     void initialize(int stage);
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void finish();
-    virtual void handleMessage(cMessage *);
-    virtual void handleSVCMessage(cMessage *);
+    virtual void handleMessage(cMessage *msg);
+    virtual void handleSVCMessage(cMessage *msg);
 };
 
 } //namespace

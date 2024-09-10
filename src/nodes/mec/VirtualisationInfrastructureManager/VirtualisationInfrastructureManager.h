@@ -128,12 +128,12 @@ class VirtualisationInfrastructureManager : public cSimpleModule
   public:
 
     // instancing the requested MEC App (called by MECPM)
-    MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *);
-    bool instantiateEmulatedMEApp(CreateAppMessage *);
+    MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *msg);
+    bool instantiateEmulatedMEApp(CreateAppMessage *msg);
 
     // terminating the correspondent MEC App (called by MECPM)
-    bool terminateMEApp(DeleteAppMessage *);
-    bool terminateEmulatedMEApp(DeleteAppMessage *);
+    bool terminateMEApp(DeleteAppMessage *msg);
+    bool terminateEmulatedMEApp(DeleteAppMessage *msg);
 
     /*
      * This method is called by the MEC apps that want to simulate

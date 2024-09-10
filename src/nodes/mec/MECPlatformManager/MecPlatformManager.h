@@ -45,7 +45,7 @@ class MecPlatformManager : public cSimpleModule
 
     virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
     virtual void initialize(int stage);
-    virtual void handleMessage(cMessage *) {}
+    virtual void handleMessage(cMessage *msg) {}
     virtual void finish() {}
 
     /* instantiating the requested MECApp
@@ -61,11 +61,11 @@ class MecPlatformManager : public cSimpleModule
      * is known at the MEC orchestrator (in the appDescriptor)
      */
     // instantiating the MEC app
-    MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *);
-    bool instantiateEmulatedMEApp(CreateAppMessage *);
+    MecAppInstanceInfo *instantiateMEApp(CreateAppMessage *msg);
+    bool instantiateEmulatedMEApp(CreateAppMessage *msg);
     // terminating the corresponding MEC app
-    bool terminateMEApp(DeleteAppMessage *);
-    bool terminateEmulatedMEApp(DeleteAppMessage *);
+    bool terminateMEApp(DeleteAppMessage *msg);
+    bool terminateEmulatedMEApp(DeleteAppMessage *msg);
 
     const std::vector<ServiceInfo> *getAvailableMecServices() const;
 
