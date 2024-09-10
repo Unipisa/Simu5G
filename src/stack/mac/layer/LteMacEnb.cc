@@ -977,7 +977,7 @@ void LteMacEnb::updateUserTxParam(cPacket *pktAux)
     lteInfo->setUserTxParams(tmp);
     RbMap rbMap;
     lteInfo->setTxMode(newParam.readTxMode());
-    LteSchedulerEnb *scheduler = ((dir == DL) ? (LteSchedulerEnb *)enbSchedulerDl_ : (LteSchedulerEnb *)enbSchedulerUl_);
+    LteSchedulerEnb *scheduler = ((dir == DL) ? static_cast<LteSchedulerEnb *>(enbSchedulerDl_) : static_cast<LteSchedulerEnb *>(enbSchedulerUl_));
 
     int grantedBlocks = scheduler->readRbOccupation(lteInfo->getDestId(), lteInfo->getCarrierFrequency(), rbMap);
 

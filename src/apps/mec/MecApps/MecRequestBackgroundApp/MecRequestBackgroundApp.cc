@@ -31,8 +31,8 @@ MecRequestBackgroundApp::~MecRequestBackgroundApp() {
 
 void MecRequestBackgroundApp::handleServiceMessage(int connId)
 {
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)serviceSocket_->getUserData();
-    serviceHttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(serviceSocket_->getUserData());
+    serviceHttpMessage = check_and_cast<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "payload: " << serviceHttpMessage->getBody() << endl;
 }
 
@@ -116,8 +116,8 @@ void MecRequestBackgroundApp::handleHttpMessage(int connId)
 
 void MecRequestBackgroundApp::handleMp1Message(int connId)
 {
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
-    mp1HttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(mp1Socket_->getUserData());
+    mp1HttpMessage = check_and_cast<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "MecRequestBackgroundApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try {

@@ -49,8 +49,8 @@ class LteMacPdu : public LteMacPdu_Base
         // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
         cPacketQueue::Iterator iterOther(*other.sduList_);
         for (cPacketQueue::Iterator iter(*sduList_); !iter.end(); iter++) {
-            cPacket *p1 = (cPacket *)*iter;
-            cPacket *p2 = (cPacket *)*iterOther;
+            cPacket *p1 = static_cast<cPacket *>(*iter);
+            cPacket *p2 = static_cast<cPacket *>(*iterOther);
             if (p1->getControlInfo() == nullptr && p2->getControlInfo() != nullptr) {
                 FlowControlInfo *fci = dynamic_cast<FlowControlInfo *>(p2->getControlInfo());
                 if (fci) {

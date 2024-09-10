@@ -64,7 +64,7 @@ void UERequestApp::initialize(int stage)
     localPort_ = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
 
-    char *deviceAppAddressStr = (char *)par("deviceAppAddress").stringValue();
+    const char *deviceAppAddressStr = par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceAppAddressStr);
 
     //binding socket

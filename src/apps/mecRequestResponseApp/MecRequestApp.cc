@@ -37,7 +37,7 @@ void MecRequestApp::initialize(int stage)
     localPort_ = par("localPort");
     destPort_ = par("destPort");
     sourceSymbolicAddress_ = getContainingNode(this)->getFullName();
-    const char *destSymbolicAddress = (char *)par("destAddress").stringValue();
+    const char *destSymbolicAddress = par("destAddress").stringValue();
     destAddress_ = inet::L3AddressResolver().resolve(destSymbolicAddress);
 
     //binding socket UDP

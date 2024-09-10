@@ -228,8 +228,8 @@ void MecRnisTestApp::handleHttpMessage(int connId)
 void MecRnisTestApp::handleMp1Message(int connId)
 {
     // for now I only have one Service Registry
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
-    mp1HttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(mp1Socket_->getUserData());
+    mp1HttpMessage = check_and_cast_nullable<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "MecRnisTestApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try {
@@ -265,8 +265,8 @@ void MecRnisTestApp::handleMp1Message(int connId)
 
 void MecRnisTestApp::handleServiceMessage(int connId)
 {
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)serviceSocket_->getUserData();
-    serviceHttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(serviceSocket_->getUserData());
+    serviceHttpMessage = check_and_cast_nullable<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
 
     if (serviceHttpMessage->getType() == REQUEST) {
         // should never go here?

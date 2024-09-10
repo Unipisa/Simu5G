@@ -533,9 +533,9 @@ void NRMacUe::macPduMake(MacCid cid)
                 // FIXME: hb is never deleted
                 auto info = pit->second->getTag<UserControlInfo>();
                 if (info->getDirection() == UL)
-                    hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, (LteMacBase *)getMacByMacNodeId(binder_, destId));
+                    hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
                 else // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, (LteMacBase *)getMacByMacNodeId(binder_, destId));
+                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
             }

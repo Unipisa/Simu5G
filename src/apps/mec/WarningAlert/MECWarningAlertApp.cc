@@ -223,8 +223,8 @@ void MECWarningAlertApp::handleHttpMessage(int connId)
 void MECWarningAlertApp::handleMp1Message(int connId)
 {
     // for now I only have just one Service Registry
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
-    mp1HttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(mp1Socket_->getUserData());
+    mp1HttpMessage = check_and_cast_nullable<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "MECWarningAlertApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try {
@@ -257,8 +257,8 @@ void MECWarningAlertApp::handleMp1Message(int connId)
 
 void MECWarningAlertApp::handleServiceMessage(int connId)
 {
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)serviceSocket_->getUserData();
-    serviceHttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(serviceSocket_->getUserData());
+    serviceHttpMessage = check_and_cast_nullable<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
 
     if (serviceHttpMessage->getType() == REQUEST) {
         Http::send204Response(serviceSocket_); // send back 204 no content

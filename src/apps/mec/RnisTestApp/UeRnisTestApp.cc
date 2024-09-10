@@ -54,7 +54,7 @@ void UeRnisTestApp::initialize(int stage)
     int localPort = par("localPort");
     deviceAppPort_ = par("deviceAppPort");
     const char *sourceSymbolicAddress = getParentModule()->getFullName();
-    const char *deviceSymbolicAppAddress = (char *)par("deviceAppAddress").stringValue();
+    const char *deviceSymbolicAppAddress = par("deviceAppAddress").stringValue();
     deviceAppAddress_ = inet::L3AddressResolver().resolve(deviceSymbolicAppAddress);
 
     //binding socket

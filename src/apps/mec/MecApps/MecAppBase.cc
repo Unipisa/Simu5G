@@ -87,9 +87,9 @@ void MecAppBase::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
         if (strcmp(msg->getName(), "processedMessage") == 0) {
-            handleProcessedMessage((cMessage *)packetQueue_.pop());
+            handleProcessedMessage(check_and_cast<cMessage *>(packetQueue_.pop()));
             if (!packetQueue_.isEmpty()) {
-                double processingTime = scheduleNextMsg((cMessage *)packetQueue_.front());
+                double processingTime = scheduleNextMsg(check_and_cast<cMessage *>(packetQueue_.front()));
                 EV << "MecAppBase::scheduleNextMsg() - next msg is processed in " << processingTime << "s" << endl;
                 scheduleAt(simTime() + processingTime, processMessage_);
             }
@@ -101,9 +101,9 @@ void MecAppBase::handleMessage(cMessage *msg)
             EV << "MecAppBase::handleMessage(): processedHttpMsg " << endl;
             ProcessingTimeMessage *procMsg = check_and_cast<ProcessingTimeMessage *>(msg);
             int connId = procMsg->getSocketId();
-            TcpSocket *sock = (TcpSocket *)sockets_.getSocketById(connId);
+            TcpSocket *sock = static_cast<TcpSocket *>(sockets_.getSocketById(connId));
             if (sock != nullptr) {
-                HttpMessageStatus *msgStatus = (HttpMessageStatus *)sock->getUserData();
+                HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(sock->getUserData());
                 handleHttpMessage(connId);
                 delete msgStatus->httpMessageQueue.pop();
                 if (!msgStatus->httpMessageQueue.isEmpty()) {
@@ -149,7 +149,7 @@ void MecAppBase::handleProcessedMessage(cMessage *msg)
         handleSelfMessage(msg);
     }
     else {
-        TcpSocket *sock = (TcpSocket *)sockets_.findSocketFor(msg);
+        ISocket *sock = sockets_.findSocketFor(msg);
         if (sock != nullptr) {
             EV << "MecAppBase::handleProcessedMessage(): message for socket with ID: " << sock->getSocketId() << endl;
             sock->processMessage(msg);
@@ -171,7 +171,7 @@ void MecAppBase::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, b
 
     std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)socket->getUserData();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(socket->getUserData());
 
     bool res = Http::parseReceivedMsg(socket->getSocketId(), packet, msgStatus->httpMessageQueue, msgStatus->bufferedData, msgStatus->currentMessage);
     if (res) {
@@ -218,7 +218,7 @@ TcpSocket *MecAppBase::addNewSocket()
 
 void MecAppBase::removeSocket(inet::TcpSocket *tcpSock)
 {
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)tcpSock->getUserData();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(tcpSock->getUserData());
     std::cout << "Deleting httpMessages in socket with sockId " << tcpSock->getSocketId() << std::endl;
     while (!msgStatus->httpMessageQueue.isEmpty()) {
         std::cout << "Deleting httpMessages message" << std::endl;

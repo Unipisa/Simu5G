@@ -166,8 +166,8 @@ void MECResponseApp::handleHttpMessage(int connId)
 void MECResponseApp::handleMp1Message(int connId)
 {
     // for now I only have just one Service Registry
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)mp1Socket_->getUserData();
-    mp1HttpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(mp1Socket_->getUserData());
+    mp1HttpMessage = check_and_cast_nullable<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "MECPlatooningApp::handleMp1Message - payload: " << mp1HttpMessage->getBody() << endl;
 
     try {
@@ -204,13 +204,8 @@ void MECResponseApp::handleMp1Message(int connId)
 
 void MECResponseApp::handleServiceMessage(int connId)
 {
-    HttpBaseMessage *httpMessage = nullptr;
-    HttpMessageStatus *msgStatus = (HttpMessageStatus *)serviceSocket_->getUserData();
-    httpMessage = (HttpBaseMessage *)msgStatus->httpMessageQueue.front();
-
-    if (httpMessage == nullptr) {
-        throw cRuntimeError("MECResponseApp::handleServiceMessage() - httpMessage is null!");
-    }
+    HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(serviceSocket_->getUserData());
+    HttpBaseMessage *httpMessage = check_and_cast<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
 
     if (httpMessage->getType() == RESPONSE) {
         HttpResponseMessage *rspMsg = dynamic_cast<HttpResponseMessage *>(httpMessage);

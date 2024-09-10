@@ -69,7 +69,7 @@ void SocketManager::dataArrived(inet::Packet *msg, bool urgent) {
         while (!httpMessageQueue.isEmpty()) {
             // TODO handle response in service!!
             service->emitRequestQueueLength();
-            HttpBaseMessage *msg = (HttpBaseMessage *)httpMessageQueue.pop();
+            HttpBaseMessage *msg = check_and_cast<HttpBaseMessage *>(httpMessageQueue.pop());
             msg->setArrivalTime(simTime());
             if (msg->getType() == REQUEST)
                 service->newRequest(check_and_cast<HttpRequestMessage *>(msg));

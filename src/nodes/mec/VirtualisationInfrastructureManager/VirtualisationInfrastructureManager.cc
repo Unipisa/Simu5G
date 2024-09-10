@@ -118,7 +118,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - processing..." << endl;
     //retrieve UE App ID
     int ueAppID = msg->getUeAppID();
-    char *meModuleName = (char *)msg->getMEModuleName();
+    const char *meModuleName = msg->getMEModuleName();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
     if (currentMEApps < maxMECApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
@@ -178,7 +178,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
 
     int serviceIndex = findService(msg->getRequiredService());
 
-    char *meModuleName = (char *)msg->getMEModuleName();
+    const char *meModuleName = msg->getMEModuleName();
 
     // int ueAppPort  = msg->getSourcePort();
 

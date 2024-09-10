@@ -282,7 +282,7 @@ void LocationService::handlePUTRequest(const HttpRequestMessage *currentRequestM
                 Http::send400Response(socket); // bad body JSON
                 return;
             }
-            CircleNotificationSubscription *sub = (CircleNotificationSubscription *)it->second;
+            CircleNotificationSubscription *sub = check_and_cast<CircleNotificationSubscription *>(it->second);
             int id = sub->getSubscriptionId();
             CircleNotificationSubscription *newSubscription = new CircleNotificationSubscription(binder_, id, socket, baseSubscriptionLocation_, eNodeB_, sub->getFirstNotification(), sub->getLastNotification());
             bool res = newSubscription->fromJson(jsonBody);
@@ -325,7 +325,7 @@ void LocationService::handleDELETERequest(const HttpRequestMessage *currentReque
         int subId = std::stoi(ssubId);
         Subscriptions::iterator it = subscriptions_.find(subId);
         if (it != subscriptions_.end()) {
-            // CircleNotificationSubscription *sub = (CircleNotificationSubscription*) it->second;
+            // CircleNotificationSubscription *sub = check_and_cast<CircleNotificationSubscription *>(it->second);
             subscriptionTimer_->removeSubId(subId);
             if (subscriptionTimer_->getSubIdSetSize() == 0 && subscriptionTimer_->isScheduled())
                 cancelEvent(subscriptionTimer_);
