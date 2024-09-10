@@ -254,6 +254,7 @@ void UEWarningAlertApp::sendMessageToMECApp() {
     alert->setType(START_WARNING);
     alert->setCenterPositionX(par("positionX").doubleValue());
     alert->setCenterPositionY(par("positionY").doubleValue());
+    alert->setCenterPositionZ(par("positionZ").doubleValue());
     alert->setRadius(par("radius").doubleValue());
     alert->setChunkLength(inet::B(20));
     alert->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
