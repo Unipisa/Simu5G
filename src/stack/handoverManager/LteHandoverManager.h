@@ -38,7 +38,8 @@ class LteHandoverManager : public cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    cGate *x2Manager_[2];
+    cGate *x2ManagerInGate_ = nullptr;
+    cGate *x2ManagerOutGate_ = nullptr;
 
     // reference to the PDCP layer
     inet::ModuleRefByPar<IP2Nic> ip2nic_;

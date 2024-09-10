@@ -26,8 +26,8 @@ void LteHandoverManager::initialize()
     nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macCellId").intValue());
 
     // get reference to the gates
-    x2Manager_[IN_GATE] = gate("x2ManagerIn");
-    x2Manager_[OUT_GATE] = gate("x2ManagerOut");
+    x2ManagerInGate_ = gate("x2ManagerIn");
+    x2ManagerOutGate_ = gate("x2ManagerOut");
 
     // get reference to the IP2Nic layer
     ip2nic_.reference(this, "ip2nicModule", true);
@@ -41,14 +41,14 @@ void LteHandoverManager::initialize()
     ctrlInfo->setInit(true);
     x2Packet->insertAtFront(initMsg);
 
-    send(x2Packet, x2Manager_[OUT_GATE]);
+    send(x2Packet, x2ManagerOutGate_);
 }
 
 void LteHandoverManager::handleMessage(cMessage *msg)
 {
     cPacket *pkt = check_and_cast<cPacket *>(msg);
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == x2Manager_[IN_GATE]) {
+    if (incoming == x2ManagerInGate_) {
         // incoming data from X2 Manager
         EV << "LteHandoverManager::handleMessage - Received message from X2 Manager" << endl;
         handleX2Message(pkt);
@@ -105,7 +105,7 @@ void LteHandoverManager::sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::x2ap);
 
     // send to X2 Manager
-    send(pkt, x2Manager_[OUT_GATE]);
+    send(pkt, x2ManagerOutGate_);
 }
 
 void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo)
@@ -139,7 +139,7 @@ void LteHandoverManager::forwardDataToTargetEnb(Packet *datagram, MacNodeId targ
     EV << NOW << " LteHandoverManager::forwardDataToTargetEnb - Send IP datagram to eNB " << targetEnb << endl;
 
     // send to X2 Manager
-    send(datagram, x2Manager_[OUT_GATE]);
+    send(datagram, x2ManagerOutGate_);
 }
 
 void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId sourceEnb)

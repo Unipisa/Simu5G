@@ -26,8 +26,8 @@ void DualConnectivityManager::initialize()
     nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macCellId").intValue());
 
     // get reference to the gates
-    x2Manager_[IN_GATE] = gate("x2ManagerIn");
-    x2Manager_[OUT_GATE] = gate("x2ManagerOut");
+    x2ManagerInGate_ = gate("x2ManagerIn");
+    x2ManagerOutGate_ = gate("x2ManagerOut");
 
     // register to the X2 Manager
     auto x2packet = new inet::Packet("X2DualConnectivityDataMsg");
@@ -36,13 +36,12 @@ void DualConnectivityManager::initialize()
     ctrlInfo->setInit(true);
     x2packet->insertAtFront(initMsg);
 
-    send(x2packet, x2Manager_[OUT_GATE]);
+    send(x2packet, x2ManagerOutGate_);
 }
 
 void DualConnectivityManager::handleMessage(cMessage *msg)
 {
-    cGate *incoming = msg->getArrivalGate();
-    if (incoming == x2Manager_[IN_GATE]) {
+    if (msg->getArrivalGate() == x2ManagerInGate_) {
         // incoming data from X2 Manager
         EV << "DualConnectivityManager::handleMessage - Received message from X2 manager" << endl;
         handleX2Message(msg);
@@ -102,7 +101,7 @@ void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNode
     EV << NOW << " DualConnectivityManager::forwardDataToTargetNode - Send packet to node " << targetNode << endl;
 
     // send to X2 Manager
-    send(pkt, x2Manager_[OUT_GATE]);
+    send(pkt, x2ManagerOutGate_);
 }
 
 void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
