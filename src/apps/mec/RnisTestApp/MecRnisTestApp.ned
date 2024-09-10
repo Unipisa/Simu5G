@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,11 +14,14 @@ package simu5g.apps.mec.RnisTestApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 
-//
-// This module represents a simple MEC app that connects to the Radio Network Information
-// Service (RNIS) and periodically requests L2 Measurements. The measurements obtained
-// from the RNIS are then sent back to the UE application. It can be used to demonstrate
-// the interaction between UE and MEC applications for querying RNIS.
+// 
+// This module is an application that is dynamically instantiated on a MEC host upon request
+// from a ~UeRnisTestApp, via a ~DeviceApp. It is used to test and showcase the functionalities 
+// of the ~RNIService API.
+// Upon reception of a request from the UE, it queries the ~RNIService periodically to obtain
+// L2 measurements related to the UE who sent the request (see the sendQuery() function). The 
+// results obtained from the RNIS is sent back to the ~UeRnisTestApp in a response message.
+// Note that the response time of the RNIS depends on the current load at the RNIS.
 //
 simple MecRnisTestApp extends MecAppBase
 {
