@@ -80,6 +80,10 @@ void UALCMPApp::handleStartOperation(inet::LifecycleOperation *operation)
     //serverSocket.bind(localAddress[0] ? L3Address(localAddress) : L3Address(), localPort);
     serverSocket.bind(inet::L3Address(), localPort); // bind socket for any address
 
+    int tos = par("tos");
+    if (tos != -1)
+        serverSocket.setTos(tos);
+
     serverSocket.listen();
 }
 
