@@ -9,14 +9,12 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.compManager;
-
-import simu5g.x2.X2User;
+package simu5g.stack.d2dModeSelection;
 
 //
-// Interface for the Comp Manager
+// Interface for D2D Mode Selection module
 //
-moduleinterface LteCompManager extends X2User
+moduleinterface ID2DModeSelection
 {
     parameters:
         @display("i=block/cogwheel");

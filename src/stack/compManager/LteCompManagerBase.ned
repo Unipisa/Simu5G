@@ -11,7 +11,7 @@
 
 package simu5g.stack.compManager;
 
-simple LteCompManagerBase like LteCompManager
+simple LteCompManagerBase like ILteCompManager
 {
     parameters:
         @display("i=block/cogwheel");

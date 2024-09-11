@@ -9,14 +9,20 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.d2dModeSelection;
+
+package simu5g.stack.phy;
 
 //
-// Interface for D2D Mode Selection module
+// Interface for the LtePhy module of PHY Layer
 //
-moduleinterface D2DModeSelection
+moduleinterface ILtePhy
 {
     parameters:
-        @display("i=block/cogwheel");
+        @display("i=block/wrxtx");
+
+    gates:
+        input upperGateIn;
+        output upperGateOut;
+        input radioIn;
 }
 

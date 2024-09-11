@@ -9,17 +9,16 @@
 // and cannot be removed from it.
 //
 
-package simu5g.x2;
+package simu5g.stack.compManager;
+
+import simu5g.x2.IX2User;
 
 //
-// Interface X2 User modules
+// Interface for the Comp Manager
 //
-moduleinterface X2User
+moduleinterface ILteCompManager extends IX2User
 {
     parameters:
         @display("i=block/cogwheel");
-    gates:
-        //# connections to the X2 Manager
-        input x2ManagerIn;
-        output x2ManagerOut;
 }
+

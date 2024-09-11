@@ -19,7 +19,7 @@ package simu5g.stack.d2dModeSelection;
 // that must be switched, sends a notification to the transmitting
 // endpoint of those flows
 //
-simple D2DModeSelectionBase like D2DModeSelection
+simple D2DModeSelectionBase like ID2DModeSelection
 {
     parameters:
         double modeSelectionPeriod @unit(s) = default(1s);

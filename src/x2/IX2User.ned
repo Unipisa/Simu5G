@@ -9,22 +9,17 @@
 // and cannot be removed from it.
 //
 
-
-package simu5g.stack.mac;
+package simu5g.x2;
 
 //
-// Interface for the MAC layer of LTE Stack.
+// Interface X2 User modules
 //
-moduleinterface LteMac
+moduleinterface IX2User
 {
     parameters:
-        @display("i=block/mac");
-        string interfaceTableModule;
-
+        @display("i=block/cogwheel");
     gates:
-        input RLC_to_MAC;    // RLC to MAC
-        output MAC_to_RLC;    // MAC to RLC
-        input PHY_to_MAC;    // PHY to MAC
-        output MAC_to_PHY;    // MAC to PHY
+        //# connections to the X2 Manager
+        input x2ManagerIn;
+        output x2ManagerOut;
 }
-

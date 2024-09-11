@@ -17,7 +17,7 @@ package simu5g.corenetwork.statsCollector;
 
 //
 
-module UeStatsCollector like StatsCollector
+module UeStatsCollector like IStatsCollector
 {
     parameters:
         string collectorType = default("ueStatsCollector");

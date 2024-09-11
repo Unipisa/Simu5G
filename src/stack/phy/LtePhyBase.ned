@@ -15,7 +15,7 @@ package simu5g.stack.phy;
 //
 // Base LtePhy module of PHY Layer
 //
-simple LtePhyBase like LtePhy
+simple LtePhyBase like ILtePhy
 {
     parameters:
         @display("i=block/wrxtx");

@@ -15,7 +15,7 @@ package simu5g.stack.pdcp_rrc;
 //
 // Base module for the PDCP/RRC layer of LTE Stack.
 //
-simple LtePdcpRrcBase like LtePdcpRrc
+simple LtePdcpRrcBase like ILtePdcpRrc
 {
     parameters:
         @display("i=block/fork");

@@ -12,7 +12,7 @@
 
 package simu5g.stack;
 
-import simu5g.stack.d2dModeSelection.D2DModeSelection;
+import simu5g.stack.d2dModeSelection.ID2DModeSelection;
 
 
 //
@@ -28,7 +28,7 @@ module LteNicEnbD2D extends LteNicEnb
         d2dCapable = default(true);   // DO NOT CHANGE
 
     submodules:
-        d2dModeSelection: <default("D2DModeSelectionBase")> like D2DModeSelection {
+        d2dModeSelection: <default("D2DModeSelectionBase")> like ID2DModeSelection {
             @display("p=623,314,row");
         }
 }

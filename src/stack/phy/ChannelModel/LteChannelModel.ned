@@ -12,7 +12,7 @@
 package simu5g.stack.phy.ChannelModel;
 
 
-simple LteChannelModel like LteChannelModelInterface
+simple LteChannelModel like ILteChannelModel
 {
     parameters:
         @display("i=block/classifier2");

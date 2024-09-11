@@ -12,10 +12,10 @@
 
 package simu5g.stack;
 
-import simu5g.stack.mac.LteMac;
-import simu5g.stack.packetFlowManager.PacketFlowManager;
-import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
-import simu5g.stack.phy.LtePhy;
+import simu5g.stack.mac.ILteMac;
+import simu5g.stack.packetFlowManager.IPacketFlowManager;
+import simu5g.stack.phy.ChannelModel.ILteChannelModel;
+import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
 
@@ -55,16 +55,16 @@ module NRNicUe extends LteNicUeD2D
             *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.nrPacketFlowManager" : "";
         }
         // MAC Layer
-        nrMac: <default("NRMacUe")> like LteMac {
+        nrMac: <default("NRMacUe")> like ILteMac {
             interfaceTableModule = parent.interfaceTableModule;
             @display("p=466,314");
         }
         // PHY Layer
-        nrPhy: <default("NRPhyUe")> like LtePhy {
+        nrPhy: <default("NRPhyUe")> like ILtePhy {
             @display("p=466,389");
         }
         // NR Channel Model
-        nrChannelModel[numNRCarriers]: <NRChannelModelType> like LteChannelModelInterface {
+        nrChannelModel[numNRCarriers]: <NRChannelModelType> like ILteChannelModel {
             @display("p=232,389");
         }
 
@@ -76,7 +76,7 @@ module NRNicUe extends LteNicUeD2D
  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        nrPacketFlowManager: <default("NRPacketFlowManagerUe")> like PacketFlowManager if hasRNISupport {
+        nrPacketFlowManager: <default("NRPacketFlowManagerUe")> like IPacketFlowManager if hasRNISupport {
             @display("p=200,300");
         }
 

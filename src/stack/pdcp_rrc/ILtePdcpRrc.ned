@@ -9,11 +9,24 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.packetFlowManager;
 
-moduleinterface PacketFlowManager
+package simu5g.stack.pdcp_rrc;
+
+//
+// Interface for the PDCP/RRC layer of LTE Stack.
+//
+moduleinterface ILtePdcpRrc
 {
-    string macModule;
-    string pfmType;
+    parameters:
+        @display("i=block/fork");
+        int headerCompressedSize @unit(B);
+
+    gates:
+        inout DataPort;
+        inout EUTRAN_RRC_Sap;
+        inout TM_Sap[];
+        inout UM_Sap[];
+        inout AM_Sap[];
 }
+
 

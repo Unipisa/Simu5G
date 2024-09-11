@@ -14,11 +14,11 @@ package simu5g.stack;
 
 import inet.networklayer.common.NetworkInterface;
 import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
-import simu5g.stack.mac.LteMac;
-import simu5g.stack.packetFlowManager.PacketFlowManager;
-import simu5g.stack.pdcp_rrc.LtePdcpRrc;
-import simu5g.stack.phy.ChannelModel.LteChannelModelInterface;
-import simu5g.stack.phy.LtePhy;
+import simu5g.stack.mac.ILteMac;
+import simu5g.stack.packetFlowManager.IPacketFlowManager;
+import simu5g.stack.pdcp_rrc.ILtePdcpRrc;
+import simu5g.stack.phy.ChannelModel.ILteChannelModel;
+import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.LteRlc;
 
 
@@ -70,7 +70,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=412,67");
         }
         // PDCP-RRC Layer
-        pdcpRrc: <> like LtePdcpRrc {
+        pdcpRrc: <> like ILtePdcpRrc {
             @display("p=362,141");
         }
         // RLC Layer
@@ -81,22 +81,22 @@ module LteNicBase extends NetworkInterface like ICellularNic
             *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.packetFlowManager" : "";
         }
         // MAC Layer
-        mac: <> like LteMac {
+        mac: <> like ILteMac {
             @display("p=363,314");
         }
         // LtePhy submodule
-        phy: <> like LtePhy {
+        phy: <> like ILtePhy {
             @display("p=363,389");
         }
 
-        channelModel[numCarriers]: <LteChannelModelType> like LteChannelModelInterface {
+        channelModel[numCarriers]: <LteChannelModelType> like ILteChannelModel {
             @display("p=100,389");
         }
 
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        packetFlowManager: <default("")> like PacketFlowManager if hasRNISupport {
+        packetFlowManager: <default("")> like IPacketFlowManager if hasRNISupport {
             @display("p=70,300");
         }
 

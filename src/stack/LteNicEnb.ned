@@ -13,7 +13,7 @@
 package simu5g.stack;
 
 import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
-import simu5g.stack.compManager.LteCompManager;
+import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.handoverManager.LteHandoverManager;
 import simu5g.x2.LteX2Manager;
@@ -44,7 +44,7 @@ module LteNicEnb extends LteNicBase
         //#
         //# Modules exploiting X2 interface
         //#
-        compManager: <default("LteCompManagerProportional")> like LteCompManager if compEnabled {
+        compManager: <default("LteCompManagerProportional")> like ILteCompManager if compEnabled {
             @display("p=493,314,row");
         }
         handoverManager: LteHandoverManager {

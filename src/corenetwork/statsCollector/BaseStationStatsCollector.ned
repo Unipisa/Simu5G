@@ -17,7 +17,7 @@ package simu5g.corenetwork.statsCollector;
 
 //
 
-module BaseStationStatsCollector like StatsCollector
+module BaseStationStatsCollector like IStatsCollector
 {
     parameters:
         string collectorType = default("eNBStatsCollector");

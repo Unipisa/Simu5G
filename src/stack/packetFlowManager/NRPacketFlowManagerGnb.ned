@@ -11,7 +11,7 @@
 
 package simu5g.stack.packetFlowManager;
 
-simple NRPacketFlowManagerGnb like PacketFlowManager
+simple NRPacketFlowManagerGnb like IPacketFlowManager
 {
     @class("PacketFlowManagerEnb");
 

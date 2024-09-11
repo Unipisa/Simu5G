@@ -9,11 +9,22 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.phy.ChannelModel;
 
+package simu5g.stack.mac;
 
-moduleinterface LteChannelModelInterface
+//
+// Interface for the MAC layer of LTE Stack.
+//
+moduleinterface ILteMac
 {
-    @display("i=block/classifier2");
+    parameters:
+        @display("i=block/mac");
+        string interfaceTableModule;
+
+    gates:
+        input RLC_to_MAC;    // RLC to MAC
+        output MAC_to_RLC;    // MAC to RLC
+        input PHY_to_MAC;    // PHY to MAC
+        output MAC_to_PHY;    // MAC to PHY
 }
 

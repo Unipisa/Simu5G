@@ -9,20 +9,11 @@
 // and cannot be removed from it.
 //
 
+package simu5g.stack.packetFlowManager;
 
-package simu5g.stack.phy;
-
-//
-// Interface for the LtePhy module of PHY Layer
-//
-moduleinterface LtePhy
+moduleinterface IPacketFlowManager
 {
-    parameters:
-        @display("i=block/wrxtx");
-
-    gates:
-        input upperGateIn;
-        output upperGateOut;
-        input radioIn;
+    string macModule;
+    string pfmType;
 }
 

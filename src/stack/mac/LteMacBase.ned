@@ -15,7 +15,7 @@ package simu5g.stack.mac;
 //
 // Base module for the MAC layer of LTE Stack.
 //
-simple LteMacBase like LteMac
+simple LteMacBase like ILteMac
 {
     parameters:
         @display("i=block/mac");

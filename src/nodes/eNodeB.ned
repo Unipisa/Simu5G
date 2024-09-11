@@ -22,7 +22,7 @@ import inet.transportlayer.udp.Udp;
 import simu5g.common.cellInfo.CellInfo;
 import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
-import simu5g.corenetwork.statsCollector.StatsCollector;
+import simu5g.corenetwork.statsCollector.IStatsCollector;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
 import simu5g.stack.ICellularNic;
 import simu5g.x2.LteX2App;
@@ -112,7 +112,7 @@ module eNodeB
                 @display("p=110,244;is=s");
         }
 
-        collector: <default("BaseStationStatsCollector")> like StatsCollector if hasRNISupport {
+        collector: <default("BaseStationStatsCollector")> like IStatsCollector if hasRNISupport {
             @display("p=50,275;is=s");
         }
 
