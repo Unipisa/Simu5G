@@ -142,6 +142,7 @@ enum TxDirectionType
 {
     ANISOTROPIC = 0;
     OMNI = 1;
+    UNKNOWN_TX_DIRECTION = -1;
 };
 
 // Lte feedback type

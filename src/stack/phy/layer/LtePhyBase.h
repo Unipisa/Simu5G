@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <math.h>
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
@@ -74,23 +75,23 @@ class LtePhyBase : public ChannelAccess
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
-    int upperGateIn_;
+    int upperGateIn_ = -1;
     /** The id of the out-data gate to the Stack */
-    int upperGateOut_;
+    int upperGateOut_ = -1;
     /** The id of the radioIn gate to receive LteAirFrames */
-    int radioInGate_;
+    int radioInGate_ = -1;
 
     /** Pointer to the World Utility, to obtain some global information*/
     //BaseWorldUtility* world_;
     /** Statistics */
-    unsigned int numAirFrameReceived_;    /// number of LteAirFrame correctly received
-    unsigned int numAirFrameNotReceived_; /// number of LteAirFrame not received
+    unsigned int numAirFrameReceived_ = 0;    /// number of LteAirFrame correctly received
+    unsigned int numAirFrameNotReceived_ = 0; /// number of LteAirFrame not received
 
     /** Local device MacNodeId */
-    MacNodeId nodeId_;
+    MacNodeId nodeId_ = NODEID_NONE;
 
     /** Node type */
-    RanNodeType nodeType_;
+    RanNodeType nodeType_ = UNKNOWN_NODE_TYPE;
 
     /// Reference to Binder
     inet::ModuleRefByPar<Binder> binder_;
@@ -99,39 +100,39 @@ class LtePhyBase : public ChannelAccess
     opp_component_ptr<CellInfo> cellInfo_;
 
     // used in multicast D2D to prevent a send direct towards out-of-range UEs. Range is expressed via multicastD2DRange_
-    bool enableMulticastD2DRangeCheck_;
+    bool enableMulticastD2DRangeCheck_ = false;
 
     // used with the enableMulticastD2DRangeCheck_ parameter
-    double multicastD2DRange_;
+    double multicastD2DRange_ = NAN;
 
     /*
      * If true, UEs associate to the best serving cell at initialization
      */
-    bool dynamicCellAssociation_;
+    bool dynamicCellAssociation_ = false;
 
     //Ue  Tx Power
-    double ueTxPower_;
+    double ueTxPower_ = NAN;
     // eNodeB Tx Power
-    double eNodeBtxPower_;
+    double eNodeBtxPower_ = NAN;
     //Micro eNb Tx Power
-    double microTxPower_;
+    double microTxPower_ = NAN;
     // Tx Power
-    double txPower_;
+    double txPower_ = NAN;
     // Tx Direction
-    TxDirectionType txDirection_;
+    TxDirectionType txDirection_ = OMNI;
     // Tx Angle
-    double txAngle_;
+    double txAngle_ = NAN;
     // Attenuation array
     AttenuationVector attenuationVector_;
     //Used only for PisaPhy
-    LteFeedbackComputation *lteFeedbackComputation_;
+    LteFeedbackComputation *lteFeedbackComputation_ = nullptr;
 
-    double carrierFrequency_;
+    double carrierFrequency_ = NAN;
 
     /*
      * NR Support
      */
-    bool isNr_;           // this flag is true if this module is part of the NR stack
+    bool isNr_ = false;           // this flag is true if this module is part of the NR stack
 
     //Statistics
     static simsignal_t averageCqiDlSignal_;
@@ -140,7 +141,7 @@ class LtePhyBase : public ChannelAccess
 
     // Users that are transmitting (uplink)
     // receiving (downlink) current packet
-    MacNodeId connectedNodeId_;
+    MacNodeId connectedNodeId_ = NODEID_NONE;
 
     // last time that the node has transmitted (currently, used only by UEs)
     simtime_t lastActive_;
