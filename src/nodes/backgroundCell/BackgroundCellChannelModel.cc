@@ -861,37 +861,35 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
     double txPwr;
 
     std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-    std::vector<EnbInfo *>::iterator it = enbList->begin(), et = enbList->end();
 
-    while (it != et) {
-        MacNodeId id = (*it)->id;
+    for (auto enb : *enbList) {
+        MacNodeId id = enb->id;
 
         // initialize eNb data structures
-        if (!(*it)->init) {
+        if (!enb->init) {
             // obtain a reference to enb phy and obtain tx power
-            (*it)->phy = check_and_cast<LtePhyBase *>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
+            enb->phy = check_and_cast<LtePhyBase *>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
 
-            (*it)->txPwr = (*it)->phy->getTxPwr();//dBm
+            enb->txPwr = enb->phy->getTxPwr();//dBm
 
             // get tx direction
-            (*it)->txDirection = (*it)->phy->getTxDirection();
+            enb->txDirection = enb->phy->getTxDirection();
 
             // get tx angle
-            (*it)->txAngle = (*it)->phy->getTxAngle();
+            enb->txAngle = enb->phy->getTxAngle();
 
             //get reference to mac layer
-            (*it)->mac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, id));
+            enb->mac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, id));
 
-            (*it)->init = true;
+            enb->init = true;
         }
 
-        Coord bsPos = (*it)->phy->getCoord();
+        Coord bsPos = enb->phy->getCoord();
 
-        LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>((*it)->phy->getChannelModel(carrierFrequency));
+        LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>(enb->phy->getChannelModel(carrierFrequency));
 
         // if the interfering BS does not use the selected carrier frequency, skip it
         if (interfChanModel == nullptr) {
-            ++it;
             continue;
         }
 
@@ -901,9 +899,9 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
 
         //=============== ANGULAR ATTENUATION =================
         double angularAtt = 0;
-        if ((*it)->txDirection == ANISOTROPIC) {
+        if (enb->txDirection == ANISOTROPIC) {
             //get tx angle
-            double txAngle = (*it)->txAngle;
+            double txAngle = enb->txAngle;
 
             // compute the angle between uePosition and reference axis, considering the eNb as center
             double ueAngle = computeAngle(bsPos, bgUePos);
@@ -923,19 +921,17 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
         // else, antenna is omni-directional
         //=============== END ANGULAR ATTENUATION =================
 
-        txPwr = (*it)->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+        txPwr = enb->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 
         numBands = std::min(numBands, interfChanModel->getNumBands());
         for (unsigned int i = 0; i < numBands; i++) {
             // compute the number of occupied slot (unnecessary)
-            temp = (*it)->mac->getDlBandStatus(i);
+            temp = enb->mac->getDlBandStatus(i);
             if (temp != 0)
                 (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
             EV << "\t band " << i << " occupied " << temp << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
         }
-
-        ++it;
     }
 
     return true;
@@ -946,32 +942,26 @@ bool BackgroundCellChannelModel::computeUplinkInterference(MacNodeId bgUeId, ine
 {
     EV << "**** Uplink Interference ****" << endl;
 
-    const std::vector<std::vector<UeAllocationInfo>> *ulTransmissionMap;
-    const std::vector<UeAllocationInfo> *allocatedUes;
-    std::vector<UeAllocationInfo>::const_iterator ue_it, ue_et;
-
-    ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
+    const std::vector<std::vector<UeAllocationInfo>> *ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
     if (ulTransmissionMap != nullptr && !ulTransmissionMap->empty()) {
         for (unsigned int i = 0; i < numBands; i++) {
             // get the set of UEs transmitting on the same band
-            allocatedUes = &(ulTransmissionMap->at(i));
-
-            ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-            for ( ; ue_it != ue_et; ++ue_it) {
-                MacNodeId ueId = ue_it->nodeId;
-                // MacCellId cellId = ue_it->cellId;
-                Direction dir = ue_it->dir;
+            const std::vector<UeAllocationInfo>& allocatedUes = ulTransmissionMap->at(i);
+            for (const auto& ueInfo : allocatedUes) {
+                MacNodeId ueId = ueInfo.nodeId;
+                // MacCellId cellId = ueInfo.cellId;
+                Direction dir = ueInfo.dir;
                 double txPwr;
                 inet::Coord ueCoord;
                 LtePhyUe *uePhy = nullptr;
                 TrafficGeneratorBase *trafficGen = nullptr;
-                if (ue_it->phy != nullptr) {
-                    uePhy = check_and_cast<LtePhyUe *>(ue_it->phy);
+                if (ueInfo.phy != nullptr) {
+                    uePhy = check_and_cast<LtePhyUe *>(ueInfo.phy);
                     txPwr = uePhy->getTxPwr(dir);
                     ueCoord = uePhy->getCoord();
                 }
                 else { // this is a backgroundUe
-                    trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it->trafficGen);
+                    trafficGen = check_and_cast<TrafficGeneratorBase *>(ueInfo.trafficGen);
                     txPwr = trafficGen->getTxPwr();
                     ueCoord = trafficGen->getCoord();
                 }

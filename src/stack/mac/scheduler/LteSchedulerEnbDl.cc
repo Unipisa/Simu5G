@@ -391,13 +391,10 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
     // retrieving reference to HARQ entities
     HarqTxBuffers *harqQueues = mac_->getHarqTxBuffers(carrierFrequency);
     if (harqQueues != nullptr) {
-        HarqTxBuffers::iterator it = harqQueues->begin();
-        HarqTxBuffers::iterator et = harqQueues->end();
-
         std::vector<BandLimit> usableBands;
 
         // examination of HARQ process in rtx status, adding them to scheduling list
-        for ( ; it != et; ) {
+        for (auto it = harqQueues->begin(); it != harqQueues->end(); ) {
             // For each UE
             MacNodeId nodeId = it->first;
 
@@ -528,9 +525,8 @@ bool LteSchedulerEnbDl::getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeI
         int limit = -2;
 
         // check whether band i is in the set of usable bands
-        UsableBands::iterator it = usableBands->begin();
-        for ( ; it != usableBands->end(); ++it) {
-            if (*it == i) {
+        for (auto band : *usableBands) {
+            if (band == i) {
                 // band i must be marked as unlimited
                 limit = -1;
                 break;

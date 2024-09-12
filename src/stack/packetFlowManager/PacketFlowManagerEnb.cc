@@ -217,8 +217,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     FramingInfo fi = rlcPdu->getFramingInfo();
     const RlcSduList *rlcSduList = rlcPdu->getRlcSduList();
     const RlcSduListSizes *rlcSduSizes = rlcPdu->getRlcSduSizes();
-    auto lit = rlcSduList->begin();
-    auto sit = rlcSduSizes->begin();
 
     // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
     if (status == START) {
@@ -271,6 +269,8 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
 
     int rlcSduSize = 0;
+    auto lit = rlcSduList->begin();
+    auto sit = rlcSduSizes->begin();
     for ( ; lit != rlcSduList->end(); ++lit, ++sit) {
         auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();
         unsigned int pdcpSno = rlcSdu->getSnoMainPacket();

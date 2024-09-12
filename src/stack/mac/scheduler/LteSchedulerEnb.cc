@@ -60,13 +60,12 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    auto it = carriers->begin();
     LteScheduler *newSched = nullptr;
-    for ( ; it != carriers->end(); ++it) {
+    for (auto& item : *carriers) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
-        newSched->setCarrierFrequency(it->second.carrierFrequency);
-        newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
+        newSched->setCarrierFrequency(item.second.carrierFrequency);
+        newSched->setNumerologyIndex(item.second.numerologyIndex);     // set periodicity for this scheduler according to numerology
         newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
     }
@@ -105,12 +104,11 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
 
     LteScheduler *newSched = nullptr;
     const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    auto it = carriers->begin();
-    for ( ; it != carriers->end(); ++it) {
+    for (auto& item : *carriers) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
-        newSched->setCarrierFrequency(it->second.carrierFrequency);
-        newSched->setNumerologyIndex(it->second.numerologyIndex);     // set periodicity for this scheduler according to numerology
+        newSched->setCarrierFrequency(item.second.carrierFrequency);
+        newSched->setNumerologyIndex(item.second.numerologyIndex);     // set periodicity for this scheduler according to numerology
         newSched->initializeBandLimit();
         scheduler_.push_back(newSched);
     }
@@ -972,17 +970,12 @@ void LteSchedulerEnb::resourceBlockStatistics(bool sleep)
     double allocatedBlocks = 0;
     unsigned int antenna = 0;
 
-    auto antennaIt = planeIt->begin();
-    auto antennaItEnd = planeIt->end();
-
     // For each antenna (MACRO/RUs)
-    for ( ; antennaIt != antennaItEnd; ++antennaIt) {
-        allocatedBlocks += (double)(*antennaIt);
+    for (auto num : *planeIt) {
+        allocatedBlocks += (double)(num);
 
         // collect the antenna utilization for the current Layer
-        utilization_ += (double)(*antennaIt);
-
-        antenna++;
+        utilization_ += (double)(num);
     }
 
     utilization_ /= (((double)(antenna)) * ((double)resourceBlocks_));

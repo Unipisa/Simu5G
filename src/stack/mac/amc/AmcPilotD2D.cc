@@ -32,8 +32,7 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
     preconfiguredTxParams_->writeCqi(std::vector<Cqi>(1, cqi));
 
     BandSet b;
-    Band i = 0;
-    for ( ; i < binder_->getTotalBands(); ++i)
+    for (Band i = 0; i < binder_->getTotalBands(); ++i)
         b.insert(i);
 
     preconfiguredTxParams_->writeBands(b);

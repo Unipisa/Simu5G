@@ -192,12 +192,12 @@ void LteMacEnb::initialize(int stage)
         }
 
         const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
-        auto it = carriers->begin();
         int i = 0;
-        for ( ; it != carriers->end(); ++it, ++i) {
-            double carrierFrequency = it->second.carrierFrequency;
+        for (const auto& item : *carriers) {
+            double carrierFrequency = item.second.carrierFrequency;
             bgTrafficManager_[carrierFrequency] = check_and_cast<IBackgroundTrafficManager *>(getParentModule()->getSubmodule("bgTrafficGenerator", i)->getSubmodule("manager"));
             bgTrafficManager_[carrierFrequency]->setCarrierFrequency(carrierFrequency);
+            ++i;
         }
     }
     else if (stage == inet::INITSTAGE_LAST) {
@@ -209,13 +209,12 @@ void LteMacEnb::initialize(int stage)
         scheduleAt(NOW + ttiPeriod_, ttiTick_);
 
         const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
-        auto it = carriers->begin();
-        for ( ; it != carriers->end(); ++it) {
+        for (const auto& item : *carriers) {
             // set periodicity for this carrier according to its numerology
             NumerologyPeriodCounter info;
-            info.max = 1 << (cellInfo_->getMaxNumerologyIndex() - it->second.numerologyIndex); // 2^(maxNumerologyIndex - numerologyIndex)
+            info.max = 1 << (cellInfo_->getMaxNumerologyIndex() - item.second.numerologyIndex); // 2^(maxNumerologyIndex - numerologyIndex)
             info.current = info.max - 1;
-            numerologyPeriodCounter_[it->second.numerologyIndex] = info;
+            numerologyPeriodCounter_[item.second.numerologyIndex] = info;
         }
 
         // set the periodicity for each scheduler
@@ -244,10 +243,9 @@ void LteMacEnb::macSduRequest()
     std::map<double, LteMacScheduleList>::iterator cit;
     for (cit = scheduleListDl_->begin(); cit != scheduleListDl_->end(); cit++) { // loop on carriers
 
-        LteMacScheduleList::const_iterator it;
-        for (it = cit->second.begin(); it != cit->second.end(); it++) { // loop on CIDs
-            MacCid destCid = it->first.first;
-            // Codeword cw = it->first.second;
+        for (const auto& item : cit->second) { // loop on CIDs
+            MacCid destCid = item.first.first;
+            // Codeword cw = item.first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
             // for each band, count the number of bytes allocated for this UE (should be by CID)
@@ -337,10 +335,9 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 {
     EV << NOW << "LteMacEnb::sendGrants " << endl;
 
-    std::map<double, LteMacScheduleList>::iterator cit = scheduleList->begin();
-    for ( ; cit != scheduleList->end(); ++cit) {
-        LteMacScheduleList& carrierScheduleList = cit->second;
-        while (!cit->second.empty()) {
+    for (auto& citem : *scheduleList) {
+        LteMacScheduleList& carrierScheduleList = citem.second;
+        while (!carrierScheduleList.empty()) {
             LteMacScheduleList::iterator it, ot;
             it = carrierScheduleList.begin();
 
@@ -388,7 +385,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
             EV << NOW << " LteMacEnb::sendGrants Node[" << getMacNodeId() << "] - "
                << granted << " blocks to grant for user " << nodeId << " on "
-               << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << cit->first << "]" << endl;
+               << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << citem.first << "]" << endl;
 
             // TODO: change to tag instead of chunk
             // TODO: Grant is set as aperiodic by default
@@ -404,20 +401,19 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
             pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
             pkt->addTagIfAbsent<UserControlInfo>()->setDestId(nodeId);
             pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(GRANTPKT);
-            pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(cit->first);
+            pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(citem.first);
 
             // Get and set the user's UserTxParams
-            const UserTxParams& ui = getAmc()->computeTxParams(nodeId, UL, cit->first);
+            const UserTxParams& ui = getAmc()->computeTxParams(nodeId, UL, citem.first);
             UserTxParams *txPara = new UserTxParams(ui);
             grant->setUserTxParams(txPara);
 
             // Acquiring remote antennas set from user info
             const std::set<Remote>& antennas = ui.readAntennaSet();
-            std::set<Remote>::const_iterator antenna_it, antenna_et = antennas.end();
 
             // Get bands for this carrier
-            const unsigned int firstBand = cellInfo_->getCarrierStartingBand(cit->first);
-            const unsigned int lastBand = cellInfo_->getCarrierLastBand(cit->first);
+            const unsigned int firstBand = cellInfo_->getCarrierStartingBand(citem.first);
+            const unsigned int lastBand = cellInfo_->getCarrierLastBand(citem.first);
 
             // HANDLE MULTICW
             for ( ; cw < codewords; ++cw) {
@@ -426,13 +422,12 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
                 for (Band b = firstBand; b <= lastBand; ++b) {
                     unsigned int bandAllocatedBlocks = 0;
 
-                    for (antenna_it = antennas.begin(); antenna_it != antenna_et; ++antenna_it) {
-                        bandAllocatedBlocks += enbSchedulerUl_->readPerUeAllocatedBlocks(nodeId,
-                                *antenna_it, b);
+                    for (const auto& antenna : antennas) {
+                        bandAllocatedBlocks += enbSchedulerUl_->readPerUeAllocatedBlocks(nodeId, antenna, b);
                     }
 
                     grantedBytes += amc_->computeBytesOnNRbs(nodeId, b, cw,
-                            bandAllocatedBlocks, UL, cit->first);
+                            bandAllocatedBlocks, UL, citem.first);
                 }
 
                 grant->setGrantedCwBytes(cw, grantedBytes);
@@ -441,7 +436,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
 
             RbMap map;
 
-            enbSchedulerUl_->readRbOccupation(nodeId, cit->first, map);
+            enbSchedulerUl_->readRbOccupation(nodeId, citem.first, map);
 
             grant->setGrantedBlocks(map);
             pkt->insertAtFront(grant);
@@ -493,13 +488,11 @@ void LteMacEnb::macPduMake(MacCid cid)
     macPduList_.clear();
 
     // Build a MAC PDU for each scheduled user on each codeword
-    std::map<double, LteMacScheduleList>::iterator cit = scheduleListDl_->begin();
-    for ( ; cit != scheduleListDl_->end(); ++cit) {
-        double carrierFreq = cit->first;
-        LteMacScheduleList::const_iterator it;
-        for (it = cit->second.begin(); it != cit->second.end(); it++) {
+    for (auto& cit : *scheduleListDl_) {
+        double carrierFreq = cit.first;
+        for (auto& it : cit.second) {
             Packet *macPacket = nullptr;
-            MacCid destCid = it->first.first;
+            MacCid destCid = it.first.first;
 
             if (destCid != cid)
                 continue;
@@ -509,10 +502,10 @@ void LteMacEnb::macPduMake(MacCid cid)
             if (mbuf_[destCid]->getQueueLength() == 0)
                 break;
 
-            Codeword cw = it->first.second;
+            Codeword cw = it.first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
             std::pair<MacNodeId, Codeword> pktId = {destId, cw};
-            unsigned int sduPerCid = it->second;
+            unsigned int sduPerCid = it.second;
             unsigned int grantedBlocks = 0;
             TxMode txmode;
 
@@ -587,10 +580,9 @@ void LteMacEnb::macPduMake(MacCid cid)
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        MacPduList::iterator pit;
-        for (pit = lit->second.begin(); pit != lit->second.end(); ++pit) {
-            MacNodeId destId = pit->first.first;
-            Codeword cw = pit->first.second;
+        for (const auto& pit : lit->second) {
+            MacNodeId destId = pit.first.first;
+            Codeword cw = pit.first.second;
 
             LteHarqBufferTx *txBuf;
             auto hit = harqTxBuffers.find(destId);
@@ -606,7 +598,7 @@ void LteMacEnb::macPduMake(MacCid cid)
             }
             UnitList txList = (txBuf->firstAvailable());
 
-            auto macPacket = pit->second;
+            auto macPacket = pit.second;
             auto header = macPacket->peekAtFront<LteMacPdu>();
             EV << "LteMacBase: PDU Maker created PDU: " << macPacket->str() << endl;
 
@@ -813,16 +805,12 @@ void LteMacEnb::handleSelfMessage()
     // Reception
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
-    auto mit = harqRxBuffers_.begin();
-    auto met = harqRxBuffers_.end();
-    for ( ; mit != met; mit++) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
+    for (auto& mit : harqRxBuffers_) {
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit.first)) > 0)
             continue;
 
-        auto hit = mit->second.begin();
-        auto het = mit->second.end();
-        for ( ; hit != het; hit++) {
-            auto pduList = hit->second->extractCorrectPdus();
+        for (auto& hit : mit.second) {
+            auto pduList = hit.second->extractCorrectPdus();
             while (!pduList.empty()) {
                 auto pdu = pduList.front();
                 pduList.pop_front();
@@ -853,9 +841,8 @@ void LteMacEnb::handleSelfMessage()
     if (activation) {
         // clear previous schedule list
         if (scheduleListDl_ != nullptr) {
-            std::map<double, LteMacScheduleList>::iterator cit = scheduleListDl_->begin();
-            for ( ; cit != scheduleListDl_->end(); ++cit)
-                cit->second.clear();
+            for (auto& cit : *scheduleListDl_)
+                cit.second.clear();
             scheduleListDl_->clear();
         }
 
@@ -868,14 +855,12 @@ void LteMacEnb::handleSelfMessage()
     EV << "========================================== END DOWNLINK ============================================" << endl;
 
     // purge from corrupted PDUs all RX HARQ buffers for all users
-    for (mit = harqRxBuffers_.begin(); mit != met; mit++) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit->first)) > 0)
+    for (auto& mit : harqRxBuffers_) {
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit.first)) > 0)
             continue;
 
-        HarqRxBuffers::iterator hit = mit->second.begin();
-        HarqRxBuffers::iterator het = mit->second.end();
-        for ( ; hit != het; hit++)
-            hit->second->purgeCorruptedPdus();
+        for (auto& hit : mit.second)
+            hit.second->purgeCorruptedPdus();
     }
 
     // Message that triggers flushing of TX HARQ buffers for all users
@@ -919,12 +904,9 @@ int LteMacEnb::getProcessForRtx(double carrierFrequency, Direction dir)
 
 void LteMacEnb::flushHarqBuffers()
 {
-    std::map<double, HarqTxBuffers>::iterator mit = harqTxBuffers_.begin();
-    std::map<double, HarqTxBuffers>::iterator met = harqTxBuffers_.end();
-    for ( ; mit != met; mit++) {
-        HarqTxBuffers::iterator it;
-        for (it = mit->second.begin(); it != mit->second.end(); it++)
-            it->second->sendSelectedDown();
+    for (auto& mit : harqTxBuffers_) {
+        for (auto& it : mit.second)
+            it.second->sendSelectedDown();
     }
 }
 
@@ -941,20 +923,17 @@ void LteMacEnb::macHandleFeedbackPkt(cPacket *pktAux)
 
     auto lteInfo = pkt->getTag<UserControlInfo>();
 
-    LteFeedbackDoubleVector::iterator it;
-    LteFeedbackVector::iterator jt;
-
-    for (it = fbMapDl.begin(); it != fbMapDl.end(); ++it) {
-        for (jt = it->begin(); jt != it->end(); ++jt) {
-            if (!jt->isEmptyFeedback()) {
-                amc_->pushFeedback(id, DL, (*jt), lteInfo->getCarrierFrequency());
+    for (auto& it : fbMapDl) {
+        for (auto& jt : it) {
+            if (!jt.isEmptyFeedback()) {
+                amc_->pushFeedback(id, DL, jt, lteInfo->getCarrierFrequency());
             }
         }
     }
-    for (it = fbMapUl.begin(); it != fbMapUl.end(); ++it) {
-        for (jt = it->begin(); jt != it->end(); ++jt) {
-            if (!jt->isEmptyFeedback())
-                amc_->pushFeedback(id, UL, (*jt), lteInfo->getCarrierFrequency());
+    for (auto& it : fbMapUl) {
+        for (auto& jt : it) {
+            if (!jt.isEmptyFeedback())
+                amc_->pushFeedback(id, UL, jt, lteInfo->getCarrierFrequency());
         }
     }
     delete pkt;
@@ -1041,27 +1020,21 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
 
         std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
-        auto it1 = harqBuffers->begin();
-        auto end1 = harqBuffers->end();
 
-        for ( ; it1 != end1; ++it1) {
-            const HarqTxBuffers& harqBuffer = it1->second;
-            auto itHarq = harqBuffer.begin();
-            auto endHarq = harqBuffer.end();
-            for ( ; itHarq != endHarq; ++itHarq) {
-                if (itHarq->second->isHarqBufferActive()) {
-                    activeUeSet.insert(itHarq->first); // active users in HARQ
+        for (const auto& it1 : *harqBuffers) {
+            const HarqTxBuffers& harqBuffer = it1.second;
+            for (const auto& itHarq : harqBuffer) {
+                if (itHarq.second->isHarqBufferActive()) {
+                    activeUeSet.insert(itHarq.first); // active users in HARQ
                 }
             }
         }
 
         // every time an RLC SDU enters the layer, a newPktData is sent to
         // mac to inform the presence of data in RLC.
-        auto vit = macBuffers_.begin();
-        auto eit = macBuffers_.end();
-        for ( ; vit != eit; ++vit) {
-            if (!vit->second->isEmpty())
-                activeUeSet.insert(MacCidToNodeId(vit->first)); // active users in RLC
+        for (const auto& vit : macBuffers_) {
+            if (!vit.second->isEmpty())
+                activeUeSet.insert(MacCidToNodeId(vit.first)); // active users in RLC
         }
     }
     else if (dir == UL) {

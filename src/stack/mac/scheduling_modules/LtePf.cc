@@ -66,8 +66,6 @@ void LtePf::prepareSchedule()
             continue;
         auto it = bands.begin(), et = bands.end();
 
-        std::set<Remote>::iterator antennaIt = info.readAntennaSet().begin(), antennaEt = info.readAntennaSet().end();
-
         bool cqiNull = false;
         for (unsigned int i = 0; i < codeword; i++) {
             if (info.readCqiVector()[i] == 0)
@@ -80,10 +78,11 @@ void LtePf::prepareSchedule()
         unsigned int availableBlocks = 0;
         unsigned int availableBytes = 0;
         // for each antenna
-        for ( ; antennaIt != antennaEt; ++antennaIt) {
+        for (auto antenna : info.readAntennaSet()) {
             // for each logical band
+            //FIXME missing reset `it`??? it = bands.begin();
             for ( ; it != et; ++it) {
-                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, *antennaIt, *it);
+                unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, antenna, *it);
                 availableBlocks += blocks;
                 availableBytes += eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs(nodeId, *it, blocks, dir, carrierFrequency_);
             }

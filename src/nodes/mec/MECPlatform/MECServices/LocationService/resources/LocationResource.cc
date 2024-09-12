@@ -89,16 +89,13 @@ nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, 
     const std::map<MacNodeId, inet::Coord> *uePositionList;
 
     uePositionList = it->second->getUePositionList();
-
-    auto pit = uePositionList->begin();
-    auto end = uePositionList->end();
-    for ( ; pit != end; ++pit) {
-        inet::Ipv4Address ipAddress = binder_->getIPv4Address(pit->first);
+    for (const auto& item : *uePositionList) {
+        inet::Ipv4Address ipAddress = binder_->getIPv4Address(item.first);
         if (addressess.find(ipAddress) != addressess.end())
             continue;
         addressess.insert(ipAddress);
-        EV << "LocationResource::toJson() - user: " << pit->first << endl;
-        User ueInfo = getUserByNodeId(pit->first, it->first);
+        EV << "LocationResource::toJson() - user: " << item.first << endl;
+        User ueInfo = getUserByNodeId(item.first, it->first);
         if (ueInfo.getIpv4Address() != inet::Ipv4Address::UNSPECIFIED_ADDRESS)
             ueArray.push_back(ueInfo.toJson());
     }

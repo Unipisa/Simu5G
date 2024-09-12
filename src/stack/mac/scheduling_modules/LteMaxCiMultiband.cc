@@ -51,7 +51,6 @@ void LteMaxCiMultiband::prepareSchedule()
         }
         // obtain a vector of CQI, one for each band
         std::vector<Cqi> vect = eNbScheduler_->mac_->getAmc()->readMultiBandCqi(nodeId, direction_, carrierFrequency_);
-        int band = 0;
         if (debug)
             cout << NOW << " LteMaxCiMultiband::prepareSchedule - per band cqi for UE[" << nodeId << "]" << endl;
 
@@ -59,7 +58,7 @@ void LteMaxCiMultiband::prepareSchedule()
         totAvailableBytes_MB = 0;
 
         // compute the number of bytes that can be fitted into each BAND
-        for ( ; band < vect.size(); ++band ) {
+        for (int band = 0; band < vect.size(); ++band ) {
             unsigned int blocks = eNbScheduler_->readAvailableRbs(nodeId, MACRO, band);
             availableBlocks += blocks;
             availableBytes_MB = eNbScheduler_->mac_->getAmc()->computeBytesOnNRbs_MB(nodeId, band, blocks, direction_, carrierFrequency_);

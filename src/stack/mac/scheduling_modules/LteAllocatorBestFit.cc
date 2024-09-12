@@ -400,13 +400,12 @@ void LteAllocatorBestFit::prepareSchedule()
         if (blocks <= req_RBs && blocks != 0) {
             // Going here means that there's room for allocation (here's the true allocation)
             std::sort(bookedBands.begin(), bookedBands.end());
-            std::vector<Band>::iterator it_b = bookedBands.begin();
             // For all the bands previously booked
-            for ( ; it_b != bookedBands.end(); ++it_b) {
+            for (auto band : bookedBands) {
                 // TODO Find a correct way to specify plane and antenna
-                allocatedRbsPerBand_[MAIN_PLANE][MACRO][*it_b].ueAllocatedRbsMap_[nodeId] += 1;
-                allocatedRbsPerBand_[MAIN_PLANE][MACRO][*it_b].ueAllocatedBytesMap_[nodeId] += req_Bytes1RB;
-                allocatedRbsPerBand_[MAIN_PLANE][MACRO][*it_b].allocated_ += 1;
+                allocatedRbsPerBand_[MAIN_PLANE][MACRO][band].ueAllocatedRbsMap_[nodeId] += 1;
+                allocatedRbsPerBand_[MAIN_PLANE][MACRO][band].ueAllocatedBytesMap_[nodeId] += req_Bytes1RB;
+                allocatedRbsPerBand_[MAIN_PLANE][MACRO][band].allocated_ += 1;
             }
 
             // Add the nodeId to the scheduleList (needed for Grants)

@@ -77,12 +77,9 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
         }
         else {
             // TODO Add MIN and MEAN cqi computation methods
-            unsigned int bandIt = 0;
-            unsigned short currBand = (*usableB)[bandIt];
-            chosenBand = currBand;
-            chosenCqi = summaryCqi.at(currBand);
-            for ( ; bandIt < usableB->size(); ++bandIt) {
-                currBand = (*usableB)[bandIt];
+            chosenBand = (*usableB)[0];
+            chosenCqi = summaryCqi.at(chosenBand);
+            for (Band currBand : *usableB) {
                 // For all available band
                 double s = (double)summaryCqi.at(currBand);
                 if (chosenCqi < s) {
@@ -115,12 +112,9 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
             EV << NOW << " AmcPilotAuto::computeTxParams - no UsableBand available for this user." << endl;
         }
         else {
-            unsigned int bandIt = 0;
-            unsigned short currBand = (*usableB)[bandIt];
-            chosenBand = currBand;
-            chosenCqi = summaryCqi.at(currBand);
-            for ( ; bandIt < usableB->size(); ++bandIt) {
-                currBand = (*usableB)[bandIt];
+            chosenBand = (*usableB)[0];
+            chosenCqi = summaryCqi.at(chosenBand);
+            for (Band currBand : *usableB) {
                 // For all available band
                 double s = (double)summaryCqi.at(currBand);
                 if (chosenCqi > s) {

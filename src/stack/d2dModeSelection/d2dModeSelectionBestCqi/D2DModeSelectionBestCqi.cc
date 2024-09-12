@@ -31,16 +31,14 @@ void D2DModeSelectionBestCqi::doModeSelection()
     double primaryCarrierFrequency = mac_->getCellInfo()->getCarriers()->front();
 
     switchList_.clear();
-    std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>>::iterator it = peeringModeMap_->begin();
-    for ( ; it != peeringModeMap_->end(); ++it) {
+    for (auto it = peeringModeMap_->begin(); it != peeringModeMap_->end(); ++it) {
         MacNodeId srcId = it->first;
 
         // consider only UEs within this cell
         if (binder_->getNextHop(srcId) != mac_->getMacCellId())
             continue;
 
-        std::map<MacNodeId, LteD2DMode>::iterator jt = it->second.begin();
-        for ( ; jt != it->second.end(); ++jt) {
+        for (auto jt = it->second.begin(); jt != it->second.end(); ++jt) {
             MacNodeId dstId = jt->first;   // since the D2D CQI is the same for all D2D connections,
                                            // the mode will be the same for all destinations
 

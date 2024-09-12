@@ -381,9 +381,8 @@ cModule *MecOrchestrator::findBestMecHost(const ApplicationDescriptor& appDesc)
         else {
             break;
         }
-        auto it = mecServices->begin();
-        for ( ; it != mecServices->end(); ++it) {
-            if (serviceName == it->getName()) {
+        for (const auto& service : *mecServices) {
+            if (serviceName == service.getName()) {
                 bestHost = mecHost;
                 break;
             }

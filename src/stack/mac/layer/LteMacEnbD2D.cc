@@ -182,9 +182,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
 {
     EV << NOW << "LteMacEnbD2D::sendGrants " << endl;
 
-    std::map<double, LteMacScheduleList>::iterator cit = scheduleList->begin();
-    for ( ; cit != scheduleList->end(); ++cit) {
-        LteMacScheduleList& carrierScheduleList = cit->second;
+    for (auto& [carrierFreq, carrierScheduleList] : *scheduleList) {
         while (!carrierScheduleList.empty()) {
             LteMacScheduleList::iterator it, ot;
             it = carrierScheduleList.begin();
@@ -224,7 +222,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
 
             EV << NOW << " LteMacEnbD2D::sendGrants Node[" << getMacNodeId() << "] - "
                << granted << " blocks to grant for user " << nodeId << " on "
-               << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << cit->first << "]" << endl;
+               << codewords << " codewords. CW[" << cw << "\\" << otherCw << "] carrier[" << carrierFreq << "]" << endl;
 
             // get the direction of the grant, depending on which connection has been scheduled by the eNB
             Direction dir = (lcid == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : ((lcid == D2D_SHORT_BSR) ? D2D : UL);
@@ -243,21 +241,19 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
             pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
             pkt->addTagIfAbsent<UserControlInfo>()->setDestId(nodeId);
             pkt->addTagIfAbsent<UserControlInfo>()->setFrameType(GRANTPKT);
-            pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(cit->first);
+            pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
 
-            const UserTxParams& ui = getAmc()->computeTxParams(nodeId, dir, cit->first);
+            const UserTxParams& ui = getAmc()->computeTxParams(nodeId, dir, carrierFreq);
             UserTxParams *txPara = new UserTxParams(ui);
             // FIXME: possible memory leak
             grant->setUserTxParams(txPara);
 
             // acquiring remote antennas set from user info
             const std::set<Remote>& antennas = ui.readAntennaSet();
-            auto antenna_it = antennas.begin(),
-                                             antenna_et = antennas.end();
 
             // get bands for this carrier
-            const unsigned int firstBand = cellInfo_->getCarrierStartingBand(cit->first);
-            const unsigned int lastBand = cellInfo_->getCarrierLastBand(cit->first);
+            const unsigned int firstBand = cellInfo_->getCarrierStartingBand(carrierFreq);
+            const unsigned int lastBand = cellInfo_->getCarrierLastBand(carrierFreq);
 
             //  HANDLE MULTICW
             for ( ; cw < codewords; ++cw) {
@@ -265,11 +261,10 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
 
                 for (Band b = firstBand; b <= lastBand; ++b) {
                     unsigned int bandAllocatedBlocks = 0;
-                    // for (; antenna_it != antenna_et; ++antenna_it) // OLD FOR
-                    for (antenna_it = antennas.begin(); antenna_it != antenna_et; ++antenna_it) {
-                        bandAllocatedBlocks += enbSchedulerUl_->readPerUeAllocatedBlocks(nodeId, *antenna_it, b);
+                    for (const auto& antenna : antennas) {
+                        bandAllocatedBlocks += enbSchedulerUl_->readPerUeAllocatedBlocks(nodeId, antenna, b);
                     }
-                    grantedBytes += amc_->computeBytesOnNRbs(nodeId, b, cw, bandAllocatedBlocks, dir, cit->first);
+                    grantedBytes += amc_->computeBytesOnNRbs(nodeId, b, cw, bandAllocatedBlocks, dir, carrierFreq);
                 }
 
                 grant->setGrantedCwBytes(cw, grantedBytes);
@@ -277,7 +272,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
             }
             RbMap map;
 
-            enbSchedulerUl_->readRbOccupation(nodeId, cit->first, map);
+            enbSchedulerUl_->readRbOccupation(nodeId, carrierFreq, map);
 
             grant->setGrantedBlocks(map);
 
@@ -303,9 +298,7 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
     EV << NOW << "LteMacEnbD2D::clearBsrBuffers - Clear BSR buffers of UE " << ueId << endl;
 
     // empty all BSR buffers belonging to the UE
-    LteMacBufferMap::iterator vit = bsrbuf_.begin();
-    for ( ; vit != bsrbuf_.end(); ++vit) {
-        MacCid cid = vit->first;
+    for (auto& [cid, buf] : bsrbuf_) {
         // check if this buffer is for this UE
         if (MacCidToNodeId(cid) != ueId)
             continue;
@@ -313,7 +306,6 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
         EV << NOW << "LteMacEnbD2D::clearBsrBuffers - Clear BSR buffer for cid " << cid << endl;
 
         // empty its BSR buffer
-        LteMacBuffer *buf = vit->second;
         EV << NOW << "LteMacEnbD2D::clearBsrBuffers - Length was " << buf->getQueueOccupancy() << endl;
 
         while (!buf->isEmpty())
@@ -435,10 +427,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
     if (!switchPkt->getTxSide()) { // address the receiving endpoint of the D2D flow (tx entities at the eNB)
         // get the outgoing connection corresponding to the DL connection for the RX endpoint of the D2D flow
-        std::map<MacCid, FlowControlInfo>::iterator jt = connDesc_.begin();
-        for ( ; jt != connDesc_.end(); ++jt) {
-            MacCid cid = jt->first;
-            FlowControlInfo *lteInfo = check_and_cast<FlowControlInfo *>(&(jt->second));
+        for (auto& [cid, lteInfo] : connDesc_) {
             if (MacCidToNodeId(cid) == nodeId) {
                 EV << NOW << " LteMacEnbD2D::sendModeSwitchNotification - send signal for TX entity to upper layers in the eNB (cid=" << cid << ")" << endl;
 
@@ -452,7 +441,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 else
                     switchPktTx->setOldConnection(false);
                 pktTx->insertAtFront(switchPktTx);
-                *(pktTx->addTag<FlowControlInfo>()) = *lteInfo;
+                *(pktTx->addTag<FlowControlInfo>()) = lteInfo;
                 sendUpperPackets(pktTx);
                 break;
             }
@@ -463,17 +452,12 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
         clearBsrBuffers(nodeId);
 
         // get the incoming connection corresponding to the UL connection for the TX endpoint of the D2D flow
-        std::map<MacCid, FlowControlInfo>::iterator jt = connDescIn_.begin();
-        for ( ; jt != connDescIn_.end(); ++jt) {
-            MacCid cid = jt->first;
-            FlowControlInfo *lteInfo = check_and_cast<FlowControlInfo *>(&(jt->second));
+        for (auto& [cid, lteInfo] : connDescIn_) {
             if (MacCidToNodeId(cid) == nodeId) {
                 if (msHarqInterrupt_) { // interrupt H-ARQ processes for UL
-                    std::map<double, HarqRxBuffers>::iterator mit = harqRxBuffers_.begin();
-                    std::map<double, HarqRxBuffers>::iterator met = harqRxBuffers_.end();
-                    for ( ; mit != met; mit++) {
-                        HarqRxBuffers::iterator hit = mit->second.find(nodeId);
-                        if (hit != mit->second.end()) {
+                    for (auto& mit : harqRxBuffers_) {
+                        HarqRxBuffers::iterator hit = mit.second.find(nodeId);
+                        if (hit != mit.second.end()) {
                             for (unsigned int proc = 0; proc < (unsigned int)ENB_RX_HARQ_PROCESSES; proc++) {
                                 unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
                                 for (unsigned int i = 0; i < numUnits; i++) {
@@ -501,7 +485,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     switchPktRx->setOldConnection(false);
 
                 pktRx->insertAtFront(switchPktRx);
-                *(pktRx->addTag<FlowControlInfo>()) = *lteInfo;
+                *(pktRx->addTag<FlowControlInfo>()) = lteInfo;
                 sendUpperPackets(pktRx);
                 break;
             }
@@ -511,21 +495,15 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
 void LteMacEnbD2D::flushHarqBuffers()
 {
-    std::map<double, HarqTxBuffers>::iterator mit = harqTxBuffers_.begin();
-    std::map<double, HarqTxBuffers>::iterator met = harqTxBuffers_.end();
-    for ( ; mit != met; mit++) {
-        HarqTxBuffers::iterator it;
-        for (it = mit->second.begin(); it != mit->second.end(); it++)
-            it->second->sendSelectedDown();
+    for (auto& mit : harqTxBuffers_) {
+        for (auto& it : mit.second)
+            it.second->sendSelectedDown();
     }
 
     // flush mirror buffer
-    std::map<double, HarqBuffersMirrorD2D>::iterator mirr_mit = harqBuffersMirrorD2D_.begin();
-    std::map<double, HarqBuffersMirrorD2D>::iterator mirr_met = harqBuffersMirrorD2D_.end();
-    for ( ; mirr_mit != mirr_met; mirr_mit++) {
-        HarqBuffersMirrorD2D::iterator mirr_it;
-        for (mirr_it = mirr_mit->second.begin(); mirr_it != mirr_mit->second.end(); mirr_it++)
-            mirr_it->second->markSelectedAsWaiting();
+    for (auto& mirr_mit : harqBuffersMirrorD2D_) {
+        for (auto& mirr_it : mirr_mit.second)
+            mirr_it.second->markSelectedAsWaiting();
     }
 }
 

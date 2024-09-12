@@ -932,11 +932,10 @@ unsigned int LteSchedulerEnbUl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
 
 void LteSchedulerEnbUl::removePendingRac(MacNodeId nodeId)
 {
-    std::map<double, RacStatus>::iterator it = racStatus_.begin();
-    for ( ; it != racStatus_.end(); ++it) {
-        RacStatus::iterator elem_it = it->second.find(nodeId);
-        if (elem_it != it->second.end())
-            it->second.erase(nodeId);
+    for (auto& item : racStatus_) {
+        RacStatus::iterator elem_it = item.second.find(nodeId);
+        if (elem_it != item.second.end())
+            item.second.erase(nodeId);
     }
 }
 

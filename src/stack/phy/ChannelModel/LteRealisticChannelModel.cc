@@ -2790,7 +2790,6 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
 
     const std::vector<std::vector<UeAllocationInfo>> *ulTransmissionMap;
     const std::vector<UeAllocationInfo> *allocatedUes;
-    std::vector<UeAllocationInfo>::const_iterator ue_it, ue_et;
 
     if (isCqi) {// check slot occupation for this TTI
         ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
@@ -2799,22 +2798,21 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
                 // get the set of UEs transmitting on the same band
                 allocatedUes = &(ulTransmissionMap->at(i));
 
-                ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-                for ( ; ue_it != ue_et; ++ue_it) {
-                    MacNodeId ueId = ue_it->nodeId;
-                    MacCellId cellId = ue_it->cellId;
-                    Direction dir = ue_it->dir;
+                for (auto& ue_it : *allocatedUes) {
+                    MacNodeId ueId = ue_it.nodeId;
+                    MacCellId cellId = ue_it.cellId;
+                    Direction dir = ue_it.dir;
                     double txPwr;
                     inet::Coord ueCoord;
                     LtePhyUe *uePhy = nullptr;
                     TrafficGeneratorBase *trafficGen = nullptr;
-                    if (ue_it->phy != nullptr) {
-                        uePhy = check_and_cast<LtePhyUe *>(ue_it->phy);
+                    if (ue_it.phy != nullptr) {
+                        uePhy = check_and_cast<LtePhyUe *>(ue_it.phy);
                         txPwr = uePhy->getTxPwr(dir);
                         ueCoord = uePhy->getCoord();
                     }
                     else { // this is a backgroundUe
-                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it->trafficGen);
+                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it.trafficGen);
                         txPwr = trafficGen->getTxPwr();
                         ueCoord = trafficGen->getCoord();
                     }
@@ -2852,22 +2850,21 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
                 // get the set of UEs transmitting on the same band
                 allocatedUes = &(ulTransmissionMap->at(i));
 
-                ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-                for ( ; ue_it != ue_et; ++ue_it) {
-                    MacNodeId ueId = ue_it->nodeId;
-                    MacCellId cellId = ue_it->cellId;
-                    Direction dir = ue_it->dir;
+                for (auto& ue_it : *allocatedUes) {
+                    MacNodeId ueId = ue_it.nodeId;
+                    MacCellId cellId = ue_it.cellId;
+                    Direction dir = ue_it.dir;
                     double txPwr;
                     inet::Coord ueCoord;
                     LtePhyUe *uePhy = nullptr;
                     TrafficGeneratorBase *trafficGen = nullptr;
-                    if (ue_it->phy != nullptr) {
-                        uePhy = check_and_cast<LtePhyUe *>(ue_it->phy);
+                    if (ue_it.phy != nullptr) {
+                        uePhy = check_and_cast<LtePhyUe *>(ue_it.phy);
                         txPwr = uePhy->getTxPwr(dir);
                         ueCoord = uePhy->getCoord();
                     }
                     else { // this is a backgroundUe
-                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it->trafficGen);
+                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it.trafficGen);
                         txPwr = trafficGen->getTxPwr();
                         ueCoord = trafficGen->getCoord();
                     }
@@ -2911,7 +2908,6 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
 
     const std::vector<std::vector<UeAllocationInfo>> *ulTransmissionMap;
     const std::vector<UeAllocationInfo> *allocatedUes;
-    std::vector<UeAllocationInfo>::const_iterator ue_it, ue_et;
 
     if (isCqi) {// check slot occupation for this TTI
         ulTransmissionMap = binder_->getUlTransmissionMap(carrierFrequency, CURR_TTI);
@@ -2920,22 +2916,21 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
                 // get the UEs transmitting on the same band
                 allocatedUes = &(ulTransmissionMap->at(i));
 
-                ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-                for ( ; ue_it != ue_et; ++ue_it) {
-                    MacNodeId ueId = ue_it->nodeId;
-                    MacCellId cellId = ue_it->cellId;
-                    Direction dir = ue_it->dir;
+                for (auto& ue_it : *allocatedUes) {
+                    MacNodeId ueId = ue_it.nodeId;
+                    MacCellId cellId = ue_it.cellId;
+                    Direction dir = ue_it.dir;
                     double txPwr;
                     inet::Coord ueCoord;
                     LtePhyUe *uePhy = nullptr;
                     TrafficGeneratorBase *trafficGen = nullptr;
-                    if (ue_it->phy != nullptr) {
-                        uePhy = check_and_cast<LtePhyUe *>(ue_it->phy);
+                    if (ue_it.phy != nullptr) {
+                        uePhy = check_and_cast<LtePhyUe *>(ue_it.phy);
                         txPwr = uePhy->getTxPwr(dir);
                         ueCoord = uePhy->getCoord();
                     }
                     else { // this is a backgroundUe
-                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it->trafficGen);
+                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it.trafficGen);
                         txPwr = trafficGen->getTxPwr();
                         ueCoord = trafficGen->getCoord();
                     }
@@ -2972,22 +2967,21 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
                 // get the UEs transmitting on the same band
                 allocatedUes = &(ulTransmissionMap->at(i));
 
-                ue_it = allocatedUes->begin(), ue_et = allocatedUes->end();
-                for ( ; ue_it != ue_et; ++ue_it) {
-                    MacNodeId ueId = ue_it->nodeId;
-                    MacCellId cellId = ue_it->cellId;
-                    Direction dir = ue_it->dir;
+                for (auto& ue_it : *allocatedUes) {
+                    MacNodeId ueId = ue_it.nodeId;
+                    MacCellId cellId = ue_it.cellId;
+                    Direction dir = ue_it.dir;
                     double txPwr;
                     inet::Coord ueCoord;
                     LtePhyUe *uePhy = nullptr;
                     TrafficGeneratorBase *trafficGen = nullptr;
-                    if (ue_it->phy != nullptr) {
-                        uePhy = check_and_cast<LtePhyUe *>(ue_it->phy);
+                    if (ue_it.phy != nullptr) {
+                        uePhy = check_and_cast<LtePhyUe *>(ue_it.phy);
                         txPwr = uePhy->getTxPwr(dir);
                         ueCoord = uePhy->getCoord();
                     }
                     else { // this is a backgroundUe
-                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it->trafficGen);
+                        trafficGen = check_and_cast<TrafficGeneratorBase *>(ue_it.trafficGen);
                         txPwr = trafficGen->getTxPwr();
                         ueCoord = trafficGen->getCoord();
                     }

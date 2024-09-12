@@ -164,13 +164,12 @@ void LteMacUe::initialize(int stage)
             // for each numerology available in this UE, set the corresponding timers
             const std::set<NumerologyIndex> *numerologyIndexSet = binder_->getUeNumerologyIndex(nodeId_);
             if (numerologyIndexSet != nullptr) {
-                auto it = numerologyIndexSet->begin();
-                for ( ; it != numerologyIndexSet->end(); ++it) {
+                for (auto idx : *numerologyIndexSet) {
                     // set periodicity for this carrier according to its numerology
                     NumerologyPeriodCounter info;
-                    info.max = 1 << (binder_->getUeMaxNumerologyIndex(nodeId_) - *it); // 2^(maxNumerologyIndex - numerologyIndex)
+                    info.max = 1 << (binder_->getUeMaxNumerologyIndex(nodeId_) - idx); // 2^(maxNumerologyIndex - numerologyIndex)
                     info.current = info.max - 1;
-                    numerologyPeriodCounter_[*it] = info;
+                    numerologyPeriodCounter_[idx] = info;
                 }
             }
         }
@@ -198,26 +197,24 @@ int LteMacUe::macSduRequest()
     // get the number of granted bytes for each codeword
     std::vector<unsigned int> allocatedBytes;
 
-    auto git = schedulingGrant_.begin();
-    for ( ; git != schedulingGrant_.end(); ++git) {
-        if (git->second == nullptr)
+    for (auto& grant : schedulingGrant_) {
+        if (grant.second == nullptr)
             continue;
 
-        for (int cw = 0; cw < git->second->getGrantedCwBytesArraySize(); cw++)
-            allocatedBytes.push_back(git->second->getGrantedCwBytes(cw));
+        for (size_t cw = 0; cw < grant.second->getGrantedCwBytesArraySize(); cw++)
+            allocatedBytes.push_back(grant.second->getGrantedCwBytes(cw));
     }
 
     // Ask for a MAC sdu for each scheduled user on each codeword
-    std::map<double, LteMacScheduleList *>::iterator cit = scheduleList_.begin();
-    for ( ; cit != scheduleList_.end(); ++cit) {
+    for (auto& cit : scheduleList_) {
         LteMacScheduleList::const_iterator it;
-        for (it = cit->second->begin(); it != cit->second->end(); it++) {
-            MacCid destCid = it->first.first;
-            Codeword cw = it->first.second;
+        for (const auto& it : *cit.second) {
+            MacCid destCid = it.first.first;
+            Codeword cw = it.first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
 
             auto key = std::make_pair(destCid, cw);
-            LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit->first]->getScheduledBytesList();
+            LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit.first]->getScheduledBytesList();
             auto bit = scheduledBytesList->find(key);
 
             // consume bytes on this codeword
@@ -369,21 +366,18 @@ void LteMacUe::macPduMake(MacCid cid)
     macPduList_.clear();
 
     // Build a MAC PDU for each scheduled user on each codeword
-    std::map<double, LteMacScheduleList *>::iterator cit = scheduleList_.begin();
-    for ( ; cit != scheduleList_.end(); ++cit) {
-        double carrierFreq = cit->first;
+    for (auto [carrierFreq, schList] : scheduleList_) {
         Packet *macPkt = nullptr;
 
-        LteMacScheduleList::const_iterator it;
-        for (it = cit->second->begin(); it != cit->second->end(); it++) {
-            MacCid destCid = it->first.first;
-            Codeword cw = it->first.second;
+        for (auto& item : *schList) {
+            MacCid destCid = item.first.first;
+            Codeword cw = item.first.second;
 
             // from a UE perspective, the destId is always the one of the eNB
             MacNodeId destId = getMacCellId();
 
             std::pair<MacNodeId, Codeword> pktId = {destId, cw};
-            unsigned int sduPerCid = it->second;
+            unsigned int sduPerCid = item.second;
 
             if (macPduList_.find(carrierFreq) == macPduList_.end()) {
                 MacPduList newList;
@@ -646,16 +640,11 @@ void LteMacUe::handleSelfMessage()
     EV << "----- UE MAIN LOOP -----" << endl;
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
-    std::map<double, HarqRxBuffers>::iterator mit = harqRxBuffers_.begin();
-    std::map<double, HarqRxBuffers>::iterator met = harqRxBuffers_.end();
-    for ( ; mit != met; mit++) {
-        HarqRxBuffers::iterator hit = mit->second.begin();
-        HarqRxBuffers::iterator het = mit->second.end();
-
+    for (auto& mit : harqRxBuffers_) {
         std::list<Packet *> pduList;
 
-        for ( ; hit != het; ++hit) {
-            pduList = hit->second->extractCorrectPdus();
+        for (auto& hit : mit.second) {
+            pduList = hit.second->extractCorrectPdus();
             while (!pduList.empty()) {
                 auto pdu = pduList.front();
                 pduList.pop_front();
@@ -671,10 +660,8 @@ void LteMacUe::handleSelfMessage()
     // no HARQ counter is updated since no transmission is sent.
 
     bool noSchedulingGrants = true;
-    auto git = schedulingGrant_.begin();
-    auto get = schedulingGrant_.end();
-    for ( ; git != get; ++git) {
-        if (git->second != nullptr) {
+    for (auto& git : schedulingGrant_) {
+        if (git.second != nullptr) {
             noSchedulingGrants = false;
             break;
         }
@@ -692,15 +679,15 @@ void LteMacUe::handleSelfMessage()
         bool periodicGrant = false;
         bool checkRac = false;
         bool skip = false;
-        for (git = schedulingGrant_.begin(); git != get; ++git) {
-            if (git->second != nullptr && git->second->getPeriodic()) {
+        for (auto& git : schedulingGrant_) {
+            if (git.second != nullptr && git.second->getPeriodic()) {
                 periodicGrant = true;
-                double carrierFreq = git->first;
+                double carrierFreq = git.first;
 
                 // Periodic checks
                 if (--expirationCounter_[carrierFreq] < 0) {
                     // Periodic grant is expired
-                    git->second = nullptr;
+                    git.second = nullptr;
                     checkRac = true;
                 }
                 else if (--periodCounter_[carrierFreq] > 0) {
@@ -708,7 +695,7 @@ void LteMacUe::handleSelfMessage()
                 }
                 else {
                     // resetting grant period
-                    periodCounter_[carrierFreq] = git->second->getPeriod();
+                    periodCounter_[carrierFreq] = git.second->getPeriod();
                     // this is periodic grant TTI - continue with frame sending
                     checkRac = false;
                     skip = false;
@@ -812,12 +799,11 @@ void LteMacUe::handleSelfMessage()
             for (it = mtit->second.begin(); it != mtit->second.end(); it++) {
                 LteHarqBufferTx *currHarq = it->second;
                 BufferStatus harqStatus = currHarq->getBufferStatus();
-                BufferStatus::iterator jt = harqStatus.begin(), jet = harqStatus.end();
 
                 EV << "\t cycleOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
-                for ( ; jt != jet; ++jt) {
-                    EV << "\t\t cycleInner " << cntInner << " - jt->size=" << jt->size()
-                       << " - statusCw(0/1)=" << jt->at(0).second << "/" << jt->at(1).second << endl;
+                for (const auto& unitStatusVector : harqStatus) {
+                    EV << "\t\t cycleInner " << cntInner << " - jt->size=" << unitStatusVector.size()
+                       << " - statusCw(0/1)=" << unitStatusVector.at(0).second << "/" << unitStatusVector.at(1).second << endl;
                 }
             }
         }
@@ -999,10 +985,9 @@ void LteMacUe::flushHarqBuffers()
     }
 
     // deleting non-periodic grant
-    auto git = schedulingGrant_.begin();
-    for ( ; git != schedulingGrant_.end(); ++git) {
-        if (git->second != nullptr && !(git->second->getPeriodic())) {
-            git->second = nullptr;
+    for (auto& git : schedulingGrant_) {
+        if (git.second != nullptr && !(git.second->getPeriodic())) {
+            git.second = nullptr;
         }
     }
 }
@@ -1013,10 +998,9 @@ bool LteMacUe::getHighestBackloggedFlow(MacCid& cid, unsigned int& priority)
     // TODO : implement priorities and LCGs
     // search in virtual buffer structures
 
-    auto it = macBuffers_.begin(), et = macBuffers_.end();
-    for ( ; it != et; ++it) {
-        if (!it->second->isEmpty()) {
-            cid = it->first;
+    for (const auto& item : macBuffers_) {
+        if (!item.second->isEmpty()) {
+            cid = item.first;
             // TODO priority = something;
             return true;
         }
