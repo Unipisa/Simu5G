@@ -14,6 +14,7 @@ if [ ! -f bin/simu5g ]; then
 else
     export SIMU5G_ROOT=`pwd`
     echo "$SIMU5G_ROOT added to PATH"
-    export PATH=$SIMU5G_ROOT/bin:$PATH
+    export PATH="$SIMU5G_ROOT/bin:$PATH"
+    export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$SIMU5G_ROOT/images"
 fi
 
