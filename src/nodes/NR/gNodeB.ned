@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,11 +14,11 @@ package simu5g.nodes.NR;
 import simu5g.nodes.eNodeB;
 
 //
-// This module represents a gNodeB (Next Generation Node B) in a 5G New Radio (NR) network.
-// It extends the eNodeB module, integrating NR-specific components and functionalities.
-// The gNodeB acts as a base station in 5G networks, handling both user and control plane traffic.
-// It supports various advanced features such as Carrier Aggregation, Dual Connectivity, and others
-// which are essential for high data rates and low latency communications in 5G networks.
+// This module implements a gNodeB of a 5G LTE network. It extends the ~eNodeB module
+// by providing 5G connectivity to ~NRUe modules. It can be used in either StandAlone (SA) and 
+// Non-StandAlone (NSA) 5G deployments. In the former case, it is directly connected to a ~Upf
+// module.  In the latter case, instead, this module can be configured as a secondary node of 
+// a ~eNodeB module (hence enabling E-UTRA Dual Connectivity, EN-DC).
 //
 module gNodeB extends eNodeB
 {

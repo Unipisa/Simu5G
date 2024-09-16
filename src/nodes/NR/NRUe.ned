@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -17,28 +16,9 @@ import simu5g.corenetwork.statsCollector.NRueStatsCollector;
 import simu5g.nodes.Ue;
 
 //
-// NRUe Module
-// This module represents a 5G NR (New Radio) User Equipment (UE) in the Simu5G network.
-//
-// The NRUe module extends the basic Ue module and includes additional parameters 
-// and submodules specific to NR functionalities.
-//
-// Parameters:
-// - nicType: Defines the type of NIC used by the UE, defaulting to "NRNicUe".
-// - nrMasterId: A mutable parameter representing the master ID for NR.
-// - nrMacNodeId: A mutable parameter for the NR MAC Node ID.
-// - nrMacCellId: A mutable parameter for the NR MAC Cell ID.
-//
-// Gates:
-// - nrRadioIn: A direct input gate for connections to the master node.
-//
-// Submodules:
-// - NRueCollector: An optional submodule of type NRueStatsCollector that collects 
-//   statistics for the NR UE, utilized if RNISupport is present.
-//
-// Connections:
-// - Allows unconnected connections by default.
-// - Connects the NR radio input directly to the cellular NIC's NR radio input.
+// This module implements a User Equipment (UE) of a 5G LTE network. It extends the ~Ue module
+// by implementing a ~NRNicUe as a Network Network Interface Card (NIC) module. This module can be
+// used to model a device that can connect to either a 4G eNodeB or 5G gNodeB, or both.
 //
 module NRUe extends Ue
 {
