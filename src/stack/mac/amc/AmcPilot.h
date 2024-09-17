@@ -19,12 +19,6 @@
 
 namespace simu5g {
 
-// specifies a list of bands that can be used by a user
-typedef std::vector<Band> UsableBands;
-
-// maps a user with a set of usable bands. If a UE is not in the list, the set of usable bands comprises the whole spectrum
-typedef std::map<MacNodeId, UsableBands> UsableBandsList;
-
 /// Forward declaration of LteAmc class, used by AmcPilot.
 class LteAmc;
 
