@@ -13,12 +13,10 @@
 package simu5g.stack.backgroundTrafficGenerator;
 
 //
-// This module interface defines a common set of parameters and functionality
-// for traffic managers handling background UEs' (User Equipments) traffic
-// within the simulation. Implementing modules can specify various traffic 
-// models and strategies for generating and managing background traffic, 
-// which can be used to test network performance and behavior under different 
-// traffic conditions with minimal impact on the simulator performance.
+// This module interface defines the contract for traffic generator manager
+// within the ~BackgroundTrafficGenerator module of a ~eNodeB or ~gNodeB. 
+// This interface can be implemented by other modules to create a custom 
+// traffic generator manager, see ~BackgroundTrafficManager.
 //
 moduleinterface IBackgroundTrafficManager
 {

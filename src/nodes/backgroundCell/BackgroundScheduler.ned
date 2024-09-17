@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,9 +12,9 @@
 package simu5g.nodes.backgroundCell;
 
 //
-// This module represents a scheduler for a background cell in an LTE or NR network.
-// It is responsible for allocating resources to background user equipments (UEs), managing 
-// their traffic and interference, and keeping track of scheduling statistics.
+// This module is responsible to compute the allocation of time-frequency resources 
+// of background UEs in a ~BackgroundCell, by taking into account the traffic generated
+// by such UEs and their channel quality.
 //
 simple BackgroundScheduler
 {

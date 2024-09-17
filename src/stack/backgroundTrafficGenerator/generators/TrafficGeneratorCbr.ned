@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,10 +12,10 @@
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
 //
-// The TrafficGeneratorCbr module generates Constant Bit Rate (CBR) traffic 
-// for background users. It extends the TrafficGeneratorBase and provides 
-// customizable parameters such as packet size and inter-arrival periods 
-// for both Downlink (DL) and Uplink (UL) traffic.
+// This module specializes the ~TrafficGeneratorBase module to provide a 
+// Constant Bit Rate (CBR) background traffic generator. This generator
+// generates fixed-size packets at regular intervals in either downlink 
+// or uplink bands, or both.
 // 
 simple TrafficGeneratorCbr extends TrafficGeneratorBase
 {

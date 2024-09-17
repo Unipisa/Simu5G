@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,14 +12,11 @@
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
 //
-// The TrafficGeneratorBase module serves as an abstract base for generating 
-// different types of traffic for background users in the Simu5G framework. 
-// It defines a set of parameters for configuring the start time, packet sizes, 
-// inter-arrival times for both Downlink (DL) and Uplink (UL) traffic, and other 
-// features such as retransmission rates and CQI statistics.
-//
-// The module also includes signals and statistics for monitoring various 
-// metrics like SINR, CQI, and HARQ error rates.
+// This module provides the basic functions and paramthat a traffic generator 
+// submodule (implementing the ~ITrafficGenerator interface) can exploit. It 
+// enables the configuration of parameters like the starting time of the traffic, 
+// the size and inter-generation of packets, the rate of retransmissions, and so on.
+// Custom background traffic generators can be implemented by extending this module.
 //
 simple TrafficGeneratorBase like ITrafficGenerator
 {

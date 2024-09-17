@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,11 +12,10 @@
 package simu5g.stack.backgroundTrafficGenerator;
 
 //
-// The BackgroundTrafficGenerator module generates background traffic for LTE simulations. 
-// This module can be configured with a specific number of background UEs (numBgUes) 
-// and a traffic manager type (bgTrafficManagerType). It supports parameters such as 
-// enabling periodic CQI updates (enablePeriodicCqiUpdate), using probabilistic CQI 
-// (useProbabilisticCqi), and computing average interference (computeAvgInterference).
+// This module is part of a ~BackgroundCell module and takes care of instantiating a 
+// configurable number of background UEs (see ~BackgroundUe module), and to setup 
+// their mode of computing the channel status information required by the
+// ~BackgroundScheduler module.
 //
 module BackgroundTrafficGenerator
 {

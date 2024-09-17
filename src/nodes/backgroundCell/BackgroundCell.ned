@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -16,11 +15,23 @@ import inet.mobility.static.StationaryMobility;
 import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
 
 //
-// BackgroundCell Module
-//
-// This background cell implements only one carrier.
-// If you want to simulate multiple carriers, deploy multiple background cells in the same position
-// and change carrierFrequency parameter
+// This module implements a lightweight model for a 4G eNodeB or 5G gNodeB. It is used to generate
+// configurable inter-cell interference in the simulated network. With respect to ~eNodeB and ~gNodeB
+// module, this module occupies time-frequency resources in both the uplink and downlink bandwidth
+// without simulating the actual transmission/reception of data packets to/from User Equipments (UEs), 
+// hence it is much more efficient from the simulation speed perspective. 
+// To accomplish this, it contains a ~BackgroundTrafficGenerator to customize the level of background
+// traffic to be simulated, a ~BackgroundChannelModel to configure channel parameters, and a 
+// ~BackgroundScheduler that takes care of allocating time-frequency resources based on the traffic
+// generator. 
+// Note that this module is able to generate interference on one Component Carrier only, as configured
+// in the ~BackgroundScheduler module. In order to produce interference in multiple carriers, it is 
+// possible to use multiple instances of this module, each configured with the desired carrier frequency.
+// 
+// For more details, see: 
+//     G. Nardini, G. Stea, A. Virdis, "Scalable Real-time Emulation of 5G Networks with Simu5G", 
+//     IEEE Access, vol. 9, pp. 148504-148520, 2021
+// 
 module BackgroundCell
 {
     parameters:
