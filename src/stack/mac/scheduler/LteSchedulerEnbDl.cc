@@ -507,9 +507,8 @@ bool LteSchedulerEnbDl::getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeI
     bandLimit->clear();
 
     // get usable bands for this user
-    UsableBands *usableBands = nullptr;
-    bool ret = mac_->getAmc()->getPilotUsableBands(ueId, usableBands);
-    if (!ret) {
+    UsableBands *usableBands = mac_->getAmc()->getPilotUsableBands(ueId);
+    if (usableBands == nullptr) {
         // leave the bandLimit empty
         return false;
     }

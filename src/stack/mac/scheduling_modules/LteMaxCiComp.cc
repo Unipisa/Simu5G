@@ -21,9 +21,8 @@ bool LteMaxCiComp::getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeId ueI
     bandLimit->clear();
 
     // get usable bands for this user
-    UsableBands *usableBands = nullptr;
-    bool ret = eNbScheduler_->mac_->getAmc()->getPilotUsableBands(ueId, usableBands);
-    if (!ret) {
+    UsableBands *usableBands = eNbScheduler_->mac_->getAmc()->getPilotUsableBands(ueId);
+    if (usableBands == nullptr) {
         // leave the bandLimit empty
         return false;
     }

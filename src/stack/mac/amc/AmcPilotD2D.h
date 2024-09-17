@@ -51,7 +51,7 @@ class AmcPilotD2D : public AmcPilot
     // TODO reimplement these functions
     virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) { std::vector<Cqi> result; return result; }
     virtual void setUsableBands(MacNodeId id, UsableBands usableBands) {}
-    virtual bool getUsableBands(MacNodeId id, UsableBands *& uBands) { return false; }
+    virtual UsableBands *getUsableBands(MacNodeId id) { return nullptr; }
 };
 
 } //namespace

@@ -154,8 +154,8 @@ class LteAmc
     // multiband version of the above function. It returns the number of bytes that can fit in the given "blocks" of the given "band"
     virtual unsigned int computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
     virtual unsigned int computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-    bool setPilotUsableBands(MacNodeId id, std::vector<unsigned short> usableBands);
-    bool getPilotUsableBands(MacNodeId id, std::vector<unsigned short> *& usableBands);
+    bool setPilotUsableBands(MacNodeId id, UsableBands usableBands);
+    UsableBands *getPilotUsableBands(MacNodeId id);
 
     // utilities - do not involve pilot invocation
     unsigned int getItbsPerCqi(Cqi cqi, const Direction dir);

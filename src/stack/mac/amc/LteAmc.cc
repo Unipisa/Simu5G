@@ -793,9 +793,9 @@ bool LteAmc::setPilotUsableBands(MacNodeId id, std::vector<unsigned short> usabl
     return true;
 }
 
-bool LteAmc::getPilotUsableBands(MacNodeId id, std::vector<unsigned short> *& usableBands)
+UsableBands *LteAmc::getPilotUsableBands(MacNodeId id)
 {
-    return pilot_->getUsableBands(id, usableBands);
+    return pilot_->getUsableBands(id);
 }
 
 unsigned int LteAmc::getItbsPerCqi(Cqi cqi, const Direction dir)

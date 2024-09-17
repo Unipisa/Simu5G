@@ -84,7 +84,7 @@ class AmcPilot
     virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) = 0;
 
     virtual void setUsableBands(MacNodeId id, UsableBands usableBands) = 0;
-    virtual bool getUsableBands(MacNodeId id, UsableBands *& uBands) = 0;
+    virtual UsableBands *getUsableBands(MacNodeId id) = 0;
 
     void setMode(PilotComputationModes mode) { mode_ = mode; }
 };
