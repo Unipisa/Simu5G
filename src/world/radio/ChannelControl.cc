@@ -255,14 +255,13 @@ void ChannelControl::purgeOngoingTransmissions()
 {
     for (int i = 0; i < numChannels; i++) {
         for (auto it = transmissions[i].begin(); it != transmissions[i].end(); ) {
-            auto curr = it;
             AirFrame *frame = *it;
-            ++it;
-
             if (frame->getTimestamp() + frame->getDuration() + TRANSMISSION_PURGE_INTERVAL < simTime()) {
                 delete frame;
-                transmissions[i].erase(curr);
+                it = transmissions[i].erase(it);
             }
+            else
+                ++it;
         }
     }
 }
