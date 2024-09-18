@@ -214,9 +214,6 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     if (desc->rlcSdusPerPdu_.find(rlcSno) != desc->rlcSdusPerPdu_.end())
         throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d. Aborting", pfmType.c_str(), rlcSno, lcid);
 
-    FramingInfo fi = rlcPdu->getFramingInfo();
-    const RlcSduList *rlcSduList = rlcPdu->getRlcSduList();
-    const RlcSduListSizes *rlcSduSizes = rlcPdu->getRlcSduSizes();
 
     // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
     if (status == START) {
@@ -268,7 +265,9 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         throw cRuntimeError("%s::insertRlcPdu RLCBurstStatus not recognized", pfmType.c_str());
     }
 
-    int rlcSduSize = 0;
+    FramingInfo fi = rlcPdu->getFramingInfo();
+    const RlcSduList *rlcSduList = rlcPdu->getRlcSduList();
+    const RlcSduListSizes *rlcSduSizes = rlcPdu->getRlcSduSizes();
     auto lit = rlcSduList->begin();
     auto sit = rlcSduSizes->begin();
     for ( ; lit != rlcSduList->end(); ++lit, ++sit) {
@@ -315,7 +314,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
          * According to TS 128 552 V15 (5G performance measurements) the throughput volume
          * is counted at the RLC SDU level
          */
-        rlcSduSize = (B(rlcPdu->getChunkLength()) - B(RLC_HEADER_UM)).get(); // RLC pdu size - RLC header
+        int rlcSduSize = (B(rlcPdu->getChunkLength()) - B(RLC_HEADER_UM)).get(); // RLC pdu size - RLC header
 
         auto bsit = desc->burstStatus_.find(desc->burstId_);
         if (bsit == desc->burstStatus_.end())

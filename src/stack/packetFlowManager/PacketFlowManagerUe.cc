@@ -163,7 +163,6 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
     const RlcSduListSizes *rlcSduSizes = rlcPdu->getRlcSduSizes();
     auto lit = rlcSduList->begin();
     auto sit = rlcSduSizes->begin();
-
     for ( ; lit != rlcSduList->end(); ++lit, ++sit) {
         auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();
         unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
