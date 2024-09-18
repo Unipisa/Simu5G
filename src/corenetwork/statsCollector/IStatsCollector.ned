@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,12 +12,10 @@
 package simu5g.corenetwork.statsCollector;
 
 //
-// This is the statistic collector of an eNodeB. It stores all the attributes of the RNI
-// service Layer2Meaurements resource. The RNI service will call its methods in order to
-// respond to requests. The module is essential for the collection and management
-// of various performance metrics critical to network operations, enabling robust
-// monitoring and analysis of data related to user equipment (UE) interactions and 
-// network performance.
+// A module implementing this interface is a utility module that is accessed by 
+// the ~RNIService of a ~MECHost module to retrieve radio network information related
+// to the parent e/gNodeB module. The RNIS accesses this module via direct method calls.
+// See, for instance, ~BaseStationStatsCollector or ~UeStatsCollector.
 //
 moduleinterface IStatsCollector
 {

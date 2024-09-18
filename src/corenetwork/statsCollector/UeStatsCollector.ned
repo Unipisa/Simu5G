@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,11 +12,10 @@
 package simu5g.corenetwork.statsCollector;
 
 //
-// This module collects and maintains statistics for User Equipment (UE) within an eNodeB or gNodeB.
-// It gathers Layer 2 measurements for the Radio Network Information (RNI) Service. This includes
-// metrics such as packet delays, discard rates, throughput, and data volume. The collected 
-// data is utilized to respond to RNI service requests effectively and is managed through 
-// defined time periods for various measurements.
+// This module collects the radio network information of a LTE UE, which can 
+// be accessed by the ~RNIService module of a ~MECHost. For example, this module
+// provide information like the packet delay or discard rate.
+//
 //
 module UeStatsCollector like IStatsCollector
 {

@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -11,12 +10,11 @@
 //
 
 package simu5g.corenetwork.statsCollector;
+
 //
-// This module represents the statistics collector for a gNodeB in a 5G NR network.
-// It extends the BaseStationStatsCollector, integrating functionalities specific
-// to gNodeB. The GNodeBStatsCollector is responsible for gathering and storing
-// various performance metrics and statistics related to the gNodeB's operation,
-// which are essential for analyzing network performance and troubleshooting.
+// This module collects the radio network information of a 5G gNodeB, which can 
+// be accessed by the ~RNIService module of a ~MECHost. At the moment, it exposes
+// the same information as the ~BaseStationStatsCollector module.
 //
 module GNodeBStatsCollector extends BaseStationStatsCollector
 {
