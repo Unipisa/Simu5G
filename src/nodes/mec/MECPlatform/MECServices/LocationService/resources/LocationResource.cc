@@ -75,10 +75,10 @@ User LocationResource::getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const
     return ueInfo;
 }
 
-nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, CellInfo *>::const_iterator it) const
+nlohmann::ordered_json LocationResource::getUserListPerCell(MacCellId macCellId, CellInfo *cellInfo) const
 {
     nlohmann::ordered_json ueArray;
-    EV << "LocationResource::toJson() - gnb" << it->first << endl;
+    EV << "LocationResource::toJson() - gnb" << macCellId << endl;
 
     /*
      * this structure takes trace of the UE already counted.
@@ -88,14 +88,14 @@ nlohmann::ordered_json LocationResource::getUserListPerCell(std::map<MacCellId, 
     std::set<inet::Ipv4Address> addressess;
     const std::map<MacNodeId, inet::Coord> *uePositionList;
 
-    uePositionList = it->second->getUePositionList();
+    uePositionList = cellInfo->getUePositionList();
     for (const auto& item : *uePositionList) {
         inet::Ipv4Address ipAddress = binder_->getIPv4Address(item.first);
         if (addressess.find(ipAddress) != addressess.end())
             continue;
         addressess.insert(ipAddress);
         EV << "LocationResource::toJson() - user: " << item.first << endl;
-        User ueInfo = getUserByNodeId(item.first, it->first);
+        User ueInfo = getUserByNodeId(item.first, macCellId);
         if (ueInfo.getIpv4Address() != inet::Ipv4Address::UNSPECIFIED_ADDRESS)
             ueArray.push_back(ueInfo.toJson());
     }
@@ -109,7 +109,7 @@ nlohmann::ordered_json LocationResource::toJson() const {
     nlohmann::ordered_json ueArray;
 
     for (auto it = eNodeBs_.begin(); it != eNodeBs_.end(); ++it) {
-        ueArray.push_back(getUserListPerCell(it));  //TODO why does getUserListPerCell() take an iterator?
+        ueArray.push_back(getUserListPerCell(it->first, it->second));
     }
 
     if (ueArray.size() > 1) {
@@ -166,7 +166,7 @@ nlohmann::ordered_json LocationResource::toJsonCell(std::vector<MacCellId>& cell
     for (auto cid : cellsID) {
         auto it = eNodeBs_.find(cid);
         if (it != eNodeBs_.end()) {
-            ueArray.push_back(getUserListPerCell(it));
+            ueArray.push_back(getUserListPerCell(it->first, it->second));
         }
         else {
             std::string notFound = "AccessPointId " + std::to_string(num(cid)) + " Not found.";

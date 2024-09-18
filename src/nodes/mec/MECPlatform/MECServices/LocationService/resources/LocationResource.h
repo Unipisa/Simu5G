@@ -59,7 +59,7 @@ class LocationResource : public AttributeBase
     UserInfo getUserInfoByNodeId(MacNodeId nodeId, MacCellId cellId) const;
     User getUserByNodeId(MacNodeId nodeId, MacCellId cellId) const;
 
-    nlohmann::ordered_json getUserListPerCell(std::map<MacCellId, CellInfo *>::const_iterator it) const;
+    nlohmann::ordered_json getUserListPerCell(MacCellId macCellId, CellInfo *cellInfo) const;
 
 };
 
