@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,15 +12,15 @@
 package simu5g.corenetwork.gtp;
 
 //
-// This module implements a simplified version of the GTP-U (GPRS Tunneling Protocol - User Plane) protocol.
-// It is used for creating data tunnels between GTP peers in LTE and 5G networks.
-// The module handles encapsulation and decapsulation of IP packets for transmission over the core network.
-//
-// Features:
-// - Can communicate with traffic flow filters to receive IP datagrams that need to be tunneled.
-// - Utilizes UDP sockets for GTP-U communication with peer nodes.
-// - Supports configurable local and peer tunnel ports.
-// - Allows optional specification of outgoing network interface.
+// This module implements a simplified version of the user plane of the GPRS Tunneling 
+// Protocol (GTP). On one hand, this module encapsulates incoming IP datagrams into GTP
+// packets and sends them towards the tunnel destination endpoint (GTP works on top of 
+// UDP). The destination endpoint is identified by exploiting information coming from 
+// the ~TrafficFlowFilter module. On the other hand, when this module receives GTP packets
+// from a tunnel source endpoint, it decapsulates the included IP datagram and sends it
+// to the intended destination, according to normal IP forwarding.   
+// This module is used by all entities that need to communicate within the cellular core 
+// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MECHost modules. 
 //
 simple GtpUser
 {

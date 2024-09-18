@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,12 +12,12 @@
 package simu5g.corenetwork.trafficFlowFilter;
 
 //
-// The TrafficFlowFilter module maps IP 4-Tuples to TFT identifiers, identifying a bearer and associating it 
-// with an ID recognizable by the first GTP-U entity. It interacts with the LTE Binder to determine the packet's
-// destination. This module can reside in both eNodeBs and PGWs. At the PGW, it finds the destination endpoint 
-// (eNodeB serving the destination UE) of the GTP tunnel to be established. At the eNodeB, the destination endpoint 
-// is typically the PGW, but if the fastForwarding flag is enabled and the destination is within the same cell, 
-// the packet is relayed to the Radio interface directly.
+// This module maps IP 4-Tuples to TFT identifiers, which are used by the ~GtpUser module
+// contained in the same node. It interacts with the ~Binder to determine the packet's
+// destination. This module resides in any module that includes a ~GtpUser module too, such
+// as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MECHost modules. For example, at a ~Upf
+// module acting as entry point of the 5G network, it finds the destination endpoint of the 
+// GTP tunnel the packet should traverse, i.e., the gNodeB serving the destination UE.
 //
 simple TrafficFlowFilter
 {
