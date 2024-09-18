@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -17,7 +16,7 @@ import inet.mobility.static.StationaryMobility;
 //
 // This module simulates a traffic light in an urban environment.
 // It includes a stationary mobility submodule to represent the fixed position
-// of the traffic light, and a TrafficLightController submodule to manage
+// of the traffic light, and a ~TrafficLightController submodule to model
 // the traffic light's states (green, yellow, red) and interactions with vehicles.
 //
 module TrafficLight

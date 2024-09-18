@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -15,14 +14,13 @@ package simu5g.mobility.trafficLightMobility;
 import inet.mobility.single.LinearMobility;
 
 //
-// This module represents a mobility model that allows for dynamic movement
-// of nodes based on traffic light signals. Nodes can change direction at 
-// traffic lights and will reflect off boundaries with the same angle.
-//
-// Parameters:
-//   - initialRoadIndex: Index of the initial road where the node starts.
-//   - trafficLightsList: List of traffic light modules that influence the node.
-//   - enableTurns: Flag to enable or disable random turns at traffic lights.
+// This module extends the INET's Linear Mobility model to mimic the movement of
+// a vehicle moving across roads with interserctions regulated by traffic lights.
+// The node implementing this mobility model moves at constant speed and, if it 
+// encounters a ~TrafficLight module whose color is "red", then it stops until the
+// traffic light's color becomes "green". When resuming its movement, the node may
+// change its direction if the "enableTurns" parameter is enabled. It requires the
+// presence of ~TrafficLight modules in the same network scenario.
 //
 simple TrafficLightMobility extends LinearMobility
 {
