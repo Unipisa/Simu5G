@@ -114,11 +114,9 @@ void NRMacUe::handleSelfMessage()
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
 
-        HarqTxBuffers::iterator it2;
-        LteHarqBufferTx *currHarq;
         std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            double carrierFrequency = mtit->first;
+        for (auto& mtit : harqTxBuffers_) {
+            double carrierFrequency = mtit.first;
 
             // skip if this is not the turn of this carrier
             if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
@@ -128,8 +126,7 @@ void NRMacUe::handleSelfMessage()
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++) {
-                currHarq = it2->second;
+            for (auto [it2Key, currHarq] : mtit.second) {
                 unsigned int numProcesses = currHarq->getNumProcesses();
 
                 for (unsigned int proc = 0; proc < numProcesses; proc++) {
@@ -167,14 +164,10 @@ void NRMacUe::handleSelfMessage()
         if (!retx) {
             emptyScheduleList_ = true;
             std::map<double, LteSchedulerUeUl *>::iterator sit;
-            for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit) {
-                double carrierFrequency = sit->first;
-
+            for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
                 // skip if this is not the turn of this carrier
                 if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
                     continue;
-
-                LteSchedulerUeUl *carrierLcgScheduler = sit->second;
 
                 EV << "NRMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
@@ -202,14 +195,13 @@ void NRMacUe::handleSelfMessage()
 
     //============================ DEBUG ==========================
     if (debugHarq_) {
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            EV << "\n carrier[ " << mtit->first << "] htxbuf.size " << mtit->second.size() << endl;
+        for (auto& mtit : harqTxBuffers_) {
+            EV << "\n carrier[ " << mtit.first << "] htxbuf.size " << mtit.second.size() << endl;
             EV << "\n htxbuf.size " << harqTxBuffers_.size() << endl;
 
             int cntOuter = 0;
             int cntInner = 0;
-            for (auto [currId, currHarq] : mtit->second) {
+            for (auto [currId, currHarq] : mtit.second) {
                 BufferStatus harqStatus = currHarq->getBufferStatus();
                 EV << "\t cycleOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
                 for (const auto& jt : harqStatus) {
@@ -315,9 +307,7 @@ void NRMacUe::macPduMake(MacCid cid)
             if (bsrTriggered_ || bsrD2DMulticastTriggered_) {
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
-                LteMacBufferMap::const_iterator itbsr;
-                for (itbsr = macBuffers_.begin(); itbsr != macBuffers_.end(); itbsr++) {
-                    MacCid cid = itbsr->first;
+                for (auto [cid, buffer] : macBuffers_) {
                     Direction connDir = (Direction)connDesc_[cid].getDirection();
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
@@ -326,7 +316,7 @@ void NRMacUe::macPduMake(MacCid cid)
                     if (bsrD2DMulticastTriggered_ && connDir != D2D_MULTI)
                         continue;
 
-                    sizeBsr += itbsr->second->getQueueOccupancy();
+                    sizeBsr += buffer->getQueueOccupancy();
 
                     // take into account the RLC header size
                     if (sizeBsr > 0) {

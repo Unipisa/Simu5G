@@ -51,10 +51,7 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
         // retrieving reference to HARQ entities
         HarqRxBuffers *harqQueues = mac_->getHarqRxBuffers(carrierFrequency);
         if (harqQueues != nullptr) {
-            for (auto it = harqQueues->begin(); it != harqQueues->end(); ++it) {
-                // get current nodeId
-                MacNodeId nodeId = it->first;
-
+            for (auto [nodeId, currHarq] : *harqQueues) {
                 if (nodeId == NODEID_NONE) {
                     // UE has left the simulation - erase queue and continue
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
@@ -65,8 +62,6 @@ bool NRSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *ban
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
                 }
-
-                LteHarqBufferRx *currHarq = it->second;
 
                 // Get user transmission parameters
                 const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency);// get the user info

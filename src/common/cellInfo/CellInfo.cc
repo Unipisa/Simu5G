@@ -242,15 +242,15 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
 
         // update carriers' bounds
         unsigned int b = 0;
-        for (it = carrierMap_.begin(); it != carrierMap_.end(); ++it) {
-            it->second.firstBand = b;
-            it->second.lastBand = b + it->second.numBands - 1;
-            b = it->second.lastBand + 1;
-            EV << "* [" << it->first << "GHz] - range[" << it->second.firstBand << "-" << it->second.lastBand << "]" << endl;
+        for (auto& [cKey, carrierInfo] : carrierMap_) {
+            carrierInfo.firstBand = b;
+            carrierInfo.lastBand = b + carrierInfo.numBands - 1;
+            b = carrierInfo.lastBand + 1;
+            EV << "* [" << cKey << "GHz] - range[" << carrierInfo.firstBand << "-" << carrierInfo.lastBand << "]" << endl;
 
             // --- create usable bands structure --- //
 
-            it->second.bandLimit.clear();
+            carrierInfo.bandLimit.clear();
 
             // for each band of the band vector provided
             for (unsigned int i = 0; i < numBands_; i++) {
@@ -258,13 +258,13 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
                 elem.band_ = Band(i);
 
                 // check whether band i is in the set of usable bands
-                int limit = (i >= it->second.firstBand && i <= it->second.lastBand) ? -1 : -2;
+                int limit = (i >= carrierInfo.firstBand && i <= carrierInfo.lastBand) ? -1 : -2;
 
                 elem.limit_.clear();
                 for (unsigned int j = 0; j < MAX_CODEWORDS; j++)
                     elem.limit_.push_back(limit);
 
-                it->second.bandLimit.push_back(elem);
+                carrierInfo.bandLimit.push_back(elem);
             }
         }
     }

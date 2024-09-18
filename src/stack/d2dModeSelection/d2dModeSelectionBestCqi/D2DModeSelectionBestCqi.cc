@@ -31,15 +31,15 @@ void D2DModeSelectionBestCqi::doModeSelection()
     double primaryCarrierFrequency = mac_->getCellInfo()->getCarriers()->front();
 
     switchList_.clear();
-    for (auto it = peeringModeMap_->begin(); it != peeringModeMap_->end(); ++it) {
-        MacNodeId srcId = it->first;
+    for (auto& it : *peeringModeMap_) {
+        MacNodeId srcId = it.first;
 
         // consider only UEs within this cell
         if (binder_->getNextHop(srcId) != mac_->getMacCellId())
             continue;
 
-        for (auto jt = it->second.begin(); jt != it->second.end(); ++jt) {
-            MacNodeId dstId = jt->first;   // since the D2D CQI is the same for all D2D connections,
+        for (auto& jt : it.second) {
+            MacNodeId dstId = jt.first;   // since the D2D CQI is the same for all D2D connections,
                                            // the mode will be the same for all destinations
 
             // consider only UEs within this cell
@@ -50,7 +50,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
             if (binder_->hasUeHandoverTriggered(dstId) || binder_->hasUeHandoverTriggered(srcId))
                 continue;
 
-            LteD2DMode oldMode = jt->second;
+            LteD2DMode oldMode = jt.second;
 
             // Compute the achievable bits on a single RB for UL direction
             // Note that this operation takes into account the CQI returned by the AMC Pilot (by default, it
@@ -73,7 +73,7 @@ void D2DModeSelectionBestCqi::doModeSelection()
                 switchList_.push_back(info);
 
                 // update peering map
-                jt->second = newMode;
+                jt.second = newMode;
 
                 EV << NOW << " D2DModeSelectionBestCqi::doModeSelection - Flow: " << srcId << " --> " << dstId << " [" << d2dModeToA(newMode) << "]" << endl;
             }

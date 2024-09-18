@@ -439,9 +439,8 @@ void LteMacUe::macPduMake(MacCid cid)
 
     // Put MAC PDUs in H-ARQ buffers
 
-    std::map<double, MacPduList>::iterator lit;
-    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit) {
-        double carrierFreq = lit->first;
+    for (auto& lit : macPduList_) {
+        double carrierFreq = lit.first;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
@@ -449,7 +448,7 @@ void LteMacUe::macPduMake(MacCid cid)
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        for (auto & pit : lit->second) {
+        for (auto & pit : lit.second) {
 
             MacNodeId destId = pit.first.first;
             Codeword cw = pit.first.second;
@@ -727,19 +726,16 @@ void LteMacUe::handleSelfMessage()
 
         bool retx = false;
 
-        HarqTxBuffers::iterator it2;
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            double carrierFrequency = mtit->first;
+        for (auto& mtit : harqTxBuffers_) {
+            double carrierFrequency = mtit.first;
 
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            LteHarqBufferTx *currHarq;
-            for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++) {
+            for (auto& it2 : mtit.second) {
                 EV << "\t Looking for retransmission in ACID " << (unsigned int)currentHarq_ << endl;
-                currHarq = it2->second;
+                LteHarqBufferTx *currHarq = it2.second;
 
                 // check if the current process has units ready for retransmission
                 retx = currHarq->getProcess(currentHarq_)->hasReadyUnits();
@@ -759,15 +755,12 @@ void LteMacUe::handleSelfMessage()
         }
         // if no retransmission is needed, proceed with normal scheduling
         if (!retx) {
-            std::map<double, LteSchedulerUeUl *>::iterator sit;
-            for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit) {
-                double carrierFrequency = sit->first;
+            for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
 
                 // skip if no grant is configured for this carrier
                 if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                     continue;
 
-                LteSchedulerUeUl *carrierLcgScheduler = sit->second;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
                 scheduleList_[carrierFrequency] = carrierScheduleList;
             }
@@ -789,15 +782,13 @@ void LteMacUe::handleSelfMessage()
     //============================ DEBUG ==========================
     if (debugHarq_) {
         // TODO make this part optional to save computations
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            EV << "\n carrier[ " << mtit->first << "] htxbuf.size " << mtit->second.size() << endl;
+        for (auto& mtit : harqTxBuffers_) {
+            EV << "\n carrier[ " << mtit.first << "] htxbuf.size " << mtit.second.size() << endl;
 
-            HarqTxBuffers::iterator it;
+            //TODO const variables
             int cntOuter = 0;
             int cntInner = 0;
-            for (it = mtit->second.begin(); it != mtit->second.end(); it++) {
-                LteHarqBufferTx *currHarq = it->second;
+            for (auto [nodeId, currHarq] : mtit.second) {
                 BufferStatus harqStatus = currHarq->getBufferStatus();
 
                 EV << "\t cycleOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
@@ -919,10 +910,8 @@ void LteMacUe::checkRAC()
 
     bool trigger = false;
 
-    LteMacBufferMap::const_iterator it;
-
-    for (it = macBuffers_.begin(); it != macBuffers_.end(); ++it) {
-        if (!(it->second->isEmpty())) {
+    for (const auto& it : macBuffers_) {
+        if (!(it.second->isEmpty())) {
             trigger = true;
             break;
         }
@@ -977,11 +966,9 @@ void LteMacUe::updateUserTxParam(cPacket *pktAux)
 void LteMacUe::flushHarqBuffers()
 {
     // send the selected units to lower layers
-    std::map<double, HarqTxBuffers>::iterator mtit;
-    for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-        HarqTxBuffers::iterator it2;
-        for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++)
-            it2->second->sendSelectedDown();
+    for (auto& mtit : harqTxBuffers_) {
+        for (auto& it2 : mtit.second)
+            it2.second->sendSelectedDown();
     }
 
     // deleting non-periodic grant

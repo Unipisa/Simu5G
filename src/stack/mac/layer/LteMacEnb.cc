@@ -241,9 +241,9 @@ void LteMacEnb::macSduRequest()
 
     // Ask for a MAC SDU for each scheduled user on each carrier and each codeword
     std::map<double, LteMacScheduleList>::iterator cit;
-    for (cit = scheduleListDl_->begin(); cit != scheduleListDl_->end(); cit++) { // loop on carriers
+    for (const auto& cit : *scheduleListDl_) { // loop on carriers
 
-        for (const auto& item : cit->second) { // loop on CIDs
+        for (const auto& item : cit.second) { // loop on CIDs
             MacCid destCid = item.first.first;
             // Codeword cw = item.first.second;
             MacNodeId destId = MacCidToNodeId(destCid);
@@ -572,15 +572,15 @@ void LteMacEnb::macPduMake(MacCid cid)
     }
 
     std::map<double, MacPduList>::iterator lit;
-    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit) {
-        double carrierFreq = lit->first;
+    for (const auto& lit : macPduList_) {
+        double carrierFreq = lit.first;
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
             harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        for (const auto& pit : lit->second) {
+        for (const auto& pit : lit.second) {
             MacNodeId destId = pit.first.first;
             Codeword cw = pit.first.second;
 

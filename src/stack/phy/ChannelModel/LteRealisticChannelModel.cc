@@ -2623,9 +2623,7 @@ LteRealisticChannelModel::JakesFadingMap *LteRealisticChannelModel::obtainUeJake
     LtePhyBase *phy = nullptr;
 
     std::vector<UeInfo *> *ueList = binder_->getUeList();
-    std::vector<UeInfo *>::iterator it;
-    for (it = ueList->begin(); it != ueList->end(); ++it) {
-        UeInfo *ueInfo = *it;
+    for (auto ueInfo : *ueList) {
         if (ueInfo->id == id) {
             phy = ueInfo->phy;
             break;
@@ -2652,9 +2650,7 @@ LteRealisticChannelModel::ShadowFadingMap *LteRealisticChannelModel::obtainShado
     LtePhyBase *phy = nullptr;
 
     std::vector<UeInfo *> *ueList = binder_->getUeList();
-    std::vector<UeInfo *>::iterator it;
-    for (it = ueList->begin(); it != ueList->end(); ++it) {
-        UeInfo *ueInfo = *it;
+    for (auto ueInfo : *ueList) {
         if (ueInfo->id == id) {
             phy = ueInfo->phy;
             break;

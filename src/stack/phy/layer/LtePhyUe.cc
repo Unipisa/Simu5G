@@ -112,17 +112,17 @@ void LtePhyUe::initialize(int stage)
 
             // get the list of all eNodeBs in the network
             std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-            for (auto it = enbList->begin(); it != enbList->end(); ++it) {
+            for (auto enbInfo : *enbList) {
                 // the NR phy layer only checks signal from gNBs
-                if (isNr_ && (*it)->nodeType != GNODEB)
+                if (isNr_ && enbInfo->nodeType != GNODEB)
                     continue;
 
                 // the LTE phy layer only checks signal from eNBs
-                if (!isNr_ && (*it)->nodeType != ENODEB)
+                if (!isNr_ && enbInfo->nodeType != ENODEB)
                     continue;
 
-                MacNodeId cellId = (*it)->id;
-                LtePhyBase *cellPhy = check_and_cast<LtePhyBase *>((*it)->eNodeB->getSubmodule("cellularNic")->getSubmodule("phy"));
+                MacNodeId cellId = enbInfo->id;
+                LtePhyBase *cellPhy = check_and_cast<LtePhyBase *>(enbInfo->eNodeB->getSubmodule("cellularNic")->getSubmodule("phy"));
                 double cellTxPower = cellPhy->getTxPwr();
                 Coord cellPos = cellPhy->getCoord();
 

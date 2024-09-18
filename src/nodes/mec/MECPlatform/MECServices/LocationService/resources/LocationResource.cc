@@ -108,8 +108,8 @@ nlohmann::ordered_json LocationResource::toJson() const {
     nlohmann::ordered_json userList;
     nlohmann::ordered_json ueArray;
 
-    for (auto it = eNodeBs_.begin(); it != eNodeBs_.end(); ++it) {
-        ueArray.push_back(getUserListPerCell(it->first, it->second));
+    for (auto [cid, cellInfo] : eNodeBs_) {
+        ueArray.push_back(getUserListPerCell(cid, cellInfo));
     }
 
     if (ueArray.size() > 1) {

@@ -269,9 +269,8 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-    std::map<double, MacPduList>::iterator lit;
-    for (lit = macPduList_.begin(); lit != macPduList_.end(); ++lit) {
-        double carrierFreq = lit->first;
+    for (auto& lit : macPduList_) {
+        double carrierFreq = lit.first;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
@@ -279,10 +278,9 @@ void LteMacUeD2D::macPduMake(MacCid cid)
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        MacPduList::iterator pit;
-        for (pit = lit->second.begin(); pit != lit->second.end(); pit++) {
-            MacNodeId destId = pit->first.first;
-            Codeword cw = pit->first.second;
+        for (auto& pit : lit.second) {
+            MacNodeId destId = pit.first.first;
+            Codeword cw = pit.first.second;
 
             // Check if the HarqTx buffer already exists for the destId
             // Get a reference for the destId TXBuffer
@@ -295,7 +293,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 // The tx buffer does not exist yet for this mac node id, create one
                 LteHarqBufferTx *hb;
                 // FIXME: hb is never deleted
-                auto info = pit->second->getTag<UserControlInfo>();
+                auto info = pit.second->getTag<UserControlInfo>();
 
                 if (info->getDirection() == UL) {
                     hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
@@ -312,7 +310,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
             // Get a reference of the LteMacPdu from pit pointer (extract PDU from the MAP)
-            auto macPkt = pit->second;
+            auto macPkt = pit.second;
 
             // BSR related operations
 
@@ -526,9 +524,8 @@ void LteMacUeD2D::checkRAC()
 
     LteMacBufferMap::const_iterator it;
 
-    for (it = macBuffers_.begin(); it != macBuffers_.end(); ++it) {
-        if (!(it->second->isEmpty())) {
-            MacCid cid = it->first;
+    for (auto [cid, macBuffer] : macBuffers_) {
+        if (!(macBuffer->isEmpty())) {
             if (connDesc_.at(cid).getDirection() == D2D_MULTI)
                 triggerD2DMulticast = true;
             else
@@ -688,19 +685,17 @@ void LteMacUeD2D::handleSelfMessage()
 
         bool retx = false;
 
-        HarqTxBuffers::iterator it2;
         LteHarqBufferTx *currHarq;
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            double carrierFrequency = mtit->first;
+        for (auto& mtit : harqTxBuffers_) {
+            double carrierFrequency = mtit.first;
 
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            for (it2 = mtit->second.begin(); it2 != mtit->second.end(); it2++) {
+            for (auto& it2 : mtit.second) {
                 EV << "\t Looking for retx in acid " << (unsigned int)currentHarq_ << endl;
-                currHarq = it2->second;
+                currHarq = it2.second;
 
                 // check if the current process has unit ready for retx
                 bool ready = currHarq->getProcess(currentHarq_)->hasReadyUnits();
@@ -733,11 +728,7 @@ void LteMacUeD2D::handleSelfMessage()
         if (!retx) {
             emptyScheduleList_ = true;
             std::map<double, LteSchedulerUeUl *>::iterator sit;
-            for (sit = lcgScheduler_.begin(); sit != lcgScheduler_.end(); ++sit) {
-                double carrierFrequency = sit->first;
-
-                LteSchedulerUeUl *carrierLcgScheduler = sit->second;
-
+            for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
                 EV << "LteMacUeD2D::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
                 EV << "LteMacUeD2D::handleSelfMessage - scheduled " << carrierScheduleList->size() << " connections on carrier " << carrierFrequency << endl;
@@ -764,18 +755,14 @@ void LteMacUeD2D::handleSelfMessage()
 
     //============================ DEBUG ==========================
     if (debugHarq_) {
-        std::map<double, HarqTxBuffers>::iterator mtit;
-        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-            EV << "\n carrier[ " << mtit->first << "] htxbuf.size " << mtit->second.size() << endl;
-
-            HarqTxBuffers::iterator it;
+        for (const auto& mtit : harqTxBuffers_) {
+            EV << "\n carrier[ " << mtit.first << "] htxbuf.size " << mtit.second.size() << endl;
 
             EV << "\n htxbuf.size " << harqTxBuffers_.size() << endl;
 
             int cntOuter = 0;
             int cntInner = 0;
-            for (it = mtit->second.begin(); it != mtit->second.end(); it++) {
-                LteHarqBufferTx *currHarq = it->second;
+            for (auto [mtitKey, currHarq] : mtit.second) {
                 BufferStatus harqStatus = currHarq->getBufferStatus();
                 EV << "\t cicloOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
                 for (const auto& jt : harqStatus) {
@@ -899,10 +886,9 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
                         // Interrupt H-ARQ processes for SL
                         MacNodeId id = peerId;
-                        std::map<double, HarqTxBuffers>::iterator mtit;
-                        for (mtit = harqTxBuffers_.begin(); mtit != harqTxBuffers_.end(); ++mtit) {
-                            HarqTxBuffers::iterator hit = mtit->second.find(id);
-                            if (hit != mtit->second.end()) {
+                        for (auto& mtit : harqTxBuffers_) {
+                            HarqTxBuffers::iterator hit = mtit.second.find(id);
+                            if (hit != mtit.second.end()) {
                                 for (int proc = 0; proc < (unsigned int)UE_TX_HARQ_PROCESSES; proc++) {
                                     hit->second->forceDropProcess(proc);
                                 }
@@ -910,8 +896,8 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
                             // Interrupt H-ARQ processes for UL
                             id = getMacCellId();
-                            hit = mtit->second.find(id);
-                            if (hit != mtit->second.end()) {
+                            hit = mtit.second.find(id);
+                            if (hit != mtit.second.end()) {
                                 for (int proc = 0; proc < (unsigned int)UE_TX_HARQ_PROCESSES; proc++) {
                                     hit->second->forceDropProcess(proc);
                                 }
@@ -974,10 +960,9 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                     if (switchPkt->getInterruptHarq()) {
                         // Interrupt H-ARQ processes for SL
                         MacNodeId id = peerId;
-                        std::map<double, HarqRxBuffers>::iterator mrit;
-                        for (mrit = harqRxBuffers_.begin(); mrit != harqRxBuffers_.end(); ++mrit) {
-                            HarqRxBuffers::iterator hit = mrit->second.find(id);
-                            if (hit != mrit->second.end()) {
+                        for (auto& mrit : harqRxBuffers_) {
+                            HarqRxBuffers::iterator hit = mrit.second.find(id);
+                            if (hit != mrit.second.end()) {
                                 for (unsigned int proc = 0; proc < (unsigned int)UE_RX_HARQ_PROCESSES; proc++) {
                                     unsigned int numUnits = hit->second->getProcess(proc)->getNumHarqUnits();
                                     for (unsigned int i = 0; i < numUnits; i++) {

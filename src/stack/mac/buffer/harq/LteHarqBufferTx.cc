@@ -314,8 +314,8 @@ LteHarqProcessTx *LteHarqBufferTx::getSelectedProcess()
 // @author Alessandro Noferi
 
 bool LteHarqBufferTx::isHarqBufferActive() const {
-    for (auto it = processes_->begin(); it != processes_->end(); ++it) {
-        if ((*it)->isHarqProcessActive()) {
+    for (auto process : *processes_) {
+        if (process->isHarqProcessActive()) {
             return true;
         }
     }
@@ -324,8 +324,8 @@ bool LteHarqBufferTx::isHarqBufferActive() const {
 
 LteHarqBufferTx::~LteHarqBufferTx()
 {
-    for (auto it = processes_->begin(); it != processes_->end(); ++it)
-        delete *it;
+    for (auto process : *processes_)
+        delete process;
 
     processes_->clear();
     delete processes_;

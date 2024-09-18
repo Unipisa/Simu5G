@@ -133,15 +133,11 @@ void LteDrr::updateSchedulingInfo()
         throw cRuntimeError("LteDrr::updateSchedulingInfo invalid direction");
     }
 
-    //    // Iterators to cycle through the maps of connection descriptors.
-
-    LteMacBufferMap::iterator it = conn->begin(), et = conn->end();
-
     // Select the minimum rate and MAC SDU size.
     double minSize = 0;
     double minRate = 0;
-    for (it = conn->begin(); it != et; ++it) {
-        MacCid cid = it->first;
+    for (auto& it : *conn) {
+        MacCid cid = it.first;
         MacNodeId nodeId = MacCidToNodeId(cid);
         bool eligible = true;
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
