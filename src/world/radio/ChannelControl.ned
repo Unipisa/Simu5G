@@ -1,4 +1,3 @@
-
 //
 //                  Simu5G
 //
@@ -13,14 +12,11 @@
 package simu5g.world.radio;
 
 //
-// ChannelControl has exactly one instance in every network model that
-// contains mobile nodes.
-// This module manages the radio channels for the network's nodes,
-// taking into account various network parameters such as maximum 
-// transmission power, path loss coefficient, signal attenuation threshold, 
-// and carrier frequency. It offers support for different propagation models,
-// ensuring proper handling of radio communications within the network.
-///
+// Utility module that record the position of each radio module in the network.
+// Exactly one instance of this module (or its module extensions) must be present 
+// in the network. Note that channel parameters in this module are obsolete and 
+// are not used.
+//
 simple ChannelControl
 {
     parameters:
