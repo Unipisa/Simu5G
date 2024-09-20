@@ -40,18 +40,18 @@ class LteRlcMux : public cSimpleModule
      * Initialize class structures
      * gate map and delay
      */
-    virtual void initialize() override;
+    void initialize() override;
 
     /**
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Statistics recording
      */
-    virtual void finish() override;
+    void finish() override;
 
   private:
     /*

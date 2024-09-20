@@ -94,16 +94,16 @@ class AmRxQueue : public cSimpleModule
 
     AmRxQueue();
 
-    virtual ~AmRxQueue();
+    ~AmRxQueue() override;
 
     //! Receive an RLC PDU from the lower layer
     void enque(inet::Packet *pdu);
 
     //! Send a buffer status report to the ACK manager
-    virtual void handleMessage(cMessage *msg);
+    void handleMessage(cMessage *msg) override;
 
     //initialize
-    void initialize();
+    void initialize() override;
 
   protected:
 

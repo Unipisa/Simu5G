@@ -72,7 +72,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
         this->setChunkLength(inet::b(1));
     }
 
-    virtual ~LteRlcDataPdu()
+    ~LteRlcDataPdu() override
     {
         // Needs to delete all contained packets
         for (auto& sdu : sduList_)
@@ -94,7 +94,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
         return *this;
     }
 
-    virtual LteRlcDataPdu *dup() const override
+    LteRlcDataPdu *dup() const override
     {
         return new LteRlcDataPdu(*this);
     }
@@ -198,7 +198,7 @@ class LteRlcUmDataPdu : public LteRlcDataPdu
         return *this;
     }
 
-    virtual LteRlcUmDataPdu *dup() const
+    LteRlcUmDataPdu *dup() const override
     {
         return new LteRlcUmDataPdu(*this);
     }

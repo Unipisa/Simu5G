@@ -50,14 +50,14 @@ class AmcPilotAuto : public AmcPilot
      * @param dir The link direction.
      * @return The user transmission parameters computed.
      */
-    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
+    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency) override;
 
     /*
      * Defines a subset of bands that will be used in AMC operation.
      * e.g. limit the set of bands that will be considered in the "computeTxParams" function.
      * Note that the id can be either a UE or an eNodeB.
      */
-    void setUsableBands(MacNodeId id, UsableBands usableBands);
+    void setUsableBands(MacNodeId id, UsableBands usableBands) override;
 
     /*
      * Returns the subset of bands that will be used in scheduling operation.
@@ -68,10 +68,10 @@ class AmcPilotAuto : public AmcPilot
      * bands will not be limited).
      * The method returns nullptr if ALL bands are usable (hence, ignore the pointer), otherwise returns usable bands.
      */
-    virtual UsableBands *getUsableBands(MacNodeId id);
+    UsableBands *getUsableBands(MacNodeId id) override;
 
     // Returns a vector with one CQI for each band (for the given user).
-    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency);
+    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) override;
 };
 
 } //namespace

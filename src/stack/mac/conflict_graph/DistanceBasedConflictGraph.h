@@ -32,8 +32,8 @@ class DistanceBasedConflictGraph : public ConflictGraph
     double getDbmFromDistance(double distance);
 
     // overridden functions
-    virtual void findVertices(std::vector<CGVertex>& vertices);
-    virtual void findEdges(const std::vector<CGVertex>& vertices);
+    void findVertices(std::vector<CGVertex>& vertices) override;
+    void findEdges(const std::vector<CGVertex>& vertices) override;
 
   public:
     DistanceBasedConflictGraph(Binder *binder, LteMacEnbD2D *macEnb, bool reuseD2D, bool reuseD2DMulti, double dbmThresh);

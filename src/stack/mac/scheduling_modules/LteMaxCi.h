@@ -26,9 +26,9 @@ class LteMaxCi : public virtual LteScheduler
   public:
     LteMaxCi(Binder *binder) : LteScheduler(binder) {}
 
-    virtual void prepareSchedule();
+    void prepareSchedule() override;
 
-    virtual void commitSchedule();
+    void commitSchedule() override;
 
 };
 

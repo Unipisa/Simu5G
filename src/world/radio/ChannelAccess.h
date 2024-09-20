@@ -41,14 +41,14 @@ class ChannelAccess : public cSimpleModule, public cListener
     bool positionUpdateArrived;
 
   public:
-    virtual ~ChannelAccess();
+    ~ChannelAccess() override;
 
     /**
      * @brief Called by the signaling mechanism to inform of changes.
      *
      * ChannelAccess is subscribed to position changes.
      */
-    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
+    void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
     /** Finds the channelControl module in the network */
     IChannelControl *getChannelControl();
@@ -69,8 +69,8 @@ class ChannelAccess : public cSimpleModule, public cListener
     cModule *getHostModule() const { return hostModule; }
 
     /** Register with ChannelControl and subscribe to hostPos*/
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_PHYSICAL_LAYER + 1; }
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_PHYSICAL_LAYER + 1; }
 };
 
 } //namespace

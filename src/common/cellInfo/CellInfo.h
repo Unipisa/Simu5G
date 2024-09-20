@@ -114,8 +114,8 @@ class CellInfo : public cSimpleModule
 
   protected:
 
-    virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 2; }
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
 
     /**
      * Deploys remote antennas.
@@ -354,7 +354,7 @@ class CellInfo : public cSimpleModule
     void detachUser(MacNodeId nodeId);
     void attachUser(MacNodeId nodeId);
 
-    ~CellInfo();
+    ~CellInfo() override;
 };
 
 } //namespace

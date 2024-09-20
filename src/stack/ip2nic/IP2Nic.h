@@ -124,10 +124,10 @@ class IP2Nic : public cSimpleModule
     // TODO use a better policy
     bool markPacket(inet::Ptr<FlowControlInfo> ci);
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_LAST; }
-    virtual void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LAST; }
+    void handleMessage(cMessage *msg) override;
+    void finish() override;
 
     cGate *stackGateOut_ = nullptr;       // gate connecting IP2Nic module to cellular stack
     cGate *ipGateOut_ = nullptr;          // gate connecting IP2Nic module to network layer
@@ -153,7 +153,7 @@ class IP2Nic : public cSimpleModule
     void triggerHandoverUe(MacNodeId newMasterId, bool isNr = false);
     void signalHandoverCompleteUe(bool isNr = false);
 
-    virtual ~IP2Nic();
+    ~IP2Nic() override;
 };
 
 } //namespace

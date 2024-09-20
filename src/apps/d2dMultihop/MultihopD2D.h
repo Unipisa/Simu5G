@@ -82,10 +82,10 @@ class MultihopD2D : public cSimpleModule
     // reference to the statistics manager
     ModuleRefByPar<MultihopD2DStatistics> stat_;
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage);
-    virtual void handleMessage(cMessage *msg);
-    virtual void finish();
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
+    void finish() override;
 
     void markAsReceived(uint32_t msgId);      // store the msg id in the set of received messages
     bool isAlreadyReceived(uint32_t msgId);   // returns true if the given msg has already been received
@@ -100,7 +100,7 @@ class MultihopD2D : public cSimpleModule
 
   public:
     MultihopD2D();
-    ~MultihopD2D();
+    ~MultihopD2D() override;
 
     virtual void handleEvent(unsigned int eventId);
 };

@@ -30,9 +30,9 @@ class MecResponseApp : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    void initialize(int stage);
-    virtual void handleMessage(cMessage *msg);
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
 
     void handleRequest(cMessage *msg);
     void sendResponse(cMessage *msg);

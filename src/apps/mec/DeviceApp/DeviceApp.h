@@ -77,10 +77,10 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     // variable set in ned, if the appDescriptor is not in the MEC orchestrator
     std::string appPackageSource;
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessage(cMessage *msg) override;
+    void finish() override;
 
     /* Utility functions */
     virtual void handleSelfMessage(cMessage *msg);
@@ -91,22 +91,22 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     virtual void connectToUALCMP();
 
     /* inet::TcpSocket::CallbackInterface callback methods */
-    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;
-    virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }
-    virtual void socketEstablished(inet::TcpSocket *socket) override;
-    virtual void socketPeerClosed(inet::TcpSocket *socket) override;
-    virtual void socketClosed(inet::TcpSocket *socket) override;
-    virtual void socketFailure(inet::TcpSocket *socket, int code) override;
-    virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
-    virtual void socketDeleted(inet::TcpSocket *socket) override {}
+    void socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent) override;
+    void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }
+    void socketEstablished(inet::TcpSocket *socket) override;
+    void socketPeerClosed(inet::TcpSocket *socket) override;
+    void socketClosed(inet::TcpSocket *socket) override;
+    void socketFailure(inet::TcpSocket *socket, int code) override;
+    void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
+    void socketDeleted(inet::TcpSocket *socket) override {}
 
     /* inet::UdpSocket::CallbackInterface callback methods */
-    virtual void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
-    virtual void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
-    virtual void socketClosed(inet::UdpSocket *socket) override;
+    void socketDataArrived(inet::UdpSocket *socket, inet::Packet *packet) override;
+    void socketErrorArrived(inet::UdpSocket *socket, inet::Indication *indication) override;
+    void socketClosed(inet::UdpSocket *socket) override;
 
   public:
-    virtual ~DeviceApp();
+    ~DeviceApp() override;
 
 };
 

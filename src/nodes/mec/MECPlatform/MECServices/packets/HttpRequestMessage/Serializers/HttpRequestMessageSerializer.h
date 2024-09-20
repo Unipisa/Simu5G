@@ -30,8 +30,8 @@ using namespace inet;
 class HttpRequestMessageSerializer : public FieldsChunkSerializer
 {
   protected:
-    virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
-    virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
+    void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
+    const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
 };
 
 } //namespace

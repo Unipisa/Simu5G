@@ -21,7 +21,7 @@ namespace simu5g {
 class AvailableResourcesSelectionBased : public SelectionPolicyBase
 {
   protected:
-    virtual cModule *findBestMecHost(const ApplicationDescriptor&) override;
+    cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
     AvailableResourcesSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}

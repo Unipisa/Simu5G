@@ -104,26 +104,26 @@ class LteDlFeedbackGenerator : public cSimpleModule
     /**
      * Initialization function.
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
     /**
      * Manage self messages for sensing and transmission.
      * @param msg self message for sensing or transmission
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Channel sensing
      */
     void sensing(FbPeriodicity per);
-    virtual int numInitStages() const override { return inet::INITSTAGE_LINK_LAYER + 1; }
+    int numInitStages() const override { return inet::INITSTAGE_LINK_LAYER + 1; }
 
   public:
 
     /**
      * Destructor
      */
-    ~LteDlFeedbackGenerator();
+    ~LteDlFeedbackGenerator() override;
 
     /**
      * Function used to register an aperiodic feedback request

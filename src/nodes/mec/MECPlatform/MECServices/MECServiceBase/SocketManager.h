@@ -40,18 +40,18 @@ class SocketManager : public cSimpleModule, public inet::TcpSocket::ICallback
     std::string bufferedData;
 
     // internal: inet::TcpSocket::CallbackInterface methods
-    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { dataArrived(packet, urgent); }
-    virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }
-    virtual void socketEstablished(inet::TcpSocket *socket) override { established(); }
-    virtual void socketPeerClosed(inet::TcpSocket *socket) override { peerClosed(); }
-    virtual void socketClosed(inet::TcpSocket *socket) override { closed(); }
-    virtual void socketFailure(inet::TcpSocket *socket, int code) override { failure(code); }
-    virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override { statusArrived(status); }
-    virtual void socketDeleted(inet::TcpSocket *socket) override { if (socket == sock) sock = nullptr; }
+    void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { dataArrived(packet, urgent); }
+    void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override { socket->accept(availableInfo->getNewSocketId()); }
+    void socketEstablished(inet::TcpSocket *socket) override { established(); }
+    void socketPeerClosed(inet::TcpSocket *socket) override { peerClosed(); }
+    void socketClosed(inet::TcpSocket *socket) override { closed(); }
+    void socketFailure(inet::TcpSocket *socket, int code) override { failure(code); }
+    void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override { statusArrived(status); }
+    void socketDeleted(inet::TcpSocket *socket) override { if (socket == sock) sock = nullptr; }
 
   public:
 
-    virtual ~SocketManager() { delete sock; }
+    ~SocketManager() override { delete sock; }
 
     // internal: called by TCPSrvHostApp after creating this module
     virtual void init(MecServiceBase *serv, inet::TcpSocket *socket) { service = serv; sock = socket; }

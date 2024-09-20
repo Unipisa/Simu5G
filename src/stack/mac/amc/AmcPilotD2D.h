@@ -44,14 +44,14 @@ class AmcPilotD2D : public AmcPilot
      * @param dir The link direction.
      * @return The user transmission parameters computed.
      */
-    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
+    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency) override;
 
     void setPreconfiguredTxParams(Cqi cqi);
 
     // TODO reimplement these functions
-    virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) { std::vector<Cqi> result; return result; }
-    virtual void setUsableBands(MacNodeId id, UsableBands usableBands) {}
-    virtual UsableBands *getUsableBands(MacNodeId id) { return nullptr; }
+    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) override { std::vector<Cqi> result; return result; }
+    void setUsableBands(MacNodeId id, UsableBands usableBands) override {}
+    UsableBands *getUsableBands(MacNodeId id) override { return nullptr; }
 };
 
 } //namespace

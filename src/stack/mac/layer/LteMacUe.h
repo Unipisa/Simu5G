@@ -74,13 +74,13 @@ class LteMacUe : public LteMacBase
     /**
      * Reads MAC parameters for UE and performs initialization.
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
     /**
      * Analyze gate of incoming packets
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * macSduRequest() sends a message to the RLC layer
@@ -93,7 +93,7 @@ class LteMacUe : public LteMacBase
      * bufferizePacket() is called every time a packet is
      * received from the upper layer
      */
-    virtual bool bufferizePacket(cPacket *pkt) override;
+    bool bufferizePacket(cPacket *pkt) override;
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -104,7 +104,7 @@ class LteMacUe : public LteMacBase
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    virtual void macPduMake(MacCid cid = 0) override;
+    void macPduMake(MacCid cid = 0) override;
 
     /**
      * macPduUnmake() extracts SDUs from a received MAC
@@ -112,28 +112,28 @@ class LteMacUe : public LteMacBase
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(cPacket *pkt) override;
+    void macPduUnmake(cPacket *pkt) override;
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer
      */
-    virtual void handleUpperMessage(cPacket *pkt) override;
+    void handleUpperMessage(cPacket *pkt) override;
 
     /**
      * Main loop
      */
-    virtual void handleSelfMessage() override;
+    void handleSelfMessage() override;
 
     /*
      * Receives and handles scheduling grants
      */
-    virtual void macHandleGrant(cPacket *pkt) override;
+    void macHandleGrant(cPacket *pkt) override;
 
     /*
      * Receives and handles RAC responses
      */
-    virtual void macHandleRac(cPacket *pkt) override;
+    void macHandleRac(cPacket *pkt) override;
 
     /*
      * Checks RAC status
@@ -142,7 +142,7 @@ class LteMacUe : public LteMacBase
     /*
      * Update UserTxParam stored in every lteMacPdu when an RTX changes this information
      */
-    virtual void updateUserTxParam(cPacket *pkt) override;
+    void updateUserTxParam(cPacket *pkt) override;
 
     /**
      * Flush Tx H-ARQ buffers for the user
@@ -151,7 +151,7 @@ class LteMacUe : public LteMacBase
 
   public:
     LteMacUe();
-    virtual ~LteMacUe();
+    ~LteMacUe() override;
 
     /*
      * Access scheduling grant
@@ -192,7 +192,7 @@ class LteMacUe : public LteMacBase
      *
      * @param nodeId Id of the node whose queues are deleted
      */
-    virtual void deleteQueues(MacNodeId nodeId) override;
+    void deleteQueues(MacNodeId nodeId) override;
 
     // update ID of the serving cell during handover
     virtual void doHandover(MacNodeId targetEnb);

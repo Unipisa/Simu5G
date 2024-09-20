@@ -87,16 +87,16 @@ class NRRxPdcpEntity : public LteRxPdcpEntity
     double timeout_;
 
     // handler for PDCP SDU
-    virtual void handlePdcpSdu(Packet *pdcpSdu);
+    void handlePdcpSdu(Packet *pdcpSdu) override;
 
   public:
 
 
-    virtual void initialize();
+    void initialize() override;
 
-    virtual void handleMessage(cMessage *msg);
+    void handleMessage(cMessage *msg) override;
 
-    virtual bool isEmpty() const { return sduBuffer_.size() == 0; }
+    bool isEmpty() const override { return sduBuffer_.size() == 0; }
 };
 
 } //namespace

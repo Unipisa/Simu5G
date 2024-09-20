@@ -38,11 +38,11 @@ class TrafficLightMobility : public LinearMobility
     bool enableTurns_; // flag for enabling random turns at a traffic light
 
   protected:
-    virtual int numInitStages() const override { return NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
+    int numInitStages() const override { return NUM_INIT_STAGES; }
+    void initialize(int stage) override;
 
     /** @brief Move the host*/
-    virtual void move() override;
+    void move() override;
 
     // this method returns the angle in degrees of the orientation of the vehicle
     virtual double getOrientationAngleDegree();

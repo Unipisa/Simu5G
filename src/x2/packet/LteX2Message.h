@@ -82,12 +82,12 @@ class LteX2Message : public LteX2Message_Base
         operator=(other);
     }
 
-    virtual LteX2Message *dup() const
+    LteX2Message *dup() const override
     {
         return new LteX2Message(*this);
     }
 
-    virtual ~LteX2Message()
+    ~LteX2Message() override
     {
         while (!ieList_.empty()) {
             delete ieList_.front();

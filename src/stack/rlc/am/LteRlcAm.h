@@ -61,10 +61,10 @@ class LteRlcAm : public cSimpleModule
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
-    virtual void initialize() override;
-    virtual void finish() override
+    void initialize() override;
+    void finish() override
     {
     }
 

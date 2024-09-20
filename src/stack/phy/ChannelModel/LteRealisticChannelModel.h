@@ -165,7 +165,7 @@ class LteRealisticChannelModel : public LteChannelModel
     static simsignal_t measuredSinrUlSignal_;
 
   public:
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /*
      * Compute Attenuation caused by pathloss and shadowing (optional)
@@ -174,7 +174,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param dir traffic direction
      * @param coord position of end point communication (if dir==UL is the position of UE else is the position of eNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
+    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
 
     /*
      * Compute Attenuation for D2D caused by pathloss and shadowing (optional)
@@ -225,7 +225,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual std::vector<double> getSIR(LteAirFrame *frame, UserControlInfo *lteInfo);
+    std::vector<double> getSIR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Compute sinr for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
@@ -233,7 +233,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo);
+    std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Compute received useful signal for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
@@ -241,7 +241,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo);
+    std::vector<double> getRSRP(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Compute sinr for each band for a background UE according to pathloss
@@ -249,18 +249,18 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo *lteInfo);
+    std::vector<double> getSINR_bgUe(LteAirFrame *frame, UserControlInfo *lteInfo) override;
 
     /*
      * Compute received power for a background UE according to pathloss
      *
      */
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId);
+    double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus, MacNodeId bsId) override;
 
     /*
      * Compute Received useful signal for D2D transmissions
      */
-    virtual std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord);
+    std::vector<double> getRSRP_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord) override;
 
     /*
      * Compute sinr (D2D) for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
@@ -268,8 +268,8 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId);
-    virtual std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector);
+    std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId) override;
+    std::vector<double> getSINR_D2D(LteAirFrame *frame, UserControlInfo *lteInfo_1, MacNodeId destId, inet::Coord destCoord, MacNodeId enbId, const std::vector<double>& rsrpVector) override;
 
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
@@ -279,7 +279,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param lteinfo pointer to the user control info
      * @param rsrpVector the received signal for each RB, if it has already been computed
      */
-    virtual bool isError_D2D(LteAirFrame *frame, UserControlInfo *lteI, const std::vector<double>& rsrpVector);
+    bool isError_D2D(LteAirFrame *frame, UserControlInfo *lteI, const std::vector<double>& rsrpVector) override;
 
     /*
      * Compute the error probability of the transmitted packet according to cqi used, txmode, and the received power
@@ -288,7 +288,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual bool isError(LteAirFrame *frame, UserControlInfo *lteI);
+    bool isError(LteAirFrame *frame, UserControlInfo *lteI) override;
 
     /*
      * The same as before but used for das TODO to be implemented
@@ -296,7 +296,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param frame pointer to the packet
      * @param lteinfo pointer to the user control info
      */
-    virtual bool isErrorDas(LteAirFrame *frame, UserControlInfo *lteI)
+    bool isErrorDas(LteAirFrame *frame, UserControlInfo *lteI) override
     {
         throw cRuntimeError("DAS PHY LAYER TO BE IMPLEMENTED");
         return -1;
@@ -308,7 +308,7 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param distance between UE and eNodeB
      * @param los line-of-sight flag
      */
-    virtual double computePathLoss(double distance, double dbp, bool los);
+    double computePathLoss(double distance, double dbp, bool los) override;
 
     /*
      * Compute attenuation for indoor scenario
@@ -395,8 +395,8 @@ class LteRealisticChannelModel : public LteChannelModel
         return &lastComputedSF_;
     }
 
-    virtual bool isUplinkInterferenceEnabled() { return enableUplinkInterference_; }
-    virtual bool isD2DInterferenceEnabled() { return enableD2DInterference_; }
+    bool isUplinkInterferenceEnabled() override { return enableUplinkInterference_; }
+    bool isD2DInterferenceEnabled() override { return enableD2DInterference_; }
 
   protected:
 

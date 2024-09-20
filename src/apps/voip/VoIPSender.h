@@ -67,11 +67,11 @@ class VoIPSender : public cSimpleModule
     void sendVoIPPacket();
 
   public:
-    ~VoIPSender();
+    ~VoIPSender() override;
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
 

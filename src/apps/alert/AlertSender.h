@@ -45,16 +45,16 @@ class AlertSender : public cSimpleModule
     void sendAlertPacket();
 
   public:
-    ~AlertSender();
+    ~AlertSender() override;
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
 
     // utility: show current statistics above the icon
-    virtual void refreshDisplay() const override;
+    void refreshDisplay() const override;
 };
 
 } //namespace

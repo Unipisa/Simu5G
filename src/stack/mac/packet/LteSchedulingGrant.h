@@ -54,7 +54,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         grantedCwBytes.resize(MAX_CODEWORDS);
     }
 
-    ~LteSchedulingGrant()
+    ~LteSchedulingGrant() override
     {
         if (userTxParams != nullptr) {
             delete userTxParams;
@@ -75,7 +75,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         return *this;
     }
 
-    virtual LteSchedulingGrant *dup() const override
+    LteSchedulingGrant *dup() const override
     {
         return new LteSchedulingGrant(*this);
     }
@@ -113,35 +113,35 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         grantedBlocks = rbMap;
     }
 
-    virtual void setGrantedCwBytesArraySize(size_t size) override
+    void setGrantedCwBytesArraySize(size_t size) override
     {
         grantedCwBytes.resize(size);
     }
 
-    virtual size_t getGrantedCwBytesArraySize() const override
+    size_t getGrantedCwBytesArraySize() const override
     {
         return grantedCwBytes.size();
     }
 
-    virtual unsigned int getGrantedCwBytes(size_t k) const override
+    unsigned int getGrantedCwBytes(size_t k) const override
     {
         return grantedCwBytes.at(k);
     }
 
-    virtual void setGrantedCwBytes(size_t k, unsigned int grantedCwBytes_var) override
+    void setGrantedCwBytes(size_t k, unsigned int grantedCwBytes_var) override
     {
         grantedCwBytes[k] = grantedCwBytes_var;
     }
 
-    virtual void appendGrantedCwBytes(unsigned int grantedCwBytes) override {
+    void appendGrantedCwBytes(unsigned int grantedCwBytes) override {
         throw cRuntimeError("insertGrantedCwBytes not implemented");
     }
 
-    virtual void insertGrantedCwBytes(size_t k, unsigned int grantedCwBytes) override {
+    void insertGrantedCwBytes(size_t k, unsigned int grantedCwBytes) override {
         throw cRuntimeError("insertGrantedCwBytes not implemented");
     }
 
-    virtual void eraseGrantedCwBytes(size_t k) override {
+    void eraseGrantedCwBytes(size_t k) override {
         throw cRuntimeError("eraseGrantedCwBytes not implemented");
     }
 

@@ -44,9 +44,9 @@ class NRAmc : public LteAmc
 
     NRMCSelem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 
-    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
+    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency) override;
+    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency) override;
+    unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency) override;
 
 };
 

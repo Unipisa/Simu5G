@@ -42,7 +42,7 @@ class UmRxEntity : public cSimpleModule
 {
   public:
     UmRxEntity();
-    virtual ~UmRxEntity();
+    ~UmRxEntity() override;
 
     /*
      * Enqueues a lower layer packet into the PDU buffer
@@ -67,8 +67,8 @@ class UmRxEntity : public cSimpleModule
     /**
      * Initialize watches
      */
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 
     //Statistics
     static unsigned int totalCellPduRcvdBytes_;

@@ -45,7 +45,7 @@ class LteRxPdcpEntity : public cSimpleModule
   public:
 
 
-    virtual void initialize();
+    void initialize() override;
 
     // obtain the IP datagram from the PDCP PDU
     void handlePacketFromLowerLayer(Packet *pkt);

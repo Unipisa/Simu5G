@@ -53,8 +53,8 @@ class LteChannelModel : public cSimpleModule
 
   public:
 
-    virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 2; }
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
 
     /*
      * Returns the carrier frequency

@@ -65,9 +65,9 @@ class D2DModeSelectionBase : public cSimpleModule
 
   public:
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessage(cMessage *msg) override;
 
     // this method triggers possible switches after handover
     // if handoverCompleted is false, move all the connections for nodeId to IM

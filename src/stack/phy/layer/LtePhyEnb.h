@@ -39,10 +39,10 @@ class LtePhyEnb : public LtePhyBase
      */
     DasFilter *das_ = nullptr;
 
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
-    virtual void handleSelfMessage(cMessage *msg);
-    virtual void handleAirFrame(cMessage *msg);
+    void handleSelfMessage(cMessage *msg) override;
+    void handleAirFrame(cMessage *msg) override;
     bool handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     void handleFeedbackPkt(UserControlInfo *lteinfo, LteAirFrame *frame);
     virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt);
@@ -57,7 +57,7 @@ class LtePhyEnb : public LtePhyBase
     virtual void emitDistanceFromMaster() {}
 
   public:
-    virtual ~LtePhyEnb();
+    ~LtePhyEnb() override;
 
 };
 

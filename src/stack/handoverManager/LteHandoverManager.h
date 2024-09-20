@@ -51,8 +51,8 @@ class LteHandoverManager : public cSimpleModule
 
   public:
 
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 
     // send handover command on X2 to the eNB
     void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);

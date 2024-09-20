@@ -261,8 +261,8 @@ class BackgroundCellChannelModel : public cSimpleModule
     bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, double carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double> *interference);
 
   protected:
-    virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LOCAL + 1; }
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LOCAL + 1; }
 
   public:
 

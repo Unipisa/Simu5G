@@ -26,9 +26,9 @@ class LtePhyEnbD2D : public LtePhyEnb
 
   protected:
 
-    virtual void initialize(int stage) override;
-    virtual void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt) override;
-    virtual void handleAirFrame(cMessage *msg) override;
+    void initialize(int stage) override;
+    void requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame, inet::Packet *pkt) override;
+    void handleAirFrame(cMessage *msg) override;
 };
 
 } //namespace

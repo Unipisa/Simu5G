@@ -50,7 +50,7 @@ class ComponentCarrier : public cSimpleModule
 
   public:
 
-    virtual void initialize();
+    void initialize() override;
 
     /*
      * Returns the carrier frequency

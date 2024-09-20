@@ -49,7 +49,7 @@ class X2HandoverCommandIE : public X2InformationElement
         return *this;
     }
 
-    virtual X2HandoverCommandIE *dup() const
+    X2HandoverCommandIE *dup() const override
     {
         return new X2HandoverCommandIE(*this);
     }

@@ -60,11 +60,11 @@ class CbrSender : public cSimpleModule
     void sendCbrPacket();
 
   public:
-    ~CbrSender();
+    ~CbrSender() override;
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void finish() override;
     void handleMessage(cMessage *msg) override;

@@ -45,7 +45,7 @@ class HttpRequestMessage : public HttpRequestMessage_m
     HttpRequestMessage(const char *method, const char *name = nullptr, short kind = 0);
     HttpRequestMessage& operator=(const HttpRequestMessage& other) { if (this == &other) return *this; HttpRequestMessage_m::operator=(other); copy(other); return *this; }
 
-    virtual HttpRequestMessage *dup() const override { return new HttpRequestMessage(*this); }
+    HttpRequestMessage *dup() const override { return new HttpRequestMessage(*this); }
 
     virtual void addBodyChunk(const std::string& bodyChunk);
     // key MUST be like "key: "

@@ -64,9 +64,9 @@ class GtpUser : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
 
     // receive an IP Datagram from the traffic filter, encapsulates it in a GTP-U packet then forwards it to the proper next hop
     void handleFromTrafficFlowFilter(inet::Packet *datagram);

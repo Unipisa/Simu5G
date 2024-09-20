@@ -24,14 +24,14 @@ class NRMacUe : public LteMacUeD2D
     /**
      * Main loop
      */
-    virtual void handleSelfMessage();
+    void handleSelfMessage() override;
 
     /**
      * macSduRequest() sends a message to the RLC layer
      * requesting MAC SDUs (one for each CID),
      * according to the Schedule List.
      */
-    virtual int macSduRequest();
+    int macSduRequest() override;
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -42,7 +42,7 @@ class NRMacUe : public LteMacUeD2D
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    virtual void macPduMake(MacCid cid = 0);
+    void macPduMake(MacCid cid = 0) override;
 };
 
 } //namespace

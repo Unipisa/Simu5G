@@ -28,7 +28,7 @@ class CreateContextAppAckMessage : public CreateContextAppAck
     CreateContextAppAckMessage(const char *name = nullptr, short kind = 0);
     CreateContextAppAckMessage(const CreateContextAppAckMessage& other);
     CreateContextAppAckMessage& operator=(const CreateContextAppAckMessage& other);
-    virtual CreateContextAppAckMessage *dup() const override { return new CreateContextAppAckMessage(*this); }
+    CreateContextAppAckMessage *dup() const override { return new CreateContextAppAckMessage(*this); }
 
     virtual nlohmann::json getAppContext() const;
     virtual void setAppContext(nlohmann::json& appContext);

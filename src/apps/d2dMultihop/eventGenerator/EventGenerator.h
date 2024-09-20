@@ -50,11 +50,11 @@ class EventGenerator : public cSimpleModule
 
   protected:
 
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 
   public:
-    ~EventGenerator();
+    ~EventGenerator() override;
 
     void computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNodeId sourceId, double maxBroadcastRadius = -1.0);
     void registerNode(MultihopD2D *app, MacNodeId lteNodeId);

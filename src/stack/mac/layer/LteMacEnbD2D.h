@@ -67,24 +67,24 @@ class LteMacEnbD2D : public LteMacEnb
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(cPacket *pkt);
+    void macPduUnmake(cPacket *pkt) override;
 
-    virtual void macHandleFeedbackPkt(cPacket *pkt);
+    void macHandleFeedbackPkt(cPacket *pkt) override;
     /**
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the lower layer
      */
-    virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
+    void sendGrants(std::map<double, LteMacScheduleList> *scheduleList) override;
 
     void macHandleD2DModeSwitch(cPacket *pkt);
 
     /**
      * Flush Tx H-ARQ buffers for all users
      */
-    virtual void flushHarqBuffers();
+    void flushHarqBuffers() override;
 
     /// Lower Layer Handler
-    virtual void fromPhy(cPacket *pkt);
+    void fromPhy(cPacket *pkt) override;
 
   public:
 
@@ -92,31 +92,31 @@ class LteMacEnbD2D : public LteMacEnb
     /**
      * Reads MAC parameters for ue and performs initialization.
      */
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /**
      * Main loop
      */
-    virtual void handleSelfMessage();
+    void handleSelfMessage() override;
 
-    virtual void handleMessage(cMessage *msg);
+    void handleMessage(cMessage *msg) override;
 
-    virtual bool isD2DCapable()
+    bool isD2DCapable() override
     {
         return true;
     }
 
-    virtual bool isReuseD2DEnabled()
+    bool isReuseD2DEnabled() override
     {
         return reuseD2D_;
     }
 
-    virtual bool isReuseD2DMultiEnabled()
+    bool isReuseD2DMultiEnabled() override
     {
         return reuseD2DMulti_;
     }
 
-    virtual ConflictGraph *getConflictGraph()
+    ConflictGraph *getConflictGraph() override
     {
         return conflictGraph_;
     }
@@ -127,7 +127,7 @@ class LteMacEnbD2D : public LteMacEnb
      *
      * @param nodeId id of node performing handover
      */
-    virtual void deleteQueues(MacNodeId nodeId);
+    void deleteQueues(MacNodeId nodeId) override;
 
     // get the reference to the "mirror" buffers
     HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(double carrierFrequency);

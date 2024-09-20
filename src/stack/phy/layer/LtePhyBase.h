@@ -207,9 +207,9 @@ class LtePhyBase : public ChannelAccess
      *
      * @param stage initialization stage
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
-    virtual int numInitStages() const override {
+    int numInitStages() const override {
         return std::max(inet::INITSTAGE_LAST + 1, ChannelAccess::numInitStages());
     }
 
@@ -218,7 +218,7 @@ class LtePhyBase : public ChannelAccess
      *
      * @param msg message received from stack or from air channel
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Sends a frame to all NICs in range.
@@ -246,7 +246,7 @@ class LtePhyBase : public ChannelAccess
      *
      * Emits statistics related to the serving cell
      */
-    virtual void emitMobilityStats() override {}
+    void emitMobilityStats() override {}
 
   protected:
 

@@ -60,7 +60,7 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
         return *this;
     }
 
-    virtual LteFeedbackPkt *dup() const
+    LteFeedbackPkt *dup() const override
     {
         return new LteFeedbackPkt(*this);
     }

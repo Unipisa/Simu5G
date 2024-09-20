@@ -51,7 +51,7 @@ class LteTxPdcpEntity : public cSimpleModule
   public:
 
 
-    virtual void initialize();
+    void initialize() override;
 
     // create a PDCP PDU from the IP datagram
     void handlePacketFromUpperLayer(Packet *pkt);

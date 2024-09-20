@@ -43,7 +43,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
      * Checks for all processes if the PDU has been evaluated and sends
      * feedback if affirmative.
      */
-    virtual void sendFeedback();
+    void sendFeedback() override;
 
   public:
     LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast = false);
@@ -54,7 +54,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
      *
      * @param pdu to be inserted
      */
-    virtual void insertPdu(Codeword cw, inet::Packet *pdu);
+    void insertPdu(Codeword cw, inet::Packet *pdu) override;
 
     /**
      * Sends feedback for all processes which are older than
@@ -62,7 +62,7 @@ class LteHarqBufferRxD2D : public LteHarqBufferRx
      *
      * @return uncorrupted PDUs or empty list if none
      */
-    virtual std::list<inet::Packet *> extractCorrectPdus();
+    std::list<inet::Packet *> extractCorrectPdus() override;
 
 };
 

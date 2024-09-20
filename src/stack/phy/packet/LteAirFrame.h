@@ -53,7 +53,7 @@ class LteAirFrame : public LteAirFrame_Base
         return *this;
     }
 
-    virtual LteAirFrame *dup() const
+    LteAirFrame *dup() const override
     {
         return new LteAirFrame(*this);
     }

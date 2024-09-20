@@ -57,20 +57,20 @@ class UALCMPApp : public MecServiceBase
 
   protected:
 
-    virtual void initialize(int stage) override;
-    virtual void finish() override;
+    void initialize(int stage) override;
+    void finish() override;
 
-    virtual void handleMessageWhenUp(cMessage *msg) override;
+    void handleMessageWhenUp(cMessage *msg) override;
     void handleStartOperation(inet::LifecycleOperation *operation) override;
 
     // GET the list of available MEC app descriptors
-    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
     // POST the instantiation of a MEC app
-    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
+    void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
     // PUT not implemented, yet
-    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
+    void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
     // DELETE a MEC app previously instantiated
-    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
     /*
      * These two methods manage the responses coming from the MEC orchestrator and

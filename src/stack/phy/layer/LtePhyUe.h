@@ -125,15 +125,15 @@ class LtePhyUe : public LtePhyBase
 
     bool hasCollector = false;
 
-    virtual void initialize(int stage) override;
-    virtual void handleSelfMessage(cMessage *msg) override;
-    virtual void handleAirFrame(cMessage *msg) override;
-    virtual void finish() override;
-    virtual void finish(cComponent *component, simsignal_t signalID) override { cIListener::finish(component, signalID); }
+    void initialize(int stage) override;
+    void handleSelfMessage(cMessage *msg) override;
+    void handleAirFrame(cMessage *msg) override;
+    void finish() override;
+    void finish(cComponent *component, simsignal_t signalID) override { cIListener::finish(component, signalID); }
 
-    virtual void handleUpperMessage(cMessage *msg) override;
+    void handleUpperMessage(cMessage *msg) override;
 
-    virtual void emitMobilityStats() override;
+    void emitMobilityStats() override;
 
     /**
      * Utility function to update the hysteresis threshold using hysteresisFactor_.
@@ -148,7 +148,7 @@ class LtePhyUe : public LtePhyBase
     virtual void doHandover();
 
   public:
-    virtual ~LtePhyUe();
+    ~LtePhyUe() override;
     DasFilter *getDasFilter();
     /**
      * Send feedback, called by feedback generator in DL

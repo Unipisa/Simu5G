@@ -48,20 +48,20 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
     LteFeedbackComputationRealistic(Binder *binder, double targetBler, std::map<MacNodeId, Lambda> *lambda, double lambdaMinTh,
             double lambdaMaxTh, double lambdaRatioTh, unsigned int numBands);
 
-    virtual LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,
+    LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,
             TxMode currentTxMode,
             std::map<Remote, int> antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype,
-            int numRus, std::vector<double> snr, MacNodeId id = NODEID_NONE);
+            int numRus, std::vector<double> snr, MacNodeId id = NODEID_NONE) override;
 
-    virtual LteFeedbackVector computeFeedback(const Remote remote, FeedbackType fbType,
+    LteFeedbackVector computeFeedback(const Remote remote, FeedbackType fbType,
             RbAllocationType rbAllocationType, TxMode currentTxMode,
             int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-            std::vector<double> snr, MacNodeId id = NODEID_NONE);
+            std::vector<double> snr, MacNodeId id = NODEID_NONE) override;
 
-    virtual LteFeedback computeFeedback(const Remote remote, TxMode txmode, FeedbackType fbType,
+    LteFeedback computeFeedback(const Remote remote, TxMode txmode, FeedbackType fbType,
             RbAllocationType rbAllocationType,
             int antennaCws, int numPreferredBands, FeedbackGeneratorType feedbackGeneratortype, int numRus,
-            std::vector<double> snr, MacNodeId id = NODEID_NONE);
+            std::vector<double> snr, MacNodeId id = NODEID_NONE) override;
 };
 
 } //namespace

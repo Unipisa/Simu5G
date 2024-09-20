@@ -148,13 +148,13 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
 
   protected:
-    virtual void initialize(int stages) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessage(cMessage *msg) override
+    void initialize(int stages) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessage(cMessage *msg) override
     {
     }
 
-    virtual void finish() override;
+    void finish() override;
 
   public:
     Binder() :  lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
@@ -169,7 +169,7 @@ class Binder : public cSimpleModule
         return totalBands_;
     }
 
-    virtual ~Binder()
+    ~Binder() override
     {
         for (auto enb : enbList_)
             delete enb;

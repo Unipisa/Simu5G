@@ -71,8 +71,8 @@ class MultihopD2DStatistics : public cSimpleModule
 
   protected:
 
-    virtual void initialize();
-    virtual void finish();
+    void initialize() override;
+    void finish() override;
 
   public:
     void recordNewBroadcast(unsigned int msgId, UeSet& destinations);

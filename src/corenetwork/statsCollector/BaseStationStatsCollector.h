@@ -95,7 +95,7 @@ class BaseStationStatsCollector : public cSimpleModule
     double tPutPeriod_;
 
   public:
-    virtual ~BaseStationStatsCollector();
+    ~BaseStationStatsCollector() override;
 
     const mec::Ecgi& getEcgi() const;
     MacCellId getCellId() const;
@@ -220,11 +220,11 @@ class BaseStationStatsCollector : public cSimpleModule
     void resetStats(MacNodeId nodeId);
 
   protected:
-    virtual void initialize(int stages) override;
+    void initialize(int stages) override;
 
-    virtual int numInitStages() const override { return INITSTAGE_LAST; }
+    int numInitStages() const override { return INITSTAGE_LAST; }
 
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
 };
 

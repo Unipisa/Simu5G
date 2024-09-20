@@ -140,9 +140,9 @@ class UeStatsCollector : public cSimpleModule
     }
 
   protected:
-    virtual void initialize(int stages) override;
-    virtual int numInitStages() const override { return INITSTAGE_LAST; }
-    virtual void handleMessage(cMessage *msg) override {}
+    void initialize(int stages) override;
+    int numInitStages() const override { return INITSTAGE_LAST; }
+    void handleMessage(cMessage *msg) override {}
 };
 
 } //namespace

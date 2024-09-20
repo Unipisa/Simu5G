@@ -83,9 +83,9 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 
     /*************************************/
 
-    virtual void initialize(int stage);
-    virtual int numInitStages() const { return inet::INITSTAGE_LAST; }
-    virtual void handleMessage(cMessage *msg);
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LAST; }
+    void handleMessage(cMessage *msg) override;
 
     static const double nrCqiTable[16];
     static double getCqiFromTable(double snr);
@@ -99,46 +99,46 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
   public:
 
     // set carrier frequency
-    void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }
+    void setCarrierFrequency(double carrierFrequency) override { carrierFrequency_ = carrierFrequency; }
 
     // get the tx power of the BS
-    double getBsTxPower() { return bsTxPower_; }
+    double getBsTxPower() override { return bsTxPower_; }
 
     // get the position of the BS
-    inet::Coord getBsCoord() { return bsCoord_; }
+    inet::Coord getBsCoord() override { return bsCoord_; }
 
     // invoked by the UE's traffic generator when new data is backlogged
-    virtual void notifyBacklog(int index, Direction dir, bool rtx = false);
+    void notifyBacklog(int index, Direction dir, bool rtx = false) override;
 
     // returns the CQI based on the given position and power
-    virtual Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0);
+    Cqi computeCqi(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower = 0.0) override;
 
     // returns the CQI based on the given sinr
-    virtual Cqi computeCqiFromSinr(double sinr);
+    Cqi computeCqiFromSinr(double sinr) override;
 
     // returns the pointer to the traffic generator of the given background UE
-    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId);
+    TrafficGeneratorBase *getTrafficGenerator(MacNodeId bgUeId) override;
 
     // returns the begin (end) iterator of the vector of UEs
-    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin();
-    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd();
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesBegin() override;
+    std::vector<TrafficGeneratorBase *>::const_iterator getBgUesEnd() override;
 
     // returns the begin (end) iterator of the vector of backlogged UEs
-    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false);
-    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir, bool rtx = false);
+    std::list<int>::const_iterator getBackloggedUesBegin(Direction dir, bool rtx = false) override;
+    std::list<int>::const_iterator getBackloggedUesEnd(Direction dir, bool rtx = false) override;
 
     // returns the begin (end) iterator of the vector of backlogged UEs that are waiting for RAC handshake to finish
-    std::list<int>::const_iterator getWaitingForRacUesBegin();
-    std::list<int>::const_iterator getWaitingForRacUesEnd();
+    std::list<int>::const_iterator getWaitingForRacUesBegin() override;
+    std::list<int>::const_iterator getWaitingForRacUesEnd() override;
 
     // returns the buffer of the given UE for in the given direction
-    virtual unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx = false);
+    unsigned int getBackloggedUeBuffer(MacNodeId bgUeId, Direction dir, bool rtx = false) override;
 
     // signal that the RAC for the given UE has been handled
-    virtual void racHandled(MacNodeId bgUeId);
+    void racHandled(MacNodeId bgUeId) override;
 
     // update background UE's backlog and returns true if the buffer is empty
-    virtual unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false);
+    unsigned int consumeBackloggedUeBytes(MacNodeId bgUeId, unsigned int bytes, Direction dir, bool rtx = false) override;
 };
 
 } //namespace

@@ -64,21 +64,21 @@ class MECResponseApp : public MecAppBase
     inet::L3Address serviceAddress_;
     int servicePort_;
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
-    virtual void handleProcessedMessage(cMessage *msg) override;
-    virtual void finish() override;
-    virtual void handleSelfMessage(cMessage *msg) override;
-    virtual void handleHttpMessage(int connId) override;
-    virtual void handleUeMessage(cMessage *msg) override {}
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleProcessedMessage(cMessage *msg) override;
+    void finish() override;
+    void handleSelfMessage(cMessage *msg) override;
+    void handleHttpMessage(int connId) override;
+    void handleUeMessage(cMessage *msg) override {}
 
-    virtual double scheduleNextMsg(cMessage *msg) override;
+    double scheduleNextMsg(cMessage *msg) override;
 
     // @brief handler for data received from the service registry
-    virtual void handleMp1Message(int connId) override;
+    void handleMp1Message(int connId) override;
 
     // @brief handler for data received from a MEC service
-    virtual void handleServiceMessage(int connId) override;
+    void handleServiceMessage(int connId) override;
 
     virtual void handleRequest(cMessage *msg);
     virtual void handleStopRequest(cMessage *msg);
@@ -91,11 +91,11 @@ class MECResponseApp : public MecAppBase
     void sendGetRequest();
 
     /* TCPSocket::CallbackInterface callback methods */
-    virtual void established(int connId) override;
-    virtual void socketClosed(inet::TcpSocket *socket) override;
+    void established(int connId) override;
+    void socketClosed(inet::TcpSocket *socket) override;
 
   public:
-    virtual ~MECResponseApp();
+    ~MECResponseApp() override;
 };
 
 } //namespace

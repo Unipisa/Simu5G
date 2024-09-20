@@ -29,8 +29,8 @@ class X2AppServer : public inet::SctpServer
     cGate *x2ManagerIn_ = nullptr;
 
   protected:
-    virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
     void handleTimer(cMessage *msg);
     void generateAndSend(inet::Packet *pkt);
 };

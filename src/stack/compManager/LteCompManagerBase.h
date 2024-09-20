@@ -91,8 +91,8 @@ class LteCompManagerBase : public cSimpleModule
     void setUsableBands(UsableBands& usableBands);
 
   public:
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 };
 
 } //namespace

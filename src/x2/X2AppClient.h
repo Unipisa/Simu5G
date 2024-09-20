@@ -32,7 +32,7 @@ class X2AppClient : public inet::SctpClient
   protected:
 
     void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void socketEstablished(inet::SctpSocket *socket, unsigned long int buffer) override;
     void socketDataArrived(inet::SctpSocket *socket, inet::Packet *msg, bool urgent) override;
 };

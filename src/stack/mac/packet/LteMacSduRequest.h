@@ -64,7 +64,7 @@ class LteMacSduRequest : public LteMacSduRequest_Base
         return *this;
     }
 
-    virtual LteMacSduRequest *dup() const
+    LteMacSduRequest *dup() const override
     {
         return new LteMacSduRequest(*this);
     }

@@ -103,9 +103,9 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     static simsignal_t bgHarqErrorRateDlSignal_;
     static simsignal_t bgHarqErrorRateUlSignal_;
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_SINGLE_MOBILITY + 1; }
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_SINGLE_MOBILITY + 1; }
+    void handleMessage(cMessage *msg) override;
 
     // get new values for SINR and CQI
     void updateMeasurements();
@@ -117,7 +117,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
 
   public:
     TrafficGeneratorBase();
-    virtual ~TrafficGeneratorBase();
+    ~TrafficGeneratorBase() override;
 
     // returns the index of the bg UE within the vector of bg UEs
     virtual int getId() { return bgUeIndex_; }
@@ -132,7 +132,7 @@ class TrafficGeneratorBase : public cSimpleModule, public cListener
     virtual inet::Coord getCoord() { return pos_; }
 
     // This module is subscribed to position changes.
-    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
+    void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
     // returns the number of buffered bytes for the given direction
     unsigned int getBufferLength(Direction dir, bool rtx = false);

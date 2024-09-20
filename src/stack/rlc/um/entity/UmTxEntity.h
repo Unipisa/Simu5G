@@ -64,7 +64,7 @@ class UmTxEntity : public cSimpleModule
 
   public:
 
-    virtual ~UmTxEntity()
+    ~UmTxEntity() override
     {
         delete flowControlInfo_;
     }
@@ -183,7 +183,7 @@ class UmTxEntity : public cSimpleModule
      * Initialize fragmentSize and
      * watches
      */
-    virtual void initialize() override;
+    void initialize() override;
 
   private:
 

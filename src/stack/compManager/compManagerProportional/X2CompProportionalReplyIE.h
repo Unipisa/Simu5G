@@ -53,7 +53,7 @@ class X2CompProportionalReplyIE : public X2CompReplyIE
         return *this;
     }
 
-    virtual X2CompProportionalReplyIE *dup() const
+    X2CompProportionalReplyIE *dup() const override
     {
         return new X2CompProportionalReplyIE(*this);
     }

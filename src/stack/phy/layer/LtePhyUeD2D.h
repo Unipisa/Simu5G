@@ -40,19 +40,19 @@ class LtePhyUeD2D : public LtePhyUe
     void decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo);
     // ---------------------------------------------------------------- //
 
-    virtual void initialize(int stage);
-    virtual void finish();
-    virtual void handleAirFrame(cMessage *msg);
-    virtual void handleUpperMessage(cMessage *msg);
-    virtual void handleSelfMessage(cMessage *msg);
+    void initialize(int stage) override;
+    void finish() override;
+    void handleAirFrame(cMessage *msg) override;
+    void handleUpperMessage(cMessage *msg) override;
+    void handleSelfMessage(cMessage *msg) override;
 
-    virtual void triggerHandover();
-    virtual void doHandover();
+    void triggerHandover() override;
+    void doHandover() override;
 
   public:
 
-    virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
-    virtual double getTxPwr(Direction dir = UNKNOWN_DIRECTION)
+    void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req) override;
+    double getTxPwr(Direction dir = UNKNOWN_DIRECTION) override
     {
         if (dir == D2D)
             return d2dTxPower_;

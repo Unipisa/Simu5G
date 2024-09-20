@@ -50,30 +50,30 @@ class LteMacUeD2D : public LteMacUe
     /**
      * Reads MAC parameters for the UE and performs initialization.
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
     /**
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Main loop
      */
-    virtual void handleSelfMessage() override;
+    void handleSelfMessage() override;
 
-    virtual void macHandleGrant(cPacket *pkt) override;
+    void macHandleGrant(cPacket *pkt) override;
 
     /*
      * Checks RAC status
      */
-    virtual void checkRAC() override;
+    void checkRAC() override;
 
     /*
      * Receives and handles RAC responses
      */
-    virtual void macHandleRac(cPacket *pkt) override;
+    void macHandleRac(cPacket *pkt) override;
 
     void macHandleD2DModeSwitch(cPacket *pkt);
 
@@ -88,12 +88,12 @@ class LteMacUeD2D : public LteMacUe
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    virtual void macPduMake(MacCid cid = 0) override;
+    void macPduMake(MacCid cid = 0) override;
 
   public:
-    virtual ~LteMacUeD2D();
+    ~LteMacUeD2D() override;
 
-    virtual bool isD2DCapable() override
+    bool isD2DCapable() override
     {
         return true;
     }
@@ -106,7 +106,7 @@ class LteMacUeD2D : public LteMacUe
             bsrTriggered_ = true;
     }
 
-    virtual void doHandover(MacNodeId targetEnb) override;
+    void doHandover(MacNodeId targetEnb) override;
 };
 
 } //namespace

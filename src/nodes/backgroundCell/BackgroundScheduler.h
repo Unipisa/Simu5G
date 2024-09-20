@@ -93,14 +93,14 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     static simsignal_t bgAvgServedBlocksUlSignal_;
 
   protected:
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
+    void handleMessage(cMessage *msg) override;
 
   public:
 
     // This module is subscribed to position changes.
-    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
+    void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *) override;
 
     BackgroundCellChannelModel *getChannelModel() { return bgChannelModel_; }
 

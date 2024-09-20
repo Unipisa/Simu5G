@@ -188,7 +188,7 @@ class LteMacBase : public cSimpleModule
     /**
      * Deletes MAC Buffers
      */
-    virtual ~LteMacBase();
+    ~LteMacBase() override;
 
     /**
      * deleteQueues() must be called on handover
@@ -333,24 +333,24 @@ class LteMacBase : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     /**
      * Grabs NED parameters, initializes gates
      * and the TTI self message
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
     /**
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Statistics recording
      */
-    virtual void finish() override;
+    void finish() override;
 
     /**
      * Deleting the module
@@ -358,7 +358,7 @@ class LteMacBase : public cSimpleModule
      * Method is overridden to cancel the periodic TTI self-message,
      * afterwards the deleteModule method of cSimpleModule is called.
      */
-    virtual void deleteModule() override;
+    void deleteModule() override;
 
     /**
      * Main loop of the Mac level, calls the scheduler

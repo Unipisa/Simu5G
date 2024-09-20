@@ -70,7 +70,7 @@ class TrafficLightController : public cSimpleModule
     bool isSameAngle(inet::Coord carPosition, inet::deg heading, bool reverseDir = false);
 
   public:
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
 
@@ -86,7 +86,7 @@ class TrafficLightController : public cSimpleModule
     // check if the car is approaching the traffic light, i.e., it is in a straight line and moving towards the traffic light
     bool isApproaching(inet::Coord carPosition, inet::deg carDirection);
 
-    ~TrafficLightController();
+    ~TrafficLightController() override;
 };
 
 } //namespace

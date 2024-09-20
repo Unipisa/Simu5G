@@ -70,13 +70,13 @@ class LteMacEnb : public LteMacBase
     /**
      * Reads MAC parameters for eNb and performs initialization.
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
     /**
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Creates scheduling grants (one for each nodeId) according to the Schedule List.
@@ -90,7 +90,7 @@ class LteMacEnb : public LteMacBase
      * to the Schedule List (stored after scheduling).
      * It sends them to H-ARQ.
      */
-    virtual void macPduMake(MacCid cid) override;
+    void macPduMake(MacCid cid) override;
 
     /**
      * macPduUnmake() extracts SDUs from a received MAC
@@ -102,7 +102,7 @@ class LteMacEnb : public LteMacBase
      *
      * @param pkt container packet
      */
-    virtual void macPduUnmake(cPacket *pkt) override;
+    void macPduUnmake(cPacket *pkt) override;
 
     /**
      * macSduRequest() sends a message to the RLC layer
@@ -129,32 +129,32 @@ class LteMacEnb : public LteMacBase
      * @param pkt Packet to be buffered
      * @return TRUE if the packet was buffered successfully, FALSE otherwise.
      */
-    virtual bool bufferizePacket(cPacket *pkt) override;
+    bool bufferizePacket(cPacket *pkt) override;
 
     /**
      * handleUpperMessage() is called every time a packet is
      * received from the upper layer.
      */
-    virtual void handleUpperMessage(cPacket *pkt) override;
+    void handleUpperMessage(cPacket *pkt) override;
 
     /**
      * Main loop.
      */
-    virtual void handleSelfMessage() override;
+    void handleSelfMessage() override;
     /**
      * macHandleFeedbackPkt is called every time a feedback packet arrives on MAC.
      */
-    virtual void macHandleFeedbackPkt(cPacket *pkt) override;
+    void macHandleFeedbackPkt(cPacket *pkt) override;
 
     /*
      * Receives and handles RAC requests.
      */
-    virtual void macHandleRac(cPacket *pkt) override;
+    void macHandleRac(cPacket *pkt) override;
 
     /*
      * Update UserTxParam stored in every lteMacPdu when an RTX changes this information.
      */
-    virtual void updateUserTxParam(cPacket *pkt) override;
+    void updateUserTxParam(cPacket *pkt) override;
 
     /**
      * Flush Tx H-ARQ buffers for all users.
@@ -164,7 +164,7 @@ class LteMacEnb : public LteMacBase
   public:
 
     LteMacEnb();
-    virtual ~LteMacEnb();
+    ~LteMacEnb() override;
 
     /// Returns the BSR virtual buffers.
     LteMacBufferMap *getBsrVirtualBuffers()
@@ -178,7 +178,7 @@ class LteMacEnb : public LteMacBase
      *
      * @param nodeId id of node performing handover.
      */
-    virtual void deleteQueues(MacNodeId nodeId) override;
+    void deleteQueues(MacNodeId nodeId) override;
 
     /**
      * Getter for AMC module.

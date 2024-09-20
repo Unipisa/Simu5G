@@ -27,12 +27,12 @@ class D2DModeSelectionBestCqi : public D2DModeSelectionBase
   protected:
 
     // Execute the mode selection algorithm
-    virtual void doModeSelection();
+    void doModeSelection() override;
 
   public:
 
-    virtual void initialize(int stage);
-    virtual void doModeSwitchAtHandover(MacNodeId nodeId, bool handoverCompleted);
+    void initialize(int stage) override;
+    void doModeSwitchAtHandover(MacNodeId nodeId, bool handoverCompleted) override;
 };
 
 } //namespace

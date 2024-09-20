@@ -41,20 +41,20 @@ class LteCompManagerProportional : public LteCompManagerBase
     // utility function: convert a vector of double to a vector of integer, preserving the sum of the elements
     std::vector<unsigned int> roundVector(std::vector<double>& vec, int sum);
 
-    virtual void provisionalSchedule();  // run the provisional scheduling algorithm (client side)
-    virtual void doCoordination();       // run the coordination algorithm (coordinator side)
+    void provisionalSchedule() override;  // run the provisional scheduling algorithm (client side)
+    void doCoordination() override;       // run the coordination algorithm (coordinator side)
 
-    virtual X2CompProportionalRequestIE *buildClientRequest();
-    virtual void handleClientRequest(inet::Ptr<X2CompMsg> compMsg);
+    X2CompProportionalRequestIE *buildClientRequest() override;
+    void handleClientRequest(inet::Ptr<X2CompMsg> compMsg) override;
 
-    virtual X2CompProportionalReplyIE *buildCoordinatorReply(X2NodeId clientId);
-    virtual void handleCoordinatorReply(inet::Ptr<X2CompMsg> compMsg);
+    X2CompProportionalReplyIE *buildCoordinatorReply(X2NodeId clientId) override;
+    void handleCoordinatorReply(inet::Ptr<X2CompMsg> compMsg) override;
 
     UsableBands parseAllowedBlocksMap(std::vector<CompRbStatus>& allowedBlocksMap);
 
   public:
 
-    virtual void initialize();
+    void initialize() override;
 };
 
 } //namespace

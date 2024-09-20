@@ -78,8 +78,8 @@ class PacketFlowManagerBase : public cSimpleModule
 
     int headerCompressedSize_;
 
-    virtual int numInitStages() const { return 2; }
-    virtual void initialize(int stage);
+    int numInitStages() const override { return 2; }
+    void initialize(int stage) override;
 
   public:
 
@@ -171,7 +171,7 @@ class PacketFlowManagerBase : public cSimpleModule
     virtual unsigned int getNextRlcSno() { return nextRlcSno_; }
     virtual unsigned int getNextPdcpSno() { return nextPdcpSno_; }
 
-    virtual void finish();
+    void finish() override;
 
 };
 

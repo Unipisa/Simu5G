@@ -32,7 +32,7 @@ class ServiceInfo : public AttributeBase
     ServiceInfo(const std::string& serInstanceId, const std::string& serName, const CategoryRef& serCat, const std::string& version,
             const std::string& state, const TransportInfo& tInfo, const std::string& serializer, const std::string& mecHost, const std::string& sol, bool clo, bool local);
 
-    nlohmann::ordered_json toJson() const;
+    nlohmann::ordered_json toJson() const override;
 
     const std::string& getName() const { return serName_; }
     const std::string& getInstanceId() const { return serInstanceId_; }

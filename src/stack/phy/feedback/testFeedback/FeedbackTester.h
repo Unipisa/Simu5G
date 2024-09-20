@@ -30,8 +30,8 @@ class FeedbackTester : public cSimpleModule
     ModuleRefByPar<LteDlFeedbackGenerator> generator_;
 
   protected:
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 };
 
 } //namespace

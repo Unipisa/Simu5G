@@ -30,7 +30,7 @@ class VoIPReceiver : public cSimpleModule
 {
     inet::UdpSocket socket;
 
-    ~VoIPReceiver();
+    ~VoIPReceiver() override;
 
     int emodel_Ie_;
     int emodel_Bpl_;
@@ -59,11 +59,11 @@ class VoIPReceiver : public cSimpleModule
     static simsignal_t voIPJitterSignal_;
     static simsignal_t voIPReceivedThroughputSignal_;
 
-    virtual void finish() override;
+    void finish() override;
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
     double eModel(simtime_t delay, double loss);

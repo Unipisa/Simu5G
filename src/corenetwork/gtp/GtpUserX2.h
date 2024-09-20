@@ -45,9 +45,9 @@ class GtpUserX2 : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage);
-    virtual void handleMessage(inet::cMessage *msg);
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(inet::cMessage *msg) override;
 
     // receive an X2 Message from the X2 Manager, encapsulates it in a GTP-U packet then forwards it to the proper next hop
     void handleFromStack(inet::Packet *x2Msg);

@@ -118,7 +118,7 @@ class LteMacPdu : public LteMacPdu_Base
         return *this;
     }
 
-    virtual LteMacPdu *dup() const override
+    LteMacPdu *dup() const override
     {
         return new LteMacPdu(*this);
     }
@@ -140,7 +140,7 @@ class LteMacPdu : public LteMacPdu_Base
     /**
      * Destructor
      */
-    virtual ~LteMacPdu()
+    ~LteMacPdu() override
     {
         // delete the SDU queue
         // (since it is derived from cPacketQueue, it will automatically delete all contained SDUs)
@@ -162,38 +162,38 @@ class LteMacPdu : public LteMacPdu_Base
         return getByteLength() * 8;
     }
 
-    virtual void setSduArraySize(size_t size) override
+    void setSduArraySize(size_t size) override
     {
         ASSERT(false);
     }
 
-    virtual size_t getSduArraySize() const override
+    size_t getSduArraySize() const override
     {
         return sduList_->getLength();
     }
 
-    virtual const inet::Packet& getSdu(size_t k) const override
+    const inet::Packet& getSdu(size_t k) const override
     {
         auto pkt = dynamic_cast<Packet *>(sduList_->get(k));
         return *pkt;
     }
 
-    virtual void setSdu(size_t k, const Packet& sdu) override
+    void setSdu(size_t k, const Packet& sdu) override
     {
         ASSERT(false);
     }
 
-    virtual void appendSdu(const inet::Packet& sdu) override
+    void appendSdu(const inet::Packet& sdu) override
     {
         ASSERT(false);
     }
 
-    virtual void insertSdu(size_t k, const inet::Packet& sdu) override
+    void insertSdu(size_t k, const inet::Packet& sdu) override
     {
         ASSERT(false);
     }
 
-    virtual void eraseSdu(size_t k) override
+    void eraseSdu(size_t k) override
     {
         ASSERT(false);
     }
@@ -284,7 +284,7 @@ class LteMacPdu : public LteMacPdu_Base
         return macPduId_;
     }
 
-    virtual void setHeaderLength(unsigned int headerLength) override
+    void setHeaderLength(unsigned int headerLength) override
     {
         LteMacPdu_Base::setHeaderLength(headerLength);
         this->setChunkLength(b(getBitLength()));

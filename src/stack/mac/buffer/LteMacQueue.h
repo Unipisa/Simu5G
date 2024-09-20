@@ -52,7 +52,7 @@ class LteMacQueue : public cPacketQueue
      */
     LteMacQueue(const LteMacQueue& queue);
     LteMacQueue& operator=(const LteMacQueue& queue);
-    LteMacQueue *dup() const;
+    LteMacQueue *dup() const override;
 
     /**
      * pushBack() inserts a new packet in the back

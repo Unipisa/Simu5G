@@ -45,10 +45,10 @@ class VoDUDPClient : public cSimpleModule
 
   protected:
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void finish() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void finish() override;
+    void handleMessage(cMessage *msg) override;
     virtual void receiveStream(const VoDPacket *msg);
 };
 

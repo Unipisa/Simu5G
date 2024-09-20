@@ -36,24 +36,24 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     BackgroundCellAmc *bgAmc_ = nullptr;
 
   protected:
-    virtual double getTtiPeriod();
-    virtual bool isSetBgTrafficManagerInfoInit();
-    virtual std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower);
+    double getTtiPeriod() override;
+    bool isSetBgTrafficManagerInfoInit() override;
+    std::vector<double> getSINR(int bgUeIndex, Direction dir, inet::Coord bgUePos, double bgUeTxPower) override;
 
   public:
-    virtual ~BackgroundCellTrafficManager();
-    virtual void initialize(int stage);
+    ~BackgroundCellTrafficManager() override;
+    void initialize(int stage) override;
 
     // get the number of RBs
-    virtual unsigned int getNumBands();
+    unsigned int getNumBands() override;
 
     // returns the bytes per block of the given UE for the given direction
-    virtual unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) {
+    unsigned int getBackloggedUeBytesPerBlock(MacNodeId bgUeId, Direction dir) override {
         throw cRuntimeError("Not implemented");
     }
 
     // Compute received power for a background UE according to path loss
-    virtual double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus);
+    double getReceivedPower_bgUe(double txPower, inet::Coord txPos, inet::Coord rxPos, Direction dir, bool losStatus) override;
 };
 
 } //namespace

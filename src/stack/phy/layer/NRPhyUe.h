@@ -26,10 +26,10 @@ class NRPhyUe : public LtePhyUeD2D
     // reference to the parallel PHY layer
     inet::ModuleRefByPar<NRPhyUe> otherPhy_;
 
-    virtual void initialize(int stage);
-    virtual void handleAirFrame(cMessage *msg);
-    virtual void triggerHandover();
-    virtual void doHandover();
+    void initialize(int stage) override;
+    void handleAirFrame(cMessage *msg) override;
+    void triggerHandover() override;
+    void doHandover() override;
 
     // force handover to the given target node (0 means forcing detachment)
     virtual void forceHandover(MacNodeId targetMasterNode = NODEID_NONE, double targetMasterRssi = 0.0);

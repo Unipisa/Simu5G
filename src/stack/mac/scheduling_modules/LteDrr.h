@@ -66,15 +66,15 @@ class LteDrr : public LteScheduler
 
     //virtual void schedule ();
 
-    virtual void prepareSchedule();
+    void prepareSchedule() override;
 
-    virtual void commitSchedule();
+    void commitSchedule() override;
 
     // *****************************************************************************************
 
-    void notifyActiveConnection(MacCid cid);
+    void notifyActiveConnection(MacCid cid) override;
 
-    void updateSchedulingInfo();
+    void updateSchedulingInfo() override;
 };
 
 } //namespace

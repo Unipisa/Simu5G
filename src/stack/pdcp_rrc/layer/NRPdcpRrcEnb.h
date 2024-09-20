@@ -39,13 +39,13 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
     // Reference to the Dual Connectivity Manager
     inet::ModuleRefByPar<DualConnectivityManager> dualConnectivityManager_;
 
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /**
      * Handler for data port
      * @param pkt Incoming packet
      */
-    virtual void fromDataPort(cPacket *pktAux);
+    void fromDataPort(cPacket *pktAux) override;
 
     /**
      * Handler for um/am sap
@@ -57,9 +57,9 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
      *
      * @param pkt Incoming packet
      */
-    virtual void fromLowerLayer(cPacket *pkt);
+    void fromLowerLayer(cPacket *pkt) override;
 
-    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo);
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * getEntity() is used to gather the NR PDCP entity
@@ -71,19 +71,19 @@ class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
      * @return Pointer to the PDCP entity for the LCID of the flow
      *
      */
-    virtual LteTxPdcpEntity *getTxEntity(MacCid lcid);
-    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
+    LteTxPdcpEntity *getTxEntity(MacCid lcid) override;
+    LteRxPdcpEntity *getRxEntity(MacCid cid) override;
 
     /*
      * Dual Connectivity support
      */
-    virtual bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
+    bool isDualConnectivityEnabled() override { return dualConnectivityEnabled_; }
 
     // Send packet to the target node by invoking the Dual Connectivity manager
-    virtual void forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode);
+    void forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode) override;
 
     // Receive packet from the source node. Called by the Dual Connectivity manager
-    virtual void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode);
+    void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode) override;
 
   public:
     virtual void activeUeUL(std::set<MacNodeId> *ueSet);

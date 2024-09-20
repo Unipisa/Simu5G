@@ -45,8 +45,8 @@ enum DevAppCode { START_MECAPP_CODE, STOP_MECAPP_CODE, START_ACK_CODE, STOP_ACK_
 class DeviceAppMessageSerializer : public inet::FieldsChunkSerializer
 {
   protected:
-    virtual void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
-    virtual const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
+    void serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const override;
+    const Ptr<Chunk> deserialize(MemoryInputStream& stream) const override;
 };
 
 } //namespace

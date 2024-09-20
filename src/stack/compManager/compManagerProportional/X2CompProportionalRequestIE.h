@@ -48,7 +48,7 @@ class X2CompProportionalRequestIE : public X2CompRequestIE
         return *this;
     }
 
-    virtual X2CompProportionalRequestIE *dup() const
+    X2CompProportionalRequestIE *dup() const override
     {
         return new X2CompProportionalRequestIE(*this);
     }

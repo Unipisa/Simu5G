@@ -29,7 +29,7 @@ class CurrentLocation : public AttributeBase
     CurrentLocation(double accuracy, const inet::Coord& coords, const TimeStamp& ts);
     CurrentLocation(double accuracy, const inet::Coord& coords);
 
-    nlohmann::ordered_json toJson() const;
+    nlohmann::ordered_json toJson() const override;
 };
 
 } //namespace

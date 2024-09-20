@@ -47,9 +47,9 @@ class LtePf : public LteScheduler
 
     //virtual void schedule ();
 
-    virtual void prepareSchedule();
+    void prepareSchedule() override;
 
-    virtual void commitSchedule();
+    void commitSchedule() override;
 
     // *****************************************************************************************
 

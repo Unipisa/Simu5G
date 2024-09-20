@@ -53,21 +53,21 @@ class LocationService : public MecServiceBase2
 
   protected:
 
-    virtual void initialize(int stage) override;
-    virtual void finish() override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    void finish() override;
+    void handleMessage(cMessage *msg) override;
 
-    virtual void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
-    virtual void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
-    virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
-    virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    void handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
+    void handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)   override;
+    void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)    override;
+    void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) override;
 
     /*
      * This method is called for every element in the subscriptions_ queue.
      */
-    virtual bool manageSubscription() override;
+    bool manageSubscription() override;
 
-    virtual ~LocationService();
+    ~LocationService() override;
 
 };
 

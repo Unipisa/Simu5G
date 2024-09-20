@@ -30,14 +30,14 @@ class LteRlcUmD2D : public LteRlcUm
 {
   public:
 
-    virtual void resumeDownstreamInPackets(MacNodeId peerId) override;
-    virtual bool isEmptyingTxBuffer(MacNodeId peerId) override;
+    void resumeDownstreamInPackets(MacNodeId peerId) override;
+    bool isEmptyingTxBuffer(MacNodeId peerId) override;
 
   protected:
 
     RanNodeType nodeType_;
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     /**
      * getTxBuffer() is used by the sender to gather the TXBuffer
@@ -49,7 +49,7 @@ class LteRlcUmD2D : public LteRlcUm
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity *getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
+    UmTxEntity *getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * UM Mode
@@ -66,7 +66,7 @@ class LteRlcUmD2D : public LteRlcUm
      *
      * @param pkt packet to process
      */
-    virtual void handleLowerMessage(cPacket *pkt) override;
+    void handleLowerMessage(cPacket *pkt) override;
 
     /**
      * deleteQueues() must be called on handover
@@ -74,7 +74,7 @@ class LteRlcUmD2D : public LteRlcUm
      *
      * @param nodeId Id of the node whose queues are deleted
      */
-    virtual void deleteQueues(MacNodeId nodeId) override;
+    void deleteQueues(MacNodeId nodeId) override;
 
   private:
 

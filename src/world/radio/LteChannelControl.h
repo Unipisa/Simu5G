@@ -27,15 +27,15 @@ class LteChannelControl : public ChannelControl
   protected:
 
     /** Calculate interference distance */
-    virtual double calcInterfDist();
+    double calcInterfDist() override;
 
     /** Reads initialization parameters and calculates a maximal interference distance */
-    virtual void initialize();
+    void initialize() override;
 
   public:
 
     /** Called from ChannelAccess to transmit a frame to all the radios in range on the frame's channel */
-    virtual void sendToChannel(RadioRef srcRadio, AirFrame *airFrame);
+    void sendToChannel(RadioRef srcRadio, AirFrame *airFrame) override;
 };
 
 } //namespace

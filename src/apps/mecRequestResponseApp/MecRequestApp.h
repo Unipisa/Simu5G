@@ -49,14 +49,14 @@ class MecRequestApp : public cSimpleModule
     static simsignal_t recvResponseSnoSignal_;
 
   public:
-    ~MecRequestApp();
+    ~MecRequestApp() override;
 
   protected:
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    void initialize(int stage);
-    virtual void handleMessage(cMessage *msg);
-    virtual void finish();
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
+    void finish() override;
 
     void sendRequest();
     void recvResponse(cMessage *msg);

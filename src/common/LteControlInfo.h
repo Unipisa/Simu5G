@@ -46,7 +46,7 @@ class UserControlInfo : public UserControlInfo_Base
      * @param kind packet kind
      */
     UserControlInfo();
-    virtual ~UserControlInfo();
+    ~UserControlInfo() override;
 
     /*
      * Operator = : packet copy
@@ -69,7 +69,7 @@ class UserControlInfo : public UserControlInfo_Base
      * dup() : packet duplicate
      * @return pointer to duplicate packet
      */
-    virtual UserControlInfo *dup() const
+    UserControlInfo *dup() const override
     {
         return new UserControlInfo(*this);
     }

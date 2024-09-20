@@ -145,11 +145,11 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
      */
     virtual void scheduleNextEvent(bool now = false);
 
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void handleMessageWhenUp(cMessage *msg) override;
-    virtual void finish() override;
-    virtual void refreshDisplay() const override;
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessageWhenUp(cMessage *msg) override;
+    void finish() override;
+    void refreshDisplay() const override;
 
     /*
      * This method finds all the BSs connected to the MEC Host hosting the service
@@ -205,20 +205,20 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     virtual void handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
     virtual void handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) = 0;
 
-    virtual void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw cRuntimeError("Unexpected data"); }
-    virtual void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
-    virtual void socketEstablished(inet::TcpSocket *socket) override {}
-    virtual void socketPeerClosed(inet::TcpSocket *socket) override {}
-    virtual void socketClosed(inet::TcpSocket *socket) override;
-    virtual void socketFailure(inet::TcpSocket *socket, int code) override {}
-    virtual void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
-    virtual void socketDeleted(inet::TcpSocket *socket) override {}
+    void socketDataArrived(inet::TcpSocket *socket, inet::Packet *packet, bool urgent) override { throw cRuntimeError("Unexpected data"); }
+    void socketAvailable(inet::TcpSocket *socket, inet::TcpAvailableInfo *availableInfo) override;
+    void socketEstablished(inet::TcpSocket *socket) override {}
+    void socketPeerClosed(inet::TcpSocket *socket) override {}
+    void socketClosed(inet::TcpSocket *socket) override;
+    void socketFailure(inet::TcpSocket *socket, int code) override {}
+    void socketStatusArrived(inet::TcpSocket *socket, inet::TcpStatusInfo *status) override {}
+    void socketDeleted(inet::TcpSocket *socket) override {}
 
-    virtual void handleStartOperation(inet::LifecycleOperation *operation) override;
-    virtual void handleStopOperation(inet::LifecycleOperation *operation) override;
-    virtual void handleCrashOperation(inet::LifecycleOperation *operation) override;
+    void handleStartOperation(inet::LifecycleOperation *operation) override;
+    void handleStopOperation(inet::LifecycleOperation *operation) override;
+    void handleCrashOperation(inet::LifecycleOperation *operation) override;
 
-    virtual ~MecServiceBase();
+    ~MecServiceBase() override;
 
   public:
     /*

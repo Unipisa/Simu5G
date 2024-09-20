@@ -26,7 +26,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
 {
 
   public:
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /*
      * Compute LOS probability (taken from TR 38.901)
@@ -51,7 +51,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
      * @param twoDimDistance distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
-    virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
+    double computePathLoss(double threeDimDistance, double twoDimDistance, bool los) override;
 
     /*
      * UMa path loss model (taken from TR 38.901)
@@ -100,7 +100,7 @@ class NRChannelModel_3GPP38_901 : public NRChannelModel
      * @param nodeId mac node id of UE
      * @param speed speed of UE
      */
-    virtual double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl);
+    double computeShadowing(double sqrDistance, MacNodeId nodeId, double speed, bool cqiDl) override;
 
 };
 

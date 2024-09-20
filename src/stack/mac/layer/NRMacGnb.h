@@ -25,7 +25,7 @@ class NRMacGnb : public LteMacEnbD2D
     /**
      * Reads MAC parameters and performs initialization.
      */
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
 };
 

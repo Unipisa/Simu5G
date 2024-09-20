@@ -34,7 +34,7 @@ class X2DualConnectivityDataMsg : public LteX2Message
 
     X2DualConnectivityDataMsg& operator=(const X2DualConnectivityDataMsg& other);
 
-    virtual X2DualConnectivityDataMsg *dup() const;
+    X2DualConnectivityDataMsg *dup() const override;
 
 };
 

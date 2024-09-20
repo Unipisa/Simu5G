@@ -84,17 +84,17 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     static simsignal_t stopSessionSignal_;
 
   protected:
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
+    void finish() override;
 
-    virtual void handleHttpMessage(int connId) override {};
-    virtual void handleServiceMessage(int connId) override {};
-    virtual void handleMp1Message(int connId) override {};
-    virtual void established(int connId) override {};
-    virtual void handleSelfMessage(cMessage *msg) override;
-    virtual void handleUeMessage(cMessage *msg) override;
+    void handleHttpMessage(int connId) override {};
+    void handleServiceMessage(int connId) override {};
+    void handleMp1Message(int connId) override {};
+    void established(int connId) override {};
+    void handleSelfMessage(cMessage *msg) override;
+    void handleUeMessage(cMessage *msg) override;
 
     void handleStartMessage(cMessage *msg);
     void handleStopMessage(cMessage *msg);
@@ -105,7 +105,7 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     void processPacket(inet::Packet *packet);
 
   public:
-    virtual ~MecRTVideoStreamingReceiver();
+    ~MecRTVideoStreamingReceiver() override;
 };
 
 } //namespace

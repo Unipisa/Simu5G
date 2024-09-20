@@ -22,7 +22,7 @@ class MecHostSelectionBased : public SelectionPolicyBase
 {
   protected:
     int mecHostIndex_;
-    virtual cModule *findBestMecHost(const ApplicationDescriptor&) override;
+    cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
     MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index);

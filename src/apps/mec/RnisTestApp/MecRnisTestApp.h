@@ -54,22 +54,22 @@ class MecRnisTestApp : public MecAppBase
     cMessage *rnisQueryingTimer_ = nullptr;
 
   protected:
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
-    virtual void finish() override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void finish() override;
 
-    virtual void handleProcessedMessage(cMessage *msg) override;
+    void handleProcessedMessage(cMessage *msg) override;
 
-    virtual void handleHttpMessage(int connId) override;
-    virtual void handleServiceMessage(int connId) override;
-    virtual void handleMp1Message(int connId) override;
-    virtual void handleUeMessage(cMessage *msg) override;
+    void handleHttpMessage(int connId) override;
+    void handleServiceMessage(int connId) override;
+    void handleMp1Message(int connId) override;
+    void handleUeMessage(cMessage *msg) override;
 
     virtual void sendQuery(int cellId, std::string ueIpv4Address);
 
-    virtual void handleSelfMessage(cMessage *msg) override;
+    void handleSelfMessage(cMessage *msg) override;
 
-    virtual void established(int connId) override;
+    void established(int connId) override;
 };
 
 } //namespace

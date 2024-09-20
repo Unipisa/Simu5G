@@ -46,8 +46,8 @@ class DualConnectivityManager : public cSimpleModule
 
   public:
 
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
 
     // send a PDCP PDU to the X2 Manager
     void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode);

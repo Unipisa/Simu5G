@@ -201,9 +201,9 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
-    void initialize(int stage);
-    virtual void handleMessage(cMessage *msg);
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
 
     // OMNeT++-like MEC service management
     //finding the MEC Service requested by UE App among the MEC Services available on the MEC Host

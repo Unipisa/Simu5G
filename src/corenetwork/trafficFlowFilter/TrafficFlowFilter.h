@@ -65,11 +65,11 @@ class TrafficFlowFilter : public cSimpleModule
     int meAppsExtAddressMask_;
 
   protected:
-    virtual int numInitStages() const override { return inet::INITSTAGE_LAST + 1; }
-    virtual void initialize(int stage) override;
+    int numInitStages() const override { return inet::INITSTAGE_LAST + 1; }
+    void initialize(int stage) override;
 
     // The TrafficFlowFilter module may receive messages only from the input interface of its compound module
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     // functions for managing filter tables
     TrafficFlowTemplateId findTrafficFlow(inet::L3Address srcAddress, inet::L3Address destAddress);

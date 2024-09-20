@@ -44,10 +44,10 @@ class CbrReceiver : public cSimpleModule
 
   protected:
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
+    void finish() override;
 };
 
 } //namespace

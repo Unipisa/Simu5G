@@ -136,7 +136,7 @@ class AmTxQueue : public cSimpleModule
 
   public:
     AmTxQueue();
-    virtual ~AmTxQueue();
+    ~AmTxQueue() override;
 
     /*
      * Enqueues an upper layer packet into the transmission buffer
@@ -173,12 +173,12 @@ class AmTxQueue : public cSimpleModule
     /**
      * Initialize
      */
-    virtual void initialize();
+    void initialize() override;
     /*
      * Analyze the gate of incoming packet and call proper handler
      * @param msg
      */
-    virtual void handleMessage(cMessage *msg);
+    void handleMessage(cMessage *msg) override;
 
     /* Discards a given RLC PDU and all the PDUs related to the same SDU
      *

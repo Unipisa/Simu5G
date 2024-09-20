@@ -20,7 +20,7 @@ class NRChannelModel : public LteRealisticChannelModel
 {
 
   public:
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /*
      * Compute attenuation caused by path loss and shadowing (optional)
@@ -29,14 +29,14 @@ class NRChannelModel : public LteRealisticChannelModel
      * @param dir traffic direction
      * @param coord position of end point communication (if dir==UL it is the position of UE else it is the position of gNodeB)
      */
-    virtual double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl);
+    double getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl) override;
 
     /*
      *  Compute attenuation caused by transmission direction
      *
      * @param angle angle
      */
-    virtual double computeAngularAttenuation(double hAngle, double vAngle);
+    double computeAngularAttenuation(double hAngle, double vAngle) override;
 
     /*
      * Compute LOS probability (taken from TR 36.873)
@@ -53,7 +53,7 @@ class NRChannelModel : public LteRealisticChannelModel
      * @param twoDimDistance distance between UE and gNodeB (2D)
      * @param los line-of-sight flag
      */
-    virtual double computePathLoss(double threeDimDistance, double twoDimDistance, bool los);
+    double computePathLoss(double threeDimDistance, double twoDimDistance, bool los) override;
 
     /*
      * 3D-InH path loss model (taken from TR 36.873)
@@ -91,7 +91,7 @@ class NRChannelModel : public LteRealisticChannelModel
      * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
-    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference);
+    bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference) override;
 
     /*
      * Compute attenuation due to path loss and shadowing

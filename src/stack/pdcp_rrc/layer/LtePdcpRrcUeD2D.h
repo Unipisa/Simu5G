@@ -34,9 +34,9 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
 
   protected:
 
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
-    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     using LtePdcpRrcUe::getDirection;  // base class variant: return direction for communication with eNB
     // additional getDirection method determining if D2D communication is available to a specific destination
@@ -51,7 +51,7 @@ class LtePdcpRrcUeD2D : public LtePdcpRrcUe
      * handler for data port
      * @param pkt incoming packet
      */
-    virtual void fromDataPort(cPacket *pkt) override;
+    void fromDataPort(cPacket *pkt) override;
 
     // handler for mode switch signal
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);

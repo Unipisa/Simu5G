@@ -43,7 +43,7 @@ class X2CompRequestIE : public X2InformationElement
         return *this;
     }
 
-    virtual X2CompRequestIE *dup() const
+    X2CompRequestIE *dup() const override
     {
         return new X2CompRequestIE(*this);
     }

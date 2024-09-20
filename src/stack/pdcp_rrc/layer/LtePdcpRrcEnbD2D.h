@@ -31,14 +31,14 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
 
   protected:
 
-    virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage *msg) override;
+    void initialize(int stage) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * handler for data port
      * @param pkt incoming packet
      */
-    virtual void fromDataPort(cPacket *pkt) override;
+    void fromDataPort(cPacket *pkt) override;
 
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };

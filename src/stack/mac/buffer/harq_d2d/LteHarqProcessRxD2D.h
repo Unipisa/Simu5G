@@ -43,7 +43,7 @@ class LteHarqProcessRxD2D : public LteHarqProcessRx
      *
      * @return feedback message to be sent.
      */
-    virtual inet::Packet *createFeedback(Codeword cw);
+    inet::Packet *createFeedback(Codeword cw) override;
 
     /**
      * Creates a feedback message based on the evaluation result for this PDU.

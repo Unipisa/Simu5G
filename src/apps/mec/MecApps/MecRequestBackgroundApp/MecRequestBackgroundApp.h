@@ -36,25 +36,25 @@ class MecRequestBackgroundApp : public MecAppBase
     HttpBaseMessage *mp1HttpMessage = nullptr;
     HttpBaseMessage *serviceHttpMessage = nullptr;
 
-    virtual void handleSelfMessage(cMessage *msg) override;
+    void handleSelfMessage(cMessage *msg) override;
 
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    virtual void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
 
-    virtual void handleHttpMessage(int connId) override;
-    virtual void handleServiceMessage(int connId) override;
-    virtual void handleMp1Message(int connId) override;
+    void handleHttpMessage(int connId) override;
+    void handleServiceMessage(int connId) override;
+    void handleMp1Message(int connId) override;
 
-    virtual void handleUeMessage(cMessage *msg) override {};
+    void handleUeMessage(cMessage *msg) override {};
 
-    virtual void established(int connId) override;
+    void established(int connId) override;
 
     virtual void sendRequest();
 
-    virtual void finish() override;
+    void finish() override;
 
   public:
-    virtual ~MecRequestBackgroundApp();
+    ~MecRequestBackgroundApp() override;
 };
 
 } //namespace

@@ -39,12 +39,12 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
 
   protected:
 
-    virtual void initialize(int stage);
+    void initialize(int stage) override;
 
     /**
      * getNrNodeId(): returns the ID of this node
      */
-    virtual MacNodeId getNrNodeId() { return nrNodeId_; }
+    MacNodeId getNrNodeId() override { return nrNodeId_; }
 
     // this function overrides the one in the base class because we need to distinguish the nodeId of the sender
     // i.e. whether to use the NR nodeId or the LTE one
@@ -56,13 +56,13 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
     }
 
     // this function was redefined so as to use the getDirection() function implemented above
-    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo);
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * handler for data port
      * @param pkt incoming packet
      */
-    virtual void fromDataPort(cPacket *pkt);
+    void fromDataPort(cPacket *pkt) override;
 
     /**
      * getEntity() is used to gather the NR PDCP entity
@@ -74,22 +74,22 @@ class NRPdcpRrcUe : public LtePdcpRrcUeD2D
      * @return pointer to the PDCP entity for the LCID of the flow
      *
      */
-    virtual LteTxPdcpEntity *getTxEntity(MacCid lcid);
-    virtual LteRxPdcpEntity *getRxEntity(MacCid lcid);
+    LteTxPdcpEntity *getTxEntity(MacCid lcid) override;
+    LteRxPdcpEntity *getRxEntity(MacCid lcid) override;
 
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
      */
-    virtual void sendToLowerLayer(Packet *pkt);
+    void sendToLowerLayer(Packet *pkt) override;
 
     /*
      * Dual Connectivity support
      */
-    virtual bool isDualConnectivityEnabled() { return dualConnectivityEnabled_; }
+    bool isDualConnectivityEnabled() override { return dualConnectivityEnabled_; }
 
   public:
 
-    virtual void deleteEntities(MacNodeId nodeId);
+    void deleteEntities(MacNodeId nodeId) override;
 };
 
 } //namespace

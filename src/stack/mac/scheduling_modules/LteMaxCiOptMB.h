@@ -48,9 +48,9 @@ class LteMaxCiOptMB : public virtual LteScheduler
   public:
     LteMaxCiOptMB(Binder *binder);
 
-    virtual void prepareSchedule();
+    void prepareSchedule() override;
 
-    virtual void commitSchedule();
+    void commitSchedule() override;
 
 };
 

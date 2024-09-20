@@ -60,7 +60,7 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
      * @param fb ACK or NACK for this H-ARQ unit
      * @return true if the unit has become empty, false if it is still busy
      */
-    virtual bool pduFeedback(HarqAcknowledgment fb);
+    bool pduFeedback(HarqAcknowledgment fb) override;
 
     /**
      * Returns the macPdu to be sent and increments transmissions_ counter.
@@ -69,7 +69,7 @@ class LteHarqUnitTxD2D : public LteHarqUnitTx
      * to extract the PDU the Mac layer will send.
      * Before extraction, control info is updated with transmission counter and ndi.
      */
-    virtual inet::Packet *extractPdu();
+    inet::Packet *extractPdu() override;
 
 };
 

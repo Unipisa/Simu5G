@@ -76,7 +76,7 @@ class LtePdcpRrcBase : public cSimpleModule
     /**
      * Cleans the connection table
      */
-    virtual ~LtePdcpRrcBase();
+    ~LtePdcpRrcBase() override;
 
     /*
      * Delete TX/RX entities (redefine this function)
@@ -90,19 +90,19 @@ class LtePdcpRrcBase : public cSimpleModule
      * gates, delay, compression
      * and watches
      */
-    virtual void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     /**
      * Analyze gate of incoming packet
      * and call proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     /**
      * Statistics recording
      */
-    virtual void finish() override;
+    void finish() override;
 
     /*
      * Internal functions
@@ -333,21 +333,21 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
 {
   protected:
 
-    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo)
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override
     {
         // UE is subject to handovers: master may change
         return binder_->getNextHop(nodeId_);
     }
 
-    Direction getDirection()
+    Direction getDirection() override
     {
         // Data coming from DataPort on UE are always Uplink
         return UL;
     }
 
   public:
-    virtual void initialize(int stage);
-    virtual void deleteEntities(MacNodeId nodeId);
+    void initialize(int stage) override;
+    void deleteEntities(MacNodeId nodeId) override;
 };
 
 class LtePdcpRrcEnb : public LtePdcpRrcBase
@@ -358,7 +358,7 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
         delete lteInfo;
     }
 
-    virtual MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo)
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override
     {
         // destination id
         MacNodeId destId = binder_->getMacNodeId(inet::Ipv4Address(lteInfo->getDstAddr()));
@@ -378,15 +378,15 @@ class LtePdcpRrcEnb : public LtePdcpRrcBase
         return destId;
     }
 
-    Direction getDirection()
+    Direction getDirection() override
     {
         // Data coming from DataPort on ENB are always Downlink
         return DL;
     }
 
   public:
-    virtual void initialize(int stage);
-    virtual void deleteEntities(MacNodeId nodeId);
+    void initialize(int stage) override;
+    void deleteEntities(MacNodeId nodeId) override;
 };
 
 } //namespace

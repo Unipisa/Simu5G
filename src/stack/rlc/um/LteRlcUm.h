@@ -137,9 +137,9 @@ class LteRlcUm : public cSimpleModule
     /**
      * Initialize watches
      */
-    virtual void initialize(int stage) override;
+    void initialize(int stage) override;
 
-    virtual void finish() override
+    void finish() override
     {
     }
 
@@ -147,7 +147,7 @@ class LteRlcUm : public cSimpleModule
      * Analyze the gate of the incoming packet
      * and call the proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
     // parameters
     bool mapAllLcidsToSingleBearer_;

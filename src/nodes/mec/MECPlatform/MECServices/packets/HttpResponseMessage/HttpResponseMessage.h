@@ -45,7 +45,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
     HttpResponseMessage(const HttpResponseStatus res, const char *name = nullptr, short kind = 0);
     HttpResponseMessage& operator=(const HttpResponseMessage& other) { if (this == &other) return *this; HttpResponseMessage_m::operator=(other); copy(other); return *this; }
 
-    virtual HttpResponseMessage *dup() const override { return new HttpResponseMessage(*this); }
+    HttpResponseMessage *dup() const override { return new HttpResponseMessage(*this); }
 
     virtual void addBodyChunk(const std::string& bodyChunk);
     // key MUST be like "key: "
@@ -53,7 +53,7 @@ class HttpResponseMessage : public HttpResponseMessage_m
     virtual std::string getHeaderField(const std::string& key) const;
 
     virtual void setStatus(HttpResponseStatus code);
-    virtual void setStatus(const char *status) override;
+    void setStatus(const char *status) override;
     virtual std::string getPayload() const;
 
   private:

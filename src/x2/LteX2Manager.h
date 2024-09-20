@@ -47,7 +47,7 @@ class LteX2Manager : public cSimpleModule
   protected:
 
     void initialize(int stage) override;
-    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
     virtual void fromStack(inet::Packet *pkt);

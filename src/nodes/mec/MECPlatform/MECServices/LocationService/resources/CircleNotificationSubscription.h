@@ -32,10 +32,10 @@ class CircleNotificationSubscription : public SubscriptionBase
     CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs);
     CircleNotificationSubscription(Binder *binder_, unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation, std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs, bool firstNotSent, simtime_t lastNot);
 
-    virtual bool fromJson(const nlohmann::ordered_json& json) override;
-    virtual void sendSubscriptionResponse() override;
-    virtual void sendNotification(EventNotification *event) override;
-    virtual EventNotification *handleSubscription() override;
+    bool fromJson(const nlohmann::ordered_json& json) override;
+    void sendSubscriptionResponse() override;
+    void sendNotification(EventNotification *event) override;
+    EventNotification *handleSubscription() override;
 
     virtual bool getCheckImmediate() const { return checkImmediate; }
 

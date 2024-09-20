@@ -43,10 +43,10 @@ class LteRlcTm : public cSimpleModule
      * Analyzes gate of incoming packet
      * and calls proper handler
      */
-    virtual void handleMessage(cMessage *msg) override;
+    void handleMessage(cMessage *msg) override;
 
-    virtual void initialize() override;
-    virtual void finish() override {}
+    void initialize() override;
+    void finish() override {}
 
   private:
     /**
