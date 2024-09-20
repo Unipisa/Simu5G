@@ -13,13 +13,13 @@
 package simu5g.stack.rlc;
 
 //
-// This module implements the functionalities of the Unacknowledged Mode (UM) of the 
-// Radio Link Control (RLC) layer. 
-// Transmitting- and receiving-side functionalities are provided by ~UmTxEntity and
+// This module implements the functionalities of the Unacknowledged Mode (UM) of the
+// Radio Link Control (RLC) layer.
+// Transmitting- and receiving-side functionalities are provided by the ~UmTxEntity and
 // ~UmRxEntity submodules, respectively. The latter are created dynamically whenever
-// a new connection is detected. This module is responsible to identify the flow a 
-// RLC Service Data Unit (SDU) or Protocol Data Unit (PDU) belongs to and hand it to 
-// the corresponding transmitting or receiving entity for further processing. 
+// a new connection is detected. This module is responsible for identifying the flow to which
+// a RLC Service Data Unit (SDU) or Protocol Data Unit (PDU) belongs and routing it to
+// the corresponding transmitting or receiving entity for further processing.
 //
 simple LteRlcUm like ILteRlcUm
 {

@@ -25,7 +25,7 @@ package simu5g.stack.compManager;
 // to implement specific CoMP algorithms.
 //
 // Parameters:
-// - compNodeType: Specifies the type of CoMP node (client, client and coordinator, coordinator only).
+// - compNodeType: Specifies the type of CoMP node (client, client and coordinator, or coordinator only).
 // - coordinatorId: The identifier for the coordinator node.
 // - clientList: A space-separated list of client node identifiers.
 // - coordinationPeriod: The time interval between two coordination instances.

@@ -14,10 +14,10 @@ package simu5g.nodes.mec.MECPlatformManager;
 //
 //# MECPlatformManager module
 //
-// This module implements the MEC platform manager (MECPM) entity inside the ~MECHost
-// It acts as an interface between the MEC orchestrator and MEC host itself. Specifically,
-// it takes care of interfacing with the ~VirtualisationInfrastructureManager to instantiate
-// and terminatie MEC applications upon request from the MEC orchestrator.
+// This module implements the MEC platform manager (MECPM) entity within the ~MECHost.
+// It serves as an interface between the MEC orchestrator and the MEC host itself. Specifically,
+// it manages interactions with the ~VirtualisationInfrastructureManager to instantiate
+// and terminate MEC applications upon requests from the MEC orchestrator.
 //
 simple MecPlatformManager
 {

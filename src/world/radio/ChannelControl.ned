@@ -12,10 +12,10 @@
 package simu5g.world.radio;
 
 //
-// Utility module that record the position of each radio module in the network.
-// Exactly one instance of this module (or its module extensions) must be present 
-// in the network. Note that channel parameters in this module are obsolete and 
-// are not used.
+// Utility module that records the position of each radio module in the network.
+// Exactly one instance of this module (or its derived extensions) must be present
+// in the network. Note that channel parameters in this module are obsolete and
+// are not utilized.
 //
 simple ChannelControl
 {

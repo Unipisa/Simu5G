@@ -13,10 +13,10 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// The LtePdcpRrcBase module implements the functionalities of the Packet Data 
-// Convergence Protocol (PDCP). It enables header compression and maps incoming IP packets 
-// to different Radio Link Control (RLC) modes. This module dynamically creates 
-// ~LteTxPdcpEntity and ~LteRxPdcpEntity submodules to handle individual tx/rx connections 
+// The LtePdcpRrcBase module implements the functionalities of the Packet Data
+// Convergence Protocol (PDCP). It enables header compression and maps incoming IP packets
+// to different Radio Link Control (RLC) modes. This module dynamically creates
+// ~LteTxPdcpEntity and ~LteRxPdcpEntity submodules to handle individual transmission/reception connections
 //
 simple LtePdcpRrcBase like ILtePdcpRrc
 {

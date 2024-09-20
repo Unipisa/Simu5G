@@ -14,8 +14,8 @@ package simu5g.stack.dualConnectivityManager;
 import simu5g.x2.IX2User;
 
 //
-// Interface for the Dual Connectivity Manager. This module extends the ~X2User moduleinterface
-// to defines the basic contract that any Dual Connectivity manager must adhere to.
+// Interface for the Dual Connectivity Manager. This module extends the ~X2User module interface
+// to define the basic contract that any Dual Connectivity Manager must adhere to.
 //
 moduleinterface IDualConnectivityManager extends IX2User
 {

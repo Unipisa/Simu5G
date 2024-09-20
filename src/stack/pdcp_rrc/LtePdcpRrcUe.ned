@@ -13,7 +13,7 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// The LtePdcpRrcUe module implements the PDCP/RRC layer for a LTE NIC employed at 
+// The LtePdcpRrcUe module implements the PDCP/RRC layer for an LTE NIC employed at
 // a User Equipment. It performs header compression on incoming IP datagrams
 //
 simple LtePdcpRrcUe extends LtePdcpRrcBase

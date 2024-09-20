@@ -12,9 +12,9 @@
 package simu5g.stack.backgroundTrafficGenerator;
 
 //
-// This module is part of a ~BackgroundCell module and takes care of instantiating a 
-// configurable number of background UEs (see ~BackgroundUe module), and to setup 
-// their mode of computing the channel status information required by the
+// This module is part of a ~BackgroundCell module and is responsible for instantiating a
+// configurable number of background UEs (see ~BackgroundUe module) and setting up
+// their method for computing the channel status information required by the
 // ~BackgroundScheduler module.
 //
 module BackgroundTrafficGenerator

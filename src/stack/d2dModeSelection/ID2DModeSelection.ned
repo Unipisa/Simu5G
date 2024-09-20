@@ -12,7 +12,7 @@
 package simu5g.stack.d2dModeSelection;
 
 //
-// Interface for D2D Mode Selection module
+// Interface for the D2D Mode Selection module
 //
 moduleinterface ID2DModeSelection
 {

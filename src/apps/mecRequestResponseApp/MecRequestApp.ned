@@ -14,14 +14,13 @@ package simu5g.apps.mecRequestResponseApp;
 import inet.applications.contract.IApp;
 
 //
-// This module provides an application model to be run at a User Equipment (UE), which 
-// generates periodic requests to be sent to a ~MecResponseApp module hosted on a (edge) 
-// host, located next to a base station. For each request, it expects to receive a 
-// response from the ~MecResponseApp. The statistic about the Round-trip Time (RTT) is
-// recorded by this module. 
-// Optionally, the effect of migration can be simulated when the User Equipment (UE) 
-// performs a handover to different base station. In this case, the application can be 
-// forced to forward new requests to a different (edge) host, i.e. the one located next to
+// This module provides an application model to be run at a User Equipment (UE), which
+// generates periodic requests to be sent to a ~MecResponseApp module hosted on an (edge)
+// host, located next to a base station. For each request, it expects to receive a
+// response from the ~MecResponseApp. This module records statistics about the Round-trip Time (RTT).
+// Optionally, the effect of migration can be simulated when the User Equipment (UE)
+// performs a handover to a different base station. In this case, the application can be
+// configured to forward new requests to a different (edge) host, namely, the one located next to
 // the new base station.
 //
 simple MecRequestApp like IApp

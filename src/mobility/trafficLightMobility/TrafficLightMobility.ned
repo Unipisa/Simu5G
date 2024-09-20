@@ -14,13 +14,13 @@ package simu5g.mobility.trafficLightMobility;
 import inet.mobility.single.LinearMobility;
 
 //
-// This module extends the INET's Linear Mobility model to mimic the movement of
-// a vehicle moving across roads with interserctions regulated by traffic lights.
-// The node implementing this mobility model moves at constant speed and, if it 
-// encounters a ~TrafficLight module whose color is "red", then it stops until the
-// traffic light's color becomes "green". When resuming its movement, the node may
-// change its direction if the "enableTurns" parameter is enabled. It requires the
-// presence of ~TrafficLight modules in the same network scenario.
+// This module extends INET's Linear Mobility model to simulate the movement of
+// a vehicle navigating roads with intersections regulated by traffic lights.
+// The node implementing this mobility model moves at a constant speed and, if it
+// encounters a ~TrafficLight module with a "red" color, it stops until the
+// traffic light turns "green". Upon resuming its movement, the node may
+// change its direction if the "enableTurns" parameter is enabled. This module
+// requires the presence of ~TrafficLight modules in the same network scenario.
 //
 simple TrafficLightMobility extends LinearMobility
 {

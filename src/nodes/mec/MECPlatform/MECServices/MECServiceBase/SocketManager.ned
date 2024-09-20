@@ -14,7 +14,7 @@ package simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase;
 //
 // This simple module is responsible for managing the state of TCP connections for MEC services.
 // It is instantiated by MecServiceBase to handle each new connection, utilizing the
-// inet::TcpSocket::CallbackInterface. It processes incoming HTTP packets and manages 
+// inet::TcpSocket::CallbackInterface. It processes incoming HTTP packets and manages
 // requests and responses within the system.
 //
 simple SocketManager

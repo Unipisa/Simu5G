@@ -14,11 +14,11 @@ package simu5g.stack.phy.ChannelModel;
 
 // NRChannelModel_3GPP38_901
 //
-// This channel model implements path loss, LOS probability and shadowing according to
+// This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
 //     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
-// TODO implements Urban Macro only
+// TODO: Implement Urban Macro only
 //
 simple NRChannelModel_3GPP38_901 extends NRChannelModel
 {

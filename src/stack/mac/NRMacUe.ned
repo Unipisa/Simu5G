@@ -12,10 +12,10 @@
 package simu5g.stack.mac;
 
 //
-// This module provides the functionalities for the Medium Access Control (MAC) of the
-// NewRadio (NR) protocol stack at the User Equipment (UE) side. In particular, it extends
-// the ~LteMacUeD2D module by redefining functions in order to support different numerologies
-// parametrization
+// This module provides functionalities for the Medium Access Control (MAC) of the
+// New Radio (NR) protocol stack at the User Equipment (UE) side. In particular, it extends
+// the ~LteMacUeD2D module by redefining functions to support different numerology
+// parameterizations.
 //
 simple NRMacUe extends LteMacUeD2D
 {

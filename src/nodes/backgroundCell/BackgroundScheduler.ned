@@ -12,9 +12,9 @@
 package simu5g.nodes.backgroundCell;
 
 //
-// This module is responsible to compute the allocation of time-frequency resources 
-// of background UEs in a ~BackgroundCell, by taking into account the traffic generated
-// by such UEs and their channel quality.
+// This module is responsible for computing the allocation of time-frequency resources
+// for background UEs in a ~BackgroundCell, taking into account the traffic generated
+// by these UEs and their channel quality.
 //
 simple BackgroundScheduler
 {

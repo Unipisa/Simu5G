@@ -27,8 +27,8 @@ import simu5g.nodes.NR.NRUe;
 import org.car2x.veins.base.modules.*;
 
 //
-// This module defines a Car node as a NR User Equipment (UE) with vehicular-like
-// mobility. The latter is modeled by exploiting the the Veins-Inet project.
+// This module defines a Car node as an NR User Equipment (UE) with vehicular-like
+// mobility. The latter is modeled by utilizing the Veins-Inet project.
 //
 // See https://veins.car2x.org/documentation/modules/#veins_inet
 //

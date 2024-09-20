@@ -15,9 +15,9 @@ import inet.applications.contract.IApp;
 
 //
 // This module represents a model for the receiver of Voice-over-IP (VoIP) traffic.
-// It receives packets sent by a ~VoIPSender application via UDP, and records statistics
-// such as packet loss, end-to-end latency, jitter, and throughput. Moreover, it computes
-// and emits a MOS (Mean Opinion Score) value, representing the Quality-of-Experience of 
+// It receives packets sent by a ~VoIPSender application via UDP and records statistics
+// such as packet loss, end-to-end latency, jitter, and throughput. Furthermore, it computes
+// and emits a MOS (Mean Opinion Score) value, which represents the Quality-of-Experience of
 // the end users.
 //
 simple VoIPReceiver like IApp

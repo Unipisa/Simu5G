@@ -14,27 +14,27 @@ package simu5g.apps.d2dMultihop;
 import inet.applications.contract.IApp;
 
 //
-// This module implements an application for disseminating event's notifications,
+// This module implements an application for disseminating event notifications,
 // using multihop D2D transmissions. New messages are generated upon the reception
 // of external events, signaled by the ~EventGenerator module. The application
 // sends the message to an IP multicast address, which is then mapped to D2D
-// multicast transmission mode within the LTE/NR protocol stack. When the application 
-// receives a message, it can relay it to the same IP multicast address, in order 
+// multicast transmission mode within the LTE/NR protocol stack. When the application
+// receives a message, it can relay it to the same IP multicast address in order
 // to extend the coverage of the D2D transmission.
-// To avoid flooding, two mechanims can be used:
-// - specifying a time-to-live (TTL) for the message, which is decreased every time
+// To avoid flooding, two mechanisms can be used:
+// - specifying a time-to-live (TTL) for the message, which decreases every time
 //   the message is relayed by a UE;
 // - specifying a target broadcast radius for the message: a UE relays the message
 //   only if it is located within a configurable distance from the originator.
 //
-// Moreover, if Trickle suppression mechanism is enabled, the application avoids
-// to relay a message when more than 'k' duplicates have already been received.
+// Moreover, if the Trickle suppression mechanism is enabled, the application avoids
+// relaying a message when more than 'k' duplicates have already been received.
 //
-// Every message originated by a node is associated to a *target area*, i.e. the
+// Every message originated by a node is associated with a *target area*, i.e., the
 // set of nodes that should receive the notification. This is used for gathering
 // statistics about the dissemination of the message.
 //
-// ref: G. Nardini, G. Stea, A. Virdis, "A fast and reliable broadcast service
+// Reference: G. Nardini, G. Stea, A. Virdis, "A fast and reliable broadcast service
 //      for LTE-Advanced exploiting multihop device-to-device transmissions",
 //      Future Internet, 2017, 9(4), 89
 //

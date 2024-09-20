@@ -20,9 +20,9 @@ import simu5g.x2.LteX2Manager;
 
 
 //
-// The LteNicEnb module is a network interface which provides LTE connectivity
-// within an eNodeB. It implements data and signaling plane of the LTE stack,
-// which includes PDCP, RLC, MAC, and PHY layers. The parameters and submodules
+// The LteNicEnb module is a network interface that provides LTE connectivity
+// within an eNodeB. It implements the data and signaling planes of the LTE stack,
+// which includes the PDCP, RLC, MAC, and PHY layers. The parameters and submodules
 // allow customization of the eNodeB's behavior, including whether it supports
 // D2D communication, CoMP (Coordinated MultiPoint), or dual connectivity.
 //

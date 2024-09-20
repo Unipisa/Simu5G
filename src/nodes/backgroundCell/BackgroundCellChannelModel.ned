@@ -12,11 +12,11 @@
 package simu5g.nodes.backgroundCell;
 
 //
-// This module configures the channel parameters associated with a ~BackgroundCell. Within the latter,
-// it is used to compute the channel quality of background UEs (see ~BackgroundUe module), which is in
-// turn useful to derive the correct occupation of time-frequency resources via Adaptive Modulation and
-// Coding mechanism.
-// 
+// This module configures the channel parameters associated with a ~BackgroundCell. It is used
+// to compute the channel quality for background UEs (refer to the ~BackgroundUe module), which in
+// turn is essential for deriving the correct allocation of time-frequency resources via the
+// Adaptive Modulation and Coding mechanism.
+//
 simple BackgroundCellChannelModel
 {
     parameters:

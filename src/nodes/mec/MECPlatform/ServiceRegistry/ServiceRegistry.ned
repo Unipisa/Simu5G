@@ -13,11 +13,11 @@ package simu5g.nodes.mec.MECPlatform.ServiceRegistry;
 import inet.applications.contract.IApp;
 
 //
-// This module models the functionalities of the Service Registry entity of
+// This module models the functionalities of the Service Registry entity in
 // the MEC architecture (ETSI GS MEC 003). It exposes a REST API
-// compliant to ETSI GS MEC 011, allowing MEC applications to discover MEC services
-// available in the MEC host. In particular, MEC applications can obtain IP address
-// and port number for each instantiated MEC service, so that it can start sending
+// compliant with ETSI GS MEC 011, allowing MEC applications to discover MEC services
+// available in the MEC host. In particular, MEC applications can obtain the IP address
+// and port number for each instantiated MEC service, so that they can start sending
 // requests to it
 //
 simple ServiceRegistry like IApp

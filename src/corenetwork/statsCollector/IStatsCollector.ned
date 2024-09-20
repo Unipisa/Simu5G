@@ -12,10 +12,10 @@
 package simu5g.corenetwork.statsCollector;
 
 //
-// A module implementing this interface is a utility module that is accessed by 
+// A module implementing this interface is a utility module that is accessed by
 // the ~RNIService of a ~MECHost module to retrieve radio network information related
 // to the parent e/gNodeB module. The RNIS accesses this module via direct method calls.
-// See, for instance, ~BaseStationStatsCollector or ~UeStatsCollector.
+// For example, see ~BaseStationStatsCollector or ~UeStatsCollector.
 //
 moduleinterface IStatsCollector
 {

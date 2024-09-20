@@ -15,8 +15,8 @@ package simu5g.stack.mac;
 //
 // Base module for the Medium Access Control (MAC) layer of the LTE protocol stack.
 //
-// This module provides the common functionalities for MAC operations at both the 
-// eNodeB and User Equipment (UE) side, such as functions to exchange MAC Service
+// This module provides common functionalities for MAC operations at both the
+// eNodeB and User Equipment (UE) sides, such as functions to exchange MAC Service
 // Data Units (SDUs) with the Radio Link Control (RLC) layer, and MAC Protocol Data
 // Units (PDUs) with the physical layer.
 //

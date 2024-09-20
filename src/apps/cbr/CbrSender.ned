@@ -15,10 +15,10 @@ import inet.applications.contract.IApp;
 
 //
 // Simple module for generating Constant Bit Rate (CBR) traffic. This module
-// periodically sends packets with a specified size to a destination address
+// periodically sends packets of a specified size to a designated address
 // and port. The intervals between packets and the overall duration of the
-// communication is configurable. The module emits statistics related to 
-// (generated) throughput and amount of bytes sent.
+// communication are configurable. The module emits statistics related to
+// the generated throughput and the total amount of bytes sent.
 //
 simple CbrSender like IApp
 {

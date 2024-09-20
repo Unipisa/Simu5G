@@ -15,8 +15,8 @@ package simu5g.apps.mec.MecRequestResponseApp;
 import inet.applications.contract.IApp;
 
 //
-// This application is to be instantiated at the UE side. It requires that a ~DeviceApp is
-// also instantiated at the UE. This module requests the ~DeviceApp to instantiate a 
+// This application is to be instantiated on the UE side. It requires that a ~DeviceApp is
+// also instantiated at the UE. This module requests the ~DeviceApp to instantiate a
 // ~MECResponseApp in the MEC system.
 // Once the peer MEC application is up and running, this module sends periodic messages to
 // the MEC application and waits for a response. It collects metrics such as round-trip time.

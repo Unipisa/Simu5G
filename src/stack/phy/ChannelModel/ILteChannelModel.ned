@@ -12,10 +12,10 @@
 package simu5g.stack.phy.ChannelModel;
 
 //
-// This module provides the interface for modules implementing the model of 
-// the radio channel. Such modules are responsible to provide functions to compute
-// the Signal to Interference-plus-Noise Ratio (SINR) of received frames taking into
-// account channel effects such as propagation loss, fading/shadowing and inter-cell
+// This module provides the interface for modules implementing the model of
+// the radio channel. Such modules are responsible for providing functions to compute
+// the Signal to Interference-plus-Noise Ratio (SINR) of received frames, taking into
+// account channel effects such as propagation loss, fading/shadowing, and inter-cell
 // interference.
 //
 moduleinterface ILteChannelModel

@@ -14,15 +14,15 @@ package simu5g.apps.mecRequestResponseApp;
 import inet.applications.contract.IApp;
 
 //
-// This module provides a simplified model of an edge application, and it is intended
-// to run in a (edge) host associated to a base station. It receives requests from a
-// User Equipment (UE) application, e.g. a ~MecRequestApp, and sends a response after 
-// some processing time. The latter is computed based on the size of request packet
-// and a value representing the computation capabilities of the node hosting this
+// This module provides a simplified model of an edge application, intended
+// to run on an edge host associated with a base station. It receives requests from a
+// User Equipment (UE) application, such as a ~MecRequestApp, and sends a response after
+// a processing time. The processing time is calculated based on the size of the request packet
+// and a value representing the computational capabilities of the node hosting this
 // application module.
-// If the UE sending the request is not served by the base station associated to this
-// application, then an additional delay to the response is considered, i.e. representing
-// the time needed to traverse the cellular core network.
+// If the UE that sends the request is not served by the base station associated with this
+// application, then an additional delay is applied to the response, which represents
+// the time required to traverse the cellular core network.
 //
 simple MecResponseApp like IApp
 {

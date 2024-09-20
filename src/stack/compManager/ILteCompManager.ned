@@ -22,9 +22,9 @@ import simu5g.x2.IX2User;
 //
 // @neddoc
 // The `LteCompManager` module interface provides a blueprint for implementing
-// the COMP (Coordinated Multi-Point) manager functionality in the LTE network stack. 
-// It extends the `X2User` interface, inheriting its capabilities and providing additional 
-// hooks for managing COMP-specific operations. The interface comes with a built-in 
+// the CoMP (Coordinated Multi-Point) manager functionality in the LTE network stack.
+// It extends the `X2User` interface, inheriting its capabilities and providing additional
+// hooks for managing CoMP-specific operations. The interface comes with a built-in
 // display icon for visual representation in network simulations.
 //
 moduleinterface ILteCompManager extends IX2User

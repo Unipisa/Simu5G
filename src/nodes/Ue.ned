@@ -29,14 +29,14 @@ import simu5g.stack.ICellularNic;
 
 
 //
-// This module models a User Equipment (UE) of a 4G LTE network. It is a host equipped with
-// an LTE Network Interface Card (NIC), which allows the UE to connect to a ~eNodeB module via the  
-// Radio Access Network (RAN) of the LTE network and communicate with any other host in the system. 
-// Besides a NIC submodule, this compound module contains all the higher layers of the protocol stack,
+// This module models a User Equipment (UE) in a 4G LTE network. It is a host equipped with
+// an LTE Network Interface Card (NIC), allowing the UE to connect to an ~eNodeB module via the
+// Radio Access Network (RAN) of the LTE network and communicate with any other host in the system.
+// In addition to a NIC submodule, this compound module includes all the higher layers of the protocol stack,
 // from IP to application modules. It supports a configurable number of UDP and TCP applications. It
-// also has an Ethernet interface, which is used in the real-time emulation mode to connect the UE 
-// to the real network (outside the simulator) via a virtual ethernet interface.
-// 
+// also features an Ethernet interface, which is utilized in real-time emulation mode to connect the UE
+// to the real network (outside the simulator) via a virtual Ethernet interface.
+//
 module Ue
 {
     parameters:

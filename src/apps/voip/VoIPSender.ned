@@ -15,9 +15,9 @@ import inet.applications.contract.IApp;
 
 //
 // This module represents a model for the sender of Voice-over-IP (VoIP) traffic.
-// It generates packets by alterneting "talkspurts" and "silence" periods, whose respective
-// duration is modeled by a Weibull distribution. During talkspurts, fixed-size packets are
-// generated periodically, and sent over UDP to a specified destination address and port.
+// It generates packets by alternating "talk spurts" and "silence" periods, with their respective
+// durations modeled by a Weibull distribution. During talk spurts, fixed-size packets are
+// generated periodically and sent over UDP to a specified destination address and port.
 //
 simple VoIPSender like IApp
 {

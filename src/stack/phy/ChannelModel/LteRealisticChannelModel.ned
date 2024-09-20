@@ -12,13 +12,13 @@
 package simu5g.stack.phy.ChannelModel;
 
 //
-// This module implements the functions for a model representing the 2D channel in LTE 
-// specification 3GPP TR 36.803. It includes computation of:
-// - path loss (both linr-of-sight and non-line-of-sight),
+// This module implements the functions for a model representing the 2D channel in the LTE
+// specification 3GPP TR 36.803. It includes the computation of:
+// - path loss (both line-of-sight and non-line-of-sight),
 // - fading (Jakes or Rayleigh model),
 // - log-normal shadowing,
 // - inter-cell interference.
-// Such effects are used to compute the Signal to Interference-plus-Noise Ratio (SINR). 
+// These effects are utilized to compute the Signal to Interference-plus-Noise Ratio (SINR).
 //
 //
 simple LteRealisticChannelModel extends LteChannelModel

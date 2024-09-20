@@ -13,7 +13,7 @@ package simu5g.stack.phy.ChannelModel;
 
 
 //
-// This channel model implements path loss, LOS probability and shadowing according to
+// This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
 //     3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
 //

@@ -13,11 +13,11 @@
 package simu5g.stack.rlc;
 
 //
-// This module implements the functionalities of the Unacknowledged Mode (UM) of the 
-// Radio Link Control (RLC) layer for User Equipments supporting Device-to-device (D2D) 
-// communications.  It extends the basic RLC functionalities with specific management
-// functions necessary when a connection is switched from infrastracture mode to D2D mode,
-// and vice versa
+// This module implements the functionalities of the Unacknowledged Mode (UM) of the
+// Radio Link Control (RLC) layer for User Equipments supporting Device-to-Device (D2D)
+// communications. It extends the basic RLC functionalities with specific management
+// functions necessary when a connection is switched from infrastructure mode to D2D mode,
+// and vice versa.
 //
 simple LteRlcUmD2D extends LteRlcUm
 {

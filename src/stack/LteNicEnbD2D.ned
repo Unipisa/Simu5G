@@ -17,8 +17,8 @@ import simu5g.stack.d2dModeSelection.ID2DModeSelection;
 //
 // The LteNicEnbD2D module represents an LTE eNodeB network interface with
 // support for D2D (Device-to-Device) communications. It extends the basic
-// LteNicEnb module for managing D2D-capable UEs (User Equipments). A D2D mode
-// selection algorithm can be specified via the 'd2dModeSelectionType'
+// LteNicEnb module to manage D2D-capable UEs (User Equipments). A D2D mode
+// selection algorithm can be specified using the 'd2dModeSelectionType'
 // parameter.
 //
 module LteNicEnbD2D extends LteNicEnb

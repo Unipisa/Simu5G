@@ -15,8 +15,8 @@ package simu5g.stack;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 
 //
-// The LteNicUe module is a network interface which provides LTE connectivity
-// within a UE (User Equipment). It implements data and signaling plane of the LTE stack,
+// The LteNicUe module is a network interface that provides LTE connectivity
+// within a UE (User Equipment). It implements the data and signaling planes of the LTE stack,
 // which includes PDCP, RLC, MAC, and PHY layers. The parameters and submodules
 // allow customization of the UE's behavior.
 //

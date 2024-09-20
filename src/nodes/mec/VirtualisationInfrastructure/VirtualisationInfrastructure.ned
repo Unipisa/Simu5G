@@ -23,13 +23,13 @@ import inet.transportlayer.udp.Udp;
 
 //
 // This module represents the Virtualisation Infrastructure in a MEC host.
-// It takes care of forwarding packets coming from the 5G core network to the 
-// appropriate MEC applications, after applying the processing of all the necessary
+// It takes care of forwarding packets coming from the 5G core network to the
+// appropriate MEC applications, applying the processing required by all the necessary
 // network protocol layers.
-// Optionally, it can hosts "independent" MEC applications, i.e. applications that 
-// are statically created at initialization, without going through the normal 
+// Optionally, it can host "independent" MEC applications, i.e., applications that
+// are statically created at initialization, without going through the normal
 // lifecycle (i.e., through the UALCMP and MEC orchestrator).
-// It provides the external interface to communicate with emulated MEC applications, 
+// It provides the external interface to communicate with emulated MEC applications,
 // running outside the simulation environment.
 //
 module VirtualisationInfrastructure

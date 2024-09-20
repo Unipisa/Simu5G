@@ -11,10 +11,10 @@
 package simu5g.stack.ip2nic;
 
 //
-// INetworkLayer2CellularNic module interface acts as an intermediary between the network layer 
-// and the cellular (LTE/NR) protocol stack. It enables the interactions of the cellular stack with the 
-// network layer, enabling the transmission of IP packets through the protocol layers of 
-// the LTE and NR technologies.
+// The INetworkLayer2CellularNic module interface serves as an intermediary between the network layer
+// and the cellular (LTE/NR) protocol stack. It facilitates interactions between the cellular stack and the
+// network layer, enabling the transmission of IP packets through the protocol layers of
+// LTE and NR technologies.
 //
 moduleinterface INetworkLayer2CellularNic
 {

@@ -15,9 +15,9 @@ import inet.applications.contract.IApp;
 //
 // This module simulates a video-on-demand (VoD) client application
 // that receives video frames over UDP. It is assumed that the transmitted
-// video is encoded using multiple layers, according to the Scalable Video 
-// Coding (SVC) technique, hence the module collects separate statistics
-// (such as throughput and delay) for each different layer.
+// video is encoded using multiple layers according to the Scalable Video
+// Coding (SVC) technique. Hence, the module collects separate statistics
+// (such as throughput and delay) for each layer.
 //
 simple VoDUDPClient like IApp
 {

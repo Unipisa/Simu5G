@@ -22,14 +22,14 @@ import simu5g.nodes.mec.VirtualisationInfrastructureManager.VirtualisationInfras
 
 
 //
-// This module represents a model of a Multi-access Edge Computing (MEC) host 
-// belonging to a MEC system, as specified by ETSI GS MEC 003 specifications. It runs 
-// MEC applications within its ~Virtualisation/Infrastructure and can provide a number of 
-// MEC services via the MEC platform. MEC application can be created either dynamically by 
-// the MEC orchestrator or statically at the initialization of the simulation. The MEC host 
-// possesses a configurable number of computing resources (such as CPU speed, RAM and storage),
-// and keeps track of the utilization of such resources by the MEC application via the 
-// ~VirtualisationInfrastructureManager. Moreover, this module incldues a User Plane 
+// This module represents a model of a Multi-access Edge Computing (MEC) host
+// belonging to a MEC system, as specified by the ETSI GS MEC 003 specifications. It runs
+// MEC applications within its ~VirtualisationInfrastructure and can provide a number of
+// MEC services via the MEC platform. MEC applications can be created either dynamically by
+// the MEC orchestrator or statically at the initialization of the simulation. The MEC host
+// possesses a configurable number of computing resources (such as CPU speed, RAM, and storage)
+// and keeps track of the utilization of these resources by the MEC applications via the
+// ~VirtualisationInfrastructureManager. Moreover, this module includes a User Plane
 // Function (UPF) that allows it to be connected with the 5G core network.
 //
 module MECHost

@@ -12,11 +12,11 @@
 package simu5g.nodes.mec.MECOrchestrator;
 
 //
-// This module models the MEC orchestrator's functionalities within a Multi-access Edge 
-// Computing (MEC) system. Specifically, it manages the dynamic instantiation and 
+// This module models the functionalities of the MEC orchestrator within a Multi-access Edge
+// Computing (MEC) system. Specifically, it manages the dynamic instantiation and
 // termination of MEC applications on the MEC hosts belonging to the MEC system. Upon
-// reception of MEC app instantiation request from the ~UALCMP module, this module is
-// responsible to select the MEC host the MEC application is to be instantiated, according
+// receiving a MEC app instantiation request from the ~UALCMP module, this module is
+// responsible for selecting the MEC host on which the MEC application is to be instantiated, according
 // to a configurable policy.
 //
 simple MecOrchestrator

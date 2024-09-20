@@ -16,17 +16,17 @@ import inet.mobility.contract.IMobility;
 import simu5g.stack.backgroundTrafficGenerator.generators.ITrafficGenerator;
 
 //
-// This module implements a lightweight model for a 4G or 5G User Equipment (UE).
+// This module implements a lightweight model for 4G or 5G User Equipment (UE).
 // It is used to simulate the generation of background traffic in both uplink and
-// downlink bandwidth, according to the logic specified by its ~ITrafficGenerator 
-// submodule. Generated traffic is not actually transmitted/received by this module,
-// making it more efficient from the simulation complexity perspective.
+// downlink bandwidths, according to the logic specified by its ~ITrafficGenerator
+// submodule. The generated traffic is not actually transmitted or received by this module,
+// making it more efficient from a simulation complexity perspective.
 // Instead, such traffic modifies the buffer status information that is used by the
 // ~BackgroundScheduler to allocate resources.
-// Each background UE has a mobility submodule to configure its position in the 
-// simulation floorplan. This way, realistic channel status information can be 
+// Each background UE has a mobility submodule to configure its position in the
+// simulation floor plan. This allows for realistic channel status information to be
 // computed for the background UE and used by the ~BackgroundScheduler.
-// Since this module does not send/receive actual traffic, application-level 
+// Since this module does not send or receive actual traffic, application-level
 // statistics are not produced.
 //
 module BackgroundUe

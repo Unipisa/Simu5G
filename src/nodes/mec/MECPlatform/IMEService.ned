@@ -13,9 +13,9 @@
 package simu5g.nodes.mec.MECPlatform;
 
 //
-// This module interface defines the module structure to be implemented by every
-// MEC Service (see, e.g., ~LocationService)
-// 
+// This module interface defines the structure that every
+// MEC Service must implement (see, e.g., ~LocationService)
+//
 // TODO: obsolete, to be removed (see ~IMECService instead)
 //
 moduleinterface IMEService

@@ -14,10 +14,10 @@ package simu5g.apps.cbr;
 import inet.applications.contract.IApp;
 
 //
-// This module receives Constant Bit Rate (CBR) traffic, sent by a ~CbrSender
-// application module. It binds to a specified local port and records 
+// This module receives Constant Bit Rate (CBR) traffic sent by a ~CbrSender
+// application module. It binds to a specified local port and records
 // statistics such as packet delay, jitter, packet loss, throughput, and the
-// amount of total bytes received.
+// total amount of bytes received.
 //
 simple CbrReceiver like IApp
 {

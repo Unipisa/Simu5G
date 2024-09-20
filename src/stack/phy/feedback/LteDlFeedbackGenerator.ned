@@ -42,9 +42,9 @@ simple LteDlFeedbackGenerator
         // CL_SPATIAL_MULTIPLEXING,MULTI_USER,
         string initialTxMode @enum(SINGLE_ANTENNA_PORT0,SINGLE_ANTENNA_PORT5,TRANSMIT_DIVERSITY,OL_SPATIAL_MULTIPLEXING,CL_SPATIAL_MULTIPLEXING,MULTI_USER) = default("SINGLE_ANTENNA_PORT0");
 
-        //Feedback Computation (warning, this should be compatible with
-        // analogue model and Decider
-//        xml feedbackComputation;
+        // Feedback Computation (warning: this should be compatible with
+        // the analogue model and Decider.
+        // xml feedbackComputation;
 
         //Type of generator: IDEAL, REAL, DAS_AWARE
         // IDEAL: feedback generator reports feedback for each txmode and for each rus

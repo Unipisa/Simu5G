@@ -13,9 +13,9 @@
 package simu5g.stack.pdcp_rrc;
 
 //
-// The NrPdcpRrcEnb module implements the PDCP/RRC layer for a NR NIC employed at 
+// The NRPdcpRrcEnb module implements the PDCP/RRC layer for a NR NIC utilized at
 // a Base Station. It extends the ~LtePdcpRrcEnbD2D module to enable Dual Connectivity
-// and Split Bearer functionalities at the eNodeB module. 
+// and Split Bearer functionalities at the eNodeB module.
 //
 simple NRPdcpRrcEnb extends LtePdcpRrcEnbD2D
 {

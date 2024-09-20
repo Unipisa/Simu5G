@@ -15,11 +15,11 @@ package simu5g.stack.d2dModeSelection;
 //
 // D2DModeSelectionBestCqi module
 //
-// This module implements the mode selection algorithm for D2D communications 
-// that selects the mode based on the best Channel Quality Indicator (CQI). 
-// It evaluates the CQI for each D2D-capable flow and selects the communication 
-// mode that provides the best performance in terms of achievable data rate. 
-// The primary goal is to optimize the data transmission quality and efficiency 
+// This module implements the mode selection algorithm for D2D communications
+// that selects the mode based on the best Channel Quality Indicator (CQI).
+// It evaluates the CQI for each D2D-capable flow and selects the communication
+// mode that provides the best performance in terms of achievable data rate.
+// The primary goal is to optimize data transmission quality and efficiency
 // by dynamically switching between modes based on CQI measurements.
 //
 simple D2DModeSelectionBestCqi extends D2DModeSelectionBase

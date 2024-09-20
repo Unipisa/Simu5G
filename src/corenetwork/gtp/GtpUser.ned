@@ -12,15 +12,15 @@
 package simu5g.corenetwork.gtp;
 
 //
-// This module implements a simplified version of the user plane of the GPRS Tunneling 
+// This module implements a simplified version of the user plane of the GPRS Tunneling
 // Protocol (GTP). On one hand, this module encapsulates incoming IP datagrams into GTP
-// packets and sends them towards the tunnel destination endpoint (GTP works on top of 
-// UDP). The destination endpoint is identified by exploiting information coming from 
-// the ~TrafficFlowFilter module. On the other hand, when this module receives GTP packets
+// packets and sends them to the tunnel destination endpoint (GTP operates on top of
+// UDP). The destination endpoint is identified by utilizing information from the
+// ~TrafficFlowFilter module. On the other hand, when this module receives GTP packets
 // from a tunnel source endpoint, it decapsulates the included IP datagram and sends it
-// to the intended destination, according to normal IP forwarding.   
-// This module is used by all entities that need to communicate within the cellular core 
-// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MECHost modules. 
+// to the intended destination according to normal IP forwarding.
+// This module is used by all entities that need to communicate within the cellular core
+// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MECHost modules.
 //
 simple GtpUser
 {

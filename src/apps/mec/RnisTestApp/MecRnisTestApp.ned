@@ -14,14 +14,14 @@ package simu5g.apps.mec.RnisTestApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 
-// 
+//
 // This module is an application that is dynamically instantiated on a MEC host upon request
-// from a ~UeRnisTestApp, via a ~DeviceApp. It is used to test and showcase the functionalities 
+// from a ~UeRnisTestApp via a ~DeviceApp. It is used to test and showcase the functionalities
 // of the ~RNIService API.
-// Upon reception of a request from the UE, it queries the ~RNIService periodically to obtain
-// L2 measurements related to the UE who sent the request (see the sendQuery() function). The 
-// results obtained from the RNIS is sent back to the ~UeRnisTestApp in a response message.
-// Note that the response time of the RNIS depends on the current load at the RNIS.
+// Upon receiving a request from the UE, it queries the ~RNIService periodically to obtain
+// L2 measurements related to the UE that sent the request (refer to the sendQuery() function). The
+// results obtained from the RNIS are sent back to the ~UeRnisTestApp in a response message.
+// Please note that the response time of the RNIS depends on the current load at the RNIS.
 //
 simple MecRnisTestApp extends MecAppBase
 {

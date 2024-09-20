@@ -12,13 +12,13 @@
 package simu5g.nodes;
 
 //
-// The ExtCell module represents a fictitious cell that is used to model 
+// The ExtCell module represents a fictitious cell that is used to model
 // interference from neighboring cells, without actually instantiating them
-// completely (i.e., with actual UEs producing actual traffic). It can be 
+// completely (i.e., without having actual UEs producing actual traffic). It can be
 // configured with physical layer parameters (such as transmission power and
 // direction) and the amount of resource occupation.
-// This module can be replaced by ~BackgroundCell modules that provide more
-// flexibility. 
+// This module can be replaced by ~BackgroundCell modules, which provide more
+// flexibility.
 //
 simple ExtCell
 {

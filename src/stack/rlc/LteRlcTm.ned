@@ -13,9 +13,9 @@
 package simu5g.stack.rlc;
 
 //
-// This module implements the functionalities of the Transparent Mode (UM) of the 
-// Radio Link Control (RLC) layer. 
-// 
+// This module implements the functionalities of the Transparent Mode (TM) of the
+// Radio Link Control (RLC) layer.
+//
 simple LteRlcTm
 {
     parameters:

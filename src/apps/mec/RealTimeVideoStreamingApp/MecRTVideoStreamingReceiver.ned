@@ -13,12 +13,12 @@ package simu5g.apps.mec.RealTimeVideoStreamingApp;
 
 import simu5g.apps.mec.MecApps.MecAppBase;
 
-// 
+//
 // This module is an application that is dynamically instantiated on a MEC host upon request
-// from a ~RTVideoStreamingSender application, via a ~DeviceApp.
-// It receives video frames sent by the UE and simulate a playout buffer. Moreover, it records 
-// statistics related to the quality of the received video stream. Note that statistics are
-//  collected by the ~RTVideoStreamingSender application at the UE side
+// from a ~RTVideoStreamingSender application via a ~DeviceApp.
+// It receives video frames sent by the UE and simulates a playout buffer. Moreover, it records
+// statistics related to the quality of the received video stream. Note that the statistics are
+// collected by the ~RTVideoStreamingSender application at the UE side.
 //
 simple MecRTVideoStreamingReceiver extends MecAppBase
 {

@@ -12,9 +12,9 @@
 package simu5g.nodes.mec.VirtualisationInfrastructureManager;
 
 //
-// This module can be used to simulate a background application running in the 
-// MEC host without simulating all the message exchange and finite-state machine.
-// It can be useful to simulate background tasks that utilize CPU, RAM, and disk
+// This module can be used to simulate a background application running on the
+// MEC host without simulating all message exchanges and finite-state machines.
+// It can be useful for simulating background tasks that utilize CPU, RAM, and disk
 // resources.
 //
 module BackgroundApp

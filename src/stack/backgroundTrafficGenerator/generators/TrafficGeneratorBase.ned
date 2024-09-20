@@ -12,10 +12,10 @@
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
 //
-// This module provides the basic functions and paramthat a traffic generator 
-// submodule (implementing the ~ITrafficGenerator interface) can exploit. It 
-// enables the configuration of parameters like the starting time of the traffic, 
-// the size and inter-generation of packets, the rate of retransmissions, and so on.
+// This module provides the basic functions and parameters that a traffic generator
+// submodule (implementing the ~ITrafficGenerator interface) can utilize. It
+// enables the configuration of parameters such as the starting time of the traffic,
+// the size and inter-generation timing of packets, the rate of retransmissions, and so on.
 // Custom background traffic generators can be implemented by extending this module.
 //
 simple TrafficGeneratorBase like ITrafficGenerator
@@ -71,5 +71,5 @@ simple TrafficGeneratorBase like ITrafficGenerator
         @statistic[bgHarqErrorRateUl](title="Average UL HARQ error rate for background UEs"; unit=""; source="bgHarqErrorRateUl"; record=mean,count,vector);
 }
 
-//# add here your custom generators, by extending the base module
+//# Add your custom generators here by extending the base module
 

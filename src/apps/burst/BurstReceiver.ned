@@ -16,7 +16,7 @@ import inet.applications.contract.IApp;
 //
 // This module models an application that receives bursts of packets from
 // a ~BurstSender application module. It binds to a specified UDP local port,
-// logs received packets and records statistics such as packet delay.
+// logs the received packets, and records statistics such as packet delay.
 //
 simple BurstReceiver like IApp
 {

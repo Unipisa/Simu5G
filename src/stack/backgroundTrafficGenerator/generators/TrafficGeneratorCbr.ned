@@ -12,11 +12,11 @@
 package simu5g.stack.backgroundTrafficGenerator.generators;
 
 //
-// This module specializes the ~TrafficGeneratorBase module to provide a 
+// This module specializes the ~TrafficGeneratorBase module to provide a
 // Constant Bit Rate (CBR) background traffic generator. This generator
-// generates fixed-size packets at regular intervals in either downlink 
+// produces fixed-size packets at regular intervals in either downlink
 // or uplink bands, or both.
-// 
+//
 simple TrafficGeneratorCbr extends TrafficGeneratorBase
 {
     parameters:

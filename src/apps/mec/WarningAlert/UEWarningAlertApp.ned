@@ -16,12 +16,12 @@ import inet.applications.contract.IApp;
 
 
 //
-// This application is to be instantiated at the UE side. It requires that a ~DeviceApp is
-// also instantiated at the UE. This module requests the ~DeviceApp to instantiate a 
+// This application is to be instantiated on the UE side. It requires that a ~DeviceApp is
+// also instantiated on the UE. This module requests the ~DeviceApp to instantiate a
 // ~MECWarningAlertApp in the MEC system.
 // Once the peer MEC application is up and running, this module sends a message to the MEC
-// application, requesting the latter to be notified when the UE running this module enters
-// a circular area defined by its (configurable) center and radius. 
+// application, requesting that it be notified when the UE running this module enters
+// a circular area defined by its (configurable) center and radius.
 //
 simple UEWarningAlertApp like IApp
 {

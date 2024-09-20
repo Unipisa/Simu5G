@@ -13,15 +13,15 @@
 package simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase;
 
 //
-// This module interface defines the module structure to be implemented by every
+// This module interface defines the structure that must be implemented by every
 // MEC Service (see, e.g., ~LocationService). Common MEC service functionalities are provided
-// by the MecServiceBase class, which includes support to both request-response and 
-// subscribe-notification paradigm over TCP protocol.
-// Moreover, the MecServiceBase class provides means to enqueue MEC applications' request to
-// a MEC service in a FIFO queue, so that the MEC service can serve them one at a time. Such 
-// class also computes the computation time of each request according to an exponential 
+// by the MecServiceBase class, which includes support for both request-response and
+// subscribe-notification paradigms over the TCP protocol.
+// Furthermore, the MecServiceBase class includes mechanisms to enqueue MEC applications' requests
+// to a MEC service in a FIFO queue, allowing the MEC service to serve them one at a time. This
+// class also calculates the computation time of each request according to an exponential
 // distribution.
-// 
+//
 moduleinterface IMECService
 {
     parameters:

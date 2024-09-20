@@ -14,12 +14,12 @@ package simu5g.apps.mec.MecRequestResponseApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 
-// 
-// This module is an application that is dynamically instantiated on a MEC host upon request
+//
+// This module represents an application that is dynamically instantiated on a MEC host upon request
 // from a ~UERequestApp, via a ~DeviceApp.
-// Upon reception of a request from the UE, it queries the ~LocationService to obtain some
-// information (not used, it is just to "waste" some time), and sends a response message to the 
-// UE after some computation time that depends on the current resource utilization at the 
+// Upon receiving a request from the UE, it queries the ~LocationService to obtain some
+// information (which is not utilized; it is intended only to "consume" some time), and sends a
+// response message to the UE after a computation time that depends on the current resource utilization at the
 // MEC host.
 //
 simple MECResponseApp extends MecAppBase

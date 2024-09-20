@@ -13,7 +13,7 @@
 package simu5g.stack.phy.feedback;
 
 //
-// This is the Lte Uplink Feedback Generator.
+// This is the LTE Uplink Feedback Generator.
 //
 simple LteUlFeedbackGenerator
 {

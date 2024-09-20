@@ -27,18 +27,18 @@ import simu5g.stack.ICellularNic;
 import simu5g.x2.LteX2App;
 
 //
-// This module models an evolved Node B (eNB) of a 4G LTE network. It is a special device equipped
-// with a Network Interface Card (NIC) that enables the communication with ~Ue devices attached to 
-// it. It acts as an access point that routes packet between the UEs and the 4G Core Network. 
-// Packets arriving from the UEs are tunneled to the appropriate next hop in the core network (e.g., 
-// the PDN Gateway, PGW) by using the GPRS Tunneling Protocol (GTP). On the other hand, packets 
-// received from the core network are detunneled and sent to the appropriate destination UE. 
-// Besides the 4G NIC, this compound module includes a configurable number of wired interfaces
-// to connect with routers of the core network or directly to the ~PgwStandard module, the IP
-// module to perform forwarding, and the ~GtpUser module taking care of GTP (de)tunneling. The latter
-// makes use of the ~TrafficFlowFilter module to classify incoming packets and decides the next hop.
-// Moreover, it includes a configurable number of ~LteX2App to allow peer-to-peer communications with
-// other eNodeB of the same LTE network.
+// This module models an evolved Node B (eNB) of a 4G LTE network. It is a specialized device equipped
+// with a Network Interface Card (NIC) that enables communication with the ~Ue devices connected
+// to it. It serves as an access point that routes packets between the UEs and the 4G Core Network.
+// Packets arriving from the UEs are tunneled to the appropriate next hop in the core network (e.g.,
+// the PDN Gateway, PGW) using the GPRS Tunneling Protocol (GTP). Conversely, packets
+// received from the core network are detunneled and sent to the appropriate destination UE.
+// In addition to the 4G NIC, this compound module includes a configurable number of wired interfaces
+// to connect with routers of the core network or directly to the ~PgwStandard module, which serves
+// as the IP module to perform forwarding, and the ~GtpUser module that handles GTP (de)tunneling. The latter
+// utilizes the ~TrafficFlowFilter module to classify incoming packets and determine the next hop.
+// Furthermore, it features a configurable number of ~LteX2App modules to facilitate peer-to-peer communications with
+// other eNodeBs within the same LTE network.
 //
 module eNodeB
 {

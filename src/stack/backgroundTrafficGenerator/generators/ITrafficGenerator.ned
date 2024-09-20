@@ -15,7 +15,7 @@ package simu5g.stack.backgroundTrafficGenerator.generators;
 //
 // This module interface defines the contract for traffic generator modules
 // within the ~BackgroundTrafficGenerator module. This interface can be implemented
-// by other modules to create a custom traffic generator, see ~TrafficGeneratorCbr as
+// by other modules to create a custom traffic generator; see ~TrafficGeneratorCbr as
 // an example.
 //
 moduleinterface ITrafficGenerator

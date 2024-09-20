@@ -14,10 +14,10 @@ package simu5g.common.cellInfo;
 
 //
 // This module includes data structures and functions used to support local operations
-// at the e/gNodeB, such as the cell ID, the set of Component Carriers (CCs) supported 
-// by the e/gNodeB, and so on.
+// at the e/gNodeB, such as the cell ID, the set of Component Carriers (CCs) supported
+// by the e/gNodeB, and more.
 //
-// TODO remove obsolete parameters 
+// TODO: Remove obsolete parameters
 //
 simple CellInfo
 {
