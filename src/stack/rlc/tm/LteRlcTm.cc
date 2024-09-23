@@ -77,7 +77,7 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
 
     EV << "LteRlcTm::handleUpperMessage - Sending message " << newDataPkt->getName() << " to port TM_Sap_down$o\n";
     emit(sentPacketToLowerLayerSignal_, pktDup);
-    send(pktDup, down_[OUT_GATE]);
+    send(pktDup, downOutGate_);
 }
 
 void LteRlcTm::handleLowerMessage(cPacket *pkt)
@@ -91,7 +91,7 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
             emit(sentPacketToLowerLayerSignal_, pkt);
             drop(rlcPduPkt);
 
-            send(rlcPduPkt, down_[OUT_GATE]);
+            send(rlcPduPkt, downOutGate_);
         }
         else
             EV << "LteRlcTm : Received " << pkt->getName() << " but no PDUs buffered - nothing to send to MAC.\n";
@@ -106,7 +106,7 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
 
         EV << "LteRlcTm : Sending packet " << upUpPkt->getName() << " to port TM_Sap_up$o\n";
         emit(sentPacketToUpperLayerSignal_, upUpPkt);
-        send(upUpPkt, up_[OUT_GATE]);
+        send(upUpPkt, upOutGate_);
     }
 
     drop(pkt);
@@ -119,10 +119,10 @@ void LteRlcTm::handleLowerMessage(cPacket *pkt)
 
 void LteRlcTm::initialize()
 {
-    up_[IN_GATE] = gate("TM_Sap_up$i");
-    up_[OUT_GATE] = gate("TM_Sap_up$o");
-    down_[IN_GATE] = gate("TM_Sap_down$i");
-    down_[OUT_GATE] = gate("TM_Sap_down$o");
+    upInGate_ = gate("TM_Sap_up$i");
+    upOutGate_ = gate("TM_Sap_up$o");
+    downInGate_ = gate("TM_Sap_down$i");
+    downOutGate_ = gate("TM_Sap_down$o");
 
     queueSize_ = par("queueSize");
 }
@@ -134,10 +134,10 @@ void LteRlcTm::handleMessage(cMessage *msg)
         " from port " << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == up_[IN_GATE]) {
+    if (incoming == upInGate_) {
         handleUpperMessage(pkt);
     }
-    else if (incoming == down_[IN_GATE]) {
+    else if (incoming == downInGate_) {
         handleLowerMessage(pkt);
     }
 }

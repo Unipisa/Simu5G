@@ -428,7 +428,7 @@ void LteMacUeD2D::handleMessage(cMessage *msg)
     auto pkt = check_and_cast<inet::Packet *>(msg);
     cGate *incoming = pkt->getArrivalGate();
 
-    if (incoming == down_[IN_GATE]) {
+    if (incoming == downInGate_) {
         auto userInfo = pkt->getTag<UserControlInfo>();
 
         if (userInfo->getFrameType() == D2DMODESWITCHPKT) {

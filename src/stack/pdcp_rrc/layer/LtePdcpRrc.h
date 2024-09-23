@@ -275,11 +275,16 @@ class LtePdcpRrcBase : public cSimpleModule
     /// Identifier for this node
     MacNodeId nodeId_;
 
-    cGate *dataPort_[2];
-    cGate *eutranRrcSap_[2];
-    cGate *tmSap_[2];
-    cGate *umSap_[2];
-    cGate *amSap_[2];
+    cGate *dataPortInGate_ = nullptr;
+    cGate *dataPortOutGate_ = nullptr;
+    cGate *eutranRrcSapInGate_ = nullptr;
+    cGate *eutranRrcSapOutGate_ = nullptr;
+    cGate *tmSapInGate_ = nullptr;
+    cGate *tmSapOutGate_ = nullptr;
+    cGate *umSapInGate_ = nullptr;
+    cGate *umSapOutGate_ = nullptr;
+    cGate *amSapInGate_ = nullptr;
+    cGate *amSapOutGate_ = nullptr;
 
     LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;

@@ -30,8 +30,8 @@ void LteCompManagerBase::initialize()
     Binder *binder = inet::getModuleFromPar<Binder>(par("binderModule"), this);
 
     // get reference to the gates
-    x2Manager_[IN_GATE] = gate("x2ManagerIn");
-    x2Manager_[OUT_GATE] = gate("x2ManagerOut");
+    x2ManagerInGate_ = gate("x2ManagerIn");
+    x2ManagerOutGate_ = gate("x2ManagerOut");
 
     // get reference to mac layer
     mac_ = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder, nodeId_));
@@ -56,7 +56,7 @@ void LteCompManagerBase::initialize()
     auto ctrlInfo = pkt->addTagIfAbsent<X2ControlInfoTag>();
     ctrlInfo->setInit(true);
 
-    send(pkt, x2Manager_[OUT_GATE]);
+    send(pkt, x2ManagerOutGate_);
 
     if (nodeType_ != COMP_CLIENT) {
         // get the list of slave nodes
@@ -102,7 +102,7 @@ void LteCompManagerBase::handleMessage(cMessage *msg)
     else {
         Packet *pkt = check_and_cast<Packet *>(msg);
         cGate *incoming = pkt->getArrivalGate();
-        if (incoming == x2Manager_[IN_GATE]) {
+        if (incoming == x2ManagerInGate_) {
             // incoming data from X2 Manager
             EV << "LteCompManagerBase::handleMessage - Received message from X2 manager" << endl;
             handleX2Message(pkt);
@@ -185,7 +185,7 @@ void LteCompManagerBase::sendClientRequest(X2CompRequestIE *requestIe)
         pkt->insertAtFront(compMsg);
 
         // send to X2 Manager
-        send(pkt, x2Manager_[OUT_GATE]);
+        send(pkt, x2ManagerOutGate_);
     }
 }
 
@@ -216,7 +216,7 @@ void LteCompManagerBase::sendCoordinatorReply(X2NodeId clientId, X2CompReplyIE *
 
         // send packet to X2 Manager
         pkt->insertAtFront(compMsg);
-        send(pkt, x2Manager_[OUT_GATE]);
+        send(pkt, x2ManagerOutGate_);
     }
 }
 

@@ -121,8 +121,10 @@ class LteRlcUm : public cSimpleModule
 
   protected:
 
-    cGate *up_[2];
-    cGate *down_[2];
+    cGate *upInGate_ = nullptr;
+    cGate *upOutGate_ = nullptr;
+    cGate *downInGate_ = nullptr;
+    cGate *downOutGate_ = nullptr;
 
     // statistics
     static simsignal_t receivedPacketFromUpperLayerSignal_;

@@ -202,7 +202,7 @@ void LtePdcpRrcBase::fromEutranRrcSap(cPacket *pkt)
     lteInfo->setRlcType(TM);
     pkt->setControlInfo(lteInfo);
     EV << "LteRrc : Sending packet " << pkt->getName() << " on port TM_Sap$o\n";
-    send(pkt, tmSap_[OUT_GATE]);
+    send(pkt, tmSapOutGate_);
 }
 
 /*
@@ -236,7 +236,7 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o\n";
 
     // Send message
-    send(pkt, dataPort_[OUT_GATE]);
+    send(pkt, dataPortOutGate_);
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
@@ -246,7 +246,7 @@ void LtePdcpRrcBase::toEutranRrcSap(cPacket *pkt)
     delete pkt;
 
     EV << "LteRrc : Sending packet " << upPkt->getName() << " on port EUTRAN_RRC_Sap$o\n";
-    send(upPkt, eutranRrcSap_[OUT_GATE]);
+    send(upPkt, eutranRrcSapOutGate_);
 }
 
 /*
@@ -262,15 +262,15 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
     switch (lteInfo->getRlcType()) {
         case UM:
             portName = "UM_Sap$o";
-            gate = umSap_[OUT_GATE];
+            gate = umSapOutGate_;
             break;
         case AM:
             portName = "AM_Sap$o";
-            gate = amSap_[OUT_GATE];
+            gate = amSapOutGate_;
             break;
         case TM:
             portName = "TM_Sap$o";
-            gate = tmSap_[OUT_GATE];
+            gate = tmSapOutGate_;
             break;
         default:
             throw cRuntimeError("LtePdcpRrcBase::sendToLowerLayer(): invalid RlcType %d", lteInfo->getRlcType());
@@ -306,7 +306,7 @@ void LtePdcpRrcBase::sendToUpperLayer(cPacket *pkt)
     EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o" << endl;
 
     // Send message
-    send(pkt, dataPort_[OUT_GATE]);
+    send(pkt, dataPortOutGate_);
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
@@ -317,16 +317,16 @@ void LtePdcpRrcBase::sendToUpperLayer(cPacket *pkt)
 void LtePdcpRrcBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        dataPort_[IN_GATE] = gate("DataPort$i");
-        dataPort_[OUT_GATE] = gate("DataPort$o");
-        eutranRrcSap_[IN_GATE] = gate("EUTRAN_RRC_Sap$i");
-        eutranRrcSap_[OUT_GATE] = gate("EUTRAN_RRC_Sap$o");
-        tmSap_[IN_GATE] = gate("TM_Sap$i", 0);
-        tmSap_[OUT_GATE] = gate("TM_Sap$o", 0);
-        umSap_[IN_GATE] = gate("UM_Sap$i", 0);
-        umSap_[OUT_GATE] = gate("UM_Sap$o", 0);
-        amSap_[IN_GATE] = gate("AM_Sap$i", 0);
-        amSap_[OUT_GATE] = gate("AM_Sap$o", 0);
+        dataPortInGate_ = gate("DataPort$i");
+        dataPortOutGate_ = gate("DataPort$o");
+        eutranRrcSapInGate_ = gate("EUTRAN_RRC_Sap$i");
+        eutranRrcSapOutGate_ = gate("EUTRAN_RRC_Sap$o");
+        tmSapInGate_ = gate("TM_Sap$i", 0);
+        tmSapOutGate_ = gate("TM_Sap$o", 0);
+        umSapInGate_ = gate("UM_Sap$i", 0);
+        umSapOutGate_ = gate("UM_Sap$o", 0);
+        amSapInGate_ = gate("AM_Sap$i", 0);
+        amSapOutGate_ = gate("AM_Sap$o", 0);
 
         binder_.reference(this, "binderModule", true);
         headerCompressedSize_ = B(par("headerCompressedSize"));
@@ -366,13 +366,13 @@ void LtePdcpRrcBase::handleMessage(cMessage *msg)
        << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == dataPort_[IN_GATE]) {
+    if (incoming == dataPortInGate_) {
         fromDataPort(pkt);
     }
-    else if (incoming == eutranRrcSap_[IN_GATE]) {
+    else if (incoming == eutranRrcSapInGate_) {
         fromEutranRrcSap(pkt);
     }
-    else if (incoming == tmSap_[IN_GATE]) {
+    else if (incoming == tmSapInGate_) {
         toEutranRrcSap(pkt);
     }
     else {

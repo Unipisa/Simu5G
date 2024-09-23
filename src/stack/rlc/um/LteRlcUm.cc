@@ -124,7 +124,7 @@ void LteRlcUm::sendDefragmented(cPacket *pkt)
     take(pkt);                                                    // Take ownership
 
     EV << "LteRlcUm : Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
-    send(pkt, up_[OUT_GATE]);
+    send(pkt, upOutGate_);
 
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
@@ -136,7 +136,7 @@ void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     pkt->addTagIfAbsent<inet::PacketProtocolTag>()->setProtocol(&LteProtocol::rlc);
     EV << "LteRlcUm : Sending packet " << pktAux->getName() << " to port UM_Sap_down$o\n";
-    send(pktAux, down_[OUT_GATE]);
+    send(pktAux, downOutGate_);
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
@@ -186,7 +186,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
             // the MAC will only be interested in the size of this packet
 
             EV << "LteRlcUm::handleUpperMessage - Sending message " << newDataPkt->getClassName() << " to port UM_Sap_down$o\n";
-            send(pktDup, down_[OUT_GATE]);
+            send(pktDup, downOutGate_);
         }
         else {
             // Queue is full - drop SDU
@@ -266,10 +266,10 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 void LteRlcUm::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        up_[IN_GATE] = gate("UM_Sap_up$i");
-        up_[OUT_GATE] = gate("UM_Sap_up$o");
-        down_[IN_GATE] = gate("UM_Sap_down$i");
-        down_[OUT_GATE] = gate("UM_Sap_down$o");
+        upInGate_ = gate("UM_Sap_up$i");
+        upOutGate_ = gate("UM_Sap_up$o");
+        downInGate_ = gate("UM_Sap_down$i");
+        downOutGate_ = gate("UM_Sap_down$o");
 
         // parameters
         mapAllLcidsToSingleBearer_ = par("mapAllLcidsToSingleBearer");
@@ -285,10 +285,10 @@ void LteRlcUm::handleMessage(cMessage *msg)
     EV << "LteRlcUm : Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == up_[IN_GATE]) {
+    if (incoming == upInGate_) {
         handleUpperMessage(pkt);
     }
-    else if (incoming == down_[IN_GATE]) {
+    else if (incoming == downInGate_) {
         handleLowerMessage(pkt);
     }
 }

@@ -80,10 +80,14 @@ class LteRlcMux : public cSimpleModule
      * Data structures
      */
 
-    cGate *macSap_[2];
-    cGate *tmSap_[2];
-    cGate *umSap_[2];
-    cGate *amSap_[2];
+    cGate *macSapInGate_ = nullptr;
+    cGate *macSapOutGate_ = nullptr;
+    cGate *tmSapInGate_ = nullptr;
+    cGate *tmSapOutGate_ = nullptr;
+    cGate *umSapInGate_ = nullptr;
+    cGate *umSapOutGate_ = nullptr;
+    cGate *amSapInGate_ = nullptr;
+    cGate *amSapOutGate_ = nullptr;
 };
 
 } //namespace

@@ -85,8 +85,10 @@ class LteMacBase : public cSimpleModule
     /*
      * Gates
      */
-    cGate *up_[2];     /// RLC <--> MAC
-    cGate *down_[2];   /// MAC <--> PHY
+    cGate *upInGate_ = nullptr;     /// MAC <-- RLC
+    cGate *upOutGate_ = nullptr;    /// MAC --> RLC
+    cGate *downInGate_ = nullptr;   /// MAC <-- PHY
+    cGate *downOutGate_ = nullptr;  /// MAC --> PHY
 
     /*
      * MAC MIB Params

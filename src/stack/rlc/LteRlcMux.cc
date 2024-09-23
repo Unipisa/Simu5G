@@ -26,7 +26,7 @@ void LteRlcMux::rlc2mac(cPacket *pkt)
     EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port RLC_to_MAC\n";
 
     // Send message
-    send(pkt, macSap_[OUT_GATE]);
+    send(pkt, macSapOutGate_);
 }
 
 /*
@@ -40,15 +40,15 @@ void LteRlcMux::mac2rlc(cPacket *pktAux)
     switch (lteInfo->getRlcType()) {
         case TM:
             EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port TM_Sap$o\n";
-            send(pkt, tmSap_[OUT_GATE]);
+            send(pkt, tmSapOutGate_);
             break;
         case UM:
             EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port UM_Sap$o\n";
-            send(pkt, umSap_[OUT_GATE]);
+            send(pkt, umSapOutGate_);
             break;
         case AM:
             EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port AM_Sap$o\n";
-            send(pkt, amSap_[OUT_GATE]);
+            send(pkt, amSapOutGate_);
             break;
         default:
             throw cRuntimeError("LteRlcMux: wrong traffic type %d", lteInfo->getRlcType());
@@ -61,14 +61,14 @@ void LteRlcMux::mac2rlc(cPacket *pktAux)
 
 void LteRlcMux::initialize()
 {
-    macSap_[IN_GATE] = gate("MAC_to_RLC");
-    macSap_[OUT_GATE] = gate("RLC_to_MAC");
-    tmSap_[IN_GATE] = gate("TM_Sap$i");
-    tmSap_[OUT_GATE] = gate("TM_Sap$o");
-    umSap_[IN_GATE] = gate("UM_Sap$i");
-    umSap_[OUT_GATE] = gate("UM_Sap$o");
-    amSap_[IN_GATE] = gate("AM_Sap$i");
-    amSap_[OUT_GATE] = gate("AM_Sap$o");
+    macSapInGate_ = gate("MAC_to_RLC");
+    macSapOutGate_ = gate("RLC_to_MAC");
+    tmSapInGate_ = gate("TM_Sap$i");
+    tmSapOutGate_ = gate("TM_Sap$o");
+    umSapInGate_ = gate("UM_Sap$i");
+    umSapOutGate_ = gate("UM_Sap$o");
+    amSapInGate_ = gate("AM_Sap$i");
+    amSapOutGate_ = gate("AM_Sap$o");
 }
 
 void LteRlcMux::handleMessage(cMessage *msg)
@@ -78,7 +78,7 @@ void LteRlcMux::handleMessage(cMessage *msg)
         " from port " << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == macSap_[IN_GATE]) {
+    if (incoming == macSapInGate_) {
         mac2rlc(pkt);
     }
     else {

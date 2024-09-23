@@ -58,7 +58,7 @@ void LteMacBase::sendUpperPackets(cPacket *pkt)
 {
     EV << NOW << " LteMacBase::sendUpperPackets, Sending packet " << pkt->getName() << " on port MAC_to_RLC\n";
     // Send message
-    send(pkt, up_[OUT_GATE]);
+    send(pkt, upOutGate_);
     nrToUpper_++;
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
@@ -68,7 +68,7 @@ void LteMacBase::sendLowerPackets(cPacket *pkt)
     EV << NOW << " LteMacBase::sendLowerPackets, Sending packet " << pkt->getName() << " on port MAC_to_PHY\n";
     // Send message
     updateUserTxParam(pkt);
-    send(pkt, down_[OUT_GATE]);
+    send(pkt, downOutGate_);
     nrToLower_++;
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
@@ -334,10 +334,10 @@ void LteMacBase::initialize(int stage)
         networkNode_ = getContainingNode(this);
 
         // Gates initialization
-        up_[IN_GATE] = gate("RLC_to_MAC");
-        up_[OUT_GATE] = gate("MAC_to_RLC");
-        down_[IN_GATE] = gate("PHY_to_MAC");
-        down_[OUT_GATE] = gate("MAC_to_PHY");
+        upInGate_ = gate("RLC_to_MAC");
+        upOutGate_ = gate("MAC_to_RLC");
+        downInGate_ = gate("PHY_to_MAC");
+        downOutGate_ = gate("MAC_to_PHY");
 
         // Create buffers
         queueSize_ = par("queueSize");
@@ -346,7 +346,7 @@ void LteMacBase::initialize(int stage)
         binder_.reference(this, "binderModule", true);
 
         // get the reference to the PHY layer
-        phy_ = check_and_cast<LtePhyBase *>(down_[OUT_GATE]->getPathEndGate()->getOwnerModule());
+        phy_ = check_and_cast<LtePhyBase *>(downOutGate_->getPathEndGate()->getOwnerModule());
 
         // Set the MAC MIB
 
@@ -386,7 +386,7 @@ void LteMacBase::handleMessage(cMessage *msg)
 
     cGate *incoming = pkt->getArrivalGate();
 
-    if (incoming == down_[IN_GATE]) {
+    if (incoming == downInGate_) {
         // message from PHY_to_MAC gate (from lower layer)
         emit(receivedPacketFromLowerLayerSignal_, pkt);
         nrFromLower_++;

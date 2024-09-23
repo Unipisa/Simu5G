@@ -50,8 +50,10 @@ class LteRlcAm : public cSimpleModule
     AmTxBuffers txBuffers_;
     AmRxBuffers rxBuffers_;
 
-    cGate *up_[2];
-    cGate *down_[2];
+    cGate *upInGate_ = nullptr;
+    cGate *upOutGate_ = nullptr;
+    cGate *downInGate_ = nullptr;
+    cGate *downOutGate_ = nullptr;
 
   protected:
 

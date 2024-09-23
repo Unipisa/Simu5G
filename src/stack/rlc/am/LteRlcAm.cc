@@ -92,7 +92,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 
     EV << NOW << " LteRlcAm : Sending packet " << pkt->getName()
        << " to port AM_Sap_up$o\n";
-    send(pkt, up_[OUT_GATE]);
+    send(pkt, upOutGate_);
 }
 
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
@@ -112,7 +112,7 @@ void LteRlcAm::sendFragmented(cPacket *pktAux)
     EV << NOW << " LteRlcAm : Sending packet " << pkt->getName() << " of size "
        << pkt->getByteLength() << "  to port AM_Sap_down$o\n";
 
-    send(pkt, down_[OUT_GATE]);
+    send(pkt, downOutGate_);
 }
 
 void LteRlcAm::handleUpperMessage(cPacket *pktAux)
@@ -234,7 +234,7 @@ void LteRlcAm::indicateNewDataToMac(cPacket *pktAux) {
     newData->copyTags(*pkt);
 
     EV << "LteRlcAm::sendNewDataPkt - Sending message " << newData->getName() << " to port AM_Sap_down$o\n";
-    send(newData, down_[OUT_GATE]);
+    send(newData, downOutGate_);
 }
 
 /*
@@ -243,10 +243,10 @@ void LteRlcAm::indicateNewDataToMac(cPacket *pktAux) {
 
 void LteRlcAm::initialize()
 {
-    up_[IN_GATE] = gate("AM_Sap_up$i");
-    up_[OUT_GATE] = gate("AM_Sap_up$o");
-    down_[IN_GATE] = gate("AM_Sap_down$i");
-    down_[OUT_GATE] = gate("AM_Sap_down$o");
+    upInGate_ = gate("AM_Sap_up$i");
+    upOutGate_ = gate("AM_Sap_up$o");
+    downInGate_ = gate("AM_Sap_down$i");
+    downOutGate_ = gate("AM_Sap_down$o");
 }
 
 void LteRlcAm::handleMessage(cMessage *msg)
@@ -256,11 +256,11 @@ void LteRlcAm::handleMessage(cMessage *msg)
        << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == up_[IN_GATE]) {
+    if (incoming == upInGate_) {
         EV << NOW << " LteRlcAm : calling handleUpperMessage" << endl;
         handleUpperMessage(pkt);
     }
-    else if (incoming == down_[IN_GATE]) {
+    else if (incoming == downInGate_) {
         EV << NOW << " LteRlcAm : calling handleLowerMessage" << endl;
         handleLowerMessage(pkt);
     }

@@ -42,7 +42,8 @@ class LteCompManagerBase : public cSimpleModule
     X2NodeId nodeId_;
 
     // reference to the gates
-    cGate *x2Manager_[2];
+    cGate *x2ManagerInGate_ = nullptr;
+    cGate *x2ManagerOutGate_ = nullptr;
 
     // reference to the MAC layer
     opp_component_ptr<LteMacEnb> mac_;

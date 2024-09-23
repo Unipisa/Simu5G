@@ -91,7 +91,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
             // forward packet to PDCP
             EV << "LteRlcUmD2D::handleLowerMessage - Sending packet " << pkt->getName() << " to port UM_Sap_up$o\n";
-            send(pkt, up_[OUT_GATE]);
+            send(pkt, upOutGate_);
         }
         else { // rx side
             // get the corresponding Rx buffer & call handler

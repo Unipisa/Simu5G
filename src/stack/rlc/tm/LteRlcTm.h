@@ -78,8 +78,10 @@ class LteRlcTm : public cSimpleModule
      * Data structures
      */
 
-    cGate *up_[2];
-    cGate *down_[2];
+    cGate *upInGate_ = nullptr;
+    cGate *upOutGate_ = nullptr;
+    cGate *downInGate_ = nullptr;
+    cGate *downOutGate_ = nullptr;
 
     /*
      * Queue for storing PDUs to be delivered to MAC when LteMacSduRequest is received

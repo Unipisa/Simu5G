@@ -27,12 +27,12 @@ void NRPdcpRrcUe::initialize(int stage)
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
         // initialize gates
-        nrTmSap_[IN_GATE] = gate("TM_Sap$i", 1);
-        nrTmSap_[OUT_GATE] = gate("TM_Sap$o", 1);
-        nrUmSap_[IN_GATE] = gate("UM_Sap$i", 1);
-        nrUmSap_[OUT_GATE] = gate("UM_Sap$o", 1);
-        nrAmSap_[IN_GATE] = gate("AM_Sap$i", 1);
-        nrAmSap_[OUT_GATE] = gate("AM_Sap$o", 1);
+        // nrTmSapInGate_ = gate("TM_Sap$i", 1);
+        nrTmSapOutGate_ = gate("TM_Sap$o", 1);
+        //nrUmSapInGate_ = gate("UM_Sap$i", 1);
+        nrUmSapOutGate_ = gate("UM_Sap$o", 1);
+        //nrAmSapInGate_ = gate("AM_Sap$i", 1);
+        nrAmSapOutGate_ = gate("AM_Sap$o", 1);
     }
 
     if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
@@ -250,7 +250,7 @@ void NRPdcpRrcUe::sendToLowerLayer(Packet *pkt)
         }
 
         // Send message
-        send(pkt, (lteInfo->getRlcType() == UM ? nrUmSap_[OUT_GATE] : nrAmSap_[OUT_GATE]));
+        send(pkt, (lteInfo->getRlcType() == UM ? nrUmSapOutGate_ : nrAmSapOutGate_));
 
         emit(sentPacketToLowerLayerSignal_, pkt);
     }
