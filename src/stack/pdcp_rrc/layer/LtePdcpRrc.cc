@@ -122,24 +122,24 @@ void LtePdcpRrcBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlIn
     if ((strcmp(pkt->getName(), "VoIP")) == 0) {
         lteInfo->setApplication(VOIP);
         lteInfo->setTraffic(CONVERSATIONAL);
-        lteInfo->setRlcType((int)par("conversationalRlc"));
+        lteInfo->setRlcType(conversationalRlc_);
     }
     else if ((strcmp(pkt->getName(), "gaming")) == 0) {
         lteInfo->setApplication(GAMING);
         lteInfo->setTraffic(INTERACTIVE);
-        lteInfo->setRlcType((int)par("interactiveRlc"));
+        lteInfo->setRlcType(interactiveRlc_);
     }
     else if ((strcmp(pkt->getName(), "VoDPacket") == 0)
              || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
     {
         lteInfo->setApplication(VOD);
         lteInfo->setTraffic(STREAMING);
-        lteInfo->setRlcType((int)par("streamingRlc"));
+        lteInfo->setRlcType(streamingRlc_);
     }
     else {
         lteInfo->setApplication(CBR);
         lteInfo->setTraffic(BACKGROUND);
-        lteInfo->setRlcType((int)par("backgroundRlc"));
+        lteInfo->setRlcType(backgroundRlc_);
     }
 
     lteInfo->setDirection(getDirection());
@@ -346,6 +346,11 @@ void LtePdcpRrcBase::initialize(int stage)
         if (NRpacketFlowManager_) {
             EV << "LtePdcpRrcBase::initialize - NRpacketFlowManager present" << endl;
         }
+
+        conversationalRlc_ = aToRlcType(par("conversationalRlc"));
+        interactiveRlc_ = aToRlcType(par("interactiveRlc"));
+        streamingRlc_ = aToRlcType(par("streamingRlc"));
+        backgroundRlc_ = aToRlcType(par("backgroundRlc"));
 
         // TODO WATCH_MAP(gatemap_);
         WATCH(headerCompressedSize_);

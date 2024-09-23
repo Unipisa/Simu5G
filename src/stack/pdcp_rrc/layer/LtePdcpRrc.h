@@ -281,6 +281,11 @@ class LtePdcpRrcBase : public cSimpleModule
     cGate *umSap_[2];
     cGate *amSap_[2];
 
+    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
+
     /**
      * The entities map associates each CID with a PDCP Entity, identified by its ID
      */

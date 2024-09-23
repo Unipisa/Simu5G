@@ -23,10 +23,10 @@ simple LtePdcpRrcBase like ILtePdcpRrc
         string packetFlowManagerModule = default("^.packetFlowManager"); // optional
         string nrPacketFlowManagerModule = default("^.nrPacketFlowManager"); // optional
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
-        int conversationalRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);
-        int streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);
-        int interactiveRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);
-        int backgroundRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default(1);
+        string conversationalRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string interactiveRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string backgroundRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
 
         //# Statistics
         @signal[receivedPacketFromUpperLayer];
