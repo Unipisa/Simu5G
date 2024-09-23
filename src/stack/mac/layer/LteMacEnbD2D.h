@@ -38,10 +38,10 @@ class LteMacEnbD2D : public LteMacEnb
 
     // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
     bool usePreconfiguredTxParams_;
-    UserTxParams *preconfiguredTxParams_;
+    UserTxParams *preconfiguredTxParams_ = nullptr;
 
     // Conflict Graph builder
-    ConflictGraph *conflictGraph_;
+    ConflictGraph *conflictGraph_ = nullptr;
 
     // parameters for conflict graph (needed when frequency reuse is enabled)
     bool reuseD2D_;

@@ -58,7 +58,7 @@ class GtpUser : public cSimpleModule
     // if this module is on BS, this variable includes the ID of the BS
     MacNodeId myMacNodeID;
 
-    inet::NetworkInterface *ie_;
+    inet::NetworkInterface *ie_ = nullptr;
 
     opp_component_ptr<cModule> networkNode_;
 

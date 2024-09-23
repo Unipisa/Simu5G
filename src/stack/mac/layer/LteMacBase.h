@@ -98,7 +98,7 @@ class LteMacBase : public cSimpleModule
     int harqProcesses_;
 
     /// TTI self message
-    cMessage *ttiTick_;
+    cMessage *ttiTick_ = nullptr;
 
     /// TTI for this node
     double ttiPeriod_ = TTI;

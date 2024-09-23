@@ -22,14 +22,14 @@ using namespace omnetpp;
 class MecRequestForegroundApp : public MecAppBase
 {
   protected:
-    cMessage *sendFGRequest;
+    cMessage *sendFGRequest = nullptr;
     double lambda;
 
-    inet::TcpSocket *serviceSocket_;
-    inet::TcpSocket *mp1Socket_;
+    inet::TcpSocket *serviceSocket_ = nullptr;
+    inet::TcpSocket *mp1Socket_ = nullptr;
 
-    HttpBaseMessage *mp1HttpMessage;
-    HttpBaseMessage *serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage = nullptr;
+    HttpBaseMessage *serviceHttpMessage = nullptr;
 
     virtual void handleSelfMessage(cMessage *msg) override;
 

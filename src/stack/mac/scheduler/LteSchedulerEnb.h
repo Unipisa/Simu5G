@@ -97,7 +97,7 @@ class LteSchedulerEnb
     LteMacBufferMap *vbuf_ = nullptr;
 
     // Pointer to uplink virtual buffers (that are in LteMacBase)
-    LteMacBufferMap *bsrbuf_;
+    LteMacBufferMap *bsrbuf_ = nullptr;
 
     // Pointer to Harq Tx Buffers (that are in LteMacBase)
     std::map<double, HarqTxBuffers> *harqTxBuffers_ = nullptr;

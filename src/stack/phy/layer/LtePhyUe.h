@@ -101,7 +101,7 @@ class LtePhyUe : public LtePhyBase
      * when receiving broadcasts and to retrieve physical
      * antenna properties on packet reception
      */
-    DasFilter *das_;
+    DasFilter *das_ = nullptr;
 
     /// Threshold for antenna association
     // TODO: bring it to ned par!

@@ -58,7 +58,7 @@ class LteAmc
     opp_component_ptr<LteMacEnb> mac_;
     opp_component_ptr<Binder> binder_;
     opp_component_ptr<CellInfo> cellInfo_;
-    AmcPilot *pilot_;
+    AmcPilot *pilot_ = nullptr;
     RbAllocationType allocationType_;
     int numBands_;
     MacNodeId nodeId_;

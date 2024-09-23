@@ -27,7 +27,7 @@ class UeStatsCollector;
 class CellUEInfo : public AttributeBase
 {
   protected:
-    UeStatsCollector *ueCollector_;
+    UeStatsCollector *ueCollector_ = nullptr;
     AssociateId associateId_;
     Ecgi ecgi_;
 

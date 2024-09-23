@@ -69,7 +69,7 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     inet::ModuleRefByPar<BackgroundCellChannelModel> bgChannelModel_;
 
     // TTI self message
-    cMessage *ttiTick_;
+    cMessage *ttiTick_ = nullptr;
     double ttiPeriod_;
 
     /*** ALLOCATION MANAGEMENT ***/

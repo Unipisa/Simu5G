@@ -547,9 +547,9 @@ struct EnbInfo
     TxDirectionType txDirection;
     double txAngle;
     MacNodeId id;
-    LtePhyBase *phy;
-    LteMacEnb *mac;
-    LteRealisticChannelModel *realChan;
+    LtePhyBase *phy = nullptr;
+    LteMacEnb *mac = nullptr;
+    LteRealisticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> eNodeB;
     int x2;
 };
@@ -560,9 +560,9 @@ struct UeInfo
     double txPwr;
     MacNodeId id;
     MacNodeId cellId;
-    LteRealisticChannelModel *realChan;
+    LteRealisticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> ue;
-    LtePhyBase *phy;
+    LtePhyBase *phy = nullptr;
 };
 
 /**********************************
@@ -571,7 +571,7 @@ struct UeInfo
 struct BgTrafficManagerInfo
 {
     bool init;         // initialization flag
-    IBackgroundTrafficManager *bgTrafficManager;
+    IBackgroundTrafficManager *bgTrafficManager = nullptr;
     double carrierFrequency;
     double allocatedRbsDl;
     double allocatedRbsUl;
@@ -582,8 +582,8 @@ struct BgTrafficManagerInfo
 struct UeAllocationInfo {
     MacNodeId nodeId;
     MacCellId cellId;
-    LtePhyBase *phy;
-    TrafficGeneratorBase *trafficGen;
+    LtePhyBase *phy = nullptr;
+    TrafficGeneratorBase *trafficGen = nullptr;
     Direction dir;
 };
 

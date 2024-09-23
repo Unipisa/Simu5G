@@ -40,7 +40,7 @@ class MECResponseApp : public MecAppBase
     inet::UdpSocket ueAppSocket_;
     int localUePort_;
 
-    HttpBaseMessage *mp1HttpMessage;
+    HttpBaseMessage *mp1HttpMessage = nullptr;
 
     cMessage *currentRequestfMsg_ = nullptr;
     cMessage *processingTimer_ = nullptr;

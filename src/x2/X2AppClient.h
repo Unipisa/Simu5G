@@ -27,7 +27,7 @@ class SctpAssociation;
 class X2AppClient : public inet::SctpClient
 {
     // reference to the gates
-    cGate *x2ManagerOut_;
+    cGate *x2ManagerOut_ = nullptr;
 
   protected:
 

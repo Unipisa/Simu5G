@@ -124,7 +124,7 @@ class RTVideoStreamingSender : public cSimpleModule
     opp_component_ptr<cModule> ue;
     inet::ModuleRefByPar<inet::IMobility> mobility;
     inet::Coord position;
-    cMessage *mobilityStats_;
+    cMessage *mobilityStats_ = nullptr;
 
     static simsignal_t positionSignalXSignal_;
     static simsignal_t positionSignalYSignal_;

@@ -55,7 +55,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     inet::ModuleRefByPar<Binder> binder_;
 
     //pointer to pisadata
-    PhyPisaData *phyPisaData_;
+    PhyPisaData *phyPisaData_ = nullptr;
 
     /// TTI for this node
     double ttiPeriod_;

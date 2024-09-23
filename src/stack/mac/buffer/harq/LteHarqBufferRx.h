@@ -39,7 +39,7 @@ class LteHarqBufferRx
     opp_component_ptr<Binder> binder_;
 
     /// MAC module reference
-    LteMacBase *macOwner_;
+    LteMacBase *macOwner_ = nullptr;
 
     /// number of contained H-ARQ processes
     unsigned int numHarqProcesses_;
@@ -63,12 +63,12 @@ class LteHarqBufferRx
     static simsignal_t macThroughputSignal_[2];
 
     // reference to the eNB module
-    cModule *nodeB_;
+    cModule *nodeB_ = nullptr;
 
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
     // Only access via methods. This can be nullptr if node is removed from simulation
-    LteMacBase *macUe_;
+    LteMacBase *macUe_ = nullptr;
 
   public:
     LteHarqBufferRx() {}

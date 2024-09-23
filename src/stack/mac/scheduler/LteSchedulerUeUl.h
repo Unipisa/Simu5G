@@ -40,7 +40,7 @@ class LteSchedulerUeUl
     LteMacScheduleList scheduledBytesList_;
 
     // Inner Scheduler - defaults to Standard LCG
-    LcgScheduler *lcgScheduler_;
+    LcgScheduler *lcgScheduler_ = nullptr;
 
     // Carrier frequency handled by this scheduler
     double carrierFrequency_;

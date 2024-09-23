@@ -58,7 +58,7 @@ class MecRTVideoStreamingReceiver : public MecAppBase
     int currentSessionId_ = -1;
 
     double initialPlayoutDelay;
-    cMessage *displayFrame;
+    cMessage *displayFrame = nullptr;
 
     bool firstFrameDisplayed;
     long lastFrameDisplayed_;

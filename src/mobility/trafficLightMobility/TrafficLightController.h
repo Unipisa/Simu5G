@@ -43,7 +43,7 @@ class TrafficLightController : public cSimpleModule
     inet::deg heading_;
 
     cLineFigure *line_ = nullptr;          // draw a line in the GUI representing the length of the queue of cars
-    cRectangleFigure *rect_;               // draw a rectangle in the GUI representing the area of the queue of cars
+    cRectangleFigure *rect_ = nullptr;     // draw a rectangle in the GUI representing the area of the queue of cars
 
     inet::Coord tlPosition_;               // position of the traffic light
     inet::Coord direction_;                // direction of the traffic light

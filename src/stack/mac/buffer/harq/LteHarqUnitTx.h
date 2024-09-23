@@ -66,11 +66,11 @@ class LteHarqUnitTx : noncopyable
     simtime_t txTime_;
 
     // reference to the eNB module
-    cModule *nodeB_;
+    cModule *nodeB_ = nullptr;
 
-    LteMacBase *macOwner_;
+    LteMacBase *macOwner_ = nullptr;
     //used for statistics
-    LteMacBase *dstMac_;
+    LteMacBase *dstMac_ = nullptr;
     //Maximum number of H-ARQ retransmissions
     unsigned int maxHarqRtx_;
 

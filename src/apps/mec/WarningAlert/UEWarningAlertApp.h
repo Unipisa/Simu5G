@@ -79,7 +79,7 @@ class UEWarningAlertApp : public cSimpleModule
     cMessage *selfStart_ = nullptr;
     cMessage *selfStop_ = nullptr;
 
-    cMessage *selfMecAppStart_;
+    cMessage *selfMecAppStart_ = nullptr;
 
     // used to write in a log file
     bool log;

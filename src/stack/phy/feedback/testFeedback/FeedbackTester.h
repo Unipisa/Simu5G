@@ -26,7 +26,7 @@ using namespace omnetpp;
 class FeedbackTester : public cSimpleModule
 {
     simtime_t interval_;
-    cMessage *aperiodic_;
+    cMessage *aperiodic_ = nullptr;
     ModuleRefByPar<LteDlFeedbackGenerator> generator_;
 
   protected:

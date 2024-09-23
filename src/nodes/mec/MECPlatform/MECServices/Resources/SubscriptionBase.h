@@ -48,7 +48,7 @@ class SubscriptionBase
     virtual int getSocketConnId() const;
   protected:
 
-    inet::TcpSocket *socket_;
+    inet::TcpSocket *socket_ = nullptr;
     TimeStamp timestamp_;
 
     std::string baseResLocation_;

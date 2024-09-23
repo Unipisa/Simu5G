@@ -39,14 +39,14 @@ class LocationService : public MecServiceBase2
     LocationResource LocationResource_;
 
     double LocationSubscriptionPeriod_;
-    cMessage *LocationSubscriptionEvent_;
+    cMessage *LocationSubscriptionEvent_ = nullptr;
 
     /*
      * This timer is used to check aperiodic subscriptions, i.e. every period subscription
      * states are checked. For example, in the circle notification subscriptions, the timer is used
      * to check if the UE enters/leaves the circle area.
      */
-    AperiodicSubscriptionTimer *subscriptionTimer_;
+    AperiodicSubscriptionTimer *subscriptionTimer_ = nullptr;
 
   public:
     LocationService();

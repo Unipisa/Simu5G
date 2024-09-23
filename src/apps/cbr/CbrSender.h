@@ -49,7 +49,7 @@ class CbrSender : public cSimpleModule
     // ----------------------------
 
     cMessage *selfSender_ = nullptr;
-    cMessage *initTraffic_;
+    cMessage *initTraffic_ = nullptr;
 
     simtime_t timestamp_;
     int localPort_;

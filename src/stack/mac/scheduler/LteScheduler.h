@@ -68,7 +68,7 @@ class LteScheduler
     opp_component_ptr<Binder> binder_;
 
     /// Associated LteSchedulerEnb (it is the one who creates the LteScheduler)
-    LteSchedulerEnb *eNbScheduler_;
+    LteSchedulerEnb *eNbScheduler_ = nullptr;
 
     /// Link Direction (DL/UL)
     Direction direction_;
@@ -86,7 +86,7 @@ class LteScheduler
     double carrierFrequency_;
 
     //! Set of bands available for this carrier
-    BandLimitVector *bandLimit_;
+    BandLimitVector *bandLimit_ = nullptr;
 
     //! Set of bands available for this carrier for retransmissions (reset on every slot)
     BandLimitVector slotRacBandLimit_;

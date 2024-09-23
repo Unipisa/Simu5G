@@ -61,7 +61,7 @@ class LteDlFeedbackGenerator : public cSimpleModule
     bool usePeriodic_;      /// true if we want to use also periodic feedback
     TxMode currentTxMode_;  /// transmission mode to use in feedback generation
 
-    DasFilter *dasFilter_;  /// reference to das filter
+    DasFilter *dasFilter_ = nullptr;  /// reference to das filter
     opp_component_ptr<CellInfo> cellInfo_; /// reference to cellInfo
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<LtePhyUe> phy_;

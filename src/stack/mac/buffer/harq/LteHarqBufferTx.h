@@ -29,8 +29,8 @@ using namespace omnetpp;
 class LteHarqBufferTx : noncopyable
 {
   protected:
-    LteMacBase *macOwner_;
-    std::vector<LteHarqProcessTx *> *processes_;
+    LteMacBase *macOwner_ = nullptr;
+    std::vector<LteHarqProcessTx *> *processes_ = nullptr;
     unsigned int numProc_;
     unsigned int numEmptyProc_; // @ fb on reset, @ insert
     unsigned char selectedAcid_; // @ insert, @ marksel, @ sendseldn

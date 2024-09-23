@@ -64,7 +64,7 @@ class ExtCell : public cSimpleModule
     BandStatus prevBandStatus_;
 
     // TTI self message
-    cMessage *ttiTick_;
+    cMessage *ttiTick_ = nullptr;
 
     /*** ALLOCATION MANAGEMENT ***/
 

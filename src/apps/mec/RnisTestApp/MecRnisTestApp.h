@@ -44,14 +44,14 @@ class MecRnisTestApp : public MecAppBase
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
-    inet::TcpSocket *serviceSocket_;
-    inet::TcpSocket *mp1Socket_;
+    inet::TcpSocket *serviceSocket_ = nullptr;
+    inet::TcpSocket *mp1Socket_ = nullptr;
 
-    HttpBaseMessage *mp1HttpMessage;
-    HttpBaseMessage *serviceHttpMessage;
+    HttpBaseMessage *mp1HttpMessage = nullptr;
+    HttpBaseMessage *serviceHttpMessage = nullptr;
 
     simtime_t rnisQueryingPeriod_;
-    cMessage *rnisQueryingTimer_;
+    cMessage *rnisQueryingTimer_ = nullptr;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }

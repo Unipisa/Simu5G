@@ -30,7 +30,7 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
     double lambdaMaxTh_;
     double lambdaRatioTh_;
     // Pointer to Pisa data
-    PhyPisaData *phyPisaData_;
+    PhyPisaData *phyPisaData_ = nullptr;
 
     std::vector<double> baseMin_;
 

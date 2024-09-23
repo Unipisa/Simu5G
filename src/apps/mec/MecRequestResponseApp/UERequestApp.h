@@ -61,8 +61,8 @@ class UERequestApp : public cSimpleModule
     };
     cMessage *selfStart_ = nullptr;
     cMessage *selfStop_ = nullptr;
-    cMessage *sendRequest_;
-    cMessage *unBlockingMsg_; //it prevents to stop the send/response pattern if msg gets lost
+    cMessage *sendRequest_ = nullptr;
+    cMessage *unBlockingMsg_ = nullptr; //it prevents to stop the send/response pattern if msg gets lost
 
     // signals for statistics
     static simsignal_t processingTimeSignal_;

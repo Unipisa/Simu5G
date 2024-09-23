@@ -38,7 +38,7 @@ struct mecAppEntry
 {
     int meAppGateIndex;         // map key
     int serviceIndex;           // OMNeT service index
-    cModule *meAppModule;       // for MEC app termination
+    cModule *meAppModule = nullptr;       // for MEC app termination
     inet::L3Address ueAddress;  // for downstream using UDP Socket
     int uePort;
     int ueAppID;                // for identifying the UEApp
@@ -79,12 +79,12 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     //------------------------------------
 
     // other modules
-    cModule *mecHost;
-    cModule *mecPlatform;
-    cModule *virtualisationInfr;
+    cModule *mecHost = nullptr;
+    cModule *mecPlatform = nullptr;
+    cModule *virtualisationInfr = nullptr;
     //------------------------------------
     std::string interfaceTableModule;
-    inet::InterfaceTable *interfaceTable;
+    inet::InterfaceTable *interfaceTable = nullptr;
     inet::Ipv4Address mecAppLocalAddress_;
     inet::Ipv4Address mecAppRemoteAddress_;
     inet::Ipv4Address mp1Address_;

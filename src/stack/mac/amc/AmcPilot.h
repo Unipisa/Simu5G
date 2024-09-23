@@ -34,10 +34,10 @@ class LteAmc;
 class AmcPilot
 {
   protected:
-    Binder *binder_;
+    Binder *binder_ = nullptr;
 
     //! LteAmc owner module
-    LteAmc *amc_;
+    LteAmc *amc_ = nullptr;
 
     //! Pilot Name
     std::string name_;

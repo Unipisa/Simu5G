@@ -109,11 +109,11 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
 
     HttpRequestMessage *currentRequestMessageServed_ = nullptr;
 
-    cMessage *requestService_;
+    cMessage *requestService_ = nullptr;
     double requestServiceTime_;
     cQueue requests_;               // queue that holds incoming requests
 
-    cMessage *subscriptionService_;
+    cMessage *subscriptionService_ = nullptr;
     double subscriptionServiceTime_;
     int subscriptionQueueSize_;
     std::queue<EventNotification *> subscriptionEvents_;          // queue that holds events related to subscriptions

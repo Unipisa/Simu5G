@@ -138,7 +138,7 @@ class DasFilter
      * Class storing the physical properties of
      * each antenna (distance, power, etc...)
      */
-    RemoteAntennaSet *ruSet_;
+    RemoteAntennaSet *ruSet_ = nullptr;
 
     /// Set of antennas that the feedback generator needs to report
     RemoteSet reportingSet_;
@@ -150,7 +150,7 @@ class DasFilter
     opp_component_ptr<Binder> binder_;
 
     /// Pointer to the Das filter of the master (used on UEs bound to eNBs)
-    DasFilter *das_;
+    DasFilter *das_ = nullptr;
 
     /// Pointer to the Nic
     opp_component_ptr<LtePhyBase> ltePhy_;

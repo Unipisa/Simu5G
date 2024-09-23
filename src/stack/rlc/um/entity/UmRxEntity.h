@@ -114,7 +114,7 @@ class UmRxEntity : public cSimpleModule
      * Flow-related info.
      * Initialized with the control info of the first packet of the flow
      */
-    FlowControlInfo *flowControlInfo_;
+    FlowControlInfo *flowControlInfo_ = nullptr;
 
     // The PDU enqueue buffer.
     cArray pduBuffer_;

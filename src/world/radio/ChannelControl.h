@@ -36,8 +36,8 @@ class AirFrame;
  * interference distance).
  */
 struct IChannelControl::RadioEntry {
-    cModule *radioModule;  // the module that registered this radio interface
-    cGate *radioInGate;  // gate on host module used to receive airframes
+    cModule *radioModule = nullptr;  // the module that registered this radio interface
+    cGate *radioInGate = nullptr;  // gate on host module used to receive airframes
     int channel;
     inet::Coord pos; // cached radio position
 

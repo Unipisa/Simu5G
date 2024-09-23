@@ -25,7 +25,7 @@ namespace simu5g {
 class RNICellInfo : public AttributeBase
 {
   protected:
-    BaseStationStatsCollector *collector_; // it has the cellCollector and the map <Ipue -> uecollector>
+    BaseStationStatsCollector *collector_ = nullptr; // it has the cellCollector and the map <Ipue -> uecollector>
     Ecgi ecgi_;
 
     nlohmann::ordered_json toJsonCell() const; // should this be private?

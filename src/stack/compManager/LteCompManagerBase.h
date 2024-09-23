@@ -55,8 +55,8 @@ class LteCompManagerBase : public cSimpleModule
     double coordinationPeriod_;
 
     /// Self messages
-    cMessage *compClientTick_;
-    cMessage *compCoordinatorTick_;
+    cMessage *compClientTick_ = nullptr;
+    cMessage *compCoordinatorTick_ = nullptr;
 
     // Comp Node Type specification (client, client and coordinator, coordinator only)
     CompNodeType nodeType_;

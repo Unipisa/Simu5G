@@ -36,7 +36,7 @@ class LteHarqProcessTx : noncopyable
   protected:
 
     /// reference to mac module, used to handle errors
-    LteMacBase *macOwner_;
+    LteMacBase *macOwner_ = nullptr;
 
     /// contained units vector
     UnitVector units_;

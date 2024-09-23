@@ -86,7 +86,7 @@ class VoDUDPServer : public cSimpleModule
     };
     unsigned int nrec_;
 
-    tracerec *trace_;
+    tracerec *trace_ = nullptr;
 
     std::vector<svcPacket> svcTrace_;
 

@@ -48,7 +48,7 @@ class CircleNotificationSubscription : public SubscriptionBase
 
   protected:
 
-    Binder *binder; // used to retrieve NodeId - Ipv4Address mapping
+    Binder *binder = nullptr; // used to retrieve NodeId - Ipv4Address mapping
     simtime_t lastNotification;
     bool firstNotificationSent;
 

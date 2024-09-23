@@ -109,10 +109,10 @@ class TTimer : public cObject
     unsigned int timerId_ = 0;
 
     //! Object for handling the event.
-    cSimpleModule *module_;
+    cSimpleModule *module_ = nullptr;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
-    TTimerMsg *intr_;
+    TTimerMsg *intr_ = nullptr;
 
     //! True if the timer has already been started.
     bool busy_ = false;
@@ -211,7 +211,7 @@ class TMultiTimer : public cObject
     opp_component_ptr<cSimpleModule> module_;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
-    TMultiTimerMsg *intr_;
+    TMultiTimerMsg *intr_ = nullptr;
 
     //! True if there is at least one scheduled event.
     bool busy_ = false;

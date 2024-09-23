@@ -41,9 +41,9 @@ struct mecAppMapEntry
     std::string mecAppName;
     std::string mecAppInstanceId;
     int mecUeAppID;         //ID
-    cModule *mecHost; // reference to the mecHost where the mec app has been deployed
-    cModule *vim;       // for VirtualisationInfrastructureManager methods
-    cModule *mecpm;     // for mecPlatformManager methods
+    cModule *mecHost = nullptr; // reference to the mecHost where the mec app has been deployed
+    cModule *vim = nullptr;       // for VirtualisationInfrastructureManager methods
+    cModule *mecpm = nullptr;     // for mecPlatformManager methods
 
     std::string ueSymbolicAddress;
     inet::L3Address ueAddress;  //for downstream using UDP Socket

@@ -76,7 +76,7 @@ class IP2Nic : public cSimpleModule
 
     // for each connection exploiting Split Bearer,
     // keep track of the number of packets sent down to the PDCP
-    SplitBearersTable *sbTable_;
+    SplitBearersTable *sbTable_ = nullptr;
 
   protected:
     /**
@@ -129,11 +129,11 @@ class IP2Nic : public cSimpleModule
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
 
-    cGate *stackGateOut_;       // gate connecting IP2Nic module to cellular stack
-    cGate *ipGateOut_;          // gate connecting IP2Nic module to network layer
+    cGate *stackGateOut_ = nullptr;       // gate connecting IP2Nic module to cellular stack
+    cGate *ipGateOut_ = nullptr;          // gate connecting IP2Nic module to network layer
 
     // corresponding entry for our interface
-    inet::NetworkInterface *networkIf;
+    inet::NetworkInterface *networkIf = nullptr;
 
   public:
 

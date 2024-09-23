@@ -24,7 +24,7 @@ class SelectionPolicyBase
     friend class MecOrchestrator;
 
   protected:
-    MecOrchestrator *mecOrchestrator_;
+    MecOrchestrator *mecOrchestrator_ = nullptr;
     virtual cModule *findBestMecHost(const ApplicationDescriptor&) = 0;
 
   public:

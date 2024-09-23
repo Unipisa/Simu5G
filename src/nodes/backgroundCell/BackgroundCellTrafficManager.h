@@ -33,7 +33,7 @@ class BackgroundCellTrafficManager : public BackgroundTrafficManagerBase
     inet::ModuleRefByPar<BackgroundScheduler> bgScheduler_;
 
     // reference to class AMC for this cell
-    BackgroundCellAmc *bgAmc_;
+    BackgroundCellAmc *bgAmc_ = nullptr;
 
   protected:
     virtual double getTtiPeriod();

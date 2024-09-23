@@ -26,7 +26,7 @@ using namespace omnetpp;
 class X2AppServer : public inet::SctpServer
 {
     // reference to the gate
-    cGate *x2ManagerIn_;
+    cGate *x2ManagerIn_ = nullptr;
 
   protected:
     virtual void initialize(int stage) override;

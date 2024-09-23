@@ -53,7 +53,7 @@ class D2DModeSelectionBase : public cSimpleModule
     double modeSelectionPeriod_;
 
     // Self message
-    cMessage *modeSelectionTick_;
+    cMessage *modeSelectionTick_ = nullptr;
 
     // run the mode selection algorithm. To be implemented by derived classes
     // it must build a switch list (see above)
