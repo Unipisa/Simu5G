@@ -59,9 +59,6 @@ class UmTxEntity : public cSimpleModule
 
     FragmentInfo *fragmentInfo = nullptr;
 
-  protected:
-    std::deque<inet::Packet *> *fragments = nullptr;
-
   public:
 
     ~UmTxEntity() override

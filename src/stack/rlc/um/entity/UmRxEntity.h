@@ -95,9 +95,6 @@ class UmRxEntity : public cSimpleModule
     static simsignal_t rlcThroughputD2DSignal_;
     static simsignal_t rlcPduThroughputD2DSignal_;
 
-    // buffered fragments
-    std::deque<inet::Packet *> *fragments = nullptr;
-
   private:
 
     inet::ModuleRefByPar<Binder> binder_;

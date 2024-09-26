@@ -83,7 +83,6 @@ void LteDlFeedbackGenerator::initialize(int stage)
 
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe taken" << endl;
-        dasFilter_ = phy_->getDasFilter();
         EV << "DLFeedbackGenerator Stage " << stage << " nodeid: " << nodeId_
            << " phyUe used" << endl;
         // TODO: remove this parameter
