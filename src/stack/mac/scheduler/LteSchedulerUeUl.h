@@ -15,6 +15,7 @@
 #include "common/LteCommon.h"
 
 #include "stack/mac/layer/LteMacUe.h"
+#include "stack/mac/scheduler/LcgScheduler.h"
 
 namespace simu5g {
 
@@ -40,7 +41,7 @@ class LteSchedulerUeUl
     LteMacScheduleList scheduledBytesList_;
 
     // Inner Scheduler - defaults to Standard LCG
-    LcgScheduler *lcgScheduler_ = nullptr;
+    LcgScheduler lcgScheduler_;
 
     // Carrier frequency handled by this scheduler
     double carrierFrequency_;
@@ -65,9 +66,13 @@ class LteSchedulerUeUl
     /**
      * Copy constructor and operator=
      */
-    LteSchedulerUeUl(const LteSchedulerUeUl& other)
+    LteSchedulerUeUl(const LteSchedulerUeUl& other) :
+        mac_(other.mac_),
+        scheduleList_(other.scheduleList_),
+        scheduledBytesList_(other.scheduledBytesList_),
+        lcgScheduler_(other.lcgScheduler_),
+        carrierFrequency_(other.carrierFrequency_)
     {
-        operator=(other);
     }
 
     LteSchedulerUeUl& operator=(const LteSchedulerUeUl& other);

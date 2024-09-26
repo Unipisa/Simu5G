@@ -20,7 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency) : mac_(mac), lcgScheduler_(new LcgScheduler(mac)), carrierFrequency_(carrierFrequency)
+LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency) : mac_(mac), lcgScheduler_(mac), carrierFrequency_(carrierFrequency)
 {
 }
 
@@ -34,14 +34,13 @@ LteSchedulerUeUl& LteSchedulerUeUl::operator=(const LteSchedulerUeUl& other)
     scheduledBytesList_ = other.scheduledBytesList_;
     carrierFrequency_ = other.carrierFrequency_;
 
-    lcgScheduler_ = new LcgScheduler(*(other.lcgScheduler_));
+    lcgScheduler_ = other.lcgScheduler_;
 
     return *this;
 }
 
 LteSchedulerUeUl::~LteSchedulerUeUl()
 {
-    delete lcgScheduler_;
 }
 
 LteMacScheduleList *LteSchedulerUeUl::schedule()
@@ -81,10 +80,10 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
 
         // invoke the schedule() method of the attached LCP scheduler in order to schedule
         // the connections provided
-        std::map<MacCid, unsigned int>& sdus = lcgScheduler_->schedule(availableBytes, dir);
+        std::map<MacCid, unsigned int>& sdus = lcgScheduler_.schedule(availableBytes, dir);
 
         // get the amount of bytes scheduled for each connection
-        std::map<MacCid, unsigned int>& bytes = lcgScheduler_->getScheduledBytesList();
+        std::map<MacCid, unsigned int>& bytes = lcgScheduler_.getScheduledBytesList();
 
         // TODO check if this jump is ok
         if (sdus.empty())

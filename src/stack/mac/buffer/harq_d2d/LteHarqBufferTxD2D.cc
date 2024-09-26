@@ -21,10 +21,10 @@ LteHarqBufferTxD2D::LteHarqBufferTxD2D(Binder *binder, unsigned int numProc, Lte
     macOwner_ = owner;
     nodeId_ = dstMac->getMacNodeId();
     selectedAcid_ = HARQ_NONE;
-    processes_ = new std::vector<LteHarqProcessTx *>(numProc);
-    numEmptyProc_ = numProc;
+    processes_.resize(numProc_, nullptr);
+    numEmptyProc_ = numProc_;
     for (unsigned int i = 0; i < numProc_; i++) {
-        (*processes_)[i] = new LteHarqProcessTxD2D(binder, i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
+        processes_[i] = new LteHarqProcessTxD2D(binder, i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
     }
 }
 
@@ -37,10 +37,10 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
     Codeword cw = fbpkt->getCw();
     unsigned char acid = fbpkt->getAcid();
     long fbPduId = fbpkt->getFbMacPduId(); // id of the pdu that should receive this fb
-    long unitPduId = (*processes_)[acid]->getPduId(cw);
+    long unitPduId = processes_[acid]->getPduId(cw);
 
     // After handover or a D2D mode switch, the process may have been dropped. The received feedback must be ignored.
-    if ((*processes_)[acid]->isDropped()) {
+    if (processes_[acid]->isDropped()) {
         EV << "H-ARQ TX buffer: received PDU for acid " << (int)acid << ". The corresponding unit has been "
                                                                         " reset after handover or a D2D mode switch (the contained PDU was dropped). Ignore feedback." << endl;
         delete fbpkt;
@@ -56,7 +56,7 @@ void LteHarqBufferTxD2D::receiveHarqFeedback(LteHarqFeedback *fbpkt)
         // TODO: comment endsim after tests
         throw cRuntimeError("H-ARQ TX: Feedback is not for the PDU in this unit; maybe the addressed one was dropped.");
     }
-    bool reset = (*processes_)[acid]->pduFeedback(harqResult, cw);
+    bool reset = processes_[acid]->pduFeedback(harqResult, cw);
     if (reset) {
         numEmptyProc_++;
     }

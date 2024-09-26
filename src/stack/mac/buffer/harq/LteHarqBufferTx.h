@@ -30,7 +30,7 @@ class LteHarqBufferTx : noncopyable
 {
   protected:
     LteMacBase *macOwner_ = nullptr;
-    std::vector<LteHarqProcessTx *> *processes_ = nullptr;
+    std::vector<LteHarqProcessTx *> processes_;
     unsigned int numProc_;
     unsigned int numEmptyProc_; // @ fb on reset, @ insert
     unsigned char selectedAcid_; // @ insert, @ marksel, @ sendseldn
@@ -179,7 +179,7 @@ class LteHarqBufferTx : noncopyable
 
     BufferStatus getBufferStatus();
 
-    std::vector<LteHarqProcessTx *> *getHarqProcesses() { return processes_; }
+    std::vector<LteHarqProcessTx *> *getHarqProcesses() { return &processes_; }
     unsigned int getNumProcesses() { return numProc_; }
 
     /**
