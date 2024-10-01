@@ -130,7 +130,7 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
      */
 
     LogicalCid mylcid;
-    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF) {
+    if ((mylcid = ht_.find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF) {
         // LCID not found
 
         // assign a new LCID to the connection
@@ -138,7 +138,7 @@ void NRPdcpRrcUe::fromDataPort(cPacket *pktAux)
 
         EV << "NRPdcpRrcUe : Connection not found, new CID created with LCID " << mylcid << "\n";
 
-        ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+        ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
     }
 
     // assign LCID

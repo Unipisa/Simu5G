@@ -40,7 +40,6 @@ simsignal_t LtePdcpRrcBase::sentPacketToLowerLayerSignal_ = registerSignal("sent
 
 LtePdcpRrcBase::~LtePdcpRrcBase()
 {
-    delete ht_;
 }
 
 bool LtePdcpRrcBase::isCompressionEnabled()
@@ -168,13 +167,13 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
 
     // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
     LogicalCid mylcid;
-    if ((mylcid = ht_->find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService())) == 0xFFFF) {
+    if ((mylcid = ht_.find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService())) == 0xFFFF) {
         // LCID not found
         mylcid = lcid_++;
 
         EV << "LteRrc : Connection not found, new CID created with LCID " << mylcid << "\n";
 
-        ht_->create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), mylcid);
+        ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), mylcid);
     }
 
     // assign LCID
