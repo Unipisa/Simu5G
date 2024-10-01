@@ -256,26 +256,22 @@ void LtePdcpRrcBase::sendToLowerLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
-    std::string portName;
     cGate *gate;
     switch (lteInfo->getRlcType()) {
         case UM:
-            portName = "UM_Sap$o";
             gate = umSapOutGate_;
             break;
         case AM:
-            portName = "AM_Sap$o";
             gate = amSapOutGate_;
             break;
         case TM:
-            portName = "TM_Sap$o";
             gate = tmSapOutGate_;
             break;
         default:
             throw cRuntimeError("LtePdcpRrcBase::sendToLowerLayer(): invalid RlcType %d", lteInfo->getRlcType());
     }
 
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << portName << endl;
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << gate->getFullName() << endl;
 
     /*
      * @author Alessandro Noferi
