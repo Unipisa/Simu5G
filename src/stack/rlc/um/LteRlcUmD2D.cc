@@ -44,7 +44,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 
         if (lteInfo != nullptr) {
             // store control info for this flow
-            txEnt->setFlowControlInfo(lteInfo->dup());
+            txEnt->setFlowControlInfo(lteInfo.get());
             d2dPeer = lteInfo->getD2dRxPeerId();
         }
 

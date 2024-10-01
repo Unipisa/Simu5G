@@ -50,7 +50,7 @@ class UmRxEntity : public cSimpleModule
      */
     void enque(cPacket *pkt);
 
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo; }
+    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
     FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // returns true if this entity is for a D2D_MULTI connection

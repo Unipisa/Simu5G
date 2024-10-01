@@ -62,7 +62,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 
         if (lteInfo != nullptr) {
             // store control info for this flow
-            txEnt->setFlowControlInfo(lteInfo->dup());
+            txEnt->setFlowControlInfo(lteInfo.get());
         }
 
         EV << "LteRlcUm : Added new UmTxEntity: " << txEnt->getId() <<
@@ -102,7 +102,7 @@ UmRxEntity *LteRlcUm::getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         rxEntities_[cid] = rxEnt;    // Add to rx_entities map
 
         // store control info for this flow
-        rxEnt->setFlowControlInfo(lteInfo->dup());
+        rxEnt->setFlowControlInfo(lteInfo.get());
 
         EV << "LteRlcUm : Added new UmRxEntity: " << rxEnt->getId() <<
             " for node: " << nodeId << " for Lcid: " << lcid << "\n";

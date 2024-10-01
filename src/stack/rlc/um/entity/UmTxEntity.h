@@ -82,7 +82,7 @@ class UmTxEntity : public cSimpleModule
      */
     void rlcPduMake(int pduSize);
 
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo; }
+    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
     FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
 
     // force the sequence number to assume the sno passed as an argument
