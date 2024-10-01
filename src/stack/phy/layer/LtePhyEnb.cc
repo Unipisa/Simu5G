@@ -411,8 +411,6 @@ LteFeedbackComputation *LtePhyEnb::getFeedbackComputationFromName(std::string na
 
 void LtePhyEnb::initializeFeedbackComputation()
 {
-    lteFeedbackComputation_ = nullptr;
-
     const char *name = "REAL";
 
     double targetBler = par("targetBler");
