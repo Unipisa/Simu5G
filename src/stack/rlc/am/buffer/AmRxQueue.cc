@@ -712,6 +712,8 @@ AmRxQueue::~AmRxQueue()
         delete p;
     }
     pendingPduBuffer_.clear();
+
+    delete flowControlInfo_;
 }
 
 } //namespace

@@ -73,6 +73,9 @@ AmTxQueue::~AmTxQueue()
             delete pktPdu;
         }
     }
+
+    delete lteInfo_;
+    delete currentSdu_;
 }
 
 void AmTxQueue::enque(Packet *pkt)

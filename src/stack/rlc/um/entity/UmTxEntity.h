@@ -63,6 +63,7 @@ class UmTxEntity : public cSimpleModule
 
     ~UmTxEntity() override
     {
+        delete fragmentInfo;
         delete flowControlInfo_;
     }
 

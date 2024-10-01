@@ -29,6 +29,7 @@ simsignal_t LtePhyUe::servingCellSignal_ = registerSignal("servingCell");
 LtePhyUe::~LtePhyUe()
 {
     cancelAndDelete(handoverStarter_);
+    cancelAndDelete(handoverTrigger_);
     delete das_;
 }
 
