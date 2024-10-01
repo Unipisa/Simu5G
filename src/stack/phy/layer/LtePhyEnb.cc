@@ -27,14 +27,8 @@ using namespace inet;
 LtePhyEnb::~LtePhyEnb()
 {
     cancelAndDelete(bdcStarter_);
-    if (lteFeedbackComputation_) {
-        delete lteFeedbackComputation_;
-        lteFeedbackComputation_ = nullptr;
-    }
-    if (das_) {
-        delete das_;
-        das_ = nullptr;
-    }
+    delete lteFeedbackComputation_;
+    delete das_;
 }
 
 DasFilter *LtePhyEnb::getDasFilter()

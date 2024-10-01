@@ -57,11 +57,7 @@ UmRxEntity::UmRxEntity() :
 UmRxEntity::~UmRxEntity()
 {
     Enter_Method("~UmRxEntity");
-    if (buffered_.pkt != nullptr) {
-        delete buffered_.pkt;
-        buffered_.pkt = nullptr;
-    }
-
+    delete buffered_.pkt;
     delete flowControlInfo_;
 }
 
