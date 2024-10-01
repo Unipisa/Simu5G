@@ -55,10 +55,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
 
     ~LteSchedulingGrant() override
     {
-        if (userTxParams != nullptr) {
-            delete userTxParams;
-            userTxParams = nullptr;
-        }
+        delete userTxParams;
     }
 
     LteSchedulingGrant(const LteSchedulingGrant& other) : LteSchedulingGrant_Base(other)
