@@ -27,8 +27,7 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
   private:
     void copy(const LteSchedulingGrant& other) {
         if (other.userTxParams != nullptr) {
-            const UserTxParams *txParams = check_and_cast<const UserTxParams *>(other.userTxParams);
-            userTxParams = txParams->dup();
+            userTxParams = other.userTxParams->dup();
         }
         else {
             userTxParams = nullptr;
