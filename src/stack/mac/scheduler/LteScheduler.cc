@@ -35,11 +35,7 @@ void LteScheduler::initializeBandLimit()
 
     // initialize band limits to be used on each slot for retransmissions
     // and grant requests
-    for (auto& bandLimitElem : *bandLimit_) {
-        BandLimit elem;
-        elem.band_ = bandLimitElem.band_;
-        elem.limit_ = bandLimitElem.limit_;
-
+    for (const auto& elem : *bandLimit_) {
         slotRacBandLimit_.push_back(elem);
         slotRtxBandLimit_.push_back(elem);
         slotReqGrantBandLimit_.push_back(elem);
