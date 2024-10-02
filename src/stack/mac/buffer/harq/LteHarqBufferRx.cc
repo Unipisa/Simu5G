@@ -26,11 +26,10 @@ simsignal_t LteHarqBufferRx::macCellThroughputSignal_[2] = { cComponent::registe
 simsignal_t LteHarqBufferRx::macDelaySignal_[2] = { cComponent::registerSignal("macDelayDl"), cComponent::registerSignal("macDelayUl") };
 simsignal_t LteHarqBufferRx::macThroughputSignal_[2] = { cComponent::registerSignal("macThroughputDl"), cComponent::registerSignal("macThroughputUl") };
 
-LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder,
-        MacNodeId srcId) : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), isMulticast_(false)
+LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId)
+    : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), processes_(num, nullptr), isMulticast_(false)
 {
     initMacUe();
-    processes_.resize(numHarqProcesses_);
 
     for (unsigned int i = 0; i < numHarqProcesses_; i++) {
         processes_[i] = new LteHarqProcessRx(i, macOwner_, binder);
@@ -45,6 +44,11 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
         nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
         dir = DL;
     }
+}
+
+LteHarqBufferRx::LteHarqBufferRx(Binder *binder, LteMacBase *owner, unsigned int num, MacNodeId srcId)
+    : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), processes_(num, nullptr), isMulticast_(false)
+{
 }
 
 void LteHarqBufferRx::insertPdu(Codeword cw, inet::Packet *pkt)

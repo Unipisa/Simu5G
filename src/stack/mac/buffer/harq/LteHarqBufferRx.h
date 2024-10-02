@@ -39,7 +39,7 @@ class LteHarqBufferRx
     opp_component_ptr<Binder> binder_;
 
     /// MAC module reference
-    LteMacBase *macOwner_ = nullptr;
+    opp_component_ptr<LteMacBase> macOwner_;
 
     /// number of contained H-ARQ processes
     unsigned int numHarqProcesses_;
@@ -68,10 +68,12 @@ class LteHarqBufferRx
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).
     // Only access via methods. This can be nullptr if node is removed from simulation
-    LteMacBase *macUe_ = nullptr;
+    opp_component_ptr<LteMacBase> macUe_;
+
+  protected:
+    LteHarqBufferRx(Binder *binder, LteMacBase *owner, unsigned int num, MacNodeId srcId);
 
   public:
-    LteHarqBufferRx() {}
     LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId);
 
     /**

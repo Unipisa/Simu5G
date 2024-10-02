@@ -27,13 +27,9 @@ simsignal_t LteHarqBufferRxD2D::macDelayD2D_ = cComponent::registerSignal("macDe
 simsignal_t LteHarqBufferRxD2D::macCellThroughputD2D_ = cComponent::registerSignal("macCellThroughputD2D");
 
 LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast)
+    : LteHarqBufferRx(binder, owner, num, srcId)
 {
-    macOwner_ = owner;
-    srcId_ = srcId;
     initMacUe();
-    numHarqProcesses_ = num;
-    processes_.resize(numHarqProcesses_);
-    totalRcvdBytes_ = 0;
     isMulticast_ = isMulticast;
 
     for (unsigned int i = 0; i < numHarqProcesses_; i++) {
