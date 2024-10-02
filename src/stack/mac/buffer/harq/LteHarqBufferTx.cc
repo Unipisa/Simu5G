@@ -15,12 +15,17 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteHarqBufferTx::LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac) : macOwner_(owner), numProc_(numProc), numEmptyProc_(numProc), selectedAcid_(HARQ_NONE), nodeId_(dstMac->getMacNodeId())
+LteHarqBufferTx::LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner, LteMacBase *dstMac)
+    : macOwner_(owner), processes_(numProc, nullptr), numProc_(numProc), numEmptyProc_(numProc), selectedAcid_(HARQ_NONE), nodeId_(dstMac->getMacNodeId())
 {
-    processes_.resize(numProc_, nullptr);
     for (unsigned int i = 0; i < numProc_; i++) {
         processes_[i] = new LteHarqProcessTx(binder, i, MAX_CODEWORDS, numProc_, macOwner_, dstMac);
     }
+}
+
+LteHarqBufferTx::LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner)
+    : macOwner_(owner), processes_(numProc, nullptr), numProc_(numProc), numEmptyProc_(numProc), selectedAcid_(HARQ_NONE), nodeId_((MacNodeId)-1)
+{
 }
 
 UnitList LteHarqBufferTx::firstReadyForRtx()

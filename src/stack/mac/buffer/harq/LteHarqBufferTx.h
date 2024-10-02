@@ -37,13 +37,17 @@ class LteHarqBufferTx : noncopyable
     unsigned char selectedAcid_; // @ insert, @ marksel, @ sendseldn
     MacNodeId nodeId_; // UE nodeId for which this buffer has been created
 
-  public:
-
-    /*
-     * Default Constructor
+  protected:
+    /**
+     * Protected Base Constructor.
+     *
+     * @param binder Binder module.
+     * @param numProc number of H-ARQ processes in the buffer.
+     * @param owner simple module instantiating an H-ARQ TX buffer
      */
-    LteHarqBufferTx() {}
+    LteHarqBufferTx(Binder *binder, unsigned int numProc, LteMacBase *owner);
 
+  public:
     /**
      * Constructor.
      *
