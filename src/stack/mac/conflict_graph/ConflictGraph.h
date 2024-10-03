@@ -79,7 +79,7 @@ class ConflictGraph
     opp_component_ptr<Binder> binder_;
 
     // Reference to the MAC layer
-    LteMacEnbD2D *macEnb_ = nullptr;
+    opp_component_ptr<LteMacEnbD2D> macEnb_;
 
     // Reference to the CellInfo
     opp_component_ptr<CellInfo> cellInfo_;

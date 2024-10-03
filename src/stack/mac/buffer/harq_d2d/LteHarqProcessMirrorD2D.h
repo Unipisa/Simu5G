@@ -37,7 +37,7 @@ class LteHarqProcessMirrorD2D
     unsigned char maxTransmissions_;
 
     // reference to the MAC module
-    LteMacEnb *macOwner_ = nullptr;
+    opp_component_ptr<LteMacEnb> macOwner_;
 
   public:
 

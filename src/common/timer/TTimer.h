@@ -109,7 +109,7 @@ class TTimer : public cObject
     unsigned int timerId_ = 0;
 
     //! Object for handling the event.
-    cSimpleModule *module_ = nullptr;
+    opp_component_ptr<cSimpleModule> module_;
 
     //! Used for scheduling an event into the Omnet++ event scheduler
     TTimerMsg *intr_ = nullptr;

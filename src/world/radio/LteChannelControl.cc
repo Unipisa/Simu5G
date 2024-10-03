@@ -78,7 +78,7 @@ void LteChannelControl::sendToChannel(RadioRef srcRadio, AirFrame *airFrame)
     for (auto r : neighbors) {
         coreEV << "sending message to radio\n";
         simtime_t delay = 0.0;
-        check_and_cast<cSimpleModule *>(srcRadio->radioModule)->sendDirect(airFrame->dup(), delay, airFrame->getDuration(), r->radioInGate);
+        check_and_cast<cSimpleModule *>(srcRadio->radioModule.get())->sendDirect(airFrame->dup(), delay, airFrame->getDuration(), r->radioInGate);
     }
 
     // The original frame can be deleted

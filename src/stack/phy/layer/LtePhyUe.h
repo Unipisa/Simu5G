@@ -36,7 +36,7 @@ class LtePhyUe : public LtePhyBase
     MacNodeId masterId_ = NODEID_NONE;
 
     /** Reference to master node's mobility module */
-    IMobility *masterMobility_ = nullptr;
+    opp_component_ptr<IMobility> masterMobility_;
 
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;

@@ -13,6 +13,7 @@
 #define _LTE_LTEHARQPROCESSTX_H_
 
 #include "stack/mac/buffer/harq/LteHarqUnitTx.h"
+#include "stack/mac/layer/LteMacBase.h"
 
 namespace simu5g {
 
@@ -36,7 +37,7 @@ class LteHarqProcessTx : noncopyable
   protected:
 
     /// reference to mac module, used to handle errors
-    LteMacBase *macOwner_ = nullptr;
+    opp_component_ptr<LteMacBase> macOwner_;
 
     /// contained units vector
     UnitVector units_;

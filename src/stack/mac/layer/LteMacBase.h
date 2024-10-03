@@ -106,7 +106,7 @@ class LteMacBase : public cSimpleModule
     /// MacNodeId
     MacNodeId nodeId_;
 
-    cModule *networkNode_ = nullptr;
+    opp_component_ptr<cModule> networkNode_;
 
     /// MacCellId
     MacCellId cellId_;

@@ -34,9 +34,9 @@ class AirFrame;
 class ChannelAccess : public cSimpleModule, public cListener
 {
   protected:
-    IChannelControl *cc = nullptr;  // Pointer to the ChannelControl module
+    opp_component_ptr<IChannelControl> cc = nullptr;  // Pointer to the ChannelControl module
     IChannelControl::RadioRef myRadioRef = nullptr;  // Identifies this radio in the ChannelControl module
-    cModule *hostModule = nullptr;    // the host that contains this radio model
+    opp_component_ptr<cModule> hostModule;    // the host that contains this radio model
     inet::Coord radioPos;  // the physical position of the radio (derived from display string or from mobility models)
     bool positionUpdateArrived;
 
@@ -64,7 +64,7 @@ class ChannelAccess : public cSimpleModule, public cListener
     /** Sends a message to all radios in range */
     virtual void sendToChannel(AirFrame *msg);
 
-    virtual cPar& getChannelControlPar(const char *parName) { return dynamic_cast<cModule *>(cc)->par(parName); }
+    virtual cPar& getChannelControlPar(const char *parName) { return check_and_cast<cModule *>(cc.get())->par(parName); }
     const inet::Coord& getRadioPosition() const { return radioPos; }
     cModule *getHostModule() const { return hostModule; }
 

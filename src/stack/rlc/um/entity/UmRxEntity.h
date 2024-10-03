@@ -100,7 +100,7 @@ class UmRxEntity : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
 
     // reference to eNB for statistic purpose
-    cModule *nodeB_ = nullptr;
+    opp_component_ptr<cModule> nodeB_;
 
     // Node id of the owner module
     MacNodeId ownerNodeId_;

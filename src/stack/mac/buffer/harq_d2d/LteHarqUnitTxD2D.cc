@@ -27,8 +27,8 @@ simsignal_t LteHarqUnitTxD2D::harqErrorRateD2D_4Signal_ = cComponent::registerSi
 LteHarqUnitTxD2D::LteHarqUnitTxD2D(Binder *binder, unsigned char acid, Codeword cw, LteMacBase *macOwner, LteMacBase *dstMac)
     : LteHarqUnitTx(binder, acid, cw, macOwner, dstMac)
 {
-    check_and_cast<LteMacEnbD2D *>(nodeB_);
-    check_and_cast<LteMacUeD2D *>(macOwner_);
+    check_and_cast<LteMacEnbD2D *>(nodeB_.get());
+    check_and_cast<LteMacUeD2D *>(macOwner_.get());
 }
 
 
@@ -108,7 +108,7 @@ bool LteHarqUnitTxD2D::pduFeedback(HarqAcknowledgment a)
 
         if (reset || dir == D2D_MULTI) {
             check_and_cast<LteMacUeD2D *>(ue)->emit(macPacketLossD2DSignal_, sample);
-            check_and_cast<LteMacEnbD2D *>(nodeB_)->emit(macCellPacketLossD2DSignal_, sample);
+            check_and_cast<LteMacEnbD2D *>(nodeB_.get())->emit(macCellPacketLossD2DSignal_, sample);
         }
     }
     else {

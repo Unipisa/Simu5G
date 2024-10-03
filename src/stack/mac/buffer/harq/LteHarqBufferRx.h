@@ -63,7 +63,7 @@ class LteHarqBufferRx
     static simsignal_t macThroughputSignal_[2];
 
     // reference to the eNB module
-    cModule *nodeB_ = nullptr;
+    opp_component_ptr<cModule> nodeB_;
 
   private:
     // LteMacBase* of the UE for which this buffer has been created (whose ID is srcId_).

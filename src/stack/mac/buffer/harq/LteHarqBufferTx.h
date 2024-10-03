@@ -15,6 +15,7 @@
 #include <vector>
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/buffer/harq/LteHarqProcessTx.h"
+#include "stack/mac/layer/LteMacBase.h"
 
 namespace simu5g {
 
@@ -29,7 +30,7 @@ using namespace omnetpp;
 class LteHarqBufferTx : noncopyable
 {
   protected:
-    LteMacBase *macOwner_ = nullptr;
+    opp_component_ptr<LteMacBase> macOwner_;
     std::vector<LteHarqProcessTx *> processes_;
     unsigned int numProc_;
     unsigned int numEmptyProc_; // @ fb on reset, @ insert

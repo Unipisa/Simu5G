@@ -133,7 +133,7 @@ class IP2Nic : public cSimpleModule
     cGate *ipGateOut_ = nullptr;          // gate connecting IP2Nic module to network layer
 
     // corresponding entry for our interface
-    inet::NetworkInterface *networkIf = nullptr;
+    opp_component_ptr<inet::NetworkInterface> networkIf;
 
   public:
 

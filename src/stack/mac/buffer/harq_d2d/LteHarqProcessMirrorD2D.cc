@@ -43,7 +43,7 @@ void LteHarqProcessMirrorD2D::storeFeedback(HarqAcknowledgment harqAck, int64_t 
             status_[cw] = TXHARQ_PDU_BUFFERED;
 
             // Signal the MAC the need for retransmission
-            check_and_cast<LteMacEnb *>(macOwner_)->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
+            macOwner_->signalProcessForRtx(d2dSenderId, carrierFrequency, D2D);
         }
     }
 }

@@ -73,7 +73,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     ThreadSet threadSet;
     std::string host_;
     inet::ModuleRefByPar<Binder> binder_;
-    cModule *meHost_ = nullptr;
+    opp_component_ptr<cModule> meHost_;
 
     MecPlatformManager *mecPlatformManager_ = nullptr;
     ServiceRegistry *servRegistry_ = nullptr;

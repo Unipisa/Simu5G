@@ -30,7 +30,7 @@ class LteMacUeD2D : public LteMacUe
   protected:
 
     // reference to the eNB
-    LteMacEnbD2D *enb_ = nullptr;
+    opp_component_ptr<LteMacEnbD2D> enb_;
 
     // flag for empty schedule list (true when no carriers have been scheduled)
     bool emptyScheduleList_;

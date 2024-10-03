@@ -106,7 +106,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
     ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
 
-    LtePdcpRrcEnb *pdcp_ = nullptr;
+    opp_component_ptr<LtePdcpRrcEnb> pdcp_;
 
     std::map<MacNodeId, Delay> ULPktDelay_;
     std::map<MacNodeId, std::vector<Grant>> ulGrants_;
