@@ -31,8 +31,7 @@ simsignal_t LteMacUeD2D::rcvdD2DModeSwitchNotificationSignal_ = registerSignal("
 
 LteMacUeD2D::~LteMacUeD2D()
 {
-    if (preconfiguredTxParams_ != nullptr)
-        delete preconfiguredTxParams_;
+    delete preconfiguredTxParams_;
 }
 
 void LteMacUeD2D::initialize(int stage)
