@@ -328,7 +328,6 @@ LteHarqBufferTx::~LteHarqBufferTx()
         delete process;
 
     processes_.clear();
-    macOwner_ = nullptr;
 }
 
 bool LteHarqBufferTx::isInUnitList(unsigned char acid, Codeword cw, UnitList unitIds)
