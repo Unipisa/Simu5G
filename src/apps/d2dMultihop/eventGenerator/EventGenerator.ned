@@ -28,11 +28,11 @@ simple EventGenerator
         volatile double eventPeriod @unit(s) = default(1s);
         bool singleEventSource = default(true);
 
-        bool forceStartingCoord = default(false);
-        double startingCoordX @unit(m) = default(-1.0m);
-        double startingCoordY @unit(m) = default(-1.0m);
+        bool forceStartingCoord = default(false);  //TODO not implemented
+        double startingCoordX @unit(m) = default(-1.0m);  //TODO not implemented
+        double startingCoordY @unit(m) = default(-1.0m);  //TODO not implemented
 
-        int startingUe = default(0);
+        int startingUe = default(0);  //TODO not implemented
 
         @display("i=block/cogwheel");
 }

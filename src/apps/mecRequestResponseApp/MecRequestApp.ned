@@ -37,7 +37,7 @@ simple MecRequestApp like IApp
 
         double period @unit("s") = default(1s);
         double startTime @unit("s") = default(0s);
-        double stopTime @unit("s") = default(200s);
+        double stopTime @unit("s") = default(200s);  //TODO implement
 
         int appId = default(1);
         bool enableMigration = default(false);
