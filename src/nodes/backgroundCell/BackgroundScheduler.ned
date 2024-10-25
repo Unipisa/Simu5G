@@ -23,7 +23,8 @@ simple BackgroundScheduler
         @class("BackgroundScheduler");
 
         string binderModule = default("binder");
-        string trafficManagerModule;
+        string trafficManagerModule = default("^.bgTrafficGenerator.manager");
+        string channelModelModule = default("^.bgChannelModel");
 
         // transmission power
         double txPower @unit(dBm) = default(46dBm);
