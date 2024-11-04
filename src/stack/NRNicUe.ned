@@ -59,7 +59,6 @@ module NRNicUe extends LteNicUeD2D
         }
         // MAC Layer
         nrMac: <default("NRMacUe")> like ILteMac {
-            interfaceTableModule = parent.interfaceTableModule;
             @display("p=466,314");
         }
         // PHY Layer
