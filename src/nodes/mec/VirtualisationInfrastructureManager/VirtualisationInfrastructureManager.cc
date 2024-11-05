@@ -319,6 +319,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
 
         instanceInfo->status = true;
+        instanceInfo->reference = module;
         return instanceInfo;
     }
     else {

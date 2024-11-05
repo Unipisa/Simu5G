@@ -36,6 +36,10 @@ class DeviceAppStartPacket extends DeviceAppPacket
 	string mecAppName;
 	string mecAppProvider;
 	string appPackageSource;
+    // determines whether the instantiated app should be unique for every UE or shared among them
+    bool shared = false;
+    // if the MEC app is shared, determines which DevAppId should be used
+    int associateDevAppId = -1;
 }
 
 class DeviceAppStopPacket extends DeviceAppPacket

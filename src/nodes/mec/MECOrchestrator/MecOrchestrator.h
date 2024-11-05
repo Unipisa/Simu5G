@@ -39,6 +39,7 @@ struct mecAppMapEntry
     cModule *mecHost = nullptr; // reference to the mecHost where the mec app has been deployed
     cModule *vim = nullptr;       // for VirtualisationInfrastructureManager methods
     cModule *mecpm = nullptr;     // for mecPlatformManager methods
+    cModule* reference = nullptr; // direct reference to mec app instance (omnet module)
 
     std::string ueSymbolicAddress;
     inet::L3Address ueAddress;  //for downstream using UDP Socket

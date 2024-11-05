@@ -56,7 +56,14 @@ void DeviceApp::handleUALCMPMessage()
                     for (int i = 0; i < size; ++i) {
                         nlohmann::json appInfo = jsonResponseBody["appList"];
                         if (appName == appInfo.at(i)["appName"]) {
-                            jsonRequestBody["associateDevAppId"] = std::to_string(getId());
+                            // search fo the app name in the list of shared apps. if found, use the stored dev app id
+                            auto sharedDevAppId = devAppIds.find(std::string(appName));
+                            int associateDevAppId;
+                            if (sharedDevAppId != devAppIds.end())
+                                associateDevAppId = sharedDevAppId->second;
+                            else
+                                associateDevAppId = getId();
+                            jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
                             jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];// "WAMECAPP_External"; //startPk->getMecAppDId()
                             jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
                             jsonRequestBody["appInfo"]["appProvider"] = appInfo.at(i)["appProvider"];//startPk->getMecAppProvider();//"lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest";
@@ -67,7 +74,14 @@ void DeviceApp::handleUALCMPMessage()
 
                     if (!found) {
                         EV << "DeviceApp::handleUALCMPMessage: application descriptor for appName: " << appName << " not found." << endl;
-                        jsonRequestBody["associateDevAppId"] = std::to_string(getId());
+                        // search fo the app name in the list of shared apps. if found, use the stored dev app id
+                        auto sharedDevAppId = devAppIds.find(std::string(appName));
+                        int associateDevAppId;
+                        if (sharedDevAppId != devAppIds.end())
+                            associateDevAppId = sharedDevAppId->second;
+                        else
+                            associateDevAppId = getId();
+                        jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
                         jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";
 
                         jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
@@ -357,6 +371,10 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
      * ask the proxy for the requested app, by appName
      */
     appName = startPk->getMecAppName();
+    if (startPk->getShared()) {
+        // if this is a shared app, store the dev app id to be associated when sending the start request
+        devAppIds[std::string(appName)] = startPk->getAssociateDevAppId();
+    }
 
     std::string uri("/example/dev_app/v1/app_list");
     std::stringstream params;

@@ -76,6 +76,9 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     State appState;
     std::string appName;
 
+    // mapping from app names to app dev id to use (only used for shared apps)
+    std::map<std::string, int> devAppIds;
+
     // variable set in ned, if the appDescriptor is not in the MEC orchestrator
     std::string appPackageSource;
 
