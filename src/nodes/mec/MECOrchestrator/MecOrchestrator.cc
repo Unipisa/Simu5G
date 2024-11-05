@@ -15,6 +15,7 @@
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "nodes/mec/MECPlatform/MultiUEMECApp.h"
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
@@ -133,11 +134,6 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
 
     for(const auto& contextApp : meAppMap)
     {
-        /*
-         * TODO
-         * set the check to provide multi UE to one mec application scenario.
-         * For now the scenario is one to one, since the device application ID is used
-         */
         if(contextApp.second.mecUeAppID == ueAppID && contextApp.second.appDId.compare(contAppMsg->getAppDId()) == 0)
         {
             //        meAppMap[ueAppID].lastAckStartSeqNum = pkt->getSno();
@@ -147,7 +143,17 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
             EV << "MecOrchestrator::startMECApp - \tWARNING: required MEC App instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
             EV << "MecOrchestrator::startMECApp  - sending ackMEAppPacket with "<< ACK_CREATE_CONTEXT_APP << endl;
             sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
-            return;
+            auto* existingMECApp = dynamic_cast<MultiUEMECApp*>(contextApp.second.reference);
+            if (existingMECApp) {
+                // if the app already exist and it is an app supporting multiple UEs, then notify the app about the new UE
+                struct UE_MEC_CLIENT newUE;
+                newUE.address = inet::L3Address(contAppMsg->getUeIpAddress());
+                // the UE port is not known at this stage
+                newUE.port = -1;
+                existingMECApp->addNewUE(newUE);
+            }
+            else
+                return;
         }
     }
 
@@ -266,6 +272,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
          newMecApp.mecAppPort = appInfo->endPoint.port;
          newMecApp.mecAppIsntanceId = appInfo->instanceId;
          newMecApp.contextId = contextIdCounter;
+         newMecApp.reference = appInfo->reference;
          meAppMap[contextIdCounter] = newMecApp;
 
          MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");

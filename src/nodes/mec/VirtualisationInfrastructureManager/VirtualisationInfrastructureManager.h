@@ -50,6 +50,7 @@ struct MecAppInstanceInfo
     bool status;
     std::string instanceId;
     SockAddr endPoint;
+    cModule *reference;
 };
 
 // used to calculate processing time needed to execute a number of instructions
