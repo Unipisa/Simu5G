@@ -66,6 +66,7 @@ module MECHost
         virtualisationInfrastructure: VirtualisationInfrastructure {
             parameters:
                 @display("p=500,400");
+                gateway = parent.gateway;
         }
 
         mecPlatform: MECPlatform {

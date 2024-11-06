@@ -141,7 +141,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     // check whether the destination address is a (simulated) MEC host's address
     if (binder_->isMecHost(destAddress)) {
         // check if the destination belongs to another core network (for multi-operator scenarios)
-        std::string destGw = binder_->getNetworkName() + "." + CHK(inet::L3AddressResolver().findHostWithAddress(destAddress))->getAncestorPar("gateway").stdstringValue();
+        std::string destGw = binder_->getNetworkName() + "." + CHK(inet::L3AddressResolver().findHostWithAddress(destAddress))->par("gateway").stdstringValue();
         if (gateway_ != destGw) {
             // the destination is a MEC host under a different core network, send the packet to the gateway
             return -1;

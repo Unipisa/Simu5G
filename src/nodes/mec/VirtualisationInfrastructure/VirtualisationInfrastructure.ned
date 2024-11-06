@@ -55,6 +55,7 @@ module VirtualisationInfrastructure
 
         int numIndependentMecApp = default(0);
         int numExtEthInterfaces = default(0);
+        string gateway = default("");
 
     gates:
         inout ppp[];				// connection with GtpEndpoint and local/external networks
