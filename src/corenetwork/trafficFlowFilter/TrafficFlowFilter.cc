@@ -37,8 +37,11 @@ void TrafficFlowFilter::initialize(int stage)
     if (ownerType_ == PGW || ownerType_ == UPF) {
         gateway_ = binder_->getNetworkName() + "." + std::string(getParentModule()->getFullName());
     }
-    else if (getParentModule()->hasPar("gateway") || getParentModule()->getParentModule()->hasPar("gateway")) {
-        gateway_ = binder_->getNetworkName() + "." + getAncestorPar("gateway").stringValue();
+    else if (getParentModule()->hasPar("gateway")) {
+        gateway_ = binder_->getNetworkName() + "." + getParentModule()->par("gateway").stringValue();
+    }
+    else if (getParentModule()->getParentModule()->hasPar("gateway")) {
+        gateway_ = binder_->getNetworkName() + "." + getParentModule()->getParentModule()->par("gateway").stringValue();
     }
     else
         gateway_.clear();
