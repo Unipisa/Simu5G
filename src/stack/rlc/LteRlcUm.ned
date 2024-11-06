@@ -31,6 +31,7 @@ simple LteRlcUm like ILteRlcUm
         //# Rlc Queue
         int queueSize @unit(B) = default(2MiB);              // RLC TX entity SDU queue size (0: unlimited)
         bool mapAllLcidsToSingleBearer = default(false);     // if true, all LCIDs are mapped to a single bearer
+        string nodeType @enum(INTERNET,ENODEB,GNODEB,UE);
 
         //# SDU-level statistics
         @signal[rlcDelayDl];

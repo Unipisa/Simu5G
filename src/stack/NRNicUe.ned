@@ -56,6 +56,7 @@ module NRNicUe extends LteNicUeD2D
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
             *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.nrPacketFlowManager" : "";
+            um.nodeType = parent.nodeType;
         }
         // MAC Layer
         nrMac: <default("NRMacUe")> like ILteMac {

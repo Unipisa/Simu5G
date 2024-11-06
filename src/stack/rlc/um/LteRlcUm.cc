@@ -270,7 +270,7 @@ void LteRlcUm::initialize(int stage)
 
         // parameters
         mapAllLcidsToSingleBearer_ = par("mapAllLcidsToSingleBearer");
-        std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
+        std::string nodeTypePar = par("nodeType").stdstringValue();
         nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 
         WATCH_MAP(txEntities_);
