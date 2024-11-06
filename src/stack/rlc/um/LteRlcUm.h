@@ -126,6 +126,8 @@ class LteRlcUm : public cSimpleModule
     cGate *downInGate_ = nullptr;
     cGate *downOutGate_ = nullptr;
 
+    RanNodeType nodeType;
+
     // statistics
     static simsignal_t receivedPacketFromUpperLayerSignal_;
     static simsignal_t receivedPacketFromLowerLayerSignal_;

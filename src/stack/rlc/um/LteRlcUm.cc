@@ -9,6 +9,7 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ModuleAccess.h>
 #include <inet/common/ProtocolTag_m.h>
 
 #include "stack/rlc/um/LteRlcUm.h"
@@ -233,10 +234,6 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    RanNodeType nodeType;
-    std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
-    nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
-
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE
     for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
@@ -273,6 +270,8 @@ void LteRlcUm::initialize(int stage)
 
         // parameters
         mapAllLcidsToSingleBearer_ = par("mapAllLcidsToSingleBearer");
+        std::string nodeTypePar = getAncestorPar("nodeType").stdstringValue();
+        nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 
         WATCH_MAP(txEntities_);
         WATCH_MAP(rxEntities_);
