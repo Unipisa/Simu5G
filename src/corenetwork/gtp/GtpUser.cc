@@ -42,9 +42,9 @@ void GtpUser::initialize(int stage)
 
     tunnelPeerPort_ = par("tunnelPeerPort");
 
-    ownerType_ = selectOwnerType(getAncestorPar("nodeType"));
-
     networkNode_ = getContainingNode(this);
+
+    ownerType_ = selectOwnerType(networkNode_->par("nodeType"));
 
     // find the address of the core network gateway
     if (ownerType_ != PGW && ownerType_ != UPF) {
