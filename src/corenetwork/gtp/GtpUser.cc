@@ -52,7 +52,9 @@ void GtpUser::initialize(int stage)
         bool connectedBS = isBaseStation(ownerType_) && networkNode_->gate("ppp$o")->isConnected();
 
         if (connectedBS || ownerType_ == UPF_MEC) {
-            std::string gateway = binder_->getNetworkName() + "." + getAncestorPar("gateway").stdstringValue();
+            if (par("gateway").isEmptyString())
+                throw cRuntimeError("The required 'gateway' parameter is empty.");
+            std::string gateway = binder_->getNetworkName() + "." + par("gateway").stdstringValue();
             gwAddress_ = L3AddressResolver().resolve(gateway.c_str());
         }
     }

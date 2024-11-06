@@ -30,6 +30,7 @@ simple GtpUser
         string ipOutInterface = default("");    // optional: manual specification of outgoing interface for received IP
         int localPort = default(31);
         int tunnelPeerPort = default(31);
+        string gateway = default("");			// optional
 
         @display("i=block/tunnel");
 

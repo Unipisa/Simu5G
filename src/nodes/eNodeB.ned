@@ -216,6 +216,7 @@ module eNodeB
             parameters:
                 @display("p=1041,372");
                 ipOutInterface = "cellular";
+                gateway = parent.gateway;
         }
 
         gtpUserX2: GtpUserX2 {

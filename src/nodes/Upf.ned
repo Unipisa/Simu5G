@@ -36,6 +36,7 @@ module Upf extends NetworkLayerNodeBase
         @figure[submodules];
 
         string nodeType = default("UPF");   // do NOT change!
+        string gateway = default("");
         forwarding = default(true);
         multicastForwarding = default(false);
 
@@ -61,6 +62,7 @@ module Upf extends NetworkLayerNodeBase
         gtp_user: GtpUser {
             parameters:
                 @display("p=935,80");
+                gateway = parent.gateway;
         }
         tn: MessageDispatcher {
             parameters:
