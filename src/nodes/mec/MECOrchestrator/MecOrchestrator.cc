@@ -15,7 +15,7 @@
 #include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-#include "nodes/mec/MECPlatform/MultiUEMECApp.h"
+#include "apps/mec/MecApps/MultiUEMECApp.h"
 
 #include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
