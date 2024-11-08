@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.MECPlatform;
+package simu5g.apps.mec.MecApps;
 
 import inet.applications.contract.IApp;
 import simu5g.nodes.mec.MECPlatform.IMECApp;
