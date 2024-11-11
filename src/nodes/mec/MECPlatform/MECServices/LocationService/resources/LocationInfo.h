@@ -12,8 +12,9 @@
 #ifndef CORENETWORK_NODES_MEC_MECPLATFORM_MEC_SERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONINFO_H_
 #define CORENETWORK_NODES_MEC_MECPLATFORM_MEC_SERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONINFO_H_
 
+#include <inet/common/geometry/common/Coord.h>
+
 #include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "inet/common/geometry/common/Coord.h"
 
 namespace simu5g {
 

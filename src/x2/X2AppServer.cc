@@ -11,11 +11,11 @@
 
 #include "x2/X2AppServer.h"
 
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/Message.h>
+#include <inet/common/socket/SocketTag_m.h>
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>
-#include "inet/common/socket/SocketTag_m.h"
-#include "inet/common/ProtocolTag_m.h"
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/Message.h"
 
 namespace simu5g {
 

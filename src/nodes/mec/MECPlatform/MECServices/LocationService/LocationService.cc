@@ -13,14 +13,14 @@
 #include <string>
 #include <vector>
 
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/LocationService.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
-#include "common/utils/utils.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

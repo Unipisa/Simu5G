@@ -11,11 +11,11 @@
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
 
-#include "common/cellInfo/CellInfo.h"
-#include "inet/mobility/base/MovingMobilityBase.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
+#include <inet/mobility/base/MovingMobilityBase.h>
 
 #include "common/binder/Binder.h"
+#include "common/cellInfo/CellInfo.h"
+#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 
 namespace simu5g {
 

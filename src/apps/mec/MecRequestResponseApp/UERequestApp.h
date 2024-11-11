@@ -12,9 +12,9 @@
 #ifndef __UEREQUESTAPP_H_
 #define __UEREQUESTAPP_H_
 
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 #include "common/binder/Binder.h"
 

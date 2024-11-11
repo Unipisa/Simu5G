@@ -13,11 +13,12 @@
 #define __MECREQUESTAPP_H_
 
 #include <inet/common/ModuleRefByPar.h>
-#include "apps/mecRequestResponseApp/packets/MigrationTimer_m.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+
 #include "apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include "apps/mecRequestResponseApp/packets/MigrationTimer_m.h"
 #include "stack/phy/layer/NRPhyUe.h"
 
 namespace simu5g {

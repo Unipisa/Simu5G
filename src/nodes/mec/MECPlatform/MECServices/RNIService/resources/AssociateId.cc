@@ -10,8 +10,10 @@
 //
 
 #include "AssociateId.h"
+
+#include <inet/networklayer/contract/ipv4/Ipv4Address.h>
+
 #include "common/binder/Binder.h"
-#include "inet/networklayer/contract/ipv4/Ipv4Address.h"
 
 namespace simu5g {
 

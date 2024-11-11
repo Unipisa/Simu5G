@@ -12,12 +12,12 @@
 #ifndef __HTTPUTILS_H
 #define __HTTPUTILS_H
 
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
+#include <string>
+
+#include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
-
-#include <string>
 
 namespace simu5g {
 

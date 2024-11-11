@@ -12,12 +12,10 @@
 #ifndef __MECRESPONSEAPP_H_
 #define __MECRESPONSEAPP_H_
 
-#include "omnetpp.h"
-
 #include <queue>
 
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "apps/mec/MecApps/MecAppBase.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"

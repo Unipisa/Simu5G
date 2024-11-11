@@ -10,12 +10,14 @@
 //
 
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
+
+#include <inet/mobility/base/MovingMobilityBase.h>
+
 #include "common/LteCommon.h"
 #include "common/cellInfo/CellInfo.h"
 #include "common/binder/Binder.h"
-#include "inet/mobility/base/MovingMobilityBase.h"
 #include "nodes/mec/MECPlatform/EventNotification/CircleNotificationEvent.h"
+#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
 
 namespace simu5g {
 using namespace omnetpp;

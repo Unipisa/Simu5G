@@ -9,9 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "corenetwork/gtp/GtpUserMsg_m.h"
 #include "corenetwork/gtp/GtpUserMsgSerializer.h"
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
+
+#include "corenetwork/gtp/GtpUserMsg_m.h"
 
 namespace simu5g {
 

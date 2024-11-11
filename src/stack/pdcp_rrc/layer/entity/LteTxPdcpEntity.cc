@@ -9,13 +9,13 @@
 // and cannot be removed from it.
 //
 
-#include "inet/common/ProtocolTag_m.h"
 #include "stack/pdcp_rrc/layer/entity/LteTxPdcpEntity.h"
+
+#include <inet/common/ProtocolTag_m.h>
 
 namespace simu5g {
 
 Define_Module(LteTxPdcpEntity);
-
 
 void LteTxPdcpEntity::initialize()
 {

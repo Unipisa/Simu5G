@@ -8,28 +8,20 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
+
 #include "stack/mac/layer/LteMacUe.h"
-#include "stack/mac/buffer/harq/LteHarqBufferRx.h"
+
+#include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
+
+#include "corenetwork/statsCollector/UeStatsCollector.h"
+#include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/buffer/LteMacQueue.h"
+#include "stack/mac/buffer/harq/LteHarqBufferRx.h"
+#include "stack/mac/packet/LteMacSduRequest.h"
+#include "stack/mac/packet/LteRac_m.h"
 #include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
-#include "stack/mac/packet/LteRac_m.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "stack/mac/amc/UserTxParams.h"
-#include "stack/mac/layer/LteMacEnb.h"
-#include "inet/networklayer/common/NetworkInterface.h"
-#include "inet/common/ModuleAccess.h"
-#include "inet/networklayer/ipv4/Ipv4InterfaceData.h"
-#include "common/binder/Binder.h"
-#include "stack/phy/layer/LtePhyBase.h"
-#include "stack/mac/packet/LteMacSduRequest.h"
-#include "stack/rlc/um/LteRlcUm.h"
-#include "common/LteCommon.h"
 #include "stack/rlc/packet/LteRlcDataPdu.h"
-#include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
-
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
-#include "corenetwork/statsCollector/UeStatsCollector.h"
 
 namespace simu5g {
 

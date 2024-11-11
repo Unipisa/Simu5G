@@ -10,16 +10,12 @@
 //
 
 #include "stack/mac/layer/LteMacUeD2D.h"
+
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/buffer/LteMacQueue.h"
+#include "stack/mac/packet/LteRac_m.h"
 #include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
-#include "stack/mac/layer/LteMacEnb.h"
-#include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
-#include "stack/mac/packet/LteRac_m.h"
-#include "inet/common/TimeTag_m.h"
-
-#include "corenetwork/statsCollector/UeStatsCollector.h"
 
 namespace simu5g {
 

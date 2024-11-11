@@ -4,14 +4,10 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
-#include <vector>
-#include <string>
-#include <string.h>
 #include <stdlib.h>
 #include <string>
-
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
+#include <string.h>
+#include <vector>
 
 #ifdef _WIN32
 # include <io.h>
@@ -19,6 +15,9 @@
 #else // ifdef _WIN32
 # include <unistd.h>
 #endif // ifdef _WIN32
+
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 namespace simu5g {
 

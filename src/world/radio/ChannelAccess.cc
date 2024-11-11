@@ -10,9 +10,10 @@
 //
 
 #include "world/radio/ChannelAccess.h"
-#include <inet/mobility/contract/IMobility.h>
+
+#include <inet/common/InitStages.h>
 #include <inet/common/ModuleAccess.h>
-#include "inet/common/InitStages.h"
+#include <inet/mobility/contract/IMobility.h>
 
 namespace inet {
 Define_InitStage_Dependency(PHYSICAL_LAYER, SINGLE_MOBILITY);

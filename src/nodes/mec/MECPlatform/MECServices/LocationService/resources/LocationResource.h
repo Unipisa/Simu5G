@@ -12,18 +12,18 @@
 #ifndef _LOCATION_H_
 #define _LOCATION_H_
 
-#include "common/LteCommon.h"
-#include <set>
 #include <map>
+#include <set>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include <inet/networklayer/contract/ipv4/Ipv4Address.h>
+
+#include "common/LteCommon.h"
 #include "common/binder/Binder.h"
-#include "inet/networklayer/contract/ipv4/Ipv4Address.h"
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/UserInfo.h"
+#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
-//#include "inet/common/geometry/common/Coord.h"
 
 using namespace omnetpp;
 

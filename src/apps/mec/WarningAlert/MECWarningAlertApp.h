@@ -12,18 +12,12 @@
 #ifndef __MECWARNINGALERTAPP_H_
 #define __MECWARNINGALERTAPP_H_
 
-#include "omnetpp.h"
-
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-
-//MEWarningAlertPacket
-//#include "nodes/mec/MECPlatform/MECAppPacket_Types.h"
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
-
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "apps/mec/MecApps/MecAppBase.h"
+#include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
+#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

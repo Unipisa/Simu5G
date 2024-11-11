@@ -10,8 +10,10 @@
 //
 
 #include "stack/handoverManager/LteHandoverManager.h"
+
+#include <inet/common/ProtocolTag_m.h>
+
 #include "stack/handoverManager/X2HandoverCommandIE.h"
-#include "inet/common/ProtocolTag_m.h"
 
 namespace simu5g {
 

@@ -13,22 +13,17 @@
 #define __MECORCHESTRATORMANAGER_H_
 
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 //BINDER and UTILITIES
 #include "common/LteCommon.h"
-#include "nodes/mec/utils/MecCommon.h"
 #include "common/binder/Binder.h"           //to handle cars dynamically leaving the Network
-
-//UDP SOCKET for INET COMMUNICATION WITH UE APPs
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-
-//MEAppPacket
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
-
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

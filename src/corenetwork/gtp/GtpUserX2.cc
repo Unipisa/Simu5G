@@ -10,10 +10,13 @@
 //
 
 #include "corenetwork/gtp/GtpUserX2.h"
-#include "inet/common/ProtocolTag_m.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+
 #include <iostream>
+
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+
 #include "x2/packet/X2ControlInfo_m.h"
 
 namespace simu5g {

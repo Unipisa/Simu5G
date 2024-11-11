@@ -12,13 +12,13 @@
 #ifndef __GTP_USER_X2_H_
 #define __GTP_USER_X2_H_
 
-#include <omnetpp.h>
-#include <inet/common/ModuleRefByPar.h>
-
 #include <map>
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "corenetwork/gtp/GtpUserMsg_m.h"
+
+#include <inet/common/ModuleRefByPar.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+
 #include "common/binder/Binder.h"
+#include "corenetwork/gtp/GtpUserMsg_m.h"
 #include "x2/packet/LteX2Message.h"
 
 namespace simu5g {

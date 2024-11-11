@@ -13,17 +13,17 @@
 #define __GTP_USER_H_
 
 #include <map>
-#include <omnetpp.h>
-#include <inet/common/ModuleRefByPar.h>
 
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "corenetwork/gtp/GtpUserMsg_m.h"
+#include <omnetpp.h>
 #include <inet/common/ModuleAccess.h>
-#include <inet/networklayer/common/NetworkInterface.h>
-#include <inet/networklayer/common/L3AddressResolver.h>
-#include "common/binder/Binder.h"
+#include <inet/common/ModuleRefByPar.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/networklayer/common/NetworkInterface.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+
+#include "common/binder/Binder.h"
+#include "corenetwork/gtp/GtpUserMsg_m.h"
 
 namespace simu5g {
 

@@ -10,8 +10,10 @@
 //
 
 #include "stack/compManager/X2CompMsg.h"
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
+
 #include "x2/packet/LteX2MsgSerializer.h"
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 
 namespace simu5g {
 

@@ -12,8 +12,9 @@
 #ifndef APPS_MEC_MEAPPS_MEBGAPP_H_
 #define APPS_MEC_MEAPPS_MEBGAPP_H_
 
+#include <inet/common/lifecycle/NodeStatus.h>
+
 #include "apps/mec/MecApps/MecAppBase.h"
-#include "inet/common/lifecycle/NodeStatus.h"
 
 namespace simu5g {
 

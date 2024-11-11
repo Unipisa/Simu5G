@@ -11,8 +11,9 @@
 
 #include "apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
 
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 #include <string>
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"

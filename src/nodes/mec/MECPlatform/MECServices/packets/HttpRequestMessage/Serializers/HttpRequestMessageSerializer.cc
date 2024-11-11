@@ -17,8 +17,9 @@
 
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/Serializers/HttpRequestMessageSerializer.h"
 
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
+
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {

@@ -9,33 +9,27 @@
 // and cannot be removed from it.
 //
 
-// INET
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/common/ModuleAccess.h"
-#include "inet/common/lifecycle/NodeStatus.h"
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
-#include "inet/transportlayer/contract/tcp/TcpCommand_m.h"
-#include "inet/networklayer/contract/ipv4/Ipv4Address.h"
+#include "nodes/mec/UALCMP/UALCMPApp.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
-// Utils
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "common/utils/utils.h"
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/common/ModuleAccess.h>
+#include <inet/common/lifecycle/NodeStatus.h>
+#include <inet/transportlayer/contract/tcp/TcpSocket.h>
+#include <inet/transportlayer/contract/tcp/TcpCommand_m.h>
+#include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
-// MEC system
-#include "nodes/mec/UALCMP/UALCMPApp.h"
+#include "common/utils/utils.h"
 #include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
 #include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-
-// Messages
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
 #include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
 #include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

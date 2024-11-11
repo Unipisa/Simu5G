@@ -12,17 +12,15 @@
 #ifndef APPS_MEC_MECRTVIDEOSTREAMINGRECEIVER_H_
 #define APPS_MEC_MECRTVIDEOSTREAMINGRECEIVER_H_
 
-#include "omnetpp.h"
-
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
+#include "apps/mec/MecApps/MecAppBase.h"
 #include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
 #include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
-#include "apps/mec/MecApps/MecAppBase.h"
 
 namespace simu5g {
 

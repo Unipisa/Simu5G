@@ -8,8 +8,11 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include <inet/mobility/static/StationaryMobility.h>
+
 #include "common/cellInfo/CellInfo.h"
+
+#include <inet/mobility/static/StationaryMobility.h>
+
 #include "world/radio/ChannelControl.h"
 #include "world/radio/ChannelAccess.h"
 

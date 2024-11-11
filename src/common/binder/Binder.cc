@@ -9,15 +9,16 @@
 // and cannot be removed from it.
 //
 
-#include "common/binder/Binder.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include <cctype>
 #include <algorithm>
-#include "stack/mac/layer/LteMacUe.h"
-#include "stack/phy/layer/LtePhyUe.h"
+#include <cctype>
 
+#include <inet/networklayer/common/L3AddressResolver.h>
+
+#include "common/binder/Binder.h"
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
+#include "stack/mac/layer/LteMacUe.h"
+#include "stack/phy/layer/LtePhyUe.h"
 
 namespace simu5g {
 

@@ -12,12 +12,14 @@
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_H_
 
+#include <map>
+
 #include <omnetpp.h>
+#include <inet/networklayer/common/L3Address.h>
+
 #include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
-#include "inet/networklayer/common/L3Address.h"
 #include "nodes/mec/utils/MecCommon.h"
 #include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
-#include <map>
 
 namespace simu5g {
 

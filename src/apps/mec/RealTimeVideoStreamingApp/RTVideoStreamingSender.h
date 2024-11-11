@@ -13,20 +13,16 @@
 #define APPS_MEC_RTVIDEOSTREAMINGSENDER_H_
 
 #include <inet/common/ModuleRefByPar.h>
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include <inet/common/geometry/common/Coord.h>
+#include <inet/common/geometry/common/EulerAngles.h>
+#include <inet/mobility/contract/IMobility.h>
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 #include "common/binder/Binder.h"
-
-//inet mobility
-#include "inet/common/geometry/common/Coord.h"
-#include "inet/common/geometry/common/EulerAngles.h"
-#include "inet/mobility/contract/IMobility.h"
-
-//WarningAlertPacket
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

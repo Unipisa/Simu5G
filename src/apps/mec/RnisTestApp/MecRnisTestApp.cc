@@ -11,21 +11,19 @@
 
 #include "apps/mec/RnisTestApp/MecRnisTestApp.h"
 
+#include <fstream>
+
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/Packet_m.h>
+#include <inet/networklayer/common/L3AddressTag_m.h>
+#include <inet/transportlayer/common/L4PortTag_m.h>
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_Types.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
-
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/Packet_m.h"
-
-#include "inet/networklayer/common/L3AddressTag_m.h"
-#include "inet/transportlayer/common/L4PortTag_m.h"
-
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-
-#include <fstream>
 
 namespace simu5g {
 
@@ -33,8 +31,6 @@ Define_Module(MecRnisTestApp);
 
 using namespace inet;
 using namespace omnetpp;
-
-
 
 void MecRnisTestApp::initialize(int stage)
 {

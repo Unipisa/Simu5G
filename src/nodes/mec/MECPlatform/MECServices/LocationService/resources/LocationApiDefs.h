@@ -12,10 +12,11 @@
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONAPIDEFS_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_LOCATIONAPIDEFS_H_
 
+#include <inet/common/geometry/common/Coord.h>
+#include <inet/mobility/base/MovingMobilityBase.h>
+#include <inet/mobility/contract/IMobility.h>
+
 #include "common/binder/Binder.h"
-#include "inet/common/geometry/common/Coord.h"
-#include "inet/mobility/base/MovingMobilityBase.h"
-#include "inet/mobility/contract/IMobility.h"
 
 namespace simu5g {
 

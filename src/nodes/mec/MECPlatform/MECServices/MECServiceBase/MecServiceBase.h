@@ -12,24 +12,22 @@
 #ifndef __INET_GENERICSERVICE_H
 #define __INET_GENERICSERVICE_H
 
-#include <omnetpp.h>
-#include "inet/common/INETDefs.h"
-#include <inet/common/ModuleRefByPar.h>
-#include "inet/common/lifecycle/ILifecycle.h"
-#include "inet/common/lifecycle/LifecycleOperation.h"
-#include "inet/common/socket/SocketMap.h"
-#include <vector>
 #include <map>
-//#include "inet/applications/tcpapp/TCPSrvHostApp.h"
 #include <queue>
-#include "inet/applications/base/ApplicationBase.h"
+#include <vector>
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include <inet/applications/base/ApplicationBase.h>
+#include <inet/common/INETDefs.h>
+#include <inet/common/ModuleRefByPar.h>
+#include <inet/common/lifecycle/ILifecycle.h>
+#include <inet/common/lifecycle/LifecycleOperation.h>
+#include <inet/common/socket/SocketMap.h>
 
 #include "common/binder/Binder.h"
 #include "common/utils/utils.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "nodes/mec/utils/MecCommon.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

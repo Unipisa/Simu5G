@@ -12,7 +12,7 @@
 #ifndef __INET_GTPUSERMSGSERIALIZER_H
 #define __INET_GTPUSERMSGSERIALIZER_H
 
-#include "inet/common/packet/serializer/FieldsChunkSerializer.h"
+#include <inet/common/packet/serializer/FieldsChunkSerializer.h>
 
 namespace simu5g {
 

@@ -13,14 +13,14 @@
 #define _LTE_AMRXBUFFER_H_
 
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/common/packet/Packet.h>
 
-#include "stack/rlc/LteRlcDefs.h"
 #include "common/timer/TTimer.h"
+#include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
+#include "stack/rlc/LteRlcDefs.h"
 #include "stack/rlc/am/LteRlcAm.h"
 #include "stack/rlc/am/packet/LteRlcAmPdu.h"
 #include "stack/rlc/am/packet/LteRlcAmSdu_m.h"
-#include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
-#include "inet/common/packet/Packet.h"
 
 namespace simu5g {
 

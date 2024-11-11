@@ -10,7 +10,8 @@
 //
 
 #include "stack/dualConnectivityManager/DualConnectivityManager.h"
-#include "inet/common/ProtocolTag_m.h"
+
+#include <inet/common/ProtocolTag_m.h>
 
 namespace simu5g {
 

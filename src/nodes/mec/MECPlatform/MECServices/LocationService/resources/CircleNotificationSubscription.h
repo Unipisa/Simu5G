@@ -13,18 +13,22 @@
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "inet/common/geometry/common/Coord.h"
-#include "inet/common/INETDefs.h"
+
 #include <set>
+
+#include <inet/common/INETDefs.h>
+#include <inet/common/geometry/common/Coord.h>
+
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 #include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
-#include "common/utils/utils.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 class LteBinder;
+
 class CircleNotificationSubscription : public SubscriptionBase
 {
   public:

@@ -12,10 +12,11 @@
 #ifndef __RESPONSEAPP_H_
 #define __RESPONSEAPP_H_
 
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+
 #include "apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
 
 namespace simu5g {
 

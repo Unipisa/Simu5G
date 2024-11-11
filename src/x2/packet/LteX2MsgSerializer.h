@@ -12,8 +12,9 @@
 #ifndef X2_PACKET_LTEX2MSGSERIALIZER_H_
 #define X2_PACKET_LTEX2MSGSERIALIZER_H_
 
+#include <inet/common/packet/serializer/FieldsChunkSerializer.h>
+
 #include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
-#include "inet/common/packet/serializer/FieldsChunkSerializer.h"
 
 namespace simu5g {
 

@@ -12,7 +12,7 @@
 #ifndef _WARNINGALERTPACKETSERIALIZER_H_
 #define _WARNINGALERTPACKETSERIALIZER_H_
 
-#include "inet/common/packet/serializer/FieldsChunkSerializer.h"
+#include <inet/common/packet/serializer/FieldsChunkSerializer.h>
 
 namespace simu5g {
 

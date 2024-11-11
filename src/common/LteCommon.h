@@ -20,20 +20,22 @@
 
 #define _NO_W32_PSEUDO_MODIFIERS
 
-#include <iostream>
-#include <omnetpp.h>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <bitset>
-#include <set>
-#include <queue>
-#include <map>
-#include <list>
 #include <algorithm>
-#include "inet/common/geometry/common/Coord.h"
-#include "inet/common/packet/Packet.h"
-#include "inet/common/Protocol.h"
+#include <bitset>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <map>
+#include <queue>
+#include <set>
+#include <string>
+#include <vector>
+
+#include <omnetpp.h>
+#include <inet/common/geometry/common/Coord.h>
+#include <inet/common/packet/Packet.h>
+#include <inet/common/Protocol.h>
+
 #include "common/features.h"
 #include "common/LteCommonEnum_m.h"
 

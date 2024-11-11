@@ -11,20 +11,18 @@
 
 #include "apps/mec/WarningAlert/MECWarningAlertApp.h"
 
+#include <fstream>
+
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/Packet_m.h>
+#include <inet/networklayer/common/L3AddressTag_m.h>
+#include <inet/transportlayer/common/L4PortTag_m.h>
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
-
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/Packet_m.h"
-
-#include "inet/networklayer/common/L3AddressTag_m.h"
-#include "inet/transportlayer/common/L4PortTag_m.h"
-
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-
-#include <fstream>
 
 namespace simu5g {
 
@@ -32,7 +30,6 @@ Define_Module(MECWarningAlertApp);
 
 using namespace inet;
 using namespace omnetpp;
-
 
 MECWarningAlertApp::~MECWarningAlertApp()
 {

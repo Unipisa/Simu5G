@@ -10,11 +10,11 @@
 //
 
 #include "stack/rlc/am/buffer/AmRxQueue.h"
-#include "stack/rlc/am/LteRlcAm.h"
+
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "stack/mac/layer/LteMacBase.h"
-#include "inet/common/packet/Packet.h"
+#include "stack/rlc/am/LteRlcAm.h"
 
 namespace simu5g {
 

@@ -10,18 +10,18 @@
 //
 
 #include "stack/mac/layer/NRMacUe.h"
+
+#include <inet/common/TimeTag_m.h>
+
 #include "stack/mac/buffer/LteMacQueue.h"
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
-#include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/packet/LteMacSduRequest.h"
+#include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
-#include "inet/common/TimeTag_m.h"
 
 namespace simu5g {
 
 Define_Module(NRMacUe);
-
-
 
 void NRMacUe::handleSelfMessage()
 {

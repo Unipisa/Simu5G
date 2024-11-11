@@ -12,16 +12,12 @@
 #define __VIM_H_
 
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/networklayer/common/InterfaceTable.h>
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
 
-//BINDER and UTILITIES
 #include "common/LteCommon.h"
 #include "common/binder/Binder.h"
-#include "inet/networklayer/common/InterfaceTable.h"
-
-//INET
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-
 #include "nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {

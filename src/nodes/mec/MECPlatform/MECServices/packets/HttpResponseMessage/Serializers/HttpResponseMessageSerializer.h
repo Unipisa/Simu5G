@@ -18,7 +18,7 @@
 #ifndef _HTTPRESPONSEMESSAGESERIALIZER_H_
 #define _HTTPRESPONSEMESSAGESERIALIZER_H_
 
-#include "inet/common/packet/serializer/FieldsChunkSerializer.h"
+#include <inet/common/packet/serializer/FieldsChunkSerializer.h>
 
 namespace simu5g {
 

@@ -10,13 +10,10 @@
 //
 
 cplusplus {{
-#include "inet/common/INETDefs.h"
-#include "inet/common/geometry/common/Coord.h"
 #include "stack/phy/packet/ModulationType.h"
 }}
 
 import inet.common.geometry.Geometry;
-//class inet::Coord; {@existingClass;}
 
 namespace simu5g;
 

@@ -9,19 +9,20 @@
 // and cannot be removed from it.
 //
 
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/Packet_m.h"
-#include "inet/networklayer/common/L3AddressTag_m.h"
-#include "inet/transportlayer/common/L4PortTag_m.h"
-
 #include "apps/mec/RealTimeVideoStreamingApp/MecRTVideoStreamingReceiver.h"
+
+#include <fstream>
+
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/Packet_m.h>
+#include <inet/networklayer/common/L3AddressTag_m.h>
+#include <inet/transportlayer/common/L4PortTag_m.h>
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
 #include "nodes/mec/utils/httpUtils/json.hpp"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-
-#include <fstream>
 
 namespace simu5g {
 

@@ -17,14 +17,14 @@
 #ifndef MOBILITY_TRAFFICLIGHTCONTROLLER_H_
 #define MOBILITY_TRAFFICLIGHTCONTROLLER_H_
 
-#include <string.h>
-#include <omnetpp.h>
-
-#include <inet/common/ModuleRefByPar.h>
-#include "inet/common/geometry/common/Coord.h"
-#include "inet/common/geometry/common/Quaternion.h"
-#include "inet/mobility/static/StationaryMobility.h"
 #include <set>
+#include <string.h>
+
+#include <omnetpp.h>
+#include <inet/common/ModuleRefByPar.h>
+#include <inet/common/geometry/common/Coord.h>
+#include <inet/common/geometry/common/Quaternion.h>
+#include <inet/mobility/static/StationaryMobility.h>
 
 namespace simu5g {
 

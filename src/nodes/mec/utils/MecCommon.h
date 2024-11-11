@@ -13,8 +13,10 @@
 #define _MECCOMMON_H_
 
 #include <string>
+
+#include <inet/networklayer/common/L3Address.h>
+
 #include "common/LteCommon.h"
-#include "inet/networklayer/common/L3Address.h"
 
 namespace simu5g {
 

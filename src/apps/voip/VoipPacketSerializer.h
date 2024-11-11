@@ -16,7 +16,7 @@
 #ifndef __INET_VOIPPACKETSERIALIZER_H
 #define __INET_VOIPPACKETSERIALIZER_H
 
-#include "inet/common/packet/serializer/FieldsChunkSerializer.h"
+#include <inet/common/packet/serializer/FieldsChunkSerializer.h>
 
 namespace simu5g {
 

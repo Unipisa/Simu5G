@@ -17,11 +17,12 @@
 
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/Serializers/HttpResponseMessageSerializer.h"
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-
 #include <string>
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
+
+#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

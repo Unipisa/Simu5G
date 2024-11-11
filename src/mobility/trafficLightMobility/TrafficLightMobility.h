@@ -18,9 +18,10 @@
 #ifndef MOBILITY_TRAFFICLIGHTMOBILITY_H_
 #define MOBILITY_TRAFFICLIGHTMOBILITY_H_
 
-#include <vector>
 #include <map>
-#include "inet/mobility/single/LinearMobility.h"
+#include <vector>
+
+#include <inet/mobility/single/LinearMobility.h>
 
 namespace simu5g {
 

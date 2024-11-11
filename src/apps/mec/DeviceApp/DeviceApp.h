@@ -13,8 +13,10 @@
 #define APPS_MEC_MEAPPS_DEVICEAPP_H_
 
 #include <omnetpp.h>
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
+
+#include <inet/transportlayer/contract/tcp/TcpSocket.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
+
 #include "DeviceAppMessages/DeviceAppPacket_m.h"
 
 namespace simu5g {

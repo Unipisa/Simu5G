@@ -10,13 +10,14 @@
 //
 
 #include "apps/mec/MecApps/MecAppBase.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "apps/mec/MecApps/packets/ProcessingTimeMessage_m.h"
 
-#include "inet/common/ProtocolTag_m.h"
-#include "inet/common/ProtocolGroup.h"
-#include "inet/common/Protocol.h"
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/common/ProtocolGroup.h>
+#include <inet/common/Protocol.h>
+
+#include "apps/mec/MecApps/packets/ProcessingTimeMessage_m.h"
+#include "nodes/mec/utils/MecCommon.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

@@ -12,14 +12,13 @@
 #ifndef __UERNISTESTAPP_H_
 #define __UERNISTESTAPP_H_
 
-#include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+#include <inet/networklayer/common/L3Address.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 #include "common/binder/Binder.h"
-
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
+#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

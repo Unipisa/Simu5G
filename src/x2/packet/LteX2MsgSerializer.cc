@@ -9,14 +9,16 @@
 // and cannot be removed from it.
 //
 
-#include "x2/packet/LteX2Message.h"
 #include "x2/packet/LteX2MsgSerializer.h"
-#include "stack/handoverManager/X2HandoverControlMsg.h"
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
+
 #include "stack/compManager/X2CompMsg.h"
 #include "stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
 #include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
 #include "stack/handoverManager/X2HandoverCommandIE.h"
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
+#include "stack/handoverManager/X2HandoverControlMsg.h"
+#include "x2/packet/LteX2Message.h"
 
 namespace simu5g {
 

@@ -10,8 +10,10 @@
 //
 
 #include "mobility/trafficLightMobility/TrafficLightMobility.h"
+
+#include <inet/common/INETMath.h>
+
 #include "mobility/trafficLightMobility/TrafficLightController.h"
-#include "inet/common/INETMath.h"
 
 namespace simu5g {
 

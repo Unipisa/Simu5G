@@ -11,19 +11,17 @@
 
 #include "apps/mec/WarningAlert/UEWarningAlertApp.h"
 
+#include <fstream>
+
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/chunk/BytesChunk.h>
+#include <inet/networklayer/common/L3AddressTag_m.h>
+#include <inet/transportlayer/common/L4PortTag_m.h>
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
-
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/chunk/BytesChunk.h"
-
-#include "inet/networklayer/common/L3AddressTag_m.h"
-#include "inet/transportlayer/common/L4PortTag_m.h"
-
-#include <fstream>
 
 namespace simu5g {
 

@@ -13,9 +13,9 @@
 #define TRAFFICGENERATORBASE_H_
 
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/mobility/contract/IMobility.h>
 
 #include "common/LteCommon.h"
-#include "inet/mobility/contract/IMobility.h"
 #include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {

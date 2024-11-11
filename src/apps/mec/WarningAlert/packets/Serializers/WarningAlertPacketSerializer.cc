@@ -11,13 +11,12 @@
 
 #include "apps/mec/WarningAlert/packets/Serializers/WarningAlertPacketSerializer.h"
 
-#include "inet/common/packet/serializer/ChunkSerializerRegistry.h"
 #include <string>
+
+#include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
-
-#include <iostream> // used for debugging in emulation
 
 namespace simu5g {
 

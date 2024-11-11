@@ -10,25 +10,25 @@
 //
 
 #include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/utils/httpUtils/json.hpp"
-#include "inet/common/packet/Packet.h"
-#include "inet/common/packet/chunk/BytesChunk.h"
-#include "inet/common/TagBase_m.h"
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/ProtocolTag_m.h"
 
-#include "inet/common/INETDefs.h"
+#include <inet/common/INETDefs.h>
+#include <inet/common/ProtocolTag_m.h>
+#include <inet/common/TagBase_m.h>
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/Packet.h>
+#include <inet/common/packet/chunk/BytesChunk.h>
+
 #include "common/utils/utils.h"
-
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 #include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
 
 using namespace omnetpp;
+using namespace inet;
 
 namespace Http {
-using namespace inet;
 
 /*
  * Method for sending raw bytes.

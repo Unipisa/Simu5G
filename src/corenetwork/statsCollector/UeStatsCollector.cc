@@ -9,18 +9,17 @@
 // and cannot be removed from it.
 //
 
+#include <inet/common/ModuleAccess.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 
 #include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 #include "stack/mac/layer/LteMacBase.h"
-#include "inet/common/ModuleAccess.h"
 #include "stack/packetFlowManager/PacketFlowManagerUe.h"
+#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
 
 namespace simu5g {
 
 Define_Module(UeStatsCollector);
-
 
 void UeStatsCollector::initialize(int stage)
 {

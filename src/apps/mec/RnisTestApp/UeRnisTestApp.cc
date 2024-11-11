@@ -11,27 +11,24 @@
 
 #include "apps/mec/RnisTestApp/UeRnisTestApp.h"
 
+#include <fstream>
+
+#include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/chunk/BytesChunk.h>
+#include <inet/networklayer/common/L3AddressTag_m.h>
+#include <inet/transportlayer/common/L4PortTag_m.h>
+
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
 #include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_Types.h"
 
-#include "inet/common/TimeTag_m.h"
-#include "inet/common/packet/chunk/BytesChunk.h"
-
-#include "inet/networklayer/common/L3AddressTag_m.h"
-#include "inet/transportlayer/common/L4PortTag_m.h"
-
-#include <fstream>
-
 namespace simu5g {
 
-using namespace inet;
 using namespace std;
+using namespace inet;
 
 Define_Module(UeRnisTestApp);
-
 
 UeRnisTestApp::~UeRnisTestApp() {
     cancelAndDelete(selfStart_);

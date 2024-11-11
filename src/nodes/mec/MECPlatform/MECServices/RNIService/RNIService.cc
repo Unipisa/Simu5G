@@ -9,25 +9,26 @@
 // and cannot be removed from it.
 //
 
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/common/ModuleAccess.h"
-#include "inet/common/lifecycle/NodeStatus.h"
-#include "inet/transportlayer/contract/tcp/TcpSocket.h"
-#include "inet/transportlayer/contract/tcp/TcpCommand_m.h"
-#include "inet/applications/tcpapp/GenericAppMsg_m.h"
-#include <iostream>
 #include "nodes/mec/MECPlatform/MECServices/RNIService/RNIService.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
-//#include "apps/mec/MECServices/packets/HttpResponsePacket.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "common/utils/utils.h"
-#include "inet/networklayer/contract/ipv4/Ipv4Address.h"
 
+#include <inet/applications/tcpapp/GenericAppMsg_m.h>
+#include <inet/common/ModuleAccess.h>
+#include <inet/common/lifecycle/NodeStatus.h>
+#include <inet/networklayer/common/L3AddressResolver.h>
+#include <inet/networklayer/contract/ipv4/Ipv4Address.h>
+#include <inet/transportlayer/contract/tcp/TcpCommand_m.h>
+#include <inet/transportlayer/contract/tcp/TcpSocket.h>
+
+#include "common/utils/utils.h"
 #include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
+
 Define_Module(RNIService);
 
 RNIService::RNIService():L2MeasResource_() {

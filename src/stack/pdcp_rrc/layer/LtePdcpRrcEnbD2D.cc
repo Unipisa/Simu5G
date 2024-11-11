@@ -10,10 +10,10 @@
 //
 
 #include "stack/pdcp_rrc/layer/LtePdcpRrcEnbD2D.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
-#include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
-#include "inet/common/packet/Packet.h"
 
+#include <inet/common/packet/Packet.h>
+
+#include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {

@@ -12,7 +12,8 @@
 #ifndef _LTE_LTEHARQBUFFERRXD2D_H_
 #define _LTE_LTEHARQBUFFERRXD2D_H_
 
-#include "inet/common/packet/Packet.h"
+#include <inet/common/packet/Packet.h>
+
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessRxD2D.h"
 

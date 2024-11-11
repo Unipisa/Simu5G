@@ -10,7 +10,9 @@
 //
 
 #include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-#include "inet/networklayer/common/L3AddressResolver.h"
+
+#include <inet/networklayer/common/L3AddressResolver.h>
+
 #include "common/utils/utils.h"
 
 namespace simu5g {

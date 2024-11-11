@@ -12,12 +12,13 @@
 #include <cmath>
 #include <fstream>
 
-#include <inet/common/packet/chunk/ByteCountChunk.h>
+#include <inet/common/ModuleAccess.h>  // for multicast support
 #include <inet/common/TimeTag_m.h>
+#include <inet/common/packet/chunk/ByteCountChunk.h>
+
 #include "apps/d2dMultihop/MultihopD2D.h"
 #include "apps/d2dMultihop/TrickleTimerMsg_m.h"
 #include "stack/mac/layer/LteMacBase.h"
-#include "inet/common/ModuleAccess.h"  // for multicast support
 
 namespace simu5g {
 
