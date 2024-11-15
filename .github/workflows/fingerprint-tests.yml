@@ -29,16 +29,14 @@ jobs:
         with:
           repository: omnetpp/omnetpp
           path: omnetpp
-          # Some (yet) unreleased changes after 6.0.3 are
-          # needed for the fingerprints to match.
-          ref: omnetpp-6.x
+          ref: omnetpp-6.1.0
 
       - name: Checking out INET
         uses: actions/checkout@v4
         with:
           repository: inet-framework/inet
           path: inet4.5
-          ref: v4.5.2
+          ref: v4.5.4
 
       - name: Checking out Simu5G
         uses: actions/checkout@v4
