@@ -37,13 +37,13 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     // id among all the background cells
     int id_;
 
-    // tx power
+    // tx power [dBm]
     double txPower_;
 
     // tx direction
     TxDirectionType txDirection_;
 
-    // tx angle
+    // tx angle [deg]
     double txAngle_;
 
     // if true, this is a NR base station
@@ -53,7 +53,7 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     // numerology
     unsigned int numerologyIndex_;
 
-    // carrier frequency
+    // carrier frequency [GHz]
     double carrierFrequency_;
 
     // number of logical bands
