@@ -366,14 +366,37 @@ void MECWarningAlertApp::handleSelfMessage(cMessage *msg)
     }
     else if (strcmp(msg->getName(), "connectService") == 0) {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
-        if (!serviceAddress.isUnspecified() && serviceSocket_->getState() != inet::TcpSocket::CONNECTED) {
-            connect(serviceSocket_, serviceAddress, servicePort);
+        bool sendWarningAlertPacketInfo;
+        if (serviceAddress.isUnspecified()) {
+            EV << "MECWarningAlertApp::handleSelfMessage - service IP address is unspecified (maybe response from the service registry is arriving)" << endl;
+            sendWarningAlertPacketInfo = true;
         }
-        else {
-            if (serviceAddress.isUnspecified())
-                EV << "MECWarningAlertApp::handleSelfMessage - service IP address is unspecified (maybe response from the service registry is arriving)" << endl;
-            else if (serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
-                EV << "MECWarningAlertApp::handleSelfMessage - service socket is already connected" << endl;
+        else
+            switch (serviceSocket_->getState()) {
+                case inet::TcpSocket::PEER_CLOSED:
+                case inet::TcpSocket::LOCALLY_CLOSED:
+                case inet::TcpSocket::CLOSED:
+                case inet::TcpSocket::SOCKERROR:
+                    serviceSocket_->renewSocket();
+                    // nobreak;
+                case inet::TcpSocket::NOT_BOUND:
+                case inet::TcpSocket::BOUND:
+                    connect(serviceSocket_, serviceAddress, servicePort);
+                    sendWarningAlertPacketInfo = false;
+                    break;
+                case inet::TcpSocket::CONNECTED:
+                    EV << "MECWarningAlertApp::handleSelfMessage - service socket is already connected" << endl;
+                    sendWarningAlertPacketInfo = true;
+                    break;
+                case inet::TcpSocket::CONNECTING:
+                    EV << "MECWarningAlertApp::handleSelfMessage - service socket is already connecting" << endl;
+                    sendWarningAlertPacketInfo = true;
+                    break;
+                default:
+                    throw cRuntimeError("Unhandled socket state: %d", (int)serviceSocket_->getState());
+            }
+
+        if (sendWarningAlertPacketInfo) {
             auto nack = inet::makeShared<WarningAppPacket>();
             // the connectService message is scheduled after a start mec app from the UE app, so I can
             // respond to her here
