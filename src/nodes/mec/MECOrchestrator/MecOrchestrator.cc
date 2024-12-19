@@ -273,6 +273,14 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
          newMecApp.mecAppIsntanceId = appInfo->instanceId;
          newMecApp.contextId = contextIdCounter;
          newMecApp.reference = appInfo->reference;
+         auto multiUEMECApp = dynamic_cast<MultiUEMECApp*>(newMecApp.reference);
+         if (multiUEMECApp) {
+             struct UE_MEC_CLIENT newUE;
+             newUE.address = inet::L3Address(contAppMsg->getUeIpAddress());
+             // the UE port is not known at this stage
+             newUE.port = -1;
+             multiUEMECApp->addNewUE(newUE);
+         }
          meAppMap[contextIdCounter] = newMecApp;
 
          MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
