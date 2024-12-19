@@ -18,6 +18,8 @@ simple NRPhyUe extends LtePhyUeD2D
 {
     parameters:
         @class("NRPhyUe");
+        // indicates when an handover starts (false) and when it ends (true)
+        @signal[lte_stack_phy_handover](type=bool);
 
 }
 

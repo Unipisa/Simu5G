@@ -36,6 +36,9 @@ class NRPhyUe : public LtePhyUeD2D
   public:
     NRPhyUe();
     virtual ~NRPhyUe();
+
+    // indicates when an handover starts (0) and when it ends (1)
+    static const simsignal_t lte_stack_phy_handover;
 };
 
 } //namespace

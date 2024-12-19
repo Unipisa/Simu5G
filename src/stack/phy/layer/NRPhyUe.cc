@@ -19,6 +19,7 @@ namespace simu5g {
 
 Define_Module(NRPhyUe);
 
+const simsignal_t NRPhyUe::lte_stack_phy_handover = registerSignal("lte_stack_phy_handover");
 NRPhyUe::NRPhyUe()
 {
     handoverStarter_ = NULL;
@@ -356,6 +357,8 @@ void NRPhyUe::triggerHandover()
 
     handoverTrigger_ = new cMessage("handoverTrigger");
     scheduleAt(simTime() + handoverLatency, handoverTrigger_);
+    // signal handover begin
+    emit(lte_stack_phy_handover, false);
 }
 
 void NRPhyUe::doHandover()
@@ -475,6 +478,9 @@ void NRPhyUe::doHandover()
         IP2Nic* enbIp2nic =  check_and_cast<IP2Nic*>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2nic->signalHandoverCompleteTarget(nodeId_,oldMaster);
     }
+
+    // signal end handover
+    emit(lte_stack_phy_handover, true);
 }
 
 void NRPhyUe::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
