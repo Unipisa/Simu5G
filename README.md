@@ -60,9 +60,9 @@ Core contributors
 Dependencies
 ------------
 
-This version requires:
+This version uses:
 
-- OMNeT++ 6.0.1
+- OMNeT++ 6.1
 - INET 4.5
 
 
