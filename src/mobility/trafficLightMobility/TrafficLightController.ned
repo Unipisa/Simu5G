@@ -19,7 +19,7 @@ simple TrafficLightController
     double yellowPeriod @unit(s) = default(1s);
     double redPeriod @unit(s) = default(1s);
     double startTime @unit(s) = default(1s);
-    int startState @enum(OFF, GREEN, YELLOW, RED) = default(3); // do not use 0 or 2, for now!
+    int startState = default(3); // do not use 0 or 2, for now!
     double meanCarLength @unit(m) = default(4m);
     double areaWidth @unit(m) = default(1m);
 }

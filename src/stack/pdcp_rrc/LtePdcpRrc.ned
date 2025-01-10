@@ -36,10 +36,10 @@ simple LtePdcpRrcBase like LtePdcpRrc {
     parameters:
         @display("i=block/fork");
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
-        int conversationalRlc @enum(TM, UM, AM, UNKNOWN_RLC_TYPE) = default(1);
-        int streamingRlc @enum(TM, UM, AM, UNKNOWN_RLC_TYPE) = default(1);
-        int interactiveRlc @enum(TM, UM, AM, UNKNOWN_RLC_TYPE) = default(1);
-        int backgroundRlc @enum(TM, UM, AM, UNKNOWN_RLC_TYPE) = default(1);
+        int conversationalRlc = default(1);
+        int streamingRlc = default(1);
+        int interactiveRlc = default(1);
+        int backgroundRlc = default(1);
         
         //# Statistics
         @signal[receivedPacketFromUpperLayer];
