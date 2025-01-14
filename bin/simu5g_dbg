@@ -1,0 +1,11 @@
+#! /bin/sh
+
+SIMU5G_SRC=$SIMU5G_ROOT/src
+INET_SRC=`(cd $(inet_root)/src ; pwd)`
+COMMAND_LINE_OPTIONS="-n $SIMU5G_ROOT/simulations:$SIMU5G_ROOT/emulation:$SIMU5G_SRC:$INET_SRC"
+
+if [ -f $SIMU5G_SRC/libsimu5g_dbg.so -o -f $SIMU5G_SRC/libsimu5g_dbg.dll -o -f $SIMU5G_SRC/libsimu5g_dbg.dylib ]; then
+  opp_run_dbg -l $SIMU5G_SRC/simu5g -l $INET_SRC/INET $COMMAND_LINE_OPTIONS "$@"
+elif [ -x $SIMU5G_SRC/simu5g_dbg -o -x $SIMU5G_SRC/simu5g_dbg.exe ]; then
+  $SIMU5G_SRC/simu5g_dbg $COMMAND_LINE_OPTIONS "$@"
+fi
