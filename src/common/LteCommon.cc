@@ -20,7 +20,7 @@
 #include "common/binder/Binder.h"
 #include "common/cellInfo/CellInfo.h"
 #include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include "x2/packet/X2ControlInfo_m.h"
 
 namespace simu5g {

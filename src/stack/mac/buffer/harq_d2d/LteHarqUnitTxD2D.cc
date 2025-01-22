@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

@@ -13,7 +13,7 @@
 #define _LTE_LCGSCHEDULER_H_
 
 #include "common/LteCommon.h"
-#include "stack/mac/layer/LteMacUe.h"
+#include "stack/mac/LteMacUe.h"
 
 namespace simu5g {
 

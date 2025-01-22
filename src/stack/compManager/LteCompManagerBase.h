@@ -13,7 +13,7 @@
 #define LTE_LTECOMPMANAGERBASE_H_
 
 #include "common/LteCommon.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "x2/packet/X2ControlInfo_m.h"
 #include "stack/compManager/X2CompMsg.h"

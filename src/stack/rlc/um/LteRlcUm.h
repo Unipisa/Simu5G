@@ -16,10 +16,10 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "stack/rlc/packet/LteRlcSdu_m.h"
-#include "stack/rlc/um/entity/UmTxEntity.h"
-#include "stack/rlc/um/entity/UmRxEntity.h"
+#include "stack/rlc/um/UmTxEntity.h"
+#include "stack/rlc/um/UmRxEntity.h"
 #include "stack/rlc/packet/LteRlcDataPdu.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 #include "nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {

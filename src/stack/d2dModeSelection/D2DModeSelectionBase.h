@@ -14,7 +14,7 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/mac/LteMacEnbD2D.h"
 
 namespace simu5g {
 

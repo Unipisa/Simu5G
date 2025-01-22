@@ -38,7 +38,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         std::stringstream buf;
 
         buf << "UmTxEntity Lcid: " << lcid;
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.UmTxEntity");
+        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmTxEntity");
         UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
         txEntities_[cid] = txEnt;    // Add to tx_entities map
 

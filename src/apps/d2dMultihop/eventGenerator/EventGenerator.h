@@ -18,7 +18,7 @@
 
 #include "apps/d2dMultihop/MultihopD2D.h"
 #include "common/binder/Binder.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

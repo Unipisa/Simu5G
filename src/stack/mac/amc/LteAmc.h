@@ -20,7 +20,7 @@
 #include "stack/mac/amc/AmcPilot.h"
 #include "stack/mac/amc/LteMcs.h"
 #include "stack/mac/amc/UserTxParams.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include "common/binder/Binder.h"
 
 namespace simu5g {

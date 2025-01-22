@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/buffer/harq/LteHarqUnitTx.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include <omnetpp.h>
 
 namespace simu5g {

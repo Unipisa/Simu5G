@@ -12,7 +12,7 @@
 #ifndef _LTE_LTEHARQBUFFERRX_H_
 #define _LTE_LTEHARQBUFFERRX_H_
 
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 #include "stack/mac/buffer/harq/LteHarqProcessRx.h"
 
 namespace simu5g {

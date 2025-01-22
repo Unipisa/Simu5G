@@ -19,8 +19,8 @@
 #include "common/LteCommon.h"
 #include "nodes/ExtCell.h"
 #include "nodes/backgroundCell/BackgroundScheduler.h"
-#include "stack/phy/layer/LtePhyUe.h"
-#include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/phy/LtePhyUe.h"
+#include "stack/mac/LteMacEnbD2D.h"
 
 namespace simu5g {
 

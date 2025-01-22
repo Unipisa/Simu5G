@@ -20,8 +20,8 @@
 #include "apps/d2dMultihop/MultihopD2DPacket_m.h"
 #include "apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
 #include "apps/d2dMultihop/eventGenerator/EventGenerator.h"
-#include "stack/mac/layer/LteMacBase.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/mac/LteMacBase.h"
+#include "stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

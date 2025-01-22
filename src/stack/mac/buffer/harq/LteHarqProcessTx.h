@@ -13,7 +13,7 @@
 #define _LTE_LTEHARQPROCESSTX_H_
 
 #include "stack/mac/buffer/harq/LteHarqUnitTx.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

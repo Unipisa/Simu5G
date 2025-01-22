@@ -11,8 +11,8 @@
 
 #include "nodes/backgroundCell/BackgroundCellChannelModel.h"
 #include "nodes/backgroundCell/BackgroundScheduler.h"
-#include "stack/phy/layer/LtePhyBase.h"
-#include "stack/phy/layer/LtePhyUe.h"
+#include "stack/phy/LtePhyBase.h"
+#include "stack/phy/LtePhyUe.h"
 #include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
 namespace simu5g {

@@ -21,8 +21,8 @@
 #include <map>
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "common/cellInfo/CellInfo.h"
-#include "stack/mac/layer/LteMacEnb.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/mac/LteMacEnb.h"
+#include "stack/pdcp_rrc/LtePdcpRrc.h"
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/packetFlowManager/PacketFlowManagerEnb.h"
 

@@ -13,7 +13,7 @@
 
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 #include "stack/rlc/am/LteRlcAm.h"
 
 namespace simu5g {

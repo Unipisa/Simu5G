@@ -10,8 +10,8 @@
 //
 
 #include "PacketFlowManagerEnb.h"
-#include "stack/mac/layer/LteMacBase.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/mac/LteMacBase.h"
+#include "stack/pdcp_rrc/LtePdcpRrc.h"
 #include "stack/rlc/LteRlcDefs.h"
 #include "stack/rlc/packet/LteRlcDataPdu.h"
 #include "stack/mac/packet/LteMacPdu.h"

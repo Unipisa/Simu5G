@@ -13,8 +13,8 @@
 #include "stack/mac/packet/LteMacPdu.h"
 #include "common/LteControlInfo.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
-#include "stack/mac/layer/LteMacBase.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacBase.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

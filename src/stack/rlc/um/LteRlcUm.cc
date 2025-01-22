@@ -57,7 +57,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         std::stringstream buf;
 
         buf << "UmTxEntity Lcid: " << lcid;
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.UmTxEntity");
+        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmTxEntity");
         UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
         txEntities_[cid] = txEnt;    // Add to tx_entities map
 
@@ -97,7 +97,7 @@ UmRxEntity *LteRlcUm::getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         // Not found: create
         std::stringstream buf;
         buf << "UmRxEntity Lcid: " << lcid << " cid: " << cid;
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.UmRxEntity");
+        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmRxEntity");
         UmRxEntity *rxEnt = check_and_cast<UmRxEntity *>(
                 moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
         rxEntities_[cid] = rxEnt;    // Add to rx_entities map

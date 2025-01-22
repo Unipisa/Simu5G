@@ -17,7 +17,7 @@
 #include "nodes/mec/utils/MecCommon.h"
 
 #include "PacketFlowManagerBase.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/pdcp_rrc/LtePdcpRrc.h"
 #include "stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {

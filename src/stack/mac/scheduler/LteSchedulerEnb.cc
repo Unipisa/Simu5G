@@ -22,7 +22,7 @@
 #include "stack/mac/scheduling_modules/LteAllocatorBestFit.h"
 #include "stack/mac/buffer/LteMacBuffer.h"
 #include "stack/mac/buffer/LteMacQueue.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

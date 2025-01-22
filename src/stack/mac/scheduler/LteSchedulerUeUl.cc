@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/scheduler/LteSchedulerUeUl.h"
-#include "stack/mac/layer/LteMacUe.h"
+#include "stack/mac/LteMacUe.h"
 #include "stack/mac/amc/UserTxParams.h"
 #include "stack/mac/packet/LteSchedulingGrant.h"
 #include "stack/mac/packet/LteMacPdu.h"

@@ -13,8 +13,8 @@
 #define _LTE_LTEHARQUNITTXD2D_H_
 
 #include "stack/mac/buffer/harq/LteHarqUnitTx.h"
-#include "stack/mac/layer/LteMacUeD2D.h"
-#include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/mac/LteMacUeD2D.h"
+#include "stack/mac/LteMacEnbD2D.h"
 
 namespace simu5g {
 

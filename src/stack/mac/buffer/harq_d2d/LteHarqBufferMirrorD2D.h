@@ -16,7 +16,7 @@
 #include "common/LteCommon.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

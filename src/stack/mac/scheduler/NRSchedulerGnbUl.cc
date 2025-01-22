@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/scheduler/NRSchedulerGnbUl.h"
-#include "stack/mac/layer/NRMacGnb.h"
+#include "stack/mac/NRMacGnb.h"
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
 

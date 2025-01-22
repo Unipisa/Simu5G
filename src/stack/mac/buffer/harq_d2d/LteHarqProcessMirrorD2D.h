@@ -14,7 +14,7 @@
 
 #include <omnetpp.h>
 #include "common/LteCommon.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

@@ -15,7 +15,7 @@
 #include <vector>
 #include "stack/mac/packet/LteHarqFeedback_m.h"
 #include "stack/mac/buffer/harq/LteHarqProcessTx.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

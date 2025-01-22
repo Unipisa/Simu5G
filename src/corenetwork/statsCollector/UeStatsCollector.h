@@ -20,9 +20,9 @@
 #include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include <string>
 #include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 #include "stack/packetFlowManager/PacketFlowManagerUe.h"
-// #include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+// #include "stack/pdcp_rrc/LtePdcpRrc.h"
 
 namespace simu5g {
 

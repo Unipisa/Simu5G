@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/allocator/LteAllocationModule.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

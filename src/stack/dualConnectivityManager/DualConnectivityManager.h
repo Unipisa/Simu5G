@@ -17,7 +17,7 @@
 #include "common/LteCommon.h"
 #include "x2/packet/X2ControlInfo_m.h"
 #include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
+#include "stack/pdcp_rrc/LtePdcpRrc.h"
 
 namespace simu5g {
 

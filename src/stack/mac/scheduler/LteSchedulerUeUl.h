@@ -14,7 +14,7 @@
 
 #include "common/LteCommon.h"
 
-#include "stack/mac/layer/LteMacUe.h"
+#include "stack/mac/LteMacUe.h"
 #include "stack/mac/scheduler/LcgScheduler.h"
 
 namespace simu5g {

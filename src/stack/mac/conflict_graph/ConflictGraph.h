@@ -12,7 +12,7 @@
 #ifndef CONFLICTGRAPH_H
 #define CONFLICTGRAPH_H
 
-#include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/mac/LteMacEnbD2D.h"
 #include "common/cellInfo/CellInfo.h"
 
 namespace simu5g {

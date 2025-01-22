@@ -10,8 +10,8 @@
 //
 
 #include "stack/mac/buffer/harq/LteHarqProcessRx.h"
-#include "stack/mac/layer/LteMacBase.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacBase.h"
+#include "stack/mac/LteMacEnb.h"
 #include "common/LteControlInfo.h"
 #include "common/binder/Binder.h"
 #include "stack/mac/packet/LteHarqFeedback_m.h"

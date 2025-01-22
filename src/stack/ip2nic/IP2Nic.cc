@@ -28,7 +28,7 @@
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
 #include "stack/ip2nic/IP2Nic.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 #include "common/binder/Binder.h"
 #include "common/cellInfo/CellInfo.h"
 

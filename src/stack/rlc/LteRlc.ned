@@ -12,6 +12,11 @@
 
 package simu5g.stack.rlc;
 
+import simu5g.stack.rlc.am.LteRlcAm;
+import simu5g.stack.rlc.tm.LteRlcTm;
+import simu5g.stack.rlc.um.ILteRlcUm;
+
+
 //
 // The LteRlc module implements the functionalities of the Radio Link Control (RLC) layer.
 // It provides mechanisms for end-to-end connectivity over the radio interface. It

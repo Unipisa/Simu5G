@@ -18,8 +18,8 @@
 #include "common/blerCurves/PhyPisaData.h"
 #include "stack/backgroundTrafficGenerator/BackgroundTrafficManagerBase.h"
 #include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
-#include "stack/mac/layer/LteMacEnb.h"
-#include "stack/phy/layer/LtePhyEnb.h"
+#include "stack/mac/LteMacEnb.h"
+#include "stack/phy/LtePhyEnb.h"
 
 namespace simu5g {
 

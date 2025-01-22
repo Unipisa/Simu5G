@@ -10,11 +10,11 @@
 //
 
 #include "stack/mac/scheduler/LteSchedulerEnbUl.h"
-#include "stack/mac/layer/LteMacEnb.h"
-#include "stack/mac/layer/LteMacEnbD2D.h"
+#include "stack/mac/LteMacEnb.h"
+#include "stack/mac/LteMacEnbD2D.h"
 #include "stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

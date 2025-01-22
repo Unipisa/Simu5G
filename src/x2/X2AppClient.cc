@@ -15,7 +15,7 @@
 #include "x2/X2AppClient.h"
 #include "common/binder/Binder.h"
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

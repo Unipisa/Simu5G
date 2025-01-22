@@ -22,7 +22,7 @@
 #include "common/timer/TTimer.h"
 #include "common/timer/TTimerMsg_m.h"
 #include "stack/phy/feedback/LteFeedbackComputation.h"
-#include "stack/phy/layer/LtePhyUe.h"
+#include "stack/phy/LtePhyUe.h"
 
 namespace simu5g {
 

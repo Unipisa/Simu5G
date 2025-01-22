@@ -17,7 +17,7 @@
 #include "common/LteCommon.h"
 #include "common/LteControlInfo.h"
 #include "common/carrierAggregation/ComponentCarrier.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/phy/LtePhyBase.h"
 #include "stack/phy/packet/LteAirFrame.h"
 #include <omnetpp.h>
 

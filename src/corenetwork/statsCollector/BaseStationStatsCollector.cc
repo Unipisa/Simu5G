@@ -12,9 +12,7 @@
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
 #include "stack/packetFlowManager/PacketFlowManagerEnb.h"
-#include "stack/rlc/um/LteRlcUm.h"
-#include "stack/pdcp_rrc/layer/LtePdcpRrc.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include <string>
 
 namespace simu5g {

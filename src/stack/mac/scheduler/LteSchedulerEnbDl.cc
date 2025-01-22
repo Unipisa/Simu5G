@@ -10,7 +10,7 @@
 //
 
 #include "stack/mac/scheduler/LteSchedulerEnbDl.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 #include "stack/mac/scheduler/LteScheduler.h"
 #include "stack/mac/allocator/LteAllocationModule.h"
 #include "stack/mac/buffer/LteMacBuffer.h"

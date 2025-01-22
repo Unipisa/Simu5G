@@ -17,8 +17,8 @@
 #include "common/binder/Binder.h"
 #include "corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/mac/layer/LteMacUe.h"
-#include "stack/phy/layer/LtePhyUe.h"
+#include "stack/mac/LteMacUe.h"
+#include "stack/phy/LtePhyUe.h"
 
 namespace simu5g {
 

@@ -11,7 +11,7 @@
 
 #include "apps/d2dMultihop/eventGenerator/EventGenerator.h"
 #include "common/LteCommon.h"
-#include "stack/phy/layer/LtePhyBase.h"
+#include "stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

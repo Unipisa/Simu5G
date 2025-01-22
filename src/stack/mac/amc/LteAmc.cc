@@ -12,7 +12,7 @@
 #include <omnetpp.h>
 
 #include "stack/mac/amc/LteAmc.h"
-#include "stack/mac/layer/LteMacEnb.h"
+#include "stack/mac/LteMacEnb.h"
 
 // NOTE: AMC Pilots header file inclusions must go here
 #include "stack/mac/amc/AmcPilotAuto.h"

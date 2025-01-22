@@ -11,7 +11,7 @@
 
 #include "stack/rlc/am/buffer/AmTxQueue.h"
 #include "stack/rlc/am/LteRlcAm.h"
-#include "stack/mac/layer/LteMacBase.h"
+#include "stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

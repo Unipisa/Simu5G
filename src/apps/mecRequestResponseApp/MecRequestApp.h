@@ -19,7 +19,7 @@
 
 #include "apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
 #include "apps/mecRequestResponseApp/packets/MigrationTimer_m.h"
-#include "stack/phy/layer/NRPhyUe.h"
+#include "stack/phy/NRPhyUe.h"
 
 namespace simu5g {
 

@@ -18,8 +18,8 @@
 #include "common/LteControlInfo.h"
 #include "common/binder/Binder.h"
 #include "common/LteCommon.h"
-#include "stack/phy/layer/LtePhyBase.h"
-#include "stack/phy/layer/LtePhyEnb.h"
+#include "stack/phy/LtePhyBase.h"
+#include "stack/phy/LtePhyEnb.h"
 
 namespace simu5g {
 
