@@ -1,7 +1,5 @@
-#
-# Use the new message compiler introduced in OMNeT++ 5.3
-#
-MSGC:=$(MSGC) --msg6
+# Compile as C++17 to suppress warnings ("warning: decomposition declarations are a C++17 extension [-Wc++17-extensions]")
+CXXFLAGS+= -Wno-c++17-extensions
 
 #
 # on Windows we have to link with the winsock2 library as it is no longer added
