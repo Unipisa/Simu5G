@@ -1,0 +1,50 @@
+#!/bin/sh
+
+if [ -z "$SIMU5G_ROOT" ]; then
+  echo "Run 'source setenv' in the Simu5G root directory"
+  exit 1
+fi
+
+VERSION=$(cat $SIMU5G_ROOT/Version) || exit 1
+MINOR_VERSION=$(echo $VERSION | rev | cut -f 2- -d '.' | rev) || exit 1
+
+echo "Building Simu5G Version: $VERSION"
+
+if [ "$BUILDID" = "" ]; then
+  # generate our own build identifier
+  export BUILDDATE=$(date +%Y%m%d)
+  export BUILDHASH=$(git describe --tags --long | awk -F '-g' '{print $2;}')
+  export BUILDID="$VERSION-$BUILDHASH"
+fi
+
+FILENAME=$SIMU5G_ROOT/simu5g-$VERSION-src.tgz
+FILENAME_DOC=$SIMU5G_ROOT/simu5g-$VERSION-doc.tgz
+DIRNAME=Simu5G-$VERSION
+
+rm -rf $SIMU5G_ROOT/out/$DIRNAME
+mkdir -p $SIMU5G_ROOT/out/$DIRNAME
+
+git checkout-index -a -f --prefix=$SIMU5G_ROOT/out/$DIRNAME/ || { echo --- error copying repo ---; exit 1;}
+
+echo "simu5g-$BUILDID" > $SIMU5G_ROOT/out/$DIRNAME/Version_build
+
+echo Creating $FILENAME_DOC.
+# switch to doc dir
+cd $SIMU5G_ROOT/doc
+# patching files
+#perl -i -pe $REGEXPREPLACE s/##BUILDID##/$BUILDID/g neddoc/overview.html
+# create archive
+tar cfz $FILENAME_DOC neddoc || { echo --- error creating simu5g-x.y.z-doc.tgz ---; exit 1;}
+
+# switch to the destination dir
+cd $SIMU5G_ROOT/out/$DIRNAME
+
+# cleanup
+rm -rf doc releng .github .gitattributes .gitignore .gitmodules .circleci .travis.yml .clang-format .oppfeaturestate
+
+# pack and create tar.gz archives
+echo Creating $FILENAME.
+cd $SIMU5G_ROOT/out
+rm -f $FILENAME
+tar cfz $FILENAME $DIRNAME || { echo --- error creating Simu5G-....tgz ---; exit 1;}
+rm -rf $SIMU5G_ROOT/out/$DIRNAME

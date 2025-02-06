@@ -34,5 +34,8 @@ checkmakefiles:
 	exit 1; \
 	fi
 
+dist:
+	releng/makedist
+
 neddoc:
 	@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/simulations,/*/tests,/*/showcases" .
