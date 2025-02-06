@@ -21,9 +21,9 @@ Define_Module(CbrSender);
 using namespace inet;
 using namespace std;
 
-simsignal_t CbrSender::cbrGeneratedThroughputSignal_ = registerSignal("cbrGeneratedThroughputSignal");
-simsignal_t CbrSender::cbrGeneratedBytesSignal_ = registerSignal("cbrGeneratedBytesSignal");
-simsignal_t CbrSender::cbrSentPktSignal_ = registerSignal("cbrSentPktSignal");
+simsignal_t CbrSender::cbrGeneratedThroughputSignal_ = registerSignal("cbrGeneratedThroughput");
+simsignal_t CbrSender::cbrGeneratedBytesSignal_ = registerSignal("cbrGeneratedBytes");
+simsignal_t CbrSender::cbrSentPktSignal_ = registerSignal("cbrSentPkt");
 
 
 CbrSender::~CbrSender()

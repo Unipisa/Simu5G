@@ -16,11 +16,11 @@ namespace simu5g {
 Define_Module(CbrReceiver);
 using namespace inet;
 
-simsignal_t CbrReceiver::cbrFrameLossSignal_ = registerSignal("cbrFrameLossSignal");
-simsignal_t CbrReceiver::cbrFrameDelaySignal_ = registerSignal("cbrFrameDelaySignal");
-simsignal_t CbrReceiver::cbrJitterSignal_ = registerSignal("cbrJitterSignal");
-simsignal_t CbrReceiver::cbrReceivedThroughputSignal_ = registerSignal("cbrReceivedThroughputSignal");
-simsignal_t CbrReceiver::cbrReceivedBytesSignal_ = registerSignal("cbrReceivedBytesSignal");
+simsignal_t CbrReceiver::cbrFrameLossSignal_ = registerSignal("cbrFrameLoss");
+simsignal_t CbrReceiver::cbrFrameDelaySignal_ = registerSignal("cbrFrameDelay");
+simsignal_t CbrReceiver::cbrJitterSignal_ = registerSignal("cbrJitter");
+simsignal_t CbrReceiver::cbrReceivedThroughputSignal_ = registerSignal("cbrReceivedThroughput");
+simsignal_t CbrReceiver::cbrReceivedBytesSignal_ = registerSignal("cbrReceivedBytes");
 simsignal_t CbrReceiver::cbrRcvdPktSignal_ = registerSignal("cbrRcvdPkt");
 
 void CbrReceiver::initialize(int stage)

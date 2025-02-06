@@ -24,16 +24,16 @@ simple CbrReceiver like IApp
     parameters:
         int localPort = default(3000);
 
-        @signal[cbrFrameDelaySignal](type="simtime_t");
-        @signal[cbrJitterSignal](type="simtime_t");
-        @signal[cbrFrameLossSignal](type="double");
-        @signal[cbrReceivedThroughputSignal];
-        @signal[cbrReceivedBytesSignal];
-        @statistic[cbrFrameDelay](title="Cbr Frame Delay"; unit="s"; source="cbrFrameDelaySignal"; record=mean,vector);
-        @statistic[cbrJitter](title="Cbr Playout Loss"; unit="s"; source="cbrJitterSignal"; record=mean,vector);
-        @statistic[cbrFrameLoss](title="Cbr Frame Loss"; unit="ratio"; source="cbrFrameLossSignal"; record=mean);
-        @statistic[cbrReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughputSignal"; record=timeavg,mean,sum);
-        @statistic[cbrReceivedBytes](title="Bytes received at the application level"; unit="Bps"; source="cbrReceivedBytesSignal"; record=timeavg,mean,vector,sum);
+        @signal[cbrFrameDelay](type="simtime_t");
+        @signal[cbrJitter](type="simtime_t");
+        @signal[cbrFrameLoss](type="double");
+        @signal[cbrReceivedThroughput];
+        @signal[cbrReceivedBytes];
+        @statistic[cbrFrameDelay](title="Cbr Frame Delay"; unit="s"; source="cbrFrameDelay"; record=mean,vector);
+        @statistic[cbrJitter](title="Cbr Playout Loss"; unit="s"; source="cbrJitter"; record=mean,vector);
+        @statistic[cbrFrameLoss](title="Cbr Frame Loss"; unit="ratio"; source="cbrFrameLoss"; record=mean);
+        @statistic[cbrReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughput"; record=timeavg,mean,sum);
+        @statistic[cbrReceivedBytes](title="Bytes received at the application level"; unit="Bps"; source="cbrReceivedBytes"; record=timeavg,mean,vector,sum);
 
 
 
