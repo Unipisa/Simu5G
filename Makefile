@@ -33,3 +33,6 @@ checkmakefiles:
 	echo; \
 	exit 1; \
 	fi
+
+neddoc:
+	@opp_neddoc --verbose --no-automatic-hyperlinks -x "/*/simulations,/*/tests,/*/showcases" .
