@@ -1,44 +1,17 @@
 # What's New in Simu5G
 
-## v1.3.0 (2025-01-16)
+## v1.3.0 (2025-02-06)
 
-This version introduces a range of updates focused on streamlining module access, improving parameter handling, optimizing code structure, and enhancing documentation. This release eliminates deprecated elements, refactors constructors, and adopts modern C++ practices for better efficiency and maintainability. The update also addresses multiple bug fixes, including initialization, memory leaks, and signal registration issues.
-
-**Key Enhancements:**
-
-- Improved organization and clarity of include directives.
-- Transitioned to the use of network nodes instead of deprecated functions like `getAncestorPar()`.
-- Refactor with range-based for loops, structured bindings, and auto type iterators.
-- Significant code cleaning, including the removal of unused parameters, variables, and members.
-- Adopted modern C++ practices, such as using `nullptr` and `static_cast`, and optimizing loop and destructor usage.
-- Enhanced documentation through comprehensive reviews.
-
-**Bug Fixes:**
-
-- Fixed initialization issues leading to potential segfaults.
-- Addressed memory leaks and corrected signal registration issues.
-- Corrected conditions causing reassociation failure and errors in data packet handling.
-
-**Module and Parameter Refactoring:**
-
-- Simplified parameter access by using `networkNode->par()`.
-- Introduced NED parameters for dynamic module access, replacing hardcoded paths.
-- Consolidated redundant module initialization and parameter processing methods.
-
-**Optimizations and Quality Improvements:**
-
-- Consolidated module access and parameter passing for efficiency.
-- Implemented static signal registrations for cleaner code.
-- Removed unwanted clear() calls and refined vector initializations.
-
-**Additional Changes:**
-
-- Added D2D specific `rcvdSinr` statistics and improved logging formats.
-- Removed obsolete code, statistics, and unused functions.
-- Enhanced modularity and readability of simulation examples.
-- Implemented detailed module documentation for better user guidance.
-
-Developers and users are encouraged to upgrade to this latest version to benefit from these cumulative improvements, ensuring a more optimized and error-free simulation environment.
+- Compatible with **OMNeT++ 6.1.0** and **INET 4.5.4**
+- New modules: MultiUEMECApp, MecRnisTestApp, UeRnisTestApp
+- Added NED documentation for modules
+- Increased reusability of modules via changes such as replacing hardcoded module
+  paths in the C++ code with NED parameters (binderModule, macModule, etc.), and
+  elimination of ancestorPar() calls by introducing local parameters instead.
+- Other NED adjustments, such as removal of unused NED parameters and splitting
+  NED files to have one module per file. See doc/NED-changes.txt for details.
+- Extensive C++ modernization, and adaption of more OMNeT++ best practices.
+- Various bug fixes.
 
 ## v1.2.3 (2025-01-10)
 

@@ -1,0 +1,249 @@
+This file summarizes NED-level changes that may affect users of the project.
+
+Changes in Simu5g-1.3
+=====================
+
+Added modules
+-------------
+apps.mec.MecApps.MecAppBase (only NED, C++ code existed before)
+apps.mec.MecApps.MultiUEMECApp
+apps.mec.RnisTestApp.MecRnisTestApp
+apps.mec.RnisTestApp.UeRnisTestApp
+stack.backgroundTrafficGenerator.BackgroundTrafficManagerBase (due to refactoring)
+
+Modules moved to a different package
+-------------------------------------
+stack.rlc.AmRxEntity -> stack.rlc.am.AmRxEntity
+stack.rlc.AmRxQueue -> stack.rlc.am.buffer.AmRxQueue
+stack.rlc.AmTxEntity -> stack.rlc.am.AmTxEntity
+stack.rlc.AmTxQueue -> stack.rlc.am.buffer.AmTxQueue
+stack.rlc.LteRlcAm -> stack.rlc.am.LteRlcAm
+stack.rlc.LteRlcTm -> stack.rlc.tm.LteRlcTm
+stack.rlc.LteRlcUm -> stack.rlc.um.LteRlcUm
+stack.rlc.LteRlcUmD2D -> stack.rlc.um.LteRlcUmD2D
+stack.rlc.UmRxEntity -> stack.rlc.um.UmRxEntity
+stack.rlc.UmTxEntity -> stack.rlc.um.UmTxEntity
+
+Added parameters for accessing other modules
+--------------------------------------------
+AmRxQueue:amModule
+AmRxQueue:binderModule
+BackgroundCellChannelModel:binderModule
+BackgroundCellTrafficManager:bgSchedulerModule
+BackgroundScheduler:binderModule
+BackgroundScheduler:channelModelModule
+BackgroundScheduler:trafficManagerModule
+BackgroundTrafficManager:macModule
+BackgroundTrafficManager:phyModule
+BackgroundTrafficManagerBase:binderModule
+BaseStationStatsCollector:cellInfoModule
+BaseStationStatsCollector:macModule
+BaseStationStatsCollector:packetFlowManagerModule
+BaseStationStatsCollector:pdcpRrcModule
+BaseStationStatsCollector:rlcUmModule
+CellInfo:binderModule
+ComponentCarrier:binderModule
+D2DModeSelectionBase:binderModule
+D2DModeSelectionBase:macModule
+DualConnectivityManager:pdcpRrcModule
+EventGenerator:binderModule
+ExtCell:binderModule
+FeedbackTester:feedbackGeneratorModule
+GtpUser:binderModule
+GtpUserX2:binderModule
+IP2Nic:binderModule
+IP2Nic:handoverManagerModule
+IPacketFlowManager:macModule
+LocationService:binderModule
+LteChannelModel:binderModule
+LteChannelModel:cellInfoModule
+LteChannelModel:componentCarrierModule
+LteCompManagerBase:binderModule
+LteDlFeedbackGenerator:binderModule
+LteDlFeedbackGenerator:phyModule
+LteHandoverManager:ip2nicModule
+LteMacBase:binderModule
+LteMacBase:packetFlowManagerModule
+LteMacEnb:cellInfoModule
+LteMacEnb:pdcpRrcModule
+LteMacEnb:rlcUmModule
+LteMacUe:collectorModule
+LteMacUeD2D:pdcpRrcModule
+LteMacUeD2D:rlcUmModule
+LtePdcpRrcBase:binderModule
+LtePdcpRrcBase:nrPacketFlowManagerModule
+LtePdcpRrcBase:packetFlowManagerModule
+LtePhyBase:binderModule
+LtePhyBase:channelModelModule
+LtePhyUe:feedbackGeneratorModule
+LtePhyUe:ip2nicModule
+LtePhyUe:pdcpRrcModule
+LtePhyUe:rlcUmModule
+LteX2Manager:binderModule
+LteX2Manager:interfaceTableModule
+MecAppBase:mecPlatformModule
+MecAppBase:serviceRegistryModule
+MecAppBase:vimModule
+MecOrchestrator:binderModule
+MecPlatformManager:serviceRegistryModule
+MecPlatformManager:vimModule
+MecRequestApp:phyModule
+MultihopD2D:eventGeneratorModule
+MultihopD2D:lteMacModule
+MultihopD2D:ltePhyModule
+MultihopD2D:multihopD2DStatisticsModule
+MultiUEMECApp:interfaceTableModule
+NRPacketFlowManagerGnb:macModule
+NRPacketFlowManagerUe:macModule
+NRPdcpRrcEnb:dualConnectivityManagerModule
+NRPhyUe:otherPhyModule
+PacketFlowManagerEnb:macModule
+PacketFlowManagerUe:macModule
+RNIService:binderModule
+RTVideoStreamingSender:mobilityModule
+ServiceRegistry:binderModule
+TrafficFlowFilter:binderModule
+TrafficGeneratorBase:backgroundTrafficManagerModule
+TrafficLightController:mobilityModule
+UALCMPApp:binderModule
+UeStatsCollector:binderModule
+UeStatsCollector:macModule
+UeStatsCollector:packetFlowManagerModule
+UEWarningAlertApp:mobilityModule
+UmRxEntity:binderModule
+UmRxEntity:macModule
+UmRxEntity:umModule
+UmTxEntity:packetFlowManagerModule
+UmTxEntity:umModule
+VirtualisationInfrastructureManager:binderModule
+X2AppClient:binderModule
+X2AppServer:binderModule
+
+Added parameters*
+-----------------
+
+*These parameters were added for technical reasons, i.e. during
+NED refactoring -- they do not add any new functionality or features.
+
+BackgroundCellTrafficManager:computeAvgInterference
+BackgroundCellTrafficManager:enablePeriodicCqiUpdate
+BackgroundTrafficManager:computeAvgInterference
+BackgroundTrafficManager:enablePeriodicCqiUpdate
+BackgroundTrafficManagerBase:numBgUes
+BackgroundUe:computeAvgInterference
+BackgroundUe:enablePeriodicCqiUpdate
+BackgroundUe:useProbabilisticCqi
+DeviceApp:ualcmpLocalPort
+GtpUser:gateway
+ILtePdcpRrc:headerCompressedSize
+IPacketFlowManager:pfmType
+IStatsCollector:collectorType
+LtePhyUe:hasCollector
+LteRlcUm:nodeType
+TrafficGeneratorBase:computeAvgInterference
+TrafficGeneratorBase:enablePeriodicCqiUpdate
+TrafficGeneratorBase:useProbabilisticCqi
+TrafficLightController:bidirectional
+UALCMPApp:mecOrchestratorHostname
+Upf:gateway
+VirtualisationInfrastructure:gateway
+
+Removed unused parameters
+-------------------------
+BackgroundCell:bgTrafficManagerType
+BackgroundTrafficGenerator:bgTrafficManagerType
+BackgroundUe:trafficGeneratorType
+CellInfo:positionUpdateInterval
+CellInfo:speed
+ChannelControl:propagationModel
+DeviceApp:connectAddress
+DeviceApp:connectPort
+DeviceApp:startTime
+DeviceApp:stopOperationExtraTime
+DeviceApp:stopOperationTimeout
+DeviceApp:stopTime
+GtpUser:filter
+IMECApp:localUePort
+IMECService:dataTransferMode
+LocationService:dataTransferMode
+LteChannelModel:componentCarrierIndex
+LteMac:interfaceName
+LteMac:interfaceTableModule
+LteMacBase:interfaceName
+LteMacBase:interfaceTableModule
+LteMacEnb:muMimoMinDistance
+LteNicBase:LteMacType
+LteNicBase:LtePdcpRrcType
+LteNicBase:LtePhyType
+LteNicBase:PacketFlowManagerType
+LteNicEnb:LteCompManagerType
+LteNicEnbD2D:d2dModeSelectionType
+LtePdcpRrc:headerCompressedSize
+LteRealisticChannelModel:rsrqScale
+LteRealisticChannelModel:rsrqShift
+LteRealisticChannelModel:useRsrqFromLog
+LteRlc:LteRlcUmType
+LteRlc:umType
+NRNicUe:NRMacType
+NRNicUe:NRPacketFlowManagerType
+NRNicUe:NRPhyType
+PacketFlowManager:pfmType
+RNIService:dataTransferMode
+RTVideoStreamingSender:interfaceTableModule
+RTVideoStreamingSender:logger
+ServiceRegistry:dataTransferMode
+ServiceRegistry:destPort
+StatsCollector:collectorType
+UALCMPApp:dataTransferMode
+UALCMPApp:destPort
+UERequestApp:interfaceTableModule
+UEWarningAlertApp:interfaceTableModule
+Ue:nicType
+eNodeB:StatsCollectorType
+eNodeB:nicType
+
+Renamed parameters:
+-------------------
+CbrSender:PacketSize -> packetSize
+VoIPSender:PacketSize -> packetSize
+
+Moved parameters
+-----------------
+Common parameters from the following modules moved to the MecAppBase module:
+
+IMECResponseApp
+MECWarningAlertApp
+MecRTVideoStreamingReceiver
+MecRequestBackgroundApp
+MecRequestBackgroundGeneratorApp
+MecRequestForegroundApp
+
+Added signals
+-------------
+rcvdSinrD2D
+
+Removed signals
+---------------
+cellBlocksUtilizationDl
+cellBlocksUtilizationUl
+measuredItbs
+
+Renamed signals
+---------------
+cbrGeneratedThroughtputSignal -> cbrGeneratedThroughput
+cbrReceivedThroughtputSignal -> cbrReceivedThroughput
+
+Added statistics
+----------------
+rcvdSinrD2D
+
+Removed statistics
+------------------
+cellBlocksUtilizationDl
+cellBlocksUtilizationUl
+measuredItbs
+
+Renamed statistics
+------------------
+cbrGeneratedThroughtput -> cbrGeneratedThroughput
+cbrReceivedThroughtput -> cbrReceivedThroughput
