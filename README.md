@@ -1,10 +1,9 @@
 ﻿Simu5G
-=======
+======
 
 5G NR and LTE/LTE-A user-plane simulation model, compatible with the 
 INET Framework.
 Website: http://simu5g.org
-
 
 Disclaimer
 ----------
@@ -42,13 +41,11 @@ our work:
     OMNeT++ Library for End-to-End Performance Evaluation of 5G Networks,"
     in IEEE Access, vol. 8, pp. 181176-181191, 2020, 
     doi: 10.1109/ACCESS.2020.3028550.
-  	
+
   If you include this software or part of it within your own software, 
 README and LICENSE files cannot be removed from it and must be included 
 in the root directory of your software package.
-   	
-  	
-  	
+
 Core contributors
 -----------------
 
@@ -56,15 +53,13 @@ Core contributors
 - Giovanni Stea (giovanni.stea@unipi.it)
 - Antonio Virdis (antonio.virdis@unipi.it)
 
-
 Dependencies
 ------------
 
 This version requires:
 
-- OMNeT++ 6.0.1
-- INET 4.5
-
+- OMNeT++ 6.0.3 or later
+- INET 4.5 or later
 
 Simu5G Features
 ---------------
@@ -80,7 +75,7 @@ PDCP-RRC
 - Header compression/decompression
 - Logical connection establishment and maintenance
 - E-UTRA/NR Dual connectivity
-- Split Bearer 
+- Split Bearer
 
 RLC
 
@@ -104,7 +99,7 @@ PHY
   - inter-cell interference
   - path-loss
   - fast fading
-  - shadowing 
+  - shadowing
   - (an)isotropic antennas
 
 Advanced features
@@ -116,13 +111,11 @@ Advanced features
 - Support for vehicular mobility (integration with Veins 5.2)
 - ETSI-compliant model of Multi-access Edge Computing (MEC) systems
 
-
 Applications
 
 - Voice-over-IP (VoIP)
 - Constant Bit Rate (CBR)
 - Trace-based Video-on-demand (VoD)
-
 
 Real-time emulation support
 ---------------------------
@@ -130,7 +123,6 @@ Real-time emulation support
 Simu5G supports real-time network emulation capabilities. Navigate to
 one of the examples included in the "emulation" folder and take a look
 at the README file included therein.
-
 
 Limitations
 -----------
@@ -142,5 +134,3 @@ Limitations
 - radio bearers not implemented, not even statically configured radio 
   bearers (dynamically allocating bearers would need the RRC protocol, 
   which is Control Plane so not implemented)
-
-
