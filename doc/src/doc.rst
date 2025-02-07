@@ -13,6 +13,14 @@ User's Guide
    users-guide/emulation
    users-guide/emulation_openness
 
+References
+----------
+
+.. toctree::
+   :maxdepth: 1
+   
+   `NED Documentation </neddoc>`_
+
 Showcases
 ---------
 
@@ -30,3 +38,4 @@ Tutorials
    :glob:
 
    tutorials/*/doc/index
+
