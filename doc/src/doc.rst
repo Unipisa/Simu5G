@@ -2,6 +2,15 @@
 :hide-footer:
 
 
+References
+----------
+
+.. raw:: html
+   
+   <ul>
+      <li><a href="/neddoc" target="_blank">NED Documentation</a></li>
+   </ul>
+
 User's Guide
 ------------
 
@@ -12,14 +21,6 @@ User's Guide
    users-guide/mec
    users-guide/emulation
    users-guide/emulation_openness
-
-References
-----------
-
-.. toctree::
-   :maxdepth: 1
-   
-   `NED Documentation </neddoc>`_
 
 Showcases
 ---------
