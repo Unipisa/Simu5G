@@ -8,6 +8,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      prev_doc_version:
+        description: 'Documentation version to include (X.Y.Z format)'
+        required: true
+        type: string
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -37,6 +42,18 @@ jobs:
           build-command: make html
           # Run before the build command, you can use this to install system level dependencies, for example with "apt-get update -y && apt-get install -y perl"
           pre-build-command: doc/src/tools/setup-build-process.sh
+      
+      - name: Set doc version
+        run: echo "DOC_VERSION=${{ github.event.inputs.prev_doc_version || '1.3.0' }}" >> $GITHUB_ENV
+
+      - name: Download previous release documentation
+        run: |
+          wget https://github.com/Unipisa/Simu5G/releases/download/v${{ env.DOC_VERSION }}/simu5g-${{ env.DOC_VERSION }}-doc.tgz
+          tar xzf simu5g-${{ env.DOC_VERSION }}-doc.tgz
+          sudo mkdir -p doc/src/_build/html/neddoc
+          sudo cp -r neddoc/* doc/src/_build/html/neddoc/
+          sudo chown -R $USER:$USER doc/src/_build/html/neddoc
+        
       - name: Upload github pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
