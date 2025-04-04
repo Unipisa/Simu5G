@@ -1,5 +1,6 @@
 #!/bin/sh
-TEST_ROOT="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-export SIMU5G_ROOT=$TEST_ROOT/../..
-./fingerprinttest.py -C $SIMU5G_ROOT -e $SIMU5G_ROOT/bin/simu5g "$@"
+cd $(dirname $0)
+python3 fingerprinttest.py -C $SIMU5G_ROOT -e $SIMU5G_ROOT/bin/simu5g "$@"
+exitcode=$?
 echo "HINT: In case of errors/fingerprint mismatches, the reason might be using the wrong omnetpp or inet version -- please check the versions CI uses, see .github/workflows/fingerprint-tests.yml"
+exit $exitcode

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 #
 # Fingerprint-based regression test tool
 #
