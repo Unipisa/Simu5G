@@ -43,7 +43,7 @@ simple LteMacUeD2D extends LteMacUe
         @signal[macDelayD2D];
         @statistic[macDelayD2D](title="Delay at the MAC layer D2D"; unit="s"; source="macDelayD2D"; record=mean,vector);
         @signal[macThroughputD2D];
-        @statistic[macThroughputD2D](title="Throughput at the MAC layer D2D"; unit="Bps"; source="macThroughputD2D"; record=mean);
+        @statistic[macThroughputD2D](title="Throughput at the MAC layer D2D"; unit="Bps"; source="throughput(macThroughputD2D)"; record=mean);
 
         @signal[rcvdD2DModeSwitchNotification];
         @statistic[rcvdD2DModeSwitchNotification](title="Reception of mode switch notification (tx side)"; unit=""; source="rcvdD2DModeSwitchNotification"; record=count,vector);

@@ -125,24 +125,24 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 else
                     macUe_emit(macDelaySignal_[dir], (NOW - temp->getCreationTime()).dbl()); // TODO `info->getDirection()` and `dir` maybe differs
 
-                // Calculate Throughput by sending the number of bits for this packet
-                totalRcvdBytes_ += size;
-                totalCellRcvdBytes_ += size;
+                // Calculate Throughput by sending the number of bits for this packet (not used anymore - we use throughput statistic now)
+                // totalRcvdBytes_ += size;
+                // totalCellRcvdBytes_ += size;
 
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 if (den > 0) {
-                    double tputSample = (double)totalRcvdBytes_ / den;
-                    double cellTputSample = (double)totalCellRcvdBytes_ / den;
+                    // double tputSample = (double)totalRcvdBytes_ / den;
+                    // double cellTputSample = (double)totalCellRcvdBytes_ / den;
 
                     // emit throughput statistics
                     if (info->getDirection() == D2D) {
-                        check_and_cast<LteMacEnbD2D *>(nodeB_.get())->emit(macCellThroughputD2D_, cellTputSample);
-                        macUe_emit(macThroughputD2D_, tputSample);
+                        check_and_cast<LteMacEnbD2D *>(nodeB_.get())->emit(macCellThroughputD2D_, (int64_t)size);
+                        macUe_emit(macThroughputD2D_, (int64_t)size);
                     }
                     else {
-                        nodeB_->emit(macCellThroughputSignal_[dir], cellTputSample); // TODO `info->getDirection()` and `dir` maybe differs
-                        macUe_emit(macThroughputSignal_[dir], tputSample); // TODO `info->getDirection()` and `dir` maybe differs
+                        nodeB_->emit(macCellThroughputSignal_[dir], (int64_t)size); // TODO `info->getDirection()` and `dir` maybe differs
+                        macUe_emit(macThroughputSignal_[dir], (int64_t)size); // TODO `info->getDirection()` and `dir` maybe differs
                     }
                 }
 

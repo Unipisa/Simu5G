@@ -18,7 +18,7 @@
 
 namespace simu5g {
 
-unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
+// unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
 
 using namespace omnetpp;
 
@@ -132,18 +132,18 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 // emit delay statistic
                 macUe_emit(macDelaySignal_[dir], (NOW - pktTemp->getCreationTime()).dbl());
 
-                // Calculate Throughput by sending the number of bits for this packet
-                totalCellRcvdBytes_ += size;
-                totalRcvdBytes_ += size;
+                // Calculate Throughput by sending the number of bits for this packet (not used anymore, we now use throughput statistic!)
+                // totalCellRcvdBytes_ += size;
+                // totalRcvdBytes_ += size;
                 double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
 
                 // emit throughput statistics
                 if (den > 0) {
-                    double tputSample = (double)totalRcvdBytes_ / den;
-                    double cellTputSample = (double)totalCellRcvdBytes_ / den;
+                    // double tputSample = (double)totalRcvdBytes_ / den;
+                    // double cellTputSample = (double)totalCellRcvdBytes_ / den;
 
-                    nodeB_->emit(macCellThroughputSignal_[dir], cellTputSample);
-                    macUe_emit(macThroughputSignal_[dir], tputSample);
+                    nodeB_->emit(macCellThroughputSignal_[dir], (int64_t)size);
+                    macUe_emit(macThroughputSignal_[dir], (int64_t)size);
                 }
 
                 macOwner_->dropObj(pktTemp);

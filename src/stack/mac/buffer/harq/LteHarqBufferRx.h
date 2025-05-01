@@ -54,8 +54,8 @@ class LteHarqBufferRx
     bool isMulticast_;
 
     // Statistics
-    static unsigned int totalCellRcvdBytes_;
-    unsigned int totalRcvdBytes_ = 0;
+    // static unsigned int totalCellRcvdBytes_;
+    // unsigned int totalRcvdBytes_ = 0;
     Direction dir = UNKNOWN_DIRECTION;
 
     static simsignal_t macCellThroughputSignal_[2];
@@ -164,7 +164,7 @@ class LteHarqBufferRx
      *  It is possible that the source node (e.g., a UE) left the simulation, but the
      *  packets from the node still reside in the simulation.
      */
-    virtual void macUe_emit(simsignal_t signal, double val)
+    virtual void macUe_emit(simsignal_t signal, int64_t val)
     {
         if (macUe_ != nullptr) {
             macUe_->emit(signal, val);
