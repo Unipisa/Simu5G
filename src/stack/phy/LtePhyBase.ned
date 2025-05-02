@@ -43,6 +43,13 @@ simple LtePhyBase like ILtePhy
         double multicastD2DRange @unit(m) = default(1000m);
         string binderModule = default("binder");
         string channelModelModule = default("^.channelModel[0]"); // or "nrChannelModel[0]"
+        
+        //#
+        //# Statistics recording
+        //#
+        @signal[macNodeId];
+        @statistic[macNodeId](title="MacNodeId provided at object construction by the Binder"; unit=""; source="macNodeId"; record=last);
+        
 
     gates:
         input upperGateIn;       // from upper layer
