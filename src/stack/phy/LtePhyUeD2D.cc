@@ -170,14 +170,15 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
            // both eNB's are on the same frequency. Communication received from a different cell is dropped.
 
            // check if sending and receiving node are associated with the same eNB
-           // TODO: check if the next line could be used as a faster implementation variant
-           // MacNodeId other_enb_id = binder_->getNextHop(lteInfo->getSourceId());
+           MacNodeId other_enb_id = binder_->getNextHop(lteInfo->getSourceId());
 
+           /* alternative implementation variant - not relying on next hop information: 
            LteMacBase* otherMacBase = binder_->getMacFromMacNodeId(lteInfo->getSourceId());
            if (otherMacBase == nullptr){
                throw cRuntimeError("LtePhyUeD2D::handleAirFrame - MAC not found");
            }
            MacNodeId other_enb_id = (MacNodeId)otherMacBase->getMacCellId();
+           */
 
            if (masterId_ != other_enb_id){
                EV << "D2D frame from UE  that is associated with a different base station -> ignore frame" << endl;
