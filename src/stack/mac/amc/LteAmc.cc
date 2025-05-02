@@ -438,7 +438,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
     // DEBUG
     EV << "PeerId: " << peerId << ", Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
-    fb.print(NODEID_NONE, id, D2D, "LteAmc::pushFeedbackD2D");
+    fb.print(cellId_, id, D2D, "LteAmc::pushFeedbackD2D");
 }
 
 const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency)
