@@ -9,6 +9,6 @@
 /simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-UL -r 5,            5s,              9226-de7b/tplx;f779-966c/s, PASS,
 /simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 0,            5s,              ff0b-b399/tplx;97df-fc1a/s, PASS,
 /simulations/LTE/demo/,                  -f omnetpp.ini -c CBR-DL -r 5,            5s,              e34f-fa8b/tplx;524f-ff66/s, PASS,
-/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,    5s,              f835-ba31/tplx;84da-e6dd/s, PASS,
-/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,   5s,              c318-4c97/tplx;7c19-69db/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 0,    5s,              f835-ba31/tplx;8ada-dedd/s, PASS,
+/simulations/LTE/demo/,                  -f omnetpp.ini -c SchedulersTest -r 12,   5s,              c318-4c97/tplx;7819-51db/s, PASS,
 
