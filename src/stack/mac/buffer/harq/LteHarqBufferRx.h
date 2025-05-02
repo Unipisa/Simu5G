@@ -54,13 +54,11 @@ class LteHarqBufferRx
     bool isMulticast_;
 
     // Statistics
-    static unsigned int totalCellRcvdBytes_;
-    unsigned int totalRcvdBytes_ = 0;
     Direction dir = UNKNOWN_DIRECTION;
 
-    static simsignal_t macCellThroughputSignal_[2];
+    static simsignal_t macCellPacketSignal_[2];
     static simsignal_t macDelaySignal_[2];
-    static simsignal_t macThroughputSignal_[2];
+    static simsignal_t macPacketSignal_[2];
 
     // reference to the eNB module
     opp_component_ptr<cModule> nodeB_;
@@ -168,6 +166,12 @@ class LteHarqBufferRx
     {
         if (macUe_ != nullptr) {
             macUe_->emit(signal, val);
+        }
+    }
+    virtual void macUe_emit(simsignal_t signal, inet::Packet *pkt)
+    {
+        if (macUe_ != nullptr) {
+            macUe_->emit(signal, pkt);
         }
     }
 

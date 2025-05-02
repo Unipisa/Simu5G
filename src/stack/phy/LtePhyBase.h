@@ -138,6 +138,7 @@ class LtePhyBase : public ChannelAccess
     static simsignal_t averageCqiDlSignal_;
     static simsignal_t averageCqiUlSignal_;
     static simsignal_t averageCqiD2DSignal_;
+    static simsignal_t macNodeIdSignal_;
 
     // Users that are transmitting (uplink)
     // receiving (downlink) current packet

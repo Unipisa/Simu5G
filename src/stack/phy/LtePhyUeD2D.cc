@@ -28,6 +28,7 @@ void LtePhyUeD2D::initialize(int stage)
         d2dTxPower_ = par("d2dTxPower");
         d2dMulticastEnableCaptureEffect_ = par("d2dMulticastCaptureEffect");
         d2dDecodingTimer_ = nullptr;
+        d2dEnforceEnbBoundOnSideLink = par("d2dEnforceEnbBoundOnSideLink");
     }
 }
 
@@ -159,6 +160,35 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
         delete frame;
         return;
     }
+
+    if (d2dEnforceEnbBoundOnSideLink){
+           // In normal a setup, neighboring base stations should have different carrier frequencies and
+           // thus communication between UE's associated with different eNB's should not be possible, i.e.
+           // these UES should not be able to talk to each other over sidelink.
+           // However, modelling networks with different carrier frequencies is currently not fully supported.
+           // Workaround: This switch checks if the UE's are associated with the same eNB even if
+           // both eNB's are on the same frequency. Communication received from a different cell is dropped.
+
+           // check if sending and receiving node are associated with the same eNB
+           MacNodeId other_enb_id = binder_->getNextHop(lteInfo->getSourceId());
+
+           /* alternative implementation variant - not relying on next hop information: 
+           LteMacBase* otherMacBase = binder_->getMacFromMacNodeId(lteInfo->getSourceId());
+           if (otherMacBase == nullptr){
+               throw cRuntimeError("LtePhyUeD2D::handleAirFrame - MAC not found");
+           }
+           MacNodeId other_enb_id = (MacNodeId)otherMacBase->getMacCellId();
+           */
+
+           if (masterId_ != other_enb_id){
+               EV << "D2D frame from UE  that is associated with a different base station -> ignore frame" << endl;
+               EV << "Current MasterID: " << masterId_ << ", MAC cell ID of sender (its eNB): " << other_enb_id << endl;
+               delete lteInfo;
+               delete frame;
+               return;
+           }
+       }
+
 
     // If the packet is a D2D multicast one, store it and decode it at the end of the TTI.
     if (d2dMulticastEnableCaptureEffect_ && binder_->isInMulticastGroup(nodeId_, lteInfo->getMulticastGroupId())) {

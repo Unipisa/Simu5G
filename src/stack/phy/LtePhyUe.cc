@@ -94,6 +94,7 @@ void LtePhyUe::initialize(int stage)
             nodeId_ = MacNodeId(hostModule->par("nrMacNodeId").intValue());
         else
             nodeId_ = MacNodeId(hostModule->par("macNodeId").intValue());
+        emit(macNodeIdSignal_, num(nodeId_));
         EV << "Local MacNodeId: " << nodeId_ << endl;
     }
     else if (stage == inet::INITSTAGE_PHYSICAL_LAYER) {
