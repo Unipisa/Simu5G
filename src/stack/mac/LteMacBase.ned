@@ -46,16 +46,16 @@ simple LteMacBase like ILteMac
         //#
         @signal[macDelayDl];
         @statistic[macDelayDl](title="Delay at the MAC layer UL"; unit="s"; source="macDelayDl"; record=mean,vector);
-        @signal[macThroughputDl];
-        @statistic[macThroughputDl](title="Throughput at the MAC layer DL"; unit="Bps"; source="throughput(macThroughputDl)"; record=mean);
+        @signal[macPacketDl](type=inet::Packet);
+        @statistic[macThroughputDl](title="Throughput at the MAC layer DL"; unit=bps; source="throughput(macPacketDl)"; record=mean);
         @signal[macDelayUl];
         @statistic[macDelayUl](title="Delay at the MAC layer UL"; unit="s"; source="macDelayUl"; record=mean,vector);
-        @signal[macThroughputUl];
-        @statistic[macThroughputUl](title="Throughput at the MAC layer UL"; unit="Bps"; source="throughput(macThroughputUl)"; record=mean);
-        @signal[macCellThroughputUl];
-        @statistic[macCellThroughputUl](title="Cell Throughput at the MAC layer UL"; unit="Bps"; source="throughput(macCellThroughputUl)"; record=mean);
-        @signal[macCellThroughputDl];
-        @statistic[macCellThroughputDl](title="Cell Throughput at the MAC layer DL"; unit="Bps"; source="throughput(macCellThroughputDl)"; record=mean);
+        @signal[macPacketUl](type=inet::Packet);
+        @statistic[macThroughputUl](title="Throughput at the MAC layer UL"; unit=bps; source="throughput(macPacketUl)"; record=mean);
+        @signal[macCellPacketUl](type=inet::Packet);
+        @statistic[macCellThroughputUl](title="Cell Throughput at the MAC layer UL"; unit=bps; source="throughput(macCellPacketUl)"; record=mean);
+        @signal[macCellPacketDl](type=inet::Packet);
+        @statistic[macCellThroughputDl](title="Cell Throughput at the MAC layer DL"; unit=bps; source="throughput(macCellPacketDl)"; record=mean);
         @signal[macCellPacketLossDl];
         @statistic[macCellPacketLossDl](title="Mac Cell Packet Loss Dl"; unit=""; source="macCellPacketLossDl"; record=mean);
         @signal[macCellPacketLossUl];

@@ -22,9 +22,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-simsignal_t LteHarqBufferRxD2D::macThroughputD2D_ = cComponent::registerSignal("macThroughputD2D");
+simsignal_t LteHarqBufferRxD2D::macPacketD2D_ = cComponent::registerSignal("macPacketD2D");
 simsignal_t LteHarqBufferRxD2D::macDelayD2D_ = cComponent::registerSignal("macDelayD2D");
-simsignal_t LteHarqBufferRxD2D::macCellThroughputD2D_ = cComponent::registerSignal("macCellThroughputD2D");
+simsignal_t LteHarqBufferRxD2D::macCellPacketD2D_ = cComponent::registerSignal("macCellPacketD2D");
 
 LteHarqBufferRxD2D::LteHarqBufferRxD2D(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId, bool isMulticast)
     : LteHarqBufferRx(binder, owner, num, srcId)
@@ -116,7 +116,6 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
         for (Codeword cw = 0; cw < MAX_CODEWORDS; ++cw) {
             if (processes_[i]->isCorrect(cw)) {
                 auto temp = processes_[i]->extractPdu(cw);
-                unsigned int size = temp->getByteLength();
                 auto info = temp->getTag<UserControlInfo>();
 
                 // emit delay statistic
@@ -125,25 +124,13 @@ std::list<Packet *> LteHarqBufferRxD2D::extractCorrectPdus()
                 else
                     macUe_emit(macDelaySignal_[dir], (NOW - temp->getCreationTime()).dbl()); // TODO `info->getDirection()` and `dir` maybe differs
 
-                // Calculate Throughput by sending the number of bits for this packet (not used anymore - we use throughput statistic now)
-                // totalRcvdBytes_ += size;
-                // totalCellRcvdBytes_ += size;
-
-                double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
-
-                if (den > 0) {
-                    // double tputSample = (double)totalRcvdBytes_ / den;
-                    // double cellTputSample = (double)totalCellRcvdBytes_ / den;
-
-                    // emit throughput statistics
-                    if (info->getDirection() == D2D) {
-                        check_and_cast<LteMacEnbD2D *>(nodeB_.get())->emit(macCellThroughputD2D_, (int64_t)size);
-                        macUe_emit(macThroughputD2D_, (int64_t)size);
-                    }
-                    else {
-                        nodeB_->emit(macCellThroughputSignal_[dir], (int64_t)size); // TODO `info->getDirection()` and `dir` maybe differs
-                        macUe_emit(macThroughputSignal_[dir], (int64_t)size); // TODO `info->getDirection()` and `dir` maybe differs
-                    }
+                if (info->getDirection() == D2D) {
+                    check_and_cast<LteMacEnbD2D *>(nodeB_.get())->emit(macCellPacketD2D_, temp);
+                    macUe_emit(macPacketD2D_, temp);
+                }
+                else {
+                    nodeB_->emit(macCellPacketSignal_[dir], temp); // TODO `info->getDirection()` and `dir` maybe differs
+                    macUe_emit(macPacketSignal_[dir], temp); // TODO `info->getDirection()` and `dir` maybe differs
                 }
 
                 ret.push_back(temp);

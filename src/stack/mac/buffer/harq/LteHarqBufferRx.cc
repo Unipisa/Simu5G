@@ -22,9 +22,9 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-simsignal_t LteHarqBufferRx::macCellThroughputSignal_[2] = { cComponent::registerSignal("macCellThroughputDl"), cComponent::registerSignal("macCellThroughputUl") };
+simsignal_t LteHarqBufferRx::macCellPacketSignal_[2] = { cComponent::registerSignal("macCellPacketDl"), cComponent::registerSignal("macCellPacketUl") };
 simsignal_t LteHarqBufferRx::macDelaySignal_[2] = { cComponent::registerSignal("macDelayDl"), cComponent::registerSignal("macDelayUl") };
-simsignal_t LteHarqBufferRx::macThroughputSignal_[2] = { cComponent::registerSignal("macThroughputDl"), cComponent::registerSignal("macThroughputUl") };
+simsignal_t LteHarqBufferRx::macPacketSignal_[2] = { cComponent::registerSignal("macPacketDl"), cComponent::registerSignal("macPacketUl") };
 
 LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *binder, MacNodeId srcId)
     : binder_(binder), macOwner_(owner), numHarqProcesses_(num), srcId_(srcId), processes_(num, nullptr), isMulticast_(false)
@@ -127,24 +127,12 @@ std::list<Packet *> LteHarqBufferRx::extractCorrectPdus()
                 auto temp = pktTemp->peekAtFront<LteMacPdu>();
                 auto uInfo = pktTemp->getTag<UserControlInfo>();
 
-                unsigned int size = pktTemp->getByteLength();
-
                 // emit delay statistic
                 macUe_emit(macDelaySignal_[dir], (NOW - pktTemp->getCreationTime()).dbl());
 
-                // Calculate Throughput by sending the number of bits for this packet (not used anymore, we now use throughput statistic!)
-                // totalCellRcvdBytes_ += size;
-                // totalRcvdBytes_ += size;
-                double den = (NOW - getSimulation()->getWarmupPeriod()).dbl();
-
-                // emit throughput statistics
-                if (den > 0) {
-                    // double tputSample = (double)totalRcvdBytes_ / den;
-                    // double cellTputSample = (double)totalCellRcvdBytes_ / den;
-
-                    nodeB_->emit(macCellThroughputSignal_[dir], (int64_t)size);
-                    macUe_emit(macThroughputSignal_[dir], (int64_t)size);
-                }
+                // emit packet statistics
+                nodeB_->emit(macCellPacketSignal_[dir], pktTemp);
+                macUe_emit(macPacketSignal_[dir], pktTemp);
 
                 macOwner_->dropObj(pktTemp);
                 ret.push_back(pktTemp);
