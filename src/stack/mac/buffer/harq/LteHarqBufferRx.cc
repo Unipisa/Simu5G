@@ -18,8 +18,6 @@
 
 namespace simu5g {
 
-// unsigned int LteHarqBufferRx::totalCellRcvdBytes_ = 0;
-
 using namespace omnetpp;
 
 simsignal_t LteHarqBufferRx::macCellPacketSignal_[2] = { cComponent::registerSignal("macCellPacketDl"), cComponent::registerSignal("macCellPacketUl") };

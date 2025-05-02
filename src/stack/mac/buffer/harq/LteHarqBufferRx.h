@@ -54,8 +54,6 @@ class LteHarqBufferRx
     bool isMulticast_;
 
     // Statistics
-    // static unsigned int totalCellRcvdBytes_;
-    // unsigned int totalRcvdBytes_ = 0;
     Direction dir = UNKNOWN_DIRECTION;
 
     static simsignal_t macCellPacketSignal_[2];
