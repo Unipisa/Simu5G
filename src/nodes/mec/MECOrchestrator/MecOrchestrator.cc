@@ -151,6 +151,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage* msg)
                 // the UE port is not known at this stage
                 newUE.port = -1;
                 existingMECApp->addNewUE(newUE);
+                return;
             }
             else
                 return;
