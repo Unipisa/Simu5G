@@ -18,6 +18,11 @@ namespace simu5g;
 class MacNodeId {
     @existingClass;
     @opaque;
+    @byValue;
+    @fromValue(MacNodeId($.intValue()));
+    @toValue(num($));
+    @fromString(MacNodeId(string2int64($)));
+    @toString(int642string(num($)));
 }
 
 // class X2NodeId {
