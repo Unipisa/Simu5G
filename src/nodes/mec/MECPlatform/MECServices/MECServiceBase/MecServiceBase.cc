@@ -164,8 +164,7 @@ void MecServiceBase::handleMessageWhenUp(cMessage *msg)
         else if (serverSocket.belongsToSocket(msg))
             serverSocket.processMessage(msg);
         else {
-            EV_ERROR << "message " << msg->getFullName() << "(" << msg->getClassName() << ") arrived for unknown socket \n";
-            delete msg;
+            throw cRuntimeError("Message %s arrived for unknown socket", msg->getClassAndFullName().c_str());
         }
     }
 }

@@ -74,14 +74,11 @@ void MecAppBase::connect(inet::TcpSocket *socket, const inet::L3Address& address
     if (tos != -1)
         socket->setTos(tos);
 
-    if (address.isUnspecified()) {
-        EV_ERROR << "Connecting to " << address << " port=" << port << ": cannot resolve destination address\n";
-    }
-    else {
-        EV_INFO << "Connecting to " << address << " port=" << port << endl;
+    if (address.isUnspecified())
+        throw cRuntimeError("Connecting to %s port=%d: destination address is unspecified", address.str().c_str(), port);
 
-        socket->connect(address, port);
-    }
+    EV_INFO << "Connecting to " << address << " port=" << port << endl;
+    socket->connect(address, port);
 }
 
 void MecAppBase::handleMessage(cMessage *msg)

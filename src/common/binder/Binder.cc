@@ -157,12 +157,12 @@ void Binder::unregisterNode(MacNodeId id)
 
     // remove 'id' from LteMacBase* cache but do not delete pointer.
     if (macNodeIdToModule_.erase(id) != 1) {
-        EV_ERROR << "Cannot unregister node - node id \"" << id << "\" - not found";
+        throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
     }
 
     // remove 'id' from MacNodeId mapping
     if (nodeIds_.erase(id) != 1) {
-        EV_ERROR << "Cannot unregister node - node id \"" << id << "\" - not found";
+        throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
     }
     // remove 'id' from ulTransmissionMap_ if currently scheduled
     for (auto& carrier : ulTransmissionMap_) { // all carrier frequency

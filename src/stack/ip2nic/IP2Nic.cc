@@ -223,7 +223,8 @@ void IP2Nic::toStackUe(Packet *pkt)
         headerSize += inet::UDP_HEADER_LENGTH.get();
     }
     else {
-        EV_ERROR << "Unknown transport protocol id." << endl;
+        //TODO: throw cRuntimeError("Unknown transport protocol id %d in packet %s", transportProtocol, pkt->getName());
+        EV_ERROR << "Unknown transport protocol id " << transportProtocol << " in packet " << pkt->getName() << std::endl;
     }
 
     pkt->addTagIfAbsent<FlowControlInfo>()->setSrcAddr(srcAddr.getInt());
@@ -331,7 +332,8 @@ void IP2Nic::toStackBs(Packet *pkt)
             break;
         }
         default: {
-            EV_ERROR << "Unknown transport protocol id." << endl;
+            //TODO: throw cRuntimeError("Unknown transport protocol id %d in packet %s", transportProtocol, pkt->getName());
+            EV_ERROR << "Unknown transport protocol id " << transportProtocol << " in packet " << pkt->getName() << std::endl;
         }
     }
 
