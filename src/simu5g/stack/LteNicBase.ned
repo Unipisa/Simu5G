@@ -2,7 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-//
+// Editor: Mohamed Seliem (University College Cork)
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
@@ -49,6 +49,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
         bool dualConnectivityEnabled = default(false);
         int numCarriers = default(1);
+
+	bool nrSdapDisabled = default(true); //adds sdap layer to the NIC stack
 
         string address @mutable = default("auto");
         *.interfaceTableModule = default(absPath(this.interfaceTableModule));
@@ -104,7 +106,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
     connections allowunconnected:
-        ip2nic.stackNic <--> pdcp.DataPort;
+        ip2nic.stackNic <--> pdcp.DataPort if nrSdapDisabled;
 
         //#
         //# Internal LTE Stack Connections

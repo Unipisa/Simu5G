@@ -2,7 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-//
+// Editor: Mohamed Seliem (University College Cork)
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
@@ -12,6 +12,7 @@
 #include <cmath>
 #include <inet/common/TimeTag_m.h>
 #include "simu5g/apps/voip/VoipSender.h"
+#include "simu5g/stack/sdap/common/QosTag_m.h"
 
 namespace simu5g {
 
@@ -166,6 +167,9 @@ void VoipSender::sendVoIPPacket()
     voip->addTag<CreationTimeTag>()->setCreationTime(simTime());
     packet->insertAtBack(voip);
     EV << "VoipSender::sendVoIPPacket - Talkspurt[" << iDtalk_ - 1 << "] - Sending frame[" << iDframe_ << "]\n";
+
+    packet->addTagIfAbsent<simu5g::QosTagReq>()->setQfi(par("qfi")); //setting qfi tag
+    EV_INFO << "VoIPSender: QFI = " << par("qfi") << "<n";
 
     socket.sendTo(packet, destAddress_, destPort_);
     --nframesTmp_;
