@@ -22,11 +22,13 @@ module NRNicEnbSdap extends NrNicEnb
 {
     parameters:
         nrSdapDisabled = false;
+        int numDrbs;
         @display("bgb=694,443");
 
     submodules:
 
         nrRxSdapEntity: NrRxSdapEntity {
+            numDrbs = parent. numDrbs;
             @display("p=493,67");
         }
 
@@ -34,7 +36,7 @@ module NRNicEnbSdap extends NrNicEnb
         ip2nic.stackNic <--> nrRxSdapEntity.DataPort;
 
         //# SDAP <-> PDCP
-        nrRxSdapEntity.stackSdap <--> pdcp.DataPort;
+        nrRxSdapEntity.stackSdap++ <--> pdcp.DataPort;
 
 }
 

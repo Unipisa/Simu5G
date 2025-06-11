@@ -38,6 +38,7 @@ class NrPdcpUe : public LtePdcpUeD2D
     cGate *nrAmSapOutGate_ = nullptr;
 
   protected:
+    int drbIndex;
     void initialize(int stage) override;
 
     /**

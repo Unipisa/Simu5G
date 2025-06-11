@@ -22,10 +22,18 @@ void NrPdcpEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+        drbIndex = par("drbIndex");  // NEW
+        lcid_ = drbIndex;  // assign LCID = DRB index directly
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);
     }
+
+    if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION){
+        Binder* binder = check_and_cast<Binder*>(getModuleByPath("binder"));
+        binder->registerPdcpInstance(nodeId_, drbIndex, this);
+    }
+
     LtePdcpEnbD2D::initialize(stage);
 }
 

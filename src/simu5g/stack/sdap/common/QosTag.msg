@@ -1,4 +1,3 @@
-//
 //                  Simu5G
 //
 // Authors: Mohamed Seliem (University College Cork)
@@ -16,7 +15,6 @@ cplusplus {{
 }};
 
 namespace simu5g;
-
 
 //
 // QoS Flow Identifier (QFI) Tag Classes

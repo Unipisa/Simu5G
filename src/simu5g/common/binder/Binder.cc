@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editors: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -1271,6 +1272,41 @@ cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)
         return nullptr;
     }
     return module->getSubmodule("cellularNic")->getSubmodule("pdcp");
+}
+
+// Multi-instance RLC registration
+void Binder::registerRlcInstance(MacNodeId nodeId, int drbId, LteRlcType rlcType, cModule* module)
+{
+    RlcInstanceKey key { nodeId, drbId, rlcType };
+    rlcInstances_[key] = module;
+}
+
+cModule* Binder::getRlcByMacNodeId(MacNodeId nodeId, int drbId, LteRlcType rlcType)
+{
+    RlcInstanceKey key { nodeId, drbId, rlcType };
+    auto it = rlcInstances_.find(key);
+    if (it != rlcInstances_.end())
+        return it->second;
+    else
+        EV_WARN << "RLC instance not found for nodeId=" << nodeId << " drbId=" << drbId << endl;
+
+    return nullptr;
+}
+
+// Multi-instance PDCP registration
+void Binder::registerPdcpInstance(MacNodeId nodeId, int drbId, cModule* module)
+{
+    PdcpInstanceKey key { nodeId, drbId };
+    pdcpInstances_[key] = module;
+}
+
+cModule* Binder::getPdcpByMacNodeId(MacNodeId nodeId, int drbId)
+{
+    PdcpInstanceKey key { nodeId, drbId };
+    auto it = pdcpInstances_.find(key);
+    if (it != pdcpInstances_.end())
+        return it->second;
+    return nullptr;
 }
 
 } //namespace

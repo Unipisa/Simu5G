@@ -72,6 +72,9 @@ class NrPdcpEnb : public LtePdcpEnbD2D
     // Receive packet from the source node. Called by the Dual Connectivity manager
     void receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode) override;
 
+  private:
+    int drbIndex;
+
   public:
     virtual void activeUeUL(std::set<MacNodeId> *ueSet);
 

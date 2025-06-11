@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -29,5 +30,6 @@ simple UmRxEntity
         string macModule = default("^.^.mac");  // TODO set to "^.^.nrMac" when parent module name is "nrRlc"
         double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
         int rxWindowSize = default(16);
+        int drbIndex = parent.drbIndex;
 }
 

@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -32,7 +33,17 @@ void UmTxEntity::initialize()
     notifyEmptyBuffer_ = false;
     holdingDownstreamInPackets_ = false;
 
-    LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
+    // LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
+
+    LteMacBase *mac = check_and_cast<LteMacBase*>(
+        getParentModule()  // nrRlc[3]
+            ->gate("RLC_to_MAC")
+            ->getNextGate()    // -> rlcToMacMultiplexer.rlcIn
+            ->getOwnerModule()
+            ->gate("macOut")
+            ->getNextGate()
+            ->getOwnerModule()
+    );
 
     // store the node id of the owner module
     ownerNodeId_ = mac->getMacNodeId();

@@ -13,6 +13,7 @@
 #define __SIMU5G_NRRXSDAPENTITY_H_
 
 #include <omnetpp.h>
+#include "common/QfiContextManager.h"
 
 using namespace omnetpp;
 
@@ -34,6 +35,7 @@ namespace simu5g {
 class NrRxSdapEntity : public cSimpleModule
 {
   protected:
+    QfiContextManager contextManager;
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
 };

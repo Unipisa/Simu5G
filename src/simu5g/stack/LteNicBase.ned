@@ -2,7 +2,8 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
-// Editor: Mohamed Seliem (University College Cork)
+// Editors: Mohamed Seliem (University College Cork)
+//
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
 // The above files and the present reference are part of the software itself,
@@ -48,9 +49,11 @@ module LteNicBase extends NetworkInterface like ICellularNic
         bool d2dCapable;            // inherit the value from the parent module
 
         bool dualConnectivityEnabled = default(false);
-        int numCarriers = default(1);
 
-	bool nrSdapDisabled = default(true); //adds sdap layer to the NIC stack
+        bool nrSdapDisabled = default(true); //adds sdap layer to the NIC stack
+	bool drbDisabled = default(true); //DRb support
+		
+        int numCarriers = default(1);
 
         string address @mutable = default("auto");
         *.interfaceTableModule = default(absPath(this.interfaceTableModule));
@@ -85,6 +88,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             *.packetFlowManagerModule = parent.hasRniSupport ? "^.^.packetFlowManager" : "";
             um.nodeType = parent.nodeType;
         }
+
         // MAC Layer
         mac: <> like ILteMac {
             @display("p=363,314");
@@ -118,8 +122,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         pdcp.TM_Sap++ <--> rlc.TM_Sap;
 
         //# RLC <-> MAC
-        rlc.RLC_to_MAC --> mac.RLC_to_MAC;
-        rlc.MAC_to_RLC <-- mac.MAC_to_RLC;
+        rlc.RLC_to_MAC --> mac.RLC_to_MAC if drbDisabled;
+        rlc.MAC_to_RLC <-- mac.MAC_to_RLC if drbDisabled;
 
         //#
         //# Connections from LTE Stack to radio interface

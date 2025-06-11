@@ -26,17 +26,29 @@ void NrPdcpUe::initialize(int stage)
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
+        drbIndex = par("drbIndex");  // NEW
+
+        lcid_ = drbIndex;  // assign LCID = DRB index directly
+
+        setGateSize("TM_Sap", 2);
+        setGateSize("UM_Sap", 2);
+        setGateSize("AM_Sap", 2);
+
         // initialize gates
         // nrTmSapInGate_ = gate("TM_Sap$i", 1);
-        nrTmSapOutGate_ = gate("TM_Sap$o", 1);
-        //nrUmSapInGate_ = gate("UM_Sap$i", 1);
-        nrUmSapOutGate_ = gate("UM_Sap$o", 1);
-        //nrAmSapInGate_ = gate("AM_Sap$i", 1);
-        nrAmSapOutGate_ = gate("AM_Sap$o", 1);
+        nrTmSapOutGate_ = gate("TM_Sap$o", 0);
+        // nrUmSapInGate_ = gate("UM_Sap$i", 1);
+        nrUmSapOutGate_ = gate("UM_Sap$o", 0);
+        // nrAmSapInGate_ = gate("AM_Sap$i", 1);
+        nrAmSapOutGate_ = gate("AM_Sap$o", 0);
     }
 
-    if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
+    if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION){
         nrNodeId_ = MacNodeId(getContainingNode(this)->par("nrMacNodeId").intValue());
+        Binder* binder = check_and_cast<Binder*>(getModuleByPath("binder"));
+        binder->registerPdcpInstance(nrNodeId_, drbIndex, this);
+    }
+
 
     LtePdcpUeD2D::initialize(stage);
 }

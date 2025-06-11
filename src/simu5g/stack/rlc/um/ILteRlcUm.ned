@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -25,6 +26,7 @@ moduleinterface ILteRlcUm
 {
     parameters:
         int queueSize @unit(B);
+    	int drbIndex;  
     gates:
         inout UM_Sap_up;    // Gate to PDCP
         inout UM_Sap_down;    // Gate to RLC Mux

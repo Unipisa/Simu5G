@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editors: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -13,6 +14,8 @@
 #define _BINDER_H_
 
 #include <string>
+#include <tuple>
+#include <map>
 
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 #include <inet/networklayer/common/L3Address.h>
@@ -155,6 +158,35 @@ class Binder : public cSimpleModule
     // store the id of the UEs that are performing handover
     std::set<MacNodeId> ueHandoverTriggered_;
     std::map<MacNodeId, std::pair<MacNodeId, MacNodeId>> handoverTriggered_;
+
+    // Multi-instance RLC and PDCP registration structures
+    // Composite key for RLC registration
+    struct RlcInstanceKey {
+        MacNodeId nodeId;
+        int drbId;
+        LteRlcType rlcType;
+
+        bool operator<(const RlcInstanceKey& other) const {
+            if (nodeId != other.nodeId) return nodeId < other.nodeId;
+            if (drbId != other.drbId) return drbId < other.drbId;
+            return rlcType < other.rlcType;
+        }
+    };
+
+    // Composite key for PDCP registration
+    struct PdcpInstanceKey {
+        MacNodeId nodeId;
+        int drbId;
+
+        bool operator<(const PdcpInstanceKey& other) const {
+            if (nodeId != other.nodeId) return nodeId < other.nodeId;
+            return drbId < other.drbId;
+        }
+    };
+
+    // New maps for multi-instance registration
+    std::map<RlcInstanceKey, cModule*> rlcInstances_;
+    std::map<PdcpInstanceKey, cModule*> pdcpInstances_;
 
   protected:
     void initialize(int stages) override;
@@ -607,6 +639,17 @@ class Binder : public cSimpleModule
     cModule *getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType);
     cModule *getPdcpByNodeId(MacNodeId nodeId);
 
+    // Register RLC instance
+    void registerRlcInstance(MacNodeId nodeId, int drbId, LteRlcType rlcType, cModule* module);
+
+    // Get RLC instance
+    cModule* getRlcByMacNodeId(MacNodeId nodeId, int drbId, LteRlcType rlcType);
+
+    // Register PDCP instance
+    void registerPdcpInstance(MacNodeId nodeId, int drbId, cModule* module);
+
+    // Get PDCP instance
+    cModule* getPdcpByMacNodeId(MacNodeId nodeId, int drbId);
 };
 
 } //namespace

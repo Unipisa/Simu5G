@@ -23,14 +23,15 @@ package simu5g.stack.sdap;
 //
 // Gates:
 //  - DataPort: connects to the IP layer.
-//  - stackSdap: connects to the PDCP layer.
+//  - stackSdap[]: connects to the PDCP layer Instances.
 //
 simple NrTxSdapEntity
 {
 	parameters:
-	    string qfiToDrbMapping = default("");  // Allows QFI to DRB mapping config
+	    string qfiContextFile = default("");  // external config file
+	    int numDrbs = default(1); 										// this to allow multiple DRBs
         @display("i=block/tx");
     gates:
-        inout DataPort;     // To/from IP layer
-        inout stackSdap;    // To/from PDCP layer
+        inout DataPort;				// To/from IP layer
+        inout stackSdap[numDrbs];   // To/from PDCP layer
 }

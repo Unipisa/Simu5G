@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -160,7 +161,8 @@ void UmRxEntity::enque(cPacket *pktAux)
     double tputSample = (double)totalPduRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
 
     // emit statistics
-    cModule *ue = binder_->getRlcByNodeId(ueId, UM);
+    //cModule *ue = getRlcByMacNodeId(binder_, ueId, UM);
+    cModule *ue = binder_->getRlcByNodeId(ueId, drbId_, UM);
     if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcPduThroughputSignal_[dir_], tputSample);
@@ -272,7 +274,8 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     else           // UL. This module is at the eNB: get the node id of the sender
         ueId = lteInfo->getSourceId();
 
-    cModule *ue = binder_->getRlcByNodeId(ueId, UM);
+    //cModule *ue = getRlcByMacNodeId(binder_, ueId, UM);
+    cModule *ue = binder_->getRlcByNodeId(ueId, drbId_, UM);
     // check whether some PDCP PDUs have not been delivered
     while (sno > lastSnoDelivered_ + 1) {
         lastSnoDelivered_++;
@@ -635,7 +638,8 @@ void UmRxEntity::reassemble(unsigned int index)
     else           // UL. This module is at the eNB: get the node id of the sender
         ueId = lteInfo->getSourceId();
 
-    cModule *ue = binder_->getRlcByNodeId(ueId, UM);
+    //cModule *ue = getRlcByMacNodeId(binder_, ueId, UM);
+    cModule *ue = binder_->getRlcByNodeId(ueId, drbId_, UM);
     // check whether some PDCP PDUs have not been delivered
     while (pduSno > lastPduReassembled_ + 1) {
         // emit statistic: packet loss
@@ -681,6 +685,9 @@ void UmRxEntity::initialize()
     totalPduRcvdBytes_ = 0;
 
     rlc_.reference(this, "umModule", true);
+
+    // Get DRB index from parent module hierarchy
+    drbId_ = par("drbIndex").intValue();  // nrRlc[index]
 
     //statistics
 

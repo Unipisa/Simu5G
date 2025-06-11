@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -29,12 +30,14 @@ import simu5g.stack.rlc.um.ILteRlcUm;
 module LteRlc
 {
     parameters:
+ 		@class("LteRlc");
+		int drbIndex;  // NEW: passed by compound module
         @display("i=block/transport");
         bool d2dCapable;                                             // inherit the value from the parent module
 
     gates:
         //#
-        //# Gates connecting PDCP/RRC and RLC Layers
+        //# Gates connecting PDCP/RRC and int drbIndex;RLC Layers
         //#
 
         inout TM_Sap;    // Transparent Mode SAP
@@ -56,6 +59,7 @@ module LteRlc
 
         // UM Module
         um: <(d2dCapable ? "LteRlcUmD2D" : "LteRlcUm")> like ILteRlcUm {
+            drbIndex = parent.drbIndex;
             @display("p=200,100;");
         }
 

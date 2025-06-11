@@ -28,10 +28,11 @@ package simu5g.stack.sdap;
 //
 simple NrRxSdapEntity
 {
-	parameters:
-        @display("i=block/rx");
-        string qfiToDrbMapping = default("");  // Same mapping config as TX
+    parameters:
+	string qfiContextFile = default("");  // external config file
+	int numDrbs = default(1); // this to allow multiple DRBs
+	@display("i=block/rx");
     gates:
         inout DataPort;     // To/from IP
-        inout stackSdap;    // To/from PDCP
+        inout stackSdap[numDrbs];     // To/from PDCP
 }

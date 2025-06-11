@@ -11,41 +11,21 @@
 
 #include "NrTxSdapEntity.h"
 
-#include <map>
-#include <string>
-#include <sstream>
-
 #include "packet/NrSdapPdu_m.h"
 #include "common/QosTag_m.h"
 #include "inet/common/packet/Packet.h"
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
+
 namespace simu5g {
 
 Define_Module(NrTxSdapEntity);
 
-// DRB mapping table
-std::map<uint8_t, uint8_t> qfiToDrbMapTx;
-
 void NrTxSdapEntity::initialize()
 {
-    // Load QFI-to-DRB mapping from parameter
-    std::string mappingStr = par("qfiToDrbMapping").stdstringValue();
-
-    std::stringstream ss(mappingStr);
-    std::string pair;
-    while (std::getline(ss, pair, ',')) {
-        std::stringstream pairstream(pair);
-        std::string qfiStr, drbStr;
-
-        if (std::getline(pairstream, qfiStr, ':') && std::getline(pairstream, drbStr, ':')) {
-            uint8_t qfi = std::stoi(qfiStr);
-            uint8_t drb = std::stoi(drbStr);
-            qfiToDrbMapTx[qfi] = drb;
-            EV_INFO << "Loaded QFI->DRB mapping: QFI=" << (int)qfi << ", DRB=" << (int)drb << "\n";
-        }
-    }
+    std::string configFile = par("qfiContextFile").stdstringValue();
+    contextManager.loadFromFile(configFile);
 }
 
 void NrTxSdapEntity::handleMessage(cMessage *msg)
@@ -65,12 +45,15 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
             EV_WARN << "SDAP TX: QosTagReq not found, defaulting QFI to 0\n";
         }
 
+        const QfiContext* ctx = contextManager.getContextByQfi(qfi);
+
         // Lookup DRB mapping
-        uint8_t drb = 0;
-        if (qfiToDrbMapTx.find(qfi) != qfiToDrbMapTx.end())
-            drb = qfiToDrbMapTx[qfi];
+        int drb = 0;
+
+        if (ctx)
+            drb = ctx->drbIndex;
         else
-            EV_WARN << "SDAP TX: No DRB mapping found for QFI=" << (int)qfi << ", using default DRB 0\n";
+            EV_WARN << "SDAP TX: No mapping for QFI=" << (int)qfi << ", using default DRB 0\n";
 
         EV_INFO << "SDAP TX: Selected DRB=" << (int)drb << " for QFI=" << (int)qfi << "\n";
 
@@ -118,10 +101,10 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
         ipHeader->setTotalLengthField(ipHeader-> getTotalLengthField() + inet::B(sdapHeader->getChunkLength()));
         pkt->insertAtFront(ipHeader);
         EV_INFO << "After IP: " << pkt->peekAtFront() << "\n";
+        EV_INFO << "DRB: " << drb << "\n";
 
         // this way sdap header is hidden behined the udp/ip headers, won't be compressed by pdcp.
-
-        send(pkt, "stackSdap$o");
+        send(pkt, "stackSdap$o", drb); // route the packet to the proper drb.
     }
     else if (arrivalGate == gate("stackSdap$i")) {
         EV_INFO << "Received packet from PDCP, forwarding to IP\n";

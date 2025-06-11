@@ -9,11 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "NrRxSdapEntity.h"
 
-#include <map>
-#include <string>
-#include <sstream>
+#include "NrRxSdapEntity.h"
 
 #include "simu5g/stack/sdap/packet/NrSdapPdu_m.h"
 #include "simu5g/stack/sdap/common/QosTag_m.h"
@@ -26,42 +23,27 @@ namespace simu5g {
 
 Define_Module(NrRxSdapEntity);
 
-// DRB mapping table (same as TX)
-std::map<uint8_t, uint8_t> qfiToDrbMapRx;
 
 void NrRxSdapEntity::initialize()
 {
-    // Load QFI-to-DRB mapping
-    std::string mappingStr = par("qfiToDrbMapping").stdstringValue();
-
-    std::stringstream ss(mappingStr);
-    std::string pair;
-    while (std::getline(ss, pair, ',')) {
-        std::stringstream pairstream(pair);
-        std::string qfiStr, drbStr;
-
-        if (std::getline(pairstream, qfiStr, ':') && std::getline(pairstream, drbStr, ':')) {
-            uint8_t qfi = std::stoi(qfiStr);
-            uint8_t drb = std::stoi(drbStr);
-            qfiToDrbMapRx[qfi] = drb;
-            EV_INFO << "Loaded QFI->DRB mapping: QFI=" << (int)qfi << ", DRB=" << (int)drb << "\n";
-        }
-    }
+    std::string configFile = par("qfiContextFile").stdstringValue();
+    contextManager.loadFromFile(configFile);
 }
 
 void NrRxSdapEntity::handleMessage(cMessage *msg)
 {
     auto arrivalGate = msg->getArrivalGate();
     auto pkt = check_and_cast<inet::Packet *>(msg);
+
     uint8_t qfi = 0;
-    uint8_t drb = 0;
 
     if (arrivalGate == gate("DataPort$i")) {
         EV_INFO << "NrRxSdapEntity: Packet from IP → PDCP\n";
-        // TODO: Add SDAP header or classification (if needed)
         send(msg, "stackSdap$o");
     }
-    else if (arrivalGate == gate("stackSdap$i")) {
+    else if (strcmp(arrivalGate->getBaseName(), "stackSdap") == 0) {
+        int drbIndex = arrivalGate->getIndex();
+
         EV_INFO << "Before IP: " << pkt->peekAtFront() << "\n";
 
         auto ipHeader = pkt->removeAtFront<inet::Ipv4Header>();
@@ -105,14 +87,11 @@ void NrRxSdapEntity::handleMessage(cMessage *msg)
             EV_WARN << "SDAP RX: Unknown transport protocol\n";
         }
 
-        // DRB lookup for consistency
-        if (qfiToDrbMapRx.find(qfi) != qfiToDrbMapRx.end())
-            drb = qfiToDrbMapRx[qfi];
-        else
-            EV_WARN << "No DRB mapping found for QFI=" << (int)qfi << ", using default DRB 0\n";
-
-        EV_INFO << "SDAP RX: QFI=" << (int)qfi << ", mapped DRB=" << (int)drb << "\n";
-
+        // Lookup QFI ↔ DRB consistency check
+        const QfiContext* ctx = contextManager.getContextByDrb(drbIndex);
+        if (ctx && ctx->qfi != qfi) {
+            EV_WARN << "SDAP RX: DRB/QFI mismatch! DRB=" << drbIndex << ", received QFI=" << (int)qfi << ", expected QFI=" << (int)ctx->qfi << "\n";
+        }
 
         ipHeader->setChunkLength(ipHeader->getHeaderLength());
 
