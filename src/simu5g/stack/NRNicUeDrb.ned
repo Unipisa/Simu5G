@@ -13,6 +13,7 @@
 package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
+import simu5g.stack.multiplexer.RlcToMacMultiplexer;
 import simu5g.stack.packetFlowManager.IPacketFlowManager;
 import simu5g.stack.pdcp.NrPdcpUe;
 import simu5g.stack.pdcp.ILtePdcp;
@@ -57,7 +58,7 @@ module NRNicUeDrb extends LteNicUeD2D
         											// PHY layer (needed at handover)
 
         @display("bgb=694,443");
-        nrPhy.rlcUmModule = "^.nrRlc[0].um";
+        //nrPhy.rlcUmModule = "^.nrRlc[0].um";
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
@@ -137,7 +138,7 @@ module NRNicUeDrb extends LteNicUeD2D
 		// todo: Either make changes to RLC layer or Mac layer to provide modularity.
 		//# MUX <-> MAC
         rlcToMacMultiplexer.macOut --> nrMac.RLC_to_MAC;
-        rlcToMacMultiplexer.macIn<-- nrMac.MAC_to_RLC;
+        rlcToMacMultiplexer.macIn <-- nrMac.MAC_to_RLC;
 
 		//nrRlc[3].RLC_to_MAC --> nrMac.RLC_to_MAC;
 		//nrRlc[3].MAC_to_RLC <-- nrMac.MAC_to_RLC;

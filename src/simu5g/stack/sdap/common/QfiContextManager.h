@@ -18,19 +18,32 @@
 #include <string>
 #include <map>
 #include "QfiContext.h"
+#include "simu5g/common/LteCommon.h"
 
-class QfiContextManager
-{
+namespace simu5g {
+
+class QfiContextManager {
   private:
-    std::map<int, QfiContext> qfiMap;
-    std::map<int, QfiContext> drbMap;
+    std::map<int, QfiContext> qfiMap;            // QFI → QoS context
+    std::map<MacCid, int> cidToQfi_;             // CID → QFI
+    std::map<int, MacCid> qfiToCid_;             // QFI → CID
+    static QfiContextManager* instance;
 
   public:
+    static QfiContextManager* getInstance();
+
     void loadFromFile(const std::string& filename);
+
+    // Register a single QFI ↔ CID pair
+    void registerQfiForCid(MacCid cid, int qfi);
+
+    // Accessors
     const QfiContext* getContextByQfi(int qfi) const;
-    const QfiContext* getContextByDrb(int drbIndex) const;
+    int getQfiForCid(MacCid cid) const;
+    MacCid getCidForQfi(int qfi) const;
+    const std::map<MacCid, int>& getCidToQfiMap() const;
 };
 
-
+} // namespace simu5g
 
 #endif /* STACK_SDAP_COMMON_QFICONTEXTMANAGER_H_ */

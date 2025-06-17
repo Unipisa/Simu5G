@@ -24,8 +24,11 @@ Define_Module(NrTxSdapEntity);
 
 void NrTxSdapEntity::initialize()
 {
+    contextManager = QfiContextManager::getInstance();  // singleton
     std::string configFile = par("qfiContextFile").stdstringValue();
-    contextManager.loadFromFile(configFile);
+    // will be shared with all, just instantiate QfiContextManager
+    contextManager->loadFromFile(configFile); // here we load the config file
+    ASSERT(contextManager != nullptr);
 }
 
 void NrTxSdapEntity::handleMessage(cMessage *msg)
@@ -45,7 +48,7 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
             EV_WARN << "SDAP TX: QosTagReq not found, defaulting QFI to 0\n";
         }
 
-        const QfiContext* ctx = contextManager.getContextByQfi(qfi);
+        const QfiContext* ctx = contextManager->getContextByQfi(qfi);
 
         // Lookup DRB mapping
         int drb = 0;

@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -16,6 +17,7 @@
 #include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
 #include "simu5g/stack/mac/allocator/LteAllocatorUtils.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/sdap/common/QfiContextManager.h"
 
 namespace simu5g {
 
@@ -45,6 +47,7 @@ class LteSchedulerEnb
     friend class LteMaxCiOptMB;
     friend class LteMaxCiComp;
     friend class LteAllocatorBestFit;
+    friend class QoSAwareScheduler;
 
   protected:
 

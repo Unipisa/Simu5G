@@ -35,7 +35,7 @@ namespace simu5g {
 class NrRxSdapEntity : public cSimpleModule
 {
   protected:
-    QfiContextManager contextManager;
+    QfiContextManager* contextManager = nullptr;
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
 };

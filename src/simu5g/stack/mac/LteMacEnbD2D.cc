@@ -2,6 +2,7 @@
 //                  Simu5G
 //
 // Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+// Editor: Mohamed Seliem (University College Cork)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -146,6 +147,16 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
         MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
             createIncomingConnection(cid, *flowInfo);
+        }
+
+        EV << "LteMacEnbD2D: Lcid --->"<< (int)lcid << " Cid: " << cid <<endl;
+        QfiContextManager* mgr = QfiContextManager::getInstance();
+        mgr->registerQfiForCid(cid, (int)lcid + 1);
+
+        for (const auto& [cid, qfi] : mgr->getCidToQfiMap()) {
+            EV << "CID " << cid << " → QFIs: ";
+            EV << qfi << " ";
+            EV << endl;
         }
 
         sendUpperPackets(upPkt);

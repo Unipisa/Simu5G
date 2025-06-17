@@ -26,8 +26,8 @@ Define_Module(NrRxSdapEntity);
 
 void NrRxSdapEntity::initialize()
 {
-    std::string configFile = par("qfiContextFile").stdstringValue();
-    contextManager.loadFromFile(configFile);
+    contextManager = QfiContextManager::getInstance();  // singleton // same as TX
+    ASSERT(contextManager != nullptr);
 }
 
 void NrRxSdapEntity::handleMessage(cMessage *msg)
@@ -88,7 +88,7 @@ void NrRxSdapEntity::handleMessage(cMessage *msg)
         }
 
         // Lookup QFI ↔ DRB consistency check
-        const QfiContext* ctx = contextManager.getContextByDrb(drbIndex);
+        const QfiContext* ctx = contextManager -> getContextByQfi(drbIndex+1);
         if (ctx && ctx->qfi != qfi) {
             EV_WARN << "SDAP RX: DRB/QFI mismatch! DRB=" << drbIndex << ", received QFI=" << (int)qfi << ", expected QFI=" << (int)ctx->qfi << "\n";
         }
