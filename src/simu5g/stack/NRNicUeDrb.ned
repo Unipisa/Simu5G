@@ -73,13 +73,13 @@ module NRNicUeDrb extends LteNicUeD2D
 
         // CASE SDAP active: → multiple DRBs activated
         nrPdcp[numDrbs]: NrPdcpUe if !nrSdapDisabled {
-            @display("p=596,141");
+            @display("p=596,141,r,10");
             drbIndex = index;  // assign DRB ID
         }
 
         // RLC Layer
         nrRlc[numDrbs]: LteRlc {
-            @display("p=596,238");
+            @display("p=596,238,r,10");
             drbIndex = index;
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
