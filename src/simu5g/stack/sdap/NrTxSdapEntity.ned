@@ -23,7 +23,7 @@ package simu5g.stack.sdap;
 //
 // Gates:
 //  - DataPort: connects to the IP layer.
-//  - stackSdap[]: connects to the PDCP layer Instances.
+//  - stackSdap: connects to the PDCP layer Instances.
 //
 simple NrTxSdapEntity
 {
@@ -33,5 +33,5 @@ simple NrTxSdapEntity
         @display("i=block/tx");
     gates:
         inout DataPort;				// To/from IP layer
-        inout stackSdap[numDrbs];   // To/from PDCP layer
+        inout stackSdap;   // To/from PDCP layer
 }

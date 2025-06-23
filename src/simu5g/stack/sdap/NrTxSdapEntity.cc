@@ -11,9 +11,10 @@
 
 #include "NrTxSdapEntity.h"
 
-#include "packet/NrSdapPdu_m.h"
-#include "common/QosTag_m.h"
-#include "inet/common/packet/Packet.h"
+#include "simu5g/stack/sdap/packet/NrSdapPdu_m.h"
+#include "simu5g/stack/sdap/common/QosTag_m.h"
+#include "simu5g/common/RadioBearerTag_m.h"
+#include <inet/common/packet/Packet.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
@@ -51,14 +52,14 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
         const QfiContext* ctx = contextManager->getContextByQfi(qfi);
 
         // Lookup DRB mapping
-        int drb = 0;
+        int drbIndex = 0;
 
         if (ctx)
-            drb = ctx->drbIndex;
+            drbIndex = ctx->drbIndex;
         else
             EV_WARN << "SDAP TX: No mapping for QFI=" << (int)qfi << ", using default DRB 0\n";
 
-        EV_INFO << "SDAP TX: Selected DRB=" << (int)drb << " for QFI=" << (int)qfi << "\n";
+        EV_INFO << "SDAP TX: Selected DRB=" << (int)drbIndex << " for QFI=" << (int)qfi << "\n";
 
         // Build SDAP header
         auto sdapHeader = makeShared<NrSdapPdu>();
@@ -101,22 +102,24 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
         EV_INFO << "SDAP TX: Inserted SDAP header with QFI = " << (int)qfi << "\n";
 
         ipHeader->setChunkLength(ipHeader->getHeaderLength());
-        ipHeader->setTotalLengthField(ipHeader-> getTotalLengthField() + inet::B(sdapHeader->getChunkLength()));
+        ipHeader->setTotalLengthField(ipHeader-> getTotalLengthField() + inet::B(sdapHeader->getChunkLength())); //TODO kludge
+        // this way sdap header is hidden behined the udp/ip headers, won't be compressed by pdcp.
         pkt->insertAtFront(ipHeader);
         EV_INFO << "After IP: " << pkt->peekAtFront() << "\n";
-        EV_INFO << "DRB: " << drb << "\n";
+        EV_INFO << "DRB: " << drbIndex << "\n";
 
-        // this way sdap header is hidden behined the udp/ip headers, won't be compressed by pdcp.
-        send(pkt, "stackSdap$o", drb); // route the packet to the proper drb.
+        auto drbReqTag = pkt->addTagIfAbsent<RadioBearerReq>();
+        drbReqTag->setDrbIndex(drbIndex);
+
+        send(pkt, "stackSdap$o");
     }
-    else if (strcmp(arrivalGate->getBaseName(), "stackSdap") == 0) {
+    else if (arrivalGate == gate("stackSdap$i")) {
         EV_INFO << "Received packet from PDCP, forwarding to IP\n";
         // TODO: Strip SDAP header for reflective qos functionalities
         send(msg, "DataPort$o");
     }
     else {
-        EV_ERROR << "Message arrived on unknown gate: " << arrivalGate->getFullName() << "\n";
-        delete msg;
+        throw cRuntimeError("Message arrived on unknown gate: %s", arrivalGate->getFullName());
     }
 }
 

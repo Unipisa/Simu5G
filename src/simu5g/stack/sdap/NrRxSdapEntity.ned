@@ -34,5 +34,5 @@ simple NrRxSdapEntity
 	@display("i=block/rx");
     gates:
         inout DataPort;     // To/from IP
-        inout stackSdap[numDrbs];     // To/from PDCP
+        inout stackSdap;     // To/from PDCP
 }

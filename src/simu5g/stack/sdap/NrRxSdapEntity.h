@@ -13,7 +13,7 @@
 #define __SIMU5G_NRRXSDAPENTITY_H_
 
 #include <omnetpp.h>
-#include "common/QfiContextManager.h"
+#include "simu5g/stack/sdap/common/QfiContextManager.h"
 
 using namespace omnetpp;
 

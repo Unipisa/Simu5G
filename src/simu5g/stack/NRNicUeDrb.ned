@@ -13,12 +13,13 @@
 package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
+import simu5g.stack.multiplexer.PdcpToSdapMultiplexer;
 import simu5g.stack.multiplexer.RlcToMacMultiplexer;
 import simu5g.stack.packetFlowManager.IPacketFlowManager;
 import simu5g.stack.pdcp.NrPdcpUe;
 import simu5g.stack.pdcp.ILtePdcp;
-import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
+import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.sdap.NrTxSdapEntity;
@@ -68,7 +69,7 @@ module NRNicUeDrb extends LteNicUeD2D
     submodules:
         nrTxSdapEntity: NrTxSdapEntity {
             numDrbs = parent.numDrbs;
-            @display("p=596,67");
+            @display("p=596,50");
         }
 
         // CASE SDAP active: → multiple DRBs activated
@@ -116,13 +117,20 @@ module NRNicUeDrb extends LteNicUeD2D
             numDrbs = parent.numDrbs;
             @display("p=466,238");
         }
+
+        pdcpToSdapMultiplexer: PdcpToSdapMultiplexer {
+            numDrbs = parent.numDrbs;
+            @display("p=595.9,111.2");
+        }
+
     connections:
 
         ip2nic.stackNic <--> nrTxSdapEntity.DataPort;
 
         // New multi-DRB connections when SDAP is enabled
         for i=0..numDrbs-1 {
-            nrTxSdapEntity.stackSdap[i] <--> nrPdcp[i].DataPort;
+            pdcpToSdapMultiplexer.pdcpOut[i] --> nrPdcp[i].DataPort$i;
+            pdcpToSdapMultiplexer.pdcpIn[i] <-- nrPdcp[i].DataPort$o;
 
             //# PDCP <-> RLC
             nrPdcp[i].AM_Sap++ <--> nrRlc[i].AM_Sap;
@@ -133,6 +141,9 @@ module NRNicUeDrb extends LteNicUeD2D
             nrRlc[i].RLC_to_MAC --> rlcToMacMultiplexer.rlcIn[i];
             nrRlc[i].MAC_to_RLC <-- rlcToMacMultiplexer.rlcOut[i];
         }
+
+        pdcpToSdapMultiplexer.sdapIn <-- nrTxSdapEntity.stackSdap$o;
+        pdcpToSdapMultiplexer.sdapOut --> nrTxSdapEntity.stackSdap$i;
 
 		// while this is logically correct, simu5g rigid layers stacking causing issues.
 		// todo: Either make changes to RLC layer or Mac layer to provide modularity.

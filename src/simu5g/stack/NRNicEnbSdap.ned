@@ -36,7 +36,7 @@ module NRNicEnbSdap extends NrNicEnb
         ip2nic.stackNic <--> nrRxSdapEntity.DataPort;
 
         //# SDAP <-> PDCP
-        nrRxSdapEntity.stackSdap++ <--> pdcp.DataPort;
+        nrRxSdapEntity.stackSdap <--> pdcp.DataPort;
 
 }
 
