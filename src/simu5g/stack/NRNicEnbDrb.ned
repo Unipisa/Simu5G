@@ -12,8 +12,8 @@
 
 package simu5g.stack;
 
-import simu5g.stack.multiplexer.PdcpToSdapMultiplexer;
-import simu5g.stack.multiplexer.RlcToMacMultiplexer;
+import simu5g.stack.multiplexer.SdapDrbMultiplexer;
+import simu5g.stack.multiplexer.MacDrbMultiplexer;
 import simu5g.stack.pdcp.NrPdcpEnb;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.sdap.NrRxSdapEntity;
@@ -45,7 +45,7 @@ module NRNicEnbDrb extends LteNicEnbD2D
 
         // CASE SDAP active: → multiple DRBs activated
         nrPdcp[numDrbs]: NrPdcpEnb if !nrSdapDisabled {
-            @display("p=244.9,177.1,r,10");
+            @display("p=245,177,r,10");
             drbIndex = index;  // assign DRB ID
         }
 
@@ -60,14 +60,18 @@ module NRNicEnbDrb extends LteNicEnbD2D
 
         }
 
-        rlcToMacMultiplexer: RlcToMacMultiplexer {
-            numDrbs = parent.numDrbs;
+        lMux: MacDrbMultiplexer {
             @display("p=245,314");
+            gates:
+                rlcIn[parent.numDrbs];
+                rlcOut[parent.numDrbs];
         }
 
-        pdcpToSdapMultiplexer: PdcpToSdapMultiplexer {
-            numDrbs = parent.numDrbs;
+        hMux: SdapDrbMultiplexer {
             @display("p=244.9,118.3");
+            gates:
+                pdcpIn[parent.numDrbs];
+                pdcpOut[parent.numDrbs];
         }
 
     connections:
@@ -82,18 +86,18 @@ module NRNicEnbDrb extends LteNicEnbD2D
             nrPdcp[i].TM_Sap++ <--> nrRlc[i].TM_Sap;
 
             //# RLC <-> MUX
-            nrRlc[i].RLC_to_MAC --> rlcToMacMultiplexer.rlcIn[i];
-            nrRlc[i].MAC_to_RLC <-- rlcToMacMultiplexer.rlcOut[i];
+            nrRlc[i].RLC_to_MAC --> lMux.rlcIn[i];
+            nrRlc[i].MAC_to_RLC <-- lMux.rlcOut[i];
 
-            nrPdcp[i].DataPort$o --> pdcpToSdapMultiplexer.pdcpIn[i];
-            nrPdcp[i].DataPort$i <-- pdcpToSdapMultiplexer.pdcpOut[i];
+            nrPdcp[i].DataPort$o --> hMux.pdcpIn[i];
+            nrPdcp[i].DataPort$i <-- hMux.pdcpOut[i];
         }
 
-        rlcToMacMultiplexer.macOut --> mac.RLC_to_MAC;
-        rlcToMacMultiplexer.macIn <-- mac.MAC_to_RLC;
+        lMux.macOut --> mac.RLC_to_MAC;
+        lMux.macIn <-- mac.MAC_to_RLC;
 
-        pdcpToSdapMultiplexer.sdapOut --> nrRxSdapEntity.stackSdap$i;
-        pdcpToSdapMultiplexer.sdapIn <-- nrRxSdapEntity.stackSdap$o;
+        hMux.sdapOut --> nrRxSdapEntity.stackSdap$i;
+        hMux.sdapIn <-- nrRxSdapEntity.stackSdap$o;
 
 }
 

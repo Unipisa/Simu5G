@@ -9,10 +9,9 @@
 // and cannot be removed from it.
 //
 
-#ifndef __SIMU5G_PDCPTOSDAPMULTIPLEXER_H_
-#define __SIMU5G_PDCPTOSDAPMULTIPLEXER_H_
+#ifndef __SIMU5G_RLCTOMACMULTIPLEXER_H_
+#define __SIMU5G_RLCTOMACMULTIPLEXER_H_
 
-#include <omnetpp.h>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 
@@ -20,14 +19,9 @@ using namespace omnetpp;
 
 namespace simu5g {
 
-/**
- * TODO - Generated class
- */
-class PdcpToSdapMultiplexer : public cSimpleModule
+class MacDrbMultiplexer : public cSimpleModule
 {
   protected:
-    int numDrbs;
-
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
 };

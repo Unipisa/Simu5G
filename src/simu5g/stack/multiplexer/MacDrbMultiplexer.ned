@@ -11,16 +11,13 @@
 
 package simu5g.stack.multiplexer;
 
-simple PdcpToSdapMultiplexer
+simple MacDrbMultiplexer
 {
     parameters:
-        int numDrbs = default(4);  // configurable number of DRBs (matches PDCP instances)
-        @display("i=block/join");
-
+        @display("i=misc/node_vs");
     gates:
-        // Mux
-        output sdapOut;
-        input sdapIn;
-        input pdcpIn[numDrbs];
-        output pdcpOut[numDrbs];
+        input rlcIn[];
+        output rlcOut[];
+        input macIn;
+        output macOut;
 }

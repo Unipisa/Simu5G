@@ -11,16 +11,13 @@
 
 package simu5g.stack.multiplexer;
 
-simple RlcToMacMultiplexer
+simple SdapDrbMultiplexer
 {
     parameters:
-        int numDrbs = default(4);  // configurable number of DRBs (matches RLC instances)
-        @display("i=block/join");
-        
+        @display("i=misc/node_vs");
     gates:
-        // Mux
-        input rlcIn[numDrbs];
-        output rlcOut[numDrbs];
-        input macIn;
-        output macOut;
+        output sdapOut;
+        input sdapIn;
+        input pdcpIn[];
+        output pdcpOut[];
 }
