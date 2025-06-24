@@ -13,7 +13,7 @@
 #include "NrRxSdapEntity.h"
 
 #include "simu5g/stack/sdap/packet/NrSdapPdu_m.h"
-#include "simu5g/stack/sdap/common/QosTag_m.h"
+#include "simu5g/common/QosTag_m.h"
 #include "simu5g/common/RadioBearerTag_m.h"
 #include "inet/common/packet/Packet.h"
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
