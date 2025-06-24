@@ -12,11 +12,11 @@
 
 package simu5g.stack;
 
-import simu5g.stack.multiplexer.SdapDrbMultiplexer;
 import simu5g.stack.multiplexer.MacDrbMultiplexer;
+import simu5g.stack.multiplexer.SdapDrbMultiplexer;
 import simu5g.stack.pdcp.NrPdcpEnb;
 import simu5g.stack.rlc.LteRlc;
-import simu5g.stack.sdap.NrRxSdapEntity;
+import simu5g.stack.sdap.INrSdap;
 
 
 //
@@ -26,8 +26,8 @@ import simu5g.stack.sdap.NrRxSdapEntity;
 module NRNicEnbDrb extends LteNicEnbD2D
 {
     parameters:
-        nrSdapDisabled = false;
-        drbDisabled = false;
+        hasNrSdap = true;
+        drbSupport = true;
 
         int numDrbs; // this to allow multiple DRBs
         @display("bgb=694,443");
@@ -38,13 +38,14 @@ module NRNicEnbDrb extends LteNicEnbD2D
 
     submodules:
 
-        sdap: NrRxSdapEntity {
+        sdap: <default("NrSdap")> like INrSdap {
             numDrbs = parent.numDrbs;
+            nodeRole = "gNB";
             @display("p=245,67");
         }
 
         // CASE SDAP active: → multiple DRBs activated
-        nrPdcp[numDrbs]: NrPdcpEnb if !nrSdapDisabled {
+        nrPdcp[numDrbs]: NrPdcpEnb if hasNrSdap {
             @display("p=245,177,r,10");
             drbIndex = index;  // assign DRB ID
         }
@@ -100,4 +101,3 @@ module NRNicEnbDrb extends LteNicEnbD2D
         hMux.sdapIn <-- sdap.stackSdap$o;
 
 }
-

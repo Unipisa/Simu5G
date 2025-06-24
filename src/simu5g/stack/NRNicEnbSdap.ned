@@ -12,7 +12,7 @@
 
 package simu5g.stack;
 
-import simu5g.stack.sdap.NrRxSdapEntity;
+import simu5g.stack.sdap.INrSdap;
 
 //
 // This module extends the Enb NIC to insert SDAP functionality (receiver-side only)
@@ -21,15 +21,16 @@ import simu5g.stack.sdap.NrRxSdapEntity;
 module NRNicEnbSdap extends NrNicEnb
 {
     parameters:
-        nrSdapDisabled = false;
+        hasNrSdap = true;
         int numDrbs = 1;
         @display("bgb=694,443");
 
     submodules:
 
-        sdap: NrRxSdapEntity {
+        sdap: <default("NrSdap")> like INrSdap {
             numDrbs = parent.numDrbs;
-            @display("p=493,67");
+            nodeRole = "gNB";
+            @display("p=245,67");
         }
 
     connections:
@@ -39,4 +40,3 @@ module NRNicEnbSdap extends NrNicEnb
         sdap.stackSdap <--> pdcp.DataPort;
 
 }
-

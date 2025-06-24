@@ -16,10 +16,9 @@ namespace simu5g;
 // SDAP header used to represent an SDAP PDU in the NR stack.
 // This header is attached to the payload in the SDAP layer.
 //
-class NrSdapPdu extends inet::FieldsChunk{
+class NrSdapHeader extends inet::FieldsChunk {
     chunkLength = inet::B(1);
-    uint8_t qfi;                       // QoS Flow Identifier (6-bit field in SDAP spec)
-    bool d_c;                          // Data/Control bit (true = data, false = control)
-    bool reflectiveQoSIndicator = false; // Enables Reflective QoS (optional, default false)
-
+    uint8_t qfi;                // QoS Flow Identifier (6-bit field in SDAP spec)
+    bool d_c;                   // Data/Control bit (true = data, false = control)
+    bool reflectiveQoS = false; // Reflective QoS enabled
 }

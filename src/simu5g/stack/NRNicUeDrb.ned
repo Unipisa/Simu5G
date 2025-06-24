@@ -13,8 +13,8 @@
 package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
-import simu5g.stack.multiplexer.SdapDrbMultiplexer;
 import simu5g.stack.multiplexer.MacDrbMultiplexer;
+import simu5g.stack.multiplexer.SdapDrbMultiplexer;
 import simu5g.stack.packetFlowManager.IPacketFlowManager;
 import simu5g.stack.pdcp.NrPdcpUe;
 import simu5g.stack.pdcp.ILtePdcp;
@@ -23,6 +23,8 @@ import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.sdap.NrTxSdapEntity;
+import simu5g.stack.sdap.INrSdap;
+import simu5g.stack.sdap.common.IReflectiveQosTable;
 
 //
 // This module defines a User Equipment (UE) network interface card that
@@ -47,8 +49,9 @@ module NRNicUeDrb extends LteNicUeD2D
 
         int numNrCarriers = default(1);
 
-        nrSdapDisabled = false;
-        drbDisabled = false;
+        hasNrSdap = true;
+        drbSupport = true;
+        bool hasReflectiveQosTable = default(false);  // Enable/disable reflective QoS table
 
         int numDrbs; // this to allow multiple DRBs
 
@@ -66,13 +69,15 @@ module NRNicUeDrb extends LteNicUeD2D
         phy.otherPhyModule = "^.nrPhy";
 
     submodules:
-        sdap: NrTxSdapEntity {
+        sdap: <default("NrSdap")> like INrSdap {
             numDrbs = parent.numDrbs;
+            nodeRole = "UE";
+            reflectiveQosTableModule = parent.hasReflectiveQosTable ? "^.reflectiveQosTable" : "";
             @display("p=596,66");
         }
 
         // CASE SDAP active: → multiple DRBs activated
-        nrPdcp[numDrbs]: NrPdcpUe if !nrSdapDisabled {
+        nrPdcp[numDrbs]: NrPdcpUe if hasNrSdap {
             @display("p=596,175,r,10");
             drbIndex = index;  // assign DRB ID
         }
@@ -124,6 +129,11 @@ module NRNicUeDrb extends LteNicUeD2D
             gates:
                 pdcpIn[parent.numDrbs];
                 pdcpOut[parent.numDrbs];
+        }
+
+        // Conditional Reflective QoS Table for UE
+        reflectiveQosTable: <default("ReflectiveQosTable")> like IReflectiveQosTable if hasReflectiveQosTable {
+            @display("p=162.1,199.4;is=s");
         }
 
     connections:

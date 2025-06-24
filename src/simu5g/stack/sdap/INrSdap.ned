@@ -12,12 +12,15 @@
 package simu5g.stack.sdap;
 
 //
-// SDAP Receive Entity.
+// Implements the SDAP Protocol.
 //
-// This module implements the receive-side SDAP functionality for the UE.
-// It receives PDUs from the PDCP layer, extracts the SDAP header if present,
-// restores the corresponding QoS Flow based on the QFI, and forwards the
-// packet to the upper IP layer.
+// For PDUs received from the PDCP layer, extracts SDAP headers (if present),
+// restores the associated QoS Flow based on QFI, and forwards the resulting SDUs
+// to the upper IP layer.
+//
+// For SDUs received from the IP layer, performs QFI-to-DRB mapping,
+// encapsulates the data with SDAP headers if needed, and forwards the packets
+// to the PDCP layer.
 //
 // Parameters:
 //  - qfiToDrbMapping: optional static mapping from QFI to DRB for simulation purposes.
@@ -26,12 +29,11 @@ package simu5g.stack.sdap;
 //  - DataPort: connects to the IP layer.
 //  - stackSdap: connects to the PDCP layer.
 //
-simple NrRxSdapEntity
+moduleinterface INrSdap
 {
     parameters:
-	string qfiContextFile = default("");  // external config file
-	int numDrbs = default(1); // this to allow multiple DRBs
-	@display("i=block/rx");
+        int numDrbs; // number of DRBs
+        string nodeRole @enum("UE", "gNB");  // Node role: "UE" or "gNB" - determines reflective QoS behavior
     gates:
         inout DataPort;     // To/from IP
         inout stackSdap;     // To/from PDCP

@@ -41,6 +41,7 @@ class QfiContextManager {
     const QfiContext* getContextByQfi(int qfi) const;
     int getQfiForCid(MacCid cid) const;
     MacCid getCidForQfi(int qfi) const;
+    const std::map<int, QfiContext>& getQfiMap() const;
     const std::map<MacCid, int>& getCidToQfiMap() const;
 };
 

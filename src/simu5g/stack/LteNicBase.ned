@@ -50,9 +50,9 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
         bool dualConnectivityEnabled = default(false);
 
-        bool nrSdapDisabled = default(true); //adds sdap layer to the NIC stack
-	bool drbDisabled = default(true); //DRb support
-		
+        bool hasNrSdap = default(false); //adds sdap layer to the NIC stack
+        bool drbSupport = default(false); //DRb support
+        
         int numCarriers = default(1);
 
         string address @mutable = default("auto");
@@ -102,7 +102,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=100,389");
         }
 
-         		//#
+        //#
         //# Modules used to take trace of PDCP pkt flow
         //#
         packetFlowManager: <default("")> like IPacketFlowManager if hasRniSupport {
@@ -110,7 +110,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
     connections allowunconnected:
-        ip2nic.stackNic <--> pdcp.DataPort if nrSdapDisabled;
+        ip2nic.stackNic <--> pdcp.DataPort if !hasNrSdap;
 
         //#
         //# Internal LTE Stack Connections
@@ -122,8 +122,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         pdcp.TM_Sap++ <--> rlc.TM_Sap;
 
         //# RLC <-> MAC
-        rlc.RLC_to_MAC --> mac.RLC_to_MAC if drbDisabled;
-        rlc.MAC_to_RLC <-- mac.MAC_to_RLC if drbDisabled;
+        rlc.RLC_to_MAC --> mac.RLC_to_MAC if !drbSupport;
+        rlc.MAC_to_RLC <-- mac.MAC_to_RLC if !drbSupport;
 
         //#
         //# Connections from LTE Stack to radio interface

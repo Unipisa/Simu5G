@@ -48,9 +48,16 @@ const std::map<MacCid, int>& QfiContextManager::getCidToQfiMap() const {
     return cidToQfi_;
 }
 
+const std::map<int, QfiContext>& QfiContextManager::getQfiMap() const {
+    return qfiMap;
+}
+
 // Placeholder for file loader
 void QfiContextManager::loadFromFile(const std::string& filename) {
     std::ifstream in(filename);
+    if (!in.is_open())
+        throw cRuntimeError("QfiContextManager: Failed to open file '%s'", filename.c_str());
+
     std::string line;
 
     while (std::getline(in, line)) {
@@ -68,5 +75,10 @@ void QfiContextManager::loadFromFile(const std::string& filename) {
             qfiMap[ctx.qfi] = ctx;
         }
     }
-}
 
+    //TODO enable this (currently fails!)
+//    if (in.fail())
+//        throw cRuntimeError("QfiContextManager: Failed to read file '%s'", filename.c_str());
+
+    in.close();
+}

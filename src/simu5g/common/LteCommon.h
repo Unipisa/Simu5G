@@ -70,6 +70,7 @@ class LteProtocol
     static const inet::Protocol ltemac;  // LTE Medium Access Control
     static const inet::Protocol gtp;     // GPRS Tunneling Protocol
     static const inet::Protocol x2ap;    // X2AP Protocol
+    static const inet::Protocol sdap;    // Service Data Adaptation Protocol
 };
 
 /**

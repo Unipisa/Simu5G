@@ -12,23 +12,33 @@
 
 package simu5g.stack;
 
-import simu5g.stack.sdap.NrTxSdapEntity;
+import simu5g.stack.sdap.INrSdap;
+import simu5g.stack.sdap.common.IReflectiveQosTable;
 
-// This module extends the UE NIC to insert SDAP functionality (transmit-side only)
+
+// This module extends the UE NIC to insert SDAP functionality
 // between IP and PDCP layers, allowing QoS Flow management per 3GPP 5G specifications.
 //
 module NRNicUeSdap extends NrNicUe
 {
     parameters:
-        nrSdapDisabled = false;
+        hasNrSdap = true;
+        bool hasReflectiveQosTable = default(false);  // Enable/disable reflective QoS table
         int numDrbs = 1;
         @display("bgb=694,443");
 
     submodules:
 
-        sdap: NrTxSdapEntity {
+        sdap: <default("NrSdap")> like INrSdap {
             numDrbs = parent.numDrbs;
-            @display("p=466,141");
+            nodeRole = "UE";
+            reflectiveQosTableModule = parent.hasReflectiveQosTable ? "^.reflectiveQosTable" : "";
+            @display("p=245,67");
+        }
+
+        // Conditional Reflective QoS Table for UE
+        reflectiveQosTable: <default("ReflectiveQosTable")> like IReflectiveQosTable if hasReflectiveQosTable {
+            @display("p=185,200;is=s");
         }
 
 
