@@ -147,17 +147,17 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         std::string destGw = binder_->getNetworkName() + "." + CHK(inet::L3AddressResolver().findHostWithAddress(destAddress))->par("gateway").stdstringValue();
         if (gateway_ != destGw) {
             // the destination is a MEC host under a different core network, send the packet to the gateway
-            return -1;
+            return TFT_EXTERNAL_DESTINATION;
         }
 
-        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << endl;
-        return -3;
+        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (TFT_MEC_HOST) for tunneling to " << destAddress.str() << endl;
+        return TFT_MEC_HOST;
     }
     // emulation mode
     else if (!meAppsExtAddress_.isUnspecified() && destAddress.matches(meAppsExtAddress_, meAppsExtAddressMask_)) {
         // the destination is a MecApplication running outside the simulator, forward to meHost (it has forwarding enabled)
-        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (-3) for tunneling to " << destAddress.str() << " (external) " << endl;
-        return -3;
+        EV << "TrafficFlowFilter::findTrafficFlow - returning flowId (TFT_MEC_HOST) for tunneling to " << destAddress.str() << " (external) " << endl;
+        return TFT_MEC_HOST;
     }
 
     MacNodeId destId = binder_->getMacNodeId(destAddress.toIpv4());
@@ -166,18 +166,18 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is not a UE. ";
         if (ownerType_ == UPF || ownerType_ == PGW) {
             EV << "Remove packet from the simulation." << endl;
-            return -2;   // the destination UE has been removed from the simulation
+            return TFT_REMOVED_DESTINATION;   // the destination UE has been removed from the simulation
         }
         else { // BS or MEC
             EV << "Forward packet to the gateway." << endl;
-            return -1;   // the destination might be outside the cellular network, send the packet to the gateway
+            return TFT_EXTERNAL_DESTINATION;   // the destination might be outside the cellular network, send the packet to the gateway
         }
     }
 
     MacNodeId destBS = binder_->getNextHop(destId);
     if (destBS == NODEID_NONE) {
         EV << "TrafficFlowFilter::findTrafficFlow - destination " << destAddress.str() << " is a UE [" << destId << "] not attached to any BS. Remove packet from the simulation." << endl;
-        return -2;   // the destination UE is not attached to any nodeB
+        return TFT_REMOVED_DESTINATION;   // the destination UE is not attached to any nodeB
     }
 
     // the serving node for the UE might be a secondary node in case of NR Dual Connectivity
@@ -187,12 +187,12 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 
     if (isBaseStation(ownerType_)) {
         if (fastForwarding_ && srcMaster == destMaster)
-            return 0;                                        // local delivery
+            return TFT_LOCAL_DELIVERY;                       // local delivery
 
-        return -1;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
-                     // TODO if the BS is within the same core network, there should be a direct tunnel to
-                     //      it without going through the gateway (for now, this is not implemented as it
-                     //      may cause packets being transmitted via the X2
+        return TFT_EXTERNAL_DESTINATION;   // send the packet to the PGW/UPF. It will forward the packet to the correct BS
+                                          // TODO if the BS is within the same core network, there should be a direct tunnel to
+                                          //      it without going through the gateway (for now, this is not implemented as it
+                                          //      may cause packets being transmitted via the X2
     }
 
     // MEC host or PGW/UPF
@@ -202,7 +202,7 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
     if (gateway_ != destGw) {
         // the destination is a Base Station under a different core network, send the packet to the gateway
         EV << "Forward packet to the gateway" << endl;
-        return -1;
+        return TFT_EXTERNAL_DESTINATION;
     }
 
     EV << "Forward packet to BS " << destMaster << endl;
@@ -210,4 +210,3 @@ TrafficFlowTemplateId TrafficFlowFilter::findTrafficFlow(L3Address srcAddress, L
 }
 
 } //namespace
-

@@ -148,7 +148,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
     EV << "GtpUser::handleFromTrafficFlowFilter - Received a tftMessage with flowId[" << flowId << "]" << endl;
 
-    if (flowId == -2) {
+    if (flowId == TFT_REMOVED_DESTINATION) {
         // the destination has been removed from the simulation. Delete datagram
         EV << "GtpUser::handleFromTrafficFlowFilter - Destination has been removed from the simulation. Deleting packet." << endl;
         delete datagram;
@@ -156,7 +156,7 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
     }
 
     // If we are on the eNB and the flowId represents the ID of this eNB, forward the packet locally
-    if (flowId == 0) {
+    if (flowId == TFT_LOCAL_DELIVERY) {
         // local delivery
         send(datagram, "pppGate");
     }
@@ -177,11 +177,11 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
         delete datagram;
 
         L3Address tunnelPeerAddress;
-        if (flowId == -1) { // send to the gateway
+        if (flowId == TFT_EXTERNAL_DESTINATION) { // send to the gateway
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
         }
-        else if (flowId == -3) { // send to a MEC host
+        else if (flowId == TFT_MEC_HOST) { // send to a MEC host
             // check if the destination MEC host is within the same core network
 
             // retrieve the address of the UPF included within the MEC host
@@ -290,4 +290,3 @@ void GtpUser::handleFromUdp(Packet *pkt)
 }
 
 } //namespace
-
