@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/UALCMP/UALCMPApp.h"
+#include "simu5g/nodes/mec/ualcmp/UALCMPApp.h"
 
 #include <string>
 #include <vector>
@@ -25,10 +25,10 @@
 #include "simu5g/nodes/mec/orchestrator/MecOrchestrator.h"
 #include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
-#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
-#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
-#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
-#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
+#include "simu5g/nodes/mec/ualcmp/UALCMPMessages/CreateContextAppMessage.h"
+#include "simu5g/nodes/mec/ualcmp/UALCMPMessages/CreateContextAppAckMessage.h"
+#include "simu5g/nodes/mec/ualcmp/UALCMPMessages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/ualcmp/UALCMPMessages/UALCMPMessages_types.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
