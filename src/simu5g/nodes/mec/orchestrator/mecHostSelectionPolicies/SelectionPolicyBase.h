@@ -12,8 +12,8 @@
 #ifndef NODES_MEC_MECORCHESTRATOR_SELECTIONPOLICYBASE_H_
 #define NODES_MEC_MECORCHESTRATOR_SELECTIONPOLICYBASE_H_
 
-#include "simu5g/nodes/mec/MECOrchestrator/MecOrchestrator.h"
-#include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "simu5g/nodes/mec/orchestrator/MecOrchestrator.h"
+#include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 
 namespace simu5g {
 

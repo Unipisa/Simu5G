@@ -22,8 +22,8 @@
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/MECOrchestrator/MecOrchestrator.h"
-#include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "simu5g/nodes/mec/orchestrator/MecOrchestrator.h"
+#include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include "simu5g/nodes/mec/platform/MECServices/Resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"

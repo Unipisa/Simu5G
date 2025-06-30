@@ -7,7 +7,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
 #include <math.h>       // pow
 #include  <iostream>
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.MECOrchestrator;
+package simu5g.nodes.mec.orchestrator;
 
 //
 // This module models the functionalities of the MEC orchestrator within a Multi-access Edge
