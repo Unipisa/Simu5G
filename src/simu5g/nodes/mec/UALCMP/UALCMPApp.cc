@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/UALCMP/UALCMPApp.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPApp.h"
 
 #include <string>
 #include <vector>
@@ -21,15 +21,15 @@
 #include <inet/transportlayer/contract/tcp/TcpCommand_m.h>
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
-#include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECOrchestrator/MecOrchestrator.h"
+#include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

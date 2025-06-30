@@ -9,24 +9,24 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECOrchestrator/MecOrchestrator.h"
+#include "simu5g/nodes/mec/MECOrchestrator/MecOrchestrator.h"
 
-#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-#include "apps/mec/MecApps/MultiUEMECApp.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/apps/mec/MecApps/MultiUEMECApp.h"
 
-#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+#include "simu5g/nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
-#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_types.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppMessage.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/CreateContextAppAckMessage.h"
 
-#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecServiceSelectionBased.h"
-#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/AvailableResourcesSelectionBased.h"
-#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecHostSelectionBased.h"
+#include "simu5g/nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecServiceSelectionBased.h"
+#include "simu5g/nodes/mec/MECOrchestrator/mecHostSelectionPolicies/AvailableResourcesSelectionBased.h"
+#include "simu5g/nodes/mec/MECOrchestrator/mecHostSelectionPolicies/MecHostSelectionBased.h"
 
 // Emulation debug
 #include <iostream>

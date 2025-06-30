@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 #include <inet/common/INETDefs.h>
 #include <inet/common/ProtocolTag_m.h>
@@ -18,10 +18,10 @@
 #include <inet/common/packet/Packet.h>
 #include <inet/common/packet/chunk/BytesChunk.h>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-#include "nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
 

@@ -14,14 +14,14 @@
 
 #include <omnetpp.h>
 
-#include "common/cellInfo/CellInfo.h"
-#include "stack/phy/feedback/LteFeedback.h"
-#include "stack/phy/feedback/LteSummaryBuffer.h"
-#include "stack/mac/amc/AmcPilot.h"
-#include "stack/mac/amc/LteMcs.h"
-#include "stack/mac/amc/UserTxParams.h"
-#include "stack/mac/LteMacEnb.h"
-#include "common/binder/Binder.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
+#include "simu5g/stack/phy/feedback/LteSummaryBuffer.h"
+#include "simu5g/stack/mac/amc/AmcPilot.h"
+#include "simu5g/stack/mac/amc/LteMcs.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

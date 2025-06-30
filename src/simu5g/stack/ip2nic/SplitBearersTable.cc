@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/ip2nic/SplitBearersTable.h"
+#include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
 namespace simu5g {
 

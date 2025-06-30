@@ -9,21 +9,21 @@
 // and cannot be removed from it.
 //
 
-#include "common/LteControlInfo.h"
-#include "common/binder/Binder.h"
-#include "common/cellInfo/CellInfo.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/mac/buffer/harq/LteHarqBufferTx.h"
-#include "stack/mac/buffer/harq_d2d/LteHarqBufferRxD2D.h"
-#include "stack/mac/buffer/harq/LteHarqBufferRx.h"
-#include "stack/mac/packet/LteMacPdu.h"
-#include "stack/mac/buffer/LteMacQueue.h"
-#include "stack/mac/packet/LteHarqFeedback_m.h"
-#include "stack/mac/packet/LteMacPdu.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "assert.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
-#include "stack/phy/LtePhyBase.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqBufferRxD2D.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferRx.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
+#include "simu5g/stack/mac/buffer/LteMacQueue.h"
+#include "simu5g/stack/mac/packet/LteHarqFeedback_m.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+#include <assert.h>
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

@@ -15,12 +15,12 @@
 #include <inet/common/INETDefs.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "common/binder/Binder.h"
-#include "nodes/backgroundCell/BackgroundCellChannelModel.h"
-#include "nodes/ExtCell.h"
-#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
-#include "stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellChannelModel.h"
+#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/stack/mac/scheduler/LteScheduler.h"  // for SortedDesc
 
 namespace simu5g {
 

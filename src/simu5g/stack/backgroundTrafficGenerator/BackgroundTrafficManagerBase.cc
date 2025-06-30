@@ -9,9 +9,9 @@
 // and cannot be removed from it.
 //
 
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManagerBase.h"
-#include "stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
-#include "stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/stack/backgroundTrafficGenerator/BackgroundTrafficManagerBase.h"
+#include "simu5g/stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
+#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
 
 namespace simu5g {
 

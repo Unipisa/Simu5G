@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <inet/common/TimeTag_m.h>
-#include "apps/burst/BurstSender.h"
+#include "simu5g/apps/burst/BurstSender.h"
 
 namespace simu5g {
 

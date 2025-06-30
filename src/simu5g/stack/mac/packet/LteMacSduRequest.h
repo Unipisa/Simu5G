@@ -12,8 +12,8 @@
 #ifndef _LTE_LTEMACSDUREQUEST_H_
 #define _LTE_LTEMACSDUREQUEST_H_
 
-#include "stack/mac/packet/LteMacSduRequest_m.h"
-#include "common/LteCommon.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest_m.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

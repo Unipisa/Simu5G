@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/backgroundCell/BackgroundCellChannelModel.h"
-#include "nodes/backgroundCell/BackgroundScheduler.h"
-#include "stack/phy/LtePhyBase.h"
-#include "stack/phy/LtePhyUe.h"
-#include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellChannelModel.h"
+#include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/phy/LtePhyUe.h"
+#include "simu5g/stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
 namespace simu5g {
 

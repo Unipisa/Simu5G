@@ -13,18 +13,18 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
-import nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.MECPlatform.MECPackets;
 //cplusplus {{
-//#include "nodes/mec/MECPlatform/MECPackets_m.h";
+//#include "simu5g/nodes/mec/MECPlatform/MECPackets_m.h";
 //}}
-//import lte.nodes.mec.MEPlatform.MECPackets.MECPacket;
+//import simu5g.lte.nodes.mec.MEPlatform.MECPackets.MECPacket;
 
 namespace simu5g;
 
 class DeviceAppPacket extends MECPacket {
 //    unsigned int sno;
 //    simtime_t timestamp;
-//    
+//
 //    //type of message
 //    string type;
 //    string operation;

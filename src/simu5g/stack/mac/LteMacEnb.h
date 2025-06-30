@@ -14,11 +14,11 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/cellInfo/CellInfo.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/mac/amc/LteAmc.h"
-#include "common/LteCommon.h"
-#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 

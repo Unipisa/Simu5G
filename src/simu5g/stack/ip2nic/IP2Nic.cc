@@ -27,10 +27,10 @@
 
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
-#include "stack/ip2nic/IP2Nic.h"
-#include "stack/mac/LteMacBase.h"
-#include "common/binder/Binder.h"
-#include "common/cellInfo/CellInfo.h"
+#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
 
 namespace simu5g {
 

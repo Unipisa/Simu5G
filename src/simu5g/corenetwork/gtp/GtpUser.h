@@ -22,8 +22,8 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "common/binder/Binder.h"
-#include "corenetwork/gtp/GtpUserMsg_m.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpUserMsg_m.h"
 
 namespace simu5g {
 

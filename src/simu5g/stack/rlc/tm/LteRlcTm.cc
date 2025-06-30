@@ -11,8 +11,8 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
-#include "stack/rlc/tm/LteRlcTm.h"
-#include "stack/mac/packet/LteMacSduRequest.h"
+#include "simu5g/stack/rlc/tm/LteRlcTm.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 
 namespace simu5g {
 

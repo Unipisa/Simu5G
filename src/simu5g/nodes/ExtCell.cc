@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/ExtCell.h"
+#include "simu5g/nodes/ExtCell.h"
 
 namespace simu5g {
 

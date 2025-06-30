@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/rlc/LteRlcMux.h"
+#include "simu5g/stack/rlc/LteRlcMux.h"
 
 namespace simu5g {
 

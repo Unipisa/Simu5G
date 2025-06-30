@@ -20,11 +20,11 @@
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 

@@ -17,8 +17,8 @@ namespace simu5g;
 
 class RealTimeVideoStreamingAppPacket extends inet::FieldsChunk
 {
-	int type;	
-} 
+	int type;
+}
 
 class StartRealTimeVideoStreamingAppPacket extends RealTimeVideoStreamingAppPacket
 {
@@ -54,7 +54,7 @@ class RealTimeVideoStreamingAppSegmentHeader extends RealTimeVideoStreamingAppPa
     bool isFragmented = false;   // flag to see if the packet contains a fragment of the frame
     simtime_t payloadTimestamp;
     uint8_t pictureType;   // picture type of the frame the data in this packet belongs to.
-   
+
     int totalFrags;
     int currentFrags;
 }

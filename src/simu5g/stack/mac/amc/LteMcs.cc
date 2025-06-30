@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/amc/LteMcs.h"
+#include "simu5g/stack/mac/amc/LteMcs.h"
 
 namespace simu5g {
 

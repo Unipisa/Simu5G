@@ -9,19 +9,19 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/LteMacUe.h"
+#include "simu5g/stack/mac/LteMacUe.h"
 
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
 
-#include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "stack/mac/buffer/LteMacQueue.h"
-#include "stack/mac/buffer/harq/LteHarqBufferRx.h"
-#include "stack/mac/packet/LteMacSduRequest.h"
-#include "stack/mac/packet/LteRac_m.h"
-#include "stack/mac/packet/LteSchedulingGrant.h"
-#include "stack/mac/scheduler/LteSchedulerUeUl.h"
-#include "stack/rlc/packet/LteRlcDataPdu.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/buffer/LteMacQueue.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferRx.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
+#include "simu5g/stack/mac/packet/LteRac_m.h"
+#include "simu5g/stack/mac/packet/LteSchedulingGrant.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerUeUl.h"
+#include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 
 namespace simu5g {
 

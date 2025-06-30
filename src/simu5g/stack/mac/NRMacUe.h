@@ -12,7 +12,7 @@
 #ifndef _NRMACUED2D_H_
 #define _NRMACUED2D_H_
 
-#include "stack/mac/LteMacUeD2D.h"
+#include "simu5g/stack/mac/LteMacUeD2D.h"
 
 namespace simu5g {
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
+#include "simu5g/stack/backgroundTrafficGenerator/BackgroundTrafficManager.h"
 
 namespace simu5g {
 

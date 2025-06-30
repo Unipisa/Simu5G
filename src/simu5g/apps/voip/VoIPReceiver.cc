@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/voip/VoIPReceiver.h"
+#include "simu5g/apps/voip/VoIPReceiver.h"
 
 namespace simu5g {
 

@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
 
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
-#include "stack/pdcp_rrc/packet/LteRohcPdu_m.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/pdcp_rrc/packet/LteRohcPdu_m.h"
 
 namespace simu5g {
 

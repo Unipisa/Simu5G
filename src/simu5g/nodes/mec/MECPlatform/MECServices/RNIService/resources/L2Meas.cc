@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/L2Meas.h"
-#include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/RNICellInfo.h"
-#include "common/binder/Binder.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/L2Meas.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/RNICellInfo.h"
+#include "simu5g/common/binder/Binder.h"
 #include "CellUEInfo.h"
 
 namespace simu5g {

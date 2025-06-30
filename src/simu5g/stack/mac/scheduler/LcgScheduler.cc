@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/scheduler/LcgScheduler.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/scheduler/LcgScheduler.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 
 namespace simu5g {
 

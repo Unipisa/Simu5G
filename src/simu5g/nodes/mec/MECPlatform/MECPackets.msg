@@ -15,7 +15,7 @@ import inet.common.packet.chunk.Chunk;
 namespace simu5g;
 
 class MECPacket extends inet::FieldsChunk {
-   
+
     unsigned int sno;
     simtime_t timestamp;
     //type of message

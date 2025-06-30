@@ -13,11 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#include "apps/voip/VoipPacketSerializer.h"
+#include "simu5g/apps/voip/VoipPacketSerializer.h"
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "apps/voip/VoipPacket_m.h"
+#include "simu5g/apps/voip/VoipPacket_m.h"
 
 namespace simu5g {
 

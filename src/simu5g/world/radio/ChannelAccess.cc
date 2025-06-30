@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "world/radio/ChannelAccess.h"
+#include "simu5g/world/radio/ChannelAccess.h"
 
 #include <inet/common/InitStages.h>
 #include <inet/common/ModuleAccess.h>

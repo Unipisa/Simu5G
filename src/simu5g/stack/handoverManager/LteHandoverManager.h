@@ -14,11 +14,11 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "stack/ip2nic/IP2Nic.h"
-#include "common/LteCommon.h"
-#include "x2/packet/X2ControlInfo_m.h"
-#include "stack/handoverManager/X2HandoverControlMsg.h"
-#include "stack/handoverManager/X2HandoverDataMsg.h"
+#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/stack/handoverManager/X2HandoverControlMsg.h"
+#include "simu5g/stack/handoverManager/X2HandoverDataMsg.h"
 
 namespace simu5g {
 

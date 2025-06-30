@@ -12,7 +12,7 @@
 #ifndef STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_
 #define STACK_PHY_FEEDBACK_LTESUMMARYFEEDBACK_H_
 
-#include "stack/phy/feedback/LteSummaryFeedback.h"
+#include "simu5g/stack/phy/feedback/LteSummaryFeedback.h"
 
 namespace simu5g {
 

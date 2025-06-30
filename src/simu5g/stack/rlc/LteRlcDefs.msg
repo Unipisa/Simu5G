@@ -10,7 +10,7 @@
 //
 
 cplusplus {{
-#include "stack/rlc/LteRlcDefs.h"
+#include "simu5g/stack/rlc/LteRlcDefs.h"
 }}
 
 namespace simu5g;

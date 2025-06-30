@@ -10,7 +10,7 @@
 //
 
 #include <omnetpp.h>
-#include "common/blerCurves/PhyPisaData.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
 
 namespace simu5g {
 

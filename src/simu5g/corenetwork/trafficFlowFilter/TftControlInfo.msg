@@ -10,7 +10,7 @@
 //
 
 import inet.common.INETDefs;
-import common.LteCommon;
+import simu5g.common.LteCommon;
 import inet.common.TagBase;
 
 namespace simu5g;

@@ -16,7 +16,7 @@
 
 #include <inet/networklayer/common/L3Address.h>
 
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

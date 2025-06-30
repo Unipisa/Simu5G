@@ -10,7 +10,7 @@
 //
 
 cplusplus {{
-#include "stack/phy/packet/ModulationType.h"
+#include "simu5g/stack/phy/packet/ModulationType.h"
 }}
 
 import inet.common.geometry.Geometry;

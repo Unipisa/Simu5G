@@ -14,7 +14,7 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/networklayer/configurator/ipv4/Ipv4NetworkConfigurator.h>
 #include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
-#include "x2/LteX2Manager.h"
+#include "simu5g/x2/LteX2Manager.h"
 
 namespace simu5g {
 

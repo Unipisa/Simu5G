@@ -12,7 +12,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 import inet.common.geometry.Geometry;
-import common.LteCommon;
+import simu5g.common.LteCommon;
 
 cplusplus {{
 const inet::B D2D_MULTIHOP_HEADER_LENGTH = inet::B(8);

@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/rlc/um/UmTxEntity.h"
-#include "stack/rlc/am/packet/LteRlcAmPdu.h"
+#include "simu5g/stack/rlc/um/UmTxEntity.h"
+#include "simu5g/stack/rlc/am/packet/LteRlcAmPdu.h"
 
-#include "stack/packetFlowManager/PacketFlowManagerUe.h"
-#include "stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
 
 namespace simu5g {
 

@@ -12,8 +12,8 @@
 #ifndef CONFLICTGRAPH_H
 #define CONFLICTGRAPH_H
 
-#include "stack/mac/LteMacEnbD2D.h"
-#include "common/cellInfo/CellInfo.h"
+#include "simu5g/stack/mac/LteMacEnbD2D.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
 
 namespace simu5g {
 

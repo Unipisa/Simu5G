@@ -10,12 +10,12 @@
 //
 
 #include <assert.h>
-#include "stack/phy/LtePhyUe.h"
+#include "simu5g/stack/phy/LtePhyUe.h"
 
-#include "stack/ip2nic/IP2Nic.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/phy/packet/LteFeedbackPkt.h"
-#include "stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 
 namespace simu5g {
 

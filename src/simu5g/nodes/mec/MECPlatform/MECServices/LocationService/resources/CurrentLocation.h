@@ -12,8 +12,8 @@
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CURRENTLOCATION_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CURRENTLOCATION_H_
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
 

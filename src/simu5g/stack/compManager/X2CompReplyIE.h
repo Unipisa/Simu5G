@@ -12,7 +12,7 @@
 #ifndef _LTE_X2COMPREPLYIE_H_
 #define _LTE_X2COMPREPLYIE_H_
 
-#include "x2/packet/X2InformationElement.h"
+#include "simu5g/x2/packet/X2InformationElement.h"
 
 namespace simu5g {
 

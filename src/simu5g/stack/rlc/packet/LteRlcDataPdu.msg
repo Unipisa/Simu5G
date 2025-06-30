@@ -12,7 +12,7 @@
 //
 // This is the RLC Data Pdu (base for all RLC modes)
 // flowing through LTE stack: basically
-// it contains the fields 
+// it contains the fields
 // that receiver needs in order to
 // correctly decode the original packets
 //

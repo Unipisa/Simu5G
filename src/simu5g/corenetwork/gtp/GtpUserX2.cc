@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "corenetwork/gtp/GtpUserX2.h"
+#include "simu5g/corenetwork/gtp/GtpUserX2.h"
 
 #include <iostream>
 
@@ -17,7 +17,7 @@
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "x2/packet/X2ControlInfo_m.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
 
 namespace simu5g {
 

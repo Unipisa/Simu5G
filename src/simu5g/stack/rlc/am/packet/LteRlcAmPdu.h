@@ -12,7 +12,7 @@
 #ifndef _LTE_LTERLCAMPDU_H_
 #define _LTE_LTERLCAMPDU_H_
 
-#include "stack/rlc/am/packet/LteRlcAmPdu_m.h"
+#include "simu5g/stack/rlc/am/packet/LteRlcAmPdu_m.h"
 
 namespace simu5g {
 

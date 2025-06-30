@@ -13,10 +13,10 @@
 #define _LTE_LTEHARQBUFFERMIRRORD2D_H_
 
 #include <omnetpp.h>
-#include "common/LteCommon.h"
-#include "stack/mac/packet/LteHarqFeedback_m.h"
-#include "stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/packet/LteHarqFeedback_m.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqProcessMirrorD2D.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

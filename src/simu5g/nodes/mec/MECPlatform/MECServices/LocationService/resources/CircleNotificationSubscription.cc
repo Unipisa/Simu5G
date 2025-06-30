@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/CircleNotificationSubscription.h"
 
 #include <inet/mobility/base/MovingMobilityBase.h>
 
-#include "common/LteCommon.h"
-#include "common/cellInfo/CellInfo.h"
-#include "common/binder/Binder.h"
-#include "nodes/mec/MECPlatform/EventNotification/CircleNotificationEvent.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/nodes/mec/MECPlatform/EventNotification/CircleNotificationEvent.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/CurrentLocation.h"
 
 namespace simu5g {
 using namespace omnetpp;

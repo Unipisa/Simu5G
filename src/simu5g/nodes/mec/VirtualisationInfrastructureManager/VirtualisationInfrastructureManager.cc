@@ -9,9 +9,9 @@
 // and cannot be removed from it.
 //
 #include <inet/networklayer/common/L3AddressResolver.h>
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-#include "nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
-#include "nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/UALCMP/UALCMPMessages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
 namespace simu5g {
 

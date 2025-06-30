@@ -15,12 +15,12 @@
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
-#include "apps/mec/MecApps/MecAppBase.h"
-#include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
-#include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
+#include "simu5g/apps/mec/MecApps/MecAppBase.h"
+#include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
+#include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
 
 namespace simu5g {
 

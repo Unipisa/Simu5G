@@ -19,7 +19,7 @@
 #include <inet/common/INETDefs.h>
 #include <inet/common/geometry/common/Coord.h>
 
-#include "world/radio/IChannelControl.h"
+#include "simu5g/world/radio/IChannelControl.h"
 
 namespace simu5g {
 

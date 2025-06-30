@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
 
 namespace simu5g {
 

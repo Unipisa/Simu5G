@@ -12,10 +12,10 @@
 #include <omnetpp.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/sctp/SctpAssociation.h>
-#include "x2/X2AppClient.h"
-#include "common/binder/Binder.h"
+#include "simu5g/x2/X2AppClient.h"
+#include "simu5g/common/binder/Binder.h"
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

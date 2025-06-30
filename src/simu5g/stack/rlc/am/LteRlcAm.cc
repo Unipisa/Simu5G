@@ -11,11 +11,11 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
-#include "common/LteCommon.h"
-#include "stack/rlc/am/LteRlcAm.h"
-#include "stack/rlc/am/buffer/AmTxQueue.h"
-#include "stack/rlc/am/buffer/AmRxQueue.h"
-#include "stack/mac/packet/LteMacSduRequest.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/rlc/am/LteRlcAm.h"
+#include "simu5g/stack/rlc/am/buffer/AmTxQueue.h"
+#include "simu5g/stack/rlc/am/buffer/AmRxQueue.h"
+#include "simu5g/stack/mac/packet/LteMacSduRequest.h"
 
 namespace simu5g {
 

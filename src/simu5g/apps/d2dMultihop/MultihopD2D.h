@@ -17,11 +17,11 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
-#include "apps/d2dMultihop/MultihopD2DPacket_m.h"
-#include "apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
-#include "apps/d2dMultihop/eventGenerator/EventGenerator.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/phy/LtePhyBase.h"
+#include "simu5g/apps/d2dMultihop/MultihopD2DPacket_m.h"
+#include "simu5g/apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
+#include "simu5g/apps/d2dMultihop/eventGenerator/EventGenerator.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

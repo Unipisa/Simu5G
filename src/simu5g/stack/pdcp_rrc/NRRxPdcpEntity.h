@@ -12,9 +12,9 @@
 #ifndef _NRRXPDCPENTITY_H_
 #define _NRRXPDCPENTITY_H_
 
-#include "stack/pdcp_rrc/LteRxPdcpEntity.h"
-#include "stack/dualConnectivityManager/DualConnectivityManager.h"
-#include "common/timer/TTimer.h"
+#include "simu5g/stack/pdcp_rrc/LteRxPdcpEntity.h"
+#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/common/timer/TTimer.h"
 
 namespace simu5g {
 

@@ -12,7 +12,7 @@
 #ifndef TRAFFICGENERATORCBR_H_
 #define TRAFFICGENERATORCBR_H_
 
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "simu5g/stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 namespace simu5g {
 

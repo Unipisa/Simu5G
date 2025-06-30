@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
-#include "apps/d2dMultihop/MultihopD2D.h"
+#include "simu5g/apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
+#include "simu5g/apps/d2dMultihop/MultihopD2D.h"
 
 namespace simu5g {
 

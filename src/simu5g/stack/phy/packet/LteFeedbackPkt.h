@@ -12,8 +12,8 @@
 #ifndef _LTE_LTEFEEDBACKPKT_H_
 #define _LTE_LTEFEEDBACKPKT_H_
 
-#include "stack/phy/packet/LteFeedbackPkt_m.h"
-#include "stack/phy/feedback/LteFeedback.h"
+#include "simu5g/stack/phy/packet/LteFeedbackPkt_m.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
 
 namespace simu5g {
 

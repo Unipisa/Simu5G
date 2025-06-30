@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <inet/common/TimeTag_m.h>
-#include "apps/voip/VoIPSender.h"
+#include "simu5g/apps/voip/VoIPSender.h"
 
 namespace simu5g {
 

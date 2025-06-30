@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
-#include "common/LteControlInfo.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
+#include "simu5g/common/LteControlInfo.h"
 
 namespace simu5g {
 

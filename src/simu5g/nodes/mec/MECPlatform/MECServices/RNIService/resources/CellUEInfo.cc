@@ -10,7 +10,7 @@
 //
 
 #include "CellUEInfo.h"
-#include "corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 
 namespace simu5g {
 

@@ -15,10 +15,10 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

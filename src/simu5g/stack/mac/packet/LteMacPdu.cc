@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/packet/LteMacPdu.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
 
 namespace simu5g {
 

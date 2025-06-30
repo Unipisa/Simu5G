@@ -13,12 +13,12 @@
 #define _LTE_PACKETFLOWMANAGERENB_H_
 
 #include <omnetpp.h>
-#include "common/LteCommon.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 #include "PacketFlowManagerBase.h"
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 

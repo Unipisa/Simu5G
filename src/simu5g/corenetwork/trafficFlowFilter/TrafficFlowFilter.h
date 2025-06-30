@@ -15,8 +15,8 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
-#include "common/binder/Binder.h"
+#include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

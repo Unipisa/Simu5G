@@ -15,9 +15,9 @@
 #include <map>
 #include <vector>
 
-#include "common/LteCommon.h"
-#include "stack/mac/amc/UserTxParams.h"
-#include "stack/phy/feedback/LteSummaryFeedback.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
+#include "simu5g/stack/phy/feedback/LteSummaryFeedback.h"
 
 namespace simu5g {
 

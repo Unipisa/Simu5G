@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/backgroundCell/BackgroundCellTrafficManager.h"
-#include "nodes/backgroundCell/BackgroundScheduler.h"
-#include "nodes/backgroundCell/BackgroundCellAmc.h"
-#include "nodes/backgroundCell/BackgroundCellAmcNr.h"
-#include "stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/phy/LtePhyEnb.h"
-#include "stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellTrafficManager.h"
+#include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellAmc.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellAmcNr.h"
+#include "simu5g/stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
+#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
 
 namespace simu5g {
 

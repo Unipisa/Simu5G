@@ -12,8 +12,8 @@
 #ifndef LTERLCDATAPDU_H_
 #define LTERLCDATAPDU_H_
 
-#include "stack/rlc/packet/LteRlcDataPdu_m.h"
-#include "stack/rlc/LteRlcDefs.h"
+#include "simu5g/stack/rlc/packet/LteRlcDataPdu_m.h"
+#include "simu5g/stack/rlc/LteRlcDefs.h"
 
 namespace simu5g {
 

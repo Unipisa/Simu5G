@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-import common.LteCommon;
+import simu5g.common.LteCommon;
 
 namespace simu5g;
 

@@ -16,9 +16,9 @@
 #include <inet/common/TimeTag_m.h>
 #include <inet/common/packet/chunk/ByteCountChunk.h>
 
-#include "apps/d2dMultihop/MultihopD2D.h"
-#include "apps/d2dMultihop/TrickleTimerMsg_m.h"
-#include "stack/mac/LteMacBase.h"
+#include "simu5g/apps/d2dMultihop/MultihopD2D.h"
+#include "simu5g/apps/d2dMultihop/TrickleTimerMsg_m.h"
+#include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

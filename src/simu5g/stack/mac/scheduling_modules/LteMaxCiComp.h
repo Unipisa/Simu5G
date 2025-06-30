@@ -12,8 +12,8 @@
 #ifndef _LTE_LTEMAXCICOMP_H_
 #define _LTE_LTEMAXCICOMP_H_
 
-#include "stack/mac/scheduler/LteScheduler.h"
-#include "common/LteCommon.h"
+#include "simu5g/stack/mac/scheduler/LteScheduler.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

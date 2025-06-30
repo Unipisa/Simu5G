@@ -12,11 +12,11 @@
 #ifndef APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_L2MEASSUBSCRIPTION_H_
 #define APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_L2MEASSUBSCRIPTION_H_
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/AssociateId.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/AssociateId.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

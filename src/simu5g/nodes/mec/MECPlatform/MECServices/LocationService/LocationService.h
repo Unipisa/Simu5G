@@ -12,8 +12,8 @@
 #ifndef _LOCATIONSERVICE_H
 #define _LOCATIONSERVICE_H
 
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase2.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase2.h"
 
 namespace simu5g {
 

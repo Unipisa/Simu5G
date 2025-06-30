@@ -14,9 +14,9 @@
 #include <cstdio>
 #include <vector>
 #include <map>
-#include "stack/mac/scheduler/LteSchedulerEnb.h"
-#include "stack/mac/scheduling_modules/LteMaxCiOptMB.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
+#include "simu5g/stack/mac/scheduling_modules/LteMaxCiOptMB.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 
 namespace simu5g {
 

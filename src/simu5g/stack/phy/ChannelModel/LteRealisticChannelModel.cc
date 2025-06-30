@@ -9,18 +9,18 @@
 // and cannot be removed from it.
 //
 
-#include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
+#include "simu5g/stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
 #include <fstream>
-#include "common/cellInfo/CellInfo.h"
-#include "stack/phy/packet/LteAirFrame.h"
-#include "common/binder/Binder.h"
-#include "stack/mac/amc/UserTxParams.h"
-#include "common/LteCommon.h"
-#include "nodes/ExtCell.h"
-#include "nodes/backgroundCell/BackgroundScheduler.h"
-#include "stack/phy/LtePhyUe.h"
-#include "stack/mac/LteMacEnbD2D.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/phy/packet/LteAirFrame.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
+#include "simu5g/stack/phy/LtePhyUe.h"
+#include "simu5g/stack/mac/LteMacEnbD2D.h"
 
 namespace simu5g {
 

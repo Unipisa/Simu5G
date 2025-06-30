@@ -16,7 +16,7 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
+#include "simu5g/apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
 
 namespace simu5g {
 

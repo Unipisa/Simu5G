@@ -9,9 +9,9 @@
 // and cannot be removed from it.
 //
 
-#include "stack/rlc/am/buffer/AmTxQueue.h"
-#include "stack/rlc/am/LteRlcAm.h"
-#include "stack/mac/LteMacBase.h"
+#include "simu5g/stack/rlc/am/buffer/AmTxQueue.h"
+#include "simu5g/stack/rlc/am/LteRlcAm.h"
+#include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

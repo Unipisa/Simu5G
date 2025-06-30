@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/backgroundCell/BackgroundScheduler.h"
+#include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
 
 namespace simu5g {
 

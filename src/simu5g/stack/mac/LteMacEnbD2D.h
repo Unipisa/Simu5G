@@ -12,11 +12,11 @@
 #ifndef _LTE_LTEMACENBD2D_H_
 #define _LTE_LTEMACENBD2D_H_
 
-#include "stack/mac/LteMacEnb.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
-#include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
-#include "stack/mac/conflict_graph/ConflictGraph.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqBufferMirrorD2D.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
 
 namespace simu5g {
 

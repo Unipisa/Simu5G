@@ -11,9 +11,9 @@
 
 //#include <math.h>
 #include <cmath>
-#include "stack/phy/feedback/LteFeedbackComputationRealistic.h"
-#include "common/blerCurves/PhyPisaData.h"
-#include "common/binder/Binder.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

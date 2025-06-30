@@ -14,13 +14,13 @@
 
 #include <inet/mobility/contract/IMobility.h>
 
-#include "stack/ip2nic/IP2Nic.h"
-#include "stack/phy/LtePhyBase.h"
-#include "stack/phy/das/DasFilter.h"
-#include "stack/mac/LteMacUe.h"
-#include "stack/rlc/um/LteRlcUm.h"
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
-#include "stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/phy/das/DasFilter.h"
+#include "simu5g/stack/mac/LteMacUe.h"
+#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 
 namespace simu5g {
 

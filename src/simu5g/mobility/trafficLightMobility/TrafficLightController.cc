@@ -14,7 +14,7 @@
  *      Author: linofex
  */
 
-#include "mobility/trafficLightMobility/TrafficLightController.h"
+#include "simu5g/mobility/trafficLightMobility/TrafficLightController.h"
 #include <inet/common/ModuleAccess.h>
 #include <cmath>
 

@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "stack/rlc/um/LteRlcUm.h"
-#include "stack/rlc/um//UmRxEntity.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/rlc/um//UmRxEntity.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

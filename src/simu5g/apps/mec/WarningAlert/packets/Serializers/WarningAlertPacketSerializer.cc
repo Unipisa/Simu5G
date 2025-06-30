@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/WarningAlert/packets/Serializers/WarningAlertPacketSerializer.h"
+#include "simu5g/apps/mec/WarningAlert/packets/Serializers/WarningAlertPacketSerializer.h"
 
 #include <string>
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
 
 namespace simu5g {
 

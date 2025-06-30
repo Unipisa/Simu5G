@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/phy/NRPhyUe.h"
+#include "simu5g/stack/phy/NRPhyUe.h"
 
-#include "stack/ip2nic/IP2Nic.h"
-#include "stack/phy/feedback/LteDlFeedbackGenerator.h"
-#include "stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
 
 namespace simu5g {
 

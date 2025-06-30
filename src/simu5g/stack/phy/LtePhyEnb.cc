@@ -11,10 +11,10 @@
 
 #include <inet/networklayer/common/NetworkInterface.h>
 
-#include "stack/phy/LtePhyEnb.h"
-#include "stack/phy/packet/LteFeedbackPkt.h"
-#include "stack/phy/das/DasFilter.h"
-#include "common/LteCommon.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
+#include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/phy/das/DasFilter.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

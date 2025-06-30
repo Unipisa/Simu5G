@@ -14,8 +14,8 @@
 
 #include <string>
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Plmn.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/Plmn.h"
 
 namespace simu5g {
 

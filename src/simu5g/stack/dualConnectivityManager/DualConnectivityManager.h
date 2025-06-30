@@ -14,10 +14,10 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "x2/packet/X2ControlInfo_m.h"
-#include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
 
 namespace simu5g {
 

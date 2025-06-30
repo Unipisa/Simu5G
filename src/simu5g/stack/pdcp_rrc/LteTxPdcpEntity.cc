@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/pdcp_rrc/LteTxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/LteTxPdcpEntity.h"
 
 #include <inet/common/ProtocolTag_m.h>
 

@@ -15,9 +15,9 @@
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "apps/mec/MecApps/MecAppBase.h"
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/apps/mec/MecApps/MecAppBase.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

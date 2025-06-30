@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/RnisTestApp/UeRnisTestApp.h"
+#include "simu5g/apps/mec/RnisTestApp/UeRnisTestApp.h"
 
 #include <fstream>
 
@@ -18,10 +18,10 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
-#include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_Types.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "simu5g/apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
+#include "simu5g/apps/mec/RnisTestApp/packets/RnisTestAppPacket_Types.h"
 
 namespace simu5g {
 

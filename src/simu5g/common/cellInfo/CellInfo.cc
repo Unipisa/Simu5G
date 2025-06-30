@@ -9,12 +9,12 @@
 // and cannot be removed from it.
 //
 
-#include "common/cellInfo/CellInfo.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
 
 #include <inet/mobility/static/StationaryMobility.h>
 
-#include "world/radio/ChannelControl.h"
-#include "world/radio/ChannelAccess.h"
+#include "simu5g/world/radio/ChannelControl.h"
+#include "simu5g/world/radio/ChannelAccess.h"
 
 namespace simu5g {
 

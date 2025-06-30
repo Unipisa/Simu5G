@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/scheduling_modules/LteAllocatorBestFit.h"
-#include "stack/mac/scheduler/LteSchedulerEnb.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "stack/mac/conflict_graph/ConflictGraph.h"
+#include "simu5g/stack/mac/scheduling_modules/LteAllocatorBestFit.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
 
 namespace simu5g {
 

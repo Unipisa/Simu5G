@@ -12,7 +12,7 @@
 #ifndef _LTE_X2COMPPROPORTIONALREPLYIE_H_
 #define _LTE_X2COMPPROPORTIONALREPLYIE_H_
 
-#include "stack/compManager/X2CompReplyIE.h"
+#include "simu5g/stack/compManager/X2CompReplyIE.h"
 
 namespace simu5g {
 

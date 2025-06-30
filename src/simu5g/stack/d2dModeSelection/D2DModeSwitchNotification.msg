@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-import common.LteCommonEnum;
-import common.LteCommon;
+import simu5g.common.LteCommonEnum;
+import simu5g.common.LteCommon;
 import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;

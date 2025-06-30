@@ -12,9 +12,9 @@
 #ifndef _LTE_LTEX2MESSAGE_H_
 #define _LTE_LTEX2MESSAGE_H_
 
-#include "x2/packet/LteX2Message_m.h"
-#include "common/LteCommon.h"
-#include "x2/packet/X2InformationElement.h"
+#include "simu5g/x2/packet/LteX2Message_m.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/x2/packet/X2InformationElement.h"
 
 namespace simu5g {
 

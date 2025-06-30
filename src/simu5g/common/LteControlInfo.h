@@ -12,7 +12,7 @@
 #ifndef _LTE_LTECONTROLINFO_H_
 #define _LTE_LTECONTROLINFO_H_
 
-#include "common/LteControlInfo_m.h"
+#include "simu5g/common/LteControlInfo_m.h"
 #include <vector>
 
 namespace simu5g {

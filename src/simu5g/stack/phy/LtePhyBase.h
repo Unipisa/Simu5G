@@ -19,14 +19,14 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "world/radio/ChannelAccess.h"
-#include "world/radio/ChannelControl.h"
-#include "common/LteCommon.h"
-#include "common/LteControlInfo.h"
-#include "stack/phy/packet/LteAirFrame.h"
-#include "stack/mac/amc/LteAmc.h"
-#include "stack/phy/ChannelModel/LteChannelModel.h"
-#include "stack/phy/feedback/LteFeedbackComputationRealistic.h"
+#include "simu5g/world/radio/ChannelAccess.h"
+#include "simu5g/world/radio/ChannelControl.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/phy/packet/LteAirFrame.h"
+#include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
 
 namespace simu5g {
 

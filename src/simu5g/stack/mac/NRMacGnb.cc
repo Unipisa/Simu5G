@@ -8,8 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include "stack/mac/NRMacGnb.h"
-#include "stack/mac/scheduler/NRSchedulerGnbUl.h"
+#include "simu5g/stack/mac/NRMacGnb.h"
+#include "simu5g/stack/mac/scheduler/NRSchedulerGnbUl.h"
 
 namespace simu5g {
 

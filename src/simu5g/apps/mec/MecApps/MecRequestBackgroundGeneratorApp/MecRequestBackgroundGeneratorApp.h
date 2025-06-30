@@ -14,7 +14,7 @@
 
 #include <inet/common/lifecycle/NodeStatus.h>
 
-#include "apps/mec/MecApps/MecAppBase.h"
+#include "simu5g/apps/mec/MecApps/MecAppBase.h"
 
 namespace simu5g {
 

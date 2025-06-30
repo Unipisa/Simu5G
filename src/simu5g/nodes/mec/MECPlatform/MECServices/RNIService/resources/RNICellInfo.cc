@@ -10,7 +10,7 @@
 //
 
 #include "RNICellInfo.h"
-#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 
 namespace simu5g {
 

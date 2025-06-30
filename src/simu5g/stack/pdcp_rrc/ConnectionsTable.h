@@ -12,7 +12,7 @@
 #ifndef _LTE_CONNECTIONSTABLE_H_
 #define _LTE_CONNECTIONSTABLE_H_
 
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

@@ -12,10 +12,10 @@
 #ifndef _LTE_LTESCHEDULERENB_H_
 #define _LTE_LTESCHEDULERENB_H_
 
-#include "common/LteCommon.h"
-#include "stack/mac/buffer/harq/LteHarqBufferTx.h"
-#include "stack/mac/allocator/LteAllocatorUtils.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
+#include "simu5g/stack/mac/allocator/LteAllocatorUtils.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

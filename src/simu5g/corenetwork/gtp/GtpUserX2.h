@@ -17,9 +17,9 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "common/binder/Binder.h"
-#include "corenetwork/gtp/GtpUserMsg_m.h"
-#include "x2/packet/LteX2Message.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/gtp/GtpUserMsg_m.h"
+#include "simu5g/x2/packet/LteX2Message.h"
 
 namespace simu5g {
 

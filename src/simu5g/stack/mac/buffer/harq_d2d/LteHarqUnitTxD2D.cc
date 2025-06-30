@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

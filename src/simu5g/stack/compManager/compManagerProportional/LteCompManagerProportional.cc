@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/compManager/compManagerProportional/LteCompManagerProportional.h"
+#include "simu5g/stack/compManager/compManagerProportional/LteCompManagerProportional.h"
 
 namespace simu5g {
 

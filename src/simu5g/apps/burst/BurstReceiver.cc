@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/burst/BurstReceiver.h"
+#include "simu5g/apps/burst/BurstReceiver.h"
 
 namespace simu5g {
 

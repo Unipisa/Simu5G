@@ -11,12 +11,12 @@
 //
 #include <omnetpp.h>
 
-#include "stack/mac/amc/LteAmc.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 // NOTE: AMC Pilots header file inclusions must go here
-#include "stack/mac/amc/AmcPilotAuto.h"
-#include "stack/mac/amc/AmcPilotD2D.h"
+#include "simu5g/stack/mac/amc/AmcPilotAuto.h"
+#include "simu5g/stack/mac/amc/AmcPilotD2D.h"
 
 namespace simu5g {
 

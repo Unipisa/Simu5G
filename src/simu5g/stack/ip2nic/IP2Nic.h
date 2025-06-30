@@ -15,11 +15,11 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
-#include "common/LteCommon.h"
-#include "common/LteControlInfo.h"
-#include "stack/handoverManager/LteHandoverManager.h"
-#include "common/binder/Binder.h"
-#include "stack/ip2nic/SplitBearersTable.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/handoverManager/LteHandoverManager.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
 namespace simu5g {
 

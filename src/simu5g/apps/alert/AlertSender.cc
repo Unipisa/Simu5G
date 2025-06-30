@@ -13,7 +13,7 @@
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/TimeTag_m.h>
 
-#include "apps/alert/AlertSender.h"
+#include "simu5g/apps/alert/AlertSender.h"
 
 namespace simu5g {
 

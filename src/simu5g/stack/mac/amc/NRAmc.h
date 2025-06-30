@@ -14,8 +14,8 @@
 
 #include <omnetpp.h>
 
-#include "stack/mac/amc/LteAmc.h"
-#include "stack/mac/amc/NRMcs.h"
+#include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/stack/mac/amc/NRMcs.h"
 
 namespace simu5g {
 

@@ -17,7 +17,7 @@
 
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
-#include "apps/voip/VoipPacket_m.h"
+#include "simu5g/apps/voip/VoipPacket_m.h"
 
 namespace simu5g {
 

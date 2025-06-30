@@ -12,7 +12,7 @@
 #ifndef _LTE_LTEMCS_H_
 #define _LTE_LTEMCS_H_
 
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

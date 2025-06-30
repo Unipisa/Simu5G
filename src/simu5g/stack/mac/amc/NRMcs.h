@@ -12,8 +12,8 @@
 #ifndef _NRMCS_H_
 #define _NRMCS_H_
 
-#include "common/LteCommon.h"
-#include "stack/mac/amc/LteMcs.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/amc/LteMcs.h"
 
 namespace simu5g {
 

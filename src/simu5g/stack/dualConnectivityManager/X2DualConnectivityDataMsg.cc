@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
+#include "simu5g/stack/dualConnectivityManager/X2DualConnectivityDataMsg.h"
 
 namespace simu5g {
 

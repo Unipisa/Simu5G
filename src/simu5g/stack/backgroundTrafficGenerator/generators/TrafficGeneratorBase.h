@@ -15,8 +15,8 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/mobility/contract/IMobility.h>
 
-#include "common/LteCommon.h"
-#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 

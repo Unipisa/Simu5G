@@ -12,10 +12,10 @@
 #ifndef _ASSOCIATEID_H_
 #define _ASSOCIATEID_H_
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
 #include <string>
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

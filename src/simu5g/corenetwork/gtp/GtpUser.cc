@@ -8,8 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include "corenetwork/gtp/GtpUser.h"
-#include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
+#include "simu5g/corenetwork/gtp/GtpUser.h"
+#include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include <iostream>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>

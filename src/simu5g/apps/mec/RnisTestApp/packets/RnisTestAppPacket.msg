@@ -14,14 +14,14 @@
 // RnisTestAppPacket used by UeRnisTestApp and MecRnisTestApp
 //
 
-import nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.MECPlatform.MECPackets;
 
 cplusplus {{
-#include "nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 }}
 
-class nlohmann::json 
-{ 
+class nlohmann::json
+{
     @existingClass;
 }
 
@@ -32,15 +32,15 @@ class RnisTestAppPacket extends MECPacket
 }
 
 class RnisTestAppStartPacket extends RnisTestAppPacket
-{       
+{
     double period;   // determines the RNIS querying period
 }
 
 class RnisTestAppStopPacket extends RnisTestAppPacket
-{       
+{
 }
 
 class RnisTestAppInfoPacket extends RnisTestAppPacket
-{       
+{
     nlohmann::json l2meas;
 }

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/MecRequestResponseApp/MECResponseApp.h"
+#include "simu5g/apps/mec/MecRequestResponseApp/MECResponseApp.h"
 
 #include <fstream>
 
@@ -18,10 +18,10 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "apps/mec/MecRequestResponseApp/packets/RequestResponsePacket_m.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/utils/httpUtils/json.hpp"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/apps/mec/MecRequestResponseApp/packets/RequestResponsePacket_m.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 
 namespace simu5g {
 

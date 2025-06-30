@@ -34,7 +34,7 @@ enum HttpRequestState {
     BAD_REQ_URI		= 9;
 };
 
-enum HttpResponseStatus { 
+enum HttpResponseStatus {
 	OK 					= 0;	// 200
     CREATED 			= 1;    // 201
     NO_CONTENT 			= 2; 	// 204
@@ -62,7 +62,7 @@ class HttpBaseMessage extends inet::FieldsChunk
     string httpProtocol = "HTTP/1.1";		 // http protocol, defaul HTTP/1.1
     int contentLength;						 // Content-Length header
     int remainingDataToRecv;				 // Counter for HTTP msg within more TCP segments
-    string contentType = "application/json"; // Content-Type header 
+    string contentType = "application/json"; // Content-Type header
     string connection = "keep-alive";		 // Connection  header
     simtime_t arrivalTime = 0;					 //  Point in time when the messagge arrives (used by the Service to calculate response time)
 }
@@ -84,6 +84,6 @@ class HttpRequestMessage_m extends HttpBaseMessage
 //
 class HttpResponseMessage_m extends HttpBaseMessage
 {
-    int code;	// e.g. 200 
+    int code;	// e.g. 200
     string status; 	// e.g. OK
 }

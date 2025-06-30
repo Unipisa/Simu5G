@@ -12,7 +12,7 @@
 #ifndef LTECHANNELCONTROL_H
 #define LTECHANNELCONTROL_H
 
-#include "world/radio/ChannelControl.h"
+#include "simu5g/world/radio/ChannelControl.h"
 
 namespace simu5g {
 

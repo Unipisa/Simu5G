@@ -17,8 +17,8 @@
 #include <string.h>
 #include <fstream>
 
-#include <apps/vod/VoDPacket_m.h>
-#include <apps/vod/VoDUDPStruct.h>
+#include "simu5g/apps/vod/VoDPacket_m.h"
+#include "simu5g/apps/vod/VoDUDPStruct.h"
 #include <inet/transportlayer/contract/udp/UdpControlInfo.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3AddressResolver.h>

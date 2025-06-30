@@ -16,8 +16,8 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "common/binder/Binder.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

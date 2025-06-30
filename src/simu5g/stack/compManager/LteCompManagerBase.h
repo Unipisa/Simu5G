@@ -12,13 +12,13 @@
 #ifndef LTE_LTECOMPMANAGERBASE_H_
 #define LTE_LTECOMPMANAGERBASE_H_
 
-#include "common/LteCommon.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
-#include "x2/packet/X2ControlInfo_m.h"
-#include "stack/compManager/X2CompMsg.h"
-#include "stack/compManager/X2CompRequestIE.h"
-#include "stack/compManager/X2CompReplyIE.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/stack/compManager/X2CompMsg.h"
+#include "simu5g/stack/compManager/X2CompRequestIE.h"
+#include "simu5g/stack/compManager/X2CompReplyIE.h"
 
 namespace simu5g {
 

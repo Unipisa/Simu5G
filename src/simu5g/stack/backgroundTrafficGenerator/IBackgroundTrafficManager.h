@@ -17,9 +17,9 @@
 
 #include <inet/common/geometry/common/Coord.h>
 
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
-#include "common/LteCommon.h"
-#include "common/LteCommonEnum_m.h"
+#include "simu5g/stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteCommonEnum_m.h"
 
 namespace simu5g {
 

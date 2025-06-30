@@ -12,7 +12,7 @@
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_CATEGORYREF_H_
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
 namespace simu5g {
 

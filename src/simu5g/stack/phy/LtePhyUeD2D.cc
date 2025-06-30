@@ -10,9 +10,9 @@
 //
 
 #include <assert.h>
-#include "stack/phy/LtePhyUeD2D.h"
-#include "stack/phy/packet/LteFeedbackPkt.h"
-#include "stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/phy/LtePhyUeD2D.h"
+#include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
 
 namespace simu5g {
 

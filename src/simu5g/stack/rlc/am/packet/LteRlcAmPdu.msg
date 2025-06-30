@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-import  stack.rlc.LteRlcDefs;
-import  stack.rlc.packet.LteRlcPdu;
+import simu5g. stack.rlc.LteRlcDefs;
+import simu5g. stack.rlc.packet.LteRlcPdu;
 
 namespace simu5g;
 

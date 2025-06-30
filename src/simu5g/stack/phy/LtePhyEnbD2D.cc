@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "stack/phy/LtePhyEnbD2D.h"
-#include "stack/phy/packet/LteFeedbackPkt.h"
-#include "common/LteCommon.h"
-#include "stack/phy/das/DasFilter.h"
+#include "simu5g/stack/phy/LtePhyEnbD2D.h"
+#include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/phy/das/DasFilter.h"
 
 namespace simu5g {
 

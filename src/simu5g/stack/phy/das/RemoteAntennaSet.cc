@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/phy/das/RemoteAntennaSet.h"
+#include "simu5g/stack/phy/das/RemoteAntennaSet.h"
 
 namespace simu5g {
 

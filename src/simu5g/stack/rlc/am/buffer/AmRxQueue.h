@@ -15,12 +15,12 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/common/packet/Packet.h>
 
-#include "common/timer/TTimer.h"
-#include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
-#include "stack/rlc/LteRlcDefs.h"
-#include "stack/rlc/am/LteRlcAm.h"
-#include "stack/rlc/am/packet/LteRlcAmPdu.h"
-#include "stack/rlc/am/packet/LteRlcAmSdu_m.h"
+#include "simu5g/common/timer/TTimer.h"
+#include "simu5g/stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
+#include "simu5g/stack/rlc/LteRlcDefs.h"
+#include "simu5g/stack/rlc/am/LteRlcAm.h"
+#include "simu5g/stack/rlc/am/packet/LteRlcAmPdu.h"
+#include "simu5g/stack/rlc/am/packet/LteRlcAmSdu_m.h"
 
 namespace simu5g {
 

@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/scheduler/NRSchedulerGnbUl.h"
-#include "stack/mac/NRMacGnb.h"
-#include "stack/mac/buffer/harq/LteHarqBufferRx.h"
-#include "stack/mac/allocator/LteAllocationModule.h"
+#include "simu5g/stack/mac/scheduler/NRSchedulerGnbUl.h"
+#include "simu5g/stack/mac/NRMacGnb.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferRx.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 
 namespace simu5g {
 

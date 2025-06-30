@@ -12,8 +12,8 @@
 #ifndef _NRTXPDCPENTITY_H_
 #define _NRTXPDCPENTITY_H_
 
-#include "stack/pdcp_rrc/LteTxPdcpEntity.h"
-#include "stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/stack/pdcp_rrc/LteTxPdcpEntity.h"
+#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
 
 namespace simu5g {
 

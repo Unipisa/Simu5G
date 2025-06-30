@@ -19,8 +19,8 @@
 
 #include <inet/common/INETMath.h>
 
-#include "world/radio/ChannelControl.h"
-#include "stack/phy/packet/AirFrame_m.h"
+#include "simu5g/world/radio/ChannelControl.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
 
 namespace simu5g {
 

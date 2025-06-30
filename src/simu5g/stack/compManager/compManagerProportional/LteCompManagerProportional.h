@@ -12,9 +12,9 @@
 #ifndef LTE_LTECOMPMANAGERPROPORTIONAL_H_
 #define LTE_LTECOMPMANAGERPROPORTIONAL_H_
 
-#include "stack/compManager/LteCompManagerBase.h"
-#include "stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
-#include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
+#include "simu5g/stack/compManager/LteCompManagerBase.h"
+#include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalRequestIE.h"
+#include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
 
 namespace simu5g {
 

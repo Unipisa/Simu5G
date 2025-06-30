@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/allocator/LteAllocationModuleFrequencyReuse.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModuleFrequencyReuse.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 
 namespace simu5g {
 

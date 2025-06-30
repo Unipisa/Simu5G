@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "x2/X2AppServer.h"
+#include "simu5g/x2/X2AppServer.h"
 
 #include <inet/common/ProtocolTag_m.h>
 #include <inet/common/TimeTag_m.h>

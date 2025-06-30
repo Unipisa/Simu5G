@@ -12,9 +12,9 @@
 #ifndef _LTE_LTEMACUED2D_H_
 #define _LTE_LTEMACUED2D_H_
 
-#include "stack/mac/LteMacUe.h"
-#include "stack/mac/LteMacEnbD2D.h"
-#include "stack/mac/buffer/harq_d2d/LteHarqBufferTxD2D.h"
+#include "simu5g/stack/mac/LteMacUe.h"
+#include "simu5g/stack/mac/LteMacEnbD2D.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqBufferTxD2D.h"
 
 namespace simu5g {
 

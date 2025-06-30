@@ -14,12 +14,12 @@
 
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/EventNotification/EventNotification.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/AperiodicSubscriptionTimer_m.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

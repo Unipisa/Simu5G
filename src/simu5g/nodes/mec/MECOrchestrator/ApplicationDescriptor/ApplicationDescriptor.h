@@ -12,8 +12,8 @@
 
 #include <string.h>
 #include <omnetpp.h>
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
 

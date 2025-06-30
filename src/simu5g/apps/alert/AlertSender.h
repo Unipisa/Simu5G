@@ -17,7 +17,7 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
-#include "apps/alert/AlertPacket_m.h"
+#include "simu5g/apps/alert/AlertPacket_m.h"
 
 namespace simu5g {
 

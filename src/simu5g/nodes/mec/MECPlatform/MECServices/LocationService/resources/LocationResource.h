@@ -17,11 +17,11 @@
 
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
-#include "common/LteCommon.h"
-#include "common/binder/Binder.h"
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/UserInfo.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/UserInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
 

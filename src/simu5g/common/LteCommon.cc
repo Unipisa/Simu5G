@@ -9,19 +9,19 @@
 // and cannot be removed from it.
 //
 
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 #include <inet/common/packet/dissector/ProtocolDissectorRegistry.h>
 #include <inet/networklayer/ipv4/Ipv4ProtocolDissector.h>
 #include <inet/common/IProtocolRegistrationListener.h>
 #include <inet/common/ProtocolTag_m.h>
 
-#include "common/LteControlInfo.h"
-#include "common/binder/Binder.h"
-#include "common/cellInfo/CellInfo.h"
-#include "corenetwork/trafficFlowFilter/TftControlInfo_m.h"
-#include "stack/mac/LteMacEnb.h"
-#include "x2/packet/X2ControlInfo_m.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
 
 namespace simu5g {
 

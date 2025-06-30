@@ -10,7 +10,7 @@
 //
 
 cplusplus {{
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 }}
 
 namespace simu5g;

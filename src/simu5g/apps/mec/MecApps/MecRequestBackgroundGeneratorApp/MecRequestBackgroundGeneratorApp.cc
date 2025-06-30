@@ -7,16 +7,16 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/MecApps/MecRequestBackgroundGeneratorApp/MecRequestBackgroundGeneratorApp.h"
+#include "simu5g/apps/mec/MecApps/MecRequestBackgroundGeneratorApp/MecRequestBackgroundGeneratorApp.h"
 
 #include <string>
 
 #include <inet/common/TimeTag_m.h>
 #include <inet/common/packet/chunk/BytesChunk.h>
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

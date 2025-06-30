@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "common/LteControlInfo.h"
-#include "stack/mac/amc/UserTxParams.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
 
 namespace simu5g {
 

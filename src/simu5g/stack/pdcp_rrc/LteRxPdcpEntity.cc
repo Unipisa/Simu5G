@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/pdcp_rrc/LteRxPdcpEntity.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/pdcp_rrc/LteRxPdcpEntity.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 

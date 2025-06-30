@@ -12,7 +12,7 @@
 #ifndef _LTE_LTE_SCHEDULER_ENB_UL_H_
 #define _LTE_LTE_SCHEDULER_ENB_UL_H_
 
-#include "stack/mac/scheduler/LteSchedulerEnb.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
 
 namespace simu5g {
 

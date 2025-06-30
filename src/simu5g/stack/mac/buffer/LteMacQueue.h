@@ -16,7 +16,7 @@
 
 #include <inet/common/packet/Packet.h>
 
-#include "stack/rlc/packet/LteRlcPdu_m.h"
+#include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 
 namespace simu5g {
 

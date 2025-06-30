@@ -13,8 +13,8 @@
 #define _LTE_LTERLCMUX_H_
 
 #include <omnetpp.h>
-#include "common/LteCommon.h"
-#include "common/LteControlInfo.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
 
 namespace simu5g {
 

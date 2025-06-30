@@ -12,7 +12,7 @@
 #ifndef LTE_D2DMODESELECTIONBESTCQI_H_
 #define LTE_D2DMODESELECTIONBESTCQI_H_
 
-#include "stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
 
 namespace simu5g {
 

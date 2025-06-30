@@ -13,7 +13,7 @@
 #define __X2APPCLIENT_H_
 
 #include <inet/applications/sctpapp/SctpClient.h>
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

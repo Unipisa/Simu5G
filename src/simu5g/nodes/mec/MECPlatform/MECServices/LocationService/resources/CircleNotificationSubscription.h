@@ -12,16 +12,16 @@
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
 
 #include <set>
 
 #include <inet/common/INETDefs.h>
 #include <inet/common/geometry/common/Coord.h>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/TerminalLocation.h"
 
 namespace simu5g {
 

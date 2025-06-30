@@ -9,13 +9,13 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationResource.h"
 
 #include <inet/mobility/base/MovingMobilityBase.h>
 
-#include "common/binder/Binder.h"
-#include "common/cellInfo/CellInfo.h"
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationApiDefs.h"
 
 namespace simu5g {
 

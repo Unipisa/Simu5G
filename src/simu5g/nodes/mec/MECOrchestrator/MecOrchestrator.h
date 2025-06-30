@@ -18,12 +18,12 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 //BINDER and UTILITIES
-#include "common/LteCommon.h"
-#include "common/binder/Binder.h"           //to handle cars dynamically leaving the Network
-#include "nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-#include "nodes/mec/MECPlatform/MEAppPacket_m.h"
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"           //to handle cars dynamically leaving the Network
+#include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
+#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_m.h"
+#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

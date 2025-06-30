@@ -13,7 +13,7 @@
 #define _LTE_LTEMACBUFFER_H_
 
 #include <omnetpp.h>
-#include "common/LteCommon.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

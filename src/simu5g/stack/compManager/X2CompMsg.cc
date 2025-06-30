@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/compManager/X2CompMsg.h"
+#include "simu5g/stack/compManager/X2CompMsg.h"
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "x2/packet/LteX2MsgSerializer.h"
+#include "simu5g/x2/packet/LteX2MsgSerializer.h"
 
 namespace simu5g {
 

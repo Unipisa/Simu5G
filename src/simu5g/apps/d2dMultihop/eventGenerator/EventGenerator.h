@@ -16,9 +16,9 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "apps/d2dMultihop/MultihopD2D.h"
-#include "common/binder/Binder.h"
-#include "stack/phy/LtePhyBase.h"
+#include "simu5g/apps/d2dMultihop/MultihopD2D.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

@@ -15,9 +15,9 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "stack/pdcp_rrc/NRTxPdcpEntity.h"
-#include "stack/pdcp_rrc/LtePdcpRrcEnbD2D.h"
-#include "stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/stack/pdcp_rrc/NRTxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrcEnbD2D.h"
+#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
 
 namespace simu5g {
 

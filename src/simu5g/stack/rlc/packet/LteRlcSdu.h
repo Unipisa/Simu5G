@@ -12,8 +12,8 @@
 #ifndef LTERLCSDU_H_
 #define LTERLCSDU_H_
 
-#include "stack/rlc/packet/LteRlcSdu_m.h"
-#include "common/LteControlInfo.h"
+#include "simu5g/stack/rlc/packet/LteRlcSdu_m.h"
+#include "simu5g/common/LteControlInfo.h"
 
 namespace simu5g {
 

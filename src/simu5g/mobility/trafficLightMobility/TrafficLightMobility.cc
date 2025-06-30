@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "mobility/trafficLightMobility/TrafficLightMobility.h"
+#include "simu5g/mobility/trafficLightMobility/TrafficLightMobility.h"
 
 #include <inet/common/INETMath.h>
 
-#include "mobility/trafficLightMobility/TrafficLightController.h"
+#include "simu5g/mobility/trafficLightMobility/TrafficLightController.h"
 
 namespace simu5g {
 

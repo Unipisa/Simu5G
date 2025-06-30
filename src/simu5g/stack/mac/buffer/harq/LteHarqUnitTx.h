@@ -14,10 +14,10 @@
 
 #include <omnetpp.h>
 
-#include "stack/mac/packet/LteMacPdu.h"
-#include "common/LteControlInfo.h"
-#include "common/LteCommon.h"
-#include "stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

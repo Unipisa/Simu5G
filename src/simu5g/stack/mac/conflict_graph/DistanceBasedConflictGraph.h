@@ -12,7 +12,7 @@
 #ifndef DISTANCEBASEDCONFLICTGRAPH_H
 #define DISTANCEBASEDCONFLICTGRAPH_H
 
-#include "stack/mac/conflict_graph/ConflictGraph.h"
+#include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
 
 namespace simu5g {
 

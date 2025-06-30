@@ -11,8 +11,8 @@
 
 #include <inet/networklayer/common/NetworkInterface.h>
 
-#include "stack/pdcp_rrc/NRPdcpRrcEnb.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/pdcp_rrc/NRPdcpRrcEnb.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 

@@ -12,7 +12,7 @@
 #ifndef _NRSCHEDULER_GNB_UL_H_
 #define _NRSCHEDULER_GNB_UL_H_
 
-#include "stack/mac/scheduler/LteSchedulerEnbUl.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnbUl.h"
 
 namespace simu5g {
 

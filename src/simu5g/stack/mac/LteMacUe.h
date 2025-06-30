@@ -12,10 +12,10 @@
 #ifndef _LTE_LTEMACUE_H_
 #define _LTE_LTEMACUE_H_
 
-#include "stack/mac/LteMacBase.h"
-#include "stack/phy/LtePhyBase.h"
-#include "stack/mac/buffer/harq/LteHarqBufferTx.h"
-#include "stack/phy/feedback/LteFeedback.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqBufferTx.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
 
 namespace simu5g {
 

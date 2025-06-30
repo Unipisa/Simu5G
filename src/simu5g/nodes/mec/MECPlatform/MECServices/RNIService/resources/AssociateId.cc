@@ -13,7 +13,7 @@
 
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
-#include "common/binder/Binder.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "simu5g/stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
 
 #include <inet/mobility/contract/IMobility.h>
 
-#include "stack/backgroundTrafficGenerator/generators/RtxNotification_m.h"
+#include "simu5g/stack/backgroundTrafficGenerator/generators/RtxNotification_m.h"
 
 namespace simu5g {
 

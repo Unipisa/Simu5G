@@ -15,14 +15,14 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include <string>
-#include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/packetFlowManager/PacketFlowManagerUe.h"
-// #include "stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
+// #include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
 
 namespace simu5g {
 

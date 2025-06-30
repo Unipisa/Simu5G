@@ -19,10 +19,10 @@
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 #include <inet/networklayer/common/L3Address.h>
 
-#include "common/LteCommon.h"
-#include "common/blerCurves/PhyPisaData.h"
-#include "nodes/ExtCell.h"
-#include "stack/mac/LteMacBase.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/nodes/ExtCell.h"
+#include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

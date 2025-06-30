@@ -12,10 +12,10 @@
 #ifndef _LTE_LTEALLOCATORBESTFIT_H_
 #define _LTE_LTEALLOCATORBESTFIT_H_
 
-#include "stack/mac/scheduler/LteScheduler.h"
-#include "stack/mac/allocator/LteAllocatorUtils.h"
-#include "stack/mac/allocator/LteAllocationModule.h"
-#include "stack/mac/conflict_graph/ConflictGraph.h"
+#include "simu5g/stack/mac/scheduler/LteScheduler.h"
+#include "simu5g/stack/mac/allocator/LteAllocatorUtils.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModule.h"
+#include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
 
 namespace simu5g {
 

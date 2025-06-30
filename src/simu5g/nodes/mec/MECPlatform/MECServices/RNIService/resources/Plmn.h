@@ -12,8 +12,8 @@
 #ifndef _PLMN_H_
 #define _PLMN_H_
 
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
 
 namespace simu5g {
 

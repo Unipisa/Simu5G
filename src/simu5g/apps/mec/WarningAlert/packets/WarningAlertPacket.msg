@@ -14,7 +14,7 @@
 // IceAlert Packet used by UEIceAlertApp MEIceAlertApp and MEIceAlertService
 //
 
-import nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.MECPlatform.MECPackets;
 
 namespace simu5g;
 
@@ -23,8 +23,8 @@ class WarningAppPacket extends MECPacket
 }
 
 class WarningAlertPacket extends WarningAppPacket
-{       
-    int ueOmnetID; 
+{
+    int ueOmnetID;
     double positionX;
     double positionY;
     double positionZ;
@@ -32,14 +32,14 @@ class WarningAlertPacket extends WarningAppPacket
 }
 
 class WarningStartPacket extends WarningAppPacket
-{       
+{
 	double centerPositionX;
 	double centerPositionY;
 	double centerPositionZ;
-	
+
 	double radius;
 }
 
 class WarningStopPacket extends WarningAppPacket
-{       
+{
 }

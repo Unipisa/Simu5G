@@ -11,10 +11,10 @@
 
 #include <inet/networklayer/common/NetworkInterface.h>
 
-#include "stack/pdcp_rrc/NRPdcpRrcUe.h"
-#include "stack/pdcp_rrc/NRTxPdcpEntity.h"
-#include "stack/pdcp_rrc/NRRxPdcpEntity.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/pdcp_rrc/NRPdcpRrcUe.h"
+#include "simu5g/stack/pdcp_rrc/NRTxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/NRRxPdcpEntity.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 

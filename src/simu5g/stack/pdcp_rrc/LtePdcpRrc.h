@@ -15,13 +15,13 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/binder/Binder.h"
-#include "common/LteCommon.h"
-#include "stack/pdcp_rrc/ConnectionsTable.h"
-#include "common/LteControlInfo.h"
-#include "stack/pdcp_rrc/LteTxPdcpEntity.h"
-#include "stack/pdcp_rrc/LteRxPdcpEntity.h"
-#include "stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/pdcp_rrc/ConnectionsTable.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/pdcp_rrc/LteTxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/LteRxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 

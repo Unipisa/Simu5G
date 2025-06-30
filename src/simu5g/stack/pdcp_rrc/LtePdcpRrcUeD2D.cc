@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "stack/pdcp_rrc/LtePdcpRrcUeD2D.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrcUeD2D.h"
 #include <inet/networklayer/common/L3AddressResolver.h>
-#include "stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
-#include "stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 

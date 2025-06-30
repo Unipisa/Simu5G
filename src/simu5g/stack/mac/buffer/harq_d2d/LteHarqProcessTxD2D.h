@@ -12,8 +12,8 @@
 #ifndef _LTE_LTEHARQPROCESSTXD2D_H_
 #define _LTE_LTEHARQPROCESSTXD2D_H_
 
-#include "stack/mac/buffer/harq/LteHarqProcessTx.h"
-#include "stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqProcessTx.h"
+#include "simu5g/stack/mac/buffer/harq_d2d/LteHarqUnitTxD2D.h"
 
 namespace simu5g {
 

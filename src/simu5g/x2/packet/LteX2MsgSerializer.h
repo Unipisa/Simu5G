@@ -14,7 +14,7 @@
 
 #include <inet/common/packet/serializer/FieldsChunkSerializer.h>
 
-#include "stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
+#include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalReplyIE.h"
 
 namespace simu5g {
 

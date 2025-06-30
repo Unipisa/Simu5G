@@ -17,9 +17,9 @@
 #include <omnetpp.h>
 #include <inet/networklayer/common/L3Address.h>
 
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 
 namespace simu5g {
 

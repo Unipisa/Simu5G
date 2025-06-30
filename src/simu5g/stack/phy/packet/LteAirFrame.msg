@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-import stack.phy.packet.AirFrame;
+import simu5g.stack.phy.packet.AirFrame;
 
 namespace simu5g;
 

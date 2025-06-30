@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/RealTimeVideoStreamingApp/RTVideoStreamingSender.h"
+#include "simu5g/apps/mec/RealTimeVideoStreamingApp/RTVideoStreamingSender.h"
 
 #include <fstream>
 
@@ -18,11 +18,11 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
-#include "apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
+#include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
+#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

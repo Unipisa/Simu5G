@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/resources/ServiceInfo.h"
 
 namespace simu5g {
 

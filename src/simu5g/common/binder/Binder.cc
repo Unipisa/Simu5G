@@ -14,11 +14,11 @@
 
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "common/binder/Binder.h"
-#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
-#include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/mac/LteMacUe.h"
-#include "stack/phy/LtePhyUe.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/stack/mac/LteMacUe.h"
+#include "simu5g/stack/phy/LtePhyUe.h"
 
 namespace simu5g {
 

@@ -12,9 +12,9 @@
 #ifndef _LTE_X2DUALCONNECTIVITYDATAMSG_H_
 #define _LTE_X2DUALCONNECTIVITYDATAMSG_H_
 
-#include "x2/packet/LteX2Message.h"
-#include "common/LteCommon.h"
-#include "common/LteControlInfo_m.h"
+#include "simu5g/x2/packet/LteX2Message.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo_m.h"
 
 namespace simu5g {
 

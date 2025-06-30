@@ -12,7 +12,7 @@
 #ifndef LTEMAXCIMULTIBAND_H_
 #define LTEMAXCIMULTIBAND_H_
 
-#include "stack/mac/scheduler/LteScheduler.h"
+#include "simu5g/stack/mac/scheduler/LteScheduler.h"
 
 namespace simu5g {
 

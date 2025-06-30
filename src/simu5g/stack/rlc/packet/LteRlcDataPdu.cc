@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/rlc/packet/LteRlcDataPdu.h"
+#include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 
 namespace simu5g {
 

@@ -10,8 +10,8 @@
 //
 
 #include "MecHostSelectionBased.h"
-#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
-#include "nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 

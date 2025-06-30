@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/alert/AlertReceiver.h"
+#include "simu5g/apps/alert/AlertReceiver.h"
 #include <inet/common/ModuleAccess.h>  // for multicast support
 
 namespace simu5g {

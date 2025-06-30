@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mecRequestResponseApp/MecRequestApp.h"
+#include "simu5g/apps/mecRequestResponseApp/MecRequestApp.h"
 
 namespace simu5g {
 

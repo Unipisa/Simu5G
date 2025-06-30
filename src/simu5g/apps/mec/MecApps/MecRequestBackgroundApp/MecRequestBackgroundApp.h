@@ -12,7 +12,7 @@
 #ifndef APPS_MEC_MEAPPS_MEBG_APP_H_
 #define APPS_MEC_MEAPPS_MEBG_APP_H_
 
-#include "apps/mec/MecApps/MecAppBase.h"
+#include "simu5g/apps/mec/MecApps/MecAppBase.h"
 
 namespace simu5g {
 

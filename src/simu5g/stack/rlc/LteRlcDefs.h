@@ -12,9 +12,9 @@
 #ifndef _LTE_LTERLCDEFS_H_
 #define _LTE_LTERLCDEFS_H_
 
-#include "common/LteControlInfo.h"
-#include "stack/rlc/packet/LteRlcPdu_m.h"
-#include "stack/rlc/packet/LteRlcSdu_m.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
+#include "simu5g/stack/rlc/packet/LteRlcSdu_m.h"
 
 namespace simu5g {
 

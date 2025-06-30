@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-import common.timer.TTimerMsg;
+import simu5g.common.timer.TTimerMsg;
 
 namespace simu5g;
 

@@ -12,7 +12,7 @@
 #ifndef _LTE_AIRPHYENB_H_
 #define _LTE_AIRPHYENB_H_
 
-#include "stack/phy/LtePhyBase.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

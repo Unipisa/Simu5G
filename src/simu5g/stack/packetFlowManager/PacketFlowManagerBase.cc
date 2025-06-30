@@ -13,12 +13,12 @@
 
 #include <inet/common/ModuleAccess.h>
 
-#include "stack/mac/LteMacBase.h"
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
-#include "stack/rlc/LteRlcDefs.h"
-#include "stack/rlc/packet/LteRlcDataPdu.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/rlc/LteRlcDefs.h"
+#include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 
-#include "common/LteControlInfo.h"
+#include "simu5g/common/LteControlInfo.h"
 
 #include <sstream>
 

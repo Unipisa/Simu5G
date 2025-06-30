@@ -16,7 +16,7 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "common/binder/Binder.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

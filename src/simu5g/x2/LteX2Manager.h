@@ -15,11 +15,11 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "common/LteCommon.h"
-#include "x2/packet/LteX2Message.h"
-#include "x2/packet/X2ControlInfo_m.h"
-#include "x2/X2AppClient.h"
-#include "common/binder/Binder.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/x2/packet/LteX2Message.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
+#include "simu5g/x2/X2AppClient.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

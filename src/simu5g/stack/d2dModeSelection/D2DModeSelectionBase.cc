@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
 
 namespace simu5g {
 

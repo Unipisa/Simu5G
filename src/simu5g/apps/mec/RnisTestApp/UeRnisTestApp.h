@@ -16,9 +16,9 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "common/binder/Binder.h"
-#include "apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
-#include "nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
+#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

@@ -12,9 +12,9 @@
 #ifndef _LTE_LTEMACPDU_H_
 #define _LTE_LTEMACPDU_H_
 
-#include "stack/mac/packet/LteMacPdu_m.h"
-#include "common/LteCommon.h"
-#include "common/LteControlInfo.h"
+#include "simu5g/stack/mac/packet/LteMacPdu_m.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
 
 namespace simu5g {
 

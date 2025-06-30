@@ -12,7 +12,7 @@
 #ifndef _LTE_LTEFEEDBACKCOMPUTATIONREALISTIC_H_
 #define _LTE_LTEFEEDBACKCOMPUTATIONREALISTIC_H_
 
-#include "stack/phy/feedback/LteFeedbackComputation.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputation.h"
 
 namespace simu5g {
 

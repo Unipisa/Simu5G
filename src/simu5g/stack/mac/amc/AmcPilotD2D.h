@@ -12,7 +12,7 @@
 #ifndef _LTE_AMCPILOTD2D_H_
 #define _LTE_AMCPILOTD2D_H_
 
-#include "stack/mac/amc/AmcPilot.h"
+#include "simu5g/stack/mac/amc/AmcPilot.h"
 
 namespace simu5g {
 

@@ -12,8 +12,8 @@
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_TRANSINFO_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_TRANSINFO_H_
 
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/resources/EndPointInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/resources/EndPointInfo.h"
 
 namespace simu5g {
 

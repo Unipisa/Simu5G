@@ -15,13 +15,13 @@ import inet.common.packet.chunk.Chunk;
 namespace simu5g;
 
 class MEAppPacket extends inet::FieldsChunk {
-   
+
     unsigned int sno;
     simtime_t timestamp;
-    
+
     //type of message
     string type;
-    
+
     //communication informations
     string sourceAddress;
     int	   sourcePort;   // added by Alessandro Noferi
@@ -29,20 +29,20 @@ class MEAppPacket extends inet::FieldsChunk {
     int	   destinationPort;   // added by Alessandro Noferi
     string destinationMecAppAddress;
     int	   destinationMecAppPort;   // added by Alessandro Noferi
-    
-    
+
+
     //instantiation informations
     string MEModuleType;			//path where to find the cModule of the MEApp to instantiate
     string MEModuleName;			//module class name of the MEApp to instantiate
-    
+
     //identification information
     int ueAppID;
-    
+
     //resources required
     double requiredDisk;
     double requiredRam;
     double requiredCpu;
-    
+
     //service required
     string requiredService;
 }

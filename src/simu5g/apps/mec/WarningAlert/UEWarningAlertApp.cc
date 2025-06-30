@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "apps/mec/WarningAlert/UEWarningAlertApp.h"
+#include "simu5g/apps/mec/WarningAlert/UEWarningAlertApp.h"
 
 #include <fstream>
 
@@ -18,10 +18,10 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
-#include "apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
+#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_Types.h"
 
 namespace simu5g {
 

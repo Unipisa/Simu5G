@@ -15,14 +15,14 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/cellInfo/CellInfo.h"
-#include "common/LteCommon.h"
-#include "stack/phy/das/DasFilter.h"
-#include "stack/phy/feedback/LteFeedback.h"
-#include "common/timer/TTimer.h"
-#include "common/timer/TTimerMsg_m.h"
-#include "stack/phy/feedback/LteFeedbackComputation.h"
-#include "stack/phy/LtePhyUe.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/phy/das/DasFilter.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
+#include "simu5g/common/timer/TTimer.h"
+#include "simu5g/common/timer/TTimerMsg_m.h"
+#include "simu5g/stack/phy/feedback/LteFeedbackComputation.h"
+#include "simu5g/stack/phy/LtePhyUe.h"
 
 namespace simu5g {
 

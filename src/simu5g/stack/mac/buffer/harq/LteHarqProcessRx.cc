@@ -9,13 +9,13 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/buffer/harq/LteHarqProcessRx.h"
-#include "stack/mac/LteMacBase.h"
-#include "stack/mac/LteMacEnb.h"
-#include "common/LteControlInfo.h"
-#include "common/binder/Binder.h"
-#include "stack/mac/packet/LteHarqFeedback_m.h"
-#include "stack/mac/packet/LteMacPdu.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqProcessRx.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/stack/mac/packet/LteHarqFeedback_m.h"
+#include "simu5g/stack/mac/packet/LteMacPdu.h"
 
 namespace simu5g {
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/amc/AmcPilotD2D.h"
+#include "simu5g/stack/mac/amc/AmcPilotD2D.h"
 
 namespace simu5g {
 

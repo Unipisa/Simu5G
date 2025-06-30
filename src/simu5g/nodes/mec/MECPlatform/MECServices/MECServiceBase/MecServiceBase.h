@@ -23,11 +23,11 @@
 #include <inet/common/lifecycle/LifecycleOperation.h>
 #include <inet/common/socket/SocketMap.h>
 
-#include "common/binder/Binder.h"
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

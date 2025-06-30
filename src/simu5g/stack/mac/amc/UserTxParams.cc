@@ -11,7 +11,7 @@
 
 #include <omnetpp.h>
 
-#include "stack/mac/amc/UserTxParams.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
 
 namespace simu5g {
 

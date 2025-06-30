@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
-#include "stack/phy/LtePhyBase.h"
+#include "simu5g/stack/mac/conflict_graph/DistanceBasedConflictGraph.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
 
 namespace simu5g {
 

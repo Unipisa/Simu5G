@@ -15,8 +15,8 @@
 #include <ctime>
 #include <string>
 
-#include "nodes/mec/utils/httpUtils/json.hpp"
-#include "common/LteCommon.h"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

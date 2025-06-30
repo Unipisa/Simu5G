@@ -12,12 +12,12 @@
 #ifndef _L2MEAS_H_
 #define _L2MEAS_H_
 
-#include "common/utils/utils.h"
-#include "common/LteCommon.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/common/LteCommon.h"
 #include <vector>
 #include <map>
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
 

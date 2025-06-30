@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/pdcp_rrc/NRRxPdcpEntity.h"
+#include "simu5g/stack/pdcp_rrc/NRRxPdcpEntity.h"
 
 namespace simu5g {
 

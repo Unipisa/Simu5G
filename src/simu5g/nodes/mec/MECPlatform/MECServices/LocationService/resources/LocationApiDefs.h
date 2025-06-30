@@ -16,7 +16,7 @@
 #include <inet/mobility/base/MovingMobilityBase.h>
 #include <inet/mobility/contract/IMobility.h>
 
-#include "common/binder/Binder.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

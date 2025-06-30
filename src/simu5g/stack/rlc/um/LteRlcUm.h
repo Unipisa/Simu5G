@@ -13,14 +13,14 @@
 #define _LTE_LTERLCUM_H_
 
 #include <omnetpp.h>
-#include "common/LteCommon.h"
-#include "common/LteControlInfo.h"
-#include "stack/rlc/packet/LteRlcSdu_m.h"
-#include "stack/rlc/um/UmTxEntity.h"
-#include "stack/rlc/um/UmRxEntity.h"
-#include "stack/rlc/packet/LteRlcDataPdu.h"
-#include "stack/mac/LteMacBase.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/rlc/packet/LteRlcSdu_m.h"
+#include "simu5g/stack/rlc/um/UmTxEntity.h"
+#include "simu5g/stack/rlc/um/UmRxEntity.h"
+#include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
+#include "simu5g/stack/mac/LteMacBase.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

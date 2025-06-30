@@ -12,7 +12,7 @@
 #ifndef NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_
 #define NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_
 
-#include "nodes/mec/MECOrchestrator/mecHostSelectionPolicies/SelectionPolicyBase.h"
+#include "simu5g/nodes/mec/MECOrchestrator/mecHostSelectionPolicies/SelectionPolicyBase.h"
 
 namespace simu5g {
 

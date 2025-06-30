@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "corenetwork/statsCollector/BaseStationStatsCollector.h"
-#include "corenetwork/statsCollector/UeStatsCollector.h"
-#include "stack/packetFlowManager/PacketFlowManagerEnb.h"
-#include "stack/mac/LteMacEnb.h"
+#include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
+#include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
 #include <string>
 
 namespace simu5g {

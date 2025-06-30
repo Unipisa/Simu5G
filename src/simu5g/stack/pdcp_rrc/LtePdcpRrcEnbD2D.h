@@ -13,7 +13,7 @@
 #define _LTE_LTEPDCPRRCENBD2D_H_
 
 #include <omnetpp.h>
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
 
 namespace simu5g {
 

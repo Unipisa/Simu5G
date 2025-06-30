@@ -14,12 +14,12 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "common/blerCurves/PhyPisaData.h"
-#include "stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
-#include "stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/phy/LtePhyEnb.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/blerCurves/PhyPisaData.h"
+#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/stack/backgroundTrafficGenerator/generators/TrafficGeneratorBase.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
 
 namespace simu5g {
 

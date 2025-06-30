@@ -13,8 +13,8 @@
 #define STACK_PHY_FEEDBACK_LTESUMMARYBUFFER_H_
 
 #include <list>
-#include "stack/phy/feedback/LteSummaryBuffer.h"
-#include "stack/phy/feedback/LteFeedback.h"
+#include "simu5g/stack/phy/feedback/LteSummaryBuffer.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
 
 namespace simu5g {
 

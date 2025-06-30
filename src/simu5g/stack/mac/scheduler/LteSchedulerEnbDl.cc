@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/scheduler/LteSchedulerEnbDl.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/mac/scheduler/LteScheduler.h"
-#include "stack/mac/allocator/LteAllocationModule.h"
-#include "stack/mac/buffer/LteMacBuffer.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnbDl.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/mac/scheduler/LteScheduler.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModule.h"
+#include "simu5g/stack/mac/buffer/LteMacBuffer.h"
 
 namespace simu5g {
 

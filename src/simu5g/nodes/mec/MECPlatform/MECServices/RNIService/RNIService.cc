@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/RNIService/RNIService.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/RNIService.h"
 
 #include <iostream>
 #include <string>
@@ -23,9 +23,9 @@
 #include <inet/transportlayer/contract/tcp/TcpCommand_m.h>
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

@@ -11,8 +11,8 @@
 
 #include <vector>
 
-#include "stack/mac/scheduling_modules/LteMaxCiMultiband.h"
-#include "stack/mac/scheduler/LteSchedulerEnb.h"
+#include "simu5g/stack/mac/scheduling_modules/LteMaxCiMultiband.h"
+#include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
 
 namespace simu5g {
 

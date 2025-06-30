@@ -16,9 +16,9 @@
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "common/LteCommon.h"
-#include "common/binder/Binder.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

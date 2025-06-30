@@ -12,10 +12,10 @@
 #ifndef _LTE_AMCPILOT_H_
 #define _LTE_AMCPILOT_H_
 
-#include "common/LteCommon.h"
-#include "stack/mac/amc/LteAmc.h"
-#include "stack/mac/amc/UserTxParams.h"
-#include "stack/phy/feedback/LteFeedback.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/amc/LteAmc.h"
+#include "simu5g/stack/mac/amc/UserTxParams.h"
+#include "simu5g/stack/phy/feedback/LteFeedback.h"
 
 namespace simu5g {
 

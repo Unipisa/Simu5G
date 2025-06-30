@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
 
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "common/utils/utils.h"
+#include "simu5g/common/utils/utils.h"
 
 namespace simu5g {
 

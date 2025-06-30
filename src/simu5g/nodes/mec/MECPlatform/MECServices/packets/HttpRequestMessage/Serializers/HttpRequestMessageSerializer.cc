@@ -15,12 +15,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/Serializers/HttpRequestMessageSerializer.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/Serializers/HttpRequestMessageSerializer.h"
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

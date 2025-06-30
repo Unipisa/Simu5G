@@ -18,7 +18,7 @@
 
 #include <inet/common/INETDefs.h>
 #include <inet/common/geometry/common/Coord.h>
-#include "stack/phy/packet/AirFrame_m.h"
+#include "simu5g/stack/phy/packet/AirFrame_m.h"
 
 namespace simu5g {
 

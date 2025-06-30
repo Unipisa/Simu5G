@@ -15,9 +15,9 @@
 #include <vector>
 #include <omnetpp.h>
 #include <map>
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/utils/MecCommon.h"
-#include "nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/RNIService/resources/Ecgi.h"
 #include "AssociateId.h"
 
 namespace simu5g {

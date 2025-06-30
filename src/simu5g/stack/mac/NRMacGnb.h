@@ -12,7 +12,7 @@
 #ifndef _NRMACGNB_H_
 #define _NRMACGNB_H_
 
-#include "stack/mac/LteMacEnbD2D.h"
+#include "simu5g/stack/mac/LteMacEnbD2D.h"
 
 namespace simu5g {
 

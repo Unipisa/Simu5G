@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
+#include "simu5g/nodes/mec/MECPlatform/EventNotification/EventNotification.h"
 
 namespace simu5g {
 

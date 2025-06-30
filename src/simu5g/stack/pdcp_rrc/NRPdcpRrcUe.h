@@ -14,7 +14,7 @@
 
 #include <omnetpp.h>
 
-#include "stack/pdcp_rrc/LtePdcpRrcUeD2D.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrcUeD2D.h"
 
 namespace simu5g {
 

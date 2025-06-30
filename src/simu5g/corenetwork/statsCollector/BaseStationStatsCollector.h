@@ -16,15 +16,15 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "common/LteCommon.h"
-#include "nodes/mec/utils/MecCommon.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/nodes/mec/utils/MecCommon.h"
 #include <map>
-#include "corenetwork/statsCollector/L2Measures/L2MeasBase.h"
-#include "common/cellInfo/CellInfo.h"
-#include "stack/mac/LteMacEnb.h"
-#include "stack/pdcp_rrc/LtePdcpRrc.h"
-#include "stack/rlc/um/LteRlcUm.h"
-#include "stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
+#include "simu5g/common/cellInfo/CellInfo.h"
+#include "simu5g/stack/mac/LteMacEnb.h"
+#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/rlc/um/LteRlcUm.h"
+#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
 
 namespace simu5g {
 using namespace inet;

@@ -12,8 +12,8 @@
 #ifndef _LTE_LTERLCUMD2D_H_
 #define _LTE_LTERLCUMD2D_H_
 
-#include "common/utils/utils.h"
-#include "stack/rlc/um/LteRlcUm.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/stack/rlc/um/LteRlcUm.h"
 
 namespace simu5g {
 

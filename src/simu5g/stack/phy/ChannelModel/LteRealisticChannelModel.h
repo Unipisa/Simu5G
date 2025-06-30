@@ -13,7 +13,7 @@
 #define STACK_PHY_CHANNELMODEL_LTEREALISTICCHANNELMODEL_H_
 
 #include <omnetpp.h>
-#include "stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
 
 namespace simu5g {
 

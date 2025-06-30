@@ -11,8 +11,8 @@
 
 #include <omnetpp.h>
 
-#include "nodes/backgroundCell/BackgroundCellAmcNr.h"
-#include "common/binder/Binder.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellAmcNr.h"
+#include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
 

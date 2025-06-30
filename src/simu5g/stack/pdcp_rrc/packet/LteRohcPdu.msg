@@ -20,7 +20,7 @@ namespace simu5g;
 
 //
 // This is the RObust Header Compression PDU
-// 
+//
 // ROHC is modeled by reducing the compressed headers to a lower size
 // as indicated by the headerCompressedSize_ parameter. The additional ROHC header
 // is added an allows to restore the compressed headers to their full size when

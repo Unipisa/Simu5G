@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
+#include "simu5g/corenetwork/trafficFlowFilter/TrafficFlowFilter.h"
 #include <inet/common/IProtocolRegistrationListener.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>

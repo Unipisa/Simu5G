@@ -12,8 +12,8 @@
 #ifndef STACK_PHY_CHANNELMODEL_LTEDUMMYCHANNELMODEL_H_
 #define STACK_PHY_CHANNELMODEL_LTEDUMMYCHANNELMODEL_H_
 
-#include "common/LteControlInfo.h"
-#include "stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
 
 namespace simu5g {
 

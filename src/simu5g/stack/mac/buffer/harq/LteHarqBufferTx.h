@@ -13,9 +13,9 @@
 #define _LTE_LTEHARQBUFFERTX_H_
 
 #include <vector>
-#include "stack/mac/packet/LteHarqFeedback_m.h"
-#include "stack/mac/buffer/harq/LteHarqProcessTx.h"
-#include "stack/mac/LteMacBase.h"
+#include "simu5g/stack/mac/packet/LteHarqFeedback_m.h"
+#include "simu5g/stack/mac/buffer/harq/LteHarqProcessTx.h"
+#include "simu5g/stack/mac/LteMacBase.h"
 
 namespace simu5g {
 

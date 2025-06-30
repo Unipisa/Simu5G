@@ -11,7 +11,7 @@
 
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
-import common.LteCommon;
+import simu5g.common.LteCommon;
 
 namespace simu5g;
 

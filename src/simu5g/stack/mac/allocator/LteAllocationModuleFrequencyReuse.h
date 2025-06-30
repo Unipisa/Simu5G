@@ -12,8 +12,8 @@
 #ifndef _LTE_LTEALLOCATIONMODULEFREQUENCYREUSE_H_
 #define _LTE_LTEALLOCATIONMODULEFREQUENCYREUSE_H_
 
-#include "common/LteCommon.h"
-#include "stack/mac/allocator/LteAllocationModule.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 
 namespace simu5g {
 

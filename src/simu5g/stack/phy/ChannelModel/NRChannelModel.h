@@ -12,7 +12,7 @@
 #ifndef NRCHANNELMODEL_H_
 #define NRCHANNELMODEL_H_
 
-#include "stack/phy/ChannelModel/LteRealisticChannelModel.h"
+#include "simu5g/stack/phy/ChannelModel/LteRealisticChannelModel.h"
 
 namespace simu5g {
 

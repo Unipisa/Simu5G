@@ -17,9 +17,9 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 
-#include "stack/phy/das/RemoteAntennaSet.h"
-#include "common/binder/Binder.h"
-#include "common/LteCommon.h"
+#include "simu5g/stack/phy/das/RemoteAntennaSet.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

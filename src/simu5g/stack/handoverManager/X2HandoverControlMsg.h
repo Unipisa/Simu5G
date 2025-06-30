@@ -12,8 +12,8 @@
 #ifndef _LTE_X2HANDOVERCONTROLMSG_H_
 #define _LTE_X2HANDOVERCONTROLMSG_H_
 
-#include "x2/packet/LteX2Message.h"
-#include "common/LteCommon.h"
+#include "simu5g/x2/packet/LteX2Message.h"
+#include "simu5g/common/LteCommon.h"
 
 namespace simu5g {
 

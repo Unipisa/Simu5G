@@ -13,7 +13,7 @@
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "x2/packet/LteX2MsgSerializer.h"
+#include "simu5g/x2/packet/LteX2MsgSerializer.h"
 
 namespace simu5g {
 

@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#include "stack/handoverManager/LteHandoverManager.h"
+#include "simu5g/stack/handoverManager/LteHandoverManager.h"
 
 #include <inet/common/ProtocolTag_m.h>
 
-#include "stack/handoverManager/X2HandoverCommandIE.h"
+#include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
 
 namespace simu5g {
 

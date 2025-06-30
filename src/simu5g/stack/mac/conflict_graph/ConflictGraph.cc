@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/mac/conflict_graph/ConflictGraph.h"
+#include "simu5g/stack/mac/conflict_graph/ConflictGraph.h"
 
 namespace simu5g {
 

@@ -12,9 +12,9 @@
 #ifndef CORENETWORK_NODES_MEC_MECPLATFORM_MEC_SERVICES_LOCATION_SERVICE_RESOURCES_USER_H_
 #define CORENETWORK_NODES_MEC_MECPLATFORM_MEC_SERVICES_LOCATION_SERVICE_RESOURCES_USER_H_
 
-#include "nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationInfo.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/LocationService/resources/LocationInfo.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
 

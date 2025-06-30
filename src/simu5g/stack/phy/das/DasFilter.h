@@ -13,13 +13,13 @@
 #define _LTE_DASFILTER_H_
 
 #include <omnetpp.h>
-#include "stack/phy/das/RemoteAntennaSet.h"
-#include "stack/phy/packet/LteAirFrame.h"
-#include "common/LteControlInfo.h"
-#include "common/binder/Binder.h"
-#include "common/LteCommon.h"
-#include "stack/phy/LtePhyBase.h"
-#include "stack/phy/LtePhyEnb.h"
+#include "simu5g/stack/phy/das/RemoteAntennaSet.h"
+#include "simu5g/stack/phy/packet/LteAirFrame.h"
+#include "simu5g/common/LteControlInfo.h"
+#include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/LteCommon.h"
+#include "simu5g/stack/phy/LtePhyBase.h"
+#include "simu5g/stack/phy/LtePhyEnb.h"
 
 namespace simu5g {
 

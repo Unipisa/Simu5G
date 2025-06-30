@@ -14,8 +14,8 @@
 
 #include <omnetpp.h>
 
-#include "nodes/backgroundCell/BackgroundCellAmc.h"
-#include "stack/mac/amc/NRMcs.h"
+#include "simu5g/nodes/backgroundCell/BackgroundCellAmc.h"
+#include "simu5g/stack/mac/amc/NRMcs.h"
 
 namespace simu5g {
 

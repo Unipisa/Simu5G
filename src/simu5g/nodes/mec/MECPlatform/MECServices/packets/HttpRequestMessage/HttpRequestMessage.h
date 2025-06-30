@@ -21,7 +21,7 @@
 
 #include <omnetpp.h>
 #include <string>
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpMessages_m.h"
 
 namespace simu5g {
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 
 #include <iostream>
 #include <sstream>
@@ -21,12 +21,12 @@
 #include <inet/common/lifecycle/NodeStatus.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "nodes/mec/MECPlatform/EventNotification/EventNotification.h"
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/SocketManager.h"
-#include "nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
-#include "nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
-#include "nodes/mec/MECPlatformManager/MecPlatformManager.h"
-#include "nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/nodes/mec/MECPlatform/EventNotification/EventNotification.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/SocketManager.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
 

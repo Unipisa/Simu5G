@@ -8,9 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include "nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
-#include "time.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/Resources/TimeStamp.h"
 
 namespace simu5g {
 

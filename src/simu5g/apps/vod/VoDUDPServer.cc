@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <inet/common/TimeTag_m.h>
-#include "apps/vod/VoDUDPServer.h"
+#include "simu5g/apps/vod/VoDUDPServer.h"
 
 namespace simu5g {
 

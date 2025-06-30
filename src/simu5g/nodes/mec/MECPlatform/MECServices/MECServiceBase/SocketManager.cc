@@ -9,13 +9,13 @@
 // and cannot be removed from it.
 //
 
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/SocketManager.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/SocketManager.h"
 
-#include "common/utils/utils.h"
-#include "nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
+#include "simu5g/common/utils/utils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/MECServiceBase/MecServiceBase.h"
 #include <iostream>
-#include "nodes/mec/utils/httpUtils/httpUtils.h"
-#include "nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
 
 namespace simu5g {
 

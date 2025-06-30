@@ -11,7 +11,7 @@
 
 #include <inet/common/ModuleAccess.h>
 
-#include "stack/compManager/LteCompManagerBase.h"
+#include "simu5g/stack/compManager/LteCompManagerBase.h"
 
 namespace simu5g {
 

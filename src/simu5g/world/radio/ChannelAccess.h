@@ -18,8 +18,8 @@
 #include <omnetpp.h>
 #include <inet/common/INETDefs.h>
 
-#include "world/radio/IChannelControl.h"
-#include "common/features.h"
+#include "simu5g/world/radio/IChannelControl.h"
+#include "simu5g/common/features.h"
 
 namespace simu5g {
 

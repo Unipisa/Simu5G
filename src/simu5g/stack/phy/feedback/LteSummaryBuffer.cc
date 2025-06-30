@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/phy/feedback/LteSummaryBuffer.h"
+#include "simu5g/stack/phy/feedback/LteSummaryBuffer.h"
 
 namespace simu5g {
 

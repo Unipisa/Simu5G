@@ -16,7 +16,7 @@
 #include <vector>
 #include <iostream>
 
-#include "common/blerCurves/BLERvsSINR_15CQI_TU.h"
+#include "simu5g/common/blerCurves/BLERvsSINR_15CQI_TU.h"
 
 namespace simu5g {
 

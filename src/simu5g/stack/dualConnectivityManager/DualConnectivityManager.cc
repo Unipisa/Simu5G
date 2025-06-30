@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "stack/dualConnectivityManager/DualConnectivityManager.h"
+#include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
 
 #include <inet/common/ProtocolTag_m.h>
 
