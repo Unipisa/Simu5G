@@ -22,7 +22,7 @@
 #include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
 #include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
 #include "simu5g/apps/mec/MecRequestResponseApp/packets/RequestResponsePacket_m.h"
-#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

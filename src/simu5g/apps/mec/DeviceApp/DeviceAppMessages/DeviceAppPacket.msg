@@ -13,7 +13,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
-import simu5g.nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.platform.MECPackets;
 //cplusplus {{
 //#include "simu5g/nodes/mec/MECPlatform/MECPackets_m.h";
 //}}

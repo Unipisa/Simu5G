@@ -21,8 +21,8 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"           //to handle cars dynamically leaving the Network
 #include "simu5g/nodes/mec/MECOrchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_m.h"
-#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MEAppPacket_m.h"
+#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {

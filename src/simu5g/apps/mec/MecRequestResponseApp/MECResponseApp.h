@@ -18,7 +18,7 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/apps/mec/MecApps/MecAppBase.h"
-#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

@@ -18,7 +18,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 #include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
-#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

@@ -10,7 +10,7 @@
 //
 
 
-import simu5g.nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.platform.MECPackets;
 import inet.networklayer.common.L3Address;
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;

@@ -14,7 +14,7 @@
 #include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
 #include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
 
-#include "simu5g/nodes/mec/MECPlatform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 #include "simu5g/apps/mec/MecApps/MultiUEMECApp.h"
 
 #include "simu5g/nodes/mec/MECOrchestrator/MECOMessages/MECOrchestratorMessages_m.h"

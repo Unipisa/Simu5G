@@ -14,8 +14,8 @@
 #include <inet/common/TimeTag_m.h>
 #include <inet/common/packet/chunk/BytesChunk.h>
 
-#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "simu5g/nodes/mec/MECPlatform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/platform/MECServices/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {

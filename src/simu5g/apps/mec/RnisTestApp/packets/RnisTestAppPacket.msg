@@ -14,7 +14,7 @@
 // RnisTestAppPacket used by UeRnisTestApp and MecRnisTestApp
 //
 
-import simu5g.nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.platform.MECPackets;
 
 cplusplus {{
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"

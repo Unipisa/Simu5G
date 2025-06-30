@@ -12,7 +12,7 @@
 package simu5g.apps.mec.MecApps;
 
 import inet.applications.contract.IApp;
-import simu5g.nodes.mec.MECPlatform.IMECApp;
+import simu5g.nodes.mec.platform.IMECApp;
 
 //
 //  This is a MEC app that ... TBC

@@ -14,7 +14,7 @@
 // IceAlert Packet used by UEIceAlertApp MEIceAlertApp and MEIceAlertService
 //
 
-import simu5g.nodes.mec.MECPlatform.MECPackets;
+import simu5g.nodes.mec.platform.MECPackets;
 
 namespace simu5g;
 

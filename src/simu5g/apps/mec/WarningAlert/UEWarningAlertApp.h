@@ -22,7 +22,7 @@
 
 #include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/nodes/mec/MECPlatform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
 
 namespace simu5g {
 

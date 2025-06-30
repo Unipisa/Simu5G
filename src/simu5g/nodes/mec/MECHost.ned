@@ -14,7 +14,7 @@ package simu5g.nodes.mec;
 import inet.applications.contract.IApp;
 import inet.node.ethernet.Eth10G;
 import simu5g.nodes.Upf;
-import simu5g.nodes.mec.MECPlatform.MECPlatform;
+import simu5g.nodes.mec.platform.MECPlatform;
 import simu5g.nodes.mec.MECPlatformManager.MecPlatformManager;
 import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
 import simu5g.nodes.mec.VirtualisationInfrastructureManager.BackgroundApp;
