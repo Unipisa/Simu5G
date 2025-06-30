@@ -21,7 +21,7 @@
 #include "simu5g/apps/mec/MecRequestResponseApp/packets/RequestResponsePacket_m.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
-#include "simu5g/nodes/mec/platform/MECServices/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/platform/services/packets/HttpResponseMessage/HttpResponseMessage.h"
 
 namespace simu5g {
 

@@ -44,7 +44,7 @@ simple UALCMPApp like IApp
         double requestServiceTime @unit(s) = default(5us);
         double subscriptionServiceTime @unit(s) = default(10us);
 
-        string serverThreadClass = default("simu5g.nodes.mec.MECPlatform.MECServices.MECServiceBase.SocketManager");
+        string serverThreadClass = default("simu5g.nodes.mec.platform.services.MECServiceBase.SocketManager");
 
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
 

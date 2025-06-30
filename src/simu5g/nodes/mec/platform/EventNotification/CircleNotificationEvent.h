@@ -12,7 +12,7 @@
 #define NODES_MEC_MEPLATFORM_EVENTNOTIFICATION_CIRCLENOTIFICATIONEVENT_H_
 
 #include "EventNotification.h"
-#include "simu5g/nodes/mec/platform/MECServices/LocationService/resources/TerminalLocation.h"
+#include "simu5g/nodes/mec/platform/services/LocationService/resources/TerminalLocation.h"
 
 namespace simu5g {
 

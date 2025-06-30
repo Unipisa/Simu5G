@@ -16,7 +16,7 @@
 
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
-#include "simu5g/nodes/mec/platform/MECServices/packets/HttpMessages_m.h"
+#include "simu5g/nodes/mec/platform/services/packets/HttpMessages_m.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
