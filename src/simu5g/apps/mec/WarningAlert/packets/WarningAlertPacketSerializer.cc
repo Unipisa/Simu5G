@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/apps/mec/WarningAlert/packets/Serializers/WarningAlertPacketSerializer.h"
+#include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacketSerializer.h"
 
 #include <string>
 
