@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase2.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase2.h"
 
 #include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 

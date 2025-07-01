@@ -13,7 +13,7 @@
 #define _LOCATIONSERVICE_H
 
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/LocationResource.h"
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase2.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase2.h"
 
 namespace simu5g {
 

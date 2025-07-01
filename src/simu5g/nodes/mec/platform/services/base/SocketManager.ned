@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.platform.services.MECServiceBase;
+package simu5g.nodes.mec.platform.services.base;
 
 //
 // This simple module is responsible for managing the state of TCP connections for MEC services.

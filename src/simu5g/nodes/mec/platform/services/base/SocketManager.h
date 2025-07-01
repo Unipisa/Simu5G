@@ -16,7 +16,7 @@
 #include <inet/common/lifecycle/ILifecycle.h>
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpMessages_m.h"
 
 namespace simu5g {

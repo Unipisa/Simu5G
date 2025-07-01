@@ -10,7 +10,7 @@
 //
 package simu5g.nodes.mec.platform.services.LocationService;
 
-import simu5g.nodes.mec.platform.services.MECServiceBase.IMECService;
+import simu5g.nodes.mec.platform.services.base.IMECService;
 import inet.applications.contract.IApp;
 
 //
@@ -36,7 +36,7 @@ simple LocationService like IMECService, IApp
         double requestServiceTime @unit(s) = default(0.5us);
         double subscriptionServiceTime @unit(s) = default(0.5us);
 
-        string serverThreadClass = default("simu5g.nodes.mec.platform.services.MECServiceBase.SocketManager");
+        string serverThreadClass = default("simu5g.nodes.mec.platform.services.base.SocketManager");
 
         string serviceName = default("LocationService");
         string serviceVersion = default("v2");

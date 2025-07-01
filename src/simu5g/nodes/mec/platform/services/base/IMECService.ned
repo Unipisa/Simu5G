@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.platform.services.MECServiceBase;
+package simu5g.nodes.mec.platform.services.base;
 
 //
 // This module interface defines the structure that must be implemented by every

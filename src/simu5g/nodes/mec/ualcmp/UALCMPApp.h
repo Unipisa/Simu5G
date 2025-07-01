@@ -12,7 +12,7 @@
 #ifndef _UALCMPAPP_H
 #define _UALCMPAPP_H
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {

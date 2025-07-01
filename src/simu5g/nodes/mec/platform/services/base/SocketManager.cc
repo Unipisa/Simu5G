@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/SocketManager.h"
+#include "simu5g/nodes/mec/platform/services/base/SocketManager.h"
 
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 #include <iostream>
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"

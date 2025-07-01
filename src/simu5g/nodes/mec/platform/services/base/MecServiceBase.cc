@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 
 #include <iostream>
 #include <sstream>
@@ -22,7 +22,7 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/nodes/mec/platform/EventNotification/EventNotification.h"
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/SocketManager.h"
+#include "simu5g/nodes/mec/platform/services/base/SocketManager.h"
 #include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 #include "simu5g/nodes/mec/mepm/MecPlatformManager.h"

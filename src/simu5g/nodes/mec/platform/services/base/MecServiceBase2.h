@@ -12,7 +12,7 @@
 #ifndef __SIMU5G_MECSERVICEBASE2_H
 #define __SIMU5G_MECSERVICEBASE2_H
 
-#include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
+#include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 
 namespace simu5g {
 

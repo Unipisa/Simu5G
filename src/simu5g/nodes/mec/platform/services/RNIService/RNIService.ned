@@ -12,7 +12,7 @@
 package simu5g.nodes.mec.platform.services.RNIService;
 
 
-import simu5g.nodes.mec.platform.services.MECServiceBase.IMECService;
+import simu5g.nodes.mec.platform.services.base.IMECService;
 import inet.applications.contract.IApp;
 
 //
@@ -36,7 +36,7 @@ simple RNIService like IMECService, IApp
         int numBGApps = default(0); // used only if loadGenerator is true
 
 
-        string serverThreadClass = default("simu5g.nodes.mec.platform.services.MECServiceBase.SocketManager");
+        string serverThreadClass = default("simu5g.nodes.mec.platform.services.base.SocketManager");
 
         string serviceName = default("RNIService");
         string serviceVersion = default("v2");
