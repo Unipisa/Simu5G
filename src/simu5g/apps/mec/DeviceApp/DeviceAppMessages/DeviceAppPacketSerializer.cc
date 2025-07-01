@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/Serializers/DeviceAppPacketSerializer.h"
+#include "DeviceAppPacketSerializer.h"
 
 #include <string>
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "DeviceAppPacket_m.h"
+#include "DeviceAppPacket_Types.h"
 
 namespace simu5g {
 
