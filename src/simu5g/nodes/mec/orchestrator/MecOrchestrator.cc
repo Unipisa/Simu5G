@@ -17,7 +17,7 @@
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 #include "simu5g/apps/mec/MecApps/MultiUEMECApp.h"
 
-#include "simu5g/nodes/mec/orchestrator/MECOMessages/MECOrchestratorMessages_m.h"
+#include "simu5g/nodes/mec/orchestrator/messages/MECOrchestratorMessages_m.h"
 
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_types.h"
