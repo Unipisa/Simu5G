@@ -19,7 +19,7 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_Types.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"

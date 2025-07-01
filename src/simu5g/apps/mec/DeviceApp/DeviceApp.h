@@ -17,7 +17,7 @@
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
-#include "DeviceAppMessages/DeviceAppPacket_m.h"
+#include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_m.h"
 
 namespace simu5g {
 

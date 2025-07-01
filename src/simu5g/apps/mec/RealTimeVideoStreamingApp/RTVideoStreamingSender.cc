@@ -18,8 +18,8 @@
 #include <inet/networklayer/common/L3AddressTag_m.h>
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
-#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_m.h"
-#include "simu5g/apps/mec/DeviceApp/DeviceAppMessages/DeviceAppPacket_Types.h"
+#include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_m.h"
+#include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_Types.h"
 #include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
 #include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
 #include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
