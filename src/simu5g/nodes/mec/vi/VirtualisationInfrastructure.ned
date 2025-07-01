@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.VirtualisationInfrastructure;
+package simu5g.nodes.mec.vi;
 
 import inet.common.MessageDispatcher;
 import inet.linklayer.contract.IEthernetInterface;

@@ -16,7 +16,7 @@ import inet.node.ethernet.Eth10G;
 import simu5g.nodes.Upf;
 import simu5g.nodes.mec.platform.MECPlatform;
 import simu5g.nodes.mec.mepm.MecPlatformManager;
-import simu5g.nodes.mec.VirtualisationInfrastructure.VirtualisationInfrastructure;
+import simu5g.nodes.mec.vi.VirtualisationInfrastructure;
 import simu5g.nodes.mec.vim.BackgroundApp;
 import simu5g.nodes.mec.vim.VirtualisationInfrastructureManager;
 
