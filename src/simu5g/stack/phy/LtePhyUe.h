@@ -19,7 +19,7 @@
 #include "simu5g/stack/phy/das/DasFilter.h"
 #include "simu5g/stack/mac/LteMacUe.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcpRrc.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 
 namespace simu5g {

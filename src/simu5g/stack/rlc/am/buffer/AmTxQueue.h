@@ -18,7 +18,7 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/timer/TTimer.h"
-#include "simu5g/stack/pdcp_rrc/packet/LtePdcpPdu_m.h"
+#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/stack/rlc/am/packet/LteRlcAmPdu.h"
 #include "simu5g/stack/rlc/am/packet/LteRlcAmSdu_m.h"

@@ -35,7 +35,7 @@
 #include "simu5g/stack/rlc/am/packet/LteRlcAmPdu_m.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp_rrc/NRPdcpRrcEnb.h"
+#include "simu5g/stack/pdcp/NRPdcpRrcEnb.h"
 
 namespace simu5g {
 

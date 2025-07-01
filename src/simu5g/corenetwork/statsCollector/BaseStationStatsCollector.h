@@ -22,7 +22,7 @@
 #include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
-#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcpRrc.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
 

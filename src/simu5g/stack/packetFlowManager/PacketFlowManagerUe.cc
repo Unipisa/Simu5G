@@ -11,7 +11,7 @@
 
 #include "PacketFlowManagerUe.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/pdcp_rrc/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcpRrc.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 #include "simu5g/stack/mac/packet/LteMacPdu.h"
