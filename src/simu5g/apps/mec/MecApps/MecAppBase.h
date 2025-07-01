@@ -24,7 +24,7 @@
 #include "simu5g/nodes/mec/platform/services/packets/HttpResponseMessage/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/platform/services/packets/HttpMessages_m.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
-#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 

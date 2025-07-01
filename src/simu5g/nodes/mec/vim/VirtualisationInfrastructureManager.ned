@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.VirtualisationInfrastructureManager;
+package simu5g.nodes.mec.vim;
 
 
 //

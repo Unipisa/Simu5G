@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 #include <inet/networklayer/common/L3AddressResolver.h>
-#include "simu5g/nodes/mec/VirtualisationInfrastructureManager/VirtualisationInfrastructureManager.h"
+#include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
 #include "simu5g/nodes/mec/orchestrator/MECOMessages/MECOrchestratorMessages_m.h"
 
