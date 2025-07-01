@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/ualcmp/UALCMPMessages/CreateContextAppAckMessage.h"
+#include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
 
 namespace simu5g {
 

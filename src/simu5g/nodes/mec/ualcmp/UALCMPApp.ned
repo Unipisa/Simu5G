@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.UALCMP;
+package simu5g.nodes.mec.ualcmp;
 
 import inet.applications.contract.IApp;
 
