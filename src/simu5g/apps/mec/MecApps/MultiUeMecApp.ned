@@ -12,15 +12,15 @@
 package simu5g.apps.mec.MecApps;
 
 import inet.applications.contract.IApp;
-import simu5g.nodes.mec.platform.IMECApp;
+import simu5g.nodes.mec.platform.IMecApp;
 
 //
 // This is an empty MEC app which is used as a model for MEC apps that should
 // be shared among multiple UEs. Any shared MEC app that should extend this app 
-simple MultiUEMECApp like IMECApp, IApp
+simple MultiUeMecApp like IMecApp, IApp
 {
     parameters:
-        @class(simu5g::MultiUEMECApp);
+        @class(simu5g::MultiUeMecApp);
         @display("i=block/app;is=s");
 
         int packetSize @unit(B) = default(10B);

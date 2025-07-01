@@ -34,7 +34,7 @@ class UALCMPMessage;
 //
 // Communications with the MEC orchestrator occur via OMNeT connections and messages
 
-class UALCMPApp : public MecServiceBase
+class UalcmpApp : public MecServiceBase
 {
   private:
 
@@ -53,7 +53,7 @@ class UALCMPApp : public MecServiceBase
     std::map<unsigned int, LcmRequestStatus> pendingRequests;
 
   public:
-    UALCMPApp();
+    UalcmpApp();
 
   protected:
 

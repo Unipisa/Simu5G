@@ -18,7 +18,7 @@ import inet.applications.contract.IApp;
 //
 // This application is to be instantiated on the UE side. It requires that a ~DeviceApp is
 // also instantiated on the UE. This module requests the ~DeviceApp to instantiate a
-// ~MECWarningAlertApp in the MEC system.
+// ~MecWarningAlertApp in the MEC system.
 // Once the peer MEC application is up and running, this module sends a message to the MEC
 // application, requesting that it be notified when the UE running this module enters
 // a circular area defined by its (configurable) center and radius.
@@ -44,7 +44,7 @@ simple UeWarningAlertApp like IApp
         double startTime @unit("s") = default(0s);
         double stopTime @unit("s") = default(120s);
 
-        string mecAppName = default("MECWarningAlertApp"); // but could be MEWarningAlertApp_rest_External
+        string mecAppName = default("MecWarningAlertApp"); // but could be MEWarningAlertApp_rest_External
 
         double positionX @unit(m) = default(210m);
         double positionY @unit(m) = default(260m);

@@ -13,15 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#include "MultiUEMECApp.h"
+#include "MultiUeMecApp.h"
 
 namespace simu5g {
 
-Define_Module(MultiUEMECApp);
+Define_Module(MultiUeMecApp);
 
-void MultiUEMECApp::addNewUE(struct UE_MEC_CLIENT ueData)
+void MultiUeMecApp::addNewUE(struct UeMecClient ueData)
 {
-    throw cRuntimeError("Every MEC app inheriting from MultiUEMECApp must override and implement the addNewUE method");
+    throw cRuntimeError("Every MEC app inheriting from MultiUeMecApp must override and implement the addNewUE method");
 }
 
 }

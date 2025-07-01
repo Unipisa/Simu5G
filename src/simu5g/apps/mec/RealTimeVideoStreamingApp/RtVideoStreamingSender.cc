@@ -22,7 +22,7 @@
 #include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_Types.h"
 #include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"
 #include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPackets_m.h"
-#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MeAppPacket_Types.h"
 
 namespace simu5g {
 

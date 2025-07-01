@@ -12,7 +12,7 @@
 package simu5g.nodes.mec.platform.services.RniService;
 
 
-import simu5g.nodes.mec.platform.services.base.IMECService;
+import simu5g.nodes.mec.platform.services.base.IMecService;
 import inet.applications.contract.IApp;
 
 //
@@ -20,7 +20,7 @@ import inet.applications.contract.IApp;
 // GS MEC 012 specification. It exposes a REST API that allows MEC applications to retrieve
 // layer-2 measurements related to a User Equipment (UE) or base station.
 //
-simple RniService like IMECService, IApp
+simple RniService like IMecService, IApp
 {
     parameters:
         int requestQueueSize = default(0);

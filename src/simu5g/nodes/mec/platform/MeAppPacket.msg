@@ -14,14 +14,7 @@ import inet.common.packet.chunk.Chunk;
 
 namespace simu5g;
 
-message MECOrchestratorMessage {
-    int contextId; // identifier of the ueMecApp
-    int requestId; // used to inform the UALCMP to which request the response refers
-    string type; // trigger of mecApp setup or termination
-    bool success;
-}
-
-class CreateAppMessage extends inet::FieldsChunk {
+class MeAppPacket extends inet::FieldsChunk {
 
     unsigned int sno;
     simtime_t timestamp;
@@ -41,7 +34,6 @@ class CreateAppMessage extends inet::FieldsChunk {
     //instantiation informations
     string MEModuleType;			//path where to find the cModule of the MEApp to instantiate
     string MEModuleName;			//module class name of the MEApp to instantiate
-    int contextId;
 
     //identification information
     int ueAppID;
@@ -53,41 +45,4 @@ class CreateAppMessage extends inet::FieldsChunk {
 
     //service required
     string requiredService;
-    //service provded
-    string providedService;
-
 }
-
-class DeleteAppMessage extends inet::FieldsChunk {
-
-    unsigned int sno;
-    simtime_t timestamp;
-
-    //type of message
-    string type;
-
-    //communication informations
-    string sourceAddress;
-    int	   sourcePort;   // added by Alessandro Noferi
-    string destinationAddress;
-    int	   destinationPort;   // added by Alessandro Noferi
-    string destinationMecAppAddress;
-    int	   destinationMecAppPort;   // added by Alessandro Noferi
-
-
-    //instantiation informations
-    string MEModuleType;			//path where to find the cModule of the MEApp to instantiate
-    string MEModuleName;			//module class name of the MEApp to instantiate
-
-    //identification information
-    int ueAppID;
-
-    //resources required
-    unsigned int requiredDisk;
-    unsigned int requiredRam;
-    double requiredCpu;
-
-    //service required
-    string requiredService;
-}
-

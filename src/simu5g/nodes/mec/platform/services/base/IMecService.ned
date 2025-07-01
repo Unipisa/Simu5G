@@ -21,7 +21,7 @@ package simu5g.nodes.mec.platform.services.base;
 // class also calculates the computation time of each request according to an exponential
 // distribution.
 //
-moduleinterface IMECService
+moduleinterface IMecService
 {
     parameters:
         @display("i=block/app");

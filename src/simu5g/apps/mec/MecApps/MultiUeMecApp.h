@@ -23,12 +23,12 @@ using namespace omnetpp;
 
 namespace simu5g {
 
-struct UE_MEC_CLIENT {
+struct UeMecClient {
     inet::L3Address address;
     int port;
 };
 
-class MultiUEMECApp : public MecAppBase
+class MultiUeMecApp : public MecAppBase
 {
 protected:
     virtual void handleSelfMessage(omnetpp::cMessage *msg) {};
@@ -42,7 +42,7 @@ public:
      * Method used to notify the MEC app that a new UE would like to associate with that
      * Every MEC app inheriting from this class, must implement this method
      */
-    virtual void addNewUE(struct UE_MEC_CLIENT ueData);
+    virtual void addNewUE(struct UeMecClient ueData);
 };
 
 }

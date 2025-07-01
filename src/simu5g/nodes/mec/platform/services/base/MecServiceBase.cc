@@ -59,11 +59,11 @@ void MecServiceBase::initialize(int stage)
 
         binder_.reference(this, "binderModule", true);
 
-        // ---- >>>>> ---- not found in UALCMPApp ----
+        // ---- >>>>> ---- not found in UalcmpApp ----
 
-        meHost_ = getParentModule() // MECPlatform
+        meHost_ = getParentModule() // MecPlatform
                     ->getParentModule(); // MeHost
-        // ---- <<<<< ---- not found in UALCMPApp ----
+        // ---- <<<<< ---- not found in UalcmpApp ----
     }
 }
 

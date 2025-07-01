@@ -21,15 +21,15 @@
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"           //to handle cars dynamically leaving the Network
 #include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor.h"
-#include "simu5g/nodes/mec/platform/MEAppPacket_m.h"
-#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MeAppPacket_m.h"
+#include "simu5g/nodes/mec/platform/MeAppPacket_Types.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
-struct mecAppMapEntry
+struct MecAppMapEntry
 {
     int contextId;
     std::string appDId;
@@ -55,7 +55,7 @@ struct mecAppMapEntry
 };
 
 class UALCMPMessage;
-class MECOrchestratorMessage;
+class MecOrchestratorMessage;
 class SelectionPolicyBase;
 
 //
@@ -90,8 +90,8 @@ class MecOrchestrator : public cSimpleModule
     std::vector<cModule *> mecHosts;
 
     //storing the UEApp and MEApp information
-    //key = contextId - value mecAppMapEntry
-    std::map<int, mecAppMapEntry> meAppMap;
+    //key = contextId - value MecAppMapEntry
+    std::map<int, MecAppMapEntry> meAppMap;
     std::map<std::string, ApplicationDescriptor> mecApplicationDescriptors_;
 
     int contextIdCounter;

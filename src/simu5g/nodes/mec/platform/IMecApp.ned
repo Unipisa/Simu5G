@@ -13,11 +13,11 @@ package simu5g.nodes.mec.platform;
 
 //
 // This module interface defines the structure to be implemented by every
-// MEC Application that supports standard lifecycle management via ~UALCMP and
+// MEC Application that supports standard lifecycle management via ~Ualcmp and
 // ~MecOrchestrator (i.e., MEC applications that can be instantiated dynamically
-// by User Equipment). See, for example, the ~MECResponseApp module.
+// by User Equipment). See, for example, the ~MecResponseApp module.
 //
-moduleinterface IMECApp
+moduleinterface IMecApp
 {
     parameters:
         @display("i=block/app");

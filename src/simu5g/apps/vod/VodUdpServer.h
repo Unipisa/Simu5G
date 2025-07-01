@@ -64,7 +64,7 @@ class VodUdpServer : public cSimpleModule
         uint32_t trec_size;
     };
 
-    struct svcPacket
+    struct SvcPacket
     {
         int tid = -1;
         int lid = -1;
@@ -80,7 +80,7 @@ class VodUdpServer : public cSimpleModule
         std::string frameType;
         long int index;
 
-        svcPacket()  {
+        SvcPacket()  {
 
         }
     };
@@ -88,7 +88,7 @@ class VodUdpServer : public cSimpleModule
 
     tracerec *trace_ = nullptr;
 
-    std::vector<svcPacket> svcTrace_;
+    std::vector<SvcPacket> svcTrace_;
 
   protected:
     void initialize(int stage) override;

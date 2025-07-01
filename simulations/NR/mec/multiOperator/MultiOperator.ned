@@ -21,9 +21,9 @@ import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
-import simu5g.nodes.mec.MECHost;
+import simu5g.nodes.mec.MecHost;
 import simu5g.nodes.mec.orchestrator.MecOrchestrator;
-import simu5g.nodes.mec.ualcmp.UALCMP;
+import simu5g.nodes.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
@@ -103,10 +103,10 @@ network MultiOperator
         }
 
         //# MEC modules
-        mecHost_A: MECHost {
+        mecHost_A: MecHost {
             @display("p=273,281");
         }
-        mecHost_B: MECHost if enableMecOperatorB {
+        mecHost_B: MecHost if enableMecOperatorB {
             @display("p=1245,281");
         }
         mecOrchestrator_A: MecOrchestrator {
@@ -115,10 +115,10 @@ network MultiOperator
         mecOrchestrator_B: MecOrchestrator if enableMecOperatorB {
             @display("p=1245,73");
         }
-        ualcmp_A: UALCMP {
+        ualcmp_A: Ualcmp {
             @display("p=490,73");
         }
-        ualcmp_B: UALCMP if enableMecOperatorB {
+        ualcmp_B: Ualcmp if enableMecOperatorB {
             @display("p=1027,73");
         }
 

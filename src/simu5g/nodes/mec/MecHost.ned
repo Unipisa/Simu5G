@@ -14,7 +14,7 @@ package simu5g.nodes.mec;
 import inet.applications.contract.IApp;
 import inet.node.ethernet.Eth10G;
 import simu5g.nodes.Upf;
-import simu5g.nodes.mec.platform.MECPlatform;
+import simu5g.nodes.mec.platform.MecPlatform;
 import simu5g.nodes.mec.mepm.MecPlatformManager;
 import simu5g.nodes.mec.vi.VirtualisationInfrastructure;
 import simu5g.nodes.mec.vim.BackgroundApp;
@@ -32,13 +32,13 @@ import simu5g.nodes.mec.vim.VirtualisationInfrastructureManager;
 // ~VirtualisationInfrastructureManager. Moreover, this module includes a User Plane
 // Function (UPF) that allows it to be connected with the 5G core network.
 //
-module MECHost
+module MecHost
 {
     parameters:
         @display("i=device/server2;bgb=1000,500");
 
         //# Node specs
-        string nodeType = "MECHost";						// DO NOT CHANGE
+        string nodeType = "MecHost";						// DO NOT CHANGE
         string gateway = default("upf");
 
         //#	ME Host Resources
@@ -69,7 +69,7 @@ module MECHost
                 gateway = parent.gateway;
         }
 
-        mecPlatform: MECPlatform {
+        mecPlatform: MecPlatform {
             parameters:
                 @display("p=573,158");
         }

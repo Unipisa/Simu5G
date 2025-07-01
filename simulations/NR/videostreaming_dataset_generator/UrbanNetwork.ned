@@ -21,9 +21,9 @@ import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
-import simu5g.nodes.mec.MECHost;
+import simu5g.nodes.mec.MecHost;
 import simu5g.nodes.mec.orchestrator.MecOrchestrator;
-import simu5g.nodes.mec.ualcmp.UALCMP;
+import simu5g.nodes.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
@@ -84,13 +84,13 @@ network UrbanNetwork
         }
 
         //# MEC modules
-        mecHost: MECHost {
+        mecHost: MecHost {
             @display("p=1150,1200");
         }
         mecOrchestrator: MecOrchestrator {
             @display("p=1300,1050");
         }
-        ualcmp: UALCMP {
+        ualcmp: Ualcmp {
             @display("p=1150,1050");
         }
 

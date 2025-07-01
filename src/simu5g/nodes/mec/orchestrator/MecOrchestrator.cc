@@ -15,9 +15,9 @@
 #include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
-#include "simu5g/apps/mec/MecApps/MultiUEMECApp.h"
+#include "simu5g/apps/mec/MecApps/MultiUeMecApp.h"
 
-#include "simu5g/nodes/mec/orchestrator/messages/MECOrchestratorMessages_m.h"
+#include "simu5g/nodes/mec/orchestrator/messages/MecOrchestratorMessages_m.h"
 
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_types.h"
@@ -67,9 +67,9 @@ void MecOrchestrator::initialize(int stage)
 void MecOrchestrator::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage()) {
-        if (strcmp(msg->getName(), "MECOrchestratorMessage") == 0) {
+        if (strcmp(msg->getName(), "MecOrchestratorMessage") == 0) {
             EV << "MecOrchestrator::handleMessage - " << msg->getName() << endl;
-            MECOrchestratorMessage *meoMsg = check_and_cast<MECOrchestratorMessage *>(msg);
+            MecOrchestratorMessage *meoMsg = check_and_cast<MecOrchestratorMessage *>(msg);
             if (strcmp(meoMsg->getType(), CREATE_CONTEXT_APP) == 0) {
                 if (meoMsg->getSuccess())
                     sendCreateAppContextAck(true, meoMsg->getRequestId(), meoMsg->getContextId());
@@ -124,10 +124,10 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
             EV << "MecOrchestrator::startMECApp - \tWARNING: required MEC App instance ALREADY STARTED on MEC host: " << contextApp.second.mecHost->getName() << endl;
             EV << "MecOrchestrator::startMECApp  - sending ackMEAppPacket with " << ACK_CREATE_CONTEXT_APP << endl;
             sendCreateAppContextAck(true, contAppMsg->getRequestId(), contextApp.first);
-            auto* existingMECApp = dynamic_cast<MultiUEMECApp*>(contextApp.second.reference);
+            auto* existingMECApp = dynamic_cast<MultiUeMecApp*>(contextApp.second.reference);
             if (existingMECApp) {
                 // if the app already exist and it is an app supporting multiple UEs, then notify the app about the new UE
-                struct UE_MEC_CLIENT newUE;
+                struct UeMecClient newUE;
                 newUE.address = inet::L3Address(contAppMsg->getUeIpAddress());
                 // the UE port is not known at this stage
                 newUE.port = -1;
@@ -166,7 +166,10 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         CreateAppMessage *createAppMsg = new CreateAppMessage();
 
         createAppMsg->setUeAppID(atoi(contAppMsg->getDevAppId()));
-        createAppMsg->setMEModuleName(desc.getAppName().c_str());
+        std::string appName = desc.getAppName();
+        // KLUDGE to preserve fingerprint across MEC->Mec rename, as MEModuleName is used as name for a new submodule in VirtualisationInfrastructureManager
+        appName = opp_replacesubstring (appName, "MecWarningAlertApp", "MECWarningAlertApp", false); // restore original name
+        createAppMsg->setMEModuleName(appName.c_str());
         createAppMsg->setMEModuleType(desc.getAppProvider().c_str());
 
         createAppMsg->setRequiredCpu(desc.getVirtualResources().cpu);
@@ -185,7 +188,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         createAppMsg->setContextId(contextIdCounter);
 
         // Add the new MEC app in the map structure
-        mecAppMapEntry newMecApp;
+        MecAppMapEntry newMecApp;
         newMecApp.appDId = appDid;
         newMecApp.mecUeAppID = ueAppID;
         newMecApp.mecHost = bestHost;
@@ -226,7 +229,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
 
         if (!appInfo->status) {
             EV << "MecOrchestrator::startMECApp - something went wrong during MEC app instantiation" << endl;
-            MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
+            MecOrchestratorMessage *msg = new MecOrchestratorMessage("MecOrchestratorMessage");
             msg->setType(CREATE_CONTEXT_APP);
             msg->setRequestId(contAppMsg->getRequestId());
             msg->setSuccess(false);
@@ -243,7 +246,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         newMecApp.contextId = contextIdCounter;
         meAppMap[contextIdCounter] = newMecApp;
 
-        MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
+        MecOrchestratorMessage *msg = new MecOrchestratorMessage("MecOrchestratorMessage");
         msg->setContextId(contextIdCounter);
         msg->setType(CREATE_CONTEXT_APP);
         msg->setRequestId(contAppMsg->getRequestId());
@@ -264,7 +267,7 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
     else {
         // throw cRuntimeError("MecOrchestrator::startMECApp - A suitable MEC host has not been selected");
         EV << "MecOrchestrator::startMECApp - A suitable MEC host has not been selected" << endl;
-        MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
+        MecOrchestratorMessage *msg = new MecOrchestratorMessage("MecOrchestratorMessage");
         msg->setType(CREATE_CONTEXT_APP);
         msg->setRequestId(contAppMsg->getRequestId());
         msg->setSuccess(false);
@@ -303,7 +306,7 @@ void MecOrchestrator::stopMECApp(UALCMPMessage *msg) {
         isTerminated = mecpm->terminateMEApp(deleteAppMsg);
     }
 
-    MECOrchestratorMessage *mecoMsg = new MECOrchestratorMessage("MECOrchestratorMessage");
+    MecOrchestratorMessage *mecoMsg = new MecOrchestratorMessage("MecOrchestratorMessage");
     mecoMsg->setType(DELETE_CONTEXT_APP);
     mecoMsg->setRequestId(contAppMsg->getRequestId());
     mecoMsg->setContextId(contAppMsg->getContextId());
@@ -344,7 +347,7 @@ void MecOrchestrator::sendCreateAppContextAck(bool result, unsigned int requestS
             return;
         }
 
-        mecAppMapEntry mecAppStatus = meAppMap[contextId];
+        MecAppMapEntry mecAppStatus = meAppMap[contextId];
 
         ack->setSuccess(true);
         ack->setContextId(contextId);

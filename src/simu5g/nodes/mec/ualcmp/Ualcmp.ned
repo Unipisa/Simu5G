@@ -27,7 +27,7 @@ import inet.transportlayer.udp.Udp;
 // packets from a real, external Device App application via the external Ethernet interface submodule.
 //
 //
-module UALCMP
+module Ualcmp
 {
     parameters:
         @networkNode();
@@ -92,7 +92,7 @@ module UALCMP
         //# Transport layer modules and corresponding application modules
         //#
 		// =============== UDP ============== //
-        ualcmpApp: UALCMPApp {
+        ualcmpApp: UalcmpApp {
                     // hostname of the reference orchestrator
             mecOrchestratorHostname = parent.mecOrchestratorHostname;
             @display("p=549,74,row");

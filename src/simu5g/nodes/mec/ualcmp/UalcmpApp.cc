@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/ualcmp/UALCMPApp.h"
+#include "simu5g/nodes/mec/ualcmp/UalcmpApp.h"
 
 #include <string>
 #include <vector>
@@ -33,9 +33,9 @@
 
 namespace simu5g {
 
-Define_Module(UALCMPApp);
+Define_Module(UalcmpApp);
 
-UALCMPApp::UALCMPApp()
+UalcmpApp::UalcmpApp()
 {
     baseUriQueries_ = "/example/dev_app/v1";
     baseUriSubscriptions_ = baseUriQueries_;
@@ -43,11 +43,11 @@ UALCMPApp::UALCMPApp()
     supportedQueryParams_.insert("app_contexts");
 }
 
-void UALCMPApp::initialize(int stage)
+void UalcmpApp::initialize(int stage)
 {
     MecServiceBase::initialize(stage);
 
-    EV << "UALCMPApp::initialize stage " << stage << endl;
+    EV << "UalcmpApp::initialize stage " << stage << endl;
 
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         baseSubscriptionLocation_ = host_ + baseUriSubscriptions_ + "/";
@@ -55,9 +55,9 @@ void UALCMPApp::initialize(int stage)
     }
 }
 
-void UALCMPApp::handleStartOperation(inet::LifecycleOperation *operation)
+void UalcmpApp::handleStartOperation(inet::LifecycleOperation *operation)
 {
-    EV << "UALCMPApp::handleStartOperation" << endl;
+    EV << "UalcmpApp::handleStartOperation" << endl;
     const char *localAddress = par("localAddress");
     int localPort = par("localPort");
     EV << "Local Address: " << localAddress << " port: " << localPort << endl;
@@ -81,7 +81,7 @@ void UALCMPApp::handleStartOperation(inet::LifecycleOperation *operation)
     serverSocket.listen();
 }
 
-void UALCMPApp::handleMessageWhenUp(cMessage *msg)
+void UalcmpApp::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->arrivedOn("fromMecOrchestrator")) {
         // manage here the messages from mecOrchestrator
@@ -103,22 +103,22 @@ void UALCMPApp::handleMessageWhenUp(cMessage *msg)
     }
 }
 
-void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
+void UalcmpApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
 {
     CreateContextAppAckMessage *ack = check_and_cast<CreateContextAppAckMessage *>(msg);
     unsigned int reqSno = ack->getRequestId();
 
-    EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << endl;
+    EV << "UalcmpApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << endl;
 
     auto req = pendingRequests.find(reqSno);
     if (req == pendingRequests.end()) {
-        EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << " not present in pendingRequests. Discarding... " << endl;
+        EV << "UalcmpApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << " not present in pendingRequests. Discarding... " << endl;
         return;
     }
 
     int connId = req->second.connId;
 
-    EV << "UALCMPApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: " << connId << endl;
+    EV << "UalcmpApp::handleCreateContextAppAckMessage - reqSno: " << reqSno << " related to connid: " << connId << endl;
 
     nlohmann::json jsonBody = req->second.appCont;
 
@@ -146,7 +146,7 @@ void UALCMPApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
     }
 }
 
-void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
+void UalcmpApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
 {
     DeleteContextAppAckMessage *ack = check_and_cast<DeleteContextAppAckMessage *>(msg);
 
@@ -154,12 +154,12 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
 
     auto req = pendingRequests.find(reqSno);
     if (req == pendingRequests.end()) {
-        EV << "UALCMPApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " not present in pendingRequests. Discarding... " << endl;
+        EV << "UalcmpApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " not present in pendingRequests. Discarding... " << endl;
         return;
     }
 
     int connId = req->second.connId;
-    EV << "UALCMPApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: " << connId << endl;
+    EV << "UalcmpApp::handleDeleteContextAppAckMessage - reqSno: " << reqSno << " related to connid: " << connId << endl;
 
     inet::TcpSocket *socket = check_and_cast_nullable<inet::TcpSocket *>(socketMap.getSocketById(connId));
 
@@ -177,9 +177,9 @@ void UALCMPApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
     }
 }
 
-void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
+void UalcmpApp::handleGETRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
-    EV << "UALCMPApp::handleGETRequest" << endl;
+    EV << "UalcmpApp::handleGETRequest" << endl;
     std::string uri = currentRequestMessageServed->getUri();
 
     // check it is a GET for a query or a subscription
@@ -200,7 +200,7 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
 
             for (const auto& queryParam : queryParameters) {
                 if (queryParam.rfind("appName", 0) == 0) { // cell_id=par1,par2
-                    EV << "UALCMPApp::handleGETRequest - parameters: " << endl;
+                    EV << "UalcmpApp::handleGETRequest - parameters: " << endl;
                     params = simu5g::utils::splitString(queryParam, "=");
                     if (params.size() != 2) { //must be param=values
                         Http::send400Response(socket);
@@ -245,11 +245,11 @@ void UALCMPApp::handleGETRequest(const HttpRequestMessage *currentRequestMessage
     }
 }
 
-void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
+void UalcmpApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
     std::string uri = currentRequestMessageServed->getUri();
     std::string body = currentRequestMessageServed->getBody();
-    EV << "UALCMPApp::handlePOSTRequest - uri: " << uri << endl;
+    EV << "UalcmpApp::handlePOSTRequest - uri: " << uri << endl;
 
     // it has to be managed the case when the sub is /area/circle (it has two slashes)
     if (uri == (baseUriSubscriptions_ + "/app_contexts")) {
@@ -258,7 +258,7 @@ void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessag
             jsonBody = nlohmann::json::parse(body); // get the JSON structure
         }
         catch (nlohmann::detail::parse_error e) {
-            throw cRuntimeError("UALCMPApp::handlePOSTRequest - %s", e.what());
+            throw cRuntimeError("UalcmpApp::handlePOSTRequest - %s", e.what());
             // body is not correctly formatted in JSON, manage it
             Http::send400Response(socket); // bad body JSON
             return;
@@ -289,11 +289,11 @@ void UALCMPApp::handlePOSTRequest(const HttpRequestMessage *currentRequestMessag
     }
 }
 
-void UALCMPApp::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {
+void UalcmpApp::handlePUTRequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket) {
     Http::send404Response(socket, "PUT not implemented, yet");
 }
 
-void UALCMPApp::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
+void UalcmpApp::handleDELETERequest(const HttpRequestMessage *currentRequestMessageServed, inet::TcpSocket *socket)
 {
     EV << "LocationService::handleDELETERequest" << endl;
     // uri must be in form /example/dev_app/v1/app_context/contextId
@@ -322,17 +322,17 @@ void UALCMPApp::handleDELETERequest(const HttpRequestMessage *currentRequestMess
     }
 }
 
-CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::json& jsonBody)
+CreateContextAppMessage *UalcmpApp::parseContextCreateRequest(const nlohmann::json& jsonBody)
 {
     if (!jsonBody.contains("appInfo")) {
-        EV << "UALCMPApp::parseContextCreateRequest - appInfo attribute not found" << endl;
+        EV << "UalcmpApp::parseContextCreateRequest - appInfo attribute not found" << endl;
         return nullptr;
     }
 
     nlohmann::json appInfo = jsonBody["appInfo"];
 
     if (!jsonBody.contains("associateDevAppId")) {
-        EV << "UALCMPApp::parseContextCreateRequest - associateDevAppId attribute not found" << endl;
+        EV << "UalcmpApp::parseContextCreateRequest - associateDevAppId attribute not found" << endl;
         return nullptr;
     }
 
@@ -362,7 +362,7 @@ CreateContextAppMessage *UALCMPApp::parseContextCreateRequest(const nlohmann::js
     }
 }
 
-void UALCMPApp::finish()
+void UalcmpApp::finish()
 {
 }
 

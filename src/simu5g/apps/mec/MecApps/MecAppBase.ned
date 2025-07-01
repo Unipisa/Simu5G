@@ -12,12 +12,12 @@
 package simu5g.apps.mec.MecApps;
 
 import inet.applications.contract.IApp;
-import simu5g.nodes.mec.platform.IMECApp;
+import simu5g.nodes.mec.platform.IMecApp;
 
 //
 //  This is a MEC app that ... TBC
 //
-simple MecAppBase like IMECApp, IApp
+simple MecAppBase like IMecApp, IApp
 {
     parameters:
         @display("i=block/app;is=s");

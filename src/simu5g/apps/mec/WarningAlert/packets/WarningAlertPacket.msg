@@ -14,11 +14,11 @@
 // IceAlert Packet used by UEIceAlertApp MEIceAlertApp and MEIceAlertService
 //
 
-import simu5g.nodes.mec.platform.MECPackets;
+import simu5g.nodes.mec.platform.MecPackets;
 
 namespace simu5g;
 
-class WarningAppPacket extends MECPacket
+class WarningAppPacket extends MecPacket
 {
 }
 

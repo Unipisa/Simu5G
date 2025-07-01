@@ -11,7 +11,7 @@
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
-#include "simu5g/nodes/mec/orchestrator/messages/MECOrchestratorMessages_m.h"
+#include "simu5g/nodes/mec/orchestrator/messages/MecOrchestratorMessages_m.h"
 
 namespace simu5g {
 
@@ -147,7 +147,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - meModuleName: " << appName.str() << endl;
 
         //creating the mecAppMap map entry
-        mecAppEntry newAppEntry;
+        MecAppEntry newAppEntry;
 
         newAppEntry.meAppGateIndex = -1;
         newAppEntry.meAppModule = nullptr;
@@ -221,7 +221,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         module->setName(appName.str().c_str());
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
         //creating the mecAppMap map entry
-        mecAppEntry newAppEntry;
+        MecAppEntry newAppEntry;
 
         newAppEntry.meAppGateIndex = index;
         newAppEntry.serviceIndex = serviceIndex;
@@ -242,7 +242,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         display << "p=" << (80 + ((index % 5) * 200) % 1000) << "," << (100 + (50 * (index / 5) % 350)) << ";is=vs";
         module->setDisplayString(display.str().c_str());
 
-        //initialize IMECApp Parameters
+        //initialize IMecApp Parameters
         module->par("mecAppIndex") = index;
         module->par("mecAppId") = ueAppID;
         module->par("requiredRam") = ram;
@@ -432,7 +432,7 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
 
     if (isAllocable(reqRam, reqDisk, reqCpu)) {
         //storing information about ME App allocated resources
-        mecAppEntry appEntry;
+        MecAppEntry appEntry;
 
         appEntry.ueAppID = ueAppID;
         appEntry.resources.ram = reqRam;

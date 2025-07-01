@@ -30,7 +30,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-struct mecAppEntry
+struct MecAppEntry
 {
     int meAppGateIndex;         // map key
     int serviceIndex;           // OMNeT service index
@@ -106,8 +106,8 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     // ------------------------------------
 
     // storing the UEApp and MECApp informations
-    // key = MEC App gate index - value mecAppMapEntry
-    std::map<int, mecAppEntry> mecAppMap;
+    // key = MEC App gate index - value MecAppMapEntry
+    std::map<int, MecAppEntry> mecAppMap;
 
     //------------------------------------
     // Resources manager

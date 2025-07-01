@@ -22,17 +22,17 @@ import inet.applications.contract.IApp;
 //   - POST /app_contexts: to request the creation of a new application context
 //   - DELETE /app_contexts/{contextId}: to request the deletion of an existing application context
 // The application communicates directly with the MEC orchestrator without going through the
-// protocol stack of the ~UALCMP module.
+// protocol stack of the ~Ualcmp module.
 //
-simple UALCMPApp like IApp
+simple UalcmpApp like IApp
 {
     parameters:
         @display("i=block/source");
-        @class("UALCMPApp");
+        @class("UalcmpApp");
 
         string binderModule = default("binder");
 
-        string serviceName = default("UALCMP");
+        string serviceName = default("Ualcmp");
         int requestQueueSize = default(0);
         int subscriptionQueueSize = default(0);
         string localAddress = default(""); // local address; may be left empty ("")

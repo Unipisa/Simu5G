@@ -44,7 +44,7 @@ using namespace omnetpp;
 
 //
 
-class MECWarningAlertApp : public MecAppBase
+class MecWarningAlertApp : public MecAppBase
 {
 
     //UDP socket to communicate with the UeApp
@@ -90,7 +90,7 @@ class MECWarningAlertApp : public MecAppBase
     void established(int connId) override;
 
   public:
-    ~MECWarningAlertApp() override;
+    ~MecWarningAlertApp() override;
 
 };
 

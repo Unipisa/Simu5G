@@ -21,10 +21,10 @@ import simu5g.apps.mec.MecApps.MecAppBase;
 // by the MEC Host. This module receives a notification from the Location Service when
 // the UE enters/exits the area and, in turn, sends a message to the UE.
 //
-simple MECWarningAlertApp extends MecAppBase
+simple MecWarningAlertApp extends MecAppBase
 {
     parameters:
-        @class(MECWarningAlertApp);
+        @class(MecWarningAlertApp);
         @display("i=block/app;is=s");
 
         int packetSize @unit(B) = default(10B);

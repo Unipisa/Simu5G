@@ -20,7 +20,7 @@ package simu5g.corenetwork.gtp;
 // from a tunnel source endpoint, it decapsulates the included IP datagram and sends it
 // to the intended destination according to normal IP forwarding.
 // This module is used by all entities that need to communicate within the cellular core
-// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MECHost modules.
+// network, such as ~eNodeB, ~gNodeB, ~PgwStandard, ~Upf, and ~MecHost modules.
 //
 simple GtpUser
 {

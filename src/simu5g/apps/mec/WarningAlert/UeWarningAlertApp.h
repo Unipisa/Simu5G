@@ -22,14 +22,14 @@
 
 #include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/nodes/mec/platform/MEAppPacket_Types.h"
+#include "simu5g/nodes/mec/platform/MeAppPacket_Types.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
 
 /**
- * This is a UE app that asks a Device App to instantiate the MECWarningAlertApp.
+ * This is a UE app that asks a Device App to instantiate the MecWarningAlertApp.
  * After a successful response, it asks the MEC app to be notified when the car
  * enters a circular zone described by x,y center position and the radius. When a danger
  * event arrives, the car color becomes red.

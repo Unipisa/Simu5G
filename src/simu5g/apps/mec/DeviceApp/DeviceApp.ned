@@ -17,7 +17,7 @@ import inet.applications.contract.IApp;
 // This module models the Device App entity as defined by the ETSI Multi-access Edge Computing (MEC)
 // specifications. The Device App can be instantiated on a User Equipment (UE) that wants to
 // dynamically instantiate a MEC application within a MEC system. It establishes a TCP connection
-// with the User App Lifecycle Management Proxy (UALCMP) entity (see the ~UALCMP module) and, upon
+// with the User App Lifecycle Management Proxy (UALCMP) entity (see the ~Ualcmp module) and, upon
 // receiving a MEC application instantiation request from another UE application, it sends a message
 // to the UALCMP including the URI of the MEC application to be instantiated. Once the confirmation
 // of successful instantiation is received, the Device App sends an acknowledgment to the UE

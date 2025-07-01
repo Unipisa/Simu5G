@@ -56,7 +56,7 @@ void VodUdpServer::initialize(int stage)
         infile.seekg(0, ios::beg);
         long int i = 0;
         while (!infile.eof()) {
-            svcPacket tmp;
+            SvcPacket tmp;
             tmp.index = i;
             infile >> tmp.memoryAdd >> tmp.length >> tmp.lid >> tmp.tid >> tmp.qid >>
             tmp.frameType >> tmp.isDiscardable >> tmp.isTruncatable >> tmp.frameNumber
@@ -64,7 +64,7 @@ void VodUdpServer::initialize(int stage)
             svcTrace_.push_back(tmp);
             i++;
         }
-        svcPacket tmp;
+        SvcPacket tmp;
         tmp.index = LONG_MAX;
         svcTrace_.push_back(tmp);
     }

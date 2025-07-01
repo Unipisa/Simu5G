@@ -1,7 +1,7 @@
 {
 "appDid" : "WAMECAPP",
-"appName" : "MECWarningAlertApp",
-"appProvider" : "lte.apps.mec.warningAlert.MECWarningAlertApp",
+"appName" : "MecWarningAlertApp",
+"appProvider" : "lte.apps.mec.warningAlert.MecWarningAlertApp",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{

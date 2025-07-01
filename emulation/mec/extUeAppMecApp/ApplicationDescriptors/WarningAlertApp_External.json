@@ -1,7 +1,7 @@
 {
 "appDid" : "WAMECAPPEXT",
-"appName" : "MECWarningAlertApp",
-"appProvider" : "simu5g.apps.mec.WarningAlert.MECWarningAlertApp",
+"appName" : "MecWarningAlertApp",
+"appProvider" : "simu5g.apps.mec.WarningAlert.MecWarningAlertApp",
 "appInfoName" : "appInfoName_",
 "appDescription" : "appDescription_",
 "virtualComputeDescriptor" :{

@@ -19,9 +19,9 @@ import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
-import simu5g.nodes.mec.MECHost;
+import simu5g.nodes.mec.MecHost;
 import simu5g.nodes.mec.orchestrator.MecOrchestrator;
-import simu5g.nodes.mec.ualcmp.UALCMP;
+import simu5g.nodes.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
@@ -77,16 +77,16 @@ network MultiMecHost_delay
         }
 
         //# MEC modules
-        mecHost1: MECHost {
+        mecHost1: MecHost {
             @display("p=248,247");
         }
-        mecHost2: MECHost {
+        mecHost2: MecHost {
             @display("p=748,247");
         }
         mecOrchestrator: MecOrchestrator {
             @display("p=749,132");
         }
-        ualcmp: UALCMP {
+        ualcmp: Ualcmp {
             @display("p=603,131");
         }
 

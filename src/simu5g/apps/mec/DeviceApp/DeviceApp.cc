@@ -250,7 +250,7 @@ void DeviceApp::handleUALCMPMessage()
 
             case IDLE:
             default:
-                throw cRuntimeError("DeviceApp::handleUALCMPMessage() - appstate IDLE. No messages should arrive from the UALCMP");
+                throw cRuntimeError("DeviceApp::handleUALCMPMessage() - appstate IDLE. No messages should arrive from UALCMP");
         }
     }
     else {

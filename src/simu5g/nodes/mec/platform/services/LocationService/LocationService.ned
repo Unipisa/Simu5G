@@ -10,7 +10,7 @@
 //
 package simu5g.nodes.mec.platform.services.LocationService;
 
-import simu5g.nodes.mec.platform.services.base.IMECService;
+import simu5g.nodes.mec.platform.services.base.IMecService;
 import inet.applications.contract.IApp;
 
 //
@@ -20,7 +20,7 @@ import inet.applications.contract.IApp;
 // subscribe-notification patterns (in the latter case, the MEC application will be notified when
 // a target UE enters a specific circular area.
 //
-simple LocationService like IMECService, IApp
+simple LocationService like IMecService, IApp
 {
     parameters:
         int requestQueueSize = default(0);
