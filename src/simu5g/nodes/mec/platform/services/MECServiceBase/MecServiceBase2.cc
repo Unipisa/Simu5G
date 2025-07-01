@@ -11,7 +11,7 @@
 
 #include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase2.h"
 
-#include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 
 namespace simu5g {
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.MECPlatformManager;
+package simu5g.nodes.mec.mepm;
 
 //
 //# MECPlatformManager module

@@ -25,7 +25,7 @@
 #include "simu5g/nodes/mec/platform/services/MECServiceBase/SocketManager.h"
 #include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
-#include "simu5g/nodes/mec/MECPlatformManager/MecPlatformManager.h"
+#include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
