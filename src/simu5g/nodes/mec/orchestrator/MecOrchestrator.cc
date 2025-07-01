@@ -24,9 +24,9 @@
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
 
-#include "simu5g/nodes/mec/orchestrator/mecHostSelectionPolicies/MecServiceSelectionBased.h"
-#include "simu5g/nodes/mec/orchestrator/mecHostSelectionPolicies/AvailableResourcesSelectionBased.h"
-#include "simu5g/nodes/mec/orchestrator/mecHostSelectionPolicies/MecHostSelectionBased.h"
+#include "simu5g/nodes/mec/orchestrator/policies/MecServiceSelectionBased.h"
+#include "simu5g/nodes/mec/orchestrator/policies/AvailableResourcesSelectionBased.h"
+#include "simu5g/nodes/mec/orchestrator/policies/MecHostSelectionBased.h"
 
 // Emulation debug
 #include <iostream>

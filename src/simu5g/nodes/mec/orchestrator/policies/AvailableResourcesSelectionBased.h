@@ -9,26 +9,25 @@
 // and cannot be removed from it.
 //
 
-#ifndef NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_
-#define NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_
+#ifndef NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_AVAILABLERESOURCESELECTION_H_
+#define NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_AVAILABLERESOURCESELECTION_H_
 
-#include "simu5g/nodes/mec/orchestrator/mecHostSelectionPolicies/SelectionPolicyBase.h"
+#include "simu5g/nodes/mec/orchestrator/policies/SelectionPolicyBase.h"
 
 namespace simu5g {
 
 //class MecOrchestrator;
 
-class MecHostSelectionBased : public SelectionPolicyBase
+class AvailableResourcesSelectionBased : public SelectionPolicyBase
 {
   protected:
-    int mecHostIndex_;
     cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
-    MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index);
+    AvailableResourcesSelectionBased(MecOrchestrator *mecOrchestrator) : SelectionPolicyBase(mecOrchestrator) {}
 };
 
 } //namespace
 
-#endif /* NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_MECHOSTSELECTIONBASED_H_ */
+#endif /* NODES_MEC_MECORCHESTRATOR_MECHOSTSELECTIONPOLICIES_AVAILABLERESOURCESELECTION_H_ */
 
