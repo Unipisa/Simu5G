@@ -15,7 +15,7 @@
 #include "simu5g/nodes/mec/platform/services/MECServiceBase/MecServiceBase.h"
 #include <iostream>
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
 
 namespace simu5g {
 

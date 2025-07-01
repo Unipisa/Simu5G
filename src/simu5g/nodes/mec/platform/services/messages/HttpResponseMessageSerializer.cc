@@ -15,43 +15,39 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/Serializers/HttpRequestMessageSerializer.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessageSerializer.h"
+
+#include <string>
 
 #include <inet/common/packet/serializer/ChunkSerializerRegistry.h>
 
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 
 using namespace inet;
 
-Register_Serializer(HttpRequestMessage, HttpRequestMessageSerializer);
+Register_Serializer(HttpResponseMessage, HttpResponseMessageSerializer);
 
-void HttpRequestMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
+void HttpResponseMessageSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
 {
-    EV << "HttpRequestMessageSerializer::serialize" << endl;
+    EV << "HttpResponseMessageSerializer::serialize" << endl;
     auto startPosition = stream.getLength();
-    const auto& applicationPacket = staticPtrCast<const HttpRequestMessage>(chunk);
-    stream.writeBytes((const uint8_t *)applicationPacket->getPayload().c_str(), B(applicationPacket->getPayload().size()));
-
+    const auto& applicationPacket = staticPtrCast<const HttpResponseMessage>(chunk);
+    std::string payload = applicationPacket->getPayload();
+    stream.writeBytes((const uint8_t *)payload.c_str(), B(payload.size()));
     int64_t remainders = B(applicationPacket->getChunkLength() - (stream.getLength() - startPosition)).get();
     if (remainders < 0)
         throw cRuntimeError("ApplicationPacket length = %d smaller than required %d bytes", (int)B(applicationPacket->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
     stream.writeByteRepeatedly('?', remainders);
 }
 
-const Ptr<Chunk> HttpRequestMessageSerializer::deserialize(MemoryInputStream& stream) const
+// TODO
+const Ptr<Chunk> HttpResponseMessageSerializer::deserialize(MemoryInputStream& stream) const
 {
-    EV << "HttpRequestMessageSerializer::deserialize" << endl;
-    auto startPosition = stream.getPosition();
-    auto applicationPacket = makeShared<HttpRequestMessage>();
-    std::string data = stream.readString();
-    applicationPacket = check_and_cast<HttpRequestMessage *>(Http::parseHeader(data));
-
-    B remainders = stream.getLength() - (stream.getPosition() - startPosition);
-    ASSERT(remainders >= B(0));
-    stream.readByteRepeatedly('?', B(remainders).get());
+    EV << "HttpResponseMessageSerializer::deserialize" << endl;
+    auto applicationPacket = makeShared<HttpResponseMessage>();
     return applicationPacket;
 }
 

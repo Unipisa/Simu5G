@@ -19,7 +19,7 @@
 #include "simu5g/common/utils/utils.h"
 #include "simu5g/nodes/mec/platform/services/LocationService/LocationService.h"
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/CircleNotificationSubscription.h"
-#include "simu5g/nodes/mec/platform/services/packets/AperiodicSubscriptionTimer_m.h"
+#include "simu5g/nodes/mec/platform/services/messages/AperiodicSubscriptionTimer_m.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {

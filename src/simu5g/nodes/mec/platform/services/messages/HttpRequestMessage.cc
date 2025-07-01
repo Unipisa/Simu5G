@@ -2,7 +2,7 @@
 
 #include <inet/common/INETDefs.h>
 
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
 
 namespace simu5g {
 

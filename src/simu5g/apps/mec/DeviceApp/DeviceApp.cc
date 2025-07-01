@@ -20,8 +20,8 @@
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
 #include "DeviceAppMessages/DeviceAppPacket_Types.h"
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/HttpRequestMessage.h"
-#include "simu5g/nodes/mec/platform/services/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 

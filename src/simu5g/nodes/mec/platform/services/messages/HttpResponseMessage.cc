@@ -1,6 +1,6 @@
 //
 
-#include "simu5g/nodes/mec/platform/services/packets/HttpResponseMessage/HttpResponseMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
 
 #include <inet/common/INETDefs.h>
 

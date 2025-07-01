@@ -25,7 +25,7 @@
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/platform/services/packets/HttpRequestMessage/HttpRequestMessage.h"
+#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
