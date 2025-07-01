@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/mac/NRMacUe.h"
+#include "simu5g/stack/mac/NrMacUe.h"
 
 #include <inet/common/TimeTag_m.h>
 
@@ -21,9 +21,9 @@
 
 namespace simu5g {
 
-Define_Module(NRMacUe);
+Define_Module(NrMacUe);
 
-void NRMacUe::handleSelfMessage()
+void NrMacUe::handleSelfMessage()
 {
     EV << "----- UE MAIN LOOP -----" << endl;
 
@@ -43,7 +43,7 @@ void NRMacUe::handleSelfMessage()
         }
     }
 
-    EV << NOW << "NRMacUe::handleSelfMessage " << nodeId_ << " - HARQ process " << (unsigned int)currentHarq_ << endl;
+    EV << NOW << "NrMacUe::handleSelfMessage " << nodeId_ << " - HARQ process " << (unsigned int)currentHarq_ << endl;
 
     // no grant available - if user has backlogged data, it will trigger scheduling request
     // no HARQ counter is updated since no transmission is sent.
@@ -58,7 +58,7 @@ void NRMacUe::handleSelfMessage()
     }
 
     if (noSchedulingGrants) {
-        EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
+        EV << NOW << " NrMacUe::handleSelfMessage " << nodeId_ << " NO configured grant" << endl;
         checkRAC();
         // TODO ensure all operations done before return (i.e. move H-ARQ RX purge before this point)
     }
@@ -103,7 +103,7 @@ void NRMacUe::handleSelfMessage()
     scheduleList_.clear();
     requestedSdus_ = 0;
     if (!noSchedulingGrants) { // if a grant is configured
-        EV << NOW << " NRMacUe::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
+        EV << NOW << " NrMacUe::handleSelfMessage " << nodeId_ << " entered scheduling" << endl;
 
         bool retx = false;
 
@@ -169,9 +169,9 @@ void NRMacUe::handleSelfMessage()
                 if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
                     continue;
 
-                EV << "NRMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
+                EV << "NrMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();
-                EV << "NRMacUe::handleSelfMessage - scheduled " << carrierScheduleList->size() << " connections on carrier " << carrierFrequency << endl;
+                EV << "NrMacUe::handleSelfMessage - scheduled " << carrierScheduleList->size() << " connections on carrier " << carrierFrequency << endl;
                 scheduleList_[carrierFrequency] = carrierScheduleList;
                 if (!carrierScheduleList->empty())
                     emptyScheduleList_ = false;
@@ -215,7 +215,7 @@ void NRMacUe::handleSelfMessage()
 
     // update current HARQ process id, if needed
     if (requestedSdus_ == 0) {
-        EV << NOW << " NRMacUe::handleSelfMessage - incrementing counter for HARQ processes " << (unsigned int)currentHarq_ << " --> " << (currentHarq_ + 1) % harqProcesses_ << endl;
+        EV << NOW << " NrMacUe::handleSelfMessage - incrementing counter for HARQ processes " << (unsigned int)currentHarq_ << " --> " << (currentHarq_ + 1) % harqProcesses_ << endl;
         currentHarq_ = (currentHarq_ + 1) % harqProcesses_;
     }
 
@@ -224,9 +224,9 @@ void NRMacUe::handleSelfMessage()
     EV << "--- END UE MAIN LOOP ---" << endl;
 }
 
-int NRMacUe::macSduRequest()
+int NrMacUe::macSduRequest()
 {
-    EV << "----- START NRMacUe::macSduRequest -----\n";
+    EV << "----- START NrMacUe::macSduRequest -----\n";
     int numRequestedSdus = 0;
 
     // get the number of granted bytes for each codeword
@@ -261,11 +261,11 @@ int NRMacUe::macSduRequest()
 
             // consume bytes on this codeword
             if (bit == scheduledBytesList->end())
-                throw cRuntimeError("NRMacUe::macSduRequest - cannot find entry in scheduledBytesList");
+                throw cRuntimeError("NrMacUe::macSduRequest - cannot find entry in scheduledBytesList");
             else {
                 allocatedBytes[cw] -= bit->second;
 
-                EV << NOW << " NRMacUe::macSduRequest - cid[" << destCid << "] - SDU size[" << bit->second << "B] - " << allocatedBytes[cw] << " bytes left on codeword " << cw << endl;
+                EV << NOW << " NrMacUe::macSduRequest - cid[" << destCid << "] - SDU size[" << bit->second << "B] - " << allocatedBytes[cw] << " bytes left on codeword " << cw << endl;
 
                 // send the request message to the upper layer
                 // TODO: Replace by tag
@@ -284,11 +284,11 @@ int NRMacUe::macSduRequest()
         }
     }
 
-    EV << "------ END NRMacUe::macSduRequest ------\n";
+    EV << "------ END NrMacUe::macSduRequest ------\n";
     return numRequestedSdus;
 }
 
-void NRMacUe::macPduMake(MacCid cid)
+void NrMacUe::macPduMake(MacCid cid)
 {
     int64_t size = 0;
 
@@ -346,11 +346,11 @@ void NRMacUe::macPduMake(MacCid cid)
                     if (macPktBsr != nullptr) {
                         LteChannelModel *channelModel = phy_->getChannelModel();
                         if (channelModel == nullptr)
-                            throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
+                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
                         bsrAlreadyMade = true;
-                        EV << "NRMacUe::macPduMake - BSR D2D created with size " << sizeBsr << " created" << endl;
+                        EV << "NrMacUe::macPduMake - BSR D2D created with size " << sizeBsr << " created" << endl;
                     }
 
                     bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevents the UE from sending an unnecessary RAC request
@@ -508,7 +508,7 @@ void NRMacUe::macPduMake(MacCid cid)
 
             // search for an empty unit within the first available process
             UnitList txList = (pit.second->getTag<UserControlInfo>()->getDirection() == D2D_MULTI) ? txBuf->getEmptyUnits(currentHarq_) : txBuf->firstAvailable();
-            EV << "NRMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "]" << endl;
+            EV << "NrMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "]" << endl;
 
             //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
             auto macPkt = pit.second;
@@ -591,7 +591,7 @@ void NRMacUe::macPduMake(MacCid cid)
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
                 bsrAlreadyMade = true;
-                EV << "NRMacUe::macPduMake - BSR created with size " << size << endl;
+                EV << "NrMacUe::macPduMake - BSR created with size " << size << endl;
             }
 
             if (bsrAlreadyMade && size > 0) { // this prevents the UE from sending an unnecessary RAC request
@@ -602,13 +602,13 @@ void NRMacUe::macPduMake(MacCid cid)
 
             macPkt->insertAtFront(header);
 
-            EV << "NRMacUe: pduMaker created PDU: " << macPkt->str() << endl;
+            EV << "NrMacUe: pduMaker created PDU: " << macPkt->str() << endl;
 
             // TODO: harq test
             // pdu transmission here (if any)
             // txAcid has HARQ_NONE for non-fillable codeword, acid otherwise
             if (txList.second.empty()) {
-                EV << "NRMacUe() : no available process for this MAC pdu in TxHarqBuffer" << endl;
+                EV << "NrMacUe() : no available process for this MAC pdu in TxHarqBuffer" << endl;
                 delete macPkt;
             }
             else {

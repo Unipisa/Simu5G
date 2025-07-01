@@ -19,13 +19,13 @@
 namespace simu5g {
 
 /**
- * @class NRPdcpRrcUe
+ * @class NrPdcpRrcUe
  * @brief PDCP Layer
  *
  * This is the PDCP/RRC layer of NR Stack
  *
  */
-class NRPdcpRrcUe : public LtePdcpRrcUeD2D
+class NrPdcpRrcUe : public LtePdcpRrcUeD2D
 {
     cGate *nrTmSapOutGate_ = nullptr;
     cGate *nrUmSapOutGate_ = nullptr;

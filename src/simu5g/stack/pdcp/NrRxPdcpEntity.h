@@ -63,7 +63,7 @@ enum PdcpRxTimerType
  * This is the PDCP entity of LTE/NR Stack.
  *
  */
-class NRRxPdcpEntity : public LteRxPdcpEntity
+class NrRxPdcpEntity : public LteRxPdcpEntity
 {
   protected:
 

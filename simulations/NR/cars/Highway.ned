@@ -22,7 +22,7 @@ import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.Upf;
 import simu5g.common.binder.Binder;
 import simu5g.nodes.NR.gNodeB;
-import simu5g.nodes.cars.NRCar;
+import simu5g.nodes.cars.NrCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 
@@ -75,7 +75,7 @@ network Highway
             @display("p=391,313;is=vl");
         }
         //# submodule vector to store all cars - will be filled dynamically during simulations
-        car[0]: NRCar;
+        car[0]: NrCar;
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;

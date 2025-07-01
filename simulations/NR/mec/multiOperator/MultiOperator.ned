@@ -17,7 +17,7 @@ import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
@@ -95,10 +95,10 @@ network MultiOperator
         bgCell[numBgCells]: BackgroundCell {
             @display("p=138,630;is=vl");
         }
-        ue_A[numUe_A]: NRUe {
+        ue_A[numUe_A]: NrUe {
             @display("p=717,691");
         }
-        ue_B[numUe_B]: NRUe {
+        ue_B[numUe_B]: NrUe {
             @display("p=937,691");
         }
 

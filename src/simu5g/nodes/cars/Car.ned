@@ -22,7 +22,7 @@ import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 import inet.common.MessageDispatcher;
 import simu5g.nodes.Ue;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 
 import org.car2x.veins.base.modules.*;
 

@@ -40,7 +40,7 @@ void UeStatsCollector::initialize(int stage)
          * since they are split, too.
          */
 
-        bool isNr_ = (std::string(getContainingNicModule(mac_)->getComponentType()->getName()) == "NRNicUe");
+        bool isNr_ = (std::string(getContainingNicModule(mac_)->getComponentType()->getName()) == "NrNicUe");
 
         packetFlowManager_.reference(this, "packetFlowManagerModule", isNr_);
 

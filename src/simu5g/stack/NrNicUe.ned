@@ -26,16 +26,16 @@ import simu5g.stack.rlc.LteRlc;
 // LteNicUeD2D module by adding additional submodules and parameters to
 // support NR-specific functionalities.
 //
-module NRNicUe extends LteNicUeD2D
+module NrNicUe extends LteNicUeD2D
 {
     parameters:
-        string NRChannelModelType = default("NRChannelModel_3GPP38_901");
+        string NRChannelModelType = default("NrChannelModel_3GPP38_901");
 
         packetFlowManager.typename = default("PacketFlowManagerUe");
 
         int numNRCarriers = default(1);
 
-        pdcpRrc.typename = default("NRPdcpRrcUe");
+        pdcpRrc.typename = default("NrPdcpRrcUe");
         phy.typename = default("NRPhyUe");	        // TODO fix this
         											// LtePhy is of type NRPhyUe so that it is
         											// be aware of the existing of the second
@@ -59,7 +59,7 @@ module NRNicUe extends LteNicUeD2D
             um.nodeType = parent.nodeType;
         }
         // MAC Layer
-        nrMac: <default("NRMacUe")> like ILteMac {
+        nrMac: <default("NrMacUe")> like ILteMac {
             @display("p=466,314");
         }
         // PHY Layer
@@ -79,7 +79,7 @@ module NRNicUe extends LteNicUeD2D
  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        nrPacketFlowManager: <default("NRPacketFlowManagerUe")> like IPacketFlowManager if hasRNISupport {
+        nrPacketFlowManager: <default("NrPacketFlowManagerUe")> like IPacketFlowManager if hasRNISupport {
             @display("p=200,300");
         }
 

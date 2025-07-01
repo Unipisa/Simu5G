@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/phy/channelmodel/NRChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/NrChannelModel.h"
 
 namespace simu5g {
 
@@ -17,14 +17,14 @@ namespace simu5g {
 // and tolerating the maximum distance violation is enabled
 #define ATT_MAXDISTVIOLATED    1000
 
-Define_Module(NRChannelModel);
+Define_Module(NrChannelModel);
 
-void NRChannelModel::initialize(int stage)
+void NrChannelModel::initialize(int stage)
 {
     LteRealisticChannelModel::initialize(stage);
 }
 
-double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
+double NrChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coord coord, bool cqiDl)
 {
     double movement = .0;
     double speed = .0;
@@ -65,12 +65,12 @@ double NRChannelModel::getAttenuation(MacNodeId nodeId, Direction dir, inet::Coo
         // sender is a UE
         updatePositionHistory(nodeId, coord);
 
-    EV << "NRChannelModel::getAttenuation - computed attenuation at distance " << threeDimDistance << " for eNb is " << attenuation << endl;
+    EV << "NrChannelModel::getAttenuation - computed attenuation at distance " << threeDimDistance << " for eNb is " << attenuation << endl;
 
     return attenuation;
 }
 
-double NRChannelModel::computeAngularAttenuation(double hAngle, double vAngle) {
+double NrChannelModel::computeAngularAttenuation(double hAngle, double vAngle) {
 
     // --- compute horizontal pattern attenuation --- //
     double angularAttMin = 30;
@@ -90,7 +90,7 @@ double NRChannelModel::computeAngularAttenuation(double hAngle, double vAngle) {
     return (angularAtt < angularAttMin) ? angularAtt : angularAttMin;
 }
 
-void NRChannelModel::computeLosProbability(double d, MacNodeId nodeId)
+void NrChannelModel::computeLosProbability(double d, MacNodeId nodeId)
 {
     double p = 0;
     if (!dynamicLos_) {
@@ -129,7 +129,7 @@ void NRChannelModel::computeLosProbability(double d, MacNodeId nodeId)
         losMap_[nodeId] = false;
 }
 
-double NRChannelModel::computePathLoss(double threeDimDistance, double twoDimDistance, bool los)
+double NrChannelModel::computePathLoss(double threeDimDistance, double twoDimDistance, bool los)
 {
     // compute attenuation based on selected scenario and based on LOS or NLOS
     double pathLoss = 0;
@@ -152,7 +152,7 @@ double NRChannelModel::computePathLoss(double threeDimDistance, double twoDimDis
     return pathLoss;
 }
 
-double NRChannelModel::computeIndoor(double threeDimDistance, double twoDimDistance, bool los)
+double NrChannelModel::computeIndoor(double threeDimDistance, double twoDimDistance, bool los)
 {
     double a, b;
     if (los) {
@@ -170,7 +170,7 @@ double NRChannelModel::computeIndoor(double threeDimDistance, double twoDimDista
     return a * log10(threeDimDistance) + b + 20 * log10(carrierFrequency_);
 }
 
-double NRChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los)
+double NrChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los)
 {
     if (twoDimDistance < 10)
         twoDimDistance = 10;
@@ -211,7 +211,7 @@ double NRChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimD
     return (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
 }
 
-double NRChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los)
+double NrChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimDistance, bool los)
 {
     if (twoDimDistance < 10)
         twoDimDistance = 10;
@@ -282,7 +282,7 @@ double NRChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
     return (pLoss_los > pLoss_nlos) ? pLoss_los + penetrationLoss : pLoss_nlos + penetrationLoss;
 }
 
-double NRChannelModel::computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los)
+double NrChannelModel::computeRuralMacro(double threeDimDistance, double twoDimDistance, bool los)
 {
     if (twoDimDistance < 10)
         twoDimDistance = 10;
@@ -327,7 +327,7 @@ double NRChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
     return pLoss_nlos;
 }
 
-bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency,
+bool NrChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency,
         std::vector<double> *interference)
 {
     EV << "**** Ext Cell Interference **** " << endl;
@@ -409,7 +409,7 @@ bool NRChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeI
     return true;
 }
 
-double NRChannelModel::computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId)
+double NrChannelModel::computeExtCellPathLoss(double threeDimDistance, double twoDimDistance, MacNodeId nodeId)
 {
     computeSpeed(nodeId, phy_->getCoord());
 

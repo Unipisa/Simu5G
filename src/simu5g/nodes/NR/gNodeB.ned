@@ -15,7 +15,7 @@ import simu5g.nodes.eNodeB;
 
 //
 // This module implements a gNodeB for a 5G LTE network. It extends the ~eNodeB module
-// by providing 5G connectivity to ~NRUe modules. It can be used in either StandAlone (SA) or
+// by providing 5G connectivity to ~NrUe modules. It can be used in either StandAlone (SA) or
 // Non-StandAlone (NSA) 5G deployments. In the former case, it is directly connected to a ~Upf
 // module. In the latter case, this module can be configured as a secondary node of
 // a ~eNodeB module, thus enabling E-UTRA Dual Connectivity (EN-DC).
@@ -28,5 +28,5 @@ module gNodeB extends eNodeB
         collector.typename = default("GNodeBStatsCollector");
         gateway = default("upf"); // change this path if the gateway node is inside a compound module
         nodeType = "GNODEB";        // DO NOT CHANGE
-        cellularNic.typename = default("NRNicEnb");
+        cellularNic.typename = default("NrNicEnb");
 }

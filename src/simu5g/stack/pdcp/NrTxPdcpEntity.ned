@@ -9,22 +9,18 @@
 // and cannot be removed from it.
 //
 
-
 package simu5g.stack.pdcp;
 
 //
 // This module handles the operations related to the NR PDCP (Packet Data Convergence Protocol)
-// layer on the receiving side of a specific connection. It extends the ~LteRxPdcpEntity module.
-// This module facilitates the creation of support for Dual Connectivity functionality. In
-// particular, it manages the reordering of out-of-sequence PDCP PDUs in Dual Connectivity deployments.
+// layer at the transmitting side of a specific connection. It extends the ~LteTxPdcpEntity module.
+// Additionally, this module manages the creation process by adding support for Dual Connectivity functionality.
 //
-simple NRRxPdcpEntity extends LteRxPdcpEntity
+simple NrTxPdcpEntity extends LteTxPdcpEntity
 {
     parameters:
         @dynamic(true);
-        @class("NRRxPdcpEntity");
+        @class("NrTxPdcpEntity");
         @display("i=block/segm");
-        bool outOfOrderDelivery = default(false);
-        double timeout @unit(s) = default(0.1s);   // Timeout for RX Buffer
-        int rxWindowSize = default(4096);
 }
+

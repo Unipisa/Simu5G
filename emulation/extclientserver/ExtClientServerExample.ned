@@ -18,7 +18,7 @@ import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.ExtCell;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.world.radio.LteChannelControl;
@@ -58,7 +58,7 @@ network ExtClientServerExample
         gnb: gNodeB {
             @display("p=671,174;is=vl");
         }
-        ue: NRUe {
+        ue: NrUe {
             @display("p=671,309");
         }
         extCell[numExtCells]: ExtCell {

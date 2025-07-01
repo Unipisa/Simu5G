@@ -12,18 +12,18 @@
 
 package simu5g.nodes.NR;
 
-import simu5g.corenetwork.statsCollector.NRueStatsCollector;
+import simu5g.corenetwork.statsCollector.NrUeStatsCollector;
 import simu5g.nodes.Ue;
 
 //
 // This module implements a User Equipment (UE) for a 5G LTE network. It extends the ~Ue module
-// by implementing a ~NRNicUe as a Network Interface Card (NIC) module. This module can be
+// by implementing a ~NrNicUe as a Network Interface Card (NIC) module. This module can be
 // used to model a device that can connect to either a 4G eNodeB or a 5G gNodeB, or both.
 //
-module NRUe extends Ue
+module NrUe extends Ue
 {
     parameters:
-        cellularNic.typename = default("NRNicUe");
+        cellularNic.typename = default("NrNicUe");
 
         int nrMasterId @mutable = default(0);
         int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter
@@ -36,7 +36,7 @@ module NRUe extends Ue
 
     submodules:
         //# UeStatsCollector - for MEC
-        NRueCollector: NRueStatsCollector if hasRNISupport {
+        NRueCollector: NrUeStatsCollector if hasRNISupport {
             @display("p=127,506;is=s");
         }
 

@@ -15,20 +15,20 @@
 #include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
-#include "simu5g/stack/pdcp/NRTxPdcpEntity.h"
+#include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/stack/pdcp/LtePdcpRrcEnbD2D.h"
 #include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
 
 namespace simu5g {
 
 /**
- * @class NRPdcpRrcEnb
+ * @class NrPdcpRrcEnb
  * @brief PDCP Layer
  *
  * This is the PDCP/RRC layer of NR Stack
  *
  */
-class NRPdcpRrcEnb : public LtePdcpRrcEnbD2D
+class NrPdcpRrcEnb : public LtePdcpRrcEnbD2D
 {
 
   protected:

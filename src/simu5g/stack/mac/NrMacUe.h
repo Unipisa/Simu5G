@@ -16,7 +16,7 @@
 
 namespace simu5g {
 
-class NRMacUe : public LteMacUeD2D
+class NrMacUe : public LteMacUeD2D
 {
 
   protected:

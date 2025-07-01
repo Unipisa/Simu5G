@@ -64,8 +64,8 @@ class LtePdcpRrcBase : public cSimpleModule
 {
     friend class LteTxPdcpEntity;
     friend class LteRxPdcpEntity;
-    friend class NRTxPdcpEntity;
-    friend class NRRxPdcpEntity;
+    friend class NrTxPdcpEntity;
+    friend class NrRxPdcpEntity;
     friend class DualConnectivityManager;
 
   public:

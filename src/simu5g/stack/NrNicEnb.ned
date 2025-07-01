@@ -13,19 +13,19 @@
 package simu5g.stack;
 
 //
-// The NRNicEnb module serves as a network interface that provides 5G connectivity
+// The NrNicEnb module serves as a network interface that provides 5G connectivity
 // within a gNodeB. It implements the data and signaling plane of the NR (New Radio) stack,
 // which encompasses the PDCP, RLC, MAC, and PHY layers. The parameters and submodules
 // facilitate the customization of the gNodeB's behavior, including its support for
 // D2D communication, CoMP (Coordinated MultiPoint), or dual connectivity.
 //
-module NRNicEnb extends LteNicEnbD2D
+module NrNicEnb extends LteNicEnbD2D
 {
     parameters:
-        pdcpRrc.typename = default("NRPdcpRrcEnb");
-        mac.typename = default("NRMacGnb");
-        LteChannelModelType = default("NRChannelModel_3GPP38_901");
+        pdcpRrc.typename = default("NrPdcpRrcEnb");
+        mac.typename = default("NrMacGnb");
+        LteChannelModelType = default("NrChannelModel_3GPP38_901");
         @display("bgb=694,443");
-        packetFlowManager.typename = default("NRPacketFlowManagerGnb");
+        packetFlowManager.typename = default("NrPacketFlowManagerGnb");
 }
 

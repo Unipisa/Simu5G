@@ -16,7 +16,7 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.mec.MECHost;
@@ -62,7 +62,7 @@ network singleMecHost
         gNodeB1: gNodeB {
             @display("p=140,250;is=vl");
         }
-        ue[numUes]: NRUe {
+        ue[numUes]: NrUe {
             @display("p=237,310");
         }
         //# MEC module

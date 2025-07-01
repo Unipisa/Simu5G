@@ -20,7 +20,7 @@ namespace simu5g {
 class LtePdcpRrcBase;
 
 /**
- * @class NRTxPdcpEntity
+ * @class NrTxPdcpEntity
  * @brief Entity for New Radio PDCP Layer
  *
  * This is the PDCP entity of LTE/NR Stack.
@@ -29,7 +29,7 @@ class LtePdcpRrcBase;
  * - maintain numbering of one logical connection
  *
  */
-class NRTxPdcpEntity : public LteTxPdcpEntity
+class NrTxPdcpEntity : public LteTxPdcpEntity
 {
   protected:
 

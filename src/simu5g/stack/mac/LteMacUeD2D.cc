@@ -42,8 +42,8 @@ void LteMacUeD2D::initialize(int stage)
 
         cModule *pdcpRrc = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
         std::string pdcpType = pdcpRrc->getComponentType()->getName();
-        if (pdcpType != "LtePdcpRrcUeD2D" && pdcpType != "NRPdcpRrcUe")
-            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpRrcUeD2D or NRPdcpRrcUe. Aborting", pdcpType.c_str());
+        if (pdcpType != "LtePdcpRrcUeD2D" && pdcpType != "NrPdcpRrcUe")
+            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpRrcUeD2D or NrPdcpRrcUe. Aborting", pdcpType.c_str());
     }
     if (stage == inet::INITSTAGE_NETWORK_LAYER) {
         // get parameters
@@ -142,7 +142,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         // select channel model for given carrier frequency
                         LteChannelModel *channelModel = phy_->getChannelModel(carrierFreq);
                         if (channelModel == nullptr)
-                            throw cRuntimeError("NRMacUe::macPduMake - channel model is a null pointer. Abort.");
+                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer. Abort.");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
                         bsrAlreadyMade = true;

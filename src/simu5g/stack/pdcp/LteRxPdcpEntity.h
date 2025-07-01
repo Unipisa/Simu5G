@@ -53,7 +53,7 @@ class LteRxPdcpEntity : public cSimpleModule
     /*
      * @author Alessandro Noferi
      *
-     * This method is used with NRRxPdcpEntity that has
+     * This method is used with NrRxPdcpEntity that has
      * an SDU buffer. In particular, it is used when the
      * RNI service requests the number of active users
      * in UL, that also counts buffered UL data in PDCP.

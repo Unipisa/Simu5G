@@ -17,7 +17,7 @@ import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
@@ -67,13 +67,13 @@ network SingleCell_Standalone_D2D
         bgCell[numBgCells]: BackgroundCell {
             @display("p=416,277;is=vl");
         }
-        ueCell[numUeCell]: NRUe {
+        ueCell[numUeCell]: NrUe {
             @display("p=612,316");
         }
-        ueD2DTx[numUeD2DTx]: NRUe {
+        ueD2DTx[numUeD2DTx]: NrUe {
             @display("p=550,423");
         }
-        ueD2DRx[numUeD2DRx]: NRUe {
+        ueD2DRx[numUeD2DRx]: NrUe {
             @display("p=726,423");
         }
     connections:

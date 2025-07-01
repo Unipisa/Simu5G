@@ -12,15 +12,16 @@
 package simu5g.stack.packetFlowManager;
 
 //
-// NRPacketFlowManagerGnb is designed to handle packet flow management
-// operations specifically for NR (New Radio) e/gNodeB in 5G simulations.
-// It ensures that data packets are managed efficiently in a 5G network scenario,
-// providing an accurate model of packet handling mechanisms.
+// This simple module represents the Packet Flow Manager for User Equipment
+// (UE) in an NR (New Radio) network. It manages the flow of packets for various
+// services within the UE, ensuring that data traffic is efficiently handled
+// in accordance with NR specifications.
 //
-simple NRPacketFlowManagerGnb like IPacketFlowManager
+simple NrPacketFlowManagerUe like IPacketFlowManager
 {
-    @class("PacketFlowManagerEnb");
+    @class("PacketFlowManagerUe");
 
     string macModule = default("^.mac");
-    string pfmType = default("NRPacketFlowManagerGnb");
+    string pfmType = default("NrPacketFlowManagerUe");
 }
+

@@ -38,7 +38,7 @@ void LtePhyUe::initialize(int stage)
     LtePhyBase::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
-        isNr_ = false;        // this might be true only if this module is a NrPhyUe
+        isNr_ = false;        // this might be true only if this module is a UeNrPhy
         nodeType_ = UE;
         enableHandover_ = par("enableHandover");
         handoverLatency_ = par("handoverLatency").doubleValue();

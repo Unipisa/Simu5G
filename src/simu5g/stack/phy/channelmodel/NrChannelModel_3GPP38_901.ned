@@ -12,7 +12,7 @@
 package simu5g.stack.phy.channelmodel;
 
 
-// NRChannelModel_3GPP38_901
+// NrChannelModel_3GPP38_901
 //
 // This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
@@ -20,10 +20,10 @@ package simu5g.stack.phy.channelmodel;
 //
 // TODO: Implement Urban Macro only
 //
-simple NRChannelModel_3GPP38_901 extends NRChannelModel
+simple NrChannelModel_3GPP38_901 extends NrChannelModel
 {
     parameters:
-        @class("NRChannelModel_3GPP38_901");
+        @class("NrChannelModel_3GPP38_901");
 
         bool useBuildingPenetrationLossHighLossModel = default(false);
 }

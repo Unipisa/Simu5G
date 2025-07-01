@@ -16,9 +16,9 @@ package simu5g.corenetwork.statsCollector;
 // be accessed by the ~RNIService module of a ~MECHost. Currently, it exposes
 // the same functionalities as the ~UeStatsCollector.
 //
-module NRueStatsCollector extends UeStatsCollector
+module NrUeStatsCollector extends UeStatsCollector
 {
     parameters:
-        collectorType = default("NRueStatsCollector");
+        collectorType = default("NrUeStatsCollector");
         packetFlowManagerModule = default("^.cellularNic.nrPacketFlowManager");
 }

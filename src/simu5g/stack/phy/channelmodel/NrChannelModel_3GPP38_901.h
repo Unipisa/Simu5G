@@ -12,17 +12,17 @@
 #ifndef NRCHANNELMODEL_3GPP38_901_H_
 #define NRCHANNELMODEL_3GPP38_901_H_
 
-#include "simu5g/stack/phy/channelmodel/NRChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/NrChannelModel.h"
 
 namespace simu5g {
 
-// NRChannelModel_3GPP38_901
+// NrChannelModel_3GPP38_901
 //
 // This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
 //     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
-class NRChannelModel_3GPP38_901 : public NRChannelModel
+class NrChannelModel_3GPP38_901 : public NrChannelModel
 {
 
   public:

@@ -17,7 +17,7 @@ import inet.node.ethernet.Eth10G;
 import inet.node.inet.Router;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
@@ -65,7 +65,7 @@ network ExtClientServer_bgCells
         bgCell[numBgCells]: BackgroundCell {
             @display("p=670,440;is=vl");
         }
-        ue: NRUe {
+        ue: NrUe {
             @display("p=670,309");
         }
 

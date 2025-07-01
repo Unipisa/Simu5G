@@ -16,7 +16,7 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.mec.MECHost;
@@ -73,7 +73,7 @@ network ExtUeAppExample
             @display("p=420,157;i=device/smallrouter");
         }
 
-        ue: NRUe {
+        ue: NrUe {
             @display("p=51,259");
         }
 

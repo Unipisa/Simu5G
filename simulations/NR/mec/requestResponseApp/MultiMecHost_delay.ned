@@ -15,7 +15,7 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import simu5g.nodes.NR.NRUe;
+import simu5g.nodes.NR.NrUe;
 import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
@@ -72,7 +72,7 @@ network MultiMecHost_delay
         bgCell[numBgCells]: BackgroundCell {
             @display("p=80,576;is=vl");
         }
-        ue[numUe]: NRUe {
+        ue[numUe]: NrUe {
             @display("p=353,481");
         }
 

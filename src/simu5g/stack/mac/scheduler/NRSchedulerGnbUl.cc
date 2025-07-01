@@ -10,7 +10,7 @@
 //
 
 #include "simu5g/stack/mac/scheduler/NRSchedulerGnbUl.h"
-#include "simu5g/stack/mac/NRMacGnb.h"
+#include "simu5g/stack/mac/NrMacGnb.h"
 #include "simu5g/stack/mac/buffer/harq/LteHarqBufferRx.h"
 #include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 

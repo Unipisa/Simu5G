@@ -8,20 +8,20 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include "simu5g/stack/mac/NRMacGnb.h"
+#include "simu5g/stack/mac/NrMacGnb.h"
 #include "simu5g/stack/mac/scheduler/NRSchedulerGnbUl.h"
 
 namespace simu5g {
 
-Define_Module(NRMacGnb);
+Define_Module(NrMacGnb);
 
-NRMacGnb::NRMacGnb() : LteMacEnbD2D()
+NrMacGnb::NrMacGnb() : LteMacEnbD2D()
 {
     nodeType_ = GNODEB;
 }
 
 
-void NRMacGnb::initialize(int stage)
+void NrMacGnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LINK_LAYER) {
         // Create and initialize NR MAC Uplink scheduler

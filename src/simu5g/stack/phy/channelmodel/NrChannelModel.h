@@ -16,7 +16,7 @@
 
 namespace simu5g {
 
-class NRChannelModel : public LteRealisticChannelModel
+class NrChannelModel : public LteRealisticChannelModel
 {
 
   public:

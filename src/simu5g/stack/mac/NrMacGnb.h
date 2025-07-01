@@ -9,17 +9,27 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.phy.channelmodel;
+#ifndef _NRMACGNB_H_
+#define _NRMACGNB_H_
 
+#include "simu5g/stack/mac/LteMacEnbD2D.h"
 
-//
-// This channel model implements path loss, LOS probability, and shadowing according to
-// the following specifications:
-//     3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
-//
-simple NRChannelModel extends LteRealisticChannelModel
+namespace simu5g {
+
+class NrMacGnb : public LteMacEnbD2D
 {
-    parameters:
-        @class("NRChannelModel");
-}
+  public:
+
+    NrMacGnb();
+
+    /**
+     * Reads MAC parameters and performs initialization.
+     */
+    void initialize(int stage) override;
+
+};
+
+} //namespace
+
+#endif
 
