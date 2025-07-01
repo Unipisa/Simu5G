@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec.platform.services.RNIService;
+package simu5g.nodes.mec.platform.services.RniService;
 
 
 import simu5g.nodes.mec.platform.services.base.IMECService;

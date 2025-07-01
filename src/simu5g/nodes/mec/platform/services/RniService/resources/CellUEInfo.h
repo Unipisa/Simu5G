@@ -17,7 +17,7 @@
 #include <map>
 #include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
-#include "simu5g/nodes/mec/platform/services/RNIService/resources/Ecgi.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/Ecgi.h"
 #include "AssociateId.h"
 
 namespace simu5g {

@@ -9,10 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/RNIService/resources/L2Meas.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/L2Meas.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
-#include "simu5g/nodes/mec/platform/services/RNIService/resources/RNICellInfo.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/RNICellInfo.h"
 #include "simu5g/common/binder/Binder.h"
 #include "CellUEInfo.h"
 

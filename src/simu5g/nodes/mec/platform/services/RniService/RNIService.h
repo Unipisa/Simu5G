@@ -13,7 +13,7 @@
 #define _RNISERVICE_H
 
 #include "simu5g/nodes/mec/platform/services/base/MecServiceBase2.h"
-#include "simu5g/nodes/mec/platform/services/RNIService/resources/L2Meas.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/L2Meas.h"
 
 namespace simu5g {
 

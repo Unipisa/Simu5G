@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/RNIService/RNIService.h"
+#include "simu5g/nodes/mec/platform/services/RniService/RNIService.h"
 
 #include <iostream>
 #include <string>

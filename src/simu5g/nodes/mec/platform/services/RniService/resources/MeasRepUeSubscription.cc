@@ -10,29 +10,30 @@
 //
 
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/platform/services/RNIService/resources/L2MeasSubscription.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/MeasRepUeSubscription.h"
 #include <iostream>
 
 namespace simu5g {
 
 using namespace omnetpp;
 
-L2MeasSubscription::L2MeasSubscription() : SubscriptionBase() {}
-L2MeasSubscription::L2MeasSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,
+MeasRepUeSubscription::MeasRepUeSubscription() : SubscriptionBase() {}
+MeasRepUeSubscription::MeasRepUeSubscription(unsigned int subId, inet::TcpSocket *socket, const std::string& baseResLocation,
         std::set<cModule *, simu5g::utils::cModule_LessId>& eNodeBs) :
     SubscriptionBase(subId, socket, baseResLocation, eNodeBs) {}
 
-bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
+bool MeasRepUeSubscription::fromJson(const nlohmann::ordered_json& body)
 {
-    if (body.contains("L2MeasurementSubscription")) { // mandatory attribute
-        subscriptionType_ = "L2MeasurementSubscription";
+    if (body.contains("MeasRepUeSubscription")) { // mandatory attribute
+
+        subscriptionType_ = "MeasRepUeSubscription";
     }
     else {
-        Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 attribute
+        Http::send400Response(socket_); // callbackReference is mandatory and takes exactly 1 att
         return false;
     }
 
-    nlohmann::ordered_json jsonBody = body["L2MeasurementSubscription"];
+    nlohmann::ordered_json jsonBody = body["MeasRepUeSubscription"];
 
     // add basic information
     bool result = SubscriptionBase::fromJson(jsonBody);
@@ -42,7 +43,7 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
 
         if (!jsonBody.contains("filterCriteria") || jsonBody["filterCriteria"].is_array()) {
             std::cout << "1" << std::endl;
-            Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 attribute
+            Http::send400Response(socket_); // filterCriteria is mandatory and takes exactly 1 att
             return false;
         }
 
@@ -53,24 +54,24 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
             if (filterCriteria["appInstanceId"].is_array()) {
                 std::cout << "2" << std::endl;
 
-                Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 attribute
+                Http::send400Response(socket_); // appInstanceId, if present, takes exactly 1 att
                 return false;
             }
             filterCriteria_.appInstanceId = filterCriteria["appInstanceId"];
         }
 
-        //check users filter
+        //check ues filter
         if (filterCriteria.contains("associateId")) {
             if (filterCriteria["associateId"].is_array()) {
                 std::cout << "3" << std::endl;
 
-                Http::send400Response(socket_); // only one ip
+                Http::send400Response(socket_); // only one id
                 return false;
             }
             else {
                 if (filterCriteria["associateId"]["type"] == "UE_IPv4_ADDRESS") {
-                    filterCriteria_.associteId_.setType(filterCriteria["associateId"]["type"]);
-                    filterCriteria_.associteId_.setValue(filterCriteria["associateId"]["value"]);
+                    filterCriteria_.associateId_.setType(filterCriteria["associateId"]["type"]);
+                    filterCriteria_.associateId_.setValue(filterCriteria["associateId"]["value"]);
                 }
             }
         }
@@ -105,7 +106,8 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
 
         //check trigger filter
         if (filterCriteria.contains("trigger")) {
-            //check if it is event trigger and notify, based on the state of the users and cells
+            std::string trigger = filterCriteria["trigger"];
+            //check if it is event trigger and notify, based on the state of the ues and cells
         }
 
         nlohmann::ordered_json response = body;
@@ -120,15 +122,15 @@ bool L2MeasSubscription::fromJson(const nlohmann::ordered_json& body)
     return false;
 }
 
-void L2MeasSubscription::sendSubscriptionResponse() {
+void MeasRepUeSubscription::sendSubscriptionResponse() {
     nlohmann::ordered_json val;
     val[subscriptionType_]["callbackReference"] = callbackReference_;
     val[subscriptionType_]["_links"]["self"] = links_;
-    val[subscriptionType_]["filterCriteria"] = filterCriteria_.associteId_.toJson();
+    val[subscriptionType_]["filterCriteria"] = filterCriteria_.associateId_.toJson();
     val[subscriptionType_]["filterCriteria"] = filterCriteria_.ecgi.toJson();
 }
 
-void L2MeasSubscription::sendNotification(EventNotification *event) {}
+void MeasRepUeSubscription::sendNotification(EventNotification *event) {}
 
 } //namespace
 
