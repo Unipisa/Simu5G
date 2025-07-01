@@ -18,14 +18,14 @@ namespace simu5g {
 
 //class MecOrchestrator;
 
-class MecHostSelectionBased : public SelectionPolicyBase
+class MecHostBasedSelectionPolicy : public SelectionPolicyBase
 {
   protected:
     int mecHostIndex_;
     cModule *findBestMecHost(const ApplicationDescriptor&) override;
 
   public:
-    MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index);
+    MecHostBasedSelectionPolicy(MecOrchestrator *mecOrchestrator, int index);
 };
 
 } //namespace

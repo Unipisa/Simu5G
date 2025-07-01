@@ -74,9 +74,9 @@ class MecOrchestrator : public cSimpleModule
 {
     // Selection Policies modules access grants
     friend class SelectionPolicyBase;
-    friend class MecServiceSelectionBased;
-    friend class AvailableResourcesSelectionBased;
-    friend class MecHostSelectionBased;
+    friend class MecServiceBasedSelectionPolicy;
+    friend class AvailableResourcesBasedSelectionPolicy;
+    friend class MecHostBasedSelectionPolicy;
 
     SelectionPolicyBase *mecHostSelectionPolicy_ = nullptr;
 

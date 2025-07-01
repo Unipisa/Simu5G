@@ -9,28 +9,28 @@
 // and cannot be removed from it.
 //
 
-#include "MecHostSelectionBased.h"
+#include "MecHostBasedSelectionPolicy.h"
 #include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 #include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 
-MecHostSelectionBased::MecHostSelectionBased(MecOrchestrator *mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator), mecHostIndex_(index)
+MecHostBasedSelectionPolicy::MecHostBasedSelectionPolicy(MecOrchestrator *mecOrchestrator, int index):SelectionPolicyBase(mecOrchestrator), mecHostIndex_(index)
 {
 }
 
-cModule *MecHostSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)
+cModule *MecHostBasedSelectionPolicy::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
-    EV << "MecHostSelectionBased::findBestMecHost - finding best MecHost..." << endl;
+    EV << "MecHostBasedSelectionPolicy::findBestMecHost - finding best MecHost..." << endl;
     cModule *bestHost = nullptr;
 
     int size = mecOrchestrator_->mecHosts.size();
     if (size <= mecHostIndex_) {
-        EV << "MecHostSelectionBased::findBestMecHost - No Mec Host with index [" << mecHostIndex_ << "] found" << endl;
+        EV << "MecHostBasedSelectionPolicy::findBestMecHost - No Mec Host with index [" << mecHostIndex_ << "] found" << endl;
     }
     else {
         bestHost = mecOrchestrator_->mecHosts.at(mecHostIndex_);
-        EV << "MecHostSelectionBased::findBestMecHost - MEC host [" << bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
+        EV << "MecHostBasedSelectionPolicy::findBestMecHost - MEC host [" << bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
     }
     return bestHost;
 }

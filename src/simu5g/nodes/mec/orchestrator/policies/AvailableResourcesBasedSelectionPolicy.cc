@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/orchestrator/policies/AvailableResourcesSelectionBased.h"
+#include "simu5g/nodes/mec/orchestrator/policies/AvailableResourcesBasedSelectionPolicy.h"
 #include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 #include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 
-cModule *AvailableResourcesSelectionBased::findBestMecHost(const ApplicationDescriptor& appDesc)
+cModule *AvailableResourcesBasedSelectionPolicy::findBestMecHost(const ApplicationDescriptor& appDesc)
 {
-    EV << "AvailableResourcesSelectionBased::findBestMecHost - finding best MecHost..." << endl;
+    EV << "AvailableResourcesBasedSelectionPolicy::findBestMecHost - finding best MecHost..." << endl;
     cModule *bestHost = nullptr;
     double maxCpuSpeed = -1;
 
@@ -26,21 +26,21 @@ cModule *AvailableResourcesSelectionBased::findBestMecHost(const ApplicationDesc
         ResourceDescriptor resources = appDesc.getVirtualResources();
         bool res = vim->isAllocable(resources.ram, resources.disk, resources.cpu);
         if (!res) {
-            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] does not have enough resources. Searching again..." << endl;
+            EV << "AvailableResourcesBasedSelectionPolicy::findBestMecHost - MEC host [" << mecHost->getName() << "] does not have enough resources. Searching again..." << endl;
             continue;
         }
         if (vim->getAvailableResources().cpu > maxCpuSpeed) {
             // Temporarily select this mec host as the best
-            EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << mecHost->getName() << "] temporarily chosen as best MEC host. Available resources: " << endl;
+            EV << "AvailableResourcesBasedSelectionPolicy::findBestMecHost - MEC host [" << mecHost->getName() << "] temporarily chosen as best MEC host. Available resources: " << endl;
             vim->printResources();
             bestHost = mecHost;
             maxCpuSpeed = vim->getAvailableResources().cpu;
         }
     }
     if (bestHost != nullptr)
-        EV << "AvailableResourcesSelectionBased::findBestMecHost - MEC host [" << bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
+        EV << "AvailableResourcesBasedSelectionPolicy::findBestMecHost - MEC host [" << bestHost->getName() << "] has been chosen as the best Mec Host" << endl;
     else
-        EV << "AvailableResourcesSelectionBased::findBestMecHost - No Mec Host found" << endl;
+        EV << "AvailableResourcesBasedSelectionPolicy::findBestMecHost - No Mec Host found" << endl;
     return bestHost;
 }
 

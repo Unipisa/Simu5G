@@ -24,9 +24,9 @@
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
 
-#include "simu5g/nodes/mec/orchestrator/policies/MecServiceSelectionBased.h"
-#include "simu5g/nodes/mec/orchestrator/policies/AvailableResourcesSelectionBased.h"
-#include "simu5g/nodes/mec/orchestrator/policies/MecHostSelectionBased.h"
+#include "simu5g/nodes/mec/orchestrator/policies/MecServiceBasedSelectionPolicy.h"
+#include "simu5g/nodes/mec/orchestrator/policies/AvailableResourcesBasedSelectionPolicy.h"
+#include "simu5g/nodes/mec/orchestrator/policies/MecHostBasedSelectionPolicy.h"
 
 // Emulation debug
 #include <iostream>
@@ -48,11 +48,11 @@ void MecOrchestrator::initialize(int stage)
 
     const char *selectionPolicyPar = par("selectionPolicy");
     if (!strcmp(selectionPolicyPar, "MecServiceBased"))
-        mecHostSelectionPolicy_ = new MecServiceSelectionBased(this);
+        mecHostSelectionPolicy_ = new MecServiceBasedSelectionPolicy(this);
     else if (!strcmp(selectionPolicyPar, "AvailableResourcesBased"))
-        mecHostSelectionPolicy_ = new AvailableResourcesSelectionBased(this);
+        mecHostSelectionPolicy_ = new AvailableResourcesBasedSelectionPolicy(this);
     else if (!strcmp(selectionPolicyPar, "MecHostBased"))
-        mecHostSelectionPolicy_ = new MecHostSelectionBased(this, par("mecHostIndex"));
+        mecHostSelectionPolicy_ = new MecHostBasedSelectionPolicy(this, par("mecHostIndex"));
     else
         throw cRuntimeError("MecOrchestrator::initialize - Selection policy '%s' not present!", selectionPolicyPar);
 
