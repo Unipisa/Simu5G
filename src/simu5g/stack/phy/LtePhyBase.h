@@ -25,7 +25,7 @@
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/phy/packet/LteAirFrame.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
-#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
 #include "simu5g/stack/phy/feedback/LteFeedbackComputationRealistic.h"
 
 namespace simu5g {

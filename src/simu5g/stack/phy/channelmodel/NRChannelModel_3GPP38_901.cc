@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/phy/ChannelModel/NRChannelModel_3GPP38_901.h"
+#include "simu5g/stack/phy/channelmodel/NRChannelModel_3GPP38_901.h"
 
 namespace simu5g {
 

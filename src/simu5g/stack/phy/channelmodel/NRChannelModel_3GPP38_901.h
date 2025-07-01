@@ -12,7 +12,7 @@
 #ifndef NRCHANNELMODEL_3GPP38_901_H_
 #define NRCHANNELMODEL_3GPP38_901_H_
 
-#include "simu5g/stack/phy/ChannelModel/NRChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/NRChannelModel.h"
 
 namespace simu5g {
 

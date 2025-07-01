@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.phy.ChannelModel;
+package simu5g.stack.phy.channelmodel;
 
 //
 // This module implements the functions for a model representing the 2D channel in the LTE

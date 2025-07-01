@@ -16,7 +16,7 @@
 #include "simu5g/stack/backgroundTrafficGenerator/ActiveUeNotification_m.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/LtePhyEnb.h"
-#include "simu5g/stack/phy/ChannelModel/LteChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/LteChannelModel.h"
 
 namespace simu5g {
 

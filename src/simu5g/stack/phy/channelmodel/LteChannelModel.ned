@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.phy.ChannelModel;
+package simu5g.stack.phy.channelmodel;
 
 //
 // This is the base module for developing more realistic models of the radio channel.

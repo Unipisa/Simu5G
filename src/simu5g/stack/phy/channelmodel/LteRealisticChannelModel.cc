@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/phy/ChannelModel/LteRealisticChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/LteRealisticChannelModel.h"
 
 #include <fstream>
 #include "simu5g/common/cellInfo/CellInfo.h"

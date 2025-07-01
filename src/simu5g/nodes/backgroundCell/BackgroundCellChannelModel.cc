@@ -13,7 +13,7 @@
 #include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
-#include "simu5g/stack/phy/ChannelModel/LteRealisticChannelModel.h"
+#include "simu5g/stack/phy/channelmodel/LteRealisticChannelModel.h"
 
 namespace simu5g {
 

@@ -14,7 +14,7 @@ package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowManager.IPacketFlowManager;
-import simu5g.stack.phy.ChannelModel.ILteChannelModel;
+import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;

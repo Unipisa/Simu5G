@@ -9,17 +9,21 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.phy.ChannelModel;
+package simu5g.stack.phy.channelmodel;
 
 
+// NRChannelModel_3GPP38_901
 //
 // This channel model implements path loss, LOS probability, and shadowing according to
 // the following specifications:
-//     3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
+//     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
 //
-simple NRChannelModel extends LteRealisticChannelModel
+// TODO: Implement Urban Macro only
+//
+simple NRChannelModel_3GPP38_901 extends NRChannelModel
 {
     parameters:
-        @class("NRChannelModel");
-}
+        @class("NRChannelModel_3GPP38_901");
 
+        bool useBuildingPenetrationLossHighLossModel = default(false);
+}
