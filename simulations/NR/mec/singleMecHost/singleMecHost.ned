@@ -25,7 +25,7 @@ import simu5g.nodes.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
-network singleMecHost
+network SingleMecHost
 {
     parameters:
         @display("i=block/network2;bgb=811,507;bgi=background/pisa");
