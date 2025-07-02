@@ -37,7 +37,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         string interfaceTableModule;
         string routingTableModule;
 
-        bool hasRNISupport = default(false);
+        bool hasRniSupport = default(false);
 
         string nodeType;
         double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
@@ -81,7 +81,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=362,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.mac";
-            *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.packetFlowManager" : "";
+            *.packetFlowManagerModule = parent.hasRniSupport ? "^.^.packetFlowManager" : "";
             um.nodeType = parent.nodeType;
         }
         // MAC Layer
@@ -100,7 +100,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
          		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        packetFlowManager: <default("")> like IPacketFlowManager if hasRNISupport {
+        packetFlowManager: <default("")> like IPacketFlowManager if hasRniSupport {
             @display("p=70,300");
         }
 

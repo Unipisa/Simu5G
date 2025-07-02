@@ -46,7 +46,7 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
-        nrMac.packetFlowManagerModule = hasRNISupport ? "^.nrPacketFlowManager" : "";
+        nrMac.packetFlowManagerModule = hasRniSupport ? "^.nrPacketFlowManager" : "";
         phy.otherPhyModule = "^.nrPhy";
 
     submodules:
@@ -55,7 +55,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,226");
             d2dCapable = parent.d2dCapable;
             *.macModule = "^.^.nrMac";
-            *.packetFlowManagerModule = parent.hasRNISupport ? "^.^.nrPacketFlowManager" : "";
+            *.packetFlowManagerModule = parent.hasRniSupport ? "^.^.nrPacketFlowManager" : "";
             um.nodeType = parent.nodeType;
         }
         // MAC Layer
@@ -79,7 +79,7 @@ module NrNicUe extends LteNicUeD2D
  		//#
         //# Modules used to take trace of PDCP pkt flow
         //#
-        nrPacketFlowManager: <default("NrPacketFlowManagerUe")> like IPacketFlowManager if hasRNISupport {
+        nrPacketFlowManager: <default("NrPacketFlowManagerUe")> like IPacketFlowManager if hasRniSupport {
             @display("p=200,300");
         }
 

@@ -89,7 +89,7 @@ module eNodeB
         string mecHost = default("");		// symbolic name of the connected MEHost in the Network
 
         //# @author Alessandro Noferi
-        bool hasRNISupport = default(false);
+        bool hasRniSupport = default(false);
 
         //# use it in case of emulation
         string extMeAppsAddress = default(""); // Address of the external MeApp IP/mask
@@ -119,7 +119,7 @@ module eNodeB
                 @display("p=110,244;is=s");
         }
 
-        collector: <default("BaseStationStatsCollector")> like IStatsCollector if hasRNISupport {
+        collector: <default("BaseStationStatsCollector")> like IStatsCollector if hasRniSupport {
             @display("p=50,275;is=s");
         }
 

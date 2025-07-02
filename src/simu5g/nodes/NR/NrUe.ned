@@ -28,15 +28,15 @@ module NrUe extends Ue
         int nrMasterId @mutable = default(0);
         int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter
         int nrMacCellId @mutable = default(0); // TODO: this is not a real parameter
-        cellularNic.nrMac.collectorModule = hasRNISupport ? "^.^.NRueCollector" : "";
-        cellularNic.nrPhy.hasCollector = hasRNISupport;
+        cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.NRueCollector" : "";
+        cellularNic.nrPhy.hasCollector = hasRniSupport;
 
     gates:
         input nrRadioIn @directIn;     // connection to master
 
     submodules:
         //# UeStatsCollector - for MEC
-        NRueCollector: NrUeStatsCollector if hasRNISupport {
+        NRueCollector: NrUeStatsCollector if hasRniSupport {
             @display("p=127,506;is=s");
         }
 

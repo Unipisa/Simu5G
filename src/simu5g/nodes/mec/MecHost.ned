@@ -42,12 +42,12 @@ module MecHost
         string gateway = default("upf");
 
         //#	ME Host Resources
-        int maxMECApps = default(0);
+        int maxMecApps = default(0);
         double maxRam @unit("B") = default(32GB);
         double maxDisk @unit("B") = default(100TB);
         double maxCpuSpeed = default(300000); 	 // CPU's clock speed in Million Instruction per Seconds (MIPS)
 
-        int numBGMecApp = default(0);
+        int numBgMecApps = default(0);
         int numIndependentMecApp = default(0);
 
         //# List of Base Stations associated to the MEC host
@@ -92,7 +92,7 @@ module MecHost
                 gateway = parent.gateway;
         }
 
-        bgApp[numBGMecApp]: BackgroundApp {
+        bgApp[numBgMecApps]: BackgroundApp {
             @display("p=865,326,row,140");
         }
 

@@ -84,9 +84,9 @@ module Ue
         //# Num of PcapRecorders
         int numPcapRecorders = default(0); // no of PcapRecorders
 
-        bool hasRNISupport = default(false);
-        cellularNic.mac.collectorModule = hasRNISupport ? "^.^.ueCollector" : "";
-        cellularNic.phy.hasCollector = hasRNISupport;
+        bool hasRniSupport = default(false);
+        cellularNic.mac.collectorModule = hasRniSupport ? "^.^.ueCollector" : "";
+        cellularNic.phy.hasCollector = hasRniSupport;
 
     gates:
         input radioIn @directIn;     // connection to master
@@ -172,7 +172,7 @@ module Ue
         }
 
         //# UeStatsCollector - for MEC
-        ueCollector: UeStatsCollector if hasRNISupport {
+        ueCollector: UeStatsCollector if hasRniSupport {
             @display("p=126,588;is=s");
         }
 

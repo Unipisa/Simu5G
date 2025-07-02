@@ -35,10 +35,10 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     //------------------------------------
     mecHost = getParentModule();
-    if (mecHost->hasPar("maxMECApps"))
-        maxMECApps = mecHost->par("maxMECApps");
+    if (mecHost->hasPar("maxMecApps"))
+        maxMecApps = mecHost->par("maxMecApps");
     else
-        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - \tFATAL! Error when getting mecHost.maxMECApps parameter!");
+        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - \tFATAL! Error when getting mecHost.maxMecApps parameter!");
 
     maxRam = mecHost->par("maxRam").doubleValue();
     maxDisk = mecHost->par("maxDisk").doubleValue();
@@ -65,7 +65,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     virtualisationInfr = mecHost->getSubmodule("virtualisationInfrastructure");
     if (virtualisationInfr == nullptr)
-        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMECApps parameter!");
+        throw cRuntimeError("VirtualisationInfrastructureManager::initialize - mecHost.maxMecApps parameter!");
 
     // register MEC addresses to the Binder
     inet::L3Address mecHostAddress = inet::L3AddressResolver().resolve(virtualisationInfr->getFullPath().c_str());
@@ -73,8 +73,8 @@ void VirtualisationInfrastructureManager::initialize(int stage)
     binder_->registerMecHostUpfAddress(mecHostAddress, gtpAddress);
     binder_->registerMecHost(mecHostAddress);
 
-    virtualisationInfr->setGateSize("meAppOut", maxMECApps);
-    virtualisationInfr->setGateSize("meAppIn", maxMECApps);
+    virtualisationInfr->setGateSize("meAppOut", maxMecApps);
+    virtualisationInfr->setGateSize("meAppIn", maxMecApps);
 
     mecPlatform = mecHost->getSubmodule("mecPlatform");
 
@@ -83,7 +83,7 @@ void VirtualisationInfrastructureManager::initialize(int stage)
 
     //------------------------------------
     //retrieve the set of free gates
-    for (int i = 0; i < maxMECApps; i++)
+    for (int i = 0; i < maxMecApps; i++)
         freeGates.push_back(i);
     //------------------------------------
     interfaceTable = check_and_cast<inet::InterfaceTable *>(virtualisationInfr->getSubmodule("interfaceTable"));
@@ -121,7 +121,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
     const char *meModuleName = msg->getMEModuleName();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
-    if (currentMEApps < maxMECApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
+    if (currentMEApps < maxMecApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
         //creating ueAppIdToMeAppMapKey map entry
         EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - ueAppIdToMeAppMapKey[" << ueAppID << "]" << endl;
         int key = ueAppID;
@@ -164,7 +164,7 @@ bool VirtualisationInfrastructureManager::instantiateEmulatedMEApp(CreateAppMess
 
         //Sending ACK to the UEApp
         //testing
-        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateEmulatedMEApp - currentMEApps: " << currentMEApps << " / " << maxMecApps << endl;
         return true;
     }
     else {
@@ -186,7 +186,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
     int ueAppID = msg->getUeAppID();
 
     //checking if there are ME App slots available and if ueAppIdToMeAppMapKey map entry does not exist (that means ME App not already instantiated)
-    if (currentMEApps < maxMECApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
+    if (currentMEApps < maxMecApps && mecAppMap.find(ueAppID) == mecAppMap.end()) {
         //getting the first available gate
         int index = freeGates.front();
         freeGates.erase(freeGates.begin());
@@ -316,7 +316,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
 
         //testing
         EV << "VirtualisationInfrastructureManager::instantiateMEApp - " << module->getName() << " instantiated!" << endl;
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp - currentMEApps: " << currentMEApps << " / " << maxMecApps << endl;
 
         instanceInfo->status = true;
         instanceInfo->reference = module;
@@ -338,7 +338,7 @@ bool VirtualisationInfrastructureManager::terminateEmulatedMEApp(DeleteAppMessag
         int key = ueAppID;
         EV << "VirtualisationInfrastructureManager::terminateMEApp - " << mecAppMap[key].meAppModule->getName() << " terminated!" << endl;
         currentMEApps--;
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMecApps << endl;
 
         //deallocate resources
         deallocateResources(mecAppMap[key].resources.ram, mecAppMap[key].resources.disk, mecAppMap[key].resources.cpu);
@@ -367,7 +367,7 @@ bool VirtualisationInfrastructureManager::terminateMEApp(DeleteAppMessage *msg)
         mecAppMap[key].meAppModule->callFinish();
         mecAppMap[key].meAppModule->deleteModule();
         currentMEApps--;
-        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMECApps << endl;
+        EV << "VirtualisationInfrastructureManager::terminateMEApp - currentMEApps: " << currentMEApps << " / " << maxMecApps << endl;
 
         //Sending ACK_STOP_MEAPP to the UEApp
 
@@ -506,7 +506,7 @@ ResourceDescriptor VirtualisationInfrastructureManager::getAvailableResources() 
 
 void VirtualisationInfrastructureManager::reserveResourcesBGApps()
 {
-    int numMecApps = mecHost->par("numBGMecApp");
+    int numMecApps = mecHost->par("numBgMecApps");
     EV << "VirtualisationInfrastructureManager::reserveResourcesBGApps - reserving resources for " << numMecApps << " BG apps..." << endl;
 
     for (int i = 0; i < numMecApps; ++i) {

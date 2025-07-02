@@ -89,7 +89,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 
     //------------------------------------
     //parameters to control the number of MEC APPs instantiated and to set gate sizes
-    int maxMECApps;
+    int maxMecApps;
     int currentMEApps = 0;
 
     int mecAppPortCounter; // counter to assign socket ports to Mec Apps
@@ -175,7 +175,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
      */
     bool isAllocable(double ram, double disk, double cpu)
     {
-        return currentMEApps < maxMECApps &&
+        return currentMEApps < maxMecApps &&
                ram < maxRam - allocatedRam &&
                disk < maxDisk - allocatedDisk &&
                cpu < maxCPU - allocatedCPU;
