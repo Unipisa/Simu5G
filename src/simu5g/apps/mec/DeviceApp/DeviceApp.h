@@ -55,8 +55,8 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     inet::TcpSocket ualcmpSocket_;
     inet::UdpSocket ueAppSocket_;
 
-    inet::L3Address UALCMPAddress;
-    int UALCMPPort;
+    inet::L3Address ualcmpAddress;
+    int ualcmpPort;
 
     HttpBaseMessage *UalcmpMessage = nullptr;
     std::string ualcmpMessageBuffer;

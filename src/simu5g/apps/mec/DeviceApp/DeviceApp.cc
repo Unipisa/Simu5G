@@ -309,10 +309,10 @@ void DeviceApp::initialize(int stage) {
         ualcmpSocket_.setTos(tos);
     }
 
-    const char *lcmAddress = par("UALCMPAddress").stringValue();
-    UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
-    EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
-    UALCMPPort = par("UALCMPPort");
+    const char *lcmAddress = par("ualcmpAddress").stringValue();
+    ualcmpAddress = L3AddressResolver().resolve(lcmAddress);
+    EV << "DeviceApp::initialize - ualcmpAddress: " << ualcmpAddress.str() << endl;
+    ualcmpPort = par("ualcmpPort");
 
     processedUalcmpMessage = new cMessage("processedUalcmpMessage");
 
@@ -349,13 +349,13 @@ void DeviceApp::connectToUALCMP()
     // we need a new connId if this is not the first connection
     ualcmpSocket_.renewSocket();
 
-    if (UALCMPAddress.isUnspecified()) {
-        EV_ERROR << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << ": cannot resolve destination address\n";
+    if (ualcmpAddress.isUnspecified()) {
+        EV_ERROR << "Connecting to " << ualcmpAddress << " port=" << ualcmpPort << ": cannot resolve destination address\n";
         throw cRuntimeError("LCM proxy address is unspecified!");
     }
     else {
-        EV << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << endl;
-        ualcmpSocket_.connect(UALCMPAddress, UALCMPPort);
+        EV << "Connecting to " << ualcmpAddress << " port=" << ualcmpPort << endl;
+        ualcmpSocket_.connect(ualcmpAddress, ualcmpPort);
     }
 }
 

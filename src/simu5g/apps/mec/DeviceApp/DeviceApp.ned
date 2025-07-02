@@ -27,8 +27,8 @@ import inet.applications.contract.IApp;
 //
 simple DeviceApp like IApp
 {
-    string UALCMPAddress = default(""); // UALCMP connect address to connect to, may be left empty ("")
-    int UALCMPPort = default(-1); // UALCMP port number to connect to
+    string ualcmpAddress = default(""); // UALCMP connect address to connect to, may be left empty ("")
+    int ualcmpPort = default(-1); // UALCMP port number to connect to
     int ualcmpLocalPort = default(8740); // UALCMP local port number
 
     string appProvider = default("");
