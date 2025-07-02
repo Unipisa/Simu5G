@@ -33,7 +33,7 @@ module NrNicUe extends LteNicUeD2D
 
         packetFlowManager.typename = default("PacketFlowManagerUe");
 
-        int numNRCarriers = default(1);
+        int numNrCarriers = default(1);
 
         pdcpRrc.typename = default("NrPdcpRrcUe");
         phy.typename = default("NrPhyUe");	        // TODO fix this
@@ -67,7 +67,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,389");
         }
         // NR Channel Model
-        nrChannelModel[numNRCarriers]: <nrChannelModelType> like ILteChannelModel {
+        nrChannelModel[numNrCarriers]: <nrChannelModelType> like ILteChannelModel {
             @display("p=232,389");
         }
 

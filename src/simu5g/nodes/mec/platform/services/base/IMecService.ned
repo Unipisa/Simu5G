@@ -47,7 +47,7 @@ moduleinterface IMecService
 
         bool loadGenerator;
         double betaa;
-        int numBGApps;
+        int numBgApps;
 
 
         string localAddress; // local address; may be left empty ("")

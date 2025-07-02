@@ -88,7 +88,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     double lambda_; // arrival rate of a BG request from a BG app
     double beta_; // arrival rate of a BG request from a BG app
 
-    int numBGApps_; // number of BG apps
+    int numBgApps_; // number of BG apps
     double rho_ = 0;
     simtime_t lastFGRequestArrived_ = 0;
 

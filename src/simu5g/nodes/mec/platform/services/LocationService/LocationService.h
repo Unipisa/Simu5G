@@ -38,7 +38,7 @@ class LocationService : public MecServiceBase2
 
     LocationResource LocationResource_;
 
-    double LocationSubscriptionPeriod_;
+    double locationSubscriptionPeriod_;
     cMessage *LocationSubscriptionEvent_ = nullptr;
 
     /*

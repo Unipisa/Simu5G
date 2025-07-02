@@ -321,7 +321,7 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
         }
         else {
             simtime_t deltaTime = simTime() - lastFGRequestArrived_;
-            numOfBGReqs = poisson(deltaTime.dbl() * numBGApps_ * lambda_, 0); // BG requests arrived in the period of time deltaTime
+            numOfBGReqs = poisson(deltaTime.dbl() * numBgApps_ * lambda_, 0); // BG requests arrived in the period of time deltaTime
             // debug
             EV << "MecServiceBase::newRequest - number of BG requests between this and the last FG request: " << numOfBGReqs << endl;
         }

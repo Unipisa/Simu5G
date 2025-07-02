@@ -26,14 +26,14 @@ void MecServiceBase2::initialize(int stage)
         if (loadGenerator_) {
             beta_ = par("betaa").doubleValue();
             lambda_ = 1 / beta_;
-            numBGApps_ = par("numBGApps").intValue();
+            numBgApps_ = par("numBgApps").intValue();
             /*
              * check if the system is stable.
              * For M/M/1 --> rho (lambda_/mu) < 1
              * If arrivals come from multiple independent exponential sources:
-             * (numBGApps * lambda_) / mu < 1
+             * (numBgApps * lambda_) / mu < 1
              */
-            double lambdaT = lambda_ * (numBGApps_ + 1);
+            double lambdaT = lambda_ * (numBgApps_ + 1);
             rho_ = lambdaT * requestServiceTime_;
             if (rho_ >= 1)
                 throw cRuntimeError("M/M/1 system is unstable: rho is %f", rho_);

@@ -49,7 +49,7 @@ void LocationService::initialize(int stage)
         LocationResource_.setBaseUri(host_ + baseUriQueries_);
         EV << "Host: " << host_ + baseUriQueries_ << endl;
         LocationSubscriptionEvent_ = new cMessage("LocationSubscriptionEvent");
-        LocationSubscriptionPeriod_ = par("LocationSubscriptionPeriod");
+        locationSubscriptionPeriod_ = par("locationSubscriptionPeriod");
 
         subscriptionTimer_ = new AperiodicSubscriptionTimer("subscriptionTimer");
         subscriptionTimer_->setPeriod(0.1);
