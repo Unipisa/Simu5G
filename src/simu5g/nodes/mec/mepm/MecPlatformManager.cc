@@ -35,7 +35,7 @@ void MecPlatformManager::initialize(int stage)
     }
 }
 
-// instancing the requested MECApp (called by handleResource)
+// instancing the requested MecApp (called by handleResource)
 MecAppInstanceInfo *MecPlatformManager::instantiateMEApp(CreateAppMessage *msg)
 {
     MecAppInstanceInfo *res = vim->instantiateMEApp(msg);
@@ -57,7 +57,7 @@ bool MecPlatformManager::terminateEmulatedMEApp(DeleteAppMessage *msg)
     return res;
 }
 
-// terminating the corresponding MECApp (called by handleResource)
+// terminating the corresponding MecApp (called by handleResource)
 bool MecPlatformManager::terminateMEApp(DeleteAppMessage *msg)
 {
     bool res = vim->terminateMEApp(msg);

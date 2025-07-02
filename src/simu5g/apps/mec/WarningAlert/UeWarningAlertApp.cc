@@ -101,7 +101,7 @@ void UeWarningAlertApp::handleMessage(cMessage *msg)
                 sendStopMEWarningAlertApp();
                 break;
             case KIND_SELF_MEC_APP_START:
-                sendMessageToMECApp();
+                sendMessageToMecApp();
                 scheduleAt(simTime() + period_, selfMecAppStart_);
                 break;
             default:
@@ -235,7 +235,7 @@ void UeWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage *msg)
             scheduleAt(simTime() + stopTime, selfStop_);
             EV << "UeWarningAlertApp::handleAckStartMEWarningAlertApp - Starting sendStopMEWarningAlertApp() in " << stopTime << " seconds " << endl;
         }
-        sendMessageToMECApp();
+        sendMessageToMecApp();
         scheduleAt(simTime() + period_, selfMecAppStart_);
     }
     else {
@@ -243,7 +243,7 @@ void UeWarningAlertApp::handleAckStartMEWarningAlertApp(cMessage *msg)
     }
 }
 
-void UeWarningAlertApp::sendMessageToMECApp() {
+void UeWarningAlertApp::sendMessageToMecApp() {
 
     // send start monitoring message to the MEC application
 
@@ -268,7 +268,7 @@ void UeWarningAlertApp::sendMessageToMECApp() {
     }
 
     socket.sendTo(pkt, mecAppAddress_, mecAppPort_);
-    EV << "UeWarningAlertApp::sendMessageToMECApp() - Start message sent to the MEC app" << endl;
+    EV << "UeWarningAlertApp::sendMessageToMecApp() - Start message sent to the MEC app" << endl;
 }
 
 void UeWarningAlertApp::handleInfoMEWarningAlertApp(cMessage *msg)

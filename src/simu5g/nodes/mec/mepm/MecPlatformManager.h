@@ -48,7 +48,7 @@ class MecPlatformManager : public cSimpleModule
     void handleMessage(cMessage *msg) override {}
     void finish() override {}
 
-    /* instantiating the requested MECApp
+    /* instantiating the requested MecApp
      *
      * The argument is a message even if it is called as a direct method call from the
      * MEC orchestrator. It could be useful in the future if the MECPM were enriched

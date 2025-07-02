@@ -36,7 +36,7 @@ using namespace omnetpp;
  * simulates processing time to execute block of codes.
  * Use this app when HTTP messages arrive in a synchronous way and so there is not the need of
  * queuing them during other processing.
- * A MECAppBase that stores HTTP messages in a queue is planned to be implemented.
+ * A MecAppBase that stores HTTP messages in a queue is planned to be implemented.
  *
  * To develop a real MEC app, it is only necessary to implement the abstract methods related to
  * the logic behavior.

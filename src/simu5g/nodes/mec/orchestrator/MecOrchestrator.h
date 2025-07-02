@@ -123,12 +123,12 @@ class MecOrchestrator : public cSimpleModule
     // handling CREATE_CONTEXT_APP type
     // it selects the most suitable MEC host and calls the method of its MEC platform manager to require
     // the MEC app instantiation
-    void startMECApp(UALCMPMessage *msg);
+    void startMecApp(UALCMPMessage *msg);
 
     // handling DELETE_CONTEXT_APP type
     // it calls the method of the MEC platform manager of the MEC host where the MEC app has been deployed
     // to delete the MEC app
-    void stopMECApp(UALCMPMessage *msg);
+    void stopMecApp(UALCMPMessage *msg);
 
     // sending ACK_CREATE_CONTEXT_APP or ACK_DELETE_CONTEXT_APP
     void sendCreateAppContextAck(bool result, unsigned int requestSno, int contextId = -1);

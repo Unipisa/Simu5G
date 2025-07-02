@@ -142,8 +142,8 @@ class RtVideoStreamingSender : public cSimpleModule
     void finish() override;
 
     // communication with device app
-    void sendStartMECApp();
-    void sendStopMECApp();
+    void sendStartMecApp();
+    void sendStopMecApp();
     // communication with MEC app
     void sendMessage();
     void sendStartMessage();
@@ -164,9 +164,9 @@ class RtVideoStreamingSender : public cSimpleModule
     void handleStopSessionAck(cMessage *msg);
     void handleStopSessionNack(cMessage *msg);
 
-    void handleAckStartMECApp(cMessage *msg);
-    void handleInfoMECApp(cMessage *msg);
-    void handleAckStopMECApp(cMessage *msg);
+    void handleAckStartMecApp(cMessage *msg);
+    void handleInfoMecApp(cMessage *msg);
+    void handleAckStopMecApp(cMessage *msg);
 
     void openFileStream();
     void initializeVideoStream();

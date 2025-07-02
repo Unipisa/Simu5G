@@ -91,7 +91,7 @@ class UeWarningAlertApp : public cSimpleModule
     void finish() override;
 
     void sendStartMEWarningAlertApp();
-    void sendMessageToMECApp();
+    void sendMessageToMecApp();
     void sendStopMEWarningAlertApp();
 
     void handleAckStartMEWarningAlertApp(cMessage *msg);

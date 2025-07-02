@@ -105,7 +105,7 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     std::vector<int> freeGates;
     // ------------------------------------
 
-    // storing the UEApp and MECApp informations
+    // storing the UEApp and MecApp informations
     // key = MEC App gate index - value MecAppMapEntry
     std::map<int, MecAppEntry> mecAppMap;
 

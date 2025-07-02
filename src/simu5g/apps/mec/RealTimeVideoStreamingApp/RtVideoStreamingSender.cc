@@ -111,7 +111,7 @@ void RtVideoStreamingSender::initialize(int stage)
     // starting RtVideoStreamingSender
     simtime_t startTime = par("startTime");
 
-    EV << "RtVideoStreamingSender::initialize - starting sendStartMECApp() in " << startTime << " seconds " << endl;
+    EV << "RtVideoStreamingSender::initialize - starting sendStartMecApp() in " << startTime << " seconds " << endl;
     scheduleAt(simTime() + startTime, selfMecAppStart_);
 
     // testing
@@ -143,10 +143,10 @@ void RtVideoStreamingSender::handleMessage(cMessage *msg)
                 return;
             }
             case KIND_SELF_MEC_APP_START:
-                sendStartMECApp();
+                sendStartMecApp();
                 break;
             case KIND_SELF_MEC_APP_STOP:
-                sendStopMECApp();
+                sendStopMecApp();
                 break;
             case KIND_SELF_RT_VIDEO_STREAMING_APP_STOP:
                 sendStopMessage();
@@ -180,10 +180,10 @@ void RtVideoStreamingSender::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // device app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP)) {
-                handleAckStartMECApp(msg);
+                handleAckStartMecApp(msg);
             }
             else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP)) {
-                handleAckStopMECApp(msg);
+                handleAckStopMecApp(msg);
             }
             else {
                 throw cRuntimeError("RtVideoStreamingSender::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
@@ -194,7 +194,7 @@ void RtVideoStreamingSender::handleMessage(cMessage *msg)
             auto mePkt = packet->peekAtFront<RealTimeVideoStreamingAppPacket>();
             EV << "RtVideoStreamingSender::handleMessage - message from MEC app of type: " << mePkt->getType() << endl;
             if (mePkt->getType() == RTVIDEOSTREAMING_COMMAND) {
-                handleInfoMECApp(msg);
+                handleInfoMecApp(msg);
             }
             else if (mePkt->getType() == START_RTVIDEOSTREAMING_NACK) {
                 handleStartNack(msg);
@@ -235,7 +235,7 @@ void RtVideoStreamingSender::finish()
 /*
  * -----------------------------------------------Sender Side------------------------------------------
  */
-void RtVideoStreamingSender::sendStartMECApp()
+void RtVideoStreamingSender::sendStartMecApp()
 {
     inet::Packet *packet = new inet::Packet("RTVideoStreamingSenderPacketStart");
     auto start = inet::makeShared<DeviceAppStartPacket>();
@@ -255,9 +255,9 @@ void RtVideoStreamingSender::sendStartMECApp()
     scheduleAt(simTime() + lifeCyclePeriod_, selfMecAppStart_);
 }
 
-void RtVideoStreamingSender::sendStopMECApp()
+void RtVideoStreamingSender::sendStopMecApp()
 {
-    EV << "RtVideoStreamingSender::sendStopMECApp - Sending " << STOP_MECAPP << " type RtVideoStreamingSender\n";
+    EV << "RtVideoStreamingSender::sendStopMecApp - Sending " << STOP_MECAPP << " type RtVideoStreamingSender\n";
 
     inet::Packet *packet = new inet::Packet("DeviceAppStopPacket");
     auto stop = inet::makeShared<DeviceAppStopPacket>();
@@ -345,7 +345,7 @@ void RtVideoStreamingSender::sendMessage() {
 
     // send start monitoring message to the MEC application
 
-    EV_TRACE << "RtVideoStreamingSender::sendMessageToMECApp() " << endl;
+    EV_TRACE << "RtVideoStreamingSender::sendMessageToMecApp() " << endl;
     // read next frame line
     int bits;
     char unit[100];
@@ -549,7 +549,7 @@ void RtVideoStreamingSender::sendMessage() {
 /*
  * ---------------------------------------------Receiver Side------------------------------------------
  */
-void RtVideoStreamingSender::handleAckStartMECApp(cMessage *msg)
+void RtVideoStreamingSender::handleAckStartMecApp(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
@@ -557,7 +557,7 @@ void RtVideoStreamingSender::handleAckStartMECApp(cMessage *msg)
     if (pkt->getResult() == true) {
         mecAppAddress_ = L3AddressResolver().resolve(pkt->getIpAddress());
         mecAppPort_ = pkt->getPort();
-        EV << "RtVideoStreamingSender::handleAckStartMECApp - Received " << pkt->getType() << " type RtVideoStreamingSender. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
+        EV << "RtVideoStreamingSender::handleAckStartMecApp - Received " << pkt->getType() << " type RtVideoStreamingSender. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
         cancelEvent(selfMecAppStart_);
         // send start video streaming request to the MEC App
         sendSessionStartMessage();
@@ -568,24 +568,24 @@ void RtVideoStreamingSender::handleAckStartMECApp(cMessage *msg)
         if (!selfRTVideoStreamingAppStop_->isScheduled()) {
             simtime_t stopTime = par("stopTime");
             scheduleAt(simTime() + stopTime, selfRTVideoStreamingAppStop_);
-            EV << "RtVideoStreamingSender::handleAckStartMECApp - Starting sendStopMECApp() in " << stopTime << " seconds " << endl;
+            EV << "RtVideoStreamingSender::handleAckStartMecApp - Starting sendStopMecApp() in " << stopTime << " seconds " << endl;
         }
     }
     else {
-        EV << "RtVideoStreamingSender::handleAckStartMECApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
+        EV << "RtVideoStreamingSender::handleAckStartMecApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
     }
 }
 
-void RtVideoStreamingSender::handleInfoMECApp(cMessage *msg)
+void RtVideoStreamingSender::handleInfoMecApp(cMessage *msg)
 {
 }
 
-void RtVideoStreamingSender::handleAckStopMECApp(cMessage *msg)
+void RtVideoStreamingSender::handleAckStopMecApp(cMessage *msg)
 {
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
-    EV << "RtVideoStreamingSender::handleAckStopMECApp - Received " << pkt->getType() << " type RtVideoStreamingSender with result: " << pkt->getResult() << endl;
+    EV << "RtVideoStreamingSender::handleAckStopMecApp - Received " << pkt->getType() << " type RtVideoStreamingSender with result: " << pkt->getResult() << endl;
     if (pkt->getResult() == false)
         EV << "Reason: " << pkt->getReason() << endl;
 
@@ -610,7 +610,7 @@ void RtVideoStreamingSender::handleStopAck(cMessage *msg)
 {
     EV << "RtVideoStreamingSender::handleStopAck" << endl;
     // send stop MEC app to device app
-    sendStopMECApp();
+    sendStopMecApp();
     if (selfRTVideoStreamingAppStop_->isScheduled()) {
         cancelEvent(selfRTVideoStreamingAppStop_);
     }
