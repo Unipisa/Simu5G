@@ -43,7 +43,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         double processingDelayIn @unit(s) = default(0s);   // additional processing delay for incoming ip packets
         double processingDelayOut @unit(s) = default(0s);   // additional processing delay for outgoing ip packets
 
-        string LteChannelModelType = default("LteRealisticChannelModel");
+        string lteChannelModelType = default("LteRealisticChannelModel");
 
         bool d2dCapable;            // inherit the value from the parent module
 
@@ -93,7 +93,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=363,389");
         }
 
-        channelModel[numCarriers]: <LteChannelModelType> like ILteChannelModel {
+        channelModel[numCarriers]: <lteChannelModelType> like ILteChannelModel {
             @display("p=100,389");
         }
 

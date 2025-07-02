@@ -29,7 +29,7 @@ import simu5g.stack.rlc.LteRlc;
 module NrNicUe extends LteNicUeD2D
 {
     parameters:
-        string NRChannelModelType = default("NrChannelModel_3GPP38_901");
+        string nrChannelModelType = default("NrChannelModel_3GPP38_901");
 
         packetFlowManager.typename = default("PacketFlowManagerUe");
 
@@ -67,7 +67,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,389");
         }
         // NR Channel Model
-        nrChannelModel[numNRCarriers]: <NRChannelModelType> like ILteChannelModel {
+        nrChannelModel[numNRCarriers]: <nrChannelModelType> like ILteChannelModel {
             @display("p=232,389");
         }
 
