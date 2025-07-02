@@ -21,7 +21,7 @@ using namespace omnetpp;
 
 class MecOrchestrator;
 class CreateContextAppMessage;
-class UALCMPMessage;
+class UalcmpMessage;
 
 //
 // This module implements (part of) the mx2 reference point a device app uses to
@@ -76,8 +76,8 @@ class UalcmpApp : public MecServiceBase
      * These two methods manage the responses coming from the MEC orchestrator and
      * create the HTTP responses to the Device apps
      */
-    void handleCreateContextAppAckMessage(UALCMPMessage *msg);
-    void handleDeleteContextAppAckMessage(UALCMPMessage *msg);
+    void handleCreateContextAppAckMessage(UalcmpMessage *msg);
+    void handleDeleteContextAppAckMessage(UalcmpMessage *msg);
 
     /*
      * Method used to parse the body of POST requests for the instantiation of MEC apps.

@@ -19,8 +19,8 @@
 
 #include "simu5g/nodes/mec/orchestrator/messages/MecOrchestratorMessages_m.h"
 
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_types.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_m.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_types.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
 
@@ -83,15 +83,15 @@ void MecOrchestrator::handleMessage(cMessage *msg)
     // Handle message from the LCM proxy
     else if (msg->arrivedOn("fromUALCMP")) {
         EV << "MecOrchestrator::handleMessage - " << msg->getName() << endl;
-        handleUALCMPMessage(msg);
+        handleUalcmpMessage(msg);
     }
 
     delete msg;
 }
 
-void MecOrchestrator::handleUALCMPMessage(cMessage *msg)
+void MecOrchestrator::handleUalcmpMessage(cMessage *msg)
 {
-    UALCMPMessage *lcmMsg = check_and_cast<UALCMPMessage *>(msg);
+    UalcmpMessage *lcmMsg = check_and_cast<UalcmpMessage *>(msg);
 
     // Handling CREATE_CONTEXT_APP
     if (!strcmp(lcmMsg->getType(), CREATE_CONTEXT_APP))
@@ -102,7 +102,7 @@ void MecOrchestrator::handleUALCMPMessage(cMessage *msg)
         stopMecApp(lcmMsg);
 }
 
-void MecOrchestrator::startMecApp(UALCMPMessage *msg)
+void MecOrchestrator::startMecApp(UalcmpMessage *msg)
 {
     CreateContextAppMessage *contAppMsg = check_and_cast<CreateContextAppMessage *>(msg);
 
@@ -276,7 +276,7 @@ void MecOrchestrator::startMecApp(UALCMPMessage *msg)
     }
 }
 
-void MecOrchestrator::stopMecApp(UALCMPMessage *msg) {
+void MecOrchestrator::stopMecApp(UalcmpMessage *msg) {
     EV << "MecOrchestrator::stopMecApp - processing..." << endl;
 
     DeleteContextAppMessage *contAppMsg = check_and_cast<DeleteContextAppMessage *>(msg);

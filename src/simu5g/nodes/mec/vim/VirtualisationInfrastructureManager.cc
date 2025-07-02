@@ -10,7 +10,7 @@
 //
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_m.h"
 #include "simu5g/nodes/mec/orchestrator/messages/MecOrchestratorMessages_m.h"
 
 namespace simu5g {

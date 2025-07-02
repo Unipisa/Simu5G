@@ -52,16 +52,16 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
 {
   protected:
 
-    inet::TcpSocket UALCMPSocket_;
+    inet::TcpSocket ualcmpSocket_;
     inet::UdpSocket ueAppSocket_;
 
     inet::L3Address UALCMPAddress;
     int UALCMPPort;
 
-    HttpBaseMessage *UALCMPMessage = nullptr;
-    std::string UALCMPMessageBuffer;
+    HttpBaseMessage *UalcmpMessage = nullptr;
+    std::string ualcmpMessageBuffer;
 
-    cMessage *processedUALCMPMessage = nullptr;
+    cMessage *processedUalcmpMessage = nullptr;
 
     int localPort;
 
@@ -89,7 +89,7 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
 
     /* Utility functions */
     virtual void handleSelfMessage(cMessage *msg);
-    virtual void handleUALCMPMessage();
+    virtual void handleUalcmpMessage();
     void sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk);
     void sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk);
 

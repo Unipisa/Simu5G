@@ -27,8 +27,8 @@
 #include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_types.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_m.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_types.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
@@ -85,7 +85,7 @@ void UalcmpApp::handleMessageWhenUp(cMessage *msg)
 {
     if (msg->arrivedOn("fromMecOrchestrator")) {
         // manage here the messages from mecOrchestrator
-        UALCMPMessage *lcmMsg = check_and_cast<UALCMPMessage *>(msg);
+        UalcmpMessage *lcmMsg = check_and_cast<UalcmpMessage *>(msg);
         if (strcmp(lcmMsg->getType(), ACK_CREATE_CONTEXT_APP) == 0) {
             handleCreateContextAppAckMessage(lcmMsg);
         }
@@ -103,7 +103,7 @@ void UalcmpApp::handleMessageWhenUp(cMessage *msg)
     }
 }
 
-void UalcmpApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
+void UalcmpApp::handleCreateContextAppAckMessage(UalcmpMessage *msg)
 {
     CreateContextAppAckMessage *ack = check_and_cast<CreateContextAppAckMessage *>(msg);
     unsigned int reqSno = ack->getRequestId();
@@ -146,7 +146,7 @@ void UalcmpApp::handleCreateContextAppAckMessage(UALCMPMessage *msg)
     }
 }
 
-void UalcmpApp::handleDeleteContextAppAckMessage(UALCMPMessage *msg)
+void UalcmpApp::handleDeleteContextAppAckMessage(UalcmpMessage *msg)
 {
     DeleteContextAppAckMessage *ack = check_and_cast<DeleteContextAppAckMessage *>(msg);
 

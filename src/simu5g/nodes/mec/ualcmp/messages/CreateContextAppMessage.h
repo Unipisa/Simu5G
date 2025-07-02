@@ -12,7 +12,7 @@
 #ifndef NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPMESSAGE_H_
 #define NODES_MEC_LCMPROXY_LCMPROXYMESSAGES_CREATECONTEXTAPPMESSAGE_H_
 
-#include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"
+#include "simu5g/nodes/mec/ualcmp/messages/UalcmpMessages_m.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {

@@ -34,19 +34,19 @@ Define_Module(DeviceApp);
 
 DeviceApp::~DeviceApp()
 {
-    cancelAndDelete(processedUALCMPMessage);
+    cancelAndDelete(processedUalcmpMessage);
 }
 
-void DeviceApp::handleUALCMPMessage()
+void DeviceApp::handleUalcmpMessage()
 {
-    EV << "DeviceApp::handleUALCMPMessage: " << UALCMPMessage->getBody() << endl;
+    EV << "DeviceApp::handleUalcmpMessage: " << UalcmpMessage->getBody() << endl;
 
-    if (UALCMPMessage->getType() == RESPONSE) {
-        HttpResponseMessage *response = dynamic_cast<HttpResponseMessage *>(UALCMPMessage);
+    if (UalcmpMessage->getType() == RESPONSE) {
+        HttpResponseMessage *response = dynamic_cast<HttpResponseMessage *>(UalcmpMessage);
 
         switch (appState) {
             case START: {
-                EV << "DeviceApp::handleUALCMPMessage - START" << endl;
+                EV << "DeviceApp::handleUalcmpMessage - START" << endl;
                 if (response->getCode() == 200) { // Successful response of the get
                     nlohmann::json jsonResponseBody = nlohmann::json::parse(response->getBody());
                     nlohmann::json jsonRequestBody;
@@ -73,7 +73,7 @@ void DeviceApp::handleUALCMPMessage()
                     }
 
                     if (!found) {
-                        EV << "DeviceApp::handleUALCMPMessage: application descriptor for appName: " << appName << " not found." << endl;
+                        EV << "DeviceApp::handleUalcmpMessage: application descriptor for appName: " << appName << " not found." << endl;
                         // search fo the app name in the list of shared apps. if found, use the stored dev app id
                         auto sharedDevAppId = devAppIds.find(std::string(appName));
                         int associateDevAppId;
@@ -91,9 +91,9 @@ void DeviceApp::handleUALCMPMessage()
 
                     const char *uri = "/example/dev_app/v1/app_contexts";
 
-                    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
+                    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-                    Http::sendPostRequest(&UALCMPSocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
+                    Http::sendPostRequest(&ualcmpSocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
 
                     //send request
                     appState = CREATING;
@@ -101,15 +101,15 @@ void DeviceApp::handleUALCMPMessage()
                 }
                 else {
                     // this should not happen. This device app always sends well formed requests to the UALCMP
-                    throw cRuntimeError("DeviceApp::handleUALCMPMessage() - this should not happen. This device app sends well formed requests to the UALCMP.");
+                    throw cRuntimeError("DeviceApp::handleUalcmpMessage() - this should not happen. This device app sends well formed requests to the UALCMP.");
                 }
                 break;
             }
 
             case CREATING: {
-                EV << "DeviceApp::handleUALCMPMessage - CREATING" << endl;
+                EV << "DeviceApp::handleUalcmpMessage - CREATING" << endl;
                 if (response->getCode() == 201) { // Successful response of the post
-                    nlohmann::json jsonBody = nlohmann::json::parse(UALCMPMessage->getBody());
+                    nlohmann::json jsonBody = nlohmann::json::parse(UalcmpMessage->getBody());
 
                     inet::Packet *packet = new inet::Packet("DeviceAppStartAckPacket");
 
@@ -117,7 +117,7 @@ void DeviceApp::handleUALCMPMessage()
 
                     if (contextUri.empty()) {
                         //ERROR
-                        EV << "DeviceApp::handleUALCMPMessage - ERROR (on CREATE 201) - Mec Application Context not created, i.e. the MEC app has not been instantiated" << endl;
+                        EV << "DeviceApp::handleUalcmpMessage - ERROR (on CREATE 201) - Mec Application Context not created, i.e. the MEC app has not been instantiated" << endl;
 
                         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
@@ -137,8 +137,8 @@ void DeviceApp::handleUALCMPMessage()
                         appContextUri = contextUri;
                         mecAppEndPoint = jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"];
 
-                        EV << "DeviceApp::handleUALCMPMessage - reference URI of the application instance context is: " << appContextUri << endl;
-                        EV << "DeviceApp::handleUALCMPMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
+                        EV << "DeviceApp::handleUalcmpMessage - reference URI of the application instance context is: " << appContextUri << endl;
+                        EV << "DeviceApp::handleUalcmpMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
 
                         std::vector<std::string> endPoint = cStringTokenizer(mecAppEndPoint.c_str(), ":").asVector();
                         EV << "vectore size: " << endPoint[0] << " e " << atoi(endPoint[1].c_str()) << endl;
@@ -168,7 +168,7 @@ void DeviceApp::handleUALCMPMessage()
                 }
                 else if (response->getCode() == 500) {
                     //ERROR
-                    EV << "DeviceApp::handleUALCMPMessage - ERROR (on CREATE " << response->getCode() << ") - Mec Application Context not created, i.e. the MEC app has not been instantiated" << endl;
+                    EV << "DeviceApp::handleUalcmpMessage - ERROR (on CREATE " << response->getCode() << ") - Mec Application Context not created, i.e. the MEC app has not been instantiated" << endl;
                     auto nack = inet::makeShared<DeviceAppStartAckPacket>();
 
                     //instantiation requirements and info
@@ -195,7 +195,7 @@ void DeviceApp::handleUALCMPMessage()
                 }
                 else {
                     // in state create only 201 and 500 code are allowed, if other code arrives, something went wrong...
-                    EV << "DeviceApp::handleUALCMPMessage - HTTP code " << response->getCode() << " not allowe in CREATE state" << endl;
+                    EV << "DeviceApp::handleUalcmpMessage - HTTP code " << response->getCode() << " not allowe in CREATE state" << endl;
                 }
                 break;
             }
@@ -250,7 +250,7 @@ void DeviceApp::handleUALCMPMessage()
 
             case IDLE:
             default:
-                throw cRuntimeError("DeviceApp::handleUALCMPMessage() - appstate IDLE. No messages should arrive from UALCMP");
+                throw cRuntimeError("DeviceApp::handleUalcmpMessage() - appstate IDLE. No messages should arrive from UALCMP");
         }
     }
     else {
@@ -264,11 +264,11 @@ void DeviceApp::handleSelfMessage(cMessage *msg) {
         connectToUALCMP();
         delete msg;
     }
-    else if (strcmp(msg->getName(), "processedUALCMPMessage") == 0) {
-        handleUALCMPMessage();
-        if (UALCMPMessage != nullptr)
-            delete UALCMPMessage;
-        UALCMPMessage = nullptr;
+    else if (strcmp(msg->getName(), "processedUalcmpMessage") == 0) {
+        handleUalcmpMessage();
+        if (UalcmpMessage != nullptr)
+            delete UalcmpMessage;
+        UalcmpMessage = nullptr;
     }
 }
 
@@ -283,30 +283,30 @@ void DeviceApp::initialize(int stage) {
     localPort = par("localPort");
 
     ueAppSocket_.setOutputGate(gate("socketOut"));
-    UALCMPSocket_.setOutputGate(gate("socketOut"));
+    ualcmpSocket_.setOutputGate(gate("socketOut"));
 
     ueAppSocket_.bind(localAddress, localPort); // bind ueSocket to listen on local port
-    UALCMPSocket_.bind(localAddress, par("ualcmpLocalPort")); // bind UALCMP Socket to listen on ualcmpLocalPort
+    ualcmpSocket_.bind(localAddress, par("ualcmpLocalPort")); // bind UALCMP Socket to listen on ualcmpLocalPort
 
     ueAppSocket_.setCallback(this);
-    UALCMPSocket_.setCallback(this);
+    ualcmpSocket_.setCallback(this);
 
     int timeToLive = par("timeToLive"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (timeToLive != -1) {
         ueAppSocket_.setTimeToLive(timeToLive);
-        UALCMPSocket_.setTimeToLive(timeToLive);
+        ualcmpSocket_.setTimeToLive(timeToLive);
     }
 
     int dscp = par("dscp"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (dscp != -1) {
         ueAppSocket_.setDscp(dscp);
-        UALCMPSocket_.setDscp(dscp);
+        ualcmpSocket_.setDscp(dscp);
     }
 
     int tos = par("tos"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (tos != -1) {
         ueAppSocket_.setTos(tos);
-        UALCMPSocket_.setTos(tos);
+        ualcmpSocket_.setTos(tos);
     }
 
     const char *lcmAddress = par("UALCMPAddress").stringValue();
@@ -314,7 +314,7 @@ void DeviceApp::initialize(int stage) {
     EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
     UALCMPPort = par("UALCMPPort");
 
-    processedUALCMPMessage = new cMessage("processedUALCMPMessage");
+    processedUalcmpMessage = new cMessage("processedUalcmpMessage");
 
     appPackageSource = par("appPackageSource").stringValue();
 
@@ -339,15 +339,15 @@ void DeviceApp::handleMessage(cMessage *msg)
         ueAppSocket_.processMessage(msg);
         delete msg;
     }
-    else if (UALCMPSocket_.belongsToSocket(msg)) {
-        UALCMPSocket_.processMessage(msg);
+    else if (ualcmpSocket_.belongsToSocket(msg)) {
+        ualcmpSocket_.processMessage(msg);
     }
 }
 
 void DeviceApp::connectToUALCMP()
 {
     // we need a new connId if this is not the first connection
-    UALCMPSocket_.renewSocket();
+    ualcmpSocket_.renewSocket();
 
     if (UALCMPAddress.isUnspecified()) {
         EV_ERROR << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << ": cannot resolve destination address\n";
@@ -355,7 +355,7 @@ void DeviceApp::connectToUALCMP()
     }
     else {
         EV << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << endl;
-        UALCMPSocket_.connect(UALCMPAddress, UALCMPPort);
+        ualcmpSocket_.connect(UALCMPAddress, UALCMPPort);
     }
 }
 
@@ -380,13 +380,13 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
     std::stringstream params;
     params << "appName=" << appName;
 
-    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
+    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE) {
-        Http::sendGetRequest(&UALCMPSocket_, host.c_str(), uri.c_str(), params.str().c_str());
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE) {
+        Http::sendGetRequest(&ualcmpSocket_, host.c_str(), uri.c_str(), params.str().c_str());
         appState = START;
     }
-    else if (UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED) {
+    else if (ualcmpSocket_.getState() != inet::TcpSocket::CONNECTED) {
         // send nack to the UE app
 
         inet::Packet *packet = new inet::Packet("DeviceAppStartAckPacket");
@@ -428,18 +428,18 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
      */
     std::string cId = stopPk->getContextId();
 
-    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
+    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED) {
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED) {
         EV << "DeviceApp::sendStopAppContext - send DELETE for MEC app: " << appContextUri << endl;
-        Http::sendDeleteRequest(&UALCMPSocket_, host.c_str(), appContextUri.c_str());
+        Http::sendDeleteRequest(&ualcmpSocket_, host.c_str(), appContextUri.c_str());
         appState = DELETING;
     }
     else if (appState == DELETING) {
         EV << "DeviceApp::sendStopAppContext - DELETE command already sent - discarding packet" << endl;
         return;
     }
-    else if (UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED) {
+    else if (ualcmpSocket_.getState() != inet::TcpSocket::CONNECTED) {
         EV << "DeviceApp::sendStopAppContext - LCM proxy not connected" << endl;
 
         inet::Packet *packet = new inet::Packet("DeviceAppStopAckPacket");
@@ -503,26 +503,26 @@ void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bo
 
     delete msg;
 
-    bool res = Http::parseReceivedMsg(packet, UALCMPMessageBuffer, UALCMPMessage);
+    bool res = Http::parseReceivedMsg(packet, ualcmpMessageBuffer, UalcmpMessage);
     if (res) {
-        EV << "DeviceApp::socketDataArrived - schedule processedUALCMPMessage" << endl;
-        UALCMPMessage->setSockId(UALCMPSocket_.getSocketId());
+        EV << "DeviceApp::socketDataArrived - schedule processedUalcmpMessage" << endl;
+        UalcmpMessage->setSockId(ualcmpSocket_.getSocketId());
         double time = 0.005;
-        scheduleAt(simTime() + time, processedUALCMPMessage);
+        scheduleAt(simTime() + time, processedUalcmpMessage);
     }
 }
 
 void DeviceApp::socketEstablished(inet::TcpSocket *socket)
 {
-    EV << "DeviceApp::socketEstablished - UALCMPSocket established " << endl;
+    EV << "DeviceApp::socketEstablished - ualcmpSocket established " << endl;
 }
 
 void DeviceApp::socketPeerClosed(inet::TcpSocket *socket)
 {
     EV << "DeviceApp::socketPeerClosed" << endl;
-    if (UALCMPSocket_.getState() == TcpSocket::PEER_CLOSED) {
+    if (ualcmpSocket_.getState() == TcpSocket::PEER_CLOSED) {
         EV_INFO << "remote TCP closed, closing here as well\n";
-        UALCMPSocket_.close();
+        ualcmpSocket_.close();
     }
 }
 
@@ -531,8 +531,8 @@ void DeviceApp::socketFailure(inet::TcpSocket *socket, int code) {}
 
 void DeviceApp::finish()
 {
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED)
-        UALCMPSocket_.close();
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED)
+        ualcmpSocket_.close();
 }
 
 } //namespace

@@ -11,39 +11,39 @@
 
 namespace simu5g;
 
-message UALCMPMessage {
-    string type; // UALCMPMessage messageType (appListReq, appListRes, create, delete)
+message UalcmpMessage {
+    string type; // UalcmpMessage messageType (appListReq, appListRes, create, delete)
     int connectionId; // Placeholder to retrieve the correct devApp socket
     int requestId;
 }
 
 
-message CreateContextApp extends UALCMPMessage
+message CreateContextApp extends UalcmpMessage
 {
 	bool onboarded;
 	string appPackagePath; // if onboarded == false
 	string appDId;		   // if onboarded == true
-	
+
 	string ueIpAddress;   // this is used by the simulator to check if the ue has left the netowrk!
-	
+
 	string devAppId;      //device app identifier, used as identifier for the mecapp (i.e. ueAppId)
 }
 
-message CreateContextAppAck extends UALCMPMessage
+message CreateContextAppAck extends UalcmpMessage
 {
 	bool success;
 	string appInstanceUri;
 
 	string appInstanceId;
-	int contextId;	
+	int contextId;
 }
 
-message DeleteContextAppMessage extends UALCMPMessage
+message DeleteContextAppMessage extends UalcmpMessage
 {
 	int contextId;
 }
 
-message DeleteContextAppAckMessage extends UALCMPMessage
+message DeleteContextAppAckMessage extends UalcmpMessage
 {
     bool success;
 	int contextId;
