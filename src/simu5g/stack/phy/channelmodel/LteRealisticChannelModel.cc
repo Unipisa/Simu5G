@@ -53,7 +53,7 @@ void LteRealisticChannelModel::initialize(int stage)
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
         hUe_ = par("ueHeight");
 
-        wStreet_ = par("street_wide");
+        wStreet_ = par("streetWidth");
 
         correlationDistance_ = par("correlationDistance");
         harqReduction_ = par("harqReduction");
@@ -74,15 +74,15 @@ void LteRealisticChannelModel::initialize(int stage)
         fixedLos_ = par("fixedLos");
 
         fading_ = par("fading");
-        std::string fType = par("fading_type");
+        std::string fType = par("fadingType");
         if (fType == "JAKES")
             fadingType_ = JAKES;
         else if (fType == "RAYLEIGH")
             fadingType_ = RAYLEIGH;
         else
-            throw cRuntimeError("Unrecognized value in 'fading_type' parameter: \"%s\"", fType.c_str());
+            throw cRuntimeError("Unrecognized value in 'fadingType' parameter: \"%s\"", fType.c_str());
 
-        fadingPaths_ = par("fading_paths");
+        fadingPaths_ = par("numFadingPaths");
         enableBackgroundCellInterference_ = par("bgCellInterference");
         enableExtCellInterference_ = par("extCellInterference");
         enableDownlinkInterference_ = par("downlinkInterference");

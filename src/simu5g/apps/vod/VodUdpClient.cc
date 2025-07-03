@@ -70,7 +70,7 @@ void VodUdpClient::finish()
 
     // Parameters to be sent to ana.sh
 
-    string inputFileName = par("vod_trace_file").stringValue();
+    string inputFileName = par("vodTraceFile").stringValue();
     string bsePath = par("bsePath").stringValue();
     string origVideoYuv = par("origVideoYuv").stringValue();
     string origVideoSvc = par("origVideoSvc").stringValue();

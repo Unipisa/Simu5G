@@ -31,7 +31,7 @@ void VodUdpServer::initialize(int stage)
         return;
     EV << "VoD Server initialize: stage " << stage << endl;
     serverPort = par("localPort");
-    inputFileName = par("vod_trace_file").stringValue();
+    inputFileName = par("vodTraceFile").stringValue();
     traceType = par("traceType").stringValue();
     fps = par("fps");
     TIME_SLOT = 1.0 / fps;

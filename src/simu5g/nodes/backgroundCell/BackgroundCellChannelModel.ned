@@ -39,7 +39,7 @@ simple BackgroundCellChannelModel
         // determines if the UE is inside a building
         bool insideBuilding = default(false);
 
-        double street_wide @unit(m) = default(20m); //TODO width
+        double streetWidth @unit(m) = default(20m); //TODO width
         double ueHeight @unit(m) = default(1.5m);
         bool tolerateMaxDistViolation = default(false);
 
@@ -67,9 +67,9 @@ simple BackgroundCellChannelModel
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYLEIGH) -->
-        string fading_type @enum(RAYLEIGH,JAKES) = default("JAKES");
+        string fadingType @enum(RAYLEIGH,JAKES) = default("JAKES");
         // If jakes fading this parameter specify the number of path (tap channel) -->
-        int fading_paths = default(6);
+        int numFadingPaths = default(6);
         double delayRms @unit(s) = default(363ns);
 
         // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->

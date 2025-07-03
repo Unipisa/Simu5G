@@ -39,7 +39,7 @@ simple LteRealisticChannelModel extends LteChannelModel
         // determines if the UE is inside a building
         bool insideBuilding = default(false);
 
-        double street_wide @unit(m) = default(20m);
+        double streetWidth @unit(m) = default(20m);
         double ueHeight @unit(m) = default(1.5m);
         bool tolerateMaxDistViolation = default(false);
         bool useTorus = default(false);
@@ -78,9 +78,9 @@ simple LteRealisticChannelModel extends LteChannelModel
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYGHLEY) -->
-        string fading_type @enum(RAYLEIGH,JAKES) = default("JAKES");
+        string fadingType @enum(RAYLEIGH,JAKES) = default("JAKES");
         // If jakes fading this parameter specify the number of path (tap channel) -->
-        int fading_paths = default(6);
+        int numFadingPaths = default(6);
 
         double delayRms @unit(s) = default(363ns);
 
