@@ -37,7 +37,7 @@ simple BackgroundCellChannelModel
         // Building height -->
         double building_height @unit(m) = default(20m);
         // determines if the UE is inside a building
-        bool inside_building = default(false);
+        bool insideBuilding = default(false);
 
         double street_wide @unit(m) = default(20m); //TODO width
         double ue_height @unit(m) = default(1.5m);
@@ -61,9 +61,9 @@ simple BackgroundCellChannelModel
         double cable_loss @unit(dB) = default(2dB);
 
         // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation -->
-        bool dynamic_los = default(false);
+        bool dynamicLos = default(false);
         // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss -->
-        bool fixed_los = default(false);
+        bool fixedLos = default(false);
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYLEIGH) -->
@@ -73,9 +73,9 @@ simple BackgroundCellChannelModel
         double delay_rms @unit(s) = default(363ns);
 
         // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->
-        bool bgCell_interference = default(true);
+        bool bgCellInterference = default(true);
         // if true, enables the inter-cell interference computation for DL connections -->
-        bool downlink_interference = default(true);
+        bool downlinkInterference = default(true);
         // if true, enables the interference computation for UL connections -->
-        bool uplink_interference = default(true);
+        bool uplinkInterference = default(true);
 }

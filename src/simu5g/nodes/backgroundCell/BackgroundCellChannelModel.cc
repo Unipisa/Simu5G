@@ -26,7 +26,7 @@ void BackgroundCellChannelModel::initialize(int stage)
         scenario_ = aToDeploymentScenario(par("scenario").stringValue());
         hNodeB_ = par("nodeb_height");
         hBuilding_ = par("building_height");
-        inside_building_ = par("inside_building");
+        inside_building_ = par("insideBuilding");
         if (inside_building_)
             inside_distance_ = uniform(0.0, 25.0);
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
@@ -44,8 +44,8 @@ void BackgroundCellChannelModel::initialize(int stage)
         shadowing_ = par("shadowing");
         correlationDistance_ = par("correlation_distance");
 
-        dynamicLos_ = par("dynamic_los");
-        fixedLos_ = par("fixed_los");
+        dynamicLos_ = par("dynamicLos");
+        fixedLos_ = par("fixedLos");
 
         fading_ = par("fading");
         std::string fType = par("fading_type");
@@ -61,9 +61,9 @@ void BackgroundCellChannelModel::initialize(int stage)
         fadingPaths_ = par("fading_paths");
         delayRMS_ = par("delay_rms");
 
-        enableBackgroundCellInterference_ = par("bgCell_interference");
-        enableDownlinkInterference_ = par("downlink_interference");
-        enableUplinkInterference_ = par("uplink_interference");
+        enableBackgroundCellInterference_ = par("bgCellInterference");
+        enableDownlinkInterference_ = par("downlinkInterference");
+        enableUplinkInterference_ = par("uplinkInterference");
 
         //get binder
         binder_.reference(this, "binderModule", true);

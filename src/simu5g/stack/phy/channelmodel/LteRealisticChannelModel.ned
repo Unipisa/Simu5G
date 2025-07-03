@@ -37,7 +37,7 @@ simple LteRealisticChannelModel extends LteChannelModel
         // Building height -->
         double building_height @unit(m) = default(20m);
         // determines if the UE is inside a building
-        bool inside_building = default(false);
+        bool insideBuilding = default(false);
 
         double street_wide @unit(m) = default(20m);
         double ue_height @unit(m) = default(1.5m);
@@ -72,9 +72,9 @@ simple LteRealisticChannelModel extends LteChannelModel
         double cable_loss @unit(dB) = default(2dB);
 
         // If true enable the possibility to switch dinamically the LOS/NLOS pathloss computation -->
-        bool dynamic_los = default(false);
+        bool dynamicLos = default(false);
         // If dynamic-los is false this parameter, if true, compute LOS pathloss otherwise compute NLOS pathloss -->
-        bool fixed_los = default(false);
+        bool fixedLos = default(false);
         // Enable/disable fading -->
         bool fading = default(true);
         // Fading type (JAKES or RAYGHLEY) -->
@@ -85,17 +85,17 @@ simple LteRealisticChannelModel extends LteChannelModel
         double delay_rms @unit(s) = default(363ns);
 
         // if true, enables the inter-cell interference computation for UL and DL connections from background cells -->
-        bool bgCell_interference = default(true);
+        bool bgCellInterference = default(true);
         // if true, enables the inter-cell interference computation for DL connections from external cells (maybe this is obsolete and should be removed) -->
-        bool extCell_interference = default(true);
+        bool extCellInterference = default(true);
         // if true, enables the inter-cell interference computation for DL connections -->
-        bool downlink_interference = default(false);
+        bool downlinkInterference = default(false);
         // if true, enables the interference computation for UL connections -->
-        bool uplink_interference = default(false);
+        bool uplinkInterference = default(false);
 	// if true, enables the interference computation for D2D connections -->
-        bool d2d_interference = default(true);
+        bool d2dInterference = default(true);
 
-        bool enable_extCell_los = default(true);
+        bool enableExtCellLos = default(true);
 
         // collection of SINR statistics can be disabled because it might be quite time-consuming
         bool collectSinrStatistics = default(true);

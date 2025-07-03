@@ -45,7 +45,7 @@ void VoipSender::initialize(int stage)
     shapeTalk_ = par("shape_talk");
     scaleSil_ = par("scale_sil");
     shapeSil_ = par("shape_sil");
-    isTalk_ = par("is_talk");
+    isTalk_ = par("isTalk");
     iDtalk_ = 0;
     nframes_ = 0;
     nframesTmp_ = 0;

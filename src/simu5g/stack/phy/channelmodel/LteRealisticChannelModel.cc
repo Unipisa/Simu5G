@@ -47,7 +47,7 @@ void LteRealisticChannelModel::initialize(int stage)
         hNodeB_ = par("nodeb_height");
         shadowing_ = par("shadowing");
         hBuilding_ = par("building_height");
-        inside_building_ = par("inside_building");
+        inside_building_ = par("insideBuilding");
         if (inside_building_)
             inside_distance_ = uniform(0.0, 25.0);
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
@@ -70,8 +70,8 @@ void LteRealisticChannelModel::initialize(int stage)
         ueNoiseFigure_ = par("ue_noise_figure");
         bsNoiseFigure_ = par("bs_noise_figure");
         useTorus_ = par("useTorus");
-        dynamicLos_ = par("dynamic_los");
-        fixedLos_ = par("fixed_los");
+        dynamicLos_ = par("dynamicLos");
+        fixedLos_ = par("fixedLos");
 
         fading_ = par("fading");
         std::string fType = par("fading_type");
@@ -83,14 +83,14 @@ void LteRealisticChannelModel::initialize(int stage)
             throw cRuntimeError("Unrecognized value in 'fading_type' parameter: \"%s\"", fType.c_str());
 
         fadingPaths_ = par("fading_paths");
-        enableBackgroundCellInterference_ = par("bgCell_interference");
-        enableExtCellInterference_ = par("extCell_interference");
-        enableDownlinkInterference_ = par("downlink_interference");
-        enableUplinkInterference_ = par("uplink_interference");
-        enableD2DInterference_ = par("d2d_interference");
+        enableBackgroundCellInterference_ = par("bgCellInterference");
+        enableExtCellInterference_ = par("extCellInterference");
+        enableDownlinkInterference_ = par("downlinkInterference");
+        enableUplinkInterference_ = par("uplinkInterference");
+        enableD2DInterference_ = par("d2dInterference");
         delayRMS_ = par("delay_rms");
 
-        enable_extCell_los_ = par("enable_extCell_los");
+        enable_extCell_los_ = par("enableExtCellLos");
 
         collectSinrStatistics_ = par("collectSinrStatistics");
 
