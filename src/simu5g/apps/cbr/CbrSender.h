@@ -37,7 +37,7 @@ class CbrSender : public cSimpleModule
     int iDframe_;
     int nframesTmp_;
     int size_;
-    simtime_t sampling_time;
+    simtime_t samplingTime;
     simtime_t startTime_;
     simtime_t finishTime_;
 

@@ -26,12 +26,12 @@ simple VoipSender like IApp
         int destPort = default(3000);
         string destAddress;
         int packetSize @unit(B) = default(40B);
-        double shape_talk @unit(s) = default(0.824s); // params for Weibull distribution
-        double scale_talk @unit(s) = default(1.423s);
-        double shape_sil @unit(s) = default(1.089s);
-        double scale_sil @unit(s) = default(0.900s);
+        double shapeTalk @unit(s) = default(0.824s); // params for Weibull distribution
+        double scaleTalk @unit(s) = default(1.423s);
+        double shapeSil @unit(s) = default(1.089s);
+        double scaleSil @unit(s) = default(0.900s);
         bool isTalk = default(true); // whether transmission starts with talk or silence
-        double sampling_time @unit("s") = default(0.02s);
+        double samplingTime @unit("s") = default(0.02s);
         double startTime @unit("s") = default(0s);
         bool silences = default(true);
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value

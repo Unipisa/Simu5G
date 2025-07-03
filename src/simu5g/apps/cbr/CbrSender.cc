@@ -43,7 +43,7 @@ void CbrSender::initialize(int stage)
         iDframe_ = 0;
         timestamp_ = 0;
         size_ = par("packetSize");
-        sampling_time = par("sampling_time");
+        samplingTime = par("samplingTime");
         localPort_ = par("localPort");
         destPort_ = par("destPort");
 
@@ -55,7 +55,7 @@ void CbrSender::initialize(int stage)
         finishTime_ = par("finishTime");
 
         EV << " finish time " << finishTime_ << endl;
-        nframes_ = (finishTime_ - startTime_) / sampling_time;
+        nframes_ = (finishTime_ - startTime_) / samplingTime;
 
         initTraffic_ = new cMessage("initTraffic");
         initTraffic();
@@ -127,7 +127,7 @@ void CbrSender::sendCbrPacket()
     }
     socket.sendTo(packet, destAddress_, destPort_);
 
-    scheduleAt(simTime() + sampling_time, selfSource_);
+    scheduleAt(simTime() + samplingTime, selfSource_);
 }
 
 void CbrSender::finish()

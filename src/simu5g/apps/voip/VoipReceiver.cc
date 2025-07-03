@@ -50,9 +50,9 @@ void VoipReceiver::initialize(int stage)
     emodel_A_ = par("emodel_A_");
     emodel_Ro_ = par("emodel_Ro_");
 
-    mBufferSpace_ = par("dim_buffer");
-    mSamplingDelta_ = par("sampling_time");
-    mPlayoutDelay_ = par("playout_delay");
+    mBufferSpace_ = par("dimBuffer");
+    mSamplingDelta_ = par("samplingTime");
+    mPlayoutDelay_ = par("playoutDelay");
 
     mInit_ = true;
 

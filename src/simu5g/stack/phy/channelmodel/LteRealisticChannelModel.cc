@@ -44,18 +44,18 @@ void LteRealisticChannelModel::initialize(int stage)
     LteChannelModel::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
         scenario_ = aToDeploymentScenario(par("scenario").stringValue());
-        hNodeB_ = par("nodeb_height");
+        hNodeB_ = par("nodebHeight");
         shadowing_ = par("shadowing");
-        hBuilding_ = par("building_height");
+        hBuilding_ = par("buildingHeight");
         inside_building_ = par("insideBuilding");
         if (inside_building_)
             inside_distance_ = uniform(0.0, 25.0);
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
-        hUe_ = par("ue_height");
+        hUe_ = par("ueHeight");
 
         wStreet_ = par("street_wide");
 
-        correlationDistance_ = par("correlation_distance");
+        correlationDistance_ = par("correlationDistance");
         harqReduction_ = par("harqReduction");
 
         lambdaMinTh_ = par("lambdaMinTh");
@@ -66,9 +66,9 @@ void LteRealisticChannelModel::initialize(int stage)
         antennaGainEnB_ = par("antennGainEnB");
         antennaGainMicro_ = par("antennGainMicro");
         thermalNoise_ = par("thermalNoise");
-        cableLoss_ = par("cable_loss");
-        ueNoiseFigure_ = par("ue_noise_figure");
-        bsNoiseFigure_ = par("bs_noise_figure");
+        cableLoss_ = par("cableLoss");
+        ueNoiseFigure_ = par("ueNoiseFigure");
+        bsNoiseFigure_ = par("bsNoiseFigure");
         useTorus_ = par("useTorus");
         dynamicLos_ = par("dynamicLos");
         fixedLos_ = par("fixedLos");
@@ -88,7 +88,7 @@ void LteRealisticChannelModel::initialize(int stage)
         enableDownlinkInterference_ = par("downlinkInterference");
         enableUplinkInterference_ = par("uplinkInterference");
         enableD2DInterference_ = par("d2dInterference");
-        delayRMS_ = par("delay_rms");
+        delayRMS_ = par("delayRms");
 
         enable_extCell_los_ = par("enableExtCellLos");
 

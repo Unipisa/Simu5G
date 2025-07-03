@@ -21,9 +21,9 @@ void ExtCell::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         // get coordinates
-        position_.x = par("position_x");
-        position_.y = par("position_y");
-        position_.z = par("position_z");
+        position_.x = par("positionX");
+        position_.y = par("positionY");
+        position_.z = par("positionZ");
         if (getEnvir()->isGUI()) {
             getDisplayString().setTagArg("p", 0, (long)position_.x);
             getDisplayString().setTagArg("p", 1, (long)position_.y);

@@ -24,13 +24,13 @@ void BackgroundCellChannelModel::initialize(int stage)
     cSimpleModule::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
         scenario_ = aToDeploymentScenario(par("scenario").stringValue());
-        hNodeB_ = par("nodeb_height");
-        hBuilding_ = par("building_height");
+        hNodeB_ = par("nodebHeight");
+        hBuilding_ = par("buildingHeight");
         inside_building_ = par("insideBuilding");
         if (inside_building_)
             inside_distance_ = uniform(0.0, 25.0);
         tolerateMaxDistViolation_ = par("tolerateMaxDistViolation");
-        hUe_ = par("ue_height");
+        hUe_ = par("ueHeight");
 
         wStreet_ = par("street_wide");
 
@@ -38,11 +38,11 @@ void BackgroundCellChannelModel::initialize(int stage)
         antennaGainEnB_ = par("antennGainEnB");
         antennaGainMicro_ = par("antennGainMicro");
         thermalNoise_ = par("thermalNoise");
-        cableLoss_ = par("cable_loss");
-        ueNoiseFigure_ = par("ue_noise_figure");
-        bsNoiseFigure_ = par("bs_noise_figure");
+        cableLoss_ = par("cableLoss");
+        ueNoiseFigure_ = par("ueNoiseFigure");
+        bsNoiseFigure_ = par("bsNoiseFigure");
         shadowing_ = par("shadowing");
-        correlationDistance_ = par("correlation_distance");
+        correlationDistance_ = par("correlationDistance");
 
         dynamicLos_ = par("dynamicLos");
         fixedLos_ = par("fixedLos");
@@ -59,7 +59,7 @@ void BackgroundCellChannelModel::initialize(int stage)
             throw cRuntimeError("Unrecognized value in 'fading_type' parameter: \"%s\"", fType.c_str());
 
         fadingPaths_ = par("fading_paths");
-        delayRMS_ = par("delay_rms");
+        delayRMS_ = par("delayRms");
 
         enableBackgroundCellInterference_ = par("bgCellInterference");
         enableDownlinkInterference_ = par("downlinkInterference");

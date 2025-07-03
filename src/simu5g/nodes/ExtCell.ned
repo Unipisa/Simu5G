@@ -28,9 +28,9 @@ simple ExtCell
         string binderModule = default("binder");
 
         // coordinates
-        double position_x @unit("m") = default(0m);
-        double position_y @unit("m") = default(0m);
-        double position_z @unit("m") = default(0m);
+        double positionX @unit("m") = default(0m);
+        double positionY @unit("m") = default(0m);
+        double positionZ @unit("m") = default(0m);
 
         // transmission power
         double txPower @unit(dBm) = default(46dBm);
