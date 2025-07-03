@@ -24,10 +24,10 @@ simple VoipReceiver like IApp
 {
     parameters:
         int localPort = default(3000);
-        int emodel_Ie_ = default(5);  // TODO from some ITU standard, figure it out
-        int emodel_Bpl_ = default(10);
-        int emodel_A_ = default(5);
-        double emodel_Ro_ = default(93.2);
+        int emodel_Ie = default(5);  // TODO from some ITU standard, figure it out
+        int emodel_Bpl = default(10);
+        int emodel_A = default(5);
+        double emodel_Ro = default(93.2);
         double playoutDelay @unit("s") = default(0s);
         int dimBuffer @unit(pk) = default(20pk); // in the number of packets
         double samplingTime @unit("s") = default(0.02s);

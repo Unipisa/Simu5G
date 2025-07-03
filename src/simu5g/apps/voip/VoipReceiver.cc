@@ -45,10 +45,10 @@ void VoipReceiver::initialize(int stage)
     if (stage != inet::INITSTAGE_APPLICATION_LAYER)
         return;
 
-    emodel_Ie_ = par("emodel_Ie_");
-    emodel_Bpl_ = par("emodel_Bpl_");
-    emodel_A_ = par("emodel_A_");
-    emodel_Ro_ = par("emodel_Ro_");
+    emodel_Ie_ = par("emodel_Ie");
+    emodel_Bpl_ = par("emodel_Bpl");
+    emodel_A_ = par("emodel_A");
+    emodel_Ro_ = par("emodel_Ro");
 
     mBufferSpace_ = par("dimBuffer");
     mSamplingDelta_ = par("samplingTime");
