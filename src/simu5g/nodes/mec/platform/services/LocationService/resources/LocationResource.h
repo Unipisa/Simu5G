@@ -21,7 +21,7 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/utils/utils.h"
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/UserInfo.h"
-#include "simu5g/nodes/mec/platform/services/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/platform/services/resources/TimeStamp.h"
 
 namespace simu5g {
 

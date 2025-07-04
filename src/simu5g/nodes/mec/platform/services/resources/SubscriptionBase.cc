@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 
 namespace simu5g {

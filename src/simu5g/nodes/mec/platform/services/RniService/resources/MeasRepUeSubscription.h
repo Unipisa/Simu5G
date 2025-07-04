@@ -13,7 +13,7 @@
 #define APPS_MEC_MESERVICES_RNISERVICE_RESOURCES_MEASREPUESUBSCRIPTION_H_
 
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/platform/services/RniService/resources/Ecgi.h"
 #include "simu5g/nodes/mec/platform/services/RniService/resources/AssociateId.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"

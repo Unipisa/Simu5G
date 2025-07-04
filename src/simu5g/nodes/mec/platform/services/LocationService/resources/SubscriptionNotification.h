@@ -12,7 +12,7 @@
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_SUBSCRIPTIONNOTIFICATION_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_SUBSCRIPTIONNOTIFICATION_H_
 
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/LocationApiDefs.h"
 
 namespace simu5g {

@@ -17,8 +17,8 @@
 #include "simu5g/common/utils/utils.h"
 #include "simu5g/nodes/mec/platform/EventNotification/EventNotification.h"
 #include "simu5g/nodes/mec/platform/services/messages/AperiodicSubscriptionTimer_m.h"
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
-#include "simu5g/nodes/mec/platform/services/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/TimeStamp.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {

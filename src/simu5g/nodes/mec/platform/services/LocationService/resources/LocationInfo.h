@@ -14,7 +14,7 @@
 
 #include <inet/common/geometry/common/Coord.h>
 
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 
 namespace simu5g {
 

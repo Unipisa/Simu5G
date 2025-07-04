@@ -12,7 +12,7 @@
 #ifndef APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 #define APPS_MEC_MESERVICES_LOCATIONSERVICE_RESOURCES_CIRCLENOTIFICATIONSUBSCRIPTION_H_
 
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 
 #include <set>
 

@@ -15,7 +15,7 @@
 #include <vector>
 #include <omnetpp.h>
 #include <map>
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 #include "simu5g/nodes/mec/platform/services/RniService/resources/Ecgi.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"

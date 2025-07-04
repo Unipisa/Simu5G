@@ -13,8 +13,8 @@
 #define CORENETWORK_NODES_MEC_MEPLATFORM_MESERVICES_LOCATIONSERVICE_RESOURCES_USERINFO_H_
 
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/LocationInfo.h"
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
-#include "simu5g/nodes/mec/platform/services/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/TimeStamp.h"
 #include "simu5g/nodes/mec/platform/services/LocationService/resources/User.h"
 
 namespace simu5g {

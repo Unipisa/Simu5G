@@ -24,7 +24,7 @@
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 
 #include "simu5g/common/utils/utils.h"
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {

@@ -24,7 +24,7 @@
 #include "simu5g/common/utils/utils.h"
 #include "simu5g/nodes/mec/orchestrator/MecOrchestrator.h"
 #include "simu5g/nodes/mec/orchestrator/ApplicationDescriptor/ApplicationDescriptor.h"
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/CreateContextAppAckMessage.h"
 #include "simu5g/nodes/mec/ualcmp/messages/UALCMPMessages_m.h"

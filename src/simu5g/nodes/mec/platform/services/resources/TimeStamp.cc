@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/nodes/mec/platform/services/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/platform/services/resources/TimeStamp.h"
 
 namespace simu5g {
 

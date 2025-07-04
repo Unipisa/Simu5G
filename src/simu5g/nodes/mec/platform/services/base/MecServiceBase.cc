@@ -23,7 +23,7 @@
 
 #include "simu5g/nodes/mec/platform/EventNotification/EventNotification.h"
 #include "simu5g/nodes/mec/platform/services/base/SocketManager.h"
-#include "simu5g/nodes/mec/platform/services/Resources/SubscriptionBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/SubscriptionBase.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
 #include "simu5g/nodes/mec/mepm/MecPlatformManager.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"

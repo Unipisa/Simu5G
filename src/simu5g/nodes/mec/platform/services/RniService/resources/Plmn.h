@@ -13,7 +13,7 @@
 #define _PLMN_H_
 
 #include "simu5g/nodes/mec/utils/MecCommon.h"
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 
 namespace simu5g {
 

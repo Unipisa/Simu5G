@@ -12,7 +12,7 @@
 #ifndef NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_SERVICEINFO_H_
 #define NODES_MEC_MECPLATFORM_SERVICEREGISTRY_RESOURCES_SERVICEINFO_H_
 
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/resources/CategoryRef.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/resources/TransportInfo.h"
 

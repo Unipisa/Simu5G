@@ -16,8 +16,8 @@
 #include "simu5g/common/LteCommon.h"
 #include <vector>
 #include <map>
-#include "simu5g/nodes/mec/platform/services/Resources/AttributeBase.h"
-#include "simu5g/nodes/mec/platform/services/Resources/TimeStamp.h"
+#include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
+#include "simu5g/nodes/mec/platform/services/resources/TimeStamp.h"
 
 namespace simu5g {
 
