@@ -12,7 +12,6 @@
 #ifndef _LTE_LTEDLFBGENERATOR_H_
 #define _LTE_LTEDLFBGENERATOR_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/cellInfo/CellInfo.h"

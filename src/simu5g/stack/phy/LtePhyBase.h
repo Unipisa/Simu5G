@@ -16,7 +16,6 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/world/radio/ChannelAccess.h"

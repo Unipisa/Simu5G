@@ -12,7 +12,6 @@
 #ifndef _LTE_LTERLCMUX_H_
 #define _LTE_LTERLCMUX_H_
 
-#include <omnetpp.h>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 

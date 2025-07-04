@@ -12,8 +12,6 @@
 #ifndef _LTE_LTEHARQUNITTX_H_
 #define _LTE_LTEHARQUNITTX_H_
 
-#include <omnetpp.h>
-
 #include "simu5g/stack/mac/packet/LteMacPdu.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/LteCommon.h"

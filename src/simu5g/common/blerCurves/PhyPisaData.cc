@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/common/blerCurves/PhyPisaData.h"
 
 namespace simu5g {

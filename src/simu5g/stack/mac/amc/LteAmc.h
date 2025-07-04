@@ -12,8 +12,7 @@
 #ifndef _LTE_LTEAMC_H_
 #define _LTE_LTEAMC_H_
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/stack/phy/feedback/LteFeedback.h"
 #include "simu5g/stack/phy/feedback/LteSummaryBuffer.h"

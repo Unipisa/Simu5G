@@ -12,8 +12,7 @@
 #ifndef _BACKGROUNDCELLAMCNR_H_
 #define _BACKGROUNDCELLAMCNR_H_
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/backgroundCell/BackgroundCellAmc.h"
 #include "simu5g/stack/mac/amc/NrMcs.h"
 

@@ -12,7 +12,6 @@
 #ifndef _LTE_DASFILTER_H_
 #define _LTE_DASFILTER_H_
 
-#include <omnetpp.h>
 #include "simu5g/stack/phy/das/RemoteAntennaSet.h"
 #include "simu5g/stack/phy/packet/LteAirFrame.h"
 #include "simu5g/common/LteControlInfo.h"

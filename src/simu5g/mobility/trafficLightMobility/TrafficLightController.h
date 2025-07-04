@@ -20,7 +20,7 @@
 #include <set>
 #include <string.h>
 
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/common/geometry/common/Coord.h>
 #include <inet/common/geometry/common/Quaternion.h>

@@ -13,8 +13,8 @@
 #define _CELLUEINFO_H_
 
 #include <vector>
-#include <omnetpp.h>
 #include <map>
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/mec/platform/services/resources/AttributeBase.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 #include "simu5g/nodes/mec/platform/services/RniService/resources/Ecgi.h"

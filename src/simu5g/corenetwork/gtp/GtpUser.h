@@ -14,7 +14,7 @@
 
 #include <map>
 
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>

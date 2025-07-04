@@ -12,7 +12,6 @@
 #ifndef _LTE_LTEPDCPRRC_H_
 #define _LTE_LTEPDCPRRC_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/binder/Binder.h"

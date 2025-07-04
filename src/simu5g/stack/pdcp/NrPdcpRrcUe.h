@@ -12,8 +12,7 @@
 #ifndef _NRPDCPRRCUE_H_
 #define _NRPDCPRRCUE_H_
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/pdcp/LtePdcpRrcUeD2D.h"
 
 namespace simu5g {

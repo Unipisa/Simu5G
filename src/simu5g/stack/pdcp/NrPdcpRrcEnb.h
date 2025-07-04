@@ -12,9 +12,9 @@
 #ifndef _NRPDCPRRCENB_H_
 #define _NRPDCPRRCENB_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/stack/pdcp/LtePdcpRrcEnbD2D.h"
 #include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"

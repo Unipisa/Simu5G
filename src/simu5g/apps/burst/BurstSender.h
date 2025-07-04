@@ -12,12 +12,12 @@
 #define _BURSTSENDER_H_
 
 #include <string.h>
-#include <omnetpp.h>
 
 #include <inet/common/INETDefs.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "BurstPacket_m.h"
 
 namespace simu5g {

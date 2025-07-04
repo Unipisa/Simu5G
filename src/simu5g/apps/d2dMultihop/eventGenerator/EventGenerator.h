@@ -13,9 +13,10 @@
 #define _LTE_EVENTGENERATOR_H_
 
 #include <string.h>
-#include <omnetpp.h>
+
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/apps/d2dMultihop/MultihopD2D.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/phy/LtePhyBase.h"

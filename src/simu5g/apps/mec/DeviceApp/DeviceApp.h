@@ -12,7 +12,7 @@
 #ifndef APPS_MEC_MEAPPS_DEVICEAPP_H_
 #define APPS_MEC_MEAPPS_DEVICEAPP_H_
 
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>

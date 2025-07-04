@@ -12,7 +12,6 @@
 #ifndef _LTE_LTERXPDCPENTITY_H_
 #define _LTE_LTERXPDCPENTITY_H_
 
-#include <omnetpp.h>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/LtePdcpRrc.h"

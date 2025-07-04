@@ -12,8 +12,9 @@
 #ifndef _LTE_FEEDBACKTESTER_H_
 #define _LTE_FEEDBACKTESTER_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
+
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 
 namespace simu5g {

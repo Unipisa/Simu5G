@@ -18,8 +18,6 @@
 #ifndef _LTE_LTECOMMON_H_
 #define _LTE_LTECOMMON_H_
 
-#define _NO_W32_PSEUDO_MODIFIERS
-
 #include <algorithm>
 #include <bitset>
 #include <fstream>
@@ -31,17 +29,16 @@
 #include <string>
 #include <vector>
 
-#include <omnetpp.h>
 #include <inet/common/geometry/common/Coord.h>
 #include <inet/common/packet/Packet.h>
 #include <inet/common/Protocol.h>
 
-#include "simu5g/common/features.h"
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteCommonEnum_m.h"
 
-namespace simu5g {
-
 using namespace omnetpp;
+
+namespace simu5g {
 
 class Binder;
 class CellInfo;

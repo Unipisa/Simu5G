@@ -12,8 +12,6 @@
 #ifndef _LTE_LTEAIRFRAME_H_
 #define _LTE_LTEAIRFRAME_H_
 
-#include <omnetpp.h>
-
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/phy/packet/LteAirFrame_m.h"

@@ -17,8 +17,6 @@
 #define _LTE_USERTXPARAMS_H_
 
 //#include "simu5g/common/LteCommon.h"
-#include <omnetpp.h>
-
 #include "simu5g/stack/mac/amc/LteMcs.h"
 
 namespace simu5g {

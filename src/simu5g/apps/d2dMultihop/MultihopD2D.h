@@ -13,10 +13,12 @@
 #define _LTE_MULTIHOPD2D_H_
 
 #include <string.h>
-#include <omnetpp.h>
+
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
+
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/apps/d2dMultihop/MultihopD2DPacket_m.h"
 #include "simu5g/apps/d2dMultihop/statistics/MultihopD2DStatistics.h"
 #include "simu5g/apps/d2dMultihop/eventGenerator/EventGenerator.h"

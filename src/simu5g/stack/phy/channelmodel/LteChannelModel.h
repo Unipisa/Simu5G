@@ -19,8 +19,6 @@
 #include "simu5g/common/carrierAggregation/ComponentCarrier.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
 #include "simu5g/stack/phy/packet/LteAirFrame.h"
-#include <omnetpp.h>
-
 namespace simu5g {
 
 using namespace inet;

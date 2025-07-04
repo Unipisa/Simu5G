@@ -13,10 +13,10 @@
 #ifndef _LTE_VODUDPCLIENT_H_
 #define _LTE_VODUDPCLIENT_H_
 
-#include <omnetpp.h>
 #include <string.h>
 #include <fstream>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/apps/vod/VoDPacket_m.h"
 #include "simu5g/apps/vod/VoDUDPStruct.h"
 #include <inet/transportlayer/contract/udp/UdpControlInfo.h>

@@ -12,8 +12,7 @@
 #ifndef _BACKGROUNDCELLAMC_H_
 #define _BACKGROUNDCELLAMC_H_
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/mac/amc/LteMcs.h"
 

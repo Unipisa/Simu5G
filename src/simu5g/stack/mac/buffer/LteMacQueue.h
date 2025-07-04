@@ -12,10 +12,9 @@
 #ifndef _LTE_LTEMACQUEUE_H_
 #define _LTE_LTEMACQUEUE_H_
 
-#include <omnetpp.h>
-
 #include <inet/common/packet/Packet.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/rlc/packet/LteRlcPdu_m.h"
 
 namespace simu5g {

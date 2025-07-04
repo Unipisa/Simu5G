@@ -12,7 +12,6 @@
 #ifndef __IP2NIC_H_
 #define __IP2NIC_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 #include "simu5g/common/LteCommon.h"

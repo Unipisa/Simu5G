@@ -12,7 +12,6 @@
 #ifndef _LTE_PACKETFLOWMANAGERBASE_H_
 #define _LTE_PACKETFLOWMANAGERBASE_H_
 
-#include <omnetpp.h>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 

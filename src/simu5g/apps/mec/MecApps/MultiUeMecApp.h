@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include <omnetpp.h>
 #include <inet/networklayer/common/L3Address.h>
+
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/apps/mec/MecApps/MecAppBase.h"
 
 using namespace omnetpp;

@@ -12,9 +12,9 @@
 #ifndef _LTE_UMTXENTITY_H_
 #define _LTE_UMTXENTITY_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"

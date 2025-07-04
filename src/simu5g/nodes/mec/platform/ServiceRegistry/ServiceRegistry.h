@@ -14,9 +14,9 @@
 
 #include <map>
 
-#include <omnetpp.h>
 #include <inet/networklayer/common/L3Address.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/mec/platform/services/base/MecServiceBase.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/resources/ServiceInfo.h"

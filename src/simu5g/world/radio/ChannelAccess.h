@@ -15,9 +15,9 @@
 #include <list>
 #include <limits>
 
-#include <omnetpp.h>
 #include <inet/common/INETDefs.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/world/radio/IChannelControl.h"
 #include "simu5g/common/features.h"
 

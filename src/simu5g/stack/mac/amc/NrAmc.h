@@ -12,8 +12,7 @@
 #ifndef _NRAMC_H_
 #define _NRAMC_H_
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/stack/mac/amc/NrMcs.h"
 

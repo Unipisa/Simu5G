@@ -12,8 +12,6 @@
 #ifndef _CELLINFO_H_
 #define _CELLINFO_H_
 
-#include <omnetpp.h>
-
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 

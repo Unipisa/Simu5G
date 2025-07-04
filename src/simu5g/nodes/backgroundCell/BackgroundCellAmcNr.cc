@@ -9,8 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/backgroundCell/BackgroundCellAmcNr.h"
 #include "simu5g/common/binder/Binder.h"
 

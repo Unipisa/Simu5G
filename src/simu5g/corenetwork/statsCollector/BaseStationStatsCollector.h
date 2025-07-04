@@ -12,8 +12,6 @@
 #ifndef _LTE_ENOBSTATSCOLLECTOR_H_
 #define _LTE_ENOBSTATSCOLLECTOR_H_
 
-#include <omnetpp.h>
-
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"

@@ -12,7 +12,6 @@
 #ifndef APPS_MEC_MEAPPS_MECAPPBASE_H_
 #define APPS_MEC_MEAPPS_MECAPPBASE_H_
 
-#include <omnetpp.h>
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/common/socket/SocketMap.h>
@@ -20,6 +19,7 @@
 #include <inet/transportlayer/contract/tcp/TcpSocket.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpMessages_m.h"

@@ -16,7 +16,7 @@
 #include "simu5g/nodes/mec/platform/ServiceRegistry/resources/CategoryRef.h"
 #include "simu5g/nodes/mec/platform/ServiceRegistry/resources/TransportInfo.h"
 
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 #include <string>
 
 namespace simu5g {

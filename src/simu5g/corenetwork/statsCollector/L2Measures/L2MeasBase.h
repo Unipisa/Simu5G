@@ -14,7 +14,7 @@
 
 #include <vector>
 #include <string>
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 
 namespace simu5g {
 

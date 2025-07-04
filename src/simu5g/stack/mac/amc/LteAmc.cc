@@ -9,8 +9,7 @@
 // and cannot be removed from it.
 //
 //
-#include <omnetpp.h>
-
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 

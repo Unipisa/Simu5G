@@ -15,11 +15,10 @@
 #include <list>
 #include <string.h>
 
-#include <omnetpp.h>
-
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/apps/voip/VoipPacket_m.h"
 
 namespace simu5g {

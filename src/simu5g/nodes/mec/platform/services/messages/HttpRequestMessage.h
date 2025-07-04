@@ -19,8 +19,8 @@
 #ifndef _HTTREQUESTMESSAGE_H_
 #define  _HTTREQUESTMESSAGE_H_
 
-#include <omnetpp.h>
 #include <string>
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/mec/platform/services/messages/HttpMessages_m.h"
 
 namespace simu5g {

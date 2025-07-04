@@ -14,8 +14,6 @@
 
 #include <string>
 
-#include <omnetpp.h>
-
 #include <inet/networklayer/contract/ipv4/Ipv4Address.h>
 #include <inet/networklayer/common/L3Address.h>
 

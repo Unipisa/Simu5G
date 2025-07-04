@@ -9,9 +9,10 @@
 // and cannot be removed from it.
 //
 
-#include <omnetpp.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include <inet/transportlayer/sctp/SctpAssociation.h>
+
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/x2/X2AppClient.h"
 #include "simu5g/common/binder/Binder.h"
 #include <inet/transportlayer/contract/sctp/SctpCommand_m.h>

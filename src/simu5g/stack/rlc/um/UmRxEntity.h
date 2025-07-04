@@ -12,9 +12,9 @@
 #ifndef _LTE_UMRXENTITY_H_
 #define _LTE_UMRXENTITY_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/common/timer/TTimer.h"
 #include "simu5g/common/LteControlInfo.h"

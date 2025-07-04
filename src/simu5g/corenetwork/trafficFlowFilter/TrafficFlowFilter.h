@@ -12,9 +12,9 @@
 #ifndef __TRAFFICFLOWFILTER_H_
 #define __TRAFFICFLOWFILTER_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/corenetwork/trafficFlowFilter/TftControlInfo_m.h"
 #include "simu5g/common/binder/Binder.h"
 

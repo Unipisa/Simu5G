@@ -12,7 +12,6 @@
 #ifndef COMPONENTCARRIER_H_
 #define COMPONENTCARRIER_H_
 
-#include <omnetpp.h>
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"

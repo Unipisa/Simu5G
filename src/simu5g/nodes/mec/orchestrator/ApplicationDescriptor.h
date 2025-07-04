@@ -11,7 +11,7 @@
 #define NODES_MEC_MECORCHESTRATOR_APPLICATIONDESCRIPTOR_APPLICATIONDESCRIPTOR_H_
 
 #include <string.h>
-#include <omnetpp.h>
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/nodes/mec/utils/MecCommon.h"
 #include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
 

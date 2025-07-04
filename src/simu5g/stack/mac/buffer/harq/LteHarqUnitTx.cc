@@ -9,9 +9,9 @@
 // and cannot be removed from it.
 //
 
+#include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/mac/buffer/harq/LteHarqUnitTx.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
-#include <omnetpp.h>
 
 namespace simu5g {
 
