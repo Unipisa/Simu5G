@@ -2,14 +2,63 @@
 """
 Python rewrite of gen_runallexamples.pl
 Generates fingerprint test CSV entries by scanning .ini files for configurations.
+Only prints simulations that are NOT listed in the provided CSV files.
 """
 
+import argparse
+import csv
 import os
 import re
 import sys
 from pathlib import Path
 
+def parse_existing_csv_files(csv_files):
+    """
+    Parse CSV files and extract (dir, args) pairs for comparison.
+    Returns a set of (working_dir, args) tuples.
+    """
+    existing_simulations = set()
+
+    for csv_file in csv_files:
+        if not os.path.exists(csv_file):
+            print(f"# Warning: CSV file {csv_file} not found", file=sys.stderr)
+            continue
+
+        try:
+            with open(csv_file, 'r', encoding='utf-8', errors='ignore') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    # Skip empty lines and comment lines
+                    if not line or line.startswith('#'):
+                        continue
+
+                    # Split by comma and extract first two columns
+                    parts = [part.strip() for part in line.split(',')]
+                    if len(parts) >= 2:
+                        working_dir = parts[0].strip()
+                        args = parts[1].strip()
+                        existing_simulations.add((working_dir, args))
+
+        except Exception as e:
+            print(f"# Error reading CSV file {csv_file}: {e}", file=sys.stderr)
+
+    return existing_simulations
+
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description='Generate fingerprint test CSV entries, excluding simulations already in provided CSV files'
+    )
+    parser.add_argument('csv_files', nargs='*',
+                       help='CSV files containing existing simulations to exclude')
+
+    args = parser.parse_args()
+
+    # Parse existing CSV files if provided
+    existing_simulations = set()
+    if args.csv_files:
+        existing_simulations = parse_existing_csv_files(args.csv_files)
+        print(f"# Loaded {len(existing_simulations)} existing simulations from {len(args.csv_files)} CSV file(s)", file=sys.stderr)
     # Define the skip list - tests that should be commented out
     skiplist_text = """
 /examples/emulation/extclient/omnetpp.ini  General                       # ext interface tests are not supported as they require pcap drivers and external events
@@ -60,6 +109,10 @@ def main():
 
     print("# working directory, command line arguments, simulation time limit, fingerprint, expected result, tags")
 
+    # Collect all results for sorting and count filtered simulations
+    all_results = []
+    filtered_count = 0
+
     # Process each .ini file
     for fname in ini_files:
         try:
@@ -69,28 +122,33 @@ def main():
             print(f"# Error reading {fname}: {e}", file=sys.stderr)
             continue
 
-        # Find all [Config ...] sections
-        config_matches = re.findall(r'^\s*(\[Config [a-zA-Z_0-9-]+\].*?)$', content, re.MULTILINE)
+        # Find all [Config ...] or [...] sections
+        config_matches = re.findall(r'^\s*(\[(?:Config )?[a-zA-Z_0-9-]+\].*?)$', content, re.MULTILINE)
 
         # If no configs found, use General as default
         if not config_matches:
             config_matches = ["[Config General]"]
 
-        # Find extends clauses to identify extended configs
-        extends = {}
-        extends_matches = re.findall(r'^\s*extends\s*=\s*([^#\n]+)\s*(?:#.*)?$', content, re.MULTILINE)
-        for extends_line in extends_matches:
-            extends_line = extends_line.strip()
-            # Split by comma and process each extended config
-            for item in re.split(r'\s*,\s*', extends_line):
-                item = item.strip()
-                if item:
-                    extends[item] = f"# {item} extended"
+        # Find abstract configs to identify configs that should be skipped
+        abstract_configs = set()
+
+        # Find which config sections contain abstract markers
+        config_sections = re.split(r'^\s*\[(?:Config )?[a-zA-Z_0-9-]+\]', content, flags=re.MULTILINE)
+        config_names = re.findall(r'^\s*\[(?:Config )?([a-zA-Z_0-9-]+)\]', content, re.MULTILINE)
+
+        # Check each config section for abstract markers
+        for i, section in enumerate(config_sections[1:], 0):  # Skip first empty section
+            if i < len(config_names):
+                config_name = config_names[i]
+                # Check for 'abstract = true' or '#abstract-config = true' patterns only
+                if (re.search(r'^\s*abstract\s*=\s*true\s*(?:#.*)?$', section, re.MULTILINE | re.IGNORECASE) or
+                    re.search(r'^\s*#\s*abstract-config\s*=\s*true\s*(?:#.*)?$', section, re.MULTILINE | re.IGNORECASE)):
+                    abstract_configs.add(config_name)
 
         # Process each config
-        for config_line in config_matches:
+        for config_index, config_line in enumerate(config_matches):
             # Extract config name and comment
-            config_match = re.match(r'^\[Config ([a-zA-Z_0-9-]+)\]\s*(#.*)?$', config_line)
+            config_match = re.match(r'^\[(?:Config )?([a-zA-Z_0-9-]+)\]\s*(#.*)?$', config_line)
             if not config_match:
                 continue
 
@@ -103,31 +161,52 @@ def main():
                 dir_path = dir_path[2:]
 
             # Build the CSV line - keep the ./ prefix like the original Perl script
-            working_dir = f"/./{dir_path}/" if dir_path else "/./"
-            working_dir_padded = working_dir + ' ' * max(0, 36 - len(working_dir))
+            working_dir = f"/{dir_path}/" if dir_path else "/"
+            working_dir_padded = working_dir + ',' + ' ' * max(1, 36 - len(working_dir))
 
             command_args = f"-f {filename} -c {cfg} -r 0"
-            command_padded = command_args + ',' + ' ' * max(0, 83 - len(working_dir_padded + command_args + ','))
+            command_padded = command_args + ',' + ' ' * max(0, 85 - len(working_dir_padded + command_args + ', '))
 
             time_limit = "---100s,"
-            time_padded = time_limit + ' ' * max(0, 100 - len(working_dir_padded + command_padded + time_limit))
+            time_padded = time_limit + ' ' * max(0, 101 - len(working_dir_padded + command_padded + time_limit))
 
             fingerprint = "0000-0000/tplx, "
             result = "PASS,"
 
             run_line = working_dir_padded + command_padded + time_padded + fingerprint + result
 
+            # Check if this simulation already exists in the provided CSV files
+            simulation_key = (working_dir, command_args)
+            if simulation_key in existing_simulations:
+                # Skip this simulation as it already exists in the CSV files
+                filtered_count += 1
+                continue
+
             # Check if this should be skipped or commented
             skip_key = f"/{dir_path}/{filename}  {cfg}"
 
+            # Determine the output line and whether it should be commented
             if "__interactive__" in comment.lower():
-                print(f"# {run_line}   # {config_line}")
-            elif cfg in extends:
-                print(f"# {run_line}   {extends[cfg]}")
+                output_line = f"# {run_line}   # {config_line}"
+            elif cfg in abstract_configs:
+                output_line = f"# {run_line}   # {cfg} is abstract"
             elif skip_key in skiplist:
-                print(f"# {run_line}   {skiplist[skip_key]}")
+                output_line = f"# {run_line}   {skiplist[skip_key]}"
             else:
-                print(run_line)
+                output_line = run_line
+
+            # Add to results with sorting key (path, filename, original order in file)
+            sort_key = (dir_path, filename, config_index)
+            all_results.append((sort_key, output_line))
+
+    # Sort results by path, filename, config name and print
+    all_results.sort(key=lambda x: x[0])
+    for _, output_line in all_results:
+        print(output_line)
+
+    # Report filtering statistics if CSV files were provided
+    if args.csv_files and filtered_count > 0:
+        print(f"# Filtered out {filtered_count} simulation(s) that were already present in the provided CSV file(s)", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
