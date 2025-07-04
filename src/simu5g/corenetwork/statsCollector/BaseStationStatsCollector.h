@@ -15,7 +15,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/mec/utils/MecCommon.h"
 #include <map>
 #include "simu5g/corenetwork/statsCollector/L2Measures/L2MeasBase.h"
 #include "simu5g/common/cellInfo/CellInfo.h"

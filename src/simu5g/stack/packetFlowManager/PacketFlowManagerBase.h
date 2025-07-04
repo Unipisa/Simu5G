@@ -13,7 +13,7 @@
 #define _LTE_PACKETFLOWMANAGERBASE_H_
 
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

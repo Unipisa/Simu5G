@@ -18,7 +18,7 @@
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/apps/mec/RnisTestApp/packets/RnisTestAppPacket_m.h"
-#include "simu5g/nodes/mec/platform/MeAppPacket_Types.h"
+#include "simu5g/mec/platform/MeAppPacket_Types.h"
 
 namespace simu5g {
 

@@ -14,11 +14,11 @@ package simu5g.nodes.mec;
 import inet.applications.contract.IApp;
 import inet.node.ethernet.Eth10G;
 import simu5g.nodes.Upf;
-import simu5g.nodes.mec.platform.MecPlatform;
-import simu5g.nodes.mec.mepm.MecPlatformManager;
-import simu5g.nodes.mec.vi.VirtualisationInfrastructure;
-import simu5g.nodes.mec.vim.BackgroundApp;
-import simu5g.nodes.mec.vim.VirtualisationInfrastructureManager;
+import simu5g.mec.platform.MecPlatform;
+import simu5g.mec.mepm.MecPlatformManager;
+import simu5g.mec.vi.VirtualisationInfrastructure;
+import simu5g.mec.vim.BackgroundApp;
+import simu5g.mec.vim.VirtualisationInfrastructureManager;
 
 
 //

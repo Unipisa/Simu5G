@@ -20,11 +20,11 @@
 #include <inet/transportlayer/contract/udp/UdpSocket.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
-#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
-#include "simu5g/nodes/mec/platform/services/messages/HttpMessages_m.h"
-#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
-#include "simu5g/nodes/mec/vim/VirtualisationInfrastructureManager.h"
+#include "simu5g/mec/platform/services/messages/HttpRequestMessage.h"
+#include "simu5g/mec/platform/services/messages/HttpResponseMessage.h"
+#include "simu5g/mec/platform/services/messages/HttpMessages_m.h"
+#include "simu5g/mec/platform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/mec/vim/VirtualisationInfrastructureManager.h"
 
 namespace simu5g {
 

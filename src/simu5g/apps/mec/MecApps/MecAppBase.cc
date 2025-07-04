@@ -16,8 +16,8 @@
 #include <inet/common/Protocol.h>
 
 #include "simu5g/apps/mec/MecApps/packets/ProcessingTimeMessage_m.h"
-#include "simu5g/nodes/mec/utils/MecCommon.h"
-#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/mec/utils/MecCommon.h"
+#include "simu5g/mec/utils/httpUtils/httpUtils.h"
 
 namespace simu5g {
 

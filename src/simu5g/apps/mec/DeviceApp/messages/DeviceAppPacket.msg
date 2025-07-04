@@ -13,7 +13,7 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
-import simu5g.nodes.mec.platform.MecPackets;
+import simu5g.mec.platform.MecPackets;
 
 namespace simu5g;
 

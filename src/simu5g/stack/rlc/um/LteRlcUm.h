@@ -19,7 +19,7 @@
 #include "simu5g/stack/rlc/um/UmRxEntity.h"
 #include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

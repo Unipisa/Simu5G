@@ -15,8 +15,8 @@
 #include <inet/networklayer/common/L3Address.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
-#include "simu5g/nodes/mec/platform/MeAppPacket_Types.h"
-#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/mec/platform/MeAppPacket_Types.h"
+#include "simu5g/mec/platform/ServiceRegistry/ServiceRegistry.h"
 
 #include "simu5g/apps/mec/MecApps/MecAppBase.h"
 #include "simu5g/apps/mec/RealTimeVideoStreamingApp/packets/RTVideoStreamingPacket_Types.h"

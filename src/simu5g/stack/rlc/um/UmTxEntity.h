@@ -18,7 +18,7 @@
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
-#include "simu5g/nodes/mec/utils/MecCommon.h"
+#include "simu5g/mec/utils/MecCommon.h"
 
 namespace simu5g {
 

@@ -12,11 +12,11 @@
 package simu5g.apps.mec.MecApps;
 
 import inet.applications.contract.IApp;
-import simu5g.nodes.mec.platform.IMecApp;
+import simu5g.mec.platform.IMecApp;
 
 //
 // This is an empty MEC app which is used as a model for MEC apps that should
-// be shared among multiple UEs. Any shared MEC app that should extend this app 
+// be shared among multiple UEs. Any shared MEC app that should extend this app
 simple MultiUeMecApp like IMecApp, IApp
 {
     parameters:

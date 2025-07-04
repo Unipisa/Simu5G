@@ -17,7 +17,7 @@
 
 #include "simu5g/apps/mec/MecApps/MecAppBase.h"
 #include "simu5g/apps/mec/WarningAlert/packets/WarningAlertPacket_m.h"
-#include "simu5g/nodes/mec/platform/ServiceRegistry/ServiceRegistry.h"
+#include "simu5g/mec/platform/ServiceRegistry/ServiceRegistry.h"
 
 namespace simu5g {
 

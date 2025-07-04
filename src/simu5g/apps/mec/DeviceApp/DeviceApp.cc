@@ -20,10 +20,10 @@
 #include <inet/transportlayer/common/L4PortTag_m.h>
 
 #include "simu5g/apps/mec/DeviceApp/messages/DeviceAppPacket_Types.h"
-#include "simu5g/nodes/mec/platform/services/messages/HttpRequestMessage.h"
-#include "simu5g/nodes/mec/platform/services/messages/HttpResponseMessage.h"
-#include "simu5g/nodes/mec/utils/httpUtils/httpUtils.h"
-#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/mec/platform/services/messages/HttpRequestMessage.h"
+#include "simu5g/mec/platform/services/messages/HttpResponseMessage.h"
+#include "simu5g/mec/utils/httpUtils/httpUtils.h"
+#include "simu5g/mec/utils/httpUtils/json.hpp"
 
 namespace simu5g {
 

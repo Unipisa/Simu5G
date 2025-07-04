@@ -14,10 +14,10 @@
 // RnisTestAppPacket used by UeRnisTestApp and MecRnisTestApp
 //
 
-import simu5g.nodes.mec.platform.MecPackets;
+import simu5g.mec.platform.MecPackets;
 
 cplusplus {{
-#include "simu5g/nodes/mec/utils/httpUtils/json.hpp"
+#include "simu5g/mec/utils/httpUtils/json.hpp"
 }}
 
 class nlohmann::json

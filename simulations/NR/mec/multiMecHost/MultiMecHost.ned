@@ -20,8 +20,8 @@ import simu5g.nodes.NR.gNodeB;
 import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
 import simu5g.nodes.mec.MecHost;
-import simu5g.nodes.mec.orchestrator.MecOrchestrator;
-import simu5g.nodes.mec.ualcmp.Ualcmp;
+import simu5g.mec.orchestrator.MecOrchestrator;
+import simu5g.mec.ualcmp.Ualcmp;
 import simu5g.world.radio.LteChannelControl;
 
 
