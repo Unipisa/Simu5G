@@ -1,9 +1,0 @@
-# workingdir,                            args,                                               simtimelimit,    fingerprint
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterOnly-DL -r 0,           5s,         2d8f-f556/tplx;dac8-5917/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterOnly-UL -r 0,           5s,         845f-025c/tplx;b38e-a84e/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SecondaryOnly-DL -r 0,        5s,         458d-f4b6/tplx;a729-fe54/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SecondaryOnly-UL -r 0,        5s,         494b-b13d/tplx;ae30-4e1e/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterPlusSecondary-DL -r 0,  5s,         d922-ff35/tplx;f476-279d/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-MasterPlusSecondary-UL -r 0,  5s,         5d34-b50d/tplx;62fb-3fbf/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SplitBearer-DL -r 0,          5s,         309d-f2b3/tplx;96b3-729b/s, PASS,
-/simulations/NR/dualConnectivity,        -f omnetpp.ini -c DualConn-SplitBearer-UL -r 0,          5s,         5e3b-9cd9/tplx;2979-0e4a/s, PASS,

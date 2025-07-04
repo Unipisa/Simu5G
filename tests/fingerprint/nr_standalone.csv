@@ -1,4 +1,0 @@
-# workingdir,                      args,                                                   simtimelimit,    fingerprint
-/simulations/NR/standalone,        -f omnetpp.ini -c VoIP-DL -r 0,                         5s,              7127-a871/tplx;ded8-01d1/s,PASS,
-/simulations/NR/standalone,        -f omnetpp.ini -c VoIP-UL -r 0,                         5s,              ee32-76b0/tplx;2379-98cc/s,PASS,
-

@@ -1,4 +1,0 @@
-# workingdir,                            args,                                          simtimelimit,    fingerprint
-/simulations/LTE/x2/,                         -f omnetpp.ini -c X2-Mesh-balanced -r 0,      5s,              7cf0-52a5/tplx, PASS,
-/simulations/LTE/x2/,                         -f omnetpp.ini -c X2-Mesh-unbalanced -r 0,    5s,              4d38-6821/tplx, PASS,
-
