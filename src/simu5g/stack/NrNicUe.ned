@@ -35,7 +35,7 @@ module NrNicUe extends LteNicUeD2D
 
         int numNrCarriers = default(1);
 
-        pdcpRrc.typename = default("NrPdcpUe");
+        pdcp.typename = default("NrPdcpUe");
         phy.typename = default("NrPhyUe");	        // TODO fix this
         											// LtePhy is of type NrPhyUe so that it is
         											// be aware of the existing of the second
@@ -86,9 +86,9 @@ module NrNicUe extends LteNicUeD2D
     connections:
 
         //# PDCP <-> RLC
-        pdcpRrc.UM_Sap++ <--> nrRlc.UM_Sap;
-        pdcpRrc.AM_Sap++ <--> nrRlc.AM_Sap;
-        pdcpRrc.TM_Sap++ <--> nrRlc.TM_Sap;
+        pdcp.UM_Sap++ <--> nrRlc.UM_Sap;
+        pdcp.AM_Sap++ <--> nrRlc.AM_Sap;
+        pdcp.TM_Sap++ <--> nrRlc.TM_Sap;
 
         //# RLC <-> MAC
         nrRlc.RLC_to_MAC --> nrMac.RLC_to_MAC;

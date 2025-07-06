@@ -81,7 +81,7 @@ simple LteMacEnb extends LteMacBase
 
         string cellInfoModule;
         string rlcUmModule = default("^.rlc.um");
-        string pdcpRrcModule = default("^.pdcpRrc");
+        string pdcpRrcModule = default("^.pdcp");
 
         //#
         //# Statistics related to resource blocks occupancy

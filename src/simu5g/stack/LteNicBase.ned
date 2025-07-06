@@ -72,7 +72,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=412,67");
         }
         // PDCP-RRC Layer
-        pdcpRrc: <> like ILtePdcp {
+        pdcp: <> like ILtePdcp {
             @display("p=362,141");
         }
         // RLC Layer
@@ -104,16 +104,16 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
     connections allowunconnected:
-        ip2nic.stackNic <--> pdcpRrc.DataPort;
+        ip2nic.stackNic <--> pdcp.DataPort;
 
         //#
         //# Internal LTE Stack Connections
         //#
 
         //# PDCP <-> RLC
-        pdcpRrc.UM_Sap++ <--> rlc.UM_Sap;
-        pdcpRrc.AM_Sap++ <--> rlc.AM_Sap;
-        pdcpRrc.TM_Sap++ <--> rlc.TM_Sap;
+        pdcp.UM_Sap++ <--> rlc.UM_Sap;
+        pdcp.AM_Sap++ <--> rlc.AM_Sap;
+        pdcp.TM_Sap++ <--> rlc.TM_Sap;
 
         //# RLC <-> MAC
         rlc.RLC_to_MAC --> mac.RLC_to_MAC;

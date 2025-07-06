@@ -26,7 +26,7 @@ simple LtePhyUe extends LtePhyBase
         @class("LtePhyUe");
 
         string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"
-        string pdcpRrcModule = default("^.pdcpRrc");
+        string pdcpRrcModule = default("^.pdcp");
         string ip2nicModule = default("^.ip2nic");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
 

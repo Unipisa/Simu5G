@@ -40,8 +40,8 @@ void LteMacUeD2D::initialize(int stage)
         if (rlcUmType != "LteRlcUmD2D")
             throw cRuntimeError("LteMacUeD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'. Aborting", par("rlcUmModule").stringValue(), rlcUmType.c_str());
 
-        cModule *pdcpRrc = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
-        std::string pdcpType = pdcpRrc->getComponentType()->getName();
+        cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
+        std::string pdcpType = pdcp->getComponentType()->getName();
         if (pdcpType != "LtePdcpUeD2D" && pdcpType != "NrPdcpUe")
             throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpUeD2D or NrPdcpUe. Aborting", pdcpType.c_str());
     }

@@ -533,7 +533,7 @@ cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
     if (id == 0) {
         return nullptr;
     }
-    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcpRrc");
+    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcp");
 }
 
 LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId)

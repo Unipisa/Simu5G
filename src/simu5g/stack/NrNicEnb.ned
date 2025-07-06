@@ -22,7 +22,7 @@ package simu5g.stack;
 module NrNicEnb extends LteNicEnbD2D
 {
     parameters:
-        pdcpRrc.typename = default("NrPdcpEnb");
+        pdcp.typename = default("NrPdcpEnb");
         mac.typename = default("NrMacGnb");
         lteChannelModelType = default("NrChannelModel_3GPP38_901");
         @display("bgb=694,443");
