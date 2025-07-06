@@ -35,7 +35,7 @@
 #include "simu5g/stack/rlc/am/packet/LteRlcAmPdu_m.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp/NrPdcpRrcEnb.h"
+#include "simu5g/stack/pdcp/NrPdcpEnb.h"
 
 namespace simu5g {
 
@@ -1058,14 +1058,14 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         }
 
         /*
-         * If the PDCP layer is NRPdcpRrc and isDualConnectivityEnabled,
+         * If the PDCP layer is NrPdcp and isDualConnectivityEnabled,
          * the PDCP layer can also have SDUs buffered.
          */
 
-        NrPdcpRrcEnb *nrPdpc;
+        NrPdcpEnb *nrPdpc;
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
-        if (strcmp(pdcp->getClassName(), "NrPdcpRrcEnb") == 0) {
-            nrPdpc = check_and_cast<NrPdcpRrcEnb *>(pdcp);
+        if (strcmp(pdcp->getClassName(), "NrPdcpEnb") == 0) {
+            nrPdpc = check_and_cast<NrPdcpEnb *>(pdcp);
             std::set<MacNodeId> activePdcpUe;
             nrPdpc->activeUeUL(&activePdcpUe);
             for (auto ue: activePdcpUe) {

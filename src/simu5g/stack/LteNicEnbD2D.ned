@@ -24,7 +24,7 @@ import simu5g.stack.d2dModeSelection.ID2DModeSelection;
 module LteNicEnbD2D extends LteNicEnb
 {
     parameters:
-        pdcpRrc.typename = default("LtePdcpRrcEnbD2D");
+        pdcpRrc.typename = default("LtePdcpEnbD2D");
         mac.typename = default("LteMacEnbD2D");
         phy.typename = default("LtePhyEnbD2D");
         packetFlowManager.typename = default("PacketFlowManagerEnb");

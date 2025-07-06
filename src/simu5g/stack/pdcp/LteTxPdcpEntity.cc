@@ -19,7 +19,7 @@ Define_Module(LteTxPdcpEntity);
 
 void LteTxPdcpEntity::initialize()
 {
-    pdcp_ = check_and_cast<LtePdcpRrcBase *>(getParentModule());
+    pdcp_ = check_and_cast<LtePdcpBase *>(getParentModule());
 }
 
 void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
@@ -51,7 +51,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
             headerLength = 0;
             break;
         default:
-            throw cRuntimeError("LtePdcpRrcBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
+            throw cRuntimeError("LtePdcpBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
     }
     pdcpPkt->setChunkLength(B(headerLength));
     pkt->trim();

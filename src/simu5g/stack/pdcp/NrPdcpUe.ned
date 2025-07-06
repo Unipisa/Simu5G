@@ -9,15 +9,16 @@
 // and cannot be removed from it.
 //
 
-
 package simu5g.stack.pdcp;
 
 //
-// The LtePdcpRrcUe module implements the PDCP/RRC layer for an LTE NIC employed at
-// a User Equipment. It performs header compression on incoming IP datagrams
+// The NrPdcpUe module implements the PDCP/RRC layer for an NR NIC employed at
+// a User Equipment. It extends the ~LtePdcpUeD2D module to enable Dual Connectivity
+// and Split Bearer functionalities at the UE.
 //
-simple LtePdcpRrcUe extends LtePdcpRrcBase
+simple NrPdcpUe extends LtePdcpUeD2D
 {
-    @class("LtePdcpRrcUe");
+    parameters:
+        @class("NrPdcpUe");
 }
 

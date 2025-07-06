@@ -19,7 +19,7 @@ Define_Module(LteRxPdcpEntity);
 
 void LteRxPdcpEntity::initialize()
 {
-    pdcp_ = check_and_cast<LtePdcpRrcBase *>(getParentModule());
+    pdcp_ = check_and_cast<LtePdcpBase *>(getParentModule());
 }
 
 void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)

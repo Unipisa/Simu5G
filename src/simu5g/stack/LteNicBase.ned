@@ -16,7 +16,7 @@ import inet.networklayer.common.NetworkInterface;
 import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowManager.IPacketFlowManager;
-import simu5g.stack.pdcp.ILtePdcpRrc;
+import simu5g.stack.pdcp.ILtePdcp;
 import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.ILtePhy;
 import simu5g.stack.rlc.LteRlc;
@@ -72,7 +72,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
             @display("p=412,67");
         }
         // PDCP-RRC Layer
-        pdcpRrc: <> like ILtePdcpRrc {
+        pdcpRrc: <> like ILtePdcp {
             @display("p=362,141");
         }
         // RLC Layer

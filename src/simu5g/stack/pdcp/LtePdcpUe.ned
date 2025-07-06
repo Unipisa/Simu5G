@@ -9,16 +9,15 @@
 // and cannot be removed from it.
 //
 
+
 package simu5g.stack.pdcp;
 
 //
-// The LtePdcpRrcUeD2D module implements the PDCP/RRC layer for an LTE NIC employed at
-// a User Equipment with support for Device-to-Device (D2D) communications. It extends
-// the basic PDCP/RRC functionality with D2D communication capabilities.
+// The LtePdcpUe module implements the PDCP/RRC layer for an LTE NIC employed at
+// a User Equipment. It performs header compression on incoming IP datagrams
 //
-simple LtePdcpRrcUeD2D extends LtePdcpRrcUe
+simple LtePdcpUe extends LtePdcpBase
 {
-    parameters:
-        @class("LtePdcpRrcUeD2D");
+    @class("LtePdcpUe");
 }
 

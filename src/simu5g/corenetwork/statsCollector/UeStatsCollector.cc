@@ -15,7 +15,7 @@
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
-#include "simu5g/stack/pdcp/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
 

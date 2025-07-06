@@ -13,14 +13,14 @@
 package simu5g.stack.pdcp;
 
 //
-// The LtePdcpRrcEnb module implements the PDCP/RRC layer for an LTE NIC employed at
+// The LtePdcpEnb module implements the PDCP/RRC layer for an LTE NIC employed at
 // eNodeBs. It performs header compression and maps incoming IP datagrams to different
 // Radio Link Control (RLC) modes. Additionally, it supports Dual Connectivity and Split Bearer
 // functionalities.
 //
-simple LtePdcpRrcEnb extends LtePdcpRrcBase
+simple LtePdcpEnb extends LtePdcpBase
 {
-    @class("LtePdcpRrcEnb");
+    @class("LtePdcpEnb");
 }
 
 

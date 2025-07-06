@@ -42,8 +42,8 @@ void LteMacUeD2D::initialize(int stage)
 
         cModule *pdcpRrc = inet::getModuleFromPar<cModule>(par("pdcpRrcModule"), this);
         std::string pdcpType = pdcpRrc->getComponentType()->getName();
-        if (pdcpType != "LtePdcpRrcUeD2D" && pdcpType != "NrPdcpRrcUe")
-            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpRrcUeD2D or NrPdcpRrcUe. Aborting", pdcpType.c_str());
+        if (pdcpType != "LtePdcpUeD2D" && pdcpType != "NrPdcpUe")
+            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpUeD2D or NrPdcpUe. Aborting", pdcpType.c_str());
     }
     if (stage == inet::INITSTAGE_NETWORK_LAYER) {
         // get parameters

@@ -9,19 +9,19 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/pdcp/LtePdcpRrcUeD2D.h"
+#include "simu5g/stack/pdcp/LtePdcpUeD2D.h"
 #include <inet/networklayer/common/L3AddressResolver.h>
 #include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 
-Define_Module(LtePdcpRrcUeD2D);
+Define_Module(LtePdcpUeD2D);
 
 using namespace inet;
 using namespace omnetpp;
 
-MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
+MacNodeId LtePdcpUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 {
     Ipv4Address destAddr = Ipv4Address(lteInfo->getDstAddr());
     MacNodeId destId = binder_->getMacNodeId(destAddr);
@@ -38,7 +38,7 @@ MacNodeId LtePdcpRrcUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 /*
  * Upper Layer handlers
  */
-void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
+void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
@@ -93,7 +93,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     }
 
     // Cid Request
-    EV << "LtePdcpRrcUeD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
+    EV << "LtePdcpUeD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
        << " , ToS: " << lteInfo->getTypeOfService()
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
@@ -110,7 +110,7 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
         // assign a new LCID to the connection
         mylcid = lcid_++;
 
-        EV << "LtePdcpRrcUeD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
+        EV << "LtePdcpUeD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
     }
@@ -119,8 +119,8 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     lteInfo->setLcid(mylcid);
     lteInfo->setSourceId(nodeId_);
 
-    EV << "LtePdcpRrcUeD2D : Assigned Lcid: " << mylcid << "\n";
-    EV << "LtePdcpRrcUeD2D : Assigned Node ID: " << nodeId_ << "\n";
+    EV << "LtePdcpUeD2D : Assigned Lcid: " << mylcid << "\n";
+    EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
 
     // get effective next hop dest ID
     destId = getDestId(lteInfo);
@@ -133,13 +133,13 @@ void LtePdcpRrcUeD2D::fromDataPort(cPacket *pktAux)
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-void LtePdcpRrcUeD2D::handleMessage(cMessage *msg)
+void LtePdcpUeD2D::handleMessage(cMessage *msg)
 {
     cPacket *pktAux = check_and_cast<cPacket *>(msg);
 
     // check whether the message is a notification for mode switch
     if (strcmp(pktAux->getName(), "D2DModeSwitchNotification") == 0) {
-        EV << "LtePdcpRrcUeD2D::handleMessage - Received packet " << pktAux->getName() << " from port " << pktAux->getArrivalGate()->getName() << endl;
+        EV << "LtePdcpUeD2D::handleMessage - Received packet " << pktAux->getName() << " from port " << pktAux->getArrivalGate()->getName() << endl;
 
         auto pkt = check_and_cast<inet::Packet *>(pktAux);
         auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
@@ -150,13 +150,13 @@ void LtePdcpRrcUeD2D::handleMessage(cMessage *msg)
         delete pktAux;
     }
     else {
-        LtePdcpRrcBase::handleMessage(msg);
+        LtePdcpBase::handleMessage(msg);
     }
 }
 
-void LtePdcpRrcUeD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
+void LtePdcpUeD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
 {
-    EV << NOW << " LtePdcpRrcUeD2D::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
+    EV << NOW << " LtePdcpUeD2D::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
 
     // add here specific behavior for handling mode switch at the PDCP layer
 }

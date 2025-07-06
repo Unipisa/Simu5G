@@ -42,7 +42,7 @@ using namespace omnetpp;
  */
 
 class LteRlcUmDataPdu;
-class LtePdcpRrcUe;
+class LtePdcpUe;
 class PacketFlowManagerUe : public PacketFlowManagerBase
 {
 

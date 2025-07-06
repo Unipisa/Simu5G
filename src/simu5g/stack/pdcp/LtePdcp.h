@@ -59,7 +59,7 @@ class PacketFlowManagerBase;
  * that uniquely identifies a connection in the whole network.
  *
  */
-class LtePdcpRrcBase : public cSimpleModule
+class LtePdcpBase : public cSimpleModule
 {
     friend class LteTxPdcpEntity;
     friend class LteRxPdcpEntity;
@@ -75,7 +75,7 @@ class LtePdcpRrcBase : public cSimpleModule
     /**
      * Cleans the connection table
      */
-    ~LtePdcpRrcBase() override;
+    ~LtePdcpBase() override;
 
     /*
      * Delete TX/RX entities (redefine this function)
@@ -306,7 +306,7 @@ class LtePdcpRrcBase : public cSimpleModule
     static simsignal_t sentPacketToLowerLayerSignal_;
 };
 
-class LtePdcpRrcUe : public LtePdcpRrcBase
+class LtePdcpUe : public LtePdcpBase
 {
   protected:
 
@@ -327,7 +327,7 @@ class LtePdcpRrcUe : public LtePdcpRrcBase
     void deleteEntities(MacNodeId nodeId) override;
 };
 
-class LtePdcpRrcEnb : public LtePdcpRrcBase
+class LtePdcpEnb : public LtePdcpBase
 {
   protected:
     void handleControlInfo(cPacket *upPkt, FlowControlInfo *lteInfo)

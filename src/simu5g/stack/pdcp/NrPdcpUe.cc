@@ -11,16 +11,16 @@
 
 #include <inet/networklayer/common/NetworkInterface.h>
 
-#include "simu5g/stack/pdcp/NrPdcpRrcUe.h"
+#include "simu5g/stack/pdcp/NrPdcpUe.h"
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
 #include "simu5g/stack/pdcp/NrRxPdcpEntity.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
 
-Define_Module(NrPdcpRrcUe);
+Define_Module(NrPdcpUe);
 
-void NrPdcpRrcUe::initialize(int stage)
+void NrPdcpUe::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
@@ -38,10 +38,10 @@ void NrPdcpRrcUe::initialize(int stage)
     if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION)
         nrNodeId_ = MacNodeId(getContainingNode(this)->par("nrMacNodeId").intValue());
 
-    LtePdcpRrcUeD2D::initialize(stage);
+    LtePdcpUeD2D::initialize(stage);
 }
 
-MacNodeId NrPdcpRrcUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
+MacNodeId NrPdcpUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 {
     Ipv4Address destAddr = Ipv4Address(lteInfo->getDstAddr());
     MacNodeId destId = binder_->getMacNodeId(destAddr);
@@ -61,7 +61,7 @@ MacNodeId NrPdcpRrcUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 /*
  * Upper Layer handlers
  */
-void NrPdcpRrcUe::fromDataPort(cPacket *pktAux)
+void NrPdcpUe::fromDataPort(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
@@ -119,7 +119,7 @@ void NrPdcpRrcUe::fromDataPort(cPacket *pktAux)
     }
 
     // Cid Request
-    EV << "NrPdcpRrcUe : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
+    EV << "NrPdcpUe : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
        << " , ToS: " << lteInfo->getTypeOfService()
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
@@ -136,7 +136,7 @@ void NrPdcpRrcUe::fromDataPort(cPacket *pktAux)
         // assign a new LCID to the connection
         mylcid = lcid_++;
 
-        EV << "NrPdcpRrcUe : Connection not found, new CID created with LCID " << mylcid << "\n";
+        EV << "NrPdcpUe : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
     }
@@ -144,8 +144,8 @@ void NrPdcpRrcUe::fromDataPort(cPacket *pktAux)
     // assign LCID
     lteInfo->setLcid(mylcid);
 
-    EV << "NrPdcpRrcUe : Assigned Lcid: " << mylcid << "\n";
-    EV << "NrPdcpRrcUe : Assigned Node ID: " << nodeId << "\n";
+    EV << "NrPdcpUe : Assigned Lcid: " << mylcid << "\n";
+    EV << "NrPdcpUe : Assigned Node ID: " << nodeId << "\n";
 
     // get effective next hop dest ID
     destId = getDestId(lteInfo);
@@ -158,7 +158,7 @@ void NrPdcpRrcUe::fromDataPort(cPacket *pktAux)
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-LteTxPdcpEntity *NrPdcpRrcUe::getTxEntity(MacCid cid)
+LteTxPdcpEntity *NrPdcpUe::getTxEntity(MacCid cid)
 {
     // Find entity for this LCID
     PdcpTxEntities::iterator it = txEntities_.find(cid);
@@ -171,19 +171,19 @@ LteTxPdcpEntity *NrPdcpRrcUe::getTxEntity(MacCid cid)
 
         txEntities_[cid] = txEnt;    // Add to entities map
 
-        EV << "NrPdcpRrcUe::getEntity - Added new PdcpEntity for Cid: " << cid << "\n";
+        EV << "NrPdcpUe::getEntity - Added new PdcpEntity for Cid: " << cid << "\n";
 
         return txEnt;
     }
     else {
         // Found
-        EV << "NrPdcpRrcUe::getEntity - Using old PdcpEntity for Cid: " << cid << "\n";
+        EV << "NrPdcpUe::getEntity - Using old PdcpEntity for Cid: " << cid << "\n";
 
         return it->second;
     }
 }
 
-LteRxPdcpEntity *NrPdcpRrcUe::getRxEntity(MacCid cid)
+LteRxPdcpEntity *NrPdcpUe::getRxEntity(MacCid cid)
 {
     // Find entity for this CID
     PdcpRxEntities::iterator it = rxEntities_.find(cid);
@@ -196,19 +196,19 @@ LteRxPdcpEntity *NrPdcpRrcUe::getRxEntity(MacCid cid)
         NrRxPdcpEntity *rxEnt = check_and_cast<NrRxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
         rxEntities_[cid] = rxEnt;    // Add to entities map
 
-        EV << "NrPdcpRrcUe::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
+        EV << "NrPdcpUe::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
 
         return rxEnt;
     }
     else {
         // Found
-        EV << "NrPdcpRrcUe::getRxEntity - Using old RxPdcpEntity for Cid: " << cid << "\n";
+        EV << "NrPdcpUe::getRxEntity - Using old RxPdcpEntity for Cid: " << cid << "\n";
 
         return it->second;
     }
 }
 
-void NrPdcpRrcUe::deleteEntities(MacNodeId nodeId)
+void NrPdcpUe::deleteEntities(MacNodeId nodeId)
 {
     // delete connections related to the given master nodeB only
     // (the UE might have dual connectivity enabled)
@@ -231,11 +231,11 @@ void NrPdcpRrcUe::deleteEntities(MacNodeId nodeId)
     }
 }
 
-void NrPdcpRrcUe::sendToLowerLayer(Packet *pkt)
+void NrPdcpUe::sendToLowerLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     if (!dualConnectivityEnabled_ || lteInfo->getUseNR()) {
-        EV << "NrPdcpRrcUe : Sending packet " << pkt->getName() << " on port "
+        EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port "
            << (lteInfo->getRlcType() == UM ? "NR_UM_Sap$o\n" : "NR_AM_Sap$o\n");
 
         // use NR id as source
@@ -255,7 +255,7 @@ void NrPdcpRrcUe::sendToLowerLayer(Packet *pkt)
         emit(sentPacketToLowerLayerSignal_, pkt);
     }
     else
-        LtePdcpRrcBase::sendToLowerLayer(pkt);
+        LtePdcpBase::sendToLowerLayer(pkt);
 }
 
 } //namespace

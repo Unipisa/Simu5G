@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/pdcp/LtePdcpRrcEnbD2D.h"
+#include "simu5g/stack/pdcp/LtePdcpEnbD2D.h"
 
 #include <inet/common/packet/Packet.h>
 
@@ -18,7 +18,7 @@
 
 namespace simu5g {
 
-Define_Module(LtePdcpRrcEnbD2D);
+Define_Module(LtePdcpEnbD2D);
 
 using namespace omnetpp;
 using namespace inet;
@@ -26,7 +26,7 @@ using namespace inet;
 /*
  * Upper Layer handlers
  */
-void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
+void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
@@ -61,7 +61,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
     }
 
     // Cid Request
-    EV << "LtePdcpRrcEnbD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
+    EV << "LtePdcpEnbD2D : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())
        << " , ToS: " << lteInfo->getTypeOfService()
        << " , Direction: " << dirToA((Direction)lteInfo->getDirection()) << " ]\n";
@@ -78,7 +78,7 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
         // assign a new LCID to the connection
         mylcid = lcid_++;
 
-        EV << "LtePdcpRrcEnbD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
+        EV << "LtePdcpEnbD2D : Connection not found, new CID created with LCID " << mylcid << "\n";
 
         ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
     }
@@ -93,28 +93,28 @@ void LtePdcpRrcEnbD2D::fromDataPort(cPacket *pktAux)
     // obtain CID
     MacCid cid = idToMacCid(destId, mylcid);
 
-    EV << "LtePdcpRrcEnbD2D : Assigned Lcid: " << mylcid << " [CID: " << cid << "]\n";
-    EV << "LtePdcpRrcEnbD2D : Assigned Node ID: " << nodeId_ << "\n";
-    EV << "LtePdcpRrcEnbD2D : dest ID: " << destId << "\n";
+    EV << "LtePdcpEnbD2D : Assigned Lcid: " << mylcid << " [CID: " << cid << "]\n";
+    EV << "LtePdcpEnbD2D : Assigned Node ID: " << nodeId_ << "\n";
+    EV << "LtePdcpEnbD2D : dest ID: " << destId << "\n";
 
     // get the PDCP entity for this LCID and process the packet
     LteTxPdcpEntity *entity = getTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-void LtePdcpRrcEnbD2D::initialize(int stage)
+void LtePdcpEnbD2D::initialize(int stage)
 {
-    LtePdcpRrcEnb::initialize(stage);
+    LtePdcpEnb::initialize(stage);
 }
 
-void LtePdcpRrcEnbD2D::handleMessage(cMessage *msg)
+void LtePdcpEnbD2D::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto chunk = pkt->peekAtFront<Chunk>();
 
     // check whether the message is a notification for mode switch
     if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
-        EV << "LtePdcpRrcEnbD2D::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
+        EV << "LtePdcpEnbD2D::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
 
         auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
         // call handler
@@ -122,13 +122,13 @@ void LtePdcpRrcEnbD2D::handleMessage(cMessage *msg)
         delete pkt;
     }
     else {
-        LtePdcpRrcEnb::handleMessage(msg);
+        LtePdcpEnb::handleMessage(msg);
     }
 }
 
-void LtePdcpRrcEnbD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
+void LtePdcpEnbD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
 {
-    EV << NOW << " LtePdcpRrcEnbD2D::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
+    EV << NOW << " LtePdcpEnbD2D::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
 
     // add here specific behavior for handling mode switch at the PDCP layer
 }

@@ -13,18 +13,18 @@
 #define _NRPDCPRRCUE_H_
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/pdcp/LtePdcpRrcUeD2D.h"
+#include "simu5g/stack/pdcp/LtePdcpUeD2D.h"
 
 namespace simu5g {
 
 /**
- * @class NrPdcpRrcUe
+ * @class NrPdcpUe
  * @brief PDCP Layer
  *
  * This is the PDCP/RRC layer of NR Stack
  *
  */
-class NrPdcpRrcUe : public LtePdcpRrcUeD2D
+class NrPdcpUe : public LtePdcpUeD2D
 {
     cGate *nrTmSapOutGate_ = nullptr;
     cGate *nrUmSapOutGate_ = nullptr;

@@ -12,13 +12,13 @@
 package simu5g.stack.pdcp;
 
 //
-// The LtePdcpRrcEnbD2D module implements the PDCP/RRC layer for a LTE NIC employed at
+// The LtePdcpEnbD2D module implements the PDCP/RRC layer for a LTE NIC employed at
 // eNodeBs, providing support for D2D (Device-to-Device) communications. This module extends
-// the basic LtePdcpRrcEnb by adding functionality for managing D2D-capable user equipment,
+// the basic LtePdcpEnb by adding functionality for managing D2D-capable user equipment,
 // specifically for buffering packets during D2D mode switching operations.
 //
-simple LtePdcpRrcEnbD2D extends LtePdcpRrcEnb
+simple LtePdcpEnbD2D extends LtePdcpEnb
 {
-    @class("LtePdcpRrcEnbD2D");
+    @class("LtePdcpEnbD2D");
 }
 

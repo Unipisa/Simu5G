@@ -18,7 +18,7 @@
 
 namespace simu5g {
 
-class LtePdcpRrcBase;
+class LtePdcpBase;
 
 /*
  * Descriptor of the entity status

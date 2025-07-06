@@ -16,19 +16,19 @@
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/stack/pdcp/NrTxPdcpEntity.h"
-#include "simu5g/stack/pdcp/LtePdcpRrcEnbD2D.h"
+#include "simu5g/stack/pdcp/LtePdcpEnbD2D.h"
 #include "simu5g/stack/dualConnectivityManager/DualConnectivityManager.h"
 
 namespace simu5g {
 
 /**
- * @class NrPdcpRrcEnb
+ * @class NrPdcpEnb
  * @brief PDCP Layer
  *
  * This is the PDCP/RRC layer of NR Stack
  *
  */
-class NrPdcpRrcEnb : public LtePdcpRrcEnbD2D
+class NrPdcpEnb : public LtePdcpEnbD2D
 {
 
   protected:

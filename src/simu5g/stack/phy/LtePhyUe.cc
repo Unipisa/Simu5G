@@ -657,7 +657,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
 
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master
-    LtePdcpRrcEnb *masterPdcp = check_and_cast<LtePdcpRrcEnb *>(getPdcpByMacNodeId(binder_, masterId));
+    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(getPdcpByMacNodeId(binder_, masterId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for master at this ue

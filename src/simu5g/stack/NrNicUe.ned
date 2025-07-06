@@ -35,7 +35,7 @@ module NrNicUe extends LteNicUeD2D
 
         int numNrCarriers = default(1);
 
-        pdcpRrc.typename = default("NrPdcpRrcUe");
+        pdcpRrc.typename = default("NrPdcpUe");
         phy.typename = default("NrPhyUe");	        // TODO fix this
         											// LtePhy is of type NrPhyUe so that it is
         											// be aware of the existing of the second

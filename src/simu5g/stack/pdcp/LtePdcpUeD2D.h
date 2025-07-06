@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_LTEPDCPRRCENBD2D_H_
-#define _LTE_LTEPDCPRRCENBD2D_H_
+#ifndef _LTE_LTEPDCPRRCUED2D_H_
+#define _LTE_LTEPDCPRRCUED2D_H_
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/pdcp/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
 
@@ -26,13 +26,26 @@ using namespace omnetpp;
  * This is the PDCP/RRC layer of the LTE Stack (with D2D support).
  *
  */
-class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
+class LtePdcpUeD2D : public LtePdcpUe
 {
+    // initialization flag for each D2D peer
+    // it is set to true when the first IP datagram for that peer reaches the PDCP layer
+    std::map<inet::L3Address, bool> d2dPeeringInit_;
 
   protected:
 
-    void initialize(int stage) override;
     void handleMessage(cMessage *msg) override;
+
+    MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
+
+    using LtePdcpUe::getDirection;  // base class variant: return direction for communication with eNB
+    // additional getDirection method determining if D2D communication is available to a specific destination
+    Direction getDirection(MacNodeId destId)
+    {
+        if (binder_->getD2DCapability(nodeId_, destId) && binder_->getD2DMode(nodeId_, destId) == DM)
+            return D2D;
+        return UL;
+    }
 
     /**
      * handler for data port
@@ -40,6 +53,7 @@ class LtePdcpRrcEnbD2D : public LtePdcpRrcEnb
      */
     void fromDataPort(cPacket *pkt) override;
 
+    // handler for mode switch signal
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };
 

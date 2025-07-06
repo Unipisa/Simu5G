@@ -16,7 +16,7 @@
 #include "simu5g/mec/utils/MecCommon.h"
 
 #include "PacketFlowManagerBase.h"
-#include "simu5g/stack/pdcp/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 
 namespace simu5g {
@@ -105,7 +105,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
     ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
 
-    opp_component_ptr<LtePdcpRrcEnb> pdcp_;
+    opp_component_ptr<LtePdcpEnb> pdcp_;
 
     std::map<MacNodeId, Delay> ULPktDelay_;
     std::map<MacNodeId, std::vector<Grant>> ulGrants_;

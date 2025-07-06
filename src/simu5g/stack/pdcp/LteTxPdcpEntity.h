@@ -14,11 +14,11 @@
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
-#include "simu5g/stack/pdcp/LtePdcpRrc.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
 
-class LtePdcpRrcBase;
+class LtePdcpBase;
 class LtePdcpPdu;
 
 using namespace inet;
@@ -37,7 +37,7 @@ class LteTxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpRrcBase *pdcp_ = nullptr;
+    LtePdcpBase *pdcp_ = nullptr;
 
     // next sequence number to be assigned
     unsigned int sno_ = 0;

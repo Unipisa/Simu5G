@@ -20,7 +20,7 @@ package simu5g.stack.pdcp;
 // to/from the underlying Radio Link Control (RLC) layer.
 // Its primary responsibilities include header compression and connection identification.
 //
-moduleinterface ILtePdcpRrc
+moduleinterface ILtePdcp
 {
     parameters:
         @display("i=block/fork");
