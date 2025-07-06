@@ -20,11 +20,5 @@ simple NrPdcpRrcUe extends LtePdcpRrcUeD2D
 {
     parameters:
         @class("NrPdcpRrcUe");
-    gates:
-        inout nr_DataPort;
-        inout nr_EUTRAN_RRC_Sap;
-        inout nr_TM_Sap;
-        inout nr_UM_Sap;
-        inout nr_AM_Sap;
 }
 
