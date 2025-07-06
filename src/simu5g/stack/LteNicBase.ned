@@ -59,7 +59,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //# Gates connecting UE/eNB and LTE Stack
         //#
         //# Control Ports
-        inout EUTRAN_RRC_Sap;   // Control of RRC Layer
         input upperLayerIn;
         output upperLayerOut;
         input radioIn @loose;  // to receive messages sent using sendDirect()
@@ -110,8 +109,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //#
         //# Internal LTE Stack Connections
         //#
-
-        EUTRAN_RRC_Sap <--> pdcpRrc.EUTRAN_RRC_Sap;
 
         //# PDCP <-> RLC
         pdcpRrc.UM_Sap++ <--> rlc.UM_Sap;

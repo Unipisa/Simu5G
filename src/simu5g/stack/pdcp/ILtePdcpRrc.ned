@@ -28,7 +28,6 @@ moduleinterface ILtePdcpRrc
 
     gates:
         inout DataPort;
-        inout EUTRAN_RRC_Sap;
         inout TM_Sap[];
         inout UM_Sap[];
         inout AM_Sap[];

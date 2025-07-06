@@ -184,16 +184,6 @@ class LtePdcpRrcBase : public cSimpleModule
      */
     virtual void fromDataPort(cPacket *pkt);
 
-    /**
-     * handler for eutran port
-     *
-     * fromEutranRrcSap() receives data packets from eutran
-     * and sends them on a special LCID, over TM
-     *
-     * @param pkt incoming packet
-     */
-    void fromEutranRrcSap(cPacket *pkt);
-
     /*
      * Lower Layer Handlers
      */
@@ -219,16 +209,6 @@ class LtePdcpRrcBase : public cSimpleModule
      * @param pkt incoming packet
      */
     void toDataPort(cPacket *pkt);
-
-    /**
-     * handler for tm sap
-     *
-     * toEutranRrcSap() decapsulates packet and sends it
-     * over the eutran port
-     *
-     * @param pkt incoming packet
-     */
-    void toEutranRrcSap(cPacket *pkt);
 
     /*
      * Forwarding Handlers
@@ -276,8 +256,6 @@ class LtePdcpRrcBase : public cSimpleModule
 
     cGate *dataPortInGate_ = nullptr;
     cGate *dataPortOutGate_ = nullptr;
-    cGate *eutranRrcSapInGate_ = nullptr;
-    cGate *eutranRrcSapOutGate_ = nullptr;
     cGate *tmSapInGate_ = nullptr;
     cGate *tmSapOutGate_ = nullptr;
     cGate *umSapInGate_ = nullptr;

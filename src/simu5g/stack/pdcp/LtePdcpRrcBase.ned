@@ -48,10 +48,6 @@ simple LtePdcpRrcBase like ILtePdcpRrc
 
         inout DataPort;            // Port to transmit data packets
 
-        //# Control Ports
-
-        inout EUTRAN_RRC_Sap;    // Control of RRC Layer
-
         //#
         //# Gates connecting PDCP/RRC and RLC Layer
         //#

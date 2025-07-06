@@ -190,18 +190,6 @@ void LtePdcpRrcBase::fromDataPort(cPacket *pktAux)
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-void LtePdcpRrcBase::fromEutranRrcSap(cPacket *pkt)
-{
-    // TODO For now use LCID 1000 for Control Traffic coming from RRC
-    FlowControlInfo *lteInfo = new FlowControlInfo();
-    lteInfo->setSourceId(nodeId_);
-    lteInfo->setLcid(1000);
-    lteInfo->setRlcType(TM);
-    pkt->setControlInfo(lteInfo);
-    EV << "LteRrc : Sending packet " << pkt->getName() << " on port TM_Sap$o\n";
-    send(pkt, tmSapOutGate_);
-}
-
 /*
  * Lower layer handlers
  */
@@ -235,15 +223,6 @@ void LtePdcpRrcBase::toDataPort(cPacket *pktAux)
     // Send message
     send(pkt, dataPortOutGate_);
     emit(sentPacketToUpperLayerSignal_, pkt);
-}
-
-void LtePdcpRrcBase::toEutranRrcSap(cPacket *pkt)
-{
-    cPacket *upPkt = pkt->decapsulate();
-    delete pkt;
-
-    EV << "LteRrc : Sending packet " << upPkt->getName() << " on port EUTRAN_RRC_Sap$o\n";
-    send(upPkt, eutranRrcSapOutGate_);
 }
 
 /*
@@ -312,8 +291,6 @@ void LtePdcpRrcBase::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         dataPortInGate_ = gate("DataPort$i");
         dataPortOutGate_ = gate("DataPort$o");
-        eutranRrcSapInGate_ = gate("EUTRAN_RRC_Sap$i");
-        eutranRrcSapOutGate_ = gate("EUTRAN_RRC_Sap$o");
         tmSapInGate_ = gate("TM_Sap$i", 0);
         tmSapOutGate_ = gate("TM_Sap$o", 0);
         umSapInGate_ = gate("UM_Sap$i", 0);
@@ -361,12 +338,6 @@ void LtePdcpRrcBase::handleMessage(cMessage *msg)
     cGate *incoming = pkt->getArrivalGate();
     if (incoming == dataPortInGate_) {
         fromDataPort(pkt);
-    }
-    else if (incoming == eutranRrcSapInGate_) {
-        fromEutranRrcSap(pkt);
-    }
-    else if (incoming == tmSapInGate_) {
-        toEutranRrcSap(pkt);
     }
     else {
         fromLowerLayer(pkt);
