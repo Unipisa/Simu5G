@@ -85,7 +85,7 @@ void LtePhyUe::initialize(int stage)
         mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
 
         rlcUm_.reference(this, "rlcUmModule", true);
-        pdcp_.reference(this, "pdcpRrcModule", true);
+        pdcp_.reference(this, "pdcpModule", true);
         ip2nic_.reference(this, "ip2nicModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
 

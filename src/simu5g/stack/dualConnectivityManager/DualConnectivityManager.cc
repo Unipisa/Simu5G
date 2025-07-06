@@ -21,7 +21,7 @@ Define_Module(DualConnectivityManager);
 
 void DualConnectivityManager::initialize()
 {
-    pdcp_.reference(this, "pdcpRrcModule", true);
+    pdcp_.reference(this, "pdcpModule", true);
 
     // get the node id
     nodeId_ = MacNodeId(inet::getContainingNode(this)->par("macCellId").intValue());

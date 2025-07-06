@@ -48,7 +48,7 @@ void BaseStationStatsCollector::initialize(int stage) {
         ecgi_.plmn.mnc = node->par("mnc").stdstringValue();
 
         mac_.reference(this, "macModule", true);
-        pdcp_.reference(this, "pdcpRrcModule", true);
+        pdcp_.reference(this, "pdcpModule", true);
 
         rlc_.reference(this, "rlcUmModule", false);
         if (!rlc_) {
