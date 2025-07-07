@@ -1,0 +1,13 @@
+# These simulations are currently excluded from fingerprint tests, because they require Veins.
+# working directory, command line arguments, simulation time limit, fingerprint, expected result, tags
+/simulations/LTE/cars/,              -f omnetpp.ini -c General -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/LTE/cars/,              -f omnetpp.ini -c VoIP-UL -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/LTE/cars/,              -f omnetpp.ini -c VoIP-DL -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/LTE/cars/,              -f omnetpp.ini -c VoIP-D2D -r 0,               5s,         0000-0000/tplx, PASS,
+/simulations/LTE/cars/,              -f omnetpp.ini -c D2DMulticast -r 0,           5s,         0000-0000/tplx, PASS,
+/simulations/NR/cars/,               -f omnetpp.ini -c General -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/NR/cars/,               -f omnetpp.ini -c VoIP-UL -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/NR/cars/,               -f omnetpp.ini -c VoIP-DL -r 0,                5s,         0000-0000/tplx, PASS,
+/simulations/NR/cars/,               -f omnetpp.ini -c VoIP-D2D -r 0,               5s,         0000-0000/tplx, PASS,
+/simulations/NR/cars/,               -f omnetpp.ini -c D2DMulticast -r 0,           5s,         0000-0000/tplx, PASS,
+
