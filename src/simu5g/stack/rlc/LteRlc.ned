@@ -33,6 +33,26 @@ module LteRlc
  		@class("LteRlc");
 		int drbIndex;  // NEW: passed by compound module
         @display("i=block/transport");
+        @signal[rlcPduThroughputDl];
+        @signal[rlcThroughputDl];
+        @signal[rlcPduDelayDl];
+        @signal[rlcPacketLossDl];
+        @signal[rlcDelayDl];
+        @signal[rlcPduPacketLossDl];
+        @signal[rlcPduThroughputUl];
+        @signal[rlcThroughputUl];
+        @signal[rlcPduDelayUl];
+        @signal[rlcPacketLossUl];
+        @signal[rlcDelayUl];
+        @signal[rlcPduPacketLossUl];
+        @signal[rlcPduThroughputD2D];
+        @signal[rlcThroughputD2D];
+        @signal[rlcPduDelayD2D];
+        @signal[rlcPacketLossD2D];
+        @signal[rlcDelayD2D];
+        @signal[rlcPduPacketLossD2D];
+        @signal[rlcPacketLossTotal];
+
         bool d2dCapable;                                             // inherit the value from the parent module
 
     gates:
