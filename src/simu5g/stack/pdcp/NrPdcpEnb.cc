@@ -22,8 +22,9 @@ void NrPdcpEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
-        drbIndex = par("drbIndex");  // NEW
-        lcid_ = drbIndex;  // assign LCID = DRB index directly
+        drbIndex = par("drbIndex");
+        if (drbIndex != -1)
+            lcid_ = drbIndex;  // assign LCID = DRB index directly
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);

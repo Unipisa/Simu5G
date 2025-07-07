@@ -22,6 +22,6 @@ simple NrPdcpUe extends LtePdcpUeD2D
         @class("NrPdcpUe");
         rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
-        int drbIndex;  // NEW: passed by compound module
+        int drbIndex = default(-1);
 }
 

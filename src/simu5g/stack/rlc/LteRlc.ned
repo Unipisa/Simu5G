@@ -30,8 +30,8 @@ import simu5g.stack.rlc.um.ILteRlcUm;
 module LteRlc
 {
     parameters:
- 		@class("LteRlc");
-		int drbIndex;  // NEW: passed by compound module
+        @class("LteRlc");
+        int drbIndex = default(-1);
         @display("i=block/transport");
         @signal[rlcPduThroughputDl];
         @signal[rlcThroughputDl];

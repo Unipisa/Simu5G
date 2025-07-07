@@ -26,21 +26,26 @@ void NrPdcpUe::initialize(int stage)
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
-        drbIndex = par("drbIndex");  // NEW
-
-        lcid_ = drbIndex;  // assign LCID = DRB index directly
-
-        setGateSize("TM_Sap", 2);
-        setGateSize("UM_Sap", 2);
-        setGateSize("AM_Sap", 2);
+        drbIndex = par("drbIndex");
+        if (drbIndex != -1)
+            lcid_ = drbIndex;  // assign LCID = DRB index directly
 
         // initialize gates
-        // nrTmSapInGate_ = gate("TM_Sap$i", 1);
-        nrTmSapOutGate_ = gate("TM_Sap$o", 0);
-        // nrUmSapInGate_ = gate("UM_Sap$i", 1);
-        nrUmSapOutGate_ = gate("UM_Sap$o", 0);
-        // nrAmSapInGate_ = gate("AM_Sap$i", 1);
-        nrAmSapOutGate_ = gate("AM_Sap$o", 0);
+        if (drbIndex == -1) {
+            nrTmSapOutGate_ = gate("TM_Sap$o", 1);
+            nrUmSapOutGate_ = gate("UM_Sap$o", 1);
+            nrAmSapOutGate_ = gate("AM_Sap$o", 1);
+        }
+        else {
+            // drbIndex != -1: assume there are multiple RLC submodules so we need gates to be connected differently
+            setGateSize("TM_Sap", 2);
+            setGateSize("UM_Sap", 2);
+            setGateSize("AM_Sap", 2);  //TODO needed????
+
+            nrTmSapOutGate_ = gate("TM_Sap$o", 0);
+            nrUmSapOutGate_ = gate("UM_Sap$o", 0);
+            nrAmSapOutGate_ = gate("AM_Sap$o", 0);
+        }
     }
 
     if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION){

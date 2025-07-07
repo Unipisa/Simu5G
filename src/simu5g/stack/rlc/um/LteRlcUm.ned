@@ -26,7 +26,7 @@ simple LteRlcUm like ILteRlcUm
 {
     parameters:
         @class("LteRlcUm");
-		int drbIndex;  
+        int drbIndex = default(-1);
         @display("i=block/wheelbarrow");
 
         string txEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
