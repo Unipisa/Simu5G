@@ -35,15 +35,7 @@ void UmTxEntity::initialize()
 
     // LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
 
-    LteMacBase *mac = check_and_cast<LteMacBase*>(
-        getParentModule()  // nrRlc[3]
-            ->gate("RLC_to_MAC")
-            ->getNextGate()    // -> rlcToMacMultiplexer.rlcIn
-            ->getOwnerModule()
-            ->gate("macOut")
-            ->getNextGate()
-            ->getOwnerModule()
-    );
+    LteMacBase *mac = check_and_cast<LteMacBase*>(getParentModule()->getParentModule()->getSubmodule("mac")); //TODO remove hardcoded path!
 
     // store the node id of the owner module
     ownerNodeId_ = mac->getMacNodeId();
