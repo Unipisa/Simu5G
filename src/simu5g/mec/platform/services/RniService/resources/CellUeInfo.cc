@@ -9,27 +9,27 @@
 // and cannot be removed from it.
 //
 
-#include "CellUEInfo.h"
+#include "CellUeInfo.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 
 namespace simu5g {
 
-CellUEInfo::CellUEInfo() {}
+CellUeInfo::CellUeInfo() {}
 
-CellUEInfo::CellUEInfo(UeStatsCollector *ueCollector, const Ecgi& ecgi):
+CellUeInfo::CellUeInfo(UeStatsCollector *ueCollector, const Ecgi& ecgi):
     ueCollector_(ueCollector), associateId_(), ecgi_(ecgi)
 {
     associateId_.setAssociateId(ueCollector->getAssociateId());
 }
 
-CellUEInfo::CellUEInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi):
+CellUeInfo::CellUeInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi):
     ueCollector_(ueCollector), associateId_(), ecgi_(ecgi)
 {
     associateId_.setAssociateId(ueCollector->getAssociateId());
 }
 
 
-nlohmann::ordered_json CellUEInfo::toJson() const
+nlohmann::ordered_json CellUeInfo::toJson() const
 {
     nlohmann::ordered_json val;
 

@@ -29,7 +29,7 @@ enum {
     UEAPP_ACK_STOP  = 3,
 };
 
-class UERequestApp : public cSimpleModule
+class UeRequestApp : public cSimpleModule
 {
     //communication to device app and mec app
     inet::UdpSocket socket;
@@ -72,7 +72,7 @@ class UERequestApp : public cSimpleModule
     static simsignal_t responseTimeSignal_;
 
   public:
-    ~UERequestApp() override;
+    ~UeRequestApp() override;
 
   protected:
 

@@ -21,7 +21,7 @@ import inet.applications.contract.IApp;
 // Once the peer MEC application is up and running, this module sends periodic messages to
 // the MEC application and waits for a response. It collects metrics such as round-trip time.
 //
-simple UERequestApp like IApp
+simple UeRequestApp like IApp
 {
     parameters:
         @display("i=block/source");

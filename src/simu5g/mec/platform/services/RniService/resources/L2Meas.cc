@@ -14,7 +14,7 @@
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "simu5g/mec/platform/services/RniService/resources/RniCellInfo.h"
 #include "simu5g/common/binder/Binder.h"
-#include "CellUEInfo.h"
+#include "CellUeInfo.h"
 
 namespace simu5g {
 
@@ -56,7 +56,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
     for (const auto &[macCellId, baseStationStatsCollector] : eNodeBs_) {
         UeStatsCollectorMap *ueMap = baseStationStatsCollector->getCollectorMap();
         for (const auto &[ueId, ueStatsCollector] : *ueMap) {
-            CellUEInfo cellUeInfo = CellUEInfo(ueStatsCollector, baseStationStatsCollector->getEcgi());
+            CellUeInfo cellUeInfo = CellUeInfo(ueStatsCollector, baseStationStatsCollector->getEcgi());
             ueArray.push_back(cellUeInfo.toJson());
         }
         RniCellInfo cellInfo = RniCellInfo(baseStationStatsCollector);
@@ -119,7 +119,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                     continue;
                 if (baseStation->hasUeCollector(nrNodeId)) {
                     UeStatsCollector *ueColl = baseStation->getUeCollector(nrNodeId);
-                    CellUEInfo cellUeInfo = CellUEInfo(ueColl, baseStation->getEcgi());
+                    CellUeInfo cellUeInfo = CellUeInfo(ueColl, baseStation->getEcgi());
                     ueArray.push_back(cellUeInfo.toJson());
                     found = true;
                     break; // next ue id
@@ -138,7 +138,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
                     continue;
                 if (baseStation->hasUeCollector(lteNodeId)) {
                     UeStatsCollector *ueColl = baseStation->getUeCollector(lteNodeId);
-                    CellUEInfo cellUeInfo = CellUEInfo(ueColl, baseStation->getEcgi());
+                    CellUeInfo cellUeInfo = CellUeInfo(ueColl, baseStation->getEcgi());
                     ueArray.push_back(cellUeInfo.toJson());
                     found = true;
                     break; // next ue id
@@ -154,7 +154,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
             for (const auto& [cellId, baseStation]: eNodeBs_) {
                 if (baseStation->hasUeCollector(lteNodeId)) {
                     UeStatsCollector *ueColl = baseStation->getUeCollector(lteNodeId);
-                    CellUEInfo cellUeInfo = CellUEInfo(ueColl, baseStation->getEcgi());
+                    CellUeInfo cellUeInfo = CellUeInfo(ueColl, baseStation->getEcgi());
                     ueArray.push_back(cellUeInfo.toJson());
                     found = true;
                     break; // next ue id
@@ -165,7 +165,7 @@ nlohmann::ordered_json L2Meas::toJsonUe(std::vector<inet::Ipv4Address>& uesID) c
             for (const auto& [cellId, baseStation]: eNodeBs_) {
                 if (baseStation->hasUeCollector(nrNodeId)) {
                     UeStatsCollector *ueColl = baseStation->getUeCollector(nrNodeId);
-                    CellUEInfo cellUeInfo = CellUEInfo(ueColl, baseStation->getEcgi());
+                    CellUeInfo cellUeInfo = CellUeInfo(ueColl, baseStation->getEcgi());
                     ueArray.push_back(cellUeInfo.toJson());
                     found = true;
                     break; // next ue id
@@ -208,7 +208,7 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
 
             UeStatsCollectorMap *ueMap = it->second->getCollectorMap();
             for (const auto& [ueId, ueCollector] : *ueMap) {
-                CellUEInfo cellUeInfo = CellUEInfo(ueCollector, it->second->getEcgi());
+                CellUeInfo cellUeInfo = CellUeInfo(ueCollector, it->second->getEcgi());
                 ueArray.push_back(cellUeInfo.toJson());
             }
         }

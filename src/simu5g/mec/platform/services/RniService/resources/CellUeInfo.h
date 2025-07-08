@@ -24,7 +24,7 @@ namespace simu5g {
 
 class UeStatsCollector;
 
-class CellUEInfo : public AttributeBase
+class CellUeInfo : public AttributeBase
 {
   protected:
     UeStatsCollector *ueCollector_ = nullptr;
@@ -34,9 +34,9 @@ class CellUEInfo : public AttributeBase
     nlohmann::ordered_json toJsonCell() const;
 
   public:
-    CellUEInfo();
-    CellUEInfo(UeStatsCollector *ueCollector, const Ecgi& ecgi);
-    CellUEInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi);
+    CellUeInfo();
+    CellUeInfo(UeStatsCollector *ueCollector, const Ecgi& ecgi);
+    CellUeInfo(UeStatsCollector *ueCollector, const mec::Ecgi& ecgi);
 
 
     nlohmann::ordered_json toJson() const override;
