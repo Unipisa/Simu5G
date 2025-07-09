@@ -22,13 +22,13 @@ module NRNicEnbSdap extends NrNicEnb
 {
     parameters:
         nrSdapDisabled = false;
-        int numDrbs;
+        int numDrbs = 1;
         @display("bgb=694,443");
 
     submodules:
 
         nrRxSdapEntity: NrRxSdapEntity {
-            numDrbs = parent. numDrbs;
+            numDrbs = parent.numDrbs;
             @display("p=493,67");
         }
 

@@ -20,8 +20,8 @@ import simu5g.stack.sdap.NrTxSdapEntity;
 module NRNicUeSdap extends NrNicUe
 {
     parameters:
-		nrSdapDisabled = false; 
-		int numDrbs;
+		nrSdapDisabled = false;
+		int numDrbs = 1;
         @display("bgb=694,443");
 
     submodules:
