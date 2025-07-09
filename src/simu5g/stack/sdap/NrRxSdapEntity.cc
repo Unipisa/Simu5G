@@ -39,7 +39,7 @@ void NrRxSdapEntity::handleMessage(cMessage *msg)
 
     if (arrivalGate == gate("DataPort$i")) {
         EV_INFO << "NrRxSdapEntity: Packet from IP → PDCP\n";
-        send(msg, "stackSdap$o");
+        send(msg, "stackSdap$o", 0); // todo: the gate assigment should be dynamic to enable reflective qos
     }
     else if (strcmp(arrivalGate->getBaseName(), "stackSdap") == 0) {
         int drbIndex = arrivalGate->getIndex();

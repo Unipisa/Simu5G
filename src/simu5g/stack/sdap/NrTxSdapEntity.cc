@@ -109,9 +109,9 @@ void NrTxSdapEntity::handleMessage(cMessage *msg)
         // this way sdap header is hidden behined the udp/ip headers, won't be compressed by pdcp.
         send(pkt, "stackSdap$o", drb); // route the packet to the proper drb.
     }
-    else if (arrivalGate == gate("stackSdap$i")) {
+    else if (strcmp(arrivalGate->getBaseName(), "stackSdap") == 0) {
         EV_INFO << "Received packet from PDCP, forwarding to IP\n";
-        // TODO: Strip SDAP header
+        // TODO: Strip SDAP header for reflective qos functionalities
         send(msg, "DataPort$o");
     }
     else {
