@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.NR;
+package simu5g.nodes;
 
 import simu5g.nodes.eNodeB;
 

@@ -21,8 +21,8 @@ import simu5g.world.radio.LteChannelControl;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.Upf;
 import simu5g.common.binder.Binder;
-import simu5g.nodes.NR.gNodeB;
-import simu5g.nodes.cars.NrCar;
+import simu5g.nodes.gNodeB;
+import simu5g.nodes.NrCar;
 
 import org.car2x.veins.subprojects.veins_inet.VeinsInetManager;
 

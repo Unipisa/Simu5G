@@ -37,7 +37,7 @@ import simu5g.stack.ICellularNic;
 // also features an Ethernet interface, which is utilized in real-time emulation mode to connect the UE
 // to the real network (outside the simulator) via a virtual Ethernet interface.
 //
-module Ue
+module LteUe
 {
     parameters:
         @networkNode();

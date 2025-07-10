@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-package simu5g.nodes.mec;
+package simu5g.nodes;
 
 import inet.applications.contract.IApp;
 import inet.node.ethernet.Eth10G;

@@ -19,7 +19,7 @@ import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.ExtCell;
 import simu5g.nodes.PgwStandard;
-import simu5g.nodes.Ue;
+import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
@@ -72,13 +72,13 @@ network MultiCell_X2Mesh
         eNodeB3: eNodeB {
             @display("p=578,454;is=vl");
         }
-        ue1[numUe1]: Ue {
+        ue1[numUe1]: LteUe {
             @display("p=421,293");
         }
-        ue2[numUe2]: Ue {
+        ue2[numUe2]: LteUe {
             @display("p=526,235");
         }
-        ue3[numUe3]: Ue {
+        ue3[numUe3]: LteUe {
             @display("p=551,371");
         }
         extCell[numExtCells]: ExtCell {

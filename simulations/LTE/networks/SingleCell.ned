@@ -18,7 +18,7 @@ import inet.node.inet.StandardHost;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.PgwStandard;
-import simu5g.nodes.Ue;
+import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
@@ -56,7 +56,7 @@ network SingleCell
         eNB: eNodeB {
             @display("p=391,260;is=vl");
         }
-        ue[numUe]: Ue {
+        ue[numUe]: LteUe {
             @display("p=783,278");
         }
     connections:

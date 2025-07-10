@@ -10,7 +10,7 @@
 //
 
 
-package simu5g.nodes.cars;
+package simu5g.nodes;
 
 import inet.applications.contract.IApp;
 import inet.mobility.contract.IMobility;
@@ -21,18 +21,18 @@ import inet.networklayer.configurator.ipv4.HostAutoConfigurator;
 import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 import inet.common.MessageDispatcher;
-import simu5g.nodes.Ue;
-import simu5g.nodes.NR.NrUe;
+import simu5g.nodes.LteUe;
+import simu5g.nodes.NrUe;
 
 import org.car2x.veins.base.modules.*;
 
 //
-// This module defines a Car node as an NR User Equipment (UE) with vehicular-like
-// mobility. The latter is modeled by utilizing the Veins-Inet project.
+// This module defines a LteCar node as a LTE User Equipment (UE) with vehicular-like
+// mobility. This behavior is modeled by utilizing the Veins-Inet project.
 //
 // See https://veins.car2x.org/documentation/modules/#veins_inet
 //
-module NrCar extends NrUe
+module LteCar extends LteUe
 {
     parameters:
         @display("i=device/car");
@@ -42,7 +42,10 @@ module NrCar extends NrUe
 
         //# Network Layer specs
         *.routingTableModule = default(absPath(".ipv4.routingTable"));
+        *.interfaceTableModule = default(absPath(".interfaceTable"));
 
         ipv4.configurator.typename = "HostAutoConfigurator";
         ipv4.configurator.interfaces = "cellular lo0";
 }
+
+

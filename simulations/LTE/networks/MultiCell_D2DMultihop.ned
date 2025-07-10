@@ -20,7 +20,7 @@ import simu5g.apps.d2dMultihop.statistics.MultihopD2DStatistics;
 import simu5g.common.binder.Binder;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.PgwStandard;
-import simu5g.nodes.Ue;
+import simu5g.nodes.LteUe;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 
@@ -89,19 +89,19 @@ network MultiCell_D2DMultihop
         eNodeB5: eNodeB {
             @display("p=1800,400;is=vl");
         }
-        ue1[numUe1]: Ue {
+        ue1[numUe1]: LteUe {
             @display("p=300,450;is=s");
         }
-        ue2[numUe2]: Ue {
+        ue2[numUe2]: LteUe {
             @display("p=700,450;is=s");
         }
-        ue3[numUe3]: Ue {
+        ue3[numUe3]: LteUe {
             @display("p=1100,450;is=s");
         }
-        ue4[numUe4]: Ue {
+        ue4[numUe4]: LteUe {
             @display("p=1500,450;is=s");
         }
-        ue5[numUe5]: Ue {
+        ue5[numUe5]: LteUe {
             @display("p=1900,450;is=s");
         }
         eventGenerator: EventGenerator {
