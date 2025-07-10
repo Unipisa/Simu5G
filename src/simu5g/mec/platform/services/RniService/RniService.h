@@ -19,7 +19,7 @@ namespace simu5g {
 
 /**
  * Radio Network Information Service (RNI)
- * This class inherits the MECServiceBase module interface for the implementation
+ * This class inherits the MecServiceBase module interface for the implementation
  * of the RNI Service defined in ETSI GS MEC 012 RNI API.
  * The currently available functionalities are related to the L2 measurements information resource
  */

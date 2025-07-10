@@ -34,7 +34,7 @@ module Ualcmp
         @display("i=device/mainframe;bgb=1006,692");
 
         //# Node specs
-        string nodeType = "MECOrchestrator";						// DO NOT CHANGE
+        string nodeType = "MecOrchestrator";						// DO NOT CHANGE
         string gateway = default("upf");
 
         // hostname of the reference orchestrator

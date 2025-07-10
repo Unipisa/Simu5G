@@ -21,7 +21,7 @@ using namespace omnetpp;
 
 /**
  * Location Service
- * This class inherits the MECServiceBase module interface for the implementation
+ * This class inherits the MecServiceBase module interface for the implementation
  * of the Location Service defined in ETSI GS MEC 013 Location API.
  * In particular, the currently available functionalities are:
  *  - get the current location of a UE (or a group of UEs)
