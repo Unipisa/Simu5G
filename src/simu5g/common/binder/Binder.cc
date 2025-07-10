@@ -1159,10 +1159,10 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
         if (newCellType == GNODEB) {
             // Retrieve NrUeCollector
             cModule *ueModule = getModuleByMacNodeId(ue);
-            if (ueModule->findSubmodule("NRueCollector") == -1)
-                ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("NRueCollector"));
+            if (ueModule->findSubmodule("nrUeCollector") == -1)
+                ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("nrUeCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got NRueCollector required for the gNB", num(ue));
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] does not have an 'nrUeCollector' submodule required for the gNB", num(ue));
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else if (newCellType == ENODEB) {
@@ -1171,7 +1171,7 @@ void Binder::moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell)
             if (ueModule->findSubmodule("ueCollector") == -1)
                 ueColl = check_and_cast<UeStatsCollector *>(ueModule->getSubmodule("ueCollector"));
             else
-                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] has not got ueCollector required for the eNB", num(ue));
+                throw cRuntimeError("LteBinder::moveUeCollector - Ue [%hu] does not have an 'ueCollector' submodule required for the eNB", num(ue));
             addUeCollectorToEnodeB(ue, ueColl, newCell);
         }
         else {

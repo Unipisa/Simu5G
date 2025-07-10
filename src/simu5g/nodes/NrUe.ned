@@ -28,7 +28,7 @@ module NrUe extends LteUe
         int nrMasterId @mutable = default(0);
         int nrMacNodeId @mutable = default(0); // TODO: this is not a real parameter
         int nrMacCellId @mutable = default(0); // TODO: this is not a real parameter
-        cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.NRueCollector" : "";
+        cellularNic.nrMac.collectorModule = hasRniSupport ? "^.^.nrUeCollector" : "";
         cellularNic.nrPhy.hasCollector = hasRniSupport;
 
     gates:
@@ -36,7 +36,7 @@ module NrUe extends LteUe
 
     submodules:
         //# UeStatsCollector - for MEC
-        NRueCollector: NrUeStatsCollector if hasRniSupport {
+        nrUeCollector: NrUeStatsCollector if hasRniSupport {
             @display("p=127,506;is=s");
         }
 

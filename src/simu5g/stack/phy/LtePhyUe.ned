@@ -36,7 +36,7 @@ simple LtePhyUe extends LtePhyBase
         // configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)
         double minRssi @unit("dB") = default(-99.0dB);
 
-        bool hasCollector = default(false); // true when node has a collector module (ueCollector/NRueCollector) for this PHY module
+        bool hasCollector = default(false); // true when node has a collector module (ueCollector/nrUeCollector) for this PHY module
 
         @signal[distance];
         @statistic[distance](title="distance between UE and serving base station"; unit="meters"; source="distance"; record=mean,vector);
