@@ -27,5 +27,13 @@ simple MecRequestForegroundApp extends MecAppBase
 {
     parameters:
         @class(MecRequestForegroundApp);
+
+        mecAppId = default(0); // it will be overridden by module ID in initialize()
+        
+        //# TODO check if these are used...
+        requiredRam = default(10MB);
+        requiredDisk = default(100MB);
+        requiredCpu = default(15000);
+        
         double lambda @unit(s) = default(10ms);
 }

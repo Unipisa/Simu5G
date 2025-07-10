@@ -30,6 +30,8 @@ simple MecRequestBackgroundGeneratorApp extends MecAppBase
         int numberOfApplications;
         bool allocateHostResources = default(false);
 
+        mecAppId = default(0); // it will be overridden by module ID in initialize()
+
         //resource required info
         requiredRam = default(10MB);
         requiredDisk = default(100MB);

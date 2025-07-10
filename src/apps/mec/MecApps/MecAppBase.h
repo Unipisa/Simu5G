@@ -89,7 +89,6 @@ class MecAppBase : public cSimpleModule, public inet::TcpSocket::ICallback
     inet::ModuleRefByPar<ServiceRegistry> serviceRegistry;
 
     int mecAppId;
-    int mecAppIndex_;
     double requiredRam;
     double requiredDisk;
     double requiredCpu;

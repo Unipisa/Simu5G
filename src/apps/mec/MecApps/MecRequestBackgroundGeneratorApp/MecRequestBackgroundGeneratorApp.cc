@@ -135,8 +135,8 @@ void MecRequestBackgroundGeneratorApp::initialize(int stage) {
 
     if (stage == inet::INITSTAGE_APPLICATION_LAYER) {
         EV << "MecRequestBackgroundGeneratorApp::initialize" << endl;
+        mecAppId = getId();
         numberOfApplications_ = par("numberOfApplications");
-
         if (numberOfApplications_ != 0) {
             if (vim == nullptr)
                 throw cRuntimeError("MecRequestBackgroundGeneratorApp::initialize - vim is null!");

@@ -22,8 +22,7 @@ simple MecAppBase like IMECApp, IApp
     parameters:
         @display("i=block/app;is=s");
 
-        int mecAppId;
-        int mecAppIndex;
+        int mecAppId;      // will be assigned by the VIM upon Mec App instantiation
 
         string mp1Address = default("");
         int mp1Port = default(10021);

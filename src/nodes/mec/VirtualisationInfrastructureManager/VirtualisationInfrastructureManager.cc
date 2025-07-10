@@ -243,7 +243,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         module->setDisplayString(display.str().c_str());
 
         //initialize IMECApp Parameters
-        module->par("mecAppIndex") = index;
         module->par("mecAppId") = ueAppID;
         module->par("requiredRam") = ram;
         module->par("requiredDisk") = disk;

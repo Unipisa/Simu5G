@@ -21,11 +21,11 @@ moduleinterface IMECApp
 {
     parameters:
         @display("i=block/app");
-        int mecAppId;
-        int mecAppIndex;
 
-        string mp1Address;
-        int mp1Port;
+        int mecAppId;
+
+        string mp1Address;  // IP address of the Mp1 interface to the MEC Platform
+        int mp1Port;        // port number of the MEC Platform
 
 		//resource required infos
         double requiredRam @unit("B");

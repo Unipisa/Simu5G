@@ -46,7 +46,6 @@ void MecAppBase::initialize(int stage)
     mp1Port = par("mp1Port");
 
     mecAppId = par("mecAppId"); // FIXME mecAppId is the deviceAppId (it does not change anything, though)
-    mecAppIndex_ = par("mecAppIndex");
     requiredRam = par("requiredRam").doubleValue();
     requiredDisk = par("requiredDisk").doubleValue();
     requiredCpu = par("requiredCpu").doubleValue();
