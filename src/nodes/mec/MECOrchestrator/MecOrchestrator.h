@@ -86,7 +86,6 @@ class MecOrchestrator : public cSimpleModule
     //------------------------------------
 
     //parent modules
-
     std::vector<cModule *> mecHosts;
 
     //storing the UEApp and MEApp information
@@ -94,7 +93,8 @@ class MecOrchestrator : public cSimpleModule
     std::map<int, mecAppMapEntry> meAppMap;
     std::map<std::string, ApplicationDescriptor> mecApplicationDescriptors_;
 
-    int contextIdCounter;
+    // next context id to be assigned to new MEC apps
+    int contextIdCounter = 0;
 
     double onboardingTime;
     double instantiationTime;

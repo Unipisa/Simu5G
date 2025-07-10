@@ -70,7 +70,7 @@ void UEWarningAlertApp::initialize(int stage)
     //retrieving mobility module
     mobility.reference(this, "mobilityModule", true);
 
-    mecAppName = par("mecAppName").stringValue();
+    mecAppName_ = par("mecAppName").stringValue();
 
     //initializing the auto-scheduling messages
     selfStart_ = new cMessage("selfStart", KIND_SELF_START);
@@ -86,6 +86,10 @@ void UEWarningAlertApp::initialize(int stage)
     EV << "UEWarningAlertApp::initialize - sourceAddress: " << sourceSimbolicAddress << " [" << inet::L3AddressResolver().resolve(sourceSimbolicAddress).str() << "]" << endl;
     EV << "UEWarningAlertApp::initialize - destAddress: " << deviceSimbolicAppAddress_ << " [" << deviceAppAddress_.str() << "]" << endl;
     EV << "UEWarningAlertApp::initialize - binding to port: local:" << localPort_ << " , dest:" << deviceAppPort_ << endl;
+
+    WATCH(mecAppAddress_);
+    WATCH(mecAppPort_);
+    WATCH(mecAppName_);
 }
 
 void UEWarningAlertApp::handleMessage(cMessage *msg)
@@ -162,10 +166,10 @@ void UEWarningAlertApp::sendStartMEWarningAlertApp()
 
     //instantiation requirements and info
     start->setType(START_MECAPP);
-    start->setMecAppName(mecAppName.c_str());
+    start->setMecAppName(mecAppName_.c_str());
     //start->setMecAppProvider("lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest_External");
 
-    start->setChunkLength(inet::B(2 + mecAppName.size() + 1));
+    start->setChunkLength(inet::B(2 + mecAppName_.size() + 1));
     start->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
     packet->insertAtBack(start);

@@ -135,13 +135,13 @@ void DeviceApp::handleUALCMPMessage()
                     }
                     else {
                         appContextUri = contextUri;
-                        mecAppEndPoint = jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"];
+                        std::string mecAppEndPoint = jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"];
 
                         EV << "DeviceApp::handleUALCMPMessage - reference URI of the application instance context is: " << appContextUri << endl;
                         EV << "DeviceApp::handleUALCMPMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
 
                         std::vector<std::string> endPoint = cStringTokenizer(mecAppEndPoint.c_str(), ":").asVector();
-                        EV << "vectore size: " << endPoint[0] << " e " << atoi(endPoint[1].c_str()) << endl;
+                        EV << "vector size: " << endPoint[0] << " e " << atoi(endPoint[1].c_str()) << endl;
 
                         auto ack = inet::makeShared<DeviceAppStartAckPacket>();
 

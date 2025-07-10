@@ -182,7 +182,8 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         else
             createAppMsg->setRequiredService("NULL");
 
-        createAppMsg->setContextId(contextIdCounter);
+        int contextId = contextIdCounter++;
+        createAppMsg->setContextId(contextId);
 
         // Add the new MEC app in the map structure
         mecAppMapEntry newMecApp;
@@ -240,21 +241,15 @@ void MecOrchestrator::startMECApp(UALCMPMessage *msg)
         newMecApp.mecAppAddress = appInfo->endPoint.addr;
         newMecApp.mecAppPort = appInfo->endPoint.port;
         newMecApp.mecAppInstanceId = appInfo->instanceId;
-        newMecApp.contextId = contextIdCounter;
-        meAppMap[contextIdCounter] = newMecApp;
+        newMecApp.contextId = contextId;
+        newMecApp.reference = appInfo->reference;
+        meAppMap[contextId] = newMecApp;
 
         MECOrchestratorMessage *msg = new MECOrchestratorMessage("MECOrchestratorMessage");
-        msg->setContextId(contextIdCounter);
+        msg->setContextId(contextId);
         msg->setType(CREATE_CONTEXT_APP);
         msg->setRequestId(contAppMsg->getRequestId());
         msg->setSuccess(true);
-
-         newMecApp.mecAppAddress = appInfo->endPoint.addr;
-         newMecApp.mecAppPort = appInfo->endPoint.port;
-         newMecApp.mecAppInstanceId = appInfo->instanceId;
-         newMecApp.contextId = contextIdCounter;
-         newMecApp.reference = appInfo->reference;
-         meAppMap[contextIdCounter] = newMecApp;
 
         processingTime += instantiationTime;
         scheduleAt(simTime() + processingTime, msg);

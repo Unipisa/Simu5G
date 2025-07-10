@@ -71,7 +71,6 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     bool flag;
 
     std::string appContextUri;
-    std::string mecAppEndPoint;
 
     State appState;
     std::string appName;

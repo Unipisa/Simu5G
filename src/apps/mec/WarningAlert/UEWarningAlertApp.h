@@ -57,8 +57,7 @@ class UEWarningAlertApp : public cSimpleModule
     // MEC application endPoint (returned by the device app)
     inet::L3Address mecAppAddress_;
     int mecAppPort_;
-
-    std::string mecAppName;
+    std::string mecAppName_;
 
     // mobility information
     opp_component_ptr<cModule> ue;
@@ -74,7 +73,6 @@ class UEWarningAlertApp : public cSimpleModule
 
     cMessage *selfStart_ = nullptr;
     cMessage *selfStop_ = nullptr;
-
     cMessage *selfMecAppStart_ = nullptr;
 
     // used to write in a log file
