@@ -52,25 +52,21 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
 {
   protected:
 
-    inet::TcpSocket UALCMPSocket_;
     inet::UdpSocket ueAppSocket_;
 
-    inet::L3Address UALCMPAddress;
-    int UALCMPPort;
+    inet::L3Address ualcmpAddress_;   // destination IP address to connect to the UALCMP
+    int ualcmpDestPort_;              // port number to connect the UALCMP
+    inet::TcpSocket ualcmpSocket_;    // socket for communicating with the UALCMP
 
     HttpBaseMessage *UALCMPMessage = nullptr;
     std::string UALCMPMessageBuffer;
 
     cMessage *processedUALCMPMessage = nullptr;
 
-    int localPort;
-
     inet::L3Address ueAppAddress;
     int ueAppPort;
 
-    bool flag;
-
-    std::string appContextUri;
+    std::string appContextUri;   // store the URI of the instantiated MEC application
 
     State appState;
     std::string appName;

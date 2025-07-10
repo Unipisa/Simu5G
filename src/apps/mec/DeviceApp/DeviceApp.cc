@@ -39,14 +39,14 @@ DeviceApp::~DeviceApp()
 
 void DeviceApp::handleUALCMPMessage()
 {
-    EV << "DeviceApp::handleUALCMPMessage: " << UALCMPMessage->getBody() << endl;
+    EV_INFO << "DeviceApp::handleUALCMPMessage - parsing message from UALCMP, current app state: " << appState << endl;
+    EV_DEBUG << "Message body: " << endl << UALCMPMessage->getBody() << endl;
 
     if (UALCMPMessage->getType() == RESPONSE) {
         HttpResponseMessage *response = dynamic_cast<HttpResponseMessage *>(UALCMPMessage);
 
         switch (appState) {
             case START: {
-                EV << "DeviceApp::handleUALCMPMessage - START" << endl;
                 if (response->getCode() == 200) { // Successful response of the get
                     nlohmann::json jsonResponseBody = nlohmann::json::parse(response->getBody());
                     nlohmann::json jsonRequestBody;
@@ -56,7 +56,8 @@ void DeviceApp::handleUALCMPMessage()
                     for (int i = 0; i < size; ++i) {
                         nlohmann::json appInfo = jsonResponseBody["appList"];
                         if (appName == appInfo.at(i)["appName"]) {
-                            // search fo the app name in the list of shared apps. if found, use the stored dev app id
+                            // search for the app name in the list of shared apps. if found, use the stored dev app id
+                            EV_DEBUG << "DeviceApp::handleUALCMPMessage: application descriptor for application " << appName << " found" << endl;
                             auto sharedDevAppId = devAppIds.find(std::string(appName));
                             int associateDevAppId;
                             if (sharedDevAppId != devAppIds.end())
@@ -64,17 +65,17 @@ void DeviceApp::handleUALCMPMessage()
                             else
                                 associateDevAppId = getId();
                             jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
-                            jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];// "WAMECAPP_External"; //startPk->getMecAppDId()
-                            jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
-                            jsonRequestBody["appInfo"]["appProvider"] = appInfo.at(i)["appProvider"];//startPk->getMecAppProvider();//"lte.apps.mec.warningAlert_rest.MEWarningAlertApp_rest";
+                            jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];
+                            jsonRequestBody["appInfo"]["appName"] = appName;
+                            jsonRequestBody["appInfo"]["appProvider"] = appInfo.at(i)["appProvider"];
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        EV << "DeviceApp::handleUALCMPMessage: application descriptor for appName: " << appName << " not found." << endl;
-                        // search fo the app name in the list of shared apps. if found, use the stored dev app id
+                        EV_DEBUG << "DeviceApp::handleUALCMPMessage: application descriptor for application " << appName << " not found" << endl;
+                        // search for the app name in the list of shared apps. if found, use the stored dev app id
                         auto sharedDevAppId = devAppIds.find(std::string(appName));
                         int associateDevAppId;
                         if (sharedDevAppId != devAppIds.end())
@@ -82,7 +83,7 @@ void DeviceApp::handleUALCMPMessage()
                         else
                             associateDevAppId = getId();
                         jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
-                        jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";
+                        jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource;
 
                         jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
                         // do not add the appProvider field (even if it is mandatory in ETSI specs. The MEC orchestrator we implemented does not use it
@@ -91,9 +92,9 @@ void DeviceApp::handleUALCMPMessage()
 
                     const char *uri = "/example/dev_app/v1/app_contexts";
 
-                    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
+                    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-                    Http::sendPostRequest(&UALCMPSocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
+                    Http::sendPostRequest(&ualcmpSocket_, jsonRequestBody.dump().c_str(), host.c_str(), uri);
 
                     //send request
                     appState = CREATING;
@@ -107,12 +108,9 @@ void DeviceApp::handleUALCMPMessage()
             }
 
             case CREATING: {
-                EV << "DeviceApp::handleUALCMPMessage - CREATING" << endl;
                 if (response->getCode() == 201) { // Successful response of the post
                     nlohmann::json jsonBody = nlohmann::json::parse(UALCMPMessage->getBody());
-
                     inet::Packet *packet = new inet::Packet("DeviceAppStartAckPacket");
-
                     std::string contextUri = response->getHeaderField("Location");
 
                     if (contextUri.empty()) {
@@ -137,19 +135,17 @@ void DeviceApp::handleUALCMPMessage()
                         appContextUri = contextUri;
                         std::string mecAppEndPoint = jsonBody["appInfo"]["userAppInstanceInfo"]["referenceURI"];
 
-                        EV << "DeviceApp::handleUALCMPMessage - reference URI of the application instance context is: " << appContextUri << endl;
-                        EV << "DeviceApp::handleUALCMPMessage - endPOint of the mec application instance is: " << mecAppEndPoint << endl;
+                        EV_INFO << "DeviceApp::handleUALCMPMessage - reference URI of the application instance context is: " << appContextUri << endl;
+                        EV_INFO << "DeviceApp::handleUALCMPMessage - endPoint of the mec application instance is: " << mecAppEndPoint << endl;
 
                         std::vector<std::string> endPoint = cStringTokenizer(mecAppEndPoint.c_str(), ":").asVector();
-                        EV << "vector size: " << endPoint[0] << " e " << atoi(endPoint[1].c_str()) << endl;
+
+                        std::string contextId = jsonBody["contextId"];
+
+                        EV_DEBUG << "DeviceApp::handleUALCMPMessage - sending ACK to the UE app" << endl;
 
                         auto ack = inet::makeShared<DeviceAppStartAckPacket>();
-
-                        //instantiation requirements and info
                         ack->setType(ACK_START_MECAPP);
-
-                        //connection info
-                        std::string contextId = jsonBody["contextId"];
                         ack->setContextId(contextId.c_str());
                         ack->setResult(true);
                         ack->setIpAddress(endPoint[0].c_str());
@@ -177,12 +173,10 @@ void DeviceApp::handleUALCMPMessage()
                     //connection info
                     nack->setResult(false);
                     nack->setReason(response->getPayload().c_str());
-                    if (strlen(nack->getReason())) {
+                    if (strlen(nack->getReason()))
                         nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
-                    }
-                    else {
+                    else
                         nack->setChunkLength(inet::B(2)); //just code and data length = 0
-                    }
                     nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
 
                     inet::Packet *packet = new inet::Packet("DeviceAppStartAckPacket");
@@ -216,12 +210,10 @@ void DeviceApp::handleUALCMPMessage()
                 else if (response->getCode() == 404) {
                     ack->setResult(false);
                     ack->setReason("ContextId not found, maybe it has been already deleted");
-                    if (strlen(ack->getReason())) {
+                    if (strlen(ack->getReason()))
                         ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
-                    }
-                    else {
+                    else
                         ack->setChunkLength(inet::B(2)); //just code and data length = 0
-                    }
                     ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
                     appState = IDLE;
@@ -229,12 +221,10 @@ void DeviceApp::handleUALCMPMessage()
                 else if (response->getCode() == 500) {
                     ack->setResult(false);
                     ack->setReason("MEC app termination did not success");
-                    if (strlen(ack->getReason())) {
+                    if (strlen(ack->getReason()))
                         ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
-                    }
-                    else {
+                    else
                         ack->setChunkLength(inet::B(2)); //just code and data length = 0
-                    }
                     ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
                     packet->insertAtBack(ack);
 
@@ -280,39 +270,36 @@ void DeviceApp::initialize(int stage) {
     const char *localAddressStr = par("localAddress");
     L3Address localAddress = *localAddressStr ? L3AddressResolver().resolve(localAddressStr) : L3Address();
 
-    localPort = par("localPort");
-
+    // setup socket with the local UE application
     ueAppSocket_.setOutputGate(gate("socketOut"));
-    UALCMPSocket_.setOutputGate(gate("socketOut"));
-
-    ueAppSocket_.bind(localAddress, localPort); // bind ueSocket to listen on local port
-    UALCMPSocket_.bind(localAddress, par("ualcmpLocalPort")); // bind UALCMP Socket to listen on ualcmpLocalPort
-
+    ueAppSocket_.bind(localAddress, par("localPort").intValue());
     ueAppSocket_.setCallback(this);
-    UALCMPSocket_.setCallback(this);
+
+    // setup socket with the UALCMP
+    ualcmpSocket_.setOutputGate(gate("socketOut"));
+    ualcmpSocket_.bind(localAddress, par("ualcmpLocalPort").intValue());
+    ualcmpSocket_.setCallback(this);
+    const char *lcmAddress = par("ualcmpAddress").stringValue();
+    ualcmpAddress_ = L3AddressResolver().resolve(lcmAddress);
+    ualcmpDestPort_ = par("ualcmpDestPort");
 
     int timeToLive = par("timeToLive"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (timeToLive != -1) {
         ueAppSocket_.setTimeToLive(timeToLive);
-        UALCMPSocket_.setTimeToLive(timeToLive);
+        ualcmpSocket_.setTimeToLive(timeToLive);
     }
 
     int dscp = par("dscp"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (dscp != -1) {
         ueAppSocket_.setDscp(dscp);
-        UALCMPSocket_.setDscp(dscp);
+        ualcmpSocket_.setDscp(dscp);
     }
 
     int tos = par("tos"); // TODO split to 2 parameters, when need different value for ue and UALCMP socket
     if (tos != -1) {
         ueAppSocket_.setTos(tos);
-        UALCMPSocket_.setTos(tos);
+        ualcmpSocket_.setTos(tos);
     }
-
-    const char *lcmAddress = par("UALCMPAddress").stringValue();
-    UALCMPAddress = L3AddressResolver().resolve(lcmAddress);
-    EV << "DeviceApp::initialize - UALCMPAddress: " << UALCMPAddress.str() << endl;
-    UALCMPPort = par("UALCMPPort");
 
     processedUALCMPMessage = new cMessage("processedUALCMPMessage");
 
@@ -321,12 +308,12 @@ void DeviceApp::initialize(int stage) {
     appState = IDLE;
 
     /* directly connect to the LCM proxy
-     * instead of waiting for a requeste from the UE, it is
+     * instead of waiting for a request from the UE, it is
      * easier to manage
      */
 
     cMessage *msg = new cMessage("connect");
-    scheduleAt(simTime() + 0.0, msg);
+    scheduleAt(simTime(), msg);
 }
 
 void DeviceApp::handleMessage(cMessage *msg)
@@ -339,30 +326,28 @@ void DeviceApp::handleMessage(cMessage *msg)
         ueAppSocket_.processMessage(msg);
         delete msg;
     }
-    else if (UALCMPSocket_.belongsToSocket(msg)) {
-        UALCMPSocket_.processMessage(msg);
+    else if (ualcmpSocket_.belongsToSocket(msg)) {
+        ualcmpSocket_.processMessage(msg);
     }
 }
 
 void DeviceApp::connectToUALCMP()
 {
     // we need a new connId if this is not the first connection
-    UALCMPSocket_.renewSocket();
+    ualcmpSocket_.renewSocket();
 
-    if (UALCMPAddress.isUnspecified()) {
-        EV_ERROR << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << ": cannot resolve destination address\n";
+    if (ualcmpAddress_.isUnspecified()) {
+        EV_ERROR << "Connecting to " << ualcmpAddress_ << " port=" << ualcmpDestPort_ << ": cannot resolve destination address\n";
         throw cRuntimeError("LCM proxy address is unspecified!");
     }
     else {
-        EV << "Connecting to " << UALCMPAddress << " port=" << UALCMPPort << endl;
-        UALCMPSocket_.connect(UALCMPAddress, UALCMPPort);
+        EV << "Connecting to " << ualcmpAddress_ << " port=" << ualcmpDestPort_ << endl;
+        ualcmpSocket_.connect(ualcmpAddress_, ualcmpDestPort_);
     }
 }
 
 void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
 {
-    EV << "DeviceApp::sendStartAppContext" << endl;
-
     auto startPk = dynamicPtrCast<const DeviceAppStartPacket>(pk);
     if (startPk == nullptr)
         throw cRuntimeError("DeviceApp::sendStartAppContext - DeviceAppStartPacket is null");
@@ -380,39 +365,32 @@ void DeviceApp::sendStartAppContext(inet::Ptr<const DeviceAppPacket> pk)
     std::stringstream params;
     params << "appName=" << appName;
 
-    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
+    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE) {
-        Http::sendGetRequest(&UALCMPSocket_, host.c_str(), uri.c_str(), params.str().c_str());
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED && appState == IDLE) {
+        EV_INFO << "DeviceApp::sendStartAppContext - requesting instantiation of app " << appName << " to UALCMP" << endl;
+        Http::sendGetRequest(&ualcmpSocket_, host.c_str(), uri.c_str(), params.str().c_str());
         appState = START;
     }
-    else if (UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED) {
-        // send nack to the UE app
+    else if (ualcmpSocket_.getState() != inet::TcpSocket::CONNECTED) {
+        EV_INFO << "DeviceApp::sendStartAppContext - cannot request instantiation of app " << appName << " because UALCMP is not connected" << endl;
 
+        // inform UE application
         inet::Packet *packet = new inet::Packet("DeviceAppStartAckPacket");
         auto nack = inet::makeShared<DeviceAppStartAckPacket>();
-
-        //instantiation requirements and info
         nack->setType(ACK_START_MECAPP);
-
-        //connection info
         nack->setResult(false);
-
         nack->setReason("LCM proxy not connected");
-        if (strlen(nack->getReason())) {
+        if (strlen(nack->getReason()))
             nack->setChunkLength(inet::B(2 + strlen(nack->getReason()))); //just code and data length = 0
-        }
-        else {
+        else
             nack->setChunkLength(inet::B(2)); //just code and data length = 0
-        }
         nack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         packet->insertAtBack(nack);
         ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
-
-        return;
     }
     else if (appState != IDLE) {
-        EV << "DeviceApp::sendStartAppContext already sent" << endl;
+        EV_INFO << "DeviceApp::sendStartAppContext - do not request instantiation of app " << appName << " because it was already requested" << endl;
     }
 }
 
@@ -427,41 +405,32 @@ void DeviceApp::sendStopAppContext(inet::Ptr<const DeviceAppPacket> pk)
      *  appContextUri saved during startContext
      */
     std::string cId = stopPk->getContextId();
+    std::string host = ualcmpSocket_.getRemoteAddress().str() + ":" + std::to_string(ualcmpSocket_.getRemotePort());
 
-    std::string host = UALCMPSocket_.getRemoteAddress().str() + ":" + std::to_string(UALCMPSocket_.getRemotePort());
-
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED) {
-        EV << "DeviceApp::sendStopAppContext - send DELETE for MEC app: " << appContextUri << endl;
-        Http::sendDeleteRequest(&UALCMPSocket_, host.c_str(), appContextUri.c_str());
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED && appState == APPCREATED) {
+        EV_INFO << "DeviceApp::sendStopAppContext - requesting termination of MEC app: " << appContextUri << " to the UALCMP" << endl;
+        Http::sendDeleteRequest(&ualcmpSocket_, host.c_str(), appContextUri.c_str());
         appState = DELETING;
     }
     else if (appState == DELETING) {
-        EV << "DeviceApp::sendStopAppContext - DELETE command already sent - discarding packet" << endl;
-        return;
+        EV_INFO << "DeviceApp::sendStopAppContext - termination request for MEC app already sent. Do not send again" << endl;
     }
-    else if (UALCMPSocket_.getState() != inet::TcpSocket::CONNECTED) {
-        EV << "DeviceApp::sendStopAppContext - LCM proxy not connected" << endl;
+    else if (ualcmpSocket_.getState() != inet::TcpSocket::CONNECTED) {
+        EV << "DeviceApp::sendStopAppContext - termination request cannot be sent because UALCMP is not connected" << endl;
 
+        // inform UE application
         inet::Packet *packet = new inet::Packet("DeviceAppStopAckPacket");
         auto ack = inet::makeShared<DeviceAppStopAckPacket>();
-
-        //instantiation requirements and info
         ack->setType(ACK_STOP_MECAPP);
-
         ack->setResult(false);
         ack->setReason("LCM proxy not connected");
-
-        if (strlen(ack->getReason())) {
+        if (strlen(ack->getReason()))
             ack->setChunkLength(inet::B(2 + strlen(ack->getReason()))); //just code and data length = 0
-        }
-        else {
+        else
             ack->setChunkLength(inet::B(2)); //just code and data length = 0
-        }
         ack->addTagIfAbsent<inet::CreationTimeTag>()->setCreationTime(simTime());
         packet->insertAtBack(ack);
-
         ueAppSocket_.sendTo(packet, ueAppAddress, ueAppPort);
-        return;
     }
 }
 
@@ -474,13 +443,11 @@ void DeviceApp::socketDataArrived(UdpSocket *socket, Packet *pk)
     ueAppPort = pk->getTag<L4PortInd>()->getSrcPort();
 
     auto pkt = pk->peekAtFront<DeviceAppPacket>();
-    EV << "DeviceAppPacket type: " << pkt->getType() << endl;
-    if (strcmp(pkt->getType(), START_MECAPP) == 0) {
+    EV_DEBUG << "DeviceApp::socketDataArrived - packet type: " << pkt->getType() << endl;
+    if (strcmp(pkt->getType(), START_MECAPP) == 0)
         sendStartAppContext(pkt);
-    }
-    else if (strcmp(pkt->getType(), STOP_MECAPP) == 0) {
+    else if (strcmp(pkt->getType(), STOP_MECAPP) == 0)
         sendStopAppContext(pkt);
-    }
 }
 
 void DeviceApp::socketErrorArrived(UdpSocket *socket, Indication *indication)
@@ -497,7 +464,7 @@ void DeviceApp::socketClosed(UdpSocket *socket)
 // ------ TCP socket Callback implementation
 void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bool urgent)
 {
-    EV << "DeviceApp::socketDataArrived" << endl;
+    EV_INFO << "DeviceApp::socketDataArrived - received packet from the UALCMP" << endl;
     std::vector<uint8_t> bytes = msg->peekDataAsBytes()->getBytes();
     std::string packet(bytes.begin(), bytes.end());
 
@@ -505,9 +472,9 @@ void DeviceApp::socketDataArrived(inet::TcpSocket *socket, inet::Packet *msg, bo
 
     bool res = Http::parseReceivedMsg(packet, UALCMPMessageBuffer, UALCMPMessage);
     if (res) {
-        EV << "DeviceApp::socketDataArrived - schedule processedUALCMPMessage" << endl;
-        UALCMPMessage->setSockId(UALCMPSocket_.getSocketId());
-        double time = 0.005;
+        double time = 0.005; // TODO make parametric
+        EV_INFO << "DeviceApp::socketDataArrived - packet will be processed in " << time << " seconds" << endl;
+        UALCMPMessage->setSockId(ualcmpSocket_.getSocketId());
         scheduleAt(simTime() + time, processedUALCMPMessage);
     }
 }
@@ -520,9 +487,9 @@ void DeviceApp::socketEstablished(inet::TcpSocket *socket)
 void DeviceApp::socketPeerClosed(inet::TcpSocket *socket)
 {
     EV << "DeviceApp::socketPeerClosed" << endl;
-    if (UALCMPSocket_.getState() == TcpSocket::PEER_CLOSED) {
+    if (ualcmpSocket_.getState() == TcpSocket::PEER_CLOSED) {
         EV_INFO << "remote TCP closed, closing here as well\n";
-        UALCMPSocket_.close();
+        ualcmpSocket_.close();
     }
 }
 
@@ -531,8 +498,8 @@ void DeviceApp::socketFailure(inet::TcpSocket *socket, int code) {}
 
 void DeviceApp::finish()
 {
-    if (UALCMPSocket_.getState() == inet::TcpSocket::CONNECTED)
-        UALCMPSocket_.close();
+    if (ualcmpSocket_.getState() == inet::TcpSocket::CONNECTED)
+        ualcmpSocket_.close();
 }
 
 } //namespace
