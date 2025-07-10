@@ -14,14 +14,17 @@ package simu5g.apps.mec.MecApps.MecRequestForegroundApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 //
-// This module implements a MEC application that issues GET requests to the
-// ~LocationService every 500ms. This application can be utilized as an "independent MEC app" (see
+// This module implements a MEC application that issues periodic GET requests to the
+// ~LocationService. This application can be utilized as an "independent MEC app" (see
 // ~MecHost module), hence it does not require instantiation via the MEC orchestrator
 // upon request from a User Equipment. Essentially, this application provides a quick
 // way to generate configurable load to the Location Service and simulate different
 // (and potentially more realistic) response times from the latter.
 //
-// TODO: make the period configurable
+// For now, this application does not consume resources of the MEC Host (i.e., resource
+// parameters are not used). 
+// 
+// TODO consider resources used by this app in the VIM
 //
 simple MecRequestForegroundApp extends MecAppBase
 {
@@ -30,10 +33,11 @@ simple MecRequestForegroundApp extends MecAppBase
 
         mecAppId = default(0); // it will be overridden by module ID in initialize()
         
-        //# TODO check if these are used...
+        // resource usage (not used so far)
         requiredRam = default(10MB);
         requiredDisk = default(100MB);
         requiredCpu = default(15000);
         
-        double lambda @unit(s) = default(10ms);
+        double meanRequestTime @unit(s) = default(0.5s);    // mean time between consecutive requests to the LocationService
+        bool exponentialDist = default(false);              // if true, requests are generated according to the exponential distribution with meanRequestTime as mean. If false, requests are periodic, every meanRequestTime
 }

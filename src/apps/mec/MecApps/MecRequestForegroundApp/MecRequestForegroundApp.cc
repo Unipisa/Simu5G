@@ -37,7 +37,6 @@ void MecRequestForegroundApp::initialize(int stage) {
         mecAppId = getId();
         scheduleAt(simTime() + 0, m);
         sendFGRequest = new cMessage("sendFGRequest");
-        lambda = par("lambda").doubleValue();
     }
 }
 
@@ -46,7 +45,7 @@ void MecRequestForegroundApp::handleServiceMessage(int connId)
     HttpMessageStatus *msgStatus = static_cast<HttpMessageStatus *>(serviceSocket_->getUserData());
     serviceHttpMessage = check_and_cast<HttpBaseMessage *>(msgStatus->httpMessageQueue.front());
     EV << "payload: " << serviceHttpMessage->getBody() << endl;
-    scheduleAt(simTime() + 0.500, sendFGRequest);
+    scheduleAt(simTime() + par("meanRequestTime"), sendFGRequest);
 }
 
 void MecRequestForegroundApp::handleSelfMessage(cMessage *msg) {
@@ -78,8 +77,11 @@ void MecRequestForegroundApp::established(int connId)
     }
     else if (connId == serviceSocket_->getSocketId()) {
         EV << "MecRequestBackgroundApp::established - serviceSocket" << endl;
-        scheduleAt(simTime() + 0, sendFGRequest);
-        //scheduleAt(simTime() + exponential(lambda, 2), sendFGRequest);
+        if (par("exponentialDist").boolValue())
+            scheduleAt(simTime() + exponential(par("meanRequestTime").doubleValue()), sendFGRequest);
+        else
+            scheduleAt(simTime() + par("meanRequestTime"), sendFGRequest);
+
     }
     else {
         throw cRuntimeError("MecRequestBackgroundApp::socketEstablished - Socket %d not recognized", connId);
