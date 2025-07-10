@@ -11,7 +11,7 @@
 
 #include "simu5g/stack/mac/scheduling_modules/LteMaxCi.h"
 #include "simu5g/stack/mac/scheduler/LteSchedulerEnb.h"
-#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 

@@ -18,7 +18,7 @@
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/stack/backgroundTrafficGenerator/IBackgroundTrafficManager.h"
+#include "simu5g/background/trafficGenerator/IBackgroundTrafficManager.h"
 
 namespace simu5g {
 

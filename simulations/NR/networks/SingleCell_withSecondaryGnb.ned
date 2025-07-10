@@ -20,7 +20,7 @@ import simu5g.common.carrierAggregation.CarrierAggregation;
 import simu5g.nodes.NrUe;
 import simu5g.nodes.gNodeB;
 import simu5g.nodes.PgwStandard;
-import simu5g.nodes.backgroundCell.BackgroundCell;
+import simu5g.nodes.BackgroundCell;
 import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 

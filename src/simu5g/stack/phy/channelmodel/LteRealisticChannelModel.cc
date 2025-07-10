@@ -18,7 +18,7 @@
 #include "simu5g/stack/mac/amc/UserTxParams.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/nodes/ExtCell.h"
-#include "simu5g/nodes/backgroundCell/BackgroundScheduler.h"
+#include "simu5g/background/cell/BackgroundScheduler.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/mac/LteMacEnbD2D.h"
 

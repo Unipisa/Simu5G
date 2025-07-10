@@ -12,7 +12,7 @@
 
 package simu5g.stack;
 
-import simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator;
+import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 import simu5g.stack.compManager.ILteCompManager;
 import simu5g.stack.dualConnectivityManager.DualConnectivityManager;
 import simu5g.stack.handoverManager.LteHandoverManager;
