@@ -98,7 +98,7 @@ void UeRequestApp::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) {
         switch (msg->getKind()) {
             case KIND_SELF_START:
-                sendStartMECRequestApp();
+                sendStartMecRequestApp();
                 break;
             case KIND_SELF_STOP:
                 sendStopApp();
@@ -123,9 +123,9 @@ void UeRequestApp::handleMessage(cMessage *msg)
         if (ipAdd == deviceAppAddress_ || ipAdd == inet::L3Address("127.0.0.1")) { // dev app
             auto mePkt = packet->peekAtFront<DeviceAppPacket>();
             if (!strcmp(mePkt->getType(), ACK_START_MECAPP))
-                handleAckStartMECRequestApp(msg);
+                handleAckStartMecRequestApp(msg);
             else if (!strcmp(mePkt->getType(), ACK_STOP_MECAPP))
-                handleAckStopMECRequestApp(msg);
+                handleAckStopMecRequestApp(msg);
             else
                 throw cRuntimeError("UeRequestApp::handleMessage - \tFATAL! Error, DeviceAppPacket type %s not recognized", mePkt->getType());
         }
@@ -146,9 +146,9 @@ void UeRequestApp::finish()
 {
 }
 
-void UeRequestApp::sendStartMECRequestApp()
+void UeRequestApp::sendStartMecRequestApp()
 {
-    EV << "UeRequestApp::sendStartMECRequestApp - Sending " << START_MEAPP << " type RequestPacket\n";
+    EV << "UeRequestApp::sendStartMecRequestApp - Sending " << START_MEAPP << " type RequestPacket\n";
 
     inet::Packet *packet = new inet::Packet("RequestAppStart");
     auto start = inet::makeShared<DeviceAppStartPacket>();
@@ -166,9 +166,9 @@ void UeRequestApp::sendStartMECRequestApp()
     scheduleAt(simTime() + 0.5, selfStart_);
 }
 
-void UeRequestApp::sendStopMECRequestApp()
+void UeRequestApp::sendStopMecRequestApp()
 {
-    EV << "UeRequestApp::sendStopMECRequestApp - Sending " << STOP_MEAPP << " type RequestPacket\n";
+    EV << "UeRequestApp::sendStopMecRequestApp - Sending " << STOP_MEAPP << " type RequestPacket\n";
 
     inet::Packet *packet = new inet::Packet("DeviceAppStopPacket");
     auto stop = inet::makeShared<DeviceAppStopPacket>();
@@ -191,28 +191,28 @@ void UeRequestApp::sendStopMECRequestApp()
     scheduleAt(simTime() + 0.5, selfStop_);
 }
 
-void UeRequestApp::handleAckStartMECRequestApp(cMessage *msg)
+void UeRequestApp::handleAckStartMecRequestApp(cMessage *msg)
 {
-    EV << "UeRequestApp::handleAckStartMECRequestApp - Received Start ACK packet" << endl;
+    EV << "UeRequestApp::handleAckStartMecRequestApp - Received Start ACK packet" << endl;
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStartAckPacket>();
 
     if (pkt->getResult() == true) {
         mecAppAddress_ = L3AddressResolver().resolve(pkt->getIpAddress());
         mecAppPort_ = pkt->getPort();
-        EV << "UeRequestApp::handleAckStartMECRequestApp - Received " << pkt->getType() << " type RequestPacket. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
+        EV << "UeRequestApp::handleAckStartMecRequestApp - Received " << pkt->getType() << " type RequestPacket. mecApp instance is at: " << mecAppAddress_ << ":" << mecAppPort_ << endl;
         cancelEvent(selfStart_);
         //scheduling sendStopMEWarningAlertApp()
         if (!selfStop_->isScheduled()) {
             simtime_t stopTime = par("stopTime");
             scheduleAt(simTime() + stopTime, selfStop_);
-            EV << "UeRequestApp::handleAckStartMECRequestApp - Starting sendStopMECRequestApp() in " << stopTime << " seconds " << endl;
+            EV << "UeRequestApp::handleAckStartMecRequestApp - Starting sendStopMecRequestApp() in " << stopTime << " seconds " << endl;
         }
         //send the first reuqest to the MEC app
         sendRequest();
     }
     else {
-        EV << "UeRequestApp::handleAckStartMECRequestApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
+        EV << "UeRequestApp::handleAckStartMecRequestApp - MEC application cannot be instantiated! Reason: " << pkt->getReason() << endl;
         simtime_t startTime = par("startTime");
         EV << "UeRequestApp::initialize - starting sendStartMEWarningAlertApp() in " << startTime << " seconds " << endl;
         if (!selfStart_->isScheduled())
@@ -222,14 +222,14 @@ void UeRequestApp::handleAckStartMECRequestApp(cMessage *msg)
     delete packet;
 }
 
-void UeRequestApp::handleAckStopMECRequestApp(cMessage *msg)
+void UeRequestApp::handleAckStopMecRequestApp(cMessage *msg)
 {
-    EV << "UeRequestApp::handleAckStopMECRequestApp - Received Stop ACK packet" << endl;
+    EV << "UeRequestApp::handleAckStopMecRequestApp - Received Stop ACK packet" << endl;
 
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto pkt = packet->peekAtFront<DeviceAppStopAckPacket>();
 
-    EV << "UeRequestApp::handleAckStopMECRequestApp - Received " << pkt->getType() << " type RequestPacket with result: " << pkt->getResult() << endl;
+    EV << "UeRequestApp::handleAckStopMecRequestApp - Received " << pkt->getType() << " type RequestPacket with result: " << pkt->getResult() << endl;
     if (pkt->getResult() == false)
         EV << "Reason: " << pkt->getReason() << endl;
 
@@ -259,7 +259,7 @@ void UeRequestApp::handleStopApp(cMessage *msg)
     inet::Packet *packet = check_and_cast<inet::Packet *>(msg);
     auto res = packet->peekAtFront<RequestResponseAppPacket>();
 
-    sendStopMECRequestApp();
+    sendStopMecRequestApp();
 }
 
 void UeRequestApp::sendStopApp()

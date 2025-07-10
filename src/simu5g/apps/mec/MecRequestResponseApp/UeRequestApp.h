@@ -84,15 +84,15 @@ class UeRequestApp : public cSimpleModule
     void emitStats();
 
     // --- Functions to interact with the DeviceApp --- //
-    void sendStartMECRequestApp();
-    void sendStopMECRequestApp();
+    void sendStartMecRequestApp();
+    void sendStopMecRequestApp();
     void handleStopApp(cMessage *msg);
     void sendStopApp();
 
-    void handleAckStartMECRequestApp(cMessage *msg);
-    void handleAckStopMECRequestApp(cMessage *msg);
+    void handleAckStartMecRequestApp(cMessage *msg);
+    void handleAckStopMecRequestApp(cMessage *msg);
 
-    // --- Functions to interact with the MECPlatooningApp --- //
+    // --- Functions to interact with the MecPlatooningApp --- //
     void sendRequest();
     void recvResponse(cMessage *msg);
 

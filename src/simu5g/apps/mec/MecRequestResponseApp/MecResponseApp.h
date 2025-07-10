@@ -29,7 +29,7 @@ using namespace omnetpp;
 #define UEAPP_STOP         2
 #define UEAPP_ACK_STOP     3
 
-class MECResponseApp : public MecAppBase
+class MecResponseApp : public MecAppBase
 {
   protected:
     inet::TcpSocket *mp1Socket_ = nullptr;
@@ -93,7 +93,7 @@ class MECResponseApp : public MecAppBase
     void socketClosed(inet::TcpSocket *socket) override;
 
   public:
-    ~MECResponseApp() override;
+    ~MecResponseApp() override;
 };
 
 } //namespace

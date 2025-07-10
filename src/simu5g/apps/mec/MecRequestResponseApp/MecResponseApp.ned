@@ -22,10 +22,10 @@ import simu5g.apps.mec.MecApps.MecAppBase;
 // response message to the UE after a computation time that depends on the current resource utilization at the
 // MEC host.
 //
-simple MECResponseApp extends MecAppBase
+simple MecResponseApp extends MecAppBase
 {
     parameters:
-        @class(MECResponseApp);
+        @class(MecResponseApp);
         @display("i=block/app;is=s");
 
         int responsePacketSize @unit(B) = default(50B);
