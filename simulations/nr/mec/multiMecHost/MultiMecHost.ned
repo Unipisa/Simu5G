@@ -1,0 +1,107 @@
+//
+//                  Simu5G
+//
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
+//
+// This file is part of a software released under the license included in file
+// "license.pdf". Please read LICENSE and README files before using it.
+// The above files and the present reference are part of the software itself,
+// and cannot be removed from it.
+//
+package simu5g.simulations.nr.mec.multiMecHost;
+
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+import inet.networklayer.ipv4.RoutingTableRecorder;
+import inet.node.ethernet.Eth10G;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.NrUe;
+import simu5g.nodes.gNodeB;
+import simu5g.nodes.Upf;
+import simu5g.nodes.BackgroundCell;
+import simu5g.nodes.MecHost;
+import simu5g.mec.orchestrator.MecOrchestrator;
+import simu5g.mec.ualcmp.Ualcmp;
+import simu5g.world.radio.LteChannelControl;
+
+
+// MultiMecHost
+//
+// This network includes two gNBs and two MEC hosts
+//
+network MultiMecHost
+{
+    parameters:
+        int numUe = default(1);
+        int numBgCells = default(0);
+        @display("i=block/network2;bgb=1088,678;bgi=background/pisa");
+    submodules:
+        channelControl: LteChannelControl {
+            @display("p=50,25;is=s");
+        }
+        routingRecorder: RoutingTableRecorder {
+            @display("p=50,75;is=s");
+        }
+        configurator: Ipv4NetworkConfigurator {
+            @display("p=50,125");
+        }
+        binder: Binder {
+            @display("p=50,175;is=s");
+        }
+        carrierAggregation: CarrierAggregation {
+            @display("p=50,258;is=s");
+        }
+        upf: Upf {
+            @display("p=500,131");
+        }
+        iUpf1: Upf {
+            @display("p=390,247");
+        }
+        iUpf2: Upf {
+            @display("p=603,247");
+        }
+        gnb1: gNodeB {
+            @display("p=250,395;is=vl");
+        }
+        gnb2: gNodeB {
+            @display("p=749,400;is=vl");
+        }
+        bgCell[numBgCells]: BackgroundCell {
+            @display("p=250,577;is=vl");
+        }
+        ue[numUe]: NrUe {
+            @display("p=500,481");
+        }
+
+        //# MEC modules
+        mecHost1: MecHost {
+            @display("p=248,247");
+        }
+        mecHost2: MecHost {
+            @display("p=748,247");
+        }
+        mecOrchestrator: MecOrchestrator {
+            @display("p=250,73");
+        }
+        ualcmp: Ualcmp {
+            @display("p=390,73");
+        }
+
+    connections:
+
+        //# 5G Core Network connections
+        upf.pppg++ <--> Eth10G <--> iUpf1.pppg++;
+        upf.pppg++ <--> Eth10G <--> iUpf2.pppg++;
+        iUpf1.pppg++ <--> Eth10G <--> gnb1.ppp;
+        iUpf2.pppg++ <--> Eth10G <--> gnb2.ppp;
+
+        //# MEC-related connections
+        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
+        ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
+        ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
+        mecHost1.ppp++ <--> Eth10G <--> iUpf1.pppg++;
+        mecHost2.ppp++ <--> Eth10G <--> iUpf2.pppg++;
+
+        //# X2 connections
+        gnb1.x2++ <--> Eth10G <--> gnb2.x2++;
+}
