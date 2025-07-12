@@ -27,16 +27,16 @@ module NRNicEnbSdap extends NrNicEnb
 
     submodules:
 
-        nrRxSdapEntity: NrRxSdapEntity {
+        sdap: NrRxSdapEntity {
             numDrbs = parent.numDrbs;
             @display("p=493,67");
         }
 
     connections:
-        ip2nic.stackNic <--> nrRxSdapEntity.DataPort;
+        ip2nic.stackNic <--> sdap.DataPort;
 
         //# SDAP <-> PDCP
-        nrRxSdapEntity.stackSdap <--> pdcp.DataPort;
+        sdap.stackSdap <--> pdcp.DataPort;
 
 }
 

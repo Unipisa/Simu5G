@@ -38,7 +38,7 @@ module NRNicEnbDrb extends LteNicEnbD2D
 
     submodules:
 
-        nrRxSdapEntity: NrRxSdapEntity {
+        sdap: NrRxSdapEntity {
             numDrbs = parent.numDrbs;
             @display("p=245,67");
         }
@@ -75,7 +75,7 @@ module NRNicEnbDrb extends LteNicEnbD2D
         }
 
     connections:
-        ip2nic.stackNic <--> nrRxSdapEntity.DataPort;
+        ip2nic.stackNic <--> sdap.DataPort;
 
 
 		// New multi-DRB connections when SDAP is enabled
@@ -96,8 +96,8 @@ module NRNicEnbDrb extends LteNicEnbD2D
         lMux.macOut --> mac.RLC_to_MAC;
         lMux.macIn <-- mac.MAC_to_RLC;
 
-        hMux.sdapOut --> nrRxSdapEntity.stackSdap$i;
-        hMux.sdapIn <-- nrRxSdapEntity.stackSdap$o;
+        hMux.sdapOut --> sdap.stackSdap$i;
+        hMux.sdapIn <-- sdap.stackSdap$o;
 
 }
 

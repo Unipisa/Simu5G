@@ -66,7 +66,7 @@ module NRNicUeDrb extends LteNicUeD2D
         phy.otherPhyModule = "^.nrPhy";
 
     submodules:
-        nrTxSdapEntity: NrTxSdapEntity {
+        sdap: NrTxSdapEntity {
             numDrbs = parent.numDrbs;
             @display("p=596,66");
         }
@@ -128,7 +128,7 @@ module NRNicUeDrb extends LteNicUeD2D
 
     connections:
 
-        ip2nic.stackNic <--> nrTxSdapEntity.DataPort;
+        ip2nic.stackNic <--> sdap.DataPort;
 
         // New multi-DRB connections when SDAP is enabled
         for i=0..numDrbs-1 {
@@ -145,8 +145,8 @@ module NRNicUeDrb extends LteNicUeD2D
             nrRlc[i].MAC_to_RLC <-- lMux.rlcOut[i];
         }
 
-        hMux.sdapIn <-- nrTxSdapEntity.stackSdap$o;
-        hMux.sdapOut --> nrTxSdapEntity.stackSdap$i;
+        hMux.sdapIn <-- sdap.stackSdap$o;
+        hMux.sdapOut --> sdap.stackSdap$i;
 
 		// while this is logically correct, simu5g rigid layers stacking causing issues.
 		// todo: Either make changes to RLC layer or Mac layer to provide modularity.
