@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/rlc/am/buffer/AmRxQueue.h"
+#include "simu5g/stack/rlc/am/AmRxQueue.h"
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"

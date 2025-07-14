@@ -10,25 +10,21 @@
 //
 
 
-package simu5g.stack.rlc.am.buffer;
+package simu5g.stack.rlc.am;
 
 //
-// Receive Buffer of RLC AM
+// Transmit Buffer of RLC AM
 //
-simple AmRxQueue
+simple AmTxQueue
 {
     parameters:
         @dynamic(true);
         @display("i=block/segm");
-        string amModule = default("^.am");
-        string binderModule = default("binder");
-        int rxWindowSize = default(200);
-        double ackReportInterval @unit(s) = 0.10s;
-        double statusReportInterval @unit(s) = 0.20s;
-        double timeout @unit(s) = default(1s);            // Timeout for RX Buffer
+        int fragmentSize @unit(B) = default(30B);        // Size of fragments
+        int maxRtx = default(3);
+        double pduRtxTimeout @unit(s) = default(2.0s);
+        double ctrlPduRtxTimeout @unit(s) = default(2.0s);
+        double bufferStatusTimeout @unit(s) = default(2.0s);
+        int txWindowSize = default(200);
 }
-
-//
-// Entities for the RLC module
-//
 
