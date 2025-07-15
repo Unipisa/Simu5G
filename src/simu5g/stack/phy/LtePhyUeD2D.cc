@@ -74,7 +74,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
     MacNodeId sourceId = lteInfo->getSourceId();
     if (binder_->getOmnetId(sourceId) == 0) {
-        // Source has left the simulation.
+        EV << "Source has left the simulation." << endl;
         delete msg;
         return;
     }
@@ -99,6 +99,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     // Update coordinates of this user.
     if (lteInfo->getFrameType() == HANDOVERPKT) {
         // Check if the message is on another carrier frequency or handover is already in process.
+        EV << "Received Handover packet." << endl;
         if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled())) {
             EV << "Received handover packet on a different carrier frequency. Delete it." << endl;
             delete lteInfo;
@@ -143,8 +144,9 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
         lteInfo->setDestId(nodeId_);
     }
 
-    // Send H-ARQ feedback up.
+    // Send H-ARQ feedback and other control messages up.
     if (lteInfo->getFrameType() == HARQPKT || lteInfo->getFrameType() == GRANTPKT || lteInfo->getFrameType() == RACPKT || lteInfo->getFrameType() == D2DMODESWITCHPKT) {
+        EV << "Received control message (H-ARQ feedback / GRANT / RAC / D2D mode switch)." << endl;
         handleControlMsg(frame, lteInfo);
         return;
     }
