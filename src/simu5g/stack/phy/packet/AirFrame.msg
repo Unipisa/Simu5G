@@ -33,8 +33,8 @@ packet AirFrame extends cPacket
     double snr;
     double lossRate;
     double powRec; // Power in the receiver
-    inet::Coord senderPos;
+    inet::Coord senderPos @nopack;
     double carrierFrequency;
     double bandwidth;
-    ModulationType modulationType;
+    ModulationType modulationType @nopack;
 }

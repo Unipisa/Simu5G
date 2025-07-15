@@ -42,5 +42,5 @@ class RnisTestAppStopPacket extends RnisTestAppPacket
 
 class RnisTestAppInfoPacket extends RnisTestAppPacket
 {
-    nlohmann::json l2meas;
+    nlohmann::json l2meas @nopack;
 }

@@ -30,7 +30,7 @@ class MultihopD2DPacket extends inet::FieldsChunk
     MacNodeId srcId;
     uint32_t msgid;          // unique id of the message  < sender id  | local msg id >
 
-    inet::Coord srcCoord;
+    inet::Coord srcCoord @nopack;
     double maxRadius;
 
     int ttl;                 // time-to-live (to avoid flooding)
