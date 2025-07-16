@@ -1,4 +1,4 @@
-<features cppSourceRoots="src/common" definesFile="src/common/features.h">
+<features cppSourceRoots="src" definesFile="src/simu5g/common/features.h">
  <feature
   id="Simu5G_Cars"
   name="Simu5G Cars"
