@@ -114,19 +114,16 @@ void LtePhyBase::handleUpperMessage(cMessage *msg)
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->removeTag<UserControlInfo>();
 
-    LteAirFrame *frame = nullptr;
+    const char *name;
+    switch (lteInfo->getFrameType()) {
+        case HARQPKT: name = "harqFeedback"; break;
+        case GRANTPKT: name = "harqFeedback-grant"; break;
+        case RACPKT: name = "rac"; break;
+        case D2DMODESWITCHPKT: name = "d2dModeSwitch"; break;
+        default: name = "airframe"; break;
+    }
 
-    if (lteInfo->getFrameType() == HARQPKT
-        || lteInfo->getFrameType() == GRANTPKT
-        || lteInfo->getFrameType() == RACPKT
-        || lteInfo->getFrameType() == D2DMODESWITCHPKT)
-    {
-        frame = new LteAirFrame("harqFeedback-grant");
-    }
-    else {
-        // create LteAirFrame and encapsulate the received packet
-        frame = new LteAirFrame("airframe");
-    }
+    LteAirFrame *frame = new LteAirFrame(name);
 
     frame->encapsulate(check_and_cast<cPacket *>(msg));
 
