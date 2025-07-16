@@ -103,6 +103,10 @@ inline MacNodeId operator-(MacNodeId a, unsigned int b) { return MacNodeId(stati
 inline MacNodeId operator-(unsigned int a, MacNodeId b) { return MacNodeId(a - static_cast<unsigned short>(b)); }
 inline unsigned short operator-(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) - static_cast<unsigned short>(b); }
 
+// parsimPack() needed fpr the "d" fingerprint ingredient
+inline void doParsimPacking(omnetpp::cCommBuffer *buffer, MacNodeId d) {buffer->pack(num(d));}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *buffer, MacNodeId& d) {unsigned short tmp; buffer->unpack(tmp); d = MacNodeId(tmp);}
+
 /// Node Id bounds
 constexpr MacNodeId NODEID_NONE  = MacNodeId(0);
 constexpr MacNodeId ENB_MIN_ID   = MacNodeId(1);
