@@ -15,11 +15,14 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+import simu5g.common.LteCommon;
+
 namespace simu5g;
 
 class LteMacSduRequest extends inet::FieldsChunk
 {
-    @customize(true);
     unsigned int sduSize;       // size of the requested SDU
     chunkLength = inet::B(1); // TODO: size 0
+    MacNodeId ueId = NODEID_NONE;     // ID of the destination UE associated with the request
+    LogicalCid lcid = 0;              // Logical Connection identifier associated with the request
 }

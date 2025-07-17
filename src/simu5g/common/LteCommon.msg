@@ -25,6 +25,16 @@ class MacNodeId {
     @toString(int642string(num($)));
 }
 
+class LogicalCid {
+    @existingClass;
+    @opaque;
+    @byValue;
+    @fromValue(LogicalCid($.intValue()));
+    @toValue($);
+    @fromString(LogicalCid(string2int64($)));
+    @toString(int642string($));
+}
+
 // class X2NodeId {
 //    @existingClass;
 // }
