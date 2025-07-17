@@ -34,7 +34,6 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         }
         grantedBlocks = other.grantedBlocks;
         grantedCwBytes = other.grantedCwBytes;
-        direction_ = other.direction_;
     }
 
   protected:
@@ -42,13 +41,11 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
     const UserTxParams *userTxParams = nullptr;
     RbMap grantedBlocks;
     std::vector<unsigned int> grantedCwBytes;
-    Direction direction_;
-    unsigned int grantId;
 
   public:
 
     LteSchedulingGrant() :
-        LteSchedulingGrant_Base(),  grantId(getChunkId())
+        LteSchedulingGrant_Base()
     {
         grantedCwBytes.resize(MAX_CODEWORDS);
     }
@@ -141,24 +138,9 @@ class LteSchedulingGrant : public LteSchedulingGrant_Base
         throw cRuntimeError("eraseGrantedCwBytes not implemented");
     }
 
-    void setDirection(Direction dir)
-    {
-        direction_ = dir;
-    }
-
-    Direction getDirection() const
-    {
-        return direction_;
-    }
-
-    unsigned int getGrantId() const
-    {
-        return grantId;
-    }
 
 };
 
 } //namespace
 
 #endif // _LTESCHEDULINGGRANT_H_
-

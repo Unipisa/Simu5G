@@ -12,6 +12,8 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+import simu5g.common.LteCommonEnum;
+
 namespace simu5g;
 
 //
@@ -35,4 +37,8 @@ class LteSchedulingGrant extends inet::FieldsChunk
     //# const UserTxParams* userTxParams;
     //# RbMap grantedBlocks;
     //#
+
+    Direction direction;    // Traffic Direction
+    // unsigned short direction @enum(Direction);    // Traffic Direction
+    unsigned int grantId = getChunkId();         // Grant identifier
 }
