@@ -527,7 +527,7 @@ void LtePhyUeD2D::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVe
     // Create LteAirFrame and encapsulate a feedback packet
     LteAirFrame *frame = new LteAirFrame("feedback_pkt");
     frame->encapsulate(check_and_cast<cPacket *>(pkt));
-    uinfo->feedbackReq = req;
+    uinfo->setFeedbackReq(req);
     uinfo->setDirection(UL);
     simtime_t signalLength = TTI;
     uinfo->setTxPower(txPower_);

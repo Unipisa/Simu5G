@@ -51,7 +51,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
         snr = channelModel->getSINR(frame, lteinfo);
     else
         throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
-    FeedbackRequest req = lteinfo->feedbackReq;
+    FeedbackRequest req = lteinfo->getFeedbackReq();
     // Feedback computation
     fb.clear();
     // Get number of RU
