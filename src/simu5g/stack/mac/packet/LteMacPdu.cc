@@ -160,7 +160,7 @@ void LteMacPdu::parsimPack(omnetpp::cCommBuffer *b) const
         omnetpp::doParsimPacking(b, isBsr);
 
         // Pack the control element
-        ce->parsimPack(b);
+        //TODO ce->parsimPack(b);
     }
 }
 
