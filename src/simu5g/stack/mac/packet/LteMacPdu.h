@@ -290,6 +290,9 @@ class LteMacPdu : public LteMacPdu_Base
         this->setChunkLength(b(getBitLength()));
     }
 
+    void parsimPack(omnetpp::cCommBuffer *b) const override;
+    void parsimUnpack(omnetpp::cCommBuffer *b) override;
+
 };
 
 Register_Class(LteMacPdu);
@@ -297,4 +300,3 @@ Register_Class(LteMacPdu);
 } //namespace
 
 #endif
-
