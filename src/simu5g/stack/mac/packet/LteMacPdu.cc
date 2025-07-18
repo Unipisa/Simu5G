@@ -11,9 +11,115 @@
 
 #include "simu5g/stack/mac/packet/LteMacPdu.h"
 
+using namespace inet;
+
 namespace simu5g {
 
 int64_t LteMacPdu::numMacPdus_ = 0;
+
+Register_Class(LteMacPdu);
+
+
+LteMacPdu::LteMacPdu() : LteMacPdu_Base(), sduList_(new cPacketQueue("SDU List"))
+{
+    macPduId_ = numMacPdus_++;
+    take(sduList_);
+    /*
+     * @author Alessandro Noferi
+     *
+     * getChunkId returns an int (static var in chunk.h)
+     * TODO think about creating our own static variable
+     */
+    macPduId_ = getChunkId();
+}
+
+LteMacPdu::~LteMacPdu()
+{
+    // delete the SDU queue
+    // (since it is derived from cPacketQueue, it will automatically delete all contained SDUs)
+    drop(sduList_);
+    delete sduList_;
+    for (auto *ce : ceList_) {
+        delete ce;
+    }
+}
+
+simu5g::LteMacPdu& LteMacPdu::operator=(const LteMacPdu &other)
+{
+    if (&other == this)
+        return *this;
+
+    LteMacPdu_Base::operator =(other);
+    copy(other);
+    return *this;
+}
+
+void LteMacPdu::copy(const LteMacPdu &other)
+{
+    macPduLength_ = other.macPduLength_;
+    macPduId_ = other.macPduId_;
+    sduList_ = other.sduList_->dup();
+    take(sduList_);
+    // duplicate MacControlElementsList (includes BSRs)
+    ceList_ = std::list<MacControlElement*>();
+    MacControlElementsList otherCeList = other.ceList_;
+    for (auto *ce : otherCeList) {
+        MacBsr *bsr = dynamic_cast<MacBsr*>(ce);
+        if (bsr) {
+            ceList_.push_back(new MacBsr(*bsr));
+        } else {
+            ceList_.push_back(new MacControlElement(*ce));
+        }
+    }
+    // duplication of the SDU queue duplicates all packets but not
+    // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
+    cPacketQueue::Iterator iterOther(*other.sduList_);
+    for (cPacketQueue::Iterator iter(*sduList_); !iter.end(); iter++) {
+        cPacket *p1 = static_cast<cPacket*>(*iter);
+        cPacket *p2 = static_cast<cPacket*>(*iterOther);
+        if (p1->getControlInfo() == nullptr
+                && p2->getControlInfo() != nullptr) {
+            FlowControlInfo *fci = dynamic_cast<FlowControlInfo*>(p2->getControlInfo());
+            if (fci) {
+                p1->setControlInfo(new FlowControlInfo(*fci));
+            } else {
+                throw cRuntimeError("LteMacPdu.h::Unknown type of control info in SDU list!");
+            }
+        }
+        iterOther++;
+    }
+}
+
+std::string LteMacPdu::str() const
+{
+    std::stringstream ss;
+    std::string s;
+    ss << (std::string) (getName()) << " containing " << sduList_->getLength()
+            << " SDUs and " << ceList_.size() << " CEs" << " with size "
+            << getByteLength();
+    s = ss.str();
+    return s;
+}
+
+void LteMacPdu::pushSdu(Packet *pkt)
+{
+    take(pkt);
+    macPduLength_ += pkt->getByteLength();
+    // sduList_ will take ownership
+    drop(pkt);
+    sduList_->insert(pkt);
+    this->setChunkLength(b(getBitLength()));
+}
+
+Packet* LteMacPdu::popSdu()
+{
+    Packet *pkt = check_and_cast<Packet*>(sduList_->pop());
+    macPduLength_ -= pkt->getByteLength();
+    this->setChunkLength(b(getBitLength()));
+    take(pkt);
+    drop(pkt);
+    return pkt;
+}
 
 void LteMacPdu::parsimPack(omnetpp::cCommBuffer *b) const
 {
