@@ -70,6 +70,8 @@ private:
      */
     std::string str() const override;
 
+    void forEachChild(cVisitor *v) override;
+
     void parsimPack(omnetpp::cCommBuffer *b) const override;
     void parsimUnpack(omnetpp::cCommBuffer *b) override;
 

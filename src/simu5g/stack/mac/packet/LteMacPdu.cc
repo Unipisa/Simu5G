@@ -101,6 +101,16 @@ std::string LteMacPdu::str() const
     return s;
 }
 
+void LteMacPdu::forEachChild(cVisitor *v)
+{
+    int sduCount = sduList_->getLength();
+    for (int i = 0; i < sduCount; i++) {
+        cPacket *pkt = static_cast<cPacket *>(sduList_->get(i));
+        if (!v->visit(pkt))
+            return;
+    }
+}
+
 void LteMacPdu::pushSdu(Packet *pkt)
 {
     take(pkt);
