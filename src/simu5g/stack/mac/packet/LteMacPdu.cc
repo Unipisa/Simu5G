@@ -15,14 +15,11 @@ using namespace inet;
 
 namespace simu5g {
 
-int64_t LteMacPdu::numMacPdus_ = 0;
-
 Register_Class(LteMacPdu);
 
 
 LteMacPdu::LteMacPdu() : LteMacPdu_Base()
 {
-    macPduId_ = numMacPdus_++;
     /*
      * @author Alessandro Noferi
      *
