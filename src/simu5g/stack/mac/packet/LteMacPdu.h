@@ -29,14 +29,8 @@ namespace simu5g {
 class LteMacPdu : public LteMacPdu_Base
 {
   protected:
-    /// List Of MAC SDUs
-    cPacketQueue *sduList_ = nullptr;
-
     /// List of MAC CEs
     MacControlElementsList ceList_;
-
-    /// Length of the PDU
-    int64_t macPduLength_ = 0;
 
     /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
     int64_t macPduId_;
@@ -74,50 +68,6 @@ private:
 
     void parsimPack(omnetpp::cCommBuffer *b) const override;
     void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
-    int64_t getByteLength() const { return macPduLength_ + getHeaderLength(); }
-
-    int64_t getBitLength() const { return getByteLength() * 8; }
-
-    void setSduArraySize(size_t size) override { ASSERT(false); }
-
-    size_t getSduArraySize() const override { return sduList_->getLength(); }
-
-    const inet::Packet& getSdu(size_t k) const override { return *check_and_cast<Packet *>(sduList_->get(k)); }
-
-    void setSdu(size_t k, const Packet& sdu) override { ASSERT(false); }
-
-    void appendSdu(const inet::Packet& sdu) override { ASSERT(false); }
-
-    void insertSdu(size_t k, const inet::Packet& sdu) override { ASSERT(false); }
-
-    void eraseSdu(size_t k) override { ASSERT(false); }
-
-    /**
-     * pushSdu() gets ownership of the packet
-     * and stores it inside the MAC SDU list
-     * in back position
-     *
-     * @param pkt packet to store
-     */
-    virtual void pushSdu(Packet *pkt);
-
-    /**
-     * popSdu() pops a packet from the front of
-     * the SDU list and drops ownership before
-     * returning it
-     *
-     * @return popped packet
-     */
-    virtual Packet* popSdu();
-
-    /**
-     * hasSdu() verifies if there are other
-     * SDUs inside the SDU list
-     *
-     * @return true if the list is not empty, false otherwise
-     */
-    virtual bool hasSdu() const { return !sduList_->isEmpty(); }
 
     /**
      * pushCe() stores a CE inside the

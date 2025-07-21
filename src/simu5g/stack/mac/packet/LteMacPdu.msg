@@ -26,20 +26,52 @@ namespace simu5g;
 class LteMacPdu extends inet::FieldsChunk
 {
     @customize(true);
-    abstract inet::Packet sdu[];
+
+    // Length of the PDU
+    int64_t macPduLength_ = 0;
+
+    // List Of MAC SDUs
+    inet::Packet* sdu[] @owned @getter(getSduPtr);
+
     unsigned int headerLength = 0;
     // need separate macPduId (e.g. for feedback packets) since OMNET PDU id is automatically updated
     // whenever a new packet is created, e.g. when this PDU is duplicated
     long macPduId = 0;
-
-    //#
-    //# Follows a list of elements only present in
-    //# the customized class (see LteMacPdu.h):
-    //#
-    //# MacSduList sduList;
-    //# MacControlElementsList ceList;
-    //#
 }
+
+cplusplus(LteMacPdu) {{
+    /**
+     * pushSdu() gets ownership of the packet
+     * and stores it inside the MAC SDU list
+     * in back position
+     *
+     * @param pkt packet to store
+     */
+    virtual void pushSdu(Packet *pkt);
+
+    /**
+     * popSdu() pops a packet from the front of
+     * the SDU list and drops ownership before
+     * returning it
+     *
+     * @return popped packet
+     */
+    virtual Packet* popSdu();
+
+    /**
+     * hasSdu() verifies if there are other
+     * SDUs inside the SDU list
+     *
+     * @return true if the list is not empty, false otherwise
+     */
+    virtual bool hasSdu() { return sdu_arraysize != 0; }
+
+    const inet::Packet& getSdu(size_t k) const { return *getSduPtr(k); }
+
+    int64_t getByteLength() const { return macPduLength_ + getHeaderLength(); }
+
+    int64_t getBitLength() const { return getByteLength() * 8; }
+}}
 
 //
 // Mac Control Element
