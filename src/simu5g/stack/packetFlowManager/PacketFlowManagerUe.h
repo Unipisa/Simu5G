@@ -19,7 +19,10 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-/*
+class LteRlcUmDataPdu;
+class LtePdcpUe;
+
+/**
  * This module is responsible for keeping track of all PDCP SDUs.
  * A PDCP SDU passes through the following states while it is going down
  * through the LTE NIC layers:
@@ -40,9 +43,6 @@ using namespace omnetpp;
  *  - calculate the delay time of a packet, from PDCP SDU to last HARQ ACK of the
  *    corresponding sequence number.
  */
-
-class LteRlcUmDataPdu;
-class LtePdcpUe;
 class PacketFlowManagerUe : public PacketFlowManagerBase
 {
 

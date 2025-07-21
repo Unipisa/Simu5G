@@ -22,7 +22,10 @@ using namespace omnetpp;
 typedef std::set<unsigned int> SequenceNumberSet;
 typedef unsigned int BurstId;
 
-/*
+class LteRlcUmDataPdu;
+struct StatusDescriptor;
+
+/**
  * This module is responsible for keeping track of all PDCP SDUs.
  * A PDCP SDU is encapsulated in the following packets while it is going down
  * through the LTE NIC layers:
@@ -43,10 +46,6 @@ typedef unsigned int BurstId;
  *  - calculate the delay time of a pkt, from PDCP SDU to last Harq ACK of the
  *    corresponding seq number.
  */
-
-class LteRlcUmDataPdu;
-struct StatusDescriptor;
-
 class PacketFlowManagerBase : public cSimpleModule
 {
   protected:
