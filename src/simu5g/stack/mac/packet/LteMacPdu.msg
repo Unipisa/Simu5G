@@ -76,7 +76,7 @@ cplusplus(LteMacPdu) {{
 //
 // Mac Control Element
 //
-class MacControlElement
+class MacControlElement extends cObject
 {
     double timestamp;
 }
