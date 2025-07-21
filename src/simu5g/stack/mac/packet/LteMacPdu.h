@@ -62,9 +62,6 @@ private:
 
     void forEachChild(cVisitor *v) override;
 
-    void parsimPack(omnetpp::cCommBuffer *b) const override;
-    void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
     long getId() const { return macPduId_; }
 
     void setHeaderLength(unsigned int headerLength) override {

@@ -101,17 +101,4 @@ Packet* LteMacPdu_Base::popSdu()
     return pkt;
 }
 
-void LteMacPdu::parsimPack(omnetpp::cCommBuffer *b) const
-{
-    // Pack the base class fields first
-    LteMacPdu_Base::parsimPack(b);
-}
-
-void LteMacPdu::parsimUnpack(omnetpp::cCommBuffer *b)
-{
-    // Unpack the base class fields first
-    LteMacPdu_Base::parsimUnpack(b);
-
-}
-
 } //namespace
