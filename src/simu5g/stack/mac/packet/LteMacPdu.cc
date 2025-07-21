@@ -31,11 +31,6 @@ LteMacPdu::LteMacPdu() : LteMacPdu_Base()
 
 LteMacPdu::~LteMacPdu()
 {
-    // delete the SDU queue
-    // (since it is derived from cPacketQueue, it will automatically delete all contained SDUs)
-    for (auto *ce : ceList_) {
-        delete ce;
-    }
 }
 
 simu5g::LteMacPdu& LteMacPdu::operator=(const LteMacPdu &other)
@@ -52,13 +47,6 @@ void LteMacPdu::copy(const LteMacPdu &other)
 {
     macPduLength_ = other.macPduLength_;
     macPduId_ = other.macPduId_;
-
-    // duplicate MacControlElementsList (includes BSRs)
-    for (auto *ce : ceList_)
-        delete ce;
-    ceList_.clear();
-    for (auto *ce : other.ceList_)
-        ceList_.push_back(ce->dup());
 
     // duplication of the SDU queue duplicates all packets but not
     // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
@@ -81,7 +69,7 @@ std::string LteMacPdu::str() const
     std::stringstream ss;
     std::string s;
     ss << (std::string) (getName()) << " containing " << sdu_arraysize
-            << " SDUs and " << ceList_.size() << " CEs" << " with size "
+            << " SDUs and " << ce_arraysize << " CEs" << " with size "
             << getByteLength();
     s = ss.str();
     return s;
@@ -117,20 +105,6 @@ void LteMacPdu::parsimPack(omnetpp::cCommBuffer *b) const
 {
     // Pack the base class fields first
     LteMacPdu_Base::parsimPack(b);
-
-    // Pack the CE list
-    int ceCount = ceList_.size();
-    omnetpp::doParsimPacking(b, ceCount);
-
-    for (auto* ce : ceList_) {
-        // First pack the type information to distinguish between MacControlElement and MacBsr
-        MacBsr *bsr = dynamic_cast<MacBsr *>(ce);
-        bool isBsr = (bsr != nullptr);
-        omnetpp::doParsimPacking(b, isBsr);
-
-        // Pack the control element
-        //TODO ce->parsimPack(b);
-    }
 }
 
 void LteMacPdu::parsimUnpack(omnetpp::cCommBuffer *b)
@@ -138,31 +112,6 @@ void LteMacPdu::parsimUnpack(omnetpp::cCommBuffer *b)
     // Unpack the base class fields first
     LteMacPdu_Base::parsimUnpack(b);
 
-    // Clear existing CE list
-    for (auto* ce : ceList_) {
-        delete ce;
-    }
-    ceList_.clear();
-
-    // Unpack the CE list
-    int ceCount;
-    omnetpp::doParsimUnpacking(b, ceCount);
-
-    for (int i = 0; i < ceCount; i++) {
-        // Unpack the type information
-        bool isBsr;
-        omnetpp::doParsimUnpacking(b, isBsr);
-
-        // Create the appropriate control element type and unpack it
-        MacControlElement *ce;
-        if (isBsr) {
-            ce = new MacBsr();
-        } else {
-            ce = new MacControlElement();
-        }
-        ce->parsimUnpack(b);
-        ceList_.push_back(ce);
-    }
 }
 
 } //namespace

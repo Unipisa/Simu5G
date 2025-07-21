@@ -29,9 +29,6 @@ namespace simu5g {
 class LteMacPdu : public LteMacPdu_Base
 {
   protected:
-    /// List of MAC CEs
-    MacControlElementsList ceList_;
-
     /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
     int64_t macPduId_;
 
@@ -67,34 +64,6 @@ private:
 
     void parsimPack(omnetpp::cCommBuffer *b) const override;
     void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
-    /**
-     * pushCe() stores a CE inside the
-     * MAC CE list in back position
-     *
-     * @param pkt CE to store
-     */
-    virtual void pushCe(MacControlElement *ce) { ceList_.push_back(ce); }
-
-    /**
-     * popCe() pops a CE from the front of
-     * the CE list and returns it
-     *
-     * @return popped CE
-     */
-    virtual MacControlElement *popCe() {
-        MacControlElement *ce = ceList_.front();
-        ceList_.pop_front();
-        return ce;
-    }
-
-    /**
-     * hasCe() verifies if there are other
-     * CEs inside the CE list
-     *
-     * @return true if the list is not empty, false otherwise
-     */
-    virtual bool hasCe() const { return !ceList_.empty(); }
 
     long getId() const { return macPduId_; }
 

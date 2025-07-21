@@ -33,6 +33,9 @@ class LteMacPdu extends inet::FieldsChunk
     // List Of MAC SDUs
     inet::Packet* sdu[] @owned @getter(getSduPtr);
 
+    // List of MAC CEs
+    MacControlElement* ce[] @owned;
+
     unsigned int headerLength = 0;
     // need separate macPduId (e.g. for feedback packets) since OMNET PDU id is automatically updated
     // whenever a new packet is created, e.g. when this PDU is duplicated
@@ -71,6 +74,34 @@ cplusplus(LteMacPdu) {{
     int64_t getByteLength() const { return macPduLength_ + getHeaderLength(); }
 
     int64_t getBitLength() const { return getByteLength() * 8; }
+
+    /**
+     * pushCe() stores a CE inside the
+     * MAC CE list in back position
+     *
+     * @param pkt CE to store
+     */
+    virtual void pushCe(MacControlElement *ce) { appendCe(ce); }
+
+    /**
+     * popCe() pops a CE from the front of
+     * the CE list and returns it
+     *
+     * @return popped CE
+     */
+    virtual MacControlElement *popCe() {
+        MacControlElement *ce = removeCe(0);
+        eraseCe(0);
+        return ce;
+    }
+
+    /**
+     * hasCe() verifies if there are other
+     * CEs inside the CE list
+     *
+     * @return true if the list is not empty, false otherwise
+     */
+    virtual bool hasCe() const { return ce_arraysize != 0; }
 }}
 
 //
