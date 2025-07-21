@@ -52,17 +52,14 @@ void LteMacPdu::copy(const LteMacPdu &other)
 {
     macPduLength_ = other.macPduLength_;
     macPduId_ = other.macPduId_;
+
     // duplicate MacControlElementsList (includes BSRs)
-    ceList_ = std::list<MacControlElement*>();
-    MacControlElementsList otherCeList = other.ceList_;
-    for (auto *ce : otherCeList) {
-        MacBsr *bsr = dynamic_cast<MacBsr*>(ce);
-        if (bsr) {
-            ceList_.push_back(new MacBsr(*bsr));
-        } else {
-            ceList_.push_back(new MacControlElement(*ce));
-        }
-    }
+    for (auto *ce : ceList_)
+        delete ce;
+    ceList_.clear();
+    for (auto *ce : other.ceList_)
+        ceList_.push_back(ce->dup());
+
     // duplication of the SDU queue duplicates all packets but not
     // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
     for (size_t idx = 0; idx < sdu_arraysize; idx++) {
