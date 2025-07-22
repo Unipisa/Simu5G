@@ -9,48 +9,4 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_X2COMPREQUESTIE_H_
-#define _LTE_X2COMPREQUESTIE_H_
-
-#include "simu5g/x2/packet/X2InformationElement.h"
-
-namespace simu5g {
-
-//
-// X2CompRequestIE
-// Base class for CoMP request messages
-//
-class X2CompRequestIE : public X2InformationElement
-{
-  public:
-    X2CompRequestIE()
-    {
-        type_ = COMP_REQUEST_IE;
-        length_ = 0;
-    }
-
-    X2CompRequestIE(const X2CompRequestIE& other) :
-        X2InformationElement()
-    {
-        operator=(other);
-    }
-
-    X2CompRequestIE& operator=(const X2CompRequestIE& other)
-    {
-        if (&other == this)
-            return *this;
-        X2InformationElement::operator=(other);
-        return *this;
-    }
-
-    X2CompRequestIE *dup() const override
-    {
-        return new X2CompRequestIE(*this);
-    }
-
-};
-
-} //namespace
-
-#endif
-
+#include "simu5g/stack/compManager/X2CompRequestIE_m.h"

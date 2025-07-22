@@ -158,11 +158,6 @@ struct DeploymentScenarioMapping
     @toString(.str());
 }
 
-class X2InformationElement
-{
-    @customize;
-}
-
 class LteMacBuffer
 {
     @existingClass;

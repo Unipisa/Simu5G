@@ -9,4 +9,18 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalRequestIE_m.h"
+import simu5g.stack.compManager.X2CompRequestIE;
+
+namespace simu5g;
+
+//
+// X2CompProportionalRequestIE
+//
+class X2CompProportionalRequestIE extends X2CompRequestIE
+{
+    // number of "ideally" required blocks to satisfy the queue of all UEs
+    uint32_t numBlocks;
+
+    type = COMP_PROP_REQUEST_IE;
+    length = sizeof(uint32_t);
+};

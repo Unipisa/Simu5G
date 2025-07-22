@@ -9,4 +9,12 @@
 // and cannot be removed from it.
 //
 
-#include "simu5g/stack/compManager/compManagerProportional/X2CompProportionalRequestIE_m.h"
+import simu5g.x2.packet.X2InformationElement;
+
+namespace simu5g;
+
+class X2CompReplyIE extends X2InformationElement
+{
+    type = COMP_REPLY_IE;
+    length = 0;
+};
