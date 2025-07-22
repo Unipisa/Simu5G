@@ -201,145 +201,74 @@ RbAllocationType getRbAllocationType(std::string s)
 
 const std::string txModeToA(TxMode tx)
 {
-    int i = 0;
-    while (txmodes[i].tx != UNKNOWN_TX_MODE) {
-        if (txmodes[i].tx == tx)
-            return txmodes[i].txName;
-        i++;
-    }
-    return "UNKNOWN_TX_MODE";
+    const char * str = omnetpp::cEnum::get("simu5g::TxMode")->getStringFor((intval_t)tx);
+    return str ? str : "UNKNOWN_TX_MODE";
 }
 
 TxMode aToTxMode(std::string s)
 {
-    int i = 0;
-    while (txmodes[i].tx != UNKNOWN_TX_MODE) {
-        if (txmodes[i].txName == s)
-            return txmodes[i].tx;
-        i++;
-    }
-    return UNKNOWN_TX_MODE;
+    return static_cast<TxMode>(omnetpp::cEnum::get("simu5g::TxMode")->lookup(s.c_str(), UNKNOWN_TX_MODE));
 }
 
 const std::string schedDisciplineToA(SchedDiscipline discipline)
 {
-    int i = 0;
-    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE) {
-        if (disciplines[i].discipline == discipline)
-            return disciplines[i].disciplineName;
-        i++;
-    }
-    return "UNKNOWN_DISCIPLINE";
+    const char * str = omnetpp::cEnum::get("simu5g::SchedDiscipline")->getStringFor((intval_t)discipline);
+    return str ? str : "UNKNOWN_DISCIPLINE";
 }
 
 SchedDiscipline aToSchedDiscipline(std::string s)
 {
-    int i = 0;
-    while (disciplines[i].discipline != UNKNOWN_DISCIPLINE) {
-        if (disciplines[i].disciplineName == s)
-            return disciplines[i].discipline;
-        i++;
-    }
-    return UNKNOWN_DISCIPLINE;
+    return static_cast<SchedDiscipline>(omnetpp::cEnum::get("simu5g::SchedDiscipline")->lookup(s.c_str(), UNKNOWN_DISCIPLINE));
 }
 
 const std::string dasToA(const Remote r)
 {
-    int i = 0;
-    while (remotes[i].remote != UNKNOWN_RU) {
-        if (remotes[i].remote == r)
-            return remotes[i].remoteName;
-        i++;
-    }
-    return "UNKNOWN_RU";
+    const char * str = omnetpp::cEnum::get("simu5g::Remote")->getStringFor((intval_t)r);
+    return str ? str : "UNKNOWN_RU";
 }
 
 Remote aToDas(std::string s)
 {
-    int i = 0;
-    while (remotes[i].remote != UNKNOWN_RU) {
-        if (remotes[i].remoteName == s)
-            return remotes[i].remote;
-        i++;
-    }
-    return UNKNOWN_RU;
+    return static_cast<Remote>(omnetpp::cEnum::get("simu5g::Remote")->lookup(s.c_str(), UNKNOWN_RU));
 }
 
 const std::string phyFrameTypeToA(const LtePhyFrameType r)
 {
-    int i = 0;
-    while (phytypes[i].phyType != UNKNOWN_TYPE) {
-        if (phytypes[i].phyType == r)
-            return phytypes[i].phyName;
-        i++;
-    }
-    return "UNKNOWN_TYPE";
+    const char * str = omnetpp::cEnum::get("simu5g::LtePhyFrameType")->getStringFor((intval_t)r);
+    return str ? str : "UNKNOWN_TYPE";
 }
 
 LtePhyFrameType aToPhyFrameType(std::string s)
 {
-    int i = 0;
-    while (phytypes[i].phyType != UNKNOWN_TYPE) {
-        if (phytypes[i].phyName == s)
-            return phytypes[i].phyType;
-        i++;
-    }
-    return UNKNOWN_TYPE;
+    return static_cast<LtePhyFrameType>(omnetpp::cEnum::get("simu5g::LtePhyFrameType")->lookup(s.c_str(), UNKNOWN_TYPE));
 }
 
 const std::string nodeTypeToA(const RanNodeType t)
 {
-    int i = 0;
-    while (nodetypes[i].node != UNKNOWN_NODE_TYPE) {
-        if (nodetypes[i].node == t)
-            return nodetypes[i].nodeName;
-        i++;
-    }
-    return "UNKNOWN_NODE_TYPE";
+    const char * str = omnetpp::cEnum::get("simu5g::RanNodeType")->getStringFor((intval_t)t);
+    return str ? str : "UNKNOWN_NODE_TYPE";
 }
 
 RanNodeType aToNodeType(std::string name)
 {
-    int i = 0;
-    while (nodetypes[i].node != UNKNOWN_NODE_TYPE) {
-        if (nodetypes[i].nodeName == name)
-            return nodetypes[i].node;
-        i++;
-    }
-    return UNKNOWN_NODE_TYPE;
+    return static_cast<RanNodeType>(omnetpp::cEnum::get("simu5g::RanNodeType")->lookup(name.c_str(), UNKNOWN_NODE_TYPE));
 }
 
 const std::string applicationTypeToA(ApplicationType a)
 {
-    int i = 0;
-    while (applications[i].app != UNKNOWN_APP) {
-        if (applications[i].app == a)
-            return applications[i].appName;
-        i++;
-    }
-    return "UNKNOWN_APP";
+    const char * str = omnetpp::cEnum::get("simu5g::ApplicationType")->getStringFor((intval_t)a);
+    return str ? str : "UNKNOWN_APP";
 }
 
 ApplicationType aToApplicationType(std::string s)
 {
-    int i = 0;
-    while (applications[i].app != UNKNOWN_APP) {
-        if (applications[i].appName == s)
-            return applications[i].app;
-        i++;
-    }
-    return UNKNOWN_APP;
+    return static_cast<ApplicationType>(omnetpp::cEnum::get("simu5g::ApplicationType")->lookup(s.c_str(), UNKNOWN_APP));
 }
 
 const std::string fbGeneratorTypeToA(FeedbackGeneratorType type)
 {
-    int i = 0;
-    while (feedbackGeneratorTypeTable[i].ty != UNKNOW_FB_GEN_TYPE) {
-        if (feedbackGeneratorTypeTable[i].ty == type)
-            return feedbackGeneratorTypeTable[i].tyname;
-        i++;
-    }
-    return "UNKNOW_FB_GEN_TYPE";
+    const char * str = omnetpp::cEnum::get("simu5g::FeedbackGeneratorType")->getStringFor((intval_t)type);
+    return str ? str : "UNKNOW_FB_GEN_TYPE";
 }
 
 RanNodeType getNodeTypeById(MacNodeId id)
@@ -375,24 +304,13 @@ const std::string planeToA(Plane p)
 
 const std::string DeploymentScenarioToA(DeploymentScenario type)
 {
-    int i = 0;
-    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO) {
-        if (DeploymentScenarioTable[i].scenario == type)
-            return DeploymentScenarioTable[i].scenarioName;
-        i++;
-    }
-    return "UNKNOW_SCENARIO";
+    const char * str = omnetpp::cEnum::get("simu5g::DeploymentScenario")->getStringFor((intval_t)type);
+    return str ? str : "UNKNOW_SCENARIO";
 }
 
 DeploymentScenario aToDeploymentScenario(std::string s)
 {
-    int i = 0;
-    while (DeploymentScenarioTable[i].scenario != UNKNOW_SCENARIO) {
-        if (DeploymentScenarioTable[i].scenarioName == s)
-            return DeploymentScenarioTable[i].scenario;
-        i++;
-    }
-    return UNKNOW_SCENARIO;
+    return static_cast<DeploymentScenario>(omnetpp::cEnum::get("simu5g::DeploymentScenario")->lookup(s.c_str(), UNKNOW_SCENARIO));
 }
 
 bool isMulticastConnection(LteControlInfo *lteInfo)
@@ -656,4 +574,3 @@ void removeAllSimu5GTags(inet::Packet *pkt)
 }
 
 } //namespace
-

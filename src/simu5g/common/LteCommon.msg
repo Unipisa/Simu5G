@@ -35,19 +35,6 @@ class LogicalCid {
     @toString(int642string($));
 }
 
-struct RemoteTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct LtePhyFrameTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
 
 struct BandLimit
 {
@@ -77,47 +64,6 @@ struct UeAllocationInfo
     @toString(.str());
 }
 
-struct ApplicationTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct SchedDisciplineTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct TxTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct TxDirectionTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct FeedbackGeneratorTypeTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct DeploymentScenarioMapping
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
 
 class LteMacBuffer
 {

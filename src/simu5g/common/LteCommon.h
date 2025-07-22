@@ -172,85 +172,10 @@ constexpr TrafficFlowTemplateId TFT_MEC_HOST = -3;               // MEC host des
 // Attenuation vector for analogue models
 typedef std::vector<double> AttenuationVector;
 
-struct ApplicationTable
-{
-    ApplicationType app;
-    std::string appName;
-};
-
-const ApplicationTable applications[] = {
-    ELEM(VOIP),
-    ELEM(VOD),
-    ELEM(WEB),
-    ELEM(CBR),
-    ELEM(FTP),
-    ELEM(FULLBUFFER),
-    ELEM(UNKNOWN_APP)
-};
-
-/**************************
-* Scheduling discipline  *
-**************************/
-
-struct SchedDisciplineTable
-{
-    SchedDiscipline discipline;
-    std::string disciplineName;
-};
-
-const SchedDisciplineTable disciplines[] = {
-    ELEM(DRR),
-    ELEM(PF),
-    ELEM(MAXCI),
-    ELEM(MAXCI_MB),
-    ELEM(MAXCI_OPT_MB),
-    ELEM(MAXCI_COMP),
-    ELEM(ALLOCATOR_BESTFIT),
-    ELEM(UNKNOWN_DISCIPLINE)
-};
 
 /*************************
 *   Transmission Modes  *
 *************************/
-struct TxTable
-{
-    TxMode tx;
-    std::string txName;
-};
-
-const TxTable txmodes[] = {
-    ELEM(SINGLE_ANTENNA_PORT0),
-    ELEM(SINGLE_ANTENNA_PORT5),
-    ELEM(TRANSMIT_DIVERSITY),
-    ELEM(OL_SPATIAL_MULTIPLEXING),
-    ELEM(CL_SPATIAL_MULTIPLEXING),
-    ELEM(MULTI_USER),
-    ELEM(UNKNOWN_TX_MODE)
-};
-
-struct TxDirectionTable
-{
-    TxDirectionType txDirection;
-    std::string txDirectionName;
-};
-
-const TxDirectionTable txDirections[] = {
-    ELEM(ANISOTROPIC),
-    ELEM(OMNI)
-};
-
-struct FeedbackGeneratorTypeTable
-{
-    FeedbackGeneratorType ty;
-    std::string tyname;
-};
-
-const FeedbackGeneratorTypeTable feedbackGeneratorTypeTable[] = {
-    ELEM(IDEAL),
-    ELEM(REAL),
-    ELEM(DAS_AWARE),
-    ELEM(UNKNOW_FB_GEN_TYPE)
-};
 
 /// Number of transmission modes in DL direction.
 const unsigned char DL_NUM_TXMODE = MULTI_USER + 1;
@@ -258,20 +183,6 @@ const unsigned char DL_NUM_TXMODE = MULTI_USER + 1;
 /// Number of transmission modes in UL direction.
 const unsigned char UL_NUM_TXMODE = MULTI_USER + 1;
 
-struct DeploymentScenarioMapping
-{
-    DeploymentScenario scenario;
-    std::string scenarioName;
-};
-
-const DeploymentScenarioMapping DeploymentScenarioTable[] = {
-    ELEM(INDOOR_HOTSPOT),
-    ELEM(URBAN_MICROCELL),
-    ELEM(URBAN_MACROCELL),
-    ELEM(RURAL_MACROCELL),
-    ELEM(SUBURBAN_MACROCELL),
-    ELEM(UNKNOW_SCENARIO)
-};
 
 const unsigned int txModeToIndex[6] = { 0, 0, 1, 2, 2, 0 };
 
@@ -304,22 +215,6 @@ double linearToDb(double lin);
 *      DAS Support      *
 *************************/
 
-struct RemoteTable
-{
-    Remote remote;
-    std::string remoteName;
-};
-
-const RemoteTable remotes[] = {
-    ELEM(MACRO),
-    ELEM(RU1),
-    ELEM(RU2),
-    ELEM(RU3),
-    ELEM(RU4),
-    ELEM(RU5),
-    ELEM(RU6),
-    ELEM(UNKNOWN_RU)
-};
 
 /**
  * Maximum number of available DAS RU per cell.
@@ -340,35 +235,6 @@ const unsigned char NUM_ANTENNAS = NUM_RUS + 1;
  */
 typedef std::map<Remote, std::map<Band, unsigned int>> RbMap;
 
-struct LtePhyFrameTable
-{
-    LtePhyFrameType phyType;
-    std::string phyName;
-};
-
-const LtePhyFrameTable phytypes[] = {
-    ELEM(DATAPKT),
-    ELEM(BROADCASTPKT),
-    ELEM(FEEDBACKPKT),
-    ELEM(HANDOVERPKT),
-    ELEM(GRANTPKT),
-    ELEM(D2DMODESWITCHPKT),
-    ELEM(UNKNOWN_TYPE)
-};
-
-struct RanNodeTable
-{
-    RanNodeType node;
-    std::string nodeName;
-};
-
-const RanNodeTable nodetypes[] = {
-    ELEM(INTERNET),
-    ELEM(ENODEB),
-    ELEM(GNODEB),
-    ELEM(UE),
-    ELEM(UNKNOWN_NODE_TYPE)
-};
 
 //|--------------------------------------------------|
 
@@ -642,8 +508,6 @@ bool isBaseStation(CoreNodeType nodeType);
 bool isNrUe(MacNodeId id);
 FeedbackType getFeedbackType(std::string s);
 RbAllocationType getRbAllocationType(std::string s);
-ApplicationType aToApplicationType(std::string s);
-const std::string applicationTypeToA(std::string s);
 const std::string lteTrafficClassToA(LteTrafficClass type);
 LteTrafficClass aToLteTrafficClass(std::string s);
 const std::string phyFrameTypeToA(const LtePhyFrameType r);
