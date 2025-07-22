@@ -74,13 +74,6 @@ struct BandLimit
     @toString(.str());
 }
 
-struct RemoteUnitPhyData
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
 struct EnbInfo
 {
     @existingClass;
@@ -131,13 +124,6 @@ struct TxTable
 }
 
 struct TxDirectionTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct FeedbackRequest
 {
     @existingClass;
     @opaque;

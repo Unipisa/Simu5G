@@ -35,6 +35,7 @@
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteCommonEnum_m.h"
+#include "simu5g/common/LteCommonImpl_m.h"
 
 using namespace omnetpp;
 
@@ -43,7 +44,6 @@ namespace simu5g {
 class Binder;
 class CellInfo;
 class LteCellInfo;
-class LteNodeTable;
 class LteMacEnb;
 class LteMacBase;
 class LtePhyBase;
@@ -245,17 +245,6 @@ struct TxDirectionTable
 const TxDirectionTable txDirections[] = {
     ELEM(ANISOTROPIC),
     ELEM(OMNI)
-};
-
-struct FeedbackRequest
-{
-    bool request;
-    FeedbackGeneratorType genType;
-    FeedbackType type;
-    //used if genType==real
-    TxMode txMode;
-    bool dasAware;
-    RbAllocationType rbAllocationType;
 };
 
 struct FeedbackGeneratorTypeTable
@@ -531,12 +520,6 @@ typedef std::set<MacNodeId> UeSet;
 
 /// time interval between two transmissions of the same pdu
 #define HARQ_TX_INTERVAL         7 * TTI
-
-struct RemoteUnitPhyData
-{
-    int txPower;
-    inet::Coord m;
-};
 
 // Codeword List - returned by Harq functions
 typedef std::list<Codeword> CwList;
