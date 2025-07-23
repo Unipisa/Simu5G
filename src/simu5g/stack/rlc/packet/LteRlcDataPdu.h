@@ -250,10 +250,6 @@ class LteRlcAmDataPdu : public LteRlcDataPdu
     bool getPollStatus() const { return pollStatus_; }
 };
 
-Register_Class(LteRlcDataPdu);
-Register_Class(LteRlcUmDataPdu);
-Register_Class(LteRlcAmDataPdu);
-
 } //namespace
 
 #endif /* LTERLCDATAPDU_H_ */

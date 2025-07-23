@@ -13,6 +13,10 @@
 
 namespace simu5g {
 
+Register_Class(LteRlcDataPdu);
+Register_Class(LteRlcUmDataPdu);
+Register_Class(LteRlcAmDataPdu);
+
 void LteRlcDataPdu::setPduSequenceNumber(unsigned int sno)
 {
     pduSequenceNumber_ = sno;
