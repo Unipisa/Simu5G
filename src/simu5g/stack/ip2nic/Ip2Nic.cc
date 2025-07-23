@@ -100,13 +100,10 @@ void Ip2Nic::initialize(int stage)
                 /**
                  * TODO: might need a bit more care, if the interface has changed, the query might, too
                  */
-                IIpv4RoutingTable *irt = getModuleFromPar<IIpv4RoutingTable>(
-                        par("routingTableModule"), this);
+                IIpv4RoutingTable *irt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
                 Ipv4Route *defaultRoute = new Ipv4Route();
-                defaultRoute->setDestination(
-                        Ipv4Address(inet::Ipv4Address::UNSPECIFIED_ADDRESS));
-                defaultRoute->setNetmask(
-                        Ipv4Address(inet::Ipv4Address::UNSPECIFIED_ADDRESS));
+                defaultRoute->setDestination(inet::Ipv4Address::UNSPECIFIED_ADDRESS);
+                defaultRoute->setNetmask(inet::Ipv4Address::UNSPECIFIED_ADDRESS);
 
                 defaultRoute->setInterface(networkIf);
 
