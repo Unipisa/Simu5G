@@ -49,9 +49,10 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
     // note: length does not need to be serialized - it is calculated during deserialization
 
     // serialization of list containing the information elements
-    X2InformationElementsList ieList = msg->getIeList();
-    stream.writeUint16Be(ieList.size());
-    for (auto ie : ieList) {
+    size_t size = msg->getIeArraySize();
+    stream.writeUint16Be(size);
+    for (size_t i = 0; i < size; i++) {
+        auto ie = msg->getIe(i);
         stream.writeByte(ie->getType());
 
         switch (ie->getType()) {
@@ -61,17 +62,17 @@ void LteX2MsgSerializer::serialize(MemoryOutputStream& stream, const Ptr<const C
                 break;
 
             case COMP_PROP_REQUEST_IE: {
-                X2CompProportionalRequestIE *propRequest = check_and_cast<X2CompProportionalRequestIE *>(ie);
+                const X2CompProportionalRequestIE *propRequest = check_and_cast<const X2CompProportionalRequestIE *>(ie);
                 stream.writeUint32Be(propRequest->getNumBlocks());
                 break;
             }
             case COMP_PROP_REPLY_IE: {
-                X2CompProportionalReplyIE *propReply = check_and_cast<X2CompProportionalReplyIE *>(ie);
+                const X2CompProportionalReplyIE *propReply = check_and_cast<const X2CompProportionalReplyIE *>(ie);
                 serializeStatusMap(stream, propReply->getAllowedBlocksMap());
                 break;
             }
             case X2_HANDOVER_CMD_IE: {
-                X2HandoverCommandIE *handoverCmd = check_and_cast<X2HandoverCommandIE *>(ie);
+                const X2HandoverCommandIE *handoverCmd = check_and_cast<const X2HandoverCommandIE *>(ie);
                 stream.writeByte(handoverCmd->isStartHandover());
                 stream.writeUint16Be(num(handoverCmd->getUeId()));
                 break;

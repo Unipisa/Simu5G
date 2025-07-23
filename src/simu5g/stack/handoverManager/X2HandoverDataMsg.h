@@ -31,7 +31,7 @@ class X2HandoverDataMsg : public LteX2Message
     X2HandoverDataMsg() :
         LteX2Message()
     {
-        type_ = X2_HANDOVER_DATA_MSG;
+        type = X2_HANDOVER_DATA_MSG;
     }
 
     X2HandoverDataMsg(const X2HandoverDataMsg& other) : LteX2Message() { operator=(other); }

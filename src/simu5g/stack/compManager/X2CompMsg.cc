@@ -26,7 +26,7 @@ Register_Serializer(X2CompMsg, LteX2MsgSerializer);
 X2CompMsg::X2CompMsg() :
     LteX2Message()
 {
-    type_ = X2_COMP_MSG;
+    type = X2_COMP_MSG;
 }
 
 X2CompMsg::X2CompMsg(const X2CompMsg& other) : LteX2Message() { operator=(other); }
