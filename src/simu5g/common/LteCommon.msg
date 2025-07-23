@@ -35,17 +35,6 @@ class LogicalCid {
     @toString(int642string($));
 }
 
-// class X2NodeId {
-//    @existingClass;
-// }
-
-struct Lambda
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
 struct RemoteTable
 {
     @existingClass;
@@ -54,13 +43,6 @@ struct RemoteTable
 }
 
 struct LtePhyFrameTable
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
-struct LteNodeTable
 {
     @existingClass;
     @opaque;
