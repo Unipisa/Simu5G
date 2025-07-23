@@ -24,7 +24,6 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
         lteFeedbackDoubleVectorDl_ = other.lteFeedbackDoubleVectorDl_;
         lteFeedbackDoubleVectorUl_ = other.lteFeedbackDoubleVectorUl_;
         lteFeedbackMapDoubleVectorD2D_ = other.lteFeedbackMapDoubleVectorD2D_;
-        sourceNodeId_ = other.sourceNodeId_;
     }
 
   protected:
@@ -34,8 +33,6 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
     LteFeedbackDoubleVector lteFeedbackDoubleVectorUl_;
     // map of vectors of vectors with peering UEs, RUs, and TxModes as indexes
     std::map<MacNodeId, LteFeedbackDoubleVector> lteFeedbackMapDoubleVectorD2D_;
-    // MacNodeId of the source
-    MacNodeId sourceNodeId_;
 
   public:
     LteFeedbackPkt() :
@@ -68,8 +65,6 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
     void setLteFeedbackDoubleVectorUl(LteFeedbackDoubleVector lteFeedbackDoubleVector_);
     std::map<MacNodeId, LteFeedbackDoubleVector> getLteFeedbackDoubleVectorD2D() const;
     void setLteFeedbackDoubleVectorD2D(MacNodeId peerId, LteFeedbackDoubleVector lteFeedbackDoubleVector_);
-    void setSourceNodeId(MacNodeId id);
-    MacNodeId getSourceNodeId() const;
 };
 
 } //namespace

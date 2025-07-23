@@ -43,15 +43,5 @@ void LteFeedbackPkt::setLteFeedbackDoubleVectorD2D(MacNodeId peerId, LteFeedback
     lteFeedbackMapDoubleVectorD2D_[peerId] = lteFeedbackDoubleVector;
 }
 
-void LteFeedbackPkt::setSourceNodeId(MacNodeId id)
-{
-    sourceNodeId_ = id;
-}
-
-MacNodeId LteFeedbackPkt::getSourceNodeId() const
-{
-    return sourceNodeId_;
-}
-
 } //namespace
 

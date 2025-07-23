@@ -11,9 +11,14 @@
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+import simu5g.common.LteCommon;
+
 namespace simu5g;
 
 class LteFeedbackPkt extends inet::FieldsChunk {
     chunkLength = inet::B(1); // TODO: size 0
     @customize(true);  // see the generated C++ header for more info
+
+    // MacNodeId of the source
+    MacNodeId sourceNodeId;
 }
