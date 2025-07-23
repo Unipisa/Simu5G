@@ -77,13 +77,6 @@ struct UeAllocationInfo
     @toString(.str());
 }
 
-struct QCIParameters
-{
-    @existingClass;
-    @opaque;
-    @toString(.str());
-}
-
 struct ApplicationTable
 {
     @existingClass;
