@@ -295,9 +295,9 @@ class LtePdcpBase : public cSimpleModule
      */
     virtual bool isDualConnectivityEnabled() { return false; }
 
-    virtual void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode) {}
+    virtual void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode) { throw cRuntimeError("Illegal operation forwardDataToTargetNode"); }
 
-    virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) {}
+    virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) { throw cRuntimeError("Illegal operation receiveDataFromSourceNode"); }
 
     // statistics
     static simsignal_t receivedPacketFromUpperLayerSignal_;
