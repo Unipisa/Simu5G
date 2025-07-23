@@ -266,14 +266,10 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
 
     FramingInfo fi = rlcPdu->getFramingInfo();
-    const RlcSduList *rlcSduList = rlcPdu->getRlcSduList();
-    const RlcSduListSizes *rlcSduSizes = rlcPdu->getRlcSduSizes();
-    auto lit = rlcSduList->begin();
-    auto sit = rlcSduSizes->begin();
-    for ( ; lit != rlcSduList->end(); ++lit, ++sit) {
-        auto rlcSdu = (*lit)->peekAtFront<LteRlcSdu>();
+    for (size_t idx = 0; idx < rlcPdu->getNumSdu(); ++idx) {
+        auto rlcSdu = rlcPdu->getSdu(idx)->peekAtFront<LteRlcSdu>();
         unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
-        unsigned int pdcpPduLength = *(sit); // TODO fix with size of the chunk!!
+        size_t pdcpPduLength = rlcPdu->getSduSize(idx); // TODO fix with size of the chunk!!
 
         EV << "PacketFlowManagerEnb::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << " bytes" << endl;
         //
@@ -289,7 +285,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
             throw cRuntimeError("%s::insertRlcPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
 
         // last pdcp
-        if (lit != rlcSduList->end() && lit == --rlcSduList->end()) {
+        if (idx == rlcPdu->getNumSdu() - 1) {
             // 01 or 11, lsb 1 (3GPP TS 36.322)
             // means -> Last byte of the Data field does not correspond to the last byte of a RLC SDU.
             if (fi.lastIsFragment) {

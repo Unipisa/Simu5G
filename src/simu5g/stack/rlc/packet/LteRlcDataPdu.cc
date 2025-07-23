@@ -17,24 +17,27 @@ Register_Class(LteRlcDataPdu);
 Register_Class(LteRlcUmDataPdu);
 Register_Class(LteRlcAmDataPdu);
 
-void LteRlcDataPdu::setPduSequenceNumber(unsigned int sno)
+void LteRlcDataPdu::pushSdu(inet::Packet *pkt)
 {
-    pduSequenceNumber_ = sno;
+    pushSdu(pkt, pkt->getByteLength());
 }
 
-unsigned int LteRlcDataPdu::getPduSequenceNumber() const
+void LteRlcDataPdu::pushSdu(inet::Packet *pkt, int size)
 {
-    return pduSequenceNumber_;
+    appendSdu(pkt);
+    appendSduSize(size);
+    rlcPduLength += size;
 }
 
-void LteRlcDataPdu::setFramingInfo(FramingInfo fi)
+inet::Packet *LteRlcDataPdu::popSdu(size_t& size)
 {
-    fi_ = fi;
-}
+    auto pkt = removeSdu(0);
+    eraseSdu(0);
 
-FramingInfo LteRlcDataPdu::getFramingInfo() const
-{
-    return fi_;
+    size = getSduSize(0);
+    eraseSduSize(0);
+    rlcPduLength -= size;
+    return pkt;
 }
 
 } //namespace
