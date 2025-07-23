@@ -25,9 +25,6 @@ class LteFeedbackPkt : public LteFeedbackPkt_Base
         lteFeedbackDoubleVectorUl_ = other.lteFeedbackDoubleVectorUl_;
         lteFeedbackMapDoubleVectorD2D_ = other.lteFeedbackMapDoubleVectorD2D_;
         sourceNodeId_ = other.sourceNodeId_;
-        lteFeedbackDoubleVectorDl_ = other.lteFeedbackDoubleVectorDl_;
-        lteFeedbackDoubleVectorUl_ = other.lteFeedbackDoubleVectorUl_;
-        sourceNodeId_ = other.sourceNodeId_;
     }
 
   protected:
