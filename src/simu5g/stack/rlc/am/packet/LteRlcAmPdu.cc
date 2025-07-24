@@ -13,6 +13,8 @@
 
 namespace simu5g {
 
+Register_Class(LteRlcAmPdu);
+
 void LteRlcAmPdu::setBitmapArraySize(size_t size)
 {
     bitmap_.resize(size);

@@ -108,9 +108,6 @@ class UserControlInfo : public UserControlInfo_Base
     inet::Coord getCoord() const;
 };
 
-Register_Class(UserControlInfo);
-
 } //namespace
 
 #endif
-

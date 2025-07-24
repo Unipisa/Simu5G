@@ -65,8 +65,6 @@ class LteRlcAmPdu : public LteRlcAmPdu_Base
     virtual bool isLast() const;
 };
 
-Register_Class(LteRlcAmPdu);
-
 } //namespace
 
 #endif

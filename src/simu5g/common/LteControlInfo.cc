@@ -14,6 +14,8 @@
 
 namespace simu5g {
 
+Register_Class(UserControlInfo);
+
 using namespace inet;
 
 UserControlInfo::~UserControlInfo()
@@ -67,4 +69,3 @@ inet::Coord UserControlInfo::getCoord() const
 }
 
 } //namespace
-
