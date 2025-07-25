@@ -12,6 +12,7 @@
 #ifndef _LTE_TTIMER_H_
 #define _LTE_TTIMER_H_
 
+#include "simu5g/common/LteCommon.h"
 #include "simu5g/common/timer/TTimerMsg_m.h"
 #include "simu5g/common/timer/TMultiTimerMsg_m.h"
 

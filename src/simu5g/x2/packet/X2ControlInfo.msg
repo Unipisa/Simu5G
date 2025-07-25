@@ -13,8 +13,6 @@ import inet.common.TagBase;
 import simu5g.common.LteCommon;
 
 cplusplus {{
-    #include "simu5g/common/LteCommon.h"
-
     namespace simu5g {
     typedef std::list<X2NodeId> DestinationIdList;
     }

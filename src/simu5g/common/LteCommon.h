@@ -29,13 +29,12 @@
 #include <string>
 #include <vector>
 
-#include <inet/common/geometry/common/Coord.h>
 #include <inet/common/packet/Packet.h>
 #include <inet/common/Protocol.h>
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteCommonEnum_m.h"
-#include "simu5g/common/LteCommonImpl_m.h"
+#include "simu5g/common/LteCommon_m.h"
 
 using namespace omnetpp;
 
@@ -84,68 +83,6 @@ class LteProtocol
 // Number of QCI classes
 #define LTE_QCI_CLASSES    9
 
-/// MAC node ID
-enum class MacNodeId : unsigned short {};  // emulate "strong typedef" with enum class
-
-// Facilitates finding places where the numeric value of MacNodeId is used
-inline unsigned short num(MacNodeId id) { return static_cast<unsigned short>(id); }
-
-inline std::ostream& operator<<(std::ostream& os, MacNodeId id) { os << static_cast<unsigned short>(id); return os; }
-
-// The following operators are mostly for simplifying comparisons and transformations involving UE_MIN_ID and similar constants
-inline bool operator<(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) < static_cast<unsigned short>(b); }
-inline bool operator>(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) > static_cast<unsigned short>(b); }
-inline bool operator<=(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) <= static_cast<unsigned short>(b); }
-inline bool operator>=(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) >= static_cast<unsigned short>(b); }
-inline MacNodeId operator+(MacNodeId a, unsigned int b) { return MacNodeId(static_cast<unsigned short>(a) + b); }
-inline MacNodeId operator-(MacNodeId a, unsigned int b) { return MacNodeId(static_cast<unsigned short>(a) - b); }
-inline MacNodeId operator-(unsigned int a, MacNodeId b) { return MacNodeId(a - static_cast<unsigned short>(b)); }
-inline unsigned short operator-(MacNodeId a, MacNodeId b) { return static_cast<unsigned short>(a) - static_cast<unsigned short>(b); }
-
-// parsimPack() needed fpr the "d" fingerprint ingredient
-inline void doParsimPacking(omnetpp::cCommBuffer *buffer, MacNodeId d) {buffer->pack(num(d));}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *buffer, MacNodeId& d) {unsigned short tmp; buffer->unpack(tmp); d = MacNodeId(tmp);}
-
-/// Node Id bounds
-constexpr MacNodeId NODEID_NONE  = MacNodeId(0);
-constexpr MacNodeId ENB_MIN_ID   = MacNodeId(1);
-constexpr MacNodeId ENB_MAX_ID   = MacNodeId(1023);
-constexpr MacNodeId BGUE_ID      = MacNodeId(1024);
-constexpr MacNodeId UE_MIN_ID    = MacNodeId(1025);
-constexpr MacNodeId NR_UE_MIN_ID = MacNodeId(2049);
-constexpr MacNodeId BGUE_MIN_ID  = MacNodeId(4097);
-constexpr MacNodeId UE_MAX_ID    = MacNodeId(65535);
-
-
-/// Cell node ID. It is numerically equal to eNodeB MAC node ID.
-typedef MacNodeId MacCellId;
-
-/// X2 node ID. It is equal to the eNodeB MAC Cell ID
-typedef MacNodeId X2NodeId;
-
-/// Omnet Node Id
-typedef unsigned int OmnetId;
-
-/// Logical Connection Identifier
-typedef unsigned short LogicalCid;
-
-/// Connection Identifier: <MacNodeId,LogicalCid>
-typedef unsigned int MacCid;
-
-/// Rank Indicator
-typedef unsigned short Rank;
-
-/// Channel Quality Indicator
-typedef unsigned short Cqi;
-
-/// Precoding Matrix Index
-typedef unsigned short Pmi;
-
-/// Transport Block Size
-typedef unsigned short Tbs;
-
-/// Logical band
-typedef unsigned short Band;
 
 // specifies a list of bands that can be used by a user
 typedef std::vector<Band> UsableBands;
