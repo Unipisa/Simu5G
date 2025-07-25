@@ -21,32 +21,33 @@ void UserTxParams::print(const char *s) const {
         EV << NOW << " " << s << " --------------------------\n";
         EV << NOW << " " << s << "           UserTxParams\n";
         EV << NOW << " " << s << " --------------------------\n";
-        EV << NOW << " " << s << " TxMode: " << txModeToA(txMode_) << "\n";
-        EV << NOW << " " << s << " RI: " << ri_ << "\n";
+        EV << NOW << " " << s << " TxMode: " << txModeToA(txMode) << "\n";
+        EV << NOW << " " << s << " RI: " << ri << "\n";
 
         //*** CQIs *********************************************
-        unsigned int codewords = cqiVector_.size();
-        EV << NOW << " " << s << " CQI = {";
-        if (codewords > 0) {
-            EV << cqiVector_.at(0);
-            for (Codeword cw = 1; cw < codewords; ++cw)
-                EV << ", " << cqiVector_.at(cw);
+        {
+            EV << NOW << " " << s << " CQI = {";
+            const char *sep = "";
+            for (const auto& item : cqiVector) {
+                EV << sep << item;
+                sep = ", ";
+            }
+            EV << "}\n";
         }
-        EV << "}\n";
-        //******************************************************
 
-        EV << NOW << " " << s << " PMI: " << pmi_ << "\n";
+        //******************************************************
+        EV << NOW << " " << s << " PMI: " << pmi << "\n";
 
         //*** Bands ********************************************
-        EV << NOW << " " << s << " Bands = {";
-        if (!allowedBands_.empty()) {
-            auto it = allowedBands_.begin();
-            EV << *it;
-            ++it;
-            for ( ; it != allowedBands_.end(); ++it)
-                EV << ", " << *it;
+        {
+            EV << NOW << " " << s << " Bands = {";
+            const char *sep = "";
+            for (const auto& item : allowedBands_) {
+                EV << sep << item;
+                sep = ", ";
+            }
+            EV << "}\n";
         }
-        EV << "}\n";
         //******************************************************
 
         EV << NOW << " " << s << " --------------------------\n";
