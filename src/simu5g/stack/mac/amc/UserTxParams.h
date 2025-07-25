@@ -102,9 +102,14 @@ class UserTxParams
     }
 
     //! Get/Set the status of the user transmission parameters.
-    bool& isSet()
+    bool isValid() const
     {
         return isValid_;
+    }
+
+    void setValid(bool b)
+    {
+        isValid_ = b;
     }
 
     //! Get the transmission mode.

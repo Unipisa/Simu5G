@@ -392,7 +392,7 @@ void LteAmc::pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double ca
 
     // delete the old UserTxParam for this <UE_dir_carrierFreq>, so that it will be recomputed next time it's needed
     std::map<double, std::vector<UserTxParams>> *txParams = (dir == DL) ? &dlTxParams_ : (dir == UL) ? &ulTxParams_ : throw cRuntimeError("LteAmc::pushFeedback(): Unrecognized direction");
-    if (txParams->find(carrierFrequency) != txParams->end() && txParams->at(carrierFrequency).at(index).isSet())
+    if (txParams->find(carrierFrequency) != txParams->end() && txParams->at(carrierFrequency).at(index).isValid())
         (*txParams)[carrierFrequency].at(index).restoreDefaultValues();
 
     // DEBUG
@@ -431,7 +431,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
     (*history)[peerId][antenna].at(index).at(txMode).put(fb);
 
     // delete the old UserTxParam for this <UE_dir_carrierFreq>, so that it will be recomputed next time it's needed
-    if (d2dTxParams_.find(carrierFrequency) != d2dTxParams_.end() && d2dTxParams_.at(carrierFrequency).at(index).isSet())
+    if (d2dTxParams_.find(carrierFrequency) != d2dTxParams_.end() && d2dTxParams_.at(carrierFrequency).at(index).isValid())
         d2dTxParams_[carrierFrequency].at(index).restoreDefaultValues();
 
     // DEBUG
@@ -518,7 +518,7 @@ bool LteAmc::existTxParams(MacNodeId id, const Direction dir, double carrierFreq
 
     std::map<MacNodeId, unsigned int>& nodeIndex = (dir == DL) ? dlNodeIndex_ : (dir == UL) ? ulNodeIndex_ : d2dNodeIndex_;
 
-    return (*txParams)[carrierFrequency].at(nodeIndex.at(id)).isSet();
+    return (*txParams)[carrierFrequency].at(nodeIndex.at(id)).isValid();
 }
 
 const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserTxParams& info, double carrierFrequency)
@@ -528,7 +528,7 @@ const UserTxParams& LteAmc::setTxParams(MacNodeId id, const Direction dir, UserT
         EV << NOW << " LteAmc::setTxParams detected " << nh << " as next hop for " << id << "\n";
     id = nh;
 
-    info.isSet() = true;
+    info.setValid(true);
 
     /**
      * NOTE: if the antenna set has not been explicitly written in UserTxParams

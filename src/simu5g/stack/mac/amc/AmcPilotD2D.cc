@@ -21,7 +21,7 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
     preconfiguredTxParams_ = new UserTxParams();
 
     // default parameters for D2D
-    preconfiguredTxParams_->isSet() = true;
+    preconfiguredTxParams_->setValid(true);
     preconfiguredTxParams_->writeTxMode(TRANSMIT_DIVERSITY);
     Rank ri = 1;                                              // rank for TxD is one
     preconfiguredTxParams_->writeRank(ri);

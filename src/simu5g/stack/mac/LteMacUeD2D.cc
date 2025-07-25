@@ -793,7 +793,7 @@ UserTxParams *LteMacUeD2D::getPreconfiguredTxParams()
     UserTxParams *txParams = new UserTxParams();
 
     // default parameters for D2D
-    txParams->isSet() = true;
+    txParams->setValid(true);
     txParams->writeTxMode(TRANSMIT_DIVERSITY);
     Rank ri = 1;                                              // rank for TxD is one
     txParams->writeRank(ri);
