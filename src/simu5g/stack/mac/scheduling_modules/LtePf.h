@@ -38,7 +38,7 @@ class LtePf : public LteScheduler
 
   public:
 
-    double& pfAlpha()
+    double getPfAlpha()
     {
         return pfAlpha_;
     }
