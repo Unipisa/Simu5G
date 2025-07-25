@@ -113,13 +113,13 @@ class UserTxParams
     }
 
     //! Get the transmission mode.
-    const TxMode& readTxMode() const
+    TxMode readTxMode() const
     {
         return txMode_;
     }
 
     //! Get the RI.
-    const Rank& readRank() const
+    Rank readRank() const
     {
         return ri_;
     }
@@ -131,7 +131,7 @@ class UserTxParams
     }
 
     //! Get the PMI.
-    const Pmi& readPmi() const
+    Pmi readPmi() const
     {
         return pmi_;
     }
@@ -149,13 +149,13 @@ class UserTxParams
     }
 
     //! Set the transmission mode.
-    void writeTxMode(const TxMode& txMode)
+    void writeTxMode(TxMode txMode)
     {
         txMode_ = txMode;
     }
 
     //! Set the RI.
-    void writeRank(const Rank& ri)
+    void writeRank(Rank ri)
     {
         ri_ = ri;
     }
@@ -167,7 +167,7 @@ class UserTxParams
     }
 
     //! Set the PMI.
-    void writePmi(const Pmi& pmi)
+    void writePmi(Pmi pmi)
     {
         pmi_ = pmi;
     }
