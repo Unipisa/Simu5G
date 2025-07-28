@@ -10,22 +10,25 @@
 //
 
 import inet.common.INETDefs;
-import inet.common.packet.Packet;
 import inet.common.packet.chunk.Chunk;
+import inet.common.packet.Packet;
 
 cplusplus {{
-   using namespace inet;
+namespace simu5g {
+using namespace omnetpp;
+using namespace inet;
+} // namespace
 }};
 
 namespace simu5g;
-
 
 //
 // This is the MAC message flowing through LTE stack.
 //
 class LteMacPdu extends inet::FieldsChunk
 {
-    @customize(true);
+    /// ID of the MAC PDU: incrementally set according to the static variable numMacPdus
+    int64_t macPduId_ = getChunkId();
 
     // Length of the PDU
     int64_t macPduLength_ = 0;
@@ -43,6 +46,7 @@ class LteMacPdu extends inet::FieldsChunk
 }
 
 cplusplus(LteMacPdu) {{
+  public:
     /**
      * pushSdu() gets ownership of the packet
      * and stores it inside the MAC SDU list
@@ -102,6 +106,30 @@ cplusplus(LteMacPdu) {{
      * @return true if the list is not empty, false otherwise
      */
     virtual bool hasCe() const { return ce_arraysize != 0; }
+
+    virtual std::string str() const override;
+    virtual void forEachChild(cVisitor *v) override;
+
+    long getId() const { return macPduId_; }
+}}
+
+cplusplus(LteMacPdu::setHeaderLength) {{
+    this->setChunkLength(B(macPduLength_ + headerLength)); // use the headerLength parameter
+}}
+
+cplusplus(LteMacPdu::copy) {{
+    macPduLength_ = other.macPduLength_;
+    macPduId_ = other.macPduId_;
+
+    // duplication of the SDU queue duplicates all packets but not
+    // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
+    for (size_t idx = 0; idx < sdu_arraysize; idx++) {
+        Packet *p1 = sdu[idx];
+        Packet *p2 = other.sdu[idx];
+        if (p1->getControlInfo() == nullptr && p2->getControlInfo() != nullptr) {
+            p1->setControlInfo(p2->getControlInfo()->dup());
+        }
+    }
 }}
 
 //

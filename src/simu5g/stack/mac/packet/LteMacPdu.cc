@@ -18,52 +18,6 @@ namespace simu5g {
 Register_Class(LteMacPdu);
 
 
-LteMacPdu::LteMacPdu() : LteMacPdu_Base()
-{
-    /*
-     * @author Alessandro Noferi
-     *
-     * getChunkId returns an int (static var in chunk.h)
-     * TODO think about creating our own static variable
-     */
-    macPduId_ = getChunkId();
-}
-
-LteMacPdu::~LteMacPdu()
-{
-}
-
-simu5g::LteMacPdu& LteMacPdu::operator=(const LteMacPdu &other)
-{
-    if (&other == this)
-        return *this;
-
-    LteMacPdu_Base::operator =(other);
-    copy(other);
-    return *this;
-}
-
-void LteMacPdu::copy(const LteMacPdu &other)
-{
-    macPduLength_ = other.macPduLength_;
-    macPduId_ = other.macPduId_;
-
-    // duplication of the SDU queue duplicates all packets but not
-    // the ControlInfo - iterate over all packets and restore ControlInfo if necessary
-    for (size_t idx = 0; idx < sdu_arraysize; idx++) {
-        cPacket *p1 = static_cast<cPacket*>(sdu[idx]);
-        cPacket *p2 = static_cast<cPacket*>(other.sdu[idx]);
-        if (p1->getControlInfo() == nullptr && p2->getControlInfo() != nullptr) {
-            FlowControlInfo *fci = dynamic_cast<FlowControlInfo*>(p2->getControlInfo());
-            if (fci) {
-                p1->setControlInfo(new FlowControlInfo(*fci));
-            } else {
-                throw cRuntimeError("LteMacPdu.h::Unknown type of control info in SDU list!");
-            }
-        }
-    }
-}
-
 std::string LteMacPdu::str() const
 {
     std::stringstream ss;
@@ -77,13 +31,14 @@ std::string LteMacPdu::str() const
 
 void LteMacPdu::forEachChild(cVisitor *v)
 {
+    FieldsChunk::forEachChild(v);
     for (int i = 0; i < sdu_arraysize; i++) {
         if (!v->visit(sdu[i]))
             return;
     }
 }
 
-void LteMacPdu_Base::pushSdu(Packet *pkt)
+void LteMacPdu::pushSdu(Packet *pkt)
 {
     appendSdu(pkt);
     macPduLength_ += pkt->getByteLength();
@@ -91,7 +46,7 @@ void LteMacPdu_Base::pushSdu(Packet *pkt)
     this->setChunkLength(b(getBitLength()));
 }
 
-Packet* LteMacPdu_Base::popSdu()
+Packet* LteMacPdu::popSdu()
 {
     Packet *pkt = removeSdu(0);
     eraseSdu(0);
