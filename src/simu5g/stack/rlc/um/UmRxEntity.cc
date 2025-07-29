@@ -500,9 +500,8 @@ void UmRxEntity::reassemble(unsigned int index)
                 EV << NOW << " UmRxEntity::reassemble Read the first chunk of the PDU" << endl;
 
                 // read the FI field
-                switch (fi.toValue()) {
-
-                    case 0: case 1: {  // FI=00 or FI=01
+                if (!fi.firstIsFragment) {
+                    {  // FI=00 or FI=01
                         // it is a whole SDU, send the SDU to the PDCP
 
                         EV << NOW << " UmRxEntity::reassemble This is a whole SDU [sno=" << sduSno << "]" << endl;
@@ -515,10 +514,10 @@ void UmRxEntity::reassemble(unsigned int index)
                         pktSdu = nullptr;
 
                         clearBufferedSdu();
-
-                        break;
                     }
-                    case 2: case 3: {  // FI=10 or FI=11
+                }
+                else {
+                    {  // FI=10 or FI=11
                         // it is the last portion of an SDU, take the awaiting SDU and send to the PDCP
                         EV << NOW << " UmRxEntity::reassemble This is the last part [" << sduLengthPktLeng << " B] of an SDU [sno=" << sduSno << "]" << endl;
 
@@ -564,19 +563,14 @@ void UmRxEntity::reassemble(unsigned int index)
                         pktSdu = nullptr;
 
                         clearBufferedSdu();
-
-                        break;
-                    }
-                    default: {
-                        throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi.toValue());
                     }
                 }
             }
         }
         else if (i == numSdu - 1) { // last SDU in PDU with at least 2 SDUs
             // read the FI field
-            switch (fi.toValue()) {
-                case 0: case 2: {  // FI=00 or FI=10
+            if (!fi.lastIsFragment) {
+                {  // FI=00 or FI=10
                     // it is a whole SDU, send the SDU to the PDCP
                     EV << NOW << " UmRxEntity::reassemble This is a whole SDU [sno=" << sduSno << "]" << endl;
                     if (sduLengthPktLeng != sduWholeLength)
@@ -589,10 +583,10 @@ void UmRxEntity::reassemble(unsigned int index)
                     pktSdu = nullptr;
 
                     clearBufferedSdu();
-
-                    break;
                 }
-                case 1: case 3: {  // FI=01 or FI=11
+            }
+            else {
+                {  // FI=01 or FI=11
                     // it is the first portion of an SDU, buffer it
                     EV << NOW << " UmRxEntity::reassemble The PDU includes the first part [" << sduLengthPktLeng << " B] of an SDU [sno=" << sduSno << "]" << endl;
 
@@ -607,11 +601,6 @@ void UmRxEntity::reassemble(unsigned int index)
                     pktSdu = nullptr;
 
                     EV << NOW << " UmRxEntity::reassemble Wait for the missing part..." << endl;
-
-                    break;
-                }
-                default: {
-                    throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi.toValue());
                 }
             }
         }
