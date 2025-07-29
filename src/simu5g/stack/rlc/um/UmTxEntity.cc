@@ -178,16 +178,9 @@ void UmTxEntity::rlcPduMake(int pduLength)
     else {
         // compute FI
         // the meaning of this field is specified in 3GPP TS 36.322
-        FramingInfo fi = 0;
-        unsigned short int mask;
-        if (endFrag) {
-            mask = 1;   // 01
-            fi |= mask;
-        }
-        if (startFrag) {
-            mask = 2;   // 10
-            fi |= mask;
-        }
+        FramingInfo fi;
+        fi.firstIsFragment = startFrag;   // 10
+        fi.lastIsFragment = endFrag;      // 01
 
         rlcPdu->setFramingInfo(fi);
         rlcPdu->setPduSequenceNumber(sno_++);

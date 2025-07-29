@@ -292,7 +292,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         if (lit != rlcSduList->end() && lit == --rlcSduList->end()) {
             // 01 or 11, lsb 1 (3GPP TS 36.322)
             // means -> Last byte of the Data field does not correspond to the last byte of a RLC SDU.
-            if ((fi & 1) == 1) {
+            if (fi.lastIsFragment) {
                 pit->second.hasArrivedAll = false;
             }
             else {

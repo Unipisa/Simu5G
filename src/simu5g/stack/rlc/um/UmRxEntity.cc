@@ -375,7 +375,7 @@ void UmRxEntity::reassemble(unsigned int index)
 
             if (i == numSdu - 1) { // [first SDU, i==0] there is only one SDU in this PDU
                 // read the FI field
-                switch (fi) {
+                switch (fi.toValue()) {
                     case 0: {  // FI=00
                         EV << NOW << " UmRxEntity::reassemble The PDU includes one whole SDU [sno=" << sduSno << "]" << endl;
                         if (sduLengthPktLeng != sduWholeLength)
@@ -492,7 +492,7 @@ void UmRxEntity::reassemble(unsigned int index)
                         break;
                     }
                     default: {
-                        throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi);
+                        throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi.toValue());
                     }
                 }
             }
@@ -500,7 +500,7 @@ void UmRxEntity::reassemble(unsigned int index)
                 EV << NOW << " UmRxEntity::reassemble Read the first chunk of the PDU" << endl;
 
                 // read the FI field
-                switch (fi) {
+                switch (fi.toValue()) {
 
                     case 0: case 1: {  // FI=00 or FI=01
                         // it is a whole SDU, send the SDU to the PDCP
@@ -568,14 +568,14 @@ void UmRxEntity::reassemble(unsigned int index)
                         break;
                     }
                     default: {
-                        throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi);
+                        throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi.toValue());
                     }
                 }
             }
         }
         else if (i == numSdu - 1) { // last SDU in PDU with at least 2 SDUs
             // read the FI field
-            switch (fi) {
+            switch (fi.toValue()) {
                 case 0: case 2: {  // FI=00 or FI=10
                     // it is a whole SDU, send the SDU to the PDCP
                     EV << NOW << " UmRxEntity::reassemble This is a whole SDU [sno=" << sduSno << "]" << endl;
@@ -611,7 +611,7 @@ void UmRxEntity::reassemble(unsigned int index)
                     break;
                 }
                 default: {
-                    throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi);
+                    throw cRuntimeError("UmRxEntity::reassemble(): FI field was not valid %d ", fi.toValue());
                 }
             }
         }

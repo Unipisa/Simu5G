@@ -155,7 +155,11 @@ enum RlcAmTimerType
 //  - 01: First chunk is a complete SDU, last chunk is a fragment
 //  - 10: First chunk is a fragment, last chunk is a complete SDU
 //  - 11: First and last chunk of the PDU are fragments
-typedef unsigned short int FramingInfo;
+struct FramingInfo {
+    bool firstIsFragment = false; // 1x
+    bool lastIsFragment = false;  // x1
+    unsigned short toValue() { return (firstIsFragment ? 2 : 0) | (lastIsFragment ? 1 : 0); }
+};
 
 /*
  * RLC UM Entity

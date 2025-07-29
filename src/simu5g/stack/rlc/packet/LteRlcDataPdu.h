@@ -54,7 +54,7 @@ class LteRlcDataPdu : public LteRlcDataPdu_Base
     unsigned int numSdu_ = 0;
 
     // define the segmentation info for the PDU
-    FramingInfo fi_ = 0;
+    FramingInfo fi_;  // {false, false}
 
     // Sequence number of the PDU
     unsigned int pduSequenceNumber_ = 0;
