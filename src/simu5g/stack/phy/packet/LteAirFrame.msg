@@ -17,21 +17,15 @@ cplusplus {{
  
 namespace simu5g;
 
-struct RemoteUnitPhyDataVector
-{
-    @existingClass;
-    @opaque;
-    //@toString(.str());
-}
-
 //
 // This is LteAirFrame.
 //
 packet LteAirFrame extends AirFrame {
     @customize(true);
-    RemoteUnitPhyDataVector remoteUnitPhyDataVector;
+    RemoteUnitPhyData remoteUnitPhyDataVector[] @nopack;
 }
 
 cplusplus(LteAirFrame) {{
-    void addRemoteUnitPhyDataVector(const RemoteUnitPhyData& data) { remoteUnitPhyDataVector.push_back(data); }
+  public:
+    void addRemoteUnitPhyDataVector(const RemoteUnitPhyData& data) { appendRemoteUnitPhyDataVector(data); }
 }}
