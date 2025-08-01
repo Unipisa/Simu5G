@@ -9,15 +9,11 @@
 // and cannot be removed from it.
 //
 
-cplusplus {{
-#include "simu5g/stack/phy/packet/ModulationType.h"
-}}
-
 import inet.common.geometry.Geometry;
 
-namespace simu5g;
+import simu5g.stack.phy.packet.ModulationType;
 
-class ModulationType {@existingClass;};
+namespace simu5g;
 
 //
 // Format of the messages that are sent to the channel
