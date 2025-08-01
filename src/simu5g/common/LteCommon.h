@@ -43,7 +43,6 @@ namespace simu5g {
 
 class Binder;
 class CellInfo;
-class LteCellInfo;
 class LteMacEnb;
 class LteMacBase;
 class LtePhyBase;

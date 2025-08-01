@@ -89,14 +89,6 @@ class Binder
     @toString(.str());
 }
 
-class LteCellInfo
-{
-    @existingClass;
-    @opaque;
-    @polymorphic(false);
-    @toString(.str());
-}
-
 class LteMacEnb
 {
     @existingClass;

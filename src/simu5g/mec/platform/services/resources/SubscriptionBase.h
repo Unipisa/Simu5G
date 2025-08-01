@@ -25,8 +25,6 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class LteCellInfo;
-
 class SubscriptionBase
 {
   public:
