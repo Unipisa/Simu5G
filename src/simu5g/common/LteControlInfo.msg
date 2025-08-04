@@ -15,12 +15,6 @@ import simu5g.common.LteCommon;
 
 namespace simu5g;
 
-enum LtePhyFrameType;
-enum LteRlcType;
-enum TxMode;
-enum Direction;
-enum ApplicationType;
-enum LteTrafficClass;
 
 //
 // Control info usage in Simu5G simulator
