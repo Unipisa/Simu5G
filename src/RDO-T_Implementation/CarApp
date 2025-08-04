@@ -1,1 +1,1492 @@
+#include "CarApp.h"
+#include "inet/common/packet/chunk/BytesChunk.h"
+#include "inet/networklayer/common/L3AddressResolver.h"
+#include "inet/common/ModuleAccess.h"
+#include "inet/common/ProtocolTag_m.h"
+#include "inet/common/Protocol.h"
+#include "inet/common/lifecycle/NodeStatus.h"
+#include "inet/common/lifecycle/ModuleOperations.h"
+#include "inet/linklayer/common/InterfaceTag_m.h"
+#include "inet/networklayer/common/L3AddressTag_m.h"
+#include "inet/transportlayer/common/L4PortTag_m.h"
+#include "inet/networklayer/ipv4/Ipv4InterfaceData.h"
+#include "inet/transportlayer/contract/udp/UdpControlInfo_m.h"
+#include "inet/common/socket/SocketTag_m.h"
+#include "inet/transportlayer/udp/UdpHeader_m.h"
+#include "inet/transportlayer/udp/Udp.h"
+#include "inet/common/checksum/TcpIpChecksum.h"
+#include "inet/common/DirectionTag_m.h"
+#include "inet/linklayer/common/InterfaceTag_m.h"    // ⭐ Needed for InterfaceReq
+#include "inet/networklayer/common/InterfaceTable.h"
+#include "inet/common/ModuleAccess.h"      // Needed for accessing NIC
+
+
+using namespace inet;
+Define_Module(CarApp);
+
+CarApp::~CarApp()
+{
+    cancelAndDelete(mobilityUpdateMsg);
+    cancelAndDelete(sendMessageMsg);
+    cancelAndDelete(attackMsg);
+}
+
+void CarApp::initialize(int stage)
+{
+    ApplicationBase::initialize(stage);
+
+    if (stage == INITSTAGE_LOCAL) {
+        // Initialize statistics vectors
+        packetSentVector.setName("packetsSent");
+        attackRateVector.setName("attackRate");
+        positionXVector.setName("positionX");
+        positionYVector.setName("positionY");
+        speedVector.setName("speed");
+
+        // Extract Car ID from module name (e.g., "car[5]")
+        std::string fullName = getParentModule()->getFullName();
+        size_t start = fullName.find('[') + 1;
+        size_t end = fullName.find(']');
+        if (start != std::string::npos && end != std::string::npos) {
+            std::string idStr = fullName.substr(start, end - start);
+            try {
+                mySenderId = std::stoi(idStr);
+            } catch (const std::exception& e) {
+                EV_ERROR << "Error parsing car ID: " << e.what() << endl;
+                mySenderId = 0;
+            }
+        } else {
+            EV_ERROR << "Cannot extract car ID from module name " << fullName << endl;
+            mySenderId = 0;
+        }
+
+        // Get parameters
+        mobilityFile = par("mobilityFile").stringValue();
+
+        // For Sybil attack, generate fake IDs
+        int numFakeIds = par("numFakeIds").intValue();
+        for (int i = 0; i < numFakeIds; i++) {
+            // Create fake IDs that are not real Car IDs (e.g., 1000 + mySenderId + i)
+            fakeIds.push_back(1000 + mySenderId + i);
+        }
+    }
+
+    else if (stage == INITSTAGE_NETWORK_LAYER) {
+                // 🔥 Critical Fix: Find InterfaceTable
+                interfaceTable = findModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
+                if (!interfaceTable)
+                    throw cRuntimeError("InterfaceTable not found! Check 'interfaceTableModule' parameter.");
+            }
+
+
+
+    else if (stage == INITSTAGE_APPLICATION_LAYER) {
+        // Check if node is up
+        NodeStatus *nodeStatus = dynamic_cast<NodeStatus *>(getContainingNode(this)->getSubmodule("status"));
+        bool isNodeUp = !nodeStatus || nodeStatus->getState() == NodeStatus::UP;
+        if (!isNodeUp)
+            throw cRuntimeError("Application is not ready (node DOWN)");
+
+        // Remove the isEnabled() check since it's causing an error
+        // Instead, just proceed with initialization
+
+        // Load mobility data
+        if (!mobilityFile.empty()) {
+            loadMobilityData();
+        }
+
+        // Load attack schedule
+        std::string attackFile = getSystemModule()->par("attackScheduleFile").stringValue();
+        if (!attackFile.empty()) {
+            loadAttackSchedule(attackFile);
+        }
+
+        // Create timers/messages
+        mobilityUpdateMsg = new cMessage("mobilityUpdate");
+        sendMessageMsg = new cMessage("sendMessage");
+        attackMsg = new cMessage("attackControl");
+
+        // Schedule initial events
+        scheduleAt(simTime() + 0.1, mobilityUpdateMsg);  // Update mobility first
+        scheduleAt(simTime() + 1.0, sendMessageMsg);     // Then start sending messages
+    }
+
+    EV_INFO << "Interfaces found:" << endl;
+    for (int i = 0; i < interfaceTable->getNumInterfaces(); ++i) {
+        NetworkInterface *entry = interfaceTable->getInterface(i);
+        if (entry)
+            EV_INFO << "  Interface[" << i << "] Name: " << entry->getInterfaceName() << endl;
+    }
+
+}
+
+void CarApp::handleMessageWhenUp(cMessage *msg)
+{
+    if (msg->isSelfMessage()) {
+        if (msg == mobilityUpdateMsg) {
+            // Update vehicle mobility
+            updateMobility();
+
+            // Schedule next update
+            scheduleAt(simTime() + 0.1, mobilityUpdateMsg);  // Update every 100ms
+        }
+        else if (msg == sendMessageMsg) {
+            // Check if we should start/stop attacks
+            checkForAttack();
+
+            // Send appropriate message based on attack state
+            if (isAttacking) {
+                switch (currentAttackType) {
+                    case ATTACK_TYPE_DOS:
+                        sendDoSAttack();
+                        break;
+                    case ATTACK_TYPE_SYBIL:
+                        sendSybilAttack();
+                        break;
+                    case ATTACK_TYPE_FALSIFIED:
+                        sendFalsifiedData();
+                        break;
+                    default:
+                        sendNormalMessage();
+                        break;
+                }
+            } else {
+                sendNormalMessage();
+            }
+
+            // Schedule next message
+            scheduleAt(simTime() + exponential(1.0), sendMessageMsg);
+        }
+        else if (msg == attackMsg) {
+            // Handle specific attack control (not used in this implementation)
+        }
+    }
+    else {
+        // Handle received packets
+        if (Packet *packet = dynamic_cast<Packet *>(msg)) {
+            processReceivedPacket(packet);
+            delete msg;
+        }
+        else {
+            // Handle other message types
+            delete msg;
+        }
+    }
+}
+
+void CarApp::finish()
+{
+    ApplicationBase::finish();
+    // Save statistics if needed
+}
+
+void CarApp::handleStartOperation(LifecycleOperation *operation)
+{
+    // Begin periodic mobility updates and message sending
+    if (!mobilityUpdateMsg) {
+        mobilityUpdateMsg = new cMessage("mobilityUpdate");
+        scheduleAt(simTime() + 0.1, mobilityUpdateMsg);
+    }
+    if (!sendMessageMsg) {
+        sendMessageMsg = new cMessage("sendMessage");
+        scheduleAt(simTime() + 1.0, sendMessageMsg);
+    }
+}
+
+void CarApp::handleStopOperation(LifecycleOperation *operation)
+{
+    // Stop timers
+    cancelEvent(mobilityUpdateMsg);
+    cancelEvent(sendMessageMsg);
+    cancelEvent(attackMsg);
+}
+
+void CarApp::handleCrashOperation(LifecycleOperation *operation)
+{
+    // Same as stop but abrupt
+    handleStopOperation(operation);
+}
+
+void CarApp::loadMobilityData()
+{
+    // Try to open the file
+    std::string filename = std::string("src/rdoexperiment/data/Phase1/") + mobilityFile;
+//    std::string filename = std::string("data/") + mobilityFile;
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        EV_ERROR << "Failed to open mobility file: " << filename << endl;
+        return;
+    }
+
+    EV_INFO << "Loading mobility data from " << filename << endl;
+
+    // Read and parse the file
+    std::string line;
+
+    // Skip the header if present (first line contains column names)
+    getline(file, line);
+
+    // Read data lines
+    while (getline(file, line)) {
+        std::istringstream ss(line);
+        double time, x, y;
+
+        // Attempt to parse time, x, y
+        if (ss >> time >> x >> y) {
+            mobilityData.push_back({time, {x, y}});
+        }
+    }
+
+    // Sort data by timestamp if needed
+    std::sort(mobilityData.begin(), mobilityData.end());
+
+    EV_INFO << "Loaded " << mobilityData.size() << " mobility points" << endl;
+
+    // Initialize with the first position
+    if (!mobilityData.empty()) {
+        currentX = mobilityData[0].second.first;
+        currentY = mobilityData[0].second.second;
+        currentZ = 0.0;
+
+        EV_INFO << "Initial position: (" << currentX << ", " << currentY << ", " << currentZ << ")" << endl;
+    }
+}
+
+void CarApp::updateMobility()
+{
+    if (mobilityData.empty()) {
+        // No mobility data, use fixed position
+        return;
+    }
+
+    // Current simulation time
+    double now = simTime().dbl();
+
+    // Find the position for the current time
+    // This is a simple linear interpolation between waypoints
+    while (mobilityDataIndex < mobilityData.size() - 1 &&
+           mobilityData[mobilityDataIndex + 1].first <= now) {
+        mobilityDataIndex++;
+    }
+
+    if (mobilityDataIndex >= mobilityData.size() - 1) {
+        // We've reached the end of the mobility data
+        currentX = mobilityData.back().second.first;
+        currentY = mobilityData.back().second.second;
+        currentZ = 0.0;
+        currentSpeed = 0.0;
+        currentDirection = 0.0;
+    } else {
+        // Interpolate between current and next waypoint
+        double t1 = mobilityData[mobilityDataIndex].first;
+        double t2 = mobilityData[mobilityDataIndex + 1].first;
+
+        double x1 = mobilityData[mobilityDataIndex].second.first;
+        double y1 = mobilityData[mobilityDataIndex].second.second;
+
+        double x2 = mobilityData[mobilityDataIndex + 1].second.first;
+        double y2 = mobilityData[mobilityDataIndex + 1].second.second;
+
+        // Linear interpolation factor
+        double alpha = (now - t1) / (t2 - t1);
+
+        // Interpolated position
+        double newX = x1 + alpha * (x2 - x1);
+        double newY = y1 + alpha * (y2 - y1);
+
+        // Calculate speed and direction
+        double dt = 0.1;  // Time interval (100ms)
+        double dx = newX - currentX;
+        double dy = newY - currentY;
+
+        // Speed in m/s
+        currentSpeed = sqrt(dx*dx + dy*dy) / dt;
+
+        // Direction in radians
+        if (dx != 0 || dy != 0) {
+            currentDirection = atan2(dy, dx);
+        }
+
+        // Update position
+        currentX = newX;
+        currentY = newY;
+        currentZ = 0.0;
+    }
+
+    // Record position and speed statistics
+    positionXVector.record(currentX);
+    positionYVector.record(currentY);
+    speedVector.record(currentSpeed);
+
+    EV_INFO << "Updated position: (" << currentX << ", " << currentY << ", " << currentZ << "), "
+            << "speed: " << currentSpeed << " m/s, direction: " << currentDirection << " rad" << endl;
+}
+
+void CarApp::loadAttackSchedule(const std::string& filename)
+{
+    // Try to open the file
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        EV_ERROR << "Failed to open attack schedule file: " << filename << endl;
+        return;
+    }
+
+    EV_INFO << "Loading attack schedule from " << filename << endl;
+
+    // Read and parse the file
+    std::string line;
+
+    // Skip the header (first line contains column names)
+    getline(file, line);
+
+    // Read attack schedule lines
+    while (getline(file, line)) {
+        std::istringstream ss(line);
+        std::string token;
+
+        // Parse the CSV line
+        // Format: sendTime,sender,attackType
+
+        // Parse sendTime
+        if (!getline(ss, token, ',')) continue;
+        double attackTime;
+        try {
+            attackTime = std::stod(token);
+        } catch (const std::exception&) {
+            continue;  // Skip invalid lines
+        }
+
+        // Parse sender
+        if (!getline(ss, token, ',')) continue;
+        int attackerId;
+        try {
+            attackerId = std::stoi(token);
+        } catch (const std::exception&) {
+            continue;  // Skip invalid lines
+        }
+
+        // Parse attackType
+        if (!getline(ss, token, ',')) continue;
+        int aType;
+
+        // Map attack type string to enum
+        if (token == "DoS" || token == "dos" || token == "DOS") {
+            aType = ATTACK_TYPE_DOS;
+        } else if (token == "Sybil" || token == "sybil" || token == "SYBIL") {
+            aType = ATTACK_TYPE_SYBIL;
+        } else if (token == "Falsified" || token == "falsified" || token == "FALSIFIED" || token == "false") {
+            aType = ATTACK_TYPE_FALSIFIED;
+        } else {
+            try {
+                aType = std::stoi(token);
+            } catch (const std::exception&) {
+                continue;  // Skip invalid lines
+            }
+        }
+
+        // Only add attack events for this car
+        if (attackerId == mySenderId) {
+            AttackEvent event;
+            event.time = attackTime;
+            event.attackType = aType;
+            attackSchedule.push_back(event);
+        }
+    }
+
+    // Sort attack schedule by time
+    std::sort(attackSchedule.begin(), attackSchedule.end(),
+        [](const AttackEvent& a, const AttackEvent& b) {
+            return a.time < b.time;
+        });
+
+    EV_INFO << "Loaded " << attackSchedule.size() << " attack events for car ID " << mySenderId << endl;
+}
+
+void CarApp::checkForAttack()
+{
+    // Current simulation time
+    double now = simTime().dbl();
+
+    // Check for attack start or end
+    for (const auto& event : attackSchedule) {
+        if (event.time <= now && !isAttacking) {
+            // Start an attack
+            startAttack(event.attackType);
+            break;
+        }
+        else if (isAttacking && event.time > now) {
+            // End current attack
+            stopAttack();
+            break;
+        }
+    }
+}
+
+void CarApp::startAttack(int attackType)
+{
+    if (!isAttacking) {
+        isAttacking = true;
+        currentAttackType = attackType;
+
+        switch (currentAttackType) {
+            case ATTACK_TYPE_DOS:
+                EV_INFO << "Starting DoS attack at " << simTime() << endl;
+                break;
+            case ATTACK_TYPE_SYBIL:
+                EV_INFO << "Starting Sybil attack at " << simTime() << endl;
+                break;
+            case ATTACK_TYPE_FALSIFIED:
+                EV_INFO << "Starting Falsified Data attack at " << simTime() << endl;
+                break;
+            default:
+                EV_INFO << "Starting unknown attack type " << currentAttackType << " at " << simTime() << endl;
+                break;
+        }
+    }
+}
+
+void CarApp::stopAttack()
+{
+    if (isAttacking) {
+        EV_INFO << "Stopping attack at " << simTime() << endl;
+        isAttacking = false;
+        currentAttackType = ATTACK_TYPE_NONE;
+    }
+}
+
+void CarApp::sendNormalMessage()
+{
+    // Create a new packet
+    std::string packetName = "Car_" + std::to_string(mySenderId) + "_" + std::to_string(seqNumber++);
+    auto packet = new Packet(packetName.c_str());
+
+    // Create payload with vehicle data
+    auto payload = makeShared<BytesChunk>();
+    std::vector<uint8_t> data(100, 0);  // 100 byte packet
+
+    // Include sender ID and message type
+    data[0] = mySenderId & 0xFF;
+    data[1] = (mySenderId >> 8) & 0xFF;
+    data[2] = 0x00;  // Normal message type
+
+    // Include position data
+    uint32_t xInt = static_cast<uint32_t>(currentX * 100.0);  // Centimeter precision
+    uint32_t yInt = static_cast<uint32_t>(currentY * 100.0);
+
+    data[3] = (xInt >> 0) & 0xFF;
+    data[4] = (xInt >> 8) & 0xFF;
+    data[5] = (xInt >> 16) & 0xFF;
+    data[6] = (xInt >> 24) & 0xFF;
+
+    data[7] = (yInt >> 0) & 0xFF;
+    data[8] = (yInt >> 8) & 0xFF;
+    data[9] = (yInt >> 16) & 0xFF;
+    data[10] = (yInt >> 24) & 0xFF;
+
+    // Include speed and direction
+    uint16_t speedInt = static_cast<uint16_t>(currentSpeed * 100.0);  // Centimeter/s precision
+    uint16_t dirInt = static_cast<uint16_t>((currentDirection + M_PI) * 1000.0); // Milliradian precision
+
+    data[11] = (speedInt >> 0) & 0xFF;
+    data[12] = (speedInt >> 8) & 0xFF;
+
+    data[13] = (dirInt >> 0) & 0xFF;
+    data[14] = (dirInt >> 8) & 0xFF;
+
+    // Set the data in the payload
+    payload->setBytes(data);
+    packet->insertAtBack(payload);
+
+    // Add timestamp tag
+    packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+
+    // Add protocol tag (needed by the message dispatcher)
+    packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::udp);
+
+    // Send the packet
+    sendToNic(packet);
+
+    // Update statistics
+    packetSentVector.record(1);
+}
+
+void CarApp::sendDoSAttack()
+{
+    // DoS attack sends multiple packets in a short time
+    int numPackets = par("dosPacketCount");
+
+    for (int i = 0; i < numPackets; i++) {
+        // Create a packet similar to normal but with attack marker
+        std::string packetName = "Car_" + std::to_string(mySenderId) + "_DoS_" + std::to_string(seqNumber++);
+        auto packet = new Packet(packetName.c_str());
+
+        // Create larger payload to consume bandwidth
+        auto payload = makeShared<BytesChunk>();
+        std::vector<uint8_t> data(500, 0);  // 500 byte packet (5x normal)
+
+        // Include sender ID and message type
+        data[0] = mySenderId & 0xFF;
+        data[1] = (mySenderId >> 8) & 0xFF;
+        data[2] = 0x01;  // DoS attack marker
+
+        // Set the data in the payload
+        payload->setBytes(data);
+        packet->insertAtBack(payload);
+
+        // Add timestamp tag
+        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+
+        // Add protocol tag (needed by the message dispatcher)
+        packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::udp);
+
+        // Send the packet
+        sendToNic(packet);
+    }
+
+    // Update statistics
+    attackRateVector.record(numPackets);
+}
+
+void CarApp::sendSybilAttack()
+{
+    // Sybil attack sends messages with fake IDs
+    for (int fakeId : fakeIds) {
+        // Create a packet with a fake ID
+        std::string packetName = "Car_" + std::to_string(fakeId) + "_Sybil_" + std::to_string(seqNumber++);
+        auto packet = new Packet(packetName.c_str());
+
+        // Create payload with modified position
+        auto payload = makeShared<BytesChunk>();
+        std::vector<uint8_t> data(100, 0);  // 100 byte packet
+
+        // Include fake sender ID and message type
+        data[0] = fakeId & 0xFF;
+        data[1] = (fakeId >> 8) & 0xFF;
+        data[2] = 0x02;  // Sybil attack marker
+
+        // Generate fake position (offset from real position)
+        double fakeX = currentX + (fakeId % 10 - 5) * 10.0;  // ±50m offset
+        double fakeY = currentY + (fakeId % 7 - 3) * 10.0;   // ±30m offset
+
+        uint32_t xInt = static_cast<uint32_t>(fakeX * 100.0);  // Centimeter precision
+        uint32_t yInt = static_cast<uint32_t>(fakeY * 100.0);
+
+        data[3] = (xInt >> 0) & 0xFF;
+        data[4] = (xInt >> 8) & 0xFF;
+        data[5] = (xInt >> 16) & 0xFF;
+        data[6] = (xInt >> 24) & 0xFF;
+
+        data[7] = (yInt >> 0) & 0xFF;
+        data[8] = (yInt >> 8) & 0xFF;
+        data[9] = (yInt >> 16) & 0xFF;
+        data[10] = (yInt >> 24) & 0xFF;
+
+        // Include modified speed and direction
+        double fakeSpeed = currentSpeed * (0.7 + (fakeId % 7) * 0.1);  // 70-140% of real speed
+        double fakeDir = currentDirection + (fakeId % 10 - 5) * 0.1;   // ±0.5 rad offset
+
+        uint16_t speedInt = static_cast<uint16_t>(fakeSpeed * 100.0);  // Centimeter/s precision
+        uint16_t dirInt = static_cast<uint16_t>((fakeDir + M_PI) * 1000.0); // Milliradian precision
+
+        data[11] = (speedInt >> 0) & 0xFF;
+        data[12] = (speedInt >> 8) & 0xFF;
+
+        data[13] = (dirInt >> 0) & 0xFF;
+        data[14] = (dirInt >> 8) & 0xFF;
+
+        // Set the data in the payload
+        payload->setBytes(data);
+        packet->insertAtBack(payload);
+
+        // Add timestamp tag
+        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+
+        // Add protocol tag (needed by the message dispatcher)
+        packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::udp);
+
+        // Send the packet
+        sendToNic(packet);
+    }
+
+    // Update statistics
+    attackRateVector.record(fakeIds.size());
+}
+
+void CarApp::sendFalsifiedData()
+{
+    // Create a packet with falsified data
+    std::string packetName = "Car_" + std::to_string(mySenderId) + "_False_" + std::to_string(seqNumber++);
+    auto packet = new Packet(packetName.c_str());
+
+    // Create payload with falsified values
+    auto payload = makeShared<BytesChunk>();
+    std::vector<uint8_t> data(100, 0);  // 100 byte packet
+
+    // Include sender ID and message type
+    data[0] = mySenderId & 0xFF;
+    data[1] = (mySenderId >> 8) & 0xFF;
+    data[2] = 0x03;  // Falsified data marker
+
+    // Generate false position (significant offset from real position)
+    double falseX = currentX + 200.0;  // 200m offset
+    double falseY = currentY - 150.0;  // 150m offset
+
+    uint32_t xInt = static_cast<uint32_t>(falseX * 100.0);  // Centimeter precision
+    uint32_t yInt = static_cast<uint32_t>(falseY * 100.0);
+
+    data[3] = (xInt >> 0) & 0xFF;
+    data[4] = (xInt >> 8) & 0xFF;
+    data[5] = (xInt >> 16) & 0xFF;
+    data[6] = (xInt >> 24) & 0xFF;
+
+    data[7] = (yInt >> 0) & 0xFF;
+    data[8] = (yInt >> 8) & 0xFF;
+    data[9] = (yInt >> 16) & 0xFF;
+    data[10] = (yInt >> 24) & 0xFF;
+
+    // Include reversed speed and altered direction
+    double falseSpeed = -currentSpeed * 2.0;  // Reversed and doubled
+    double falseDir = currentDirection + M_PI;  // Opposite direction
+
+    uint16_t speedInt = static_cast<uint16_t>(std::abs(falseSpeed) * 100.0);  // Centimeter/s precision
+    uint16_t dirInt = static_cast<uint16_t>((falseDir + M_PI) * 1000.0); // Milliradian precision
+
+    data[11] = (speedInt >> 0) & 0xFF;
+    data[12] = (speedInt >> 8) & 0xFF;
+
+    data[13] = (dirInt >> 0) & 0xFF;
+    data[14] = (dirInt >> 8) & 0xFF;
+
+    // Set the data in the payload
+    payload->setBytes(data);
+    packet->insertAtBack(payload);
+
+    // Add falsified timestamp (5 seconds in the past)
+    packet->addTag<CreationTimeTag>()->setCreationTime(simTime() - 5.0);
+
+    // Add protocol tag (needed by the message dispatcher)
+    packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::udp);
+
+    // Send the packet
+    sendToNic(packet);
+
+    // Update statistics
+    attackRateVector.record(1);
+}
+
+void CarApp::processReceivedPacket(Packet *packet)
+{
+    // Process incoming packets (e.g., from other vehicles)
+    EV_INFO << "Received packet: " << packet->getName() << endl;
+
+    // Extract data from the packet
+    auto payload = packet->peekData<BytesChunk>();
+    if (payload) {
+        // Process the data
+        auto& bytes = payload->getBytes();
+
+        if (bytes.size() >= 3) {
+            // Extract sender ID
+            // Extract sender ID
+                        int senderId = bytes[0] | (bytes[1] << 8);
+
+                        // Extract message type
+                        int messageType = bytes[2];
+
+                        // Extract position if available
+                        double posX = 0.0, posY = 0.0;
+                        if (bytes.size() >= 11) {
+                            uint32_t xInt = bytes[3] | (bytes[4] << 8) | (bytes[5] << 16) | (bytes[6] << 24);
+                            uint32_t yInt = bytes[7] | (bytes[8] << 8) | (bytes[9] << 16) | (bytes[10] << 24);
+
+                            posX = xInt / 100.0;  // Convert from centimeters to meters
+                            posY = yInt / 100.0;
+                        }
+
+                        // Extract speed and direction if available
+                        double speed = 0.0, direction = 0.0;
+                        if (bytes.size() >= 15) {
+                            uint16_t speedInt = bytes[11] | (bytes[12] << 8);
+                            uint16_t dirInt = bytes[13] | (bytes[14] << 8);
+
+                            speed = speedInt / 100.0;     // Convert from cm/s to m/s
+                            direction = (dirInt / 1000.0) - M_PI;  // Convert from milliradians and shift range
+                        }
+
+                        // Process based on message type
+                        std::string msgTypeStr;
+                        switch (messageType) {
+                            case 0x00:
+                                msgTypeStr = "Normal";
+                                break;
+                            case 0x01:
+                                msgTypeStr = "DoS";
+                                break;
+                            case 0x02:
+                                msgTypeStr = "Sybil";
+                                break;
+                            case 0x03:
+                                msgTypeStr = "Falsified";
+                                break;
+                            default:
+                                msgTypeStr = "Unknown";
+                                break;
+                        }
+
+                        EV_INFO << "  - Sender ID: " << senderId << endl;
+                        EV_INFO << "  - Message Type: " << msgTypeStr << endl;
+                        EV_INFO << "  - Position: (" << posX << ", " << posY << ")" << endl;
+                        EV_INFO << "  - Speed: " << speed << " m/s, Direction: " << direction << " rad" << endl;
+                    }
+                }
+            }
+
+int CarApp::getWlanInterfaceId()
+{
+    // ⭐ Auto-find InterfaceTable inside the parent module
+    auto interfaceTable = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), getContainingNode(this));
+    if (!interfaceTable)
+        throw cRuntimeError("InterfaceTable not found automatically inside the car!");
+
+    NetworkInterface *entry = interfaceTable->findInterfaceByName("cellularNic");
+    if (!entry)
+        throw cRuntimeError("Wireless interface 'cellularNic' not found!");
+
+    return entry->getInterfaceId();
+}
+
+
+void CarApp::sendToNic(Packet *packet)
+{
+    // First, remove any existing tags to avoid conflicts
+    packet->clearTags();
+
+    // Create a UDP datagram (UdpHeader)
+    auto udpHeader = makeShared<UdpHeader>();
+    udpHeader->setSourcePort(10000 + mySenderId);  // Source port based on Car ID
+    udpHeader->setDestinationPort(9000);           // Destination port fixed
+    udpHeader->setCrc(0);
+    udpHeader->setCrcMode(CRC_DISABLED);
+    udpHeader->setTotalLengthField(udpHeader->getChunkLength() + packet->getDataLength());
+
+    // Insert the UDP header at the front
+    packet->insertAtFront(udpHeader);
+
+    // Add protocol tag (needed by message dispatcher)
+    packet->addTag<PacketProtocolTag>()->setProtocol(&Protocol::udp);
+
+    // ⭐ Correctly add InterfaceReq to specify the NIC
+    auto interfaceReq = packet->addTag<InterfaceReq>();
+    interfaceReq->setInterfaceId(getWlanInterfaceId()); // Get the wireless NIC id
+
+    // Send the packet
+    send(packet, "socketOut");
+}
+
+
+
+
+
+
+//#include "CarApp.h"
+//#include "inet/common/packet/chunk/BytesChunk.h"
+//#include "inet/transportlayer/contract/udp/UdpSocket.h"
+//#include "inet/networklayer/common/L3AddressResolver.h"
+//#include "inet/common/ModuleAccess.h"
+//#include "inet/common/socket/SocketTag_m.h"
+//
+//// Global map to hold attack nodes
+//std::map<int, int> attackNodes;  // Map senderId -> attackType
+//std::map<int, double> attackSeverity; // Map senderId -> attack severity
+//std::map<int, simtime_t> attackStartTime; // Map senderId -> attack start time
+//std::map<int, simtime_t> attackEndTime; // Map senderId -> attack end time
+//
+//Define_Module(CarApp);
+//
+//void CarApp::initialize()
+//{
+//    // Initialize vectors for statistics
+//    packetSentVector.setName("packetsSent");
+//    attackRateVector.setName("attackRate");
+//
+//    // Extract Car ID from module name (e.g., "car[5]")
+//    std::string fullName = getParentModule()->getFullName();
+//    size_t start = fullName.find('[') + 1;
+//    size_t end = fullName.find(']');
+//    std::string idStr = fullName.substr(start, end - start);
+//    mySenderId = std::stoi(idStr);
+//
+//    // Initialize UDP socket
+//    socket.setOutputGate(gate("socketOut"));
+//
+//    // Bind to local port (port number should be unique for this app)
+//    socket.bind(10000 + mySenderId);
+//
+//    // Setup multicast group for broadcast communication
+//    broadcastAddr = Ipv4Address("224.0.0.10");
+//    broadcastPort = 9000;
+//
+//    // Load attack nodes only once (only one Car will do it)
+//    if (attackNodes.empty() && getSystemModule()->par("useAttackSchedule").boolValue()) {
+//        std::string attackFile = getSystemModule()->par("attackScheduleFile").stringValue();
+//        loadAttackNodesFromCSV(attackFile);
+//    }
+//
+//    // Set up normal periodic message sending (all nodes, including attackers)
+//    periodicMsgEvent = new cMessage("sendPeriodicMsg");
+//    scheduleAt(simTime() + exponential(1.0), periodicMsgEvent);
+//
+//    // Check if this node is an attacker
+//    if (attackNodes.find(mySenderId) != attackNodes.end()) {
+//        isAttacker = true;
+//        myAttackType = attackNodes[mySenderId];
+//        myAttackSeverity = attackSeverity[mySenderId];
+//        myAttackStartTime = attackStartTime[mySenderId];
+//        myAttackEndTime = attackEndTime[mySenderId];
+//
+//        EV_INFO << "Car[" << mySenderId << "] is an attacker. Attack Type: " << myAttackType
+//                << ", Severity: " << myAttackSeverity
+//                << ", Start: " << myAttackStartTime
+//                << ", End: " << myAttackEndTime << endl;
+//
+//        // Schedule attack start
+//        attackMsgEvent = new cMessage("attackControl");
+//        scheduleAt(myAttackStartTime, attackMsgEvent);
+//
+//        // For Sybil attack, generate fake IDs
+//        if (myAttackType == ATTACK_TYPE_SYBIL) {
+//            // Create fake IDs based on severity (higher severity = more fake IDs)
+//            int numFakeIds = std::max(1, static_cast<int>(myAttackSeverity * 5));
+//            for (int i = 0; i < numFakeIds; i++) {
+//                // Create fake IDs that are not real Car IDs (e.g., 1000 + mySenderId + i)
+//                fakeIds.push_back(1000 + mySenderId + i);
+//            }
+//        }
+//    }
+//    else {
+//        EV_INFO << "Car[" << mySenderId << "] is a normal node." << endl;
+//    }
+//}
+//
+//void CarApp::handleMessage(cMessage *msg)
+//{
+//    if (msg->isSelfMessage()) {
+//        // Self messages for scheduling
+//        if (msg == periodicMsgEvent) {
+//            // Regular message sending for all nodes
+//            sendNormalMessage();
+//
+//            // Schedule next periodic message
+//            scheduleAt(simTime() + exponential(1.0), periodicMsgEvent);
+//        }
+//        else if (msg == attackMsgEvent) {
+//            // Start or stop attack based on current time
+//            if (simTime() >= myAttackStartTime && simTime() < myAttackEndTime) {
+//                startAttack();
+//            } else if (simTime() >= myAttackEndTime) {
+//                stopAttack();
+//            }
+//        }
+//        else if (msg->getName() == std::string("attackMsg")) {
+//            // Handle ongoing attack messages
+//            if (isAttacker && simTime() < myAttackEndTime) {
+//                if (myAttackType == ATTACK_TYPE_DOS) {
+//                    sendDoSAttack();
+//                }
+//                else if (myAttackType == ATTACK_TYPE_SYBIL) {
+//                    sendSybilAttack();
+//                }
+//                else if (myAttackType == ATTACK_TYPE_FALSIFIED) {
+//                    sendFalsifiedData();
+//                }
+//            }
+//            delete msg;
+//        }
+//    }
+//    else {
+//        // Handle incoming UDP packets from other cars
+//        auto packet = check_and_cast<Packet *>(msg);
+//        socket.processMessage(msg);
+//    }
+//}
+//
+//void CarApp::finish()
+//{
+//    // Cleanup scheduled messages
+//    cancelAndDelete(periodicMsgEvent);
+//    if (isAttacker) {
+//        cancelAndDelete(attackMsgEvent);
+//    }
+//}
+//
+//// Helper function to load CSV
+//void CarApp::loadAttackNodesFromCSV(const std::string& filename)
+//{
+//    std::ifstream file(filename);
+//    if (!file.is_open()) {
+//        EV_ERROR << "Failed to open CSV file: " << filename << endl;
+//        return;
+//    }
+//
+//    std::string line;
+//    getline(file, line); // Skip header
+//
+//    // Expected format: node_id,attack_type,start_time,end_time,severity
+//    while (getline(file, line)) {
+//        std::stringstream ss(line);
+//        std::string token;
+//
+//        // Parse node_id
+//        getline(ss, token, ',');
+//        int senderId = stoi(token);
+//
+//        // Parse attack_type
+//        getline(ss, token, ',');
+//        int attackType = stoi(token);
+//
+//        // Parse start_time
+//        getline(ss, token, ',');
+//        simtime_t startTime = stod(token);
+//
+//        // Parse end_time
+//        getline(ss, token, ',');
+//        simtime_t endTime = stod(token);
+//
+//        // Parse severity
+//        getline(ss, token, ',');
+//        double severity = stod(token);
+//
+//        // Store attack information
+//        attackNodes[senderId] = attackType;
+//        attackSeverity[senderId] = severity;
+//        attackStartTime[senderId] = startTime;
+//        attackEndTime[senderId] = endTime;
+//    }
+//
+//    EV_INFO << "Attack nodes loaded successfully from CSV! Total: " << attackNodes.size() << endl;
+//}
+//
+//void CarApp::startAttack()
+//{
+//    EV_INFO << "Car[" << mySenderId << "] starting attack type " << myAttackType << " at " << simTime() << endl;
+//
+//    // Create a message to trigger attack behavior
+//    cMessage* attackMsg = new cMessage("attackMsg");
+//
+//    // Schedule attack behavior based on attack type
+//    if (myAttackType == ATTACK_TYPE_DOS) {
+//        // For DoS, schedule frequent messages
+//        // Severity affects the rate: higher severity = higher frequency
+//        double interval = std::max(0.1, 1.0 - (myAttackSeverity * 0.9));
+//        scheduleAt(simTime() + interval, attackMsg);
+//    }
+//    else if (myAttackType == ATTACK_TYPE_SYBIL) {
+//        // For Sybil, schedule less frequent but multiple ID attacks
+//        scheduleAt(simTime() + exponential(0.5), attackMsg);
+//    }
+//    else if (myAttackType == ATTACK_TYPE_FALSIFIED) {
+//        // For falsified data, follow normal timing but with bad data
+//        scheduleAt(simTime() + exponential(1.0), attackMsg);
+//    }
+//
+//    // Schedule next check at end time
+//    scheduleAt(myAttackEndTime, attackMsgEvent);
+//}
+//
+//void CarApp::stopAttack()
+//{
+//    EV_INFO << "Car[" << mySenderId << "] stopped attack at " << simTime() << endl;
+//    // No need to do anything special, just don't reschedule attack messages
+//}
+//
+//void CarApp::sendNormalMessage()
+//{
+//    // Create a new packet
+//    std::string packetName = "Car_" + std::to_string(mySenderId) + "_" + std::to_string(seqNumber++);
+//    auto packet = new Packet(packetName.c_str());
+//
+//    // Add data to payload
+//    auto payload = makeShared<BytesChunk>();
+//    std::vector<uint8_t> data(100, 0);  // Create vector of 100 bytes initialized to 0
+//    // Include sender ID and timestamp in the data if needed
+//    data[0] = mySenderId & 0xFF;
+//    data[1] = (mySenderId >> 8) & 0xFF;
+//    payload->setBytes(data);
+//    packet->insertAtBack(payload);
+//
+//    // Create timestamp tag
+//    packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//    // Send to all cars via UDP multicast
+//    socket.sendTo(packet, broadcastAddr, broadcastPort);
+//
+//    // Update statistics
+//    packetSentVector.record(1);
+//}
+//
+//void CarApp::sendDoSAttack()
+//{
+//    // DoS attack sends many messages in short time intervals
+//    EV_INFO << "Car[" << mySenderId << "] executing DoS attack at " << simTime() << endl;
+//
+//    // Create multiple packets with high rate
+//    int numPackets = std::max(1, static_cast<int>(myAttackSeverity * 10));
+//
+//    for (int i = 0; i < numPackets; i++) {
+//        // Create a packet similar to normal but with higher frequency
+//        std::string packetName = "Car_" + std::to_string(mySenderId) + "_DoS_" + std::to_string(seqNumber++);
+//        auto packet = new Packet(packetName.c_str());
+//
+//        // Add larger payload to consume more bandwidth
+//        auto payload = makeShared<BytesChunk>();
+//        std::vector<uint8_t> data(500, 0);  // Larger data for DoS
+//        data[0] = mySenderId & 0xFF;
+//        data[1] = (mySenderId >> 8) & 0xFF;
+//        payload->setBytes(data);
+//        packet->insertAtBack(payload);
+//
+//        // Create timestamp tag
+//        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//        // Send via UDP
+//        socket.sendTo(packet, broadcastAddr, broadcastPort);
+//    }
+//
+//    // Update statistics
+//    attackRateVector.record(numPackets);
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        double interval = std::max(0.1, 1.0 - (myAttackSeverity * 0.9));
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + interval, nextAttackMsg);
+//    }
+//}
+//
+//void CarApp::sendSybilAttack()
+//{
+//    // Sybil attack sends messages with fake IDs
+//    EV_INFO << "Car[" << mySenderId << "] executing Sybil attack at " << simTime() << endl;
+//
+//    // Send one message for each fake ID
+//    for (int fakeId : fakeIds) {
+//        std::string packetName = "Car_" + std::to_string(fakeId) + "_Sybil_" + std::to_string(seqNumber++);
+//        auto packet = new Packet(packetName.c_str());
+//
+//        // Normal sized payload
+//        auto payload = makeShared<BytesChunk>();
+//        std::vector<uint8_t> data(100, 0);  // Normal sized data
+//        data[0] = fakeId & 0xFF;  // Include fake ID in the data
+//        data[1] = (fakeId >> 8) & 0xFF;
+//        payload->setBytes(data);
+//        packet->insertAtBack(payload);
+//
+//        // Create timestamp tag
+//        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//        // For Sybil attack, we might want to use a different local port to mimic different senders
+//        // However, for simplicity, we'll use the same socket
+//        socket.sendTo(packet, broadcastAddr, broadcastPort);
+//    }
+//
+//    // Update statistics
+//    attackRateVector.record(fakeIds.size());
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + exponential(0.5), nextAttackMsg);
+//    }
+//}
+//
+//void CarApp::sendFalsifiedData()
+//{
+//    // Falsified data attack sends incorrect information
+//    EV_INFO << "Car[" << mySenderId << "] executing Falsified Data attack at " << simTime() << endl;
+//
+//    std::string packetName = "Car_" + std::to_string(mySenderId) + "_False_" + std::to_string(seqNumber++);
+//    auto packet = new Packet(packetName.c_str());
+//
+//    // Normal sized payload but with falsified content
+//    auto payload = makeShared<BytesChunk>();
+//    std::vector<uint8_t> data(100, 0);
+//    data[0] = mySenderId & 0xFF;
+//    data[1] = (mySenderId >> 8) & 0xFF;
+//    // Include falsified data in the rest of the payload
+//    // This could be incorrect position, speed, etc.
+//    data[2] = 0xFF;  // Falsified data marker
+//    payload->setBytes(data);
+//    packet->insertAtBack(payload);
+//
+//    // Create a falsified timestamp (5 seconds in the past)
+//    packet->addTag<CreationTimeTag>()->setCreationTime(simTime() - 5.0);
+//
+//    // Send via UDP
+//    socket.sendTo(packet, broadcastAddr, broadcastPort);
+//
+//    // Update statistics
+//    attackRateVector.record(1);
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + exponential(1.0), nextAttackMsg);
+//    }
+//}
+
+
+
+
+
+//#include "CarApp.h"
+//#include "inet/common/packet/chunk/BytesChunk.h" // Added proper include for Bytes chunk
+//
+//// Global map to hold attack nodes
+//std::map<int, int> attackNodes;  // Map senderId -> attackType
+//std::map<int, double> attackSeverity; // Map senderId -> attack severity
+//std::map<int, simtime_t> attackStartTime; // Map senderId -> attack start time
+//std::map<int, simtime_t> attackEndTime; // Map senderId -> attack end time
+//
+//Define_Module(CarApp);
+//
+//void CarApp::initialize()
+//{
+//    // Initialize vectors for statistics
+//    packetSentVector.setName("packetsSent");
+//    attackRateVector.setName("attackRate");
+//
+//    // Extract Car ID from module name (e.g., "car[5]")
+//    std::string fullName = getParentModule()->getFullName();
+//    size_t start = fullName.find('[') + 1;
+//    size_t end = fullName.find(']');
+//    std::string idStr = fullName.substr(start, end - start);
+//    mySenderId = std::stoi(idStr);
+//
+//    // Load attack nodes only once (only one Car will do it)
+//    if (attackNodes.empty() && getSystemModule()->par("useAttackSchedule").boolValue()) {
+//        std::string attackFile = getSystemModule()->par("attackScheduleFile").stringValue();
+//        loadAttackNodesFromCSV(attackFile);
+//    }
+//
+//    // Set up normal periodic message sending (all nodes, including attackers)
+//    periodicMsgEvent = new cMessage("sendPeriodicMsg");
+//    scheduleAt(simTime() + exponential(1.0), periodicMsgEvent);
+//
+//    // Check if this node is an attacker
+//    if (attackNodes.find(mySenderId) != attackNodes.end()) {
+//        isAttacker = true;
+//        myAttackType = attackNodes[mySenderId];
+//        myAttackSeverity = attackSeverity[mySenderId];
+//        myAttackStartTime = attackStartTime[mySenderId];
+//        myAttackEndTime = attackEndTime[mySenderId];
+//
+//        EV_INFO << "Car[" << mySenderId << "] is an attacker. Attack Type: " << myAttackType
+//                << ", Severity: " << myAttackSeverity
+//                << ", Start: " << myAttackStartTime
+//                << ", End: " << myAttackEndTime << endl;
+//
+//        // Schedule attack start
+//        attackMsgEvent = new cMessage("attackControl");
+//        scheduleAt(myAttackStartTime, attackMsgEvent);
+//
+//        // For Sybil attack, generate fake IDs
+//        if (myAttackType == ATTACK_TYPE_SYBIL) {
+//            // Create fake IDs based on severity (higher severity = more fake IDs)
+//            int numFakeIds = std::max(1, static_cast<int>(myAttackSeverity * 5));
+//            for (int i = 0; i < numFakeIds; i++) {
+//                // Create fake IDs that are not real Car IDs (e.g., 1000 + mySenderId + i)
+//                fakeIds.push_back(1000 + mySenderId + i);
+//            }
+//        }
+//    }
+//    else {
+//        EV_INFO << "Car[" << mySenderId << "] is a normal node." << endl;
+//    }
+//}
+//
+//void CarApp::handleMessage(cMessage *msg)
+//{
+//    if (msg == periodicMsgEvent) {
+//        // Regular message sending for all nodes
+//        sendNormalMessage();
+//
+//        // Schedule next periodic message
+//        scheduleAt(simTime() + exponential(1.0), periodicMsgEvent);
+//    }
+//    else if (msg == attackMsgEvent) {
+//        // Start or stop attack based on current time
+//        if (simTime() >= myAttackStartTime && simTime() < myAttackEndTime) {
+//            startAttack();
+//        } else if (simTime() >= myAttackEndTime) {
+//            stopAttack();
+//        }
+//    }
+//    else if (msg->getName() == std::string("attackMsg")) {
+//        // Handle ongoing attack messages
+//        if (isAttacker && simTime() < myAttackEndTime) {
+//            if (myAttackType == ATTACK_TYPE_DOS) {
+//                sendDoSAttack();
+//            }
+//            else if (myAttackType == ATTACK_TYPE_SYBIL) {
+//                sendSybilAttack();
+//            }
+//            else if (myAttackType == ATTACK_TYPE_FALSIFIED) {
+//                sendFalsifiedData();
+//            }
+//        }
+//        delete msg;
+//    }
+//    else {
+//        // Handle incoming messages from other Cars
+//        // Process based on protocol requirements
+//        delete msg;
+//    }
+//}
+//
+//void CarApp::finish()
+//{
+//    // Cleanup scheduled messages
+//    cancelAndDelete(periodicMsgEvent);
+//    if (isAttacker) {
+//        cancelAndDelete(attackMsgEvent);
+//    }
+//}
+//
+//// Helper function to load CSV
+//void CarApp::loadAttackNodesFromCSV(const std::string& filename)
+//{
+//    std::ifstream file(filename);
+//    if (!file.is_open()) {
+//        EV_ERROR << "Failed to open CSV file: " << filename << endl;
+//        return;
+//    }
+//
+//    std::string line;
+//    getline(file, line); // Skip header
+//
+//    // Expected format: node_id,attack_type,start_time,end_time,severity
+//    while (getline(file, line)) {
+//        std::stringstream ss(line);
+//        std::string token;
+//
+//        // Parse node_id
+//        getline(ss, token, ',');
+//        int senderId = stoi(token);
+//
+//        // Parse attack_type
+//        getline(ss, token, ',');
+//        int attackType = stoi(token);
+//
+//        // Parse start_time
+//        getline(ss, token, ',');
+//        simtime_t startTime = stod(token);
+//
+//        // Parse end_time
+//        getline(ss, token, ',');
+//        simtime_t endTime = stod(token);
+//
+//        // Parse severity
+//        getline(ss, token, ',');
+//        double severity = stod(token);
+//
+//        // Store attack information
+//        attackNodes[senderId] = attackType;
+//        attackSeverity[senderId] = severity;
+//        attackStartTime[senderId] = startTime;
+//        attackEndTime[senderId] = endTime;
+//    }
+//
+//    EV_INFO << "Attack nodes loaded successfully from CSV! Total: " << attackNodes.size() << endl;
+//}
+//
+//void CarApp::startAttack()
+//{
+//    EV_INFO << "Car[" << mySenderId << "] starting attack type " << myAttackType << " at " << simTime() << endl;
+//
+//    // Create a message to trigger attack behavior
+//    cMessage* attackMsg = new cMessage("attackMsg");
+//
+//    // Schedule attack behavior based on attack type
+//    if (myAttackType == ATTACK_TYPE_DOS) {
+//        // For DoS, schedule frequent messages
+//        // Severity affects the rate: higher severity = higher frequency
+//        double interval = std::max(0.1, 1.0 - (myAttackSeverity * 0.9));
+//        scheduleAt(simTime() + interval, attackMsg);
+//    }
+//    else if (myAttackType == ATTACK_TYPE_SYBIL) {
+//        // For Sybil, schedule less frequent but multiple ID attacks
+//        scheduleAt(simTime() + exponential(0.5), attackMsg);
+//    }
+//    else if (myAttackType == ATTACK_TYPE_FALSIFIED) {
+//        // For falsified data, follow normal timing but with bad data
+//        scheduleAt(simTime() + exponential(1.0), attackMsg);
+//    }
+//
+//    // Schedule next check at end time
+//    scheduleAt(myAttackEndTime, attackMsgEvent);
+//}
+//
+//void CarApp::stopAttack()
+//{
+//    EV_INFO << "Car[" << mySenderId << "] stopped attack at " << simTime() << endl;
+//    // No need to do anything special, just don't reschedule attack messages
+//}
+//
+//void CarApp::sendNormalMessage()
+//{
+//    // Create a new packet
+//    std::string packetName = "Car_" + std::to_string(mySenderId) + "_" + std::to_string(seqNumber++);
+//    auto packet = new Packet(packetName.c_str());
+//
+//    // Add data to payload (fixed BytesChunk constructor issue)
+//    auto payload = makeShared<BytesChunk>();
+//    std::vector<uint8_t> data(100, 0);  // Create vector of 100 bytes initialized to 0
+//    payload->setBytes(data);
+//    packet->insertAtBack(payload);
+//
+//    // Add timestamp
+//    packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//    // Add sender ID
+//    // Create IPv4 address from the sender ID
+//    Ipv4Address ipv4Addr;
+//    ipv4Addr.set(mySenderId);  // Use ID as IP address
+//    L3Address l3Addr;
+//    l3Addr.set(ipv4Addr);
+//    packet->addTag<L3AddressReq>()->setSrcAddress(l3Addr);
+//
+//    // Send to output gate
+//    send(packet, "out");
+//
+//    // Update statistics
+//    packetSentVector.record(1);
+//}
+//
+//void CarApp::sendDoSAttack()
+//{
+//    // DoS attack sends many messages in short time intervals
+//    EV_INFO << "Car[" << mySenderId << "] executing DoS attack at " << simTime() << endl;
+//
+//    // Create multiple packets with high rate
+//    int numPackets = std::max(1, static_cast<int>(myAttackSeverity * 10));
+//
+//    for (int i = 0; i < numPackets; i++) {
+//        // Create a packet similar to normal but with higher frequency
+//        std::string packetName = "Car_" + std::to_string(mySenderId) + "_DoS_" + std::to_string(seqNumber++);
+//        auto packet = new Packet(packetName.c_str());
+//
+//        // Add larger payload to consume more bandwidth
+//        auto payload = makeShared<BytesChunk>();
+//        std::vector<uint8_t> data(500, 0);  // Create vector of 500 bytes initialized to 0
+//        payload->setBytes(data);
+//        packet->insertAtBack(payload);
+//
+//        // Add timestamp
+//        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//        // Add sender ID (not spoofed in DoS)
+//        // Create IPv4 address from the sender ID
+//        Ipv4Address ipv4Addr;
+//        ipv4Addr.set(mySenderId);  // Use ID as IP address
+//        L3Address l3Addr;
+//        l3Addr.set(ipv4Addr);
+//        packet->addTag<L3AddressReq>()->setSrcAddress(l3Addr);
+//
+//        // Send to output gate
+//        send(packet, "out");
+//    }
+//
+//    // Update statistics
+//    attackRateVector.record(numPackets);
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        double interval = std::max(0.1, 1.0 - (myAttackSeverity * 0.9));
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + interval, nextAttackMsg);
+//    }
+//}
+//
+//void CarApp::sendSybilAttack()
+//{
+//    // Sybil attack sends messages with fake IDs
+//    EV_INFO << "Car[" << mySenderId << "] executing Sybil attack at " << simTime() << endl;
+//
+//    // Send one message for each fake ID
+//    for (int fakeId : fakeIds) {
+//        std::string packetName = "Car_" + std::to_string(fakeId) + "_Sybil_" + std::to_string(seqNumber++);
+//        auto packet = new Packet(packetName.c_str());
+//
+//        // Normal sized payload
+//        auto payload = makeShared<BytesChunk>();
+//        std::vector<uint8_t> data(100, 0);  // Create vector of 100 bytes initialized to 0
+//        payload->setBytes(data);
+//        packet->insertAtBack(payload);
+//
+//        // Add timestamp
+//        packet->addTag<CreationTimeTag>()->setCreationTime(simTime());
+//
+//        // Spoof sender ID with fake ID
+//        // Create IPv4 address from the fake ID
+//        Ipv4Address ipv4Addr;
+//        ipv4Addr.set(fakeId);  // Use fake ID as IP address
+//        L3Address l3Addr;
+//        l3Addr.set(ipv4Addr);
+//        packet->addTag<L3AddressReq>()->setSrcAddress(l3Addr);
+//
+//        // Send to output gate
+//        send(packet, "out");
+//    }
+//
+//    // Update statistics
+//    attackRateVector.record(fakeIds.size());
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + exponential(0.5), nextAttackMsg);
+//    }
+//}
+//
+//void CarApp::sendFalsifiedData()
+//{
+//    // Falsified data attack sends incorrect information
+//    EV_INFO << "Car[" << mySenderId << "] executing Falsified Data attack at " << simTime() << endl;
+//
+//    std::string packetName = "Car_" + std::to_string(mySenderId) + "_False_" + std::to_string(seqNumber++);
+//    auto packet = new Packet(packetName.c_str());
+//
+//    // Normal sized payload but with falsified content
+//    auto payload = makeShared<BytesChunk>();
+//    std::vector<uint8_t> data(100, 0);  // Create vector of 100 bytes initialized to 0
+//    payload->setBytes(data);
+//    packet->insertAtBack(payload);
+//
+//    // Add timestamp (potentially falsified)
+//    // A falsified timestamp could disrupt time-dependent protocols
+//    simtime_t falsifiedTime = simTime() - 5.0; // Falsify by 5 seconds
+//    packet->addTag<CreationTimeTag>()->setCreationTime(falsifiedTime);
+//
+//    // Add correct sender ID (the attack is in the data, not the identity)
+//    // Create IPv4 address from the sender ID
+//    Ipv4Address ipv4Addr;
+//    ipv4Addr.set(mySenderId);  // Use ID as IP address
+//    L3Address l3Addr;
+//    l3Addr.set(ipv4Addr);
+//    packet->addTag<L3AddressReq>()->setSrcAddress(l3Addr);
+//
+//    // Send to output gate
+//    send(packet, "out");
+//
+//    // Update statistics
+//    attackRateVector.record(1);
+//
+//    // Schedule next attack message if still within attack timeframe
+//    if (simTime() < myAttackEndTime) {
+//        cMessage* nextAttackMsg = new cMessage("attackMsg");
+//        scheduleAt(simTime() + exponential(1.0), nextAttackMsg);
+//    }
+//}
 
