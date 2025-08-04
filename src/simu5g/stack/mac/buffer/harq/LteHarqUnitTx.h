@@ -20,6 +20,7 @@
 namespace simu5g {
 
 using namespace omnetpp;
+using namespace inet;
 
 class LteMacBase;
 

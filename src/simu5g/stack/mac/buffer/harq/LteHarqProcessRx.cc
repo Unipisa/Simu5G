@@ -20,6 +20,7 @@
 namespace simu5g {
 
 using namespace omnetpp;
+using namespace inet;
 
 LteHarqProcessRx::LteHarqProcessRx(unsigned char acid, LteMacBase *owner, Binder *binder) : acid_(acid), macOwner_(owner), binder_(binder),  maxHarqRtx_(owner->par("maxHarqRtx")), harqFbEvaluationTimer_(owner->par("harqFbEvaluationTimer"))
 {
