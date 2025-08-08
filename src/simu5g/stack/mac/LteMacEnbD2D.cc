@@ -204,7 +204,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
                 cw = otherCw;
             }
 
-            std::pair<MacCid, Codeword> otherPair(num(nodeId), otherCw);  // note: MacNodeId used as MacCid
+            std::pair<MacCid, Codeword> otherPair(idToMacCid(MacNodeId(0), num(nodeId)), otherCw);  //FIXME args swapped!!! is this correct???
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // increment number of allocated Cw
@@ -553,4 +553,3 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
 }
 
 } //namespace
-

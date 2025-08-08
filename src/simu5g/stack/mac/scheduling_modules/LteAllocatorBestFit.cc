@@ -130,7 +130,7 @@ void LteAllocatorBestFit::prepareSchedule()
     // Set for deleting inactive connections
     ActiveSet inactive_connections;
 
-    for (unsigned int it1 : carrierActiveConnectionSet_) {
+    for (MacCid it1 : carrierActiveConnectionSet_) {
         // Current connection.
         cid = it1;
 
@@ -200,7 +200,7 @@ void LteAllocatorBestFit::prepareSchedule()
     }
 
     //Delete inactive connections
-    for (unsigned int inactive_connection : inactive_connections) {
+    for (MacCid inactive_connection : inactive_connections) {
         carrierActiveConnectionSet_.erase(inactive_connection);
         activeConnectionTempSet_.erase(inactive_connection);
     }
@@ -409,7 +409,7 @@ void LteAllocatorBestFit::prepareSchedule()
             }
 
             // Add the nodeId to the scheduleList (needed for Grants)
-            std::pair<unsigned int, Codeword> scListId;
+            std::pair<MacCid, Codeword> scListId;
             scListId.first = cid;
             scListId.second = 0; // TODO add support for codewords different from 0
             eNbScheduler_->storeScListId(carrierFrequency_, scListId, blocks);

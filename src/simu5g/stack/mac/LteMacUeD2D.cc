@@ -203,7 +203,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     macPkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDestId(destId);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(dir);
-                    macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(SHORT_BSR));
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(SHORT_BSR);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
                     if (usePreconfiguredTxParams_)
                         macPkt->addTagIfAbsent<UserControlInfo>()->setUserTxParams(preconfiguredTxParams_->dup());

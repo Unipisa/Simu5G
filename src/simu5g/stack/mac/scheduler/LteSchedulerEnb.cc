@@ -506,7 +506,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
                 scheduleList_[carrierFrequency] = newScheduleList;
             }
             // create entry in the schedule list for this pair <cid,cw>
-            std::pair<unsigned int, Codeword> scListId(cid, cw);
+            std::pair<MacCid, Codeword> scListId(cid, cw);
             if (scheduleList_[carrierFrequency].find(scListId) == scheduleList_[carrierFrequency].end())
                 scheduleList_[carrierFrequency][scListId] = 0;
 
@@ -791,7 +791,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 void LteSchedulerEnb::backlog(MacCid cid)
 {
     EV << "LteSchedulerEnb::backlog - backlogged data for Logical Cid " << cid << endl;
-    if (cid == 1)
+    if (cid == idToMacCid(MacNodeId(0), LogicalCid(1)))
         return;
 
     EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
@@ -919,7 +919,7 @@ void LteSchedulerEnb::storeAllocationEnb(std::vector<std::vector<AllocatedRbsPer
     allocator_->storeAllocation(allocatedRbsPerBand, untouchableBands);
 }
 
-void LteSchedulerEnb::storeScListId(double carrierFrequency, std::pair<unsigned int, Codeword> scList, unsigned int num_blocks)
+void LteSchedulerEnb::storeScListId(double carrierFrequency, std::pair<MacCid, Codeword> scList, unsigned int num_blocks)
 {
     scheduleList_[carrierFrequency][scList] = num_blocks;
 }
@@ -1007,4 +1007,3 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
 }
 
 } //namespace
-

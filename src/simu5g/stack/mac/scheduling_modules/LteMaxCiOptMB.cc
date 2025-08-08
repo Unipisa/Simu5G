@@ -100,7 +100,7 @@ void LteMaxCiOptMB::generateProblem()
     // for each band configuration
     vector<int> cqiPerConfig;
     vector<Cqi> cqiPerBand;
-    for (unsigned int it : carrierActiveConnectionSet_) {
+    for (MacCid it : carrierActiveConnectionSet_) {
         cqiPerConfig.clear();
         MacNodeId ueId = MacCidToNodeId(it);
         ueList_.push_back(ueId);

@@ -358,7 +358,7 @@ class LteSchedulerEnb
     void storeAllocationEnb(std::vector<std::vector<AllocatedRbsPerBandMapA>> allocatedRbsPerBand, std::set<Band> *untouchableBands = nullptr);
 
     // store an element in the schedule list
-    void storeScListId(double carrierFrequency, std::pair<unsigned int, Codeword> scList, unsigned int num_blocks);
+    void storeScListId(double carrierFrequency, std::pair<MacCid, Codeword> scList, unsigned int num_blocks);
 
   private:
 

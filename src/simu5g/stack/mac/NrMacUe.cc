@@ -409,7 +409,7 @@ void NrMacUe::macPduMake(MacCid cid)
                     macPkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDestId(destId);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setDirection(dir);
-                    macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(MacCidToLcid(SHORT_BSR));
+                    macPkt->addTagIfAbsent<UserControlInfo>()->setLcid(SHORT_BSR);
                     macPkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFreq);
 
                     macPkt->addTagIfAbsent<UserControlInfo>()->setGrantId(schedulingGrant_[carrierFreq]->getGrantId());

@@ -161,7 +161,7 @@ bool LteSchedulerEnbUl::racschedule(double carrierFrequency, BandLimitVector *ba
                 // create scList id for current cid/codeword
                 MacCid cid = idToMacCid(nodeId, SHORT_BSR);  // build the cid. Since this grant will be used for a BSR,
                                                              // we use the LCID corresponding to the SHORT_BSR
-                std::pair<unsigned int, Codeword> scListId = {cid, cw};
+                std::pair<MacCid, Codeword> scListId = {cid, cw};
                 scheduleList_[carrierFrequency][scListId] = blocks;
             }
         }
@@ -499,7 +499,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
         Codeword allocatedCw = 0;
         // search for already allocated codeword
         // create "mirror" scList ID for other codeword than current
-        std::pair<unsigned int, Codeword> scListMirrorId = std::pair<unsigned int, Codeword>(idToMacCid(nodeId, SHORT_BSR), MAX_CODEWORDS - cw - 1);
+        std::pair<MacCid, Codeword> scListMirrorId = std::pair<MacCid, Codeword>(idToMacCid(nodeId, SHORT_BSR), MAX_CODEWORDS - cw - 1);
         if (scheduleList_.find(carrierFrequency) != scheduleList_.end()) {
             if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end()) {
                 allocatedCw = MAX_CODEWORDS - cw - 1;
@@ -567,7 +567,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtx(MacNodeId nodeId, double carr
             unsigned int cwAllocatedBlocks = 0;
 
             // create scList id for current node/codeword
-            std::pair<unsigned int, Codeword> scListId = std::pair<unsigned int, Codeword>(idToMacCid(nodeId, SHORT_BSR), cw);
+            std::pair<MacCid, Codeword> scListId = std::pair<MacCid, Codeword>(idToMacCid(nodeId, SHORT_BSR), cw);
 
             for (unsigned int i = 0; i < size; ++i) {
                 // For each LB for which blocks have been allocated
@@ -679,7 +679,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeI
         Codeword allocatedCw = 0;
         //search for already allocated codeword
         //create "mirror" scList ID for other codeword than current
-        std::pair<unsigned int, Codeword> scListMirrorId = {idToMacCid(senderId, D2D_SHORT_BSR), MAX_CODEWORDS - cw - 1};
+        std::pair<MacCid, Codeword> scListMirrorId = {idToMacCid(senderId, D2D_SHORT_BSR), MAX_CODEWORDS - cw - 1};
         if (scheduleList_.find(carrierFrequency) != scheduleList_.end()) {
             if (scheduleList_[carrierFrequency].find(scListMirrorId) != scheduleList_[carrierFrequency].end()) {
                 allocatedCw = MAX_CODEWORDS - cw - 1;
@@ -749,7 +749,7 @@ unsigned int LteSchedulerEnbUl::schedulePerAcidRtxD2D(MacNodeId destId, MacNodeI
             unsigned int cwAllocatedBlocks = 0;
 
             // create scList id for current cid/codeword
-            std::pair<unsigned int, Codeword> scListId = {idToMacCid(senderId, D2D_SHORT_BSR), cw};
+            std::pair<MacCid, Codeword> scListId = {idToMacCid(senderId, D2D_SHORT_BSR), cw};
 
             for (unsigned int i = 0; i < size; ++i) {
                 // For each LB for which blocks have been allocated
@@ -940,4 +940,3 @@ void LteSchedulerEnbUl::removePendingRac(MacNodeId nodeId)
 }
 
 } //namespace
-

@@ -215,10 +215,10 @@ void BackgroundScheduler::updateAllocation(Direction dir)
         if (rtxScheduledBgUes.find(bgUeId) != rtxScheduledBgUes.end())
             continue;
 
-        // the cid for a background UE is a 32bit integer composed as:
-        // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
-        // - the least significant 16 bits are set to 0 (lcid=0)
-        bgCid = num(bgUeId) << 16;
+        // the cid for a background UE is composed of:
+        // - the background UE id (BGUE_MIN_ID+index)
+        // - lcid=0
+        bgCid = idToMacCid(bgUeId, 0);
 
         bytesPerBlock = bgTrafficManager_->getBackloggedUeBytesPerBlock(bgUeId, dir);
 
@@ -237,7 +237,7 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
-        bgUeId = MacNodeId(current.x_ >> 16);
+        bgUeId = MacCidToNodeId(current.x_);
         bytesPerBlock = current.score_;
 
         unsigned int buffer = bgTrafficManager_->getBackloggedUeBuffer(bgUeId, dir);
@@ -296,4 +296,3 @@ TrafficGeneratorBase *BackgroundScheduler::getPrevBandInterferingUe(int band)
 }
 
 } //namespace
-
