@@ -453,10 +453,7 @@ char *cStringToLower(char *str);
 LteRlcType aToRlcType(std::string s);
 const std::string planeToA(Plane p);
 MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info);
-MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid);
 MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info);        // get the CID from the packet control info
-MacNodeId MacCidToNodeId(MacCid cid);
-LogicalCid MacCidToLcid(MacCid cid);
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId);
 cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
 cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId);

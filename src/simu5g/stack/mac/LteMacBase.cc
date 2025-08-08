@@ -215,7 +215,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
         lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
 
         EV << "LteMacBuffers : Using new buffer on node: " <<
-            MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+            cid.getNodeId() << " for LCID: " << cid.getLcid() << ", Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
     else {
@@ -249,7 +249,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
             vqueue->pushBack(vpkt);
 
             EV << "LteMacBuffers : Using old buffer on node: " <<
-                MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+                cid.getNodeId() << " for LCID: " << cid.getLcid() << ", Space left in the Queue: " <<
                 queue->getQueueSize() - queue->getByteLength() << "\n";
         }
         else
@@ -263,7 +263,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
 void LteMacBase::deleteQueues(MacNodeId nodeId)
 {
     for (auto mit = mbuf_.begin(); mit != mbuf_.end(); ) {
-        if (MacCidToNodeId(mit->first) == nodeId) {
+        if (mit->first.getNodeId() == nodeId) {
             while (!mit->second->isEmpty()) {
                 cPacket *pkt = mit->second->popFront();
                 delete pkt;
@@ -276,7 +276,7 @@ void LteMacBase::deleteQueues(MacNodeId nodeId)
         }
     }
     for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
-        if (MacCidToNodeId(vit->first) == nodeId) {
+        if (vit->first.getNodeId() == nodeId) {
             while (!vit->second->isEmpty())
                 vit->second->popFront();
             delete vit->second;        // Delete Queue

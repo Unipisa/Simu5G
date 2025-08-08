@@ -180,7 +180,7 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
     lteInfo->setDestId(destId);
 
     // obtain CID
-    MacCid cid = idToMacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, mylcid);
 
     EV << "LteRrc : Assigned Lcid: " << mylcid << "\n";
     EV << "LteRrc : Assigned Node ID: " << nodeId_ << "\n";
@@ -201,7 +201,7 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
-    MacCid cid = idToMacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
+    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
 
     LteRxPdcpEntity *entity = getRxEntity(cid);
     entity->handlePacketFromLowerLayer(pkt);
@@ -411,7 +411,7 @@ void LtePdcpEnb::deleteEntities(MacNodeId nodeId)
 
     // delete connections related to the given UE
     for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        if (MacCidToNodeId(tit->first) == nodeId) {
+        if (tit->first.getNodeId() == nodeId) {
             tit->second->deleteModule();
             tit = txEntities_.erase(tit);
         }
@@ -421,7 +421,7 @@ void LtePdcpEnb::deleteEntities(MacNodeId nodeId)
     }
 
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        if (MacCidToNodeId(rit->first) == nodeId) {
+        if (rit->first.getNodeId() == nodeId) {
             rit->second->deleteModule();
             rit = rxEntities_.erase(rit);
         }

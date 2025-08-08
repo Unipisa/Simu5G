@@ -102,7 +102,7 @@ void LteMaxCiOptMB::generateProblem()
     vector<Cqi> cqiPerBand;
     for (MacCid it : carrierActiveConnectionSet_) {
         cqiPerConfig.clear();
-        MacNodeId ueId = MacCidToNodeId(it);
+        MacNodeId ueId = it.getNodeId();
         ueList_.push_back(ueId);
         cidList_.push_back(it);
         cqiPerBandMatrix.insert(pair<MacNodeId, std::vector<Cqi>>(ueId, eNbScheduler_->mac_->getAmc()->readMultiBandCqi(ueId, direction_, carrierFrequency_)));

@@ -30,7 +30,7 @@ void LteMaxCi::prepareSchedule()
 
     for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {
             // Node has left the simulation - erase corresponding CIDs
@@ -43,7 +43,7 @@ void LteMaxCi::prepareSchedule()
         // If we are allocating the UL subframe, this connection may be either UL or D2D
         Direction dir;
         if (direction_ == UL)
-            dir = (MacCidToLcid(cid) == D2D_SHORT_BSR) ? D2D : (MacCidToLcid(cid) == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
+            dir = (cid.getLcid() == D2D_SHORT_BSR) ? D2D : (cid.getLcid() == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
         else
             dir = DL;
 
@@ -98,7 +98,7 @@ void LteMaxCi::prepareSchedule()
             // The cid for a background UE is a 32-bit integer composed as:
             // - the most significant 16 bits are set to the background UE id (BGUE_MIN_ID+index)
             // - the least significant 16 bits are set to 0 (lcid=0)
-            MacCid bgCid = idToMacCid(bgUeId, 0);
+            MacCid bgCid = MacCid(bgUeId, 0);
 
             int bytesPerBlock = bgTrafficManager->getBackloggedUeBytesPerBlock(bgUeId, direction_);
 
@@ -117,13 +117,13 @@ void LteMaxCi::prepareSchedule()
         bool eligible = true;
         unsigned int granted;
 
-        if (MacCidToNodeId(current.x_) >= BGUE_MIN_ID) {
-            EV << NOW << " LteMaxCI::schedule scheduling background UE " << MacCidToNodeId(current.x_) << " with score of " << current.score_ << endl;
+        if (current.x_.getNodeId() >= BGUE_MIN_ID) {
+            EV << NOW << " LteMaxCI::schedule scheduling background UE " << current.x_.getNodeId() << " with score of " << current.score_ << endl;
 
             // Grant data to that background connection.
             granted = requestGrantBackground(current.x_, 4294967295U, terminate, active, eligible);
 
-            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to background UE " << MacCidToNodeId(current.x_) << endl;
+            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to background UE " << current.x_.getNodeId() << endl;
         }
         else {
             EV << NOW << " LteMaxCI::schedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
@@ -147,7 +147,7 @@ void LteMaxCi::prepareSchedule()
         if (!active) {
             EV << NOW << "LteMaxCI::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
 
-            if (MacCidToNodeId(current.x_) <= BGUE_MIN_ID) {
+            if (current.x_.getNodeId() <= BGUE_MIN_ID) {
                 carrierActiveConnectionSet_.erase(current.x_);
                 activeConnectionTempSet_.erase(current.x_);
             }

@@ -176,8 +176,8 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
 unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
 {
     // Get the node ID and logical connection ID
-    MacNodeId nodeId = MacCidToNodeId(cid);
-    LogicalCid flowId = MacCidToLcid(cid);
+    MacNodeId nodeId = cid.getNodeId();
+    LogicalCid flowId = cid.getLcid();
 
     Direction dir = direction_;
     if (dir == UL) {
@@ -537,7 +537,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
 
 unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
 {
-    MacNodeId bgUeId = MacCidToNodeId(bgCid);
+    MacNodeId bgUeId = bgCid.getNodeId();
 
     // Get the number of codewords
     unsigned int numCodewords = 1;
@@ -791,7 +791,7 @@ unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int
 void LteSchedulerEnb::backlog(MacCid cid)
 {
     EV << "LteSchedulerEnb::backlog - backlogged data for Logical Cid " << cid << endl;
-    if (cid == idToMacCid(MacNodeId(0), LogicalCid(1)))
+    if (cid == MacCid(MacNodeId(0), LogicalCid(1)))
         return;
 
     EV << NOW << " LteSchedulerEnb::backlog CID notified " << cid << endl;
@@ -997,7 +997,7 @@ void LteSchedulerEnb::removeActiveConnections(MacNodeId nodeId)
 {
     for (auto it = activeConnectionSet_.begin(); it != activeConnectionSet_.end(); ) {
         MacCid cid = *it;
-        if (MacCidToNodeId(cid) == nodeId) {
+        if (cid.getNodeId() == nodeId) {
             EV << NOW << "LteSchedulerEnb::removeActiveConnections CID removed " << cid << endl;
             it = activeConnectionSet_.erase(it);
         }

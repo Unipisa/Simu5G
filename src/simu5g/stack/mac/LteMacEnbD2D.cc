@@ -149,7 +149,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
         auto lteInfo = upPkt->getTag<FlowControlInfo>();
         MacNodeId senderId = lteInfo->getSourceId();
         LogicalCid lcid = lteInfo->getLcid();
-        MacCid cid = idToMacCid(senderId, lcid);
+        MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
             FlowControlInfo toStore(*lteInfo);
             connDescIn_[cid] = toStore;
@@ -165,7 +165,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
         auto lteInfo = pkt->getTag<UserControlInfo>();
         LogicalCid lcid = lteInfo->getLcid();  // one of SHORT_BSR or D2D_MULTI_SHORT_BSR
 
-        MacCid cid = idToMacCid(lteInfo->getSourceId(), lcid); // this way, different connections from the same UE (e.g. one UL and one D2D)
+        MacCid cid = MacCid(lteInfo->getSourceId(), lcid); // this way, different connections from the same UE (e.g. one UL and one D2D)
                                                                // obtain different CIDs. With the inverse operation, you can get
                                                                // the LCID and discover if the connection is UL or D2D
         bufferizeBsr(bsr, cid);
@@ -187,8 +187,8 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
             Codeword cw = it->first.second;
             Codeword otherCw = MAX_CODEWORDS - cw;
             MacCid cid = it->first.first;
-            LogicalCid lcid = MacCidToLcid(cid);
-            MacNodeId nodeId = MacCidToNodeId(cid);
+            LogicalCid lcid = cid.getLcid();
+            MacNodeId nodeId = cid.getNodeId();
             unsigned int granted = it->second;
             unsigned int codewords = 0;
 
@@ -204,7 +204,7 @@ void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList
                 cw = otherCw;
             }
 
-            std::pair<MacCid, Codeword> otherPair(idToMacCid(MacNodeId(0), num(nodeId)), otherCw);  //FIXME args swapped!!! is this correct???
+            std::pair<MacCid, Codeword> otherPair(MacCid(MacNodeId(0), num(nodeId)), otherCw);  //FIXME args swapped!!! is this correct???
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // increment number of allocated Cw
@@ -297,7 +297,7 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
     // empty all BSR buffers belonging to the UE
     for (auto& [cid, buf] : bsrbuf_) {
         // check if this buffer is for this UE
-        if (MacCidToNodeId(cid) != ueId)
+        if (cid.getNodeId() != ueId)
             continue;
 
         EV << NOW << "LteMacEnbD2D::clearBsrBuffers - Clear BSR buffer for cid " << cid << endl;
@@ -425,7 +425,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
     if (!switchPkt->getTxSide()) { // address the receiving endpoint of the D2D flow (tx entities at the eNB)
         // get the outgoing connection corresponding to the DL connection for the RX endpoint of the D2D flow
         for (auto& [cid, lteInfo] : connDesc_) {
-            if (MacCidToNodeId(cid) == nodeId) {
+            if (cid.getNodeId() == nodeId) {
                 EV << NOW << " LteMacEnbD2D::sendModeSwitchNotification - send signal for TX entity to upper layers in the eNB (cid=" << cid << ")" << endl;
 
                 auto pktTx = pkt->dup();
@@ -450,7 +450,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
         // get the incoming connection corresponding to the UL connection for the TX endpoint of the D2D flow
         for (auto& [cid, lteInfo] : connDescIn_) {
-            if (MacCidToNodeId(cid) == nodeId) {
+            if (cid.getNodeId() == nodeId) {
                 if (msHarqInterrupt_) { // interrupt H-ARQ processes for UL
                     for (auto& mit : harqRxBuffers_) {
                         HarqRxBuffers::iterator hit = mit.second.find(nodeId);

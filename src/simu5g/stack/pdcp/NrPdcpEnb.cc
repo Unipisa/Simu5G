@@ -92,7 +92,7 @@ void NrPdcpEnb::fromDataPort(cPacket *pktAux)
     lteInfo->setLcid(mylcid);
 
     // obtain CID
-    MacCid cid = idToMacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, mylcid);
 
     EV << "NrPdcpEnb : Assigned LCID: " << mylcid << " [CID: " << cid << "]\n";
     EV << "NrPdcpEnb : Assigned Node ID: " << nodeId_ << "\n";
@@ -124,7 +124,7 @@ void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
     EV << "LtePdcp : Received packet with CID " << lteInfo->getLcid() << "\n";
     EV << "LtePdcp : Packet size " << pkt->getByteLength() << " Bytes\n";
 
-    MacCid cid = idToMacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
+    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
 
     LteRxPdcpEntity *entity = getRxEntity(cid);
     entity->handlePacketFromLowerLayer(pkt);
@@ -238,7 +238,7 @@ void NrPdcpEnb::receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode)
 void NrPdcpEnb::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     for (const auto& entity : rxEntities_) {
-        MacNodeId nodeId = MacCidToNodeId(entity.first);
+        MacNodeId nodeId = entity.first.getNodeId();
         if (!(entity.second->isEmpty()))
             ueSet->insert(nodeId);
     }

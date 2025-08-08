@@ -91,7 +91,7 @@ void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = idToMacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, mylcid);
 
     EV << "LtePdcpEnbD2D : Assigned Lcid: " << mylcid << " [CID: " << cid << "]\n";
     EV << "LtePdcpEnbD2D : Assigned Node ID: " << nodeId_ << "\n";

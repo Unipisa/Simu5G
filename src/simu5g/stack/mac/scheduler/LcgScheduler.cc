@@ -150,7 +150,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             }
 
             EV << NOW << " LcgScheduler::schedule Node " << mac_->getMacNodeId() << " , Parameters:" << endl;
-            EV << "\t Logical Channel ID: " << MacCidToLcid(cid) << endl;
+            EV << "\t Logical Channel ID: " << cid.getLcid() << endl;
             EV << "\t CID: " << cid << endl;
             if (priorityService) {
                 // Update bucket value for this connection

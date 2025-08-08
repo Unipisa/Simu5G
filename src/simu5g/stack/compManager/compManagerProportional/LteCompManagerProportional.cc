@@ -34,7 +34,7 @@ void LteCompManagerProportional::provisionalSchedule()
     LteMacBufferMap *vbuf = mac_->getMacBuffers();
     ActiveSet *activeSet = mac_->getActiveSet(dir);
     for (MacCid cid : *activeSet) {
-        MacNodeId ueId = MacCidToNodeId(cid);
+        MacNodeId ueId = cid.getNodeId();
 
         unsigned int queueLength = vbuf->at(cid)->getQueueOccupancy();
 

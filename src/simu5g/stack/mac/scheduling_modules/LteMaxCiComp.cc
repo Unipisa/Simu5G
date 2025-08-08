@@ -69,7 +69,7 @@ void LteMaxCiComp::prepareSchedule()
 
     for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {
             // node has left the simulation - erase corresponding CIDs
@@ -126,7 +126,7 @@ void LteMaxCiComp::prepareSchedule()
 
         // Get the bandLimit for the current user
         std::vector<BandLimit> *bandLim;
-        bool ret = getBandLimit(&usableBands, MacCidToNodeId(current.x_));
+        bool ret = getBandLimit(&usableBands, current.x_.getNodeId());
         if (!ret)
             bandLim = nullptr;
         else

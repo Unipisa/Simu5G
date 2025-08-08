@@ -100,7 +100,7 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
 
     LteMacBufferMap::iterator bit;
     for (bit = bsrbuf_.begin(); bit != bsrbuf_.end(); ) {
-        if (MacCidToNodeId(bit->first) == nodeId) {
+        if (bit->first.getNodeId() == nodeId) {
             delete bit->second;
             bit = bsrbuf_.erase(bit);
         }
@@ -246,7 +246,7 @@ void LteMacEnb::macSduRequest()
         for (const auto& item : cit.second) { // loop on CIDs
             MacCid destCid = item.first.first;
             // Codeword cw = item.first.second;
-            MacNodeId destId = MacCidToNodeId(destCid);
+            MacNodeId destId = destCid.getNodeId();
 
             // for each band, count the number of bytes allocated for this UE (should be by CID)
             unsigned int allocatedBytes = 0;
@@ -263,7 +263,7 @@ void LteMacEnb::macSduRequest()
             macSduRequest->setUeId(destId);
             macSduRequest->setChunkLength(b(1)); // TODO: should be 0
             macSduRequest->setUeId(destId);
-            macSduRequest->setLcid(MacCidToLcid(destCid));
+            macSduRequest->setLcid(destCid.getLcid());
             macSduRequest->setSduSize(allocatedBytes - MAC_HEADER);    // do not consider MAC header size
             pkt->insertAtFront(macSduRequest);
             if (queueSize_ != 0 && queueSize_ < macSduRequest->getSduSize()) {
@@ -291,7 +291,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
             bsrbuf_[cid] = bsrqueue;
 
             EV << "LteBsrBuffers : Added new BSR buffer for node: "
-               << MacCidToNodeId(cid) << " for LCID: " << MacCidToLcid(cid)
+               << cid.getNodeId() << " for LCID: " << cid.getLcid()
                << " Current BSR size: " << bsr->getSize() << "\n";
 
             // signal backlog to Uplink scheduler
@@ -312,8 +312,8 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
             queuedBsr.second = bsr->getTimestamp();
             bsrqueue->pushBack(queuedBsr);
 
-            EV << "LteBsrBuffers : Using old buffer for node: " << MacCidToNodeId(
-                    cid) << " for LCID: " << MacCidToLcid(cid)
+            EV << "LteBsrBuffers : Using old buffer for node: " << cid.getNodeId()
+                    << " for LCID: " << cid.getLcid()
                << " Current BSR size: " << bsr->getSize() << "\n";
 
             // signal backlog to Uplink scheduler
@@ -324,8 +324,8 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
             if (!bsrqueue->isEmpty())
                 bsrqueue->popFront();
 
-            EV << "LteBsrBuffers : Using old buffer for node: " << MacCidToNodeId(
-                    cid) << " for LCID: " << MacCidToLcid(cid)
+            EV << "LteBsrBuffers : Using old buffer for node: " << cid.getNodeId()
+                    << " for LCID: " << cid.getLcid()
                << " - now empty" << "\n";
         }
     }
@@ -351,7 +351,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
                 otherCw = MAX_CODEWORDS - cw;
 
                 cid = it->first.first;
-                nodeId = MacCidToNodeId(cid);
+                nodeId = cid.getNodeId();
 
                 granted = it->second;
 
@@ -370,7 +370,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
                 cw = otherCw;
             }
 
-            std::pair<MacCid, Codeword> otherPair(idToMacCid(MacNodeId(0), num(nodeId)), otherCw); // FIXME args swapped!!! is this OK???
+            std::pair<MacCid, Codeword> otherPair(MacCid(MacNodeId(0), num(nodeId)), otherCw); // FIXME args swapped!!! is this OK???
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // Increment the number of allocated Cw
@@ -503,7 +503,7 @@ void LteMacEnb::macPduMake(MacCid cid)
                 break;
 
             Codeword cw = it.first.second;
-            MacNodeId destId = MacCidToNodeId(destCid);
+            MacNodeId destId = destCid.getNodeId();
             std::pair<MacNodeId, Codeword> pktId = {destId, cw};
             unsigned int sduPerCid = it.second;
             unsigned int grantedBlocks = 0;
@@ -649,7 +649,7 @@ void LteMacEnb::macPduUnmake(cPacket *pktAux)
         // TODO: see if BSR for CID or LCID
         MacBsr *bsr = check_and_cast<MacBsr *>(macPkt->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
-        MacCid cid = idToMacCid(lteInfo->getSourceId(), 0);
+        MacCid cid = MacCid(lteInfo->getSourceId(), 0);
         bufferizeBsr(bsr, cid);
         delete bsr;
     }
@@ -699,7 +699,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
             lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
 
             EV << "LteMacBuffers : Using new buffer on node: " <<
-                MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Bytes in the Queue: " <<
+                cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Bytes in the Queue: " <<
                 vqueue->getQueueOccupancy() << "\n";
         }
         else {
@@ -712,7 +712,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
                 vqueue->pushBack(vpkt);
 
                 EV << "LteMacBuffers : Using old buffer on node: " <<
-                    MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+                    cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
                     vqueue->getQueueOccupancy() << "\n";
             }
             else
@@ -735,7 +735,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
         mbuf_[cid] = queue;
 
         EV << "LteMacBuffers : Using new buffer on node: " <<
-            MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+            cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
     else {
@@ -766,7 +766,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
         }
 
         EV << "LteMacBuffers : Using old buffer on node: " <<
-            MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+            cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
 
@@ -777,7 +777,7 @@ void LteMacEnb::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTag<FlowControlInfo>();
-    MacCid cid = idToMacCid(lteInfo->getDestId(), lteInfo->getLcid());
+    MacCid cid = MacCid(lteInfo->getDestId(), lteInfo->getLcid());
 
     bool isLteRlcPduNewData = checkIfHeaderType<LteRlcPduNewData>(pkt);
 
@@ -1016,7 +1016,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         // from macCid to NodeId
         for (auto& item : mbuf_) {
             if (item.second->getQueueLength() != 0)
-                activeUeSet.insert(MacCidToNodeId(item.first)); // active users in MAC
+                activeUeSet.insert(item.first.getNodeId()); // active users in MAC
         }
 
         std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
@@ -1034,7 +1034,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
         // mac to inform the presence of data in RLC.
         for (const auto& vit : macBuffers_) {
             if (!vit.second->isEmpty())
-                activeUeSet.insert(MacCidToNodeId(vit.first)); // active users in RLC
+                activeUeSet.insert(vit.first.getNodeId()); // active users in RLC
         }
     }
     else if (dir == UL) {

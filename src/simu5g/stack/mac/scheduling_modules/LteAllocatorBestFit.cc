@@ -134,7 +134,7 @@ void LteAllocatorBestFit::prepareSchedule()
         // Current connection.
         cid = it1;
 
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
 
         // Get virtual buffer reference
         LteMacBuffer *conn = eNbScheduler_->bsrbuf_->at(cid);
@@ -150,7 +150,7 @@ void LteAllocatorBestFit::prepareSchedule()
         // Set the right direction for nodeId
         Direction dir;
         if (direction_ == UL)
-            dir = (MacCidToLcid(cid) == D2D_SHORT_BSR) ? D2D : (MacCidToLcid(cid) == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
+            dir = (cid.getLcid() == D2D_SHORT_BSR) ? D2D : (cid.getLcid() == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
         else
             dir = DL;
 
@@ -214,12 +214,12 @@ void LteAllocatorBestFit::prepareSchedule()
         MacCid cid = current.x_;
 
         // get the node Id
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
 
         //Set the right direction for nodeId
         Direction dir;
         if (direction_ == UL)
-            dir = (MacCidToLcid(cid) == D2D_SHORT_BSR) ? D2D : (MacCidToLcid(cid) == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
+            dir = (cid.getLcid() == D2D_SHORT_BSR) ? D2D : (cid.getLcid() == D2D_MULTI_SHORT_BSR) ? D2D_MULTI : direction_;
         else
             dir = DL;
 

@@ -151,7 +151,7 @@ void NrPdcpUe::fromDataPort(cPacket *pktAux)
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = idToMacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, mylcid);
 
     // get the PDCP entity for this CID and process the packet
     LteTxPdcpEntity *entity = getTxEntity(cid);
@@ -213,7 +213,7 @@ void NrPdcpUe::deleteEntities(MacNodeId nodeId)
     // delete connections related to the given master nodeB only
     // (the UE might have dual connectivity enabled)
     for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        if (MacCidToNodeId(tit->first) == nodeId) {
+        if (tit->first.getNodeId() == nodeId) {
             tit->second->deleteModule();  // Delete Entity
             tit = txEntities_.erase(tit);       // Delete Element
         }
@@ -222,7 +222,7 @@ void NrPdcpUe::deleteEntities(MacNodeId nodeId)
         }
     }
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        if (MacCidToNodeId(rit->first) == nodeId) {
+        if (rit->first.getNodeId() == nodeId) {
             rit->second->deleteModule();  // Delete Entity
             rit = rxEntities_.erase(rit);       // Delete Element
         }

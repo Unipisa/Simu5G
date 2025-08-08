@@ -169,7 +169,7 @@ void LteScheduler::buildCarrierActiveConnectionSet()
 
     const UeSet& carrierUeSet = binder_->getCarrierUeSet(carrierFrequency_);
     for (auto& activeConnection : *activeConnectionSet_) {
-        if (carrierUeSet.find(MacCidToNodeId(activeConnection)) != carrierUeSet.end())
+        if (carrierUeSet.find(activeConnection.getNodeId()) != carrierUeSet.end())
             carrierActiveConnectionSet_.insert(activeConnection);
     }
 }

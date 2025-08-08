@@ -29,7 +29,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         throw cRuntimeError("LteRlcUmD2D::getTxBuffer - lteInfo is a NULL pointer. Aborting.");
 
     // Find TXBuffer for this CID
-    MacCid cid = idToMacCid(nodeId, lcid);
+    MacCid cid = MacCid(nodeId, lcid);
     EV << "LteRlcUmD2D::getTxBuffer for node [" << nodeId << "]" << " with lcid [" << lcid << "]" << " and cid [" << cid << "]" << endl;
     UmTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end()) {
@@ -143,7 +143,7 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
             continue;
         }
 
-        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(tit->first) == nodeId)) {
+        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && tit->first.getNodeId() == nodeId)) {
             tit->second->deleteModule(); // Delete Entity
             tit = txEntities_.erase(tit);    // Delete Elem
         }
@@ -163,7 +163,7 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
             continue;
         }
 
-        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(rit->first) == nodeId)) {
+        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && rit->first.getNodeId() == nodeId)) {
             rit->second->deleteModule(); // Delete Entity
             rit = rxEntities_.erase(rit);    // Delete Elem
         }

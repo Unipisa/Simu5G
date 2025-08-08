@@ -40,7 +40,7 @@ void LteMaxCiMultiband::prepareSchedule()
         cout << NOW << " LteMaxCiMultiband::prepareSchedule - Total Active Connections:" << activeConnectionTempSet_.size() << endl;
     for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
         OmnetId id = binder_->getOmnetId(nodeId);
         if (nodeId == NODEID_NONE || id == 0) {
             // node has left the simulation - erase corresponding CIDs

@@ -50,7 +50,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         throw cRuntimeError("LteRlcUm::getTxBuffer - lteInfo is NULL pointer. Aborting.");
 
     // Find TXBuffer for this CID
-    MacCid cid = idToMacCid(nodeId, lcid);
+    MacCid cid = MacCid(nodeId, lcid);
     UmTxEntities::iterator it = txEntities_.find(cid);
     if (it == txEntities_.end()) {
         // Not found: create
@@ -90,7 +90,7 @@ UmRxEntity *LteRlcUm::getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
     LogicalCid lcid = lteInfo->getLcid();
 
     // Find RXBuffer for this CID
-    MacCid cid = idToMacCid(nodeId, lcid);
+    MacCid cid = MacCid(nodeId, lcid);
 
     UmRxEntities::iterator it = rxEntities_.find(cid);
     if (it == rxEntities_.end()) {
@@ -237,7 +237,7 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
     // at the UE, delete all connections
     // at the eNB, delete connections related to the given UE
     for (auto tit = txEntities_.begin(); tit != txEntities_.end();) {
-        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(tit->first) == nodeId)) {
+        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && tit->first.getNodeId() == nodeId)) {
             tit->second->deleteModule(); // Delete Entity
             tit = txEntities_.erase(tit);    // Delete Element
         }
@@ -246,7 +246,7 @@ void LteRlcUm::deleteQueues(MacNodeId nodeId)
         }
     }
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end();) {
-        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && MacCidToNodeId(rit->first) == nodeId)) {
+        if (nodeType == UE || ((nodeType == ENODEB || nodeType == GNODEB) && rit->first.getNodeId() == nodeId)) {
             rit->second->deleteModule(); // Delete Entity
             rit = rxEntities_.erase(rit);    // Delete Element
         }
@@ -295,7 +295,7 @@ void LteRlcUm::handleMessage(cMessage *msg)
 void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     for (const auto& [macCid, entity] : rxEntities_) {
-        MacNodeId nodeId = MacCidToNodeId(macCid);
+        MacNodeId nodeId = macCid.getNodeId();
         if ((ueSet->find(nodeId) == ueSet->end()) && !entity->isEmpty())
             ueSet->insert(nodeId);
     }

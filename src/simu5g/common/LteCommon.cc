@@ -318,10 +318,6 @@ bool isMulticastConnection(LteControlInfo *lteInfo)
     return lteInfo->getMulticastGroupId() >= 0;
 }
 
-MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid)
-{
-    return MacCid(nodeId, lcid);
-}
 
 /*
  * Obtain the CID from the Control Info
@@ -354,7 +350,7 @@ MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info)
             throw cRuntimeError("ctrlInfoToMacCid(): unknown direction %d", dir);
     }
     EV << "ctrlInfoToMacCid - dir[" << dir << "] - ueId[" << ueId << "] - lcid[" << lcid << "]" << endl;
-    return idToMacCid(ueId, lcid);
+    return MacCid(ueId, lcid);
 }
 
 /*
@@ -386,15 +382,6 @@ MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
     return ueId;
 }
 
-MacNodeId MacCidToNodeId(MacCid cid)
-{
-    return cid.getNodeId();
-}
-
-LogicalCid MacCidToLcid(MacCid cid)
-{
-    return cid.getLcid();
-}
 
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
 {

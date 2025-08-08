@@ -218,7 +218,7 @@ void BackgroundScheduler::updateAllocation(Direction dir)
         // the cid for a background UE is composed of:
         // - the background UE id (BGUE_MIN_ID+index)
         // - lcid=0
-        bgCid = idToMacCid(bgUeId, 0);
+        bgCid = MacCid(bgUeId, 0);
 
         bytesPerBlock = bgTrafficManager_->getBackloggedUeBytesPerBlock(bgUeId, dir);
 
@@ -237,7 +237,7 @@ void BackgroundScheduler::updateAllocation(Direction dir)
 
         // Pop the top connection from the list.
         ScoreDesc current = score.top();
-        bgUeId = MacCidToNodeId(current.x_);
+        bgUeId = current.x_.getNodeId();
         bytesPerBlock = current.score_;
 
         unsigned int buffer = bgTrafficManager_->getBackloggedUeBuffer(bgUeId, dir);

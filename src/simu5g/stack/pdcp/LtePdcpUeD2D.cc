@@ -126,7 +126,7 @@ void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = idToMacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, mylcid);
 
     // get the PDCP entity for this CID and process the packet
     LteTxPdcpEntity *entity = getTxEntity(cid);

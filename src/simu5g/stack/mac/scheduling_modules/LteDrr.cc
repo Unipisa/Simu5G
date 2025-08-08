@@ -28,7 +28,7 @@ void LteDrr::prepareSchedule()
         // Get the current CID.
         MacCid cid = activeTempList_.current();
 
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
 
         // Check if node is still a valid node in the simulation - might have been dynamically removed.
         if (binder_->getOmnetId(nodeId) == 0) {
@@ -138,7 +138,7 @@ void LteDrr::updateSchedulingInfo()
     double minRate = 0;
     for (auto& it : *conn) {
         MacCid cid = it.first;
-        MacNodeId nodeId = MacCidToNodeId(cid);
+        MacNodeId nodeId = cid.getNodeId();
         bool eligible = true;
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
         unsigned int codeword = info.getLayers().size();

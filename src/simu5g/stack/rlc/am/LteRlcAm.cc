@@ -26,7 +26,7 @@ using namespace omnetpp;
 AmTxQueue *LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
 {
     // Find TXBuffer for this CID
-    MacCid cid = idToMacCid(nodeId, lcid);
+    MacCid cid = MacCid(nodeId, lcid);
     AmTxBuffers::iterator it = txBuffers_.find(cid);
 
     if (it == txBuffers_.end()) {
@@ -56,7 +56,7 @@ AmTxQueue *LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
 AmRxQueue *LteRlcAm::getRxBuffer(MacNodeId nodeId, LogicalCid lcid)
 {
     // Find RXBuffer for this CID
-    MacCid cid = idToMacCid(nodeId, lcid);
+    MacCid cid = MacCid(nodeId, lcid);
 
     AmRxBuffers::iterator it = rxBuffers_.find(cid);
     if (it == rxBuffers_.end()) {
@@ -189,7 +189,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 void LteRlcAm::deleteQueues(MacNodeId nodeId)
 {
     for (auto tit = txBuffers_.begin(); tit != txBuffers_.end(); ) {
-        if (MacCidToNodeId(tit->first) == nodeId) {
+        if (tit->first.getNodeId() == nodeId) {
             delete tit->second; // Delete Queue
             tit = txBuffers_.erase(tit); // Delete Element
         }
@@ -198,7 +198,7 @@ void LteRlcAm::deleteQueues(MacNodeId nodeId)
         }
     }
     for (auto rit = rxBuffers_.begin(); rit != rxBuffers_.end(); ) {
-        if (MacCidToNodeId(rit->first) == nodeId) {
+        if (rit->first.getNodeId() == nodeId) {
             delete rit->second; // Delete Queue
             rit = rxBuffers_.erase(rit); // Delete Element
         }

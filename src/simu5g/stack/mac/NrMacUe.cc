@@ -253,7 +253,7 @@ int NrMacUe::macSduRequest()
         for (auto& item : *citList) {
             MacCid destCid = item.first.first;
             Codeword cw = item.first.second;
-            MacNodeId destId = MacCidToNodeId(destCid);
+            MacNodeId destId = destCid.getNodeId();
 
             std::pair<MacCid, Codeword> key(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[citFreq]->getScheduledBytesList();
@@ -273,7 +273,7 @@ int NrMacUe::macSduRequest()
                 auto macSduRequest = makeShared<LteMacSduRequest>();
                 macSduRequest->setChunkLength(b(1)); // TODO: should be 0
                 macSduRequest->setUeId(destId);
-                macSduRequest->setLcid(MacCidToLcid(destCid));
+                macSduRequest->setLcid(destCid.getLcid());
                 macSduRequest->setSduSize(bit->second);
                 pkt->insertAtFront(macSduRequest);
                 *(pkt->addTag<FlowControlInfo>()) = connDesc_[destCid];

@@ -203,7 +203,7 @@ int LteMacUe::macSduRequest()
         for (const auto& it : *cit.second) {
             MacCid destCid = it.first.first;
             Codeword cw = it.first.second;
-            MacNodeId destId = MacCidToNodeId(destCid);
+            MacNodeId destId = destCid.getNodeId();
 
             auto key = std::make_pair(destCid, cw);
             LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit.first]->getScheduledBytesList();
@@ -223,7 +223,7 @@ int LteMacUe::macSduRequest()
                 auto macSduRequest = makeShared<LteMacSduRequest>();
                 macSduRequest->setChunkLength(b(1)); // TODO: should be 0
                 macSduRequest->setUeId(destId);
-                macSduRequest->setLcid(MacCidToLcid(destCid));
+                macSduRequest->setLcid(destCid.getLcid());
                 macSduRequest->setSduSize(bit->second);
                 pkt->insertAtFront(macSduRequest);
                 *(pkt->addTag<FlowControlInfo>()) = connDesc_[destCid];
@@ -278,7 +278,7 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
             lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
 
             EV << "LteMacBuffers : Using new buffer on node: " <<
-                MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Bytes in the Queue: " <<
+                cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Bytes in the Queue: " <<
                 vqueue->getQueueOccupancy() << "\n";
         }
         else {
@@ -291,7 +291,7 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
                 vqueue->pushBack(vpkt);
 
                 EV << "LteMacBuffers : Using old buffer on node: " <<
-                    MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+                    cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
                     vqueue->getQueueOccupancy() << "\n";
             }
             else
@@ -314,7 +314,7 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
         mbuf_[cid] = queue;
 
         EV << "LteMacBuffers : Using new buffer on node: " <<
-            MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << ", Space left in the Queue: " <<
+            cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
     else {
@@ -344,7 +344,7 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
         }
 
         EV << "LteMacBuffers : Using old buffer on node: " <<
-            MacCidToNodeId(cid) << " for Lcid: " << MacCidToLcid(cid) << "(cid: " << cid << "), Space left in the Queue: " <<
+            cid.getNodeId() << " for Lcid: " << cid.getLcid() << "(cid: " << cid << "), Space left in the Queue: " <<
             queue->getQueueSize() - queue->getByteLength() << "\n";
     }
 
@@ -590,7 +590,7 @@ void LteMacUe::macPduUnmake(cPacket *pktAux)
         auto lteInfo = upPkt->getTag<FlowControlInfo>();
         MacNodeId senderId = lteInfo->getSourceId();
         LogicalCid lcid = lteInfo->getLcid();
-        MacCid cid = idToMacCid(senderId, lcid);
+        MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
             FlowControlInfo toStore(*lteInfo);
             connDescIn_[cid] = toStore;
