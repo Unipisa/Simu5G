@@ -369,6 +369,8 @@ void LteMacBase::initialize(int stage)
         WATCH(nodeId_);
         WATCH_MAP(mbuf_);
         WATCH_MAP(macBuffers_);
+        WATCH_MAP(connDesc_);
+        WATCH_MAP(connDescIn_);
     }
 }
 
