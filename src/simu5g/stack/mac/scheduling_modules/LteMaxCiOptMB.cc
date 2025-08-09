@@ -238,9 +238,8 @@ void LteMaxCiOptMB::generateProblem()
         LteMacBufferMap *buf = mac_->getMacBuffers();
         LteMacBufferMap::iterator it = buf->find(cidList_[iUe]);
         int queue = 0;
-        if (it == mac_->getMacBuffers()->end()) {
-            cRuntimeError("LteMaxCiOptMB::generateProblem Cannot find CID[%u]. Aborting... ", cidList_[iUe]);
-        }
+        if (it == mac_->getMacBuffers()->end())
+            cRuntimeError("LteMaxCiOptMB::generateProblem: Cannot find CID %s", cidList_[iUe].str().c_str());
         queue = it->second->getQueueOccupancy();
         MacNodeId ueId = ueList_[iUe];
         appFileStream << "v" << ueId << " - p" << ueId << " <= " << queue << endl;

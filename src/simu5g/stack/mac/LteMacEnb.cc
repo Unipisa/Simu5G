@@ -342,7 +342,7 @@ void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
             it = carrierScheduleList.begin();
 
             Codeword cw = 0, otherCw = 0;
-            MacCid cid = 0;
+            MacCid cid = MacCid();
             MacNodeId nodeId = NODEID_NONE;
             unsigned int codewords = 0;
             unsigned int granted = 0;
@@ -554,9 +554,9 @@ void LteMacEnb::macPduMake(MacCid cid)
 
             while (sduPerCid > 0) {
                 if ((mbuf_[destCid]->getQueueLength()) < (int)sduPerCid) {
-                    throw cRuntimeError("Abnormal queue length detected while building MAC PDU for cid %d "
+                    throw cRuntimeError("Abnormal queue length detected while building MAC PDU for cid %s "
                                         "Queue real SDU length is %d while scheduled SDUs are %d",
-                            destCid, mbuf_[destCid]->getQueueLength(), sduPerCid);
+                            destCid.str().c_str(), mbuf_[destCid]->getQueueLength(), sduPerCid);
                 }
 
                 auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
@@ -716,7 +716,7 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
                     vqueue->getQueueOccupancy() << "\n";
             }
             else
-                throw cRuntimeError("LteMacEnb::bufferizePacket - cannot find mac buffer for cid %d", cid);
+                throw cRuntimeError("LteMacEnb::bufferizePacket - cannot find mac buffer for cid %s", cid.str().c_str());
         }
 
         delete pkt;

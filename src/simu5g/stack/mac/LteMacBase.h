@@ -387,7 +387,7 @@ class LteMacBase : public cSimpleModule
      * Functions to be redefined by derived classes
      */
 
-    virtual void macPduMake(MacCid cid = 0) = 0;
+    virtual void macPduMake(MacCid cid = MacCid()) = 0;
     virtual void macPduUnmake(cPacket *pkt) = 0;
 
     /**

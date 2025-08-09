@@ -99,10 +99,10 @@ LteMacScheduleList *LteSchedulerUeUl::schedule()
             scheduledBytesList_[{cid, cw}] = byte;
         }
 
-        MacCid highestBackloggedFlow = 0;
-        MacCid highestBackloggedPriority = 0;
-        MacCid lowestBackloggedFlow = 0;
-        MacCid lowestBackloggedPriority = 0;
+        MacCid highestBackloggedFlow = MacCid();
+        unsigned int highestBackloggedPriority = 0;
+        MacCid lowestBackloggedFlow = MacCid();
+        unsigned int lowestBackloggedPriority = 0;
         bool backlog = false;
 
         // get the highest backlogged flow id and priority

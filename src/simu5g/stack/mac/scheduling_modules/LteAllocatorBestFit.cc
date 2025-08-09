@@ -123,7 +123,7 @@ void LteAllocatorBestFit::prepareSchedule()
     // Resume a MaxCi scoreList build mode
     // Build the score list by cycling through the active connections.
     ScoreList score;
-    MacCid cid = 0;
+    MacCid cid = MacCid();
     unsigned int blocks = 0;
     unsigned int byPs = 0;
 

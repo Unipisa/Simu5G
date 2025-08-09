@@ -42,10 +42,9 @@ class NrMacUe : public LteMacUeD2D
      * On UE it also adds a BSR control element to the MAC PDU
      * containing the size of its buffer (for that CID)
      */
-    void macPduMake(MacCid cid = 0) override;
+    void macPduMake(MacCid cid = MacCid()) override;
 };
 
 } //namespace
 
 #endif
-

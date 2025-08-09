@@ -320,7 +320,7 @@ bool isMulticastConnection(LteControlInfo *lteInfo)
 
 MacCid idToMacCid(MacNodeId nodeId, LogicalCid lcid)
 {
-    return ((MacCid)nodeId << 16) | lcid;
+    return MacCid(nodeId, lcid);
 }
 
 /*
@@ -388,12 +388,12 @@ MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info)
 
 MacNodeId MacCidToNodeId(MacCid cid)
 {
-    return (MacNodeId)(cid >> 16);
+    return cid.getNodeId();
 }
 
 LogicalCid MacCidToLcid(MacCid cid)
 {
-    return (LogicalCid)(cid);
+    return cid.getLcid();
 }
 
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)

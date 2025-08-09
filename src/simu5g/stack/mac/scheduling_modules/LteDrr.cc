@@ -63,7 +63,7 @@ void LteDrr::prepareSchedule()
         unsigned int scheduled = requestGrant(cid, desc.deficit_, terminateFlag, activeFlag, eligibleFlag);
 
         if (desc.deficit_ < scheduled)
-            throw cRuntimeError("LteDrr::execSchedule CID:%d unexpected deficit value of %d [scheduled=%d]", cid, desc.deficit_, scheduled);
+            throw cRuntimeError("LteDrr::execSchedule: CID %s: unexpected deficit value of %d [scheduled=%d]", cid.str().c_str(), desc.deficit_, scheduled);
 
         // Update the deficit counter.
         desc.deficit_ -= scheduled;

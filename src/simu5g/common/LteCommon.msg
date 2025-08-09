@@ -64,7 +64,7 @@ typedef unsigned int OmnetId;
 typedef unsigned short LogicalCid;
 
 /// Connection Identifier: <MacNodeId,LogicalCid>
-typedef unsigned int MacCid;
+// MacCid is now a class with separate fields instead of a packed integer
 
 /// Rank Indicator
 typedef unsigned short Rank;
@@ -80,6 +80,50 @@ typedef unsigned short Tbs;
 
 /// Logical band
 typedef unsigned short Band;
+
+/**
+ *  Block allocation Map: # of Rbs per Band, per Remote.
+ */
+typedef std::map<Remote, std::map<Band, unsigned int>> RbMap;
+
+/**
+ * MAC Connection Identifier class that contains separate fields for
+ * MacNodeId and LogicalCid instead of packing them into a single integer.
+ * Can be used as std::map key and provides string representation.
+ */
+class MacCid
+{
+private:
+    MacNodeId nodeId_;
+    LogicalCid lcid_;
+
+public:
+    // Default constructor
+    MacCid() : nodeId_(static_cast<MacNodeId>(0)), lcid_(0) {}
+
+    // Constructor
+    MacCid(MacNodeId nodeId, LogicalCid lcid) : nodeId_(nodeId), lcid_(lcid) {}
+
+    // Getters
+    MacNodeId getNodeId() const { return nodeId_; }
+    LogicalCid getLcid() const { return lcid_; }
+    unsigned int asPackedInt() const { return (num(nodeId_) << 16) | lcid_; }
+
+    // Check if this is an empty/invalid MacCid (default constructed)
+    bool isEmpty() const { return num(nodeId_) == 0 && lcid_ == 0; }
+
+    // String representation
+    std::string str() const { return "MacCid(nodeId=" + std::to_string(num(nodeId_)) + ", lcid=" + std::to_string(lcid_) + ")"; }
+
+    // Comparison operators for std::map compatibility
+    bool operator<(const MacCid& other) const { return asPackedInt() < other.asPackedInt(); }
+    bool operator==(const MacCid& other) const  { return nodeId_ == other.nodeId_ && lcid_ == other.lcid_; }
+    bool operator!=(const MacCid& other) const { return nodeId_ != other.nodeId_ || lcid_ != other.lcid_; }
+
+    // Stream output operator
+    friend std::ostream& operator<<(std::ostream& os, const MacCid& cid) { return os << cid.str(); }
+};
+
 }}
 
 class MacCellId {
@@ -146,15 +190,9 @@ class LogicalCid {
 
 /// Connection Identifier: <MacNodeId,LogicalCid>
 class MacCid {
-    @existingClass; // typedef unsigned int MacCid;
+    @existingClass; // class MacCid with separate nodeId and lcid fields
     @descriptor(false);
-    @primitive;
-    @castFunction(false);
-    @fromString(string2int64($));
-    @toString(int642string($));
-    @defaultValue(0);
-    @toValue((omnetpp::intval_t)($));
-    @fromValue(omnetpp::checked_int_cast<int64_t>($.intValue()));
+    @opaque;
 };
 
 /// Rank Indicator

@@ -223,10 +223,10 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     // Add SDU to PDU
                     // Find MAC Packet
                     if (mbuf_.find(destCid) == mbuf_.end())
-                        throw cRuntimeError("Unable to find MAC buffer for cid %d", destCid);
+                        throw cRuntimeError("Unable to find MAC buffer for cid %s", destCid.str().c_str());
 
                     if (mbuf_[destCid]->isEmpty())
-                        throw cRuntimeError("Empty buffer for cid %d, while expected SDUs were %d", destCid, sduPerCid);
+                        throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
                     auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
 

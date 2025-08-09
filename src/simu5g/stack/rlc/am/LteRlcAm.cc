@@ -32,7 +32,7 @@ AmTxQueue *LteRlcAm::getTxBuffer(MacNodeId nodeId, LogicalCid lcid)
     if (it == txBuffers_.end()) {
         // Not found: create
         std::stringstream buf;
-        buf << "AmTxQueue Lcid: " << lcid << " cid: " << cid;
+        buf << "AmTxQueue Lcid: " << lcid << " cid: " << cid.asPackedInt();
         cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.am.AmTxQueue");
         AmTxQueue *txbuf = check_and_cast<AmTxQueue *>(
                 moduleType->createScheduleInit(buf.str().c_str(),
@@ -62,7 +62,7 @@ AmRxQueue *LteRlcAm::getRxBuffer(MacNodeId nodeId, LogicalCid lcid)
     if (it == rxBuffers_.end()) {
         // Not found: create
         std::stringstream buf;
-        buf << "AmRxQueue Lcid: " << lcid << " cid: " << cid;
+        buf << "AmRxQueue Lcid: " << lcid << " cid: " << cid.asPackedInt();
         cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.am.AmRxQueue");
         AmRxQueue *rxbuf = check_and_cast<AmRxQueue *>(
                 moduleType->createScheduleInit(buf.str().c_str(),

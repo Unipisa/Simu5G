@@ -295,7 +295,7 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
                     vqueue->getQueueOccupancy() << "\n";
             }
             else
-                throw cRuntimeError("LteMacUe::bufferizePacket - cannot find mac buffer for cid %d", cid);
+                throw cRuntimeError("LteMacUe::bufferizePacket - cannot find mac buffer for cid %s", cid.str().c_str());
         }
 
         delete pkt;
@@ -411,10 +411,10 @@ void LteMacUe::macPduMake(MacCid cid)
                 // Find Mac Pkt
 
                 if (mbuf_.find(destCid) == mbuf_.end())
-                    throw cRuntimeError("Unable to find mac buffer for cid %d", destCid);
+                    throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
 
                 if (mbuf_[destCid]->isEmpty())
-                    throw cRuntimeError("Empty buffer for cid %d, while expected SDUs were %d", destCid, sduPerCid);
+                    throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
                 auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
                 drop(pkt);

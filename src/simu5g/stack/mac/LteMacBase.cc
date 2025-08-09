@@ -253,7 +253,7 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
                 queue->getQueueSize() - queue->getByteLength() << "\n";
         }
         else
-            throw cRuntimeError("LteMacBase::bufferizePacket - cannot find MAC buffer for CID %d", cid);
+            throw cRuntimeError("LteMacBase::bufferizePacket - cannot find MAC buffer for CID %s", cid.str().c_str());
     }
     /// After bufferization buffers must be synchronized
     assert(mbuf_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());

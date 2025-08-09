@@ -353,7 +353,7 @@ LteTxPdcpEntity *LtePdcpBase::getTxEntity(MacCid cid)
         std::stringstream buf;
         // FIXME HERE
 
-        buf << "LteTxPdcpEntity cid: " << cid;
+        buf << "LteTxPdcpEntity cid: " << cid.asPackedInt();
         cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.LteTxPdcpEntity");
         LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
         txEntities_[cid] = txEnt;    // Add to entities map
@@ -378,7 +378,7 @@ LteRxPdcpEntity *LtePdcpBase::getRxEntity(MacCid cid)
         // Not found: create
 
         std::stringstream buf;
-        buf << "LteRxPdcpEntity Cid: " << cid;
+        buf << "LteTxPdcpEntity Cid: " << cid.asPackedInt();
         cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.LteRxPdcpEntity");
         LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
         rxEntities_[cid] = rxEnt;    // Add to entities map
