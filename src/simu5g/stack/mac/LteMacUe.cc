@@ -323,12 +323,8 @@ bool LteMacUe::bufferizePacket(cPacket *pktAux)
         if (!queue->pushBack(pkt)) {
             totalOverflowedBytes_ += pkt->getByteLength();
             double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-            if (lteInfo->getDirection() == DL) {
-                emit(macBufferOverflowDlSignal_, sample);
-            }
-            else {
-                emit(macBufferOverflowUlSignal_, sample);
-            }
+            simsignal_t signal = (lteInfo->getDirection() == DL) ? macBufferOverflowDlSignal_ : macBufferOverflowUlSignal_;
+            emit(signal, sample);
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
 

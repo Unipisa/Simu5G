@@ -41,10 +41,8 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
         EV << "LteRlcTm : Dropping packet " << pkt->getName() << " (queue full) \n";
 
         // statistics: packet was lost
-        if (lteInfo->getDirection() == DL)
-            emit(rlcPacketLossDlSignal_, 1.0);
-        else
-            emit(rlcPacketLossUlSignal_, 1.0);
+        simsignal_t signal = (lteInfo->getDirection() == DL) ? rlcPacketLossDlSignal_ : rlcPacketLossUlSignal_;
+        emit(signal, 1.0);
 
         drop(pkt);
         delete pkt;
@@ -63,10 +61,8 @@ void LteRlcTm::handleUpperMessage(cPacket *pktAux)
     queuedPdus_.insert(pkt);
 
     // statistics: packet was not lost
-    if (lteInfo->getDirection() == DL)
-        emit(rlcPacketLossDlSignal_, 0.0);
-    else
-        emit(rlcPacketLossUlSignal_, 0.0);
+    simsignal_t signal = (lteInfo->getDirection() == DL) ? rlcPacketLossDlSignal_ : rlcPacketLossUlSignal_;
+    emit(signal, 0.0);
 
     // create a message to notify the MAC layer that the queue contains new data
     auto newDataPkt = inet::makeShared<LteRlcPduNewData>();

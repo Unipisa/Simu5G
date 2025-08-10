@@ -263,10 +263,8 @@ void BackgroundScheduler::updateAllocation(Direction dir)
     }
 
     // emit statistics
-    if (dir == DL)
-        emit(bgAvgServedBlocksDlSignal_, (long)b);
-    else
-        emit(bgAvgServedBlocksUlSignal_, (long)b);
+    simsignal_t signal = (dir == DL) ? bgAvgServedBlocksDlSignal_ : bgAvgServedBlocksUlSignal_;
+    emit(signal, (long)b);
 
     EV << "----- END BACKGROUND CELL ALLOCATION UPDATE -----" << endl;
 }

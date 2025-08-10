@@ -252,10 +252,8 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
     }
 
     // this simulates a transmission, so emit CQI statistic
-    if (dir == DL)
-        emit(bgAverageCqiDlSignal_, (long)cqi_[DL]);
-    else
-        emit(bgAverageCqiUlSignal_, (long)cqi_[UL]);
+    simsignal_t cqiSignal = (dir == DL) ? bgAverageCqiDlSignal_ : bgAverageCqiUlSignal_;
+    emit(cqiSignal, (long)cqi_[dir]);
 
     // "schedule" a retransmission with the given probability
     double err = uniform(0.0, 1.0);
@@ -265,16 +263,12 @@ unsigned int TrafficGeneratorBase::consumeBytes(int bytes, Direction dir, bool r
         rtxNotification->setBytes(bytes);
         scheduleAt(NOW + rtxDelay_[dir], rtxNotification);
 
-        if (dir == DL)
-            emit(bgHarqErrorRateDlSignal_, 1.0);
-        else
-            emit(bgHarqErrorRateUlSignal_, 1.0);
+        simsignal_t harqErrorSignal = (dir == DL) ? bgHarqErrorRateDlSignal_ : bgHarqErrorRateUlSignal_;
+        emit(harqErrorSignal, 1.0);
     }
     else {
-        if (dir == DL)
-            emit(bgHarqErrorRateDlSignal_, 0.0);
-        else
-            emit(bgHarqErrorRateUlSignal_, 0.0);
+        simsignal_t harqErrorSignal = (dir == DL) ? bgHarqErrorRateDlSignal_ : bgHarqErrorRateUlSignal_;
+        emit(harqErrorSignal, 0.0);
     }
 
     return (!rtx) ? bufferedBytes_[dir] : bufferedBytesRtx_[dir];
@@ -291,10 +285,8 @@ void TrafficGeneratorBase::receiveSignal(cComponent *source, simsignal_t signalI
 
 void TrafficGeneratorBase::collectMeasuredSinr(double sample, Direction dir)
 {
-    if (dir == DL)
-        emit(bgMeasuredSinrDlSignal_, sample);
-    else
-        emit(bgMeasuredSinrUlSignal_, sample);
+    simsignal_t signal = (dir == DL) ? bgMeasuredSinrDlSignal_ : bgMeasuredSinrUlSignal_;
+    emit(signal, sample);
 }
 
 } //namespace
