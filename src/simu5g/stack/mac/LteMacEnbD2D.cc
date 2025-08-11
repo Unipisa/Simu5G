@@ -121,47 +121,41 @@ void LteMacEnbD2D::handleSelfMessage()
     LteMacEnb::handleSelfMessage();
 }
 
-void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
+void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
 {
-    auto pkt = check_and_cast<Packet *>(pktAux);
-    auto macPkt = pkt->removeAtFront<LteMacPdu>();
-
-    /*
-     * @author Alessandro Noferi
-     * Notify the packet flow manager about the successful arrival of a TB from a UE.
-     * From ETSI TS 138314 V16.0.0 (2020-07)
-     *   tSucc: the point in time when the MAC SDU i was received successfully by the network
-     */
+    auto pkt = check_and_cast<Packet *>(cpkt);
+    auto macPdu = pkt->removeAtFront<LteMacPdu>();
     auto userInfo = pkt->getTag<UserControlInfo>();
 
-    if (packetFlowManager_ != nullptr) {
+    // Notify the packet flow manager about the successful arrival of a TB from a UE.
+    // From ETSI TS 138314 V16.0.0 (2020-07)
+    if (packetFlowManager_ != nullptr)
         packetFlowManager_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
-    }
 
-    while (macPkt->hasSdu()) {
+    while (macPdu->hasSdu()) {
         // Extract and send SDU
-        auto upPkt = check_and_cast<Packet *>(macPkt->popSdu());
+        auto upPkt = macPdu->popSdu();
         take(upPkt);
 
         EV << "LteMacEnbD2D: pduUnmaker extracted SDU" << endl;
 
         // store descriptor for the incoming connection, if not already stored
-        auto lteInfo = upPkt->getTag<FlowControlInfo>();
-        MacNodeId senderId = lteInfo->getSourceId();
-        LogicalCid lcid = lteInfo->getLcid();
+        auto flowInfo = upPkt->getTag<FlowControlInfo>();
+        MacNodeId senderId = flowInfo->getSourceId();
+        LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
-            FlowControlInfo toStore(*lteInfo);
+            FlowControlInfo toStore(*flowInfo);
             connDescIn_[cid] = toStore;
         }
 
         sendUpperPackets(upPkt);
     }
 
-    while (macPkt->hasCe()) {
+    while (macPdu->hasCe()) {
         // Extract CE
         // TODO: see if for cid or lcid
-        MacBsr *bsr = check_and_cast<MacBsr *>(macPkt->popCe());
+        MacBsr *bsr = check_and_cast<MacBsr *>(macPdu->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
         LogicalCid lcid = lteInfo->getLcid();  // one of SHORT_BSR or D2D_MULTI_SHORT_BSR
 
@@ -170,7 +164,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
                                                                // the LCID and discover if the connection is UL or D2D
         bufferizeBsr(bsr, cid);
     }
-    pkt->insertAtFront(macPkt);
+    pkt->insertAtFront(macPdu);
 
     delete pkt;
 }

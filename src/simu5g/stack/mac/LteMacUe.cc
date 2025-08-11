@@ -571,30 +571,31 @@ void LteMacUe::macPduMake(MacCid cid)
     }
 }
 
-void LteMacUe::macPduUnmake(cPacket *pktAux)
+void LteMacUe::macPduUnmake(cPacket *cpkt)
 {
-    auto pkt = check_and_cast<Packet *>(pktAux);
-    auto macPkt = pkt->removeAtFront<LteMacPdu>();
-    while (macPkt->hasSdu()) {
+    auto pkt = check_and_cast<Packet *>(cpkt);
+    auto macPdu = pkt->removeAtFront<LteMacPdu>();
+    auto userControlInfo = pkt->getTag<UserControlInfo>();
+
+    while (macPdu->hasSdu()) {
         // Extract and send SDU
-        auto upPkt = macPkt->popSdu();
+        auto upPkt = macPdu->popSdu();
         take(upPkt);
 
         EV << "LteMacBase: pduUnmaker extracted SDU" << endl;
 
-        // store descriptor for the incoming connection, if not already stored
-        auto lteInfo = upPkt->getTag<FlowControlInfo>();
-        MacNodeId senderId = lteInfo->getSourceId();
-        LogicalCid lcid = lteInfo->getLcid();
+        auto flowInfo = upPkt->getTag<FlowControlInfo>();
+        MacNodeId senderId = flowInfo->getSourceId();
+        LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
-            FlowControlInfo toStore(*lteInfo);
+            FlowControlInfo toStore(*flowInfo);
             connDescIn_[cid] = toStore;
         }
         sendUpperPackets(upPkt);
     }
 
-    pkt->insertAtFront(macPkt);
+    pkt->insertAtFront(macPdu);
 
     ASSERT(pkt->getOwner() == this);
     delete pkt;

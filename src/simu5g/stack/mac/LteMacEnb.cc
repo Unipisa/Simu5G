@@ -616,26 +616,20 @@ void LteMacEnb::macPduMake(MacCid cid)
     EV << "------ END LteMacEnb::macPduMake ------\n";
 }
 
-void LteMacEnb::macPduUnmake(cPacket *pktAux)
+void LteMacEnb::macPduUnmake(cPacket *cpkt)
 {
-    auto pkt = check_and_cast<Packet *>(pktAux);
-    auto macPkt = pkt->removeAtFront<LteMacPdu>();
-
-    /*
-     * @author Alessandro Noferi
-     * Notify the pfm about the successful arrival of a TB from a UE.
-     * From ETSI TS 138314 V16.0.0 (2020-07)
-     * tSucc: the point in time when the MAC SDU i was received successfully by the network
-     */
+    auto pkt = check_and_cast<Packet *>(cpkt);
+    auto macPdu = pkt->removeAtFront<LteMacPdu>();
     auto userInfo = pkt->getTag<UserControlInfo>();
 
-    if (packetFlowManager_ != nullptr) {
+    // Notify the pfm about the successful arrival of a TB from a UE.
+    // From ETSI TS 138314 V16.0.0 (2020-07)
+    if (packetFlowManager_ != nullptr)
         packetFlowManager_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
-    }
 
-    while (macPkt->hasSdu()) {
+    while (macPdu->hasSdu()) {
         // Extract and send SDU
-        cPacket *upPkt = macPkt->popSdu();
+        cPacket *upPkt = macPdu->popSdu();
         take(upPkt);
 
         // TODO: upPkt->info()
@@ -643,16 +637,16 @@ void LteMacEnb::macPduUnmake(cPacket *pktAux)
         sendUpperPackets(upPkt);
     }
 
-    while (macPkt->hasCe()) {
+    while (macPdu->hasCe()) {
         // Extract CE
         // TODO: see if BSR for CID or LCID
-        MacBsr *bsr = check_and_cast<MacBsr *>(macPkt->popCe());
+        MacBsr *bsr = check_and_cast<MacBsr *>(macPdu->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
         MacCid cid = MacCid(lteInfo->getSourceId(), 0);
         bufferizeBsr(bsr, cid);
         delete bsr;
     }
-    pkt->insertAtFront(macPkt);
+    pkt->insertAtFront(macPdu);
 
     ASSERT(pkt->getOwner() == this);
     delete pkt;
