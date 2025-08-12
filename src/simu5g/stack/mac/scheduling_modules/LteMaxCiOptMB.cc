@@ -452,7 +452,7 @@ void LteMaxCiOptMB::launchProblem()
 void LteMaxCiOptMB::applyScheduling()
 {
     if (cidList_.size() != schedulingDecision_.size()) {
-        cRuntimeError("LteMaxCiOptMB::applyScheduling - number of CIDs and schedulingDecision size doesn't match. Aborting...");
+        cRuntimeError("LteMaxCiOptMB::applyScheduling - number of CIDs and schedulingDecision size doesn't match");
     }
 
     int totUes = cidList_.size();

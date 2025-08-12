@@ -346,7 +346,7 @@ void NrMacUe::macPduMake(MacCid cid)
                     if (macPktBsr != nullptr) {
                         LteChannelModel *channelModel = phy_->getChannelModel();
                         if (channelModel == nullptr)
-                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer. Abort.");
+                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
                         bsrAlreadyMade = true;

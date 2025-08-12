@@ -35,7 +35,7 @@ void LteMacEnbD2D::initialize(int stage)
         cModule *rlcUm = inet::getModuleFromPar<cModule>(par("rlcUmModule"), this);
         std::string rlcUmType = rlcUm->getComponentType()->getName();
         if (rlcUmType != "LteRlcUmD2D")
-            throw cRuntimeError("LteMacEnbD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'. Aborting", par("rlcUmModule").stringValue(), rlcUmType.c_str());
+            throw cRuntimeError("LteMacEnbD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'", par("rlcUmModule").stringValue(), rlcUmType.c_str());
     }
     else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT) {
         usePreconfiguredTxParams_ = par("usePreconfiguredTxParams");
@@ -61,7 +61,7 @@ void LteMacEnbD2D::initialize(int stage)
                     break;
                 }
                 default: {
-                    throw cRuntimeError("LteMacEnbD2D::initialize - CG type unknown. Aborting");
+                    throw cRuntimeError("LteMacEnbD2D::initialize - CG type unknown");
                 }
             }
 

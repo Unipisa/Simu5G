@@ -133,7 +133,7 @@ void LteDlFeedbackGenerator::initCellInfo()
         numPreferredBands_ = cellInfo_->getNumPreferredBands();
     }
     else
-        throw cRuntimeError("LteDlFeedbackGenerator::initCellInfo - cellInfo is NULL pointer. Aborting");
+        throw cRuntimeError("LteDlFeedbackGenerator::initCellInfo - cellInfo is NULL pointer");
 
     EV << "DLFeedbackGenerator - nodeid: " << nodeId_
        << " used cellInfo: bands " << numBands_ << " preferred bands "

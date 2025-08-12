@@ -47,7 +47,7 @@ void VodUdpServer::initialize(int stage)
     if (!inputFileName.empty()) {
         // Check whether string is empty
         if (traceType != "SVC")
-            throw cRuntimeError("VodUdpServer::initialize - only SVC trace is currently available. Abort.");
+            throw cRuntimeError("VodUdpServer::initialize - only SVC trace is currently available");
 
         infile.open(inputFileName.c_str(), ios::in);
         if (infile.bad()) // Or the file is bad

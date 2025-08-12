@@ -38,12 +38,12 @@ void LteMacUeD2D::initialize(int stage)
         cModule *rlcUm = inet::getModuleFromPar<cModule>(par("rlcUmModule"), this);
         std::string rlcUmType = rlcUm->getComponentType()->getName();
         if (rlcUmType != "LteRlcUmD2D")
-            throw cRuntimeError("LteMacUeD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'. Aborting", par("rlcUmModule").stringValue(), rlcUmType.c_str());
+            throw cRuntimeError("LteMacUeD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'", par("rlcUmModule").stringValue(), rlcUmType.c_str());
 
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
         std::string pdcpType = pdcp->getComponentType()->getName();
         if (pdcpType != "LtePdcpUeD2D" && pdcpType != "NrPdcpUe")
-            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpUeD2D or NrPdcpUe. Aborting", pdcpType.c_str());
+            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpUeD2D or NrPdcpUe", pdcpType.c_str());
     }
     if (stage == inet::INITSTAGE_NETWORK_LAYER) {
         // get parameters
@@ -142,7 +142,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                         // select channel model for given carrier frequency
                         LteChannelModel *channelModel = phy_->getChannelModel(carrierFreq);
                         if (channelModel == nullptr)
-                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer. Abort.");
+                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer");
                         else
                             macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
                         bsrAlreadyMade = true;
@@ -802,7 +802,7 @@ UserTxParams *LteMacUeD2D::getPreconfiguredTxParams()
     Cqi cqi = par("d2dCqi");
     if (cqi < 0 || cqi > 15) {
         delete txParams;
-        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %hu is not a valid value. Aborting", cqi);
+        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - CQI %hu is not a valid value", cqi);
     }
     txParams->writeCqi(std::vector<Cqi>(1, cqi));
 
@@ -814,7 +814,7 @@ UserTxParams *LteMacUeD2D::getPreconfiguredTxParams()
     }
     else {
         delete txParams;
-        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - cellInfo is a NULL pointer. Aborting");
+        throw cRuntimeError("LteMacUeD2D::getPreconfiguredTxParams - cellInfo is a NULL pointer");
     }
 
     RemoteSet antennas;

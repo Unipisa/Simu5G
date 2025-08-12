@@ -48,7 +48,7 @@ double DistanceBasedConflictGraph::getDbmFromDistance(double distance)
 
     // obtain path loss in dBm
     if (channelModel == nullptr)
-        throw cRuntimeError("DistanceBasedConflictGraph::getDbmFromDistance - channel model is a null pointer. Abort");
+        throw cRuntimeError("DistanceBasedConflictGraph::getDbmFromDistance - channel model is a null pointer");
     else
         pLoss = channelModel->computePathLoss(distance, dbp, los);
 

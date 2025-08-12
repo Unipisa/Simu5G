@@ -2637,7 +2637,7 @@ LteRealisticChannelModel::JakesFadingMap *LteRealisticChannelModel::obtainUeJake
     JakesFadingMap *j;
     LteRealisticChannelModel *re = dynamic_cast<LteRealisticChannelModel *>(phy->getChannelModel(carrierFrequency_));
     if (re == nullptr)
-        throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer. Abort.");
+        throw cRuntimeError("LteRealisticChannelModel::obtainUeJakesMap - channel model is a null pointer");
     else
         j = re->getJakesMap();
 

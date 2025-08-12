@@ -47,7 +47,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         lcid = mapAllLcidsToSingleBearer_ ? 1 : lteInfo->getLcid();
     }
     else
-        throw cRuntimeError("LteRlcUm::getTxBuffer - lteInfo is NULL pointer. Aborting.");
+        throw cRuntimeError("LteRlcUm::getTxBuffer - lteInfo is NULL pointer");
 
     // Find TXBuffer for this CID
     MacCid cid = MacCid(nodeId, lcid);

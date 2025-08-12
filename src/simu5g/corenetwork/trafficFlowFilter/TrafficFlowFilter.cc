@@ -100,7 +100,7 @@ CoreNodeType TrafficFlowFilter::selectOwnerType(const char *type)
     else if (strcmp(type, "UPF_MEC") == 0)
         return UPF_MEC;
     else
-        throw cRuntimeError("TrafficFlowFilter::selectOwnerType - unknown owner type [%s]. Aborting...", type);
+        throw cRuntimeError("TrafficFlowFilter::selectOwnerType - unknown owner type [%s]", type);
 
     // never gets here
     return ENB;

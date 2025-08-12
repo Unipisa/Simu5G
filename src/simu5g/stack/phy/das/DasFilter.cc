@@ -48,7 +48,7 @@ double DasFilter::receiveBroadcast(LteAirFrame *frame, UserControlInfo *lteInfo)
         std::vector<double> rssiV;
         LteChannelModel *channelModel = ltePhy_->getChannelModel();
         if (channelModel == nullptr)
-            throw cRuntimeError("DasFilter::receiveBroadcast - channel model is a null pointer. Abort.");
+            throw cRuntimeError("DasFilter::receiveBroadcast - channel model is a null pointer");
         else
             rssiV = channelModel->getSINR(frame, lteInfo);
         double rssi = 0;

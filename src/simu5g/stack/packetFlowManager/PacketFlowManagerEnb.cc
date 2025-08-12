@@ -45,7 +45,7 @@ bool PacketFlowManagerEnb::hasLcid(LogicalCid lcid)
 void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
 {
     if (connectionMap_.find(lcid) != connectionMap_.end())
-        throw cRuntimeError("%s::initLcid - Logical CID %d already present. Aborting", pfmType.c_str(), lcid);
+        throw cRuntimeError("%s::initLcid - Logical CID %d already present", pfmType.c_str(), lcid);
 
     // init new descriptor
     StatusDescriptor newDesc;
@@ -94,7 +94,7 @@ void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int p
     // if pdcpStatus_ already present, error
     std::map<unsigned int, PdcpStatus>::iterator it = desc->pdcpStatus_.find(pdcp);
     if (it != desc->pdcpStatus_.end())
-        throw cRuntimeError("%s::initPdcpStatus - PdcpStatus for PDCP sno [%d] already present for node %hu, this should not happen. Abort", pfmType.c_str(), pdcp, num(desc->nodeId_));
+        throw cRuntimeError("%s::initPdcpStatus - PdcpStatus for PDCP sno [%d] already present for node %hu, this should not happen", pfmType.c_str(), pdcp, num(desc->nodeId_));
 
     PdcpStatus newpdcpStatus;
 
@@ -212,13 +212,13 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     unsigned int rlcSno = rlcPdu->getPduSequenceNumber();
 
     if (desc->rlcSdusPerPdu_.find(rlcSno) != desc->rlcSdusPerPdu_.end())
-        throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d. Aborting", pfmType.c_str(), rlcSno, lcid);
+        throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d", pfmType.c_str(), rlcSno, lcid);
 
 
     // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
     if (status == START) {
         if (desc->burstState_ == true)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status START incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status START incompatible with local status %d", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         BurstStatus newBurst;
         newBurst.isCompleted = false;
         newBurst.startBurstTransmission = simTime();
@@ -229,7 +229,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
     else if (status == STOP) {
         if (desc->burstState_ == false)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status STOP incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status STOP incompatible with local status %d", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         desc->burstStatus_[desc->burstId_].isCompleted = true;
         desc->burstState_ = false;
 
@@ -250,15 +250,15 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
     else if (status == INACTIVE) {
         if (desc->burstState_ == true)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status INACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status INACTIVE incompatible with local status %d", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu INACTIVE burst" << endl;
     }
     else if (status == ACTIVE) {
         if (desc->burstState_ == false)
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status ACTIVE incompatible with local status %d. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status ACTIVE incompatible with local status %d", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
         auto bsit = desc->burstStatus_.find(desc->burstId_);
         if (bsit == desc->burstStatus_.end())
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst", pfmType.c_str(), num(desc->nodeId_), lcid);
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu ACTIVE burst " << desc->burstId_ << endl;
     }
     else {
@@ -282,7 +282,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         // set the PDCP entry time
         auto pit = desc->pdcpStatus_.find(pdcpSno);
         if (pit == desc->pdcpStatus_.end())
-            throw cRuntimeError("%s::insertRlcPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
+            throw cRuntimeError("%s::insertRlcPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen", pfmType.c_str(), pdcpSno);
 
         // last pdcp
         if (idx == rlcPdu->getNumSdu() - 1) {
@@ -314,7 +314,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
 
         auto bsit = desc->burstStatus_.find(desc->burstId_);
         if (bsit == desc->burstStatus_.end())
-            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst. Aborting", pfmType.c_str(), num(desc->nodeId_), lcid);
+            throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . Burst status not found during active burst", pfmType.c_str(), num(desc->nodeId_), lcid);
         // add rlc to rlc set of the burst and the size
         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::insertRlcPdu - lcid[" << lcid << "], insert RLC SDU of size " << rlcSduSize << endl;
 
@@ -335,7 +335,7 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
     // get the descriptor for this connection
     StatusDescriptor *desc = &cit->second;
     if (desc->rlcSdusPerPdu_.find(rlcSno) == desc->rlcSdusPerPdu_.end())
-        throw cRuntimeError("%s::discardRlcPdu - RLC PDU SN %d not present for logical CID %d. Aborting", pfmType.c_str(), rlcSno, lcid);
+        throw cRuntimeError("%s::discardRlcPdu - RLC PDU SN %d not present for logical CID %d", pfmType.c_str(), rlcSno, lcid);
 
     // get the PDCP SDUs fragmented in this RLC PDU
     SequenceNumberSet pdcpSnoSet = desc->rlcSdusPerPdu_.find(rlcSno)->second;
@@ -343,7 +343,7 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
         // find sdu -> rlc for this pdcp
         auto rit = desc->rlcPdusPerSdu_.find(pdcpSno);
         if (rit == desc->rlcPdusPerSdu_.end())
-            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] with lcid [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno, lcid);
+            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] with lcid [%d] not present, this should not happen", pfmType.c_str(), pdcpSno, lcid);
 
         // remove the RLC PDUs that contain a fragment of this pdcpSno
         rit->second.erase(rlcSno);
@@ -351,7 +351,7 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
         // set this pdcp sdu as discarded, flag use in macPduArrive to not take into account this pdcp
         auto pit = desc->pdcpStatus_.find(pdcpSno);
         if (pit == desc->pdcpStatus_.end())
-            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] already present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
+            throw cRuntimeError("%s::discardRlcPdu - PdcpStatus for PDCP sno [%d] already present, this should not happen", pfmType.c_str(), pdcpSno);
 
         if (fromMac)
             pit->second.discardedAtMac = true; // discarded rate stats also
@@ -409,7 +409,7 @@ void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
         if (desc->macSdusPerPdu_.find(macPduId) != desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for logical CID %d. Aborting", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for logical CID %d", pfmType.c_str(), macPduId, lcid);
 
         for (int i = 0; i < len; ++i) {
             auto rlcPdu = macPdu->getSdu(i);
@@ -431,7 +431,7 @@ void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
             for (const auto& pdcpSno : pdcpSet) {
                 auto sdit = desc->pdcpStatus_.find(pdcpSno);
                 if (sdit == desc->pdcpStatus_.end())
-                    throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen. Abort", pfmType.c_str(), pdcpSno);
+                    throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen", pfmType.c_str(), pdcpSno);
                 sdit->second.sentOverTheAir = true;
             }
         }
@@ -472,7 +472,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
         auto mit = desc->macSdusPerPdu_.find(macPduId);
         if (mit == desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::macPduArrived - MAC PDU ID %d not present for logical CID %d. Aborting", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::macPduArrived - MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), macPduId, lcid);
         SequenceNumberSet rlcSnoSet = mit->second;
 
         // === STEP 2 ========================================================== //
@@ -483,7 +483,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
             auto nit = desc->rlcSdusPerPdu_.find(rlcPduSno);
             if (nit == desc->rlcSdusPerPdu_.end())
-                throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present for logical CID %d. Aborting", pfmType.c_str(), rlcPduSno, lcid);
+                throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present for logical CID %d", pfmType.c_str(), rlcPduSno, lcid);
             SequenceNumberSet pdcpSnoSet = nit->second;
 
             // === STEP 3 ============================================================================ //
@@ -496,23 +496,23 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                 auto oit = desc->rlcPdusPerSdu_.find(pdcpPduSno);
                 if (oit == desc->rlcPdusPerSdu_.end())
-                    throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d not present for logical CID %d. Aborting", pfmType.c_str(), pdcpPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d not present for logical CID %d", pfmType.c_str(), pdcpPduSno, lcid);
 
                 auto kt = oit->second.find(rlcPduSno);
                 if (kt == oit->second.end())
-                    throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present in the set of PDCP PDU SN %d for logical CID %d. Aborting", pfmType.c_str(), pdcpPduSno, rlcPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present in the set of PDCP PDU SN %d for logical CID %d", pfmType.c_str(), pdcpPduSno, rlcPduSno, lcid);
 
                 // the RLC PDU has been sent, so erase it from the set
                 oit->second.erase(kt);
 
                 auto pit = desc->pdcpStatus_.find(pdcpPduSno);
                 if (pit == desc->pdcpStatus_.end())
-                    throw cRuntimeError("%s::macPduArrived - PdcpStatus for PDCP sno [%d] not present for lcid [%d], this should not happen. Abort", pfmType.c_str(), pdcpPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - PdcpStatus for PDCP sno [%d] not present for lcid [%d], this should not happen", pfmType.c_str(), pdcpPduSno, lcid);
 
                 // check whether the set is now empty
                 if (desc->rlcPdusPerSdu_[pdcpPduSno].empty()) {
                     if (pit->second.entryTime == 0)
-                        throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d of Lcid %d has no entry time timestamp, this should not happen. Aborting", pfmType.c_str(), pdcpPduSno, lcid);
+                        throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d of Lcid %d has no entry time timestamp, this should not happen", pfmType.c_str(), pdcpPduSno, lcid);
 
                     if (pit->second.hasArrivedAll && !pit->second.discardedAtRlc && !pit->second.discardedAtMac) {
                         EV_FATAL << NOW << " node id " << desc->nodeId_ << " " << pfmType << "::macPduArrived - ----> PDCP PDU [" << pdcpPduSno << "] has been completely sent, remove from PDCP buffer" << endl;
@@ -583,7 +583,7 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
 
         auto mit = desc->macSdusPerPdu_.find(macPduId);
         if (mit == desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::discardMacPdu - MAC PDU ID %d not present for logical CID %d. Aborting", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::discardMacPdu - MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), macPduId, lcid);
         SequenceNumberSet rlcSnoSet = mit->second;
 
         for (const auto& sn : rlcSnoSet) {

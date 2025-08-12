@@ -50,7 +50,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
     if (channelModel != nullptr)
         snr = channelModel->getSINR(frame, lteinfo);
     else
-        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+        throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
     FeedbackRequest req = lteinfo->getFeedbackReq();
     // Feedback computation
     fb.clear();
@@ -99,7 +99,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
             if (channelModel != nullptr)
                 snr = channelModel->getSINR(frame, lteinfo);
             else
-                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+                throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
 
             dir = DL;
         }
@@ -121,7 +121,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
                         if (channelModel != nullptr)
                             snr = channelModel->getSINR_D2D(frame, lteinfo, peerId, peerCoord, nodeId_);
                         else
-                            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer. Abort");
+                            throw cRuntimeError("LtePhyEnbD2D::requestFeedback - channelModel is null pointer");
 
                         // Compute the feedback for this link
                         fb = lteFeedbackComputation_->computeFeedback(type, rbtype, txmode,

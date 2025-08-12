@@ -609,7 +609,7 @@ void LteMacEnb::macPduMake(MacCid cid)
             }
             else {
                 if (txList.first == HARQ_NONE)
-                    throw cRuntimeError("LteMacBase: PDU Maker sending to an incorrect void H-ARQ process. Aborting");
+                    throw cRuntimeError("LteMacBase: PDU Maker sending to an incorrect void H-ARQ process");
                 txBuf->insertPdu(txList.first, cw, macPacket);
             }
         }

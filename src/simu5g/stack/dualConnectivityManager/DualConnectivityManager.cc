@@ -72,7 +72,7 @@ void DualConnectivityManager::handleX2Message(cMessage *msg)
         return;
     }
     else
-        throw cRuntimeError("DualConnectivityManager::handleX2Message - Message type not valid. Abort.");
+        throw cRuntimeError("DualConnectivityManager::handleX2Message - Message type not valid");
 
     delete packet;
 }
