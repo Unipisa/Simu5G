@@ -26,6 +26,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -338,6 +339,7 @@ struct EnbInfo
     LteRealisticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> eNodeB;
     int x2;
+    std::string str() const;
 };
 
 struct UeInfo
@@ -349,6 +351,7 @@ struct UeInfo
     LteRealisticChannelModel *realChan = nullptr;
     opp_component_ptr<cModule> ue;
     LtePhyBase *phy = nullptr;
+    std::string str() const;
 };
 
 /**********************************
@@ -362,6 +365,7 @@ struct BgTrafficManagerInfo
     double allocatedRbsDl;
     double allocatedRbsUl;
     std::vector<double> allocatedRbsUeUl;
+    std::string str() const;
 };
 
 // uplink interference support

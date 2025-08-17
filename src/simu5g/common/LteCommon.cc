@@ -560,4 +560,31 @@ void removeAllSimu5GTags(inet::Packet *pkt)
     pkt->removeTagIfPresent<LteControlInfo>();
 }
 
+std::string EnbInfo::str() const
+{
+    std::ostringstream oss;
+    oss << "EnbInfo[id=" << id << ", module=" << (eNodeB ? eNodeB->getFullName() : "null")
+        << ", type=" << nodeTypeToA(nodeType) << "/" << (type == MACRO_ENB ? "MACRO" : "MICRO")
+        << ", init=" << (init ? "Y" : "N") << ", txPwr=" << txPwr << "dBm]";
+    return oss.str();
+}
+
+std::string UeInfo::str() const
+{
+    std::ostringstream oss;
+    oss << "UeInfo[id=" << id << ", module=" << (ue ? ue->getFullName() : "null")
+        << ", cellId=" << cellId << ", init=" << (init ? "Y" : "N")
+        << ", txPwr=" << txPwr << "dBm]";
+    return oss.str();
+}
+
+std::string BgTrafficManagerInfo::str() const
+{
+    std::ostringstream oss;
+    oss << "BgTrafficManagerInfo[freq=" << carrierFrequency << "GHz"
+        << ", init=" << (init ? "Y" : "N") << ", rbsDL=" << allocatedRbsDl
+        << ", rbsUL=" << allocatedRbsUl << ", numUEs=" << allocatedRbsUeUl.size() << "]";
+    return oss.str();
+}
+
 } //namespace

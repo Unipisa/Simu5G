@@ -250,11 +250,57 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     secondaryNodeToMasterNode_[num(slaveId)] = masterId;
 }
 
+inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
+inline ostream& operator<<(ostream& os, const UeInfo& info) { return os << info.str(); }
+inline ostream& operator<<(ostream& os, const EnbInfo& info) { return os << info.str(); }
+inline ostream& operator<<(ostream& os, const BgTrafficManagerInfo& info) { return os << info.str(); }
+
 void Binder::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         phyPisaData.setBlerShift(par("blerShift"));
         networkName_ = getSystemModule()->getName();
+
+        // Add WATCH macros for all member variables
+        WATCH(networkName_);
+        WATCH_MAP(macNodeIdToIPAddress_);
+        WATCH_MAP(nrMacNodeIdToIPAddress_);
+        WATCH_MAP(macNodeIdToModuleName_);
+        WATCH_PTRMAP(macNodeIdToModuleRef_);
+        WATCH_PTRMAP(macNodeIdToModule_);
+        WATCH_VECTOR(nextHop_);
+        WATCH_VECTOR(secondaryNodeToMasterNode_);
+        WATCH_MAP(nodeIds_);
+        WATCH_SET(mecHostAddress_);
+        WATCH_MAP(mecHostToUpfAddress_);
+        // WATCH_MAP(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
+        // WATCH_MAP(bgSchedulerList_); // Commented out - contains vectors of BackgroundScheduler* pointers that don't have stream operators
+        WATCH_PTRVECTOR(enbList_); // Commented out - contains EnbInfo* pointers that don't have stream operators
+        WATCH_PTRVECTOR(ueList_); // Commented out - contains UeInfo* pointers that don't have stream operators
+        WATCH_PTRVECTOR(bgTrafficManagerList_); // Commented out - contains BgTrafficManagerInfo* pointers that don't have stream operators
+        // WATCH_MAP(bgCellsInterferenceMatrix_); // Commented out - contains nested maps that don't have stream operators
+        // WATCH_MAP(bgUesInterferenceMatrix_); // Commented out - contains nested maps that don't have stream operators
+        WATCH(maxDataRatePerRb_);
+        WATCH(macNodeIdCounter_[0]);
+        WATCH(macNodeIdCounter_[1]);
+        WATCH(macNodeIdCounter_[2]);
+        // WATCH_MAP(dMap_); // Commented out - contains nested maps that don't have stream operators
+        WATCH(totalBands_);
+        // WATCH_MAP(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
+        // WATCH_MAP(carrierUeMap_); // Commented out - contains sets that don't have stream operators
+        WATCH_MAP(carrierFreqToNumerologyIndex_);
+        WATCH_VECTOR(ueMaxNumerologyIndex_);
+        // WATCH_MAP(ueNumerologyIndex_); // Commented out - contains sets that don't have stream operators
+        // WATCH_MAP(ulTransmissionMap_); // Commented out - contains complex nested vectors that don't have stream operators
+        WATCH(lastUpdateUplinkTransmissionInfo_);
+        WATCH(lastUplinkTransmission_);
+        // WATCH_MAP(x2ListeningPorts_); // Commented out - contains lists that don't have stream operators
+        // WATCH_MAP(x2PeerAddress_); // Commented out - contains L3Address that doesn't have stream operator
+        // WATCH_MAP(d2dPeeringMap_); // Commented out - contains nested maps that don't have stream operators
+        // WATCH_MAP(multicastGroupMap_); // Commented out - contains sets that don't have stream operators
+        WATCH_SET(multicastTransmitterSet_);
+        WATCH_SET(ueHandoverTriggered_);
+        // WATCH_MAP(handoverTriggered_); // Commented out - contains pairs that don't have stream operators
     }
 
     if (stage == inet::INITSTAGE_LAST) {

@@ -43,8 +43,8 @@ class Binder : public cSimpleModule
 
     typedef std::map<MacNodeId, std::map<MacNodeId, bool>> DeployedUesMap;
 
-    std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_;
-    std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_;
+    std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_; //TODO name is swapped!
+    std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_; //TODO name is swapped!
     std::map<MacNodeId, std::string> macNodeIdToModuleName_;
     std::map<MacNodeId, opp_component_ptr<cModule>> macNodeIdToModuleRef_;
     std::map<MacNodeId, opp_component_ptr<LteMacBase>> macNodeIdToModule_;
