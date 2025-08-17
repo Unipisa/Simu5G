@@ -420,7 +420,7 @@ bool Binder::isMecHost(const inet::L3Address& mecHostAddress)
 const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostAddress)
 {
     if (mecHostToUpfAddress_.find(mecHostAddress) == mecHostToUpfAddress_.end())
-        throw cRuntimeError("Binder::getUpfFromMecHost - address not found");
+        throw cRuntimeError("Binder::getUpfFromMecHost - address %s not found", mecHostAddress.str().c_str());
     return mecHostToUpfAddress_[mecHostAddress];
 }
 
@@ -437,14 +437,14 @@ void Binder::registerModule(MacNodeId nodeId, cModule *module)
 const char *Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleName_.find(nodeId) == macNodeIdToModuleName_.end())
-        throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID not found");
+        throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID %d not found", num(nodeId));
     return macNodeIdToModuleName_[nodeId].c_str();
 }
 
 cModule *Binder::getModuleByMacNodeId(MacNodeId nodeId)
 {
     if (macNodeIdToModuleRef_.find(nodeId) == macNodeIdToModuleRef_.end())
-        throw cRuntimeError("Binder::getModuleByMacNodeId - node ID not found");
+        throw cRuntimeError("Binder::getModuleByMacNodeId - node ID %d not found", num(nodeId));
     return macNodeIdToModuleRef_[nodeId];
 }
 
