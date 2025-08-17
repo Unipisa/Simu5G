@@ -34,17 +34,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
     if (lteInfo != nullptr) {
         nodeId = ctrlInfoToUeId(lteInfo);
 
-        /**
-         * Note: Simu5G currently determines the LCID based
-         * on the src/dst IP addresses and TOS field and uses separate
-         * RLC entities for each of them. In order to evaluate the effect of using
-         * only a single UM LCID and a single bearer, this parameter allows to
-         * use only a single UM TxEntity, as it would be with a single bearer.
-         *
-         * Otherwise (i.e. if mapAllLcidsToSingleBearer_ is false), separate
-         * entities are used for each LCID.
-         */
-        lcid = mapAllLcidsToSingleBearer_ ? 1 : lteInfo->getLcid();
+        lcid = lteInfo->getLcid();
     }
     else
         throw cRuntimeError("LteRlcUm::getTxBuffer - lteInfo is NULL pointer");
@@ -269,7 +259,6 @@ void LteRlcUm::initialize(int stage)
         downOutGate_ = gate("UM_Sap_down$o");
 
         // parameters
-        mapAllLcidsToSingleBearer_ = par("mapAllLcidsToSingleBearer");
         std::string nodeTypePar = par("nodeType").stdstringValue();
         nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 

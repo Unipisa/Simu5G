@@ -25,7 +25,6 @@ moduleinterface ILteRlcUm
 {
     parameters:
         int queueSize @unit(B);
-        bool mapAllLcidsToSingleBearer;
     gates:
         inout UM_Sap_up;    // Gate to PDCP
         inout UM_Sap_down;    // Gate to RLC Mux
