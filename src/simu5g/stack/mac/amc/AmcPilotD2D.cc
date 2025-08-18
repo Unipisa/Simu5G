@@ -42,7 +42,7 @@ void AmcPilotD2D::setPreconfiguredTxParams(Cqi cqi)
     preconfiguredTxParams_->writeAntennas(antennas);
 }
 
-const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency)
+const UserTxParams& AmcPilotD2D::computeTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency)
 {
     EV << NOW << " AmcPilot" << getName() << "::computeTxParams for UE " << id << ", direction " << dirToA(dir) << endl;
 

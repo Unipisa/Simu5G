@@ -28,7 +28,10 @@ using namespace omnetpp;
 class BackgroundCellChannelModel : public cSimpleModule
 {
     // carrier frequency for this cell
-    double carrierFrequency_;
+    GHz carrierFrequency_;
+    double carrierFrequencyHz_;
+    double carrierFrequencyGHz_;
+    double log10CarrierFrequencyGHz_;
 
     // eNodeB Height
     double hNodeB_;
@@ -254,9 +257,9 @@ class BackgroundCellChannelModel : public cSimpleModule
     double getTwoDimDistance(inet::Coord a, inet::Coord b);
     double computeAngularAttenuation(double hAngle, double vAngle);
 
-    bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
-    bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, double carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
-    bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, double carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double> *interference);
+    bool computeDownlinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, GHz carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
+    bool computeUplinkInterference(MacNodeId bgUeId, inet::Coord bgUePos, GHz carrierFrequency, const RbMap& rbmap, unsigned int numBands, std::vector<double> *interference);
+    bool computeBackgroundCellInterference(MacNodeId bgUeId, inet::Coord bgUeCoord, int bgBsId, inet::Coord bgBsCoord, GHz carrierFrequency, const RbMap& rbmap, Direction dir, unsigned int numBands, std::vector<double> *interference);
 
   protected:
     void initialize(int stage) override;
@@ -265,7 +268,12 @@ class BackgroundCellChannelModel : public cSimpleModule
   public:
 
     // set carrier frequency
-    void setCarrierFrequency(double carrierFrequency) { carrierFrequency_ = carrierFrequency; }
+    void setCarrierFrequency(GHz carrierFrequency) {
+        carrierFrequency_ = carrierFrequency;
+        carrierFrequencyGHz_ = GHz(carrierFrequency).get();
+        carrierFrequencyHz_ = Hz(carrierFrequency).get();
+        log10CarrierFrequencyGHz_ = log10(carrierFrequencyGHz_);
+    }
 
     /*
      * Compute SINR for each band for user nodeId according to pathloss, shadowing (optional) and multipath fading
@@ -282,4 +290,3 @@ class BackgroundCellChannelModel : public cSimpleModule
 } //namespace
 
 #endif
-

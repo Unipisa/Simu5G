@@ -41,21 +41,21 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      * @param carrierFreq
      * @return
      */
-    bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency) override;
+    bool checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency) override;
 
-    bool racschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) override { return false; }
+    bool racschedule(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override { return false; }
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return true if OFDM space is exhausted.
      */
-    bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    bool rtxschedule(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
 
     /**
      * Schedule retransmissions for background UEs
      * @return true if OFDM space is exhausted.
      */
-    bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    bool rtxscheduleBackground(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
 
     /**
      * Schedules retransmission for the HARQ process of the given UE on a set of logical bands.
@@ -68,10 +68,10 @@ class LteSchedulerEnbDl : public LteSchedulerEnb
      * @param acid The ACID
      * @return The allocated bytes. 0 if retransmission was not possible
      */
-    unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
+    unsigned int schedulePerAcidRtx(MacNodeId nodeId, GHz carrierFrequency, Codeword cw, unsigned char acid,
             std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false) override;
 
-    unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
+    unsigned int scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
             Remote antenna = MACRO, bool limitBl = false) override;
 
     bool getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeId ueId);

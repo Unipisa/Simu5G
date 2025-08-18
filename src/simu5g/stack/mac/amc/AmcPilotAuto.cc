@@ -15,7 +15,7 @@ namespace simu5g {
 
 using namespace inet;
 
-const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency)
+const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency)
 {
     EV << NOW << " AmcPilot" << getName() << "::computeTxParams for UE " << id << ", direction " << dirToA(dir) << endl;
 
@@ -193,7 +193,7 @@ const UserTxParams& AmcPilotAuto::computeTxParams(MacNodeId id, const Direction 
     return amc_->setTxParams(id, dir, info, carrierFrequency);
 }
 
-std::vector<Cqi> AmcPilotAuto::getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency)
+std::vector<Cqi> AmcPilotAuto::getMultiBandCqi(MacNodeId id, const Direction dir, GHz carrierFrequency)
 {
     EV << NOW << " AmcPilot" << getName() << "::getMultiBandCqi for UE " << id << ", direction " << dirToA(dir) << endl;
 

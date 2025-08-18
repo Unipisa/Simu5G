@@ -155,12 +155,12 @@ void LtePhyBase::initializeChannelModel()
 {
     primaryChannelModel_.reference(this, "channelModelModule", true);
     primaryChannelModel_->setPhy(this);
-    double carrierFreq = primaryChannelModel_->getCarrierFrequency();
+    GHz carrierFreq = primaryChannelModel_->getCarrierFrequency();
     unsigned int numerologyIndex = primaryChannelModel_->getNumerologyIndex();
     channelModel_[carrierFreq] = primaryChannelModel_;
 
     if (nodeType_ == UE)
-        binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
+        binder_->registerCarrierUe(GHz(carrierFreq), numerologyIndex, nodeId_); //TODO check this call in the original!!!
 
     int vectSize = primaryChannelModel_->getVectorSize();
     LteChannelModel *chanModel = nullptr;
@@ -171,7 +171,7 @@ void LtePhyBase::initializeChannelModel()
         numerologyIndex = chanModel->getNumerologyIndex();
         channelModel_[carrierFreq] = chanModel;
         if (nodeType_ == UE)
-            binder_->registerCarrierUe(carrierFreq, numerologyIndex, nodeId_);
+            binder_->registerCarrierUe(GHz(carrierFreq), numerologyIndex, nodeId_);
     }
 }
 
@@ -292,4 +292,3 @@ int LtePhyBase::getReceiverGateIndex(const cModule *receiver, bool isNr) const
 }
 
 } //namespace
-

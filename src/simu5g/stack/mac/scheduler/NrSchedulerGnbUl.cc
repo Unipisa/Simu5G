@@ -16,7 +16,7 @@
 
 namespace simu5g {
 
-bool NrSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
+bool NrSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency)
 {
     HarqRxBuffers *harqRxBuff = mac_->getHarqRxBuffers(carrierFrequency);
     if (harqRxBuff == nullptr)                              // a new HARQ buffer will be created at reception
@@ -42,7 +42,7 @@ bool NrSchedulerGnbUl::checkEligibility(MacNodeId id, Codeword& cw, double carri
     return true;
 }
 
-bool NrSchedulerGnbUl::rtxschedule(double carrierFrequency, BandLimitVector *bandLim)
+bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLim)
 {
     try {
         EV << NOW << " NrSchedulerGnbUl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;

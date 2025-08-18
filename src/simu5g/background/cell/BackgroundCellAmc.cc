@@ -47,7 +47,7 @@ void BackgroundCellAmc::calculateMcsScale()
     mcsScaleDl_ = dlRbSubCarriers * (dlRbSymbols - dlSigSymbols) - dlPilotRe;
 }
 
-unsigned int BackgroundCellAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+unsigned int BackgroundCellAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency)
 {
     // DEBUG
     EV << NOW << " BackgroundCellAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << endl;

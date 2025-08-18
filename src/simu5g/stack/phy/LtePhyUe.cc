@@ -128,7 +128,7 @@ void LtePhyUe::initialize(int stage)
                 Coord cellPos = cellPhy->getCoord();
 
                 // check whether the BS supports the carrier frequency used by the UE
-                double ueCarrierFrequency = primaryChannelModel_->getCarrierFrequency();
+                GHz ueCarrierFrequency = primaryChannelModel_->getCarrierFrequency();
                 LteChannelModel *cellChannelModel = cellPhy->getChannelModel(ueCarrierFrequency);
                 if (cellChannelModel == nullptr)
                     continue;
@@ -465,7 +465,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     }
 
     // check if the air frame was sent on a correct carrier frequency
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
@@ -589,10 +589,10 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
         throw cRuntimeError("LtePhyUe::handleUpperMessage  Ue preparing to send message to %hu instead of its master (%hu)", num(dest), num(masterId_));
     }
 
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr)
-        throw cRuntimeError("LtePhyUe::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq);
+        throw cRuntimeError("LtePhyUe::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     if (lteInfo->getFrameType() == DATAPKT && (channelModel->isUplinkInterferenceEnabled() || channelModel->isD2DInterferenceEnabled())) {
         // Store the RBs used for data transmission to the binder (for UL interference computation)
@@ -708,7 +708,7 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
 
     // send one feedback packet for each carrier
     for (auto& cm : channelModel_) {
-        double carrierFrequency = cm.first;
+        GHz carrierFrequency = cm.first;
         LteAirFrame *carrierFrame = frame->dup();
         UserControlInfo *carrierInfo = uinfo->dup();
         carrierInfo->setCarrierFrequency(carrierFrequency);
@@ -801,4 +801,3 @@ void LtePhyUe::finish()
 }
 
 } //namespace
-

@@ -28,13 +28,13 @@ class NrSchedulerGnbUl : public LteSchedulerEnbUl
     // does nothing with asynchronous H-ARQ
     void updateHarqDescs() override {}
 
-    bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency) override;
+    bool checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency) override;
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    bool rtxschedule(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
 };
 
 } //namespace

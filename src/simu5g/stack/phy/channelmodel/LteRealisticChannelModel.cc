@@ -1706,7 +1706,7 @@ double LteRealisticChannelModel::jakesFading(MacNodeId nodeId, double speed,
         }
     }
     // convert carrier frequency from GHz to Hz
-    double f = carrierFrequency_ * 1000000000;
+    double f = carrierFrequencyHz_;
 
     // get transmission time start (TTI = 1ms)
     simtime_t t = simTime().dbl() - 0.001;
@@ -2145,7 +2145,7 @@ double LteRealisticChannelModel::computeIndoor(double d, bool los)
         a = 43.3;
         b = 11.5;
     }
-    return a * log10(d) + b + 20 * log10(carrierFrequency_);
+    return a * log10(d) + b + 20 * log10CarrierFrequencyGHz_;
 }
 
 double LteRealisticChannelModel::computeUrbanMicro(double d, bool los)
@@ -2154,7 +2154,7 @@ double LteRealisticChannelModel::computeUrbanMicro(double d, bool los)
         d = 10;
 
     double dbp = 4 * (hNodeB_ - 1) * (hUe_ - 1)
-        * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+        * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
     if (los) {
         // LOS situation
         if (d > 5000) {
@@ -2164,10 +2164,10 @@ double LteRealisticChannelModel::computeUrbanMicro(double d, bool los)
                 throw cRuntimeError("Error: LOS urban microcell path loss model is valid for d < 5000 m");
         }
         if (d < dbp)
-            return 22 * log10(d) + 28 + 20 * log10(carrierFrequency_);
+            return 22 * log10(d) + 28 + 20 * log10CarrierFrequencyGHz_;
         else
             return 40 * log10(d) + 7.8 - 18 * log10(hNodeB_ - 1)
-                   - 18 * log10(hUe_ - 1) + 2 * log10(carrierFrequency_);
+                   - 18 * log10(hUe_ - 1) + 2 * log10CarrierFrequencyGHz_;
     }
     // NLOS situation
     if (d < 10)
@@ -2178,7 +2178,7 @@ double LteRealisticChannelModel::computeUrbanMicro(double d, bool los)
         else
             throw cRuntimeError("Error: NLOS urban microcell path loss model is valid for d < 2000 m");
     }
-    return 36.7 * log10(d) + 22.7 + 26 * log10(carrierFrequency_);
+    return 36.7 * log10(d) + 22.7 + 26 * log10CarrierFrequencyGHz_;
 }
 
 double LteRealisticChannelModel::computeUrbanMacro(double d, bool los)
@@ -2187,7 +2187,7 @@ double LteRealisticChannelModel::computeUrbanMacro(double d, bool los)
         d = 10;
 
     double dbp = 4 * (hNodeB_ - 1) * (hUe_ - 1)
-        * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+        * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
     if (los) {
         if (d > 5000) {
             if (tolerateMaxDistViolation_)
@@ -2196,10 +2196,10 @@ double LteRealisticChannelModel::computeUrbanMacro(double d, bool los)
                 throw cRuntimeError("Error: LOS urban macrocell path loss model is valid for d < 5000 m");
         }
         if (d < dbp)
-            return 22 * log10(d) + 28 + 20 * log10(carrierFrequency_);
+            return 22 * log10(d) + 28 + 20 * log10CarrierFrequencyGHz_;
         else
             return 40 * log10(d) + 7.8 - 18 * log10(hNodeB_ - 1)
-                   - 18 * log10(hUe_ - 1) + 2 * log10(carrierFrequency_);
+                   - 18 * log10(hUe_ - 1) + 2 * log10CarrierFrequencyGHz_;
     }
 
     if (d < 10)
@@ -2214,7 +2214,7 @@ double LteRealisticChannelModel::computeUrbanMacro(double d, bool los)
     double att = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
         - (24.37 - 3.7 * pow(hBuilding_ / hNodeB_, 2)) * log10(hNodeB_)
         + (43.42 - 3.1 * log10(hNodeB_)) * (log10(d) - 3)
-        + 20 * log10(carrierFrequency_)
+        + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(11.75 * hUe_), 2)) - 4.97);
     return att;
 }
@@ -2225,7 +2225,7 @@ double LteRealisticChannelModel::computeSubUrbanMacro(double d, double& dbp, boo
         d = 10;
 
     dbp = 4 * (hNodeB_ - 1) * (hUe_ - 1)
-        * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+        * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
     if (los) {
         if (d > 5000) {
             if (tolerateMaxDistViolation_)
@@ -2238,13 +2238,13 @@ double LteRealisticChannelModel::computeSubUrbanMacro(double d, double& dbp, boo
         double a = (a1 < 10) ? a1 : 10;
         double b = (b1 < 14.72) ? b1 : 14.72;
         if (d < dbp) {
-            double first = 20 * log10((40 * M_PI * d * carrierFrequency_) / 3);
+            double first = 20 * log10((40 * M_PI * d * carrierFrequencyGHz_) / 3);
             double second = a * log10(d);
             double fourth = 0.002 * log10(hBuilding_) * d;
             return first + second - b + fourth;
         }
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequency_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(d / dbp);
     }
@@ -2257,7 +2257,7 @@ double LteRealisticChannelModel::computeSubUrbanMacro(double d, double& dbp, boo
     double att = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
         - (24.37 - 3.7 * pow(hBuilding_ / hNodeB_, 2)) * log10(hNodeB_)
         + (43.42 - 3.1 * log10(hNodeB_)) * (log10(d) - 3)
-        + 20 * log10(carrierFrequency_)
+        + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(11.75 * hUe_), 2)) - 4.97);
     return att;
 }
@@ -2268,7 +2268,7 @@ double LteRealisticChannelModel::computeRuralMacro(double d, double& dbp, bool l
         d = 10;
 
     dbp = 4 * (hNodeB_ - 1) * (hUe_ - 1)
-        * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+        * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
     if (los) {
         // LOS situation
         if (d > 10000) {
@@ -2283,10 +2283,10 @@ double LteRealisticChannelModel::computeRuralMacro(double d, double& dbp, bool l
         double a = (a1 < 10) ? a1 : 10;
         double b = (b1 < 14.72) ? b1 : 14.72;
         if (d < dbp)
-            return 20 * log10((40 * M_PI * d * carrierFrequency_) / 3)
+            return 20 * log10((40 * M_PI * d * carrierFrequencyGHz_) / 3)
                    + a * log10(d) - b + 0.002 * log10(hBuilding_) * d;
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequency_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(d / dbp);
     }
@@ -2301,7 +2301,7 @@ double LteRealisticChannelModel::computeRuralMacro(double d, double& dbp, bool l
     double att = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
         - (24.37 - 3.7 * pow(hBuilding_ / hNodeB_, 2)) * log10(hNodeB_)
         + (43.42 - 3.1 * log10(hNodeB_)) * (log10(d) - 3)
-        + 20 * log10(carrierFrequency_)
+        + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(11.75 * hUe_), 2)) - 4.97);
     return att;
 }
@@ -2343,7 +2343,7 @@ double LteRealisticChannelModel::getStdDev(bool dist, MacNodeId nodeId)
     return 0.0;
 }
 
-bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency,
+bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, GHz carrierFrequency,
         std::vector<double> *interference)
 {
     EV << "**** Ext Cell Interference **** " << endl;
@@ -2421,7 +2421,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
     return true;
 }
 
-bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir,
+bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, Direction dir,
         std::vector<double> *interference)
 {
     EV << "**** Background Cell Interference **** " << endl;
@@ -2666,7 +2666,7 @@ LteRealisticChannelModel::ShadowFadingMap *LteRealisticChannelModel::obtainShado
     return j;
 }
 
-bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap,
+bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,
         std::vector<double> *interference)
 {
     EV << "**** Downlink Interference ****" << endl;
@@ -2780,7 +2780,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
     return true;
 }
 
-bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, double carrierFrequency, const RbMap& rbmap, std::vector<double> *interference)
+bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference)
 {
     EV << "**** Uplink Interference for cellId[" << eNbId << "] node[" << senderId << "] ****" << endl;
 
@@ -2894,7 +2894,7 @@ bool LteRealisticChannelModel::computeUplinkInterference(MacNodeId eNbId, MacNod
     return true;
 }
 
-bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, Coord senderCoord, MacNodeId destId, Coord destCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap,
+bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, Coord senderCoord, MacNodeId destId, Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap,
         std::vector<double> *interference, Direction dir)
 {
     EV << "**** D2D Interference for cellId[" << eNbId << "] node[" << destId << "] ****" << endl;

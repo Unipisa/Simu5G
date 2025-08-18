@@ -50,7 +50,7 @@ class LteAmc
   public:
     void printParameters();
     void printFbhb(Direction dir);
-    void printTxParams(Direction dir, double carrierFrequency);
+    void printTxParams(Direction dir, GHz carrierFrequency);
     void printMuMimoMatrix(const char *s);
 
   protected:
@@ -81,16 +81,16 @@ class LteAmc
     std::vector<MacNodeId> d2dRevNodeIndex_;
 
     // one tx param per carrier
-    std::map<double, std::vector<UserTxParams>> dlTxParams_;
-    std::map<double, std::vector<UserTxParams>> ulTxParams_;
-    std::map<double, std::vector<UserTxParams>> d2dTxParams_;
+    std::map<GHz, std::vector<UserTxParams>> dlTxParams_;
+    std::map<GHz, std::vector<UserTxParams>> ulTxParams_;
+    std::map<GHz, std::vector<UserTxParams>> d2dTxParams_;
 
     int fType_; //CQI synchronization Debugging
 
     // one History per carrier
-    std::map<double, History_> dlFeedbackHistory_;
-    std::map<double, History_> ulFeedbackHistory_;
-    std::map<double, std::map<MacNodeId, History_>> d2dFeedbackHistory_;
+    std::map<GHz, History_> dlFeedbackHistory_;
+    std::map<GHz, History_> ulFeedbackHistory_;
+    std::map<GHz, std::map<MacNodeId, History_>> d2dFeedbackHistory_;
 
     unsigned int fbhbCapacityDl_;
     unsigned int fbhbCapacityUl_;
@@ -103,7 +103,7 @@ class LteAmc
     LteMuMimoMatrix muMimoUlMatrix_;
     LteMuMimoMatrix muMimoD2DMatrix_;
 
-    History_ *getHistory(Direction dir, double carrierFrequency);
+    History_ *getHistory(Direction dir, GHz carrierFrequency);
 
   public:
     LteAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas);
@@ -124,10 +124,10 @@ class LteAmc
     // CodeRate MCS rescaling
     void rescaleMcs(double rePerRb, Direction dir = DL);
 
-    void pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, double carrierFrequency);
-    void pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, double carrierFrequency);
-    const LteSummaryFeedback& getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency);
-    const LteSummaryFeedback& getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, double carrierFrequency);
+    void pushFeedback(MacNodeId id, Direction dir, LteFeedback fb, GHz carrierFrequency);
+    void pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, GHz carrierFrequency);
+    const LteSummaryFeedback& getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, GHz carrierFrequency);
+    const LteSummaryFeedback& getFeedbackD2D(MacNodeId id, Remote antenna, TxMode txMode, MacNodeId peerId, GHz carrierFrequency);
 
     //used when it is necessary to know if the requested feedback exists or not
     // LteSummaryFeedback getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir,bool& valid);
@@ -139,20 +139,20 @@ class LteAmc
         return &remoteSet_;
     }
 
-    bool existTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    const UserTxParams& getTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    const UserTxParams& setTxParams(MacNodeId id, const Direction dir, UserTxParams& info, double carrierFrequency);
-    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency);
+    bool existTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency);
+    const UserTxParams& getTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency);
+    const UserTxParams& setTxParams(MacNodeId id, const Direction dir, UserTxParams& info, GHz carrierFrequency);
+    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency);
+    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency);
+    virtual unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, GHz carrierFrequency);
+    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency);
+    virtual unsigned int computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, GHz carrierFrequency);
 
-    virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
+    virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency);
 
     // multiband version of the above function. It returns the number of bytes that can fit in the given "blocks" of the given "band"
-    virtual unsigned int computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
-    virtual unsigned int computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency);
+    virtual unsigned int computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency);
+    virtual unsigned int computeBitsOnNRbs_MB(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency);
     bool setPilotUsableBands(MacNodeId id, UsableBands usableBands);
     UsableBands *getPilotUsableBands(MacNodeId id);
 
@@ -217,7 +217,7 @@ class LteAmc
             muMimoD2DMatrix_.addPair(id1, id2);
     }
 
-    std::vector<Cqi> readMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency);
+    std::vector<Cqi> readMultiBandCqi(MacNodeId id, const Direction dir, GHz carrierFrequency);
 
     int getSystemNumBands() { return numBands_; }
 

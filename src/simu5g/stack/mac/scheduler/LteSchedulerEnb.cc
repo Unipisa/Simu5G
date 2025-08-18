@@ -128,7 +128,7 @@ void LteSchedulerEnb::initializeSchedulerPeriodCounter(NumerologyIndex maxNumero
         schedulerItem->initializeSchedulerPeriodCounter(maxNumerologyIndex);
 }
 
-std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
+std::map<GHz, LteMacScheduleList> *LteSchedulerEnb::schedule()
 {
     EV << "LteSchedulerEnb::schedule performed by Node: " << mac_->getMacNodeId() << endl;
 
@@ -173,7 +173,7 @@ std::map<double, LteMacScheduleList> *LteSchedulerEnb::schedule()
  *  ANTENNA UNAWARE: scheduleGrant(cid,bytes,terminate,active,eligible,band_limit);
  *  BAND UNAWARE:    scheduleGrant(cid,bytes,terminate,active,eligible);
  */
-unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, GHz carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
 {
     // Get the node ID and logical connection ID
     MacNodeId nodeId = cid.getNodeId();
@@ -535,7 +535,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     return totalAllocatedBytes;
 }
 
-unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, double carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnb::scheduleGrantBackground(MacCid bgCid, unsigned int bytes, bool& terminate, bool& active, bool& eligible, GHz carrierFrequency, BandLimitVector *bandLim, Remote antenna, bool limitBl)
 {
     MacNodeId bgUeId = bgCid.getNodeId();
 
@@ -828,7 +828,7 @@ unsigned int LteSchedulerEnb::readTotalAvailableRbs()
     return allocator_->computeTotalRbs();
 }
 
-unsigned int LteSchedulerEnb::readRbOccupation(const MacNodeId id, double carrierFrequency, RbMap& rbMap)
+unsigned int LteSchedulerEnb::readRbOccupation(const MacNodeId id, GHz carrierFrequency, RbMap& rbMap)
 {
     RbMap tmpRbMap;
 
@@ -867,7 +867,7 @@ void LteSchedulerEnb::resetAllocator()
 }
 
 unsigned int LteSchedulerEnb::availableBytes(const MacNodeId id,
-        Remote antenna, Band b, Codeword cw, Direction dir, double carrierFrequency, int limit)
+        Remote antenna, Band b, Codeword cw, Direction dir, GHz carrierFrequency, int limit)
 {
     EV << "LteSchedulerEnb::availableBytes MacNodeId " << id << " Antenna " << dasToA(antenna) << " band " << b << " cw " << cw << endl;
     // Retrieving this user available resource blocks
@@ -885,7 +885,7 @@ unsigned int LteSchedulerEnb::availableBytes(const MacNodeId id,
     return bytes;
 }
 
-unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Remote antenna, Band b, Direction dir, double carrierFrequency, int limit)
+unsigned int LteSchedulerEnb::availableBytesBackgroundUe(const MacNodeId id, Remote antenna, Band b, Direction dir, GHz carrierFrequency, int limit)
 {
     EV << "LteSchedulerEnb::availableBytes MacNodeId " << id << " Antenna " << dasToA(antenna) << " band " << b << endl;
     // Retrieving this user's available resource blocks
@@ -919,7 +919,7 @@ void LteSchedulerEnb::storeAllocationEnb(std::vector<std::vector<AllocatedRbsPer
     allocator_->storeAllocation(allocatedRbsPerBand, untouchableBands);
 }
 
-void LteSchedulerEnb::storeScListId(double carrierFrequency, std::pair<MacCid, Codeword> scList, unsigned int num_blocks)
+void LteSchedulerEnb::storeScListId(GHz carrierFrequency, std::pair<MacCid, Codeword> scList, unsigned int num_blocks)
 {
     scheduleList_[carrierFrequency][scList] = num_blocks;
 }

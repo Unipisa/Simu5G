@@ -435,29 +435,29 @@ class LteRealisticChannelModel : public LteChannelModel
      * @param eNbId id of the considered eNb
      * @param isCqi if we are computing a CQI
      */
-    bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, double carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
+    bool computeDownlinkInterference(MacNodeId eNbId, MacNodeId ueId, inet::Coord coord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
 
     /*
      * Compute interference coming from neighboring cells for the UL direction
      */
-    bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, double carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
+    bool computeUplinkInterference(MacNodeId eNbId, MacNodeId senderId, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference);
 
     /*
      * Compute interference coming from neighboring UEs for the D2D/D2D_MULTI direction
      */
-    bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
+    bool computeD2DInterference(MacNodeId eNbId, MacNodeId senderId, inet::Coord senderCoord, MacNodeId destId, inet::Coord destCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, std::vector<double> *interference, Direction dir);
 
     /*
      * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
-    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference);
+    virtual bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference);
 
     /*
      * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
-    virtual bool computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, double carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double> *interference);
+    virtual bool computeBackgroundCellInterference(MacNodeId nodeId, inet::Coord bsCoord, inet::Coord ueCoord, bool isCqi, GHz carrierFrequency, const RbMap& rbmap, Direction dir, std::vector<double> *interference);
 
     /*
      * Compute attenuation due to path loss and shadowing

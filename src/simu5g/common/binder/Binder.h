@@ -61,10 +61,10 @@ class Binder : public cSimpleModule
     std::map<inet::L3Address, inet::L3Address> mecHostToUpfAddress_;
 
     // list of static external cells. Used for intercell interference evaluation
-    std::map<double, ExtCellList> extCellList_;
+    std::map<GHz, ExtCellList> extCellList_;
 
     // list of static external cells. Used for intercell interference evaluation
-    std::map<double, BackgroundSchedulerList> bgSchedulerList_;
+    std::map<GHz, BackgroundSchedulerList> bgSchedulerList_;
 
     // list of all eNBs. Used for inter-cell interference evaluation
     std::vector<EnbInfo *> enbList_;
@@ -95,11 +95,11 @@ class Binder : public cSimpleModule
     CarrierInfoMap componentCarriers_;
 
     // for each carrier, store the UEs that are able to use it
-    typedef std::map<double, UeSet> CarrierUeMap;
+    typedef std::map<GHz, UeSet> CarrierUeMap;
     CarrierUeMap carrierUeMap_;
 
     // hack to link carrier freq to numerology index
-    std::map<double, NumerologyIndex> carrierFreqToNumerologyIndex_;
+    std::map<GHz, NumerologyIndex> carrierFreqToNumerologyIndex_;
     // max numerology index used by UEs
     std::vector<NumerologyIndex> ueMaxNumerologyIndex_;
     // set of numerologies used by each UE
@@ -108,7 +108,7 @@ class Binder : public cSimpleModule
     /*
      * Uplink interference support
      */
-    typedef std::map<double, std::vector<std::vector<std::vector<UeAllocationInfo>>>> UplinkTransmissionMap;
+    typedef std::map<GHz, std::vector<std::vector<std::vector<UeAllocationInfo>>>> UplinkTransmissionMap;
     // for each carrier frequency, for both previous and current TTIs, for each RB, stores the UE (nodeId and ref to the PHY module) that transmitted/are transmitting within that RB
     UplinkTransmissionMap ulTransmissionMap_;
     // TTI of the last update of the UL band status
@@ -187,18 +187,18 @@ class Binder : public cSimpleModule
     /**
      * Registers a carrier to the global Binder module
      */
-    void registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
+    void registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
             bool useTdd = false, unsigned int tddNumSymbolsDl = 0, unsigned int tddNumSymbolsUl = 0);
 
     /**
      * Registers a UE to a given carrier
      */
-    void registerCarrierUe(double carrierFrequency, unsigned int numerologyIndex, MacNodeId ueId);
+    void registerCarrierUe(GHz carrierFrequency, unsigned int numerologyIndex, MacNodeId ueId);
 
     /**
      * Returns the set of UEs enabled on the given carrier
      */
-    const UeSet& getCarrierUeSet(double carrierFrequency);
+    const UeSet& getCarrierUeSet(GHz carrierFrequency);
 
     /**
      * Returns the max numerology index used by the given UE
@@ -213,7 +213,7 @@ class Binder : public cSimpleModule
     /**
      * Returns the numerology associated to a carrier frequency
      */
-    NumerologyIndex getNumerologyIndexFromCarrierFreq(double carrierFreq) { return carrierFreqToNumerologyIndex_[carrierFreq]; }
+    NumerologyIndex getNumerologyIndexFromCarrierFreq(GHz carrierFreq) { return carrierFreqToNumerologyIndex_[carrierFreq]; }
 
     /**
      * Returns the slot duration associated to the numerology (in seconds)
@@ -228,7 +228,7 @@ class Binder : public cSimpleModule
     /**
      * Returns the slot format for the given carrier
      */
-    SlotFormat getSlotFormat(double carrierFrequency);
+    SlotFormat getSlotFormat(GHz carrierFrequency);
 
     /**
      * Registers a node to the global Binder module.
@@ -475,7 +475,7 @@ class Binder : public cSimpleModule
         return nodeIds_.size();
     }
 
-    int addExtCell(ExtCell *extCell, double carrierFrequency)
+    int addExtCell(ExtCell *extCell, GHz carrierFrequency)
     {
         if (extCellList_.find(carrierFrequency) == extCellList_.end())
             extCellList_[carrierFrequency] = ExtCellList();
@@ -484,12 +484,12 @@ class Binder : public cSimpleModule
         return extCellList_[carrierFrequency].size() - 1;
     }
 
-    ExtCellList getExtCellList(double carrierFrequency)
+    ExtCellList getExtCellList(GHz carrierFrequency)
     {
         return extCellList_[carrierFrequency];
     }
 
-    int addBackgroundScheduler(BackgroundScheduler *bgScheduler, double carrierFrequency)
+    int addBackgroundScheduler(BackgroundScheduler *bgScheduler, GHz carrierFrequency)
     {
         if (bgSchedulerList_.find(carrierFrequency) == bgSchedulerList_.end())
             bgSchedulerList_[carrierFrequency] = BackgroundSchedulerList();
@@ -498,7 +498,7 @@ class Binder : public cSimpleModule
         return bgSchedulerList_[carrierFrequency].size() - 1;
     }
 
-    BackgroundSchedulerList *getBackgroundSchedulerList(double carrierFrequency)
+    BackgroundSchedulerList *getBackgroundSchedulerList(GHz carrierFrequency)
     {
         return &bgSchedulerList_[carrierFrequency];
     }
@@ -542,9 +542,9 @@ class Binder : public cSimpleModule
      */
     simtime_t getLastUpdateUlTransmissionInfo();
     void initAndResetUlTransmissionInfo();
-    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir);
-    void storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir);  // overloaded function for bgUes
-    const std::vector<std::vector<UeAllocationInfo>> *getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t);
+    void storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir);
+    void storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir);  // overloaded function for bgUes
+    const std::vector<std::vector<UeAllocationInfo>> *getUlTransmissionMap(GHz carrierFreq, UlTransmissionMapTTI t);
     /*
      * X2 Support
      */
@@ -627,4 +627,3 @@ class Binder : public cSimpleModule
 } //namespace
 
 #endif
-

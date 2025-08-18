@@ -28,7 +28,7 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
 
     NrMcsElem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 
-    unsigned int getSymbolsPerSlot(double carrierFrequency, Direction dir);
+    unsigned int getSymbolsPerSlot(GHz carrierFrequency, Direction dir);
     unsigned int getResourceElementsPerBlock(unsigned int symbolsPerSlot);
     unsigned int getResourceElements(unsigned int blocks, unsigned int symbolsPerSlot);
     unsigned int computeTbsFromNinfo(double nInfo, double coderate);
@@ -36,7 +36,7 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
   public:
     BackgroundCellAmcNr(Binder *binder);
 
-    unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency) override;
+    unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency) override;
 };
 
 } //namespace

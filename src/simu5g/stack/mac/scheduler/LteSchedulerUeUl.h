@@ -44,7 +44,7 @@ class LteSchedulerUeUl
     LcgScheduler lcgScheduler_;
 
     // Carrier frequency handled by this scheduler
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
   public:
 
@@ -61,7 +61,7 @@ class LteSchedulerUeUl
     /*
      * Constructor
      */
-    LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency);
+    LteSchedulerUeUl(LteMacUe *mac, GHz carrierFrequency);
 
     /**
      * Copy constructor and operator=

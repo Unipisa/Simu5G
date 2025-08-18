@@ -17,6 +17,7 @@
 #include <iostream>
 #include <math.h>
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/common/Units.h>
 
 #include "simu5g/world/radio/ChannelAccess.h"
 #include "simu5g/world/radio/ChannelControl.h"
@@ -70,7 +71,7 @@ class LtePhyBase : public ChannelAccess
      */
     static short airFramePriority_;
     /** channel models to use.*/
-    std::map<double, opp_component_ptr<LteChannelModel>> channelModel_;
+    std::map<GHz, opp_component_ptr<LteChannelModel>> channelModel_;
     inet::ModuleRefByPar<LteChannelModel> primaryChannelModel_;
 
     /** The id of the in-data gate from the Stack */
@@ -126,7 +127,7 @@ class LtePhyBase : public ChannelAccess
     //Used only for PisaPhy
     LteFeedbackComputation *lteFeedbackComputation_ = nullptr;
 
-    double carrierFrequency_ = NAN;
+    double carrierFrequency_ = NAN;  // [Hz]
 
     /*
      * NR Support
@@ -152,16 +153,16 @@ class LtePhyBase : public ChannelAccess
         return primaryChannelModel_;
     }
 
-    const std::map<double, opp_component_ptr<LteChannelModel>> *getChannelModels()
+    const std::map<GHz, opp_component_ptr<LteChannelModel>> *getChannelModels()
     {
         return &channelModel_;
     }
 
-    LteChannelModel *getChannelModel(double carrierFreq = 0.0)
+    LteChannelModel *getChannelModel(GHz carrierFreq = GHz(0.0))
     {
         if (channelModel_.empty())
             return nullptr;
-        if (carrierFreq == 0.0) // when not specified, returns the first channel model (primary cell) TODO check this
+        if (carrierFreq == GHz(0.0)) // when not specified, returns the first channel model (primary cell) TODO check this
             return channelModel_.begin()->second;
         auto it = channelModel_.find(carrierFreq);
         return (it == channelModel_.end()) ? nullptr : it->second;
@@ -344,4 +345,3 @@ class LtePhyBase : public ChannelAccess
 } //namespace
 
 #endif /* _LTE_AIRPHYBASE_H_ */
-

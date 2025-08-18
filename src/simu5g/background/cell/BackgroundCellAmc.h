@@ -40,7 +40,7 @@ class BackgroundCellAmc
     BackgroundCellAmc(Binder *binder);
     virtual ~BackgroundCellAmc() {}
 
-    virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency);
+    virtual unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency);
 
     // utilities - do not involve pilot invocation
     unsigned int getItbsPerCqi(Cqi cqi, const Direction dir);

@@ -32,12 +32,16 @@
 
 #include <inet/common/packet/Packet.h>
 #include <inet/common/Protocol.h>
+#include <inet/common/Units.h>
 
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteCommonEnum_m.h"
 #include "simu5g/common/LteCommon_m.h"
 
 using namespace omnetpp;
+
+using inet::Hz;
+using inet::GHz;
 
 namespace simu5g {
 
@@ -361,7 +365,7 @@ struct BgTrafficManagerInfo
 {
     bool init;         // initialization flag
     IBackgroundTrafficManager *bgTrafficManager = nullptr;
-    double carrierFrequency;
+    GHz carrierFrequency;
     double allocatedRbsDl;
     double allocatedRbsUl;
     std::vector<double> allocatedRbsUeUl;
@@ -394,7 +398,7 @@ struct SlotFormat {
 };
 
 struct CarrierInfo {
-    double carrierFrequency;
+    GHz carrierFrequency;
     unsigned int numBands;
     unsigned int firstBand;
     unsigned int lastBand;
@@ -402,7 +406,7 @@ struct CarrierInfo {
     NumerologyIndex numerologyIndex;
     SlotFormat slotFormat;
 };
-typedef std::map<double, CarrierInfo> CarrierInfoMap;
+typedef std::map<GHz, CarrierInfo> CarrierInfoMap;
 
 /*************************************
 * Shortcut for structures using STL

@@ -33,20 +33,20 @@ class LteMacUe : public LteMacBase
     bool firstTx = false;
 
     // one per carrier
-    std::map<double, LteSchedulerUeUl *> lcgScheduler_;
+    std::map<GHz, LteSchedulerUeUl *> lcgScheduler_;
 
     // configured grant - one for each codeword
-    std::map<double, inet::IntrusivePtr<const LteSchedulingGrant>> schedulingGrant_;
+    std::map<GHz, inet::IntrusivePtr<const LteSchedulingGrant>> schedulingGrant_;
 
     /// List of scheduled connections for this UE
-    std::map<double, LteMacScheduleList *> scheduleList_;
+    std::map<GHz, LteMacScheduleList *> scheduleList_;
 
     // current H-ARQ process counter
     unsigned char currentHarq_ = 0;
 
     // periodic grant handling - one per carrier
-    std::map<double, unsigned int> periodCounter_;
-    std::map<double, unsigned int> expirationCounter_;
+    std::map<GHz, unsigned int> periodCounter_;
+    std::map<GHz, unsigned int> expirationCounter_;
 
     // number of MAC SDUs requested to the RLC
     int requestedSdus_ = 0;
@@ -156,7 +156,7 @@ class LteMacUe : public LteMacBase
     /*
      * Access scheduling grant
      */
-    inline const LteSchedulingGrant *getSchedulingGrant(double carrierFrequency) const
+    inline const LteSchedulingGrant *getSchedulingGrant(GHz carrierFrequency) const
     {
         if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end())
             return nullptr;

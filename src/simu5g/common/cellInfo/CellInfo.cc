@@ -203,29 +203,29 @@ unsigned int CellInfo::getPrimaryCarrierNumBands()
     return primaryCarrierNumBands;
 }
 
-unsigned int CellInfo::getCarrierNumBands(double carrierFrequency)
+unsigned int CellInfo::getCarrierNumBands(GHz carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
+        throw cRuntimeError("CellInfo::getCarrierNumBands - Carrier %f is not used on node %hu", carrierFrequency.get(), num(cellId_));
 
     return it->second.numBands;
 }
 
-double CellInfo::getPrimaryCarrierFrequency()
+GHz CellInfo::getPrimaryCarrierFrequency()
 {
-    double primaryCarrierFrequency = 0.0;
+    GHz primaryCarrierFrequency = GHz(0.0);
     if (!carrierMap_.empty())
         primaryCarrierFrequency = carrierMap_.begin()->first;
 
     return primaryCarrierFrequency;
 }
 
-void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
+void CellInfo::registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it != carrierMap_.end())
-        throw cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %hu", carrierFrequency, num(cellId_));
+        throw cRuntimeError("CellInfo::registerCarrier - Carrier [%fGHz] already exists on node %hu", carrierFrequency.get(), num(cellId_));
     else {
         carriersVector_.push_back(carrierFrequency);
 
@@ -273,7 +273,7 @@ void CellInfo::registerCarrier(double carrierFrequency, unsigned int carrierNumB
     }
 }
 
-const std::vector<double> *CellInfo::getCarriers()
+const std::vector<GHz> *CellInfo::getCarriers()
 {
     return &carriersVector_;
 }
@@ -283,11 +283,11 @@ const CarrierInfoMap *CellInfo::getCarrierInfoMap()
     return &carrierMap_;
 }
 
-unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
+unsigned int CellInfo::getCellwiseBand(GHz carrierFrequency, Band index)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
+        throw cRuntimeError("CellInfo::getCellwiseBand - Carrier %f is not used on node %hu", carrierFrequency.get(), num(cellId_));
 
     if (index > it->second.numBands)
         throw cRuntimeError("CellInfo::getCellwiseBand - Selected band [%d] is greater than the number of available bands on this carrier [%d]", index, it->second.numBands);
@@ -295,34 +295,34 @@ unsigned int CellInfo::getCellwiseBand(double carrierFrequency, Band index)
     return it->second.firstBand + index;
 }
 
-BandLimitVector *CellInfo::getCarrierBandLimit(double carrierFrequency)
+BandLimitVector *CellInfo::getCarrierBandLimit(GHz carrierFrequency)
 {
-    if (carrierFrequency == 0.0) {
+    if (carrierFrequency == GHz(0.0)) {
         auto it = carrierMap_.begin();
         if (it != carrierMap_.end())
             return &(it->second.bandLimit);
     }
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %hu", carrierFrequency, num(cellId_));
+        throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %hu", carrierFrequency.get(), num(cellId_));
 
     return &(it->second.bandLimit);
 }
 
-unsigned int CellInfo::getCarrierStartingBand(double carrierFrequency)
+unsigned int CellInfo::getCarrierStartingBand(GHz carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency.get());
 
     return it->second.firstBand;
 }
 
-unsigned int CellInfo::getCarrierLastBand(double carrierFrequency)
+unsigned int CellInfo::getCarrierLastBand(GHz carrierFrequency)
 {
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
-        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("CellInfo::getCarrierStartingBand - Carrier [%fGHz] not found", carrierFrequency.get());
 
     return it->second.lastBand;
 }
@@ -352,4 +352,3 @@ SlotFormat CellInfo::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl
 }
 
 } //namespace
-

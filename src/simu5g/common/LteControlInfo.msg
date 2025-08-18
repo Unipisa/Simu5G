@@ -12,6 +12,7 @@
 import inet.common.INETDefs;
 import inet.common.TagBase;
 import inet.common.geometry.Geometry; // for Coord
+import inet.common.Units;
 import simu5g.common.LteCommon;
 import simu5g.stack.mac.amc.UserTxParams;
 
@@ -109,7 +110,7 @@ class FlowControlInfo extends LteControlInfo {
 //
 class UserControlInfo extends LteControlInfo {
     bool isNr = false;
-    double carrierFrequency = NaN;       // carrier frequency
+    inet::GHz carrierFrequency;       // carrier frequency
 
     //# H-ARQ Control Information
 

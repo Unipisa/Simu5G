@@ -41,7 +41,7 @@ class LteHarqProcessMirrorD2D
   public:
 
     LteHarqProcessMirrorD2D(unsigned int numUnits, unsigned char numTransmissions, LteMacEnb *macOwner);
-    void storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, MacNodeId d2dSenderId, double carrierFrequency, Codeword cw);
+    void storeFeedback(HarqAcknowledgment harqAck, int64_t pduLength, MacNodeId d2dSenderId, GHz carrierFrequency, Codeword cw);
     std::vector<TxHarqPduStatus>& getProcessStatus() { return status_; }
     TxHarqPduStatus getUnitStatus(Codeword cw) { return status_[cw]; }
     void markSelected(Codeword cw) { status_[cw] = TXHARQ_PDU_SELECTED; }

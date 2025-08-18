@@ -24,6 +24,9 @@ void LteChannelModel::initialize(int stage)
 
         numBands_ = componentCarrier_->getNumBands();   // TODO fix this for UEs' channel model (probably it's not used)
         carrierFrequency_ = componentCarrier_->getCarrierFrequency();
+        carrierFrequencyGHz_ = GHz(carrierFrequency_).get();
+        carrierFrequencyHz_ = Hz(carrierFrequency_).get();
+        log10CarrierFrequencyGHz_ = log10(carrierFrequencyGHz_);
 
         // register the carrier to the cellInfo module and the binder
         cellInfo_.reference(this, "cellInfoModule", false);

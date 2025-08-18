@@ -121,13 +121,13 @@ class LteMacBase : public cSimpleModule
     LteMacBufferMap macBuffers_;
 
     /// List of pdus finalized for each user on each codeword (one entry per carrier)
-    std::map<double, MacPduList> macPduList_;
+    std::map<GHz, MacPduList> macPduList_;
 
     /// Harq Tx Buffers (one entry per carrier)
-    std::map<double, HarqTxBuffers> harqTxBuffers_;
+    std::map<GHz, HarqTxBuffers> harqTxBuffers_;
 
     /// Harq Rx Buffers (one entry per carrier)
-    std::map<double, HarqRxBuffers> harqRxBuffers_;
+    std::map<GHz, HarqRxBuffers> harqRxBuffers_;
 
     /* Connection Descriptors
      * Holds flow-related information
@@ -253,19 +253,19 @@ class LteMacBase : public cSimpleModule
     }
 
     // Returns the harq tx buffers
-    std::map<double, HarqTxBuffers> *getHarqTxBuffers()
+    std::map<GHz, HarqTxBuffers> *getHarqTxBuffers()
     {
         return &harqTxBuffers_;
     }
 
     // Returns the harq rx buffers
-    std::map<double, HarqRxBuffers> *getHarqRxBuffers()
+    std::map<GHz, HarqRxBuffers> *getHarqRxBuffers()
     {
         return &harqRxBuffers_;
     }
 
     // Returns the harq tx buffers for the given carrier
-    HarqTxBuffers *getHarqTxBuffers(double carrierFrequency)
+    HarqTxBuffers *getHarqTxBuffers(GHz carrierFrequency)
     {
         if (harqTxBuffers_.find(carrierFrequency) == harqTxBuffers_.end())
             return nullptr;
@@ -273,7 +273,7 @@ class LteMacBase : public cSimpleModule
     }
 
     // Returns the harq rx buffers for the given carrier
-    HarqRxBuffers *getHarqRxBuffers(double carrierFrequency)
+    HarqRxBuffers *getHarqRxBuffers(GHz carrierFrequency)
     {
         if (harqRxBuffers_.find(carrierFrequency) == harqRxBuffers_.end())
             return nullptr;
@@ -441,4 +441,3 @@ class LteMacBase : public cSimpleModule
 } //namespace
 
 #endif
-

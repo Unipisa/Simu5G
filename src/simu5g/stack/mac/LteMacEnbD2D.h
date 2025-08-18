@@ -34,7 +34,7 @@ class LteMacEnbD2D : public LteMacEnb
      * Stores the mirrored status of H-ARQ buffers for D2D transmissions.
      * The key value of the map is the pair <sender,receiver> of the D2D flow
      */
-    std::map<double, HarqBuffersMirrorD2D> harqBuffersMirrorD2D_;
+    std::map<GHz, HarqBuffersMirrorD2D> harqBuffersMirrorD2D_;
 
     // if true, use the preconfigured TX params for transmission, else use that signaled by the eNB
     bool usePreconfiguredTxParams_;
@@ -74,7 +74,7 @@ class LteMacEnbD2D : public LteMacEnb
      * creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the lower layer
      */
-    void sendGrants(std::map<double, LteMacScheduleList> *scheduleList) override;
+    void sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList) override;
 
     void macHandleD2DModeSwitch(cPacket *pkt);
 
@@ -130,7 +130,7 @@ class LteMacEnbD2D : public LteMacEnb
     void deleteQueues(MacNodeId nodeId) override;
 
     // get the reference to the "mirror" buffers
-    HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(double carrierFrequency);
+    HarqBuffersMirrorD2D *getHarqBuffersMirrorD2D(GHz carrierFrequency);
 
     // delete the "mirror" Harq Buffer for this pair (useful at mode switch)
     void deleteHarqBuffersMirrorD2D(MacNodeId txPeer, MacNodeId rxPeer);

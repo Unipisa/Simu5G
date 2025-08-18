@@ -44,12 +44,12 @@ class LteMacEnb : public LteMacBase
     int numAntennas_ = 0;
 
     /// List of scheduled users (one per carrier) - Downlink
-    std::map<double, LteMacScheduleList> *scheduleListDl_ = nullptr;
+    std::map<GHz, LteMacScheduleList> *scheduleListDl_ = nullptr;
 
     int eNodeBCount;
 
     /// Reference to the background traffic manager
-    std::map<double, IBackgroundTrafficManager *> bgTrafficManager_;
+    std::map<GHz, IBackgroundTrafficManager *> bgTrafficManager_;
 
     /*******************************************************************************************/
 
@@ -63,9 +63,9 @@ class LteMacEnb : public LteMacBase
     LteSchedulerEnbUl *enbSchedulerUl_ = nullptr;
 
     /// Maps to keep track of nodes that need a retransmission to be scheduled
-    std::map<double, int> needRtxDl_;
-    std::map<double, int> needRtxUl_;
-    std::map<double, int> needRtxD2D_;
+    std::map<GHz, int> needRtxDl_;
+    std::map<GHz, int> needRtxUl_;
+    std::map<GHz, int> needRtxD2D_;
 
     /**
      * Reads MAC parameters for eNb and performs initialization.
@@ -82,7 +82,7 @@ class LteMacEnb : public LteMacBase
      * Creates scheduling grants (one for each nodeId) according to the Schedule List.
      * It sends them to the lower layer.
      */
-    virtual void sendGrants(std::map<double, LteMacScheduleList> *scheduleList);
+    virtual void sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList);
 
     /**
      * macPduMake() creates MAC PDUs (one for each CID)
@@ -196,10 +196,10 @@ class LteMacEnb : public LteMacBase
     /**
      * Getter for the backgroundTrafficManager.
      */
-    virtual IBackgroundTrafficManager *getBackgroundTrafficManager(double carrierFrequency)
+    virtual IBackgroundTrafficManager *getBackgroundTrafficManager(GHz carrierFrequency)
     {
         if (bgTrafficManager_.find(carrierFrequency) == bgTrafficManager_.end())
-            throw cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency);
+            throw cRuntimeError("LteMacEnb::getBackgroundTrafficManager - carrier frequency [%f] not valid.", carrierFrequency.get());
         return bgTrafficManager_[carrierFrequency];
     }
 
@@ -223,12 +223,12 @@ class LteMacEnb : public LteMacBase
     /*
      * Inform the base station that the given node will need a retransmission.
      */
-    virtual void signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, Direction dir, bool rtx = true);
+    virtual void signalProcessForRtx(MacNodeId nodeId, GHz carrierFrequency, Direction dir, bool rtx = true);
 
     /*
      * Get the number of nodes requesting retransmissions for the given carrier.
      */
-    virtual int getProcessForRtx(double carrierFrequency, Direction dir);
+    virtual int getProcessForRtx(GHz carrierFrequency, Direction dir);
 
     void cqiStatistics(MacNodeId id, Direction dir, LteFeedback fb);
 
@@ -268,4 +268,3 @@ class LteMacEnb : public LteMacBase
 } //namespace
 
 #endif
-

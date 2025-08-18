@@ -24,7 +24,7 @@ void LteScheduler::setEnbScheduler(LteSchedulerEnb *eNbScheduler)
     mac_ = eNbScheduler_->mac_;
 }
 
-void LteScheduler::setCarrierFrequency(double carrierFrequency)
+void LteScheduler::setCarrierFrequency(GHz carrierFrequency)
 {
     carrierFrequency_ = carrierFrequency;
 }
@@ -167,7 +167,7 @@ void LteScheduler::buildCarrierActiveConnectionSet()
     // put in the activeConnectionSet only connections that are active
     // and whose UE is enabled to use this carrier
 
-    const UeSet& carrierUeSet = binder_->getCarrierUeSet(carrierFrequency_);
+    const UeSet& carrierUeSet = binder_->getCarrierUeSet(GHz(carrierFrequency_));
     for (auto& activeConnection : *activeConnectionSet_) {
         if (carrierUeSet.find(activeConnection.getNodeId()) != carrierUeSet.end())
             carrierActiveConnectionSet_.insert(activeConnection);
@@ -175,4 +175,3 @@ void LteScheduler::buildCarrierActiveConnectionSet()
 }
 
 } //namespace
-

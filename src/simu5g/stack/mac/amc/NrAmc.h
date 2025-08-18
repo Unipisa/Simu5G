@@ -25,7 +25,7 @@ namespace simu5g {
  */
 class NrAmc : public LteAmc
 {
-    unsigned int getSymbolsPerSlot(double carrierFrequency, Direction dir);
+    unsigned int getSymbolsPerSlot(GHz carrierFrequency, Direction dir);
     unsigned int getResourceElementsPerBlock(unsigned int symbolsPerSlot);
     unsigned int getResourceElements(unsigned int blocks, unsigned int symbolsPerSlot);
     unsigned int computeTbsFromNinfo(double nInfo, double coderate);
@@ -42,9 +42,9 @@ class NrAmc : public LteAmc
 
     NrMcsElem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 
-    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency) override;
-    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency) override;
-    unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency) override;
+    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency) override;
+    unsigned int computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, GHz carrierFrequency) override;
+    unsigned int computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency) override;
 
 };
 

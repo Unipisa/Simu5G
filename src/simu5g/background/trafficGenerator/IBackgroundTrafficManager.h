@@ -31,7 +31,7 @@ class IBackgroundTrafficManager
   public:
 
     // Set carrier frequency
-    virtual void setCarrierFrequency(double carrierFrequency) = 0;
+    virtual void setCarrierFrequency(GHz carrierFrequency) = 0;
 
     // Get the number of RBs
     virtual unsigned int getNumBands() = 0;
@@ -85,4 +85,3 @@ class IBackgroundTrafficManager
 } //namespace
 
 #endif
-

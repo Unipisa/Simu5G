@@ -26,7 +26,7 @@ NrAmc::NrAmc(LteMacEnb *mac, Binder *binder, CellInfo *cellInfo, int numAntennas
 }
 
 
-unsigned int NrAmc::getSymbolsPerSlot(double carrierFrequency, Direction dir)
+unsigned int NrAmc::getSymbolsPerSlot(GHz carrierFrequency, Direction dir)
 {
     unsigned totSymbols = 14;   // TODO get this parameter from CellInfo/Carrier
 
@@ -131,7 +131,7 @@ unsigned int NrAmc::computeCodewordTbs(UserTxParams *info, Codeword cw, Directio
 *      Scheduler interface functions      *
 *******************************************/
 
-unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)
+unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, GHz carrierFrequency)
 {
     if (blocks == 0)
         return 0;
@@ -166,7 +166,7 @@ unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks,
     return bits;
 }
 
-unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency)
+unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, GHz carrierFrequency)
 {
     if (blocks == 0)
         return 0;
@@ -197,7 +197,7 @@ unsigned int NrAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigne
     return tbs;
 }
 
-unsigned int NrAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+unsigned int NrAmc::computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency)
 {
     // DEBUG
     EV << NOW << " NrAmc::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << " carrierFrequency: " << carrierFrequency << endl;
@@ -274,4 +274,3 @@ NrMcsElem NrAmc::getMcsElemPerCqi(Cqi cqi, const Direction dir)
 }
 
 } //namespace
-

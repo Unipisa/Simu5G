@@ -61,7 +61,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
     double ttiPeriod_;
 
     // carrier frequency for these bg UEs
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
     // tx power of the e/gNodeB
     double bsTxPower_;
@@ -99,7 +99,7 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
   public:
 
     // set carrier frequency
-    void setCarrierFrequency(double carrierFrequency) override { carrierFrequency_ = carrierFrequency; }
+    void setCarrierFrequency(GHz carrierFrequency) override { carrierFrequency_ = carrierFrequency; }
 
     // get the tx power of the BS
     double getBsTxPower() override { return bsTxPower_; }
@@ -144,4 +144,3 @@ class BackgroundTrafficManagerBase : public cSimpleModule, public IBackgroundTra
 } //namespace
 
 #endif
-

@@ -29,7 +29,7 @@ using namespace inet;
 
 Define_Module(Binder);
 
-void Binder::registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
+void Binder::registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex, bool useTdd, unsigned int tddNumSymbolsDl, unsigned int tddNumSymbolsUl)
 {
     CarrierInfoMap::iterator it = componentCarriers_.find(carrierFrequency);
     if (it != componentCarriers_.end() && carrierNumBands <= componentCarriers_[carrierFrequency].numBands) {
@@ -56,12 +56,12 @@ void Binder::registerCarrier(double carrierFrequency, unsigned int carrierNumBan
     }
 }
 
-void Binder::registerCarrierUe(double carrierFrequency, unsigned int numerologyIndex, MacNodeId ueId)
+void Binder::registerCarrierUe(GHz carrierFrequency, unsigned int numerologyIndex, MacNodeId ueId)
 {
     // check if carrier exists in the system
     CarrierUeMap::iterator it = carrierUeMap_.find(carrierFrequency);
     if (it == carrierUeMap_.end())
-        throw cRuntimeError("Binder::registerCarrierUe - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("Binder::registerCarrierUe - Carrier [%fGHz] not found", carrierFrequency.get());
 
     carrierUeMap_[carrierFrequency].insert(ueId);
 
@@ -79,11 +79,11 @@ void Binder::registerCarrierUe(double carrierFrequency, unsigned int numerologyI
         ueMaxNumerologyIndex_[num(ueId)] = (numerologyIndex > ueMaxNumerologyIndex_[num(ueId)]) ? numerologyIndex : ueMaxNumerologyIndex_[num(ueId)];
 }
 
-const UeSet& Binder::getCarrierUeSet(double carrierFrequency)
+const UeSet& Binder::getCarrierUeSet(GHz carrierFrequency)
 {
     CarrierUeMap::iterator it = carrierUeMap_.find(carrierFrequency);
     if (it == carrierUeMap_.end())
-        throw cRuntimeError("Binder::getCarrierUeSet - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("Binder::getCarrierUeSet - Carrier [%fGHz] not found", carrierFrequency.get());
 
     return carrierUeMap_[carrierFrequency];
 }
@@ -127,11 +127,11 @@ SlotFormat Binder::computeSlotFormat(bool useTdd, unsigned int tddNumSymbolsDl, 
     return sf;
 }
 
-SlotFormat Binder::getSlotFormat(double carrierFrequency)
+SlotFormat Binder::getSlotFormat(GHz carrierFrequency)
 {
     CarrierInfoMap::iterator it = componentCarriers_.find(carrierFrequency);
     if (it == componentCarriers_.end())
-        throw cRuntimeError("Binder::getSlotFormat - Carrier [%fGHz] not found", carrierFrequency);
+        throw cRuntimeError("Binder::getSlotFormat - Carrier [%fGHz] not found", carrierFrequency.get());
 
     return it->second.slotFormat;
 }
@@ -521,7 +521,7 @@ void Binder::initAndResetUlTransmissionInfo()
     lastUpdateUplinkTransmissionInfo_ = NOW;
 }
 
-void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir)
+void Binder::storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, LtePhyBase *phy, Direction dir)
 {
     UeAllocationInfo info;
     info.nodeId = nodeId;
@@ -551,7 +551,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     lastUplinkTransmission_ = NOW;
 }
 
-void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir)
+void Binder::storeUlTransmissionMap(GHz carrierFreq, Remote antenna, RbMap& rbMap, MacNodeId nodeId, MacCellId cellId, TrafficGeneratorBase *trafficGen, Direction dir)
 {
     UeAllocationInfo info;
     info.nodeId = nodeId;
@@ -581,7 +581,7 @@ void Binder::storeUlTransmissionMap(double carrierFreq, Remote antenna, RbMap& r
     lastUplinkTransmission_ = NOW;
 }
 
-const std::vector<std::vector<UeAllocationInfo>> *Binder::getUlTransmissionMap(double carrierFreq, UlTransmissionMapTTI t)
+const std::vector<std::vector<UeAllocationInfo>> *Binder::getUlTransmissionMap(GHz carrierFreq, UlTransmissionMapTTI t)
 {
     if (ulTransmissionMap_.find(carrierFreq) == ulTransmissionMap_.end() || t >= ulTransmissionMap_[carrierFreq].size()) {
         return nullptr;
@@ -1240,4 +1240,3 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
 }
 
 } //namespace
-

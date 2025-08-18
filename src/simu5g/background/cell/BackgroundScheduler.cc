@@ -41,7 +41,7 @@ void BackgroundScheduler::initialize(int stage)
 
         isNr_ = par("isNr");
         numerologyIndex_ = par("numerologyIndex");
-        carrierFrequency_ = par("carrierFrequency").doubleValue();
+        carrierFrequency_ = GHz(par("carrierFrequency").doubleValue());
         numBands_ = par("numBands");
 
         // initialize band status structures

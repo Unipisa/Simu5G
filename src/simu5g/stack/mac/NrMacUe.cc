@@ -29,7 +29,7 @@ void NrMacUe::handleSelfMessage()
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
     for (auto& mit : harqRxBuffers_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit.first)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((mit.first))) > 0)
             continue;
 
         std::list<Packet *> pduList;
@@ -50,7 +50,7 @@ void NrMacUe::handleSelfMessage()
 
     bool noSchedulingGrants = true;
     for (auto& git : schedulingGrant_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(git.first)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((git.first))) > 0)
             continue;
 
         if (git.second != nullptr)
@@ -69,7 +69,7 @@ void NrMacUe::handleSelfMessage()
         for (auto& git : schedulingGrant_) {
             if (git.second != nullptr && git.second->getPeriodic()) {
                 periodicGrant = true;
-                double carrierFreq = git.first;
+                GHz carrierFreq = git.first;
 
                 // Periodic checks
                 if (--expirationCounter_[carrierFreq] < 0) {
@@ -114,12 +114,12 @@ void NrMacUe::handleSelfMessage()
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
 
-        std::map<double, HarqTxBuffers>::iterator mtit;
+        std::map<GHz, HarqTxBuffers>::iterator mtit;
         for (auto& mtit : harqTxBuffers_) {
-            double carrierFrequency = mtit.first;
+            GHz carrierFrequency = mtit.first;
 
             // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
+            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFrequency))) > 0)
                 continue;
 
             // skip if no grant is configured for this carrier
@@ -163,10 +163,10 @@ void NrMacUe::handleSelfMessage()
         // if no retransmission is needed, proceed with normal scheduling
         if (!retx) {
             emptyScheduleList_ = true;
-            std::map<double, LteSchedulerUeUl *>::iterator sit;
+            std::map<GHz, LteSchedulerUeUl *>::iterator sit;
             for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
                 // skip if this is not the turn of this carrier
-                if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFrequency)) > 0)
+                if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFrequency))) > 0)
                     continue;
 
                 EV << "NrMacUe::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
@@ -234,7 +234,7 @@ int NrMacUe::macSduRequest()
 
     for (auto& gitem : schedulingGrant_) {
         // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(gitem.first)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((gitem.first))) > 0)
             continue;
 
         if (gitem.second == nullptr)
@@ -247,7 +247,7 @@ int NrMacUe::macSduRequest()
     // Ask for a MAC SDU for each scheduled user on each codeword
     for (auto [citFreq, citList] : scheduleList_) {
         // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(citFreq)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((citFreq))) > 0)
             continue;
 
         for (auto& item : *citList) {
@@ -297,10 +297,10 @@ void NrMacUe::macPduMake(MacCid cid)
     bool bsrAlreadyMade = false;
     // UE is in D2D-mode but it received an UL grant (for BSR)
     for (auto& gitem : schedulingGrant_) {
-        double carrierFreq = gitem.first;
+        GHz carrierFreq = gitem.first;
 
         // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
             continue;
 
         if (gitem.second != nullptr && gitem.second->getDirection() == UL && emptyScheduleList_) {
@@ -370,7 +370,7 @@ void NrMacUe::macPduMake(MacCid cid)
         // Build a MAC PDU for each scheduled user on each codeword
         for (auto [carrierFreq, schList] : scheduleList_) {
             // skip if this is not the turn of this carrier
-            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
+            if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
                 continue;
 
             LteMacScheduleList::const_iterator it;
@@ -471,9 +471,9 @@ void NrMacUe::macPduMake(MacCid cid)
 
     // Put MAC PDUs in H-ARQ buffers
     for (auto& lit : macPduList_) {
-        double carrierFreq = lit.first;
+        GHz carrierFreq = lit.first;
         // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
             continue;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
@@ -621,4 +621,3 @@ void NrMacUe::macPduMake(MacCid cid)
 }
 
 } //namespace
-

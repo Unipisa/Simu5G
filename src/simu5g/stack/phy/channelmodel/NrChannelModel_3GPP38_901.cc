@@ -77,12 +77,12 @@ double NrChannelModel_3GPP38_901::computePenetrationLoss(double threeDimDistance
     double inside_distance = (inside_distance_ < threeDimDistance) ? inside_distance_ : threeDimDistance;
     double pLoss_in = 0.5 * inside_distance;
     double pLoss_tw = 0.0;
-    if (carrierFrequency_ <= 6.0)
+    if (carrierFrequencyGHz_ <= 6.0)
         pLoss_tw = 20.0;
     else {
-        double Lglass = 2 + 0.2 * carrierFrequency_;
-        double LiirGlass = 23 + 0.3 * carrierFrequency_;
-        double Lconcrete = 5 + 4 * carrierFrequency_;
+        double Lglass = 2 + 0.2 * carrierFrequencyGHz_;
+        double LiirGlass = 23 + 0.3 * carrierFrequencyGHz_;
+        double Lconcrete = 5 + 4 * carrierFrequencyGHz_;
 
         if (useBuildingPenetrationHighLossModel_)
             pLoss_tw = 5 - 10 * log10(0.7 * pow(10, (-Lglass / 10)) + 0.3 * pow(10, (-Lconcrete / 10))) + normal(0.0, 4.4);
@@ -149,14 +149,14 @@ double NrChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
     }
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
-    double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+    double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_  / SPEED_OF_LIGHT);
 
     // Compute LOS path loss
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
-        pLoss_los = 28 + 22 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
+        pLoss_los = 28 + 22 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_;
     else
-        pLoss_los = 28 + 40 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
+        pLoss_los = 28 + 40 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_ - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
     pLoss_los += penetrationLoss;
 
     double pLoss = 0.0;
@@ -164,7 +164,7 @@ double NrChannelModel_3GPP38_901::computeUrbanMacro(double threeDimDistance, dou
         pLoss = pLoss_los;
     else {
         // Compute NLOS path loss
-        double pLoss_nlos = 13.54 + 39.08 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 0.6 * (hUe_ - 1.5);
+        double pLoss_nlos = 13.54 + 39.08 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_ - 0.6 * (hUe_ - 1.5);
         pLoss_nlos += penetrationLoss;
 
         pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
@@ -189,14 +189,14 @@ double NrChannelModel_3GPP38_901::computeUrbanMicro(double threeDimDistance, dou
     double hEnvir = 1.0;
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
-    double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+    double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_  / SPEED_OF_LIGHT);
 
     // Compute LOS path loss
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
-        pLoss_los = 32.4 + 21 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
+        pLoss_los = 32.4 + 21 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_;
     else
-        pLoss_los = 32.4 + 40 * log10(threeDimDistance) + 20 * log10(carrierFrequency_) - 9.5 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
+        pLoss_los = 32.4 + 40 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_ - 9.5 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
     pLoss_los += penetrationLoss;
 
     double pLoss = 0.0;
@@ -204,7 +204,7 @@ double NrChannelModel_3GPP38_901::computeUrbanMicro(double threeDimDistance, dou
         pLoss = pLoss_los;
     else {
         // Compute NLOS path loss
-        double pLoss_nlos = 35.3 * log10(threeDimDistance) + 22.4 + 21.3 * log10(carrierFrequency_) - 0.3 * (hUe_ - 1.5);
+        double pLoss_nlos = 35.3 * log10(threeDimDistance) + 22.4 + 21.3 * log10CarrierFrequencyGHz_ - 0.3 * (hUe_ - 1.5);
         pLoss_nlos += penetrationLoss;
 
         pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
@@ -232,7 +232,7 @@ double NrChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
     }
 
     // Compute break-point distance
-    double dbp = 2 * M_PI * hNodeB_ * hUe_ * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+    double dbp = 2 * M_PI * hNodeB_ * hUe_ * (carrierFrequencyHz_  / SPEED_OF_LIGHT);
 
     double h = 5.0; // Average building height
     double A = 0.03 * pow(h, 1.72);
@@ -241,10 +241,10 @@ double NrChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
     double min2 = (B < 14.77) ? B : 14.77;
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp) {
-        pLoss_los = 20 * log10(40 * M_PI * threeDimDistance * (carrierFrequency_ / 3.0)) + min1 * log10(threeDimDistance) - min2 + 0.002 * log10(h) * threeDimDistance;
+        pLoss_los = 20 * log10(40 * M_PI * threeDimDistance * (carrierFrequencyGHz_ / 3.0)) + min1 * log10(threeDimDistance) - min2 + 0.002 * log10(h) * threeDimDistance;
     }
     else {
-        pLoss_los = 20 * log10(40 * M_PI * dbp * (carrierFrequency_ / 3.0)) + min1 * log10(dbp) - min2 + 0.002 * log10(h) * dbp
+        pLoss_los = 20 * log10(40 * M_PI * dbp * (carrierFrequencyGHz_ / 3.0)) + min1 * log10(dbp) - min2 + 0.002 * log10(h) * dbp
             + 40 * log10(threeDimDistance / dbp);
     }
     pLoss_los += penetrationLoss;
@@ -255,7 +255,7 @@ double NrChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
     else {
         double W = 20.0;  // Average street width
         double pLoss_nlos = 161.04 - 7.1 * log10(W) + 7.5 * log10(h) - (24.37 - 3.7 * pow(h / hNodeB_, 2)) * log10(hNodeB_)
-            + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3.0) + 20 * log10(carrierFrequency_)
+            + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3.0) + 20 * log10CarrierFrequencyGHz_
             - (3.2 * pow((log10(11.75 * hUe_)), 2) - 4.97);
         pLoss_nlos += penetrationLoss;
         pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
@@ -278,7 +278,7 @@ double NrChannelModel_3GPP38_901::computeIndoor(double threeDimDistance, double 
         penetrationLoss = computePenetrationLoss(threeDimDistance);
 
     // Compute LOS path loss
-    double pLoss_los = 32.4 + 17.3 * log10(threeDimDistance) + 20 * log10(carrierFrequency_);
+    double pLoss_los = 32.4 + 17.3 * log10(threeDimDistance) + 20 * log10CarrierFrequencyGHz_;
     pLoss_los += penetrationLoss;
 
     double pLoss = 0.0;
@@ -286,7 +286,7 @@ double NrChannelModel_3GPP38_901::computeIndoor(double threeDimDistance, double 
         pLoss = pLoss_los;
     else {
         // Compute NLOS path loss
-        double pLoss_nlos = 38.3 * log10(threeDimDistance) + 17.3 + 24.9 * log10(carrierFrequency_);
+        double pLoss_nlos = 38.3 * log10(threeDimDistance) + 17.3 + 24.9 * log10CarrierFrequencyGHz_;
         pLoss_nlos += penetrationLoss;
 
         pLoss = (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;

@@ -21,7 +21,7 @@ BackgroundCellAmcNr::BackgroundCellAmcNr(Binder *binder) : BackgroundCellAmc(bin
 {
 }
 
-unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Direction dir, double carrierFrequency)
+unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Direction dir, GHz carrierFrequency)
 {
     // DEBUG
     EV << NOW << " BackgroundCellAmcNr::computeBitsPerRbBackground CQI: " << cqi << " Direction: " << dirToA(dir) << " carrierFrequency: " << carrierFrequency << endl;
@@ -96,7 +96,7 @@ NrMcsElem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
     return ret;
 }
 
-unsigned int BackgroundCellAmcNr::getSymbolsPerSlot(double carrierFrequency, Direction dir)
+unsigned int BackgroundCellAmcNr::getSymbolsPerSlot(GHz carrierFrequency, Direction dir)
 {
     unsigned int totSymbols = 14;   // TODO get this parameter from CellInfo/Carrier
 

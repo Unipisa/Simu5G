@@ -107,7 +107,7 @@ void LteMacBase::fromPhy(cPacket *pktAux)
     auto userInfo = pkt->getTag<UserControlInfo>();
 
     MacNodeId src = userInfo->getSourceId();
-    double carrierFreq = userInfo->getCarrierFrequency();
+    GHz carrierFreq = userInfo->getCarrierFrequency();
 
     if (userInfo->getFrameType() == HARQPKT) {
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {

@@ -83,7 +83,7 @@ class LteScheduler
     ActiveSet carrierActiveConnectionSet_;
 
     //! Frequency of the carrier handled by this scheduler
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
     //! Set of bands available for this carrier
     BandLimitVector *bandLimit_ = nullptr;
@@ -133,7 +133,7 @@ class LteScheduler
      * Initializes the carrier frequency for this LteScheduler.
      * @param carrierFrequency carrier frequency
      */
-    void setCarrierFrequency(double carrierFrequency);
+    void setCarrierFrequency(GHz carrierFrequency);
 
     /*
      * Initializes band limit for this scheduler
@@ -153,7 +153,7 @@ class LteScheduler
     /**
      * Returns the carrier frequency for this LteScheduler.
      */
-    double getCarrierFrequency() { return carrierFrequency_; };
+    GHz getCarrierFrequency() { return carrierFrequency_; };
 
     /**
      * Set the numerology index for this scheduler
@@ -220,4 +220,3 @@ class LteScheduler
 } //namespace
 
 #endif // _LTE_LTESCHEDULER_H_
-

@@ -167,7 +167,7 @@ double NrChannelModel::computeIndoor(double threeDimDistance, double twoDimDista
         a = 43.3;
         b = 11.5;
     }
-    return a * log10(threeDimDistance) + b + 20 * log10(carrierFrequency_);
+    return a * log10(threeDimDistance) + b + 20 * log10CarrierFrequencyGHz_;
 }
 
 double NrChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimDistance, bool los)
@@ -185,13 +185,13 @@ double NrChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimD
     // compute break-point distance
     double hNodeB = hNodeB_ - 1.0;
     double hUe = hUe_ - 1.0;
-    double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+    double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
 
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
-        pLoss_los = 22 * log10(threeDimDistance) + 28 + 20 * log10(carrierFrequency_);
+        pLoss_los = 22 * log10(threeDimDistance) + 28 + 20 * log10CarrierFrequencyGHz_;
     else
-        pLoss_los = 40 * log10(threeDimDistance) + 28 + 20 * log10(carrierFrequency_) - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
+        pLoss_los = 40 * log10(threeDimDistance) + 28 + 20 * log10CarrierFrequencyGHz_ - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
 
     if (los)
         return pLoss_los;
@@ -206,7 +206,7 @@ double NrChannelModel::computeUrbanMicro(double threeDimDistance, double twoDimD
     }
 
     double pLoss_nlos = 36.7 * log10(threeDimDistance) + 22.7
-        + 26 * log10(carrierFrequency_) - 0.3 * (hUe_ - 1.5);
+        + 26 * log10CarrierFrequencyGHz_ - 0.3 * (hUe_ - 1.5);
 
     return (pLoss_los > pLoss_nlos) ? pLoss_los : pLoss_nlos;
 }
@@ -232,11 +232,11 @@ double NrChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
         double inside_distance = (inside_distance_ < threeDimDistance) ? inside_distance_ : threeDimDistance;
         double pLoss_in = 0.5 * inside_distance;
         double pLoss_tw = 0.0;
-        if (carrierFrequency_ <= 6.0)
+        if (carrierFrequencyGHz_ <= 6.0)
             pLoss_tw = 20.0;
         else {
-            double Lglass = 2 + 0.2 * carrierFrequency_;
-            double Lconcrete = 5 + 4 * carrierFrequency_;
+            double Lglass = 2 + 0.2 * carrierFrequencyGHz_;
+            double Lconcrete = 5 + 4 * carrierFrequencyGHz_;
             pLoss_tw = 5 - 10 * log10(0.7 * pow(10, (-Lglass / 10)) + 0.7 * pow(10, (-Lconcrete / 10))) + normal(0.0, 4.4);
         }
         penetrationLoss = pLoss_tw + pLoss_in;
@@ -261,13 +261,13 @@ double NrChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
     double hNodeB = hNodeB_ - hEnvir;
     double hUe = hUe_ - hEnvir;
 
-    double dbp = 4 * hNodeB * hUe * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+    double dbp = 4 * hNodeB * hUe * (carrierFrequencyHz_  / SPEED_OF_LIGHT);
 
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp)
-        pLoss_los = 22 * log10(threeDimDistance) + 28 + 20 * log10(carrierFrequency_);
+        pLoss_los = 22 * log10(threeDimDistance) + 28 + 20 * log10CarrierFrequencyGHz_;
     else
-        pLoss_los = 40 * log10(threeDimDistance) + 28 + 20 * log10(carrierFrequency_) - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
+        pLoss_los = 40 * log10(threeDimDistance) + 28 + 20 * log10CarrierFrequencyGHz_ - 9 * log10((dbp * dbp + (hNodeB_ - hUe_) * (hNodeB_ - hUe_)));
 
     if (los)
         return pLoss_los + penetrationLoss;
@@ -276,7 +276,7 @@ double NrChannelModel::computeUrbanMacro(double threeDimDistance, double twoDimD
 
     double pLoss_nlos = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
         - (24.37 - 3.7 * pow(hBuilding_ / hNodeB_, 2)) * log10(hNodeB_)
-        + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3) + 20 * log10(carrierFrequency_)
+        + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3) + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(17.625), 2)) - 4.97) - 0.6 * (hUe_ - 1.5);
 
     return (pLoss_los > pLoss_nlos) ? pLoss_los + penetrationLoss : pLoss_nlos + penetrationLoss;
@@ -296,7 +296,7 @@ double NrChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
                 throw cRuntimeError("Error: rural macrocell path loss model is valid for d < 10000 m");
         }
 
-        double dbp = 2 * M_PI * hNodeB_ * hUe_ * ((carrierFrequency_ * 1000000000) / SPEED_OF_LIGHT);
+        double dbp = 2 * M_PI * hNodeB_ * hUe_ * (carrierFrequencyHz_ / SPEED_OF_LIGHT);
 
         double a1 = (0.03 * pow(hBuilding_, 1.72));
         double b1 = 0.044 * pow(hBuilding_, 1.72);
@@ -304,10 +304,10 @@ double NrChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
         double b = (b1 < 14.77) ? b1 : 14.77;
 
         if (twoDimDistance < dbp)
-            return 20 * log10((40 * M_PI * threeDimDistance * carrierFrequency_) / 3)
+            return 20 * log10((40 * M_PI * threeDimDistance * carrierFrequencyGHz_) / 3)
                    + a * log10(threeDimDistance) - b + 0.002 * log10(hBuilding_) * threeDimDistance;
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequency_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(threeDimDistance / dbp);
     }
@@ -322,12 +322,12 @@ double NrChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
 
     double pLoss_nlos = 161.04 - 7.1 * log10(wStreet_) + 7.5 * log10(hBuilding_)
         - (24.37 - 3.7 * pow(hBuilding_ / hNodeB_, 2)) * log10(hNodeB_)
-        + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3) + 20 * log10(carrierFrequency_)
+        + (43.42 - 3.1 * log10(hNodeB_)) * (log10(threeDimDistance) - 3) + 20 * log10CarrierFrequencyGHz_
         - (3.2 * (pow(log10(11.75 * hUe_), 2)) - 4.97);
     return pLoss_nlos;
 }
 
-bool NrChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, double carrierFrequency,
+bool NrChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, Coord coord, bool isCqi, GHz carrierFrequency,
         std::vector<double> *interference)
 {
     EV << "**** Ext Cell Interference **** " << endl;

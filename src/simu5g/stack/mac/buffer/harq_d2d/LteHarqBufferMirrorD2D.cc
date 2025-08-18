@@ -34,7 +34,7 @@ void LteHarqBufferMirrorD2D::receiveHarqFeedback(inet::Packet *pkt)
     unsigned char acid = fbpkt->getAcid();
     unsigned int pduLength = fbpkt->getPduLength();
     MacNodeId d2dSenderId = fbpkt->getD2dSenderId();
-    double carrierFrequency = pkt->getTag<UserControlInfo>()->getCarrierFrequency();
+    GHz carrierFrequency = pkt->getTag<UserControlInfo>()->getCarrierFrequency();
     processes_[acid]->storeFeedback(harqResult, pduLength, d2dSenderId, carrierFrequency, cw);
 
     // debug output

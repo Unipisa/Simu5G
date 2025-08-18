@@ -175,7 +175,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *pktAux)
     delete pkt;
 }
 
-void LteMacEnbD2D::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
+void LteMacEnbD2D::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
 {
     EV << NOW << "LteMacEnbD2D::sendGrants " << endl;
 
@@ -312,7 +312,7 @@ void LteMacEnbD2D::clearBsrBuffers(MacNodeId ueId)
     }
 }
 
-HarqBuffersMirrorD2D *LteMacEnbD2D::getHarqBuffersMirrorD2D(double carrierFrequency)
+HarqBuffersMirrorD2D *LteMacEnbD2D::getHarqBuffersMirrorD2D(GHz carrierFrequency)
 {
     if (harqBuffersMirrorD2D_.find(carrierFrequency) == harqBuffersMirrorD2D_.end())
         return nullptr;
@@ -515,7 +515,7 @@ void LteMacEnbD2D::fromPhy(cPacket *pktAux)
     auto userInfo = pkt->getTag<UserControlInfo>();
     if (userInfo->getFrameType() == HARQPKT) {
         MacNodeId src = userInfo->getSourceId();
-        double carrierFrequency = userInfo->getCarrierFrequency();
+        GHz carrierFrequency = userInfo->getCarrierFrequency();
 
         // this feedback refers to a mirrored H-ARQ buffer
         auto hfbpkt = pkt->peekAtFront<LteHarqFeedback>();

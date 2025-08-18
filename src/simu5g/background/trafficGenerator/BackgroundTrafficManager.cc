@@ -32,7 +32,7 @@ void BackgroundTrafficManager::initialize(int stage)
         bsCoord_ = phy_->getCoord();
         channelModel_ = phy_->getChannelModel(carrierFrequency_);
         if (channelModel_ == nullptr)
-            throw cRuntimeError("BackgroundTrafficManagerBase::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_);
+            throw cRuntimeError("BackgroundTrafficManagerBase::initialize - cannot find channel model for carrier frequency %f", carrierFrequency_.get());
     }
 }
 
@@ -94,4 +94,3 @@ double BackgroundTrafficManager::getReceivedPower_bgUe(double txPower, inet::Coo
 }
 
 } //namespace
-

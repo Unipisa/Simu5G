@@ -91,7 +91,7 @@ class NrChannelModel : public LteRealisticChannelModel
      * Evaluates total interference from external cells seen from the spot given by coord
      * @return total interference expressed in dBm
      */
-    bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, double carrierFrequency, std::vector<double> *interference) override;
+    bool computeExtCellInterference(MacNodeId eNbId, MacNodeId nodeId, inet::Coord coord, bool isCqi, GHz carrierFrequency, std::vector<double> *interference) override;
 
     /*
      * Compute attenuation due to path loss and shadowing

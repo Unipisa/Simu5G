@@ -50,7 +50,7 @@ class AmcPilotAuto : public AmcPilot
      * @param dir The link direction.
      * @return The user transmission parameters computed.
      */
-    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency) override;
+    const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency) override;
 
     /*
      * Defines a subset of bands that will be used in AMC operation.
@@ -71,7 +71,7 @@ class AmcPilotAuto : public AmcPilot
     UsableBands *getUsableBands(MacNodeId id) override;
 
     // Returns a vector with one CQI for each band (for the given user).
-    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) override;
+    std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, GHz carrierFrequency) override;
 };
 
 } //namespace

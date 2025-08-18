@@ -125,7 +125,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     // Call the appropriate function to make a BSR for a D2D communication
                     auto macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    double carrierFreq = gitem.first;
+                    GHz carrierFreq = gitem.first;
                     if (info != nullptr) {
                         info->setCarrierFrequency(carrierFreq);
                         info->setUserTxParams(gitem.second->getUserTxParams()->dup());
@@ -265,7 +265,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
     // Put MAC PDUs in H-ARQ buffers
     for (auto& lit : macPduList_) {
-        double carrierFreq = lit.first;
+        GHz carrierFreq = lit.first;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
@@ -452,7 +452,7 @@ void LteMacUeD2D::macHandleGrant(cPacket *pktAux)
     auto grant = pkt->popAtFront<LteSchedulingGrant>();
 
     auto userInfo = pkt->getTag<UserControlInfo>();
-    double carrierFrequency = userInfo->getCarrierFrequency();
+    GHz carrierFrequency = userInfo->getCarrierFrequency();
     EV << NOW << " LteMacUeD2D::macHandleGrant - Direction: " << dirToA(grant->getDirection()) << " Carrier: " << carrierFrequency << endl;
 
     // delete old grant
@@ -535,7 +535,7 @@ void LteMacUeD2D::checkRAC()
 
     if ((racRequested_ = trigger) || (racD2DMulticastRequested_ = triggerD2DMulticast)) {
         auto pkt = new Packet("RacRequest");
-        double carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
+        GHz carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
         pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFrequency);
         pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
@@ -633,7 +633,7 @@ void LteMacUeD2D::handleSelfMessage()
         for (auto& git : schedulingGrant_) {
             if (git.second != nullptr && git.second->getPeriodic()) {
                 periodicGrant = true;
-                double carrierFreq = git.first;
+                GHz carrierFreq = git.first;
 
                 // Periodic checks
                 if (--expirationCounter_[carrierFreq] < 0) {
@@ -682,7 +682,7 @@ void LteMacUeD2D::handleSelfMessage()
 
         LteHarqBufferTx *currHarq;
         for (auto& mtit : harqTxBuffers_) {
-            double carrierFrequency = mtit.first;
+            GHz carrierFrequency = mtit.first;
 
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
@@ -722,7 +722,7 @@ void LteMacUeD2D::handleSelfMessage()
         // if no retx is needed, proceed with normal scheduling
         if (!retx) {
             emptyScheduleList_ = true;
-            std::map<double, LteSchedulerUeUl *>::iterator sit;
+            std::map<GHz, LteSchedulerUeUl *>::iterator sit;
             for (auto [carrierFrequency, carrierLcgScheduler] : lcgScheduler_) {
                 EV << "LteMacUeD2D::handleSelfMessage - running LCG scheduler for carrier [" << carrierFrequency << "]" << endl;
                 LteMacScheduleList *carrierScheduleList = carrierLcgScheduler->schedule();

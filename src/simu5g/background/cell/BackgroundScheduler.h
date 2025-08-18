@@ -54,7 +54,7 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     unsigned int numerologyIndex_;
 
     // carrier frequency [GHz]
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
     // number of logical bands
     unsigned int numBands_;
@@ -130,4 +130,3 @@ class BackgroundScheduler : public cSimpleModule, public cListener
 } //namespace
 
 #endif
-

@@ -22,7 +22,7 @@ void ComponentCarrier::initialize()
 {
     binder_.reference(this, "binderModule", true);
     numBands_ = par("numBands");
-    carrierFrequency_ = par("carrierFrequency");
+    carrierFrequency_ = GHz(par("carrierFrequency"));
     numerologyIndex_ = par("numerologyIndex");
     if (numerologyIndex_ > 4)
         throw cRuntimeError("ComponentCarrier::initialize - numerology index [%d] not valid. It must be in the range between 0-4.", numerologyIndex_);
@@ -38,4 +38,3 @@ void ComponentCarrier::initialize()
 }
 
 } //namespace
-

@@ -39,13 +39,13 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * @param cw
      * @return
      */
-    bool checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency) override;
+    bool checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency) override;
 
     //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UEs.
-    std::map<double, HarqStatus> harqStatus_;
+    std::map<GHz, HarqStatus> harqStatus_;
 
     //! RAC request flags: signals whether a UE shall be granted the RAC allocation
-    std::map<double, RacStatus> racStatus_;
+    std::map<GHz, RacStatus> racStatus_;
 
   public:
 
@@ -56,25 +56,25 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * Updates current schedule list with RAC grant responses.
      * @return TRUE if OFDM space is exhausted.
      */
-    bool racschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
-    virtual void racscheduleBackground(unsigned int& racAllocatedBlocks, double carrierFrequency, BandLimitVector *bandLim = nullptr);
+    bool racschedule(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    virtual void racscheduleBackground(unsigned int& racAllocatedBlocks, GHz carrierFrequency, BandLimitVector *bandLim = nullptr);
 
     /**
      * Updates current schedule list with HARQ retransmissions.
      * @return TRUE if OFDM space is exhausted.
      */
-    bool rtxschedule(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    bool rtxschedule(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
 
     /**
      * Schedule retransmissions for background UEs
      * @return TRUE if OFDM space is exhausted.
      */
-    bool rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim = nullptr) override;
+    bool rtxscheduleBackground(GHz carrierFrequency, BandLimitVector *bandLim = nullptr) override;
 
     /**
      * signals RAC request to the scheduler (called by e/gNb)
      */
-    virtual void signalRac(MacNodeId nodeId, double carrierFrequency)
+    virtual void signalRac(MacNodeId nodeId, GHz carrierFrequency)
     {
         if (racStatus_.find(carrierFrequency) == racStatus_.end()) {
             RacStatus newMap;
@@ -95,13 +95,13 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * @param acid The ACID
      * @return The allocated bytes. 0 if retransmission was not possible
      */
-    unsigned int schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
+    unsigned int schedulePerAcidRtx(MacNodeId nodeId, GHz carrierFrequency, Codeword cw, unsigned char acid,
             std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false) override;
 
-    unsigned int schedulePerAcidRtxD2D(MacNodeId destId, MacNodeId senderId, double carrierFrequency, Codeword cw, unsigned char acid,
+    unsigned int schedulePerAcidRtxD2D(MacNodeId destId, MacNodeId senderId, GHz carrierFrequency, Codeword cw, unsigned char acid,
             std::vector<BandLimit> *bandLim = nullptr, Remote antenna = MACRO, bool limitBl = false);
 
-    unsigned int scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
+    unsigned int scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim = nullptr,
             Remote antenna = MACRO, bool limitBl = false) override;
 
     void removePendingRac(MacNodeId nodeId);

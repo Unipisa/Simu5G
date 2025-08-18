@@ -432,7 +432,7 @@ void LteMacUe::macPduMake(MacCid cid)
     // Put MAC PDUs in H-ARQ buffers
 
     for (auto& lit : macPduList_) {
-        double carrierFreq = lit.first;
+        GHz carrierFreq = lit.first;
 
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
@@ -673,7 +673,7 @@ void LteMacUe::handleSelfMessage()
         for (auto& git : schedulingGrant_) {
             if (git.second != nullptr && git.second->getPeriodic()) {
                 periodicGrant = true;
-                double carrierFreq = git.first;
+                GHz carrierFreq = git.first;
 
                 // Periodic checks
                 if (--expirationCounter_[carrierFreq] < 0) {
@@ -719,7 +719,7 @@ void LteMacUe::handleSelfMessage()
         bool retx = false;
 
         for (auto& mtit : harqTxBuffers_) {
-            double carrierFrequency = mtit.first;
+            GHz carrierFrequency = mtit.first;
 
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
@@ -810,7 +810,7 @@ void LteMacUe::macHandleGrant(cPacket *pktAux)
 
     // delete old grant
     auto userInfo = pkt->getTag<UserControlInfo>();
-    double carrierFrequency = userInfo->getCarrierFrequency();
+    GHz carrierFrequency = userInfo->getCarrierFrequency();
 
     EV << NOW << " LteMacUe::macHandleGrant - Direction: " << dirToA(grant->getDirection()) << " Carrier: " << carrierFrequency << endl;
 
@@ -918,7 +918,7 @@ void LteMacUe::checkRAC()
         auto racReq = makeShared<LteRac>();
         pkt->insertAtFront(racReq);
 
-        double carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
+        GHz carrierFrequency = phy_->getPrimaryChannelModel()->getCarrierFrequency();
         pkt->addTagIfAbsent<UserControlInfo>()->setCarrierFrequency(carrierFrequency);
         pkt->addTagIfAbsent<UserControlInfo>()->setSourceId(getMacNodeId());
         pkt->addTagIfAbsent<UserControlInfo>()->setDestId(getMacCellId());
@@ -943,7 +943,7 @@ void LteMacUe::updateUserTxParam(cPacket *pktAux)
     if (lteInfo->getFrameType() != DATAPKT)
         return;
 
-    double carrierFrequency = lteInfo->getCarrierFrequency();
+    GHz carrierFrequency = lteInfo->getCarrierFrequency();
 
     lteInfo->setUserTxParams(schedulingGrant_[carrierFrequency]->getUserTxParams()->dup());
 

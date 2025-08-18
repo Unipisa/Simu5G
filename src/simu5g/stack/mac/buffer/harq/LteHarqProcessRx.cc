@@ -67,10 +67,10 @@ bool LteHarqProcessRx::isEvaluated(Codeword cw)
     if (status_.at(cw) == RXHARQ_PDU_EVALUATING) {
         // get carrier frequency from the control info included in pdu_
         auto lteInfo = pdu_[cw]->getTag<UserControlInfo>();
-        double carrierFreq = lteInfo->getCarrierFrequency();
+        GHz carrierFreq = lteInfo->getCarrierFrequency();
 
         // obtain numerology and corresponding slot duration
-        NumerologyIndex numerologyIndex = binder_->getNumerologyIndexFromCarrierFreq(carrierFreq);
+        NumerologyIndex numerologyIndex = binder_->getNumerologyIndexFromCarrierFreq((carrierFreq));
         double slotDuration = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex);
 
         if ((NOW - rxTime_.at(cw)) >= slotDuration * (harqFbEvaluationTimer_ - 1))
@@ -244,4 +244,3 @@ bool LteHarqProcessRx::isHarqProcessActive()
 }
 
 } //namespace
-

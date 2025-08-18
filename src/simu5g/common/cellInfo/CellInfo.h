@@ -99,7 +99,7 @@ class CellInfo : public cSimpleModule
     CarrierInfoMap carrierMap_;
 
     // store the carrier frequencies used by this cell
-    std::vector<double> carriersVector_;
+    std::vector<GHz> carriersVector_;
 
     // max numerology index used in this cell
     NumerologyIndex maxNumerologyIndex_ = 0;
@@ -214,7 +214,7 @@ class CellInfo : public cSimpleModule
     unsigned int getNumBands();
 
     // returns the carrier frequency of the primary cell
-    double getPrimaryCarrierFrequency();
+    GHz getPrimaryCarrierFrequency();
 
     double getMcsScaleUl()
     {
@@ -323,30 +323,30 @@ class CellInfo : public cSimpleModule
      * Carrier Aggregation support
      */
     // register a new carrier for this node with the given number of bands
-    void registerCarrier(double carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
+    void registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
             bool useTdd = false, unsigned int tddNumSymbolsDl = 0, unsigned int tddNumSymbolsUl = 0);
 
-    const std::vector<double> *getCarriers();
+    const std::vector<GHz> *getCarriers();
 
     const CarrierInfoMap *getCarrierInfoMap();
 
     NumerologyIndex getMaxNumerologyIndex() { return maxNumerologyIndex_; }
 
     // convert a carrier-local band index to a cellwide band index
-    unsigned int getCellwiseBand(double carrierFrequency, Band index);
+    unsigned int getCellwiseBand(GHz carrierFrequency, Band index);
 
     // returns the number of bands for the primary cell
     unsigned int getPrimaryCarrierNumBands();
 
     // returns the number of bands for the given carrier
-    unsigned int getCarrierNumBands(double carrierFrequency);
+    unsigned int getCarrierNumBands(GHz carrierFrequency);
 
     // returns the band limit vector for the given carrier
     // if arg is not specified, returns the info for the primary carrier
-    BandLimitVector *getCarrierBandLimit(double carrierFrequency);
+    BandLimitVector *getCarrierBandLimit(GHz carrierFrequency);
 
-    unsigned int getCarrierStartingBand(double carrierFrequency);
-    unsigned int getCarrierLastBand(double carrierFrequency);
+    unsigned int getCarrierStartingBand(GHz carrierFrequency);
+    unsigned int getCarrierLastBand(GHz carrierFrequency);
     /*******************************************************************************/
 
     void detachUser(MacNodeId nodeId);

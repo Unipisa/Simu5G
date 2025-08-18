@@ -19,7 +19,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, double carrierFrequency)
+bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency)
 {
     HarqTxBuffers *harqTxBuff = mac_->getHarqTxBuffers(carrierFrequency);
     if (harqTxBuff == nullptr)                              // a new HARQ buffer will be created at transmission
@@ -45,7 +45,7 @@ bool LteSchedulerEnbDl::checkEligibility(MacNodeId id, Codeword& cw, double carr
     return true;
 }
 
-unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carrierFrequency, Codeword cw, unsigned char acid,
+unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, GHz carrierFrequency, Codeword cw, unsigned char acid,
         std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
 {
     // Get user transmission parameters
@@ -131,7 +131,7 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
 
     HarqTxBuffers *harqTxBuff = mac_->getHarqTxBuffers(carrierFrequency);
     if (harqTxBuff == nullptr)
-        throw cRuntimeError("LteSchedulerEnbDl::schedulePerAcidRtx - HARQ Buffer not found for carrier %f", carrierFrequency);
+        throw cRuntimeError("LteSchedulerEnbDl::schedulePerAcidRtx - HARQ Buffer not found for carrier %f", carrierFrequency.get());
     LteHarqBufferTx *currHarq = harqTxBuff->at(nodeId);
 
     // bytes to serve
@@ -256,7 +256,7 @@ unsigned int LteSchedulerEnbDl::schedulePerAcidRtx(MacNodeId nodeId, double carr
     return bytes;
 }
 
-unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
+unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, GHz carrierFrequency, Codeword cw, std::vector<BandLimit> *bandLim, Remote antenna, bool limitBl)
 {
     try {
         IBackgroundTrafficManager *bgTrafficManager = mac_->getBackgroundTrafficManager(carrierFrequency);
@@ -383,7 +383,7 @@ unsigned int LteSchedulerEnbDl::scheduleBgRtx(MacNodeId bgUeId, double carrierFr
     return 0;
 }
 
-bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *bandLim)
+bool LteSchedulerEnbDl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLim)
 {
     EV << NOW << " LteSchedulerEnbDl::rtxschedule --------------------::[ START RTX-SCHEDULE ]::--------------------" << endl;
     EV << NOW << " LteSchedulerEnbDl::rtxschedule Cell:  " << mac_->getMacCellId() << " Direction: " << (direction_ == DL ? "DL" : "UL") << endl;
@@ -469,7 +469,7 @@ bool LteSchedulerEnbDl::rtxschedule(double carrierFrequency, BandLimitVector *ba
     return availableBlocks == 0;
 }
 
-bool LteSchedulerEnbDl::rtxscheduleBackground(double carrierFrequency, BandLimitVector *bandLim)
+bool LteSchedulerEnbDl::rtxscheduleBackground(GHz carrierFrequency, BandLimitVector *bandLim)
 {
     EV << NOW << " LteSchedulerEnbDl::rtxscheduleBackground --------------------::[ START RTX-SCHEDULE-BACKGROUND ]::--------------------" << endl;
     EV << NOW << " LteSchedulerEnbDl::rtxscheduleBackground Cell:  " << mac_->getMacCellId() << " Direction: " << (direction_ == DL ? "DL" : "UL") << endl;
@@ -543,4 +543,3 @@ bool LteSchedulerEnbDl::getBandLimit(std::vector<BandLimit> *bandLimit, MacNodeI
 }
 
 } //namespace
-

@@ -46,7 +46,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
         return;
     }
 
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;

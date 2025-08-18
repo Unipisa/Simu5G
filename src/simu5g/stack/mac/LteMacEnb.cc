@@ -194,7 +194,7 @@ void LteMacEnb::initialize(int stage)
         const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
         int i = 0;
         for (const auto& item : *carriers) {
-            double carrierFrequency = item.second.carrierFrequency;
+            GHz carrierFrequency = item.second.carrierFrequency;
             bgTrafficManager_[carrierFrequency] = check_and_cast<IBackgroundTrafficManager *>(getParentModule()->getSubmodule("bgTrafficGenerator", i)->getSubmodule("manager"));
             bgTrafficManager_[carrierFrequency]->setCarrierFrequency(carrierFrequency);
             ++i;
@@ -240,7 +240,7 @@ void LteMacEnb::macSduRequest()
     EV << "----- START LteMacEnb::macSduRequest -----\n";
 
     // Ask for a MAC SDU for each scheduled user on each carrier and each codeword
-    std::map<double, LteMacScheduleList>::iterator cit;
+    std::map<GHz, LteMacScheduleList>::iterator cit;
     for (const auto& cit : *scheduleListDl_) { // loop on carriers
 
         for (const auto& item : cit.second) { // loop on CIDs
@@ -331,7 +331,7 @@ void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
     }
 }
 
-void LteMacEnb::sendGrants(std::map<double, LteMacScheduleList> *scheduleList)
+void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
 {
     EV << NOW << "LteMacEnb::sendGrants " << endl;
 
@@ -489,7 +489,7 @@ void LteMacEnb::macPduMake(MacCid cid)
 
     // Build a MAC PDU for each scheduled user on each codeword
     for (auto& cit : *scheduleListDl_) {
-        double carrierFreq = cit.first;
+        GHz carrierFreq = cit.first;
         for (auto& it : cit.second) {
             Packet *macPacket = nullptr;
             MacCid destCid = it.first.first;
@@ -571,9 +571,9 @@ void LteMacEnb::macPduMake(MacCid cid)
         }
     }
 
-    std::map<double, MacPduList>::iterator lit;
+    std::map<GHz, MacPduList>::iterator lit;
     for (const auto& lit : macPduList_) {
-        double carrierFreq = lit.first;
+        GHz carrierFreq = lit.first;
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
             harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
@@ -806,7 +806,7 @@ void LteMacEnb::handleSelfMessage()
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
     for (auto& mit : harqRxBuffers_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit.first)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((mit.first))) > 0)
             continue;
 
         for (auto& hit : mit.second) {
@@ -827,7 +827,7 @@ void LteMacEnb::handleSelfMessage()
 
     enbSchedulerUl_->updateHarqDescs();
 
-    std::map<double, LteMacScheduleList> *scheduleListUl = enbSchedulerUl_->schedule();
+    std::map<GHz, LteMacScheduleList> *scheduleListUl = enbSchedulerUl_->schedule();
     // send uplink grants to PHY layer
     sendGrants(scheduleListUl);
     EV << "============================================ END UPLINK ============================================" << endl;
@@ -856,7 +856,7 @@ void LteMacEnb::handleSelfMessage()
 
     // purge from corrupted PDUs all RX HARQ buffers for all users
     for (auto& mit : harqRxBuffers_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(mit.first)) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((mit.first))) > 0)
             continue;
 
         for (auto& hit : mit.second)
@@ -874,9 +874,9 @@ void LteMacEnb::handleSelfMessage()
     EV << "--- END ENB MAIN LOOP ---" << endl;
 }
 
-void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, Direction dir, bool rtx)
+void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, GHz carrierFrequency, Direction dir, bool rtx)
 {
-    std::map<double, int> *needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
+    std::map<GHz, int> *needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
         (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("LteMacEnb::signalProcessForRtx - direction %d not valid\n", dir);
 
     if (needRtx->find(carrierFrequency) == needRtx->end()) {
@@ -891,9 +891,9 @@ void LteMacEnb::signalProcessForRtx(MacNodeId nodeId, double carrierFrequency, D
         (*needRtx)[carrierFrequency]++;
 }
 
-int LteMacEnb::getProcessForRtx(double carrierFrequency, Direction dir)
+int LteMacEnb::getProcessForRtx(GHz carrierFrequency, Direction dir)
 {
-    std::map<double, int> *needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
+    std::map<GHz, int> *needRtx = (dir == DL) ? &needRtxDl_ : (dir == UL) ? &needRtxUl_ :
         (dir == D2D) ? &needRtxD2D_ : throw cRuntimeError("LteMacEnb::getProcessForRtx - direction %d not valid\n", dir);
 
     if (needRtx->find(carrierFrequency) == needRtx->end())
@@ -1019,7 +1019,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
                 activeUeSet.insert(item.first.getNodeId()); // active users in MAC
         }
 
-        std::map<double, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
+        std::map<GHz, HarqTxBuffers> *harqBuffers = getHarqTxBuffers();
 
         for (const auto& it1 : *harqBuffers) {
             const HarqTxBuffers& harqBuffer = it1.second;
@@ -1081,4 +1081,3 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 }
 
 } //namespace
-

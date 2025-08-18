@@ -277,3 +277,15 @@ struct FeedbackRequest
     RbAllocationType rbAllocationType;
 };
 
+// no GHz in inet -- define it
+cplusplus{{
+#include <inet/common/Units.h>
+}}
+
+namespace inet;
+
+cplusplus{{
+using namespace units::values;
+}}
+
+class GHz  { @existingClass; @primitive; @fromString(inet::GHz(string2double($)));   @toString(inet::unit2string($)); @defaultValue(inet::GHz(NaN));   @toValue(cValue($.get(),"GHz"));  @fromValue(inet::GHz($.doubleValueInUnit("GHz"))); }

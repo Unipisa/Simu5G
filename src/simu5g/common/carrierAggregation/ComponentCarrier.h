@@ -32,7 +32,7 @@ class ComponentCarrier : public cSimpleModule
     inet::ModuleRefByPar<Binder> binder_;
 
     // Carrier Frequency
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
     // Number of bands for this carrier
     unsigned int numBands_;
@@ -54,7 +54,7 @@ class ComponentCarrier : public cSimpleModule
     /*
      * Returns the carrier frequency
      */
-    double getCarrierFrequency() { return carrierFrequency_; }
+    GHz getCarrierFrequency() { return carrierFrequency_; }
 
     /*
      * Returns the number of logical bands
@@ -75,4 +75,3 @@ class ComponentCarrier : public cSimpleModule
 } //namespace
 
 #endif
-

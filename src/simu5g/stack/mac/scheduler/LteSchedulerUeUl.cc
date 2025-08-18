@@ -20,7 +20,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe *mac, double carrierFrequency) : mac_(mac), lcgScheduler_(mac), carrierFrequency_(carrierFrequency)
+LteSchedulerUeUl::LteSchedulerUeUl(LteMacUe *mac, GHz carrierFrequency) : mac_(mac), lcgScheduler_(mac), carrierFrequency_(carrierFrequency)
 {
 }
 

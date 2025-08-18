@@ -50,7 +50,7 @@ class ExtCell : public cSimpleModule
     double txAngle_;
 
     // Carrier frequency
-    double carrierFrequency_;
+    GHz carrierFrequency_;
 
     // Number of logical bands
     unsigned int numBands_;
@@ -118,4 +118,3 @@ class ExtCell : public cSimpleModule
 } //namespace
 
 #endif
-

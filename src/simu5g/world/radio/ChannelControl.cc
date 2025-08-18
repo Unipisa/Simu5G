@@ -82,7 +82,7 @@ double ChannelControl::calcInterfDist()
     double interfDistance;
 
     // the carrier frequency used
-    double carrierFrequency = par("carrierFrequency");
+    double carrierFrequency = par("carrierFrequency"); // [Hz]
     // maximum transmission power possible
     double pMax = par("pMax");
     // signal attenuation threshold

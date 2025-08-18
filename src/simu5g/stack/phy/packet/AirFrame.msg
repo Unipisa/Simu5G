@@ -10,7 +10,9 @@
 //
 
 import inet.common.geometry.Geometry;
+import inet.common.Units;
 
+import simu5g.common.LteCommon;
 import simu5g.stack.phy.packet.ModulationType;
 
 namespace simu5g;
@@ -30,7 +32,7 @@ packet AirFrame extends cPacket
     double lossRate;
     double powRec; // Power in the receiver
     inet::Coord senderPos @nopack;
-    double carrierFrequency;
+    inet::GHz carrierFrequency;
     double bandwidth;
     ModulationType modulationType @nopack;
 }

@@ -79,7 +79,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
         return;
     }
 
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr) {
         EV << "Received packet on carrier frequency not supported by this node. Delete it." << endl;
@@ -282,10 +282,10 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
     auto pkt = check_and_cast<inet::Packet *>(msg);
     auto lteInfo = pkt->removeTag<UserControlInfo>();
 
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr)
-        throw cRuntimeError("LtePhyUeD2D::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq);
+        throw cRuntimeError("LtePhyUeD2D::handleUpperMessage - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     if (lteInfo->getFrameType() == DATAPKT && (channelModel->isUplinkInterferenceEnabled() || channelModel->isD2DInterferenceEnabled())) {
         // Store the RBs used for data transmission to the binder (for UL interference computation).
@@ -323,7 +323,7 @@ void LtePhyUeD2D::handleUpperMessage(cMessage *msg)
     frame->setSchedulingPriority(airFramePriority_);
 
     // Set transmission duration according to the numerology.
-    NumerologyIndex numerologyIndex = binder_->getNumerologyIndexFromCarrierFreq(lteInfo->getCarrierFrequency());
+    NumerologyIndex numerologyIndex = binder_->getNumerologyIndexFromCarrierFreq((lteInfo->getCarrierFrequency()));
     double slotDuration = binder_->getSlotDurationFromNumerologyIndex(numerologyIndex);
     frame->setDuration(slotDuration);
 
@@ -350,10 +350,10 @@ void LtePhyUeD2D::storeAirFrame(LteAirFrame *newFrame)
     // Implements the capture effect
     // Store the frame received from the nearest transmitter
     UserControlInfo *newInfo = check_and_cast<UserControlInfo *>(newFrame->getControlInfo());
-    double carrierFreq = newInfo->getCarrierFrequency();
+    GHz carrierFreq = newInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr)
-        throw cRuntimeError("LtePhyUeD2D::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq);
+        throw cRuntimeError("LtePhyUeD2D::storeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     Coord myCoord = getCoord();
     double distance = 0.0;
@@ -444,10 +444,10 @@ void LtePhyUeD2D::decodeAirFrame(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     EV << NOW << " LtePhyUeD2D::decodeAirFrame - Start decoding..." << endl;
 
-    double carrierFreq = lteInfo->getCarrierFrequency();
+    GHz carrierFreq = lteInfo->getCarrierFrequency();
     LteChannelModel *channelModel = getChannelModel(carrierFreq);
     if (channelModel == nullptr)
-        throw cRuntimeError("LtePhyUeD2D::decodeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq);
+        throw cRuntimeError("LtePhyUeD2D::decodeAirFrame - Carrier frequency [%f] not supported by any channel model", carrierFreq.get());
 
     // Apply decider to received packet
     bool result = true;
@@ -543,7 +543,7 @@ void LtePhyUeD2D::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVe
 
     // Send one feedback packet for each carrier
     for (auto& cm : channelModel_) {
-        double carrierFrequency = cm.first;
+        GHz carrierFrequency = cm.first;
         LteAirFrame *carrierFrame = frame->dup();
         UserControlInfo *carrierInfo = uinfo->dup();
         carrierInfo->setCarrierFrequency(carrierFrequency);
@@ -573,4 +573,3 @@ void LtePhyUeD2D::finish()
 }
 
 } //namespace
-

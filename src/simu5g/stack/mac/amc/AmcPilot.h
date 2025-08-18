@@ -70,7 +70,7 @@ class AmcPilot
      * @param dir The link direction.
      * @return The user transmission parameters computed.
      */
-    virtual const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, double carrierFrequency) = 0;
+    virtual const UserTxParams& computeTxParams(MacNodeId id, const Direction dir, GHz carrierFrequency) = 0;
 
     /**
      * Function to get the AMC Pilot name.
@@ -81,7 +81,7 @@ class AmcPilot
         return name_;
     }
 
-    virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, double carrierFrequency) = 0;
+    virtual std::vector<Cqi> getMultiBandCqi(MacNodeId id, const Direction dir, GHz carrierFrequency) = 0;
 
     virtual void setUsableBands(MacNodeId id, UsableBands usableBands) = 0;
     virtual UsableBands *getUsableBands(MacNodeId id) = 0;

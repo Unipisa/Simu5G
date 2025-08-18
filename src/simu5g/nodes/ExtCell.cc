@@ -42,7 +42,7 @@ void ExtCell::initialize(int stage)
             default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
         }
 
-        carrierFrequency_ = par("carrierFrequency").doubleValue();
+        carrierFrequency_ = GHz(par("carrierFrequency"));
         numBands_ = par("numBands");
     }
     if (stage == inet::INITSTAGE_LOCAL + 1) {
@@ -154,4 +154,3 @@ void ExtCell::setBandUtilization(double bandUtilization)
 }
 
 } //namespace
-
