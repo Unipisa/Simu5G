@@ -225,7 +225,7 @@ void LtePhyBase::sendMulticast(LteAirFrame *frame)
             EV << NOW << " LtePhyBase::sendMulticast - node " << destId << " is in the multicast group" << endl;
 
             // get a pointer to receiving module
-            cModule *receiver = getSimulation()->getModule(nodeIt->second);
+            cModule *receiver = getSimulation()->getModule(nodeIt->second.omnetId);
             LtePhyBase *recvPhy;
             double dist;
 

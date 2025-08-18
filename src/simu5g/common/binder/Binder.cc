@@ -150,18 +150,13 @@ void Binder::unregisterNode(MacNodeId id)
     }
 
     // iterate all nodeIds and find HarqRx buffers dependent on 'id'
-    for (const auto& [nodeId, omnetId] : nodeIds_) {
+    for (const auto& [nodeId, nodeInfo] : nodeInfoMap_) {
         LteMacBase *mac = getMacFromMacNodeId(nodeId);
         mac->unregisterHarqBufferRx(id);
     }
 
-    // remove 'id' from LteMacBase* cache but do not delete pointer.
-    if (macNodeIdToModule_.erase(id) != 1) {
-        throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
-    }
-
-    // remove 'id' from MacNodeId mapping
-    if (nodeIds_.erase(id) != 1) {
+    // remove 'id' from consolidated node info map
+    if (nodeInfoMap_.erase(id) != 1) {
         throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
     }
     // remove 'id' from ulTransmissionMap_ if currently scheduled
@@ -201,9 +196,9 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
        << " with OmnetId: " << module->getId() << " and MacNodeId " << macNodeId
        << "\n";
 
-    // registering new node to Binder
-
-    nodeIds_[macNodeId] = module->getId();
+    // registering new node to Binder - use consolidated NodeInfo structure
+    NodeInfo nodeInfo(module->getId(), module->getFullPath(), module);
+    nodeInfoMap_[macNodeId] = nodeInfo;
 
     if (!registerNr)
         module->par("macNodeId") = num(macNodeId);
@@ -265,12 +260,9 @@ void Binder::initialize(int stage)
         WATCH(networkName_);
         WATCH_MAP(macNodeIdToIPAddress_);
         WATCH_MAP(nrMacNodeIdToIPAddress_);
-        WATCH_MAP(macNodeIdToModuleName_);
-        WATCH_PTRMAP(macNodeIdToModuleRef_);
-        WATCH_PTRMAP(macNodeIdToModule_);
+        // WATCH_MAP(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
         WATCH_VECTOR(nextHop_);
         WATCH_VECTOR(secondaryNodeToMasterNode_);
-        WATCH_MAP(nodeIds_);
         WATCH_SET(mecHostAddress_);
         WATCH_MAP(mecHostToUpfAddress_);
         // WATCH_MAP(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
@@ -393,25 +385,25 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 
 OmnetId Binder::getOmnetId(MacNodeId nodeId)
 {
-    auto it = nodeIds_.find(nodeId);
-    if (it != nodeIds_.end())
-        return it->second;
+    auto it = nodeInfoMap_.find(nodeId);
+    if (it != nodeInfoMap_.end())
+        return it->second.omnetId;
     return 0;
 }
 
-std::map<MacNodeId, OmnetId>::const_iterator Binder::getNodeIdListBegin()
+std::map<MacNodeId, NodeInfo>::const_iterator Binder::getNodeIdListBegin()
 {
-    return nodeIds_.begin();
+    return nodeInfoMap_.begin();
 }
 
-std::map<MacNodeId, OmnetId>::const_iterator Binder::getNodeIdListEnd()
+std::map<MacNodeId, NodeInfo>::const_iterator Binder::getNodeIdListEnd()
 {
-    return nodeIds_.end();
+    return nodeInfoMap_.end();
 }
 
 MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
-    for (const auto& [macNodeId, omnetId] : nodeIds_)
-        if (omnetId == id)
+    for (const auto& [macNodeId, nodeInfo] : nodeInfoMap_)
+        if (nodeInfo.omnetId == id)
             return macNodeId;
     return NODEID_NONE;
 }
@@ -421,15 +413,17 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
     if (id == NODEID_NONE)
         return nullptr;
 
-    LteMacBase *mac;
-    if (macNodeIdToModule_.find(id) == macNodeIdToModule_.end()) {
-        mac = check_and_cast<LteMacBase *>(getMacByMacNodeId(this, id));
-        macNodeIdToModule_[id] = mac;
+    auto it = nodeInfoMap_.find(id);
+    if (it == nodeInfoMap_.end())
+        return nullptr;
+
+    // Check if MAC module is already cached
+    if (it->second.macModule == nullptr) {
+        // Cache the MAC module reference
+        it->second.macModule = check_and_cast<LteMacBase *>(getMacByMacNodeId(this, id));
     }
-    else {
-        mac = macNodeIdToModule_[id];
-    }
-    return mac;
+
+    return it->second.macModule;
 }
 
 MacNodeId Binder::getNextHop(MacNodeId slaveId)
@@ -472,26 +466,44 @@ const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostA
 
 void Binder::registerName(MacNodeId nodeId, std::string moduleName)
 {
-    macNodeIdToModuleName_[nodeId] = moduleName;
+    auto it = nodeInfoMap_.find(nodeId);
+    if (it != nodeInfoMap_.end()) {
+        it->second.moduleName = moduleName;
+    } else {
+        // If node doesn't exist yet, create a new entry
+        NodeInfo nodeInfo;
+        nodeInfo.moduleName = moduleName;
+        nodeInfoMap_[nodeId] = nodeInfo;
+    }
 }
 
 void Binder::registerModule(MacNodeId nodeId, cModule *module)
 {
-    macNodeIdToModuleRef_[nodeId] = module;
+    auto it = nodeInfoMap_.find(nodeId);
+    if (it != nodeInfoMap_.end()) {
+        it->second.moduleRef = module;
+    } else {
+        // If node doesn't exist yet, create a new entry
+        NodeInfo nodeInfo;
+        nodeInfo.moduleRef = module;
+        nodeInfoMap_[nodeId] = nodeInfo;
+    }
 }
 
 const char *Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
 {
-    if (macNodeIdToModuleName_.find(nodeId) == macNodeIdToModuleName_.end())
+    auto it = nodeInfoMap_.find(nodeId);
+    if (it == nodeInfoMap_.end() || it->second.moduleName.empty())
         throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID %d not found", num(nodeId));
-    return macNodeIdToModuleName_[nodeId].c_str();
+    return it->second.moduleName.c_str();
 }
 
 cModule *Binder::getModuleByMacNodeId(MacNodeId nodeId)
 {
-    if (macNodeIdToModuleRef_.find(nodeId) == macNodeIdToModuleRef_.end())
+    auto it = nodeInfoMap_.find(nodeId);
+    if (it == nodeInfoMap_.end() || it->second.moduleRef == nullptr)
         throw cRuntimeError("Binder::getModuleByMacNodeId - node ID %d not found", num(nodeId));
-    return macNodeIdToModuleRef_[nodeId];
+    return it->second.moduleRef;
 }
 
 ConnectedUesMap Binder::getDeployedUes(MacNodeId localId, Direction dir)

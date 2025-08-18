@@ -34,6 +34,19 @@ class UeStatsCollector;
  * IP addresses, etc.
  */
 
+// Consolidated node information structure
+struct NodeInfo {
+    OmnetId omnetId;
+    std::string moduleName;
+    opp_component_ptr<cModule> moduleRef;
+    opp_component_ptr<LteMacBase> macModule;
+
+    NodeInfo() : omnetId(0), moduleName(""), moduleRef(nullptr), macModule(nullptr) {}
+
+    NodeInfo(OmnetId omnetId, const std::string& moduleName, cModule* moduleRef)
+        : omnetId(omnetId), moduleName(moduleName), moduleRef(moduleRef), macModule(nullptr) {}
+};
+
 class Binder : public cSimpleModule
 {
   private:
@@ -45,12 +58,12 @@ class Binder : public cSimpleModule
 
     std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_; //TODO name is swapped!
     std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_; //TODO name is swapped!
-    std::map<MacNodeId, std::string> macNodeIdToModuleName_;
-    std::map<MacNodeId, opp_component_ptr<cModule>> macNodeIdToModuleRef_;
-    std::map<MacNodeId, opp_component_ptr<LteMacBase>> macNodeIdToModule_;
+
+    // Consolidated node information - replaces nodeIds_, macNodeIdToModuleName_, macNodeIdToModuleRef_, macNodeIdToModule_
+    std::map<MacNodeId, NodeInfo> nodeInfoMap_;
+
     std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
-    std::map<MacNodeId, OmnetId> nodeIds_;
 
     // stores the IP address of the MEC hosts in the simulation
     std::set<inet::L3Address> mecHostAddress_;
@@ -295,8 +308,8 @@ class Binder : public cSimpleModule
     /*
      * get iterators for the list of nodes
      */
-    std::map<MacNodeId, OmnetId>::const_iterator getNodeIdListBegin();
-    std::map<MacNodeId, OmnetId>::const_iterator getNodeIdListEnd();
+    std::map<MacNodeId, NodeInfo>::const_iterator getNodeIdListBegin();
+    std::map<MacNodeId, NodeInfo>::const_iterator getNodeIdListEnd();
 
     /**
      * getMacNodeIdFromOmnetId() returns the MacNodeId of the module
@@ -472,7 +485,7 @@ class Binder : public cSimpleModule
     PhyPisaData phyPisaData;
 
     int getNodeCount() {
-        return nodeIds_.size();
+        return nodeInfoMap_.size();
     }
 
     int addExtCell(ExtCell *extCell, GHz carrierFrequency)
