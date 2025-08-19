@@ -52,6 +52,8 @@ void BackgroundScheduler::initialize(int stage)
         ulPrevBandAllocation_.resize(numBands_, NODEID_NONE);
         ulBandAllocation_.resize(numBands_, NODEID_NONE);
 
+        binder_.reference(this, "binderModule", true);
+
         // TODO: if BackgroundScheduler interference is disabled, do not send selfMessages
         // Start TTI tick
         ttiTick_ = new cMessage("ttiTick_");
@@ -63,8 +65,6 @@ void BackgroundScheduler::initialize(int stage)
         getParentModule()->subscribe(inet::IMobility::mobilityStateChangedSignal, this);
     }
     if (stage == inet::INITSTAGE_LOCAL + 1) {
-        binder_.reference(this, "binderModule", true);
-
         // add this cell to the binder
         id_ = binder_->addBackgroundScheduler(this, carrierFrequency_);
 
