@@ -30,10 +30,10 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-typedef enum
+enum TrafficLightState
 {
     OFF, GREEN, YELLOW, RED
-} TrafficLightState;
+};
 
 class TrafficLightController : public cSimpleModule
 {

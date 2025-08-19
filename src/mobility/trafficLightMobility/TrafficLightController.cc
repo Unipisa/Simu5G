@@ -18,12 +18,13 @@
 #include <inet/common/ModuleAccess.h>
 #include <cmath>
 
+using namespace omnetpp;
+
 namespace simu5g {
 
 Define_Module(TrafficLightController);
 
-using namespace omnetpp;
-
+Register_Enum_WithVar(trafficLightStateEnum, TrafficLightState, (OFF, GREEN, YELLOW, RED));
 
 TrafficLightController::~TrafficLightController() {
     cancelAndDelete(stateMsg_);
@@ -82,14 +83,12 @@ void TrafficLightController::handleMessage(cMessage *msg)
         if (msg == stateMsg_) {
             EV << "TrafficLightController::handleMessage: changeState" << endl;
             if (state_ == OFF) {
-                int state = par("startState");
-                state_ = (TrafficLightState)state;
-                std::string color = (state == GREEN ? "green" : "red");
+                state_ = trafficLightStateEnum->resolveName<TrafficLightState>(par("startState"));
+                std::string color = trafficLightStateEnum->getNameForValue(state_);
                 getParentModule()->getDisplayString().setTagArg("i", 1, color.c_str());
-                if (state_ == RED) {
+                if (state_ == RED)
                     drawRect();
-                }
-                scheduleAt(simTime() + (state == GREEN ? greenPeriod_ : redPeriod_), stateMsg_);
+                scheduleAt(simTime() + (state_ == GREEN ? greenPeriod_ : redPeriod_), stateMsg_);
             }
             else if (state_ == RED) {
                 state_ = GREEN;
