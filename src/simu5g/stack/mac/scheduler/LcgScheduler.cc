@@ -55,7 +55,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
 
     bool firstSdu = true;
 
-    LcgMap& lcgMap = mac_->getLcgMap();
+    const LcgMap& lcgMap = mac_->getLcgMap();
 
     if (lcgMap.empty())
         return scheduleList_;
@@ -63,9 +63,8 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
     // for all traffic classes
     for (unsigned short i = 0; i < UNKNOWN_TRAFFIC_TYPE; ++i) {
         // Prepare the iterators to cycle the entire scheduling set
-        std::pair<LcgMap::iterator, LcgMap::iterator> it_pair;
-        it_pair = lcgMap.equal_range((LteTrafficClass)i);
-        LcgMap::iterator it = it_pair.first, et = it_pair.second;
+        auto it_pair = lcgMap.equal_range((LteTrafficClass)i);
+        auto it = it_pair.first, et = it_pair.second;
 
         EV << NOW << " LcgScheduler::schedule - Node  " << mac_->getMacNodeId() << ", Starting priority service for traffic class " << i << endl;
 

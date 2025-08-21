@@ -2427,8 +2427,8 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
     EV << "**** Background Cell Interference **** " << endl;
 
     // get bg schedulers list
-    BackgroundSchedulerList *list = binder_->getBackgroundSchedulerList(carrierFrequency);
-    BackgroundSchedulerList::iterator it = list->begin();
+    const auto& list = binder_->getBackgroundSchedulerList(carrierFrequency);
+    auto it = list.begin();
 
     Coord c;
     double dist, // meters
@@ -2439,7 +2439,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
            angularAtt; // dBm
 
     //compute distance for each cell
-    while (it != list->end()) {
+    while (it != list.end()) {
         if (dir == DL) {
             // compute interference with respect to the background base station
 
@@ -2622,8 +2622,7 @@ LteRealisticChannelModel::JakesFadingMap *LteRealisticChannelModel::obtainUeJake
     // obtain a reference to UE phy
     LtePhyBase *phy = nullptr;
 
-    std::vector<UeInfo *> *ueList = binder_->getUeList();
-    for (auto ueInfo : *ueList) {
+    for (const auto& ueInfo : binder_->getUeList()) {
         if (ueInfo->id == id) {
             phy = ueInfo->phy;
             break;
@@ -2649,8 +2648,7 @@ LteRealisticChannelModel::ShadowFadingMap *LteRealisticChannelModel::obtainShado
     // obtain a reference to UE phy
     LtePhyBase *phy = nullptr;
 
-    std::vector<UeInfo *> *ueList = binder_->getUeList();
-    for (auto ueInfo : *ueList) {
+    for (const auto& ueInfo : binder_->getUeList()) {
         if (ueInfo->id == id) {
             phy = ueInfo->phy;
             break;
@@ -2678,8 +2676,8 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
 
     double txPwr;
 
-    std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-    std::vector<EnbInfo *>::iterator it = enbList->begin(), et = enbList->end();
+    const auto& enbList = binder_->getEnbList();
+    auto it = enbList.begin(), et = enbList.end();
 
     while (it != et) {
         MacNodeId id = (*it)->id;

@@ -108,8 +108,7 @@ void LtePhyEnbD2D::requestFeedback(UserControlInfo *lteinfo, LteAirFrame *frame,
 
             if (enableD2DCqiReporting_) {
                 // Compute D2D feedback for all possible peering UEs
-                std::vector<UeInfo *> *ueList = binder_->getUeList();
-                for (const auto& ueInfo : *ueList) {
+                for (const auto& ueInfo : binder_->getUeList()) {
                     MacNodeId peerId = ueInfo->id;
                     if (peerId != lteinfo->getSourceId() && binder_->getD2DCapability(lteinfo->getSourceId(), peerId) && binder_->getNextHop(peerId) == nodeId_) {
                         // The source UE might communicate with this peer using D2D, so compute feedback (only in-cell D2D)

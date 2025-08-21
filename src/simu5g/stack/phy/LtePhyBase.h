@@ -153,9 +153,9 @@ class LtePhyBase : public ChannelAccess
         return primaryChannelModel_;
     }
 
-    const std::map<GHz, opp_component_ptr<LteChannelModel>> *getChannelModels()
+    const std::map<GHz, opp_component_ptr<LteChannelModel>>& getChannelModels()
     {
-        return &channelModel_;
+        return channelModel_;
     }
 
     LteChannelModel *getChannelModel(GHz carrierFreq = GHz(0.0))

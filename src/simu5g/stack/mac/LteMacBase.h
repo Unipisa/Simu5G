@@ -241,7 +241,7 @@ class LteMacBase : public cSimpleModule
     }
 
     // Returns Traffic Class to cid mapping
-    LcgMap& getLcgMap()
+    const LcgMap& getLcgMap()
     {
         return lcgMap_;
     }

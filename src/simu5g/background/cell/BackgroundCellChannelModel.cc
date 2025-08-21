@@ -857,9 +857,7 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
 
     double txPwr;
 
-    std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-
-    for (auto enb : *enbList) {
+    for (const auto& enb : binder_->getEnbList()) {
         MacNodeId id = enb->id;
 
         // initialize eNb data structures
@@ -989,8 +987,8 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
     EV << "**** Background Cell Interference **** " << endl;
 
     // get external cell list
-    BackgroundSchedulerList *list = binder_->getBackgroundSchedulerList(carrierFrequency);
-    BackgroundSchedulerList::iterator it = list->begin();
+    const BackgroundSchedulerList& list = binder_->getBackgroundSchedulerList(carrierFrequency);
+    auto it = list.begin();
 
     Coord c;
     double dist, // meters
@@ -1001,7 +999,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
            angularAtt; // dBm
 
     //compute distance for each cell
-    while (it != list->end()) {
+    while (it != list.end()) {
         // skip interference from serving Bg Bs
         if ((*it)->getId() == bgBsId) {
             it++;

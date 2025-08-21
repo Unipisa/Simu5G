@@ -112,8 +112,7 @@ void LtePhyUe::initialize(int stage)
             UserControlInfo *cInfo = new UserControlInfo();
 
             // get the list of all eNodeBs in the network
-            std::vector<EnbInfo *> *enbList = binder_->getEnbList();
-            for (auto enbInfo : *enbList) {
+            for (const auto& enbInfo : binder_->getEnbList()) {
                 // the NR phy layer only checks signal from gNBs
                 if (isNr_ && enbInfo->nodeType != GNODEB)
                     continue;

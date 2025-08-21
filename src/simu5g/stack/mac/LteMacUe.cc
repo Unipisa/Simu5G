@@ -134,8 +134,8 @@ void LteMacUe::initialize(int stage)
         }
     }
     else if (stage == inet::INITSTAGE_TRANSPORT_LAYER) {
-        const auto *channelModels = phy_->getChannelModels();
-        for (const auto& cm : *channelModels) {
+        const auto& channelModels = phy_->getChannelModels();
+        for (const auto& cm : channelModels) {
             lcgScheduler_[cm.first] = new LteSchedulerUeUl(this, cm.first);
         }
     }

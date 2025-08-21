@@ -510,9 +510,9 @@ class Binder : public cSimpleModule
         return bgSchedulerList_[carrierFrequency].size() - 1;
     }
 
-    BackgroundSchedulerList *getBackgroundSchedulerList(GHz carrierFrequency)
+    const BackgroundSchedulerList& getBackgroundSchedulerList(GHz carrierFrequency)
     {
-        return &bgSchedulerList_[carrierFrequency];
+        return bgSchedulerList_[carrierFrequency];
     }
 
     void addEnbInfo(EnbInfo *info)
@@ -520,9 +520,9 @@ class Binder : public cSimpleModule
         enbList_.push_back(info);
     }
 
-    std::vector<EnbInfo *> *getEnbList()
+    const std::vector<EnbInfo *>& getEnbList()
     {
-        return &enbList_;
+        return enbList_;
     }
 
     void addUeInfo(UeInfo *info)
@@ -530,9 +530,9 @@ class Binder : public cSimpleModule
         ueList_.push_back(info);
     }
 
-    std::vector<UeInfo *> *getUeList()
+    const std::vector<UeInfo *>& getUeList()
     {
-        return &ueList_;
+        return ueList_;
     }
 
     void addBgTrafficManagerInfo(BgTrafficManagerInfo *info)
@@ -540,9 +540,9 @@ class Binder : public cSimpleModule
         bgTrafficManagerList_.push_back(info);
     }
 
-    std::vector<BgTrafficManagerInfo *> *getBgTrafficManagerList()
+    const std::vector<BgTrafficManagerInfo *>& getBgTrafficManagerList()
     {
-        return &bgTrafficManagerList_;
+        return bgTrafficManagerList_;
     }
 
     Cqi meanCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir);
