@@ -306,10 +306,9 @@ class Binder : public cSimpleModule
     OmnetId getOmnetId(MacNodeId nodeId);
 
     /*
-     * get iterators for the list of nodes
+     * getMacNodeIdFromOmnetId returns information on all nodes in a map
      */
-    std::map<MacNodeId, NodeInfo>::const_iterator getNodeIdListBegin();
-    std::map<MacNodeId, NodeInfo>::const_iterator getNodeIdListEnd();
+    const std::map<MacNodeId, NodeInfo>& getNodeInfoMap() const { return nodeInfoMap_; }
 
     /**
      * getMacNodeIdFromOmnetId() returns the MacNodeId of the module

@@ -391,16 +391,6 @@ OmnetId Binder::getOmnetId(MacNodeId nodeId)
     return 0;
 }
 
-std::map<MacNodeId, NodeInfo>::const_iterator Binder::getNodeIdListBegin()
-{
-    return nodeInfoMap_.begin();
-}
-
-std::map<MacNodeId, NodeInfo>::const_iterator Binder::getNodeIdListEnd()
-{
-    return nodeInfoMap_.end();
-}
-
 MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
     for (const auto& [macNodeId, nodeInfo] : nodeInfoMap_)
         if (nodeInfo.omnetId == id)

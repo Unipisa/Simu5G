@@ -214,18 +214,18 @@ void LtePhyBase::sendMulticast(LteAirFrame *frame)
         throw cRuntimeError("LtePhyBase::sendMulticast - Error. Group ID %d is not valid.", groupId);
 
     // send the frame to nodes belonging to the multicast group only
-    for (auto nodeIt = binder_->getNodeIdListBegin(); nodeIt != binder_->getNodeIdListEnd(); ++nodeIt) {
-        MacNodeId destId = nodeIt->first;
+    for (auto pair : binder_->getNodeInfoMap()) {
+        MacNodeId destId = pair.first;
 
         // if the node in the list does not use the same LTE/NR technology of this PHY module, skip it
         if (isNrUe(destId) != isNr_)
             continue;
 
-        if (destId != nodeId_ && binder_->isInMulticastGroup(nodeIt->first, groupId)) {
+        if (destId != nodeId_ && binder_->isInMulticastGroup(destId, groupId)) {
             EV << NOW << " LtePhyBase::sendMulticast - node " << destId << " is in the multicast group" << endl;
 
             // get a pointer to receiving module
-            cModule *receiver = getSimulation()->getModule(nodeIt->second.omnetId);
+            cModule *receiver = getSimulation()->getModule(pair.second.omnetId);
             LtePhyBase *recvPhy;
             double dist;
 
