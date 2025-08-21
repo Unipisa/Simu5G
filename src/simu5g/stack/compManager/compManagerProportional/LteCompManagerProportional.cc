@@ -26,7 +26,7 @@ void LteCompManagerProportional::provisionalSchedule()
     EV << NOW << " LteCompManagerProportional::provisionalSchedule - Start " << endl;
 
     // TODO check if correct
-    GHz primaryCarrierFrequency = mac_->getCellInfo()->getCarriers()->front();
+    GHz primaryCarrierFrequency = mac_->getCellInfo()->getCarriers().front();
 
     provisionedBlocks_ = 0;
 
@@ -273,4 +273,3 @@ std::vector<unsigned int> LteCompManagerProportional::roundVector(std::vector<do
 }
 
 } //namespace
-

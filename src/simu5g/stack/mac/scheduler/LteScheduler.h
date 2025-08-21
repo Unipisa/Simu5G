@@ -86,7 +86,7 @@ class LteScheduler
     GHz carrierFrequency_;
 
     //! Set of bands available for this carrier
-    BandLimitVector *bandLimit_ = nullptr;
+    BandLimitVector bandLimit_;
 
     //! Set of bands available for this carrier for retransmissions (reset on every slot)
     BandLimitVector slotRacBandLimit_;

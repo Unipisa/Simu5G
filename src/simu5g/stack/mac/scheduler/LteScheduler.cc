@@ -35,7 +35,7 @@ void LteScheduler::initializeBandLimit()
 
     // initialize band limits to be used on each slot for retransmissions
     // and grant requests
-    for (const auto& elem : *bandLimit_) {
+    for (const auto& elem : bandLimit_) {
         slotRacBandLimit_.push_back(elem);
         slotRtxBandLimit_.push_back(elem);
         slotReqGrantBandLimit_.push_back(elem);
@@ -63,10 +63,10 @@ unsigned int LteScheduler::requestGrant(MacCid cid, unsigned int bytes, bool& te
 {
     if (bandLim == nullptr) {
         // reset the band limit vector used for requesting grants
-        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
+        for (unsigned int i = 0; i < bandLimit_.size(); i++) {
             // copy the element
-            slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
-            slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+            slotReqGrantBandLimit_[i].band_ = bandLimit_.at(i).band_;
+            slotReqGrantBandLimit_[i].limit_ = bandLimit_.at(i).limit_;
         }
         bandLim = &slotReqGrantBandLimit_;
     }
@@ -78,10 +78,10 @@ unsigned int LteScheduler::requestGrantBackground(MacCid bgCid, unsigned int byt
 {
     if (bandLim == nullptr) {
         // reset the band limit vector used for requesting grants
-        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
+        for (unsigned int i = 0; i < bandLimit_.size(); i++) {
             // copy the element
-            slotReqGrantBandLimit_[i].band_ = bandLimit_->at(i).band_;
-            slotReqGrantBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+            slotReqGrantBandLimit_[i].band_ = bandLimit_.at(i).band_;
+            slotReqGrantBandLimit_[i].limit_ = bandLimit_.at(i).limit_;
         }
         bandLim = &slotReqGrantBandLimit_;
     }
@@ -105,10 +105,10 @@ bool LteScheduler::scheduleRetransmissions()
     if (!skip) {
         // reset the band limit vector used for retransmissions
         // TODO do this only when it was actually used in the previous slot
-        for (unsigned int i = 0; i < bandLimit_->size(); i++) {
+        for (unsigned int i = 0; i < bandLimit_.size(); i++) {
             // copy the element
-            slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
-            slotRtxBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+            slotRtxBandLimit_[i].band_ = bandLimit_.at(i).band_;
+            slotRtxBandLimit_[i].limit_ = bandLimit_.at(i).limit_;
         }
         spaceEnded = eNbScheduler_->rtxschedule(carrierFrequency_, &slotRtxBandLimit_);
     }
@@ -123,10 +123,10 @@ bool LteScheduler::scheduleRetransmissions()
             if (skip) {
                 // reset the band limit vector used for retransmissions
                 // TODO do this only when it was actually used in the previous slot
-                for (unsigned int i = 0; i < bandLimit_->size(); i++) {
+                for (unsigned int i = 0; i < bandLimit_.size(); i++) {
                     // copy the element
-                    slotRtxBandLimit_[i].band_ = bandLimit_->at(i).band_;
-                    slotRtxBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+                    slotRtxBandLimit_[i].band_ = bandLimit_.at(i).band_;
+                    slotRtxBandLimit_[i].limit_ = bandLimit_.at(i).limit_;
                 }
             }
             spaceEnded = eNbScheduler_->rtxscheduleBackground(carrierFrequency_, &slotRtxBandLimit_);
@@ -139,10 +139,10 @@ bool LteScheduler::scheduleRacRequests()
 {
     // reset the band limit vector used for rac
     // TODO do this only when it was actually used in the previous slot
-    for (unsigned int i = 0; i < bandLimit_->size(); i++) {
+    for (unsigned int i = 0; i < bandLimit_.size(); i++) {
         // copy the element
-        slotRacBandLimit_[i].band_ = bandLimit_->at(i).band_;
-        slotRacBandLimit_[i].limit_ = bandLimit_->at(i).limit_;
+        slotRacBandLimit_[i].band_ = bandLimit_.at(i).band_;
+        slotRacBandLimit_[i].limit_ = bandLimit_.at(i).limit_;
     }
 
     return eNbScheduler_->racschedule(carrierFrequency_, &slotRacBandLimit_);

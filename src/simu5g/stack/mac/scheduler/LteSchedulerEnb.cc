@@ -59,9 +59,9 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     // Copy schedulers
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
-    const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
+    const CarrierInfoMap& carriers = mac_->getCellInfo()->getCarrierInfoMap();
     LteScheduler *newSched = nullptr;
-    for (auto& item : *carriers) {
+    for (auto& item : carriers) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
         newSched->setCarrierFrequency(item.second.carrierFrequency);
@@ -103,8 +103,8 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
     SchedDiscipline discipline = mac_->getSchedDiscipline(direction_);
 
     LteScheduler *newSched = nullptr;
-    const CarrierInfoMap *carriers = mac_->getCellInfo()->getCarrierInfoMap();
-    for (auto& item : *carriers) {
+    const CarrierInfoMap& carriers = mac_->getCellInfo()->getCarrierInfoMap();
+    for (auto& item : carriers) {
         newSched = getScheduler(discipline);
         newSched->setEnbScheduler(this);
         newSched->setCarrierFrequency(item.second.carrierFrequency);

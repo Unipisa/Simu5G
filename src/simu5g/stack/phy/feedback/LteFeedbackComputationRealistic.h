@@ -20,7 +20,7 @@ class PhyPisaData;
 class LteFeedbackComputationRealistic : public LteFeedbackComputation
 {
     // Channel matrix struct
-    std::map<MacNodeId, Lambda> *lambda_;
+    const std::map<MacNodeId, Lambda>& lambda_;
     // Target BLER
     double targetBler_;
     // Number of logical bands
@@ -45,7 +45,7 @@ class LteFeedbackComputationRealistic : public LteFeedbackComputation
     double meanSnr(std::vector<double> snr);
 
   public:
-    LteFeedbackComputationRealistic(Binder *binder, double targetBler, std::map<MacNodeId, Lambda> *lambda, double lambdaMinTh,
+    LteFeedbackComputationRealistic(Binder *binder, double targetBler, const std::map<MacNodeId, Lambda>& lambda, double lambdaMinTh,
             double lambdaMaxTh, double lambdaRatioTh, unsigned int numBands);
 
     LteFeedbackDoubleVector computeFeedback(FeedbackType fbType, RbAllocationType rbAllocationType,

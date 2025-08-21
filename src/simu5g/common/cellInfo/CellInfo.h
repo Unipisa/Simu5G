@@ -264,9 +264,9 @@ class CellInfo : public cSimpleModule
             return inet::Coord::ZERO;
     }
 
-    const std::map<MacNodeId, inet::Coord> *getUePositionList()
+    const std::map<MacNodeId, inet::Coord>& getUePositionList()
     {
-        return &uePosition;
+        return uePosition;
     }
 
     void setUePosition(MacNodeId id, inet::Coord c)
@@ -312,9 +312,9 @@ class CellInfo : public cSimpleModule
         return &(lambdaMap_.at(id));
     }
 
-    std::map<MacNodeId, Lambda> *getLambda()
+    const std::map<MacNodeId, Lambda>& getLambda()
     {
-        return &lambdaMap_;
+        return lambdaMap_;
     }
 
     //---------------------------------------------------------------
@@ -326,9 +326,9 @@ class CellInfo : public cSimpleModule
     void registerCarrier(GHz carrierFrequency, unsigned int carrierNumBands, unsigned int numerologyIndex,
             bool useTdd = false, unsigned int tddNumSymbolsDl = 0, unsigned int tddNumSymbolsUl = 0);
 
-    const std::vector<GHz> *getCarriers();
+    const std::vector<GHz>& getCarriers();
 
-    const CarrierInfoMap *getCarrierInfoMap();
+    const CarrierInfoMap& getCarrierInfoMap();
 
     NumerologyIndex getMaxNumerologyIndex() { return maxNumerologyIndex_; }
 
@@ -343,7 +343,7 @@ class CellInfo : public cSimpleModule
 
     // returns the band limit vector for the given carrier
     // if arg is not specified, returns the info for the primary carrier
-    BandLimitVector *getCarrierBandLimit(GHz carrierFrequency);
+    const BandLimitVector& getCarrierBandLimit(GHz carrierFrequency);
 
     unsigned int getCarrierStartingBand(GHz carrierFrequency);
     unsigned int getCarrierLastBand(GHz carrierFrequency);
@@ -358,4 +358,3 @@ class CellInfo : public cSimpleModule
 } //namespace
 
 #endif
-

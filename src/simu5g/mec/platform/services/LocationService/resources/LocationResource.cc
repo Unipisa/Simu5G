@@ -86,10 +86,8 @@ nlohmann::ordered_json LocationResource::getUserListPerCell(MacCellId macCellId,
      * The uniqueness of the ip address allows us to avoid counting twice.
      */
     std::set<inet::Ipv4Address> addressess;
-    const std::map<MacNodeId, inet::Coord> *uePositionList;
-
-    uePositionList = cellInfo->getUePositionList();
-    for (const auto& item : *uePositionList) {
+    const std::map<MacNodeId, inet::Coord>& uePositionList = cellInfo->getUePositionList();
+    for (const auto& item : uePositionList) {
         inet::Ipv4Address ipAddress = binder_->getIPv4Address(item.first);
         if (addressess.find(ipAddress) != addressess.end())
             continue;
@@ -132,9 +130,9 @@ nlohmann::ordered_json LocationResource::toJsonUe(std::vector<inet::Ipv4Address>
         MacNodeId nodeId = binder_->getMacNodeId(ueId);
         bool found = false;
         for (const auto& [macCellId, eNodeB] : eNodeBs_) {
-            const std::map<MacNodeId, inet::Coord>* uePositionList = eNodeB->getUePositionList();
-            auto pit = uePositionList->find(nodeId);
-            if (pit != uePositionList->end()) {
+            const std::map<MacNodeId, inet::Coord>& uePositionList = eNodeB->getUePositionList();
+            auto pit = uePositionList.find(nodeId);
+            if (pit != uePositionList.end()) {
                 UserInfo ueInfo = getUserInfoByNodeId(pit->first, macCellId);
                 if (ueInfo.getIpv4Address() != inet::Ipv4Address::UNSPECIFIED_ADDRESS)
                     ueArray.push_back(ueInfo.toJson());
@@ -192,4 +190,3 @@ nlohmann::ordered_json LocationResource::toJson(std::vector<MacCellId>& cellsID,
 }
 
 } //namespace
-

@@ -191,9 +191,9 @@ void LteMacEnb::initialize(int stage)
             enbSchedulerUl_->initialize(UL, this, binder_);
         }
 
-        const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
+        const CarrierInfoMap& carriers = cellInfo_->getCarrierInfoMap();
         int i = 0;
-        for (const auto& item : *carriers) {
+        for (const auto& item : carriers) {
             GHz carrierFrequency = item.second.carrierFrequency;
             bgTrafficManager_[carrierFrequency] = check_and_cast<IBackgroundTrafficManager *>(getParentModule()->getSubmodule("bgTrafficGenerator", i)->getSubmodule("manager"));
             bgTrafficManager_[carrierFrequency]->setCarrierFrequency(carrierFrequency);
@@ -208,8 +208,8 @@ void LteMacEnb::initialize(int stage)
         ttiPeriod_ = binder_->getSlotDurationFromNumerologyIndex(cellInfo_->getMaxNumerologyIndex());
         scheduleAt(NOW + ttiPeriod_, ttiTick_);
 
-        const CarrierInfoMap *carriers = cellInfo_->getCarrierInfoMap();
-        for (const auto& item : *carriers) {
+        const CarrierInfoMap& carriers = cellInfo_->getCarrierInfoMap();
+        for (const auto& item : carriers) {
             // set periodicity for this carrier according to its numerology
             NumerologyPeriodCounter info;
             info.max = 1 << (cellInfo_->getMaxNumerologyIndex() - item.second.numerologyIndex); // 2^(maxNumerologyIndex - numerologyIndex)

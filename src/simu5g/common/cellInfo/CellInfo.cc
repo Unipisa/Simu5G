@@ -273,14 +273,14 @@ void CellInfo::registerCarrier(GHz carrierFrequency, unsigned int carrierNumBand
     }
 }
 
-const std::vector<GHz> *CellInfo::getCarriers()
+const std::vector<GHz>& CellInfo::getCarriers()
 {
-    return &carriersVector_;
+    return carriersVector_;
 }
 
-const CarrierInfoMap *CellInfo::getCarrierInfoMap()
+const CarrierInfoMap& CellInfo::getCarrierInfoMap()
 {
-    return &carrierMap_;
+    return carrierMap_;
 }
 
 unsigned int CellInfo::getCellwiseBand(GHz carrierFrequency, Band index)
@@ -295,18 +295,18 @@ unsigned int CellInfo::getCellwiseBand(GHz carrierFrequency, Band index)
     return it->second.firstBand + index;
 }
 
-BandLimitVector *CellInfo::getCarrierBandLimit(GHz carrierFrequency)
+const BandLimitVector& CellInfo::getCarrierBandLimit(GHz carrierFrequency)
 {
     if (carrierFrequency == GHz(0.0)) {
         auto it = carrierMap_.begin();
         if (it != carrierMap_.end())
-            return &(it->second.bandLimit);
+            return it->second.bandLimit;
     }
     auto it = carrierMap_.find(carrierFrequency);
     if (it == carrierMap_.end())
         throw cRuntimeError("CellInfo::getCarrierBandLimit - Carrier %f is not used on node %hu", carrierFrequency.get(), num(cellId_));
 
-    return &(it->second.bandLimit);
+    return it->second.bandLimit;
 }
 
 unsigned int CellInfo::getCarrierStartingBand(GHz carrierFrequency)
