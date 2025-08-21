@@ -2666,15 +2666,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
 {
     EV << "**** Downlink Interference ****" << endl;
 
-    // reference to the mac/phy/channel of each cell
-
-    int temp;
-    double att;
-
-    double txPwr;
-
     const auto& enbList = binder_->getEnbList();
-
     for (auto& enbInfo : enbList) {
         MacNodeId id = enbInfo->id;
 
@@ -2707,7 +2699,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
             continue;
 
         // compute attenuation using data structures within the cell
-        att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
+        double att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
         EV << "EnbId [" << id << "] - attenuation [" << att << "]";
 
         //=============== ANGULAR ATTENUATION =================
@@ -2734,7 +2726,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         // else, antenna is omni-directional
         //=============== END ANGULAR ATTENUATION =================
 
-        txPwr = enbInfo->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+        double txPwr = enbInfo->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 
         unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
@@ -2742,7 +2734,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         if (isCqi) {// check slot occupation for this TTI
             for (unsigned int i = 0; i < numBands; i++) {
                 // compute the number of occupied slot (unnecessary)
-                temp = enbInfo->mac->getDlBandStatus(i);
+                int temp = enbInfo->mac->getDlBandStatus(i);
                 if (temp != 0)
                     (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
@@ -2757,7 +2749,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
                     continue;
 
                 // compute the number of occupied slot (unnecessary)
-                temp = enbInfo->mac->getDlPrevBandStatus(i);
+                int temp = enbInfo->mac->getDlPrevBandStatus(i);
                 if (temp != 0)
                     (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
