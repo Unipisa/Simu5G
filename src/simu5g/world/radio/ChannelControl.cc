@@ -57,10 +57,6 @@ ChannelControl::~ChannelControl()
  */
 void ChannelControl::initialize()
 {
-    coreDebug = hasPar("coreDebug") ? (bool)par("coreDebug") : false;
-
-    EV << "initializing ChannelControl\n";
-
     numChannels = par("numChannels");
     transmissions.resize(numChannels);
 
