@@ -2351,7 +2351,6 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
     // get external cell list
     ExtCellList list = binder_->getExtCellList(carrierFrequency);
 
-    Coord c;
     double dist, // meters
            recvPwr, // watt
            recvPwrDBm, // dBm
@@ -2361,7 +2360,7 @@ bool LteRealisticChannelModel::computeExtCellInterference(MacNodeId eNbId, MacNo
     //compute distance for each cell
     for (auto& extCell : list) {
         // get external cell position
-        c = extCell->getPosition();
+        Coord c = extCell->getPosition();
         // compute distance between UE and the ext cell
         dist = coord.distance(c);
 
@@ -2428,7 +2427,6 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 
     // get bg schedulers list
     const auto& list = binder_->getBackgroundSchedulerList(carrierFrequency);
-    auto it = list.begin();
 
     Coord c;
     double dist, // meters
@@ -2439,12 +2437,12 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
            angularAtt; // dBm
 
     //compute distance for each cell
-    while (it != list.end()) {
+    for (auto& bgScheduler : list) {
         if (dir == DL) {
             // compute interference with respect to the background base station
 
             // get external cell position
-            c = (*it)->getPosition();
+            c = bgScheduler->getPosition();
             // compute distance between UE and the ext cell
             dist = ueCoord.distance(c);
 
@@ -2455,10 +2453,10 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
             // compute attenuation according to some path loss model
             att = computeExtCellPathLoss(dist, nodeId);
 
-            txPwr = (*it)->getTxPower();
+            txPwr = bgScheduler->getTxPower();
 
             //=============== ANGULAR ATTENUATION =================
-            if ((*it)->getTxDirection() == OMNI) {
+            if (bgScheduler->getTxDirection() == OMNI) {
                 angularAtt = 0;
             }
             else {
@@ -2466,7 +2464,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                 double ueAngle = computeAngle(c, ueCoord);
 
                 // compute the reception angle between ue and eNB
-                double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
+                double recvAngle = fabs(bgScheduler->getTxAngle() - ueAngle);
 
                 if (recvAngle > 180)
                     recvAngle = 360 - recvAngle;
@@ -2484,7 +2482,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
             recvPwr = dBmToLinear(recvPwrDBm);
             EV << " recvPwr[" << recvPwr << "]\t";
 
-            unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
+            unsigned int numBands = std::min(numBands_, bgScheduler->getNumBands());
             EV << " - shared bands [" << numBands << "]\t";
             EV << " - interfering bands[";
 
@@ -2492,10 +2490,10 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
             for (unsigned int i = 0; i < numBands; i++) {
                 int occ = 0;
                 if (isCqi) { // check slot occupation for this TTI
-                    occ = (*it)->getBandStatus(i, DL);
+                    occ = bgScheduler->getBandStatus(i, DL);
                 }
                 else if (!rbmap.empty() && rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
-                    occ = (*it)->getPrevBandStatus(i, DL);
+                    occ = bgScheduler->getPrevBandStatus(i, DL);
                 }
 
                 // if the ext cell is active, add interference
@@ -2515,7 +2513,7 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
 
             angularAtt = 0;  // we assume OMNI directional UEs
 
-            unsigned int numBands = std::min(numBands_, (*it)->getNumBands());
+            unsigned int numBands = std::min(numBands_, bgScheduler->getNumBands());
             EV << " - shared bands [" << numBands << "]" << endl;
 
             // add interference in those bands where a UE in the background cell is active
@@ -2523,14 +2521,14 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                 int occ = 0;
 
                 if (isCqi) { // check slot occupation for this TTI
-                    occ = (*it)->getBandStatus(i, UL);
+                    occ = bgScheduler->getBandStatus(i, UL);
                     if (occ)
-                        bgUe = (*it)->getBandInterferingUe(i);
+                        bgUe = bgScheduler->getBandInterferingUe(i);
                 }
                 else if (rbmap.at(MACRO).at(i) != 0) {     // error computation. We need to check the slot occupation of the previous TTI (only if the band has been used by the UE)
-                    occ = (*it)->getPrevBandStatus(i, UL);
+                    occ = bgScheduler->getPrevBandStatus(i, UL);
                     if (occ)
-                        bgUe = (*it)->getPrevBandInterferingUe(i);
+                        bgUe = bgScheduler->getPrevBandInterferingUe(i);
                 }
 
                 // if the ext cell is active, add interference
@@ -2554,7 +2552,6 @@ bool LteRealisticChannelModel::computeBackgroundCellInterference(MacNodeId nodeI
                 }
             }
         }
-        it++;
     }
 
     return true;
@@ -2677,42 +2674,37 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
     double txPwr;
 
     const auto& enbList = binder_->getEnbList();
-    auto it = enbList.begin(), et = enbList.end();
 
-    while (it != et) {
-        MacNodeId id = (*it)->id;
+    for (auto& enbInfo : enbList) {
+        MacNodeId id = enbInfo->id;
 
-        if (id == eNbId) {
-            ++it;
+        if (id == eNbId)
             continue;
-        }
 
         // initialize eNB data structures
-        if (!(*it)->init) {
+        if (!enbInfo->init) {
             // obtain a reference to eNB phy and obtain tx power
-            (*it)->phy = check_and_cast<LtePhyBase *>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
+            enbInfo->phy = check_and_cast<LtePhyBase *>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
 
-            (*it)->txPwr = (*it)->phy->getTxPwr();//dBm
+            enbInfo->txPwr = enbInfo->phy->getTxPwr();//dBm
 
             // get tx direction
-            (*it)->txDirection = (*it)->phy->getTxDirection();
+            enbInfo->txDirection = enbInfo->phy->getTxDirection();
 
             // get tx angle
-            (*it)->txAngle = (*it)->phy->getTxAngle();
+            enbInfo->txAngle = enbInfo->phy->getTxAngle();
 
             //get reference to mac layer
-            (*it)->mac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, id));
+            enbInfo->mac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, id));
 
-            (*it)->init = true;
+            enbInfo->init = true;
         }
 
-        LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>((*it)->phy->getChannelModel(carrierFrequency));
+        LteRealisticChannelModel *interfChanModel = dynamic_cast<LteRealisticChannelModel *>(enbInfo->phy->getChannelModel(carrierFrequency));
 
         // if the eNB does not use the selected carrier frequency, skip it
-        if (interfChanModel == nullptr) {
-            ++it;
+        if (interfChanModel == nullptr)
             continue;
-        }
 
         // compute attenuation using data structures within the cell
         att = interfChanModel->getAttenuation(ueId, UL, coord, isCqi);
@@ -2720,9 +2712,9 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
 
         //=============== ANGULAR ATTENUATION =================
         double angularAtt = 0;
-        if ((*it)->txDirection == ANISOTROPIC) {
+        if (enbInfo->txDirection == ANISOTROPIC) {
             //get tx angle
-            double txAngle = (*it)->txAngle;
+            double txAngle = enbInfo->txAngle;
 
             // compute the angle between uePosition and reference axis, considering the eNB as center
             double ueAngle = computeAngle(interfChanModel->phy_->getCoord(), coord);
@@ -2742,7 +2734,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         // else, antenna is omni-directional
         //=============== END ANGULAR ATTENUATION =================
 
-        txPwr = (*it)->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
+        txPwr = enbInfo->txPwr - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
 
         unsigned int numBands = std::min(numBands_, interfChanModel->getNumBands());
         EV << " - shared bands [" << numBands << "]" << endl;
@@ -2750,7 +2742,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         if (isCqi) {// check slot occupation for this TTI
             for (unsigned int i = 0; i < numBands; i++) {
                 // compute the number of occupied slot (unnecessary)
-                temp = (*it)->mac->getDlBandStatus(i);
+                temp = enbInfo->mac->getDlBandStatus(i);
                 if (temp != 0)
                     (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
@@ -2765,14 +2757,13 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
                     continue;
 
                 // compute the number of occupied slot (unnecessary)
-                temp = (*it)->mac->getDlPrevBandStatus(i);
+                temp = enbInfo->mac->getDlPrevBandStatus(i);
                 if (temp != 0)
                     (*interference)[i] += dBmToLinear(txPwr - att); //(dBm-dB)=dBm
 
                 EV << "\t band " << i << " occupied " << temp << "/pwr[" << txPwr << "]-int[" << (*interference)[i] << "]" << endl;
             }
         }
-        ++it;
     }
 
     return true;
@@ -3014,4 +3005,3 @@ bool LteRealisticChannelModel::computeD2DInterference(MacNodeId eNbId, MacNodeId
 }
 
 } //namespace
-

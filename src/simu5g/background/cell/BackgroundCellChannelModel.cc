@@ -988,9 +988,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
 
     // get external cell list
     const BackgroundSchedulerList& list = binder_->getBackgroundSchedulerList(carrierFrequency);
-    auto it = list.begin();
 
-    Coord c;
     double dist, // meters
            txPwr, // dBm
            recvPwr, // watt
@@ -999,18 +997,16 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
            angularAtt; // dBm
 
     //compute distance for each cell
-    while (it != list.end()) {
+    for (auto& bgScheduler : list) {
         // skip interference from serving Bg Bs
-        if ((*it)->getId() == bgBsId) {
-            it++;
+        if (bgScheduler->getId() == bgBsId)
             continue;
-        }
 
         if (dir == DL) {
             // compute interference with respect to the background base station
 
             // get external cell position
-            c = (*it)->getPosition();
+            Coord c = bgScheduler->getPosition();
 
             // computer distance between UE and the ext cell
             dist = bgUeCoord.distance(c);
@@ -1024,10 +1020,10 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
             double dbp = 0;
             att = computePathLoss(dist, dbp, los);
 
-            txPwr = (*it)->getTxPower();
+            txPwr = bgScheduler->getTxPower();
 
             //=============== ANGULAR ATTENUATION =================
-            if ((*it)->getTxDirection() == OMNI) {
+            if (bgScheduler->getTxDirection() == OMNI) {
                 angularAtt = 0;
             }
             else {
@@ -1035,7 +1031,7 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                 double ueAngle = computeAngle(c, bgUeCoord);
 
                 // compute the reception angle between ue and eNb
-                double recvAngle = fabs((*it)->getTxAngle() - ueAngle);
+                double recvAngle = fabs(bgScheduler->getTxAngle() - ueAngle);
 
                 if (recvAngle > 180)
                     recvAngle = 360 - recvAngle;
@@ -1052,12 +1048,12 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
             recvPwrDBm = txPwr - att - angularAtt - cableLoss_ + antennaGainEnB_ + antennaGainUe_;
             recvPwr = dBmToLinear(recvPwrDBm);
 
-            numBands = std::min(numBands, (*it)->getNumBands());
+            numBands = std::min(numBands, bgScheduler->getNumBands());
 
             // add interference in those bands where the ext cell is active
             for (unsigned int i = 0; i < numBands; i++) {
                 int occ = 0;
-                occ = (*it)->getBandStatus(i, DL);
+                occ = bgScheduler->getBandStatus(i, DL);
 
                 // if the ext cell is active, add interference
                 if (occ > 0) {
@@ -1074,20 +1070,20 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
 
             angularAtt = 0;  // we assume OMNI directional UEs
 
-            numBands = std::min(numBands, (*it)->getNumBands());
+            numBands = std::min(numBands, bgScheduler->getNumBands());
 
             // add interference in those bands where a UE in the background cell is active
             for (unsigned int i = 0; i < numBands; i++) {
                 int occ = 0;
 
-                occ = (*it)->getBandStatus(i, UL);
+                occ = bgScheduler->getBandStatus(i, UL);
                 if (occ)
-                    bgUe = (*it)->getBandInterferingUe(i);
+                    bgUe = bgScheduler->getBandInterferingUe(i);
 
                 // if the ext cell is active, add interference
                 if (occ) {
                     txPwr = bgUe->getTxPwr();
-                    c = bgUe->getCoord();
+                    Coord c = bgUe->getCoord();
                     dist = bgBsCoord.distance(c);
 
                     EV << "\t distance between BgBS[" << bgBsCoord.x << "," << bgBsCoord.y <<
@@ -1106,7 +1102,6 @@ bool BackgroundCellChannelModel::computeBackgroundCellInterference(MacNodeId bgU
                 }
             }
         }
-        it++;
     }
 
     return true;
