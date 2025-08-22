@@ -31,7 +31,7 @@ void LteHandoverManager::initialize()
     x2ManagerInGate_ = gate("x2ManagerIn");
     x2ManagerOutGate_ = gate("x2ManagerOut");
 
-    // get reference to the IP2Nic layer
+    // get reference to the Ip2Nic layer
     ip2nic_.reference(this, "ip2nicModule", true);
 
     losslessHandover_ = par("losslessHandover").boolValue();
@@ -114,7 +114,7 @@ void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, b
 {
     EV << NOW << " LteHandoverManager::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    // send command to IP2Nic
+    // send command to Ip2Nic
     if (startHo)
         ip2nic_->triggerHandoverTarget(ueId, enb);
     else
@@ -148,7 +148,7 @@ void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId so
 {
     EV << NOW << " LteHandoverManager::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
 
-    // send data to IP2Nic for transmission
+    // send data to Ip2Nic for transmission
     ip2nic_->receiveTunneledPacketOnHandover(datagram, sourceEnb);
 }
 

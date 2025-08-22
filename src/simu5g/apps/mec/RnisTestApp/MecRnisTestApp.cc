@@ -92,7 +92,7 @@ void MecRnisTestApp::handleUeMessage(cMessage *msg)
         // get period
         rnisQueryingPeriod_ = startMsg->getPeriod();
 
-        EV << "MecRnisTestApp::handleUeMessage - UE has asked the MEC app to connect to the RNIService" << endl;
+        EV << "MecRnisTestApp::handleUeMessage - UE has asked the MEC app to connect to the RniService" << endl;
 
         cMessage *m = new cMessage("connectService");
         scheduleAt(simTime() + 0.005, m);
@@ -173,17 +173,17 @@ void MecRnisTestApp::established(int connId)
     if (connId == mp1Socket_->getSocketId()) {
         EV << "MecRnisTestApp::established - Mp1Socket" << endl;
         // get endPoint of the required service
-        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=RNIService";
+        const char *uri = "/example/mec_service_mgmt/v1/services?ser_name=RniService";
         std::string host = mp1Socket_->getRemoteAddress().str() + ":" + std::to_string(mp1Socket_->getRemotePort());
 
-        EV << "MecRnisTestApp::established - connecting to service RNIService" << endl;
+        EV << "MecRnisTestApp::established - connecting to service RniService" << endl;
 
         Http::sendGetRequest(mp1Socket_, host.c_str(), uri);
     }
     else if (connId == serviceSocket_->getSocketId()) {
         EV << "MecRnisTestApp::established - serviceSocket" << endl;
 
-        EV << "MecRnisTestApp::established - connection to the RNIService done... sending ACK to the UE" << endl;
+        EV << "MecRnisTestApp::established - connection to the RniService done... sending ACK to the UE" << endl;
 
         // the connectService message is scheduled after a start mec app from the UE app, so I can
         // respond to her here, once the socket is established
@@ -194,7 +194,7 @@ void MecRnisTestApp::established(int connId)
         packet->insertAtBack(ack);
         ueSocket.sendTo(packet, ueAppAddress, ueAppPort);
 
-        EV << "MecRnisTestApp::established - querying the RNIService" << endl;
+        EV << "MecRnisTestApp::established - querying the RniService" << endl;
 
         // send first request to the RNIS
         sendQuery(0, ueAppAddress.toIpv4().str());
@@ -203,7 +203,7 @@ void MecRnisTestApp::established(int connId)
         if (rnisQueryingPeriod_ > 0) {
             rnisQueryingTimer_ = new cMessage("rnisQueryingTimer");
             scheduleAfter(rnisQueryingPeriod_, rnisQueryingTimer_);
-            EV << "MecRnisTestApp::established - next query to the RNIService in " << rnisQueryingPeriod_ << " seconds " << endl;
+            EV << "MecRnisTestApp::established - next query to the RniService in " << rnisQueryingPeriod_ << " seconds " << endl;
         }
     }
     else {
@@ -233,17 +233,17 @@ void MecRnisTestApp::handleMp1Message(int connId)
         if (!jsonBody.empty()) {
             jsonBody = jsonBody[0];
             std::string serName = jsonBody["serName"];
-            if (serName == "RNIService") {
+            if (serName == "RniService") {
                 if (jsonBody.contains("transportInfo")) {
                     nlohmann::json endPoint = jsonBody["transportInfo"]["endPoint"]["addresses"];
-                    EV << "Obtained endpoint for RNIService - address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;
+                    EV << "Obtained endpoint for RniService - address: " << endPoint["host"] << " port: " << endPoint["port"] << endl;
 
                     std::string address = endPoint["host"];
                     serviceAddress = L3AddressResolver().resolve(address.c_str());
                     servicePort = endPoint["port"];
                     serviceSocket_ = addNewSocket();
 
-                    EV << "Creating new socket for communicating with RNIService" << endl;
+                    EV << "Creating new socket for communicating with RniService" << endl;
                 }
             }
             else {
@@ -310,7 +310,7 @@ void MecRnisTestApp::handleSelfMessage(cMessage *msg)
     else if (strcmp(msg->getName(), "connectService") == 0) {
         EV << "MecAppBase::handleMessage- " << msg->getName() << endl;
         if (!serviceAddress.isUnspecified() && serviceSocket_->getState() != inet::TcpSocket::CONNECTED) {
-            EV << "MecRnisTestApp::handleSelfMessage - socket has already been created... now connecting to the RNIService" << endl;
+            EV << "MecRnisTestApp::handleSelfMessage - socket has already been created... now connecting to the RniService" << endl;
             connect(serviceSocket_, serviceAddress, servicePort);
         }
         else {
@@ -319,7 +319,7 @@ void MecRnisTestApp::handleSelfMessage(cMessage *msg)
             else if (serviceSocket_->getState() == inet::TcpSocket::CONNECTED)
                 EV << "MecRnisTestApp::handleSelfMessage - service socket is already connected" << endl;
 
-            EV << "MecRnisTestApp::handleSelfMessage - socket has not been created for some reason... cannot connect to the RNIService, now sending NACK to UE" << endl;
+            EV << "MecRnisTestApp::handleSelfMessage - socket has not been created for some reason... cannot connect to the RniService, now sending NACK to UE" << endl;
 
             inet::Packet *packet = new inet::Packet("RnisTestAppNackPacket");
             auto nack = inet::makeShared<RnisTestAppStartPacket>();
@@ -333,13 +333,13 @@ void MecRnisTestApp::handleSelfMessage(cMessage *msg)
         }
     }
     else if (strcmp(msg->getName(), "rnisQueryingTimer") == 0) {
-        EV << "MecRnisTestApp::handleSelfMessage - rnisQueryingTimer expired: now querying the RNIService" << endl;
+        EV << "MecRnisTestApp::handleSelfMessage - rnisQueryingTimer expired: now querying the RniService" << endl;
 
         // send request to the RNIS
         sendQuery(0, ueAppAddress.toIpv4().str());
 
         scheduleAfter(rnisQueryingPeriod_, rnisQueryingTimer_);
-        EV << "MecRnisTestApp::handleSelfMessage - next query to the RNIService in " << rnisQueryingPeriod_ << " seconds " << endl;
+        EV << "MecRnisTestApp::handleSelfMessage - next query to the RniService in " << rnisQueryingPeriod_ << " seconds " << endl;
         return;
     }
 

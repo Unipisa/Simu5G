@@ -19,7 +19,7 @@ namespace simu5g {
 // This file contains MCS types and constants; MCS and ITBS tables;
 // and functions related to MCS and Tx-Modes.
 
-struct CQIelem
+struct CqiElem
 {
     /// Modulation
     LteMod mod_;
@@ -28,7 +28,7 @@ struct CQIelem
     double rate_;
 
     /// Constructor, with default set to "out of range CQI"
-    CQIelem(LteMod mod = _QPSK, double rate = 0.0) : mod_(mod), rate_(rate)
+    CqiElem(LteMod mod = _QPSK, double rate = 0.0) : mod_(mod), rate_(rate)
     {
     }
 
@@ -38,15 +38,15 @@ struct CQIelem
  * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
  * This table contains values taken from table 7.2.3-1 (TS 36.213)
  */
-extern const CQIelem cqiTable[];
+extern const CqiElem cqiTable[];
 
-struct MCSelem
+struct McsElem
 {
     LteMod mod_;       /// modulation
     Tbs iTbs_;         /// iTBS
     double threshold_; /// code rate threshold
 
-    MCSelem(LteMod mod = _QPSK, Tbs iTbs = 0, double threshold = 0.0) : mod_(mod), iTbs_(iTbs), threshold_(threshold)
+    McsElem(LteMod mod = _QPSK, Tbs iTbs = 0, double threshold = 0.0) : mod_(mod), iTbs_(iTbs), threshold_(threshold)
     {
     }
 
@@ -60,12 +60,12 @@ class McsTable
 {
   public:
 
-    MCSelem table[CQI2ITBSSIZE];
+    McsElem table[CQI2ITBSSIZE];
 
     McsTable();
 
     /// MCS table seek operator
-    MCSelem& at(Tbs tbs)
+    McsElem& at(Tbs tbs)
     {
         return table[tbs];
     }

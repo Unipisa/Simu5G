@@ -12,7 +12,7 @@
 #include "simu5g/nodes/mec/platform/services/RniService/resources/L2Meas.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
-#include "simu5g/nodes/mec/platform/services/RniService/resources/RNICellInfo.h"
+#include "simu5g/nodes/mec/platform/services/RniService/resources/RniCellInfo.h"
 #include "simu5g/common/binder/Binder.h"
 #include "CellUEInfo.h"
 
@@ -59,7 +59,7 @@ nlohmann::ordered_json L2Meas::toJson() const {
             CellUEInfo cellUeInfo = CellUEInfo(ueStatsCollector, baseStationStatsCollector->getEcgi());
             ueArray.push_back(cellUeInfo.toJson());
         }
-        RNICellInfo cellInfo = RNICellInfo(baseStationStatsCollector);
+        RniCellInfo cellInfo = RniCellInfo(baseStationStatsCollector);
         cellArray.push_back(cellInfo.toJson());
     }
 
@@ -203,7 +203,7 @@ nlohmann::ordered_json L2Meas::toJsonCell(std::vector<MacCellId>& cellsID) const
     for (const auto& cid : cellsID) {
         auto it = eNodeBs_.find(cid);
         if (it != eNodeBs_.end()) {
-            RNICellInfo cellInfo = RNICellInfo(it->second);
+            RniCellInfo cellInfo = RniCellInfo(it->second);
             cellArray.push_back(cellInfo.toJson());
 
             UeStatsCollectorMap *ueMap = it->second->getCollectorMap();

@@ -68,7 +68,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
     submodules:
         // bridge between radio nic and network layer
-        ip2nic: <default("IP2Nic")> like INetworkLayer2CellularNic {
+        ip2nic: <default("Ip2Nic")> like INetworkLayer2CellularNic {
             nodeType = parent.nodeType;
             @display("p=412,67");
         }

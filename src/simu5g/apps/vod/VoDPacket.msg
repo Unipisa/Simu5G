@@ -15,7 +15,7 @@ import inet.common.packet.chunk.Chunk;
 namespace simu5g;
 
 //
-// Packet used by the video-on-demand application (~VoDUDPServer, ~VoDUDPClient)
+// Packet used by the video-on-demand application (~VodUdpServer, ~VodUdpClient)
 //
 class VoDPacket extends inet::FieldsChunk {
     int frameSeqNum;

@@ -20,7 +20,7 @@ using namespace inet;
 
 void D2DModeSelectionBestCqi::initialize(int stage)
 {
-    D2DModeSelectionBase::initialize(stage);
+    D2dModeSelectionBase::initialize(stage);
 }
 
 void D2DModeSelectionBestCqi::doModeSelection()
@@ -89,7 +89,7 @@ void D2DModeSelectionBestCqi::doModeSwitchAtHandover(MacNodeId nodeId, bool hand
     if (handoverCompleted)
         return;
 
-    D2DModeSelectionBase::doModeSwitchAtHandover(nodeId, handoverCompleted);
+    D2dModeSelectionBase::doModeSwitchAtHandover(nodeId, handoverCompleted);
 }
 
 } //namespace

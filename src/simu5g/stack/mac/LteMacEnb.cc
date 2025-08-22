@@ -26,7 +26,7 @@
 #include "simu5g/stack/mac/packet/LteSchedulingGrant.h"
 #include "simu5g/stack/mac/allocator/LteAllocationModule.h"
 #include "simu5g/stack/mac/amc/LteAmc.h"
-#include "simu5g/stack/mac/amc/NRAmc.h"
+#include "simu5g/stack/mac/amc/NrAmc.h"
 #include "simu5g/stack/mac/amc/UserTxParams.h"
 #include "simu5g/stack/mac/packet/LteRac_m.h"
 #include "simu5g/stack/mac/packet/LteMacSduRequest.h"
@@ -137,8 +137,8 @@ void LteMacEnb::initialize(int stage)
     else if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT) {
         // Create and initialize AMC module
         std::string amcType = par("amcType").stdstringValue();
-        if (amcType == "NRAmc")
-            amc_ = new NRAmc(this, binder_, cellInfo_, numAntennas_);
+        if (amcType == "NrAmc")
+            amc_ = new NrAmc(this, binder_, cellInfo_, numAntennas_);
         else if (amcType == "LteAmc")
             amc_ = new LteAmc(this, binder_, cellInfo_, numAntennas_);
         else

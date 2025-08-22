@@ -13,7 +13,7 @@ package simu5g.corenetwork.statsCollector;
 
 //
 // This module collects the radio network information of an eNodeB, which can
-// be accessed by the ~RNIService module of a ~MECHost. For example, this module
+// be accessed by the ~RniService module of a ~MECHost. For example, this module
 // provides information such as the utilization of Resource Blocks.
 //
 module BaseStationStatsCollector like IStatsCollector

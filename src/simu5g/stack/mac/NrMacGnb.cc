@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 #include "simu5g/stack/mac/NrMacGnb.h"
-#include "simu5g/stack/mac/scheduler/NRSchedulerGnbUl.h"
+#include "simu5g/stack/mac/scheduler/NrSchedulerGnbUl.h"
 
 namespace simu5g {
 
@@ -26,7 +26,7 @@ void NrMacGnb::initialize(int stage)
     if (stage == inet::INITSTAGE_LINK_LAYER) {
         // Create and initialize NR MAC Uplink scheduler
         if (enbSchedulerUl_ == nullptr) {
-            enbSchedulerUl_ = new NRSchedulerGnbUl();
+            enbSchedulerUl_ = new NrSchedulerGnbUl();
             enbSchedulerUl_->resourceBlocks() = cellInfo_->getNumBands();
             enbSchedulerUl_->initialize(UL, this, binder_);
         }

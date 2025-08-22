@@ -19,7 +19,7 @@
 
 #include "simu5g/apps/mecRequestResponseApp/packets/MecRequestResponsePacket_m.h"
 #include "simu5g/apps/mecRequestResponseApp/packets/MigrationTimer_m.h"
-#include "simu5g/stack/phy/NRPhyUe.h"
+#include "simu5g/stack/phy/NrPhyUe.h"
 
 namespace simu5g {
 
@@ -34,7 +34,7 @@ class MecRequestApp : public cSimpleModule
     std::string sourceSymbolicAddress_;
     inet::L3Address destAddress_;
 
-    inet::ModuleRefByPar<NRPhyUe> nrPhy_;
+    inet::ModuleRefByPar<NrPhyUe> nrPhy_;
 
     unsigned int sno_;
     MacNodeId bsId_;

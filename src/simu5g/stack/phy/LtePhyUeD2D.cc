@@ -12,7 +12,7 @@
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
-#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 
 namespace simu5g {
 
@@ -54,7 +54,7 @@ void LtePhyUeD2D::handleSelfMessage(cMessage *msg)
     else if (msg->isName("doModeSwitchAtHandover")) {
         // Call mode selection module to check if DM connections are possible.
         cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
-        D2DModeSelectionBase *d2dModeSelection = check_and_cast<D2DModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
+        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, true);
 
         delete msg;
@@ -245,7 +245,7 @@ void LtePhyUeD2D::triggerHandover()
 
         // Trigger D2D mode switch.
         cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
-        D2DModeSelectionBase *d2dModeSelection = check_and_cast<D2DModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
+        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
     }
     LtePhyUe::triggerHandover();

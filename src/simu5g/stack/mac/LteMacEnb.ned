@@ -34,8 +34,8 @@ simple LteMacEnb extends LteMacBase
         //# AMC Parameters
         //#
 
-        // AMC Type:  "LteAmc", "NRAmc"
-        string amcType @enum(LteAmc,NRAmc) = default("LteAmc");
+        // AMC Type:  "LteAmc", "NrAmc"
+        string amcType @enum(LteAmc,NrAmc) = default("LteAmc");
 
         // AMC Mode:  "auto", "piloted", "multi", "das", "D2D"
         string amcMode @enum(AUTO,D2D) = default("AUTO");

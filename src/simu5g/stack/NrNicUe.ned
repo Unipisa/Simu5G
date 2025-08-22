@@ -36,8 +36,8 @@ module NrNicUe extends LteNicUeD2D
         int numNRCarriers = default(1);
 
         pdcpRrc.typename = default("NrPdcpRrcUe");
-        phy.typename = default("NRPhyUe");	        // TODO fix this
-        											// LtePhy is of type NRPhyUe so that it is
+        phy.typename = default("NrPhyUe");	        // TODO fix this
+        											// LtePhy is of type NrPhyUe so that it is
         											// be aware of the existing of the second
         											// PHY layer (needed at handover)
 
@@ -63,7 +63,7 @@ module NrNicUe extends LteNicUeD2D
             @display("p=466,314");
         }
         // PHY Layer
-        nrPhy: <default("NRPhyUe")> like ILtePhy {
+        nrPhy: <default("NrPhyUe")> like ILtePhy {
             @display("p=466,389");
         }
         // NR Channel Model

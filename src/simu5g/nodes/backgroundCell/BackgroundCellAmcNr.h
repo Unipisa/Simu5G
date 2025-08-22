@@ -15,7 +15,7 @@
 #include <omnetpp.h>
 
 #include "simu5g/nodes/backgroundCell/BackgroundCellAmc.h"
-#include "simu5g/stack/mac/amc/NRMcs.h"
+#include "simu5g/stack/mac/amc/NrMcs.h"
 
 namespace simu5g {
 
@@ -23,11 +23,11 @@ class BackgroundCellAmcNr : public BackgroundCellAmc
 {
   protected:
 
-    NRMcsTable dlNrMcsTable_;
-    NRMcsTable ulNrMcsTable_;
-    NRMcsTable d2dNrMcsTable_;
+    NrMcsTable dlNrMcsTable_;
+    NrMcsTable ulNrMcsTable_;
+    NrMcsTable d2dNrMcsTable_;
 
-    NRMCSelem getMcsElemPerCqi(Cqi cqi, const Direction dir);
+    NrMcsElem getMcsElemPerCqi(Cqi cqi, const Direction dir);
 
     unsigned int getSymbolsPerSlot(double carrierFrequency, Direction dir);
     unsigned int getResourceElementsPerBlock(unsigned int symbolsPerSlot);

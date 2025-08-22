@@ -12,7 +12,7 @@
 #ifndef LTE_D2DMODESELECTIONBESTCQI_H_
 #define LTE_D2DMODESELECTIONBESTCQI_H_
 
-#include "simu5g/stack/d2dModeSelection/D2DModeSelectionBase.h"
+#include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 
 namespace simu5g {
 
@@ -21,7 +21,7 @@ namespace simu5g {
 //
 // For each D2D-capable flow, select the mode having the best CQI
 //
-class D2DModeSelectionBestCqi : public D2DModeSelectionBase
+class D2DModeSelectionBestCqi : public D2dModeSelectionBase
 {
 
   protected:

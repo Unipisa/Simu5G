@@ -31,7 +31,7 @@ module LteNicEnbD2D extends LteNicEnb
         d2dCapable = default(true);   // DO NOT CHANGE
 
     submodules:
-        d2dModeSelection: <default("D2DModeSelectionBase")> like ID2DModeSelection {
+        d2dModeSelection: <default("D2dModeSelectionBase")> like ID2DModeSelection {
             @display("p=623,314,row");
         }
 }

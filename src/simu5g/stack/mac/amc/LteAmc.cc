@@ -809,7 +809,7 @@ unsigned int LteAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     else {
         throw cRuntimeError("LteAmc::getItbsPerCqi(): Unrecognized direction");
     }
-    CQIelem entry = cqiTable[cqi];
+    CqiElem entry = cqiTable[cqi];
     LteMod mod = entry.mod_;
     double rate = entry.rate_;
 
@@ -826,7 +826,7 @@ unsigned int LteAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     }
 
     // Initialize the working variables at the minimum value.
-    MCSelem elem = mcsTable->at(min);
+    McsElem elem = mcsTable->at(min);
     unsigned int iTbs = elem.iTbs_;
 
     // Search in the McsTable from min to max until the rate exceeds

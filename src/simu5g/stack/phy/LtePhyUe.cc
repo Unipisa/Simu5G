@@ -12,7 +12,7 @@
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUe.h"
 
-#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -186,7 +186,7 @@ void LtePhyUe::initialize(int stage)
         }
     }
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION) {
-        // get cellInfo at this stage because the next hop of the node is registered in the IP2Nic module at the INITSTAGE_NETWORK_LAYER
+        // get cellInfo at this stage because the next hop of the node is registered in the Ip2Nic module at the INITSTAGE_NETWORK_LAYER
         if (masterId_ != NODEID_NONE) {
             cellInfo_ = getCellInfo(binder_, nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
@@ -328,13 +328,13 @@ void LtePhyUe::triggerHandover()
 
     binder_->addUeHandoverTriggered(nodeId_);
 
-    // inform the UE's IP2Nic module to start holding downstream packets
+    // inform the UE's Ip2Nic module to start holding downstream packets
     ip2nic_->triggerHandoverUe(candidateMasterId_);
     binder_->removeHandoverTriggered(nodeId_);
 
-    // inform the eNB's IP2Nic module to forward data to the target eNB
+    // inform the eNB's Ip2Nic module to forward data to the target eNB
     if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        IP2Nic *enbIp2Nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        Ip2Nic *enbIp2Nic = check_and_cast<Ip2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2Nic->triggerHandoverSource(nodeId_, candidateMasterId_);
     }
 
@@ -438,12 +438,12 @@ void LtePhyUe::doHandover()
         EV << NOW << " LtePhyUe::doHandover - UE " << nodeId_ << " has completed handover to eNB " << masterId_ << "... " << endl;
     binder_->removeUeHandoverTriggered(nodeId_);
 
-    // inform the UE's IP2Nic module to forward held packets
+    // inform the UE's Ip2Nic module to forward held packets
     ip2nic_->signalHandoverCompleteUe();
 
-    // inform the eNB's IP2Nic module to forward data to the target eNB
+    // inform the eNB's Ip2Nic module to forward data to the target eNB
     if (oldMaster != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        IP2Nic *enbIp2Nic = check_and_cast<IP2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        Ip2Nic *enbIp2Nic = check_and_cast<Ip2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2Nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
     }
 }

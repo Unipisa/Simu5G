@@ -14,7 +14,7 @@
 
 #include <inet/mobility/contract/IMobility.h>
 
-#include "simu5g/stack/ip2nic/IP2Nic.h"
+#include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
 #include "simu5g/stack/phy/das/DasFilter.h"
 #include "simu5g/stack/mac/LteMacUe.h"
@@ -110,7 +110,7 @@ class LtePhyUe : public LtePhyBase
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlcUm_;
     inet::ModuleRefByPar<LtePdcpRrcBase> pdcp_;
-    inet::ModuleRefByPar<IP2Nic> ip2nic_;
+    inet::ModuleRefByPar<Ip2Nic> ip2nic_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
     simtime_t lastFeedback_;

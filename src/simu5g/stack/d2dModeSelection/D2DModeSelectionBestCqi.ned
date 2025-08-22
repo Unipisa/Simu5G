@@ -21,7 +21,7 @@ package simu5g.stack.d2dModeSelection;
 // The primary goal is to optimize data transmission quality and efficiency
 // by dynamically switching between modes based on CQI measurements.
 //
-simple D2DModeSelectionBestCqi extends D2DModeSelectionBase
+simple D2DModeSelectionBestCqi extends D2dModeSelectionBase
 {
     parameters:
         @class("D2DModeSelectionBestCqi");

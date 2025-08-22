@@ -38,7 +38,7 @@ unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Dire
 
     // compute TBS
 
-    NRMCSelem mcsElem = getMcsElemPerCqi(cqi, dir);
+    NrMcsElem mcsElem = getMcsElemPerCqi(cqi, dir);
     unsigned int numRe = getResourceElements(blocks, getSymbolsPerSlot(carrierFrequency, dir));
     unsigned int modFactor;
     switch (mcsElem.mod_) {
@@ -50,7 +50,7 @@ unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Dire
             break;
         case _256QAM: modFactor = 8;
             break;
-        default: throw cRuntimeError("NRAmc::computeCodewordTbs - unrecognized modulation.");
+        default: throw cRuntimeError("NrAmc::computeCodewordTbs - unrecognized modulation.");
     }
     double coderate = mcsElem.coderate_ / 1024;
     double nInfo = numRe * coderate * modFactor * layers;
@@ -61,10 +61,10 @@ unsigned int BackgroundCellAmcNr::computeBitsPerRbBackground(Cqi cqi, const Dire
     return tbs;
 }
 
-NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
+NrMcsElem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
 {
     // CQI threshold table selection
-    NRMcsTable *mcsTable;
+    NrMcsTable *mcsTable;
     if (dir == DL)
         mcsTable = &dlNrMcsTable_;
     else if ((dir == UL) || (dir == D2D) || (dir == D2D_MULTI))
@@ -72,7 +72,7 @@ NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
     else
         throw cRuntimeError("BackgroundCellAmcNr::getIMcsPerCqi(): Unrecognized direction");
 
-    CQIelem entry = mcsTable->getCqiElem(cqi);
+    CqiElem entry = mcsTable->getCqiElem(cqi);
     LteMod mod = entry.mod_;
     double rate = entry.rate_;
 
@@ -81,12 +81,12 @@ NRMCSelem BackgroundCellAmcNr::getMcsElemPerCqi(Cqi cqi, const Direction dir)
     unsigned int max = mcsTable->getMaxIndex(mod);
 
     // Initialize the working variables at the minimum value.
-    NRMCSelem ret = mcsTable->at(min);
+    NrMcsElem ret = mcsTable->at(min);
 
     // Search in the McsTable from min to max until the rate exceeds
     // the coderate in an entry of the table.
     for (unsigned int i = min; i <= max; i++) {
-        NRMCSelem elem = mcsTable->at(i);
+        NrMcsElem elem = mcsTable->at(i);
         if (elem.coderate_ <= rate)
             ret = elem;
         else

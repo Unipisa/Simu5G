@@ -19,24 +19,24 @@ using namespace omnetpp;
  * <CQI Index [0-15]> , <Modulation> , <Code Rate x 1024>
  * This table contains values taken from table 7.2.3-1 (TS 36.213)
  */
-const CQIelem cqiTable[] =
+const CqiElem cqiTable[] =
 {
-    CQIelem(_QPSK, 0.0),
-    CQIelem(_QPSK, 78.0),
-    CQIelem(_QPSK, 120.0),
-    CQIelem(_QPSK, 193.0),
-    CQIelem(_QPSK, 308.0),
-    CQIelem(_QPSK, 449.0),
-    CQIelem(_QPSK, 602.0),
-    CQIelem(_16QAM, 378.0),
-    CQIelem(_16QAM, 490.0),
-    CQIelem(_16QAM, 616.0),
-    CQIelem(_64QAM, 466.0),
-    CQIelem(_64QAM, 567.0),
-    CQIelem(_64QAM, 666.0),
-    CQIelem(_64QAM, 772.0),
-    CQIelem(_64QAM, 873.0),
-    CQIelem(_64QAM, 948.0),
+    CqiElem(_QPSK, 0.0),
+    CqiElem(_QPSK, 78.0),
+    CqiElem(_QPSK, 120.0),
+    CqiElem(_QPSK, 193.0),
+    CqiElem(_QPSK, 308.0),
+    CqiElem(_QPSK, 449.0),
+    CqiElem(_QPSK, 602.0),
+    CqiElem(_16QAM, 378.0),
+    CqiElem(_16QAM, 490.0),
+    CqiElem(_16QAM, 616.0),
+    CqiElem(_64QAM, 466.0),
+    CqiElem(_64QAM, 567.0),
+    CqiElem(_64QAM, 666.0),
+    CqiElem(_64QAM, 772.0),
+    CqiElem(_64QAM, 873.0),
+    CqiElem(_64QAM, 948.0),
 };
 
 /**
@@ -45,35 +45,35 @@ const CQIelem cqiTable[] =
  */
 McsTable::McsTable()
 {
-    table[0] = MCSelem(_QPSK, 0, 86.08);
-    table[1] = MCSelem(_QPSK, 1, 112.80);
-    table[2] = MCSelem(_QPSK, 2, 138.65);
-    table[3] = MCSelem(_QPSK, 3, 179.48);
-    table[4] = MCSelem(_QPSK, 4, 219.96);
-    table[5] = MCSelem(_QPSK, 5, 269.86);
-    table[6] = MCSelem(_QPSK, 6, 319.55);
-    table[7] = MCSelem(_QPSK, 7, 374.48);
-    table[8] = MCSelem(_QPSK, 8, 428.59);
-    table[9] = MCSelem(_QPSK, 9, 483.37);
-    table[10] = MCSelem(_16QAM, 9, 241.69);
-    table[11] = MCSelem(_16QAM, 10, 268.80);
-    table[12] = MCSelem(_16QAM, 11, 308.55);
-    table[13] = MCSelem(_16QAM, 12, 349.13);
-    table[14] = MCSelem(_16QAM, 13, 393.42);
-    table[15] = MCSelem(_16QAM, 14, 437.91);
-    table[16] = MCSelem(_16QAM, 15, 468.67);
-    table[17] = MCSelem(_64QAM, 15, 312.45);
-    table[18] = MCSelem(_64QAM, 16, 331.66);
-    table[19] = MCSelem(_64QAM, 17, 367.66);
-    table[20] = MCSelem(_64QAM, 18, 403.41);
-    table[21] = MCSelem(_64QAM, 19, 438.55);
-    table[22] = MCSelem(_64QAM, 20, 473.85);
-    table[23] = MCSelem(_64QAM, 21, 511.28);
-    table[24] = MCSelem(_64QAM, 22, 549.29);
-    table[25] = MCSelem(_64QAM, 23, 583.51);
-    table[26] = MCSelem(_64QAM, 24, 621.36);
-    table[27] = MCSelem(_64QAM, 25, 646.43);
-    table[28] = MCSelem(_64QAM, 26, 749.52);
+    table[0] = McsElem(_QPSK, 0, 86.08);
+    table[1] = McsElem(_QPSK, 1, 112.80);
+    table[2] = McsElem(_QPSK, 2, 138.65);
+    table[3] = McsElem(_QPSK, 3, 179.48);
+    table[4] = McsElem(_QPSK, 4, 219.96);
+    table[5] = McsElem(_QPSK, 5, 269.86);
+    table[6] = McsElem(_QPSK, 6, 319.55);
+    table[7] = McsElem(_QPSK, 7, 374.48);
+    table[8] = McsElem(_QPSK, 8, 428.59);
+    table[9] = McsElem(_QPSK, 9, 483.37);
+    table[10] = McsElem(_16QAM, 9, 241.69);
+    table[11] = McsElem(_16QAM, 10, 268.80);
+    table[12] = McsElem(_16QAM, 11, 308.55);
+    table[13] = McsElem(_16QAM, 12, 349.13);
+    table[14] = McsElem(_16QAM, 13, 393.42);
+    table[15] = McsElem(_16QAM, 14, 437.91);
+    table[16] = McsElem(_16QAM, 15, 468.67);
+    table[17] = McsElem(_64QAM, 15, 312.45);
+    table[18] = McsElem(_64QAM, 16, 331.66);
+    table[19] = McsElem(_64QAM, 17, 367.66);
+    table[20] = McsElem(_64QAM, 18, 403.41);
+    table[21] = McsElem(_64QAM, 19, 438.55);
+    table[22] = McsElem(_64QAM, 20, 473.85);
+    table[23] = McsElem(_64QAM, 21, 511.28);
+    table[24] = McsElem(_64QAM, 22, 549.29);
+    table[25] = McsElem(_64QAM, 23, 583.51);
+    table[26] = McsElem(_64QAM, 24, 621.36);
+    table[27] = McsElem(_64QAM, 25, 646.43);
+    table[28] = McsElem(_64QAM, 26, 749.52);
 }
 
 void McsTable::rescale(double scale)

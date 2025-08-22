@@ -17,7 +17,7 @@ import inet.applications.contract.IApp;
 // This application is to be instantiated on the UE side. It requires that a ~DeviceApp is
 // also instantiated on the UE. This module requests the ~DeviceApp to instantiate a
 // ~MecRnisTestApp in the MEC system. The application is used to test and showcase the
-// functionalities of the ~RNIService API.
+// functionalities of the ~RniService API.
 // Once the peer MEC application is up and running, this module sends a message to the MEC
 // application, requesting it to start querying the RNIS API periodically. When the
 // response from the  ~MecRnisTestApp is received, the result of the query to the RNIS API

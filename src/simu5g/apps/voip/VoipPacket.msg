@@ -12,7 +12,7 @@
 
 
 //
-// Packet used by the ~VoPSender and ~VoIPReceiver modules.
+// Packet used by the ~VoPSender and ~VoipReceiver modules.
 //
 
 import inet.common.INETDefs;

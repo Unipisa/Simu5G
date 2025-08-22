@@ -84,7 +84,7 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     else
         throw cRuntimeError("BackgroundCellAmc::getItbsPerCqi(): Unrecognized direction");
 
-    CQIelem entry = cqiTable[cqi];
+    CqiElem entry = cqiTable[cqi];
     LteMod mod = entry.mod_;
     double rate = entry.rate_;
 
@@ -101,7 +101,7 @@ unsigned int BackgroundCellAmc::getItbsPerCqi(Cqi cqi, const Direction dir)
     }
 
     // Initialize the working variables at the minimum value.
-    MCSelem elem = mcsTable->at(min);
+    McsElem elem = mcsTable->at(min);
     unsigned int iTbs = elem.iTbs_;
 
     // Search in the MCS table from min to max until the rate exceeds
