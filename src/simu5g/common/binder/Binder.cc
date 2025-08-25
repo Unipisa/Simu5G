@@ -140,9 +140,9 @@ void Binder::unregisterNode(MacNodeId id)
 {
     EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
 
-    for (auto it = macNodeIdToIPAddress_.begin(); it != macNodeIdToIPAddress_.end(); ) {
+    for (auto it = ipAddressToMacNodeId_.begin(); it != ipAddressToMacNodeId_.end(); ) {
         if (it->second == id) {
-            it = macNodeIdToIPAddress_.erase(it);
+            it = ipAddressToMacNodeId_.erase(it);
         }
         else {
             it++;
@@ -258,8 +258,8 @@ void Binder::initialize(int stage)
 
         // Add WATCH macros for all member variables
         WATCH(networkName_);
-        WATCH_MAP(macNodeIdToIPAddress_);
-        WATCH_MAP(nrMacNodeIdToIPAddress_);
+        WATCH_MAP(ipAddressToMacNodeId_);
+        WATCH_MAP(ipAddressToNrMacNodeId_);
         // WATCH_MAP(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
         WATCH_VECTOR(nextHop_);
         WATCH_VECTOR(secondaryNodeToMasterNode_);

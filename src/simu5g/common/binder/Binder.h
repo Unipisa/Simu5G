@@ -56,8 +56,8 @@ class Binder : public cSimpleModule
 
     typedef std::map<MacNodeId, std::map<MacNodeId, bool>> DeployedUesMap;
 
-    std::map<inet::Ipv4Address, MacNodeId> macNodeIdToIPAddress_; //TODO name is swapped!
-    std::map<inet::Ipv4Address, MacNodeId> nrMacNodeIdToIPAddress_; //TODO name is swapped!
+    std::map<inet::Ipv4Address, MacNodeId> ipAddressToMacNodeId_;
+    std::map<inet::Ipv4Address, MacNodeId> ipAddressToNrMacNodeId_;
 
     // Consolidated node information - replaces nodeIds_, macNodeIdToModuleName_, macNodeIdToModuleRef_, macNodeIdToModule_
     std::map<MacNodeId, NodeInfo> nodeInfoMap_;
@@ -354,9 +354,9 @@ class Binder : public cSimpleModule
      */
     MacNodeId getMacNodeId(inet::Ipv4Address address)
     {
-        if (macNodeIdToIPAddress_.find(address) == macNodeIdToIPAddress_.end())
+        if (ipAddressToMacNodeId_.find(address) == ipAddressToMacNodeId_.end())
             return NODEID_NONE;
-        MacNodeId nodeId = macNodeIdToIPAddress_[address];
+        MacNodeId nodeId = ipAddressToMacNodeId_[address];
 
         // if the UE is disconnected (its master node is 0), check the NR node Id
         if (getNextHop(nodeId) == NODEID_NONE)
@@ -372,9 +372,9 @@ class Binder : public cSimpleModule
      */
     MacNodeId getNrMacNodeId(inet::Ipv4Address address)
     {
-        if (nrMacNodeIdToIPAddress_.find(address) == nrMacNodeIdToIPAddress_.end())
+        if (ipAddressToNrMacNodeId_.find(address) == ipAddressToNrMacNodeId_.end())
             return NODEID_NONE;
-        return nrMacNodeIdToIPAddress_[address];
+        return ipAddressToNrMacNodeId_[address];
     }
 
     /**
@@ -388,11 +388,11 @@ class Binder : public cSimpleModule
      */
     inet::Ipv4Address getIPv4Address(MacNodeId nodeId)
     {
-        for (const auto& kv : macNodeIdToIPAddress_) {
+        for (const auto& kv : ipAddressToMacNodeId_) {
             if (kv.second == nodeId)
                 return kv.first;
         }
-        for (const auto& kv : nrMacNodeIdToIPAddress_) {
+        for (const auto& kv : ipAddressToNrMacNodeId_) {
             if (kv.second == nodeId)
                 return kv.first;
         }
@@ -418,9 +418,9 @@ class Binder : public cSimpleModule
     void setMacNodeId(inet::Ipv4Address address, MacNodeId nodeId)
     {
         if (isNrUe(nodeId))
-            nrMacNodeIdToIPAddress_[address] = nodeId;
+            ipAddressToNrMacNodeId_[address] = nodeId;
         else
-            macNodeIdToIPAddress_[address] = nodeId;
+            ipAddressToMacNodeId_[address] = nodeId;
     }
 
     /**
