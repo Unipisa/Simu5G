@@ -14,11 +14,17 @@ import simu5g.stack.phy.packet.AirFrame;
 cplusplus {{
 #include "simu5g/common/LteCommon.h"  // for RemoteUnitPhyDataVector
 }}
- 
+
 namespace simu5g;
 
 //
-// This is LteAirFrame.
+// Represents a physical layer transmission frame that encapsulates various types of
+// messages/packets for transmission over the air interface, such as:
+// - MAC PDUs (user data): transmitted as Transport Blocks (TB) on PDSCH/PUSCH
+// - HARQ feedback: transmitted on PUCCH (uplink control channel)
+// - Scheduling grants (DCI): transmitted on PDCCH (downlink control channel)
+// - Random access and D2D packets: transmitted on respective control/data channels
+// In the simulation, all these messages types are abstracted as LteAirFrame transmissions.
 //
 packet LteAirFrame extends AirFrame {
     @customize(true);
