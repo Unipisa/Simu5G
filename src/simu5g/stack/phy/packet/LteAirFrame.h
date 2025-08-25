@@ -22,9 +22,6 @@ using namespace omnetpp;
 
 class LteAirFrame : public LteAirFrame_Base
 {
-  protected:
-    RemoteUnitPhyDataVector remoteUnitPhyDataVector;
-
   public:
     LteAirFrame(const char *name = nullptr, int kind = 0) :
         LteAirFrame_Base(name, kind)
@@ -37,27 +34,12 @@ class LteAirFrame : public LteAirFrame_Base
         operator=(other);
     }
 
-    LteAirFrame& operator=(const LteAirFrame& other)
-    {
-        LteAirFrame_Base::operator=(other);
-        this->remoteUnitPhyDataVector = other.remoteUnitPhyDataVector;
-
-        // copy the attached control info, if any
-        if (other.getControlInfo() != nullptr) {
-            UserControlInfo *info = check_and_cast<UserControlInfo *>(other.getControlInfo());
-            UserControlInfo *info_dup = info->dup();
-            this->setControlInfo(info_dup);
-        }
-        return *this;
-    }
+    LteAirFrame& operator=(const LteAirFrame& other);
 
     LteAirFrame *dup() const override
     {
         return new LteAirFrame(*this);
     }
-
-    void addRemoteUnitPhyDataVector(RemoteUnitPhyData data);
-    RemoteUnitPhyDataVector getRemoteUnitPhyDataVector();
 };
 
 Register_Class(LteAirFrame);

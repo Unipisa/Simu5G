@@ -13,14 +13,17 @@
 
 namespace simu5g {
 
-void LteAirFrame::addRemoteUnitPhyDataVector(RemoteUnitPhyData data)
+LteAirFrame& LteAirFrame::operator=(const LteAirFrame& other)
 {
-    remoteUnitPhyDataVector.push_back(data);
-}
+    LteAirFrame_Base::operator=(other);
 
-RemoteUnitPhyDataVector LteAirFrame::getRemoteUnitPhyDataVector()
-{
-    return remoteUnitPhyDataVector;
+    // copy the attached control info, if any
+    if (other.getControlInfo() != nullptr) {
+        UserControlInfo *info = check_and_cast<UserControlInfo *>(other.getControlInfo());
+        UserControlInfo *info_dup = info->dup();
+        this->setControlInfo(info_dup);
+    }
+    return *this;
 }
 
 } //namespace
