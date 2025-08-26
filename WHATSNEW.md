@@ -1,5 +1,79 @@
 # What's New in Simu5G
 
+## v1.4.0 (2025-09-18)
+
+Compatible with **OMNeT++ 6.2.0** and **INET 4.5.4**.
+
+This release marks an important milestone in the ongoing transformation of
+Simu5G. While not introducing behavioral changes, this intermediate release
+focuses on restructuring the codebase to improve clarity, safety, and
+maintainability. Major updates include a reorganized directory structure,
+enforcing a consistent naming convention, making make packets more easily
+inspectable, and refactoring of parts of the C++ code to pave the way for
+changes in future versions. Although the release is not source-compatible with
+previous versions, existing simulations will continue to work unchanged once
+adjusted to follow the various rename operations. These improvements were
+contributed by Andras Varga (OMNeT++ Core Team).
+
+Renames:
+
+- Sources are now under src/simu5g/ instead of just src/, so that C++ includes
+  start with "simu5g/". This helps identifying Simu5G includes when Simu5G is
+  used as a dependency of other projects.
+
+- Some folders were moved inside the source tree to a more logical location. For
+  example, the simu5g/nodes/mec/ subtree was promoted to simu5g/mec/.
+
+- Several source folders were renamed to more closely follow the all-lowercase
+  convention. For example, mec/UALCMP/ became mec/ualcmp/, and mec/MECPlatform
+  became just mec/platform.
+
+- Several classes were renamed to ensure that only the first letters of acronyms
+  are uppercase. For example, MECHost became MecHost.
+
+- Several parameters were renamed to enforce camelcase names. For example,
+  bs_noise_figure became bsNoiseFigure, and fading_paths became numFadingPaths.
+  If you have existing Simu5G simulations, review the ini files carefully and
+  update the parameter assignments accordingly. (Caveat: Assignment lines that
+  refer to the old names will be simply ignored by the simulation -- there is no
+  error message for that!)
+
+- The PdcpRrc modules were renamed to just Pdcp. Likewise, pdcpRrc submodules
+  in NIC compound modules became pdcp.
+
+Further refactoring:
+
+- Several protocol header classes, while defined in msg files, contained heavy
+  customization in C++ code, including the addition of new fields. Since the
+  writing of those classes, the message compiler in OMNeT++ gained enough
+  features so that most of the customizations were no longer needed, and the
+  desired effect could be achieved in msg files only. This refactoring has the
+  benefit of making packets more inspectable from Qtenv, and packet contents can
+  now be serialized using parsimPack (useful for more thorough fingerprint
+  tests).
+
+- MacCid is a central data type that pairs an LCID with a nodeId to uniquely
+  identify a logical channel. It used to be a packed integer, and now it was
+  turned into a C++ class with separate fields for the node ID and LCID and with
+  accessor methods, for increased type safety.
+
+- carrierFrequency used to be a variable of the type double throughout the
+  codebase. The type was changed to GHz (using INET's units.h) for increased
+  type safety. This also helped identifying a bug in certain channel models
+  (LteRealisticChannelModel, BackgroundCellChannelModel) where a double
+  representing GHz instead of Hz was used in computing path loss, resulting
+  in underestimated path loss values.
+
+- Binder received several WATCHes for increased transparency in Qtenv, and
+  an overhaul of a subset of its API and internal data structures.
+
+- In the Pdcp modules, the unused EUTRAN_RRC_Sap port (and associated handling
+  code) was removed.
+
+- Refactoring of internals in several protocol modules, including MAC, PDCP and
+  RLC implementations.
+
+
 ## v1.3.1 (2025-09-18)
 
 This is a minor update for Simu5G-1.3.0. In addition to fixing regressions
