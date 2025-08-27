@@ -3,6 +3,23 @@
 Installation
 ============
 
+Recommended installation method
+*******************************
+
+The recommended installation method is to use the
+`opp_env <https://github.com/omnetpp/opp_env/blob/main/INSTALL.md>`__ 
+tool. `opp_env` allows automatic installation of all dependencies (including OMNeT++,
+INET, and Simu5G) with a single command.
+
+.. code:: bash
+
+   opp_env install simu5g-latest
+
+This will install the latest stable version of Simu5G and all its dependencies.   
+
+Manual installation
+*******************
+
 Prerequisites
 -------------
 
@@ -28,7 +45,7 @@ examples are running fine before continuing.
 Obtaining Simu5G
 ----------------
 
-Latest release: **Simu5G 1.2.2**.
+Latest release: **Simu5G 1.3.0**.
 
 In order to get Simu5G on your machine, you have the following
 options:
