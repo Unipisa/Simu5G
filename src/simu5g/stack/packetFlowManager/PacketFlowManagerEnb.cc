@@ -53,10 +53,6 @@ void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
     newDesc.burstId_ = 0;
     newDesc.burstState_ = false;
 
-    BurstStatus newBurstStatus;
-    newBurstStatus.burstSize = 0;
-    newBurstStatus.startBurstTransmission = -1;
-
     connectionMap_[lcid] = newDesc;
     EV_FATAL << NOW << " node id " << nodeId << " " << pfmType << "::initLcid - initialized lcid " << lcid << endl;
 }
