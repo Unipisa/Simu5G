@@ -599,7 +599,6 @@ void LteMacEnb::macPduMake(MacCid cid)
             UnitList txList = (txBuf->firstAvailable());
 
             auto macPacket = pit.second;
-            auto header = macPacket->peekAtFront<LteMacPdu>();
             EV << "LteMacBase: PDU Maker created PDU: " << macPacket->str() << endl;
 
             // PDU transmission here (if any)

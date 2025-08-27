@@ -243,9 +243,9 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
                     drop(pkt);
 
-                    auto header = macPkt->removeAtFront<LteMacPdu>();
-                    header->pushSdu(pkt);
-                    macPkt->insertAtFront(header);
+                    auto macPdu = macPkt->removeAtFront<LteMacPdu>();
+                    macPdu->pushSdu(pkt);
+                    macPkt->insertAtFront(macPdu);
                     sduPerCid--;
                 }
 
@@ -375,13 +375,13 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                //
                //        }
 
-            auto header = macPkt->removeAtFront<LteMacPdu>();
+            auto macPdu = macPkt->removeAtFront<LteMacPdu>();
             // Attach BSR to PDU if RAC is won and wasn't already made
             if ((bsrTriggered_ || bsrD2DMulticastTriggered_) && !bsrAlreadyMade && size > 0) {
                 MacBsr *bsr = new MacBsr();
                 bsr->setTimestamp(simTime().dbl());
                 bsr->setSize(size);
-                header->pushCe(bsr);
+                macPdu->pushCe(bsr);
                 bsrTriggered_ = false;
                 bsrD2DMulticastTriggered_ = false;
                 bsrAlreadyMade = true;
@@ -393,7 +393,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             else
                 bsrRtxTimer_ = 0;
 
-            macPkt->insertAtFront(header);
+            macPkt->insertAtFront(macPdu);
 
             EV << "LteMacUeD2D: pduMaker created PDU: " << macPkt->str() << endl;
 

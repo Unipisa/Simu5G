@@ -415,9 +415,9 @@ void LteMacUe::macPduMake(MacCid cid)
                 auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
                 drop(pkt);
 
-                auto header = macPkt->removeAtFront<LteMacPdu>();
-                header->pushSdu(pkt);
-                macPkt->insertAtFront(header);
+                auto macPdu = macPkt->removeAtFront<LteMacPdu>();
+                macPdu->pushSdu(pkt);
+                macPkt->insertAtFront(macPdu);
                 sduPerCid--;
             }
             // consider virtual buffers to compute BSR size
@@ -533,13 +533,13 @@ void LteMacUe::macPduMake(MacCid cid)
             //        }
 
             bool bsrAlreadyMade = false;
-            auto header = macPkt->removeAtFront<LteMacPdu>();
+            auto macPdu = macPkt->removeAtFront<LteMacPdu>();
             if (bsrTriggered_) {
                 MacBsr *bsr = new MacBsr();
 
                 bsr->setTimestamp(simTime().dbl());
                 bsr->setSize(size);
-                header->pushCe(bsr);
+                macPdu->pushCe(bsr);
 
                 bsrTriggered_ = false;
                 bsrAlreadyMade = true;
@@ -553,7 +553,7 @@ void LteMacUe::macPduMake(MacCid cid)
                 bsrRtxTimer_ = 0;
 
             // insert updated MacPdu
-            macPkt->insertAtFront(header);
+            macPkt->insertAtFront(macPdu);
 
             EV << "LteMacUe: pduMaker created PDU: " << macPkt->str() << endl;
 
