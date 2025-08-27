@@ -27,7 +27,7 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
     EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - LCID[" << lcid_ << "] - processing packet from RLC layer" << endl;
 
     // pop PDCP header
-    pkt->popAtFront<LtePdcpPdu>();
+    pkt->popAtFront<LtePdcpHeader>();
 
     // TODO NRRxEntity could delete this packet in handlePdcpSdu()...
     auto lteInfo = pkt->getTag<FlowControlInfo>();

@@ -127,7 +127,7 @@ void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet *pdcpPkt)
     MacNodeId nodeId = lteInfo->getDestId();
     simtime_t entryTime = simTime();
     ////
-    auto header = pdcpPkt->peekAtFront<LtePdcpPdu>();
+    auto header = pdcpPkt->peekAtFront<LtePdcpHeader>();
     int sduSize = (B(pduSize) - header->getChunkLength()).get();
 
     int sduSizeBits = (b(pdcpPkt->getBitLength()) - header->getChunkLength()).get();

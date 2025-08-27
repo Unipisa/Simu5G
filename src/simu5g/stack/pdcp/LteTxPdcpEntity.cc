@@ -37,7 +37,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
     setIds(lteInfo);
 
     // PDCP Packet creation
-    auto pdcpPkt = makeShared<LtePdcpPdu>();
+    auto pdcpHeader = makeShared<LtePdcpHeader>();
 
     unsigned int headerLength;
     switch (lteInfo->getRlcType()) {
@@ -53,9 +53,9 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
         default:
             throw cRuntimeError("LtePdcpBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
     }
-    pdcpPkt->setChunkLength(B(headerLength));
+    pdcpHeader->setChunkLength(B(headerLength));
     pkt->trim();
-    pkt->insertAtFront(pdcpPkt);
+    pkt->insertAtFront(pdcpHeader);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
 
     EV << "LtePdcp : Preparing to send "

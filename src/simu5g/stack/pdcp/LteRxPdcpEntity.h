@@ -19,7 +19,7 @@
 namespace simu5g {
 
 class LtePdcpBase;
-class LtePdcpPdu;
+class LtePdcpHeader;
 
 using namespace inet;
 
