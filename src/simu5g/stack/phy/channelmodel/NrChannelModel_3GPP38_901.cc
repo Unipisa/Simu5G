@@ -241,10 +241,10 @@ double NrChannelModel_3GPP38_901::computeRuralMacro(double threeDimDistance, dou
     double min2 = (B < 14.77) ? B : 14.77;
     double pLoss_los = 0.0;
     if (twoDimDistance < dbp) {
-        pLoss_los = 20 * log10(40 * M_PI * threeDimDistance * (carrierFrequencyGHz_ / 3.0)) + min1 * log10(threeDimDistance) - min2 + 0.002 * log10(h) * threeDimDistance;
+        pLoss_los = 20 * log10(40 * M_PI * threeDimDistance * (carrierFrequencyHz_ / 3.0)) + min1 * log10(threeDimDistance) - min2 + 0.002 * log10(h) * threeDimDistance;
     }
     else {
-        pLoss_los = 20 * log10(40 * M_PI * dbp * (carrierFrequencyGHz_ / 3.0)) + min1 * log10(dbp) - min2 + 0.002 * log10(h) * dbp
+        pLoss_los = 20 * log10(40 * M_PI * dbp * (carrierFrequencyHz_ / 3.0)) + min1 * log10(dbp) - min2 + 0.002 * log10(h) * dbp
             + 40 * log10(threeDimDistance / dbp);
     }
     pLoss_los += penetrationLoss;

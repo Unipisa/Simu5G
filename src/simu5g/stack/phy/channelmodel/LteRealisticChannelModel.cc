@@ -2238,13 +2238,13 @@ double LteRealisticChannelModel::computeSubUrbanMacro(double d, double& dbp, boo
         double a = (a1 < 10) ? a1 : 10;
         double b = (b1 < 14.72) ? b1 : 14.72;
         if (d < dbp) {
-            double first = 20 * log10((40 * M_PI * d * carrierFrequencyGHz_) / 3);
+            double first = 20 * log10((40 * M_PI * d * carrierFrequencyHz_) / 3);
             double second = a * log10(d);
             double fourth = 0.002 * log10(hBuilding_) * d;
             return first + second - b + fourth;
         }
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(d / dbp);
     }
@@ -2283,10 +2283,10 @@ double LteRealisticChannelModel::computeRuralMacro(double d, double& dbp, bool l
         double a = (a1 < 10) ? a1 : 10;
         double b = (b1 < 14.72) ? b1 : 14.72;
         if (d < dbp)
-            return 20 * log10((40 * M_PI * d * carrierFrequencyGHz_) / 3)
+            return 20 * log10((40 * M_PI * d * carrierFrequencyHz_) / 3)
                    + a * log10(d) - b + 0.002 * log10(hBuilding_) * d;
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(d / dbp);
     }

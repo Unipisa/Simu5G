@@ -304,10 +304,10 @@ double NrChannelModel::computeRuralMacro(double threeDimDistance, double twoDimD
         double b = (b1 < 14.77) ? b1 : 14.77;
 
         if (twoDimDistance < dbp)
-            return 20 * log10((40 * M_PI * threeDimDistance * carrierFrequencyGHz_) / 3)
+            return 20 * log10((40 * M_PI * threeDimDistance * carrierFrequencyHz_) / 3)
                    + a * log10(threeDimDistance) - b + 0.002 * log10(hBuilding_) * threeDimDistance;
         else
-            return 20 * log10((40 * M_PI * dbp * carrierFrequencyGHz_) / 3)
+            return 20 * log10((40 * M_PI * dbp * carrierFrequencyHz_) / 3)
                    + a * log10(dbp) - b + 0.002 * log10(hBuilding_) * dbp
                    + 40 * log10(threeDimDistance / dbp);
     }
