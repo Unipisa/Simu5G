@@ -85,7 +85,7 @@ void PacketFlowManagerEnb::clearAllLcid()
     EV_FATAL << NOW << " " << pfmType << "::clearAllLcid - cleared data structures for all lcids " << endl;
 }
 
-void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime)
+void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t arrivalTime)
 {
     // if pdcpStatus_ already present, error
     std::map<unsigned int, PdcpStatus>::iterator it = desc->pdcpStatus_.find(pdcp);

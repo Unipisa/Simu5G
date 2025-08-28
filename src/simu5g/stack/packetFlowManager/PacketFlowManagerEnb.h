@@ -26,25 +26,7 @@ using namespace omnetpp;
 class LteRlcUmDataPdu;
 
 /**
- * This module is responsible for keeping track of all PDCP SDUs.
- * A PDCP SDU passes through the following states while it is going down
- * through the LTE NIC layers:
- *
- * PDCP SDU
- * few operations
- * PDCP PDU
- * RLC SDU
- * RLC PDU or fragmented into more than one RLC PDU
- * MAC SDU
- * inserted into one TB
- * MAC PDU (aka TB)
- *
- * Each PDCP has its own sequence number, managed by the corresponding LCID
- *
- * The main functions of this module are:
- *  - detect PDCP SDU discarded (no part transmitted)
- *  - calculate the delay time of a packet, from PDCP SDU to last Harq ACK of the
- *    corresponding sequence number.
+ * The eNB-specific version of PacketFlowManager.
  */
 class PacketFlowManagerEnb : public PacketFlowManagerBase
 {
@@ -129,7 +111,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
      * total of the burst size.
      * It is called by macPduArrived (ack true) and rlcPduDiscarded (ack false)
      * @param desc LCID descriptor
-     * @param pdcpSno PDCP sequence number
+     * @param rlcSno RLC sequence number
      * @bool ack PDCP acknowledgment flag
      */
     void removePdcpBurstRLC(StatusDescriptor *desc, unsigned int rlcSno, bool ack);
@@ -137,7 +119,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     /*
      * This method creates a pdcpStatus structure when a PDCP SDU arrives at the PDCP layer.
      */
-    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
+    void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t arrivalTime);
 
     // return true if a structure for this LCID is present
     bool hasLcid(LogicalCid lcid) override;
@@ -151,50 +133,20 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
   public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override;
-
     void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) override;
-
     void insertMacPdu(inet::Ptr<const LteMacPdu>) override;
-
-    /*
-     * This method checks if the HARQ acknowledgment relative to a macPduId acknowledges an ENTIRE
-     * PDCP SDU
-     * @param lcid
-     * @param macPduId Omnet ID of the MAC PDU
-     */
     void macPduArrived(inet::Ptr<const LteMacPdu>) override;
-
     void ulMacPduArrived(MacNodeId nodeId, unsigned int grantId) override;
-
-    /*
-     * This method is called after maxHarqTransmission of a MAC PDU ID has been
-     * reached. The PDCP, RLC, SN referred to the macPdu are cleared from the
-     * data structures
-     * @param lcid
-     * @param macPduId Omnet ID of the MAC PDU to be discarded
-     */
     void discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu) override;
-
-    /*
-     * This method is used to keep track of all discarded RLC PDUs. If all RLC PDUs
-     * that compose a PDCP SDU have been discarded the discarded counters are updated
-     * @param lcid
-     * @param rlcSno sequence number of the RLC PDU
-     * @param fromMac used when this method is called by discardMacPdu
-     */
     void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
-
     void grantSent(MacNodeId nodeId, unsigned int grantId) override;
 
-    /*
-     * deletes all the LCID structures related to the UE
-     * called upon handover
+    /**
+     * Deletes all the LCID structures related to the UE. Called upon handover.
      */
     virtual void deleteUe(MacNodeId id);
 
-    /*
-     * The methods are called for a specific UE
-     */
+    // Per-UE statistics
 
     virtual uint64_t getDataVolume(MacNodeId nodeId, Direction dir);
     virtual void resetDataVolume(MacNodeId nodeId, Direction dir);
