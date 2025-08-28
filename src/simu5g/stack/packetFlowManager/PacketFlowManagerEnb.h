@@ -182,16 +182,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
      */
     void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) override;
 
-    void insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId) override;
-
     void grantSent(MacNodeId nodeId, unsigned int grantId) override;
-
-    /*
-     * invoked by the MAC layer to notify that harqProcId is completed.
-     * This method needs to go back up the chain of sequence numbers to identify which
-     * PDCP SDUs have been transmitted in this process.
-     */
-    // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId);
 
     /*
      * deletes all the LCID structures related to the UE

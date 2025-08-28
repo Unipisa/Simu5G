@@ -501,10 +501,6 @@ void PacketFlowManagerUe::resetDelayCounter()
     pdcpDelay = { 0, 0 };
 }
 
-void PacketFlowManagerUe::insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId)
-{
-}
-
 void PacketFlowManagerUe::finish()
 {
 }

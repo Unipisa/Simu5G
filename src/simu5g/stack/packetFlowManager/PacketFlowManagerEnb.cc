@@ -649,10 +649,6 @@ double PacketFlowManagerEnb::getDiscardedPkt()
     return ((double)pktDiscardCounterTotal_.discarded * 1000000) / pktDiscardCounterTotal_.total;
 }
 
-void PacketFlowManagerEnb::insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId)
-{
-}
-
 void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
 {
     Grant grant = { grantId, simTime() };

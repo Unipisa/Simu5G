@@ -149,16 +149,7 @@ class PacketFlowManagerBase : public cSimpleModule
      */
     virtual void discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac = false) = 0;
 
-    virtual void insertHarqProcess(LogicalCid lcid, unsigned int harqProcId, unsigned int macPduId) = 0;
-
     virtual void grantSent(MacNodeId nodeId, unsigned int grantId) {}
-
-    /*
-     * invoked by the MAC layer to notify that harqProcId is completed.
-     * This method needs to go back up the chain of sequence numbers to identify which
-     * PDCP SDUs have been transmitted in this process.
-     */
-    // void notifyHarqProcess(LogicalCid lcid, unsigned int harqProcId) = 0;
 
     virtual void resetDiscardCounter();
 
