@@ -68,10 +68,6 @@ class PacketFlowManagerBase : public cSimpleModule
     RanNodeType nodeType_; // UE or ENODEB (used for set MACROS)
     short int harqProcesses_; // number of harq processes
 
-    // when a mode switch occurs, the PDCP and RLC entities should be informed about the next SN to use,
-    // i.e., the first SN not transmitted due to the mode switch
-    unsigned int nextPdcpSno_;
-    unsigned int nextRlcSno_;
     std::string pfmType;
 
     int headerCompressedSize_;
@@ -166,11 +162,7 @@ class PacketFlowManagerBase : public cSimpleModule
 
     virtual void resetDiscardCounter();
 
-    virtual unsigned int getNextRlcSno() { return nextRlcSno_; }
-    virtual unsigned int getNextPdcpSno() { return nextPdcpSno_; }
-
     void finish() override;
-
 };
 
 } //namespace

@@ -527,9 +527,6 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                         dit->second.pktCount += 1;
 
-                        // update next sno
-                        nextPdcpSno_ = pdcpPduSno + 1;
-
                         // remove pdcp status
                         desc->pdcpStatus_.erase(pit);
                         oit->second.clear();
@@ -538,8 +535,6 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
                 }
             }
             desc->rlcSdusPerPdu_.erase(nit); // erase RLC PDU SN
-            // update next sno
-            nextRlcSno_ = rlcPduSno + 1;
             removePdcpBurstRLC(desc, rlcPduSno, true); // check if the pdcp is part of a burst
         }
 

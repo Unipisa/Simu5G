@@ -411,17 +411,12 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                         EV_FATAL << NOW << "node id " << desc->nodeId_ - 1025 << " " << pfmType << "::macPduArrived - PDCP PDU " << pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s" << endl;
 
-                        // update next sno
-                        nextPdcpSno_ = pdcpPduSno + 1;
-
                         // remove pdcp status
                         oit->second.clear();
                         desc->rlcPdusPerSdu_.erase(oit); // erase PDCP PDU SN
                     }
                 }
             }
-            // update next sno
-            nextRlcSno_ = rlcPduSno + 1;
         }
 
         mit->second.clear();
