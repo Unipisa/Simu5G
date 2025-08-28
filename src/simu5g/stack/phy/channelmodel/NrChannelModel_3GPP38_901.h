@@ -16,12 +16,25 @@
 
 namespace simu5g {
 
-// NrChannelModel_3GPP38_901
-//
-// This channel model implements path loss, LOS probability, and shadowing according to
-// the following specifications:
-//     3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
-//
+/**
+ * This channel model implements path loss, LOS probability, and shadowing according to
+ * the following 3GPP specifications:
+ * - 3GPP TR 38.901, "Study on channel model for frequencies from 0.5 to 100 GHz", v16.1.0, December 2019
+ * - 3GPP TS 38.211, "NR; Physical channels and modulation", v16.2.0, July 2020
+ * - 3GPP TS 38.214, "NR; Physical layer procedures for data", v16.2.0, July 2020
+ *
+ * The model supports 5G NR deployment scenarios including:
+ * - Indoor Hotspot (InH) - 0.5-100 GHz
+ * - Urban Microcell (UMi-Street Canyon) - 0.5-100 GHz
+ * - Urban Macrocell (UMa) - 0.5-100 GHz
+ * - Rural Macrocell (RMa) - 0.5-7 GHz
+ *
+ * Key features:
+ * - Frequency-dependent path loss models compliant with 3GPP TR 38.901
+ * - LOS/NLOS probability models for various scenarios
+ * - Building penetration loss for indoor UEs (Section 7.4.3 of TR 38.901)
+ * - Proper frequency handling: Hz for physical calculations, GHz for path loss formulas
+ */
 class NrChannelModel_3GPP38_901 : public NrChannelModel
 {
 
@@ -107,4 +120,3 @@ class NrChannelModel_3GPP38_901 : public NrChannelModel
 } //namespace
 
 #endif /* NRCHANNELMODEL_3GPP38_901_H_ */
-

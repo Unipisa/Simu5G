@@ -21,6 +21,27 @@ using namespace omnetpp;
 
 class Binder;
 
+/**
+ * This channel model implements path loss, LOS probability, and shadowing for LTE systems
+ * according to the following 3GPP specifications:
+ * - 3GPP TR 36.814, "Further advancements for E-UTRA physical layer aspects", v9.2.0, March 2017
+ * - 3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
+ * - 3GPP TS 36.211, "LTE; Physical channels and modulation", v13.2.0, June 2016
+ *
+ * The model supports various LTE deployment scenarios including:
+ * - Indoor Hotspot (InH)
+ * - Urban Microcell (UMi)
+ * - Urban Macrocell (UMa)
+ * - Rural Macrocell (RMa)
+ * - Suburban Macrocell (SMa)
+ *
+ * Key features:
+ * - Standards-compliant path loss models with proper frequency handling
+ * - LOS/NLOS probability computation based on 3GPP models
+ * - Jakes and Rayleigh fading models
+ * - Multi-cell interference computation
+ * - D2D communication support
+ */
 class LteRealisticChannelModel : public LteChannelModel
 {
   protected:

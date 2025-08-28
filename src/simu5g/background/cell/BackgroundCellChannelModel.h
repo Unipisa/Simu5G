@@ -25,6 +25,23 @@ using namespace omnetpp;
 // and tolerating the maximum distance violation is enabled
 #define ATT_MAXDISTVIOLATED    1000
 
+/**
+ * This channel model implements path loss, LOS probability, and shadowing for background cells
+ * according to the following 3GPP specifications:
+ * - 3GPP TR 36.814, "Further advancements for E-UTRA physical layer aspects", v9.2.0, March 2017
+ * - 3GPP TR 36.873, "Study on 3D channel model for LTE", v12.7.0, December 2017
+ *
+ * The model supports various deployment scenarios including:
+ * - Indoor Hotspot (InH)
+ * - Urban Microcell (UMi)
+ * - Urban Macrocell (UMa)
+ * - Rural Macrocell (RMa)
+ * - Suburban Macrocell (SMa)
+ *
+ * Path loss formulas follow 3GPP specifications with proper frequency handling:
+ * - Carrier frequency in Hz for physical calculations (Doppler, break-point distance)
+ * - Carrier frequency in GHz for path loss formulas as specified in standards
+ */
 class BackgroundCellChannelModel : public cSimpleModule
 {
     // carrier frequency for this cell
