@@ -72,11 +72,10 @@ class PacketFlowManagerBase : public cSimpleModule
 
     int headerCompressedSize_;
 
+  protected:
     int numInitStages() const override { return 2; }
     void initialize(int stage) override;
-
-  public:
-
+    void finish() override;
 
     // return true if a structure for this lcid is present
     virtual bool hasLcid(LogicalCid lcid) = 0;
@@ -96,6 +95,7 @@ class PacketFlowManagerBase : public cSimpleModule
     // reset structures for all connections
     virtual void clearAllLcid() = 0;
 
+  public:
     /*
      * This method inserts a new pdcp seqnum and the corresponding entry time
      * @param lcid
@@ -112,7 +112,6 @@ class PacketFlowManagerBase : public cSimpleModule
      * @param lcid
      * @param rlcPdu packet pointer
      */
-
     virtual void insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) = 0;
 
     /*
@@ -152,8 +151,6 @@ class PacketFlowManagerBase : public cSimpleModule
     virtual void grantSent(MacNodeId nodeId, unsigned int grantId) {}
 
     virtual void resetDiscardCounter();
-
-    void finish() override;
 };
 
 } //namespace

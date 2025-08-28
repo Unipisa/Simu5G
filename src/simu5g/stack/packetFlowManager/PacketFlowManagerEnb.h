@@ -119,6 +119,10 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     // used to evaluate the delay with respect to the one reported by Simu5G
     cOutVector timesUe_;
 
+  protected:
+    void initialize(int stage) override;
+    void finish() override;
+
     /*
      * This method checks if a PDCP PDU of a LCID is part of a burst of data.
      * In a positive case, according to the ack boolean its size is counted in the
@@ -135,9 +139,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
      */
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
-    void initialize(int stage) override;
-
-  public:
     // return true if a structure for this LCID is present
     bool hasLcid(LogicalCid lcid) override;
     // initialize a new structure for this LCID
@@ -147,6 +148,7 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
     // reset structures for all connections
     void clearAllLcid() override;
 
+  public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override;
 
@@ -215,7 +217,6 @@ class PacketFlowManagerEnb : public PacketFlowManagerBase
 
     virtual double getThroughputStatsPerUe(MacNodeId id);
     virtual void resetThroughputCounterPerUe(MacNodeId id);
-    void finish() override;
 };
 
 } //namespace

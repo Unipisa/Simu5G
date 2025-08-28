@@ -71,9 +71,10 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
   protected:
 
     void initialize(int stage) override;
+    void finish() override;
+
     void initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t& arrivalTime);
 
-  public:
     // return true if a structure for this LCID is present
     bool hasLcid(LogicalCid lcid) override;
     // initialize a new structure for this LCID
@@ -82,8 +83,8 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     void clearLcid(LogicalCid lcid) override;
     // reset structures for all connections
     void clearAllLcid() override;
-    virtual void clearStats();
 
+  public:
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
 
     void receivedPdcpSdu(inet::Packet *pdcpPkt) override { /*TODO*/ }
@@ -135,9 +136,7 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 
     double getDelayStats();
     void resetDelayCounter();
-
-    void finish() override;
-
+    virtual void clearStats();
 };
 
 } //namespace
