@@ -45,10 +45,6 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
 
     Delay pdcpDelay;
 
-    // Debug variables to be deleted
-    cOutVector times_;
-    std::set<unsigned int> myset;
-
   protected:
     void initialize(int stage) override;
     void finish() override;
