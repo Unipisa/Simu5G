@@ -104,8 +104,8 @@ class PacketFlowManagerBase : public cSimpleModule
      *
      * Used only by the eNodeB packetFlowManager
      */
-    virtual void insertPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:insertPdcpSdu" << endl; }
-    virtual void receivedPdcpSdu(inet::Packet *pdcpPkt) { EV << "PacketFlowManagerBase:receivedPdcpSdu" << endl; }
+    virtual void insertPdcpSdu(inet::Packet *pdcpPkt) = 0;
+    virtual void receivedPdcpSdu(inet::Packet *pdcpPkt) = 0;
 
     /*
      * This method inserts a new rlc seqnum and the corresponding pdcp pdus inside it

@@ -85,6 +85,9 @@ class PacketFlowManagerUe : public PacketFlowManagerBase
     virtual void clearStats();
 
     void insertPdcpSdu(inet::Packet *pdcpPkt) override;
+
+    void receivedPdcpSdu(inet::Packet *pdcpPkt) override { /*TODO*/ }
+
     /*
      * This method inserts a new RLC sequence number and the corresponding PDCP PDUs inside it.
      * @param lcid
