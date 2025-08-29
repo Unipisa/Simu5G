@@ -230,15 +230,10 @@ bool LteMacBase::bufferizePacket(cPacket *pktAux)
         if (!queue->pushBack(pkt)) {
             totalOverflowedBytes_ += pkt->getByteLength();
             double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-            if (lteInfo->getDirection() == DL) {
-                emit(macBufferOverflowDlSignal_, sample);
-            }
-            else if (lteInfo->getDirection() == UL) {
-                emit(macBufferOverflowUlSignal_, sample);
-            }
-            else { // D2D
-                emit(macBufferOverflowD2DSignal_, sample);
-            }
+            simsignal_t signal = (lteInfo->getDirection() == DL) ? macBufferOverflowDlSignal_ :
+                                 (lteInfo->getDirection() == UL) ? macBufferOverflowUlSignal_ :
+                                 macBufferOverflowD2DSignal_;
+            emit(signal, sample);
 
             EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
             delete pkt;
@@ -481,4 +476,3 @@ double LteMacBase::getHarqErrorRate(Direction dir)
 }
 
 } //namespace
-
