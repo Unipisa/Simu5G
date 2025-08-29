@@ -270,7 +270,6 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
             throw cRuntimeError("%s::insertMacPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
-            return;
         }
 
         // get the descriptor for this connection
@@ -331,7 +330,6 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
             throw cRuntimeError("%s::macPduArrived - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
-            return;
         }
 
         // get the descriptor for this connection

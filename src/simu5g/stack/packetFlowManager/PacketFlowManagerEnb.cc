@@ -397,9 +397,7 @@ void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         auto cit = connectionMap_.find(lcid);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            // EV_FATAL << NOW << " node id "<< desc->nodeId_<< " " << pfmType << "::insertMacPdu - Logical CID " << lcid << " not present." << endl;
             throw cRuntimeError("%s::insertMacPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
-            return;
         }
 
         // get the descriptor for this connection
@@ -448,10 +446,8 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
         int lcid = lteInfo->getLcid();
         auto cit = connectionMap_.find(lcid);
-        if (cit == connectionMap_.end()) {
+        if (cit == connectionMap_.end())
             throw cRuntimeError("%s::macPduArrived - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
-            return;
-        }
 
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
