@@ -391,10 +391,16 @@ class LteMacBase : public cSimpleModule
     virtual void macPduUnmake(cPacket *pkt) = 0;
 
     /**
+     * createQueues() creates MAC queues and buffers for a given CID
+     * if they don't already exist
+     */
+    virtual void createQueues(MacCid cid, const FlowControlInfo& lteInfo);
+
+    /**
      * bufferizePacket() is called every time a packet is
      * received from the upper layer
      */
-    virtual bool bufferizePacket(cPacket *pktAux);
+    virtual bool bufferizePacket(cPacket *pkt);
 
     /**
      * handleUpperMessage() is called every time a packet is

@@ -652,12 +652,12 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
     delete pkt;
 }
 
-bool LteMacEnb::bufferizePacket(cPacket *pktAux)
+bool LteMacEnb::bufferizePacket(cPacket *cpkt)
 {
-    auto pkt = check_and_cast<Packet *>(pktAux);
+    auto pkt = check_and_cast<Packet *>(cpkt);
 
     if (pkt->getBitLength() <= 1) { // no data in this packet
-        delete pktAux;
+        delete cpkt;
         return false;
     }
 
@@ -668,98 +668,50 @@ bool LteMacEnb::bufferizePacket(cPacket *pktAux)
     // obtain the cid from the packet information
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
+    // check if queues exist, create them if they don't
+    if (mbuf_.find(cid) == mbuf_.end())
+        createQueues(cid, *lteInfo);
+    LteMacQueue *queue = mbuf_.at(cid);
+    LteMacBuffer *vqueue = macBuffers_.at(cid);
+
     // this packet is used to signal the arrival of new data in the RLC buffers
     if (checkIfHeaderType<LteRlcPduNewData>(pkt)) {
         // update the virtual buffer for this connection
-
         // build the virtual packet corresponding to this incoming packet
         pkt->popAtFront<LteRlcPduNewData>();
         auto rlcSdu = pkt->peekAtFront<LteRlcSdu>();
         PacketInfo vpkt(rlcSdu->getLengthMainPacket(), pkt->getTimestamp());
-
-        LteMacBufferMap::iterator it = macBuffers_.find(cid);
-        if (it == macBuffers_.end()) {
-            LteMacBuffer *vqueue = new LteMacBuffer();
-            vqueue->pushBack(vpkt);
-            macBuffers_[cid] = vqueue;
-
-            // make a copy of lte control info and store it to the traffic descriptors map
-            FlowControlInfo toStore(*lteInfo);
-            connDesc_[cid] = toStore;
-            // register connection to lcg map.
-            LteTrafficClass tClass = (LteTrafficClass)lteInfo->getTraffic();
-
-            lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
-
-            EV << "LteMacBuffers : Using new buffer on node: " <<
-                cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Bytes in the Queue: " <<
-                vqueue->getQueueOccupancy() << "\n";
-        }
-        else {
-            LteMacBuffer *vqueue = nullptr;
-            LteMacBufferMap::iterator it = macBuffers_.find(cid);
-            if (it != macBuffers_.end())
-                vqueue = it->second;
-
-            if (vqueue != nullptr) {
-                vqueue->pushBack(vpkt);
-
-                EV << "LteMacBuffers : Using old buffer on node: " <<
-                    cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
-                    vqueue->getQueueOccupancy() << "\n";
-            }
-            else
-                throw cRuntimeError("LteMacEnb::bufferizePacket - cannot find mac buffer for cid %s", cid.str().c_str());
-        }
+        vqueue->pushBack(vpkt);
 
         delete pkt;
         return true; // this is only a new packet indication - only buffered in virtual queue
     }
 
     // this is a MAC SDU, buffer it in the MAC buffer
+    bool dropped = !queue->pushBack(pkt);
 
-    LteMacBuffers::iterator it = mbuf_.find(cid);
-    if (it == mbuf_.end()) {
-        // Queue not found for this cid: create
-        LteMacQueue *queue = new LteMacQueue(queueSize_);
+    if (dropped) {
+        // unable to buffer the packet (packet is not enqueued and will be dropped): update statistics
+        EV << "LteMacBuffers : queue" << cid << " is full - cannot buffer packet " << pkt->getId() << "\n";
 
-        queue->pushBack(pkt);
+        totalOverflowedBytes_ += pkt->getByteLength();
 
-        mbuf_[cid] = queue;
+        double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
+        simsignal_t signal = (lteInfo->getDirection() == DL) ? macBufferOverflowDlSignal_ : macBufferOverflowUlSignal_; //TODO D2DSignel??
+        emit(signal, sample);
 
-        EV << "LteMacBuffers : Using new buffer on node: " <<
-            cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
-            queue->getQueueSize() - queue->getByteLength() << "\n";
-    }
-    else {
-        // Found
-        LteMacQueue *queue = it->second;
-
-        if (!queue->pushBack(pkt)) {
-            // unable to buffer the packet (packet is not enqueued and will be dropped): update statistics
-            EV << "LteMacBuffers : queue" << cid << " is full - cannot buffer packet " << pkt->getId() << "\n";
-
-            totalOverflowedBytes_ += pkt->getByteLength();
-            double sample = (double)totalOverflowedBytes_ / (NOW - getSimulation()->getWarmupPeriod());
-
-            simsignal_t signal = (lteInfo->getDirection() == DL) ? macBufferOverflowDlSignal_ : macBufferOverflowUlSignal_;
-            emit(signal, sample);
-
-            EV << "LteMacBuffers : Dropped packet: queue" << cid << " is full\n";
-            // @author Alessandro Noferi
-            // discard the RLC
-            if (packetFlowManager_ != nullptr) {
-                unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-                packetFlowManager_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
-            }
-
-            // TODO add delete pkt (memory leak?)
+        // discard the RLC
+        if (packetFlowManager_ != nullptr) {
+            unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
+            packetFlowManager_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
         }
 
-        EV << "LteMacBuffers : Using old buffer on node: " <<
-            cid.getNodeId() << " for Lcid: " << cid.getLcid() << ", Space left in the Queue: " <<
-            queue->getQueueSize() - queue->getByteLength() << "\n";
+        delete pkt;
+        return false;
     }
+
+    int64_t spaceLeft = queue->getQueueSize() - queue->getByteLength();
+    EV << "LteMacBuffers : Using buffer for " << cid << ", Space left in the Queue: " << spaceLeft << "\n";
 
     return true;
 }
