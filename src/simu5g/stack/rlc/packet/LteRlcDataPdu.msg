@@ -75,8 +75,7 @@ cplusplus(LteRlcDataPdu) {{
 }}
 
 //
-// @class LteRlcUmDataPdu
-// @brief Lte RLC UM Data Pdu
+// Lte RLC UM Data Pdu
 //
 // Define additional fields for UM PDU
 //
@@ -87,8 +86,7 @@ class LteRlcUmDataPdu extends LteRlcDataPdu
 };
 
 //
-// @class LteRlcAmDataPdu
-// @brief Lte RLC AM Data Pdu
+// Lte RLC AM Data Pdu.
 //
 // Define additional fields for AM PDU
 //

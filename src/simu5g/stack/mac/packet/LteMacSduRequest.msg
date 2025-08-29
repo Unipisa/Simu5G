@@ -9,9 +9,6 @@
 // and cannot be removed from it.
 //
 
-//
-// This is the message that asks the RLC layer for a new MAC SDU.
-//
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
@@ -19,6 +16,9 @@ import simu5g.common.LteCommon;
 
 namespace simu5g;
 
+//
+// This is the message that asks the RLC layer for a new MAC SDU.
+//
 class LteMacSduRequest extends inet::FieldsChunk
 {
     unsigned int sduSize;       // size of the requested SDU

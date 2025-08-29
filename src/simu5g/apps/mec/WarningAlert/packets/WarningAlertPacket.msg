@@ -9,11 +9,6 @@
 // and cannot be removed from it.
 //
 
-
-//
-// IceAlert Packet used by UEIceAlertApp MEIceAlertApp and MEIceAlertService
-//
-
 import simu5g.mec.platform.MecPackets;
 
 namespace simu5g;

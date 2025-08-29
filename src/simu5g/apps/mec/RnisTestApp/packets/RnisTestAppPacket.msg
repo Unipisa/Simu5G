@@ -9,11 +9,6 @@
 // and cannot be removed from it.
 //
 
-
-//
-// RnisTestAppPacket used by UeRnisTestApp and MecRnisTestApp
-//
-
 import simu5g.mec.platform.MecPackets;
 
 cplusplus {{
@@ -27,6 +22,9 @@ class nlohmann::json
 
 namespace simu5g;
 
+//
+// RnisTestAppPacket used by UeRnisTestApp and MecRnisTestApp
+//
 class RnisTestAppPacket extends MecPacket
 {
 }

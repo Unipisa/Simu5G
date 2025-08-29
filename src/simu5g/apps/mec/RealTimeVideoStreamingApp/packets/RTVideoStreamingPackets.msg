@@ -27,8 +27,6 @@ class StartRealTimeVideoStreamingAppPacket extends RealTimeVideoStreamingAppPack
     int sessionId;
 }
 
-
-
 class StartSessionRealTimeVideoStreamingAppPacket extends RealTimeVideoStreamingAppPacket
 {
     int fps;

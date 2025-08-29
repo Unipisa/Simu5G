@@ -9,17 +9,13 @@
 // and cannot be removed from it.
 //
 
-//
-// This is the RLC Pdu
-// flowing through LTE stack: basically
-// it contains the fields of a fragment
-// that receiver needs in order to
-// correctly decode the original packet
-//
-
 import inet.common.INETDefs;
 import inet.common.packet.chunk.Chunk;
 
+//
+// RLC PDU flowing through LTE stack. Contains the fields of a fragment that
+// the receiver needs in order to correctly decode the original packet.
+//
 class LteRlcPdu extends inet::FieldsChunk
 {
     // TODO: size 0

@@ -9,15 +9,13 @@
 // and cannot be removed from it.
 //
 
+import inet.common.INETDefs;
+import inet.common.packet.chunk.Chunk;
 
 //
 // This is the RLC message flowing through LTE stack.
 // The relevant field is the Main Packet Sequence Number
 //
-
-import inet.common.INETDefs;
-import inet.common.packet.chunk.Chunk;
-
 class LteRlcSdu extends inet::FieldsChunk
 {
     // TODO: size 0

@@ -29,18 +29,10 @@ class DestinationIdList { @existingClass; }
 // It is attached to the X2InformationElement and contains:
 // - The X2 ID of the source eNodeB
 // - The X2 IDs of the destination eNodeBs (as a user can send an InformationElement to several peers)
-// - a 'init' flag: if set, the X2 Manager uses the IE and the incoming gate to register the user module
-//                  into its internal data structures. This allows the X2 Manager to know which user is
-//                  connected to which gate, so as to forward messages coming from X2 to the correct
-//                  user module.
-
-//
-// @class LteX2ControlInfo
-//
-// This class contains:
-// - Source X2 ID
-// - List of destination IDs
-// - init flag
+// - 'init' flag: if set, the X2 Manager uses the IE and the incoming gate to register the user module
+//   into its internal data structures. This allows the X2 Manager to know which user is
+//   connected to which gate, so as to forward messages coming from X2 to the correct
+//   user module.
 //
 class X2ControlInfoTag extends inet::TagBase {
 	MacNodeId sourceId;                       // Source X2NodeId
