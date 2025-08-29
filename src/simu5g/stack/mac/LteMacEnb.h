@@ -123,6 +123,14 @@ class LteMacEnb : public LteMacBase
     void bufferizeBsr(MacBsr *bsr, MacCid cid);
 
     /**
+     * createBsrBuffer() creates a new BSR buffer for the given CID
+     *
+     * @param cid connection id for this bsr
+     * @return pointer to the newly created LteMacBuffer
+     */
+    LteMacBuffer *createBsrBuffer(MacCid cid);
+
+    /**
      * bufferizePacket() is called every time a packet is
      * received from the upper layer.
      *

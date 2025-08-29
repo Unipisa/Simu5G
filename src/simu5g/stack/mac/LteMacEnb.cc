@@ -278,56 +278,57 @@ void LteMacEnb::macSduRequest()
     EV << "------ END LteMacEnb::macSduRequest ------\n";
 }
 
+LteMacBuffer* LteMacEnb::createBsrBuffer(MacCid cid)
+{
+    // Create new BSR buffer
+    LteMacBuffer *bsrqueue = new LteMacBuffer();
+    bsrbuf_[cid] = bsrqueue;
+
+    EV << "LteBsrBuffers : Added new BSR buffer for node: "
+       << cid.getNodeId() << " for LCID: " << cid.getLcid() << "\n";
+
+    return bsrqueue;
+}
+
 void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
 {
     LteMacBufferMap::iterator it = bsrbuf_.find(cid);
+    LteMacBuffer *bsrqueue = nullptr;
+
+    // If connection not found, create it
     if (it == bsrbuf_.end()) {
-        if (bsr->getSize() > 0) {
-            // Queue not found for this CID: create
-            LteMacBuffer *bsrqueue = new LteMacBuffer();
-
-            PacketInfo vpkt(bsr->getSize(), bsr->getTimestamp());
-            bsrqueue->pushBack(vpkt);
-            bsrbuf_[cid] = bsrqueue;
-
-            EV << "LteBsrBuffers : Added new BSR buffer for node: "
-               << cid.getNodeId() << " for LCID: " << cid.getLcid()
-               << " Current BSR size: " << bsr->getSize() << "\n";
-
-            // signal backlog to Uplink scheduler
-            enbSchedulerUl_->backlog(cid);
-        }
-        // do not store if BSR size = 0
+        bsrqueue = createBsrBuffer(cid);
     }
     else {
-        // Found
-        LteMacBuffer *bsrqueue = it->second;
-        if (bsr->getSize() > 0) {
-            // update buffer
-            PacketInfo queuedBsr;
-            if (!bsrqueue->isEmpty())
-                queuedBsr = bsrqueue->popFront();
+        bsrqueue = it->second;
+    }
 
-            queuedBsr.first = bsr->getSize();
-            queuedBsr.second = bsr->getTimestamp();
-            bsrqueue->pushBack(queuedBsr);
+    // Insert into queue
+    if (bsr->getSize() > 0) {
+        // Update buffer with new BSR data
+        PacketInfo queuedBsr;
+        if (!bsrqueue->isEmpty())
+            queuedBsr = bsrqueue->popFront();
 
-            EV << "LteBsrBuffers : Using old buffer for node: " << cid.getNodeId()
-                    << " for LCID: " << cid.getLcid()
-               << " Current BSR size: " << bsr->getSize() << "\n";
+        queuedBsr.first = bsr->getSize();
+        queuedBsr.second = bsr->getTimestamp();
+        bsrqueue->pushBack(queuedBsr);
 
-            // signal backlog to Uplink scheduler
-            enbSchedulerUl_->backlog(cid);
-        }
-        else {
-            // the UE has no backlog, remove BSR
-            if (!bsrqueue->isEmpty())
-                bsrqueue->popFront();
+        EV << "LteBsrBuffers : BSR buffer for node: " << cid.getNodeId()
+           << " for LCID: " << cid.getLcid()
+           << " Current BSR size: " << bsr->getSize() << "\n";
 
-            EV << "LteBsrBuffers : Using old buffer for node: " << cid.getNodeId()
-                    << " for LCID: " << cid.getLcid()
-               << " - now empty" << "\n";
-        }
+        // Signal backlog to Uplink scheduler
+        enbSchedulerUl_->backlog(cid);
+    }
+    else {
+        // The UE has no backlog, remove BSR
+        if (!bsrqueue->isEmpty())
+            bsrqueue->popFront();
+
+        EV << "LteBsrBuffers : BSR buffer for node: " << cid.getNodeId()
+           << " for LCID: " << cid.getLcid()
+           << " - now empty" << "\n";
     }
 }
 
