@@ -9,14 +9,14 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_LTEPDCPRRC_H_
-#define _LTE_LTEPDCPRRC_H_
+#ifndef _LTE_LTEPDCP_H_
+#define _LTE_LTEPDCP_H_
 
+#include <unordered_map>
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/stack/pdcp/ConnectionsTable.h"
 #include "simu5g/common/LteControlInfo.h"
 #include "simu5g/stack/pdcp/LteTxPdcpEntity.h"
 #include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
@@ -32,6 +32,30 @@ class LteRxPdcpEntity;
 class PacketFlowManagerBase;
 
 #define LTE_PDCP_HEADER_COMPRESSION_DISABLED    B(-1)
+
+struct ConnectionKey {
+    inet::Ipv4Address srcAddr;
+    inet::Ipv4Address dstAddr;
+    uint16_t typeOfService;
+    uint16_t direction;
+
+    bool operator==(const ConnectionKey& other) const {
+        return srcAddr == other.srcAddr &&
+               dstAddr == other.dstAddr &&
+               typeOfService == other.typeOfService &&
+               direction == other.direction;
+    }
+};
+
+struct ConnectionKeyHash {
+    std::size_t operator()(const ConnectionKey& key) const {
+        std::size_t h1 = std::hash<uint32_t>{}(key.srcAddr.getInt());
+        std::size_t h2 = std::hash<uint32_t>{}(key.dstAddr.getInt());
+        std::size_t h3 = std::hash<uint16_t>{}(key.typeOfService);
+        std::size_t h4 = std::hash<uint16_t>{}(key.direction);
+        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
+    }
+};
 
 /**
  * @class LtePdcp
@@ -80,7 +104,7 @@ class LtePdcpBase : public cSimpleModule
     LogicalCid lcid_ = 1;
 
     // Hash Table used for CID <-> Connection mapping
-    ConnectionsTable ht_;
+    std::unordered_map<ConnectionKey, LogicalCid, ConnectionKeyHash> lcidTable_;
 
     // Identifier for this node
     MacNodeId nodeId_;
@@ -357,4 +381,3 @@ class LtePdcpEnb : public LtePdcpBase
 } //namespace
 
 #endif
-

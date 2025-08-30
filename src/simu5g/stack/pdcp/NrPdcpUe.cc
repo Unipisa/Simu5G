@@ -130,15 +130,14 @@ void NrPdcpUe::fromDataPort(cPacket *pktAux)
      */
 
     LogicalCid mylcid;
-    if ((mylcid = ht_.find_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection())) == 0xFFFF) {
-        // LCID not found
-
-        // assign a new LCID to the connection
-        mylcid = lcid_++;
-
-        EV << "NrPdcpUe : Connection not found, new CID created with LCID " << mylcid << "\n";
-
-        ht_.create_entry(lteInfo->getSrcAddr(), lteInfo->getDstAddr(), lteInfo->getTypeOfService(), lteInfo->getDirection(), mylcid);
+    ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
+    auto it = lcidTable_.find(key);
+    if (it == lcidTable_.end()) {
+        lcidTable_[key] = mylcid = lcid_++;
+        EV << "Connection not found, new CID created with LCID " << mylcid << "\n";
+    }
+    else {
+        mylcid = it->second;
     }
 
     // assign LCID
