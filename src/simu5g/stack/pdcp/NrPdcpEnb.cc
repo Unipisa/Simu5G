@@ -77,15 +77,15 @@ void NrPdcpEnb::fromDataPort(cPacket *pktAux)
      */
 
     ConnectionKey key{srcAddr, destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
-    LogicalCid mylcid = lookupOrAssignLcid(key);
+    LogicalCid lcid = lookupOrAssignLcid(key);
 
     // assign LCID
-    lteInfo->setLcid(mylcid);
+    lteInfo->setLcid(lcid);
 
     // obtain CID
-    MacCid cid = MacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, lcid);
 
-    EV << "NrPdcpEnb : Assigned LCID: " << mylcid << " [CID: " << cid << "]\n";
+    EV << "NrPdcpEnb : Assigned LCID: " << lcid << " [CID: " << cid << "]\n";
     EV << "NrPdcpEnb : Assigned Node ID: " << nodeId_ << "\n";
     EV << "NrPdcpEnb : dest ID: " << destId << "\n";
 

@@ -104,20 +104,20 @@ void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
      */
 
     ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
-    LogicalCid mylcid = lookupOrAssignLcid(key);
+    LogicalCid lcid = lookupOrAssignLcid(key);
 
     // assign LCID
-    lteInfo->setLcid(mylcid);
+    lteInfo->setLcid(lcid);
     lteInfo->setSourceId(nodeId_);
 
-    EV << "LtePdcpUeD2D : Assigned Lcid: " << mylcid << "\n";
+    EV << "LtePdcpUeD2D : Assigned Lcid: " << lcid << "\n";
     EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
 
     // get effective next hop dest ID
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = MacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, lcid);
 
     // get the PDCP entity for this CID and process the packet
     LteTxPdcpEntity *entity = getTxEntity(cid);

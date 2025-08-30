@@ -178,17 +178,17 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
 
     // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
     ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), Ipv4Address(lteInfo->getDstAddr()), lteInfo->getTypeOfService(), 0xFFFF};
-    LogicalCid mylcid = lookupOrAssignLcid(key);
+    LogicalCid lcid = lookupOrAssignLcid(key);
 
     // assign LCID
-    lteInfo->setLcid(mylcid);
+    lteInfo->setLcid(lcid);
     lteInfo->setSourceId(nodeId_);
     lteInfo->setDestId(destId);
 
     // obtain CID
-    MacCid cid = MacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, lcid);
 
-    EV << "LteRrc : Assigned Lcid: " << mylcid << "\n";
+    EV << "LteRrc : Assigned Lcid: " << lcid << "\n";
     EV << "LteRrc : Assigned Node ID: " << nodeId_ << "\n";
 
     // get the PDCP entity for this LCID and process the packet

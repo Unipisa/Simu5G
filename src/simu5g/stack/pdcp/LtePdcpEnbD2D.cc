@@ -72,19 +72,19 @@ void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
      */
 
     ConnectionKey key{srcAddr, destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
-    LogicalCid mylcid = lookupOrAssignLcid(key);
+    LogicalCid lcid = lookupOrAssignLcid(key);
 
     // assign LCID
-    lteInfo->setLcid(mylcid);
+    lteInfo->setLcid(lcid);
     lteInfo->setSourceId(nodeId_);
 
     // get effective next hop dest ID
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = MacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, lcid);
 
-    EV << "LtePdcpEnbD2D : Assigned Lcid: " << mylcid << " [CID: " << cid << "]\n";
+    EV << "LtePdcpEnbD2D : Assigned Lcid: " << lcid << " [CID: " << cid << "]\n";
     EV << "LtePdcpEnbD2D : Assigned Node ID: " << nodeId_ << "\n";
     EV << "LtePdcpEnbD2D : dest ID: " << destId << "\n";
 

@@ -130,19 +130,19 @@ void NrPdcpUe::fromDataPort(cPacket *pktAux)
      */
 
     ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
-    LogicalCid mylcid = lookupOrAssignLcid(key);
+    LogicalCid lcid = lookupOrAssignLcid(key);
 
     // assign LCID
-    lteInfo->setLcid(mylcid);
+    lteInfo->setLcid(lcid);
 
-    EV << "NrPdcpUe : Assigned Lcid: " << mylcid << "\n";
+    EV << "NrPdcpUe : Assigned Lcid: " << lcid << "\n";
     EV << "NrPdcpUe : Assigned Node ID: " << nodeId << "\n";
 
     // get effective next hop dest ID
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = MacCid(destId, mylcid);
+    MacCid cid = MacCid(destId, lcid);
 
     // get the PDCP entity for this CID and process the packet
     LteTxPdcpEntity *entity = getTxEntity(cid);
