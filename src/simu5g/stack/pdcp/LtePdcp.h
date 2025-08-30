@@ -67,11 +67,77 @@ class LtePdcpBase : public cSimpleModule
     friend class NrRxPdcpEntity;
     friend class DualConnectivityManager;
 
-  public:
-    /**
-     * Initializes the connection table
-     */
+  protected:
+    // Header size after ROHC (RObust Header Compression)
+    inet::B headerCompressedSize_;
 
+    // Modules references
+    inet::ModuleRefByPar<Binder> binder_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowManagerBase> NRpacketFlowManager_;
+
+    // Connection Identifier
+    LogicalCid lcid_ = 1;
+
+    // Hash Table used for CID <-> Connection mapping
+    ConnectionsTable ht_;
+
+    // Identifier for this node
+    MacNodeId nodeId_;
+
+    cGate *dataPortInGate_ = nullptr;
+    cGate *dataPortOutGate_ = nullptr;
+    cGate *tmSapInGate_ = nullptr;
+    cGate *tmSapOutGate_ = nullptr;
+    cGate *umSapInGate_ = nullptr;
+    cGate *umSapOutGate_ = nullptr;
+    cGate *amSapInGate_ = nullptr;
+    cGate *amSapOutGate_ = nullptr;
+
+    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
+
+    /**
+     * The entities map associates each CID with a PDCP Entity, identified by its ID
+     */
+    typedef std::map<MacCid, LteTxPdcpEntity *> PdcpTxEntities;
+    typedef std::map<MacCid, LteRxPdcpEntity *> PdcpRxEntities;
+    PdcpTxEntities txEntities_;
+    PdcpRxEntities rxEntities_;
+
+    // statistics
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
+
+  protected:
+    /**
+     * getTxEntity() and getRxEntity() are used to gather the PDCP entity
+     * for that LCID. If the entity was already present, a reference
+     * is returned; otherwise, a new entity is created,
+     * added to the entities map, and a reference is returned as well.
+     *
+     * @param lcid Logical CID
+     * @return pointer to the PDCP entity for the CID of the flow
+     *
+     */
+    virtual LteTxPdcpEntity *getTxEntity(MacCid cid);
+
+    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
+
+    /*
+     * Dual Connectivity support
+     */
+    virtual bool isDualConnectivityEnabled() { return false; }
+
+    virtual void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode) { throw cRuntimeError("Illegal operation forwardDataToTargetNode"); }
+
+    virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) { throw cRuntimeError("Illegal operation receiveDataFromSourceNode"); }
+
+  public:
     /**
      * Cleans the connection table
      */
@@ -224,86 +290,8 @@ class LtePdcpBase : public cSimpleModule
      */
     void sendToUpperLayer(cPacket *pkt);
 
-    /*
-     * @author Alessandro Noferi
-     *
-     * reference to the PacketFlowManager to do notifications
-     * about PDCP packets
-     */
-    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
-    inet::ModuleRefByPar<PacketFlowManagerBase> NRpacketFlowManager_;
-
     virtual PacketFlowManagerBase *getPacketFlowManager() { return packetFlowManager_.getNullable(); }
 
-    /*
-     * Data structures
-     */
-
-    /// Header size after ROHC (RObust Header Compression)
-    inet::B headerCompressedSize_;
-
-    /// Binder reference
-    inet::ModuleRefByPar<Binder> binder_;
-
-    /// Connection Identifier
-    LogicalCid lcid_ = 1;
-
-    /// Hash Table used for CID <-> Connection mapping
-    ConnectionsTable ht_;
-
-    /// Identifier for this node
-    MacNodeId nodeId_;
-
-    cGate *dataPortInGate_ = nullptr;
-    cGate *dataPortOutGate_ = nullptr;
-    cGate *tmSapInGate_ = nullptr;
-    cGate *tmSapOutGate_ = nullptr;
-    cGate *umSapInGate_ = nullptr;
-    cGate *umSapOutGate_ = nullptr;
-    cGate *amSapInGate_ = nullptr;
-    cGate *amSapOutGate_ = nullptr;
-
-    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
-
-    /**
-     * The entities map associates each CID with a PDCP Entity, identified by its ID
-     */
-    typedef std::map<MacCid, LteTxPdcpEntity *> PdcpTxEntities;
-    typedef std::map<MacCid, LteRxPdcpEntity *> PdcpRxEntities;
-    PdcpTxEntities txEntities_;
-    PdcpRxEntities rxEntities_;
-
-    /**
-     * getTxEntity() and getRxEntity() are used to gather the PDCP entity
-     * for that LCID. If the entity was already present, a reference
-     * is returned; otherwise, a new entity is created,
-     * added to the entities map, and a reference is returned as well.
-     *
-     * @param lcid Logical CID
-     * @return pointer to the PDCP entity for the CID of the flow
-     *
-     */
-    virtual LteTxPdcpEntity *getTxEntity(MacCid cid);
-
-    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
-
-    /*
-     * Dual Connectivity support
-     */
-    virtual bool isDualConnectivityEnabled() { return false; }
-
-    virtual void forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode) { throw cRuntimeError("Illegal operation forwardDataToTargetNode"); }
-
-    virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) { throw cRuntimeError("Illegal operation receiveDataFromSourceNode"); }
-
-    // statistics
-    static simsignal_t receivedPacketFromUpperLayerSignal_;
-    static simsignal_t receivedPacketFromLowerLayerSignal_;
-    static simsignal_t sentPacketToUpperLayerSignal_;
-    static simsignal_t sentPacketToLowerLayerSignal_;
 };
 
 class LtePdcpUe : public LtePdcpBase
