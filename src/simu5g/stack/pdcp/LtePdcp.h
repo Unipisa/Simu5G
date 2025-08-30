@@ -208,6 +208,15 @@ class LtePdcpBase : public cSimpleModule
     virtual MacNodeId getNrNodeId() { return nodeId_; }
 
     /**
+     * lookupOrAssignLcid(): Looks up an existing LCID for the given connection key,
+     * or assigns a new one if not found.
+     *
+     * @param key Connection key containing source/destination addresses, ToS, and direction
+     * @return LogicalCid for the connection
+     */
+    LogicalCid lookupOrAssignLcid(const ConnectionKey& key);
+
+    /**
      * headerCompress(): Performs header compression.
      * At the moment, if header compression is enabled,
      * simply decrements the HEADER size by the configured

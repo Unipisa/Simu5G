@@ -103,16 +103,8 @@ void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
      * RLC layer will create different RLC entities for different LCIDs
      */
 
-    LogicalCid mylcid;
     ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
-    auto it = lcidTable_.find(key);
-    if (it == lcidTable_.end()) {
-        lcidTable_[key] = mylcid = lcid_++;
-        EV << "Connection not found, new CID created with LCID " << mylcid << "\n";
-    }
-    else {
-        mylcid = it->second;
-    }
+    LogicalCid mylcid = lookupOrAssignLcid(key);
 
     // assign LCID
     lteInfo->setLcid(mylcid);

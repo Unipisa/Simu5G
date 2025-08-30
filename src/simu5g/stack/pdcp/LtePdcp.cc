@@ -142,6 +142,19 @@ void LtePdcpBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo>
     lteInfo->setDirection(getDirection());
 }
 
+LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)
+{
+    auto it = lcidTable_.find(key);
+    if (it != lcidTable_.end())
+        return it->second;
+    else {
+        LogicalCid lcid = lcid_++;
+        lcidTable_[key] = lcid;
+        EV << "Connection not found, new CID created with LCID " << lcid << "\n";
+        return lcid;
+    }
+}
+
 /*
  * Upper Layer handlers
  */
@@ -164,16 +177,8 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
        << " ToS: " << lteInfo->getTypeOfService() << " ]\n";
 
     // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
-    LogicalCid mylcid;
     ConnectionKey key{Ipv4Address(lteInfo->getSrcAddr()), Ipv4Address(lteInfo->getDstAddr()), lteInfo->getTypeOfService(), 0xFFFF};
-    auto it = lcidTable_.find(key);
-    if (it == lcidTable_.end()) {
-        lcidTable_[key] = mylcid = lcid_++;
-        EV << "Connection not found, new CID created with LCID " << mylcid << "\n";
-    }
-    else {
-        mylcid = it->second;
-    }
+    LogicalCid mylcid = lookupOrAssignLcid(key);
 
     // assign LCID
     lteInfo->setLcid(mylcid);
