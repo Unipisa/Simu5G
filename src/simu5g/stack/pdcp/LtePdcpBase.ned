@@ -30,6 +30,8 @@ simple LtePdcpBase like ILtePdcp
         string streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         string interactiveRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         string backgroundRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
+        string txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
 
         //# Statistics
         @signal[receivedPacketFromUpperLayer];

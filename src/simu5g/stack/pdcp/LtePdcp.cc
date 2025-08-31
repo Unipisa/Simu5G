@@ -322,6 +322,12 @@ void LtePdcpBase::initialize(int stage)
         streamingRlc_ = aToRlcType(par("streamingRlc"));
         backgroundRlc_ = aToRlcType(par("backgroundRlc"));
 
+        const char *rxEntityModuleTypeName = par("rxEntityModuleType").stringValue();
+        rxEntityModuleType_ = cModuleType::get(rxEntityModuleTypeName);
+
+        const char *txEntityModuleTypeName = par("txEntityModuleType").stringValue();
+        txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
+
         // TODO WATCH_MAP(gatemap_);
         WATCH(headerCompressedSize_);
         WATCH(nodeId_);
@@ -352,8 +358,7 @@ LteTxPdcpEntity *LtePdcpBase::getOrCreateTxEntity(MacCid cid)
         // Not found: create
         std::stringstream buf;
         buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.LteTxPdcpEntity");
-        LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
+        LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
         txEntities_[cid] = txEnt;    // Add to entities map
 
         EV << "LtePdcpBase::getTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
@@ -377,8 +382,7 @@ LteRxPdcpEntity *LtePdcpBase::getOrCreateRxEntity(MacCid cid)
 
         std::stringstream buf;
         buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.LteRxPdcpEntity");
-        LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
+        LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
         rxEntities_[cid] = rxEnt;    // Add to entities map
 
         EV << "LtePdcpBase::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";

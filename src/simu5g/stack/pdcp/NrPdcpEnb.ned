@@ -22,7 +22,6 @@ simple NrPdcpEnb extends LtePdcpEnbD2D
     parameters:
         @class("NrPdcpEnb");
         string dualConnectivityManagerModule = default("^.dualConnectivityManager");
+        rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
+        txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
 }
-
-
-

@@ -109,6 +109,10 @@ class LtePdcpBase : public cSimpleModule
     // Identifier for this node
     MacNodeId nodeId_;
 
+    // Module type for creating RX/TX PDCP entities
+    cModuleType *rxEntityModuleType_ = nullptr;
+    cModuleType *txEntityModuleType_ = nullptr;
+
     cGate *dataPortInGate_ = nullptr;
     cGate *dataPortOutGate_ = nullptr;
     cGate *tmSapInGate_ = nullptr;

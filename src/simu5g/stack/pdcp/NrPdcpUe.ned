@@ -20,5 +20,7 @@ simple NrPdcpUe extends LtePdcpUeD2D
 {
     parameters:
         @class("NrPdcpUe");
+        rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
+        txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
 }
 

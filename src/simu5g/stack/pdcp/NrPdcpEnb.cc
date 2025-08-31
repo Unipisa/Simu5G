@@ -124,56 +124,6 @@ MacNodeId NrPdcpEnb::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
     return destId;
 }
 
-LteTxPdcpEntity *NrPdcpEnb::getOrCreateTxEntity(MacCid cid)
-{
-    // Find entity for this CID
-    PdcpTxEntities::iterator it = txEntities_.find(cid);
-    if (it == txEntities_.end()) {
-        // Not found: create
-
-        std::stringstream buf;
-        buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.NrTxPdcpEntity");
-        NrTxPdcpEntity *txEnt = check_and_cast<NrTxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
-        txEntities_[cid] = txEnt;    // Add to entities map
-
-        EV << "NrPdcpEnb::getEntity - Added new PdcpEntity for Cid: " << cid << "\n";
-
-        return txEnt;
-    }
-    else {
-        // Found
-        EV << "NrPdcpEnb::getEntity - Using old PdcpEntity for Cid: " << cid << "\n";
-
-        return it->second;
-    }
-}
-
-LteRxPdcpEntity *NrPdcpEnb::getOrCreateRxEntity(MacCid cid)
-{
-    // Find entity for this CID
-    PdcpRxEntities::iterator it = rxEntities_.find(cid);
-    if (it == rxEntities_.end()) {
-        // Not found: create
-
-        std::stringstream buf;
-        buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.NrRxPdcpEntity");
-        LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
-        rxEntities_[cid] = rxEnt;    // Add to entities map
-
-        EV << "NrPdcpEnb::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
-
-        return rxEnt;
-    }
-    else {
-        // Found
-        EV << "NrPdcpEnb::getRxEntity - Using old RxPdcpEntity for Cid: " << cid << "\n";
-
-        return it->second;
-    }
-}
-
 void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)
 {
     EV << NOW << " NrPdcpEnb::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;

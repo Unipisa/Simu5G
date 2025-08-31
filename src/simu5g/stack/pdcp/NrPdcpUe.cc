@@ -142,56 +142,6 @@ MacCid NrPdcpUe::analyzePacket(inet::Packet *pkt)
     return MacCid(destId, lcid);
 }
 
-LteTxPdcpEntity *NrPdcpUe::getOrCreateTxEntity(MacCid cid)
-{
-    // Find entity for this LCID
-    PdcpTxEntities::iterator it = txEntities_.find(cid);
-    if (it == txEntities_.end()) {
-        // Not found: create
-        std::stringstream buf;
-        buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.NrTxPdcpEntity");
-        NrTxPdcpEntity *txEnt = check_and_cast<NrTxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
-
-        txEntities_[cid] = txEnt;    // Add to entities map
-
-        EV << "NrPdcpUe::getEntity - Added new PdcpEntity for Cid: " << cid << "\n";
-
-        return txEnt;
-    }
-    else {
-        // Found
-        EV << "NrPdcpUe::getEntity - Using old PdcpEntity for Cid: " << cid << "\n";
-
-        return it->second;
-    }
-}
-
-LteRxPdcpEntity *NrPdcpUe::getOrCreateRxEntity(MacCid cid)
-{
-    // Find entity for this CID
-    PdcpRxEntities::iterator it = rxEntities_.find(cid);
-    if (it == rxEntities_.end()) {
-        // Not found: create
-
-        std::stringstream buf;
-        buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.pdcp.NrRxPdcpEntity");
-        NrRxPdcpEntity *rxEnt = check_and_cast<NrRxPdcpEntity *>(moduleType->createScheduleInit(buf.str().c_str(), this));
-        rxEntities_[cid] = rxEnt;    // Add to entities map
-
-        EV << "NrPdcpUe::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
-
-        return rxEnt;
-    }
-    else {
-        // Found
-        EV << "NrPdcpUe::getRxEntity - Using old RxPdcpEntity for Cid: " << cid << "\n";
-
-        return it->second;
-    }
-}
-
 void NrPdcpUe::deleteEntities(MacNodeId nodeId)
 {
     // delete connections related to the given master nodeB only
