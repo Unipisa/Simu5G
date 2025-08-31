@@ -282,15 +282,6 @@ void LtePdcpBase::sendToLowerLayer(Packet *pkt)
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
-void LtePdcpBase::sendToUpperLayer(cPacket *pkt)
-{
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o" << endl;
-
-    // Send message
-    send(pkt, dataPortOutGate_);
-    emit(sentPacketToUpperLayerSignal_, pkt);
-}
-
 /*
  * Main functions
  */

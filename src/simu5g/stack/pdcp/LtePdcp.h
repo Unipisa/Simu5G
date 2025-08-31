@@ -323,11 +323,6 @@ class LtePdcpBase : public cSimpleModule
      */
     virtual void sendToLowerLayer(inet::Packet *pkt);
 
-    /*
-     * sendToUpperLayer() forwards a PDCP SDU to the IP layer
-     */
-    void sendToUpperLayer(cPacket *pkt);
-
     virtual PacketFlowManagerBase *getPacketFlowManager() { return packetFlowManager_.getNullable(); }
 
 };
