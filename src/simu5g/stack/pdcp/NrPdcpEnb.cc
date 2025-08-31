@@ -32,12 +32,9 @@ void NrPdcpEnb::initialize(int stage)
 /*
  * Upper Layer handlers
  */
-void NrPdcpEnb::fromDataPort(cPacket *pktAux)
-{
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
-    // Control Information
-    auto pkt = check_and_cast<inet::Packet *>(pktAux);
+MacCid NrPdcpEnb::analyzePacket(inet::Packet *pkt)
+{
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     setTrafficInformation(pkt, lteInfo);
 
@@ -83,15 +80,7 @@ void NrPdcpEnb::fromDataPort(cPacket *pktAux)
     lteInfo->setLcid(lcid);
 
     // obtain CID
-    MacCid cid = MacCid(destId, lcid);
-
-    EV << "NrPdcpEnb : Assigned LCID: " << lcid << " [CID: " << cid << "]\n";
-    EV << "NrPdcpEnb : Assigned Node ID: " << nodeId_ << "\n";
-    EV << "NrPdcpEnb : dest ID: " << destId << "\n";
-
-    // get the PDCP entity for this LCID and process the packet
-    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
-    entity->handlePacketFromUpperLayer(pkt);
+    return MacCid(destId, lcid);
 }
 
 void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)

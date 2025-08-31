@@ -49,10 +49,10 @@ class LtePdcpUeD2D : public LtePdcpUe
     }
 
     /**
-     * handler for data port
+     * Analyze the packet and fill out its lteInfo.
      * @param pkt incoming packet
      */
-    void fromDataPort(cPacket *pkt) override;
+    MacCid analyzePacket(inet::Packet *pkt) override;
 
     // handler for mode switch signal
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);

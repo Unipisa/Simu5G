@@ -58,10 +58,10 @@ class NrPdcpUe : public LtePdcpUeD2D
     MacNodeId getDestId(inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
-     * handler for data port
+     * Analyze the packet and fill out its lteInfo.
      * @param pkt incoming packet
      */
-    void fromDataPort(cPacket *pkt) override;
+    MacCid analyzePacket(inet::Packet *pkt) override;
 
     /**
      * getEntity() is used to gather the NR PDCP entity

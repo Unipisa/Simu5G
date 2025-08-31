@@ -159,12 +159,9 @@ LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)
  * Upper Layer handlers
  */
 
-void LtePdcpBase::fromDataPort(cPacket *pktAux)
+MacCid LtePdcpBase::analyzePacket(inet::Packet *pkt)
 {
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
-
     // Control Information
-    auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     setTrafficInformation(pkt, lteInfo);
@@ -186,12 +183,18 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
     lteInfo->setDestId(destId);
 
     // obtain CID
-    MacCid cid = MacCid(destId, lcid);
+    return MacCid(destId, lcid);
+}
 
-    EV << "LteRrc : Assigned Lcid: " << lcid << "\n";
-    EV << "LteRrc : Assigned Node ID: " << nodeId_ << "\n";
+void LtePdcpBase::fromDataPort(cPacket *pktAux)
+{
+    emit(receivedPacketFromUpperLayerSignal_, pktAux);
+
+    auto pkt = check_and_cast<inet::Packet *>(pktAux);
+    MacCid cid = analyzePacket(pkt);
 
     // get the PDCP entity for this LCID and process the packet
+    EV << "Processing packet with CID " << cid << "\n";
     LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }

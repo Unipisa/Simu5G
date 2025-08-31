@@ -42,10 +42,10 @@ class NrPdcpEnb : public LtePdcpEnbD2D
     void initialize(int stage) override;
 
     /**
-     * Handler for data port
+     * Analyze the packet and fill out its lteInfo.
      * @param pkt Incoming packet
      */
-    void fromDataPort(cPacket *pktAux) override;
+    MacCid analyzePacket(inet::Packet *pkt) override;
 
     /**
      * Handler for um/am sap

@@ -26,12 +26,9 @@ using namespace inet;
 /*
  * Upper Layer handlers
  */
-void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
-{
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
-    // Control Information
-    auto pkt = check_and_cast<Packet *>(pktAux);
+MacCid LtePdcpEnbD2D::analyzePacket(inet::Packet *pkt)
+{
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     setTrafficInformation(pkt, lteInfo);
@@ -82,15 +79,7 @@ void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = MacCid(destId, lcid);
-
-    EV << "LtePdcpEnbD2D : Assigned Lcid: " << lcid << " [CID: " << cid << "]\n";
-    EV << "LtePdcpEnbD2D : Assigned Node ID: " << nodeId_ << "\n";
-    EV << "LtePdcpEnbD2D : dest ID: " << destId << "\n";
-
-    // get the PDCP entity for this LCID and process the packet
-    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
-    entity->handlePacketFromUpperLayer(pkt);
+    return MacCid(destId, lcid);
 }
 
 void LtePdcpEnbD2D::initialize(int stage)

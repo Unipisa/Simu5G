@@ -38,12 +38,9 @@ MacNodeId LtePdcpUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
 /*
  * Upper Layer handlers
  */
-void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
-{
-    emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
-    // Control Information
-    auto pkt = check_and_cast<Packet *>(pktAux);
+MacCid LtePdcpUeD2D::analyzePacket(inet::Packet *pkt)
+{
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     setTrafficInformation(pkt, lteInfo);
@@ -117,11 +114,7 @@ void LtePdcpUeD2D::fromDataPort(cPacket *pktAux)
     destId = getDestId(lteInfo);
 
     // obtain CID
-    MacCid cid = MacCid(destId, lcid);
-
-    // get the PDCP entity for this CID and process the packet
-    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
-    entity->handlePacketFromUpperLayer(pkt);
+    return MacCid(destId, lcid);
 }
 
 void LtePdcpUeD2D::handleMessage(cMessage *msg)

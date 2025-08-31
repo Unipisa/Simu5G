@@ -267,17 +267,22 @@ class LtePdcpBase : public cSimpleModule
      */
 
     /**
-     * handler for data port
+     * Analyze the metadata of the higher-layer packet (source and destination
+     * IP addresses, for example), and fills in several fields of lteInfo:
+     * - sourceId, destID
+     * - d2dTxDestId, d2dRxSrcId
+     * - multicastGroupId (if destAddr is a multicast address)
+     * - direction
+     * - application, traffic
+     * - rlcType
+     * - LCID
      *
-     * fromDataPort() receives data packets from applications
-     * and performs the following steps:
-     * - If compression is enabled, header is compressed
-     * - Reads the source port to determine if a
-     *   connection for that application was already established
-     *    - If it was established, sends the packet with the proper CID
-     *    - Otherwise, encapsulates packet in a sap message and sends it
-     *      to the RRC layer: it will find a proper CID and send the
-     *      packet back to the PDCP layer
+     * Returns the (nodeId,LCID) pair that identifies the connection for the packet.
+     */
+    virtual MacCid analyzePacket(inet::Packet *pkt);
+
+    /**
+     * Process data packets from higher layers.
      *
      * @param pkt incoming packet
      */
