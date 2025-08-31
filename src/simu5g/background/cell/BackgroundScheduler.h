@@ -31,6 +31,7 @@ typedef std::priority_queue<ScoreDesc> ScoreList;
 
 class BackgroundScheduler : public cSimpleModule, public cListener
 {
+  protected:
     // base station coordinates
     inet::Coord pos_;
 
@@ -82,12 +83,6 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     std::vector<MacNodeId> ulBandAllocation_;
     std::vector<MacNodeId> ulPrevBandAllocation_;
 
-    // update the band status. Called at each TTI (not used for FULL_ALLOC)
-    virtual void updateAllocation(Direction dir);
-    // move the current status in the prevBandStatus structure and reset the former
-    void resetAllocation(Direction dir);
-    /*****************************/
-
     // statistics
     static simsignal_t bgAvgServedBlocksDlSignal_;
     static simsignal_t bgAvgServedBlocksUlSignal_;
@@ -96,6 +91,11 @@ class BackgroundScheduler : public cSimpleModule, public cListener
     void initialize(int stage) override;
     int numInitStages() const override { return inet::INITSTAGE_LOCAL + 2; }
     void handleMessage(cMessage *msg) override;
+
+    // update the band status. Called at each TTI (not used for FULL_ALLOC)
+    virtual void updateAllocation(Direction dir);
+    // move the current status in the prevBandStatus structure and reset the former
+    void resetAllocation(Direction dir);
 
   public:
 

@@ -51,6 +51,48 @@ class UmRxEntity;
  */
 class LteRlcUm : public cSimpleModule
 {
+  protected:
+    RanNodeType nodeType;
+
+    // statistics
+    static simsignal_t receivedPacketFromUpperLayerSignal_;
+    static simsignal_t receivedPacketFromLowerLayerSignal_;
+    static simsignal_t sentPacketToUpperLayerSignal_;
+    static simsignal_t sentPacketToLowerLayerSignal_;
+    static simsignal_t rlcPacketLossDlSignal_;
+    static simsignal_t rlcPacketLossUlSignal_;
+
+    // parameters
+    bool mapAllLcidsToSingleBearer_;
+
+    /*
+    * Data structures
+    */
+
+    /**
+    * The entities map associates each CID with
+    * a TX/RX Entity , identified by its ID
+    */
+    typedef std::map<MacCid, UmTxEntity *> UmTxEntities;
+    typedef std::map<MacCid, UmRxEntity *> UmRxEntities;
+    UmTxEntities txEntities_;
+    UmRxEntities rxEntities_;
+
+    /**
+    * @author Alessandro Noferi
+    * Holds the throughput stats for each UE
+    * identified by the srcId of the
+    * FlowControlInfo in each entity
+    *
+    */
+    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
+    ULThroughputPerUE ulThroughput_;
+
+    cGate *upInGate_ = nullptr;
+    cGate *upOutGate_ = nullptr;
+    cGate *downInGate_ = nullptr;
+    cGate *downOutGate_ = nullptr;
+
   public:
 
     /**
@@ -119,22 +161,6 @@ class LteRlcUm : public cSimpleModule
     void resetThroughputStats(MacNodeId nodeId);
 
   protected:
-
-    cGate *upInGate_ = nullptr;
-    cGate *upOutGate_ = nullptr;
-    cGate *downInGate_ = nullptr;
-    cGate *downOutGate_ = nullptr;
-
-    RanNodeType nodeType;
-
-    // statistics
-    static simsignal_t receivedPacketFromUpperLayerSignal_;
-    static simsignal_t receivedPacketFromLowerLayerSignal_;
-    static simsignal_t sentPacketToUpperLayerSignal_;
-    static simsignal_t sentPacketToLowerLayerSignal_;
-    static simsignal_t rlcPacketLossDlSignal_;
-    static simsignal_t rlcPacketLossUlSignal_;
-
     /**
      * Initialize watches
      */
@@ -149,9 +175,6 @@ class LteRlcUm : public cSimpleModule
      * and call the proper handler
      */
     void handleMessage(cMessage *msg) override;
-
-    // parameters
-    bool mapAllLcidsToSingleBearer_;
 
     /**
      * getTxBuffer() is used by the sender to gather the TXBuffer
@@ -211,32 +234,8 @@ class LteRlcUm : public cSimpleModule
      */
     virtual void handleLowerMessage(cPacket *pkt);
 
-    /*
-     * Data structures
-     */
-
-    /**
-     * The entities map associates each CID with
-     * a TX/RX Entity , identified by its ID
-     */
-    typedef std::map<MacCid, UmTxEntity *> UmTxEntities;
-    typedef std::map<MacCid, UmRxEntity *> UmRxEntities;
-    UmTxEntities txEntities_;
-    UmRxEntities rxEntities_;
-
-    /**
-     * @author Alessandro Noferi
-     * Holds the throughput stats for each UE
-     * identified by the srcId of the
-     * FlowControlInfo in each entity
-     *
-     */
-    typedef std::map<MacNodeId, Throughput> ULThroughputPerUE;
-    ULThroughputPerUE ulThroughput_;
-
 };
 
 } //namespace
 
 #endif
-

@@ -28,6 +28,7 @@ using namespace omnetpp;
  */
 class LtePdcpUeD2D : public LtePdcpUe
 {
+  protected:
     // initialization flag for each D2D peer
     // it is set to true when the first IP datagram for that peer reaches the PDCP layer
     std::map<inet::L3Address, bool> d2dPeeringInit_;
@@ -60,4 +61,3 @@ class LtePdcpUeD2D : public LtePdcpUe
 } //namespace
 
 #endif
-

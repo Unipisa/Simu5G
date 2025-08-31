@@ -54,6 +54,19 @@ class LteRlcMux : public cSimpleModule
 
   private:
     /*
+     * Data structures
+     */
+
+    cGate *macSapInGate_ = nullptr;
+    cGate *macSapOutGate_ = nullptr;
+    cGate *tmSapInGate_ = nullptr;
+    cGate *tmSapOutGate_ = nullptr;
+    cGate *umSapInGate_ = nullptr;
+    cGate *umSapOutGate_ = nullptr;
+    cGate *amSapInGate_ = nullptr;
+    cGate *amSapOutGate_ = nullptr;
+
+    /*
      * Upper Layer Handler
      */
 
@@ -74,22 +87,8 @@ class LteRlcMux : public cSimpleModule
      * @param pkt packet to process
      */
     void mac2rlc(cPacket *pkt);
-
-    /*
-     * Data structures
-     */
-
-    cGate *macSapInGate_ = nullptr;
-    cGate *macSapOutGate_ = nullptr;
-    cGate *tmSapInGate_ = nullptr;
-    cGate *tmSapOutGate_ = nullptr;
-    cGate *umSapInGate_ = nullptr;
-    cGate *umSapOutGate_ = nullptr;
-    cGate *amSapInGate_ = nullptr;
-    cGate *amSapOutGate_ = nullptr;
 };
 
 } //namespace
 
 #endif
-

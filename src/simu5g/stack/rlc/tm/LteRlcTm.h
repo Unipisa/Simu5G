@@ -37,42 +37,7 @@ using namespace omnetpp;
  */
 class LteRlcTm : public cSimpleModule
 {
-  protected:
-    /**
-     * Analyzes gate of incoming packet
-     * and calls proper handler
-     */
-    void handleMessage(cMessage *msg) override;
-
-    void initialize() override;
-    void finish() override {}
-
   private:
-    /**
-     * Handler for traffic coming
-     * from the upper layer (RRC)
-     *
-     * handleUpperMessage() simply forwards packets to lower layers.
-     * An empty header is added so that the encapsulation
-     * level is the same for all packets traversing the stack
-     *
-     * @param pkt packet to process
-     */
-    void handleUpperMessage(cPacket *pkt);
-
-    /**
-     * Handler for traffic coming from
-     * lower layer
-     *
-     * handleLowerMessage() is the function that takes care
-     * of TM traffic coming from lower layer.
-     * After decapsulating the fictitious
-     * header, the packet is simply forwarded to the upper layer
-     *
-     * @param pkt packet to process
-     */
-    void handleLowerMessage(cPacket *pkt);
-
     /**
      * Data structures
      */
@@ -100,9 +65,43 @@ class LteRlcTm : public cSimpleModule
     static inet::simsignal_t sentPacketToLowerLayerSignal_;
     static inet::simsignal_t rlcPacketLossDlSignal_;
     static inet::simsignal_t rlcPacketLossUlSignal_;
+
+  protected:
+    /**
+     * Analyzes gate of incoming packet
+     * and calls proper handler
+     */
+    void handleMessage(cMessage *msg) override;
+
+    void initialize() override;
+    void finish() override {}
+
+    /**
+     * Handler for traffic coming
+     * from the upper layer (RRC)
+     *
+     * handleUpperMessage() simply forwards packets to lower layers.
+     * An empty header is added so that the encapsulation
+     * level is the same for all packets traversing the stack
+     *
+     * @param pkt packet to process
+     */
+    void handleUpperMessage(cPacket *pkt);
+
+    /**
+     * Handler for traffic coming from
+     * lower layer
+     *
+     * handleLowerMessage() is the function that takes care
+     * of TM traffic coming from lower layer.
+     * After decapsulating the fictitious
+     * header, the packet is simply forwarded to the upper layer
+     *
+     * @param pkt packet to process
+     */
+    void handleLowerMessage(cPacket *pkt);
 };
 
 } //namespace
 
 #endif
-

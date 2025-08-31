@@ -40,62 +40,7 @@ class LteRlcUmDataPdu;
  */
 class UmRxEntity : public cSimpleModule
 {
-  public:
-    UmRxEntity();
-    ~UmRxEntity() override;
-
-    /*
-     * Enqueues a lower layer packet into the PDU buffer
-     * @param pdu the packet to be enqueued
-     */
-    void enque(cPacket *pkt);
-
-    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
-    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
-
-    // returns true if this entity is for a D2D_MULTI connection
-    bool isD2DMultiConnection() { return flowControlInfo_->getDirection() == D2D_MULTI; }
-
-    // called when a D2D mode switch is triggered
-    void rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer = true);
-
-    // returns if the entity contains RLC pdus
-    bool isEmpty() const { return buffered_.pkt == nullptr && pduBuffer_.size() == 0; }
-
   protected:
-
-    /**
-     * Initialize watches
-     */
-    void initialize() override;
-    void handleMessage(cMessage *msg) override;
-
-    //Statistics
-    static unsigned int totalCellPduRcvdBytes_;
-    static unsigned int totalCellRcvdBytes_;
-    unsigned int totalPduRcvdBytes_;
-    unsigned int totalRcvdBytes_;
-    Direction dir_ = UNKNOWN_DIRECTION;
-    static simsignal_t rlcCellPacketLossSignal_[2];
-    static simsignal_t rlcPacketLossSignal_[2];
-    static simsignal_t rlcPduPacketLossSignal_[2];
-    static simsignal_t rlcDelaySignal_[2];
-    static simsignal_t rlcPduDelaySignal_[2];
-    static simsignal_t rlcCellThroughputSignal_[2];
-    static simsignal_t rlcThroughputSignal_[2];
-    static simsignal_t rlcPduThroughputSignal_[2];
-
-    static simsignal_t rlcPacketLossTotalSignal_;
-
-    // statistics for D2D
-    static simsignal_t rlcPacketLossD2DSignal_;
-    static simsignal_t rlcPduPacketLossD2DSignal_;
-    static simsignal_t rlcDelayD2DSignal_;
-    static simsignal_t rlcPduDelayD2DSignal_;
-    static simsignal_t rlcThroughputD2DSignal_;
-    static simsignal_t rlcPduThroughputD2DSignal_;
-
-  private:
 
     inet::ModuleRefByPar<Binder> binder_;
 
@@ -168,6 +113,62 @@ class UmRxEntity : public cSimpleModule
     simtime_t t2_; // point in time the burst begins
     simtime_t t1_; // point in time last packet sent during burst
 
+    //Statistics
+    static unsigned int totalCellPduRcvdBytes_;
+    static unsigned int totalCellRcvdBytes_;
+    unsigned int totalPduRcvdBytes_;
+    unsigned int totalRcvdBytes_;
+    Direction dir_ = UNKNOWN_DIRECTION;
+    static simsignal_t rlcCellPacketLossSignal_[2];
+    static simsignal_t rlcPacketLossSignal_[2];
+    static simsignal_t rlcPduPacketLossSignal_[2];
+    static simsignal_t rlcDelaySignal_[2];
+    static simsignal_t rlcPduDelaySignal_[2];
+    static simsignal_t rlcCellThroughputSignal_[2];
+    static simsignal_t rlcThroughputSignal_[2];
+    static simsignal_t rlcPduThroughputSignal_[2];
+
+    static simsignal_t rlcPacketLossTotalSignal_;
+
+    // statistics for D2D
+    static simsignal_t rlcPacketLossD2DSignal_;
+    static simsignal_t rlcPduPacketLossD2DSignal_;
+    static simsignal_t rlcDelayD2DSignal_;
+    static simsignal_t rlcPduDelayD2DSignal_;
+    static simsignal_t rlcThroughputD2DSignal_;
+    static simsignal_t rlcPduThroughputD2DSignal_;
+
+  public:
+    UmRxEntity();
+    ~UmRxEntity() override;
+
+    /*
+     * Enqueues a lower layer packet into the PDU buffer
+     * @param pdu the packet to be enqueued
+     */
+    void enque(cPacket *pkt);
+
+    void setFlowControlInfo(FlowControlInfo *lteInfo) { flowControlInfo_ = lteInfo->dup(); }
+    FlowControlInfo *getFlowControlInfo() { return flowControlInfo_; }
+
+    // returns true if this entity is for a D2D_MULTI connection
+    bool isD2DMultiConnection() { return flowControlInfo_->getDirection() == D2D_MULTI; }
+
+    // called when a D2D mode switch is triggered
+    void rlcHandleD2DModeSwitch(bool oldConnection, bool oldMode, bool clearBuffer = true);
+
+    // returns if the entity contains RLC pdus
+    bool isEmpty() const { return buffered_.pkt == nullptr && pduBuffer_.size() == 0; }
+
+
+    /**
+     * Initialize watches
+     */
+    void initialize() override;
+    void handleMessage(cMessage *msg) override;
+
+  private:
+
     /*
      * This method is used to manage a burst and calculate the UL throughput of a UE
      * It is called at the end of each TTI period and at the end of a t_reordering
@@ -195,4 +196,3 @@ class UmRxEntity : public cSimpleModule
 } //namespace
 
 #endif
-

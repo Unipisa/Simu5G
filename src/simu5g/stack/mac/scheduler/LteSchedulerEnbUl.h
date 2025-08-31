@@ -32,6 +32,14 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
     unsigned int scheduleUnit_;
     //---------------------------------------------
 
+    //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UEs.
+    std::map<GHz, HarqStatus> harqStatus_;
+
+    //! RAC request flags: signals whether a UE shall be granted the RAC allocation
+    std::map<GHz, RacStatus> racStatus_;
+
+  protected:
+
     /**
      * Checks Harq Descriptors and returns the first free codeword.
      *
@@ -40,12 +48,6 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
      * @return
      */
     bool checkEligibility(MacNodeId id, Codeword& cw, GHz carrierFrequency) override;
-
-    //! Uplink Synchronous H-ARQ process counter - keeps track of currently active process on connected UEs.
-    std::map<GHz, HarqStatus> harqStatus_;
-
-    //! RAC request flags: signals whether a UE shall be granted the RAC allocation
-    std::map<GHz, RacStatus> racStatus_;
 
   public:
 
@@ -110,4 +112,3 @@ class LteSchedulerEnbUl : public LteSchedulerEnb
 } //namespace
 
 #endif // _LTE_LTE_SCHEDULER_ENB_UL_H_
-

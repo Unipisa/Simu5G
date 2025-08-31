@@ -34,6 +34,7 @@ typedef std::pair<inet::Ipv4Address, inet::Ipv4Address> AddressPair;
  */
 class Ip2Nic : public cSimpleModule
 {
+  protected:
     RanNodeType nodeType_;      // node type: can be ENODEB, GNODEB, UE
 
     // reference to the binder
@@ -76,6 +77,12 @@ class Ip2Nic : public cSimpleModule
     // for each connection exploiting Split Bearer,
     // keep track of the number of packets sent down to the PDCP
     SplitBearersTable *sbTable_ = nullptr;
+
+    cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
+    cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer
+
+    // corresponding entry for our interface
+    opp_component_ptr<inet::NetworkInterface> networkIf;
 
   protected:
     /**
@@ -128,12 +135,6 @@ class Ip2Nic : public cSimpleModule
     void handleMessage(cMessage *msg) override;
     void finish() override;
 
-    cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
-    cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer
-
-    // corresponding entry for our interface
-    opp_component_ptr<inet::NetworkInterface> networkIf;
-
   public:
 
     /*
@@ -158,4 +159,3 @@ class Ip2Nic : public cSimpleModule
 } //namespace
 
 #endif
-

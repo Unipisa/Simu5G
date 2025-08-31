@@ -163,9 +163,6 @@ class LteMacBase : public cSimpleModule
     };
     std::map<NumerologyIndex, NumerologyPeriodCounter> numerologyPeriodCounter_;
 
-    unsigned int getNumerologyPeriodCounter(NumerologyIndex index) { return numerologyPeriodCounter_[index].current; }
-    void decreaseNumerologyPeriodCounter();
-
     // statistics in visualization
     bool statDisplay_;
     uint64_t nrFromUpper_;
@@ -178,6 +175,11 @@ class LteMacBase : public cSimpleModule
     unsigned int totalHarqErrorRateUlSum_ = 0;
     unsigned int totalHarqErrorRateDlCount_ = 0;
     unsigned int totalHarqErrorRateUlCount_ = 0;
+
+  protected:
+
+    unsigned int getNumerologyPeriodCounter(NumerologyIndex index) { return numerologyPeriodCounter_[index].current; }
+    void decreaseNumerologyPeriodCounter();
 
   public:
 

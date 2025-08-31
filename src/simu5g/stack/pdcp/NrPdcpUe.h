@@ -26,18 +26,18 @@ namespace simu5g {
  */
 class NrPdcpUe : public LtePdcpUeD2D
 {
-    cGate *nrTmSapOutGate_ = nullptr;
-    cGate *nrUmSapOutGate_ = nullptr;
-    cGate *nrAmSapOutGate_ = nullptr;
-
+  private:
     /// Identifier for this node
     MacNodeId nrNodeId_;
 
     // flag for enabling Dual Connectivity
     bool dualConnectivityEnabled_;
 
-  protected:
+    cGate *nrTmSapOutGate_ = nullptr;
+    cGate *nrUmSapOutGate_ = nullptr;
+    cGate *nrAmSapOutGate_ = nullptr;
 
+  protected:
     void initialize(int stage) override;
 
     /**
@@ -94,4 +94,3 @@ class NrPdcpUe : public LtePdcpUeD2D
 } //namespace
 
 #endif
-

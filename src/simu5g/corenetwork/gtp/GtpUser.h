@@ -53,14 +53,14 @@ class GtpUser : public cSimpleModule
     // specifies the type of the node that contains this filter (it can be ENB or PGW)
     CoreNodeType ownerType_;
 
-    CoreNodeType selectOwnerType(const char *type);
-
     // if this module is on BS, this variable includes the ID of the BS
     MacNodeId myMacNodeID;
 
     opp_component_ptr<inet::NetworkInterface> ie_;
 
     opp_component_ptr<cModule> networkNode_;
+
+    CoreNodeType selectOwnerType(const char *type);
 
   protected:
 
@@ -81,4 +81,3 @@ class GtpUser : public cSimpleModule
 } //namespace
 
 #endif
-

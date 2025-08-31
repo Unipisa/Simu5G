@@ -34,6 +34,7 @@ using namespace omnetpp;
  */
 class TrafficFlowFilter : public cSimpleModule
 {
+  protected:
     // specifies the type of the node that contains this filter (it can be ENB or PGW)
     // the filterTable_ will be indexed differently depending on this parameter
     CoreNodeType ownerType_;
@@ -47,8 +48,6 @@ class TrafficFlowFilter : public cSimpleModule
 
     // store the name of the gateway node (for MEC Hosts and base stations only)
     std::string gateway_;
-
-    CoreNodeType selectOwnerType(const char *type);
 
     // === MEC support === //
 
@@ -64,12 +63,15 @@ class TrafficFlowFilter : public cSimpleModule
     inet::L3Address meAppsExtAddress_;
     int meAppsExtAddressMask_;
 
+
   protected:
     int numInitStages() const override { return inet::INITSTAGE_LAST + 1; }
     void initialize(int stage) override;
 
     // The TrafficFlowFilter module may receive messages only from the input interface of its compound module
     void handleMessage(cMessage *msg) override;
+
+    CoreNodeType selectOwnerType(const char *type);
 
     // functions for managing filter tables
     TrafficFlowTemplateId findTrafficFlow(inet::L3Address srcAddress, inet::L3Address destAddress);
@@ -78,4 +80,3 @@ class TrafficFlowFilter : public cSimpleModule
 } //namespace
 
 #endif
-

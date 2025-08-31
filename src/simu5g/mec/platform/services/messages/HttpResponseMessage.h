@@ -40,6 +40,12 @@ namespace simu5g {
 
 class HttpResponseMessage : public HttpResponseMessage_m
 {
+  private:
+    std::map<std::string, std::string> headerFields_;
+
+  private:
+    void copy(const HttpResponseMessage& other);
+
   public:
     HttpResponseMessage(const char *name = nullptr, short kind = 0);
     HttpResponseMessage(const HttpResponseStatus res, const char *name = nullptr, short kind = 0);
@@ -55,14 +61,8 @@ class HttpResponseMessage : public HttpResponseMessage_m
     virtual void setStatus(HttpResponseStatus code);
     void setStatus(const char *status) override;
     virtual std::string getPayload() const;
-
-  private:
-    void copy(const HttpResponseMessage& other);
-    std::map<std::string, std::string> headerFields_;
-
 };
 
 } //namespace
 
 #endif //_HTTRESPONSEMESSAGE_H_
-

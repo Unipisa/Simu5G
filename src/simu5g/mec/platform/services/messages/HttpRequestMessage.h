@@ -39,6 +39,15 @@ namespace simu5g {
 
 class HttpRequestMessage : public HttpRequestMessage_m
 {
+  private:
+    std::map<std::string, std::string> headerFields_;
+
+    bool isBackgroundRequest_;
+    bool isLastBackgroundRequest_;
+
+  private:
+    void copy(const HttpRequestMessage& other);
+
   public:
     HttpRequestMessage(const char *name = nullptr, short kind = 0);
     HttpRequestMessage(const std::string method, const char *name = nullptr, short kind = 0);
@@ -63,17 +72,8 @@ class HttpRequestMessage : public HttpRequestMessage_m
     }
 
     virtual std::string getPayload() const;
-
-  private:
-    void copy(const HttpRequestMessage& other);
-    std::map<std::string, std::string> headerFields_;
-
-    bool isBackgroundRequest_;
-    bool isLastBackgroundRequest_;
-
 };
 
 } //namespace
 
 #endif //_HTTREQUESTMESSAGE_H_
-
