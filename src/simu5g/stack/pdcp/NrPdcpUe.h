@@ -73,8 +73,8 @@ class NrPdcpUe : public LtePdcpUeD2D
      * @return pointer to the PDCP entity for the LCID of the flow
      *
      */
-    LteTxPdcpEntity *getTxEntity(MacCid lcid) override;
-    LteRxPdcpEntity *getRxEntity(MacCid lcid) override;
+    LteTxPdcpEntity *getOrCreateTxEntity(MacCid lcid) override;
+    LteRxPdcpEntity *getOrCreateRxEntity(MacCid lcid) override;
 
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer

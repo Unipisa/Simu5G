@@ -145,11 +145,11 @@ void NrPdcpUe::fromDataPort(cPacket *pktAux)
     MacCid cid = MacCid(destId, lcid);
 
     // get the PDCP entity for this CID and process the packet
-    LteTxPdcpEntity *entity = getTxEntity(cid);
+    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
-LteTxPdcpEntity *NrPdcpUe::getTxEntity(MacCid cid)
+LteTxPdcpEntity *NrPdcpUe::getOrCreateTxEntity(MacCid cid)
 {
     // Find entity for this LCID
     PdcpTxEntities::iterator it = txEntities_.find(cid);
@@ -174,7 +174,7 @@ LteTxPdcpEntity *NrPdcpUe::getTxEntity(MacCid cid)
     }
 }
 
-LteRxPdcpEntity *NrPdcpUe::getRxEntity(MacCid cid)
+LteRxPdcpEntity *NrPdcpUe::getOrCreateRxEntity(MacCid cid)
 {
     // Find entity for this CID
     PdcpRxEntities::iterator it = rxEntities_.find(cid);

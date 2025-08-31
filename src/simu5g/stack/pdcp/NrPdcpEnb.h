@@ -71,8 +71,8 @@ class NrPdcpEnb : public LtePdcpEnbD2D
      * @return Pointer to the PDCP entity for the LCID of the flow
      *
      */
-    LteTxPdcpEntity *getTxEntity(MacCid lcid) override;
-    LteRxPdcpEntity *getRxEntity(MacCid cid) override;
+    LteTxPdcpEntity *getOrCreateTxEntity(MacCid lcid) override;
+    LteRxPdcpEntity *getOrCreateRxEntity(MacCid cid) override;
 
     /*
      * Dual Connectivity support

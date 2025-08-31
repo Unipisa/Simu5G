@@ -148,9 +148,9 @@ class LtePdcpBase : public cSimpleModule
      * @return pointer to the PDCP entity for the CID of the flow
      *
      */
-    virtual LteTxPdcpEntity *getTxEntity(MacCid cid);
+    virtual LteTxPdcpEntity *getOrCreateTxEntity(MacCid cid);
 
-    virtual LteRxPdcpEntity *getRxEntity(MacCid cid);
+    virtual LteRxPdcpEntity *getOrCreateRxEntity(MacCid cid);
 
     /*
      * Dual Connectivity support

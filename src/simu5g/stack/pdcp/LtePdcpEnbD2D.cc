@@ -89,7 +89,7 @@ void LtePdcpEnbD2D::fromDataPort(cPacket *pktAux)
     EV << "LtePdcpEnbD2D : dest ID: " << destId << "\n";
 
     // get the PDCP entity for this LCID and process the packet
-    LteTxPdcpEntity *entity = getTxEntity(cid);
+    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
