@@ -97,17 +97,7 @@ void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
         return;
     }
 
-    emit(receivedPacketFromLowerLayerSignal_, pkt);
-
-    auto lteInfo = pkt->getTag<FlowControlInfo>();
-
-    EV << "LtePdcp : Received packet with CID " << lteInfo->getLcid() << "\n";
-    EV << "LtePdcp : Packet size " << pkt->getByteLength() << " Bytes\n";
-
-    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
-
-    LteRxPdcpEntity *entity = getOrCreateRxEntity(cid);
-    entity->handlePacketFromLowerLayer(pkt);
+    LtePdcpEnbD2D::fromLowerLayer(pktAux);
 }
 
 MacNodeId NrPdcpEnb::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
