@@ -186,7 +186,7 @@ class LteRlcUm : public cSimpleModule
      * @return pointer to the TXBuffer for the CID of the flow
      *
      */
-    virtual UmTxEntity *getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+    virtual UmTxEntity *getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -198,7 +198,7 @@ class LteRlcUm : public cSimpleModule
      * @return pointer to the RXBuffer for that CID
      *
      */
-    virtual UmRxEntity *getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+    virtual UmRxEntity *getOrCreateRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * handler for traffic coming

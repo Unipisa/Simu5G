@@ -27,7 +27,7 @@ simsignal_t LteRlcUm::receivedPacketFromLowerLayerSignal_ = registerSignal("rece
 simsignal_t LteRlcUm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
-UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
+UmTxEntity *LteRlcUm::getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId = NODEID_NONE;
     LogicalCid lcid = 0;
@@ -70,7 +70,7 @@ UmTxEntity *LteRlcUm::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
     }
 }
 
-UmRxEntity *LteRlcUm::getRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
+UmRxEntity *LteRlcUm::getOrCreateRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
     MacNodeId nodeId;
     if (lteInfo->getDirection() == DL)
@@ -150,7 +150,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
 
-    UmTxEntity *txbuf = getTxBuffer(lteInfo);
+    UmTxEntity *txbuf = getOrCreateTxBuffer(lteInfo);
 
     // Create a new RLC packet
     auto rlcPkt = inet::makeShared<LteRlcSdu>();
@@ -195,7 +195,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
-        UmTxEntity *txbuf = getTxBuffer(lteInfo);
+        UmTxEntity *txbuf = getOrCreateTxBuffer(lteInfo);
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -211,7 +211,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         emit(receivedPacketFromLowerLayerSignal_, pkt);
 
         // Extract information from fragment
-        UmRxEntity *rxbuf = getRxBuffer(lteInfo);
+        UmRxEntity *rxbuf = getOrCreateRxBuffer(lteInfo);
         drop(pkt);
 
         // Bufferize PDU

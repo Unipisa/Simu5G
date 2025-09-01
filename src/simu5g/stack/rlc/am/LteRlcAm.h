@@ -86,7 +86,7 @@ class LteRlcAm : public cSimpleModule
      * @return pointer to the TXBuffer for that CID
      *
      */
-    AmTxQueue *getTxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmTxQueue *getOrCreateTxBuffer(MacNodeId nodeId, LogicalCid lcid);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -99,7 +99,7 @@ class LteRlcAm : public cSimpleModule
      * @return pointer to the RXBuffer for that CID
      *
      */
-    AmRxQueue *getRxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmRxQueue *getOrCreateRxBuffer(MacNodeId nodeId, LogicalCid lcid);
 
     /**
      * handler for traffic coming
