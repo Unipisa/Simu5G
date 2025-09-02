@@ -27,86 +27,64 @@ simsignal_t LteRlcUm::receivedPacketFromLowerLayerSignal_ = registerSignal("rece
 simsignal_t LteRlcUm::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
 simsignal_t LteRlcUm::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
+UmTxEntity *LteRlcUm::lookupTxBuffer(MacCid cid)
+{
+    UmTxEntities::iterator it = txEntities_.find(cid);
+    return (it != txEntities_.end()) ? it->second : nullptr;
+}
+
+UmTxEntity *LteRlcUm::createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo)
+{
+    std::stringstream buf;
+    buf << "UmTxEntity Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+    UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
+    txEntities_[cid] = txEnt;
+
+    txEnt->setFlowControlInfo(lteInfo.get());
+
+    EV << "LteRlcUm::createTxBuffer - Added new UmTxEntity: " << txEnt->getId() << " for CID " << cid << "\n";
+
+    return txEnt;
+}
+
 UmTxEntity *LteRlcUm::getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
-    MacNodeId nodeId = NODEID_NONE;
-    LogicalCid lcid = 0;
-    if (lteInfo != nullptr) {
-        nodeId = ctrlInfoToUeId(lteInfo);
+    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    UmTxEntity *txEnt = lookupTxBuffer(cid);
+    if (txEnt == nullptr)
+        txEnt = createTxBuffer(cid, lteInfo);
+    return txEnt;
+}
 
-        lcid = lteInfo->getLcid();
-    }
-    else
-        throw cRuntimeError("LteRlcUm::getTxBuffer - lteInfo is NULL pointer");
+UmRxEntity *LteRlcUm::lookupRxBuffer(MacCid cid)
+{
+    UmRxEntities::iterator it = rxEntities_.find(cid);
+    return (it != rxEntities_.end()) ? it->second : nullptr;
+}
 
-    // Find TXBuffer for this CID
-    MacCid cid = MacCid(nodeId, lcid);
-    UmTxEntities::iterator it = txEntities_.find(cid);
-    if (it == txEntities_.end()) {
-        // Not found: create
-        std::stringstream buf;
+UmRxEntity *LteRlcUm::createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo)
+{
+    std::stringstream buf;
+    buf << "UmRxEntity Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+    UmRxEntity *rxEnt = check_and_cast<UmRxEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
+    rxEntities_[cid] = rxEnt;
 
-        buf << "UmTxEntity Lcid: " << lcid << " cid: " << cid.asPackedInt();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmTxEntity");
-        UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
-        txEntities_[cid] = txEnt;    // Add to tx_entities map
+    // configure entity
+    rxEnt->setFlowControlInfo(lteInfo.get());
 
-        if (lteInfo != nullptr) {
-            // store control info for this flow
-            txEnt->setFlowControlInfo(lteInfo.get());
-        }
+    EV << "LteRlcUm::createRxBuffer - Added new UmRxEntity: " << rxEnt->getId() << " for CID " << cid << "\n";
 
-        EV << "LteRlcUm : Added new UmTxEntity: " << txEnt->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return txEnt;
-    }
-    else {
-        // Found
-        EV << "LteRlcUm : Using old UmTxBuffer: " << it->second->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return it->second;
-    }
+    return rxEnt;
 }
 
 UmRxEntity *LteRlcUm::getOrCreateRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
 {
-    MacNodeId nodeId;
-    if (lteInfo->getDirection() == DL)
-        nodeId = lteInfo->getDestId();
-    else
-        nodeId = lteInfo->getSourceId();
-    LogicalCid lcid = lteInfo->getLcid();
-
-    // Find RXBuffer for this CID
-    MacCid cid = MacCid(nodeId, lcid);
-
-    UmRxEntities::iterator it = rxEntities_.find(cid);
-    if (it == rxEntities_.end()) {
-        // Not found: create
-        std::stringstream buf;
-        buf << "UmRxEntity Lcid: " << lcid << " cid: " << cid.asPackedInt();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmRxEntity");
-        UmRxEntity *rxEnt = check_and_cast<UmRxEntity *>(
-                moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
-        rxEntities_[cid] = rxEnt;    // Add to rx_entities map
-
-        // store control info for this flow
-        rxEnt->setFlowControlInfo(lteInfo.get());
-
-        EV << "LteRlcUm : Added new UmRxEntity: " << rxEnt->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return rxEnt;
-    }
-    else {
-        // Found
-        EV << "LteRlcUm : Using old UmRxEntity: " << it->second->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return it->second;
-    }
+    MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
+    MacCid cid = MacCid(nodeId, lteInfo->getLcid());
+    UmRxEntity *rxEnt = lookupRxBuffer(cid);
+    if (rxEnt == nullptr)
+        rxEnt = createRxBuffer(cid, lteInfo);
+    return rxEnt;
 }
 
 void LteRlcUm::sendDefragmented(cPacket *pkt)
@@ -259,6 +237,9 @@ void LteRlcUm::initialize(int stage)
         downOutGate_ = gate("UM_Sap_down$o");
 
         // parameters
+        txEntityModuleType_ = cModuleType::get(par("txEntityModuleType").stringValue());
+        rxEntityModuleType_ = cModuleType::get(par("rxEntityModuleType").stringValue());
+
         std::string nodeTypePar = par("nodeType").stdstringValue();
         nodeType = static_cast<RanNodeType>(cEnum::get("simu5g::RanNodeType")->lookup(nodeTypePar.c_str()));
 
@@ -326,4 +307,3 @@ void LteRlcUm::resetThroughputStats(MacNodeId nodeId)
 }
 
 } //namespace
-

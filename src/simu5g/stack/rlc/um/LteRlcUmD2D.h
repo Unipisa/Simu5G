@@ -40,16 +40,14 @@ class LteRlcUmD2D : public LteRlcUm
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
 
     /**
-     * getTxBuffer() is used by the sender to gather the TXBuffer
-     * for that CID. If TXBuffer was already present, a reference
-     * is returned, otherwise a new TXBuffer is created,
-     * added to the tx_buffers map and a reference is returned as well.
+     * createTxBuffer() creates a new TXBuffer for the given CID and flow info.
+     * Overridden to add D2D-specific functionality like peer tracking and holding packets.
      *
+     * @param cid Connection ID for the new buffer
      * @param lteInfo flow-related info
-     * @return pointer to the TXBuffer for the CID of the flow
-     *
+     * @return pointer to the newly created TXBuffer
      */
-    UmTxEntity *getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo) override;
+    UmTxEntity *createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo) override;
 
     /**
      * UM Mode

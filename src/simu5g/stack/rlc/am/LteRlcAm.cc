@@ -23,64 +23,64 @@ Define_Module(LteRlcAm);
 
 using namespace omnetpp;
 
-AmTxQueue *LteRlcAm::getOrCreateTxBuffer(MacNodeId nodeId, LogicalCid lcid)
+AmTxQueue *LteRlcAm::lookupTxBuffer(MacCid cid)
 {
-    // Find TXBuffer for this CID
-    MacCid cid = MacCid(nodeId, lcid);
-    AmTxBuffers::iterator it = txBuffers_.find(cid);
-
-    if (it == txBuffers_.end()) {
-        // Not found: create
-        std::stringstream buf;
-        buf << "AmTxQueue Lcid: " << lcid << " cid: " << cid.asPackedInt();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.am.AmTxQueue");
-        AmTxQueue *txbuf = check_and_cast<AmTxQueue *>(
-                moduleType->createScheduleInit(buf.str().c_str(),
-                        getParentModule()));
-        txBuffers_[cid] = txbuf; // Add to tx_buffers map
-
-        EV << NOW << " LteRlcAm : Added new AmTxBuffer: " << txbuf->getId()
-           << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return txbuf;
-    }
-    else {
-        // Found
-        EV << NOW << " LteRlcAm : Using old AmTxBuffer: " << it->second->getId()
-           << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return it->second;
-    }
+    auto it = txBuffers_.find(cid);
+    return (it != txBuffers_.end()) ? it->second : nullptr;
 }
 
-AmRxQueue *LteRlcAm::getOrCreateRxBuffer(MacNodeId nodeId, LogicalCid lcid)
+AmTxQueue *LteRlcAm::createTxBuffer(MacCid cid)
+{
+    std::stringstream buf;
+    buf << "AmTxQueue Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+
+    AmTxQueue *txbuf = check_and_cast<AmTxQueue *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
+    txBuffers_[cid] = txbuf;
+
+    EV << "LteRlcAm::createTxBuffer - Added new AmTxBuffer: " << txbuf->getId() << " for CID " << cid << "\n";
+
+    return txbuf;
+}
+
+AmRxQueue *LteRlcAm::lookupRxBuffer(MacCid cid)
+{
+    auto it = rxBuffers_.find(cid);
+    return (it != rxBuffers_.end()) ? it->second : nullptr;
+}
+
+AmRxQueue *LteRlcAm::createRxBuffer(MacCid cid)
+{
+    std::stringstream buf;
+    buf << "AmRxQueue Lcid: " << cid.getLcid() << " cid: " << cid.asPackedInt();
+
+    AmRxQueue *rxbuf = check_and_cast<AmRxQueue *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), getParentModule()));
+    rxBuffers_[cid] = rxbuf;
+
+    EV << "LteRlcAm::createRxBuffer - Added new AmRxBuffer: " << rxbuf->getId() << " for CID " << cid << "\n";
+
+    return rxbuf;
+}
+
+AmTxQueue *LteRlcAm::getOrCreateTxBuffer(MacCid cid)
+{
+    // Find TXBuffer for this CID
+    AmTxQueue *txbuf = lookupTxBuffer(cid);
+    if (txbuf == nullptr) {
+        // Not found: create
+        txbuf = createTxBuffer(cid);
+    }
+    return txbuf;
+}
+
+AmRxQueue *LteRlcAm::getOrCreateRxBuffer(MacCid cid)
 {
     // Find RXBuffer for this CID
-    MacCid cid = MacCid(nodeId, lcid);
-
-    AmRxBuffers::iterator it = rxBuffers_.find(cid);
-    if (it == rxBuffers_.end()) {
+    AmRxQueue *rxbuf = lookupRxBuffer(cid);
+    if (rxbuf == nullptr) {
         // Not found: create
-        std::stringstream buf;
-        buf << "AmRxQueue Lcid: " << lcid << " cid: " << cid.asPackedInt();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.am.AmRxQueue");
-        AmRxQueue *rxbuf = check_and_cast<AmRxQueue *>(
-                moduleType->createScheduleInit(buf.str().c_str(),
-                        getParentModule()));
-        rxBuffers_[cid] = rxbuf; // Add to rx_buffers map
-
-        EV << NOW << " LteRlcAm : Added new AmRxBuffer: " << rxbuf->getId()
-           << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return rxbuf;
+        rxbuf = createRxBuffer(cid);
     }
-    else {
-        // Found
-        EV << NOW << " LteRlcAm : Using old AmRxBuffer: " << it->second->getId()
-           << " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return it->second;
-    }
+    return rxbuf;
 }
 
 void LteRlcAm::sendDefragmented(cPacket *pktAux)
@@ -98,7 +98,8 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    AmTxQueue *txbuf = getOrCreateTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
     txbuf->bufferControlPdu(pkt);
 }
 
@@ -120,7 +121,8 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
-    AmTxQueue *txbuf = getOrCreateTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
 
     // Create a new RLC packet
     auto rlcPkt = makeShared<LteRlcAmSdu>();
@@ -139,7 +141,8 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
 
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    AmTxQueue *txbuf = getOrCreateTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
     txbuf->handleControlPacket(pkt);
     lteInfo = pkt->removeTag<FlowControlInfo>();
 }
@@ -154,7 +157,8 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         // process SDU request received from MAC
 
         // get the corresponding Tx buffer
-        AmTxQueue *txbuf = getOrCreateTxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -177,7 +181,8 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         }
 
         // Extract information from fragment
-        AmRxQueue *rxbuf = getOrCreateRxBuffer(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        AmRxQueue *rxbuf = getOrCreateRxBuffer(cid);
         drop(pkt);
 
         EV << NOW << " LteRlcAm::handleLowerMessage sending packet to AM RX Queue " << endl;
@@ -247,6 +252,10 @@ void LteRlcAm::initialize()
     upOutGate_ = gate("AM_Sap_up$o");
     downInGate_ = gate("AM_Sap_down$i");
     downOutGate_ = gate("AM_Sap_down$o");
+
+    // parameters
+    txEntityModuleType_ = cModuleType::get(par("txEntityModuleType").stringValue());
+    rxEntityModuleType_ = cModuleType::get(par("rxEntityModuleType").stringValue());
 }
 
 void LteRlcAm::handleMessage(cMessage *msg)
@@ -267,4 +276,3 @@ void LteRlcAm::handleMessage(cMessage *msg)
 }
 
 } //namespace
-

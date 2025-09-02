@@ -31,6 +31,9 @@ simple LteRlcAm
     parameters:
         @display("i=block/wheelbarrow");
 
+        string txEntityModuleType = default("simu5g.stack.rlc.am.AmTxQueue");
+        string rxEntityModuleType = default("simu5g.stack.rlc.am.AmRxQueue");
+
         @signal[rlcDelayDl];
         @statistic[rlcDelayDl](title="Delay at the rlc layer UL"; unit="s"; source="rlcDelayDl"; record=mean);
         @signal[rlcThroughputDl];

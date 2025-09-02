@@ -63,7 +63,8 @@ class LteRlcUm : public cSimpleModule
     static simsignal_t rlcPacketLossUlSignal_;
 
     // parameters
-    bool mapAllLcidsToSingleBearer_;
+    cModuleType *txEntityModuleType_;
+    cModuleType *rxEntityModuleType_;
 
     /*
     * Data structures
@@ -177,6 +178,23 @@ class LteRlcUm : public cSimpleModule
     void handleMessage(cMessage *msg) override;
 
     /**
+     * lookupTxBuffer() searches for an existing TXBuffer for the given CID.
+     *
+     * @param cid Connection ID to lookup
+     * @return pointer to the TXBuffer if found, nullptr otherwise
+     */
+    virtual UmTxEntity *lookupTxBuffer(MacCid cid);
+
+    /**
+     * createTxBuffer() creates a new TXBuffer for the given CID and flow info.
+     *
+     * @param cid Connection ID for the new buffer
+     * @param lteInfo flow-related info
+     * @return pointer to the newly created TXBuffer
+     */
+    virtual UmTxEntity *createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
+
+    /**
      * getTxBuffer() is used by the sender to gather the TXBuffer
      * for that CID. If the TXBuffer was already present, a reference
      * is returned, otherwise a new TXBuffer is created,
@@ -187,6 +205,23 @@ class LteRlcUm : public cSimpleModule
      *
      */
     virtual UmTxEntity *getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
+
+    /**
+     * lookupRxBuffer() searches for an existing RXBuffer for the given CID.
+     *
+     * @param cid Connection ID to lookup
+     * @return pointer to the RXBuffer if found, nullptr otherwise
+     */
+    virtual UmRxEntity *lookupRxBuffer(MacCid cid);
+
+    /**
+     * createRxBuffer() creates a new RXBuffer for the given CID and flow info.
+     *
+     * @param cid Connection ID for the new buffer
+     * @param lteInfo flow-related info
+     * @return pointer to the newly created RXBuffer
+     */
+    virtual UmRxEntity *createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer

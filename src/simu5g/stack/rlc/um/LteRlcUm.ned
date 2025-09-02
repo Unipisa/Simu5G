@@ -28,6 +28,9 @@ simple LteRlcUm like ILteRlcUm
 
         @display("i=block/wheelbarrow");
 
+        string txEntityModuleType = default("simu5g.stack.rlc.um.UmTxEntity");
+        string rxEntityModuleType = default("simu5g.stack.rlc.um.UmRxEntity");
+
         //# Rlc Queue
         int queueSize @unit(B) = default(2MiB);              // RLC TX entity SDU queue size (0: unlimited)
         bool mapAllLcidsToSingleBearer = default(false);     // if true, all LCIDs are mapped to a single bearer

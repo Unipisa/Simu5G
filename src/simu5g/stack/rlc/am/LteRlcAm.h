@@ -34,6 +34,10 @@ class LteRlcAm : public cSimpleModule
 {
   protected:
 
+    // parameters
+    cModuleType *txEntityModuleType_;
+    cModuleType *rxEntityModuleType_;
+
     /*
      * Data structures
      */
@@ -76,17 +80,48 @@ class LteRlcAm : public cSimpleModule
     void deleteQueues(MacNodeId nodeId);
 
     /**
+     * lookupTxBuffer() searches for an existing TXBuffer for the given CID.
+     *
+     * @param cid Connection ID to lookup
+     * @return pointer to the TXBuffer if found, nullptr otherwise
+     */
+    virtual AmTxQueue *lookupTxBuffer(MacCid cid);
+
+    /**
+     * createTxBuffer() creates a new TXBuffer for the given CID.
+     *
+     * @param cid Connection ID for the new buffer
+     * @return pointer to the newly created TXBuffer
+     */
+    virtual AmTxQueue *createTxBuffer(MacCid cid);
+
+    /**
      * getTxBuffer() is used by the sender to gather the TXBuffer
      * for that CID. If TXBuffer was already present, a reference
      * is returned, otherwise a new TXBuffer is created,
      * added to the tx_buffers map and a reference is returned as well.
      *
-     * @param lcid Logical Connection ID
-     * @param nodeId MAC Node Id
+     * @param cid Connection ID (contains both node ID and logical CID)
      * @return pointer to the TXBuffer for that CID
      *
      */
-    AmTxQueue *getOrCreateTxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmTxQueue *getOrCreateTxBuffer(MacCid cid);
+
+    /**
+     * lookupRxBuffer() searches for an existing RXBuffer for the given CID.
+     *
+     * @param cid Connection ID to lookup
+     * @return pointer to the RXBuffer if found, nullptr otherwise
+     */
+    virtual AmRxQueue *lookupRxBuffer(MacCid cid);
+
+    /**
+     * createRxBuffer() creates a new RXBuffer for the given CID.
+     *
+     * @param cid Connection ID for the new buffer
+     * @return pointer to the newly created RXBuffer
+     */
+    virtual AmRxQueue *createRxBuffer(MacCid cid);
 
     /**
      * getRxBuffer() is used by the receiver to gather the RXBuffer
@@ -94,12 +129,11 @@ class LteRlcAm : public cSimpleModule
      * is returned, otherwise a new RXBuffer is created,
      * added to the rx_buffers map and a reference is returned as well.
      *
-     * @param lcid Logical Connection ID
-     * @param nodeId MAC Node Id
+     * @param cid Connection ID (contains both node ID and logical CID)
      * @return pointer to the RXBuffer for that CID
      *
      */
-    AmRxQueue *getOrCreateRxBuffer(MacNodeId nodeId, LogicalCid lcid);
+    AmRxQueue *getOrCreateRxBuffer(MacCid cid);
 
     /**
      * handler for traffic coming
@@ -184,4 +218,3 @@ class LteRlcAm : public cSimpleModule
 } //namespace
 
 #endif
-

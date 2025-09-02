@@ -17,56 +17,20 @@ namespace simu5g {
 Define_Module(LteRlcUmD2D);
 using namespace omnetpp;
 
-UmTxEntity *LteRlcUmD2D::getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
+UmTxEntity *LteRlcUmD2D::createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo)
 {
-    MacNodeId nodeId = NODEID_NONE;
-    LogicalCid lcid = 0;
-    if (lteInfo != nullptr) {
-        nodeId = ctrlInfoToUeId(lteInfo);
-        lcid = lteInfo->getLcid();
-    }
-    else
-        throw cRuntimeError("LteRlcUmD2D::getTxBuffer - lteInfo is a NULL pointer");
+    UmTxEntity *txEnt = LteRlcUm::createTxBuffer(cid, lteInfo);
 
-    // Find TXBuffer for this CID
-    MacCid cid = MacCid(nodeId, lcid);
-    EV << "LteRlcUmD2D::getTxBuffer for node [" << nodeId << "]" << " with lcid [" << lcid << "]" << " and cid [" << cid << "]" << endl;
-    UmTxEntities::iterator it = txEntities_.find(cid);
-    if (it == txEntities_.end()) {
-        // Not found: create
-        MacNodeId d2dPeer = NODEID_NONE;
-        std::stringstream buf;
+    // store per-peer map
+    MacNodeId d2dPeer = lteInfo->getD2dRxPeerId();
+    if (d2dPeer != NODEID_NONE)
+        perPeerTxEntities_[d2dPeer].insert(txEnt);
 
-        buf << "UmTxEntity Lcid: " << lcid << " cid: " << cid.asPackedInt();
-        cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmTxEntity");
-        UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
-        txEntities_[cid] = txEnt;    // Add to tx_entities map
+    // if other Tx buffers for this peer are already holding, the new one should hold too
+    if (isEmptyingTxBuffer(d2dPeer))
+        txEnt->startHoldingDownstreamInPackets();
 
-        if (lteInfo != nullptr) {
-            // store control info for this flow
-            txEnt->setFlowControlInfo(lteInfo.get());
-            d2dPeer = lteInfo->getD2dRxPeerId();
-        }
-
-        EV << "LteRlcUmD2D : Added new UmTxEntity: " << txEnt->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        // store per-peer map
-        if (d2dPeer != NODEID_NONE)
-            perPeerTxEntities_[d2dPeer].insert(txEnt);
-
-        if (isEmptyingTxBuffer(d2dPeer))
-            txEnt->startHoldingDownstreamInPackets();
-
-        return txEnt;
-    }
-    else {
-        // Found
-        EV << "LteRlcUmD2D : Using old UmTxBuffer: " << it->second->getId() <<
-            " for node: " << nodeId << " for Lcid: " << lcid << "\n";
-
-        return it->second;
-    }
+    return txEnt;
 }
 
 void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
