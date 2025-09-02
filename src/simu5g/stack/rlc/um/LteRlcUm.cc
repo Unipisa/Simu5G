@@ -266,37 +266,22 @@ void LteRlcUm::activeUeUL(std::set<MacNodeId> *ueSet)
 
 void LteRlcUm::addUeThroughput(MacNodeId nodeId, Throughput throughput)
 {
-    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
-    if (it == ulThroughput_.end()) {
-        ulThroughput_[nodeId] = throughput;
-    }
-    else {
-        it->second.pktSizeCount += throughput.pktSizeCount;
-        it->second.time += throughput.time;
-    }
+    auto& nodeUlThroughput = ulThroughput_[nodeId];
+    nodeUlThroughput.pktSizeCount += throughput.pktSizeCount;
+    nodeUlThroughput.time += throughput.time;
 }
 
 double LteRlcUm::getUeThroughput(MacNodeId nodeId)
 {
     ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
-    if (it == ulThroughput_.end()) {
-        return 0;
-    }
-    else {
-        return it->second.pktSizeCount / (it->second.time).dbl();
-    }
+    return it == ulThroughput_.end() ? 0 : it->second.pktSizeCount / it->second.time.dbl();
 }
 
 void LteRlcUm::resetThroughputStats(MacNodeId nodeId)
 {
-    ULThroughputPerUE::iterator it = ulThroughput_.find(nodeId);
-    if (it == ulThroughput_.end()) {
-        return;
-    }
-    else {
-        it->second.pktSizeCount = 0;
-        it->second.time = 0;
-    }
+    auto& nodeUlThroughput = ulThroughput_[nodeId];
+    nodeUlThroughput.pktSizeCount = 0;
+    nodeUlThroughput.time = 0;
 }
 
 } //namespace
