@@ -350,51 +350,56 @@ void LtePdcpBase::handleMessage(cMessage *msg)
     }
 }
 
+LteTxPdcpEntity *LtePdcpBase::lookupTxEntity(MacCid cid)
+{
+    auto it = txEntities_.find(cid);
+    return it != txEntities_.end() ? it->second : nullptr;
+}
+
+LteTxPdcpEntity *LtePdcpBase::createTxEntity(MacCid cid)
+{
+    std::stringstream buf;
+    buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
+    LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
+    txEntities_[cid] = txEnt;
+
+    EV << "LtePdcpBase::createTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
+
+    return txEnt;
+}
+
 LteTxPdcpEntity *LtePdcpBase::getOrCreateTxEntity(MacCid cid)
 {
-    // Find entity for this LCID
-    PdcpTxEntities::iterator it = txEntities_.find(cid);
-    if (it == txEntities_.end()) {
-        // Not found: create
-        std::stringstream buf;
-        buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
-        LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
-        txEntities_[cid] = txEnt;    // Add to entities map
+    LteTxPdcpEntity *entity = lookupTxEntity(cid);
+    if (entity == nullptr)
+        entity = createTxEntity(cid);
+    return entity;
+}
 
-        EV << "LtePdcpBase::getTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
+LteRxPdcpEntity *LtePdcpBase::lookupRxEntity(MacCid cid)
+{
+    auto it = rxEntities_.find(cid);
+    return it != rxEntities_.end() ? it->second : nullptr;
+}
 
-        return txEnt;
-    }
-    else {
-        // Found
-        EV << "LtePdcpBase::getTxEntity - Using old TxPdcpEntity for Cid: " << cid << "\n";
+LteRxPdcpEntity *LtePdcpBase::createRxEntity(MacCid cid)
+{
+    std::stringstream buf;
+    buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
+    LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
+    rxEntities_[cid] = rxEnt;
 
-        return it->second;
-    }
+    EV << "LtePdcpBase::createRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
+
+    return rxEnt;
 }
 
 LteRxPdcpEntity *LtePdcpBase::getOrCreateRxEntity(MacCid cid)
 {
-    // Find entity for this CID
-    PdcpRxEntities::iterator it = rxEntities_.find(cid);
-    if (it == rxEntities_.end()) {
-        // Not found: create
-
-        std::stringstream buf;
-        buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
-        LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
-        rxEntities_[cid] = rxEnt;    // Add to entities map
-
-        EV << "LtePdcpBase::getRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
-
-        return rxEnt;
-    }
-    else {
-        // Found
-        EV << "LtePdcpBase::getRxEntity - Using old RxPdcpEntity for Cid: " << cid << "\n";
-
-        return it->second;
-    }
+    LteRxPdcpEntity *entity = lookupRxEntity(cid);
+    if (entity == nullptr)
+        entity = createRxEntity(cid);
+    return entity;
 }
 
 void LtePdcpBase::finish()

@@ -156,6 +156,38 @@ class LtePdcpBase : public cSimpleModule
 
     virtual LteRxPdcpEntity *getOrCreateRxEntity(MacCid cid);
 
+    /**
+     * lookupTxEntity() searches for an existing TX PDCP entity for the given CID.
+     *
+     * @param cid Connection ID
+     * @return pointer to the existing TX PDCP entity, or nullptr if not found
+     */
+    virtual LteTxPdcpEntity *lookupTxEntity(MacCid cid);
+
+    /**
+     * createTxEntity() creates a new TX PDCP entity for the given CID and adds it to the entities map.
+     *
+     * @param cid Connection ID
+     * @return pointer to the newly created TX PDCP entity
+     */
+    virtual LteTxPdcpEntity *createTxEntity(MacCid cid);
+
+    /**
+     * lookupRxEntity() searches for an existing RX PDCP entity for the given CID.
+     *
+     * @param cid Connection ID
+     * @return pointer to the existing RX PDCP entity, or nullptr if not found
+     */
+    virtual LteRxPdcpEntity *lookupRxEntity(MacCid cid);
+
+    /**
+     * createRxEntity() creates a new RX PDCP entity for the given CID and adds it to the entities map.
+     *
+     * @param cid Connection ID
+     * @return pointer to the newly created RX PDCP entity
+     */
+    virtual LteRxPdcpEntity *createRxEntity(MacCid cid);
+
     /*
      * Dual Connectivity support
      */
