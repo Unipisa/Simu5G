@@ -50,7 +50,10 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
         if (switchPkt->getTxSide()) {
             // get the corresponding Rx buffer & call handler
-            UmTxEntity *txbuf = getOrCreateTxBuffer(lteInfo);
+            MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+            UmTxEntity *txbuf = lookupTxBuffer(cid);
+            if (txbuf == nullptr)
+                txbuf = createTxBuffer(cid, lteInfo);
             txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
             // forward packet to PDCP
@@ -59,7 +62,11 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
         }
         else { // rx side
             // get the corresponding Rx buffer & call handler
-            UmRxEntity *rxbuf = getOrCreateRxBuffer(lteInfo);
+            MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
+            MacCid cid = MacCid(nodeId, lteInfo->getLcid());
+            UmRxEntity *rxbuf = lookupRxBuffer(cid);
+            if (rxbuf == nullptr)
+                rxbuf = createRxBuffer(cid, lteInfo);
             rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
 
             delete pkt;

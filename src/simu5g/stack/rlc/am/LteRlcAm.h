@@ -95,17 +95,6 @@ class LteRlcAm : public cSimpleModule
      */
     virtual AmTxQueue *createTxBuffer(MacCid cid);
 
-    /**
-     * getTxBuffer() is used by the sender to gather the TXBuffer
-     * for that CID. If TXBuffer was already present, a reference
-     * is returned, otherwise a new TXBuffer is created,
-     * added to the tx_buffers map and a reference is returned as well.
-     *
-     * @param cid Connection ID (contains both node ID and logical CID)
-     * @return pointer to the TXBuffer for that CID
-     *
-     */
-    AmTxQueue *getOrCreateTxBuffer(MacCid cid);
 
     /**
      * lookupRxBuffer() searches for an existing RXBuffer for the given CID.
@@ -123,17 +112,6 @@ class LteRlcAm : public cSimpleModule
      */
     virtual AmRxQueue *createRxBuffer(MacCid cid);
 
-    /**
-     * getRxBuffer() is used by the receiver to gather the RXBuffer
-     * for that CID. If RXBuffer was already present, a reference
-     * is returned, otherwise a new RXBuffer is created,
-     * added to the rx_buffers map and a reference is returned as well.
-     *
-     * @param cid Connection ID (contains both node ID and logical CID)
-     * @return pointer to the RXBuffer for that CID
-     *
-     */
-    AmRxQueue *getOrCreateRxBuffer(MacCid cid);
 
     /**
      * handler for traffic coming

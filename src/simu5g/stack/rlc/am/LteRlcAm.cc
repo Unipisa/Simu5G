@@ -61,27 +61,6 @@ AmRxQueue *LteRlcAm::createRxBuffer(MacCid cid)
     return rxbuf;
 }
 
-AmTxQueue *LteRlcAm::getOrCreateTxBuffer(MacCid cid)
-{
-    // Find TXBuffer for this CID
-    AmTxQueue *txbuf = lookupTxBuffer(cid);
-    if (txbuf == nullptr) {
-        // Not found: create
-        txbuf = createTxBuffer(cid);
-    }
-    return txbuf;
-}
-
-AmRxQueue *LteRlcAm::getOrCreateRxBuffer(MacCid cid)
-{
-    // Find RXBuffer for this CID
-    AmRxQueue *rxbuf = lookupRxBuffer(cid);
-    if (rxbuf == nullptr) {
-        // Not found: create
-        rxbuf = createRxBuffer(cid);
-    }
-    return rxbuf;
-}
 
 void LteRlcAm::sendDefragmented(cPacket *pktAux)
 {
@@ -99,7 +78,12 @@ void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
+
+    // Find TXBuffer for this CID
+    AmTxQueue *txbuf = lookupTxBuffer(cid);
+    if (txbuf == nullptr)
+        txbuf = createTxBuffer(cid);
+
     txbuf->bufferControlPdu(pkt);
 }
 
@@ -120,9 +104,12 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-
     MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
+
+    // Find TXBuffer for this CID
+    AmTxQueue *txbuf = lookupTxBuffer(cid);
+    if (txbuf == nullptr)
+        txbuf = createTxBuffer(cid);
 
     // Create a new RLC packet
     auto rlcPkt = makeShared<LteRlcAmSdu>();
@@ -142,7 +129,12 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-    AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
+
+    // Find TXBuffer for this CID
+    AmTxQueue *txbuf = lookupTxBuffer(cid);
+    if (txbuf == nullptr)
+        txbuf = createTxBuffer(cid);
+
     txbuf->handleControlPacket(pkt);
     lteInfo = pkt->removeTag<FlowControlInfo>();
 }
@@ -158,7 +150,11 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 
         // get the corresponding Tx buffer
         MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-        AmTxQueue *txbuf = getOrCreateTxBuffer(cid);
+
+        // Find TXBuffer for this CID
+        AmTxQueue *txbuf = lookupTxBuffer(cid);
+        if (txbuf == nullptr)
+            txbuf = createTxBuffer(cid);
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -182,7 +178,10 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
 
         // Extract information from fragment
         MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-        AmRxQueue *rxbuf = getOrCreateRxBuffer(cid);
+        // Find RXBuffer for this CID
+        AmRxQueue *rxbuf = lookupRxBuffer(cid);
+        if (rxbuf == nullptr)
+            rxbuf = createRxBuffer(cid);
         drop(pkt);
 
         EV << NOW << " LteRlcAm::handleLowerMessage sending packet to AM RX Queue " << endl;

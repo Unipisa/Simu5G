@@ -194,17 +194,6 @@ class LteRlcUm : public cSimpleModule
      */
     virtual UmTxEntity *createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
 
-    /**
-     * getTxBuffer() is used by the sender to gather the TXBuffer
-     * for that CID. If the TXBuffer was already present, a reference
-     * is returned, otherwise a new TXBuffer is created,
-     * added to the tx_buffers map and a reference is returned as well.
-     *
-     * @param lteInfo flow-related info
-     * @return pointer to the TXBuffer for the CID of the flow
-     *
-     */
-    virtual UmTxEntity *getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * lookupRxBuffer() searches for an existing RXBuffer for the given CID.
@@ -223,17 +212,6 @@ class LteRlcUm : public cSimpleModule
      */
     virtual UmRxEntity *createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
 
-    /**
-     * getRxBuffer() is used by the receiver to gather the RXBuffer
-     * for that CID. If the RXBuffer was already present, a reference
-     * is returned, otherwise a new RXBuffer is created,
-     * added to the rx_buffers map and a reference is returned as well.
-     *
-     * @param lteInfo flow-related info
-     * @return pointer to the RXBuffer for that CID
-     *
-     */
-    virtual UmRxEntity *getOrCreateRxBuffer(inet::Ptr<FlowControlInfo> lteInfo);
 
     /**
      * handler for traffic coming

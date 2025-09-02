@@ -47,14 +47,6 @@ UmTxEntity *LteRlcUm::createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteI
     return txEnt;
 }
 
-UmTxEntity *LteRlcUm::getOrCreateTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
-{
-    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
-    UmTxEntity *txEnt = lookupTxBuffer(cid);
-    if (txEnt == nullptr)
-        txEnt = createTxBuffer(cid, lteInfo);
-    return txEnt;
-}
 
 UmRxEntity *LteRlcUm::lookupRxBuffer(MacCid cid)
 {
@@ -77,15 +69,6 @@ UmRxEntity *LteRlcUm::createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteI
     return rxEnt;
 }
 
-UmRxEntity *LteRlcUm::getOrCreateRxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
-{
-    MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
-    MacCid cid = MacCid(nodeId, lteInfo->getLcid());
-    UmRxEntity *rxEnt = lookupRxBuffer(cid);
-    if (rxEnt == nullptr)
-        rxEnt = createRxBuffer(cid, lteInfo);
-    return rxEnt;
-}
 
 void LteRlcUm::sendDefragmented(cPacket *pkt)
 {
@@ -128,7 +111,10 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
 
-    UmTxEntity *txbuf = getOrCreateTxBuffer(lteInfo);
+    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    UmTxEntity *txbuf = lookupTxBuffer(cid);
+    if (txbuf == nullptr)
+        txbuf = createTxBuffer(cid, lteInfo);
 
     // Create a new RLC packet
     auto rlcPkt = inet::makeShared<LteRlcSdu>();
@@ -173,7 +159,10 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
-        UmTxEntity *txbuf = getOrCreateTxBuffer(lteInfo);
+        MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        UmTxEntity *txbuf = lookupTxBuffer(cid);
+        if (txbuf == nullptr)
+            txbuf = createTxBuffer(cid, lteInfo);
 
         auto macSduRequest = pkt->peekAtFront<LteMacSduRequest>();
         unsigned int size = macSduRequest->getSduSize();
@@ -189,7 +178,11 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
         emit(receivedPacketFromLowerLayerSignal_, pkt);
 
         // Extract information from fragment
-        UmRxEntity *rxbuf = getOrCreateRxBuffer(lteInfo);
+        MacNodeId nodeId = (lteInfo->getDirection() == DL) ? lteInfo->getDestId() : lteInfo->getSourceId();
+        MacCid cid = MacCid(nodeId, lteInfo->getLcid());
+        UmRxEntity *rxbuf = lookupRxBuffer(cid);
+        if (rxbuf == nullptr)
+            rxbuf = createRxBuffer(cid, lteInfo);
         drop(pkt);
 
         // Bufferize PDU
