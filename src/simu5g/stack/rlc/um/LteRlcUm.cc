@@ -70,7 +70,7 @@ UmRxEntity *LteRlcUm::createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteI
 }
 
 
-void LteRlcUm::sendDefragmented(cPacket *pkt)
+void LteRlcUm::sendToUpperLayer(cPacket *pkt)
 {
     Enter_Method_Silent("sendDefragmented()");                    // Direct Method Call
     take(pkt);                                                    // Take ownership

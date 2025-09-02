@@ -320,7 +320,7 @@ void UmRxEntity::toPdcp(Packet *pktAux)
     EV << NOW << " UmRxEntity::toPdcp Created PDCP PDU with length " << pktAux->getByteLength() << " bytes" << endl;
     EV << NOW << " UmRxEntity::toPdcp Send packet to upper layer" << endl;
 
-    lteRlc->sendDefragmented(pktAux);
+    lteRlc->sendToUpperLayer(pktAux);
 }
 
 void UmRxEntity::reassemble(unsigned int index)

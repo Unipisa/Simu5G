@@ -97,13 +97,13 @@ class LteRlcUm : public cSimpleModule
   public:
 
     /**
-     * sendDefragmented() is invoked by the RXBuffer as a direct method
+     * sendToUpperLayer() is invoked by the RXBuffer as a direct method
      * call and is used to forward fragments to upper layers. This is needed
      * since the RXBuffer itself has no output gates
      *
      * @param pkt packet to forward
      */
-    void sendDefragmented(cPacket *pkt);
+    void sendToUpperLayer(cPacket *pkt);
 
     /**
      * deleteQueues() must be called on handover
