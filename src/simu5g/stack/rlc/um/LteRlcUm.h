@@ -97,15 +97,6 @@ class LteRlcUm : public cSimpleModule
   public:
 
     /**
-     * sendFragmented() is invoked by the TXBuffer as a direct method
-     * call and is used to forward fragments to lower layers. This is needed
-     * since the TXBuffer itself has no output gates
-     *
-     * @param pkt packet to forward
-     */
-    void sendFragmented(cPacket *pkt);
-
-    /**
      * sendDefragmented() is invoked by the RXBuffer as a direct method
      * call and is used to forward fragments to upper layers. This is needed
      * since the RXBuffer itself has no output gates
