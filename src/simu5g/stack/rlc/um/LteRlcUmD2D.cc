@@ -37,7 +37,7 @@ UmTxEntity *LteRlcUmD2D::getTxBuffer(inet::Ptr<FlowControlInfo> lteInfo)
         MacNodeId d2dPeer = NODEID_NONE;
         std::stringstream buf;
 
-        buf << "UmTxEntity Lcid: " << lcid;
+        buf << "UmTxEntity Lcid: " << lcid << " cid: " << cid.asPackedInt();
         cModuleType *moduleType = cModuleType::get("simu5g.stack.rlc.um.UmTxEntity");
         UmTxEntity *txEnt = check_and_cast<UmTxEntity *>(moduleType->createScheduleInit(buf.str().c_str(), getParentModule()));
         txEntities_[cid] = txEnt;    // Add to tx_entities map
