@@ -92,15 +92,6 @@ void LteRlcUm::sendToLowerLayer(cPacket *pktAux)
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
-void LteRlcUm::dropBufferOverflow(cPacket *pktAux)
-{
-    Enter_Method_Silent("dropBufferOverflow()");                  // Direct Method Call
-    take(pktAux);                                                    // Take ownership
-
-    EV << "LteRlcUm : Dropping packet " << pktAux->getName() << " (queue full) \n";
-    delete pktAux;
-}
-
 void LteRlcUm::handleUpperMessage(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
@@ -145,7 +136,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
         }
         else {
             // Queue is full - drop SDU
-            dropBufferOverflow(pkt);
+            txbuf->dropBufferOverflow(pkt);
         }
     }
 }

@@ -89,6 +89,9 @@ class UmTxEntity : public cSimpleModule
     // force the sequence number to assume the sno passed as an argument
     void setNextSequenceNumber(unsigned int nextSno) { sno_ = nextSno; }
 
+    // drop fragments if the queue is full.
+    void dropBufferOverflow(cPacket *pkt);
+
     // remove the last SDU from the queue
     void removeDataFromQueue();
 

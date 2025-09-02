@@ -122,14 +122,6 @@ class LteRlcUm : public cSimpleModule
      */
     virtual void sendToLowerLayer(cPacket *pkt);
 
-    /**
-     * dropBufferOverflow() is invoked by the TXEntity as a direct method
-     * call and is used to drop fragments if the queue is full.
-     *
-     * @param pkt packet to be dropped
-     */
-    virtual void dropBufferOverflow(cPacket *pkt);
-
     virtual void resumeDownstreamInPackets(MacNodeId peerId) {}
 
     virtual bool isEmptyingTxBuffer(MacNodeId peerId) { return false; }

@@ -257,6 +257,12 @@ void UmTxEntity::rlcPduMake(int pduLength)
     }
 }
 
+void UmTxEntity::dropBufferOverflow(cPacket *pkt)
+{
+    EV << "LteRlcUm : Dropping packet " << pkt->getName() << " (queue full) \n";
+    delete pkt;
+}
+
 void UmTxEntity::removeDataFromQueue()
 {
     EV << NOW << " UmTxEntity::removeDataFromQueue - removed SDU " << endl;
@@ -325,7 +331,7 @@ void UmTxEntity::resumeDownstreamInPackets()
         else {
             // Queue is full - drop SDU
             EV << "UmTxEntity::resumeDownstreamInPackets - cannot buffer SDU (queue is full), dropping" << std::endl;
-            lteRlc_->dropBufferOverflow(pktRlc);
+            dropBufferOverflow(pktRlc);
         }
     }
 }
