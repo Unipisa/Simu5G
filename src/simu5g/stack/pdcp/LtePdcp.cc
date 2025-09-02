@@ -195,7 +195,9 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
 
     // get the PDCP entity for this LCID and process the packet
     EV << "Processing packet with CID " << cid << "\n";
-    LteTxPdcpEntity *entity = getOrCreateTxEntity(cid);
+    LteTxPdcpEntity *entity = lookupTxEntity(cid);
+    if (entity == nullptr)
+        entity = createTxEntity(cid);
     entity->handlePacketFromUpperLayer(pkt);
 }
 
@@ -212,7 +214,9 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
 
     MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
 
-    LteRxPdcpEntity *entity = getOrCreateRxEntity(cid);
+    LteRxPdcpEntity *entity = lookupRxEntity(cid);
+    if (entity == nullptr)
+        entity = createRxEntity(cid);
     entity->handlePacketFromLowerLayer(pkt);
 }
 
@@ -368,13 +372,6 @@ LteTxPdcpEntity *LtePdcpBase::createTxEntity(MacCid cid)
     return txEnt;
 }
 
-LteTxPdcpEntity *LtePdcpBase::getOrCreateTxEntity(MacCid cid)
-{
-    LteTxPdcpEntity *entity = lookupTxEntity(cid);
-    if (entity == nullptr)
-        entity = createTxEntity(cid);
-    return entity;
-}
 
 LteRxPdcpEntity *LtePdcpBase::lookupRxEntity(MacCid cid)
 {
@@ -394,13 +391,6 @@ LteRxPdcpEntity *LtePdcpBase::createRxEntity(MacCid cid)
     return rxEnt;
 }
 
-LteRxPdcpEntity *LtePdcpBase::getOrCreateRxEntity(MacCid cid)
-{
-    LteRxPdcpEntity *entity = lookupRxEntity(cid);
-    if (entity == nullptr)
-        entity = createRxEntity(cid);
-    return entity;
-}
 
 void LtePdcpBase::finish()
 {

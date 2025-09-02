@@ -142,19 +142,6 @@ class LtePdcpBase : public cSimpleModule
     static simsignal_t sentPacketToLowerLayerSignal_;
 
   protected:
-    /**
-     * getTxEntity() and getRxEntity() are used to gather the PDCP entity
-     * for that LCID. If the entity was already present, a reference
-     * is returned; otherwise, a new entity is created,
-     * added to the entities map, and a reference is returned as well.
-     *
-     * @param lcid Logical CID
-     * @return pointer to the PDCP entity for the CID of the flow
-     *
-     */
-    virtual LteTxPdcpEntity *getOrCreateTxEntity(MacCid cid);
-
-    virtual LteRxPdcpEntity *getOrCreateRxEntity(MacCid cid);
 
     /**
      * lookupTxEntity() searches for an existing TX PDCP entity for the given CID.
