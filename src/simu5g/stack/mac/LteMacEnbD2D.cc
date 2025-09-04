@@ -145,8 +145,7 @@ void LteMacEnbD2D::macPduUnmake(cPacket *cpkt)
         LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
-            FlowControlInfo toStore(*flowInfo);
-            connDescIn_[cid] = toStore;
+            createIncomingConnection(cid, *flowInfo);
         }
 
         sendUpperPackets(upPkt);

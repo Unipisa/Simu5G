@@ -180,7 +180,7 @@ void LteMacBase::fromPhy(cPacket *pktAux)
     }
 }
 
-void LteMacBase::createQueues(MacCid cid, const FlowControlInfo& lteInfo)
+void LteMacBase::createOutgoingConnection(MacCid cid, const FlowControlInfo& lteInfo)
 {
     ASSERT(mbuf_.find(cid) == mbuf_.end());
 
@@ -193,6 +193,12 @@ void LteMacBase::createQueues(MacCid cid, const FlowControlInfo& lteInfo)
     // register connection to LCG map.
     LteTrafficClass tClass = (LteTrafficClass)lteInfo.getTraffic();
     lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
+}
+
+void LteMacBase::createIncomingConnection(MacCid cid, const FlowControlInfo& lteInfo)
+{
+    ASSERT(connDescIn_.find(cid) == connDescIn_.end());
+    connDescIn_[cid] = lteInfo;
 }
 
 // note: this method is never called, as it is overridden (in the same way!) in both LteMacEnb and LteMacUe
@@ -209,7 +215,7 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
 
     // check if queues exist, create them if they don't
     if (mbuf_.find(cid) == mbuf_.end())
-        createQueues(cid, *lteInfo);
+        createOutgoingConnection(cid, *lteInfo);
 
     LteMacQueue *queue = mbuf_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);

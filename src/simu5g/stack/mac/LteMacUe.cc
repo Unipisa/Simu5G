@@ -256,7 +256,7 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
 
     // check if queues exist, create them if they don't
     if (mbuf_.find(cid) == mbuf_.end())
-        createQueues(cid, *lteInfo);
+        createOutgoingConnection(cid, *lteInfo);
     LteMacQueue *queue = mbuf_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);
 
@@ -544,8 +544,7 @@ void LteMacUe::macPduUnmake(cPacket *cpkt)
         LogicalCid lcid = flowInfo->getLcid();
         MacCid cid = MacCid(senderId, lcid);
         if (connDescIn_.find(cid) == connDescIn_.end()) {
-            FlowControlInfo toStore(*flowInfo);
-            connDescIn_[cid] = toStore;
+            createIncomingConnection(cid, *flowInfo);
         }
         sendUpperPackets(upPkt);
     }
@@ -999,4 +998,3 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 }
 
 } //namespace
-

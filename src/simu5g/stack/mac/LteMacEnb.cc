@@ -671,7 +671,7 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
 
     // check if queues exist, create them if they don't
     if (mbuf_.find(cid) == mbuf_.end())
-        createQueues(cid, *lteInfo);
+        createOutgoingConnection(cid, *lteInfo);
     LteMacQueue *queue = mbuf_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);
 

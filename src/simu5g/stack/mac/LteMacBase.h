@@ -393,10 +393,16 @@ class LteMacBase : public cSimpleModule
     virtual void macPduUnmake(cPacket *pkt) = 0;
 
     /**
-     * createQueues() creates MAC queues and buffers for a given CID
-     * if they don't already exist
+     * createOutgoingConnection() creates MAC queues and buffers for a given CID
+     * and registers the outgoing connection if they don't already exist
      */
-    virtual void createQueues(MacCid cid, const FlowControlInfo& lteInfo);
+    virtual void createOutgoingConnection(MacCid cid, const FlowControlInfo& lteInfo);
+
+    /**
+     * createIncomingConnection() registers an incoming connection for a given CID
+     * if it doesn't already exist
+     */
+    virtual void createIncomingConnection(MacCid cid, const FlowControlInfo& lteInfo);
 
     /**
      * bufferizePacket() is called every time a packet is
