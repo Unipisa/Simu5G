@@ -119,25 +119,20 @@ void LteDrr::commitSchedule()
 
 void LteDrr::updateSchedulingInfo()
 {
-    // Get connections.
-    std::map<MacCid, LteMacBuffer*> *conn;
+    // Get active buffer CIDs based on direction.
+    std::vector<MacCid> activeCids;
 
-    if (direction_ == DL) {
-        conn = eNbScheduler_->mac_->getMacBuffers();
-    }
-    else if (direction_ == UL) {
-        conn = eNbScheduler_->mac_->getBsrVirtualBuffers();
-    }
-    else {
-        conn = nullptr;
+    if (direction_ == DL)
+        activeCids = eNbScheduler_->mac_->getActiveMacBufferCids();
+    else if (direction_ == UL)
+        activeCids = eNbScheduler_->mac_->getActiveBsrVirtualBufferCids();
+    else
         throw cRuntimeError("LteDrr::updateSchedulingInfo invalid direction");
-    }
 
     // Select the minimum rate and MAC SDU size.
     double minSize = 0;
     double minRate = 0;
-    for (auto& it : *conn) {
-        MacCid cid = it.first;
+    for (MacCid cid : activeCids) {
         MacNodeId nodeId = cid.getNodeId();
         bool eligible = true;
         const UserTxParams& info = eNbScheduler_->mac_->getAmc()->computeTxParams(nodeId, direction_, carrierFrequency_);
@@ -181,4 +176,3 @@ void LteDrr::notifyActiveConnection(MacCid cid)
 }
 
 } //namespace
-

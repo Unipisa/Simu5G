@@ -175,9 +175,22 @@ class LteMacEnb : public LteMacBase
     ~LteMacEnb() override;
 
     /// Returns the BSR virtual buffers.
-    std::map<MacCid, LteMacBuffer*> *getBsrVirtualBuffers()
+    LteMacBuffer *getBsrVirtualBuffer(MacCid cid)
     {
-        return &bsrbuf_;
+        auto it = bsrbuf_.find(cid);
+        if (it == bsrbuf_.end())
+            throw cRuntimeError("LteMacBase::getBsrVirtualBuffer - Buffer for CID %s not found", cid.str().c_str());
+        return it->second;
+    }
+
+    // Returns list of active buffer CIDs
+    std::vector<MacCid> getActiveBsrVirtualBufferCids()
+    {
+        std::vector<MacCid> activeCids;
+        activeCids.reserve(bsrbuf_.size());
+        for (const auto& [cid,_] : bsrbuf_)
+            activeCids.push_back(cid);
+        return activeCids;
     }
 
     /**

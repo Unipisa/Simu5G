@@ -31,12 +31,11 @@ void LteCompManagerProportional::provisionalSchedule()
     provisionedBlocks_ = 0;
 
     Direction dir = DL;
-    std::map<MacCid, LteMacBuffer*> *vbuf = mac_->getMacBuffers();
     ActiveSet *activeSet = mac_->getActiveSet(dir);
     for (MacCid cid : *activeSet) {
         MacNodeId ueId = cid.getNodeId();
 
-        unsigned int queueLength = vbuf->at(cid)->getQueueOccupancy();
+        unsigned int queueLength = mac_->getMacBuffer(cid)->getQueueOccupancy();
 
         // Compute the number of bytes available in one block for this UE
         unsigned int bytesPerBlock = 0;

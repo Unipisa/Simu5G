@@ -93,12 +93,6 @@ class LteSchedulerEnb
     // Codeword list
     LteMacAllocatedCws allocatedCws_;
 
-    // Pointer to downlink virtual buffers (that are in LteMacBase)
-    std::map<MacCid, LteMacBuffer*> *vbuf_ = nullptr;
-
-    // Pointer to uplink virtual buffers (that are in LteMacBase)
-    std::map<MacCid, LteMacBuffer*> *bsrbuf_ = nullptr;
-
     // Pointer to Harq Tx Buffers (that are in LteMacBase)
     std::map<GHz, HarqTxBuffers> *harqTxBuffers_ = nullptr;
 

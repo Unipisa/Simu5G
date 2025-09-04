@@ -237,10 +237,23 @@ class LteMacBase : public cSimpleModule
         return cellId_;
     }
 
-    // Returns the virtual buffers
-    std::map<MacCid, LteMacBuffer*> *getMacBuffers()
+    // Returns the virtual buffer for a specific CID
+    LteMacBuffer* getMacBuffer(MacCid cid)
     {
-        return &macBuffers_;
+        auto it = macBuffers_.find(cid);
+        if (it == macBuffers_.end())
+            throw cRuntimeError("LteMacBase::getMacBuffer - Buffer for CID %s not found", cid.str().c_str());
+        return it->second;
+    }
+
+    // Returns list of active buffer CIDs
+    std::vector<MacCid> getActiveMacBufferCids()
+    {
+        std::vector<MacCid> activeCids;
+        activeCids.reserve(macBuffers_.size());
+        for (const auto& [cid,_] : macBuffers_)
+            activeCids.push_back(cid);
+        return activeCids;
     }
 
     // Returns Traffic Class to cid mapping
@@ -249,10 +262,23 @@ class LteMacBase : public cSimpleModule
         return lcgMap_;
     }
 
-    // Returns connection descriptors
-    std::map<MacCid, FlowControlInfo>& getConnDesc()
+    // Returns flow control info for a specific CID
+    const FlowControlInfo& getConnDesc(MacCid cid)
     {
-        return connDesc_;
+        auto it = connDesc_.find(cid);
+        if (it == connDesc_.end())
+            throw cRuntimeError("LteMacBase: Connection %s not found", cid.str().c_str());
+        return it->second;
+    }
+
+    // Returns list of active connection CIDs
+    std::vector<MacCid> getActiveConnectionCids()
+    {
+        std::vector<MacCid> activeCids;
+        activeCids.reserve(connDesc_.size());
+        for (const auto& [cid,_] : connDesc_)
+            activeCids.push_back(cid);
+        return activeCids;
     }
 
     // Returns the harq tx buffers

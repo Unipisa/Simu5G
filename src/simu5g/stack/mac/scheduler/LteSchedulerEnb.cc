@@ -48,8 +48,6 @@ LteSchedulerEnb& LteSchedulerEnb::operator=(const LteSchedulerEnb& other)
     activeConnectionSet_ = other.activeConnectionSet_;
     scheduleList_ = other.scheduleList_;
     allocatedCws_ = other.allocatedCws_;
-    vbuf_ = other.vbuf_;
-    bsrbuf_ = other.bsrbuf_;
     harqTxBuffers_ = other.harqTxBuffers_;
     harqRxBuffers_ = other.harqRxBuffers_;
     resourceBlocks_ = other.resourceBlocks_;
@@ -92,9 +90,6 @@ void LteSchedulerEnb::initialize(Direction dir, LteMacEnb *mac, Binder *binder)
     mac_ = mac;
 
     binder_ = binder;
-
-    vbuf_ = mac_->getMacBuffers();
-    bsrbuf_ = mac_->getBsrVirtualBuffers();
 
     harqTxBuffers_ = mac_->getHarqTxBuffers();
     harqRxBuffers_ = mac_->getHarqRxBuffers();
@@ -347,7 +342,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     }
 
     // Get virtual buffer reference
-    LteMacBuffer *conn = ((dir == DL) ? vbuf_->at(cid) : bsrbuf_->at(cid));
+    LteMacBuffer *conn = (dir == DL) ? mac_->getMacBuffer(cid) : mac_->getBsrVirtualBuffer(cid);
 
     // get the buffer size
     unsigned int queueLength = conn->getQueueOccupancy(); // in bytes

@@ -137,7 +137,7 @@ void LteAllocatorBestFit::prepareSchedule()
         MacNodeId nodeId = cid.getNodeId();
 
         // Get virtual buffer reference
-        LteMacBuffer *conn = eNbScheduler_->bsrbuf_->at(cid);
+        LteMacBuffer *conn = eNbScheduler_->mac_->getBsrVirtualBuffer(cid);
         // Check whether the virtual buffer is empty
         if (conn->isEmpty()) {
             // The BSR buffer for this node is empty. Abort scheduling for the node: no data to transmit.
@@ -228,7 +228,7 @@ void LteAllocatorBestFit::prepareSchedule()
         // Compute Tx params for the extracted node
         const UserTxParams& txParams = mac_->getAmc()->computeTxParams(nodeId, dir, carrierFrequency_);
         // Get virtual buffer reference
-        LteMacBuffer *conn = eNbScheduler_->bsrbuf_->at(cid);
+        LteMacBuffer *conn = eNbScheduler_->mac_->getBsrVirtualBuffer(cid);
 
         // Get a reference of the first BSR
         PacketInfo vpkt = conn->front();

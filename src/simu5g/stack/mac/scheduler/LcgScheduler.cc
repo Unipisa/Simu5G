@@ -79,7 +79,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             for (it = it_pair.first; it != et; ++it) {
                 // get the Flow descriptor
                 MacCid cid = it->second.first;
-                FlowControlInfo connDesc = mac_->getConnDesc().at(cid);
+                FlowControlInfo connDesc = mac_->getConnDesc(cid);
                 if (connDesc.getDirection() == D2D) {
                     // get the connection virtual buffer
                     LteMacBuffer *vQueue = it->second.second;
@@ -106,7 +106,7 @@ ScheduleList& LcgScheduler::schedule(unsigned int availableBytes, Direction gran
             MacCid cid = it->second.first;
 
             // get the Flow descriptor
-            FlowControlInfo connDesc = mac_->getConnDesc().at(cid);
+            FlowControlInfo connDesc = mac_->getConnDesc(cid);
             // TODO get the QoS parameters
 
             // connection must have the same direction as the grant
@@ -341,4 +341,3 @@ ScheduleList& LcgScheduler::getScheduledBytesList()
 }
 
 } //namespace simu5g
-
