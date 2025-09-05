@@ -429,13 +429,13 @@ void NrMacUe::macPduMake(MacCid cid)
                 while (sduPerCid > 0) {
                     // Add SDU to PDU
                     // Find Mac Pkt
-                    if (mbuf_.find(destCid) == mbuf_.end())
+                    if (macQueues_.find(destCid) == macQueues_.end())
                         throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
 
-                    if (mbuf_[destCid]->isEmpty())
+                    if (macQueues_[destCid]->isEmpty())
                         throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                    auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
+                    auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
 
                     // multicast support
                     // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU

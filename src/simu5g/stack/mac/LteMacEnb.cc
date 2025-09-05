@@ -499,7 +499,7 @@ void LteMacEnb::macPduMake(MacCid cid)
 
             // Check whether the RLC has sent some data. If not, skip
             // (e.g. because the size of the MAC PDU would contain only MAC header - MAC SDU requested size = 0B)
-            if (mbuf_[destCid]->getQueueLength() == 0)
+            if (macQueues_[destCid]->getQueueLength() == 0)
                 break;
 
             Codeword cw = it.first.second;
@@ -553,13 +553,13 @@ void LteMacEnb::macPduMake(MacCid cid)
             }
 
             while (sduPerCid > 0) {
-                if ((mbuf_[destCid]->getQueueLength()) < (int)sduPerCid) {
+                if ((macQueues_[destCid]->getQueueLength()) < (int)sduPerCid) {
                     throw cRuntimeError("Abnormal queue length detected while building MAC PDU for cid %s "
                                         "Queue real SDU length is %d while scheduled SDUs are %d",
-                            destCid.str().c_str(), mbuf_[destCid]->getQueueLength(), sduPerCid);
+                            destCid.str().c_str(), macQueues_[destCid]->getQueueLength(), sduPerCid);
                 }
 
-                auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
+                auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
                 ASSERT(pkt != nullptr);
 
                 drop(pkt);
@@ -669,9 +669,9 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (mbuf_.find(cid) == mbuf_.end())
+    if (macQueues_.find(cid) == macQueues_.end())
         createOutgoingConnection(cid, *lteInfo);
-    LteMacQueue *queue = mbuf_.at(cid);
+    LteMacQueue *queue = macQueues_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);
 
     // this packet is used to signal the arrival of new data in the RLC buffers
@@ -957,7 +957,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
      */
     if (dir == DL) {
         // from macCid to NodeId
-        for (auto& item : mbuf_) {
+        for (auto& item : macQueues_) {
             if (item.second->getQueueLength() != 0)
                 activeUeSet.insert(item.first.getNodeId()); // active users in MAC
         }

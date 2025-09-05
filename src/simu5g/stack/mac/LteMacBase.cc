@@ -40,7 +40,7 @@ simsignal_t LteMacBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPack
 
 LteMacBase::~LteMacBase()
 {
-    for (auto& [key, buffer] : mbuf_)
+    for (auto& [key, buffer] : macQueues_)
         delete buffer;
     for (auto& [key, buffer] : macBuffers_)
         delete buffer;
@@ -182,11 +182,11 @@ void LteMacBase::fromPhy(cPacket *pktAux)
 
 void LteMacBase::createOutgoingConnection(MacCid cid, const FlowControlInfo& lteInfo)
 {
-    ASSERT(mbuf_.find(cid) == mbuf_.end());
+    ASSERT(macQueues_.find(cid) == macQueues_.end());
 
-    mbuf_[cid] = new LteMacQueue(queueSize_);
+    macQueues_[cid] = new LteMacQueue(queueSize_);
     macBuffers_[cid] = new LteMacBuffer();
-    take(mbuf_[cid]);
+    take(macQueues_[cid]);
 
     connDesc_[cid] = lteInfo;
 
@@ -214,10 +214,10 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (mbuf_.find(cid) == mbuf_.end())
+    if (macQueues_.find(cid) == macQueues_.end())
         createOutgoingConnection(cid, *lteInfo);
 
-    LteMacQueue *queue = mbuf_.at(cid);
+    LteMacQueue *queue = macQueues_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);
 
     bool dropped = !queue->pushBack(pkt);
@@ -243,20 +243,20 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
     EV << "LteMacBuffers : Using buffer for " << cid << ", Space left in the Queue: " << spaceLeft << "\n";
 
     // After bufferization buffers must be synchronized
-    ASSERT(mbuf_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());
+    ASSERT(macQueues_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());
     return true;
 }
 
 void LteMacBase::deleteQueues(MacNodeId nodeId)
 {
-    for (auto mit = mbuf_.begin(); mit != mbuf_.end(); ) {
+    for (auto mit = macQueues_.begin(); mit != macQueues_.end(); ) {
         if (mit->first.getNodeId() == nodeId) {
             while (!mit->second->isEmpty()) {
                 cPacket *pkt = mit->second->popFront();
                 delete pkt;
             }
             delete mit->second;        // Delete Queue
-            mit = mbuf_.erase(mit);    // Delete Element
+            mit = macQueues_.erase(mit);    // Delete Element
         }
         else {
             ++mit;
@@ -354,7 +354,7 @@ void LteMacBase::initialize(int stage)
 
         WATCH(queueSize_);
         WATCH(nodeId_);
-        WATCH_MAP(mbuf_);
+        WATCH_MAP(macQueues_);
         WATCH_MAP(macBuffers_);
         WATCH_MAP(connDesc_);
         WATCH_MAP(connDescIn_);

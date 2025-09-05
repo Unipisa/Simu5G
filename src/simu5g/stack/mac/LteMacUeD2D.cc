@@ -222,13 +222,13 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 while (sduPerCid > 0) {
                     // Add SDU to PDU
                     // Find MAC Packet
-                    if (mbuf_.find(destCid) == mbuf_.end())
+                    if (macQueues_.find(destCid) == macQueues_.end())
                         throw cRuntimeError("Unable to find MAC buffer for cid %s", destCid.str().c_str());
 
-                    if (mbuf_[destCid]->isEmpty())
+                    if (macQueues_[destCid]->isEmpty())
                         throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                    auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
+                    auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
 
                     // multicast support
                     // this trick gets the group ID from the MAC SDU and sets item in the MAC PDU
@@ -863,14 +863,14 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                         }
 
                         // Empty real buffer for the selected cid (they should be already empty)
-                        auto mBuf_it = mbuf_.find(cid);
-                        if (mBuf_it != mbuf_.end()) {
-                            while (mBuf_it->second->getQueueLength() > 0) {
-                                cPacket *pdu = mBuf_it->second->popFront();
+                        auto qit = macQueues_.find(cid);
+                        if (qit != macQueues_.end()) {
+                            while (qit->second->getQueueLength() > 0) {
+                                cPacket *pdu = qit->second->popFront();
                                 delete pdu;
                             }
-                            delete mBuf_it->second;
-                            mbuf_.erase(mBuf_it);
+                            delete qit->second;
+                            macQueues_.erase(qit);
                         }
                     }
 

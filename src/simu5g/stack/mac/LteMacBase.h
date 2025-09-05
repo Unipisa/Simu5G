@@ -115,7 +115,7 @@ class LteMacBase : public cSimpleModule
     unsigned int queueSize_;
 
     /// Mac Sdu Real Buffers
-    std::map<MacCid, LteMacQueue*> mbuf_;
+    std::map<MacCid, LteMacQueue*> macQueues_;
 
     /// Mac Sdu Virtual Buffers
     std::map<MacCid, LteMacBuffer*> macBuffers_;

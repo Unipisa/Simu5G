@@ -255,9 +255,9 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (mbuf_.find(cid) == mbuf_.end())
+    if (macQueues_.find(cid) == macQueues_.end())
         createOutgoingConnection(cid, *lteInfo);
-    LteMacQueue *queue = mbuf_.at(cid);
+    LteMacQueue *queue = macQueues_.at(cid);
     LteMacBuffer *vqueue = macBuffers_.at(cid);
 
     // this packet is used to signal the arrival of new data in the RLC buffers
@@ -361,13 +361,13 @@ void LteMacUe::macPduMake(MacCid cid)
                 // Add SDU to PDU
                 // Find Mac Pkt
 
-                if (mbuf_.find(destCid) == mbuf_.end())
+                if (macQueues_.find(destCid) == macQueues_.end())
                     throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
 
-                if (mbuf_[destCid]->isEmpty())
+                if (macQueues_[destCid]->isEmpty())
                     throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                auto pkt = check_and_cast<Packet *>(mbuf_[destCid]->popFront());
+                auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
                 drop(pkt);
 
                 auto macPdu = macPkt->removeAtFront<LteMacPdu>();
@@ -962,13 +962,13 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    for (auto mit = mbuf_.begin(); mit != mbuf_.end(); ) {
+    for (auto mit = macQueues_.begin(); mit != macQueues_.end(); ) {
         while (!mit->second->isEmpty()) {
             cPacket *pkt = mit->second->popFront();
             delete pkt;
         }
         delete mit->second;        // Delete Queue
-        mit = mbuf_.erase(mit);        // Delete Element
+        mit = macQueues_.erase(mit);        // Delete Element
     }
     for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
         while (!vit->second->isEmpty())
