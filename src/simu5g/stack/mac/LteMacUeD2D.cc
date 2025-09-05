@@ -866,24 +866,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 if (switchPkt->getClearRlcBuffer()) {
                     EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - erasing buffered data" << endl;
 
-                    // Empty virtual and real buffers for the selected cid
-                    auto connIt = connDescOut_.find(cid);
-                    if (connIt != connDescOut_.end()) {
-                        // Empty virtual buffer
-                        while (!(connIt->second.buffer->isEmpty()))
-                            connIt->second.buffer->popFront();
-
-                        // Empty real buffer (they should be already empty)
-                        while (connIt->second.queue->getQueueLength() > 0) {
-                            cPacket *pdu = connIt->second.queue->popFront();
-                            delete pdu;
-                        }
-
-                        // Delete the buffers and remove the connection
-                        delete connIt->second.buffer;
-                        delete connIt->second.queue;
-                        connDescOut_.erase(connIt);
-                    }
+                    deleteOutgoingConnection(cid);
                 }
 
                 if (switchPkt->getInterruptHarq()) {

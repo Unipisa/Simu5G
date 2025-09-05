@@ -195,6 +195,37 @@ void LteMacBase::createOutgoingConnection(MacCid cid, const FlowControlInfo& lte
     lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, virtualBuffer)));
 }
 
+void LteMacBase::deleteOutgoingConnection(MacCid cid)
+{
+    auto it = connDescOut_.find(cid);
+    if (it == connDescOut_.end())
+        throw cRuntimeError("LteMacBase::deleteOutgoingConnection - Connection %s not found", cid.str().c_str());
+
+    OutgoingConnectionInfo& connInfo = it->second;
+
+    // Empty and delete the real buffer
+    while (!connInfo.queue->isEmpty())
+        delete connInfo.queue->popFront();
+    drop(connInfo.queue);
+    delete connInfo.queue;
+
+    // Empty and delete the virtual buffer
+    while (!connInfo.buffer->isEmpty())
+        connInfo.buffer->popFront();
+    delete connInfo.buffer;
+
+    // Remove from LCG map
+    for (auto lt = lcgMap_.begin(); lt != lcgMap_.end(); ) {
+        if (lt->second.first == cid)
+            lt = lcgMap_.erase(lt);
+        else
+            ++lt;
+    }
+
+    // Remove from connection descriptor map
+    connDescOut_.erase(it);
+}
+
 void LteMacBase::createIncomingConnection(MacCid cid, const FlowControlInfo& lteInfo)
 {
     ASSERT(connDescIn_.find(cid) == connDescIn_.end());
@@ -250,26 +281,15 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
 
 void LteMacBase::deleteQueues(MacNodeId nodeId)
 {
-    for (auto mit = connDescOut_.begin(); mit != connDescOut_.end(); ) {
-        if (mit->first.getNodeId() == nodeId) {
-            // Empty and delete the real buffer
-            while (!mit->second.queue->isEmpty()) {
-                cPacket *pkt = mit->second.queue->popFront();
-                delete pkt;
-            }
-            delete mit->second.queue;
+    // Create a list of CIDs to delete (to avoid iterator invalidation)
+    std::vector<MacCid> cidsToDelete;
+    for (const auto& [cid, connInfo] : connDescOut_)
+        if (cid.getNodeId() == nodeId)
+            cidsToDelete.push_back(cid);
 
-            // Empty and delete the virtual buffer
-            while (!mit->second.buffer->isEmpty())
-                mit->second.buffer->popFront();
-            delete mit->second.buffer;
-
-            mit = connDescOut_.erase(mit);    // Delete Element
-        }
-        else {
-            ++mit;
-        }
-    }
+    // Delete each connection using the new method
+    for (const auto& cid : cidsToDelete)
+        deleteOutgoingConnection(cid);
 
     // delete H-ARQ buffers
     for (auto& [key, harqBuffers] : harqTxBuffers_) {

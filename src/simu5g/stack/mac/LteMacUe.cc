@@ -964,19 +964,10 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    for (auto mit = connDescOut_.begin(); mit != connDescOut_.end(); ) {
-        while (!mit->second.queue->isEmpty()) {
-            cPacket *pkt = mit->second.queue->popFront();
-            delete pkt;
-        }
-        delete mit->second.queue;        // Delete real buffer
 
-        while (!mit->second.buffer->isEmpty())
-            mit->second.buffer->popFront();
-        delete mit->second.buffer;    // Delete virtual buffer
-
-        mit = connDescOut_.erase(mit);        // Delete Element
-    }
+    // Delete each connection
+    for (auto cid : getActiveConnectionCids())
+        deleteOutgoingConnection(cid);
 
     // delete H-ARQ buffers
     for (auto& [key, buffer] : harqTxBuffers_) {

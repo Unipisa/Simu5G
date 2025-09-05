@@ -427,6 +427,15 @@ class LteMacBase : public cSimpleModule
     virtual void createOutgoingConnection(MacCid cid, const FlowControlInfo& lteInfo);
 
     /**
+     * deleteOutgoingConnection() deletes MAC queues and buffers for a given CID
+     * and unregisters the outgoing connection
+     *
+     * @param cid Connection identifier to delete
+     * @throw cRuntimeError if the connection does not exist
+     */
+    virtual void deleteOutgoingConnection(MacCid cid);
+
+    /**
      * createIncomingConnection() registers an incoming connection for a given CID
      * if it doesn't already exist
      */
