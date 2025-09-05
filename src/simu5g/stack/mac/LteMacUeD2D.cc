@@ -517,8 +517,6 @@ void LteMacUeD2D::checkRAC()
     bool trigger = false;
     bool triggerD2DMulticast = false;
 
-    LteMacBufferMap::const_iterator it;
-
     for (auto [cid, macBuffer] : macBuffers_) {
         if (!(macBuffer->isEmpty())) {
             if (connDesc_.at(cid).getDirection() == D2D_MULTI)
@@ -856,7 +854,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                         EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - erasing buffered data" << endl;
 
                         // Empty virtual buffer for the selected cid
-                        LteMacBufferMap::iterator macBuff_it = macBuffers_.find(cid);
+                        auto macBuff_it = macBuffers_.find(cid);
                         if (macBuff_it != macBuffers_.end()) {
                             while (!(macBuff_it->second->isEmpty()))
                                 macBuff_it->second->popFront();
@@ -865,7 +863,7 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                         }
 
                         // Empty real buffer for the selected cid (they should be already empty)
-                        LteMacBuffers::iterator mBuf_it = mbuf_.find(cid);
+                        auto mBuf_it = mbuf_.find(cid);
                         if (mBuf_it != mbuf_.end()) {
                             while (mBuf_it->second->getQueueLength() > 0) {
                                 cPacket *pdu = mBuf_it->second->popFront();

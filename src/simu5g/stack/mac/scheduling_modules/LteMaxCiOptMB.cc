@@ -235,8 +235,8 @@ void LteMaxCiOptMB::generateProblem()
 
     appFileStream << "\\ ================ Constraint 6 ================" << endl;
     for ( iUe = 0; iUe < totUes; ++iUe) {
-        LteMacBufferMap *buf = mac_->getMacBuffers();
-        LteMacBufferMap::iterator it = buf->find(cidList_[iUe]);
+        std::map<MacCid, LteMacBuffer*> *buf = mac_->getMacBuffers();
+        std::map<MacCid, LteMacBuffer*>::iterator it = buf->find(cidList_[iUe]);
         int queue = 0;
         if (it == mac_->getMacBuffers()->end())
             cRuntimeError("LteMaxCiOptMB::generateProblem: Cannot find CID %s", cidList_[iUe].str().c_str());

@@ -115,10 +115,10 @@ class LteMacBase : public cSimpleModule
     unsigned int queueSize_;
 
     /// Mac Sdu Real Buffers
-    LteMacBuffers mbuf_;
+    std::map<MacCid, LteMacQueue*> mbuf_;
 
     /// Mac Sdu Virtual Buffers
-    LteMacBufferMap macBuffers_;
+    std::map<MacCid, LteMacBuffer*> macBuffers_;
 
     /// List of pdus finalized for each user on each codeword (one entry per carrier)
     std::map<GHz, MacPduList> macPduList_;
@@ -143,6 +143,7 @@ class LteMacBase : public cSimpleModule
      * TODO: delete/update entries on handover
      */
     LcgMap lcgMap_;
+
     // Node Type;
     RanNodeType nodeType_;
 
@@ -237,7 +238,7 @@ class LteMacBase : public cSimpleModule
     }
 
     // Returns the virtual buffers
-    LteMacBufferMap *getMacBuffers()
+    std::map<MacCid, LteMacBuffer*> *getMacBuffers()
     {
         return &macBuffers_;
     }

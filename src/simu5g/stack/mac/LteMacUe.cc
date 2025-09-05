@@ -942,7 +942,7 @@ bool LteMacUe::getLowestBackloggedFlow(MacCid& cid, unsigned int& priority)
 {
     // TODO : optimize if inefficient
     // TODO : implement priorities and LCGs
-    for (LteMacBufferMap::const_reverse_iterator it = macBuffers_.rbegin(); it != macBuffers_.rend(); ++it) {
+    for (auto it = macBuffers_.rbegin(); it != macBuffers_.rend(); ++it) {
         if (!it->second->isEmpty()) {
             cid = it->first;
             // TODO priority = something;

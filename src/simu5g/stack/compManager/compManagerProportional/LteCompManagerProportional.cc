@@ -31,7 +31,7 @@ void LteCompManagerProportional::provisionalSchedule()
     provisionedBlocks_ = 0;
 
     Direction dir = DL;
-    LteMacBufferMap *vbuf = mac_->getMacBuffers();
+    std::map<MacCid, LteMacBuffer*> *vbuf = mac_->getMacBuffers();
     ActiveSet *activeSet = mac_->getActiveSet(dir);
     for (MacCid cid : *activeSet) {
         MacNodeId ueId = cid.getNodeId();

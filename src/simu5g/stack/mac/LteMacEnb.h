@@ -54,7 +54,7 @@ class LteMacEnb : public LteMacBase
     /*******************************************************************************************/
 
     /// Buffer for the BSRs
-    LteMacBufferMap bsrbuf_;
+    std::map<MacCid, LteMacBuffer*> bsrbuf_;
 
     /// Lte Mac Scheduler - Downlink
     LteSchedulerEnbDl *enbSchedulerDl_ = nullptr;
@@ -175,7 +175,7 @@ class LteMacEnb : public LteMacBase
     ~LteMacEnb() override;
 
     /// Returns the BSR virtual buffers.
-    LteMacBufferMap *getBsrVirtualBuffers()
+    std::map<MacCid, LteMacBuffer*> *getBsrVirtualBuffers()
     {
         return &bsrbuf_;
     }

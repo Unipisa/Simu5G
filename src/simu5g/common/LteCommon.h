@@ -252,18 +252,6 @@ class MacControlElement;
 class LteMacPdu;
 
 /**
- * This is a map that associates each Connection Id with
- * a Mac Queue, storing  MAC SDUs (or RLC PDUs)
- */
-typedef std::map<MacCid, LteMacQueue *> LteMacBuffers;
-
-/**
- * This is a map that associates each Connection Id with
- *  a buffer storing the  MAC SDUs info (or RLC PDUs).
- */
-typedef std::map<MacCid, LteMacBuffer *> LteMacBufferMap;
-
-/**
  * This is the Schedule list, a list of schedule elements.
  * For each CID on each codeword there is a number of SDUs
  */

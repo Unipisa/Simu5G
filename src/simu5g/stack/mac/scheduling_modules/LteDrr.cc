@@ -120,7 +120,7 @@ void LteDrr::commitSchedule()
 void LteDrr::updateSchedulingInfo()
 {
     // Get connections.
-    LteMacBufferMap *conn;
+    std::map<MacCid, LteMacBuffer*> *conn;
 
     if (direction_ == DL) {
         conn = eNbScheduler_->mac_->getMacBuffers();

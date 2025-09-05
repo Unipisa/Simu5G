@@ -98,8 +98,7 @@ void LteMacEnb::deleteQueues(MacNodeId nodeId)
 
     LteMacBase::deleteQueues(nodeId);
 
-    LteMacBufferMap::iterator bit;
-    for (bit = bsrbuf_.begin(); bit != bsrbuf_.end(); ) {
+    for (auto bit = bsrbuf_.begin(); bit != bsrbuf_.end(); ) {
         if (bit->first.getNodeId() == nodeId) {
             delete bit->second;
             bit = bsrbuf_.erase(bit);
@@ -292,7 +291,7 @@ LteMacBuffer* LteMacEnb::createBsrBuffer(MacCid cid)
 
 void LteMacEnb::bufferizeBsr(MacBsr *bsr, MacCid cid)
 {
-    LteMacBufferMap::iterator it = bsrbuf_.find(cid);
+    auto it = bsrbuf_.find(cid);
     LteMacBuffer *bsrqueue = nullptr;
 
     // If connection not found, create it
