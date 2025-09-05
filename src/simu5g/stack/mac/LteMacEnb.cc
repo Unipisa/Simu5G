@@ -270,7 +270,7 @@ void LteMacEnb::macSduRequest()
                                     " (queue size: %d, SDU request requires: %d)", queueSize_, macSduRequest->getSduSize());
             }
             auto tag = pkt->addTag<FlowControlInfo>();
-            *tag = connDesc_[destCid];
+            *tag = connDescOut_[destCid].flowInfo;
             sendUpperPackets(pkt);
         }
     }
@@ -499,7 +499,7 @@ void LteMacEnb::macPduMake(MacCid cid)
 
             // Check whether the RLC has sent some data. If not, skip
             // (e.g. because the size of the MAC PDU would contain only MAC header - MAC SDU requested size = 0B)
-            if (macQueues_[destCid]->getQueueLength() == 0)
+            if (connDescOut_[destCid].queue->getQueueLength() == 0)
                 break;
 
             Codeword cw = it.first.second;
@@ -553,13 +553,13 @@ void LteMacEnb::macPduMake(MacCid cid)
             }
 
             while (sduPerCid > 0) {
-                if ((macQueues_[destCid]->getQueueLength()) < (int)sduPerCid) {
+                if ((connDescOut_[destCid].queue->getQueueLength()) < (int)sduPerCid) {
                     throw cRuntimeError("Abnormal queue length detected while building MAC PDU for cid %s "
                                         "Queue real SDU length is %d while scheduled SDUs are %d",
-                            destCid.str().c_str(), macQueues_[destCid]->getQueueLength(), sduPerCid);
+                            destCid.str().c_str(), connDescOut_[destCid].queue->getQueueLength(), sduPerCid);
                 }
 
-                auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
+                auto pkt = check_and_cast<Packet *>(connDescOut_[destCid].queue->popFront());
                 ASSERT(pkt != nullptr);
 
                 drop(pkt);
@@ -669,10 +669,11 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (macQueues_.find(cid) == macQueues_.end())
+    if (connDescOut_.find(cid) == connDescOut_.end())
         createOutgoingConnection(cid, *lteInfo);
-    LteMacQueue *queue = macQueues_.at(cid);
-    LteMacBuffer *vqueue = macBuffers_.at(cid);
+    OutgoingConnectionInfo& connInfo = connDescOut_.at(cid);
+    LteMacQueue *queue = connInfo.queue;
+    LteMacBuffer *vqueue = connInfo.buffer;
 
     // this packet is used to signal the arrival of new data in the RLC buffers
     if (checkIfHeaderType<LteRlcPduNewData>(pkt)) {
@@ -957,8 +958,8 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
      */
     if (dir == DL) {
         // from macCid to NodeId
-        for (auto& item : macQueues_) {
-            if (item.second->getQueueLength() != 0)
+        for (auto& item : connDescOut_) {
+            if (item.second.queue->getQueueLength() != 0)
                 activeUeSet.insert(item.first.getNodeId()); // active users in MAC
         }
 
@@ -975,8 +976,8 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
 
         // every time an RLC SDU enters the layer, a newPktData is sent to
         // mac to inform the presence of data in RLC.
-        for (const auto& vit : macBuffers_) {
-            if (!vit.second->isEmpty())
+        for (const auto& vit : connDescOut_) {
+            if (!vit.second.buffer->isEmpty())
                 activeUeSet.insert(vit.first.getNodeId()); // active users in RLC
         }
     }

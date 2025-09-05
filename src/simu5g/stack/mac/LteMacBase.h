@@ -114,11 +114,21 @@ class LteMacBase : public cSimpleModule
     /// Mac Buffers maximum queue size
     unsigned int queueSize_;
 
-    /// Mac Sdu Real Buffers
-    std::map<MacCid, LteMacQueue*> macQueues_;
+    /*
+     * Outgoing connection information structure
+     * Consolidates connection descriptor, real buffer, and virtual buffer
+     */
+    struct OutgoingConnectionInfo {
+        FlowControlInfo flowInfo;       // Connection flow information
+        LteMacQueue *queue = nullptr;   // Real MAC buffer for actual packets
+        LteMacBuffer *buffer = nullptr; // Virtual buffer for scheduling decisions
 
-    /// Mac Sdu Virtual Buffers
-    std::map<MacCid, LteMacBuffer*> macBuffers_;
+        OutgoingConnectionInfo() {}
+        OutgoingConnectionInfo(const FlowControlInfo& info, LteMacQueue *q, LteMacBuffer *buf) : flowInfo(info), queue(q), buffer(buf) {}
+    };
+
+    /// Consolidated outgoing connection information (replaces mbuf_, macBuffers_, and connDesc_)
+    std::map<MacCid, OutgoingConnectionInfo> connDescOut_;
 
     /// List of pdus finalized for each user on each codeword (one entry per carrier)
     std::map<GHz, MacPduList> macPduList_;
@@ -128,11 +138,6 @@ class LteMacBase : public cSimpleModule
 
     /// Harq Rx Buffers (one entry per carrier)
     std::map<GHz, HarqRxBuffers> harqRxBuffers_;
-
-    /* Connection Descriptors
-     * Holds flow-related information
-     */
-    std::map<MacCid, FlowControlInfo> connDesc_;
 
     /* Incoming Connection Descriptors:
      * a connection is stored at the first MAC SDU delivered to the RLC
@@ -240,20 +245,16 @@ class LteMacBase : public cSimpleModule
     // Returns the virtual buffer for a specific CID
     LteMacBuffer* getMacBuffer(MacCid cid)
     {
-        auto it = macBuffers_.find(cid);
-        if (it == macBuffers_.end())
+        auto it = connDescOut_.find(cid);
+        if (it == connDescOut_.end())
             throw cRuntimeError("LteMacBase::getMacBuffer - Buffer for CID %s not found", cid.str().c_str());
-        return it->second;
+        return it->second.buffer;
     }
 
     // Returns list of active buffer CIDs
     std::vector<MacCid> getActiveMacBufferCids()
     {
-        std::vector<MacCid> activeCids;
-        activeCids.reserve(macBuffers_.size());
-        for (const auto& [cid,_] : macBuffers_)
-            activeCids.push_back(cid);
-        return activeCids;
+        return getActiveConnectionCids();
     }
 
     // Returns Traffic Class to cid mapping
@@ -265,18 +266,18 @@ class LteMacBase : public cSimpleModule
     // Returns flow control info for a specific CID
     const FlowControlInfo& getConnDesc(MacCid cid)
     {
-        auto it = connDesc_.find(cid);
-        if (it == connDesc_.end())
+        auto it = connDescOut_.find(cid);
+        if (it == connDescOut_.end())
             throw cRuntimeError("LteMacBase: Connection %s not found", cid.str().c_str());
-        return it->second;
+        return it->second.flowInfo;
     }
 
     // Returns list of active connection CIDs
     std::vector<MacCid> getActiveConnectionCids()
     {
         std::vector<MacCid> activeCids;
-        activeCids.reserve(connDesc_.size());
-        for (const auto& [cid,_] : connDesc_)
+        activeCids.reserve(connDescOut_.size());
+        for (const auto& [cid,_] : connDescOut_)
             activeCids.push_back(cid);
         return activeCids;
     }

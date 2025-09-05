@@ -417,7 +417,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
     if (!switchPkt->getTxSide()) { // address the receiving endpoint of the D2D flow (tx entities at the eNB)
         // get the outgoing connection corresponding to the DL connection for the RX endpoint of the D2D flow
-        for (auto& [cid, lteInfo] : connDesc_) {
+        for (auto& [cid, connInfo] : connDescOut_) {
             if (cid.getNodeId() == nodeId) {
                 EV << NOW << " LteMacEnbD2D::sendModeSwitchNotification - send signal for TX entity to upper layers in the eNB (cid=" << cid << ")" << endl;
 
@@ -431,7 +431,7 @@ void LteMacEnbD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 else
                     switchPktTx->setOldConnection(false);
                 pktTx->insertAtFront(switchPktTx);
-                *(pktTx->addTag<FlowControlInfo>()) = lteInfo;
+                *(pktTx->addTag<FlowControlInfo>()) = connInfo.flowInfo;
                 sendUpperPackets(pktTx);
                 break;
             }

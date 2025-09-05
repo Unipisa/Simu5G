@@ -100,9 +100,9 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             if (bsrTriggered_ || bsrD2DMulticastTriggered_) {
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
-                for (const auto& itbsr : macBuffers_) {
-                    MacCid cid = itbsr.first;
-                    Direction connDir = (Direction)connDesc_[cid].getDirection();
+                for (const auto& itbsr : connDescOut_) {
+                    const OutgoingConnectionInfo& connInfo = itbsr.second;
+                    Direction connDir = (Direction)connInfo.flowInfo.getDirection();
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
                     if (bsrTriggered_ && connDir != D2D)
@@ -110,13 +110,13 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     if (bsrD2DMulticastTriggered_ && connDir != D2D_MULTI)
                         continue;
 
-                    sizeBsr += itbsr.second->getQueueOccupancy();
+                    sizeBsr += connInfo.buffer->getQueueOccupancy();
 
                     // take into account the RLC header size
                     if (sizeBsr > 0) {
-                        if (connDesc_[cid].getRlcType() == UM)
+                        if (connInfo.flowInfo.getRlcType() == UM)
                             sizeBsr += RLC_HEADER_UM;
-                        else if (connDesc_[cid].getRlcType() == AM)
+                        else if (connInfo.flowInfo.getRlcType() == AM)
                             sizeBsr += RLC_HEADER_AM;
                     }
                 }
@@ -173,7 +173,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 Codeword cw = item.first.second;
 
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
-                FlowControlInfo *lteInfo = &(connDesc_.at(destCid));
+                FlowControlInfo *lteInfo = &(connDescOut_.at(destCid).flowInfo);
                 MacNodeId destId = lteInfo->getDestId();
                 Direction dir = (Direction)lteInfo->getDirection();
 
@@ -222,13 +222,13 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 while (sduPerCid > 0) {
                     // Add SDU to PDU
                     // Find MAC Packet
-                    if (macQueues_.find(destCid) == macQueues_.end())
+                    if (connDescOut_.find(destCid) == connDescOut_.end())
                         throw cRuntimeError("Unable to find MAC buffer for cid %s", destCid.str().c_str());
 
-                    if (macQueues_[destCid]->isEmpty())
+                    if (connDescOut_[destCid].queue->isEmpty())
                         throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                    auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
+                    auto pkt = check_and_cast<Packet *>(connDescOut_[destCid].queue->popFront());
 
                     // multicast support
                     // this trick gets the group ID from the MAC SDU and sets item in the MAC PDU
@@ -250,13 +250,13 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 }
 
                 // consider virtual buffers to compute BSR size
-                size += macBuffers_[destCid]->getQueueOccupancy();
+                size += connDescOut_[destCid].buffer->getQueueOccupancy();
 
                 if (size > 0) {
                     // take into account the RLC header size
-                    if (connDesc_[destCid].getRlcType() == UM)
+                    if (connDescOut_[destCid].flowInfo.getRlcType() == UM)
                         size += RLC_HEADER_UM;
-                    else if (connDesc_[destCid].getRlcType() == AM)
+                    else if (connDescOut_[destCid].flowInfo.getRlcType() == AM)
                         size += RLC_HEADER_AM;
                 }
             }
@@ -517,9 +517,9 @@ void LteMacUeD2D::checkRAC()
     bool trigger = false;
     bool triggerD2DMulticast = false;
 
-    for (auto [cid, macBuffer] : macBuffers_) {
-        if (!(macBuffer->isEmpty())) {
-            if (connDesc_.at(cid).getDirection() == D2D_MULTI)
+    for (auto [cid, connInfo] : connDescOut_) {
+        if (!(connInfo.buffer->isEmpty())) {
+            if (connInfo.flowInfo.getDirection() == D2D_MULTI)
                 triggerD2DMulticast = true;
             else
                 trigger = true;
@@ -849,7 +849,8 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
         std::vector<std::pair<MacCid, FlowControlInfo>> oldConnections;
         std::vector<std::pair<MacCid, FlowControlInfo>> newConnections;
 
-        for (const auto& [cid, lteInfo] : connDesc_) {
+        for (const auto& [cid, connDesc] : connDescOut_) {
+            const auto& lteInfo = connDesc.flowInfo;
             if (lteInfo.getD2dRxPeerId() == peerId && (Direction)lteInfo.getDirection() == oldDirection) {
                 oldConnections.emplace_back(cid, lteInfo);
             }
@@ -865,24 +866,23 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
                 if (switchPkt->getClearRlcBuffer()) {
                     EV << NOW << " LteMacUeD2D::macHandleD2DModeSwitch - erasing buffered data" << endl;
 
-                    // Empty virtual buffer for the selected cid
-                    auto macBuff_it = macBuffers_.find(cid);
-                    if (macBuff_it != macBuffers_.end()) {
-                        while (!(macBuff_it->second->isEmpty()))
-                            macBuff_it->second->popFront();
-                        delete macBuff_it->second;
-                        macBuffers_.erase(macBuff_it);
-                    }
+                    // Empty virtual and real buffers for the selected cid
+                    auto connIt = connDescOut_.find(cid);
+                    if (connIt != connDescOut_.end()) {
+                        // Empty virtual buffer
+                        while (!(connIt->second.buffer->isEmpty()))
+                            connIt->second.buffer->popFront();
 
-                    // Empty real buffer for the selected cid (they should be already empty)
-                    auto qit = macQueues_.find(cid);
-                    if (qit != macQueues_.end()) {
-                        while (qit->second->getQueueLength() > 0) {
-                            cPacket *pdu = qit->second->popFront();
+                        // Empty real buffer (they should be already empty)
+                        while (connIt->second.queue->getQueueLength() > 0) {
+                            cPacket *pdu = connIt->second.queue->popFront();
                             delete pdu;
                         }
-                        delete qit->second;
-                        macQueues_.erase(qit);
+
+                        // Delete the buffers and remove the connection
+                        delete connIt->second.buffer;
+                        delete connIt->second.queue;
+                        connDescOut_.erase(connIt);
                     }
                 }
 
@@ -1038,4 +1038,3 @@ void LteMacUeD2D::doHandover(MacNodeId targetEnb)
 }
 
 } //namespace
-

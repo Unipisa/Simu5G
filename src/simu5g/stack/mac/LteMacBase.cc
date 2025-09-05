@@ -40,10 +40,10 @@ simsignal_t LteMacBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPack
 
 LteMacBase::~LteMacBase()
 {
-    for (auto& [key, buffer] : macQueues_)
-        delete buffer;
-    for (auto& [key, buffer] : macBuffers_)
-        delete buffer;
+    for (auto& [key, connInfo] : connDescOut_) {
+        delete connInfo.queue;
+        delete connInfo.buffer;
+    }
 
     for (auto& [key, txBuffers] : harqTxBuffers_)
         for (auto& [key, buffer] : txBuffers)
@@ -182,17 +182,17 @@ void LteMacBase::fromPhy(cPacket *pktAux)
 
 void LteMacBase::createOutgoingConnection(MacCid cid, const FlowControlInfo& lteInfo)
 {
-    ASSERT(macQueues_.find(cid) == macQueues_.end());
+    ASSERT(connDescOut_.find(cid) == connDescOut_.end());
 
-    macQueues_[cid] = new LteMacQueue(queueSize_);
-    macBuffers_[cid] = new LteMacBuffer();
-    take(macQueues_[cid]);
+    LteMacQueue* realBuffer = new LteMacQueue(queueSize_);
+    LteMacBuffer* virtualBuffer = new LteMacBuffer();
+    take(realBuffer);
 
-    connDesc_[cid] = lteInfo;
+    connDescOut_[cid] = OutgoingConnectionInfo(lteInfo, realBuffer, virtualBuffer);
 
     // register connection to LCG map.
     LteTrafficClass tClass = (LteTrafficClass)lteInfo.getTraffic();
-    lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, macBuffers_[cid])));
+    lcgMap_.insert(LcgPair(tClass, CidBufferPair(cid, virtualBuffer)));
 }
 
 void LteMacBase::createIncomingConnection(MacCid cid, const FlowControlInfo& lteInfo)
@@ -214,11 +214,12 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (macQueues_.find(cid) == macQueues_.end())
+    if (connDescOut_.find(cid) == connDescOut_.end())
         createOutgoingConnection(cid, *lteInfo);
 
-    LteMacQueue *queue = macQueues_.at(cid);
-    LteMacBuffer *vqueue = macBuffers_.at(cid);
+    OutgoingConnectionInfo& connInfo = connDescOut_.at(cid);
+    LteMacQueue *queue = connInfo.queue;
+    LteMacBuffer *vqueue = connInfo.buffer;
 
     bool dropped = !queue->pushBack(pkt);
 
@@ -243,34 +244,30 @@ bool LteMacBase::bufferizePacket(cPacket *cpkt)
     EV << "LteMacBuffers : Using buffer for " << cid << ", Space left in the Queue: " << spaceLeft << "\n";
 
     // After bufferization buffers must be synchronized
-    ASSERT(macQueues_[cid]->getQueueLength() == macBuffers_[cid]->getQueueLength());
+    ASSERT(connInfo.queue->getQueueLength() == connInfo.buffer->getQueueLength());
     return true;
 }
 
 void LteMacBase::deleteQueues(MacNodeId nodeId)
 {
-    for (auto mit = macQueues_.begin(); mit != macQueues_.end(); ) {
+    for (auto mit = connDescOut_.begin(); mit != connDescOut_.end(); ) {
         if (mit->first.getNodeId() == nodeId) {
-            while (!mit->second->isEmpty()) {
-                cPacket *pkt = mit->second->popFront();
+            // Empty and delete the real buffer
+            while (!mit->second.queue->isEmpty()) {
+                cPacket *pkt = mit->second.queue->popFront();
                 delete pkt;
             }
-            delete mit->second;        // Delete Queue
-            mit = macQueues_.erase(mit);    // Delete Element
+            delete mit->second.queue;
+
+            // Empty and delete the virtual buffer
+            while (!mit->second.buffer->isEmpty())
+                mit->second.buffer->popFront();
+            delete mit->second.buffer;
+
+            mit = connDescOut_.erase(mit);    // Delete Element
         }
         else {
             ++mit;
-        }
-    }
-    for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
-        if (vit->first.getNodeId() == nodeId) {
-            while (!vit->second->isEmpty())
-                vit->second->popFront();
-            delete vit->second;        // Delete Queue
-            vit = macBuffers_.erase(vit);        // Delete Element
-        }
-        else {
-            ++vit;
         }
     }
 
@@ -354,10 +351,8 @@ void LteMacBase::initialize(int stage)
 
         WATCH(queueSize_);
         WATCH(nodeId_);
-        WATCH_MAP(macQueues_);
-        WATCH_MAP(macBuffers_);
-        WATCH_MAP(connDesc_);
-        WATCH_MAP(connDescIn_);
+        // WATCH_MAP(connDescOut_);
+        // WATCH_MAP(connDescIn_);
     }
 }
 

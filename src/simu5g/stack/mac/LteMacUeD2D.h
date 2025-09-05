@@ -100,7 +100,7 @@ class LteMacUeD2D : public LteMacUe
 
     virtual void triggerBsr(MacCid cid)
     {
-        if (connDesc_[cid].getDirection() == D2D_MULTI)
+        if (connDescOut_[cid].flowInfo.getDirection() == D2D_MULTI)
             bsrD2DMulticastTriggered_ = true;
         else
             bsrTriggered_ = true;
@@ -112,4 +112,3 @@ class LteMacUeD2D : public LteMacUe
 } //namespace
 
 #endif
-

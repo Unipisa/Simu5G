@@ -276,7 +276,7 @@ int NrMacUe::macSduRequest()
                 macSduRequest->setLcid(destCid.getLcid());
                 macSduRequest->setSduSize(bit->second);
                 pkt->insertAtFront(macSduRequest);
-                *(pkt->addTag<FlowControlInfo>()) = connDesc_[destCid];
+                *(pkt->addTag<FlowControlInfo>()) = connDescOut_[destCid].flowInfo;
                 sendUpperPackets(pkt);
 
                 numRequestedSdus++;
@@ -307,8 +307,9 @@ void NrMacUe::macPduMake(MacCid cid)
             if (bsrTriggered_ || bsrD2DMulticastTriggered_) {
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
-                for (auto [cid, buffer] : macBuffers_) {
-                    Direction connDir = (Direction)connDesc_[cid].getDirection();
+                for (auto [cid, connInfo] : connDescOut_) {
+                    Direction connDir = (Direction)connInfo.flowInfo.getDirection();
+                    LteMacBuffer* buffer = connInfo.buffer;
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
                     if (bsrTriggered_ && connDir != D2D)
@@ -320,9 +321,9 @@ void NrMacUe::macPduMake(MacCid cid)
 
                     // take into account the RLC header size
                     if (sizeBsr > 0) {
-                        if (connDesc_[cid].getRlcType() == UM)
+                        if (connInfo.flowInfo.getRlcType() == UM)
                             sizeBsr += RLC_HEADER_UM;
-                        else if (connDesc_[cid].getRlcType() == AM)
+                        else if (connInfo.flowInfo.getRlcType() == AM)
                             sizeBsr += RLC_HEADER_AM;
                     }
                 }
@@ -381,7 +382,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 Codeword cw = item.first.second;
 
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
-                FlowControlInfo *lteInfo = &(connDesc_.at(destCid));
+                FlowControlInfo *lteInfo = &(connDescOut_.at(destCid).flowInfo);
                 MacNodeId destId = lteInfo->getDestId();
                 Direction dir = (Direction)lteInfo->getDirection();
 
@@ -429,13 +430,13 @@ void NrMacUe::macPduMake(MacCid cid)
                 while (sduPerCid > 0) {
                     // Add SDU to PDU
                     // Find Mac Pkt
-                    if (macQueues_.find(destCid) == macQueues_.end())
+                    if (connDescOut_.find(destCid) == connDescOut_.end())
                         throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
 
-                    if (macQueues_[destCid]->isEmpty())
+                    if (connDescOut_[destCid].queue->isEmpty())
                         throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                    auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
+                    auto pkt = check_and_cast<Packet *>(connDescOut_[destCid].queue->popFront());
 
                     // multicast support
                     // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
@@ -456,13 +457,13 @@ void NrMacUe::macPduMake(MacCid cid)
                 }
 
                 // consider virtual buffers to compute BSR size
-                size += macBuffers_[destCid]->getQueueOccupancy();
+                size += connDescOut_[destCid].buffer->getQueueOccupancy();
 
                 if (size > 0) {
                     // take into account the RLC header size
-                    if (connDesc_[destCid].getRlcType() == UM)
+                    if (connDescOut_[destCid].flowInfo.getRlcType() == UM)
                         size += RLC_HEADER_UM;
-                    else if (connDesc_[destCid].getRlcType() == AM)
+                    else if (connDescOut_[destCid].flowInfo.getRlcType() == AM)
                         size += RLC_HEADER_AM;
                 }
             }

@@ -226,7 +226,7 @@ int LteMacUe::macSduRequest()
                 macSduRequest->setLcid(destCid.getLcid());
                 macSduRequest->setSduSize(bit->second);
                 pkt->insertAtFront(macSduRequest);
-                *(pkt->addTag<FlowControlInfo>()) = connDesc_[destCid];
+                *(pkt->addTag<FlowControlInfo>()) = connDescOut_[destCid].flowInfo;
                 sendUpperPackets(pkt);
 
                 numRequestedSdus++;
@@ -255,10 +255,11 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
     MacCid cid = ctrlInfoToMacCid(lteInfo);
 
     // check if queues exist, create them if they don't
-    if (macQueues_.find(cid) == macQueues_.end())
+    if (connDescOut_.find(cid) == connDescOut_.end())
         createOutgoingConnection(cid, *lteInfo);
-    LteMacQueue *queue = macQueues_.at(cid);
-    LteMacBuffer *vqueue = macBuffers_.at(cid);
+    OutgoingConnectionInfo& connInfo = connDescOut_.at(cid);
+    LteMacQueue *queue = connInfo.queue;
+    LteMacBuffer *vqueue = connInfo.buffer;
 
     // this packet is used to signal the arrival of new data in the RLC buffers
     if (checkIfHeaderType<LteRlcPduNewData>(pkt)) {
@@ -361,13 +362,14 @@ void LteMacUe::macPduMake(MacCid cid)
                 // Add SDU to PDU
                 // Find Mac Pkt
 
-                if (macQueues_.find(destCid) == macQueues_.end())
+                if (connDescOut_.find(destCid) == connDescOut_.end())
                     throw cRuntimeError("Unable to find mac buffer for cid %s", destCid.str().c_str());
 
-                if (macQueues_[destCid]->isEmpty())
+                OutgoingConnectionInfo& connInfo = connDescOut_.at(destCid);
+                if (connInfo.queue->isEmpty())
                     throw cRuntimeError("Empty buffer for cid %s, while expected SDUs were %d", destCid.str().c_str(), sduPerCid);
 
-                auto pkt = check_and_cast<Packet *>(macQueues_[destCid]->popFront());
+                auto pkt = check_and_cast<Packet *>(connInfo.queue->popFront());
                 drop(pkt);
 
                 auto macPdu = macPkt->removeAtFront<LteMacPdu>();
@@ -376,7 +378,7 @@ void LteMacUe::macPduMake(MacCid cid)
                 sduPerCid--;
             }
             // consider virtual buffers to compute BSR size
-            size += macBuffers_[destCid]->getQueueOccupancy();
+            size += connDescOut_.at(destCid).buffer->getQueueOccupancy();
         }
     }
 
@@ -853,8 +855,8 @@ void LteMacUe::checkRAC()
 
     bool trigger = false;
 
-    for (const auto& it : macBuffers_) {
-        if (!(it.second->isEmpty())) {
+    for (const auto& it : connDescOut_) {
+        if (!(it.second.buffer->isEmpty())) {
             trigger = true;
             break;
         }
@@ -928,8 +930,8 @@ bool LteMacUe::getHighestBackloggedFlow(MacCid& cid, unsigned int& priority)
     // TODO : implement priorities and LCGs
     // search in virtual buffer structures
 
-    for (const auto& item : macBuffers_) {
-        if (!item.second->isEmpty()) {
+    for (const auto& item : connDescOut_) {
+        if (!item.second.buffer->isEmpty()) {
             cid = item.first;
             // TODO priority = something;
             return true;
@@ -942,8 +944,8 @@ bool LteMacUe::getLowestBackloggedFlow(MacCid& cid, unsigned int& priority)
 {
     // TODO : optimize if inefficient
     // TODO : implement priorities and LCGs
-    for (auto it = macBuffers_.rbegin(); it != macBuffers_.rend(); ++it) {
-        if (!it->second->isEmpty()) {
+    for (auto it = connDescOut_.rbegin(); it != connDescOut_.rend(); ++it) {
+        if (!it->second.buffer->isEmpty()) {
             cid = it->first;
             // TODO priority = something;
             return true;
@@ -962,19 +964,18 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    for (auto mit = macQueues_.begin(); mit != macQueues_.end(); ) {
-        while (!mit->second->isEmpty()) {
-            cPacket *pkt = mit->second->popFront();
+    for (auto mit = connDescOut_.begin(); mit != connDescOut_.end(); ) {
+        while (!mit->second.queue->isEmpty()) {
+            cPacket *pkt = mit->second.queue->popFront();
             delete pkt;
         }
-        delete mit->second;        // Delete Queue
-        mit = macQueues_.erase(mit);        // Delete Element
-    }
-    for (auto vit = macBuffers_.begin(); vit != macBuffers_.end(); ) {
-        while (!vit->second->isEmpty())
-            vit->second->popFront();
-        delete vit->second;                  // Delete Queue
-        vit = macBuffers_.erase(vit);           // Delete Element
+        delete mit->second.queue;        // Delete real buffer
+
+        while (!mit->second.buffer->isEmpty())
+            mit->second.buffer->popFront();
+        delete mit->second.buffer;    // Delete virtual buffer
+
+        mit = connDescOut_.erase(mit);        // Delete Element
     }
 
     // delete H-ARQ buffers
@@ -994,7 +995,6 @@ void LteMacUe::deleteQueues(MacNodeId nodeId)
 
     // remove traffic descriptor and lcg entry
     lcgMap_.clear();
-    connDesc_.clear();
 }
 
 } //namespace
