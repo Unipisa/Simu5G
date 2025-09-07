@@ -42,7 +42,8 @@ enum RbAllocationType
     TYPE2_LOCALIZED = 1;
 };
 
-/// Lte Traffic Classes
+/// Lte Traffic Classes. They are used as LCG IDs as sent in BSRs. LTE has 4 LCGs,
+/// NR supports up to 8. This enum only defines 4, but this can be extended.
 enum LteTrafficClass
 {
     CONVERSATIONAL = 0; STREAMING =1;  INTERACTIVE = 2; BACKGROUND = 3; UNKNOWN_TRAFFIC_TYPE = 4;
