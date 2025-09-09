@@ -19,7 +19,7 @@ using namespace omnetpp;
 
 void LteMaxCi::prepareSchedule()
 {
-    EV << NOW << " LteMaxCI::schedule " << eNbScheduler_->mac_->getMacNodeId() << endl;
+    EV << NOW << " LteMaxCI::prepareSchedule " << eNbScheduler_->mac_->getMacNodeId() << endl;
 
     activeConnectionTempSet_ = *activeConnectionSet_;
 
@@ -83,7 +83,7 @@ void LteMaxCi::prepareSchedule()
         // Insert the cid score
         score.push(desc);
 
-        EV << NOW << " LteMaxCI::schedule computed for cid " << cid << " score of " << desc.score_ << endl;
+        EV << NOW << " LteMaxCI::prepareSchedule computed for cid " << cid << " score of " << desc.score_ << endl;
     }
 
     if (direction_ == UL || direction_ == DL) { // D2D background traffic not supported (yet?)
@@ -118,20 +118,20 @@ void LteMaxCi::prepareSchedule()
         unsigned int granted;
 
         if (MacCidToNodeId(current.x_) >= BGUE_MIN_ID) {
-            EV << NOW << " LteMaxCI::schedule scheduling background UE " << MacCidToNodeId(current.x_) << " with score of " << current.score_ << endl;
+            EV << NOW << " LteMaxCI::prepareSchedule scheduling background UE " << MacCidToNodeId(current.x_) << " with score of " << current.score_ << endl;
 
             // Grant data to that background connection.
             granted = requestGrantBackground(current.x_, 4294967295U, terminate, active, eligible);
 
-            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to background UE " << MacCidToNodeId(current.x_) << endl;
+            EV << NOW << "LteMaxCI::prepareSchedule granted " << granted << " bytes to background UE " << MacCidToNodeId(current.x_) << endl;
         }
         else {
-            EV << NOW << " LteMaxCI::schedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
+            EV << NOW << " LteMaxCI::prepareSchedule scheduling connection " << current.x_ << " with score of " << current.score_ << endl;
 
             // Grant data to that connection.
             granted = requestGrant(current.x_, 4294967295U, terminate, active, eligible);
 
-            EV << NOW << "LteMaxCI::schedule granted " << granted << " bytes to connection " << current.x_ << endl;
+            EV << NOW << "LteMaxCI::prepareSchedule granted " << granted << " bytes to connection " << current.x_ << endl;
         }
 
         // Exit immediately if the terminate flag is set.
@@ -140,12 +140,12 @@ void LteMaxCi::prepareSchedule()
         // Pop the descriptor from the score list if the active or eligible flag are clear.
         if (!active || !eligible) {
             score.pop();
-            EV << NOW << "LteMaxCI::schedule connection " << current.x_ << " was found ineligible" << endl;
+            EV << NOW << "LteMaxCI::prepareSchedule connection " << current.x_ << " was found ineligible" << endl;
         }
 
         // Set the connection as inactive if indicated by the grant.
         if (!active) {
-            EV << NOW << "LteMaxCI::schedule scheduling connection " << current.x_ << " set to inactive " << endl;
+            EV << NOW << "LteMaxCI::prepareSchedule scheduling connection " << current.x_ << " set to inactive " << endl;
 
             if (MacCidToNodeId(current.x_) <= BGUE_MIN_ID) {
                 carrierActiveConnectionSet_.erase(current.x_);

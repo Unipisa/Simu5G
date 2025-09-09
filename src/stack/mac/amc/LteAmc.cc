@@ -438,7 +438,7 @@ void LteAmc::pushFeedbackD2D(MacNodeId id, LteFeedback fb, MacNodeId peerId, dou
     // DEBUG
     EV << "PeerId: " << peerId << ", Antenna: " << dasToA(antenna) << ", TxMode: " << txMode << ", Index: " << index << endl;
     EV << "RECEIVED" << endl;
-    fb.print(NODEID_NONE, id, D2D, "LteAmc::pushFeedbackD2D");
+    fb.print(cellId_, id, D2D, "LteAmc::pushFeedbackD2D");
 }
 
 const LteSummaryFeedback& LteAmc::getFeedback(MacNodeId id, Remote antenna, TxMode txMode, const Direction dir, double carrierFrequency)
@@ -591,9 +591,9 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
         return 0;
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bits Node: " << id << "\n";
-    EV << NOW << " LteAmc::blocks2bits Band: " << b << "\n";
-    EV << NOW << " LteAmc::blocks2bits Direction: " << dirToA(dir) << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Node: " << id << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Band: " << b << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Direction: " << dirToA(dir) << "\n";
 
     // Acquiring current user scheduling information
     const UserTxParams& info = computeTxParams(id, dir, carrierFrequency);
@@ -605,7 +605,7 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
     for (Codeword cw = 0; cw < codewords; ++cw) {
         // if CQI == 0 the UE is out of range, thus bits=0
         if (info.readCqiVector().at(cw) == 0) {
-            EV << NOW << " LteAmc::blocks2bits - CQI equal to zero on cw " << cw << ", return no blocks available" << endl;
+            EV << NOW << " LteAmc::computeBitsOnNRbs - CQI equal to zero on cw " << cw << ", return no blocks available" << endl;
             continue;
         }
 
@@ -614,19 +614,19 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
         unsigned int i = (mod == _QPSK ? 0 : (mod == _16QAM ? 9 : (mod == _64QAM ? 15 : 0)));
 
         // DEBUG
-        EV << NOW << " LteAmc::blocks2bits ---::[ Codeword = " << cw << "\n";
-        EV << NOW << " LteAmc::blocks2bits Modulation: " << modToA(mod) << "\n";
-        EV << NOW << " LteAmc::blocks2bits iTbs: " << iTbs << "\n";
-        EV << NOW << " LteAmc::blocks2bits i: " << i << "\n";
-        EV << NOW << " LteAmc::blocks2bits CQI: " << info.readCqiVector().at(cw) << "\n";
+        EV << NOW << " LteAmc::computeBitsOnNRbs ---::[ Codeword = " << cw << "\n";
+        EV << NOW << " LteAmc::computeBitsOnNRbs Modulation: " << modToA(mod) << "\n";
+        EV << NOW << " LteAmc::computeBitsOnNRbs iTbs: " << iTbs << "\n";
+        EV << NOW << " LteAmc::computeBitsOnNRbs i: " << i << "\n";
+        EV << NOW << " LteAmc::computeBitsOnNRbs CQI: " << info.readCqiVector().at(cw) << "\n";
 
         const unsigned int *tbsVect = itbs2tbs(mod, info.readTxMode(), layers.at(cw), iTbs - i);
         bits += tbsVect[blocks - 1];
     }
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bits Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bits Available space: " << bits << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Resource Blocks: " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Available space: " << bits << "\n";
 
     return bits;
 }
@@ -634,23 +634,23 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, unsigned int blocks
 unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
     if (blocks > 110)                          // Safety check to avoid segmentation fault
-        throw cRuntimeError("LteAmc::blocks2bits(): Too many blocks");
+        throw cRuntimeError("LteAmc::computeBitsOnNRbs(): Too many blocks");
 
     if (blocks == 0)
         return 0;
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bits Node: " << id << "\n";
-    EV << NOW << " LteAmc::blocks2bits Band: " << b << "\n";
-    EV << NOW << " LteAmc::blocks2bits Codeword: " << cw << "\n";
-    EV << NOW << " LteAmc::blocks2bits Direction: " << dirToA(dir) << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Node: " << id << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Band: " << b << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Codeword: " << cw << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Direction: " << dirToA(dir) << "\n";
 
     // Acquiring current user scheduling information
     UserTxParams info = computeTxParams(id, dir, carrierFrequency);
 
     // if CQI == 0 the UE is out of range, thus return 0
     if (info.readCqiVector().at(cw) == 0) {
-        EV << NOW << " LteAmc::blocks2bits - CQI equal to zero, return no blocks available" << endl;
+        EV << NOW << " LteAmc::computeBitsOnNRbs - CQI equal to zero, return no blocks available" << endl;
         return 0;
     }
     unsigned char layers = info.getLayers().at(cw);
@@ -660,45 +660,45 @@ unsigned int LteAmc::computeBitsOnNRbs(MacNodeId id, Band b, Codeword cw, unsign
     unsigned int i = (mod == _QPSK ? 0 : (mod == _16QAM ? 9 : (mod == _64QAM ? 15 : 0)));
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bits Modulation: " << modToA(mod) << "\n";
-    EV << NOW << " LteAmc::blocks2bits iTbs: " << iTbs << "\n";
-    EV << NOW << " LteAmc::blocks2bits i: " << i << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Modulation: " << modToA(mod) << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs iTbs: " << iTbs << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs i: " << i << "\n";
 
     const unsigned int *tbsVect = itbs2tbs(mod, info.readTxMode(), layers, iTbs - i);
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bits Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bits Available space: " << tbsVect[blocks - 1] << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Resource Blocks: " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBitsOnNRbs Available space: " << tbsVect[blocks - 1] << "\n";
 
     return tbsVect[blocks - 1];
 }
 
 unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
-    EV << NOW << " LteAmc::blocks2bytes Node " << id << ", Band " << b << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Node " << id << ", Band " << b << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
 
     unsigned int bits = computeBitsOnNRbs(id, b, blocks, dir, carrierFrequency);
     unsigned int bytes = bits / 8;
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bytes Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bytes Available space: " << bits << "\n";
-    EV << NOW << " LteAmc::blocks2bytes Available space: " << bytes << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Resource Blocks: " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Available space: " << bits << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Available space: " << bytes << "\n";
 
     return bytes;
 }
 
 unsigned int LteAmc::computeBytesOnNRbs(MacNodeId id, Band b, Codeword cw, unsigned int blocks, const Direction dir, double carrierFrequency)
 {
-    EV << NOW << " LteAmc::blocks2bytes Node " << id << ", Band " << b << ", Codeword " << cw << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Node " << id << ", Band " << b << ", Codeword " << cw << ", direction " << dirToA(dir) << ", blocks " << blocks << "\n";
 
     unsigned int bits = computeBitsOnNRbs(id, b, cw, blocks, dir, carrierFrequency);
     unsigned int bytes = bits / 8;
 
     // DEBUG
-    EV << NOW << " LteAmc::blocks2bytes Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::blocks2bytes Available space: " << bits << "\n";
-    EV << NOW << " LteAmc::blocks2bytes Available space: " << bytes << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Resource Blocks: " << blocks << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Available space: " << bits << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs Available space: " << bytes << "\n";
 
     return bytes;
 }
@@ -712,8 +712,8 @@ unsigned int LteAmc::computeBytesOnNRbs_MB(MacNodeId id, Band b, unsigned int bl
 
     // DEBUG
     EV << NOW << " LteAmc::computeBytesOnNRbs_MB Resource Blocks: " << blocks << "\n";
-    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Available space: " << bits << "\n";
-    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Available space: " << bytes << "\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Available space: " << bits << " bits\n";
+    EV << NOW << " LteAmc::computeBytesOnNRbs_MB Available space: " << bytes << " bytes\n";
 
     return bytes;
 }
@@ -980,7 +980,7 @@ Cqi LteAmc::readWbCqi(const CqiVector& cqi)
     // consider the cqi of each band
     unsigned int bands = cqi.size();
     for (Band b = 0; b < bands; ++b) {
-        EV << "LteAmc::getWbCqi - Cqi " << cqi.at(b) << " on band " << (int)b << endl;
+        EV << "LteAmc::readWbCqi - Cqi " << cqi.at(b) << " on band " << (int)b << endl;
 
         cqiCounter += cqi.at(b);
         cqiMin = cqiMin < cqi.at(b) ? cqiMin : cqi.at(b);
@@ -1091,7 +1091,7 @@ Pmi LteAmc::readWbPmi(const PmiVector& pmi)
         throw cRuntimeError("LteAmc::readWbPmi(): Unknown weight %f", pmiComputationWeight_);
     }
 
-    EV << "LteAmc::getWbPmi - Pmi " << pmiRet << " evaluated\n";
+    EV << "LteAmc::readWbPmi - Pmi " << pmiRet << " evaluated\n";
 
     return pmiRet;
 }
@@ -1328,7 +1328,7 @@ void LteAmc::testUe(MacNodeId nodeId, Direction dir)
         numTxModes = UL_NUM_TXMODE;
     }
     else {
-        throw cRuntimeError("LteAmc::attachUser(): Unrecognized direction");
+        throw cRuntimeError("LteAmc::testUe(): Unrecognized direction");
     }
 
     unsigned int nodeIndex = (*nodeIndexMap).at(nodeId);
