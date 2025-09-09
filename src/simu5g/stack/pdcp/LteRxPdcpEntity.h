@@ -35,11 +35,18 @@ class LteRxPdcpEntity : public cSimpleModule
     // reference to the PDCP layer
     LtePdcpBase *pdcp_ = nullptr;
 
+    // whether headers are compressed
+    bool headerCompressionEnabled_;
+
     // Logical CID for this connection
     LogicalCid lcid_;
 
     // handler for PDCP SDU
     virtual void handlePdcpSdu(Packet *pkt);
+
+    virtual void decompressHeader(inet::Packet *pkt);
+
+    bool isCompressionEnabled() { return headerCompressionEnabled_; }
 
   public:
 

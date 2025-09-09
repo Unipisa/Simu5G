@@ -31,8 +31,6 @@ class LteRxPdcpEntity;
 
 class PacketFlowManagerBase;
 
-#define LTE_PDCP_HEADER_COMPRESSION_DISABLED    B(-1)
-
 struct ConnectionKey {
     inet::Ipv4Address srcAddr;
     inet::Ipv4Address dstAddr;
@@ -92,9 +90,6 @@ class LtePdcpBase : public cSimpleModule
     friend class DualConnectivityManager;
 
   protected:
-    // Header size after ROHC (RObust Header Compression)
-    inet::B headerCompressedSize_;
-
     // Modules references
     inet::ModuleRefByPar<Binder> binder_;
     inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
@@ -239,25 +234,6 @@ class LtePdcpBase : public cSimpleModule
      */
     LogicalCid lookupOrAssignLcid(const ConnectionKey& key);
 
-    /**
-     * headerCompress(): Performs header compression.
-     * At the moment, if header compression is enabled,
-     * simply decrements the HEADER size by the configured
-     * number of bytes
-     *
-     * @param Packet packet to compress
-     */
-    void headerCompress(inet::Packet *pkt);
-
-    /**
-     * headerDecompress(): Performs header decompression.
-     * At the moment, if header compression is enabled,
-     * simply restores the original packet size
-     *
-     * @param Packet packet to decompress
-     */
-    void headerDecompress(inet::Packet *pkt);
-
     /*
      * Functions to be implemented from derived classes
      */
@@ -282,8 +258,6 @@ class LtePdcpBase : public cSimpleModule
      */
     virtual Direction getDirection() = 0;
     void setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo);
-
-    bool isCompressionEnabled();
 
     /*
      * Upper Layer Handlers

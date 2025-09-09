@@ -26,10 +26,6 @@ Define_Module(LtePdcpEnb);
 using namespace omnetpp;
 using namespace inet;
 
-// We require a minimum length of 1 Byte for each header even in compressed state
-// (transport, network and ROHC header, i.e. minimum is 3 Bytes)
-#define MIN_COMPRESSED_HEADER_SIZE    B(3)
-
 // statistics
 simsignal_t LtePdcpBase::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
 simsignal_t LtePdcpBase::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
@@ -38,80 +34,6 @@ simsignal_t LtePdcpBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPac
 
 LtePdcpBase::~LtePdcpBase()
 {
-}
-
-bool LtePdcpBase::isCompressionEnabled()
-{
-    return headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED;
-}
-
-void LtePdcpBase::headerCompress(Packet *pkt)
-{
-    if (isCompressionEnabled()) {
-        auto ipHeader = pkt->removeAtFront<Ipv4Header>();
-
-        int transportProtocol = ipHeader->getProtocolId();
-        B transportHeaderCompressedSize = B(0);
-
-        auto rohcHeader = makeShared<LteRohcPdu>();
-        rohcHeader->setOrigSizeIpHeader(ipHeader->getHeaderLength());
-
-        if (IP_PROT_TCP == transportProtocol) {
-            auto tcpHeader = pkt->removeAtFront<tcp::TcpHeader>();
-            rohcHeader->setOrigSizeTransportHeader(tcpHeader->getHeaderLength());
-            tcpHeader->setChunkLength(B(1));
-            transportHeaderCompressedSize = B(1);
-            pkt->insertAtFront(tcpHeader);
-        }
-        else if (IP_PROT_UDP == transportProtocol) {
-            auto udpHeader = pkt->removeAtFront<UdpHeader>();
-            rohcHeader->setOrigSizeTransportHeader(inet::UDP_HEADER_LENGTH);
-            udpHeader->setChunkLength(B(1));
-            transportHeaderCompressedSize = B(1);
-            pkt->insertAtFront(udpHeader);
-        }
-        else {
-            EV_WARN << "LtePdcp : unknown transport header - cannot perform transport header compression";
-            rohcHeader->setOrigSizeTransportHeader(B(0));
-        }
-
-        ipHeader->setChunkLength(B(1));
-        pkt->insertAtFront(ipHeader);
-
-        rohcHeader->setChunkLength(headerCompressedSize_ - transportHeaderCompressedSize - B(1));
-        pkt->insertAtFront(rohcHeader);
-
-        EV << "LtePdcp : Header compression performed\n";
-    }
-}
-
-void LtePdcpBase::headerDecompress(Packet *pkt)
-{
-    if (isCompressionEnabled()) {
-        pkt->trim();
-        auto rohcHeader = pkt->removeAtFront<LteRohcPdu>();
-        auto ipHeader = pkt->removeAtFront<Ipv4Header>();
-        int transportProtocol = ipHeader->getProtocolId();
-
-        if (IP_PROT_TCP == transportProtocol) {
-            auto tcpHeader = pkt->removeAtFront<tcp::TcpHeader>();
-            tcpHeader->setChunkLength(rohcHeader->getOrigSizeTransportHeader());
-            pkt->insertAtFront(tcpHeader);
-        }
-        else if (IP_PROT_UDP == transportProtocol) {
-            auto udpHeader = pkt->removeAtFront<UdpHeader>();
-            udpHeader->setChunkLength(rohcHeader->getOrigSizeTransportHeader());
-            pkt->insertAtFront(udpHeader);
-        }
-        else {
-            EV_WARN << "LtePdcp : unknown transport header - cannot perform transport header decompression";
-        }
-
-        ipHeader->setChunkLength(rohcHeader->getOrigSizeIpHeader());
-        pkt->insertAtFront(ipHeader);
-
-        EV << "LtePdcp : Header decompression performed\n";
-    }
 }
 
 void LtePdcpBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo)
@@ -303,11 +225,6 @@ void LtePdcpBase::initialize(int stage)
         amSapOutGate_ = gate("AM_Sap$o", 0);
 
         binder_.reference(this, "binderModule", true);
-        headerCompressedSize_ = B(par("headerCompressedSize"));
-        if (headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED &&
-            headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE) {
-            throw cRuntimeError("Size of compressed header must not be less than %" PRId64 "B.", MIN_COMPRESSED_HEADER_SIZE.get());
-        }
 
         nodeId_ = MacNodeId(getContainingNode(this)->par("macNodeId").intValue());
 
@@ -333,7 +250,6 @@ void LtePdcpBase::initialize(int stage)
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
 
         // TODO WATCH_MAP(gatemap_);
-        WATCH(headerCompressedSize_);
         WATCH(nodeId_);
         WATCH(lcid_);
     }

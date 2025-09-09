@@ -23,6 +23,9 @@ class LtePdcpHeader;
 
 using namespace inet;
 
+
+#define LTE_PDCP_HEADER_COMPRESSION_DISABLED    B(-1)
+
 /**
  * @class LteTxPdcpEntity
  * @brief Entity for PDCP Layer
@@ -39,11 +42,18 @@ class LteTxPdcpEntity : public cSimpleModule
     // reference to the PDCP layer
     LtePdcpBase *pdcp_ = nullptr;
 
+    // Header size after ROHC (RObust Header Compression)
+    inet::B headerCompressedSize_;
+
     // next sequence number to be assigned
     unsigned int sno_ = 0;
 
     // deliver the PDCP PDU to the lower layer
     virtual void deliverPdcpPdu(Packet *pdcpPkt);
+
+    virtual void compressHeader(inet::Packet *pkt);
+
+    bool isCompressionEnabled() { return headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED; }
 
     virtual void setIds(inet::Ptr<FlowControlInfo> lteInfo);
 
