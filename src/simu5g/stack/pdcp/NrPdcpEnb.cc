@@ -61,6 +61,17 @@ MacCid NrPdcpEnb::analyzePacket(inet::Packet *pkt)
         lteInfo->setD2dRxPeerId(NODEID_NONE);
     }
 
+    // this is the body of former NrTxPdcpEntity::setIds()
+    if (lteInfo->getUseNR() && getNodeTypeById(getNodeId()) != ENODEB && getNodeTypeById(getNodeId()) != GNODEB)
+        lteInfo->setSourceId(getNrNodeId());
+    else
+        lteInfo->setSourceId(getNodeId());
+
+    if (lteInfo->getMulticastGroupId() > 0)                                               // destId is meaningless for multicast D2D (we use the id of the source for statistical purposes at lower levels)
+        lteInfo->setDestId(getNodeId());
+    else
+        lteInfo->setDestId(getDestId(lteInfo));
+
     // CID Request
     EV << "NrPdcpEnb : Received CID request for Traffic [ " << "Source: " << Ipv4Address(lteInfo->getSrcAddr())
        << " Destination: " << Ipv4Address(lteInfo->getDstAddr())

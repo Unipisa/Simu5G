@@ -106,6 +106,13 @@ MacCid LtePdcpBase::analyzePacket(inet::Packet *pkt)
     lteInfo->setSourceId(nodeId_);
     lteInfo->setDestId(destId);
 
+    // this is the body of former LteTxPdcpEntity::setIds()
+    lteInfo->setSourceId(getNodeId());
+    if (lteInfo->getMulticastGroupId() > 0)                                               // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
+        lteInfo->setDestId(getNodeId());
+    else
+        lteInfo->setDestId(getDestId(lteInfo));
+
     // obtain CID
     return MacCid(destId, lcid);
 }

@@ -58,19 +58,5 @@ void NrTxPdcpEntity::deliverPdcpPdu(Packet *pkt)
     }
 }
 
-void NrTxPdcpEntity::setIds(inet::Ptr<FlowControlInfo> lteInfo)
-{
-    if (lteInfo->getUseNR() && getNodeTypeById(pdcp_->getNodeId()) != ENODEB && getNodeTypeById(pdcp_->getNodeId()) != GNODEB)
-        lteInfo->setSourceId(pdcp_->getNrNodeId());
-    else
-        lteInfo->setSourceId(pdcp_->getNodeId());
-
-    if (lteInfo->getMulticastGroupId() > 0)                                               // destId is meaningless for multicast D2D (we use the id of the source for statistical purposes at lower levels)
-        lteInfo->setDestId(pdcp_->getNodeId());
-    else
-        lteInfo->setDestId(pdcp_->getDestId(lteInfo));
-}
-
-
 } //namespace
 
