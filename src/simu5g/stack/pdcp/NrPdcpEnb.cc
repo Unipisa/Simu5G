@@ -48,7 +48,6 @@ MacCid NrPdcpEnb::analyzePacket(inet::Packet *pkt)
     // using D2D, set D2D direction. Otherwise, set UL direction
     srcId = (lteInfo->getUseNR()) ? binder_->getNrMacNodeId(srcAddr) : binder_->getMacNodeId(srcAddr);
     destId = (lteInfo->getUseNR()) ? binder_->getNrMacNodeId(destAddr) : binder_->getMacNodeId(destAddr);   // get final destination
-    lteInfo->setDirection(getDirection());
 
     // check if src and dest of the flow are D2D-capable UEs (currently in IM)
     if (getNodeTypeById(srcId) == UE && getNodeTypeById(destId) == UE && binder_->getD2DCapability(srcId, destId)) {

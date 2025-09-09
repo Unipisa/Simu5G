@@ -61,7 +61,9 @@ void LtePdcpBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo>
         lteInfo->setRlcType(backgroundRlc_);
     }
 
-    lteInfo->setDirection(getDirection());
+    // direction of transmitted packets depends on node type
+    Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
+    lteInfo->setDirection(dir);
 }
 
 LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)

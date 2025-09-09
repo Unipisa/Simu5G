@@ -256,7 +256,6 @@ class LtePdcpBase : public cSimpleModule
      *
      * @return Direction of traffic
      */
-    virtual Direction getDirection() = 0;
     void setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo);
 
     /*
@@ -334,12 +333,6 @@ class LtePdcpUe : public LtePdcpBase
         return binder_->getNextHop(nodeId_);
     }
 
-    Direction getDirection() override
-    {
-        // Data coming from DataPort on UE are always Uplink
-        return UL;
-    }
-
   public:
     void initialize(int stage) override;
     void deleteEntities(MacNodeId nodeId) override;
@@ -371,12 +364,6 @@ class LtePdcpEnb : public LtePdcpBase
         }
         // else UE is directly attached
         return destId;
-    }
-
-    Direction getDirection() override
-    {
-        // Data coming from DataPort on ENB are always Downlink
-        return DL;
     }
 
   public:
