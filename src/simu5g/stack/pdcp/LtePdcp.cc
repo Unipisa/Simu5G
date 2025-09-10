@@ -36,30 +36,55 @@ LtePdcpBase::~LtePdcpBase()
 {
 }
 
+ApplicationType LtePdcpBase::getApplication(cPacket *pkt)
+{
+    if ((strcmp(pkt->getName(), "VoIP")) == 0)
+        return VOIP;
+    else if ((strcmp(pkt->getName(), "gaming")) == 0)
+        return GAMING;
+    else if ((strcmp(pkt->getName(), "VoDPacket") == 0) || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
+        return VOD;
+    else
+        return CBR;
+}
+
+LteTrafficClass LtePdcpBase::getTrafficCategory(cPacket *pkt)
+{
+    if ((strcmp(pkt->getName(), "VoIP")) == 0)
+        return CONVERSATIONAL;
+    else if ((strcmp(pkt->getName(), "gaming")) == 0)
+        return INTERACTIVE;
+    else if ((strcmp(pkt->getName(), "VoDPacket") == 0) || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
+        return STREAMING;
+    else
+        return BACKGROUND;
+}
+
+LteRlcType LtePdcpBase::getRlcType(LteTrafficClass trafficCategory)
+{
+    switch (trafficCategory) {
+        case CONVERSATIONAL:
+            return conversationalRlc_;
+        case INTERACTIVE:
+            return interactiveRlc_;
+        case STREAMING:
+            return streamingRlc_;
+        case BACKGROUND:
+            return backgroundRlc_;
+        default:
+            return backgroundRlc_;  // fallback
+    }
+}
+
 void LtePdcpBase::setTrafficInformation(cPacket *pkt, inet::Ptr<FlowControlInfo> lteInfo)
 {
-    if ((strcmp(pkt->getName(), "VoIP")) == 0) {
-        lteInfo->setApplication(VOIP);
-        lteInfo->setTraffic(CONVERSATIONAL);
-        lteInfo->setRlcType(conversationalRlc_);
-    }
-    else if ((strcmp(pkt->getName(), "gaming")) == 0) {
-        lteInfo->setApplication(GAMING);
-        lteInfo->setTraffic(INTERACTIVE);
-        lteInfo->setRlcType(interactiveRlc_);
-    }
-    else if ((strcmp(pkt->getName(), "VoDPacket") == 0)
-             || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
-    {
-        lteInfo->setApplication(VOD);
-        lteInfo->setTraffic(STREAMING);
-        lteInfo->setRlcType(streamingRlc_);
-    }
-    else {
-        lteInfo->setApplication(CBR);
-        lteInfo->setTraffic(BACKGROUND);
-        lteInfo->setRlcType(backgroundRlc_);
-    }
+    ApplicationType application = getApplication(pkt);
+    LteTrafficClass trafficCategory = getTrafficCategory(pkt);
+    LteRlcType rlcType = getRlcType(trafficCategory);
+
+    lteInfo->setApplication(application);
+    lteInfo->setTraffic(trafficCategory);
+    lteInfo->setRlcType(rlcType);
 
     // direction of transmitted packets depends on node type
     Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
