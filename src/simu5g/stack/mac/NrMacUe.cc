@@ -332,27 +332,22 @@ void NrMacUe::macPduMake(MacCid cid)
                     // Call the appropriate function for making a BSR for D2D communication
                     Packet *macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    if (info != nullptr) {
-                        info->setCarrierFrequency(carrierFreq);
-                        info->setUserTxParams(gitem.second->getUserTxParams()->dup());
-                        if (bsrD2DMulticastTriggered_) {
-                            info->setLcid(D2D_MULTI_SHORT_BSR);
-                            bsrD2DMulticastTriggered_ = false;
-                        }
-                        else
-                            info->setLcid(D2D_SHORT_BSR);
+                    info->setCarrierFrequency(carrierFreq);
+                    info->setUserTxParams(gitem.second->getUserTxParams()->dup());
+                    if (bsrD2DMulticastTriggered_) {
+                        info->setLcid(D2D_MULTI_SHORT_BSR);
+                        bsrD2DMulticastTriggered_ = false;
                     }
+                    else
+                        info->setLcid(D2D_SHORT_BSR);
 
                     // Add the created BSR to the PDU List
-                    if (macPktBsr != nullptr) {
-                        LteChannelModel *channelModel = phy_->getChannelModel();
-                        if (channelModel == nullptr)
-                            throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer");
-                        else
-                            macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
-                        bsrAlreadyMade = true;
-                        EV << "NrMacUe::macPduMake - BSR D2D created with size " << sizeBsr << " created" << endl;
-                    }
+                    LteChannelModel *channelModel = phy_->getChannelModel();
+                    if (channelModel == nullptr)
+                        throw cRuntimeError("NrMacUe::macPduMake - channel model is a null pointer");
+                    macPduList_[channelModel->getCarrierFrequency()][{getMacCellId(), 0}] = macPktBsr;
+                    bsrAlreadyMade = true;
+                    EV << "NrMacUe::macPduMake - BSR D2D created with size " << sizeBsr << " created" << endl;
 
                     bsrRtxTimer_ = bsrRtxTimerStart_;  // this prevents the UE from sending an unnecessary RAC request
                 }
