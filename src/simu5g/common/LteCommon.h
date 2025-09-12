@@ -518,26 +518,6 @@ bool checkIfHeaderType(const inet::Packet *pkt, bool checkFirst = false) {
     return false;
 }
 
-template<typename T>
-std::vector<T> getTagsWithInherit(inet::Packet *pkt)
-{
-    std::vector<T> t;
-    auto tags = pkt->getTags();
-    if (tags.getNumTags() == 0)
-        return t;
-
-    // check if a tag that is derived from this exists.
-    //
-    for (int i = 0; i < tags.getNumTags(); i++) {
-        auto tag = tags.getTagForUpdate(i);
-        auto temp = inet::dynamicPtrCast<T>(tag);
-        if (temp != nullptr) {
-            t.push_back(*temp.get());
-        }
-    }
-    return t;
-}
-
 } //namespace
 
 #endif

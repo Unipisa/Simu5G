@@ -224,13 +224,9 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     auto pkt = check_and_cast<Packet *>(connDescOut_[destCid].queue->popFront());
 
                     // multicast support
-                    // this trick gets the group ID from the MAC SDU and sets item in the MAC PDU
-                    auto infoVec = getTagsWithInherit<LteControlInfo>(pkt);
-
-                    if (infoVec.empty())
-                        throw cRuntimeError("No tag of type LteControlInfo found");
-
-                    int32_t groupId = infoVec.front().getMulticastGroupId();
+                    // this trick gets the group ID from the MAC SDU and sets it in the MAC PDU
+                    auto flowInfo = pkt->getTag<FlowControlInfo>();
+                    int32_t groupId = flowInfo->getMulticastGroupId();
                     if (groupId >= 0) // for unicast, group id is -1
                         macPkt->getTagForUpdate<UserControlInfo>()->setMulticastGroupId(groupId);
 
