@@ -54,6 +54,7 @@ class LteMacEnb : public LteMacBase
     /*******************************************************************************************/
 
     /// Buffer for the BSRs
+    /// In the key (MacCid), lcid is a BsrType: one of SHORT_BSR, D2D_SHORT_BSR, D2D_MULTI_SHORT_BSR.
     std::map<MacCid, LteMacBuffer*> bsrbuf_;
 
     /// Lte Mac Scheduler - Downlink
