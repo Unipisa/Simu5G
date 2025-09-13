@@ -358,8 +358,9 @@ void LtePdcpEnb::deleteEntities(MacNodeId nodeId)
 
     // delete connections related to the given UE
     for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        if (tit->first.getNodeId() == nodeId) {
-            tit->second->deleteModule();
+        auto& [cid, txEntity] = *tit;
+        if (cid.getNodeId() == nodeId) {
+            txEntity->deleteModule();
             tit = txEntities_.erase(tit);
         }
         else {
@@ -368,8 +369,9 @@ void LtePdcpEnb::deleteEntities(MacNodeId nodeId)
     }
 
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        if (rit->first.getNodeId() == nodeId) {
-            rit->second->deleteModule();
+        auto& [cid, rxEntity] = *rit;
+        if (cid.getNodeId() == nodeId) {
+            rxEntity->deleteModule();
             rit = rxEntities_.erase(rit);
         }
         else {

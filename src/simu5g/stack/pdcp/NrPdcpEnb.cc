@@ -167,12 +167,11 @@ void NrPdcpEnb::receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode)
 
 void NrPdcpEnb::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    for (const auto& entity : rxEntities_) {
-        MacNodeId nodeId = entity.first.getNodeId();
-        if (!(entity.second->isEmpty()))
+    for (const auto& [cid, rxEntity] : rxEntities_) {
+        MacNodeId nodeId = cid.getNodeId();
+        if (!(rxEntity->isEmpty()))
             ueSet->insert(nodeId);
     }
 }
 
 } //namespace
-

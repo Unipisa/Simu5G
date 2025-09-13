@@ -115,10 +115,10 @@ bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLi
             HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
             if (harqBuffersMirrorD2D != nullptr) {
                 for (auto it_d2d = harqBuffersMirrorD2D->begin(); it_d2d != harqBuffersMirrorD2D->end(); ) {
-
+                    auto& [d2dPair, currHarq] = *it_d2d;
                     // get current nodeIDs
-                    MacNodeId senderId = (it_d2d->first).first; // Transmitter
-                    MacNodeId destId = (it_d2d->first).second;  // Receiver
+                    MacNodeId senderId = d2dPair.first; // Transmitter
+                    MacNodeId destId = d2dPair.second;  // Receiver
 
                     if (senderId == NODEID_NONE || binder_->getOmnetId(senderId) == 0) {
                         // UE has left the simulation - erase queue and continue
@@ -130,8 +130,6 @@ bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLi
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
                     }
-
-                    LteHarqBufferMirrorD2D *currHarq = it_d2d->second;
 
                     // Get user transmission parameters
                     const UserTxParams& txParams = mac_->getAmc()->computeTxParams(senderId, dir, carrierFrequency);// get the user info

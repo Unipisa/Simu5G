@@ -117,10 +117,10 @@ void EventGenerator::computeTargetNodeSet(std::set<MacNodeId>& targetSet, MacNod
         inet::Coord srcCoord = uePos[sourceId];
 
         // compute the distance for each UE
-        for (auto& mit : uePos) {
-            if (mit.second.distance(srcCoord) < maxBroadcastRadius) {
-                EV << " - " << mit.first << endl;
-                targetSet.insert(mit.first);
+        for (auto& [nodeId, pos] : uePos) {
+            if (pos.distance(srcCoord) < maxBroadcastRadius) {
+                EV << " - " << nodeId << endl;
+                targetSet.insert(nodeId);
             }
         }
     }

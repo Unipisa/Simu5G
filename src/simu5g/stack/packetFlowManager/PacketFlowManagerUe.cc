@@ -302,10 +302,10 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         // set the pdcp pdus related to this RLC as sent over the air since this method is called after the MAC ID
         // has been inserted in the HARQBuffer
         SequenceNumberSet pdcpSet = tit->second;
-        for (auto pit : pdcpSet) {
-            auto sdit = desc->pdcpStatus_.find(pit);
+        for (auto pdcpSno : pdcpSet) {
+            auto sdit = desc->pdcpStatus_.find(pdcpSno);
             if (sdit == desc->pdcpStatus_.end())
-                throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen", pfmType.c_str(), pit);
+                throw cRuntimeError("%s::insertMacPdu - PdcpStatus for PDCP sno [%d] not present, this should not happen", pfmType.c_str(), pdcpSno);
             sdit->second.sentOverTheAir = true;
         }
     }

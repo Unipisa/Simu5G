@@ -396,7 +396,7 @@ bool LteSchedulerEnbDl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
         // examination of HARQ process in rtx status, adding them to scheduling list
         for (auto it = harqQueues->begin(); it != harqQueues->end(); ) {
             // For each UE
-            MacNodeId nodeId = it->first;
+            auto& [nodeId, currHarq] = *it;
 
             OmnetId id = binder_->getOmnetId(nodeId);
             if (id == 0) {
@@ -404,7 +404,6 @@ bool LteSchedulerEnbDl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
                 it = harqQueues->erase(it);
                 continue;
             }
-            LteHarqBufferTx *currHarq = it->second;
             std::vector<LteHarqProcessTx *> *processes = currHarq->getHarqProcesses();
 
             // Get user transmission parameters
@@ -492,8 +491,8 @@ bool LteSchedulerEnbDl::rtxscheduleBackground(GHz carrierFrequency, BandLimitVec
     }
 
     // consume bytes
-    for (auto & it : bgScheduledRtx)
-        bgTrafficManager->consumeBackloggedUeBytes(it.first, it.second, direction_, true); // in bytes
+    for (auto& [bgUeId, scheduledBytes] : bgScheduledRtx)
+        bgTrafficManager->consumeBackloggedUeBytes(bgUeId, scheduledBytes, direction_, true); // in bytes
 
     unsigned int availableBlocks = allocator_->computeTotalRbs();
     EV << " LteSchedulerEnbDl::rtxscheduleBackground OFDM Space: " << availableBlocks << endl;

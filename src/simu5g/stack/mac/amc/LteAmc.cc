@@ -101,11 +101,11 @@ void LteAmc::printFbhb(Direction dir)
 
     for (auto& [carrier, hist] : *history) { // for each antenna
         EV << simTime() << " # Carrier: " << carrier << "\n";
-        for (auto& histItem : hist) {
-            EV << simTime() << " # Remote: " << dasToA(histItem.first) << "\n";
-            for (size_t i = 0; i < histItem.second.size(); i++) { // for each UE
+        for (auto& [remote, remoteHist] : hist) {
+            EV << simTime() << " # Remote: " << dasToA(remote) << "\n";
+            for (size_t i = 0; i < remoteHist.size(); i++) { // for each UE
                 EV << "Ue index: " << i << ", MacNodeId: " << (*revIndex)[i] << endl;
-                auto& txVec = histItem.second[i];
+                auto& txVec = remoteHist[i];
                 for (size_t t = 0; t < txVec.size(); t++) { // for each tx mode
                     TxMode txMode = TxMode(t);
 
@@ -1137,28 +1137,28 @@ void LteAmc::detachUser(MacNodeId nodeId, Direction dir)
 
         // clear feedback data from history
         if (dir == UL || dir == DL) {
-            for (auto& hit : *history) {
+            for (auto& [carrierFreq, hist] : *history) {
                 for (auto remote : remoteSet_) {
-                    hit.second.at(remote).at(nodeIndex).clear();
+                    hist.at(remote).at(nodeIndex).clear();
                 }
             }
         }
         else { // D2D
-            for (auto& hit : *d2dHistory) {
-                for (auto& ht : hit.second) {
-                    if (ht.first == NODEID_NONE)                                          // skip fake UE 0
+            for (auto& [carrierFreq, carrierHist] : *d2dHistory) {
+                for (auto& [peerId, peerHist] : carrierHist) {
+                    if (peerId == NODEID_NONE)                                          // skip fake UE 0
                         continue;
 
                     for (auto remote : remoteSet_) {
-                        ht.second.at(remote).at(nodeIndex).clear();
+                        peerHist.at(remote).at(nodeIndex).clear();
                     }
                 }
             }
         }
 
         // clear user transmission parameters for this UE
-        for (auto& item : *userInfoVec) {
-            item.second.at(nodeIndex).restoreDefaultValues();
+        for (auto& [carrierFreq, txParams] : *userInfoVec) {
+            txParams.at(nodeIndex).restoreDefaultValues();
         }
     }
     catch (std::exception& e) {

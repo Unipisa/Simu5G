@@ -267,8 +267,8 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
         if (freqIt != harqRxBuffers_->end()) {
             auto& rxBufferForCarrierFrequency = freqIt->second;
             for (auto it = rxBufferForCarrierFrequency.begin(); it != rxBufferForCarrierFrequency.end(); ) {
-                // get current nodeId
-                MacNodeId nodeId = it->first;
+                // get current nodeId and buffer
+                auto& [nodeId, harqBuffer] = *it;
 
                 if (nodeId == NODEID_NONE) {
                     // UE has left the simulation - erase queue and continue
@@ -286,8 +286,8 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
 
                 // check whether the UE has a H-ARQ process waiting for retransmission. If not, skip UE.
                 bool skip = true;
-                unsigned char acid = (currentAcid + 2) % (it->second->getProcesses());
-                LteHarqProcessRx *currentProcess = it->second->getProcess(acid);
+                unsigned char acid = (currentAcid + 2) % (harqBuffer->getProcesses());
+                LteHarqProcessRx *currentProcess = harqBuffer->getProcess(acid);
                 std::vector<RxUnitStatus> procStatus = currentProcess->getProcessStatus();
                 for (const auto& status : procStatus) {
                     if (status.second == RXHARQ_PDU_CORRUPTED) {
@@ -328,8 +328,9 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
             HarqBuffersMirrorD2D *harqBuffersMirrorD2D = check_and_cast<LteMacEnbD2D *>(mac_.get())->getHarqBuffersMirrorD2D(carrierFrequency);
             if (harqBuffersMirrorD2D != nullptr) {
                 for (auto it_d2d = harqBuffersMirrorD2D->begin(); it_d2d != harqBuffersMirrorD2D->end(); ) {
-                    MacNodeId senderId = (it_d2d->first).first; // Transmitter
-                    MacNodeId destId = (it_d2d->first).second;  // Receiver
+                    auto& [d2dPair, harqBufferMirror] = *it_d2d;
+                    MacNodeId senderId = d2dPair.first; // Transmitter
+                    MacNodeId destId = d2dPair.second;  // Receiver
 
                     if (senderId == NODEID_NONE || binder_->getOmnetId(senderId) == 0) {
                         // UE has left the simulation - erase queue and continue
@@ -347,8 +348,8 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
 
                     // check whether the UE has a H-ARQ process waiting for retransmission. If not, skip UE.
                     bool skip = true;
-                    unsigned char acid = (currentAcid + 2) % (it_d2d->second->getProcesses());
-                    LteHarqProcessMirrorD2D *currentProcess = it_d2d->second->getProcess(acid);
+                    unsigned char acid = (currentAcid + 2) % (harqBufferMirror->getProcesses());
+                    LteHarqProcessMirrorD2D *currentProcess = harqBufferMirror->getProcess(acid);
                     std::vector<TxHarqPduStatus> procStatus = currentProcess->getProcessStatus();
                     for (const auto& status : procStatus) {
                         if (status == TXHARQ_PDU_BUFFERED) {
@@ -419,8 +420,8 @@ bool LteSchedulerEnbUl::rtxscheduleBackground(GHz carrierFrequency, BandLimitVec
         }
 
         // consume bytes
-        for (auto & it : bgScheduledRtx)
-            bgTrafficManager->consumeBackloggedUeBytes(it.first, it.second, direction_, true); // in bytes
+        for (auto& [bgUeId, scheduledBytes] : bgScheduledRtx)
+            bgTrafficManager->consumeBackloggedUeBytes(bgUeId, scheduledBytes, direction_, true); // in bytes
 
         int availableBlocks = allocator_->computeTotalRbs();
 

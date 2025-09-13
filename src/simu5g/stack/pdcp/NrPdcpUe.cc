@@ -158,8 +158,9 @@ void NrPdcpUe::deleteEntities(MacNodeId nodeId)
     // delete connections related to the given master nodeB only
     // (the UE might have dual connectivity enabled)
     for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        if (tit->first.getNodeId() == nodeId) {
-            tit->second->deleteModule();  // Delete Entity
+        auto& [cid, txEntity] = *tit;
+        if (cid.getNodeId() == nodeId) {
+            txEntity->deleteModule();  // Delete Entity
             tit = txEntities_.erase(tit);       // Delete Element
         }
         else {
@@ -167,8 +168,9 @@ void NrPdcpUe::deleteEntities(MacNodeId nodeId)
         }
     }
     for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        if (rit->first.getNodeId() == nodeId) {
-            rit->second->deleteModule();  // Delete Entity
+        auto& [cid, rxEntity] = *rit;
+        if (cid.getNodeId() == nodeId) {
+            rxEntity->deleteModule();  // Delete Entity
             rit = rxEntities_.erase(rit);       // Delete Element
         }
         else

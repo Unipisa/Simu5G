@@ -158,33 +158,33 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
 void BaseStationStatsCollector::resetDiscardCounterPerUe()
 {
     EV << collectorType_ << "::resetDiscardCounterPerUe " << endl;
-    for (auto const& ue : ueCollectors_) {
-        packetFlowManager_->resetDiscardCounterPerUe(ue.first);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        packetFlowManager_->resetDiscardCounterPerUe(ueId);
     }
 }
 
 void BaseStationStatsCollector::resetDelayCounterPerUe()
 {
     EV << collectorType_ << "::resetDelayCounterPerUe " << endl;
-    for (auto const& ue : ueCollectors_) {
-        packetFlowManager_->resetDelayCounterPerUe(ue.first);
-        ue.second->resetDelayCounter();
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        packetFlowManager_->resetDelayCounterPerUe(ueId);
+        ueCollector->resetDelayCounter();
     }
 }
 
 void BaseStationStatsCollector::resetThroughputCountersPerUe()
 {
     EV << collectorType_ << "::resetThroughputCountersPerUe " << endl;
-    for (auto const& ue : ueCollectors_) {
-        packetFlowManager_->resetThroughputCounterPerUe(ue.first);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        packetFlowManager_->resetThroughputCounterPerUe(ueId);
     }
 }
 
 void BaseStationStatsCollector::resetBytesCountersPerUe()
 {
     EV << collectorType_ << "::resetBytesCountersPerUe " << endl;
-    for (auto const& ue : ueCollectors_) {
-        packetFlowManager_->resetDataVolume(ue.first);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        packetFlowManager_->resetDataVolume(ueId);
     }
 }
 
@@ -273,8 +273,8 @@ void BaseStationStatsCollector::add_ul_nongbr_pdr_cell()
     DiscardedPkts pair = { 0, 0 };
     DiscardedPkts temp = { 0, 0 };
 
-    for (auto const& ue : ueCollectors_) {
-        temp = ue.second->getULDiscardedPkt();
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        temp = ueCollector->getULDiscardedPkt();
         pair.discarded += temp.discarded;
         pair.total += temp.total;
     }
@@ -294,25 +294,25 @@ void BaseStationStatsCollector::add_dl_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_pdr_cell_perUser()" << endl;
     double discard;
-    for (auto const& ue : ueCollectors_) {
-        discard = packetFlowManager_->getDiscardedPktPerUe(ue.first);
-        ue.second->add_dl_nongbr_pdr_ue((int)discard);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        discard = packetFlowManager_->getDiscardedPktPerUe(ueId);
+        ueCollector->add_dl_nongbr_pdr_ue((int)discard);
     }
 }
 
 void BaseStationStatsCollector::add_ul_nongbr_pdr_cell_perUser()
 {
     EV << collectorType_ << "::add_ul_nongbr_pdr_cell_perUser()" << endl;
-    for (auto const& ue : ueCollectors_) {
-        ue.second->add_ul_nongbr_pdr_ue();
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        ueCollector->add_ul_nongbr_pdr_ue();
     }
 }
 
 void BaseStationStatsCollector::add_ul_nongbr_delay_perUser()
 {
     EV << collectorType_ << "::add_ul_nongbr_delay_perUser()" << endl;
-    for (auto const& ue : ueCollectors_) {
-        ue.second->add_ul_nongbr_delay_ue();
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        ueCollector->add_ul_nongbr_delay_ue();
     }
 }
 
@@ -320,11 +320,11 @@ void BaseStationStatsCollector::add_dl_nongbr_delay_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_delay_perUser()" << endl;
     double delay;
-    for (auto const& ue : ueCollectors_) {
-        delay = packetFlowManager_->getDelayStatsPerUe(ue.first);
-        EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ue.first << endl;
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        delay = packetFlowManager_->getDelayStatsPerUe(ueId);
+        EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ueId << endl;
         if (delay != 0) {
-            ue.second->add_dl_nongbr_delay_ue((int)delay);
+            ueCollector->add_dl_nongbr_delay_ue((int)delay);
         }
     }
 }
@@ -333,10 +333,10 @@ void BaseStationStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
 {
     EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
-    for (auto const& ue : ueCollectors_) {
-        bytes = packetFlowManager_->getDataVolume(ue.first, UL);
-        EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser - received: " << bytes << "B in UL from node id: " << ue.first << endl;
-        ue.second->add_ul_nongbr_data_volume_ue(bytes);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        bytes = packetFlowManager_->getDataVolume(ueId, UL);
+        EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser - received: " << bytes << "B in UL from node id: " << ueId << endl;
+        ueCollector->add_ul_nongbr_data_volume_ue(bytes);
     }
 }
 
@@ -344,10 +344,10 @@ void BaseStationStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
-    for (auto const& ue : ueCollectors_) {
-        bytes = packetFlowManager_->getDataVolume(ue.first, DL);
-        EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser - sent: " << bytes << "B in DL to node id: " << ue.first << endl;
-        ue.second->add_dl_nongbr_data_volume_ue(bytes);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        bytes = packetFlowManager_->getDataVolume(ueId, DL);
+        EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser - sent: " << bytes << "B in DL to node id: " << ueId << endl;
+        ueCollector->add_dl_nongbr_data_volume_ue(bytes);
     }
 }
 
@@ -355,12 +355,12 @@ void BaseStationStatsCollector::add_dl_nongbr_throughput_ue_perUser()
 {
     EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser" << endl;
     double throughput;
-    for (auto const& ue : ueCollectors_) {
-        throughput = packetFlowManager_->getThroughputStatsPerUe(ue.first);
-        EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser - throughput: " << throughput << " for node " << ue.first << endl;
-        packetFlowManager_->resetThroughputCounterPerUe(ue.first);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        throughput = packetFlowManager_->getThroughputStatsPerUe(ueId);
+        EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser - throughput: " << throughput << " for node " << ueId << endl;
+        packetFlowManager_->resetThroughputCounterPerUe(ueId);
         if (throughput > 0.0)
-            ue.second->add_dl_nongbr_throughput_ue((int)throughput);
+            ueCollector->add_dl_nongbr_throughput_ue((int)throughput);
     }
 }
 
@@ -368,12 +368,12 @@ void BaseStationStatsCollector::add_ul_nongbr_throughput_ue_perUser()
 {
     EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser" << endl;
     double throughput;
-    for (auto const& ue : ueCollectors_) {
-        throughput = rlc_->getUeThroughput(ue.first);
-        EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser - throughput: " << throughput << " for node " << ue.first << endl;
-        rlc_->resetThroughputStats(ue.first);
+    for (auto const& [ueId, ueCollector] : ueCollectors_) {
+        throughput = rlc_->getUeThroughput(ueId);
+        EV << collectorType_ << "::add_ul_nongbr_throughput_ue_perUser - throughput: " << throughput << " for node " << ueId << endl;
+        rlc_->resetThroughputStats(ueId);
         if (throughput > 0.0)
-            ue.second->add_ul_nongbr_throughput_ue((int)throughput);
+            ueCollector->add_ul_nongbr_throughput_ue((int)throughput);
     }
 }
 
