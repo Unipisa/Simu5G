@@ -198,15 +198,15 @@ int LteMacUe::macSduRequest()
     }
 
     // Ask for a MAC sdu for each scheduled user on each codeword
-    for (auto& cit : scheduleList_) {
+    for (auto& [carrierFreq, scheduleList] : scheduleList_) {
         LteMacScheduleList::const_iterator it;
-        for (const auto& it : *cit.second) {
+        for (const auto& it : *scheduleList) {
             MacCid destCid = it.first.first;
             Codeword cw = it.first.second;
             MacNodeId destId = destCid.getNodeId();
 
             auto key = std::make_pair(destCid, cw);
-            LteMacScheduleList *scheduledBytesList = lcgScheduler_[cit.first]->getScheduledBytesList();
+            LteMacScheduleList *scheduledBytesList = lcgScheduler_[carrierFreq]->getScheduledBytesList();
             auto bit = scheduledBytesList->find(key);
 
             // consume bytes on this codeword
@@ -584,11 +584,11 @@ void LteMacUe::handleSelfMessage()
     EV << "----- UE MAIN LOOP -----" << endl;
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
-    for (auto& mit : harqRxBuffers_) {
+    for (auto& [carrierFreq, harqRxBuffer] : harqRxBuffers_) {
         std::list<Packet *> pduList;
 
-        for (auto& hit : mit.second) {
-            pduList = hit.second->extractCorrectPdus();
+        for (auto& [nodeId, harqBuffer] : harqRxBuffer) {
+            pduList = harqBuffer->extractCorrectPdus();
             while (!pduList.empty()) {
                 auto pdu = pduList.front();
                 pduList.pop_front();
@@ -671,16 +671,13 @@ void LteMacUe::handleSelfMessage()
 
         bool retx = false;
 
-        for (auto& mtit : harqTxBuffers_) {
-            GHz carrierFrequency = mtit.first;
-
+        for (auto& [carrierFrequency, harqTxBuffer] : harqTxBuffers_) {
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            for (auto& it2 : mtit.second) {
+            for (auto& [nodeId, currHarq] : harqTxBuffer) {
                 EV << "\t Looking for retransmission in ACID " << (unsigned int)currentHarq_ << endl;
-                LteHarqBufferTx *currHarq = it2.second;
 
                 // check if the current process has units ready for retransmission
                 retx = currHarq->getProcess(currentHarq_)->hasReadyUnits();
@@ -911,15 +908,15 @@ void LteMacUe::updateUserTxParam(cPacket *pktAux)
 void LteMacUe::flushHarqBuffers()
 {
     // send the selected units to lower layers
-    for (auto& mtit : harqTxBuffers_) {
-        for (auto& it2 : mtit.second)
-            it2.second->sendSelectedDown();
+    for (auto& [carrierFreq, harqTxBuffer] : harqTxBuffers_) {
+        for (auto& [nodeId, harqBuffer] : harqTxBuffer)
+            harqBuffer->sendSelectedDown();
     }
 
     // deleting non-periodic grant
-    for (auto& git : schedulingGrant_) {
-        if (git.second != nullptr && !(git.second->getPeriodic())) {
-            git.second = nullptr;
+    for (auto& [carrierFreq, grant] : schedulingGrant_) {
+        if (grant != nullptr && !(grant->getPeriodic())) {
+            grant = nullptr;
         }
     }
 }

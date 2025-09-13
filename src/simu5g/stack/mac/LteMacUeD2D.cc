@@ -95,13 +95,12 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
     bool bsrAlreadyMade = false;
     // UE is in D2D mode but it received an UL grant (for BSR)
-    for (auto& gitem : schedulingGrant_) {
-        if (gitem.second != nullptr && gitem.second->getDirection() == UL && emptyScheduleList_) {
+    for (auto& [carrierFreq, grant] : schedulingGrant_) {
+        if (grant != nullptr && grant->getDirection() == UL && emptyScheduleList_) {
             if (bsrTriggered_ || bsrD2DMulticastTriggered_) {
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
-                for (const auto& itbsr : connDescOut_) {
-                    const OutgoingConnectionInfo& connInfo = itbsr.second;
+                for (const auto& [cid, connInfo] : connDescOut_) {
                     Direction connDir = (Direction)connInfo.flowInfo.getDirection();
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
@@ -125,9 +124,8 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                     // Call the appropriate function to make a BSR for a D2D communication
                     auto macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
-                    GHz carrierFreq = gitem.first;
                     info->setCarrierFrequency(carrierFreq);
-                    info->setUserTxParams(gitem.second->getUserTxParams()->dup());
+                    info->setUserTxParams(grant->getUserTxParams()->dup());
                     if (bsrD2DMulticastTriggered_) {
                         info->setLcid(D2D_MULTI_SHORT_BSR);
                         bsrD2DMulticastTriggered_ = false;
@@ -259,18 +257,16 @@ void LteMacUeD2D::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-    for (auto& lit : macPduList_) {
-        GHz carrierFreq = lit.first;
-
+    for (auto& [carrierFreq, macPduMap] : macPduList_) {
         if (harqTxBuffers_.find(carrierFreq) == harqTxBuffers_.end()) {
             HarqTxBuffers newHarqTxBuffers;
             harqTxBuffers_[carrierFreq] = newHarqTxBuffers;
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        for (auto& pit : lit.second) {
-            MacNodeId destId = pit.first.first;
-            Codeword cw = pit.first.second;
+        for (auto& [pktId, macPkt] : macPduMap) {
+            MacNodeId destId = pktId.first;
+            Codeword cw = pktId.second;
 
             // Check if the HarqTx buffer already exists for the destId
             // Get a reference for the destId TXBuffer
@@ -283,7 +279,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 // The tx buffer does not exist yet for this mac node id, create one
                 LteHarqBufferTx *hb;
                 // FIXME: hb is never deleted
-                auto info = pit.second->getTag<UserControlInfo>();
+                auto info = macPkt->getTag<UserControlInfo>();
 
                 if (info->getDirection() == UL) {
                     hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
@@ -299,8 +295,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
             UnitList txList = txBuf->getEmptyUnits(currentHarq_);
             EV << "LteMacUeD2D::macPduMake - [Used Acid=" << (unsigned int)txList.first << "] , [curr=" << (unsigned int)currentHarq_ << "]" << endl;
 
-            // Get a reference of the LteMacPdu from pit pointer (extract PDU from the MAP)
-            auto macPkt = pit.second;
+            // macPkt is already available from the structured binding above
 
             // BSR related operations
 
@@ -590,9 +585,9 @@ void LteMacUeD2D::handleSelfMessage()
     EV << "----- UE MAIN LOOP -----" << endl;
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
-    for (auto& mit : harqRxBuffers_) {
-        for (auto& hit : mit.second) {
-            std::list<Packet *> pduList = hit.second->extractCorrectPdus();
+    for (auto& [carrierFreq, harqRxMap] : harqRxBuffers_) {
+        for (auto& [nodeId, rxBuffer] : harqRxMap) {
+            std::list<Packet *> pduList = rxBuffer->extractCorrectPdus();
             while (!pduList.empty()) {
                 auto pdu = pduList.front();
                 pduList.pop_front();
@@ -674,16 +669,14 @@ void LteMacUeD2D::handleSelfMessage()
         bool retx = false;
 
         LteHarqBufferTx *currHarq;
-        for (auto& mtit : harqTxBuffers_) {
-            GHz carrierFrequency = mtit.first;
-
+        for (auto& [carrierFrequency, harqTxMap] : harqTxBuffers_) {
             // skip if no grant is configured for this carrier
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            for (auto& it2 : mtit.second) {
+            for (auto& [nodeId, harqBuffer] : harqTxMap) {
                 EV << "\t Looking for retx in acid " << (unsigned int)currentHarq_ << endl;
-                currHarq = it2.second;
+                currHarq = harqBuffer;
 
                 // check if the current process has unit ready for retx
                 bool ready = currHarq->getProcess(currentHarq_)->hasReadyUnits();
@@ -743,14 +736,14 @@ void LteMacUeD2D::handleSelfMessage()
 
     //============================ DEBUG ==========================
     if (debugHarq_) {
-        for (const auto& mtit : harqTxBuffers_) {
-            EV << "\n carrier[ " << mtit.first << "] htxbuf.size " << mtit.second.size() << endl;
+        for (const auto& [carrierFreq, harqTxMap] : harqTxBuffers_) {
+            EV << "\n carrier[ " << carrierFreq << "] htxbuf.size " << harqTxMap.size() << endl;
 
             EV << "\n htxbuf.size " << harqTxBuffers_.size() << endl;
 
             int cntOuter = 0;
             int cntInner = 0;
-            for (auto [mtitKey, currHarq] : mtit.second) {
+            for (auto [nodeId, currHarq] : harqTxMap) {
                 BufferStatus harqStatus = currHarq->getBufferStatus();
                 EV << "\t cicloOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
                 for (const auto& jt : harqStatus) {
@@ -764,12 +757,12 @@ void LteMacUeD2D::handleSelfMessage()
 
     unsigned int purged = 0;
     // purge from corrupted PDUs all Rx H-HARQ buffers
-    for (auto& mit : harqRxBuffers_) {
-        for (auto& hit : mit.second) {
+    for (auto& [carrierFreq, harqRxMap] : harqRxBuffers_) {
+        for (auto& [nodeId, rxBuffer] : harqRxMap) {
             // purge corrupted PDUs only if this buffer is for a DL transmission. Otherwise, if you
             // purge PDUs for D2D communication, also "mirror" buffers will be purged
-            if (hit.first == cellId_)
-                purged += hit.second->purgeCorruptedPdus();
+            if (nodeId == cellId_)
+                purged += rxBuffer->purgeCorruptedPdus();
         }
     }
     EV << NOW << " LteMacUeD2D::handleSelfMessage Purged " << purged << " PDUs" << endl;

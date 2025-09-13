@@ -28,12 +28,12 @@ void NrMacUe::handleSelfMessage()
     EV << "----- UE MAIN LOOP -----" << endl;
 
     // extract PDUs from all HARQ RX buffers and pass them to unmaker
-    for (auto& mit : harqRxBuffers_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((mit.first))) > 0)
+    for (auto& [carrierFreq, harqRxMap] : harqRxBuffers_) {
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
             continue;
 
         std::list<Packet *> pduList;
-        for (auto [macNodeId, rxBuf] : mit.second) {
+        for (auto [macNodeId, rxBuf] : harqRxMap) {
             pduList = rxBuf->extractCorrectPdus();
             while (!pduList.empty()) {
                 auto pdu = pduList.front();
@@ -49,11 +49,11 @@ void NrMacUe::handleSelfMessage()
     // no HARQ counter is updated since no transmission is sent.
 
     bool noSchedulingGrants = true;
-    for (auto& git : schedulingGrant_) {
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((git.first))) > 0)
+    for (auto& [carrierFreq, grant] : schedulingGrant_) {
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq(carrierFreq)) > 0)
             continue;
 
-        if (git.second != nullptr)
+        if (grant != nullptr)
             noSchedulingGrants = false;
     }
 
@@ -66,15 +66,14 @@ void NrMacUe::handleSelfMessage()
         bool periodicGrant = false;
         bool checkRac = false;
         bool skip = false;
-        for (auto& git : schedulingGrant_) {
-            if (git.second != nullptr && git.second->getPeriodic()) {
+        for (auto& [carrierFreq, grant] : schedulingGrant_) {
+            if (grant != nullptr && grant->getPeriodic()) {
                 periodicGrant = true;
-                GHz carrierFreq = git.first;
 
                 // Periodic checks
                 if (--expirationCounter_[carrierFreq] < 0) {
                     // Periodic grant is expired
-                    git.second = nullptr;
+                    grant = nullptr;
                     checkRac = true;
                 }
                 else if (--periodCounter_[carrierFreq] > 0) {
@@ -82,7 +81,7 @@ void NrMacUe::handleSelfMessage()
                 }
                 else {
                     // resetting grant period
-                    periodCounter_[carrierFreq] = git.second->getPeriod();
+                    periodCounter_[carrierFreq] = grant->getPeriod();
                     // this is periodic grant TTI - continue with frame sending
                     checkRac = false;
                     skip = false;
@@ -114,10 +113,7 @@ void NrMacUe::handleSelfMessage()
             currentHarq_ = UE_TX_HARQ_PROCESSES - 2;
         }
 
-        std::map<GHz, HarqTxBuffers>::iterator mtit;
-        for (auto& mtit : harqTxBuffers_) {
-            GHz carrierFrequency = mtit.first;
-
+        for (auto& [carrierFrequency, harqTxBufferMap] : harqTxBuffers_) {
             // skip if this is not the turn of this carrier
             if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFrequency))) > 0)
                 continue;
@@ -126,7 +122,7 @@ void NrMacUe::handleSelfMessage()
             if (schedulingGrant_.find(carrierFrequency) == schedulingGrant_.end() || schedulingGrant_[carrierFrequency] == nullptr)
                 continue;
 
-            for (auto [it2Key, currHarq] : mtit.second) {
+            for (auto [it2Key, currHarq] : harqTxBufferMap) {
                 unsigned int numProcesses = currHarq->getNumProcesses();
 
                 for (unsigned int proc = 0; proc < numProcesses; proc++) {
@@ -195,13 +191,13 @@ void NrMacUe::handleSelfMessage()
 
     //============================ DEBUG ==========================
     if (debugHarq_) {
-        for (auto& mtit : harqTxBuffers_) {
-            EV << "\n carrier[ " << mtit.first << "] htxbuf.size " << mtit.second.size() << endl;
+        for (auto& [carrierFreq, harqTxBufferMap] : harqTxBuffers_) {
+            EV << "\n carrier[ " << carrierFreq << "] htxbuf.size " << harqTxBufferMap.size() << endl;
             EV << "\n htxbuf.size " << harqTxBuffers_.size() << endl;
 
             int cntOuter = 0;
             int cntInner = 0;
-            for (auto [currId, currHarq] : mtit.second) {
+            for (auto [currId, currHarq] : harqTxBufferMap) {
                 BufferStatus harqStatus = currHarq->getBufferStatus();
                 EV << "\t cycleOuter " << cntOuter << " - bufferStatus.size=" << harqStatus.size() << endl;
                 for (const auto& jt : harqStatus) {
@@ -232,16 +228,16 @@ int NrMacUe::macSduRequest()
     // get the number of granted bytes for each codeword
     std::vector<unsigned int> allocatedBytes;
 
-    for (auto& gitem : schedulingGrant_) {
+    for (auto& [carrierFreq, grant] : schedulingGrant_) {
         // skip if this is not the turn of this carrier
-        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((gitem.first))) > 0)
+        if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
             continue;
 
-        if (gitem.second == nullptr)
+        if (grant == nullptr)
             continue;
 
-        for (int cw = 0; cw < gitem.second->getGrantedCwBytesArraySize(); cw++)
-            allocatedBytes.push_back(gitem.second->getGrantedCwBytes(cw));
+        for (int cw = 0; cw < grant->getGrantedCwBytesArraySize(); cw++)
+            allocatedBytes.push_back(grant->getGrantedCwBytes(cw));
     }
 
     // Ask for a MAC SDU for each scheduled user on each codeword
@@ -296,14 +292,12 @@ void NrMacUe::macPduMake(MacCid cid)
 
     bool bsrAlreadyMade = false;
     // UE is in D2D-mode but it received an UL grant (for BSR)
-    for (auto& gitem : schedulingGrant_) {
-        GHz carrierFreq = gitem.first;
-
+    for (auto& [carrierFreq, grant] : schedulingGrant_) {
         // skip if this is not the turn of this carrier
         if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
             continue;
 
-        if (gitem.second != nullptr && gitem.second->getDirection() == UL && emptyScheduleList_) {
+        if (grant != nullptr && grant->getDirection() == UL && emptyScheduleList_) {
             if (bsrTriggered_ || bsrD2DMulticastTriggered_) {
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
@@ -333,7 +327,7 @@ void NrMacUe::macPduMake(MacCid cid)
                     Packet *macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();
                     info->setCarrierFrequency(carrierFreq);
-                    info->setUserTxParams(gitem.second->getUserTxParams()->dup());
+                    info->setUserTxParams(grant->getUserTxParams()->dup());
                     if (bsrD2DMulticastTriggered_) {
                         info->setLcid(D2D_MULTI_SHORT_BSR);
                         bsrD2DMulticastTriggered_ = false;
@@ -466,8 +460,7 @@ void NrMacUe::macPduMake(MacCid cid)
     }
 
     // Put MAC PDUs in H-ARQ buffers
-    for (auto& lit : macPduList_) {
-        GHz carrierFreq = lit.first;
+    for (auto& [carrierFreq, macPduMap] : macPduList_) {
         // skip if this is not the turn of this carrier
         if (getNumerologyPeriodCounter(binder_->getNumerologyIndexFromCarrierFreq((carrierFreq))) > 0)
             continue;
@@ -478,9 +471,9 @@ void NrMacUe::macPduMake(MacCid cid)
         }
         HarqTxBuffers& harqTxBuffers = harqTxBuffers_[carrierFreq];
 
-        for (auto& pit : lit.second) {
-            MacNodeId destId = pit.first.first;
-            Codeword cw = pit.first.second;
+        for (auto& [pktId, macPkt] : macPduMap) {
+            MacNodeId destId = pktId.first;
+            Codeword cw = pktId.second;
             // Check if the HarqTx buffer already exists for the destId
             // Get a reference for the destId TXBuffer
             LteHarqBufferTx *txBuf;
@@ -493,7 +486,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 // The tx buffer does not exist yet for this mac node id, create one
                 LteHarqBufferTx *hb;
                 // FIXME: hb is never deleted
-                auto info = pit.second->getTag<UserControlInfo>();
+                auto info = macPkt->getTag<UserControlInfo>();
                 if (info->getDirection() == UL)
                     hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, destId)));
                 else // D2D or D2D_MULTI
@@ -503,11 +496,8 @@ void NrMacUe::macPduMake(MacCid cid)
             }
 
             // search for an empty unit within the first available process
-            UnitList txList = (pit.second->getTag<UserControlInfo>()->getDirection() == D2D_MULTI) ? txBuf->getEmptyUnits(currentHarq_) : txBuf->firstAvailable();
+            UnitList txList = (macPkt->getTag<UserControlInfo>()->getDirection() == D2D_MULTI) ? txBuf->getEmptyUnits(currentHarq_) : txBuf->firstAvailable();
             EV << "NrMacUe::macPduMake - [Used Acid=" << (unsigned int)txList.first << "]" << endl;
-
-            //Get a reference of the LteMacPdu from pit pointer (extract Pdu from the MAP)
-            auto macPkt = pit.second;
 
             // BSR related operations
 
