@@ -324,33 +324,7 @@ bool isMulticastConnection(LteControlInfo *lteInfo)
  */
 MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info)
 {
-    /*
-     * Given the fact that  CID = <UE_MAC_ID,LCID>
-     * we choose the proper MAC ID based on the direction of the packet
-     *
-     * direction | src       dest
-     * ---------------------------
-     *    DL     | eNb ---->  UE
-     *    UL     | UE  ---->  eNb
-     *    D2D    | UE  ---->  UE
-     *
-     */
-    unsigned int dir = info->getDirection();
-    LogicalCid lcid = info->getLcid();
-    MacNodeId ueId;
-
-    switch (dir) {
-        case DL: case D2D:
-            ueId = info->getDestId();
-            break;
-        case UL: case D2D_MULTI:  // D2D_MULTI goes here, since the destination id is meaningless in that context
-            ueId = info->getSourceId();
-            break;
-        default:
-            throw cRuntimeError("ctrlInfoToMacCid(): unknown direction %d", dir);
-    }
-    EV << "ctrlInfoToMacCid - dir[" << dir << "] - ueId[" << ueId << "] - lcid[" << lcid << "]" << endl;
-    return MacCid(ueId, lcid);
+    return MacCid(ctrlInfoToUeId(info), info->getLcid());
 }
 
 /*
