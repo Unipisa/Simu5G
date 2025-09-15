@@ -102,7 +102,7 @@ void LteRlcUm::handleUpperMessage(cPacket *pktAux)
     auto chunk = pkt->peekAtFront<inet::Chunk>();
     EV << "LteRlcUm::handleUpperMessage - Received packet " << chunk->getClassName() << " from upper layer, size " << pktAux->getByteLength() << "\n";
 
-    MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+    MacCid cid = ctrlInfoToMacCid(lteInfo);
     UmTxEntity *txbuf = lookupTxBuffer(cid);
     if (txbuf == nullptr)
         txbuf = createTxBuffer(cid, lteInfo);
@@ -150,7 +150,7 @@ void LteRlcUm::handleLowerMessage(cPacket *pktAux)
 
     if (inet::dynamicPtrCast<const LteMacSduRequest>(chunk) != nullptr) {
         // get the corresponding Tx buffer
-        MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+        MacCid cid = ctrlInfoToMacCid(lteInfo);
         UmTxEntity *txbuf = lookupTxBuffer(cid);
         if (txbuf == nullptr)
             txbuf = createTxBuffer(cid, lteInfo);

@@ -50,7 +50,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
         if (switchPkt->getTxSide()) {
             // get the corresponding Rx buffer & call handler
-            MacCid cid = MacCid(ctrlInfoToUeId(lteInfo), lteInfo->getLcid());
+            MacCid cid = ctrlInfoToMacCid(lteInfo);
             UmTxEntity *txbuf = lookupTxBuffer(cid);
             if (txbuf == nullptr)
                 txbuf = createTxBuffer(cid, lteInfo);
@@ -145,4 +145,3 @@ void LteRlcUmD2D::deleteQueues(MacNodeId nodeId)
 }
 
 } //namespace
-
