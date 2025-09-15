@@ -34,6 +34,7 @@ void LteRxPdcpEntity::initialize()
 
 void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
 {
+    take(pkt);
     EV << NOW << " LteRxPdcpEntity::handlePacketFromLowerLayer - LCID[" << lcid_ << "] - processing packet from RLC layer" << endl;
 
     // pop PDCP header
