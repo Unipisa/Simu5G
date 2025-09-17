@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cctype>
 
+#include <inet/common/stlutils.h>
 #include <inet/networklayer/common/L3AddressResolver.h>
 
 #include "simu5g/common/binder/Binder.h"
@@ -712,39 +713,23 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
 {
     // a d2d-enabled UE can use frequency reuse if it can communicate using DM with all its peers
     // in fact, the scheduler does not know to which UE it will communicate when it grants some RBs
-    if (d2dPeeringMap_.find(nodeId) == d2dPeeringMap_.end())
+    if (!containsKey(d2dPeeringMap_, nodeId) || d2dPeeringMap_[nodeId].empty())
         return false;
 
-    if (d2dPeeringMap_[nodeId].begin() == d2dPeeringMap_[nodeId].end())
-        return false;
-
-    for (const auto& [peerId, mode] : d2dPeeringMap_[nodeId]) {
+    for (const auto& [_, mode] : d2dPeeringMap_[nodeId])
         if (mode == IM)
             return false;
-    }
     return true;
 }
 
 void Binder::registerMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
-    if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end()) {
-        MulticastGroupIdSet newSet;
-        newSet.insert(groupId);
-        multicastGroupMap_[nodeId] = newSet;
-    }
-    else {
-        multicastGroupMap_[nodeId].insert(groupId);
-    }
+    multicastGroupMap_[nodeId].insert(groupId);
 }
 
 bool Binder::isInMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
-    if (multicastGroupMap_.find(nodeId) == multicastGroupMap_.end())
-        return false;                          // the node is not enrolled in any group
-    if (multicastGroupMap_[nodeId].find(groupId) == multicastGroupMap_[nodeId].end())
-        return false;                          // the node is not enrolled in the given group
-
-    return true;
+    return inet::containsKey(multicastGroupMap_, nodeId) && inet::contains(multicastGroupMap_[nodeId], groupId);
 }
 
 void Binder::addD2DMulticastTransmitter(MacNodeId nodeId)
