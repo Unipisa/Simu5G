@@ -722,14 +722,14 @@ bool Binder::isFrequencyReuseEnabled(MacNodeId nodeId)
     return true;
 }
 
-void Binder::registerMulticastGroup(MacNodeId nodeId, int32_t groupId)
+void Binder::joinMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
-    multicastGroupMap_[nodeId].insert(groupId);
+    nodeGroupMemberships_[nodeId].insert(groupId);
 }
 
 bool Binder::isInMulticastGroup(MacNodeId nodeId, int32_t groupId)
 {
-    return inet::containsKey(multicastGroupMap_, nodeId) && inet::contains(multicastGroupMap_[nodeId], groupId);
+    return inet::containsKey(nodeGroupMemberships_, nodeId) && inet::contains(nodeGroupMemberships_[nodeId], groupId);
 }
 
 void Binder::addD2DMulticastTransmitter(MacNodeId nodeId)

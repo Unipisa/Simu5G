@@ -398,10 +398,10 @@ void Ip2Nic::registerMulticastGroups()
         uint32_t address = addr.getInt();
         uint32_t mask = ~((uint32_t)255 << 24);      // 00000000 11111111 11111111 11111111
         uint32_t groupId = address & mask;
-        binder_->registerMulticastGroup(nodeId_, groupId);
+        binder_->joinMulticastGroup(nodeId_, groupId);
         // register also the NR stack, if any
         if (nrNodeId_ != NODEID_NONE)
-            binder_->registerMulticastGroup(nrNodeId_, groupId);
+            binder_->joinMulticastGroup(nrNodeId_, groupId);
     }
 }
 
