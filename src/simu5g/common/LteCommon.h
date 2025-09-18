@@ -52,6 +52,7 @@ class LteMacBase;
 class LtePhyBase;
 class LteRealisticChannelModel;
 class LteControlInfo;
+class FlowControlInfo;
 class ExtCell;
 class IBackgroundTrafficManager;
 class BackgroundScheduler;
@@ -448,8 +449,8 @@ const std::string rlcTypeToA(LteRlcType type);
 char *cStringToLower(char *str);
 LteRlcType aToRlcType(std::string s);
 const std::string planeToA(Plane p);
-MacNodeId ctrlInfoToUeId(inet::Ptr<LteControlInfo> info);
-MacCid ctrlInfoToMacCid(inet::Ptr<LteControlInfo> info);        // get the CID from the packet control info
+MacNodeId ctrlInfoToUeId(inet::Ptr<FlowControlInfo> info);
+MacCid ctrlInfoToMacCid(inet::Ptr<FlowControlInfo> info);        // get the CID from the packet control info
 CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId);
 cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
 cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId);
