@@ -29,7 +29,7 @@ jobs:
         with:
           repository: omnetpp/omnetpp
           path: omnetpp
-          ref: omnetpp-6.1.0
+          ref: omnetpp-6.2.0
 
       - name: Checking out INET
         uses: actions/checkout@v4
