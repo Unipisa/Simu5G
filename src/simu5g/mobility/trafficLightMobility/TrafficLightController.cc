@@ -24,7 +24,7 @@ namespace simu5g {
 
 Define_Module(TrafficLightController);
 
-Register_Enum_WithVar(trafficLightStateEnum, TrafficLightState, (OFF, GREEN, YELLOW, RED));
+Register_Enum(TrafficLightState, (OFF, GREEN, YELLOW, RED));
 
 TrafficLightController::~TrafficLightController() {
     cancelAndDelete(stateMsg_);
@@ -83,8 +83,9 @@ void TrafficLightController::handleMessage(cMessage *msg)
         if (msg == stateMsg_) {
             EV << "TrafficLightController::handleMessage: changeState" << endl;
             if (state_ == OFF) {
-                state_ = trafficLightStateEnum->resolveName<TrafficLightState>(par("startState"));
-                std::string color = trafficLightStateEnum->getNameForValue(state_);
+                cEnum *trafficLightStateEnum = cEnum::get("simu5g::TrafficLightState");
+                state_ = static_cast<TrafficLightState>(trafficLightStateEnum->lookup(par("startState")));
+                std::string color = trafficLightStateEnum->getStringFor(state_);
                 getParentModule()->getDisplayString().setTagArg("i", 1, color.c_str());
                 if (state_ == RED)
                     drawRect();
