@@ -73,6 +73,10 @@ Further refactoring:
 - Refactoring of internals in several protocol modules, including MAC, PDCP and
   RLC implementations.
 
+Build:
+
+- Made the command line build consistent with the IDE build. src/Makefile is now
+  generated/updated implicitly on every build, no need to type "make makefiles".
 
 ## v1.3.1 (2025-09-18)
 
