@@ -6,9 +6,8 @@
   initiallyEnabled = "false"
   requires = ""
   labels = ""
-  nedPackages = "simu5g.nodes.cars
-                 simu5g.simulations.LTE.cars
-                 simu5g.simulations.NR.cars"
+  nedPackages = "simu5g.simulations.lte.cars
+                 simu5g.simulations.nr.cars"
   extraSourceFolders = ""
   compileFlags = ""
   linkerFlags = ""
