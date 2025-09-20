@@ -73,10 +73,10 @@ void LteHarqUnitTx::insertPdu(Packet *pkt)
 void LteHarqUnitTx::markSelected()
 {
     EV << NOW << " LteHarqUnitTx::markSelected trying to select buffer "
-       << acid_ << " codeword " << cw_ << " for transmission " << endl;
+       << (unsigned int)acid_ << " codeword " << cw_ << " for transmission " << endl;
 
     if (!(this->isReady()))
-        throw cRuntimeError("ERROR acid %d codeword %d trying to select for transmission an empty buffer", acid_, cw_);
+        throw cRuntimeError("ERROR acid %d codeword %d trying to select for transmission an empty buffer", (unsigned int)acid_, cw_);
 
     status_ = TXHARQ_PDU_SELECTED;
 }
