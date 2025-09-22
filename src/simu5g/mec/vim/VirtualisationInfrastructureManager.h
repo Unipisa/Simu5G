@@ -100,6 +100,8 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     // set of MEC Services loaded into the MEC host & platform
     int numServices;
     std::vector<cModule *> meServices;
+    int nameCounter = 0;
+
     // ------------------------------------
     // set of free gates to use for connecting MEC apps and MEC Services
     std::vector<int> freeGates;

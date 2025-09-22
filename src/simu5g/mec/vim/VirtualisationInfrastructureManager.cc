@@ -178,10 +178,6 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
 
     int serviceIndex = findService(msg->getRequiredService());
 
-    const char *meModuleName = msg->getMEModuleName();
-
-    // int ueAppPort  = msg->getSourcePort();
-
     //retrieve UE App ID
     int ueAppID = msg->getUeAppID();
 
@@ -215,11 +211,9 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         }
         // creating MEApp module instance
         cModuleType *moduleType = cModuleType::get(msg->getMEModuleType());         //MEAPP module package (i.e. path!)
-        cModule *module = moduleType->create(meModuleName, mecHost);       //MEAPP module-name & its Parent Module
-        std::stringstream appName;
-        appName << meModuleName << "\n" << module->getId();
-        module->setName(appName.str().c_str());
-        EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName.str() << endl;
+        std::string appName = opp_stringf("%s-%04d", msg->getMEModuleName(), nameCounter++);  // padding helps make ~tNl fingerprint to be more resilient to changes in app numbering (instanceId is sent over in JSON/HTTP)
+        cModule *module = moduleType->create(appName.c_str(), mecHost);
+        EV << "VirtualisationInfrastructureManager::instantiateMEApp - meModuleName: " << appName << endl;
         //creating the mecAppMap map entry
         MecAppEntry newAppEntry;
 
@@ -255,7 +249,7 @@ MecAppInstanceInfo *VirtualisationInfrastructureManager::instantiateMEApp(Create
         module->finalizeParameters();
 
         MecAppInstanceInfo *instanceInfo = new MecAppInstanceInfo();
-        instanceInfo->instanceId = appName.str();
+        instanceInfo->instanceId = appName;
 
         instanceInfo->endPoint.addr = mecAppRemoteAddress_;
         instanceInfo->endPoint.port = mecAppPortCounter;
