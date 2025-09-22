@@ -17,7 +17,6 @@ namespace simu5g {
 
 Define_Module(VirtualisationInfrastructureManager);
 
-
 void VirtualisationInfrastructureManager::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
@@ -510,9 +509,9 @@ void VirtualisationInfrastructureManager::reserveResourcesBGApps()
         double ram = bgApp->par("ram");
         double disk = bgApp->par("disk");
         double cpu = bgApp->par("cpu");
-        registerMecApp(bgApp->getId(), ram, disk, cpu);
+        // Use counter-based ID instead of module ID to ensure consistent JSON message lengths
+        registerMecApp(++bgAppIdCounter, ram, disk, cpu);
     }
 }
 
 } //namespace
-

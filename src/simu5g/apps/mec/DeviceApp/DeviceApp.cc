@@ -62,7 +62,7 @@ void DeviceApp::handleUalcmpMessage()
                             if (sharedDevAppId != devAppIds.end())
                                 associateDevAppId = sharedDevAppId->second;
                             else
-                                associateDevAppId = getId();
+                                associateDevAppId = ++deviceAppIdCounter; // Use counter instead of module ID
                             jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
                             jsonRequestBody["appInfo"]["appDId"] = appInfo.at(i)["appDId"];// "WAMECAPP_External"; //startPk->getMecAppDId()
                             jsonRequestBody["appInfo"]["appName"] = appName;//"MEWarningAlertApp_rest";
@@ -80,7 +80,7 @@ void DeviceApp::handleUalcmpMessage()
                         if (sharedDevAppId != devAppIds.end())
                             associateDevAppId = sharedDevAppId->second;
                         else
-                            associateDevAppId = getId();
+                            associateDevAppId = ++deviceAppIdCounter; // Use counter instead of module ID
                         jsonRequestBody["associateDevAppId"] = std::to_string(associateDevAppId);
                         jsonRequestBody["appInfo"]["appPackageSource"] = appPackageSource; //"ApplicationDescriptors/WarningAlertApp.json";
 
@@ -536,4 +536,3 @@ void DeviceApp::finish()
 }
 
 } //namespace
-

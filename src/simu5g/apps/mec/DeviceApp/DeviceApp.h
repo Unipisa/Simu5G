@@ -82,6 +82,9 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
     // variable set in ned, if the appDescriptor is not in the MEC orchestrator
     std::string appPackageSource;
 
+    // Counter for generating consistent device app IDs (replaces module ID dependency)
+    int deviceAppIdCounter = 2000;
+
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
@@ -118,4 +121,3 @@ class DeviceApp : public cSimpleModule, public inet::TcpSocket::ICallback, publi
 } //namespace
 
 #endif /* APPS_MEC_MEAPPS_DEVICEAPP_H_ */
-

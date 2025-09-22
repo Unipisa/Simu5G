@@ -102,6 +102,9 @@ class VirtualisationInfrastructureManager : public cSimpleModule
     std::vector<cModule *> meServices;
     int nameCounter = 0;
 
+    // Counter for generating consistent background app IDs (replaces module ID dependency)
+    int bgAppIdCounter = 1000;
+
     // ------------------------------------
     // set of free gates to use for connecting MEC apps and MEC Services
     std::vector<int> freeGates;
@@ -231,4 +234,3 @@ class VirtualisationInfrastructureManager : public cSimpleModule
 } //namespace
 
 #endif
-
