@@ -53,7 +53,7 @@ void LtePf::prepareSchedule()
         if (!binder_->nodeExists(nodeId)) {
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
-            EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no OmnetId in Binder known.";
+            EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no such node in Binder";
             continue;
         }
 

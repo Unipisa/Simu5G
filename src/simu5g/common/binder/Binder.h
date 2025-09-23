@@ -36,15 +36,14 @@ class UeStatsCollector;
 
 // Consolidated node information structure
 struct NodeInfo {
-    OmnetId omnetId;
     std::string moduleName;
     opp_component_ptr<cModule> moduleRef;
     opp_component_ptr<LteMacBase> macModule;
 
-    NodeInfo() : omnetId(0), moduleName(""), moduleRef(nullptr), macModule(nullptr) {}
+    NodeInfo() {}
 
-    NodeInfo(OmnetId omnetId, const std::string& moduleName, cModule* moduleRef)
-        : omnetId(omnetId), moduleName(moduleName), moduleRef(moduleRef), macModule(nullptr) {}
+    NodeInfo(const std::string& moduleName, cModule* moduleRef)
+        : moduleName(moduleName), moduleRef(moduleRef) {}
 };
 
 class Binder : public cSimpleModule
@@ -307,7 +306,7 @@ class Binder : public cSimpleModule
     cModule *getNodeModule(MacNodeId nodeId);
 
     /*
-     * getMacNodeIdFromOmnetId returns information on all nodes in a map
+     * getNodeInfoMap returns information on all nodes in a map
      */
     const std::map<MacNodeId, NodeInfo>& getNodeInfoMap() const { return nodeInfoMap_; }
 

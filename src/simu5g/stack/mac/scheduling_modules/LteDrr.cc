@@ -35,7 +35,7 @@ void LteDrr::prepareSchedule()
             activeTempList_.erase();          // Remove from the active list.
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
-            EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no OmnetId in Binder known.";
+            EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no such node in Binder";
             continue;
         }
 

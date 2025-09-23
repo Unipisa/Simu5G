@@ -194,11 +194,11 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
     }
 
     EV << "Binder : Assigning to module " << module->getName()
-       << " with OmnetId: " << module->getId() << " and MacNodeId " << macNodeId
+       << " with module id " << module->getId() << " and MacNodeId " << macNodeId
        << "\n";
 
     // registering new node to Binder - use consolidated NodeInfo structure
-    NodeInfo nodeInfo(module->getId(), module->getFullPath(), module);
+    NodeInfo nodeInfo(module->getFullPath(), module);
     nodeInfoMap_[macNodeId] = nodeInfo;
 
     if (!registerNr)
@@ -388,7 +388,7 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 cModule *Binder::getNodeModule(MacNodeId nodeId)
 {
     auto it = nodeInfoMap_.find(nodeId);
-    return it != nodeInfoMap_.end() ? getSimulation()->getModule(it->second.omnetId) : nullptr;
+    return it != nodeInfoMap_.end() ? it->second.moduleRef : nullptr;
 }
 
 LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)

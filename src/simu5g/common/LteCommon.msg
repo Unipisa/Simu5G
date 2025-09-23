@@ -57,9 +57,6 @@ typedef MacNodeId MacCellId;
 /// X2 node ID. It is equal to the eNodeB MAC Cell ID
 typedef MacNodeId X2NodeId;
 
-/// Omnet Node Id
-typedef unsigned int OmnetId;
-
 /// Logical Connection Identifier
 typedef unsigned short LogicalCid;
 
@@ -160,19 +157,6 @@ class X2NodeId {
     @defaultValue(0);
     @toValue((omnetpp::intval_t)($));
     @fromValue(omnetpp::checked_int_cast<int64_t>($.intValue()));
-};
-
-/// Omnet Node Id
-class OmnetId {
-    @existingClass; // typedef unsigned int OmnetId;
-    @descriptor(false);
-    @primitive;
-    @castFunction(false);
-    @fromString(string2int64($));
-    @toString(int642string($));
-    @defaultValue(0);
-    @toValue((omnetpp::intval_t)($));
-    @fromValue(omnetpp::checked_int_cast<OmnetId>($.intValue()));
 };
 
 /// Logical Connection Identifier
