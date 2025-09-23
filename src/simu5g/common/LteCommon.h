@@ -451,12 +451,6 @@ LteRlcType aToRlcType(std::string s);
 const std::string planeToA(Plane p);
 MacNodeId ctrlInfoToUeId(inet::Ptr<FlowControlInfo> info);
 MacCid ctrlInfoToMacCid(inet::Ptr<FlowControlInfo> info);        // get the CID from the packet control info
-CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId);
-cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId);
-cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId);
-cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType);
-cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId);
-LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId);
 FeedbackGeneratorType getFeedbackGeneratorType(std::string s);
 const std::string fbGeneratorTypeToA(FeedbackGeneratorType type);
 const std::string DeploymentScenarioToA(DeploymentScenario type);

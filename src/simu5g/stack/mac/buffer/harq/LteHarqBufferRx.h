@@ -178,7 +178,7 @@ class LteHarqBufferRx
      */
     void initMacUe() {
         if (macOwner_->getNodeType() == ENODEB || macOwner_->getNodeType() == GNODEB)
-            macUe_ = check_and_cast<LteMacBase *>(getMacByMacNodeId(binder_, srcId_));
+            macUe_ = check_and_cast<LteMacBase *>(binder_->getMacByMacNodeId(srcId_));
         else
             macUe_ = macOwner_;
     }
@@ -188,4 +188,3 @@ class LteHarqBufferRx
 } //namespace
 
 #endif
-

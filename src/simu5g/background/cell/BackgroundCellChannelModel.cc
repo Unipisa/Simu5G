@@ -710,7 +710,7 @@ double BackgroundCellChannelModel::computeAngularAttenuation(double hAngle, doub
 double BackgroundCellChannelModel::rayleighFading(MacNodeId id, unsigned int band)
 {
     //get raylegh variable from trace file
-    double temp1 = binder_->phyPisaData.getChannel(getCellInfo(binder_, id)->getLambda(id)->channelIndex + band);
+    double temp1 = binder_->phyPisaData.getChannel(binder_->getCellInfo(id)->getLambda(id)->channelIndex + band);
     return linearToDb(temp1);
 }
 
@@ -863,7 +863,7 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
         // initialize eNb data structures
         if (!enb->init) {
             // obtain a reference to enb phy and obtain tx power
-            enb->phy = check_and_cast<LtePhyBase *>(binder_->getNodeModule(id)->getSubmodule("cellularNic")->getSubmodule("phy"));
+            enb->phy = check_and_cast<LtePhyBase *>(binder_->getPhyByMacNodeId(id));
 
             enb->txPwr = enb->phy->getTxPwr();//dBm
 
@@ -874,7 +874,7 @@ bool BackgroundCellChannelModel::computeDownlinkInterference(MacNodeId bgUeId, i
             enb->txAngle = enb->phy->getTxAngle();
 
             //get reference to mac layer
-            enb->mac = check_and_cast<LteMacEnb *>(getMacByMacNodeId(binder_, id));
+            enb->mac = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(id));
 
             enb->init = true;
         }

@@ -625,6 +625,14 @@ class Binder : public cSimpleModule
 
     RanNodeType getBaseStationTypeById(MacNodeId);
 
+    // Moved from LteCommon - getter functions that were taking Binder as first parameter
+    CellInfo *getCellInfo(MacNodeId nodeId);
+    cModule *getPhyByMacNodeId(MacNodeId nodeId);
+    cModule *getMacByMacNodeId(MacNodeId nodeId);
+    cModule *getRlcByMacNodeId(MacNodeId nodeId, LteRlcType rlcType);
+    cModule *getPdcpByMacNodeId(MacNodeId nodeId);
+    LteMacBase *getMacUe(MacNodeId nodeId);
+
 };
 
 } //namespace

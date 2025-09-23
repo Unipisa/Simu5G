@@ -351,67 +351,6 @@ MacNodeId ctrlInfoToUeId(inet::Ptr<FlowControlInfo> info)
 }
 
 
-CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
-{
-    // Check if it is an eNodeB
-    // function GetNextHop returns nodeId
-    MacNodeId id = binder->getNextHop(nodeId);
-    cModule *module = binder->getNodeModule(id);
-    return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
-}
-
-cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId)
-{
-    // UE might have left the simulation, return NULL in this case
-    // since we do not have a MAC-Module anymore
-    cModule *module = binder->getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    if (isNrUe(nodeId))
-        return module->getSubmodule("cellularNic")->getSubmodule("nrPhy");
-    return module->getSubmodule("cellularNic")->getSubmodule("phy");
-}
-
-cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId)
-{
-    // UE might have left the simulation, return NULL in this case
-    // since we do not have a MAC-Module anymore
-    cModule *module = binder->getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    if (isNrUe(nodeId))
-        return module->getSubmodule("cellularNic")->getSubmodule("nrMac");
-    return module->getSubmodule("cellularNic")->getSubmodule("mac");
-}
-
-cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType)
-{
-    cModule *module = binder->getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    if (isNrUe(nodeId))
-        return module->getSubmodule("cellularNic")->getSubmodule("nrRlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
-    return module->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
-}
-
-cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
-{
-    // UE might have left the simulation, return NULL in this case
-    // since we do not have a MAC-Module anymore
-    cModule *module = binder->getNodeModule(nodeId);
-    if (module == nullptr) {
-        return nullptr;
-    }
-    return module->getSubmodule("cellularNic")->getSubmodule("pdcp");
-}
-
-LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId)
-{
-    return check_and_cast<LteMacBase *>(getMacByMacNodeId(binder, nodeId));
-}
 
 void getParametersFromXML(cXMLElement *xmlData, ParameterMap& outputMap)
 {

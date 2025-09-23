@@ -42,7 +42,7 @@ LteHarqBufferRx::LteHarqBufferRx(unsigned int num, LteMacBase *owner, Binder *bi
         dir = UL;
     }
     else { // this is a UE
-        nodeB_ = getMacByMacNodeId(binder, macUe_->getMacCellId());
+        nodeB_ = binder->getMacByMacNodeId(macUe_->getMacCellId());
         dir = DL;
     }
 }
@@ -224,4 +224,3 @@ bool LteHarqBufferRx::isHarqBufferActive() const {
 }
 
 } //namespace
-
