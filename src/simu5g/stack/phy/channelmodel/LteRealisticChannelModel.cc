@@ -2676,7 +2676,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         // initialize eNB data structures
         if (!enbInfo->init) {
             // obtain a reference to eNB phy and obtain tx power
-            enbInfo->phy = check_and_cast<LtePhyBase *>(binder_->getNodeModule(id)->getSubmodule("cellularNic")->getSubmodule("phy"));
+            enbInfo->phy = check_and_cast<LtePhyBase *>(binder_->getPhyByMacNodeId(id));
 
             enbInfo->txPwr = enbInfo->phy->getTxPwr();//dBm
 

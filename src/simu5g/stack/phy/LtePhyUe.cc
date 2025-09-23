@@ -413,7 +413,7 @@ void LtePhyUe::doHandover()
 
     if (candidateMasterId_ != NODEID_NONE) {
         CellInfo *oldCellInfo = cellInfo_;
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getNodeModule(candidateMasterId_)->getSubmodule("cellularNic")->getSubmodule("mac"));
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(candidateMasterId_));
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;

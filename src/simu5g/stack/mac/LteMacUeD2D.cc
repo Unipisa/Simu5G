@@ -55,7 +55,7 @@ void LteMacUeD2D::initialize(int stage)
             // get the reference to the eNB
             enb_ = check_and_cast<LteMacEnbD2D *>(binder_->getMacByMacNodeId(cellId_));
 
-            LteAmc *amc = check_and_cast<LteMacEnb *>(binder_->getNodeModule(cellId_)->getSubmodule("cellularNic")->getSubmodule("mac"))->getAmc();
+            LteAmc *amc = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(cellId_))->getAmc();
             amc->attachUser(nodeId_, D2D);
 
 // TODO remove it. UeCollector connection made in LteMacUe Initialize
