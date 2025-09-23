@@ -356,8 +356,7 @@ CellInfo *getCellInfo(Binder *binder, MacNodeId nodeId)
     // Check if it is an eNodeB
     // function GetNextHop returns nodeId
     MacNodeId id = binder->getNextHop(nodeId);
-    OmnetId omnetid = binder->getOmnetId(id);
-    cModule *module = getSimulation()->getModule(omnetid);
+    cModule *module = binder->getNodeModule(id);
     return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
 }
 
@@ -365,48 +364,48 @@ cModule *getPhyByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
-    int id = binder->getOmnetId(nodeId);
-    if (id == 0) {
+    cModule *module = binder->getNodeModule(nodeId);
+    if (module == nullptr) {
         return nullptr;
     }
     if (isNrUe(nodeId))
-        return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrPhy");
-    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("phy");
+        return module->getSubmodule("cellularNic")->getSubmodule("nrPhy");
+    return module->getSubmodule("cellularNic")->getSubmodule("phy");
 }
 
 cModule *getMacByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
-    int id = binder->getOmnetId(nodeId);
-    if (id == 0) {
-        return nullptr;
-    }
-    if (isNrUe(nodeId))
-        return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("nrMac");
-    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("mac");
-}
-
-cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType)
-{
-    cModule *module = getMacByMacNodeId(binder, nodeId);
+    cModule *module = binder->getNodeModule(nodeId);
     if (module == nullptr) {
         return nullptr;
     }
     if (isNrUe(nodeId))
-        return getSimulation()->getModule(binder->getOmnetId(nodeId))->getSubmodule("cellularNic")->getSubmodule("nrRlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
-    return getSimulation()->getModule(binder->getOmnetId(nodeId))->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
+        return module->getSubmodule("cellularNic")->getSubmodule("nrMac");
+    return module->getSubmodule("cellularNic")->getSubmodule("mac");
+}
+
+cModule *getRlcByMacNodeId(Binder *binder, MacNodeId nodeId, LteRlcType rlcType)
+{
+    cModule *module = binder->getNodeModule(nodeId);
+    if (module == nullptr) {
+        return nullptr;
+    }
+    if (isNrUe(nodeId))
+        return module->getSubmodule("cellularNic")->getSubmodule("nrRlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
+    return module->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
 }
 
 cModule *getPdcpByMacNodeId(Binder *binder, MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
-    int id = binder->getOmnetId(nodeId);
-    if (id == 0) {
+    cModule *module = binder->getNodeModule(nodeId);
+    if (module == nullptr) {
         return nullptr;
     }
-    return getSimulation()->getModule(id)->getSubmodule("cellularNic")->getSubmodule("pdcp");
+    return module->getSubmodule("cellularNic")->getSubmodule("pdcp");
 }
 
 LteMacBase *getMacUe(Binder *binder, MacNodeId nodeId)

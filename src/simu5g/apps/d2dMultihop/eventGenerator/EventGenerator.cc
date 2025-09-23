@@ -130,7 +130,7 @@ void EventGenerator::registerNode(MultihopD2D *app, MacNodeId lteNodeId)
 {
     appVector_.push_back(app);
     lteNodeIdSet_.insert(lteNodeId);
-    lteNodePhy_[lteNodeId] = check_and_cast<LtePhyBase *>((getSimulation()->getModule(binder_->getOmnetId(lteNodeId)))->getSubmodule("cellularNic")->getSubmodule("phy"));
+    lteNodePhy_[lteNodeId] = check_and_cast<LtePhyBase *>((binder_->getNodeModule(lteNodeId))->getSubmodule("cellularNic")->getSubmodule("phy"));
 }
 
 void EventGenerator::unregisterNode(MultihopD2D *app, MacNodeId lteNodeId)

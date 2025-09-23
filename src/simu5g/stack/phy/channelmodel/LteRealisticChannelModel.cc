@@ -526,7 +526,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     //=============== ANGULAR ATTENUATION =================
     if (dir == DL) {
         // get tx angle
-        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = binder_->getNodeModule(eNbId);
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -827,7 +827,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
     // =============== ANGULAR ATTENUATION =================
     if (dir == DL) {
         // get tx angle
-        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = binder_->getNodeModule(eNbId);
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -981,7 +981,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
     // ANGULAR ATTENUATION
     if (dir == DL) {
         //get tx angle
-        cModule *eNbModule = getSimulation()->getModule(binder_->getOmnetId(eNbId));
+        cModule *eNbModule = binder_->getNodeModule(eNbId);
         LtePhyBase *ltePhy = eNbModule ?
             check_and_cast<LtePhyBase *>(eNbModule->getSubmodule("cellularNic")->getSubmodule("phy")) :
             nullptr;
@@ -1146,7 +1146,7 @@ double LteRealisticChannelModel::getReceivedPower_bgUe(double txPower, inet::Coo
     // ANGULAR ATTENUATION
     if (dir == DL) {
         //get tx angle
-        cModule *bsModule = getSimulation()->getModule(binder_->getOmnetId(bsId));
+        cModule *bsModule = binder_->getNodeModule(bsId);
         LtePhyBase *phy = bsModule ? check_and_cast<LtePhyBase *>(bsModule->getSubmodule("cellularNic")->getSubmodule("phy")) : nullptr;
 
         if (phy && phy->getTxDirection() == ANISOTROPIC) {
@@ -2676,7 +2676,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         // initialize eNB data structures
         if (!enbInfo->init) {
             // obtain a reference to eNB phy and obtain tx power
-            enbInfo->phy = check_and_cast<LtePhyBase *>(getSimulation()->getModule(binder_->getOmnetId(id))->getSubmodule("cellularNic")->getSubmodule("phy"));
+            enbInfo->phy = check_and_cast<LtePhyBase *>(binder_->getNodeModule(id)->getSubmodule("cellularNic")->getSubmodule("phy"));
 
             enbInfo->txPwr = enbInfo->phy->getTxPwr();//dBm
 

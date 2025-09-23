@@ -18,20 +18,18 @@ namespace LocationUtils {
 
 inet::Coord getCoordinates(Binder *binder, const MacNodeId id)
 {
-    OmnetId omnetId = binder->getOmnetId(id);
-    if (omnetId == 0)
+    cModule *module = binder->getNodeModule(id);
+    if (module == nullptr)
         return inet::Coord::NIL; // or throw exception?
-    cModule *module = getSimulation()->getModule(omnetId);
     inet::IMobility *mobility_ = check_and_cast<inet::IMobility *>(module->getSubmodule("mobility"));
     return mobility_->getCurrentPosition();
 }
 
 inet::Coord getSpeed(Binder *binder, const MacNodeId id)
 {
-    OmnetId omnetId = binder->getOmnetId(id);
-    if (omnetId == 0)
+    cModule *module = binder->getNodeModule(id);
+    if (module == nullptr)
         return inet::Coord::NIL; // or throw exception?
-    cModule *module = getSimulation()->getModule(omnetId);
     inet::IMobility *mobility_ = check_and_cast<inet::IMobility *>(module->getSubmodule("mobility"));
     return mobility_->getCurrentVelocity();
 }
@@ -39,4 +37,3 @@ inet::Coord getSpeed(Binder *binder, const MacNodeId id)
 } // namespace LocationUtils
 
 } //namespace
-

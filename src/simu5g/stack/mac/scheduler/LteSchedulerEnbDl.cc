@@ -398,8 +398,7 @@ bool LteSchedulerEnbDl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
             // For each UE
             auto& [nodeId, currHarq] = *it;
 
-            OmnetId id = binder_->getOmnetId(nodeId);
-            if (id == 0) {
+            if (!binder_->nodeExists(nodeId)) {
                 // UE has left the simulation, erase HARQ queue
                 it = harqQueues->erase(it);
                 continue;

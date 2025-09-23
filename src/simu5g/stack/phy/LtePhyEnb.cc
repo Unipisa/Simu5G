@@ -103,7 +103,7 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 {
     EV << "Received control packet " << endl;
     MacNodeId senderMacNodeId = lteinfo->getSourceId();
-    if (binder_->getOmnetId(senderMacNodeId) == 0) {
+    if (!binder_->nodeExists(senderMacNodeId)) {
         EV << "Sender (" << senderMacNodeId << ") does not exist anymore!" << std::endl;
         delete frame;
         return true;    // FIXME ? make sure that nodes that left the simulation do not send
@@ -177,9 +177,7 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
 
     connectedNodeId_ = lteInfo->getSourceId();
 
-    int sourceId = binder_->getOmnetId(connectedNodeId_);
-    int senderId = binder_->getOmnetId(lteInfo->getDestId());
-    if (sourceId == 0 || senderId == 0) {
+    if (!binder_->nodeExists(connectedNodeId_) || !binder_->nodeExists(lteInfo->getDestId())) {
         // either source or destination have left the simulation
         delete msg;
         return;
@@ -429,4 +427,3 @@ void LtePhyEnb::initializeFeedbackComputation()
 }
 
 } //namespace
-

@@ -40,7 +40,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
     EV << "NrPhyUe: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     MacNodeId sourceId = lteInfo->getSourceId();
-    if (binder_->getOmnetId(sourceId) == 0) {
+    if (!binder_->nodeExists(sourceId)) {
         // The source has left the simulation
         delete msg;
         return;
@@ -282,7 +282,7 @@ void NrPhyUe::triggerHandover()
 
     // Inform the eNB's Ip2Nic module to forward data to the target eNB
     if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2nic->triggerHandoverSource(nodeId_, candidateMasterId_);
     }
 
@@ -291,7 +291,7 @@ void NrPhyUe::triggerHandover()
         // Currently, DM is possible only for UEs served by the same cell
 
         // Trigger D2D mode switch
-        cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
+        cModule *enb = binder_->getNodeModule(masterId_);
         D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
     }
@@ -371,7 +371,7 @@ void NrPhyUe::doHandover()
 
     if (candidateMasterId_ != NODEID_NONE) {
         CellInfo *oldCellInfo = cellInfo_;
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(getSimulation()->getModule(binder_->getOmnetId(candidateMasterId_))->getSubmodule("cellularNic")->getSubmodule("mac"));
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getNodeModule(candidateMasterId_)->getSubmodule("cellularNic")->getSubmodule("mac"));
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
@@ -407,7 +407,7 @@ void NrPhyUe::doHandover()
 
     // inform the eNB's Ip2Nic module to forward data to the target eNB
     if (oldMaster != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(getSimulation()->getModule(binder_->getOmnetId(masterId_))->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
     }
 }
@@ -455,4 +455,3 @@ void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
 }
 
 } //namespace
-

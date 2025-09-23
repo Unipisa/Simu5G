@@ -32,10 +32,9 @@ void LtePf::prepareSchedule()
 
     for (const auto& cid : carrierActiveConnectionSet_) {
         MacNodeId nodeId = cid.getNodeId();
-        OmnetId id = binder_->getOmnetId(nodeId);
         grantedBytes_[cid] = 0;
 
-        if (nodeId == NODEID_NONE || id == 0) {
+        if (nodeId == NODEID_NONE || !binder_->nodeExists(nodeId)) {
             // node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);
@@ -51,7 +50,7 @@ void LtePf::prepareSchedule()
             dir = DL;
 
         // check if node is still a valid node in the simulation - might have been dynamically removed
-        if (binder_->getOmnetId(nodeId) == 0) {
+        if (!binder_->nodeExists(nodeId)) {
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);
             EV << "CID " << cid << " of node " << nodeId << " removed from active connection set - no OmnetId in Binder known.";
@@ -176,4 +175,3 @@ void LtePf::commitSchedule()
 }
 
 } //namespace
-

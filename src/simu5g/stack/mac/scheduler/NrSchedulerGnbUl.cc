@@ -52,13 +52,8 @@ bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLi
         HarqRxBuffers *harqQueues = mac_->getHarqRxBuffers(carrierFrequency);
         if (harqQueues != nullptr) {
             for (auto [nodeId, currHarq] : *harqQueues) {
-                if (nodeId == NODEID_NONE) {
+                if (nodeId == NODEID_NONE || !binder_->nodeExists(nodeId)) {
                     // UE has left the simulation - erase queue and continue
-                    harqRxBuffers_->at(carrierFrequency).erase(nodeId);
-                    continue;
-                }
-                OmnetId id = binder_->getOmnetId(nodeId);
-                if (id == 0) {
                     harqRxBuffers_->at(carrierFrequency).erase(nodeId);
                     continue;
                 }
@@ -120,12 +115,12 @@ bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLi
                     MacNodeId senderId = d2dPair.first; // Transmitter
                     MacNodeId destId = d2dPair.second;  // Receiver
 
-                    if (senderId == NODEID_NONE || binder_->getOmnetId(senderId) == 0) {
+                    if (senderId == NODEID_NONE || !binder_->nodeExists(senderId)) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
                     }
-                    if (destId == NODEID_NONE || binder_->getOmnetId(destId) == 0) {
+                    if (destId == NODEID_NONE || !binder_->nodeExists(destId)) {
                         // UE has left the simulation - erase queue and continue
                         harqBuffersMirrorD2D->erase(it_d2d++);
                         continue;
@@ -194,4 +189,3 @@ bool NrSchedulerGnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandLi
 }
 
 } //namespace
-

@@ -31,8 +31,7 @@ void LteMaxCi::prepareSchedule()
     for (MacCid cid : carrierActiveConnectionSet_) {
         // Current connection.
         MacNodeId nodeId = cid.getNodeId();
-        OmnetId id = binder_->getOmnetId(nodeId);
-        if (nodeId == NODEID_NONE || id == 0) {
+        if (nodeId == NODEID_NONE || !binder_->nodeExists(nodeId)) {
             // Node has left the simulation - erase corresponding CIDs
             activeConnectionSet_->erase(cid);
             activeConnectionTempSet_.erase(cid);

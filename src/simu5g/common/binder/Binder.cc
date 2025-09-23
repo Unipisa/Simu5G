@@ -393,6 +393,12 @@ OmnetId Binder::getOmnetId(MacNodeId nodeId)
     return 0;
 }
 
+cModule *Binder::getNodeModule(MacNodeId nodeId)
+{
+    auto it = nodeInfoMap_.find(nodeId);
+    return it != nodeInfoMap_.end() ? getSimulation()->getModule(it->second.omnetId) : nullptr;
+}
+
 MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
     for (const auto& [macNodeId, nodeInfo] : nodeInfoMap_)
         if (nodeInfo.omnetId == id)

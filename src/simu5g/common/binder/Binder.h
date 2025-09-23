@@ -305,6 +305,16 @@ class Binder : public cSimpleModule
      */
     OmnetId getOmnetId(MacNodeId nodeId);
 
+    /**
+     * Returns true if the node exists.
+     */
+    bool nodeExists(MacNodeId nodeId) { return nodeInfoMap_.find(nodeId) != nodeInfoMap_.end(); }
+
+    /**
+     * Returns nullptr if not found.
+     */
+    cModule *getNodeModule(MacNodeId nodeId);
+
     /*
      * getMacNodeIdFromOmnetId returns information on all nodes in a map
      */

@@ -53,7 +53,7 @@ void LtePhyUeD2D::handleSelfMessage(cMessage *msg)
     }
     else if (msg->isName("doModeSwitchAtHandover")) {
         // Call mode selection module to check if DM connections are possible.
-        cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
+        cModule *enb = binder_->getNodeModule(masterId_);
         D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, true);
 
@@ -73,7 +73,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     EV << "LtePhyUeD2D: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     MacNodeId sourceId = lteInfo->getSourceId();
-    if (binder_->getOmnetId(sourceId) == 0) {
+    if (!binder_->nodeExists(sourceId)) {
         EV << "Source has left the simulation." << endl;
         delete msg;
         return;
@@ -246,7 +246,7 @@ void LtePhyUeD2D::triggerHandover()
         // Currently, DM is possible only for UEs served by the same cell.
 
         // Trigger D2D mode switch.
-        cModule *enb = getSimulation()->getModule(binder_->getOmnetId(masterId_));
+        cModule *enb = binder_->getNodeModule(masterId_);
         D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
     }

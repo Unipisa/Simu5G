@@ -31,7 +31,7 @@ void LteDrr::prepareSchedule()
         MacNodeId nodeId = cid.getNodeId();
 
         // Check if node is still a valid node in the simulation - might have been dynamically removed.
-        if (binder_->getOmnetId(nodeId) == 0) {
+        if (!binder_->nodeExists(nodeId)) {
             activeTempList_.erase();          // Remove from the active list.
             activeConnectionTempSet_.erase(cid);
             carrierActiveConnectionSet_.erase(cid);

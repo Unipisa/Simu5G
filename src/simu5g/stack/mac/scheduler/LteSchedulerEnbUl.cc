@@ -270,13 +270,8 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
                 // get current nodeId and buffer
                 auto& [nodeId, harqBuffer] = *it;
 
-                if (nodeId == NODEID_NONE) {
+                if (nodeId == NODEID_NONE || !binder_->nodeExists(nodeId)) {
                     // UE has left the simulation - erase queue and continue
-                    it = rxBufferForCarrierFrequency.erase(it);
-                    continue;
-                }
-                OmnetId id = binder_->getOmnetId(nodeId);
-                if (id == 0) {
                     it = rxBufferForCarrierFrequency.erase(it);
                     continue;
                 }
@@ -332,12 +327,12 @@ bool LteSchedulerEnbUl::rtxschedule(GHz carrierFrequency, BandLimitVector *bandL
                     MacNodeId senderId = d2dPair.first; // Transmitter
                     MacNodeId destId = d2dPair.second;  // Receiver
 
-                    if (senderId == NODEID_NONE || binder_->getOmnetId(senderId) == 0) {
+                    if (senderId == NODEID_NONE || !binder_->nodeExists(senderId)) {
                         // UE has left the simulation - erase queue and continue
                         it_d2d = harqBuffersMirrorD2D->erase(it_d2d);
                         continue;
                     }
-                    if (destId == NODEID_NONE || binder_->getOmnetId(destId) == 0) {
+                    if (destId == NODEID_NONE || !binder_->nodeExists(destId)) {
                         // UE has left the simulation - erase queue and continue
                         it_d2d = harqBuffersMirrorD2D->erase(it_d2d);
                         continue;
