@@ -385,25 +385,10 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
     nextHop_[num(slaveId)] = NODEID_NONE;
 }
 
-OmnetId Binder::getOmnetId(MacNodeId nodeId)
-{
-    auto it = nodeInfoMap_.find(nodeId);
-    if (it != nodeInfoMap_.end())
-        return it->second.omnetId;
-    return 0;
-}
-
 cModule *Binder::getNodeModule(MacNodeId nodeId)
 {
     auto it = nodeInfoMap_.find(nodeId);
     return it != nodeInfoMap_.end() ? getSimulation()->getModule(it->second.omnetId) : nullptr;
-}
-
-MacNodeId Binder::getMacNodeIdFromOmnetId(OmnetId id) {
-    for (const auto& [macNodeId, nodeInfo] : nodeInfoMap_)
-        if (nodeInfo.omnetId == id)
-            return macNodeId;
-    return NODEID_NONE;
 }
 
 LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)

@@ -297,15 +297,6 @@ class Binder : public cSimpleModule
     void registerMasterNode(MacNodeId masterId, MacNodeId slaveId);
 
     /**
-     * getOmnetId() returns the Omnet Id of the module
-     * given its MacNodeId
-     *
-     * @param nodeId MacNodeId of the module
-     * @return OmnetId of the module
-     */
-    OmnetId getOmnetId(MacNodeId nodeId);
-
-    /**
      * Returns true if the node exists.
      */
     bool nodeExists(MacNodeId nodeId) { return nodeInfoMap_.find(nodeId) != nodeInfoMap_.end(); }
@@ -319,15 +310,6 @@ class Binder : public cSimpleModule
      * getMacNodeIdFromOmnetId returns information on all nodes in a map
      */
     const std::map<MacNodeId, NodeInfo>& getNodeInfoMap() const { return nodeInfoMap_; }
-
-    /**
-     * getMacNodeIdFromOmnetId() returns the MacNodeId of the module
-     * given its OmnetId
-     *
-     * @param id OmnetId of the module
-     * @return MacNodeId of the module
-     */
-    MacNodeId getMacNodeIdFromOmnetId(OmnetId id);
 
     /*
      * getMacFromMacNodeId() returns the reference to the LteMacBase module
