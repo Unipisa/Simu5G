@@ -19,7 +19,6 @@ class WarningAppPacket extends MecPacket
 
 class WarningAlertPacket extends WarningAppPacket
 {
-    int ueOmnetID;
     double positionX;
     double positionY;
     double positionZ;
