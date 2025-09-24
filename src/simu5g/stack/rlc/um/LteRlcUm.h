@@ -175,7 +175,7 @@ class LteRlcUm : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created TXBuffer
      */
-    virtual UmTxEntity *createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
+    virtual UmTxEntity *createTxBuffer(MacCid cid, FlowControlInfo *lteInfo);
 
 
     /**
@@ -193,8 +193,8 @@ class LteRlcUm : public cSimpleModule
      * @param lteInfo flow-related info
      * @return pointer to the newly created RXBuffer
      */
-    virtual UmRxEntity *createRxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo);
 
+    virtual UmRxEntity *createRxBuffer(MacCid cid, FlowControlInfo *lteInfo);
 
     /**
      * handler for traffic coming

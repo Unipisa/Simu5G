@@ -77,7 +77,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    MacCid cid = ctrlInfoToMacCid(lteInfo);
+    MacCid cid = ctrlInfoToMacCid(lteInfo.get());
 
     // Find TXBuffer for this CID
     AmTxQueue *txbuf = lookupTxBuffer(cid);
@@ -104,7 +104,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    MacCid cid = ctrlInfoToMacCid(lteInfo);
+    MacCid cid = ctrlInfoToMacCid(lteInfo.get());
 
     // Find TXBuffer for this CID
     AmTxQueue *txbuf = lookupTxBuffer(cid);
@@ -128,7 +128,7 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
 
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    MacCid cid = ctrlInfoToMacCid(lteInfo);
+    MacCid cid = ctrlInfoToMacCid(lteInfo.get());
 
     // Find TXBuffer for this CID
     AmTxQueue *txbuf = lookupTxBuffer(cid);
@@ -149,7 +149,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         // process SDU request received from MAC
 
         // get the corresponding Tx buffer
-        MacCid cid = ctrlInfoToMacCid(lteInfo);
+        MacCid cid = ctrlInfoToMacCid(lteInfo.get());
 
         // Find TXBuffer for this CID
         AmTxQueue *txbuf = lookupTxBuffer(cid);
@@ -177,7 +177,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         }
 
         // Extract information from fragment
-        MacCid cid = ctrlInfoToMacCid(lteInfo);
+        MacCid cid = ctrlInfoToMacCid(lteInfo.get());
         // Find RXBuffer for this CID
         AmRxQueue *rxbuf = lookupRxBuffer(cid);
         if (rxbuf == nullptr)

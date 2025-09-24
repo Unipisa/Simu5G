@@ -47,7 +47,7 @@ class LteRlcUmD2D : public LteRlcUm
      * @param lteInfo flow-related info
      * @return pointer to the newly created TXBuffer
      */
-    UmTxEntity *createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo) override;
+    UmTxEntity *createTxBuffer(MacCid cid, FlowControlInfo *lteInfo) override;
 
     /**
      * UM Mode

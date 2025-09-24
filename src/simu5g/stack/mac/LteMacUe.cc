@@ -252,7 +252,7 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
     // obtain the cid from the packet information
-    MacCid cid = ctrlInfoToMacCid(lteInfo);
+    MacCid cid = ctrlInfoToMacCid(lteInfo.get());
 
     // check if queues exist, create them if they don't
     if (connDescOut_.find(cid) == connDescOut_.end())

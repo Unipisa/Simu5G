@@ -17,7 +17,7 @@ namespace simu5g {
 Define_Module(LteRlcUmD2D);
 using namespace omnetpp;
 
-UmTxEntity *LteRlcUmD2D::createTxBuffer(MacCid cid, inet::Ptr<FlowControlInfo> lteInfo)
+UmTxEntity *LteRlcUmD2D::createTxBuffer(MacCid cid, FlowControlInfo *lteInfo)
 {
     UmTxEntity *txEnt = LteRlcUm::createTxBuffer(cid, lteInfo);
 
@@ -50,10 +50,10 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
         if (switchPkt->getTxSide()) {
             // get the corresponding Rx buffer & call handler
-            MacCid cid = ctrlInfoToMacCid(lteInfo);
+            MacCid cid = ctrlInfoToMacCid(lteInfo.get());
             UmTxEntity *txbuf = lookupTxBuffer(cid);
             if (txbuf == nullptr)
-                txbuf = createTxBuffer(cid, lteInfo);
+                txbuf = createTxBuffer(cid, lteInfo.get());
             txbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getClearRlcBuffer());
 
             // forward packet to PDCP
@@ -66,7 +66,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
             MacCid cid = MacCid(nodeId, lteInfo->getLcid());
             UmRxEntity *rxbuf = lookupRxBuffer(cid);
             if (rxbuf == nullptr)
-                rxbuf = createRxBuffer(cid, lteInfo);
+                rxbuf = createRxBuffer(cid, lteInfo.get());
             rxbuf->rlcHandleD2DModeSwitch(switchPkt->getOldConnection(), switchPkt->getOldMode(), switchPkt->getClearRlcBuffer());
 
             delete pkt;
