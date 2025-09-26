@@ -138,46 +138,6 @@ SlotFormat Binder::getSlotFormat(GHz carrierFrequency)
     return it->second.slotFormat;
 }
 
-void Binder::unregisterNode(MacNodeId id)
-{
-    EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
-
-    for (auto it = ipAddressToMacNodeId_.begin(); it != ipAddressToMacNodeId_.end(); ) {
-        if (it->second == id) {
-            it = ipAddressToMacNodeId_.erase(it);
-        }
-        else {
-            it++;
-        }
-    }
-
-    // iterate all nodeIds and find HarqRx buffers dependent on 'id'
-    for (const auto& [nodeId, nodeInfo] : nodeInfoMap_) {
-        LteMacBase *mac = getMacFromMacNodeId(nodeId);
-        mac->unregisterHarqBufferRx(id);
-    }
-
-    // remove 'id' from consolidated node info map
-    if (nodeInfoMap_.erase(id) != 1) {
-        throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
-    }
-    // remove 'id' from ulTransmissionMap_ if currently scheduled
-    for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
-        for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
-            for (auto& ues : bands) { // all Ue's in each block
-                for(auto itr = ues.begin(); itr != ues.end(); ) {
-                    if (itr->nodeId == id) {
-                        itr = ues.erase(itr);
-                    }
-                    else {
-                        itr++;
-                    }
-                }
-            }
-        }
-    }
-}
-
 MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId masterId, bool registerNr)
 {
     Enter_Method_Silent("registerNode");
@@ -219,6 +179,46 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
     return macNodeId;
 }
 
+void Binder::unregisterNode(MacNodeId id)
+{
+    EV << NOW << " Binder::unregisterNode - unregistering node " << id << endl;
+
+    for (auto it = ipAddressToMacNodeId_.begin(); it != ipAddressToMacNodeId_.end(); ) {
+        if (it->second == id) {
+            it = ipAddressToMacNodeId_.erase(it);
+        }
+        else {
+            it++;
+        }
+    }
+
+    // iterate all nodeIds and find HarqRx buffers dependent on 'id'
+    for (const auto& [nodeId, nodeInfo] : nodeInfoMap_) {
+        LteMacBase *mac = getMacFromMacNodeId(nodeId);
+        mac->unregisterHarqBufferRx(id);
+    }
+
+    // remove 'id' from consolidated node info map
+    if (nodeInfoMap_.erase(id) != 1) {
+        throw cRuntimeError("Cannot unregister node - node id %d - not found", num(id));
+    }
+    // remove 'id' from ulTransmissionMap_ if currently scheduled
+    for (auto& carrier : ulTransmissionMap_) { // all carrier frequency
+        for (auto& bands : carrier.second) { // all RB's for current and last TTI (vector<vector<vector<UeAllocationInfo>>>)
+            for (auto& ues : bands) { // all Ue's in each block
+                for(auto itr = ues.begin(); itr != ues.end(); ) {
+                    if (itr->nodeId == id) {
+                        itr = ues.erase(itr);
+                    }
+                    else {
+                        itr++;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Binder::registerNextHop(MacNodeId masterId, MacNodeId slaveId)
 {
     Enter_Method_Silent("registerNextHop");
@@ -234,6 +234,18 @@ void Binder::registerNextHop(MacNodeId masterId, MacNodeId slaveId)
         nextHop_.resize(num(slaveId) + 1);
     nextHop_[num(slaveId)] = masterId;
 }
+
+void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
+{
+    Enter_Method_Silent("unregisterNextHop");
+    EV << "Binder : Unregistering slave " << slaveId << " from master " << masterId << "\n";
+    dMap_[masterId][slaveId] = false;
+
+    if (nextHop_.size() <= num(slaveId))
+        return;
+    nextHop_[num(slaveId)] = NODEID_NONE;
+}
+
 
 void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
 {
@@ -373,17 +385,6 @@ void Binder::finish()
 
         out.close();
     }
-}
-
-void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
-{
-    Enter_Method_Silent("unregisterNextHop");
-    EV << "Binder : Unregistering slave " << slaveId << " from master " << masterId << "\n";
-    dMap_[masterId][slaveId] = false;
-
-    if (nextHop_.size() <= num(slaveId))
-        return;
-    nextHop_[num(slaveId)] = NODEID_NONE;
 }
 
 cModule *Binder::getNodeModule(MacNodeId nodeId)
