@@ -424,12 +424,11 @@ MacNodeId Binder::getNextHop(MacNodeId nodeId)
     return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) == ENODEB) ? nodeId : getServingNode(nodeId);
 }
 
-MacNodeId Binder::getMasterNode(MacNodeId slaveId)
+MacNodeId Binder::getMasterNode(MacNodeId secondaryEnbId)
 {
-    Enter_Method_Silent("getMasterNode");
-    if (num(slaveId) >= secondaryNodeToMasterNode_.size())
-        throw cRuntimeError("Binder::getMasterNode(): bad slave id %hu", num(slaveId));
-    return secondaryNodeToMasterNode_[num(slaveId)];
+    if (num(secondaryEnbId) >= secondaryNodeToMasterNode_.size())
+        throw cRuntimeError("Binder::getMasterNode(): bad secondaryEnbId %hu", num(secondaryEnbId));
+    return secondaryNodeToMasterNode_[num(secondaryEnbId)];
 }
 
 void Binder::registerMecHost(const inet::L3Address& mecHostAddress)

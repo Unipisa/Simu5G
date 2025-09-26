@@ -318,13 +318,11 @@ class Binder : public cSimpleModule
     MacNodeId getNextHop(MacNodeId nodeId);
 
     /**
-     * getMasterNode() returns the master of
-     * a given slave (used for dual connectivity)
-     *
-     * @param slaveId MacNodeId of the Slave
-     * @return MacNodeId of the master
+     * In a Dual Connectivity / Split Bearer setup, returns the Master Node (MeNB, MN)
+     * for the given Secondary Node (SeNB, SN).
      */
-    MacNodeId getMasterNode(MacNodeId slaveId);
+    //TODO add  MacNodeId ueId arg: In LTE DC, the roles (master/secondary) are per UE, not per bearer.
+    MacNodeId getMasterNode(MacNodeId secondaryEnbId);
 
     /**
      * Returns the MacNodeId for the given IP address
