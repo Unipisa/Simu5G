@@ -229,9 +229,9 @@ void Binder::registerServingNode(MacNodeId enbId, MacNodeId ueId)
 
     dMap_[enbId][ueId] = true;
 
-    if (servingNodeB_.size() <= num(ueId))
-        servingNodeB_.resize(num(ueId) + 1);
-    servingNodeB_[num(ueId)] = enbId;
+    if (servingNode_.size() <= num(ueId))
+        servingNode_.resize(num(ueId) + 1);
+    servingNode_[num(ueId)] = enbId;
 }
 
 void Binder::unregisterServingNode(MacNodeId enbId, MacNodeId ueId)
@@ -244,11 +244,16 @@ void Binder::unregisterServingNode(MacNodeId enbId, MacNodeId ueId)
 
     dMap_[enbId][ueId] = false;
 
-    if (servingNodeB_.size() <= num(ueId))
+    if (servingNode_.size() <= num(ueId))
         return;
-    servingNodeB_[num(ueId)] = NODEID_NONE;
+    servingNode_[num(ueId)] = NODEID_NONE;
 }
 
+MacNodeId Binder::getServingNode(MacNodeId ueId)
+{
+    ASSERT(getNodeTypeById(ueId) == UE);
+    return servingNode_[num(ueId)]; // overindexing extends vector with zeroes, which is fine
+}
 
 void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
 {
@@ -279,7 +284,7 @@ void Binder::initialize(int stage)
         WATCH_MAP(ipAddressToMacNodeId_);
         WATCH_MAP(ipAddressToNrMacNodeId_);
         // WATCH_MAP(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
-        WATCH_VECTOR(servingNodeB_);
+        WATCH_VECTOR(servingNode_);
         WATCH_VECTOR(secondaryNodeToMasterNode_);
         WATCH_SET(mecHostAddress_);
         WATCH_MAP(mecHostToUpfAddress_);
@@ -414,14 +419,9 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
     return it->second.macModule;
 }
 
-MacNodeId Binder::getNextHop(MacNodeId slaveId)
+MacNodeId Binder::getNextHop(MacNodeId nodeId)
 {
-    Enter_Method_Silent("getNextHop");
-    if (getNodeTypeById(slaveId) == ENODEB)
-        return slaveId;
-    if (num(slaveId) >= servingNodeB_.size())
-        throw cRuntimeError("Binder::getNextHop(): bad slave id %hu", num(slaveId));
-    return servingNodeB_[num(slaveId)];
+    return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) == ENODEB) ? nodeId : getServingNode(nodeId);
 }
 
 MacNodeId Binder::getMasterNode(MacNodeId slaveId)
@@ -651,7 +651,7 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
         LteMacBase *dstMac = getMacFromMacNodeId(dst);
         if (dstMac->isD2DCapable()) {
             // set the initial mode
-            if (servingNodeB_[num(src)] == servingNodeB_[num(dst)]) {
+            if (servingNode_[num(src)] == servingNode_[num(dst)]) {
                 // if served by the same cell, then the mode is selected according to the corresponding parameter
                 LteMacBase *srcMac = getMacFromMacNodeId(src);
                 inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);

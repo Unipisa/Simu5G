@@ -61,7 +61,7 @@ class Binder : public cSimpleModule
     // Consolidated node information - replaces nodeIds_, macNodeIdToModuleName_, macNodeIdToModuleRef_, macNodeIdToModule_
     std::map<MacNodeId, NodeInfo> nodeInfoMap_;
 
-    std::vector<MacNodeId> servingNodeB_;  // ueId -> servingEnbId
+    std::vector<MacNodeId> servingNode_;  // ueId -> servingEnbId
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
 
     // stores the IP address of the MEC hosts in the simulation
@@ -274,6 +274,11 @@ class Binder : public cSimpleModule
     void unregisterServingNode(MacNodeId enbId, MacNodeId ueId);
 
     /**
+     * Returns the serving eNodeB/gNodeB of an UE, or NODEID_NONE if there is none.
+     */
+    MacNodeId getServingNode(MacNodeId ueId);
+
+    /**
      * registerMasterNode()
      *
      * It registers the secondary node to its master node (used for dual connectivity)
@@ -308,9 +313,9 @@ class Binder : public cSimpleModule
     LteMacBase *getMacFromMacNodeId(MacNodeId id);
 
     /**
-     * Returns the serving nodeB of an UE, or NODEID_NONE if there is none.
+     * For an UE, returns the serving eNodeB/gNodeB; for an eNodeB/gNodeB, returns the nodeId (the arg).
      */
-    MacNodeId getNextHop(MacNodeId ueId);
+    MacNodeId getNextHop(MacNodeId nodeId);
 
     /**
      * getMasterNode() returns the master of
