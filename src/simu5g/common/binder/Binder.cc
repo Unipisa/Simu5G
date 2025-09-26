@@ -204,6 +204,7 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
         module->par("macNodeId") = num(macNodeId);
     else
         module->par("nrMacNodeId") = num(macNodeId);
+    module->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", macNodeId).c_str());
 
     if (type == UE) {
         registerNextHop(masterId, macNodeId);
