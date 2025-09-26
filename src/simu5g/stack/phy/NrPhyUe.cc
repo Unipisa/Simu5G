@@ -334,10 +334,10 @@ void NrPhyUe::doHandover()
 
     // binder calls
     if (masterId_ != NODEID_NONE)
-        binder_->unregisterNextHop(masterId_, nodeId_);
+        binder_->unregisterServingNode(masterId_, nodeId_);
 
     if (candidateMasterId_ != NODEID_NONE) {
-        binder_->registerNextHop(candidateMasterId_, nodeId_);
+        binder_->registerServingNode(candidateMasterId_, nodeId_);
         das_->setMasterRuSet(candidateMasterId_);
     }
     binder_->updateUeInfoCellId(nodeId_, candidateMasterId_);

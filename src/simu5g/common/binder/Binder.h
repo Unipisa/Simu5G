@@ -61,7 +61,7 @@ class Binder : public cSimpleModule
     // Consolidated node information - replaces nodeIds_, macNodeIdToModuleName_, macNodeIdToModuleRef_, macNodeIdToModule_
     std::map<MacNodeId, NodeInfo> nodeInfoMap_;
 
-    std::vector<MacNodeId> nextHop_; // MacNodeIdMaster --> MacNodeIdSlave
+    std::vector<MacNodeId> servingNodeB_;  // ueId -> servingEnbId
     std::vector<MacNodeId> secondaryNodeToMasterNode_;
 
     // stores the IP address of the MEC hosts in the simulation
@@ -263,27 +263,15 @@ class Binder : public cSimpleModule
     void unregisterNode(MacNodeId id);
 
     /**
-     * registerNextHop() is called by the IP2NIC module at network startup
-     * to bind each slave with its masters. It is also
-     * called on handovers to synchronize the nextHop table:
-     *
-     * It registers a slave to its current master
-     *
-     * @param masterId MacNodeId of the Master
-     * @param slaveId MacNodeId of the Slave
+     * Binds an UE with its serving eNodeB/gNodeB. Invoked at the start of
+     * the simulation and on handovers.
      */
-    void registerNextHop(MacNodeId masterId, MacNodeId slaveId);
+    void registerServingNode(MacNodeId enbId, MacNodeId ueId);
 
     /**
-     * registerNextHop() is called on handovers to synchronize
-     * the nextHop table:
-     *
-     * It unregisters the slave from its old master
-     *
-     * @param masterId MacNodeId of the Master
-     * @param slaveId MacNodeId of the Slave
+     * Unregisters the UE from its current eNodeB/gNodeB. Invoked e.g. on handovers.
      */
-    void unregisterNextHop(MacNodeId masterId, MacNodeId slaveId);
+    void unregisterServingNode(MacNodeId enbId, MacNodeId ueId);
 
     /**
      * registerMasterNode()
@@ -320,13 +308,9 @@ class Binder : public cSimpleModule
     LteMacBase *getMacFromMacNodeId(MacNodeId id);
 
     /**
-     * getNextHop() returns the master of
-     * a given slave
-     *
-     * @param slaveId MacNodeId of the Slave
-     * @return MacNodeId of the master
+     * Returns the serving nodeB of an UE, or NODEID_NONE if there is none.
      */
-    MacNodeId getNextHop(MacNodeId slaveId);
+    MacNodeId getNextHop(MacNodeId ueId);
 
     /**
      * getMasterNode() returns the master of

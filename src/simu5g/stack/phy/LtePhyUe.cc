@@ -159,8 +159,8 @@ void LtePhyUe::initialize(int stage)
             // binder calls
             // if dynamicCellAssociation selected a different master
             if (candidateMasterId_ != NODEID_NONE && candidateMasterId_ != masterId_) {
-                binder_->unregisterNextHop(masterId_, nodeId_);
-                binder_->registerNextHop(candidateMasterId_, nodeId_);
+                binder_->unregisterServingNode(masterId_, nodeId_);
+                binder_->registerServingNode(candidateMasterId_, nodeId_);
             }
             masterId_ = candidateMasterId_;
             // set serving cell
@@ -373,10 +373,10 @@ void LtePhyUe::doHandover()
 
     // binder calls
     if (masterId_ != NODEID_NONE)
-        binder_->unregisterNextHop(masterId_, nodeId_);
+        binder_->unregisterServingNode(masterId_, nodeId_);
 
     if (candidateMasterId_ != NODEID_NONE) {
-        binder_->registerNextHop(candidateMasterId_, nodeId_);
+        binder_->registerServingNode(candidateMasterId_, nodeId_);
         das_->setMasterRuSet(candidateMasterId_);
     }
     binder_->updateUeInfoCellId(nodeId_, candidateMasterId_);
@@ -790,7 +790,7 @@ void LtePhyUe::finish()
             }
 
             // binder call
-            binder_->unregisterNextHop(masterId_, nodeId_);
+            binder_->unregisterServingNode(masterId_, nodeId_);
 
             // cellInfo call
             cellInfo_->detachUser(nodeId_);
