@@ -178,6 +178,8 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
         L3Address tunnelPeerAddress;
         if (flowId == TFT_EXTERNAL_DESTINATION) { // send to the gateway
+            if (gwAddress_.isUnspecified())
+                throw cRuntimeError("Packet is destined by TFT to external destination (Internet), but gateway address is not configured");
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << gwAddress_.str() << endl;
             tunnelPeerAddress = gwAddress_;
         }
