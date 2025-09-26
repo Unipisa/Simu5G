@@ -173,7 +173,6 @@ MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId mast
     }
     else if (type == ENODEB || type == GNODEB) {
         module->par("macCellId") = num(macNodeId);
-        registerNextHop(macNodeId, macNodeId);
         registerMasterNode(masterId, macNodeId);
     }
     return macNodeId;
@@ -226,6 +225,9 @@ void Binder::registerNextHop(MacNodeId masterId, MacNodeId slaveId)
     EV << "Binder : Registering slave " << slaveId << " to master "
        << masterId << "\n";
 
+    ASSERT(masterId == NODEID_NONE || getNodeTypeById(masterId) == ENODEB);
+    ASSERT(getNodeTypeById(slaveId) == UE);
+
     if (masterId != slaveId) {
         dMap_[masterId][slaveId] = true;
     }
@@ -239,6 +241,10 @@ void Binder::unregisterNextHop(MacNodeId masterId, MacNodeId slaveId)
 {
     Enter_Method_Silent("unregisterNextHop");
     EV << "Binder : Unregistering slave " << slaveId << " from master " << masterId << "\n";
+
+    ASSERT(masterId == NODEID_NONE || getNodeTypeById(masterId) == ENODEB);
+    ASSERT(getNodeTypeById(slaveId) == UE);
+
     dMap_[masterId][slaveId] = false;
 
     if (nextHop_.size() <= num(slaveId))
@@ -414,6 +420,8 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
 MacNodeId Binder::getNextHop(MacNodeId slaveId)
 {
     Enter_Method_Silent("getNextHop");
+    if (getNodeTypeById(slaveId) == ENODEB)
+        return slaveId;
     if (num(slaveId) >= nextHop_.size())
         throw cRuntimeError("Binder::getNextHop(): bad slave id %hu", num(slaveId));
     return nextHop_[num(slaveId)];
