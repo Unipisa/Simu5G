@@ -323,7 +323,7 @@ class LtePdcpBase : public cSimpleModule
      *
      * @param pkt incoming packet
      */
-    void toDataPort(cPacket *pkt);
+    virtual void toDataPort(cPacket *pkt);
 
     /*
      * Forwarding Handlers
