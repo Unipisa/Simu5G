@@ -34,7 +34,7 @@ void LteCompManagerBase::initialize()
     x2ManagerOutGate_ = gate("x2ManagerOut");
 
     // get reference to mac layer
-    mac_ = check_and_cast<LteMacEnb *>(binder->getMacByMacNodeId(nodeId_));
+    mac_ = check_and_cast<LteMacEnb *>(binder->getMacByNodeId(nodeId_));
 
     // get the number of available bands
     numBands_ = mac_->getCellInfo()->getNumBands();

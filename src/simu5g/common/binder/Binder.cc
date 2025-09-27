@@ -413,7 +413,7 @@ LteMacBase *Binder::getMacFromMacNodeId(MacNodeId id)
     // Check if MAC module is already cached
     if (it->second.macModule == nullptr) {
         // Cache the MAC module reference
-        it->second.macModule = check_and_cast<LteMacBase *>(getMacByMacNodeId(id));
+        it->second.macModule = check_and_cast<LteMacBase *>(getMacByNodeId(id));
     }
 
     return it->second.macModule;
@@ -1224,7 +1224,7 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     }
 }
 
-CellInfo *Binder::getCellInfo(MacNodeId nodeId)
+CellInfo *Binder::getCellInfoByNodeId(MacNodeId nodeId)
 {
     // Check if it is an eNodeB
     // function GetNextHop returns nodeId
@@ -1233,7 +1233,7 @@ CellInfo *Binder::getCellInfo(MacNodeId nodeId)
     return module ? check_and_cast<CellInfo *>(module->getSubmodule("cellInfo")) : nullptr;
 }
 
-cModule *Binder::getPhyByMacNodeId(MacNodeId nodeId)
+cModule *Binder::getPhyByNodeId(MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
@@ -1246,7 +1246,7 @@ cModule *Binder::getPhyByMacNodeId(MacNodeId nodeId)
     return module->getSubmodule("cellularNic")->getSubmodule("phy");
 }
 
-cModule *Binder::getMacByMacNodeId(MacNodeId nodeId)
+cModule *Binder::getMacByNodeId(MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
@@ -1259,7 +1259,7 @@ cModule *Binder::getMacByMacNodeId(MacNodeId nodeId)
     return module->getSubmodule("cellularNic")->getSubmodule("mac");
 }
 
-cModule *Binder::getRlcByMacNodeId(MacNodeId nodeId, LteRlcType rlcType)
+cModule *Binder::getRlcByNodeId(MacNodeId nodeId, LteRlcType rlcType)
 {
     cModule *module = getNodeModule(nodeId);
     if (module == nullptr) {
@@ -1270,7 +1270,7 @@ cModule *Binder::getRlcByMacNodeId(MacNodeId nodeId, LteRlcType rlcType)
     return module->getSubmodule("cellularNic")->getSubmodule("rlc")->getSubmodule(rlcTypeToA(rlcType).c_str());
 }
 
-cModule *Binder::getPdcpByMacNodeId(MacNodeId nodeId)
+cModule *Binder::getPdcpByNodeId(MacNodeId nodeId)
 {
     // UE might have left the simulation, return NULL in this case
     // since we do not have a MAC-Module anymore
@@ -1279,11 +1279,6 @@ cModule *Binder::getPdcpByMacNodeId(MacNodeId nodeId)
         return nullptr;
     }
     return module->getSubmodule("cellularNic")->getSubmodule("pdcp");
-}
-
-LteMacBase *Binder::getMacUe(MacNodeId nodeId)
-{
-    return check_and_cast<LteMacBase *>(getMacByMacNodeId(nodeId));
 }
 
 } //namespace

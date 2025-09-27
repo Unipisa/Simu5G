@@ -187,7 +187,7 @@ void LtePhyUe::initialize(int stage)
     else if (stage == inet::INITSTAGE_NETWORK_CONFIGURATION) {
         // get cellInfo at this stage because the next hop of the node is registered in the Ip2Nic module at the INITSTAGE_NETWORK_LAYER
         if (masterId_ != NODEID_NONE) {
-            cellInfo_ = binder_->getCellInfo(nodeId_);
+            cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);
             int index = intuniform(0, binder_->phyPisaData.maxChannel() - 1);
             if (cellInfo_ != nullptr) {
                 cellInfo_->lambdaInit(nodeId_, index);
@@ -413,7 +413,7 @@ void LtePhyUe::doHandover()
 
     if (candidateMasterId_ != NODEID_NONE) {
         CellInfo *oldCellInfo = cellInfo_;
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(candidateMasterId_));
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(candidateMasterId_));
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
@@ -638,7 +638,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     // Delete Mac Buffers
 
     // delete macBuffer[nodeId_] at old master
-    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(masterId));
+    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId));
     masterMac->deleteQueues(nodeId_);
 
     // delete queues for master at this ue
@@ -647,7 +647,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
     // Delete Rlc UM Buffers
 
     // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByMacNodeId(masterId, UM));
+    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(masterId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for master at this ue
@@ -655,7 +655,7 @@ void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
 
     // Delete PDCP Entities
     // delete pdcpEntities[nodeId_] at old master
-    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByMacNodeId(masterId));
+    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByNodeId(masterId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for master at this ue

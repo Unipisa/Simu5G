@@ -371,7 +371,7 @@ void NrPhyUe::doHandover()
 
     if (candidateMasterId_ != NODEID_NONE) {
         CellInfo *oldCellInfo = cellInfo_;
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(candidateMasterId_));
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(candidateMasterId_));
         CellInfo *newCellInfo = newMacEnb->getCellInfo();
         newCellInfo->attachUser(nodeId_);
         cellInfo_ = newCellInfo;
@@ -428,7 +428,7 @@ void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
     // Delete MAC Buffers
 
     // delete macBuffer[nodeId_] at old master
-    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(masterId));
+    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId));
     masterMac->deleteQueues(nodeId_);
 
     // delete queues for master at this UE
@@ -437,7 +437,7 @@ void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
     // Delete RLC UM Buffers
 
     // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByMacNodeId(masterId, UM));
+    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(masterId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
     // delete queues for master at this UE
@@ -447,7 +447,7 @@ void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
     // delete pdcpEntities[nodeId_] at old master
     // in case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
     MacNodeId masterNodeId = binder_->getMasterNode(masterId);
-    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByMacNodeId(masterNodeId));
+    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByNodeId(masterNodeId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for master at this UE

@@ -45,7 +45,7 @@ void LtePhyEnb::initialize(int stage)
         nodeId_ = MacNodeId(hostModule->par("macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
 
-        cellInfo_ = binder_->getCellInfo(nodeId_);
+        cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);
         if (cellInfo_ != nullptr) {
             cellInfo_->channelUpdate(nodeId_, intuniform(1, binder_->phyPisaData.maxChannel2()));
             das_ = new DasFilter(this, binder_, cellInfo_->getRemoteAntennaSet(), 0);

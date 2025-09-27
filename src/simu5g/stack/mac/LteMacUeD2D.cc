@@ -53,9 +53,9 @@ void LteMacUeD2D::initialize(int stage)
             preconfiguredTxParams_ = getPreconfiguredTxParams();
 
             // get the reference to the eNB
-            enb_ = check_and_cast<LteMacEnbD2D *>(binder_->getMacByMacNodeId(cellId_));
+            enb_ = check_and_cast<LteMacEnbD2D *>(binder_->getMacByNodeId(cellId_));
 
-            LteAmc *amc = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(cellId_))->getAmc();
+            LteAmc *amc = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(cellId_))->getAmc();
             amc->attachUser(nodeId_, D2D);
 
 // TODO remove it. UeCollector connection made in LteMacUe Initialize
@@ -278,10 +278,10 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 auto info = macPkt->getTag<UserControlInfo>();
 
                 if (info->getDirection() == UL) {
-                    hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(binder_->getMacByMacNodeId(destId)));
+                    hb = new LteHarqBufferTx(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(binder_->getMacByNodeId(destId)));
                 }
                 else { // D2D or D2D_MULTI
-                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(binder_->getMacByMacNodeId(destId)));
+                    hb = new LteHarqBufferTxD2D(binder_, (unsigned int)ENB_TX_HARQ_PROCESSES, this, check_and_cast<LteMacBase *>(binder_->getMacByNodeId(destId)));
                 }
                 harqTxBuffers[destId] = hb;
                 txBuf = hb;
@@ -789,7 +789,7 @@ UserTxParams *LteMacUeD2D::getPreconfiguredTxParams()
     txParams->writeCqi(std::vector<Cqi>(1, cqi));
 
     BandSet b;
-    CellInfo *cellInfo = binder_->getCellInfo(nodeId_);
+    CellInfo *cellInfo = binder_->getCellInfoByNodeId(nodeId_);
     if (cellInfo != nullptr) {
         for (Band i = 0; i < cellInfo->getNumBands(); ++i)
             b.insert(i);
@@ -999,7 +999,7 @@ void LteMacUeD2D::doHandover(MacNodeId targetEnb)
         if (preconfiguredTxParams_ != nullptr)
             delete preconfiguredTxParams_;
         preconfiguredTxParams_ = getPreconfiguredTxParams();
-        enb_ = check_and_cast<LteMacEnbD2D *>(binder_->getMacByMacNodeId(targetEnb));
+        enb_ = check_and_cast<LteMacEnbD2D *>(binder_->getMacByNodeId(targetEnb));
     }
     LteMacUe::doHandover(targetEnb);
 }

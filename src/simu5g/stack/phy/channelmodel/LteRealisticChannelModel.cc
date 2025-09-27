@@ -489,7 +489,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
         enbCoord = phy_->getCoord();
     }
 
-    CellInfo *eNbCell = binder_->getCellInfo(eNbId);
+    CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
     const char *eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
     EV << "LteRealisticChannelModel::getSINR - srcId=" << lteInfo->getSourceId()
@@ -678,7 +678,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     if (collectSinrStatistics_ && (lteInfo->getFrameType() == FEEDBACKPKT) && usedRBs > 0) {
         // we are on the BS, so we need to retrieve the channel model of the sender
         // XXX I know, there might be a faster way...
-        LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByMacNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
+        LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(ueId))->getChannelModel(lteInfo->getCarrierFrequency());
 
         if (dir == DL) // we are on the UE
             ueChannelModel->emit(measuredSinrDlSignal_, sumSnr / usedRBs);
@@ -790,7 +790,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
         enbCoord = phy_->getCoord();
     }
 
-    CellInfo *eNbCell = binder_->getCellInfo(eNbId);
+    CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
     const char *eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
     EV << "LteRealisticChannelModel::getRSRP - srcId=" << lteInfo->getSourceId()
@@ -953,7 +953,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
     }
     speed = computeSpeed(bgUeId, ueCoord);
 
-    CellInfo *eNbCell = binder_->getCellInfo(eNbId);
+    CellInfo *eNbCell = binder_->getCellInfoByNodeId(eNbId);
     const char *eNbTypeString = eNbCell ? (eNbCell->getEnbType() == MACRO_ENB ? "MACRO" : "MICRO") : "NULL";
 
     EV << "LteRealisticChannelModel::getSINR_bgUe - DIR=" << ((dir == DL) ? "DL" : "UL")
@@ -1655,7 +1655,7 @@ double LteRealisticChannelModel::rayleighFading(MacNodeId id,
 {
     // get rayleigh variable from trace file
     double temp1 = binder_->phyPisaData.getChannel(
-            binder_->getCellInfo(id)->getLambda(id)->channelIndex + band);
+            binder_->getCellInfoByNodeId(id)->getLambda(id)->channelIndex + band);
     return linearToDb(temp1);
 }
 
@@ -1884,7 +1884,7 @@ bool LteRealisticChannelModel::isError(LteAirFrame *frame, UserControlInfo *lteI
         else {
             // we are on the BS, so we need to retrieve the channel model of the sender
             // XXX I know, there might be a faster way...
-            LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByMacNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
+            LteChannelModel *ueChannelModel = check_and_cast<LtePhyUe *>(binder_->getPhyByNodeId(id))->getChannelModel(lteInfo->getCarrierFrequency());
             ueChannelModel->emit(rcvdSinrUlSignal_, sumSnr / usedRBs);
         }
     }
@@ -2676,7 +2676,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
         // initialize eNB data structures
         if (!enbInfo->init) {
             // obtain a reference to eNB phy and obtain tx power
-            enbInfo->phy = check_and_cast<LtePhyBase *>(binder_->getPhyByMacNodeId(id));
+            enbInfo->phy = check_and_cast<LtePhyBase *>(binder_->getPhyByNodeId(id));
 
             enbInfo->txPwr = enbInfo->phy->getTxPwr();//dBm
 
@@ -2687,7 +2687,7 @@ bool LteRealisticChannelModel::computeDownlinkInterference(MacNodeId eNbId, MacN
             enbInfo->txAngle = enbInfo->phy->getTxAngle();
 
             //get reference to mac layer
-            enbInfo->mac = check_and_cast<LteMacEnb *>(binder_->getMacByMacNodeId(id));
+            enbInfo->mac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(id));
 
             enbInfo->init = true;
         }

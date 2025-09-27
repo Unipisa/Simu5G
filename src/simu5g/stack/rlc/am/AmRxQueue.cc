@@ -157,12 +157,12 @@ void AmRxQueue::discard(const int sn)
 
     if (dir != UNKNOWN_DIRECTION) {
         // UE module
-        cModule *ue = binder_->getRlcByMacNodeId((dir == DL ? dstId : srcId), UM);
+        cModule *ue = binder_->getRlcByNodeId((dir == DL ? dstId : srcId), UM);
         if (ue != nullptr)
             ue->emit(rlcPacketLossSignal_[dir_], 1.0);
 
         // NODEB
-        cModule *nodeb = binder_->getRlcByMacNodeId((dir == DL ? srcId : dstId), UM);
+        cModule *nodeb = binder_->getRlcByNodeId((dir == DL ? srcId : dstId), UM);
         if (nodeb != nullptr)
             nodeb->emit(rlcCellPacketLossSignal_[dir_], 1.0);
     }
@@ -367,12 +367,12 @@ void AmRxQueue::passUp(const int index)
     double delay = (NOW - pkt->getCreationTime()).dbl();
 
     if (dir == DL) {
-        nodeb = binder_->getRlcByMacNodeId(srcId, UM);
-        ue = binder_->getRlcByMacNodeId(dstId, UM);
+        nodeb = binder_->getRlcByNodeId(srcId, UM);
+        ue = binder_->getRlcByNodeId(dstId, UM);
     }
     else { // dir == one of UL, D2D, D2D_MULTI
-        nodeb = binder_->getRlcByMacNodeId(dstId, UM);
-        ue = binder_->getRlcByMacNodeId(srcId, UM);
+        nodeb = binder_->getRlcByNodeId(dstId, UM);
+        ue = binder_->getRlcByNodeId(srcId, UM);
     }
 
     totalRcvdBytes_ += pkt->getByteLength();

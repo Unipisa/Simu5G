@@ -35,7 +35,7 @@ LteHarqUnitTx::LteHarqUnitTx(Binder *binder, unsigned char acid, Codeword cw,
         dir_ = DL;
     }
     else { // UE
-        nodeB_ = binder->getMacByMacNodeId(macOwner_->getMacCellId());
+        nodeB_ = binder->getMacByNodeId(macOwner_->getMacCellId());
         if (dstMac_ == nodeB_) { // UL
             dir_ = UL;
         }

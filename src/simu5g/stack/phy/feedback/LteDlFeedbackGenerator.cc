@@ -124,7 +124,7 @@ void LteDlFeedbackGenerator::handleMessage(cMessage *msg)
 
 void LteDlFeedbackGenerator::initCellInfo()
 {
-    cellInfo_ = binder_->getCellInfo(masterId_);
+    cellInfo_ = binder_->getCellInfoByNodeId(masterId_);
     EV << "DLFeedbackGenerator - nodeid: " << nodeId_ << " cellInfo taken" << endl;
 
     if (cellInfo_ != nullptr) {
