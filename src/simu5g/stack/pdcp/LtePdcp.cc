@@ -147,6 +147,8 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
     analyzePacket(pkt);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
+    verifyControlInfo(lteInfo.get());
+
     MacCid cid = MacCid(lteInfo->getDestId(), lteInfo->getLcid());
 
     LteTxPdcpEntity *entity = lookupTxEntity(cid);

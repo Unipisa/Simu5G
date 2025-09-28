@@ -280,6 +280,38 @@ RanNodeType getNodeTypeById(MacNodeId id)
     return UNKNOWN_NODE_TYPE;
 }
 
+void verifyControlInfo(const FlowControlInfo *info)
+{
+    auto srcType = getNodeTypeById(info->getSourceId());
+    auto destType = getNodeTypeById(info->getDestId());
+    bool isMulticast = info->getMulticastGroupId() != -1;
+
+    switch ((Direction)info->getDirection()) {
+        case UL:
+            ASSERT(!isMulticast);
+            ASSERT(srcType == UE);
+            ASSERT(destType == ENODEB);
+            break;
+        case DL:
+            ASSERT(!isMulticast);
+            ASSERT(srcType == ENODEB);
+            ASSERT(destType == UE);
+            break;
+        case D2D:
+            ASSERT(!isMulticast);
+            ASSERT(srcType == UE);
+            ASSERT(destType == UE);
+            break;
+        case D2D_MULTI:
+            ASSERT(isMulticast);
+            ASSERT(srcType == UE);
+            //ASSERT(destType == UE);
+            break;
+        default:
+            throw cRuntimeError("Unknown direction %d", info->getDirection());
+    }
+}
+
 bool isBaseStation(CoreNodeType nodeType)
 {
     return nodeType == ENB || nodeType == GNB;
