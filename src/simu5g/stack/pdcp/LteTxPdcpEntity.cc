@@ -41,7 +41,7 @@ void LteTxPdcpEntity::initialize()
 void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - LCID[" << lteInfo->getLcid() << "] - processing packet from IP layer" << endl;
+    EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - processing packet " << pkt->getName() << " from IP layer" << endl;
 
     // perform PDCP operations
     compressHeader(pkt); // header compression
@@ -64,19 +64,18 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
             headerLength = 0;
             break;
         default:
-            throw cRuntimeError("LtePdcpBase::fromDataport(): invalid RlcType %d", lteInfo->getRlcType());
+            throw cRuntimeError("LtePdcpBase::handlePacketFromUpperLayer(): invalid RlcType %d", lteInfo->getRlcType());
     }
     pdcpHeader->setChunkLength(B(headerLength));
     pkt->trim();
     pkt->insertAtFront(pdcpHeader);
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&LteProtocol::pdcp);
 
-    EV << "LtePdcp : Preparing to send "
+    EV << "LteTxPdcpEntity::handlePacketFromUpperLayer: Packet trafficClass="
        << lteTrafficClassToA((LteTrafficClass)lteInfo->getTraffic())
-       << " traffic\n";
-    EV << "LtePdcp : Packet size " << pkt->getByteLength() << " Bytes\n";
+       << " size=" << pkt->getByteLength() << "B\n";
 
-    EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer - LCID[" << lteInfo->getLcid() << "] - sending PDCP PDU to the RLC layer" << endl;
+    EV << NOW << " LteTxPdcpEntity::handlePacketFromUpperLayer: sending PDCP PDU to the RLC layer" << endl;
     deliverPdcpPdu(pkt);
 }
 
