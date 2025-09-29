@@ -1,4 +1,4 @@
 <config>
-    <interface hosts='*' address='10.x.x.x' netmask='255.255.0.0'/>
-    <!-- <route hosts="*"> -->
+    <interface among='eNB* eNodeB* enb* *Enb* gNB* gNodeB* gnb* *Gnb* upf* *Upf* mecHost* pgw*' address='10.x.x.x' netmask='255.255.255.0'/>
+    <interface hosts='*' address='192.168.x.x' netmask='255.255.255.0'/>
 </config>
