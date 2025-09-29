@@ -49,7 +49,7 @@ constexpr MacNodeId BGUE_ID      = MacNodeId(1024);
 constexpr MacNodeId UE_MIN_ID    = MacNodeId(1025);
 constexpr MacNodeId NR_UE_MIN_ID = MacNodeId(2049);
 constexpr MacNodeId BGUE_MIN_ID  = MacNodeId(4097);
-constexpr MacNodeId UE_MAX_ID    = MacNodeId(65535);
+constexpr MacNodeId UE_MAX_ID    = MacNodeId(32767);
 
 /// Cell node ID. It is numerically equal to eNodeB MAC node ID.
 typedef MacNodeId MacCellId;
