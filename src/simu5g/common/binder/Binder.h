@@ -316,6 +316,11 @@ class Binder : public cSimpleModule
     MacNodeId getMasterNodeOrSelf(MacNodeId secondaryEnbId);
 
     /**
+     * TODO add "forUeId" argument, to getMasterNode() too
+     */
+    MacNodeId getSecondaryNode(MacNodeId masterEnbId);
+
+    /**
      * Returns the MacNodeId for the given IP address
      *
      * @param address IP address

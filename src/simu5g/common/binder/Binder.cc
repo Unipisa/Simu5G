@@ -426,6 +426,15 @@ MacNodeId Binder::getMasterNodeOrSelf(MacNodeId secondaryEnbId)
     return secondaryNodeToMasterNodeOrSelf_[num(secondaryEnbId)];
 }
 
+MacNodeId Binder::getSecondaryNode(MacNodeId masterEnbId)
+{
+    //TODO proper solution! (maintain reverse mapping)
+    for (size_t i = 0; i < secondaryNodeToMasterNodeOrSelf_.size(); i++)
+        if (secondaryNodeToMasterNodeOrSelf_[i] == masterEnbId && i != num(masterEnbId))  // exclude "self"!
+            return MacNodeId(i);
+    return NODEID_NONE;
+}
+
 void Binder::registerMecHost(const inet::L3Address& mecHostAddress)
 {
     mecHostAddress_.insert(mecHostAddress);
