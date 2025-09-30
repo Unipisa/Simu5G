@@ -17,7 +17,8 @@
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
-#include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
+#include "simu5g/stack/pdcp/packet/RohcHeader.h"
+#include "simu5g/stack/sdap/packet/NrSdapHeader_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
@@ -71,29 +72,31 @@ void LteRxPdcpEntity::decompressHeader(Packet *pkt)
 {
     if (isCompressionEnabled()) {
         pkt->trim();
-        auto rohcHeader = pkt->removeAtFront<LteRohcPdu>();
-        auto ipHeader = pkt->removeAtFront<Ipv4Header>();
-        int transportProtocol = ipHeader->getProtocolId();
 
-        if (IP_PROT_TCP == transportProtocol) {
-            auto tcpHeader = pkt->removeAtFront<tcp::TcpHeader>();
-            tcpHeader->setChunkLength(rohcHeader->getOrigSizeTransportHeader());
-            pkt->insertAtFront(tcpHeader);
-        }
-        else if (IP_PROT_UDP == transportProtocol) {
-            auto udpHeader = pkt->removeAtFront<UdpHeader>();
-            udpHeader->setChunkLength(rohcHeader->getOrigSizeTransportHeader());
-            pkt->insertAtFront(udpHeader);
-        }
-        else {
-            EV_WARN << "LtePdcp : unknown transport header - cannot perform transport header decompression";
+        // Check if there's an SDAP header on top
+        inet::Ptr<inet::Chunk> sdapHeader = nullptr;
+        if (pkt->peekAtFront<NrSdapHeader>()) {
+            sdapHeader = pkt->removeAtFront<NrSdapHeader>();
+            EV << "LtePdcp : Removed SDAP header before decompression\n";
         }
 
-        ipHeader->setChunkLength(rohcHeader->getOrigSizeIpHeader());
-        pkt->insertAtFront(ipHeader);
+        auto rohcHeader = pkt->removeAtFront<RohcHeader>();
+
+        // Get the original headers from the ROHC header
+        auto originalHeaders = rohcHeader->getChunk();
+
+        // Insert the original headers back into the packet
+        pkt->insertAtFront(originalHeaders);
+
+        // If we had an SDAP header, add it back on top
+        if (sdapHeader) {
+            pkt->insertAtFront(sdapHeader);
+            EV << "LtePdcp : Added SDAP header back on top after decompression\n";
+        }
 
         EV << "LtePdcp : Header decompression performed\n";
     }
+
 }
 
 

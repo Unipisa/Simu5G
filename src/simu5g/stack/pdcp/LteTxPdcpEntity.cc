@@ -19,6 +19,9 @@
 #include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include <inet/common/ProtocolTag_m.h>
+#include "simu5g/stack/sdap/packet/NrSdapHeader_m.h"
+#include "simu5g/stack/pdcp/packet/RohcHeader.h"
+#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 // We require a minimum length of 1 Byte for each header even in compressed state
 // (transport, network and ROHC header, i.e. minimum is 3 Bytes)
@@ -82,38 +85,56 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
 void LteTxPdcpEntity::compressHeader(Packet *pkt)
 {
     if (isCompressionEnabled()) {
-        auto ipHeader = pkt->removeAtFront<Ipv4Header>();
+        // Check PacketProtocolTag to determine packet type
+        auto protocolTag = pkt->findTag<PacketProtocolTag>();
+        inet::Ptr<inet::Chunk> sdapHeader = nullptr;
 
-        int transportProtocol = ipHeader->getProtocolId();
-        B transportHeaderCompressedSize = B(0);
-
-        auto rohcHeader = makeShared<LteRohcPdu>();
-        rohcHeader->setOrigSizeIpHeader(ipHeader->getHeaderLength());
-
-        if (IP_PROT_TCP == transportProtocol) {
-            auto tcpHeader = pkt->removeAtFront<tcp::TcpHeader>();
-            rohcHeader->setOrigSizeTransportHeader(tcpHeader->getHeaderLength());
-            tcpHeader->setChunkLength(B(1));
-            transportHeaderCompressedSize = B(1);
-            pkt->insertAtFront(tcpHeader);
+        // If packet has SDAP protocol tag, remove SDAP header first
+        if (protocolTag && protocolTag->getProtocol() == &LteProtocol::sdap) {
+            sdapHeader = pkt->removeAtFront<NrSdapHeader>();
+            EV << "LtePdcp : Removed SDAP header before compression\n";
         }
-        else if (IP_PROT_UDP == transportProtocol) {
-            auto udpHeader = pkt->removeAtFront<UdpHeader>();
-            rohcHeader->setOrigSizeTransportHeader(inet::UDP_HEADER_LENGTH);
-            udpHeader->setChunkLength(B(1));
-            transportHeaderCompressedSize = B(1);
-            pkt->insertAtFront(udpHeader);
+
+        // Extract IP and transport headers to be compressed
+        auto ipHeader = pkt->removeAtFront<Ipv4Header>();
+        int transportProtocol = ipHeader->getProtocolId();
+
+        inet::Ptr<inet::Chunk> transportHeader;
+        if (transportProtocol == IP_PROT_TCP) {
+            transportHeader = pkt->removeAtFront<tcp::TcpHeader>();
+        }
+        else if (transportProtocol == IP_PROT_UDP) {
+            transportHeader = pkt->removeAtFront<UdpHeader>();
         }
         else {
-            EV_WARN << "LtePdcp : unknown transport header - cannot perform transport header compression";
-            rohcHeader->setOrigSizeTransportHeader(B(0));
+            transportHeader = nullptr;  // cannot compress
         }
 
-        ipHeader->setChunkLength(B(1));
-        pkt->insertAtFront(ipHeader);
+        // Create a sequence chunk containing the original headers
+        auto originalHeaders = inet::makeShared<inet::SequenceChunk>();
 
-        rohcHeader->setChunkLength(headerCompressedSize_ - transportHeaderCompressedSize - B(1));
+        // Make headers immutable before inserting into SequenceChunk
+        ipHeader->markImmutable();
+        originalHeaders->insertAtBack(ipHeader);
+        if (transportHeader) {
+            transportHeader->markImmutable();
+            originalHeaders->insertAtBack(transportHeader);
+        }
+
+        // Make originalHeaders immutable before passing to RohcHeader
+        originalHeaders->markImmutable();
+
+        // Create ROHC header with original headers and compressed size
+        auto rohcHeader = makeShared<RohcHeader>(originalHeaders, headerCompressedSize_);
+        rohcHeader->markImmutable();
         pkt->insertAtFront(rohcHeader);
+
+        // If we had an SDAP header, add it back on top of the ROHC header
+        if (sdapHeader) {
+            sdapHeader->markImmutable();
+            pkt->insertAtFront(sdapHeader);
+            EV << "LtePdcp : Added SDAP header back on top of ROHC header\n";
+        }
 
         EV << "LtePdcp : Header compression performed\n";
     }
