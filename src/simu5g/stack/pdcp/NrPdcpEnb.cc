@@ -86,6 +86,14 @@ void NrPdcpEnb::analyzePacket(inet::Packet *pkt)
     ConnectionKey key{srcAddr, destAddr, lteInfo->getTypeOfService(), lteInfo->getDirection()};
     LogicalCid lcid = lookupOrAssignLcid(key);
 
+    // Dual Connectivity: adjust source and dest IDs for downlink packets in DC scenarios.
+    // If this is a master eNB in DC and there's a secondary for this UE which will get this packet via X2 and transmit it via its RAN
+    MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
+    if (dualConnectivityEnabled_ && secondaryNodeId != NODEID_NONE && lteInfo->getUseNR()) {
+        lteInfo->setSourceId(secondaryNodeId);
+        lteInfo->setDestId(binder_->getNrMacNodeId(destAddr)); // use NR nodeId of the UE
+    }
+
     // assign LCID
     lteInfo->setLcid(lcid);
 }
@@ -142,21 +150,13 @@ void NrPdcpEnb::receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode)
     Enter_Method("receiveDataFromSourceNode");
     take(pkt);
 
-    auto ctrlInfo = pkt->getTagForUpdate<FlowControlInfo>();
+    auto ctrlInfo = pkt->getTag<FlowControlInfo>();
     if (ctrlInfo->getDirection() == DL) {
-        // if DL, forward the PDCP PDU to the RLC layer
-
-        // recover the original destId of the UE, using the destAddress and write it into the ControlInfo
-        MacNodeId destId = binder_->getNrMacNodeId(Ipv4Address(ctrlInfo->getDstAddr()));
-        ctrlInfo->setSourceId(nodeId_);
-        ctrlInfo->setDestId(destId);
-
+        MacNodeId destId = ctrlInfo->getDestId();
         EV << NOW << " NrPdcpEnb::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
-
         sendToLowerLayer(pkt);
     }
     else { // UL
-        // if UL, call the handler for reception from RLC layer (of the secondary node)
         EV << NOW << " NrPdcpEnb::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
         fromLowerLayer(pkt);
     }
