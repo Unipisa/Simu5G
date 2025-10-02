@@ -62,7 +62,7 @@ MacNodeId NrPdcpUe::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
  * Upper Layer handlers
  */
 
-MacCid NrPdcpUe::analyzePacket(inet::Packet *pkt)
+void NrPdcpUe::analyzePacket(inet::Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
     setTrafficInformation(pkt, lteInfo);
@@ -147,10 +147,8 @@ MacCid NrPdcpUe::analyzePacket(inet::Packet *pkt)
     EV << "NrPdcpUe : Assigned Node ID: " << nodeId << "\n";
 
     // get effective next hop dest ID
-    destId = getDestId(lteInfo);
-
-    // obtain CID
-    return MacCid(destId, lcid);
+    // TODO this was in the original code, but has no effect:
+    // MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());  //TODO this value is NOT set on LteInfo -- is this correct?
 }
 
 void NrPdcpUe::deleteEntities(MacNodeId nodeId)

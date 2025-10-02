@@ -27,7 +27,7 @@ using namespace inet;
  * Upper Layer handlers
  */
 
-MacCid LtePdcpEnbD2D::analyzePacket(inet::Packet *pkt)
+void LtePdcpEnbD2D::analyzePacket(inet::Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
@@ -83,9 +83,6 @@ MacCid LtePdcpEnbD2D::analyzePacket(inet::Packet *pkt)
         lteInfo->setDestId(getNodeId());
     else
         lteInfo->setDestId(getDestId(lteInfo));
-
-    // obtain CID
-    return MacCid(destId, lcid);
 }
 
 void LtePdcpEnbD2D::initialize(int stage)

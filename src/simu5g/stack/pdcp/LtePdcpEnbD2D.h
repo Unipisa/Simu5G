@@ -38,7 +38,7 @@ class LtePdcpEnbD2D : public LtePdcpEnb
      * Analyze the packet and fill out its lteInfo.
      * @param pkt incoming packet
      */
-    MacCid analyzePacket(inet::Packet *pkt) override;
+    void analyzePacket(inet::Packet *pkt) override;
 
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };

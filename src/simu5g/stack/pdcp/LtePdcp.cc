@@ -108,7 +108,7 @@ LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)
  * Upper Layer handlers
  */
 
-MacCid LtePdcpBase::analyzePacket(inet::Packet *pkt)
+void LtePdcpBase::analyzePacket(inet::Packet *pkt)
 {
     // Control Information
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
@@ -137,9 +137,6 @@ MacCid LtePdcpBase::analyzePacket(inet::Packet *pkt)
         lteInfo->setDestId(getNodeId());
     else
         lteInfo->setDestId(getDestId(lteInfo));
-
-    // obtain CID
-    return MacCid(destId, lcid);
 }
 
 void LtePdcpBase::fromDataPort(cPacket *pktAux)

@@ -61,7 +61,7 @@ class NrPdcpUe : public LtePdcpUeD2D
      * Analyze the packet and fill out its lteInfo.
      * @param pkt incoming packet
      */
-    MacCid analyzePacket(inet::Packet *pkt) override;
+    void analyzePacket(inet::Packet *pkt) override;
 
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer

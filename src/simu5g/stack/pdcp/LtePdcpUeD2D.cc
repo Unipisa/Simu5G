@@ -39,7 +39,7 @@ MacNodeId LtePdcpUeD2D::getDestId(inet::Ptr<FlowControlInfo> lteInfo)
  * Upper Layer handlers
  */
 
-MacCid LtePdcpUeD2D::analyzePacket(inet::Packet *pkt)
+void LtePdcpUeD2D::analyzePacket(inet::Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
@@ -119,9 +119,6 @@ MacCid LtePdcpUeD2D::analyzePacket(inet::Packet *pkt)
         lteInfo->setDestId(getNodeId());
     else
         lteInfo->setDestId(getDestId(lteInfo));
-
-    // obtain CID
-    return MacCid(destId, lcid);
 }
 
 void LtePdcpUeD2D::handleMessage(cMessage *msg)

@@ -290,7 +290,7 @@ class LtePdcpBase : public cSimpleModule
      *
      * Returns the (nodeId,LCID) pair that identifies the connection for the packet.
      */
-    virtual MacCid analyzePacket(inet::Packet *pkt);
+    virtual void analyzePacket(inet::Packet *pkt);
 
     /**
      * Process data packets from higher layers.

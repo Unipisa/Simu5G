@@ -45,7 +45,7 @@ class NrPdcpEnb : public LtePdcpEnbD2D
      * Analyze the packet and fill out its lteInfo.
      * @param pkt Incoming packet
      */
-    MacCid analyzePacket(inet::Packet *pkt) override;
+    void analyzePacket(inet::Packet *pkt) override;
 
     /**
      * Handler for um/am sap
