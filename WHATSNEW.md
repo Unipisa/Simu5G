@@ -1,5 +1,32 @@
 # What's New in Simu5G
 
+## v1.4.1 (2025-10-06)
+
+This is a minor update that brings further refactoring of the C++ code for clarity,
+improvements in the C++ interface of the Binder module, and some minor bug fixes.
+These improvements were contributed by Andras Varga (OMNeT++ Core Team).
+
+Notable changes:
+
+- Binder: Partial rationalization of the C++ interface, via
+  renaming/replacing/removing methods. See the git history for changes.
+
+- Updated IP addresses in the IPv4 configuration files: use 10.x.x.x
+  addresses for the Core Network, and 192.168.x.x addresses for external
+  addresses
+
+- Visual improvement: node IDs are now displayed over module icons
+
+- In MEC, do not use module IDs for bgAppId, deviceAppId and other IDs, and do
+  not encode module ID into module names. That practice made simulations brittle
+  for regression testing via fingerprints.
+
+- PDCP: Eliminated tweaking of srcId/destId in FlowControlInfo when sending
+  downlink packets over the X2 link in a Dual-Connectivity setup.
+
+- Various additional fixes and changes to improve code quality.
+
+
 ## v1.4.0 (2025-09-18)
 
 Compatible with **OMNeT++ 6.2.0** and **INET 4.5.4**.
