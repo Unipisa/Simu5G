@@ -687,17 +687,16 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
         LteD2DMode mode = computeD2DCapability(src, dst);
         if (mode == NONE) {
             EV << "Binder::checkD2DCapability - UE " << src << " may not transmit to UE " << dst << " using D2D (UE " << dst << " is not D2D capable)" << endl;
-            return false;
         }
         else {
             EV << "Binder::checkD2DCapability - UE " << src << " may transmit to UE " << dst << " using D2D (current mode " << (mode == DM ? "DM)" : "IM)") << endl;
-            d2dPeeringMap_[src][dst] = mode;
-            return true;
         }
+        d2dPeeringMap_[src][dst] = mode;
+        return mode != NONE;
     }
 
-    // an entry is present, hence this is a D2D-capable flow
-    return true;
+    // if an entry is present, and it is not NONE, this is a D2D-capable flow
+    return d2dPeeringMap_[src][dst] != NONE;
 }
 
 bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
@@ -705,8 +704,8 @@ bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
     ASSERT(getNodeTypeById(src) == UE && isValidNodeId(src));
     ASSERT(getNodeTypeById(dst) == UE && isValidNodeId(dst));
 
-    // return true if the entry exists, no matter if it is DM or IM
-    return containsKey(d2dPeeringMap_, src) && containsKey(d2dPeeringMap_[src], dst);
+    // return true if the entry exists and it is not NONE, no matter if it is DM or IM
+    return containsKey(d2dPeeringMap_, src) && containsKey(d2dPeeringMap_[src], dst) && d2dPeeringMap_[src][dst] != NONE;
 }
 
 std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
