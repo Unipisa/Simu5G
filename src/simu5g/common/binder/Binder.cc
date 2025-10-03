@@ -266,9 +266,9 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     if (masterId == NODEID_NONE)
         masterId = slaveId;
 
-    if (secondaryNodeToMasterNode_.size() <= num(slaveId))
-        secondaryNodeToMasterNode_.resize(num(slaveId) + 1);
-    secondaryNodeToMasterNode_[num(slaveId)] = masterId;
+    if (secondaryNodeToMasterNodeOrSelf_.size() <= num(slaveId))
+        secondaryNodeToMasterNodeOrSelf_.resize(num(slaveId) + 1);
+    secondaryNodeToMasterNodeOrSelf_[num(slaveId)] = masterId;
 }
 
 inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
@@ -288,7 +288,7 @@ void Binder::initialize(int stage)
         WATCH_MAP(ipAddressToNrMacNodeId_);
         // WATCH_MAP(nodeInfoMap_); // Commented out - contains complex NodeInfo structs that don't have stream operators
         WATCH_VECTOR(servingNode_);
-        WATCH_VECTOR(secondaryNodeToMasterNode_);
+        WATCH_VECTOR(secondaryNodeToMasterNodeOrSelf_);
         WATCH_SET(mecHostAddress_);
         WATCH_MAP(mecHostToUpfAddress_);
         // WATCH_MAP(extCellList_); // Commented out - contains vectors of ExtCell* pointers that don't have stream operators
@@ -427,11 +427,13 @@ MacNodeId Binder::getNextHop(MacNodeId nodeId)
     return (nodeId == NODEID_NONE || getNodeTypeById(nodeId) == ENODEB) ? nodeId : getServingNode(nodeId);
 }
 
-MacNodeId Binder::getMasterNode(MacNodeId secondaryEnbId)
+MacNodeId Binder::getMasterNodeOrSelf(MacNodeId secondaryEnbId)
 {
-    if (num(secondaryEnbId) >= secondaryNodeToMasterNode_.size())
+    ASSERT(secondaryEnbId == NODEID_NONE || getNodeTypeById(secondaryEnbId) == ENODEB);
+
+    if (num(secondaryEnbId) >= secondaryNodeToMasterNodeOrSelf_.size())
         throw cRuntimeError("Binder::getMasterNode(): bad secondaryEnbId %hu", num(secondaryEnbId));
-    return secondaryNodeToMasterNode_[num(secondaryEnbId)];
+    return secondaryNodeToMasterNodeOrSelf_[num(secondaryEnbId)];
 }
 
 void Binder::registerMecHost(const inet::L3Address& mecHostAddress)

@@ -62,7 +62,7 @@ class Binder : public cSimpleModule
     std::map<MacNodeId, NodeInfo> nodeInfoMap_;
 
     std::vector<MacNodeId> servingNode_;  // ueId -> servingEnbId
-    std::vector<MacNodeId> secondaryNodeToMasterNode_;
+    std::vector<MacNodeId> secondaryNodeToMasterNodeOrSelf_;
 
     // stores the IP address of the MEC hosts in the simulation
     std::set<inet::L3Address> mecHostAddress_;
@@ -317,7 +317,7 @@ class Binder : public cSimpleModule
      * for the given Secondary Node (SeNB, SN).
      */
     //TODO add  MacNodeId ueId arg: In LTE DC, the roles (master/secondary) are per UE, not per bearer.
-    MacNodeId getMasterNode(MacNodeId secondaryEnbId);
+    MacNodeId getMasterNodeOrSelf(MacNodeId secondaryEnbId);
 
     /**
      * Returns the MacNodeId for the given IP address

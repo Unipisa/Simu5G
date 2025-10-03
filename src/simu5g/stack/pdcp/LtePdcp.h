@@ -372,7 +372,7 @@ class LtePdcpEnb : public LtePdcpBase
         }
         else {
             // for dual connectivity
-            master = binder_->getMasterNode(master);
+            master = binder_->getMasterNodeOrSelf(master);
             if (master != nodeId_) {
                 destId = master;
             }
