@@ -66,6 +66,9 @@ void Ip2Nic::initialize(int stage)
             MacNodeId cellId = binder_->registerNode(bs, nodeType_, masterId);
             nodeId_ = cellId;
             nrNodeId_ = NODEID_NONE;
+
+            // display node ID above node icon
+            bs->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
         }
     }
     else if (stage == INITSTAGE_PHYSICAL_ENVIRONMENT) {
@@ -77,10 +80,12 @@ void Ip2Nic::initialize(int stage)
 
             masterId_ = MacNodeId(ue->par("masterId").intValue());
             nodeId_ = binder_->registerNode(ue, nodeType_, masterId_);
+            ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
 
             if (ue->hasPar("nrMasterId") && ue->par("nrMasterId").intValue() != 0) { // register also the NR MacNodeId
                 nrMasterId_ = MacNodeId(ue->par("nrMasterId").intValue());
                 nrNodeId_ = binder_->registerNode(ue, nodeType_, nrMasterId_, true);
+                ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d/%d", nodeId_, nrNodeId_).c_str());
             }
             else
                 nrNodeId_ = NODEID_NONE;

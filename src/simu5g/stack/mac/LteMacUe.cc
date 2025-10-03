@@ -67,6 +67,9 @@ void LteMacUe::initialize(int stage)
         else
             nodeId_ = MacNodeId(networkNode_->par("macNodeId").intValue());
 
+        // display node ID above module icon
+        getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
+
         // Insert UeInfo in the Binder
         UeInfo *info = new UeInfo();
         info->id = nodeId_;            // local mac ID

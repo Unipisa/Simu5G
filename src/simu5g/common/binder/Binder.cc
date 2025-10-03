@@ -157,9 +157,6 @@ MacNodeId Binder::registerNode(cModule *nodeModule, RanNodeType type, MacNodeId 
 
     nodeModule->par(isNr ? "nrMacNodeId" : "macNodeId") = num(nodeId);
 
-    // display node ID above module icon
-    nodeModule->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId).c_str());
-
     if (type == UE) {
         registerServingNode(masterId, nodeId);
     }

@@ -122,6 +122,9 @@ void LteMacEnb::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         nodeId_ = MacNodeId(networkNode_->par("macNodeId").intValue());
 
+        // display node ID above module icon
+        getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId_).c_str());
+
         cellId_ = nodeId_;
 
         cellInfo_.reference(this, "cellInfoModule", true);
