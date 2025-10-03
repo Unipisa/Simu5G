@@ -195,9 +195,9 @@ void GtpUser::handleFromTrafficFlowFilter(Packet *datagram)
 
             // get the symbolic IP address of the tunnel destination ID
             // then obtain the address via IPvXAddressResolver
-            const char *symbolicName = binder_->getModuleNameByMacNodeId(MacNodeId(flowId));
+            std::string  symbolicName = binder_->getNodeModule(MacNodeId(flowId))->getFullPath();
             EV << "GtpUser::handleFromTrafficFlowFilter - tunneling to " << symbolicName << endl;
-            tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
+            tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
         }
         socket_.sendTo(gtpPacket, tunnelPeerAddress, tunnelPeerPort_);
     }
@@ -262,8 +262,8 @@ void GtpUser::handleFromUdp(Packet *pkt)
             if (networkNode_->getFullPath() == gwFullPath) {
                 // the destination is a Base Station under the same core network as this PGW/UPF,
                 // tunnel the packet toward that BS
-                const char *symbolicName = binder_->getModuleNameByMacNodeId(destMaster);
-                L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName);
+                std::string symbolicName = binder_->getNodeModule(destMaster)->getFullPath();
+                L3Address tunnelPeerAddress = L3AddressResolver().resolve(symbolicName.c_str());
                 EV << "GtpUser::handleFromUdp - tunneling to BS " << symbolicName << endl;
 
                 // send the message to the BS through GTP tunneling

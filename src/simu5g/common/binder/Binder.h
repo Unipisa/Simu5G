@@ -28,24 +28,20 @@ using namespace omnetpp;
 
 class UeStatsCollector;
 
+
+struct NodeInfo {
+    opp_component_ptr<cModule> moduleRef;
+    opp_component_ptr<LteMacBase> macModule;
+
+    NodeInfo() {}
+    NodeInfo(cModule *moduleRef) : moduleRef(moduleRef) {}
+};
+
 /**
  * The Binder module has one instance in the whole network.
  * It stores global mapping tables with OMNeT++ module IDs,
  * IP addresses, etc.
  */
-
-// Consolidated node information structure
-struct NodeInfo {
-    std::string moduleName;
-    opp_component_ptr<cModule> moduleRef;
-    opp_component_ptr<LteMacBase> macModule;
-
-    NodeInfo() {}
-
-    NodeInfo(const std::string& moduleName, cModule* moduleRef)
-        : moduleName(moduleName), moduleRef(moduleRef) {}
-};
-
 class Binder : public cSimpleModule
 {
   private:
@@ -432,14 +428,6 @@ class Binder : public cSimpleModule
      * Returns the UPF address corresponding to the given MEC Host address
      */
     const inet::L3Address& getUpfFromMecHost(const inet::L3Address& mecHostAddress);
-    /**
-     * Associates the given MAC node ID to the name of the module
-     */
-    void registerName(MacNodeId nodeId, std::string moduleName);
-    /**
-     * Returns the module name for the given MAC node ID
-     */
-    const char *getModuleNameByMacNodeId(MacNodeId nodeId);
     /**
      * Associates the given MAC node ID to the module
      */

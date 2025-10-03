@@ -170,9 +170,7 @@ void LteMacEnb::initialize(int stage)
         info->eNodeB = hostModule;  // reference to the eNodeB module
         binder_->addEnbInfo(info);
 
-        // register the pairs <id,name> and <id, module> to the binder
-        // Modified from getFullName() to getFullPath() to fix the usage in compound modules
-        binder_->registerName(nodeId_, hostModule->getFullPath());
+        // register  <id, module> in the binder
         binder_->registerModule(nodeId_, hostModule);
     }
     else if (stage == inet::INITSTAGE_LINK_LAYER) {

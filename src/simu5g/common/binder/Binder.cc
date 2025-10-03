@@ -152,7 +152,7 @@ MacNodeId Binder::registerNode(cModule *nodeModule, RanNodeType type, MacNodeId 
        << "\n";
 
     // registering new node
-    NodeInfo nodeInfo(nodeModule->getFullPath(), nodeModule);
+    NodeInfo nodeInfo(nodeModule);
     nodeInfoMap_[nodeId] = nodeInfo;
 
     nodeModule->par(isNr ? "nrMacNodeId" : "macNodeId") = num(nodeId);
@@ -448,19 +448,6 @@ const inet::L3Address& Binder::getUpfFromMecHost(const inet::L3Address& mecHostA
     return mecHostToUpfAddress_[mecHostAddress];
 }
 
-void Binder::registerName(MacNodeId nodeId, std::string moduleName)
-{
-    auto it = nodeInfoMap_.find(nodeId);
-    if (it != nodeInfoMap_.end()) {
-        it->second.moduleName = moduleName;
-    } else {
-        // If node doesn't exist yet, create a new entry
-        NodeInfo nodeInfo;
-        nodeInfo.moduleName = moduleName;
-        nodeInfoMap_[nodeId] = nodeInfo;
-    }
-}
-
 void Binder::registerModule(MacNodeId nodeId, cModule *module)
 {
     auto it = nodeInfoMap_.find(nodeId);
@@ -472,14 +459,6 @@ void Binder::registerModule(MacNodeId nodeId, cModule *module)
         nodeInfo.moduleRef = module;
         nodeInfoMap_[nodeId] = nodeInfo;
     }
-}
-
-const char *Binder::getModuleNameByMacNodeId(MacNodeId nodeId)
-{
-    auto it = nodeInfoMap_.find(nodeId);
-    if (it == nodeInfoMap_.end() || it->second.moduleName.empty())
-        throw cRuntimeError("Binder::getModuleNameByMacNodeId - node ID %d not found", num(nodeId));
-    return it->second.moduleName.c_str();
 }
 
 cModule *Binder::getModuleByMacNodeId(MacNodeId nodeId)
