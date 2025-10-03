@@ -142,16 +142,10 @@ MacNodeId Binder::registerNode(cModule *nodeModule, RanNodeType type, MacNodeId 
 {
     Enter_Method_Silent("registerNode");
 
-    MacNodeId nodeId = NODEID_NONE;
-    switch(type) {
-    case UE:
-        nodeId = MacNodeId(isNr ? macNodeIdCounterNrUe_++ : macNodeIdCounterUe_++);
-        break;
-    case ENODEB: case GNODEB:
-        nodeId = MacNodeId(macNodeIdCounterEnb_++);
-        break;
-    default: ASSERT(false);
-    }
+    ASSERT(type == UE || type == ENODEB || type == GNODEB);
+    MacNodeId nodeId = type == UE ?
+            MacNodeId(isNr ? macNodeIdCounterNrUe_++ : macNodeIdCounterUe_++) :
+            MacNodeId(macNodeIdCounterEnb_++);  // eNB/gNB
 
     EV << "Binder : Assigning to module " << nodeModule->getName()
        << " with module id " << nodeModule->getId() << " and MacNodeId " << nodeId
@@ -171,8 +165,7 @@ MacNodeId Binder::registerNode(cModule *nodeModule, RanNodeType type, MacNodeId 
     }
     else if (type == ENODEB || type == GNODEB) {
         nodeModule->par("macCellId") = num(nodeId);
-        //TODO if (masterId != NODEID_NONE)
-        registerMasterNode(masterId, nodeId);
+        registerMasterNode(masterId, nodeId);  // note: even if masterId == NODEID_NONE!
     }
     return nodeId;
 }
@@ -263,12 +256,9 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     ASSERT(getNodeTypeById(slaveId) == ENODEB);
     ASSERT(masterId != slaveId);
 
-    if (masterId == NODEID_NONE)
-        masterId = slaveId;
-
     if (secondaryNodeToMasterNodeOrSelf_.size() <= num(slaveId))
         secondaryNodeToMasterNodeOrSelf_.resize(num(slaveId) + 1);
-    secondaryNodeToMasterNodeOrSelf_[num(slaveId)] = masterId;
+    secondaryNodeToMasterNodeOrSelf_[num(slaveId)] = (masterId != NODEID_NONE) ? masterId : slaveId;  // the "or self" bit
 }
 
 inline ostream& operator<<(ostream& os, const L3Address& addr) { return os << addr.str(); }
