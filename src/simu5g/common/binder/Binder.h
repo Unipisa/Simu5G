@@ -95,8 +95,11 @@ class Binder : public cSimpleModule
     // maximum data rate achievable in one RB (NED parameter)
     double maxDataRatePerRb_;
 
-    //TODO perhaps split the next one into 3 distinct variables, named after roles?
-    unsigned int macNodeIdCounter_[3]; // MacNodeId Counter
+    // counters for assigning MacNodeIds
+    unsigned int macNodeIdCounterEnb_ = num(ENB_MIN_ID); // eNodeB and gNodeB
+    unsigned int macNodeIdCounterUe_ = num(UE_MIN_ID);
+    unsigned int macNodeIdCounterNrUe_ = num(NR_UE_MIN_ID);
+
     DeployedUesMap dMap_; // DeployedUes --> Master Mapping
 
     /*
@@ -167,12 +170,7 @@ class Binder : public cSimpleModule
     void finish() override;
 
   public:
-    Binder() :  lastUpdateUplinkTransmissionInfo_(0.0), lastUplinkTransmission_(0.0)
-    {
-        macNodeIdCounter_[0] = num(ENB_MIN_ID);
-        macNodeIdCounter_[1] = num(UE_MIN_ID);
-        macNodeIdCounter_[2] = num(NR_UE_MIN_ID);
-    }
+    Binder() {}
 
     unsigned int getTotalBands()
     {
@@ -243,19 +241,14 @@ class Binder : public cSimpleModule
     SlotFormat getSlotFormat(GHz carrierFrequency);
 
     /**
-     * Registers a node to the global Binder module.
-     *
-     * The binder assigns an IP address to the node, from which it is derived
-     * a unique macNodeId.
-     * The node registers its moduleId (omnet ID), and if it's a UE,
-     * it registers also the association with its master node.
-     *
-     * @param module pointer to the module to be registered
-     * @param type type of this node (ENODEB, GNODEB, UE)
-     * @param masterId id of the master of this node, 0 if none (node is an eNB)
-     * @return macNodeId assigned to the module
+     * Registers a node to the global Binder module. The return value is the
+     * Binder-assigned unique MacNodeId of the node. The masterId argument
+     * has dual purpose depending on the type: for UE, it specifies the
+     * serving nodeB id; for an eNB/gNB, it specifies the master nodeB
+     * for this node, provided it is a secondary node in a Dual-Connectivity setup.
+     * isNR specifies whether an LTE or 5G NR nodeId of a UE is to be assigned.
      */
-    MacNodeId registerNode(cModule *module, RanNodeType type, MacNodeId masterId = NODEID_NONE, bool registerNr = false);
+    MacNodeId registerNode(cModule *nodeModule, RanNodeType type, MacNodeId masterId = NODEID_NONE, bool isNr = false);
 
     /**
      * Un-registers a node from the global Binder module.

@@ -138,44 +138,43 @@ SlotFormat Binder::getSlotFormat(GHz carrierFrequency)
     return it->second.slotFormat;
 }
 
-MacNodeId Binder::registerNode(cModule *module, RanNodeType type, MacNodeId masterId, bool registerNr)
+MacNodeId Binder::registerNode(cModule *nodeModule, RanNodeType type, MacNodeId masterId, bool isNr)
 {
     Enter_Method_Silent("registerNode");
 
-    MacNodeId macNodeId = NODEID_NONE;
-
-    if (type == UE) {
-        if (!registerNr)
-            macNodeId = MacNodeId(macNodeIdCounter_[1]++);
-        else
-            macNodeId = MacNodeId(macNodeIdCounter_[2]++);
+    MacNodeId nodeId = NODEID_NONE;
+    switch(type) {
+    case UE:
+        nodeId = MacNodeId(isNr ? macNodeIdCounterNrUe_++ : macNodeIdCounterUe_++);
+        break;
+    case ENODEB: case GNODEB:
+        nodeId = MacNodeId(macNodeIdCounterEnb_++);
+        break;
+    default: ASSERT(false);
     }
-    else if (type == ENODEB || type == GNODEB) {
-        macNodeId = MacNodeId(macNodeIdCounter_[0]++);
-    }
 
-    EV << "Binder : Assigning to module " << module->getName()
-       << " with module id " << module->getId() << " and MacNodeId " << macNodeId
+    EV << "Binder : Assigning to module " << nodeModule->getName()
+       << " with module id " << nodeModule->getId() << " and MacNodeId " << nodeId
        << "\n";
 
-    // registering new node to Binder - use consolidated NodeInfo structure
-    NodeInfo nodeInfo(module->getFullPath(), module);
-    nodeInfoMap_[macNodeId] = nodeInfo;
+    // registering new node
+    NodeInfo nodeInfo(nodeModule->getFullPath(), nodeModule);
+    nodeInfoMap_[nodeId] = nodeInfo;
 
-    if (!registerNr)
-        module->par("macNodeId") = num(macNodeId);
-    else
-        module->par("nrMacNodeId") = num(macNodeId);
-    module->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", macNodeId).c_str());
+    nodeModule->par(isNr ? "nrMacNodeId" : "macNodeId") = num(nodeId);
+
+    // display node ID above module icon
+    nodeModule->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", nodeId).c_str());
 
     if (type == UE) {
-        registerServingNode(masterId, macNodeId);
+        registerServingNode(masterId, nodeId);
     }
     else if (type == ENODEB || type == GNODEB) {
-        module->par("macCellId") = num(macNodeId);
-        registerMasterNode(masterId, macNodeId);
+        nodeModule->par("macCellId") = num(nodeId);
+        //TODO if (masterId != NODEID_NONE)
+        registerMasterNode(masterId, nodeId);
     }
-    return macNodeId;
+    return nodeId;
 }
 
 void Binder::unregisterNode(MacNodeId id)
@@ -260,11 +259,15 @@ void Binder::registerMasterNode(MacNodeId masterId, MacNodeId slaveId)
     Enter_Method_Silent("registerMasterNode");
     EV << "Binder : Registering slave " << slaveId << " to master " << masterId << "\n";
 
+    ASSERT(masterId == NODEID_NONE || getNodeTypeById(masterId) == ENODEB);
+    ASSERT(getNodeTypeById(slaveId) == ENODEB);
+    ASSERT(masterId != slaveId);
+
+    if (masterId == NODEID_NONE)
+        masterId = slaveId;
+
     if (secondaryNodeToMasterNode_.size() <= num(slaveId))
         secondaryNodeToMasterNode_.resize(num(slaveId) + 1);
-
-    if (masterId == NODEID_NONE)                         // this node is a master itself
-        masterId = slaveId;
     secondaryNodeToMasterNode_[num(slaveId)] = masterId;
 }
 
@@ -296,9 +299,9 @@ void Binder::initialize(int stage)
         // WATCH_MAP(bgCellsInterferenceMatrix_); // Commented out - contains nested maps that don't have stream operators
         // WATCH_MAP(bgUesInterferenceMatrix_); // Commented out - contains nested maps that don't have stream operators
         WATCH(maxDataRatePerRb_);
-        WATCH(macNodeIdCounter_[0]);
-        WATCH(macNodeIdCounter_[1]);
-        WATCH(macNodeIdCounter_[2]);
+        WATCH(macNodeIdCounterUe_);
+        WATCH(macNodeIdCounterNrUe_);
+        WATCH(macNodeIdCounterEnb_);
         // WATCH_MAP(dMap_); // Commented out - contains nested maps that don't have stream operators
         WATCH(totalBands_);
         // WATCH_MAP(componentCarriers_); // Commented out - contains complex CarrierInfo structs that don't have stream operators
@@ -641,8 +644,8 @@ Cqi Binder::medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
 
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
         throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
@@ -680,8 +683,8 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 
 bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
         throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     // if the entry is missing, returns false
@@ -699,8 +702,8 @@ std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
 
 LteD2DMode Binder::getD2DMode(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounter_[1]) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounter_[2])
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounter_[1]) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounter_[2]))
+    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
+        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
         throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     return d2dPeeringMap_[src][dst];
