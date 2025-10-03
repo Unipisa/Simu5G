@@ -210,13 +210,12 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
 
 void NrPhyUe::triggerHandover()
 {
-    // TODO: Remove asserts after testing
-    assert(masterId_ != candidateMasterId_);
+    ASSERT(masterId_ == NODEID_NONE || masterId_ != candidateMasterId_);  // "we can be unattached, but never hand over to ourselves"
 
     EV << "####Handover starting:####" << endl;
     EV << "Current master: " << masterId_ << endl;
     EV << "Current RSSI: " << currentMasterRssi_ << endl;
-    EV << "Candidate master: " << candidateMasterId_ << endl;
+    EV << "Candidate master: " << candidateMasterId_ << endl;  // note: can be NODEID_NONE!
     EV << "Candidate RSSI: " << candidateMasterRssi_ << endl;
     EV << "############" << endl;
 
