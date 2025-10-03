@@ -67,12 +67,17 @@ enum UlTransmissionMapTTI
     PREV_TTI = 0; CURR_TTI = 1;
 };
 
-/// D2D Modes
-// IM = Infastructure Mode
-// DM = Direct (D2D) Mode
+//
+// D2D Modes:
+// IM: Infastructure Mode
+// DM: Direct (D2D) Mode
+// NONE: Non D2D-capable
+//
 enum LteD2DMode
 {
-    IM = 0; DM = 1;
+    NONE = 0;
+    IM = 1;
+    DM = 2;
 };
 
 ///

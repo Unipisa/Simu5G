@@ -169,6 +169,7 @@ class Binder : public cSimpleModule
 
     // helpers
     bool isValidNodeId(MacNodeId  nodeId) const;
+    LteD2DMode computeD2DCapability(MacNodeId src, MacNodeId dst);
 
   public:
     Binder() {}

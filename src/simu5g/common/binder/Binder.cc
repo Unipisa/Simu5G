@@ -653,37 +653,46 @@ bool Binder::isValidNodeId(MacNodeId  nodeId) const
     return false;
 }
 
+LteD2DMode Binder::computeD2DCapability(MacNodeId src, MacNodeId dst)
+{
+    LteMacBase *dstMac = getMacFromMacNodeId(dst);
+    if (dstMac->isD2DCapable()) {
+        // set the initial mode
+        if (servingNode_[num(src)] == servingNode_[num(dst)]) {
+            // if served by the same cell, then the mode is selected according to the corresponding parameter
+            LteMacBase *srcMac = getMacFromMacNodeId(src);
+            inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
+            bool d2dInitialMode = srcNic->hasPar("d2dInitialMode") ? srcNic->par("d2dInitialMode").boolValue() : false;
+            return d2dInitialMode ? DM : IM;
+        }
+        else {
+            // if served by different cells, then the mode can be IM only
+            return IM;
+        }
+    }
+    else {
+        // this is not a D2D-capable flow
+        return NONE;
+    }
+}
+
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
     ASSERT(getNodeTypeById(src) == UE && isValidNodeId(src));
     ASSERT(getNodeTypeById(dst) == UE && isValidNodeId(dst));
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
-    if (!containsKey(d2dPeeringMap_, src) || !containsKey(d2dPeeringMap_[src], dst)) {
-        LteMacBase *dstMac = getMacFromMacNodeId(dst);
-        if (dstMac->isD2DCapable()) {
-            // set the initial mode
-            if (servingNode_[num(src)] == servingNode_[num(dst)]) {
-                // if served by the same cell, then the mode is selected according to the corresponding parameter
-                LteMacBase *srcMac = getMacFromMacNodeId(src);
-                inet::NetworkInterface *srcNic = getContainingNicModule(srcMac);
-                bool d2dInitialMode = srcNic->hasPar("d2dInitialMode") ? srcNic->par("d2dInitialMode").boolValue() : false;
-                d2dPeeringMap_[src][dst] = d2dInitialMode ? DM : IM;
-            }
-            else {
-                // if served by different cells, then the mode can be IM only
-                d2dPeeringMap_[src][dst] = IM;
-            }
-
-            EV << "Binder::checkD2DCapability - UE " << src << " may transmit to UE " << dst << " using D2D (current mode " << ((d2dPeeringMap_[src][dst] == DM) ? "DM)" : "IM)") << endl;
-
-            // this is a D2D-capable flow
-            return true;
+    if (!containsKey(d2dPeeringMap_, src) || !containsKey(d2dPeeringMap_[src], dst))
+    {
+        LteD2DMode mode = computeD2DCapability(src, dst);
+        if (mode == NONE) {
+            EV << "Binder::checkD2DCapability - UE " << src << " may not transmit to UE " << dst << " using D2D (UE " << dst << " is not D2D capable)" << endl;
+            return false;
         }
         else {
-            EV << "Binder::checkD2DCapability - UE " << src << " may not transmit to UE " << dst << " using D2D (UE " << dst << " is not D2D capable)" << endl;
-            // this is not a D2D-capable flow
-            return false;
+            EV << "Binder::checkD2DCapability - UE " << src << " may transmit to UE " << dst << " using D2D (current mode " << (mode == DM ? "DM)" : "IM)") << endl;
+            d2dPeeringMap_[src][dst] = mode;
+            return true;
         }
     }
 
