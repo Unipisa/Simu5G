@@ -642,14 +642,24 @@ Cqi Binder::medianCqi(std::vector<Cqi> bandCqi, MacNodeId id, Direction dir)
     return bandCqi[medianPoint];
 }
 
+bool Binder::isValidNodeId(MacNodeId  nodeId) const
+{
+    if (nodeId >= UE_MIN_ID && nodeId < MacNodeId(macNodeIdCounterUe_))
+        return true;
+    if (nodeId >= NR_UE_MIN_ID && nodeId < MacNodeId(macNodeIdCounterNrUe_))
+        return true;
+    if (nodeId >= ENB_MIN_ID && nodeId < MacNodeId(macNodeIdCounterEnb_))
+        return true;
+    return false;
+}
+
 bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
-        throw cRuntimeError("Binder::checkD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
+    ASSERT(getNodeTypeById(src) == UE && isValidNodeId(src));
+    ASSERT(getNodeTypeById(dst) == UE && isValidNodeId(dst));
 
     // if the entry is missing, check if the receiver is D2D capable and update the map
-    if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end()) {
+    if (!containsKey(d2dPeeringMap_, src) || !containsKey(d2dPeeringMap_[src], dst)) {
         LteMacBase *dstMac = getMacFromMacNodeId(dst);
         if (dstMac->isD2DCapable()) {
             // set the initial mode
@@ -683,16 +693,11 @@ bool Binder::checkD2DCapability(MacNodeId src, MacNodeId dst)
 
 bool Binder::getD2DCapability(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
-        throw cRuntimeError("Binder::getD2DCapability - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
+    ASSERT(getNodeTypeById(src) == UE && isValidNodeId(src));
+    ASSERT(getNodeTypeById(dst) == UE && isValidNodeId(dst));
 
-    // if the entry is missing, returns false
-    if (d2dPeeringMap_.find(src) == d2dPeeringMap_.end() || d2dPeeringMap_[src].find(dst) == d2dPeeringMap_[src].end())
-        return false;
-
-    // the entry exists, no matter if it is DM or IM
-    return true;
+    // return true if the entry exists, no matter if it is DM or IM
+    return containsKey(d2dPeeringMap_, src) && containsKey(d2dPeeringMap_[src], dst);
 }
 
 std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
@@ -702,8 +707,7 @@ std::map<MacNodeId, std::map<MacNodeId, LteD2DMode>> *Binder::getD2DPeeringMap()
 
 LteD2DMode Binder::getD2DMode(MacNodeId src, MacNodeId dst)
 {
-    if (src < UE_MIN_ID || (src >= MacNodeId(macNodeIdCounterUe_) && src < NR_UE_MIN_ID) || src >= MacNodeId(macNodeIdCounterNrUe_)
-        || dst < UE_MIN_ID || (dst >= MacNodeId(macNodeIdCounterUe_) && dst < NR_UE_MIN_ID) || dst >= MacNodeId(macNodeIdCounterNrUe_))
+    if (!getD2DCapability(src,dst))
         throw cRuntimeError("Binder::getD2DMode - Node Id not valid. Src %hu Dst %hu", num(src), num(dst));
 
     return d2dPeeringMap_[src][dst];

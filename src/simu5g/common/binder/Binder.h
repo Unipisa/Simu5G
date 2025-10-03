@@ -163,11 +163,12 @@ class Binder : public cSimpleModule
   protected:
     void initialize(int stages) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    void handleMessage(cMessage *msg) override
-    {
-    }
+    void handleMessage(cMessage *msg) override {}
 
     void finish() override;
+
+    // helpers
+    bool isValidNodeId(MacNodeId  nodeId) const;
 
   public:
     Binder() {}
