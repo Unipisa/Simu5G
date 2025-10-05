@@ -1,5 +1,46 @@
 # What's New in Simu5G
 
+## v1.4.1-sdap (2025-10-06)
+
+Compatible with OMNeT++ 6.2.0 and INET 4.5.4.
+
+This specialized branch release introduces SDAP protocol support, multiple DRBs
+and advanced QoS capabilities to Simu5G for enhanced 5G network simulations.
+Please note that future main releases may not include these features or may
+incorporate them in a different form, as the primary development focus remains
+on architectural refactoring and foundational improvements. The changes were
+contributed by Mohamed Seliem (University College Cork), with improvements by
+Andras Varga (OMNeT++ Core Team).
+
+Reference paper: "QoS-Aware Proportional Fairness Scheduling for Multi-Flow 5G
+UEs: A Smart Factory Perspective". Mohamed Seliem, Utz Roedig, Cormac Sreenan,
+Dirk Pesch. IEEE MSWiM, 2025.
+
+New Features:
+
+- Added an SDAP protocol implementation with reflexive QoS capabilities (NrSdap
+  and ReflectiveQosTable modules). Available using the NRUeSdap (UE) and
+  gNodeBSdap (gNodeB) node types that contain the NRNicUeSdap and NRNicEnbSdap
+  NIC types, respectively.
+
+- DRB (Data Radio Bearer) support with multi-QFI/QoS handling for realistic 5G
+  bearer management simulations. This feature is available using NRUeDrb (UE)
+  and gNodeBDrb (gNodeB) node types that contain the NRNicUeDrb and NRNicEnbDrb
+  NIC types, respectively. It can be configured using the numDrbs parameter.
+  QFI-to-DRB mappings can be defined in a context file (see SDAP's
+  qfiContextFile parameter) with 5QI parameters and QoS requirements.
+
+- QoSAwareScheduler with QFI-based Proportional Fair scheduling using QfiContextManager.
+  Enable QoS scheduling with LteMacEnb.schedulingDisciplineDl/Ul="QOS_PF".
+
+- Better representation of compressed headers in PDCP. (Note that header compression is
+  disabled by default; enable using PDCP's headerCompressedSize parameter.)
+
+- New example simulations: simulations/nr/standalone/omnetpp_sdap.ini and omnetpp_drb.ini,
+  each with Standalone, VoIP-DL, and VoIP-UL configurations demonstrating SDAP functionality
+  and multi-DRB support with QoS-aware scheduling.
+
+
 ## v1.4.1 (2025-10-06)
 
 This is a minor update that brings further refactoring of the C++ code for clarity,
