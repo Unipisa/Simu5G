@@ -20,6 +20,24 @@
 
 namespace simu5g {
 
+/**
+ * Extends the LTE/NR MAC layer scheduler to support QoS-aware scheduling
+ * decisions based on QFI (QoS Flow Identifier) contexts. QfiContextManager
+ * maintains mappings between QFIs, CIDs, and their associated QoS parameters.
+ *
+ * Key Features:
+ * - Implements a PF-based scheduler that dynamically scores active CIDs using
+ *   QoS weights derived from QFI context (e.g., 5QI, GBR, delay budget, PER,
+ *   priority).
+ * - Supports per-CID registration of QFIs
+ * - QfiContextManager can load QFI-DRB configurations from file
+ * - Provides flexible QoS weight computation based on service criticality.
+ * - Enables more realistic traffic differentiation for scenarios involving
+ *   conversational voice, URLLC, video streaming, etc.
+ *
+ * Notes:
+ * - Scheduler gracefully defaults to best-effort when no QFI context is found.
+ */
 class QoSAwareScheduler : public LteScheduler
 {
   protected:
