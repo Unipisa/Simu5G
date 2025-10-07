@@ -13,7 +13,7 @@
 package simu5g.stack.phy;
 
 //
-// This module extends LTE PHY functionalities at the User Equipment side to support device-to-device (D2D)
+// Extends LTE PHY functionalities at the User Equipment side to support device-to-device (D2D)
 // communications. Specifically, it customizes the ~LtePhyUe functionalities to support the transmission and reception
 // of frames to another UE directly, without going through the serving eNodeB. It also supports one-to-many
 // D2D transmission to UEs belonging to a multicast group. It is assumed that one-to-one D2D communication is only possible

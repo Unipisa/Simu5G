@@ -14,7 +14,7 @@ package simu5g.mec.ualcmp;
 import inet.applications.contract.IApp;
 
 //
-// This module implements (part of) the Mx2 reference point defined by the ETSI GS MEC
+// Implements (part of) the Mx2 reference point defined by the ETSI GS MEC
 // 016 V2.2.1 (2020-04) specification. A ~DeviceApp application module can use this API to
 // request MEC app lifecycle operations (i.e., instantiation, termination, relocation).
 // In particular, it provides the following methods:

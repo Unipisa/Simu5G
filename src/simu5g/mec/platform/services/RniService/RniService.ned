@@ -16,7 +16,7 @@ import simu5g.mec.platform.services.base.IMecService;
 import inet.applications.contract.IApp;
 
 //
-// This module implements a subset of the Radio Network Information Service API defined by the ETSI
+// Implements a subset of the Radio Network Information Service API defined by the ETSI
 // GS MEC 012 specification. It exposes a REST API that allows MEC applications to retrieve
 // layer-2 measurements related to a User Equipment (UE) or base station.
 //

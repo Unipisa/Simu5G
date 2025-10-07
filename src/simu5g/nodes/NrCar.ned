@@ -27,7 +27,7 @@ import simu5g.nodes.NrUe;
 import org.car2x.veins.base.modules.*;
 
 //
-// This module defines a LteCar node as an NR User Equipment (UE) with vehicular-like
+// Defines a LteCar node as an NR User Equipment (UE) with vehicular-like
 // mobility. The latter is modeled by utilizing the Veins-Inet project.
 //
 // See https://veins.car2x.org/documentation/modules/#veins_inet

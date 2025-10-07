@@ -13,7 +13,7 @@
 package simu5g.common.cellInfo;
 
 //
-// This module includes data structures and functions used to support local operations
+// Includes data structures and functions used to support local operations
 // at the e/gNodeB, such as the cell ID, the set of Component Carriers (CCs) supported
 // by the e/gNodeB, and more.
 //
@@ -28,18 +28,18 @@ simple CellInfo
         //#
         //# General properties
         //#
-        
+
         // The minimum X-coordinate of the area constraint, unconstrained by default
-        double constraintAreaMinX @unit(m) = default(-1m/0); 
+        double constraintAreaMinX @unit(m) = default(-1m/0);
 
         // The minimum Y-coordinate of the area constraint, unconstrained by default
-        double constraintAreaMinY @unit(m) = default(-1m/0); 
+        double constraintAreaMinY @unit(m) = default(-1m/0);
 
         // The maximum X-coordinate of the area constraint, unconstrained by default
-        double constraintAreaMaxX @unit(m) = default(1m/0); 
+        double constraintAreaMaxX @unit(m) = default(1m/0);
 
         // The maximum Y-coordinate of the area constraint, unconstrained by default
-        double constraintAreaMaxY @unit(m) = default(1m/0); 
+        double constraintAreaMaxY @unit(m) = default(1m/0);
 
         // Interval for sending broadcast messages (used for handover or DAS)
         double broadcastMessageInterval @unit(s) = default(1s);
@@ -50,7 +50,7 @@ simple CellInfo
         //#
         //# Remote Units (DAS)
         //#
-        
+
         // Number of Remote Units
         int numRus = default(0);
 

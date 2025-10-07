@@ -13,7 +13,7 @@
 package simu5g.stack.phy;
 
 //
-// This module extends the LTE PHY functionalities on the eNodeB side to support device-to-device (D2D)
+// Extends the LTE PHY functionalities on the eNodeB side to support device-to-device (D2D)
 // communications. Specifically, it enables the computation of Channel Status Information (CSI) related
 // to the D2D link between two UEs, which still needs to be stored at the eNodeB for scheduling purposes.
 //

@@ -14,8 +14,8 @@ package simu5g.apps.d2dMultihop;
 import inet.applications.contract.IApp;
 
 //
-// This module implements an application for disseminating event notifications,
-// using multihop D2D transmissions. New messages are generated upon the reception
+// Disseminates event notifications using multihop D2D transmissions.
+// New messages are generated upon the reception
 // of external events, signaled by the ~EventGenerator module. The application
 // sends the message to an IP multicast address, which is then mapped to D2D
 // multicast transmission mode within the LTE/NR protocol stack. When the application

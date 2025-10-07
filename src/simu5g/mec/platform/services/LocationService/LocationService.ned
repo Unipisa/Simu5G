@@ -14,7 +14,7 @@ import simu5g.mec.platform.services.base.IMecService;
 import inet.applications.contract.IApp;
 
 //
-// This module implements the Location Service API as defined by the ETSI GS MEC 013 specification.
+// Implements the Location Service API as defined by the ETSI GS MEC 013 specification.
 // It exposes a REST API that allows MEC applications to retrieve location-related information
 // about User Equipment (UE) or a group of UEs. It supports both request-response and
 // subscribe-notification patterns (in the latter case, the MEC application will be notified when

@@ -13,7 +13,7 @@
 package simu5g.stack.rlc.am;
 
 //
-// This module implements the functionalities of the Acknowledged Mode (AM) of the
+// Implements the functionalities of the Acknowledged Mode (AM) of the
 // Radio Link Control (RLC) layer.
 // At the transmitting side, it stores packets coming from the Packet Data Convergence
 // Protocol (PDCP) layer into a transmission buffer and, upon notification of a

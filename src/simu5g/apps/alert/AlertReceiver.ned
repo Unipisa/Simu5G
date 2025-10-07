@@ -14,7 +14,7 @@ package simu5g.apps.alert;
 import inet.applications.contract.IApp;
 
 //
-// This module receives alert messages sent by nodes running an ~AlertSender
+// Receives alert messages sent by nodes running an ~AlertSender
 // application. It listens for incoming packets and logs their arrival.
 // It records end-to-end delay statistics. The module also supports multicast by
 // joining local multicast groups.

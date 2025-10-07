@@ -14,17 +14,8 @@ package simu5g.stack.compManager.compManagerProportional;
 import simu5g.stack.compManager.LteCompManagerBase;
 
 //
-// This module implements a simple CoMP (Coordinated Multi-Point) coordinated scheduling algorithm.
-// A CompManager module within an eNodeB can be either a master or a slave.
-// Slave nodes send the master node the number of RBs required to satisfy
-// their users' load. The master node partitions the bandwidth based on these
-// requests and sends back an indication of which RBs are available for
-// transmission and which are not.
-//
-// ALTERNATIVE:
-//
-// This module implements a CoMP (Coordinated Multi-Point) Proportional
-// Scheduling algorithm. It allows for coordinated scheduling among multiple
+// Implements a CoMP (Coordinated Multi-Point) Proportional Scheduling
+// algorithm. It allows for coordinated scheduling among multiple
 // eNodeBs by calculating the required Resource Block (RB) allocation
 // proportionally based on user load.
 // In this structure, the module can function as either a master or a

@@ -17,7 +17,7 @@ package simu5g.nodes;
 // completely (i.e., without having actual UEs producing actual traffic). It can be
 // configured with physical layer parameters (such as transmission power and
 // direction) and the amount of resource occupation.
-// This module can be replaced by ~BackgroundCell modules, which provide more
+// Can be replaced by ~BackgroundCell modules, which provide more
 // flexibility.
 //
 simple ExtCell

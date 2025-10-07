@@ -14,7 +14,7 @@ package simu5g.apps.mec.DeviceApp;
 import inet.applications.contract.IApp;
 
 //
-// This module models the Device App entity as defined by the ETSI Multi-access Edge Computing (MEC)
+// Models the Device App entity as defined by the ETSI Multi-access Edge Computing (MEC)
 // specifications. The Device App can be instantiated on a User Equipment (UE) that wants to
 // dynamically instantiate a MEC application within a MEC system. It establishes a TCP connection
 // with the User App Lifecycle Management Proxy (UALCMP) entity (see the ~Ualcmp module) and, upon

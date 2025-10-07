@@ -14,7 +14,7 @@ package simu5g.x2;
 import inet.applications.sctpapp.SctpClient;
 
 //
-// This module extends INET's SctpClient application by adding
+// Extends INET's SctpClient application by adding
 // an output gate to send messages to the ~LteX2Manager and
 // manages the connection initiation towards the peer's server module
 // based on the configuration specified in the .ini file.

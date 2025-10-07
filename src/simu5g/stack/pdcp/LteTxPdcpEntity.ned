@@ -12,7 +12,7 @@
 package simu5g.stack.pdcp;
 
 //
-// This module handles operations related to the LTE PDCP (Packet Data Convergence Protocol)
+// Handles operations related to the LTE PDCP (Packet Data Convergence Protocol)
 // layer on the transmitting side of a specific connection. This module manages the creation,
 // sequencing, header compression, and metadata association for PDCP PDUs before they are passed
 // down to the RLC layer.

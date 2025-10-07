@@ -14,7 +14,7 @@ package simu5g.apps.mec.WarningAlert;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 //
-// This module is an application that is dynamically instantiated on a MEC host upon request
+// Application that is dynamically instantiated on a MEC host upon request
 // from a ~UeWarningAlertApp via a ~DeviceApp.
 // It receives requests from the UE to be notified when it enters a circular area defined by
 // its center and radius. This is accomplished by subscribing to the ~LocationService provided

@@ -12,7 +12,7 @@
 package simu5g.background.trafficGenerator.generators;
 
 //
-// This module provides the basic functions and parameters that a traffic generator
+// Provides the basic functions and parameters that a traffic generator
 // submodule (implementing the ~ITrafficGenerator interface) can utilize. It
 // enables the configuration of parameters such as the starting time of the traffic,
 // the size and inter-generation timing of packets, the rate of retransmissions, and so on.

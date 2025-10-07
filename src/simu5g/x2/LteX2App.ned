@@ -12,7 +12,7 @@
 package simu5g.x2;
 
 //
-// This module represents the container for all X2 applications that an e/gNodeB instantiates
+// Represents the container for all X2 applications that an e/gNodeB instantiates
 // to enable X2 communications with its peer e/gNodeBs. Specifically, for each peer,
 // this module contains two submodules:
 // - a server that sends data to the peer X2App

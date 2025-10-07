@@ -22,7 +22,7 @@ import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 
 //
-// This module represents the Virtualisation Infrastructure in a MEC host.
+// Represents the Virtualisation Infrastructure in a MEC host.
 // It takes care of forwarding packets coming from the 5G core network to the
 // appropriate MEC applications, applying the processing required by all the necessary
 // network protocol layers.

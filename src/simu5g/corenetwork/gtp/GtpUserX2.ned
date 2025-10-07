@@ -12,7 +12,7 @@
 package simu5g.corenetwork.gtp;
 
 //
-// This module implements a simplified version of the user plane of the GPRS Tunneling
+// Implements a simplified version of the user plane of the GPRS Tunneling
 // Protocol (GTP) used for handover procedures. In particular, it is employed to transfer
 // data packets from the source e/gNodeB to the target e/gNodeB during a handover (i.e.,
 // packets destined for a UE that is undergoing a handover).

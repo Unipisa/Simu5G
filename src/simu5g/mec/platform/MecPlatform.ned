@@ -15,7 +15,7 @@ import inet.applications.contract.IApp;
 import simu5g.mec.platform.ServiceRegistry.ServiceRegistry;
 
 //
-// This module represents the MEC Platform entity within a ~MecHost, as specified in the
+// Represents the MEC Platform entity within a ~MecHost, as specified in the
 // ETSI MEC architecture (ETSI GS MEC 003). It encompasses the MEC services made available to
 // MEC applications instantiated within the MEC Host, along with the ~ServiceRegistry.
 // The type and number of available MEC services can be configured.

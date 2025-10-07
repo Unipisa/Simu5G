@@ -14,7 +14,7 @@ package simu5g.apps.voip;
 import inet.applications.contract.IApp;
 
 //
-// This module represents a model for the sender of Voice-over-IP (VoIP) traffic.
+// Represents a model for the sender of Voice-over-IP (VoIP) traffic.
 // It generates packets by alternating "talk spurts" and "silence" periods, with their respective
 // durations modeled by a Weibull distribution. During talk spurts, fixed-size packets are
 // generated periodically and sent over UDP to a specified destination address and port.

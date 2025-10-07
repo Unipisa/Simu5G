@@ -13,7 +13,7 @@
 package simu5g.stack.mac;
 
 //
-// This module extends the ~LteMacBase module by providing specific MAC functions
+// Extends the ~LteMacBase module by providing specific MAC functions
 // at the User Equipment (UE) side.
 // For uplink connections, this module manages the initiation of the Random Access procedure (RAC)
 // and the sending of Buffer Status Reports (BSRs) to the eNodeBs. Once it receives an uplink scheduling

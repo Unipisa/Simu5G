@@ -13,7 +13,7 @@
 package simu5g.stack.rlc;
 
 //
-// This module functions as a (de)multiplexer between the submodules of the ~LteRlc module
+// Functions as a (de)multiplexer between the submodules of the ~LteRlc module
 // (representing the available RLC modes) and the underlying Medium Access Control (MAC)
 // module
 //

@@ -12,7 +12,7 @@
 package simu5g.apps.d2dMultihop.eventGenerator;
 
 //
-// This module is only used in conjunction with UEs running
+// Only used in conjunction with UEs running
 // a ~MultihopD2D application instance. It generates periodic
 // "events" (e.g., a collision between vehicles) at random
 // positions within the network (or by randomly selecting a node)

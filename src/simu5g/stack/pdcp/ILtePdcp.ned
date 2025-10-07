@@ -15,7 +15,7 @@ package simu5g.stack.pdcp;
 //
 // Interface for the PDCP/RRC layer of the LTE Stack.
 //
-// This module serves as an interface for the Packet Data Convergence Protocol (PDCP) layer.
+// Serves as an interface for the Packet Data Convergence Protocol (PDCP) layer.
 // It exchanges IP datagrams with the upper layers and sends/receives PDCP Protocol Data Units (PDUs)
 // to/from the underlying Radio Link Control (RLC) layer.
 // Its primary responsibilities include header compression and connection identification.

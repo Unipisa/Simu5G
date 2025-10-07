@@ -13,7 +13,7 @@
 package simu5g.stack.mac;
 
 //
-// This module extends the ~LteMacBase module by providing specific MAC functions
+// Extends the ~LteMacBase module by providing specific MAC functions
 // on the eNodeB side. Specifically, it initializes and manages the scheduling classes
 // responsible for resource allocation operations in both uplink and downlink directions,
 // while also supporting Carrier Aggregation (CA).

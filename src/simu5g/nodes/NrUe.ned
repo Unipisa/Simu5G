@@ -16,7 +16,7 @@ import simu5g.corenetwork.statsCollector.NrUeStatsCollector;
 import simu5g.nodes.LteUe;
 
 //
-// This module implements a User Equipment (UE) for a 5G LTE network. It extends the ~LteUe module
+// Models a User Equipment (UE) for a 5G/LTE network. It extends the ~LteUe module
 // by implementing a ~NrNicUe as a Network Interface Card (NIC) module. This module can be
 // used to model a device that can connect to either a 4G eNodeB or a 5G gNodeB, or both.
 //

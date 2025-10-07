@@ -14,7 +14,7 @@ package simu5g.apps.burst;
 import inet.applications.contract.IApp;
 
 //
-// This module models an application that sends bursts of packets to a ~BurstReceiver
+// Models an application that sends bursts of packets to a ~BurstReceiver
 // application. During each burst, the application sends a configurable number of
 // packets at regular intervals. The time interval between bursts can also be configured.
 //

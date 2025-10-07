@@ -12,7 +12,7 @@
 package simu5g.stack.compManager;
 
 //
- // This module serves as the base class for Coordinated Multi-Point (CoMP) manager modules in LTE networks.
+ // Serves as the base class for Coordinated Multi-Point (CoMP) manager modules in LTE networks.
  // It provides essential functionalities and parameters needed to manage CoMP operations.
  // To implement a specific CoMP algorithm, extend this class and override its pure virtual methods.
  //

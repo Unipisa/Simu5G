@@ -13,7 +13,7 @@ package simu5g.mec.vim;
 
 
 //
-// This module is responsible for managing the computing resources currently allocated
+// Manages the computing resources currently allocated
 // to MEC applications hosted by a MEC host. It is also used by MEC applications in case they
 // want to compute a processing delay based on such resource usage.
 //

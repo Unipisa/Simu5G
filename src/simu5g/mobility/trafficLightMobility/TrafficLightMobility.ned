@@ -14,7 +14,7 @@ package simu5g.mobility.trafficLightMobility;
 import inet.mobility.single.LinearMobility;
 
 //
-// This module extends INET's Linear Mobility model to simulate the movement of
+// Extends INET's Linear Mobility model to simulate the movement of
 // a vehicle navigating roads with intersections regulated by traffic lights.
 // The node implementing this mobility model moves at a constant speed and, if it
 // encounters a ~TrafficLight module with a "red" color, it stops until the

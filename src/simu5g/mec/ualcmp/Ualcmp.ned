@@ -19,7 +19,7 @@ import inet.transportlayer.tcp.Tcp;
 import inet.transportlayer.udp.Udp;
 
 //
-// This module represents a host performing the functions of the User Application Lifecycle Management
+// Represents a host performing the functions of the User Application Lifecycle Management
 // Proxy (UALCMP) defined by the ETSI Multi-access Edge Computing (MEC) specifications. It includes a
 // complete network protocol stack and a ~UalcmpApp application module that implements the logic of the
 // UALCMP entity. It is typically connected directly to a MEC orchestrator, and forwards to it the

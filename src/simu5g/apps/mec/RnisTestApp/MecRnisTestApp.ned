@@ -15,7 +15,7 @@ import simu5g.apps.mec.MecApps.MecAppBase;
 
 
 //
-// This module is an application that is dynamically instantiated on a MEC host upon request
+// Application that is dynamically instantiated on a MEC host upon request
 // from a ~UeRnisTestApp via a ~DeviceApp. It is used to test and showcase the functionalities
 // of the ~RniService API.
 // Upon receiving a request from the UE, it queries the ~RniService periodically to obtain

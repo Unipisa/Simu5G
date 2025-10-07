@@ -13,7 +13,7 @@
 package simu5g.stack.rlc.um;
 
 //
-// This module implements the receiving-side functionalities of the Unacknowledged
+// Implements the receiving-side functionalities of the Unacknowledged
 // Mode (UM) of the Radio Link Control (RLC) layer for a specific connection.
 // It stores RLC Protocol Data Units (PDUs) arriving from the Medium Access
 // Control (MAC) layer and, when possible, performs reassembly and in-sequence

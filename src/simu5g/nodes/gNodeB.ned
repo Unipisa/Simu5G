@@ -14,7 +14,7 @@ package simu5g.nodes;
 import simu5g.nodes.eNodeB;
 
 //
-// This module implements a gNodeB for a 5G LTE network. It extends the ~eNodeB module
+// Implements a gNodeB for a 5G network. It extends the ~eNodeB module
 // by providing 5G connectivity to ~NrUe modules. It can be used in either StandAlone (SA) or
 // Non-StandAlone (NSA) 5G deployments. In the former case, it is directly connected to a ~Upf
 // module. In the latter case, this module can be configured as a secondary node of

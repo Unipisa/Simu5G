@@ -13,7 +13,7 @@
 package simu5g.stack.rlc.um;
 
 //
-// This module implements the transmission side functionalities of the Unacknowledged
+// Implements the transmission side functionalities of the Unacknowledged
 // Mode (UM) of the Radio Link Control (RLC) layer for a specific connection.
 // It stores packets coming from the Packet Data Convergence Protocol (PDCP) layer
 // in a transmission buffer and, upon receiving a notification of a transmission opportunity

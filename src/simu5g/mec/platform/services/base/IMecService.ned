@@ -12,7 +12,7 @@
 package simu5g.mec.platform.services.base;
 
 //
-// This module interface defines the structure that must be implemented by every
+// Defines the structure that must be implemented by every
 // MEC Service (see, e.g., ~LocationService). Common MEC service functionalities are provided
 // by the MecServiceBase class, which includes support for both request-response and
 // subscribe-notification paradigms over the TCP protocol.

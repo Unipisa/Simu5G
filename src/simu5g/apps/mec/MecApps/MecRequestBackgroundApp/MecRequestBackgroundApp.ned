@@ -14,7 +14,7 @@ package simu5g.apps.mec.MecApps.MecRequestBackgroundApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 //
-// This module implements a generator of requests to be sent to the ~LocationService.
+// Generates requests to be sent to the ~LocationService.
 // This application can be instantiated as an "independent MEC app" (see ~MecHost
 // module), which means it does not need to be instantiated via the MEC orchestrator upon
 // request from a User Equipment. In particular, this module produces bulks of

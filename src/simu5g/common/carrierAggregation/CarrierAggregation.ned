@@ -12,7 +12,7 @@
 package simu5g.common.carrierAggregation;
 
 //
-// This module implements the Carrier Aggregation (CA) functionality used at the
+// Implements the Carrier Aggregation (CA) functionality used at the
 // Medium Access Control (MAC) layer of e/gNodeBs and UEs. CA allows multiple frequency bands -
 // referred to as Component Carriers (CCs) - to be aggregated in order to increase the overall
 // available bandwidth of the system. Each CC is implemented as a submodule and can be

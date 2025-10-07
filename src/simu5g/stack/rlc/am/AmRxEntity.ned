@@ -13,7 +13,7 @@
 package simu5g.stack.rlc.am;
 
 //
-// This module implements the receiving functionalities of the Acknowledged
+// Implements the receiving functionalities of the Acknowledged
 // Mode (AM) of the Radio Link Control (RLC) layer for a specific connection.
 // It stores RLC Protocol Data Units (PDUs) that arrive from the Medium Access
 // Control (MAC) layer and, when possible, performs reassembly and in-sequence

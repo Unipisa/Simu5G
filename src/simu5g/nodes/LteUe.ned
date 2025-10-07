@@ -29,7 +29,7 @@ import simu5g.stack.ICellularNic;
 
 
 //
-// This module models a User Equipment (UE) in a 4G LTE network. It is a host equipped with
+// Models a User Equipment (UE) in a 4G LTE network. It is a host equipped with
 // an LTE Network Interface Card (NIC), allowing the UE to connect to an ~eNodeB module via the
 // Radio Access Network (RAN) of the LTE network and communicate with any other host in the system.
 // In addition to a NIC submodule, this compound module includes all the higher layers of the protocol stack,

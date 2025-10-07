@@ -13,7 +13,7 @@
 package simu5g.stack.phy;
 
 //
-// This module extends the ~LtePhyBase module by providing the specific PHY functions
+// Extends the ~LtePhyBase module by providing the specific PHY functions
 // on the eNodeB side. It is responsible for checking if a frame received on the air interface
 // originates from a User Equipment (UE) connected to the eNB itself, and it provides the
 // functions necessary to compute the Channel Status Information (CSI) for the UEs connected to it.

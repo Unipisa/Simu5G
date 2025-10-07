@@ -14,7 +14,7 @@ package simu5g.apps.burst;
 import inet.applications.contract.IApp;
 
 //
-// This module models an application that receives bursts of packets from
+// Models an application that receives bursts of packets from
 // a ~BurstSender application module. It binds to a specified UDP local port,
 // logs the received packets, and records statistics such as packet delay.
 //

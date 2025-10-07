@@ -13,7 +13,7 @@
 package simu5g.stack.mac;
 
 //
-// This module extends LTE MAC functionalities at the User Equipment side to support device-to-device (D2D)
+// Extends LTE MAC functionalities at the User Equipment side to support device-to-device (D2D)
 // communications. Specifically, it customizes ~LteMacUe functionalities to support the transmission and reception
 // of MAC Protocol Data Units (PDUs), Channel Status Information (CSI), and Buffer Status Reports (BSRs) over a
 // D2D link. It supports D2D multicast transmission to nearby UEs belonging to a given multicast group.

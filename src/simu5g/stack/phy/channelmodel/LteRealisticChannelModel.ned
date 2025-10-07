@@ -12,7 +12,7 @@
 package simu5g.stack.phy.channelmodel;
 
 //
-// This module implements the functions for a model representing the 2D channel in the LTE
+// Implements the functions for a model representing the 2D channel in the LTE
 // specification 3GPP TR 36.803. It includes the computation of:
 // - path loss (both line-of-sight and non-line-of-sight),
 // - fading (Jakes or Rayleigh model),

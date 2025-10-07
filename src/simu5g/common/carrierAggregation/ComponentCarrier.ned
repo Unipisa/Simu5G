@@ -12,7 +12,7 @@
 package simu5g.common.carrierAggregation;
 
 //
-// This module serves as a descriptor for one Component Carrier (CC) of a Carrier Aggregation (CA)-enabled 4G/5G network.
+// Serves as a descriptor for one Component Carrier (CC) of a Carrier Aggregation (CA)-enabled 4G/5G network.
 // The module is assigned a carrier frequency (which also acts as a unique identifier
 // for the CC in the system), a bandwidth, and a numerology index (in the range of 0 to 4).
 // It can be configured with either Frequency Division Duplex (FDD) or Time

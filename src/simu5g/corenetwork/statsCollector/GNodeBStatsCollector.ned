@@ -12,7 +12,7 @@
 package simu5g.corenetwork.statsCollector;
 
 //
-// This module collects the radio network information from a 5G gNodeB, which can
+// Collects the radio network information from a 5G gNodeB, which can
 // be accessed by the ~RniService module of a ~MecHost. Currently, it exposes
 // the same information as the ~BaseStationStatsCollector module.
 //

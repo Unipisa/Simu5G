@@ -12,7 +12,7 @@
 package simu5g.mobility.trafficLightMobility;
 
 //
-// This module defines the behavior of traffic light controllers in the simulation.
+// Defines the behavior of traffic light controllers in the simulation.
 // It manages the states of the traffic lights (green, yellow, red) and handles the
 // interactions with vehicles, thus influencing the behavior of a node implementing the
 // ~TrafficLightMobility mobility model when such a node reaches the position of the

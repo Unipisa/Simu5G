@@ -11,7 +11,7 @@
 package simu5g.apps.d2dMultihop.statistics;
 
 //
-// This module is only used in conjunction with UEs running instances of the
+// Only used in conjunction with UEs running instances of the
 // ~MultihopD2D application. It collects statistics related to notification messages
 // broadcast by the ~MultihopD2D applications by gathering data through method
 // calls from these applications.

@@ -12,7 +12,7 @@
 package simu5g.mec.vim;
 
 //
-// This module can be used to simulate a background application running on the
+// Can be used to simulate a background application running on the
 // MEC host without simulating all message exchanges and finite-state machines.
 // It can be useful for simulating background tasks that utilize CPU, RAM, and disk
 // resources.

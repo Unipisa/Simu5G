@@ -22,7 +22,7 @@ import simu5g.mec.vim.VirtualisationInfrastructureManager;
 
 
 //
-// This module represents a model of a Multi-access Edge Computing (MEC) host
+// Represents a model of a Multi-access Edge Computing (MEC) host
 // belonging to a MEC system, as specified by the ETSI GS MEC 003 specifications. It runs
 // MEC applications within its ~VirtualisationInfrastructure and can provide a number of
 // MEC services via the MEC platform. MEC applications can be created either dynamically by

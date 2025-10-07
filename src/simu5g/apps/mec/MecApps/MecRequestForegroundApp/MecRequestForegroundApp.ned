@@ -14,8 +14,8 @@ package simu5g.apps.mec.MecApps.MecRequestForegroundApp;
 import simu5g.apps.mec.MecApps.MecAppBase;
 
 //
-// This module implements a MEC application that issues GET requests to the
-// ~LocationService every 500ms. This application can be utilized as an "independent MEC app" (see
+// Implements a MEC application that issues GET requests to the ~LocationService
+// every 500ms. This application can be utilized as an "independent MEC app" (see
 // ~MecHost module), hence it does not require instantiation via the MEC orchestrator
 // upon request from a User Equipment. Essentially, this application provides a quick
 // way to generate configurable load to the Location Service and simulate different

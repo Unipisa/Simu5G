@@ -27,7 +27,7 @@ import simu5g.stack.ICellularNic;
 import simu5g.x2.LteX2App;
 
 //
-// This module models an evolved Node B (eNB) of a 4G LTE network. It is a specialized device equipped
+// Models an evolved Node B (eNB) of a 4G LTE network. It is a specialized device equipped
 // with a Network Interface Card (NIC) that enables communication with the ~LteUe devices connected
 // to it. It serves as an access point that routes packets between the UEs and the 4G Core Network.
 // Packets arriving from the UEs are tunneled to the appropriate next hop in the core network (e.g.,

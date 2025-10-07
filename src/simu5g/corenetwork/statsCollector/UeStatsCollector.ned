@@ -12,7 +12,7 @@
 package simu5g.corenetwork.statsCollector;
 
 //
-// This module collects the radio network information of a LTE User Equipment (UE), which can
+// Collects the radio network information of a LTE User Equipment (UE), which can
 // be accessed by the ~RniService module of a ~MecHost. For example, this module
 // provides information such as packet delay and discard rate.
 //

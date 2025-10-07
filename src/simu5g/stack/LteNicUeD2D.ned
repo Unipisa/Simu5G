@@ -13,7 +13,7 @@ package simu5g.stack;
 
 
 //
-// This module represents a Device-to-Device (D2D) capable User Equipment (UE)
+// Represents a Device-to-Device (D2D) capable User Equipment (UE)
 // network interface. It extends the basic LTE UE functionality by adding D2D
 // communication capabilities, allowing direct communication between UEs without
 // the need to route traffic through the base station.

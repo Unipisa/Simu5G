@@ -18,10 +18,12 @@ import simu5g.background.trafficGenerator.BackgroundTrafficGenerator;
 
 
 //
-// This module implements a lightweight model for a 4G eNodeB or 5G gNodeB. It is used to generate
-// configurable inter-cell interference in the simulated network. Compared to the ~eNodeB and ~gNodeB
-// modules, this module occupies time-frequency resources in both the uplink and downlink bandwidth
-// without simulating the actual transmission or reception of data packets to or from User Equipments (UEs).
+// Implements a lightweight model for a 4G eNodeB or 5G gNodeB for generating
+// configurable inter-cell interference in the simulated network.
+//
+// Compared to the ~eNodeB and ~gNodeB modules, this module occupies time-frequency
+// resources in both the uplink and downlink bandwidth without simulating the actual
+// transmission or reception of data packets to or from User Equipments (UEs).
 // Therefore, it is significantly more efficient from a simulation speed perspective.
 // To achieve this, it includes a ~BackgroundTrafficGenerator to customize the level of background
 // traffic to be simulated, a ~BackgroundChannelModel to configure channel parameters, and a

@@ -13,7 +13,7 @@ package simu5g.apps.vod;
 import inet.applications.contract.IApp;
 
 //
-// This module simulates a video-on-demand (VoD) client application
+// Simulates a video-on-demand (VoD) client application
 // that receives video frames over UDP. It is assumed that the transmitted
 // video is encoded using multiple layers according to the Scalable Video
 // Coding (SVC) technique. Hence, the module collects separate statistics

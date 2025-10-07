@@ -13,7 +13,7 @@
 package simu5g.background.trafficGenerator;
 
 //
-// This module interface defines the contract for a traffic generator manager
+// Defines the contract for a traffic generator manager
 // within the ~BackgroundTrafficGenerator module of a ~eNodeB or ~gNodeB.
 // This interface can be implemented by other modules to create a custom
 // traffic generator manager; see ~BackgroundTrafficManager.

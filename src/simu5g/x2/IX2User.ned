@@ -12,9 +12,9 @@
 package simu5g.x2;
 
 //
-// This module interface provides the fundamental structure for submodules of the LTE/NR protocol
-// stack that need to interact with the ~LteX2Manager to utilize X2 communication to accomplish
-// their tasks, such as handover, dual connectivity, and Coordinated Multi-Point.
+// Interface for modules that need to interact with the ~LteX2Manager to utilize
+// X2 communication to perform tasks such as handover, dual connectivity, and
+// Coordinated Multi-Point.
 //
 moduleinterface IX2User
 {

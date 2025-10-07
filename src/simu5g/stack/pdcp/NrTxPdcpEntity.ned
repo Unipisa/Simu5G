@@ -12,7 +12,7 @@
 package simu5g.stack.pdcp;
 
 //
-// This module handles the operations related to the NR PDCP (Packet Data Convergence Protocol)
+// Handles the operations related to the NR PDCP (Packet Data Convergence Protocol)
 // layer at the transmitting side of a specific connection. It extends the ~LteTxPdcpEntity module.
 // Additionally, this module manages the creation process by adding support for Dual Connectivity functionality.
 //
