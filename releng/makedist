@@ -34,7 +34,7 @@ echo Creating $FILENAME_DOC.
 # switch to doc dir
 cd $SIMU5G_ROOT/doc
 # patching files
-#perl -i -pe $REGEXPREPLACE s/##BUILDID##/$BUILDID/g neddoc/overview.html
+sed -i -e "s/@VERSION@/$VERSION/g" neddoc/index.html
 # create archive
 tar cfz $FILENAME_DOC neddoc || { echo --- error creating simu5g-x.y.z-doc.tgz ---; exit 1;}
 
