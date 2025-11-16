@@ -432,6 +432,30 @@ MacNodeId Binder::getSecondaryNode(MacNodeId masterEnbId)
     return NODEID_NONE;
 }
 
+MacNodeId Binder::getUeNodeId(MacNodeId ue, bool isNr)
+{
+    //TODO better impl! mapping via IP address is not ideal.
+    if (!isValidNodeId(ue) || getNodeTypeById(ue) != UE)
+        throw cRuntimeError("Binder::getUeNodeId(): bad ueId %hu", num(ue));
+
+    inet::Ipv4Address ueIpAddr = getIPv4Address(ue);
+    if (ueIpAddr == inet::Ipv4Address::UNSPECIFIED_ADDRESS)
+        throw cRuntimeError("Binder::getUeNodeId(): no IP address for UE %hu", num(ue));
+
+    if (isNr) {
+        // Request for NR nodeId
+        if (ipAddressToNrMacNodeId_.find(ueIpAddr) != ipAddressToNrMacNodeId_.end())
+            return ipAddressToNrMacNodeId_[ueIpAddr];
+    }
+    else {
+        // Request for LTE nodeId
+        if (ipAddressToMacNodeId_.find(ueIpAddr) != ipAddressToMacNodeId_.end())
+            return ipAddressToMacNodeId_[ueIpAddr];
+    }
+
+    return NODEID_NONE;
+}
+
 void Binder::registerMecHost(const inet::L3Address& mecHostAddress)
 {
     mecHostAddress_.insert(mecHostAddress);

@@ -352,6 +352,15 @@ class Binder : public cSimpleModule
     }
 
     /**
+     * Returns the selected nodeId (LTE/NR) for the given UE.
+     *
+     * @param ue The UE's current MacNodeId (can be either LTE or NR)
+     * @param isNr If true, returns the NR nodeId; if false, returns the LTE nodeId
+     * @return The requested nodeId, or NODEID_NONE if not found/available
+     */
+    MacNodeId getUeNodeId(MacNodeId ue, bool isNr);
+
+    /**
      * author Alessandro Noferi
      *
      * Returns the IP address for the given MacNodeId
