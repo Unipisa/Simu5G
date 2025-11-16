@@ -11,6 +11,7 @@
 
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
+#include <inet/common/stlutils.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
@@ -162,8 +163,18 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
        << " ---> CID " << cid << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
 
-    if (entity == nullptr)
+    if (entity == nullptr) {
         entity = createTxEntity(cid);
+
+        // check for bug
+        if (getNodeTypeById(nodeId_) == ENODEB && lteInfo->getMulticastGroupId() == -1) {
+            MacCid lteCid = MacCid(binder_->getUeNodeId(lteInfo->getDestId(), false), lteInfo->getLcid());
+            MacCid nrCid = MacCid(binder_->getUeNodeId(lteInfo->getDestId(), true), lteInfo->getLcid());
+            if (inet::containsKey(txEntities_, lteCid) && inet::containsKey(txEntities_, nrCid))
+                throw cRuntimeError("Both LTE and NR cids of same UE are present as txEntities_ keys: %s, %s", lteCid.str().c_str(), nrCid.str().c_str());
+        }
+    }
+
     entity->handlePacketFromUpperLayer(pkt);
 }
 
@@ -181,8 +192,18 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
     MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
 
     LteRxPdcpEntity *entity = lookupRxEntity(cid);
-    if (entity == nullptr)
+    if (entity == nullptr) {
         entity = createRxEntity(cid);
+
+        // check for bug
+        if (getNodeTypeById(nodeId_) == ENODEB && lteInfo->getMulticastGroupId() == -1) {
+            MacCid lteCid = MacCid(binder_->getUeNodeId(lteInfo->getSourceId(), false), lteInfo->getLcid());
+            MacCid nrCid = MacCid(binder_->getUeNodeId(lteInfo->getSourceId(), true), lteInfo->getLcid());
+            if (inet::containsKey(rxEntities_, lteCid) && inet::containsKey(rxEntities_, nrCid))
+                throw cRuntimeError("Both LTE and NR cids of same UE are present as rxEntities_ keys: %s, %s", lteCid.str().c_str(), nrCid.str().c_str());
+        }
+
+    }
     entity->handlePacketFromLowerLayer(pkt);
 }
 
