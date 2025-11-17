@@ -139,7 +139,7 @@ void VodUdpClient::handleMessage(cMessage *msg)
             socket.setTos(tos);
         delete msg;
     }
-    else if (!strcmp(msg->getName(), "VoDPacket")) {
+    else if (opp_stringbeginswith(msg->getName(), "VoDPacket")) {
         receiveStream(check_and_cast<inet::Packet *>(msg)->peekAtFront<VoDPacket>().get());
         delete msg;
     }

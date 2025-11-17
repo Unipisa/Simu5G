@@ -156,7 +156,7 @@ void VoipSender::sendVoIPPacket()
     if (destAddress_.isUnspecified())
         destAddress_ = L3AddressResolver().resolve(par("destAddress"));
 
-    Packet *packet = new inet::Packet("VoIP");
+    Packet *packet = new inet::Packet(opp_stringf("VoIP-%d-%d", getId(), iDframe_).c_str());
     auto voip = makeShared<VoipPacket>();
     voip->setIDtalk(iDtalk_ - 1);
     voip->setNframes(nframes_);

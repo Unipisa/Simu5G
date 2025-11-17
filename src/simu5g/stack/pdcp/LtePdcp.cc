@@ -36,13 +36,15 @@ LtePdcpBase::~LtePdcpBase()
 {
 }
 
+
 ApplicationType LtePdcpBase::getApplication(cPacket *pkt)
 {
-    if ((strcmp(pkt->getName(), "VoIP")) == 0)
+    const char *name = pkt->getName();
+    if (opp_stringbeginswith(name, "VoIP"))
         return VOIP;
-    else if ((strcmp(pkt->getName(), "gaming")) == 0)
+    else if (opp_stringbeginswith(name, "gaming"))
         return GAMING;
-    else if ((strcmp(pkt->getName(), "VoDPacket") == 0) || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
+    else if (opp_stringbeginswith(name, "VoDPacket") || opp_stringbeginswith(name, "VoDFinishPacket"))
         return VOD;
     else
         return CBR;
@@ -50,11 +52,12 @@ ApplicationType LtePdcpBase::getApplication(cPacket *pkt)
 
 LteTrafficClass LtePdcpBase::getTrafficCategory(cPacket *pkt)
 {
-    if ((strcmp(pkt->getName(), "VoIP")) == 0)
+    const char *name = pkt->getName();
+    if (opp_stringbeginswith(name, "VoIP"))
         return CONVERSATIONAL;
-    else if ((strcmp(pkt->getName(), "gaming")) == 0)
+    else if (opp_stringbeginswith(name, "gaming"))
         return INTERACTIVE;
-    else if ((strcmp(pkt->getName(), "VoDPacket") == 0) || (strcmp(pkt->getName(), "VoDFinishPacket") == 0))
+    else if (opp_stringbeginswith(name, "VoDPacket") || opp_stringbeginswith(name, "VoDFinishPacket"))
         return STREAMING;
     else
         return BACKGROUND;

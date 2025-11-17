@@ -136,7 +136,7 @@ void VodUdpServer::handleSVCMessage(cMessage *msg)
         int seq_num = numPkSentApp;
         int currentFrame = svcTrace_[numPkSentApp].frameNumber;
 
-        Packet *packet = new Packet("VoDPacket");
+        Packet *packet = new Packet(opp_stringf("VoDPacket-%d-%d", getId(), seq_num).c_str());
         auto frame = makeShared<VoDPacket>();
         frame->setFrameSeqNum(seq_num);
         frame->setPayloadTimestamp(simTime());
