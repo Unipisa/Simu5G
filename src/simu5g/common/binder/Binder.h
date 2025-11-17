@@ -608,6 +608,7 @@ class Binder : public cSimpleModule
     void moveUeCollector(MacNodeId ue, MacCellId oldCell, MacCellId newCell);
 
     RanNodeType getBaseStationTypeById(MacNodeId);
+    bool isGNodeB(MacNodeId enbId);
 
     // Moved from LteCommon - getter functions that were taking Binder as first parameter
     CellInfo *getCellInfoByNodeId(MacNodeId nodeId);

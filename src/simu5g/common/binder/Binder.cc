@@ -1240,6 +1240,14 @@ RanNodeType Binder::getBaseStationTypeById(MacNodeId cellId)
     }
 }
 
+bool Binder::isGNodeB(MacNodeId enbId)
+{
+    ASSERT(getNodeTypeById(enbId) == ENODEB);
+    cModule *module = getModuleByMacNodeId(enbId);
+    std::string nodeTypeStr = module->par("nodeType").stdstringValue();
+    return nodeTypeStr == "GNODEB";
+}
+
 CellInfo *Binder::getCellInfoByNodeId(MacNodeId nodeId)
 {
     // Check if it is an eNodeB
