@@ -11,7 +11,6 @@
 
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
-#include <inet/common/stlutils.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
@@ -155,6 +154,25 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
 
     MacCid cid = MacCid(lteInfo->getDestId(), lteInfo->getLcid());
 
+    if (isDualConnectivityEnabled() && lteInfo->getMulticastGroupId() == -1) {
+        // Handle DC setup: Assume packet arrives in Master nodeB (LTE), and wants to use Secondary nodeB (NR).
+        // Packet is processed by local PDCP entity, then needs to be tunneled over X2 to Secondary for transmission.
+        // However, local PDCP entity is keyed on LTE nodeIds, so we need to tweak the cid and replace NR nodeId
+        // with LTE nodeId so that lookup succeeds.
+        if (getNodeTypeById(nodeId_) == ENODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getDestId()) ) {
+            // use another CID whose technology matches the nodeB
+            MacNodeId otherDestId = binder_->getUeNodeId(lteInfo->getDestId(), !isNrUe(lteInfo->getDestId()));
+            ASSERT(otherDestId != NODEID_NONE);
+            cid = MacCid(otherDestId, lteInfo->getLcid());
+        }
+
+        // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
+        if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getDestId()) == ENODEB)  {
+            MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
+            cid = MacCid(lteNodeB, lteInfo->getLcid());
+        }
+    }
+
     LteTxPdcpEntity *entity = lookupTxEntity(cid);
 
     // get the PDCP entity for this LCID and process the packet
@@ -163,18 +181,8 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
        << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
        << " ---> CID " << cid << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
 
-    if (entity == nullptr) {
+    if (entity == nullptr)
         entity = createTxEntity(cid);
-
-        // check for bug
-        if (getNodeTypeById(nodeId_) == ENODEB && lteInfo->getMulticastGroupId() == -1) {
-            MacCid lteCid = MacCid(binder_->getUeNodeId(lteInfo->getDestId(), false), lteInfo->getLcid());
-            MacCid nrCid = MacCid(binder_->getUeNodeId(lteInfo->getDestId(), true), lteInfo->getLcid());
-            if (inet::containsKey(txEntities_, lteCid) && inet::containsKey(txEntities_, nrCid))
-                throw cRuntimeError("Both LTE and NR cids of same UE are present as txEntities_ keys: %s, %s", lteCid.str().c_str(), nrCid.str().c_str());
-        }
-    }
-
     entity->handlePacketFromUpperLayer(pkt);
 }
 
@@ -189,21 +197,64 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
-    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());   // TODO: check if you have to get master node id
+    MacCid cid = MacCid(lteInfo->getSourceId(), lteInfo->getLcid());
 
-    LteRxPdcpEntity *entity = lookupRxEntity(cid);
-    if (entity == nullptr) {
-        entity = createRxEntity(cid);
-
-        // check for bug
-        if (getNodeTypeById(nodeId_) == ENODEB && lteInfo->getMulticastGroupId() == -1) {
-            MacCid lteCid = MacCid(binder_->getUeNodeId(lteInfo->getSourceId(), false), lteInfo->getLcid());
-            MacCid nrCid = MacCid(binder_->getUeNodeId(lteInfo->getSourceId(), true), lteInfo->getLcid());
-            if (inet::containsKey(rxEntities_, lteCid) && inet::containsKey(rxEntities_, nrCid))
-                throw cRuntimeError("Both LTE and NR cids of same UE are present as rxEntities_ keys: %s, %s", lteCid.str().c_str(), nrCid.str().c_str());
+    if (isDualConnectivityEnabled()) {
+        // Handle DC setup: Assume packet arrives at this Master nodeB (LTE) from Secondary (NR) over X2.
+        // Packet needs to be processed by local PDCP entity. However, local PDCP entity is keyed on LTE nodeIds,
+        // so we need to tweak the cid and replace NR nodeId with LTE nodeId so that lookup succeeds.
+        if (getNodeTypeById(nodeId_) == ENODEB && binder_->isGNodeB(nodeId_) != isNrUe(lteInfo->getSourceId()) ) {
+            // use another CID whose technology matches the nodeB
+            MacNodeId otherSourceId = binder_->getUeNodeId(lteInfo->getSourceId(), !isNrUe(lteInfo->getSourceId()));
+            ASSERT(otherSourceId != NODEID_NONE);
+            cid = MacCid(otherSourceId, lteInfo->getLcid());
         }
 
+        // Handle DC setup on UE side: both legs should use the *same* key for entity lookup
+        if (getNodeTypeById(nodeId_) == UE && getNodeTypeById(lteInfo->getSourceId()) == ENODEB)  {
+            MacNodeId lteNodeB = binder_->getServingNode(nodeId_);
+            cid = MacCid(lteNodeB, lteInfo->getLcid());
+        }
     }
+
+    // Handle DC setup on UE side: UE receives packet from base station
+    // and needs to use the correct PDCP entity based on technology matching
+    if (getNodeTypeById(nodeId_) == UE && lteInfo->getMulticastGroupId() == -1 && isDualConnectivityEnabled()) {
+        MacNodeId servingNodeId = binder_->getServingNode(nodeId_);
+
+        // Check if there's a technology mismatch between packet source and UE's serving base station
+        if (servingNodeId != NODEID_NONE &&
+            binder_->isGNodeB(lteInfo->getSourceId()) != binder_->isGNodeB(servingNodeId)) {
+
+            // Use alternate base station nodeId (Master or Secondary) for proper PDCP entity lookup
+            MacNodeId otherSrcId;
+            if (binder_->isGNodeB(lteInfo->getSourceId())) {
+                // Packet came from gNodeB, get its master (LTE eNodeB)
+                otherSrcId = binder_->getMasterNodeOrSelf(lteInfo->getSourceId());
+            } else {
+                // Packet came from eNodeB, get its secondary (NR gNodeB)
+                otherSrcId = binder_->getSecondaryNode(lteInfo->getSourceId());
+            }
+
+            if (otherSrcId != NODEID_NONE && otherSrcId != lteInfo->getSourceId()) {
+                cid = MacCid(otherSrcId, lteInfo->getLcid());
+
+                EV << "LtePdcp: UE DC RX - Using alternate base station ID " << otherSrcId
+                   << " instead of " << lteInfo->getSourceId()
+                   << " for technology match with serving node " << servingNodeId << endl;
+            }
+        }
+    }
+
+    LteRxPdcpEntity *entity = lookupRxEntity(cid);
+
+    EV << "fromLowerLayer in " << getFullPath() << " event #" << getSimulation()->getEventNumber()
+       <<  ": Processing packet " << pkt->getName() << " src=" << lteInfo->getSourceId() << " dest=" << lteInfo->getDestId()
+       << " multicast=" << lteInfo->getMulticastGroupId() << " direction=" << dirToA((Direction)lteInfo->getDirection())
+       << " ---> CID " << cid << (entity == nullptr ? " (NEW)" : " (existing)") << std::endl;
+
+    if (entity == nullptr)
+        entity = createRxEntity(cid);
     entity->handlePacketFromLowerLayer(pkt);
 }
 
