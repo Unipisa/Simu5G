@@ -80,16 +80,13 @@ class UmRxEntity : public cSimpleModule
         unsigned int currentPduSno;   // next PDU sequence number expected
     } buffered_;
 
-    // Sequence number of the last SDU delivered to the upper layer
-    unsigned int lastSnoDelivered_ = 0;
-
     // Sequence number of the last correctly reassembled PDU
     unsigned int lastPduReassembled_ = 0;
 
     bool init_ = false;
 
     // If true, the next PDU and the corresponding SDUs are considered in order
-    // (modify the lastPduReassembled_ and lastSnoDelivered_ counters)
+    // (modify the lastPduReassembled_ counter)
     // useful for D2D after a mode switch
     bool resetFlag_;
 
@@ -113,26 +110,21 @@ class UmRxEntity : public cSimpleModule
     simtime_t t2_; // point in time the burst begins
     simtime_t t1_; // point in time last packet sent during burst
 
-    //Statistics
+    //Statistics - RLC-UM only tracks throughput and delay (no packet loss based on PDCP sequence numbers)
     static unsigned int totalCellPduRcvdBytes_;
     static unsigned int totalCellRcvdBytes_;
     unsigned int totalPduRcvdBytes_;
     unsigned int totalRcvdBytes_;
     Direction dir_ = UNKNOWN_DIRECTION;
-    static simsignal_t rlcCellPacketLossSignal_[2];
-    static simsignal_t rlcPacketLossSignal_[2];
-    static simsignal_t rlcPduPacketLossSignal_[2];
+
+    // Valid statistics for RLC-UM (throughput and delay)
     static simsignal_t rlcDelaySignal_[2];
     static simsignal_t rlcPduDelaySignal_[2];
     static simsignal_t rlcCellThroughputSignal_[2];
     static simsignal_t rlcThroughputSignal_[2];
     static simsignal_t rlcPduThroughputSignal_[2];
 
-    static simsignal_t rlcPacketLossTotalSignal_;
-
-    // statistics for D2D
-    static simsignal_t rlcPacketLossD2DSignal_;
-    static simsignal_t rlcPduPacketLossD2DSignal_;
+    // statistics for D2D (throughput and delay only)
     static simsignal_t rlcDelayD2DSignal_;
     static simsignal_t rlcPduDelayD2DSignal_;
     static simsignal_t rlcThroughputD2DSignal_;

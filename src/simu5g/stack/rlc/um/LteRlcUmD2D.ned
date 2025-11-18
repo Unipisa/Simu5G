@@ -30,11 +30,7 @@ simple LteRlcUmD2D extends LteRlcUm
         @statistic[rlcDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcDelayD2D"; record=mean,vector);
         @signal[rlcThroughputD2D];
         @statistic[rlcThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcThroughputD2D"; record=mean,vector);
-        @signal[rlcPacketLossD2D];
-        @statistic[rlcPacketLossD2D](title="rlc Packet Loss"; unit=""; source="rlcPacketLossD2D"; record=mean,vector);
 
-        @signal[rlcCellPacketLossD2D];
-        @statistic[rlcCellPacketLossD2D](title="rlc Cell Packet Loss"; unit=""; source="rlcCellPacketLossD2D"; record=mean,vector);
         @signal[rlcCellThroughputD2D];
         @statistic[rlcCellThroughputD2D](title="Cell Throughput at the rlc layer D2D"; unit="Bps"; source="rlcCellThroughputD2D"; record=mean,vector);
 
@@ -43,7 +39,5 @@ simple LteRlcUmD2D extends LteRlcUm
         @statistic[rlcPduDelayD2D](title="Delay at the rlc layer D2D"; unit="s"; source="rlcPduDelayD2D"; record=mean,vector);
         @signal[rlcPduThroughputD2D];
         @statistic[rlcPduThroughputD2D](title="Throughput at the rlc layer D2D"; unit="Bps"; source="rlcPduThroughputD2D"; record=mean,vector);
-        @signal[rlcPduPacketLossD2D];
-        @statistic[rlcPduPacketLossD2D](title="rlc Packet Loss"; unit=""; source="rlcPduPacketLossD2D"; record=mean,vector);
 }
 

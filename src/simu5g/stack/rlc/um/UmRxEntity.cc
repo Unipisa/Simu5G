@@ -23,19 +23,14 @@ using namespace inet;
 unsigned int UmRxEntity::totalCellPduRcvdBytes_ = 0;
 unsigned int UmRxEntity::totalCellRcvdBytes_ = 0;
 
-simsignal_t UmRxEntity::rlcPacketLossTotalSignal_ = registerSignal("rlcPacketLossTotal");
-
-simsignal_t UmRxEntity::rlcCellPacketLossSignal_[2] = { cComponent::registerSignal("rlcCellPacketLossDl"), cComponent::registerSignal("rlcCellPacketLossUl") };
-simsignal_t UmRxEntity::rlcPacketLossSignal_[2] = { cComponent::registerSignal("rlcPacketLossDl"), cComponent::registerSignal("rlcPacketLossUl") };
-simsignal_t UmRxEntity::rlcPduPacketLossSignal_[2] = { cComponent::registerSignal("rlcPduPacketLossDl"), cComponent::registerSignal("rlcPduPacketLossUl") };
+// RLC-UM signals - only valid statistics (throughput and delay, no packet loss)
 simsignal_t UmRxEntity::rlcDelaySignal_[2] = { cComponent::registerSignal("rlcDelayDl"), cComponent::registerSignal("rlcDelayUl") };
 simsignal_t UmRxEntity::rlcThroughputSignal_[2] = { cComponent::registerSignal("rlcThroughputDl"), cComponent::registerSignal("rlcThroughputUl") };
 simsignal_t UmRxEntity::rlcPduDelaySignal_[2] = { cComponent::registerSignal("rlcPduDelayDl"), cComponent::registerSignal("rlcPduDelayUl") };
 simsignal_t UmRxEntity::rlcPduThroughputSignal_[2] = { cComponent::registerSignal("rlcPduThroughputDl"), cComponent::registerSignal("rlcPduThroughputUl") };
 simsignal_t UmRxEntity::rlcCellThroughputSignal_[2] = { cComponent::registerSignal("rlcCellThroughputDl"), cComponent::registerSignal("rlcCellThroughputUl") };
 
-simsignal_t UmRxEntity::rlcPacketLossD2DSignal_ = registerSignal("rlcPacketLossD2D");
-simsignal_t UmRxEntity::rlcPduPacketLossD2DSignal_ = registerSignal("rlcPduPacketLossD2D");
+// D2D signals - only valid statistics (throughput and delay, no packet loss)
 simsignal_t UmRxEntity::rlcDelayD2DSignal_ = registerSignal("rlcDelayD2D");
 simsignal_t UmRxEntity::rlcThroughputD2DSignal_ = registerSignal("rlcThroughputD2D");
 simsignal_t UmRxEntity::rlcPduDelayD2DSignal_ = registerSignal("rlcPduDelayD2D");
@@ -256,65 +251,41 @@ void UmRxEntity::moveRxWindow(int pos)
 //void UmRxEntity::toPdcp(LteRlcSdu* rlcSdu)
 void UmRxEntity::toPdcp(Packet *pktAux)
 {
-
     auto rlcSdu = pktAux->popAtFront<LteRlcSdu>();
     LteRlcUm *lteRlc = this->rlc_;
 
     auto lteInfo = pktAux->getTag<FlowControlInfo>();
-    unsigned int sno = rlcSdu->getSnoMainPacket();
     unsigned int length = pktAux->getByteLength();
     simtime_t ts = pktAux->getCreationTime();
 
     // create a PDCP PDU and send it to the upper layer
     MacNodeId ueId;
-    if (lteInfo->getDirection() == DL || lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)                                                                                                                    // This module is at a UE
+    if (lteInfo->getDirection() == DL || lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)
         ueId = ownerNodeId_;
     else           // UL. This module is at the eNB: get the node id of the sender
         ueId = lteInfo->getSourceId();
 
     cModule *ue = binder_->getRlcByNodeId(ueId, UM);
-    // check whether some PDCP PDUs have not been delivered
-    while (sno > lastSnoDelivered_ + 1) {
-        lastSnoDelivered_++;
 
-        if (nodeB_ != nullptr)
-            nodeB_->emit(rlcCellPacketLossSignal_[dir_], 1.0);
 
-        // emit statistic: packet loss
-        if (ue != nullptr) {
-            if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI)
-                ue->emit(rlcPacketLossSignal_[dir_], 1.0);
-            else
-                ue->emit(rlcPacketLossD2DSignal_, 1.0);
-            ue->emit(rlcPacketLossTotalSignal_, 1.0);
-        }
-    }
-    // update the last sno delivered to the current sno
-    lastSnoDelivered_ = sno;
-
-    // emit statistics
-
+    // emit statistics (throughput and delay only - no packet loss)
     totalCellRcvdBytes_ += length;
     totalRcvdBytes_ += length;
     double cellTputSample = (double)totalCellRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
     double tputSample = (double)totalRcvdBytes_ / (NOW - getSimulation()->getWarmupPeriod());
+
     if (ue != nullptr) {
         if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
             ue->emit(rlcThroughputSignal_[dir_], tputSample);
-            ue->emit(rlcPacketLossSignal_[dir_], 0.0);
-            ue->emit(rlcPacketLossTotalSignal_, 0.0);
             ue->emit(rlcDelaySignal_[dir_], (NOW - ts).dbl());
         }
         else {
             ue->emit(rlcThroughputD2DSignal_, tputSample);
-            ue->emit(rlcPacketLossD2DSignal_, 0.0);
-            ue->emit(rlcPacketLossTotalSignal_, 0.0);
             ue->emit(rlcDelayD2DSignal_, (NOW - ts).dbl());
         }
     }
     if (nodeB_ != nullptr) {
         nodeB_->emit(rlcCellThroughputSignal_[dir_], cellTputSample);
-        nodeB_->emit(rlcCellPacketLossSignal_[dir_], 0.0);
     }
 
     EV << NOW << " UmRxEntity::toPdcp Created PDCP PDU with length " << pktAux->getByteLength() << " bytes" << endl;
@@ -368,7 +339,6 @@ void UmRxEntity::reassemble(unsigned int index)
             if (resetFlag_) {
                 // by doing this, the first extracted SDU will be considered in order. For example, when D2D is enabled,
                 // this helps to retrieve the synchronization between SNs at the tx and rx after a mode switch
-                lastSnoDelivered_ = sduSno - 1;
                 resetFlag_ = false;
                 ignoreFragment = true;
             }
@@ -628,37 +598,11 @@ void UmRxEntity::reassemble(unsigned int index)
     received_.at(index) = false;
     EV << NOW << " UmRxEntity::reassemble Removed PDU from position " << index << endl;
 
-    // emit statistics
-    MacNodeId ueId;
-    if (lteInfo->getDirection() == DL || lteInfo->getDirection() == D2D || lteInfo->getDirection() == D2D_MULTI)                                                                                                                    // This module is at a UE
-        ueId = ownerNodeId_;
-    else           // UL. This module is at the eNB: get the node id of the sender
-        ueId = lteInfo->getSourceId();
+    // RLC-UM reassembly complete - no statistics emission needed here
+    // RLC PDU processing is successful at this point
 
-    cModule *ue = binder_->getRlcByNodeId(ueId, UM);
-    // check whether some PDCP PDUs have not been delivered
-    while (pduSno > lastPduReassembled_ + 1) {
-        // emit statistic: packet loss
-        if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
-            ue->emit(rlcPduPacketLossSignal_[dir_], 1.0);
-        }
-        else {
-            ue->emit(rlcPduPacketLossD2DSignal_, 1.0);
-        }
-
-        lastPduReassembled_++;
-    }
-
-    // update the last sno reassembled to the current sno
+    // update the last PDU reassembled to the current PDU sequence number
     lastPduReassembled_ = pduSno;
-
-    // emit statistic: packet loss
-    if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI) { // UE in IM
-        ue->emit(rlcPduPacketLossSignal_[dir_], 0.0);
-    }
-    else {
-        ue->emit(rlcPduPacketLossD2DSignal_, 0.0);
-    }
 
     pktPdu->insertAtFront(pdu);
 
