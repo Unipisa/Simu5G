@@ -61,7 +61,7 @@ simple RniService like IMecService, IApp
         @signal[loadGeneratorNumBackgroundRequests];
         @statistic[loadGeneratorNumBackgroundRequests](title="Load Generator Background Requests Count"; record=mean,vector);
         @signal[responseTime];
-        @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
+        @statistic[responseTime](title="Response time of foreground requests"; record=mean,vector);
 
     gates:
         input socketIn @labels(TcpCommand/up);
