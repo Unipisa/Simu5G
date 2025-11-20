@@ -32,7 +32,7 @@ simple CbrReceiver like IApp
         @statistic[cbrFrameDelay](title="Cbr Frame Delay"; unit="s"; source="cbrFrameDelay"; record=mean,vector);
         @statistic[cbrJitter](title="Cbr Playout Loss"; unit="s"; source="cbrJitter"; record=mean,vector);
         @statistic[cbrFrameLoss](title="Cbr Frame Loss"; unit="ratio"; source="cbrFrameLoss"; record=mean);
-        @statistic[cbrReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughput"; record=timeavg,mean,sum);
+        @statistic[cbrReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughput"; record=simu5g_rateavg);
         @statistic[cbrReceivedBytes](title="Bytes received at the application level"; unit="Bps"; source="cbrReceivedBytes"; record=timeavg,mean,vector,sum);
 
 

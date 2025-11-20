@@ -47,7 +47,7 @@ simple VoipReceiver like IApp
         @signal[voIPTaildropLoss];
         @statistic[voIPTaildropLoss](title="VoIP Tail Drop Loss"; unit="ratio"; source="voIPTaildropLoss"; record=mean);
         @signal[voIPReceivedThroughput];
-        @statistic[voIPReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="voIPReceivedThroughput"; record=mean,vector);
+        @statistic[voIPReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="voIPReceivedThroughput"; record=simu5g_rateavg,vector);
         @display("i=block/source");
     gates:
         output socketOut;
