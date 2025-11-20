@@ -32,7 +32,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-simsignal_t MecServiceBase::requestQueueSizeSignal_ = registerSignal("requestQueueSize");
+simsignal_t MecServiceBase::loadGeneratorNumBackgroundRequestsSignal_ = registerSignal("loadGeneratorNumBackgroundRequests");
 simsignal_t MecServiceBase::responseTimeSignal_ = registerSignal("responseTime");
 
 void MecServiceBase::initialize(int stage)
@@ -335,7 +335,7 @@ void MecServiceBase::newRequest(HttpRequestMessage *msg)
 
         msg->setResponseTime(sumOfresponseTimes);
         lastFGRequestArrived_ = simTime();
-        emit(requestQueueSizeSignal_, numOfBGReqs);
+        emit(loadGeneratorNumBackgroundRequestsSignal_, numOfBGReqs);
     }
 
     requests_.insert(msg);
@@ -514,4 +514,3 @@ void MecServiceBase::removeSubscriptions(int connId)
 }
 
 } //namespace
-

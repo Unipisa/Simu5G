@@ -41,8 +41,8 @@ simple ServiceRegistry like IApp
 
         string binderModule = default("binder");
 
-        @signal[requestQueueSize];
-        @statistic[requestQueueSizeStat](title="Request queue size"; source="requestQueueSize"; record=mean,vector);
+        @signal[loadGeneratorNumBackgroundRequests];
+        @statistic[loadGeneratorNumBackgroundRequests](title="Load Generator Background Requests Count"; record=mean,vector);
         @signal[responseTime];
         @statistic[responseTimeStat](title="Response time of foreground requests"; source="responseTime"; record=mean,vector);
 

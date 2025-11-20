@@ -118,7 +118,7 @@ class MecServiceBase : public inet::ApplicationBase, public inet::TcpSocket::ICa
     EventNotification *currentSubscriptionServed_ = nullptr;
 
     // signals for statistics
-    static simsignal_t requestQueueSizeSignal_;
+    static simsignal_t loadGeneratorNumBackgroundRequestsSignal_;
     static simsignal_t responseTimeSignal_;
 
     /*
