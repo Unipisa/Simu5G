@@ -18,14 +18,14 @@ Define_Module(VoipReceiver);
 using namespace std;
 using namespace inet;
 
-simsignal_t VoipReceiver::voIPFrameLossSignal_ = registerSignal("voIPFrameLoss");
-simsignal_t VoipReceiver::voIPFrameDelaySignal_ = registerSignal("voIPFrameDelay");
-simsignal_t VoipReceiver::voIPPlayoutDelaySignal_ = registerSignal("voIPPlayoutDelay");
-simsignal_t VoipReceiver::voIPMosSignal_ = registerSignal("voIPMos");
-simsignal_t VoipReceiver::voIPTaildropLossSignal_ = registerSignal("voIPTaildropLoss");
-simsignal_t VoipReceiver::voIPJitterSignal_ = registerSignal("voIPJitter");
-simsignal_t VoipReceiver::voIPPlayoutLossSignal_ = registerSignal("voIPPlayoutLoss");
-simsignal_t VoipReceiver::voIPReceivedThroughputSignal_ = registerSignal("voIPReceivedThroughput");
+simsignal_t VoipReceiver::voipFrameLossSignal_ = registerSignal("voipFrameLoss");
+simsignal_t VoipReceiver::voipFrameDelaySignal_ = registerSignal("voipFrameDelay");
+simsignal_t VoipReceiver::voipPlayoutDelaySignal_ = registerSignal("voipPlayoutDelay");
+simsignal_t VoipReceiver::voipMosSignal_ = registerSignal("voipMos");
+simsignal_t VoipReceiver::voipTaildropLossSignal_ = registerSignal("voipTaildropLoss");
+simsignal_t VoipReceiver::voipJitterSignal_ = registerSignal("voipJitter");
+simsignal_t VoipReceiver::voipPlayoutLossSignal_ = registerSignal("voipPlayoutLoss");
+simsignal_t VoipReceiver::voipReceivedThroughputSignal_ = registerSignal("voipReceivedThroughput");
 
 VoipReceiver::~VoipReceiver()
 {
@@ -94,13 +94,13 @@ void VoipReceiver::handleMessage(cMessage *msg)
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
     if (interval > 0.0) {
         double tputSample = (double)totalRcvdBytes_ / interval;
-        emit(voIPReceivedThroughputSignal_, tputSample);
+        emit(voipReceivedThroughputSignal_, tputSample);
     }
 
     // emit frame delay
     simtime_t arrivalTime = simTime();
     double sample = SIMTIME_DBL(arrivalTime - voipHeader->getPayloadTimestamp());
-    emit(voIPFrameDelaySignal_, sample);
+    emit(voipFrameDelaySignal_, sample);
 
     auto packetToBeQueued = voipHeader->dup();
     packetToBeQueued->setArrivalTime(arrivalTime);
@@ -134,7 +134,7 @@ void VoipReceiver::playout(bool finish)
         channelLoss = pPacket->getNframes() - mPacketsList_.size();
 
     sample = ((double)channelLoss / (double)n_frames);
-    emit(voIPFrameLossSignal_, sample);
+    emit(voipFrameLossSignal_, sample);
 
     // Vector for managing duplicates
     std::vector<bool> isArrived;
@@ -170,7 +170,7 @@ void VoipReceiver::playout(bool finish)
                 // avoid printing during finish (as it will print to the standard output)
                 if (!finish)
                     EV << "VoipReceiver::playout - out of time packet deleted: TALK[" << pPacket->getIDtalk() << "] - FRAME[" << IDframe << "]\n";
-                emit(voIPJitterSignal_, last_jitter);
+                emit(voipJitterSignal_, last_jitter);
                 delete pPacket;
             }
             else {
@@ -216,16 +216,16 @@ void VoipReceiver::playout(bool finish)
     }
 
     double mos = eModel(mPlayoutDelay_, proportionalLoss);
-    emit(voIPPlayoutDelaySignal_, mPlayoutDelay_);
+    emit(voipPlayoutDelaySignal_, mPlayoutDelay_);
 
     sample = ((double)playoutLoss / (double)n_frames);
-    emit(voIPPlayoutLossSignal_, sample);
+    emit(voipPlayoutLossSignal_, sample);
 
     sample = mos;
-    emit(voIPMosSignal_, sample);
+    emit(voipMosSignal_, sample);
 
     sample = ((double)tailDropLoss / (double)n_frames);
-    emit(voIPTaildropLossSignal_, sample);
+    emit(voipTaildropLossSignal_, sample);
 
     // avoid printing during finish (as it will print to the standard output)
     if (!finish) {

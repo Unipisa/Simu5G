@@ -20,7 +20,7 @@ namespace simu5g {
 Define_Module(VoipSender);
 using namespace inet;
 
-simsignal_t VoipSender::voIPGeneratedThroughputSignal_ = registerSignal("voIPGeneratedThroughput");
+simsignal_t VoipSender::voipGeneratedThroughputSignal_ = registerSignal("voipGeneratedThroughput");
 
 VoipSender::~VoipSender()
 {
@@ -176,7 +176,7 @@ void VoipSender::sendVoIPPacket()
     double interval = SIMTIME_DBL(simTime() - warmUpPer_);
     if (interval > 0.0) {
         double tputSample = (double)totalSentBytes_ / interval;
-        emit(voIPGeneratedThroughputSignal_, tputSample);
+        emit(voipGeneratedThroughputSignal_, tputSample);
     }
 
     if (nframesTmp_ > 0)

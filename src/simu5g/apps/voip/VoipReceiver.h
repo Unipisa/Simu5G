@@ -49,14 +49,14 @@ class VoipReceiver : public cSimpleModule
     unsigned int totalRcvdBytes_;
     simtime_t warmUpPer_;
 
-    static simsignal_t voIPFrameLossSignal_;
-    static simsignal_t voIPFrameDelaySignal_;
-    static simsignal_t voIPPlayoutDelaySignal_;
-    static simsignal_t voIPMosSignal_;
-    static simsignal_t voIPTaildropLossSignal_;
-    static simsignal_t voIPPlayoutLossSignal_;
-    static simsignal_t voIPJitterSignal_;
-    static simsignal_t voIPReceivedThroughputSignal_;
+    static simsignal_t voipFrameLossSignal_;
+    static simsignal_t voipFrameDelaySignal_;
+    static simsignal_t voipPlayoutDelaySignal_;
+    static simsignal_t voipMosSignal_;
+    static simsignal_t voipTaildropLossSignal_;
+    static simsignal_t voipPlayoutLossSignal_;
+    static simsignal_t voipJitterSignal_;
+    static simsignal_t voipReceivedThroughputSignal_;
 
     void finish() override;
 

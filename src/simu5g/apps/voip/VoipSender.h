@@ -50,7 +50,7 @@ class VoipSender : public cSimpleModule
     unsigned int totalSentBytes_;
     simtime_t warmUpPer_;
 
-    static simsignal_t voIPGeneratedThroughputSignal_;
+    static simsignal_t voipGeneratedThroughputSignal_;
     // ----------------------------
 
     cMessage *selfSender_ = nullptr;
