@@ -29,11 +29,11 @@ simple MultihopD2DStatistics
 {
     parameters:
         @signal[d2dMultihopEventDeliveryRatio];
-        @statistic[d2dMultihopEventDeliveryRatio](title="Avg delivery ratio within the area"; unit=""; source="d2dMultihopEventDeliveryRatio"; record=mean,sum,min,max);
+        @statistic[d2dMultihopEventDeliveryRatio](title="Avg delivery ratio within the area"; unit=""; source="d2dMultihopEventDeliveryRatio"; record=mean,min,max);
         @signal[d2dMultihopEventDelay];
-        @statistic[d2dMultihopEventDelay](title="Avg delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay"; record=mean,sum,min,max);
+        @statistic[d2dMultihopEventDelay](title="Avg delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay"; record=mean,min,max);
         @signal[d2dMultihopEventDelay95Per];
-        @statistic[d2dMultihopEventDelay95Per](title="95th percentile of the delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay95Per"; record=mean,sum,min,max);
+        @statistic[d2dMultihopEventDelay95Per](title="95th percentile of the delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay95Per"; record=mean,min,max);
         @signal[d2dMultihopEventSentMsg];
         @statistic[d2dMultihopEventSentMsg](title="Avg transmissions for broadcasting a message"; unit=""; source="d2dMultihopEventSentMsg"; record=mean,sum,min,max);
         @signal[d2dMultihopEventTrickleSuppressedMsg];
