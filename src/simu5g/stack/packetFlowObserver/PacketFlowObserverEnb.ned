@@ -9,13 +9,18 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.packetFlowManager;
+package simu5g.stack.packetFlowObserver;
 
-simple PacketFlowManagerEnb like IPacketFlowManager
+//
+// This module is responsible for keeping tracking the flow of SDUs in the stack,
+// and compute statistics from them. It is passive observer of the packet flow.
+// Its main user is MEC services.
+//
+simple PacketFlowObserverEnb like IPacketFlowObserver
 {
-    @class("PacketFlowManagerEnb");
+    @class("PacketFlowObserverEnb");
 
     string macModule = default("^.mac");
-    string pfmType = default("PacketFlowManagerEnb");
+    string pfmType = default("PacketFlowObserverEnb");
 }
 

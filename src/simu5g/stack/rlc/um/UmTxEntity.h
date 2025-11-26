@@ -15,7 +15,7 @@
 #include <inet/common/ModuleRefByPar.h>
 
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
 #include "simu5g/mec/utils/MecCommon.h"
@@ -25,7 +25,7 @@ namespace simu5g {
 using namespace omnetpp;
 
 class LteRlcUm;
-class PacketFlowManagerBase;
+class PacketFlowObserverBase;
 
 /**
  * @class UmTxEntity
@@ -127,14 +127,14 @@ class UmTxEntity : public cSimpleModule
     /*
      * @author Alessandro Noferi
      *
-     * reference to packetFlowManager in order to be able
+     * reference to packetFlowObserver in order to be able
      * to count discarded packets and packet delay
      *
      * Be sure to control every time if it is null, this module
      * is not mandatory for a correct network simulation.
      * It is useful, e.g., for RNI service within MEC
      */
-    inet::ModuleRefByPar<PacketFlowManagerBase> packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
 
     RlcBurstStatus burstStatus_;
 

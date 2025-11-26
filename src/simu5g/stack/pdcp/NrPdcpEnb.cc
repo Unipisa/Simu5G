@@ -12,7 +12,7 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 
 #include "simu5g/stack/pdcp/NrPdcpEnb.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 
 namespace simu5g {
 

@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "PacketFlowManagerBase.h"
+#include "PacketFlowObserverBase.h"
 
 #include <inet/common/ModuleAccess.h>
 
@@ -24,11 +24,11 @@
 
 namespace simu5g {
 
-//Define_Module(PacketFlowManagerBase);
+//Define_Module(PacketFlowObserverBase);
 
 
 
-void PacketFlowManagerBase::initialize(int stage)
+void PacketFlowObserverBase::initialize(int stage)
 {
     if (stage == 1) {
         LteMacBase *mac = getModuleFromPar<LteMacBase>(par("macModule"), this);
@@ -38,12 +38,12 @@ void PacketFlowManagerBase::initialize(int stage)
     }
 }
 
-void PacketFlowManagerBase::resetDiscardCounter()
+void PacketFlowObserverBase::resetDiscardCounter()
 {
     pktDiscardCounterTotal_ = { 0, 0 };
 }
 
-void PacketFlowManagerBase::finish()
+void PacketFlowObserverBase::finish()
 {
 }
 

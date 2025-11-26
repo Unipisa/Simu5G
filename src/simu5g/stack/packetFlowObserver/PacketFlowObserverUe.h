@@ -9,11 +9,11 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_PACKETFLOWMANAGERUE_H_
-#define _LTE_PACKETFLOWMANAGERUE_H_
+#ifndef _LTE_PacketFlowObserverUE_H_
+#define _LTE_PacketFlowObserverUE_H_
 
 #include "simu5g/common/LteCommon.h"
-#include "PacketFlowManagerBase.h"
+#include "PacketFlowObserverBase.h"
 
 namespace simu5g {
 
@@ -25,7 +25,7 @@ class LtePdcpUe;
 /**
  * The UE-specific version of Packet Flow Manager.
  */
-class PacketFlowManagerUe : public PacketFlowManagerBase
+class PacketFlowObserverUe : public PacketFlowObserverBase
 {
     /*
      * The node can have different active connections (LCID) at the same time, hence we need to

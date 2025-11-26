@@ -14,7 +14,7 @@
 
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverUe.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
@@ -34,15 +34,15 @@ void UeStatsCollector::initialize(int stage)
         associateId_.type = "1"; // UE_IPV4_ADDRESS
 
         /*
-         * Get packetFlowManager if present.
+         * Get packetFlowObserver if present.
          * When the UE has both Lte and NR NIC, two UeStatsCollector are created.
-         * So each of them has to get the correct reference of the packetFlowManager,
+         * So each of them has to get the correct reference of the packetFlowObserver,
          * since they are split, too.
          */
 
         bool isNr_ = (std::string(getContainingNicModule(mac_)->getComponentType()->getName()) == "NrNicUe");
 
-        packetFlowManager_.reference(this, "packetFlowManagerModule", isNr_);
+        packetFlowObserver_.reference(this, "packetFlowObserverModule", isNr_);
 
         handover_ = false;
 
@@ -63,14 +63,14 @@ void UeStatsCollector::initialize(int stage)
 
 void UeStatsCollector::resetDelayCounter()
 {
-    if (packetFlowManager_ != nullptr)
-        packetFlowManager_->resetDelayCounter();
+    if (packetFlowObserver_ != nullptr)
+        packetFlowObserver_->resetDelayCounter();
 }
 
 void UeStatsCollector::add_ul_nongbr_delay_ue()
 {
-    if (packetFlowManager_ != nullptr) {
-        double delay = packetFlowManager_->getDelayStats();
+    if (packetFlowObserver_ != nullptr) {
+        double delay = packetFlowObserver_->getDelayStats();
         if (delay != 0)
             EV << "UeStatsCollector::add_ul_nongbr_delay_ue() - delay: " << delay << endl;
         ul_nongbr_delay_ue.addValue((int)delay);
@@ -85,7 +85,7 @@ void UeStatsCollector::add_dl_nongbr_delay_ue(double value)
 
 void UeStatsCollector::add_ul_nongbr_pdr_ue()
 {
-    DiscardedPkts pair = packetFlowManager_->getDiscardedPkt();
+    DiscardedPkts pair = packetFlowObserver_->getDiscardedPkt();
     double rate = ((double)pair.discarded * 1000000) / pair.total;
     ul_nongbr_pdr_ue.addValue((int)rate);
 }
@@ -161,9 +161,9 @@ int UeStatsCollector::get_dl_nongbr_data_volume_ue()
 DiscardedPkts UeStatsCollector::getULDiscardedPkt()
 {
     DiscardedPkts pair = { 0, 0 };
-    if (packetFlowManager_ != nullptr) {
+    if (packetFlowObserver_ != nullptr) {
 
-        pair = packetFlowManager_->getDiscardedPkt();
+        pair = packetFlowObserver_->getDiscardedPkt();
         //double rate = ((double)pair.discarded * 1000000) / pair.total;
     }
     return pair;
@@ -171,7 +171,7 @@ DiscardedPkts UeStatsCollector::getULDiscardedPkt()
 
 void UeStatsCollector::resetStats()
 {
-    packetFlowManager_->clearStats();
+    packetFlowObserver_->clearStats();
     // packet delay
     ul_nongbr_delay_ue.reset();
     dl_nongbr_delay_ue.reset();

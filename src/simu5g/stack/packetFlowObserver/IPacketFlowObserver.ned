@@ -9,9 +9,9 @@
 // and cannot be removed from it.
 //
 
-package simu5g.stack.packetFlowManager;
+package simu5g.stack.packetFlowObserver;
 
-moduleinterface IPacketFlowManager
+moduleinterface IPacketFlowObserver
 {
     string macModule;
     string pfmType;

@@ -23,8 +23,8 @@ simple LtePdcpBase like ILtePdcp
     parameters:
         @display("i=block/fork");
         string binderModule = default("binder");
-        string packetFlowManagerModule = default("^.packetFlowManager"); // optional
-        string nrPacketFlowManagerModule = default("^.nrPacketFlowManager"); // optional
+        string packetFlowObserverModule = default("^.packetFlowObserver"); // optional
+        string nrPacketFlowObserverModule = default("^.nrPacketFlowObserver"); // optional
         int headerCompressedSize @unit(B) = default(-1B);    // Header compressed size (bytes) ( -1B = compression disabled
         string conversationalRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         string streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");

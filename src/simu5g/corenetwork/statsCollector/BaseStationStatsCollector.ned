@@ -25,7 +25,7 @@ module BaseStationStatsCollector like IStatsCollector
         string pdcpModule = default("^.cellularNic.pdcp");
         string cellInfoModule = default("^.cellinfo");
         string rlcUmModule = default("^.cellularNic.rlc.um");
-        string packetFlowManagerModule = default("^.cellularNic.packetFlowManager");
+        string packetFlowObserverModule = default("^.cellularNic.packetFlowObserver");
 
         bool movingAverage = default(false);
 

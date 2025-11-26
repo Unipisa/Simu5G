@@ -126,7 +126,7 @@ bool LteHarqUnitTx::pduFeedback(HarqAcknowledgment a)
                << pdu_->getId() << " discarded (max retransmissions reached) : " << maxHarqRtx_ << endl;
 
             // @author Alessandro Noferi
-            // notify discard macPduId to packetFlowManager
+            // notify discard macPduId to packetFlowObserver
 
             macOwner_->discardMacPdu(pdu_);
 

@@ -20,7 +20,7 @@
 #include <string>
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
 #include "simu5g/stack/mac/LteMacBase.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverUe.h"
 // #include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
@@ -46,7 +46,7 @@ class UeStatsCollector : public cSimpleModule
 
     // LTE Nic layers
     inet::ModuleRefByPar<LteMacBase> mac_;
-    inet::ModuleRefByPar<PacketFlowManagerUe> packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowObserverUe> packetFlowObserver_;
 
     // packet delay
     L2MeasBase ul_nongbr_delay_ue;

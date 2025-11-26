@@ -22,7 +22,7 @@
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverEnb.h"
 
 namespace simu5g {
 using namespace inet;
@@ -52,7 +52,7 @@ class BaseStationStatsCollector : public cSimpleModule
     inet::ModuleRefByPar<LtePdcpEnb> pdcp_;
     inet::ModuleRefByPar<LteMacEnb> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlc_;
-    inet::ModuleRefByPar<PacketFlowManagerEnb> packetFlowManager_;
+    inet::ModuleRefByPar<PacketFlowObserverEnb> packetFlowObserver_;
 
     inet::ModuleRefByPar<CellInfo> cellInfo_;
 

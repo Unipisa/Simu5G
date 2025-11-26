@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "PacketFlowManagerUe.h"
+#include "PacketFlowObserverUe.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
@@ -22,23 +22,23 @@
 
 namespace simu5g {
 
-Define_Module(PacketFlowManagerUe);
+Define_Module(PacketFlowObserverUe);
 
 
 
-void PacketFlowManagerUe::initialize(int stage)
+void PacketFlowObserverUe::initialize(int stage)
 {
     if (stage == 1) {
-        PacketFlowManagerBase::initialize(stage);
+        PacketFlowObserverBase::initialize(stage);
     }
 }
 
-bool PacketFlowManagerUe::hasLcid(LogicalCid lcid)
+bool PacketFlowObserverUe::hasLcid(LogicalCid lcid)
 {
     return connectionMap_.find(lcid) != connectionMap_.end();
 }
 
-void PacketFlowManagerUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
+void PacketFlowObserverUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
 {
     if (connectionMap_.find(lcid) != connectionMap_.end())
         throw cRuntimeError("%s::initLcid - Logical CID %d already present", pfmType.c_str(), lcid);
@@ -56,7 +56,7 @@ void PacketFlowManagerUe::initLcid(LogicalCid lcid, MacNodeId nodeId)
     EV_FATAL << NOW << "node id " << nodeId << " " << pfmType << "::initLcid - initialized lcid " << lcid << endl;
 }
 
-void PacketFlowManagerUe::clearLcid(LogicalCid lcid)
+void PacketFlowObserverUe::clearLcid(LogicalCid lcid)
 {
     ConnectionMap::iterator it = connectionMap_.find(lcid);
     if (it == connectionMap_.end()) {
@@ -77,20 +77,20 @@ void PacketFlowManagerUe::clearLcid(LogicalCid lcid)
     EV_FATAL << NOW << "node id " << desc->nodeId_ - 1025 << " " << pfmType << "::clearLcid - cleared data structures for lcid " << lcid << endl;
 }
 
-void PacketFlowManagerUe::clearAllLcid()
+void PacketFlowObserverUe::clearAllLcid()
 {
     connectionMap_.clear();
     EV_FATAL << NOW << " " << pfmType << "::clearAllLcid - cleared data structures for all lcids " << endl;
 }
 
-void PacketFlowManagerUe::clearStats()
+void PacketFlowObserverUe::clearStats()
 {
     clearAllLcid();
     resetDelayCounter();
     resetDiscardCounter();
 }
 
-void PacketFlowManagerUe::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int pdcpSize, simtime_t& arrivalTime)
+void PacketFlowObserverUe::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int pdcpSize, simtime_t& arrivalTime)
 
 {
     // if pdcpStatus_ already present, error
@@ -110,7 +110,7 @@ void PacketFlowManagerUe::initPdcpStatus(StatusDescriptor *desc, unsigned int pd
     desc->pdcpStatus_[pdcp] = newpdcpStatus;
 }
 
-void PacketFlowManagerUe::insertPdcpSdu(inet::Packet *pdcpPkt)
+void PacketFlowObserverUe::insertPdcpSdu(inet::Packet *pdcpPkt)
 {
     EV << pfmType << "::insertPdcpSdu" << endl;
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
@@ -140,7 +140,7 @@ void PacketFlowManagerUe::insertPdcpSdu(inet::Packet *pdcpPkt)
     EV_FATAL << NOW << "node id " << desc->nodeId_ - 1025 << " " << pfmType << "::insertPdcpSdu - PDCP status for PDCP PDU SN " << pdcpSno << " added. Logical cid " << lcid << endl;
 }
 
-void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
+void PacketFlowObserverUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status)
 {
     ConnectionMap::iterator cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end()) {
@@ -196,7 +196,7 @@ void PacketFlowManagerUe::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUm
     EV << "size:" << desc->rlcSdusPerPdu_[rlcSno].size() << endl;
 }
 
-void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac)
+void PacketFlowObserverUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac)
 {
     ConnectionMap::iterator cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end()) {
@@ -250,7 +250,7 @@ void PacketFlowManagerUe::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bo
     desc->rlcSdusPerPdu_.erase(rlcSno);
 }
 
-void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
 {
     EV << pfmType << "::insertMacPdu" << endl;
 
@@ -311,7 +311,7 @@ void PacketFlowManagerUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 {
     EV << pfmType << "::macPduArrived" << endl;
     /*
@@ -422,7 +422,7 @@ void PacketFlowManagerUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
 {
     /*
      * retrieve the macPduId and the Lcid
@@ -480,12 +480,12 @@ void PacketFlowManagerUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-DiscardedPkts PacketFlowManagerUe::getDiscardedPkt()
+DiscardedPkts PacketFlowObserverUe::getDiscardedPkt()
 {
     return pktDiscardCounterTotal_;
 }
 
-double PacketFlowManagerUe::getDelayStats()
+double PacketFlowObserverUe::getDelayStats()
 {
     if (pdcpDelay.pktCount == 0)
         return 0;
@@ -494,12 +494,12 @@ double PacketFlowManagerUe::getDelayStats()
     return (pdcpDelay.time.dbl() * 1000) / pdcpDelay.pktCount;
 }
 
-void PacketFlowManagerUe::resetDelayCounter()
+void PacketFlowObserverUe::resetDelayCounter()
 {
     pdcpDelay = { 0, 0 };
 }
 
-void PacketFlowManagerUe::finish()
+void PacketFlowObserverUe::finish()
 {
 }
 

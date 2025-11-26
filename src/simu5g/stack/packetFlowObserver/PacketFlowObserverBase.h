@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_PACKETFLOWMANAGERBASE_H_
-#define _LTE_PACKETFLOWMANAGERBASE_H_
+#ifndef _LTE_PacketFlowObserverBASE_H_
+#define _LTE_PacketFlowObserverBASE_H_
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/mec/utils/MecCommon.h"
@@ -48,7 +48,7 @@ struct StatusDescriptor;
  *  - calculate the delay time of a packet, from PDCP SDU to last HARQ ACK of the
  *    corresponding seq number.
  */
-class PacketFlowManagerBase : public cSimpleModule
+class PacketFlowObserverBase : public cSimpleModule
 {
   protected:
 

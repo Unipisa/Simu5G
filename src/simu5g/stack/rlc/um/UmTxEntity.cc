@@ -12,8 +12,8 @@
 #include "simu5g/stack/rlc/um/UmTxEntity.h"
 #include "simu5g/stack/rlc/am/packet/LteRlcAmPdu.h"
 
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerUe.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverUe.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverEnb.h"
 
 namespace simu5g {
 
@@ -42,19 +42,19 @@ void UmTxEntity::initialize()
     queueSize_ = lteRlc_->par("queueSize");
     queueLength_ = 0;
 
-    packetFlowManager_.reference(this, "packetFlowManagerModule", false);
+    packetFlowObserver_.reference(this, "packetFlowObserverModule", false);
 
     // @author Alessandro Noferi
     if (mac->getNodeType() == ENODEB || mac->getNodeType() == GNODEB) {
-        if (packetFlowManager_) {
+        if (packetFlowObserver_) {
             EV << "UmTxEntity::initialize - RLC layer is for a base station" << endl;
-            ASSERT(check_and_cast<PacketFlowManagerEnb *>(packetFlowManager_.get()));
+            ASSERT(check_and_cast<PacketFlowObserverEnb *>(packetFlowObserver_.get()));
         }
     }
     else if (mac->getNodeType() == UE) {
-        if (packetFlowManager_) {
-            EV << "UmTxEntity::initialize - RLC layer, casting the packetFlowManager " << endl;
-            ASSERT(check_and_cast<PacketFlowManagerUe *>(packetFlowManager_.get()));
+        if (packetFlowObserver_) {
+            EV << "UmTxEntity::initialize - RLC layer, casting the packetFlowObserver " << endl;
+            ASSERT(check_and_cast<PacketFlowObserverUe *>(packetFlowObserver_.get()));
         }
     }
     burstStatus_ = INACTIVE;
@@ -192,12 +192,12 @@ void UmTxEntity::rlcPduMake(int pduLength)
     /*
      * @author Alessandro Noferi
      *
-     * Notify the packetFlowManager about the new RLC PDU
+     * Notify the packetFlowObserver about the new RLC PDU
      * only in UL or DL cases
      */
     if (flowControlInfo_->getDirection() == DL || flowControlInfo_->getDirection() == UL) {
-        // add RLC PDU to packetFlowManager
-        if (len != 0 && packetFlowManager_ != nullptr) {
+        // add RLC PDU to packetFlowObserver
+        if (len != 0 && packetFlowObserver_ != nullptr) {
             LogicalCid lcid = flowControlInfo_->getLcid();
 
             /*
@@ -217,13 +217,13 @@ void UmTxEntity::rlcPduMake(int pduLength)
                 if (burstStatus_ == ACTIVE) {
                     EV << NOW << " UmTxEntity::burstStatus - ACTIVE -> INACTIVE" << endl;
 
-                    packetFlowManager_->insertRlcPdu(lcid, rlcPdu, STOP);
+                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, STOP);
                     burstStatus_ = INACTIVE;
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - " << burstStatus_ << endl;
 
-                    packetFlowManager_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
+                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
                 }
             }
             else {
@@ -231,13 +231,13 @@ void UmTxEntity::rlcPduMake(int pduLength)
                     burstStatus_ = ACTIVE;
                     EV << NOW << " UmTxEntity::burstStatus - INACTIVE -> ACTIVE" << endl;
                     //start a new burst
-                    packetFlowManager_->insertRlcPdu(lcid, rlcPdu, START);
+                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, START);
                 }
                 else {
                     EV << NOW << " UmTxEntity::burstStatus - burstStatus: " << burstStatus_ << endl;
 
                     // burst is still active
-                    packetFlowManager_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
+                    packetFlowObserver_->insertRlcPdu(lcid, rlcPdu, burstStatus_);
                 }
             }
         }

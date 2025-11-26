@@ -291,9 +291,9 @@ bool LteMacUe::bufferizePacket(cPacket *cpkt)
         emit(signal, sample);
 
         // discard the RLC
-        if (packetFlowManager_ != nullptr) {
+        if (packetFlowObserver_ != nullptr) {
             unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-            packetFlowManager_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
+            packetFlowObserver_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
         }
 
         delete pkt;

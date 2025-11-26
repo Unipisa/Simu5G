@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "PacketFlowManagerEnb.h"
+#include "PacketFlowObserverEnb.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/rlc/LteRlcDefs.h"
@@ -22,14 +22,14 @@
 
 namespace simu5g {
 
-Define_Module(PacketFlowManagerEnb);
+Define_Module(PacketFlowObserverEnb);
 
 
 
-void PacketFlowManagerEnb::initialize(int stage)
+void PacketFlowObserverEnb::initialize(int stage)
 {
     if (stage == 1) {
-        PacketFlowManagerBase::initialize(stage);
+        PacketFlowObserverBase::initialize(stage);
         if (headerCompressedSize_ == -1)
             headerCompressedSize_ = 0;
 
@@ -37,12 +37,12 @@ void PacketFlowManagerEnb::initialize(int stage)
     }
 }
 
-bool PacketFlowManagerEnb::hasLcid(LogicalCid lcid)
+bool PacketFlowObserverEnb::hasLcid(LogicalCid lcid)
 {
     return connectionMap_.find(lcid) != connectionMap_.end();
 }
 
-void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
+void PacketFlowObserverEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
 {
     if (connectionMap_.find(lcid) != connectionMap_.end())
         throw cRuntimeError("%s::initLcid - Logical CID %d already present", pfmType.c_str(), lcid);
@@ -57,7 +57,7 @@ void PacketFlowManagerEnb::initLcid(LogicalCid lcid, MacNodeId nodeId)
     EV_FATAL << NOW << " node id " << nodeId << " " << pfmType << "::initLcid - initialized lcid " << lcid << endl;
 }
 
-void PacketFlowManagerEnb::clearLcid(LogicalCid lcid)
+void PacketFlowObserverEnb::clearLcid(LogicalCid lcid)
 {
     if (connectionMap_.find(lcid) == connectionMap_.end()) {
         // this may occur after a handover, when data structures are cleared
@@ -79,13 +79,13 @@ void PacketFlowManagerEnb::clearLcid(LogicalCid lcid)
     EV_FATAL << NOW << " node id " << connectionMap_[lcid].nodeId_ << " " << pfmType << "::clearLcid - cleared data structures for lcid " << lcid << endl;
 }
 
-void PacketFlowManagerEnb::clearAllLcid()
+void PacketFlowObserverEnb::clearAllLcid()
 {
     connectionMap_.clear();
     EV_FATAL << NOW << " " << pfmType << "::clearAllLcid - cleared data structures for all lcids " << endl;
 }
 
-void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t arrivalTime)
+void PacketFlowObserverEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int pdcp, unsigned int sduHeaderSize, simtime_t arrivalTime)
 {
     // if pdcpStatus_ already present, error
     std::map<unsigned int, PdcpStatus>::iterator it = desc->pdcpStatus_.find(pdcp);
@@ -105,7 +105,7 @@ void PacketFlowManagerEnb::initPdcpStatus(StatusDescriptor *desc, unsigned int p
     EV_FATAL << pfmType << "::initPdcpStatus - PDCP PDU " << pdcp << "  with header size " << sduHeaderSize << " added" << endl;
 }
 
-void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet *pdcpPkt)
+void PacketFlowObserverEnb::insertPdcpSdu(inet::Packet *pdcpPkt)
 {
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
     LogicalCid lcid = lteInfo->getLcid();
@@ -158,7 +158,7 @@ void PacketFlowManagerEnb::insertPdcpSdu(inet::Packet *pdcpPkt)
     pktDiscardCounterTotal_.total += 1;
 }
 
-void PacketFlowManagerEnb::receivedPdcpSdu(inet::Packet *pdcpPkt)
+void PacketFlowObserverEnb::receivedPdcpSdu(inet::Packet *pdcpPkt)
 {
     auto lteInfo = pdcpPkt->getTagForUpdate<FlowControlInfo>();
     MacNodeId nodeId = lteInfo->getSourceId();
@@ -190,7 +190,7 @@ void PacketFlowManagerEnb::receivedPdcpSdu(inet::Packet *pdcpPkt)
     EV << pfmType << "::insertPdcpSdu - UL PDPC sdu bits: " << sduDataVolume_[nodeId].ulBits << " received from node: " << nodeId << endl;
 }
 
-void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {
+void PacketFlowObserverEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcUmDataPdu> rlcPdu, RlcBurstStatus status) {
     EV << pfmType << "::insertRlcPdu - Logical Cid: " << lcid << endl;
 
     auto cit = connectionMap_.find(lcid);
@@ -211,7 +211,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         throw cRuntimeError("%s::insertRlcPdu - RLC PDU SN %d already present for logical CID %d", pfmType.c_str(), rlcSno, lcid);
 
 
-    // manage burst state, for debugging and avoid errors between rlc state and packetflowmanager state
+    // manage burst state, for debugging and avoid errors between rlc state and packetFlowObserver state
     if (status == START) {
         if (desc->burstState_ == true)
             throw cRuntimeError("%s::insertRlcPdu - node %hu and lcid %d . RLC burst status START incompatible with local status %d", pfmType.c_str(), num(desc->nodeId_), lcid, desc->burstState_);
@@ -267,7 +267,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
         unsigned int pdcpSno = rlcSdu->getSnoMainPacket();
         size_t pdcpPduLength = rlcPdu->getSduSize(idx); // TODO fix with size of the chunk!!
 
-        EV << "PacketFlowManagerEnb::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << " bytes" << endl;
+        EV << "PacketFlowObserverEnb::insertRlcPdu - pdcpSdu " << pdcpSno << " with length: " << pdcpPduLength << " bytes" << endl;
         //
         // store the RLC SDUs (PDCP PDUs) included in the RLC PDU
         desc->rlcSdusPerPdu_[rlcSno].insert(pdcpSno);
@@ -318,7 +318,7 @@ void PacketFlowManagerEnb::insertRlcPdu(LogicalCid lcid, const inet::Ptr<LteRlcU
     }
 }
 
-void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac)
+void PacketFlowObserverEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, bool fromMac)
 {
     auto cit = connectionMap_.find(lcid);
     if (cit == connectionMap_.end()) {
@@ -379,7 +379,7 @@ void PacketFlowManagerEnb::discardRlcPdu(LogicalCid lcid, unsigned int rlcSno, b
     desc->rlcSdusPerPdu_.erase(rlcSno);
 }
 
-void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
 {
     EV << pfmType << "::insertMacPdu" << endl;
 
@@ -432,7 +432,7 @@ void PacketFlowManagerEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 {
     /*
      * retrieve the macPduId and the Lcid
@@ -538,7 +538,7 @@ void PacketFlowManagerEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
     }
 }
 
-void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
+void PacketFlowObserverEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu)
 {
     /*
      * retrieve the macPduId and the Lcid
@@ -581,7 +581,7 @@ void PacketFlowManagerEnb::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
     }
 }
 
-void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned int rlcSno, bool ack)
+void PacketFlowObserverEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned int rlcSno, bool ack)
 {
     // check end of a burst
     // for each burst_id, we have to search if the relative set has the RLC
@@ -615,7 +615,7 @@ void PacketFlowManagerEnb::removePdcpBurstRLC(StatusDescriptor *desc, unsigned i
     }
 }
 
-void PacketFlowManagerEnb::resetDiscardCounterPerUe(MacNodeId id)
+void PacketFlowObserverEnb::resetDiscardCounterPerUe(MacNodeId id)
 {
     std::map<MacNodeId, DiscardedPkts>::iterator it = pktDiscardCounterPerUe_.find(id);
     if (it == pktDiscardCounterPerUe_.end()) {
@@ -626,7 +626,7 @@ void PacketFlowManagerEnb::resetDiscardCounterPerUe(MacNodeId id)
     it->second = { 0, 0 };
 }
 
-double PacketFlowManagerEnb::getDiscardedPktPerUe(MacNodeId id)
+double PacketFlowObserverEnb::getDiscardedPktPerUe(MacNodeId id)
 {
     std::map<MacNodeId, DiscardedPkts>::iterator it = pktDiscardCounterPerUe_.find(id);
     if (it == pktDiscardCounterPerUe_.end()) {
@@ -638,14 +638,14 @@ double PacketFlowManagerEnb::getDiscardedPktPerUe(MacNodeId id)
     return ((double)it->second.discarded * 1000000) / it->second.total;
 }
 
-double PacketFlowManagerEnb::getDiscardedPkt()
+double PacketFlowObserverEnb::getDiscardedPkt()
 {
     if (pktDiscardCounterTotal_.total == 0)
         return 0.0;
     return ((double)pktDiscardCounterTotal_.discarded * 1000000) / pktDiscardCounterTotal_.total;
 }
 
-void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
+void PacketFlowObserverEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
 {
     Grant grant = { grantId, simTime() };
     for (const auto& grant : ulGrants_[nodeId]) {
@@ -656,7 +656,7 @@ void PacketFlowManagerEnb::grantSent(MacNodeId nodeId, unsigned int grantId)
     ulGrants_[nodeId].push_back(grant);
 }
 
-void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantId)
+void PacketFlowObserverEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantId)
 {
     for (auto it = ulGrants_[nodeId].begin(); it != ulGrants_[nodeId].end(); ) {
         if (it->grantId == grantId) {
@@ -675,7 +675,7 @@ void PacketFlowManagerEnb::ulMacPduArrived(MacNodeId nodeId, unsigned int grantI
     throw cRuntimeError("%s::ulMacPduArrived - grant [%d] for nodeId [%hu] not present", pfmType.c_str(), grantId, num(nodeId));
 }
 
-double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
+double PacketFlowObserverEnb::getDelayStatsPerUe(MacNodeId id)
 {
     auto it = pdcpDelay_.find(id);
     if (it == pdcpDelay_.end()) {
@@ -692,7 +692,7 @@ double PacketFlowManagerEnb::getDelayStatsPerUe(MacNodeId id)
     return delayMean;
 }
 
-double PacketFlowManagerEnb::getUlDelayStatsPerUe(MacNodeId id)
+double PacketFlowObserverEnb::getUlDelayStatsPerUe(MacNodeId id)
 {
     auto it = ULPktDelay_.find(id);
     if (it == ULPktDelay_.end()) {
@@ -709,7 +709,7 @@ double PacketFlowManagerEnb::getUlDelayStatsPerUe(MacNodeId id)
     return delayMean;
 }
 
-void PacketFlowManagerEnb::resetDelayCounterPerUe(MacNodeId id)
+void PacketFlowObserverEnb::resetDelayCounterPerUe(MacNodeId id)
 {
     auto it = pdcpDelay_.find(id);
     if (it == pdcpDelay_.end()) {
@@ -721,7 +721,7 @@ void PacketFlowManagerEnb::resetDelayCounterPerUe(MacNodeId id)
     it->second = { 0, 0 };
 }
 
-void PacketFlowManagerEnb::resetUlDelayCounterPerUe(MacNodeId id)
+void PacketFlowObserverEnb::resetUlDelayCounterPerUe(MacNodeId id)
 {
     auto it = ULPktDelay_.find(id);
     if (it == ULPktDelay_.end()) {
@@ -733,7 +733,7 @@ void PacketFlowManagerEnb::resetUlDelayCounterPerUe(MacNodeId id)
     it->second = { 0, 0 };
 }
 
-double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
+double PacketFlowObserverEnb::getThroughputStatsPerUe(MacNodeId id)
 {
     auto it = pdcpThroughput_.find(id);
     if (it == pdcpThroughput_.end()) {
@@ -751,7 +751,7 @@ double PacketFlowManagerEnb::getThroughputStatsPerUe(MacNodeId id)
     return throughput;
 }
 
-void PacketFlowManagerEnb::resetThroughputCounterPerUe(MacNodeId id)
+void PacketFlowObserverEnb::resetThroughputCounterPerUe(MacNodeId id)
 {
     auto it = pdcpThroughput_.find(id);
     if (it == pdcpThroughput_.end()) {
@@ -761,7 +761,7 @@ void PacketFlowManagerEnb::resetThroughputCounterPerUe(MacNodeId id)
     it->second = { 0, 0 };
 }
 
-void PacketFlowManagerEnb::deleteUe(MacNodeId nodeId)
+void PacketFlowObserverEnb::deleteUe(MacNodeId nodeId)
 {
     /* It has to be deleted:
      * all structures with MacNodeId id
@@ -783,7 +783,7 @@ void PacketFlowManagerEnb::deleteUe(MacNodeId nodeId)
     sduDataVolume_.erase(nodeId);
 }
 
-double PacketFlowManagerEnb::getPdpcLossRate()
+double PacketFlowObserverEnb::getPdpcLossRate()
 {
     unsigned int lossPackets = 0; // Dloss
     unsigned int totalPackets = 0; // N (it also counts missing pdcp sno)
@@ -798,7 +798,7 @@ double PacketFlowManagerEnb::getPdpcLossRate()
     return ((double)lossPackets * 1000000) / totalPackets;
 }
 
-double PacketFlowManagerEnb::getPdpcLossRatePerUe(MacNodeId id)
+double PacketFlowObserverEnb::getPdpcLossRatePerUe(MacNodeId id)
 {
     auto it = packetLossRate_.find(id);
     if (it != packetLossRate_.end()) {
@@ -809,7 +809,7 @@ double PacketFlowManagerEnb::getPdpcLossRatePerUe(MacNodeId id)
     }
 }
 
-void PacketFlowManagerEnb::resetPdpcLossRatePerUe(MacNodeId id)
+void PacketFlowObserverEnb::resetPdpcLossRatePerUe(MacNodeId id)
 {
     auto it = packetLossRate_.find(id);
     if (it != packetLossRate_.end()) {
@@ -817,14 +817,14 @@ void PacketFlowManagerEnb::resetPdpcLossRatePerUe(MacNodeId id)
     }
 }
 
-void PacketFlowManagerEnb::resetPdpcLossRates()
+void PacketFlowObserverEnb::resetPdpcLossRates()
 {
     for (auto& ue : packetLossRate_) {
         ue.second.reset();
     }
 }
 
-uint64_t PacketFlowManagerEnb::getDataVolume(MacNodeId nodeId, Direction dir)
+uint64_t PacketFlowObserverEnb::getDataVolume(MacNodeId nodeId, Direction dir)
 {
     auto node = sduDataVolume_.find(nodeId);
     if (node == sduDataVolume_.end())
@@ -834,10 +834,10 @@ uint64_t PacketFlowManagerEnb::getDataVolume(MacNodeId nodeId, Direction dir)
     else if (dir == UL)
         return node->second.ulBits;
     else
-        throw cRuntimeError("PacketFlowManagerEnb::getDataVolume - Wrong direction");
+        throw cRuntimeError("PacketFlowObserverEnb::getDataVolume - Wrong direction");
 }
 
-void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId, Direction dir)
+void PacketFlowObserverEnb::resetDataVolume(MacNodeId nodeId, Direction dir)
 {
     auto node = sduDataVolume_.find(nodeId);
     if (node == sduDataVolume_.end())
@@ -847,10 +847,10 @@ void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId, Direction dir)
     else if (dir == UL)
         node->second.ulBits = 0;
     else
-        throw cRuntimeError("PacketFlowManagerEnb::getDataVolume - Wrong direction");
+        throw cRuntimeError("PacketFlowObserverEnb::getDataVolume - Wrong direction");
 }
 
-void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId)
+void PacketFlowObserverEnb::resetDataVolume(MacNodeId nodeId)
 {
     auto node = sduDataVolume_.find(nodeId);
     if (node == sduDataVolume_.end())
@@ -859,7 +859,7 @@ void PacketFlowManagerEnb::resetDataVolume(MacNodeId nodeId)
     node->second.ulBits = 0;
 }
 
-void PacketFlowManagerEnb::finish()
+void PacketFlowObserverEnb::finish()
 {
 }
 

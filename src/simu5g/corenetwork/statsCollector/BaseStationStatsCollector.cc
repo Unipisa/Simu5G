@@ -11,7 +11,7 @@
 
 #include "simu5g/corenetwork/statsCollector/BaseStationStatsCollector.h"
 #include "simu5g/corenetwork/statsCollector/UeStatsCollector.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerEnb.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverEnb.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include <string>
 
@@ -55,7 +55,7 @@ void BaseStationStatsCollector::initialize(int stage) {
             throw cRuntimeError("%s::initialize - eNodeB statistic collector only works with RLC in UM mode", collectorType_.c_str());
         }
 
-        packetFlowManager_.reference(this, "packetFlowManagerModule", true);
+        packetFlowObserver_.reference(this, "packetFlowObserverModule", true);
         cellInfo_.reference(this, "cellInfoModule", true);
 
         ecgi_.cellId = cellInfo_->getMacCellId(); // at least stage 2
@@ -85,11 +85,11 @@ void BaseStationStatsCollector::initialize(int stage) {
         tPutPeriod_ = par("tPutPeriod");
 
         // start scheduling the l2 measurement
-        // schedule only stats not using packetFlowManager
+        // schedule only stats not using packetFlowObserver
 
         scheduleAt(NOW + prbUsagePeriod_, prbUsage_);
         scheduleAt(NOW + activeUsersPeriod_, activeUsers_);
-        if (packetFlowManager_ != nullptr) {
+        if (packetFlowObserver_ != nullptr) {
             scheduleAt(NOW + dataVolumePeriod_, pdcpBytes_);
             scheduleAt(NOW + discardRatePeriod_, discardRate_);
             scheduleAt(NOW + delayPacketPeriod_, packetDelay_);
@@ -127,7 +127,7 @@ void BaseStationStatsCollector::handleMessage(cMessage *msg)
             add_ul_nongbr_pdr_cell_perUser();
 
             //reset counters
-            packetFlowManager_->resetDiscardCounter();
+            packetFlowObserver_->resetDiscardCounter();
             resetDiscardCounterPerUe();
             scheduleAt(NOW + discardRatePeriod_, discardRate_);
         }
@@ -159,7 +159,7 @@ void BaseStationStatsCollector::resetDiscardCounterPerUe()
 {
     EV << collectorType_ << "::resetDiscardCounterPerUe " << endl;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        packetFlowManager_->resetDiscardCounterPerUe(ueId);
+        packetFlowObserver_->resetDiscardCounterPerUe(ueId);
     }
 }
 
@@ -167,7 +167,7 @@ void BaseStationStatsCollector::resetDelayCounterPerUe()
 {
     EV << collectorType_ << "::resetDelayCounterPerUe " << endl;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        packetFlowManager_->resetDelayCounterPerUe(ueId);
+        packetFlowObserver_->resetDelayCounterPerUe(ueId);
         ueCollector->resetDelayCounter();
     }
 }
@@ -176,7 +176,7 @@ void BaseStationStatsCollector::resetThroughputCountersPerUe()
 {
     EV << collectorType_ << "::resetThroughputCountersPerUe " << endl;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        packetFlowManager_->resetThroughputCounterPerUe(ueId);
+        packetFlowObserver_->resetThroughputCounterPerUe(ueId);
     }
 }
 
@@ -184,7 +184,7 @@ void BaseStationStatsCollector::resetBytesCountersPerUe()
 {
     EV << collectorType_ << "::resetBytesCountersPerUe " << endl;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        packetFlowManager_->resetDataVolume(ueId);
+        packetFlowObserver_->resetDataVolume(ueId);
     }
 }
 
@@ -205,7 +205,7 @@ void BaseStationStatsCollector::removeUeCollector(MacNodeId id)
     if (it != ueCollectors_.end()) {
         ueCollectors_.erase(it);
         EV << "BaseStationStatsCollector::removeUeCollector - removing UE pfm stats for UE with id[" << id << "]" << endl;
-        packetFlowManager_->deleteUe(id);
+        packetFlowObserver_->deleteUe(id);
     }
     else {
         throw cRuntimeError("%s::removeUeCollector - UeStatsCollector not present for UE node id [%hu]", collectorType_.c_str(), num(id));
@@ -263,7 +263,7 @@ void BaseStationStatsCollector::add_number_of_active_ue_ul_nongbr_cell()
 
 void BaseStationStatsCollector::add_dl_nongbr_pdr_cell()
 {
-    double discard = packetFlowManager_->getDiscardedPkt();
+    double discard = packetFlowObserver_->getDiscardedPkt();
     dl_nongbr_pdr_cell.addValue((int)discard);
 }
 
@@ -295,7 +295,7 @@ void BaseStationStatsCollector::add_dl_nongbr_pdr_cell_perUser()
     EV << collectorType_ << "::add_dl_nongbr_pdr_cell_perUser()" << endl;
     double discard;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        discard = packetFlowManager_->getDiscardedPktPerUe(ueId);
+        discard = packetFlowObserver_->getDiscardedPktPerUe(ueId);
         ueCollector->add_dl_nongbr_pdr_ue((int)discard);
     }
 }
@@ -321,7 +321,7 @@ void BaseStationStatsCollector::add_dl_nongbr_delay_perUser()
     EV << collectorType_ << "::add_dl_nongbr_delay_perUser()" << endl;
     double delay;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        delay = packetFlowManager_->getDelayStatsPerUe(ueId);
+        delay = packetFlowObserver_->getDelayStatsPerUe(ueId);
         EV << collectorType_ << "::add_dl_nongbr_delay_perUser - delay: " << delay << " for node id: " << ueId << endl;
         if (delay != 0) {
             ueCollector->add_dl_nongbr_delay_ue((int)delay);
@@ -334,7 +334,7 @@ void BaseStationStatsCollector::add_ul_nongbr_data_volume_ue_perUser()
     EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        bytes = packetFlowManager_->getDataVolume(ueId, UL);
+        bytes = packetFlowObserver_->getDataVolume(ueId, UL);
         EV << collectorType_ << "::add_ul_nongbr_data_volume_ue_perUser - received: " << bytes << "B in UL from node id: " << ueId << endl;
         ueCollector->add_ul_nongbr_data_volume_ue(bytes);
     }
@@ -345,7 +345,7 @@ void BaseStationStatsCollector::add_dl_nongbr_data_volume_ue_perUser()
     EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser" << endl;
     unsigned int bytes;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        bytes = packetFlowManager_->getDataVolume(ueId, DL);
+        bytes = packetFlowObserver_->getDataVolume(ueId, DL);
         EV << collectorType_ << "::add_dl_nongbr_data_volume_ue_perUser - sent: " << bytes << "B in DL to node id: " << ueId << endl;
         ueCollector->add_dl_nongbr_data_volume_ue(bytes);
     }
@@ -356,9 +356,9 @@ void BaseStationStatsCollector::add_dl_nongbr_throughput_ue_perUser()
     EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser" << endl;
     double throughput;
     for (auto const& [ueId, ueCollector] : ueCollectors_) {
-        throughput = packetFlowManager_->getThroughputStatsPerUe(ueId);
+        throughput = packetFlowObserver_->getThroughputStatsPerUe(ueId);
         EV << collectorType_ << "::add_dl_nongbr_throughput_ue_perUser - throughput: " << throughput << " for node " << ueId << endl;
-        packetFlowManager_->resetThroughputCounterPerUe(ueId);
+        packetFlowObserver_->resetThroughputCounterPerUe(ueId);
         if (throughput > 0.0)
             ueCollector->add_dl_nongbr_throughput_ue((int)throughput);
     }

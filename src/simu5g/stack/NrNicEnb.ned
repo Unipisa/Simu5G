@@ -26,6 +26,6 @@ module NrNicEnb extends LteNicEnbD2D
         mac.typename = default("NrMacGnb");
         lteChannelModelType = default("NrChannelModel_3GPP38_901");
         @display("bgb=694,443");
-        packetFlowManager.typename = default("NrPacketFlowManagerGnb");
+        packetFlowObserver.typename = default("NrPacketFlowObserverGnb");
 }
 

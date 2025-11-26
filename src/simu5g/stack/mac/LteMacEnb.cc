@@ -33,7 +33,7 @@
 #include "simu5g/stack/phy/LtePhyBase.h"
 #include "simu5g/stack/rlc/packet/LteRlcDataPdu.h"
 #include "simu5g/stack/rlc/am/packet/LteRlcAmPdu_m.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/pdcp/NrPdcpEnb.h"
 
@@ -447,8 +447,8 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
              *   tSched: the point in time when the UL MAC SDU i is scheduled as
              *   per the scheduling grant provided
              */
-            if (packetFlowManager_ != nullptr)
-                packetFlowManager_->grantSent(nodeId, grant->getGrantId());
+            if (packetFlowObserver_ != nullptr)
+                packetFlowObserver_->grantSent(nodeId, grant->getGrantId());
 
             // Send grant to PHY layer
             sendLowerPackets(pkt);
@@ -620,8 +620,8 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
 
     // Notify the pfm about the successful arrival of a TB from a UE.
     // From ETSI TS 138314 V16.0.0 (2020-07)
-    if (packetFlowManager_ != nullptr)
-        packetFlowManager_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
+    if (packetFlowObserver_ != nullptr)
+        packetFlowObserver_->ulMacPduArrived(userInfo->getSourceId(), userInfo->getGrantId());
 
     while (macPdu->hasSdu()) {
         // Extract and send SDU
@@ -698,9 +698,9 @@ bool LteMacEnb::bufferizePacket(cPacket *cpkt)
         emit(signal, sample);
 
         // discard the RLC
-        if (packetFlowManager_ != nullptr) {
+        if (packetFlowObserver_ != nullptr) {
             unsigned int rlcSno = check_and_cast<LteRlcUmDataPdu *>(pkt)->getPduSequenceNumber();
-            packetFlowManager_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
+            packetFlowObserver_->discardRlcPdu(lteInfo->getLcid(), rlcSno);
         }
 
         delete pkt;

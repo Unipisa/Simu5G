@@ -9,15 +9,15 @@
 // and cannot be removed from it.
 //
 
-#ifndef _LTE_PACKETFLOWMANAGERENB_H_
-#define _LTE_PACKETFLOWMANAGERENB_H_
+#ifndef _LTE_PacketFlowObserverENB_H_
+#define _LTE_PacketFlowObserverENB_H_
 
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/mec/utils/MecCommon.h"
 
-#include "PacketFlowManagerBase.h"
+#include "PacketFlowObserverBase.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 
 namespace simu5g {
 
@@ -26,9 +26,9 @@ using namespace omnetpp;
 class LteRlcUmDataPdu;
 
 /**
- * The eNB-specific version of PacketFlowManager.
+ * The eNB-specific version of PacketFlowObserver.
  */
-class PacketFlowManagerEnb : public PacketFlowManagerBase
+class PacketFlowObserverEnb : public PacketFlowObserverBase
 {
   protected:
 

@@ -10,13 +10,13 @@
 //
 
 #include "simu5g/stack/pdcp/LteRxPdcpEntity.h"
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/LteControlInfo.h"
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
-#include "simu5g/stack/packetFlowManager/PacketFlowManagerBase.h"
+#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
@@ -43,9 +43,9 @@ void LteRxPdcpEntity::handlePacketFromLowerLayer(Packet *pkt)
     // TODO NRRxEntity could delete this packet in handlePdcpSdu()...
     auto lteInfo = pkt->getTag<FlowControlInfo>();
     if (lteInfo->getDirection() != D2D_MULTI && lteInfo->getDirection() != D2D) {
-        PacketFlowManagerBase *flowManager = pdcp_->getPacketFlowManager();
-        if (flowManager != nullptr)
-            flowManager->receivedPdcpSdu(pkt);
+        PacketFlowObserverBase *flowObserver = pdcp_->getPacketFlowObserver();
+        if (flowObserver != nullptr)
+            flowObserver->receivedPdcpSdu(pkt);
     }
 
     // perform PDCP operations
