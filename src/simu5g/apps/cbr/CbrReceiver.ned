@@ -28,19 +28,16 @@ simple CbrReceiver like IApp
         @signal[cbrJitter](type="simtime_t");
         @signal[cbrFrameLoss](type="double");
         @signal[cbrReceivedThroughput];
-        @signal[cbrReceivedBytes];
+        @signal[cbrReceivedBytes](type=long); // size of each received packet
+        @signal[cbrRcvdPkt](type=long);
         @statistic[cbrFrameDelay](title="Cbr Frame Delay"; unit="s"; source="cbrFrameDelay"; record=mean,vector);
         @statistic[cbrJitter](title="Cbr Playout Loss"; unit="s"; source="cbrJitter"; record=mean,vector);
         @statistic[cbrFrameLoss](title="Cbr Frame Loss"; unit="ratio"; source="cbrFrameLoss"; record=mean);
         @statistic[cbrReceivedThroughput](title="Throughput received at the application level"; unit="Bps"; source="cbrReceivedThroughput"; record=simu5g_rateavg);
-        @statistic[cbrReceivedBytes](title="Bytes received at the application level"; unit="Bps"; source="cbrReceivedBytes"; record=timeavg,mean,vector,sum);
-
-
-
-        @signal[cbrRcvdPkt];
+        @statistic[cbrReceivedBytes](title="Packet length received at the application level"; unit="B"; source="cbrReceivedBytes"; record=mean,vector,sum);
         @statistic[cbrRcvdPkt](title="Received packet ID"; unit=""; source="cbrRcvdPkt"; record=vector);
-
         @display("i=block/source");
+
     gates:
         output socketOut;
         input socketIn;
