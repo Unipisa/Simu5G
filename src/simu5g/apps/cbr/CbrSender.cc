@@ -38,9 +38,9 @@ void CbrSender::initialize(int stage)
 
     if (stage == INITSTAGE_LOCAL) {
         selfSource_ = new cMessage("selfSource");
-        nframes_ = 0;
+        numFrames_ = 0;
         nframesTmp_ = 0;
-        iDframe_ = 0;
+        frameId_ = 0;
         timestamp_ = 0;
         size_ = par("packetSize");
         samplingTime = par("samplingTime");
@@ -55,7 +55,7 @@ void CbrSender::initialize(int stage)
         finishTime_ = par("finishTime");
 
         EV << " finish time " << finishTime_ << endl;
-        nframes_ = (finishTime_ - startTime_) / samplingTime;
+        numFrames_ = (finishTime_ - startTime_) / samplingTime;
 
         initTraffic_ = new cMessage("initTraffic");
         initTraffic();
@@ -112,8 +112,8 @@ void CbrSender::sendCbrPacket()
 {
     Packet *packet = new Packet("CBR");
     auto cbr = makeShared<CbrPacket>();
-    cbr->setNframes(nframes_);
-    cbr->setIDframe(iDframe_++);
+    cbr->setNumFrames(numFrames_);
+    cbr->setFrameId(frameId_++);
     cbr->setPayloadTimestamp(simTime());
     cbr->setPayloadSize(size_);
     cbr->setChunkLength(B(size_));

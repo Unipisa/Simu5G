@@ -15,11 +15,11 @@ import inet.common.packet.chunk.Chunk;
 namespace simu5g;
 
 //
-// Packet used by the ~VoPSender and ~VoipReceiver modules.
+// Packet used by the ~CbrSender and ~CbrReceiver modules.
 //
 class CbrPacket extends inet::FieldsChunk {
-    unsigned int nframes;
-    unsigned int IDframe;
+    unsigned int numFrames;
+    unsigned int frameId;
     simtime_t arrivalTime;
     simtime_t payloadTimestamp;
     unsigned int payloadSize;

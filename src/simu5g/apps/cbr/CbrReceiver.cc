@@ -51,7 +51,7 @@ void CbrReceiver::handleMessage(cMessage *msg)
     auto cbrHeader = pPacket->popAtFront<CbrPacket>();
 
     numReceived_++;
-    totFrames_ = cbrHeader->getNframes(); // XXX this value can be written just once
+    totFrames_ = cbrHeader->getNumFrames(); // XXX this value can be written just once
     int pktSize = (int)cbrHeader->getPayloadSize();
 
     // just to make sure we do not update recvBytes AND we avoid dividing by 0
@@ -63,9 +63,9 @@ void CbrReceiver::handleMessage(cMessage *msg)
     simtime_t delay = simTime() - cbrHeader->getPayloadTimestamp();
     emit(cbrFrameDelaySignal_, delay);
 
-    EV << "CbrReceiver::handleMessage - Packet received: FRAME[" << cbrHeader->getIDframe() << "/" << cbrHeader->getNframes() << "] with delay[" << delay << "]" << endl;
+    EV << "CbrReceiver::handleMessage - Packet received: FRAME[" << cbrHeader->getFrameId() << "/" << cbrHeader->getNumFrames() << "] with delay[" << delay << "]" << endl;
 
-    emit(cbrRcvdPktSignal_, (long)cbrHeader->getIDframe());
+    emit(cbrRcvdPktSignal_, (long)cbrHeader->getFrameId());
 
     delete msg;
 }

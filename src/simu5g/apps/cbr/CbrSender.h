@@ -33,8 +33,8 @@ class CbrSender : public cSimpleModule
 
     cMessage *selfSource_ = nullptr;
     //sender
-    int nframes_;
-    int iDframe_;
+    int numFrames_;
+    int frameId_;
     int nframesTmp_;
     int size_;
     simtime_t samplingTime;
