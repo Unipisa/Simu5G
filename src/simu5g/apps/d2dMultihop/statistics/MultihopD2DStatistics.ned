@@ -29,19 +29,19 @@ simple MultihopD2DStatistics
 {
     parameters:
         @signal[d2dMultihopEventDeliveryRatio];
-        @statistic[d2dMultihopEventDeliveryRatio](title="Avg delivery ratio within the area"; unit=""; source="d2dMultihopEventDeliveryRatio"; record=mean,min,max);
+        @statistic[d2dMultihopEventDeliveryRatio](title="Delivery ratio per broadcast event"; unit=""; source="d2dMultihopEventDeliveryRatio"; record=mean,min,max);
         @signal[d2dMultihopEventDelay];
-        @statistic[d2dMultihopEventDelay](title="Avg delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay"; record=mean,min,max);
+        @statistic[d2dMultihopEventDelay](title="Delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay"; record=mean,min,max);
         @signal[d2dMultihopEventDelay95Per];
         @statistic[d2dMultihopEventDelay95Per](title="95th percentile of the delay of broadcasting within the area"; unit=""; source="d2dMultihopEventDelay95Per"; record=mean,min,max);
         @signal[d2dMultihopEventSentMsg];
-        @statistic[d2dMultihopEventSentMsg](title="Avg transmissions for broadcasting a message"; unit=""; source="d2dMultihopEventSentMsg"; record=mean,sum,min,max);
+        @statistic[d2dMultihopEventSentMsg](title="Number of transmissions per broadcast event"; unit=""; source="d2dMultihopEventSentMsg"; record=mean,sum,min,max,vector);
         @signal[d2dMultihopEventTrickleSuppressedMsg];
-        @statistic[d2dMultihopEventTrickleSuppressedMsg](title="Avg suppressed transmissions for broadcasting a message"; unit=""; source="d2dMultihopEventTrickleSuppressedMsg"; record=mean,sum,min,max);
+        @statistic[d2dMultihopEventTrickleSuppressedMsg](title="Number of suppressed transmissions per broadcast event"; unit=""; source="d2dMultihopEventTrickleSuppressedMsg"; record=mean,sum,min,max,vector);
         @signal[d2dMultihopEventRcvdDupMsg];
-        @statistic[d2dMultihopEventRcvdDupMsg](title="Avg num of duplicates within the area"; unit=""; source="d2dMultihopEventRcvdDupMsg"; record=stats);
+        @statistic[d2dMultihopEventRcvdDupMsg](title="Number of duplicates within the area"; unit=""; source="d2dMultihopEventRcvdDupMsg"; record=stats);
         @signal[d2dMultihopEventCompleteDeliveries];
-        @statistic[d2dMultihopEventCompleteDeliveries](title="Avg complete-deliveries within the area"; unit=""; source="d2dMultihopEventCompleteDeliveries"; record=stats);
+        @statistic[d2dMultihopEventCompleteDeliveries](title="Complete-deliveries within the area"; unit=""; source="d2dMultihopEventCompleteDeliveries"; record=stats);
 
 
         @display("i=block/cogwheel");
