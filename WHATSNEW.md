@@ -1,5 +1,33 @@
 # What's New in Simu5G
 
+## v1.4.2 (2025-11-27)
+
+This is primarily a bugfix release.
+
+- Pdcp: Fixed Dual Connectivity bug where separate PDCP entities were
+  incorrectly created for LTE and NR legs of a Split Bearer instead of using a
+  single shared entity. This fix breaks RLC-UM packet loss statistics which
+  (incorrectly) inferred packet loss from PDCP sequence numbers.
+
+- RlcUm: Removed packet loss statistics that incorrectly relied on PDCP sequence
+  numbers (PDCP sequences are not contiguous in Dual Connectivity setups)
+
+- PacketFlowManager: Renamed to PacketFlowObserver, updated NED documentation.
+
+- Statistics collection refined, e.g. remove recording "sum" and/or "mean" where
+  it does not make sense; use new "rateavg" filter for computing average
+  throughput.
+
+- Binder: New utility functions: isGNodeB(), getUeNodeId().
+
+- Apps: Added sequence numbers to VoIP and VoD packet names, to facilitate
+  tracing with Qtenv.
+
+- NED documentation: Added content to simu5g-index.ned including version number
+  and WHATSNEW.
+
+
+
 ## v1.4.1 (2025-10-06)
 
 This is a minor update that brings further refactoring of the C++ code for clarity,
