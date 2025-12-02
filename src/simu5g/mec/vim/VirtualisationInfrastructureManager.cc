@@ -447,11 +447,10 @@ bool VirtualisationInfrastructureManager::registerMecApp(int ueAppID, int reqRam
 
 bool VirtualisationInfrastructureManager::deRegisterMecApp(int ueAppID)
 {
-    if (!mecAppMap.empty() || mecAppMap.find(ueAppID) != mecAppMap.end()) {
+    if (mecAppMap.find(ueAppID) != mecAppMap.end()) {
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - resources DEALLOCATED for MecApp with UEAppId " << ueAppID << endl;
         EV << "VirtualisationInfrastructureManager::handleMEAppResources - ram: " << mecAppMap[ueAppID].resources.ram << " disk: " << mecAppMap[ueAppID].resources.disk << " cpu: " << mecAppMap[ueAppID].resources.cpu << endl;
         deallocateResources(mecAppMap[ueAppID].resources.ram, mecAppMap[ueAppID].resources.disk, mecAppMap[ueAppID].resources.cpu);
-        //erasing map entry
         mecAppMap.erase(ueAppID);
         return true;
     }
