@@ -80,7 +80,7 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Configuring OMNeT++"
-          ./configure WITH_LIBXML=yes WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
+          ./configure WITH_LIBXML=yes WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no WITH_SCAVE_PYTHON_BINDINGS=no WITH_PYTHON=no
           echo "::endgroup::"
 
           echo "::group::Building OMNeT++"
