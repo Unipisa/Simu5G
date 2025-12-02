@@ -1,0 +1,121 @@
+name: "Local debugging of errors that only occur in CI -- run using: act --job local-debug"
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  local-debug:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checking out OMNeT++
+        uses: actions/checkout@v4
+        with:
+          repository: omnetpp/omnetpp
+          path: omnetpp
+          ref: omnetpp-6.2.0
+
+      - name: Checking out INET
+        uses: actions/checkout@v4
+        with:
+          repository: inet-framework/inet
+          path: inet4.5
+          ref: v4.5.4
+
+      - name: Checking out Simu5G
+        uses: actions/checkout@v4
+        with:
+          path: Simu5G
+
+      - name: Creating ccache directory
+        run: mkdir -p /home/runner/work/ccache
+
+      - name: Restoring ccache cache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/work/ccache
+          key: native-${{ matrix.mode }}-ccache-${{ github.run_id }}
+          # See: https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
+          restore-keys: native-${{ matrix.mode }}-ccache
+
+      - name: Build and test
+        run: |
+          # This entire thing is a single script to make persisting
+          # the configured environment variables across steps easier.
+          # The log output is grouped at least, for better readability.
+
+          echo "::group::Installing dependency packages"
+          sudo apt update
+          sudo apt install -y --no-install-recommends git wget curl ca-certificates make \
+            ccache clang lld gdb bison flex perl doxygen graphviz libxml2-dev zlib1g-dev python3
+          echo "::endgroup::"
+
+          echo "::group::Configuring ccache"
+          export PATH=/usr/lib/ccache:$PATH
+          export CCACHE_DIR=/home/runner/work/ccache
+          echo "::endgroup::"
+
+          echo "::group::Setting build MODE"
+          MODE=debug
+          echo "MODE=$MODE"
+          echo "::endgroup::"
+
+          echo "::group::Running OMNeT++ setenv"
+          cd $GITHUB_WORKSPACE/omnetpp
+          cp configure.user.dist configure.user
+          . setenv -f
+          echo "::endgroup::"
+
+          echo "::group::Configuring OMNeT++"
+          ./configure WITH_LIBXML=yes WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no WITH_SCAVE_PYTHON_BINDINGS=no WITH_PYTHON=no
+          echo "::endgroup::"
+
+          echo "::group::Building OMNeT++"
+          make MODE=$MODE -j $(nproc) base
+          echo "::endgroup::"
+
+          echo "::group::Running INET setenv"
+          cd $GITHUB_WORKSPACE/inet4.5
+          . setenv -f
+          echo "::endgroup::"
+
+          echo "::group::Making INET Makefiles"
+          make makefiles
+          echo "::endgroup::"
+
+          echo "::group::Building INET"
+          make MODE=$MODE -j $(nproc)
+          echo "::endgroup::"
+
+          echo "::group::Running Simu5G setenv"
+          cd $GITHUB_WORKSPACE/Simu5G
+          . setenv -f
+          echo "::endgroup::"
+
+          echo "::group::Making Simu5G Makefiles"
+          make makefiles
+          echo "::endgroup::"
+
+          echo "::group::Building Simu5G"
+          make MODE=$MODE -j $(nproc)
+          echo "::endgroup::"
+
+          echo "::group::WAITING FOR YOU TO JOIN"
+          echo "If you need to debug this workflow using 'act' and want to enter the container:"
+          echo "1. Run: docker ps"
+          echo "2. Run: docker exec -it <container-id> bash"
+          echo "3. Then execute the following commands in the container:"
+          echo "   export GITHUB_WORKSPACE=$(pwd)"
+          echo "   export PATH=/usr/lib/ccache:\$PATH"
+          echo "   export CCACHE_DIR=/home/runner/work/ccache"
+          echo "   cd \$GITHUB_WORKSPACE/omnetpp"
+          echo "   . setenv -f"
+          echo "   cd \$GITHUB_WORKSPACE/inet4.5"
+          echo "   . setenv -f"
+          echo "   cd \$GITHUB_WORKSPACE/Simu5G"
+          echo "   . setenv -f"
+          sleep 100000
+          echo "::endgroup::"
