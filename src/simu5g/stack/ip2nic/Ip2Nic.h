@@ -28,9 +28,6 @@ using namespace omnetpp;
 
 class LteHandoverManager;
 
-// a sort of five-tuple with only two elements (a two-tuple...), src and dst addresses
-typedef std::pair<inet::Ipv4Address, inet::Ipv4Address> AddressPair;
-
 /**
  *
  */
@@ -116,8 +113,6 @@ class Ip2Nic : public cSimpleModule
      * @param ci LteStackControlInfo object
      */
     void printControlInfo(inet::Packet *pkt);
-    void registerInterface();
-    void registerMulticastGroups();
 
     // mark packet for using LTE, NR or split bearer
     //

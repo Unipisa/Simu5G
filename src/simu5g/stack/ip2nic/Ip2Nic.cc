@@ -54,80 +54,26 @@ void Ip2Nic::initialize(int stage)
 
         binder_.reference(this, "binderModule", true);
 
-        NetworkInterface *nic = getContainingNicModule(this);
-        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
+        networkIf = getContainingNicModule(this);
+        dualConnectivityEnabled_ = networkIf->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             sbTable_ = new SplitBearersTable();
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
         if (nodeType_ == NODEB) {
-            // TODO: not so elegant
             cModule *bs = getContainingNode(this);
             nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
-            bool isNr = bs->par("nodeType").stdstringValue() == "GNODEB";
-            binder_->registerNode(nodeId_, bs, nodeType_, isNr);
-
-            // display node ID above node icon
-            bs->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", num(nodeId_)).c_str());
         }
         else if (nodeType_ == UE) {
             cModule *ue = getContainingNode(this);
             servingNodeId_ = MacNodeId(ue->par("servingNodeId").intValue());
             nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
-            binder_->registerNode(nodeId_, ue, nodeType_, false);
-            ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d", num(nodeId_)).c_str());
 
             if (ue->hasPar("nrServingNodeId") && ue->par("nrServingNodeId").intValue() != 0) { // register also the NR MacNodeId
                 nrServingNodeId_ = MacNodeId(ue->par("nrServingNodeId").intValue());
                 nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
-                binder_->registerNode(nrNodeId_, ue, nodeType_, true);
-                ue->getDisplayString().setTagArg("t", 0, opp_stringf("nodeId=%d/%d", num(nodeId_), num(nrNodeId_)).c_str());
             }
         }
-
-        registerInterface();
-    }
-    else if (stage == INITSTAGE_SIMU5G_NODE_RELATIONSHIPS) {
-        if (nodeType_ == NODEB) {
-            cModule *bs = getContainingNode(this);
-            MacNodeId masterId = MacNodeId(bs->par("masterId").intValue());
-            binder_->registerMasterNode(masterId, nodeId_);  // note: even if masterId == NODEID_NONE!
-        }
-        if (nodeType_ == UE) {
-            binder_->registerServingNode(servingNodeId_, nodeId_);
-            if (nrNodeId_ != NODEID_NONE)
-                binder_->registerServingNode(nrServingNodeId_, nrNodeId_);
-        }
-    }
-    else if (stage == inet::INITSTAGE_STATIC_ROUTING) {
-        if (nodeType_ == UE) {
-            // TODO: shift to routing stage
-            // if the UE has been created dynamically, we need to manually add a default route having our cellular interface as output interface
-            // otherwise we are not able to reach devices outside the cellular network
-            if (NOW > 0) {
-                /**
-                 * TODO: might need a bit more care, if the interface has changed, the query might, too
-                 */
-                IIpv4RoutingTable *irt = getModuleFromPar<IIpv4RoutingTable>(par("routingTableModule"), this);
-                Ipv4Route *defaultRoute = new Ipv4Route();
-                defaultRoute->setDestination(inet::Ipv4Address::UNSPECIFIED_ADDRESS);
-                defaultRoute->setNetmask(inet::Ipv4Address::UNSPECIFIED_ADDRESS);
-
-                defaultRoute->setInterface(networkIf);
-
-                irt->addRoute(defaultRoute);
-
-                // workaround for nodes using the HostAutoConfigurator:
-                // Since the HostAutoConfigurator calls setBroadcast(true) for all
-                // interfaces in setupNetworking called in INITSTAGE_SIMU5G_NETWORK_CONFIGURATION
-                // we must reset it to false since the cellular NIC does not support broadcasts
-                // at the moment
-                networkIf->setBroadcast(false);
-            }
-        }
-    }
-    else if (stage == inet::INITSTAGE_TRANSPORT_LAYER) {
-        registerMulticastGroups();
     }
 }
 
@@ -349,47 +295,6 @@ void Ip2Nic::printControlInfo(Packet *pkt)
     EV << "Src IP : " << pkt->getTag<IpFlowInd>()->getSrcAddr() << endl;
     EV << "Dst IP : " << pkt->getTag<IpFlowInd>()->getDstAddr() << endl;
     EV << "ToS : " << pkt->getTag<IpFlowInd>()->getTypeOfService() << endl;
-}
-
-void Ip2Nic::registerInterface()
-{
-    IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-    if (!ift)
-        return;
-
-    networkIf = getContainingNicModule(this);
-    networkIf->setInterfaceName(par("interfaceName").stdstringValue().c_str());
-    // TODO: configure MTE size from NED
-    networkIf->setMtu(1500);
-    // Disable broadcast (not supported in cellular NIC), enable multicast
-    networkIf->setBroadcast(false);
-    networkIf->setMulticast(true);
-    networkIf->setLoopback(false);
-
-    // generate a link-layer address to be used as interface token for IPv6
-    InterfaceToken token(0, getSimulation()->getUniqueNumber(), 64);
-    networkIf->setInterfaceToken(token);
-
-    // capabilities
-    networkIf->setMulticast(true);
-    networkIf->setPointToPoint(true);
-}
-
-void Ip2Nic::registerMulticastGroups()
-{
-    // get all the multicast addresses where the node is enrolled
-    IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);
-    NetworkInterface *iface = ift->findInterfaceByName(par("interfaceName").stdstringValue().c_str());
-    unsigned int numOfAddresses = iface->getProtocolData<Ipv4InterfaceData>()->getNumOfJoinedMulticastGroups();
-
-    for (unsigned int i = 0; i < numOfAddresses; ++i) {
-        Ipv4Address addr = iface->getProtocolData<Ipv4InterfaceData>()->getJoinedMulticastGroup(i);
-        MacNodeId multicastDestId = binder_->getOrAssignDestIdForMulticastAddress(addr);
-        // register in the LTE and also the NR stack, if any
-        binder_->joinMulticastGroup(nodeId_, multicastDestId);
-        if (nrNodeId_ != NODEID_NONE)
-            binder_->joinMulticastGroup(nrNodeId_, multicastDestId);
-    }
 }
 
 bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)

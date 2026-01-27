@@ -15,6 +15,7 @@
 #include "simu5g/common/LteDefs.h"
 #include "simu5g/common/LteControlInfo.h"
 #include <inet/common/ModuleRefByPar.h>
+#include <inet/networklayer/common/NetworkInterface.h>
 
 using namespace omnetpp;
 
@@ -33,6 +34,11 @@ class Rrc : public cSimpleModule
     MacNodeId lteNodeId = NODEID_NONE;
     MacNodeId nrNodeId = NODEID_NONE;
     RanNodeType nodeType = UNKNOWN_NODE_TYPE;
+
+    // corresponding entry for our interface
+    opp_component_ptr<inet::NetworkInterface> networkIf;
+
+    inet::ModuleRefByPar<Binder> binder;
     inet::ModuleRefByPar<LtePdcpBase> pdcpModule;
     inet::ModuleRefByPar<LteRlcUm> rlcUmModule;  // Compound module with TM/UM/AM submodules
     inet::ModuleRefByPar<LteRlcUm> nrRlcUmModule;  // same
@@ -43,6 +49,9 @@ class Rrc : public cSimpleModule
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
+
+    virtual void registerInterface();
+    virtual void registerMulticastGroups();
 
   public:
     RanNodeType getNodeType() const { return nodeType; }

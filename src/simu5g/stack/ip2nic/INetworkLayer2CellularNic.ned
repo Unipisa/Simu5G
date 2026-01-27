@@ -21,8 +21,6 @@ moduleinterface INetworkLayer2CellularNic
 {
     parameters:
         string nodeType;
-        string interfaceTableModule;
-        string routingTableModule;
         @display("i=block/layer");
     gates:
         // connection to network layer.

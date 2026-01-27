@@ -23,9 +23,6 @@ simple Ip2Nic like INetworkLayer2CellularNic
 {
     parameters:
         string nodeType;
-        string interfaceTableModule;
-        string interfaceName = default("cellular");
-        string routingTableModule;
         string binderModule = default("binder");
         string handoverManagerModule = default("");
         @display("i=block/layer");
