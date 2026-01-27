@@ -28,6 +28,7 @@ simple LtePhyUe extends LtePhyBase
 
         bool dynamicCellAssociation = default(false);
 
+        string handoverControllerModule = default("^.handoverController");
         string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"
         string pdcpModule = default("^.pdcp");
         string ip2nicModule = default("^.ip2nic");

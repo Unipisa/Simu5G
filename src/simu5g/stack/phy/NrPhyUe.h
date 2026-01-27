@@ -22,7 +22,7 @@ namespace simu5g {
 class NrPhyUe : public LtePhyUeD2D
 {
 
-  protected:
+public: //protected:
 
     // reference to the parallel PHY layer
     inet::ModuleRefByPar<NrPhyUe> otherPhy_;
@@ -35,8 +35,6 @@ class NrPhyUe : public LtePhyUeD2D
     // force handover to the given target node (0 means forcing detachment)
     virtual void forceHandover(MacNodeId targetMasterNode = NODEID_NONE, double targetMasterRssi = 0.0);
     void deleteOldBuffers(MacNodeId masterId);
-  public:
-    const NrPhyUe *getOtherPhy() const { return otherPhy_.get(); }
 };
 
 } //namespace

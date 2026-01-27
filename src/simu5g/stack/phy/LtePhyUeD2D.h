@@ -21,7 +21,7 @@ using namespace omnetpp;
 
 class LtePhyUeD2D : public LtePhyUe
 {
-  protected:
+public: //protected:
 
     // D2D Tx Power
     double d2dTxPower_;

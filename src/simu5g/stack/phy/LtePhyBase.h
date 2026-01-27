@@ -55,7 +55,8 @@ class LteChannelModel;
 class LtePhyBase : public ChannelAccess
 {
 
-  protected:
+public: //protected:
+
 
     /**
      * Defines the scheduling priority of AirFrames.
@@ -193,7 +194,7 @@ class LtePhyBase : public ChannelAccess
         return txAngle_;
     }
 
-  protected:
+  public: //protected:
 
     /**
      * Performs initialization operations to prepare gates' IDs, analog models,
@@ -246,7 +247,8 @@ class LtePhyBase : public ChannelAccess
      */
     void emitMobilityStats() override {}
 
-  protected:
+  public: //protected:
+
 
     /**
      * Sends the given message to the wireless channel.

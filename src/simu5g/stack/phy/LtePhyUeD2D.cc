@@ -12,6 +12,8 @@
 
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
+
+#include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
@@ -221,40 +223,12 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
 void LtePhyUeD2D::triggerHandover()
 {
-    if (masterId_ != NODEID_NONE) {
-        // Stop active D2D flows (go back to Infrastructure mode).
-        // Currently, DM is possible only for UEs served by the same cell.
-
-        // Trigger D2D mode switch.
-        cModule *enb = binder_->getNodeModule(masterId_);
-        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
-        d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
-    }
-    LtePhyUe::triggerHandover();
+    handoverController_->LtePhyUeD2D_triggerHandover();
 }
 
 void LtePhyUeD2D::doHandover()
 {
-    // AMC calls.
-    if (masterId_ != NODEID_NONE) {
-        LteAmc *oldAmc = getAmcModule(masterId_);
-        oldAmc->detachUser(nodeId_, D2D);
-    }
-
-    if (candidateMasterId_ != NODEID_NONE) {
-        LteAmc *newAmc = getAmcModule(candidateMasterId_);
-        assert(newAmc != nullptr);
-        newAmc->attachUser(nodeId_, D2D);
-    }
-
-    LtePhyUe::doHandover();
-
-    if (candidateMasterId_ != NODEID_NONE) {
-        // Send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover).
-        cMessage *msg = new cMessage("doModeSwitchAtHandover");
-        msg->setSchedulingPriority(10);
-        scheduleAt(NOW, msg);
-    }
+    handoverController_->LtePhyUeD2D_doHandover();
 }
 
 void LtePhyUeD2D::handleUpperMessage(cMessage *msg)

@@ -12,6 +12,7 @@
 
 #include "simu5g/stack/phy/NrPhyUe.h"
 
+#include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
@@ -27,6 +28,7 @@ void NrPhyUe::initialize(int stage)
     LtePhyUeD2D::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
         otherPhy_.reference(this, "otherPhyModule", true);
+        check_and_cast<NrPhyUe*>(otherPhy_.get()); // in NR, even the LTE stack's PHY is NR PHY!!!
     }
 }
 
@@ -176,233 +178,23 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
 
 void NrPhyUe::triggerHandover()
 {
-    ASSERT(masterId_ == NODEID_NONE || masterId_ != candidateMasterId_);  // "we can be unattached, but never hand over to ourselves"
-
-    EV << "####Handover starting:####" << endl;
-    EV << "Current master: " << masterId_ << endl;
-    EV << "Current RSSI: " << currentMasterRssi_ << endl;
-    EV << "Candidate master: " << candidateMasterId_ << endl;  // note: can be NODEID_NONE!
-    EV << "Candidate RSSI: " << candidateMasterRssi_ << endl;
-    EV << "############" << endl;
-
-    MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateMasterId_);
-    if (masterNode != candidateMasterId_) { // The candidate is a secondary node
-        if (otherPhy_->getMasterId() == masterNode) {
-            MacNodeId otherNodeId = otherPhy_->getMacNodeId();
-            const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
-            if (handoverPair != nullptr) {
-                if (handoverPair->second == candidateMasterId_) {
-                    // Delay this handover
-                    double delta = handoverDelta_;
-                    if (handoverPair->first != NODEID_NONE) // The other "stack" is performing a complete handover
-                        delta += handoverDetachment_ + handoverAttachment_;
-                    else                                                   // The other "stack" is attaching to an eNodeB
-                        delta += handoverAttachment_;
-
-                    EV << NOW << " NrPhyUe::triggerHandover - Wait for the handover completion for the other stack. Delay this handover." << endl;
-
-                    // Need to wait for the other stack to complete handover
-                    scheduleAt(simTime() + delta, handoverStarter_);
-                    return;
-                }
-                else {
-                    // Cancel this handover
-                    binder_->removeHandoverTriggered(nodeId_);
-                    EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateMasterId_ << " since the master is performing handover" << endl;
-                    return;
-                }
-            }
-        }
-    }
-    // Else it is a master itself
-
-    if (candidateMasterRssi_ == 0)
-        EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << masterId_ << ". Now detaching... " << endl;
-    else if (masterId_ == NODEID_NONE)
-        EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateMasterId_ << "... " << endl;
-    else
-        EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateMasterId_ << "... " << endl;
-
-    if (otherPhy_->getMasterId() != NODEID_NONE) {
-        // Check if there are secondary nodes connected
-        MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherPhy_->getMasterId());
-        if (otherMasterId == masterId_) {
-            EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << otherPhy_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
-
-            // Need to wait for the other stack to complete detachment
-            scheduleAt(simTime() + handoverDetachment_ + handoverDelta_, handoverStarter_);
-
-            // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
-            // Trigger detachment (handover to node 0)
-            otherPhy_->forceHandover();
-
-            return;
-        }
-    }
-
-    binder_->addUeHandoverTriggered(nodeId_);
-
-    // Inform the UE's Ip2Nic module to start holding downstream packets
-    ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
-
-    // Inform the eNB's Ip2Nic module to forward data to the target eNB
-    if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->triggerHandoverSource(nodeId_, candidateMasterId_);
-    }
-
-    if (masterId_ != NODEID_NONE) {
-        // Stop active D2D flows (go back to Infrastructure mode)
-        // Currently, DM is possible only for UEs served by the same cell
-
-        // Trigger D2D mode switch
-        cModule *enb = binder_->getNodeModule(masterId_);
-        D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
-        d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
-    }
-
-    double handoverLatency;
-    if (masterId_ == NODEID_NONE)                                                // Attachment only
-        handoverLatency = handoverAttachment_;
-    else if (candidateMasterId_ == NODEID_NONE)                                                // Detachment only
-        handoverLatency = handoverDetachment_;
-    else                                                // Complete handover time
-        handoverLatency = handoverDetachment_ + handoverAttachment_;
-
-    handoverTrigger_ = new cMessage("handoverTrigger");
-    scheduleAt(simTime() + handoverLatency, handoverTrigger_);
+    handoverController_->NrPhyUe_triggerHandover();
 }
 
 void NrPhyUe::doHandover()
 {
-    // if masterId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
-    // if candidateMasterId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
-
-    if (masterId_ != NODEID_NONE) {
-        // Delete Old Buffers
-        deleteOldBuffers(masterId_);
-
-        // amc calls
-        LteAmc *oldAmc = getAmcModule(masterId_);
-        oldAmc->detachUser(nodeId_, UL);
-        oldAmc->detachUser(nodeId_, DL);
-        oldAmc->detachUser(nodeId_, D2D);
-    }
-
-    if (candidateMasterId_ != NODEID_NONE) {
-        LteAmc *newAmc = getAmcModule(candidateMasterId_);
-        assert(newAmc != nullptr);
-        newAmc->attachUser(nodeId_, UL);
-        newAmc->attachUser(nodeId_, DL);
-        newAmc->attachUser(nodeId_, D2D);
-    }
-
-    // binder calls
-    if (masterId_ != NODEID_NONE)
-        binder_->unregisterServingNode(masterId_, nodeId_);
-
-    if (candidateMasterId_ != NODEID_NONE) {
-        binder_->registerServingNode(candidateMasterId_, nodeId_);
-    }
-    binder_->updateUeInfoCellId(nodeId_, candidateMasterId_);
-    // @author Alessandro Noferi
-    if (hasCollector) {
-        binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
-    }
-
-    // change masterId and notify handover to the MAC layer
-    MacNodeId oldMaster = masterId_;
-    masterId_ = candidateMasterId_;
-    mac_->doHandover(candidateMasterId_);  // do MAC operations for handover
-    currentMasterRssi_ = candidateMasterRssi_;
-    hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
-
-    // update mobility pointer
-    if (masterId_ == NODEID_NONE)
-        masterMobility_ = nullptr;
-    else {
-        cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
-        masterMobility_ = check_and_cast<IMobility *>(masterModule->getSubmodule("mobility"));
-    }
-    // update cellInfo
-    if (oldMaster != NODEID_NONE)
-        cellInfo_->detachUser(nodeId_);
-
-    if (masterId_ != NODEID_NONE) {
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId_));
-        cellInfo_ = newMacEnb->getCellInfo();
-        cellInfo_->attachUser(nodeId_);
-
-        // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
-        cMessage *msg = new cMessage("doModeSwitchAtHandover");
-        msg->setSchedulingPriority(10);
-        scheduleAt(NOW, msg);
-    }
-
-    // update DL feedback generator
-    fbGen_->handleHandover(masterId_);
-
-    // collect stat
-    emit(servingCellSignal_, (long)masterId_);
-
-    if (masterId_ == NODEID_NONE)
-        EV << NOW << " NrPhyUe::doHandover - UE " << nodeId_ << " detached from the network" << endl;
-    else
-        EV << NOW << " NrPhyUe::doHandover - UE " << nodeId_ << " has completed handover to eNB " << masterId_ << "... " << endl;
-
-    binder_->removeUeHandoverTriggered(nodeId_);
-    binder_->removeHandoverTriggered(nodeId_);
-
-    // inform the UE's Ip2Nic module to forward held packets
-    ip2nic_->signalHandoverCompleteUe(isNr_);
-
-    // inform the eNB's Ip2Nic module to forward data to the target eNB
-    if (oldMaster != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
-    }
+    handoverController_->NrPhyUe_doHandover();
 }
 
 void NrPhyUe::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
 {
     Enter_Method_Silent();
-    candidateMasterId_ = targetMasterNode;
-    candidateMasterRssi_ = targetMasterRssi;
-    hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
-
-    cancelEvent(handoverStarter_);  // if any
-    scheduleAt(NOW, handoverStarter_);
+    handoverController_->NrPhyUe_forceHandover(targetMasterNode, targetMasterRssi);
 }
 
 void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
 {
-    // Delete MAC Buffers
-
-    // delete macBuffer[nodeId_] at old master
-    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId));
-    masterMac->deleteQueues(nodeId_);
-
-    // delete queues for master at this UE
-    mac_->deleteQueues(masterId_);
-
-    // Delete RLC UM Buffers
-
-    // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(masterId, UM));
-    masterRlcUm->deleteQueues(nodeId_);
-
-    // delete queues for master at this UE
-    rlcUm_->deleteQueues(nodeId_);
-
-    // Delete PDCP Entities
-    // delete pdcpEntities[nodeId_] at old master
-    // in case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
-    MacNodeId masterNodeId = binder_->getMasterNodeOrSelf(masterId);
-    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByNodeId(masterNodeId));
-    masterPdcp->deleteEntities(nodeId_);
-
-    // delete queues for master at this UE
-    pdcp_->deleteEntities(masterId_);
+    handoverController_->NrPhyUe_deleteOldBuffers(masterId);
 }
 
 } //namespace

@@ -15,10 +15,11 @@ package simu5g.stack;
 
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
-import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.ILtePhy;
+import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.phy.feedback.LteDlFeedbackGenerator;
 import simu5g.stack.rlc.LteRlc;
+import simu5g.stack.rrc.HandoverController;
 
 
 //
@@ -47,6 +48,7 @@ module NrNicUe extends LteNicUeD2D
         nrPhy.otherPhyModule = "^.phy";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
+        nrPhy.handoverControllerModule = "^.nrHandoverController";
         nrMac.packetFlowObserverModule = hasRniSupport ? "^.nrPacketFlowObserver" : "";
         phy.otherPhyModule = "^.nrPhy";
 
@@ -77,7 +79,13 @@ module NrNicUe extends LteNicUeD2D
             @display("p=144,50;is=s");
             phyModule = "^.nrPhy";
         }
- 		//#
+
+        // NR handover controller
+        nrHandoverController: HandoverController {
+            @display("p=144,100;is=s");
+        }
+
+        //#
         //# Modules used to take trace of PDCP pkt flow
         //#
         nrPacketFlowObserver: <default("NrPacketFlowObserverUe")> like IPacketFlowObserver if hasRniSupport {
