@@ -33,9 +33,6 @@ simple LtePhyBase like ILtePhy
         string txDirection @enum(ANISOTROPIC,OMNI) = default("OMNI");
         double txAngle @unit(deg) = default(0deg);
 
-        // switch for handover messages handling on UEs
-        bool enableHandover = default(false);
-
         // TODO move to LtePhyUeD2D module
         bool enableMulticastD2DRangeCheck = default(false);
         double multicastD2DRange @unit(m) = default(1000m);

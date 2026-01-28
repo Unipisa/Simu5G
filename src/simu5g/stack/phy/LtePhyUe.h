@@ -15,19 +15,13 @@
 
 #include <inet/mobility/contract/IMobility.h>
 
-#include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/phy/LtePhyBase.h"
 #include "simu5g/stack/mac/LteMacUe.h"
-#include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp/LtePdcp.h"
-#include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
 #include "simu5g/stack/rrc/HandoverController.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
-
-class LteDlFeedbackGenerator;
 
 class LtePhyUe : public LtePhyBase
 {
@@ -41,68 +35,14 @@ public: //protected:
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;
 
-    /** Statistic for serving cell */
-    static simsignal_t servingCellSignal_;
-
     /** Self message to trigger handover procedure evaluation */
     cMessage *handoverStarter_ = nullptr;
 
     /** Self message to start the handover procedure */
     cMessage *handoverTrigger_ = nullptr;
 
-    /** RSSI received from the current serving node */
-    double currentMasterRssi_;
-
-    /** ID of the not-master node from which the highest RSSI was received */
-    MacNodeId candidateMasterId_;
-
-    /** Highest RSSI received from not-master node */
-    double candidateMasterRssi_;
-
-    /**
-     * Hysteresis threshold to evaluate handover: it introduces a small polarization to
-     * avoid multiple subsequent handovers
-     */
-    double hysteresisTh_ = 0;
-
-    /**
-     * Value used to divide currentMasterRssi_ and create a hysteresisTh_
-     * Use zero to have hysteresisTh_ == 0.
-     */
-    // TODO: bring it to ned par!
-    double hysteresisFactor_ = 10;
-
-    /**
-     * Time interval elapsing from the reception of the first handover broadcast message
-     * to the beginning of the handover procedure.
-     * It must be a small number greater than 0 to ensure that all broadcast messages
-     * are received before evaluating handover.
-     * Note that broadcast messages for handover are always received at the very same time
-     * (at bdcUpdateInterval_ seconds intervals).
-     */
-    // TODO: bring it to ned par!
-    double handoverDelta_ = 0.00001;
-
-    // Time for completion of the handover procedure
-    double handoverLatency_;
-    double handoverDetachment_;
-    double handoverAttachment_;
-
-    // Lower threshold of RSSI for detachment
-    double minRssi_;
-
-    /**
-     * Handover switch
-     */
-    bool enableHandover_;
-
-
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<HandoverController> handoverController_;
-    inet::ModuleRefByPar<LteRlcUm> rlcUm_;
-    inet::ModuleRefByPar<LtePdcpBase> pdcp_;
-    inet::ModuleRefByPar<Ip2Nic> ip2nic_;
-    inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
 
     simtime_t lastFeedback_ = 0;
 
@@ -113,8 +53,6 @@ public: //protected:
     unsigned int cqiUlSum_ = 0;
     unsigned int cqiDlCount_ = 0;
     unsigned int cqiUlCount_ = 0;
-
-    bool hasCollector = false;
 
     void initialize(int stage) override;
     void handleSelfMessage(cMessage *msg) override;
@@ -147,6 +85,9 @@ public: //protected:
     {
         return masterId_;
     }
+
+    // called on handover
+    void setMasterId(MacNodeId masterId);
 
     simtime_t coherenceTime(double speed)
     {

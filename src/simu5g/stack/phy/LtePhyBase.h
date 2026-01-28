@@ -106,11 +106,6 @@ public: //protected:
     // used with the enableMulticastD2DRangeCheck_ parameter
     double multicastD2DRange_ = NAN;
 
-    /*
-     * If true, UEs associate to the best serving cell at initialization
-     */
-    bool dynamicCellAssociation_ = false;
-
     //Ue  Tx Power
     double ueTxPower_ = NAN;
     // eNodeB Tx Power

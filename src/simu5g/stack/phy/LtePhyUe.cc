@@ -28,7 +28,6 @@ Define_Module(LtePhyUe);
 using namespace inet;
 
 simsignal_t LtePhyUe::distanceSignal_ = registerSignal("distance");
-simsignal_t LtePhyUe::servingCellSignal_ = registerSignal("servingCell");
 
 LtePhyUe::~LtePhyUe()
 {
@@ -43,32 +42,12 @@ void LtePhyUe::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         isNr_ = false;        // this might be true only if this module is a UeNrPhy
         nodeType_ = UE;
-        enableHandover_ = par("enableHandover");
-        handoverLatency_ = par("handoverLatency").doubleValue();
-        handoverDetachment_ = handoverLatency_ / 2.0;                      // TODO: make this configurable from NED
-        handoverAttachment_ = handoverLatency_ - handoverDetachment_;
-        dynamicCellAssociation_ = par("dynamicCellAssociation");
-        if (par("minRssiDefault").boolValue())
-            minRssi_ = binder_->phyPisaData.minSnr();
-        else
-            minRssi_ = par("minRssi").doubleValue();
-
-        currentMasterRssi_ = -999.0;
-        candidateMasterRssi_ = -999.0;
-
-        hasCollector = par("hasCollector");
 
         if (!hasListeners(averageCqiDlSignal_))
             throw cRuntimeError("no phy listeners");
 
         WATCH(nodeType_);
         WATCH(masterId_);
-        WATCH(candidateMasterId_);
-        WATCH(currentMasterRssi_);
-        WATCH(candidateMasterRssi_);
-        WATCH(hysteresisTh_);
-        WATCH(hysteresisFactor_);
-        WATCH(handoverDelta_);
 
         txPower_ = ueTxPower_;
 
@@ -78,10 +57,6 @@ void LtePhyUe::initialize(int stage)
         mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
 
         handoverController_.reference(this, "handoverControllerModule", true);
-        rlcUm_.reference(this, "rlcUmModule", true);
-        pdcp_.reference(this, "pdcpModule", true);
-        ip2nic_.reference(this, "ip2nicModule", true);
-        fbGen_.reference(this, "feedbackGeneratorModule", true);
 
         handoverController_->setPhy(this);
 
@@ -91,37 +66,6 @@ void LtePhyUe::initialize(int stage)
         // get local id
         nodeId_ = MacNodeId(hostModule->par(isNr_ ? "nrMacNodeId" : "macNodeId").intValue());
         EV << "Local MacNodeId: " << nodeId_ << endl;
-    }
-    else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
-        // get serving cell from configuration
-        masterId_ = binder_->getServingNode(nodeId_);
-        candidateMasterId_ = masterId_;
-
-        // find the best candidate master cell
-        if (dynamicCellAssociation_) {
-            findCandidateEnb(candidateMasterId_, candidateMasterRssi_);
-
-            // binder calls
-            // if dynamicCellAssociation selected a different master
-            if (candidateMasterId_ != NODEID_NONE && candidateMasterId_ != masterId_) {
-                binder_->unregisterServingNode(masterId_, nodeId_);
-                binder_->registerServingNode(candidateMasterId_, nodeId_);
-            }
-            masterId_ = candidateMasterId_;
-            currentMasterRssi_ = candidateMasterRssi_;
-            //HandoverCoordinator::updateHysteresisTh(this, candidateMasterRssi_); //TODO was no-op
-        }
-
-        EV << "LtePhyUe::initialize - Attaching to eNodeB " << masterId_ << endl;
-
-        emit(servingCellSignal_, (long)masterId_);
-
-        if (masterId_ == NODEID_NONE)
-            masterMobility_ = nullptr;
-        else {
-            cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
-            masterMobility_ = check_and_cast<IMobility *>(masterModule->getSubmodule("mobility"));
-        }
     }
     else if (stage == INITSTAGE_SIMU5G_CELLINFO_CHANNELUPDATE) { //TODO being fwd, eliminate stage
         // get cellInfo at this stage because the next hop of the node is registered in the Ip2Nic module at the INITSTAGE_SIMU5G_NETWORK_LAYER
@@ -188,6 +132,31 @@ void LtePhyUe::handleSelfMessage(cMessage *msg)
         delete msg;
         handoverTrigger_ = nullptr;
     }
+}
+
+void LtePhyUe::setMasterId(MacNodeId masterId)
+{
+    MacNodeId oldMaster = masterId_;
+    masterId_ = masterId;
+
+    // update reference to master node's mobility module
+    if (masterId_ == NODEID_NONE)
+        masterMobility_ = nullptr;
+    else {
+        cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
+        masterMobility_ = check_and_cast<IMobility *>(masterModule->getSubmodule("mobility"));
+    }
+
+    // update cellInfo
+    if (oldMaster != NODEID_NONE)
+        cellInfo_->detachUser(nodeId_);
+
+    if (masterId_ != NODEID_NONE) {
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId_));
+        cellInfo_ = newMacEnb->getCellInfo();
+        cellInfo_->attachUser(nodeId_);
+    }
+
 }
 
 void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)

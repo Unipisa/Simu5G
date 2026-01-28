@@ -21,8 +21,12 @@ package simu5g.stack.phy;
 //
 simple LtePhyEnb extends LtePhyBase
 {
-    @class("LtePhyEnb");
+    parameters:
+        @class("LtePhyEnb");
 
-    double targetBler = default(0.001);
+        // Enables broadcasting beacons which are used for handover feasibility assessment in UEs
+        bool enableHandover = default(false);
+
+        double targetBler = default(0.001);
 }
 

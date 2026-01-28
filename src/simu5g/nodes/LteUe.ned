@@ -87,7 +87,7 @@ module LteUe
 
         bool hasRniSupport = default(false);
         cellularNic.mac.collectorModule = hasRniSupport ? "^.^.ueCollector" : "";
-        cellularNic.phy.hasCollector = hasRniSupport;
+        cellularNic.handoverController.hasCollector = hasRniSupport;
 
     gates:
         input radioIn @directIn;     // connection to master
