@@ -73,19 +73,6 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
             return;
         }
 
-        // Check if the eNodeB is a secondary node
-        MacNodeId masterNodeId = binder_->getMasterNodeOrSelf(sourceId);
-        if (masterNodeId != sourceId) {
-            // The node has a master node, check if the other PHY of this UE is attached to that master.
-            // If not, the UE cannot attach to this secondary node and the packet must be deleted.
-            if (otherPhy_->getMasterId() != masterNodeId) {
-                EV << "Received beacon packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
-                delete lteInfo;
-                delete frame;
-                return;
-            }
-        }
-
         handoverHandler(frame, lteInfo);
         return;
     }
