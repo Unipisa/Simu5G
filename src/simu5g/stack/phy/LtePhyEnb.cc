@@ -83,14 +83,33 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
 {
     if (msg->isName("bdcStarter")) {
         // send broadcast message
-        LteAirFrame *f = createHandoverMessage();
+        LteAirFrame *f = createBeaconMessage();
         sendBroadcast(f);
         scheduleAt(NOW + bdcUpdateInterval_, msg);
     }
     else {
-        delete msg;
+        throw cRuntimeError("Unexpected self-message %s", msg->getClassAndFullName().c_str());
     }
 }
+
+LteAirFrame *LtePhyEnb::createBeaconMessage()
+{
+    // broadcast airframe
+    LteAirFrame *bdcAirFrame = new LteAirFrame("beaconMessage");
+    UserControlInfo *cInfo = new UserControlInfo();
+    cInfo->setSourceId(nodeId_);
+    cInfo->setFrameType(BEACONPKT);
+    cInfo->setTxPower(txPower_);
+    cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
+    cInfo->setIsNr(isNr_);
+    bdcAirFrame->setControlInfo(cInfo);
+    bdcAirFrame->setDuration(0);
+    bdcAirFrame->setSchedulingPriority(airFramePriority_);
+    // current position
+    cInfo->setCoord(getRadioPosition());
+    return bdcAirFrame;
+}
+
 
 bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
 {

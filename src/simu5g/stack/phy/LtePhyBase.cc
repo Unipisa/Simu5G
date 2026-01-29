@@ -86,24 +86,6 @@ void LtePhyBase::handleControlMsg(LteAirFrame *frame,
     send(pkt, upperGateOut_);
 }
 
-LteAirFrame *LtePhyBase::createHandoverMessage()
-{
-    // broadcast airframe
-    LteAirFrame *bdcAirFrame = new LteAirFrame("handoverFrame");
-    UserControlInfo *cInfo = new UserControlInfo();
-    cInfo->setSourceId(nodeId_);
-    cInfo->setFrameType(BEACONPKT);
-    cInfo->setTxPower(txPower_);
-    cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
-    cInfo->setIsNr(isNr_);
-    bdcAirFrame->setControlInfo(cInfo);
-    bdcAirFrame->setDuration(0);
-    bdcAirFrame->setSchedulingPriority(airFramePriority_);
-    // current position
-    cInfo->setCoord(getRadioPosition());
-    return bdcAirFrame;
-}
-
 void LtePhyBase::handleUpperMessage(cMessage *msg)
 {
     EV << "LtePhy: message from stack" << endl;

@@ -311,11 +311,6 @@ class LtePhyBase : public ChannelAccess
     void updateDisplayString();
 
     /**
-     * Simple utility function to create a broadcast message for handover.
-     */
-    LteAirFrame *createHandoverMessage();
-
-    /**
      * Returns the pointer to the AMC module, given a master ID (ENODEB)
      */
     LteAmc *getAmcModule(MacNodeId id);
