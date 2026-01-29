@@ -57,8 +57,8 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
 
     //Update coordinates of this user
     if (lteInfo->getFrameType() == BEACONPKT) {
-        // Check if the message is on another carrier frequency or handover is already in process
-        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled())) {
+        // Check if the message is on another carrier frequency
+        if (carrierFreq != primaryChannelModel_->getCarrierFrequency()) {
             EV << "Received beacon packet on a different carrier frequency. Delete it." << endl;
             delete lteInfo;
             delete frame;

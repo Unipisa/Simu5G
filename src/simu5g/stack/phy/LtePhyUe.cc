@@ -187,13 +187,20 @@ void LtePhyUe::handleSelfMessage(cMessage *msg)
 
 void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
-    lteInfo->setDestId(nodeId_);
     if (!enableHandover_) {
         delete frame;
         delete lteInfo;
         return;
     }
 
+    if (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled()) {
+        EV << "Handover already in progress, ignoring beacon packet." << endl;
+        delete lteInfo;
+        delete frame;
+        return;
+    }
+
+    lteInfo->setDestId(nodeId_);
     frame->setControlInfo(lteInfo);
     double rssi = 0;
 
@@ -420,8 +427,8 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
 
     //Update coordinates of this user
     if (lteInfo->getFrameType() == BEACONPKT) {
-        // check if the message is on another carrier frequency or handover is already in process
-        if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled())) {
+        // Check if the message is on another carrier frequency
+        if (carrierFreq != primaryChannelModel_->getCarrierFrequency()) {
             EV << "Received beacon packet on a different carrier frequency than the primary cell. Delete it." << endl;
             delete lteInfo;
             delete frame;
