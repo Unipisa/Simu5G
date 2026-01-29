@@ -56,10 +56,10 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
     }
 
     //Update coordinates of this user
-    if (lteInfo->getFrameType() == HANDOVERPKT) {
+    if (lteInfo->getFrameType() == BEACONPKT) {
         // Check if the message is on another carrier frequency or handover is already in process
         if (carrierFreq != primaryChannelModel_->getCarrierFrequency() || (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled())) {
-            EV << "Received handover packet on a different carrier frequency. Delete it." << endl;
+            EV << "Received beacon packet on a different carrier frequency. Delete it." << endl;
             delete lteInfo;
             delete frame;
             return;
@@ -67,7 +67,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
 
         // Check if the message is from a different cellular technology
         if (lteInfo->isNr() != isNr_) {
-            EV << "Received handover packet [from NR=" << lteInfo->isNr() << "] from a different radio technology [to NR=" << isNr_ << "]. Delete it." << endl;
+            EV << "Received beacon packet [from NR=" << lteInfo->isNr() << "] from a different radio technology [to NR=" << isNr_ << "]. Delete it." << endl;
             delete lteInfo;
             delete frame;
             return;
@@ -79,7 +79,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
             // The node has a master node, check if the other PHY of this UE is attached to that master.
             // If not, the UE cannot attach to this secondary node and the packet must be deleted.
             if (otherPhy_->getMasterId() != masterNodeId) {
-                EV << "Received handover packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
+                EV << "Received beacon packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
                 delete lteInfo;
                 delete frame;
                 return;

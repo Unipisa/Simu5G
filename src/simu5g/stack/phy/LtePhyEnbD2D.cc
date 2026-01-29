@@ -128,8 +128,8 @@ void LtePhyEnbD2D::handleAirFrame(cMessage *msg)
     EV << "LtePhyEnbD2D::handleAirFrame - received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     // Handle broadcast packet sent by another eNB
-    if (lteInfo->getFrameType() == HANDOVERPKT) {
-        EV << "LtePhyEnbD2D::handleAirFrame - received handover packet from another eNodeB. Ignore it." << endl;
+    if (lteInfo->getFrameType() == BEACONPKT) {
+        EV << "LtePhyEnbD2D::handleAirFrame - received beacon packet from another eNodeB. Ignore it." << endl;
         delete lteInfo;
         delete frame;
         return;

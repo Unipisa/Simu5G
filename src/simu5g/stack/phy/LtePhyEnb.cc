@@ -101,7 +101,7 @@ bool LtePhyEnb::handleControlPkt(UserControlInfo *lteinfo, LteAirFrame *frame)
         delete frame;
         return true;    // FIXME ? make sure that nodes that left the simulation do not send
     }
-    if (lteinfo->getFrameType() == HANDOVERPKT) {
+    if (lteinfo->getFrameType() == BEACONPKT) {
         // handover broadcast frames must not be relayed or processed by eNB
         delete frame;
         return true;
@@ -130,8 +130,8 @@ void LtePhyEnb::handleAirFrame(cMessage *msg)
     EV << "LtePhy: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     // handle broadcast packet sent by another eNB
-    if (lteInfo->getFrameType() == HANDOVERPKT) {
-        EV << "LtePhyEnb::handleAirFrame - received handover packet from another eNodeB. Ignore it." << endl;
+    if (lteInfo->getFrameType() == BEACONPKT) {
+        EV << "LtePhyEnb::handleAirFrame - received beacon packet from another eNodeB. Ignore it." << endl;
         delete lteInfo;
         delete frame;
         return;

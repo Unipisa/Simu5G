@@ -160,7 +160,7 @@ enum LtePhyFrameType
     DATAPKT = 0;
     BROADCASTPKT  = 1;
     FEEDBACKPKT = 2;
-    HANDOVERPKT = 3;
+    BEACONPKT = 3;
     HARQPKT = 4;
     GRANTPKT = 5;
     RACPKT = 6;

@@ -609,7 +609,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     std::vector<double> multiCellInterference; // Linear value (mW)
     // prepare data structure
     multiCellInterference.resize(numBands_, 0);
-    if (enableDownlinkInterference_ && dir == DL && lteInfo->getFrameType() != HANDOVERPKT) {
+    if (enableDownlinkInterference_ && dir == DL && lteInfo->getFrameType() != BEACONPKT) {
         computeDownlinkInterference(eNbId, ueId, ueCoord, (lteInfo->getFrameType() == FEEDBACKPKT), lteInfo->getCarrierFrequency(), rbmap, &multiCellInterference);
     }
     else if (enableUplinkInterference_ && dir == UL) {

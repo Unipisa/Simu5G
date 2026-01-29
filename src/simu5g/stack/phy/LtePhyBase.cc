@@ -92,7 +92,7 @@ LteAirFrame *LtePhyBase::createHandoverMessage()
     LteAirFrame *bdcAirFrame = new LteAirFrame("handoverFrame");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
-    cInfo->setFrameType(HANDOVERPKT);
+    cInfo->setFrameType(BEACONPKT);
     cInfo->setTxPower(txPower_);
     cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
     cInfo->setIsNr(isNr_);
