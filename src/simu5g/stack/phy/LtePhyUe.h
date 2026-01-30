@@ -133,6 +133,8 @@ class LtePhyUe : public LtePhyBase
 
     void deleteOldBuffers(MacNodeId masterId);
 
+    double computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo);
+
     virtual void triggerHandover();
     virtual void doHandover();
 

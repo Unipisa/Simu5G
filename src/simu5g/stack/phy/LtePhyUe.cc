@@ -218,14 +218,8 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
 
     lteInfo->setDestId(nodeId_);
     frame->setControlInfo(lteInfo);
-    double rssi = 0;
 
-    // Compute RSSI from broadcast message (DAS removed - single antenna)
-    std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, lteInfo);
-    for (auto value : rssiV)
-        rssi += value;
-    rssi /= rssiV.size();
-
+    double rssi = computeReceivedBeaconPacketRssi(frame, lteInfo);
     EV << "UE " << nodeId_ << " broadcast frame from " << lteInfo->getSourceId() << " with RSSI: " << rssi << " at " << simTime() << endl;
 
     if (lteInfo->getSourceId() != masterId_ && rssi < minRssi_) {
@@ -289,6 +283,16 @@ void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
     }
 
     delete frame;
+}
+
+double LtePhyUe::computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo)
+{
+    std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, lteInfo);
+    double rssi = 0;
+    for (auto value : rssiV)
+        rssi += value;
+    rssi /= rssiV.size();
+    return rssi;
 }
 
 void LtePhyUe::triggerHandover()
