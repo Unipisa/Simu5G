@@ -134,6 +134,29 @@ void HandoverController::initialize(int stage)
     }
 }
 
+void HandoverController::finish()
+{
+    if (getSimulation()->getSimulationStage() != CTX_FINISH) {
+        // do this only during the deletion of the module during the simulation
+
+        // do this only if this PHY layer is connected to a serving base station
+        if (masterId_ != NODEID_NONE) {
+            // clear buffers
+            deleteOldBuffers(masterId_);
+
+            // amc calls
+            LteAmc *amc = phy_->getAmcModule(masterId_);
+            if (amc != nullptr) {
+                amc->detachUser(nodeId_, UL);
+                amc->detachUser(nodeId_, DL);
+            }
+
+            // binder call
+            binder_->unregisterServingNode(masterId_, nodeId_);
+        }
+    }
+}
+
 void HandoverController::handleMessage(cMessage *msg)
 {
     if (msg->isName("handoverStarter"))
@@ -145,7 +168,7 @@ void HandoverController::handleMessage(cMessage *msg)
     }
 }
 
-void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
+void HandoverController::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     Enter_Method("handoverHandler");
     take(frame);
@@ -375,7 +398,7 @@ void HandoverController::NrPhyUe_triggerHandover()
 
             // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
             // Trigger detachment (handover to node 0)
-            phy_->otherPhy_->forceHandover(NODEID_NONE, 0.0);
+            phy_->otherPhy_->handoverController_->forceHandover(NODEID_NONE, 0.0);
 
             return;
         }
@@ -593,7 +616,7 @@ void HandoverController::NrPhyUe_doHandover()
 
 }
 
-void HandoverController::NrPhyUe_forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
+void HandoverController::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
 {
     candidateMasterId_ = targetMasterNode;
     candidateMasterRssi_ = targetMasterRssi;
@@ -601,6 +624,14 @@ void HandoverController::NrPhyUe_forceHandover(MacNodeId targetMasterNode, doubl
 
     cancelEvent(handoverStarter_);  // if any
     scheduleAt(NOW, handoverStarter_);
+}
+
+void HandoverController::deleteOldBuffers(MacNodeId masterId)
+{
+    if (dynamic_cast<NrPhyUe*>(phy_))
+        NrPhyUe_deleteOldBuffers(masterId);
+    else
+        LtePhyUe_deleteOldBuffers(masterId);
 }
 
 void HandoverController::LtePhyUe_deleteOldBuffers(MacNodeId masterId)

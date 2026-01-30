@@ -29,12 +29,6 @@ public: //protected:
 
     void initialize(int stage) override;
     void handleAirFrame(cMessage *msg) override;
-    void triggerHandover() override;
-    void doHandover() override;
-
-    // force handover to the given target node (0 means forcing detachment)
-    virtual void forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
-    void deleteOldBuffers(MacNodeId masterId);
 };
 
 } //namespace

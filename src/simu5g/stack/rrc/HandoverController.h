@@ -108,12 +108,13 @@ public:
     ~HandoverController() override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
+    void finish() override;
     void handleMessage(cMessage *msg) override;
 
     void setPhy(LtePhyUe *phy) {phy_ = phy;}
 
     // called from handleAirFrame()
-    void LtePhyUe_handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
+    void handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     // invoked on self-message
     void triggerHandover();
@@ -128,9 +129,10 @@ public:
     void NrPhyUe_doHandover();
 
     // helper
-    void NrPhyUe_forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
+    void forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
 
     // invoked from the above methods and from finish()
+    void deleteOldBuffers(MacNodeId masterId);
     void LtePhyUe_deleteOldBuffers(MacNodeId masterId);
     void NrPhyUe_deleteOldBuffers(MacNodeId masterId);
 

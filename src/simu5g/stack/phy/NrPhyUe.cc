@@ -75,7 +75,7 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
             return;
         }
 
-        handoverHandler(frame, lteInfo);
+        handoverController_->handoverHandler(frame, lteInfo);
         return;
     }
 
@@ -174,27 +174,6 @@ void NrPhyUe::handleAirFrame(cMessage *msg)
 
     if (getEnvir()->isGUI())
         updateDisplayString();
-}
-
-void NrPhyUe::triggerHandover()
-{
-    handoverController_->NrPhyUe_triggerHandover();
-}
-
-void NrPhyUe::doHandover()
-{
-    handoverController_->NrPhyUe_doHandover();
-}
-
-void NrPhyUe::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
-{
-    Enter_Method_Silent();
-    handoverController_->NrPhyUe_forceHandover(targetMasterNode, targetMasterRssi);
-}
-
-void NrPhyUe::deleteOldBuffers(MacNodeId masterId)
-{
-    handoverController_->NrPhyUe_deleteOldBuffers(masterId);
 }
 
 } //namespace

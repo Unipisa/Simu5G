@@ -58,14 +58,7 @@ public: //protected:
 
     void emitMobilityStats() override;
 
-    void handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
-
-    void deleteOldBuffers(MacNodeId masterId);
-
     double computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo);
-
-    virtual void triggerHandover();
-    virtual void doHandover();
 
     virtual void findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandidateMasterRssi);
 

@@ -149,11 +149,6 @@ void LtePhyUe::setMasterId(MacNodeId masterId)
 
 }
 
-void LtePhyUe::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
-{
-    handoverController_->LtePhyUe_handoverHandler(frame, lteInfo);
-}
-
 double LtePhyUe::computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
     std::vector<double> rssiV = primaryChannelModel_->getSINR(frame, lteInfo);
@@ -162,16 +157,6 @@ double LtePhyUe::computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControl
         rssi += value;
     rssi /= rssiV.size();
     return rssi;
-}
-
-void LtePhyUe::triggerHandover()
-{
-    handoverController_->LtePhyUe_triggerHandover();
-}
-
-void LtePhyUe::doHandover()
-{
-    handoverController_->LtePhyUe_doHandover();
 }
 
 // TODO: ***reorganize*** method
@@ -209,7 +194,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
             return;
         }
 
-        handoverHandler(frame, lteInfo);
+        handoverController_->handoverHandler(frame, lteInfo);
         return;
     }
 
@@ -328,11 +313,6 @@ void LtePhyUe::emitMobilityStats()
     }
 }
 
-void LtePhyUe::deleteOldBuffers(MacNodeId masterId)
-{
-    handoverController_->LtePhyUe_deleteOldBuffers(masterId);
-}
-
 void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req)
 {
     Enter_Method("SendFeedback");
@@ -440,24 +420,9 @@ double LtePhyUe::getVarianceCqi(Direction dir)
 void LtePhyUe::finish()
 {
     if (getSimulation()->getSimulationStage() != CTX_FINISH) {
-        // do this only during the deletion of the module during the simulation
-
-        // do this only if this PHY layer is connected to a serving base station
+        // do this only during the deletion of the module during the simulation, and
+        // this PHY layer is connected to a serving base station
         if (masterId_ != NODEID_NONE) {
-            // clear buffers
-            deleteOldBuffers(masterId_);
-
-            // amc calls
-            LteAmc *amc = getAmcModule(masterId_);
-            if (amc != nullptr) {
-                amc->detachUser(nodeId_, UL);
-                amc->detachUser(nodeId_, DL);
-            }
-
-            // binder call
-            binder_->unregisterServingNode(masterId_, nodeId_);
-
-            // cellInfo call
             cellInfo_->detachUser(nodeId_);
         }
     }

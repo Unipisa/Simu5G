@@ -47,9 +47,6 @@ public: //protected:
     void handleUpperMessage(cMessage *msg) override;
     void handleSelfMessage(cMessage *msg) override;
 
-    void triggerHandover() override;
-    void doHandover() override;
-
   public:
 
     void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req) override;
