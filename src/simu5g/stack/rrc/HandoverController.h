@@ -87,6 +87,12 @@ public:
     /** Statistic for serving cell */
     static simsignal_t servingCellSignal_;
 
+    /** Self message to trigger handover procedure evaluation */
+    cMessage *handoverStarter_ = nullptr;
+
+    /** Self message to start the handover procedure */
+    cMessage *handoverTrigger_ = nullptr;
+
     /**
      * Handover switch
      */
@@ -110,11 +116,13 @@ public:
     void LtePhyUe_handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     // invoked on self-message
+    void triggerHandover();
     void LtePhyUe_triggerHandover();
     void LtePhyUeD2D_triggerHandover();
     void NrPhyUe_triggerHandover();
 
     // invoked on self-message
+    void doHandover();
     void LtePhyUe_doHandover();
     void LtePhyUeD2D_doHandover();
     void NrPhyUe_doHandover();

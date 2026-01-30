@@ -31,8 +31,6 @@ Define_Module(HandoverController);
 /**
  * Fields still in PHY modules:
  *
- * handoverStarter_
- * handoverTrigger_
  * otherPhy_
  * cellInfo_
  * masterMobility_
@@ -62,6 +60,8 @@ simsignal_t HandoverController::servingCellSignal_ = registerSignal("servingCell
 
 HandoverController::~HandoverController()
 {
+    cancelAndDelete(handoverStarter_);
+    cancelAndDelete(handoverTrigger_);
 }
 
 void HandoverController::initialize(int stage)
@@ -89,6 +89,8 @@ void HandoverController::initialize(int stage)
             minRssi_ = par("minRssi").doubleValue();
 
         hasCollector = par("hasCollector");
+
+        handoverStarter_ = new cMessage("handoverStarter");
 
         WATCH(masterId_);
         WATCH(candidateMasterId_);
@@ -134,17 +136,27 @@ void HandoverController::initialize(int stage)
 
 void HandoverController::handleMessage(cMessage *msg)
 {
+    if (msg->isName("handoverStarter"))
+        triggerHandover();
+    else if (msg->isName("handoverTrigger")) {
+        doHandover();
+        delete msg;
+        handoverTrigger_ = nullptr;
+    }
 }
 
 void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
+    Enter_Method("handoverHandler");
+    take(frame);
+
     if (!enableHandover_) {
         delete frame;
         delete lteInfo;
         return;
     }
 
-    if (phy_->handoverTrigger_ != nullptr && phy_->handoverTrigger_->isScheduled()) {
+    if (handoverTrigger_ != nullptr && handoverTrigger_->isScheduled()) {
         EV << "Handover already in progress, ignoring beacon packet." << endl;
         delete lteInfo;
         delete frame;
@@ -186,7 +198,7 @@ void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserContro
             candidateMasterId_ = masterId_;
             candidateMasterRssi_ = rssi;
             hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
-            phy_->cancelEvent(phy_->handoverStarter_);
+            cancelEvent(handoverStarter_);
         }
         else {
             // broadcast from another master with higher RSSI
@@ -197,10 +209,10 @@ void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserContro
 
             // schedule self message to evaluate handover parameters after
             // all broadcast messages have arrived
-            if (!phy_->handoverStarter_->isScheduled()) {
+            if (!handoverStarter_->isScheduled()) {
                 // all broadcast messages are scheduled at the very same time, a small delta
                 // guarantees the ones belonging to the same turn have been received
-                phy_->scheduleAt(simTime() + handoverDelta_, phy_->handoverStarter_);
+                scheduleAt(simTime() + handoverDelta_, handoverStarter_);
             }
         }
     }
@@ -222,10 +234,10 @@ void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserContro
                     hysteresisTh_ = updateHysteresisTh(0);
                     binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
 
-                    if (!phy_->handoverStarter_->isScheduled()) {
+                    if (!handoverStarter_->isScheduled()) {
                         // all broadcast messages are scheduled at the very same time, a small delta
                         // guarantees the ones belonging to the same turn have been received
-                        phy_->scheduleAt(simTime() + handoverDelta_, phy_->handoverStarter_);
+                        scheduleAt(simTime() + handoverDelta_, handoverStarter_);
                     }
                 }
                 // else do nothing, a stronger RSSI from another nodeB has been found already
@@ -234,6 +246,16 @@ void HandoverController::LtePhyUe_handoverHandler(LteAirFrame *frame, UserContro
     }
 
     delete frame;
+}
+
+void HandoverController::triggerHandover()
+{
+    if (dynamic_cast<NrPhyUe*>(phy_))
+        NrPhyUe_triggerHandover();
+    else if (dynamic_cast<LtePhyUeD2D*>(phy_))
+        LtePhyUeD2D_triggerHandover();
+    else
+        LtePhyUe_triggerHandover();
 }
 
 void HandoverController::LtePhyUe_triggerHandover()
@@ -274,8 +296,8 @@ void HandoverController::LtePhyUe_triggerHandover()
     else
         handoverLatency = handoverDetachment_ + handoverAttachment_;
 
-    phy_->handoverTrigger_ = new cMessage("handoverTrigger");
-    phy_->scheduleAt(simTime() + handoverLatency, phy_->handoverTrigger_);
+    handoverTrigger_ = new cMessage("handoverTrigger");
+    scheduleAt(simTime() + handoverLatency, handoverTrigger_);
 }
 
 void HandoverController::LtePhyUeD2D_triggerHandover()
@@ -321,7 +343,7 @@ void HandoverController::NrPhyUe_triggerHandover()
                     EV << NOW << " NrPhyUe::triggerHandover - Wait for the handover completion for the other stack. Delay this handover." << endl;
 
                     // Need to wait for the other stack to complete handover
-                    phy_->scheduleAt(simTime() + delta, phy_->handoverStarter_);
+                    scheduleAt(simTime() + delta, handoverStarter_);
                     return;
                 }
                 else {
@@ -349,7 +371,7 @@ void HandoverController::NrPhyUe_triggerHandover()
             EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << phy_->otherPhy_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
 
             // Need to wait for the other stack to complete detachment
-            phy_->scheduleAt(simTime() + handoverDetachment_ + handoverDelta_, phy_->handoverStarter_);
+            scheduleAt(simTime() + handoverDetachment_ + handoverDelta_, handoverStarter_);
 
             // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
             // Trigger detachment (handover to node 0)
@@ -388,8 +410,18 @@ void HandoverController::NrPhyUe_triggerHandover()
     else                                                // Complete handover time
         handoverLatency = handoverDetachment_ + handoverAttachment_;
 
-    phy_->handoverTrigger_ = new cMessage("handoverTrigger");
-    phy_->scheduleAt(simTime() + handoverLatency, phy_->handoverTrigger_);
+    handoverTrigger_ = new cMessage("handoverTrigger");
+    scheduleAt(simTime() + handoverLatency, handoverTrigger_);
+}
+
+void HandoverController::doHandover()
+{
+    if (dynamic_cast<NrPhyUe*>(phy_))
+        NrPhyUe_doHandover();
+    else if (dynamic_cast<LtePhyUeD2D*>(phy_))
+        LtePhyUeD2D_doHandover();
+    else
+        LtePhyUe_doHandover();
 }
 
 void HandoverController::LtePhyUe_doHandover()
@@ -480,7 +512,7 @@ void HandoverController::LtePhyUeD2D_doHandover()
         // Send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover).
         cMessage *msg = new cMessage("doModeSwitchAtHandover");
         msg->setSchedulingPriority(10);
-        phy_->scheduleAt(NOW, msg);
+        scheduleAt(NOW, msg);
     }
 
 }
@@ -534,7 +566,7 @@ void HandoverController::NrPhyUe_doHandover()
     if (masterId_ != NODEID_NONE) {        // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
         cMessage *msg = new cMessage("doModeSwitchAtHandover");
         msg->setSchedulingPriority(10);
-        phy_->scheduleAt(NOW, msg);
+        scheduleAt(NOW, msg);
     }
     // update DL feedback generator
     fbGen_->handleHandover(masterId_);
@@ -567,8 +599,8 @@ void HandoverController::NrPhyUe_forceHandover(MacNodeId targetMasterNode, doubl
     candidateMasterRssi_ = targetMasterRssi;
     hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
 
-    phy_->cancelEvent(phy_->handoverStarter_);  // if any
-    phy_->scheduleAt(NOW, phy_->handoverStarter_);
+    cancelEvent(handoverStarter_);  // if any
+    scheduleAt(NOW, handoverStarter_);
 }
 
 void HandoverController::LtePhyUe_deleteOldBuffers(MacNodeId masterId)

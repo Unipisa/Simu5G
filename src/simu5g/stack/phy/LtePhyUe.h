@@ -35,12 +35,6 @@ public: //protected:
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;
 
-    /** Self message to trigger handover procedure evaluation */
-    cMessage *handoverStarter_ = nullptr;
-
-    /** Self message to start the handover procedure */
-    cMessage *handoverTrigger_ = nullptr;
-
     opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<HandoverController> handoverController_;
 

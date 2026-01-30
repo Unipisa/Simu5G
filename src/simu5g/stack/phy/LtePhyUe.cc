@@ -31,8 +31,6 @@ simsignal_t LtePhyUe::distanceSignal_ = registerSignal("distance");
 
 LtePhyUe::~LtePhyUe()
 {
-    cancelAndDelete(handoverStarter_);
-    cancelAndDelete(handoverTrigger_);
 }
 
 void LtePhyUe::initialize(int stage)
@@ -50,8 +48,6 @@ void LtePhyUe::initialize(int stage)
         WATCH(masterId_);
 
         txPower_ = ueTxPower_;
-
-        handoverStarter_ = new cMessage("handoverStarter");
 
         // get the reference to the MAC module
         mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
@@ -125,13 +121,7 @@ void LtePhyUe::findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCand
 
 void LtePhyUe::handleSelfMessage(cMessage *msg)
 {
-    if (msg->isName("handoverStarter"))
-        triggerHandover();
-    else if (msg->isName("handoverTrigger")) {
-        doHandover();
-        delete msg;
-        handoverTrigger_ = nullptr;
-    }
+    // no local timers
 }
 
 void LtePhyUe::setMasterId(MacNodeId masterId)
