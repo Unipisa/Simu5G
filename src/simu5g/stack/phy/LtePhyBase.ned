@@ -35,7 +35,6 @@ simple LtePhyBase like ILtePhy
 
         // switch for handover messages handling on UEs
         bool enableHandover = default(false);
-        double handoverLatency @unit(s) = default(0.05s);
 
         // TODO move to LtePhyUeD2D module
         bool enableMulticastD2DRangeCheck = default(false);

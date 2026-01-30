@@ -33,6 +33,8 @@ simple LtePhyUe extends LtePhyBase
         string ip2nicModule = default("^.ip2nic");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
 
+        double handoverLatency @unit(s) = default(0.05s);
+
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);
 
