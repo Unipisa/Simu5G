@@ -375,7 +375,7 @@ void HandoverController::NrPhyUe_triggerHandover()
 
             // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
             // Trigger detachment (handover to node 0)
-            phy_->otherPhy_->forceHandover();
+            phy_->otherPhy_->forceHandover(NODEID_NONE, 0.0);
 
             return;
         }

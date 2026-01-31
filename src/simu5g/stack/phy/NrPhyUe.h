@@ -33,7 +33,7 @@ public: //protected:
     void doHandover() override;
 
     // force handover to the given target node (0 means forcing detachment)
-    virtual void forceHandover(MacNodeId targetMasterNode = NODEID_NONE, double targetMasterRssi = 0.0);
+    virtual void forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
     void deleteOldBuffers(MacNodeId masterId);
 };
 
