@@ -169,9 +169,9 @@ void HandoverController::handleMessage(cMessage *msg)
     }
 }
 
-void HandoverController::handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo)
+void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo)
 {
-    Enter_Method("handoverHandler");
+    Enter_Method("beaconReceived");
     take(frame);
 
     if (!enableHandover_) {

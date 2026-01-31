@@ -194,7 +194,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
             return;
         }
 
-        handoverController_->handoverHandler(frame, lteInfo);
+        handoverController_->beaconReceived(frame, lteInfo);
         return;
     }
 

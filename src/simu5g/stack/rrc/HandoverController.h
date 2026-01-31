@@ -119,7 +119,7 @@ public:
     MacNodeId getMasterId() const { return masterId_; }
 
     // called from handleAirFrame()
-    void handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);
+    void beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     // invoked on self-message
     void triggerHandover();
