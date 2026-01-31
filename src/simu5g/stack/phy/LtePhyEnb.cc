@@ -27,7 +27,7 @@ using namespace inet;
 
 LtePhyEnb::~LtePhyEnb()
 {
-    cancelAndDelete(bdcStarter_);
+    cancelAndDelete(beaconStarter_);
     delete lteFeedbackComputation_;
 }
 
@@ -70,22 +70,20 @@ void LtePhyEnb::initialize(int stage)
             default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
         }
 
-        bdcUpdateInterval_ = cellInfo_->par("broadcastMessageInterval");
-        if (bdcUpdateInterval_ != 0 && par("enableHandover").boolValue()) {
-            // self message provoking the generation of a broadcast message
-            bdcStarter_ = new cMessage("bdcStarter");
-            scheduleAt(NOW, bdcStarter_);
+        beaconInterval_ = cellInfo_->par("broadcastMessageInterval");
+        if (beaconInterval_ != 0 && par("enableHandover").boolValue()) {
+            beaconStarter_ = new cMessage("beaconStarter");
+            scheduleAt(NOW, beaconStarter_);
         }
     }
 }
 
 void LtePhyEnb::handleSelfMessage(cMessage *msg)
 {
-    if (msg->isName("bdcStarter")) {
-        // send broadcast message
-        LteAirFrame *f = createBeaconMessage();
-        sendBroadcast(f);
-        scheduleAt(NOW + bdcUpdateInterval_, msg);
+    if (msg->isName("beaconStarter")) {
+        LteAirFrame *frame = createBeaconMessage();
+        sendBroadcast(frame);
+        scheduleAt(NOW + beaconInterval_, msg);
     }
     else {
         throw cRuntimeError("Unexpected self-message %s", msg->getClassAndFullName().c_str());
@@ -95,19 +93,19 @@ void LtePhyEnb::handleSelfMessage(cMessage *msg)
 LteAirFrame *LtePhyEnb::createBeaconMessage()
 {
     // broadcast airframe
-    LteAirFrame *bdcAirFrame = new LteAirFrame("beaconMessage");
+    LteAirFrame *beaconAirFrame = new LteAirFrame("beaconMessage");
     UserControlInfo *cInfo = new UserControlInfo();
     cInfo->setSourceId(nodeId_);
     cInfo->setFrameType(BEACONPKT);
     cInfo->setTxPower(txPower_);
     cInfo->setCarrierFrequency(primaryChannelModel_->getCarrierFrequency());
     cInfo->setIsNr(isNr_);
-    bdcAirFrame->setControlInfo(cInfo);
-    bdcAirFrame->setDuration(0);
-    bdcAirFrame->setSchedulingPriority(airFramePriority_);
+    beaconAirFrame->setControlInfo(cInfo);
+    beaconAirFrame->setDuration(0);
+    beaconAirFrame->setSchedulingPriority(airFramePriority_);
     // current position
     cInfo->setCoord(getRadioPosition());
-    return bdcAirFrame;
+    return beaconAirFrame;
 }
 
 

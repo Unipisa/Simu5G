@@ -26,10 +26,10 @@ class LtePhyEnb : public LtePhyBase
 
   protected:
     /** Broadcast message interval (equal to updatePos interval for mobility) */
-    double bdcUpdateInterval_;
+    double beaconInterval_;
 
     /** Self-message to trigger broadcast message sending for handover purposes */
-    cMessage *bdcStarter_ = nullptr;
+    cMessage *beaconStarter_ = nullptr;
 
     int randomChannelIndex_;
 

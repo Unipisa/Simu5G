@@ -69,7 +69,7 @@ public:
      * It must be a small number greater than 0 to ensure that all broadcast messages
      * are received before evaluating handover.
      * Note that broadcast messages for handover are always received at the very same time
-     * (at bdcUpdateInterval_ seconds intervals).
+     * (at beaconInterval_ seconds intervals).
      */
     // TODO: bring it to ned par!
     double handoverDelta_ = 0.00001;
