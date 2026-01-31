@@ -26,10 +26,6 @@ Define_Module(NrPhyUe);
 void NrPhyUe::initialize(int stage)
 {
     LtePhyUeD2D::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL) {
-        otherPhy_.reference(this, "otherPhyModule", true);
-        check_and_cast<NrPhyUe*>(otherPhy_.get()); // in NR, even the LTE stack's PHY is NR PHY!!!
-    }
 }
 
 // TODO: ***reorganize*** method

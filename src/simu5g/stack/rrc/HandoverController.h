@@ -104,6 +104,7 @@ public:
     inet::ModuleRefByPar<LtePdcpBase> pdcp_;
     inet::ModuleRefByPar<Ip2Nic> ip2nic_;
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
+    inet::ModuleRefByPar<HandoverController> otherHandoverController_;
 
     ~HandoverController() override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
@@ -112,6 +113,10 @@ public:
     void handleMessage(cMessage *msg) override;
 
     void setPhy(LtePhyUe *phy) {phy_ = phy;}
+    LtePhyUe *getPhy() const {return phy_;}
+
+    MacNodeId getNodeId() const { return nodeId_; }
+    MacNodeId getMasterId() const { return masterId_; }
 
     // called from handleAirFrame()
     void handoverHandler(LteAirFrame *frame, UserControlInfo *lteInfo);

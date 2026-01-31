@@ -23,6 +23,5 @@ simple NrPhyUe extends LtePhyUeD2D
 {
     parameters:
         @class("NrPhyUe");
-        string otherPhyModule;
 }
 

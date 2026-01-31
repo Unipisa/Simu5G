@@ -73,6 +73,7 @@ void HandoverController::initialize(int stage)
         pdcp_.reference(this, "pdcpModule", true);
         ip2nic_.reference(this, "ip2nicModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
+        otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
 
         cModule *hostModule = inet::getContainingNode(this);
         isNr_ = dynamic_cast<NrPhyUe*>(phy_) && strcmp(phy_->getFullName(), "nrPhy") == 0; //TODO kludge
@@ -187,13 +188,13 @@ void HandoverController::handoverHandler(LteAirFrame *frame, UserControlInfo *lt
     }
 
     // Check if the eNodeB is a secondary node
-    if (NrPhyUe *phyAsNr = dynamic_cast<NrPhyUe*>(phy_)) {
+    if (dynamic_cast<NrPhyUe*>(phy_)) {
         MacNodeId sourceId = lteInfo->getSourceId();
         MacNodeId masterNodeId = binder_->getMasterNodeOrSelf(sourceId);
         if (masterNodeId != sourceId) {
             // The node has a master node, check if the other PHY of this UE is attached to that master.
             // If not, the UE cannot attach to this secondary node and the packet must be deleted.
-            if (phyAsNr->otherPhy_->getMasterId() != masterNodeId) {
+            if (otherHandoverController_->getMasterId() != masterNodeId) {
                 EV << "Received beacon packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
                 delete lteInfo;
                 delete frame;
@@ -339,7 +340,6 @@ void HandoverController::LtePhyUeD2D_triggerHandover()
 
 void HandoverController::NrPhyUe_triggerHandover()
 {
-    NrPhyUe *phy_ = check_and_cast<NrPhyUe*>(this->phy_);
     ASSERT(masterId_ == NODEID_NONE || masterId_ != candidateMasterId_);  // "we can be unattached, but never hand over to ourselves"
 
     EV << "####Handover starting:####" << endl;
@@ -351,8 +351,8 @@ void HandoverController::NrPhyUe_triggerHandover()
 
     MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateMasterId_);
     if (masterNode != candidateMasterId_) { // The candidate is a secondary node
-        if (phy_->otherPhy_->getMasterId() == masterNode) {
-            MacNodeId otherNodeId = phy_->otherPhy_->getMacNodeId();
+        if (otherHandoverController_->getMasterId() == masterNode) {
+            MacNodeId otherNodeId = otherHandoverController_->getNodeId();
             const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
             if (handoverPair != nullptr) {
                 if (handoverPair->second == candidateMasterId_) {
@@ -387,18 +387,18 @@ void HandoverController::NrPhyUe_triggerHandover()
     else
         EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateMasterId_ << "... " << endl;
 
-    if (phy_->otherPhy_->getMasterId() != NODEID_NONE) {
+    if (otherHandoverController_->getMasterId() != NODEID_NONE) {
         // Check if there are secondary nodes connected
-        MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(phy_->otherPhy_->getMasterId());
+        MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherHandoverController_->getMasterId());
         if (otherMasterId == masterId_) {
-            EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << phy_->otherPhy_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
+            EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << otherHandoverController_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
 
             // Need to wait for the other stack to complete detachment
             scheduleAt(simTime() + handoverDetachment_ + handoverDelta_, handoverStarter_);
 
             // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
             // Trigger detachment (handover to node 0)
-            phy_->otherPhy_->handoverController_->forceHandover(NODEID_NONE, 0.0);
+            otherHandoverController_->forceHandover(NODEID_NONE, 0.0);
 
             return;
         }

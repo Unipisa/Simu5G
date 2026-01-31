@@ -21,12 +21,7 @@ namespace simu5g {
 
 class NrPhyUe : public LtePhyUeD2D
 {
-
 public: //protected:
-
-    // reference to the parallel PHY layer
-    inet::ModuleRefByPar<NrPhyUe> otherPhy_;
-
     void initialize(int stage) override;
     void handleAirFrame(cMessage *msg) override;
 };

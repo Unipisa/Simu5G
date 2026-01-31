@@ -45,7 +45,7 @@ module NrNicUe extends LteNicUeD2D
 
         @display("bgb=694,443");
         nrPhy.rlcUmModule = "^.nrRlc.um";
-        nrPhy.otherPhyModule = "^.phy";
+        nrHandoverController.otherHandoverControllerModule = "^.handoverController";
         nrPhy.channelModelModule = "^.nrChannelModel[0]";
         nrPhy.feedbackGeneratorModule = "^.nrDlFbGen";
         nrPhy.handoverControllerModule = "^.nrHandoverController";
@@ -53,7 +53,7 @@ module NrNicUe extends LteNicUeD2D
         nrHandoverController.macModule = "^.nrMac";
         nrHandoverController.rlcUmModule = "^.nrRlc.um";
         nrHandoverController.feedbackGeneratorModule = "^.nrDlFbGen";
-        phy.otherPhyModule = "^.nrPhy";
+        handoverController.otherHandoverControllerModule = "^.nrHandoverController";
 
     submodules:
         // RLC Layer

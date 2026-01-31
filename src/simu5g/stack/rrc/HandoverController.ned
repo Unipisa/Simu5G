@@ -40,6 +40,7 @@ simple HandoverController
         string pdcpModule = default("^.pdcp");
         string ip2nicModule = default("^.ip2nic");
         string feedbackGeneratorModule = default("^.dlFbGen"); // TODO or "^.nrDlFbGen"
+        string otherHandoverControllerModule = default("");
 
         bool hasCollector = default(false); // true when node has a collector module (ueCollector/nrUeCollector) for this PHY module
 
