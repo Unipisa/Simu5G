@@ -70,7 +70,7 @@ void LtePhyEnb::initialize(int stage)
             default: throw cRuntimeError("unknown txDirection: '%s'", txDir.c_str());
         }
 
-        beaconInterval_ = cellInfo_->par("broadcastMessageInterval");
+        beaconInterval_ = cellInfo_->par("beaconInterval");
         if (beaconInterval_ != 0 && par("enableHandover").boolValue()) {
             beaconStarter_ = new cMessage("beaconStarter");
             scheduleAt(NOW, beaconStarter_);

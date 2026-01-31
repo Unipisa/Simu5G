@@ -96,7 +96,7 @@
 /simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case -r 0,                      5s,         d2fc-dc3c/tplx;adec-e439/~tNl;f173-dc15/sz, PASS,
 /simulations/nr/mec/requestResponseApp/, -f omnetpp.ini -c worst_case_load_gen -r 0,             5s,         d2fc-dc3c/tplx;adec-e439/~tNl;f173-dc15/sz, PASS,
 /simulations/nr/mec/rnisTest/,           -f omnetpp.ini -c RnisTest -r 0,                        5s,         c9a0-d49e/tplx;633f-50d8/~tNl;6ae9-f4dc/sz, PASS,
-/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c BgGeneratorApp -r 0,                  5s,         a64d-8180/tplx;1cf9-34be/~tNl;9ff0-3d43/sz, PASS,
+/simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c BgGeneratorApp -r 0,                  5s,         80c5-ffe4/tplx;2b81-2fcb/~tNl;9ff0-3d43/sz, PASS,
 /simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c LoadGenerator -r 0,                   5s,         f45b-c2e3/tplx;527b-faab/~tNl;9ff0-3d43/sz, PASS,
 /simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c OneFg_NindependentMecApps -r 0,       5s,         618c-b307/tplx;932d-9ee4/~tNl;9ff0-3d43/sz, PASS,
 /simulations/nr/mec/singleMecHost/,      -f omnetpp.ini -c SingleMec -r 0,                       5s,         ccd0-5742/tplx;df34-245c/~tNl;9ff0-3d43/sz, PASS,

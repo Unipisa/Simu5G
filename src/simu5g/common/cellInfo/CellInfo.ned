@@ -43,7 +43,7 @@ simple CellInfo
         double constraintAreaMaxY @unit(m) = default(1m/0);
 
         // Interval for sending broadcast messages (used for handover or DAS)
-        double broadcastMessageInterval @unit(s) = default(1s);
+        double beaconInterval @unit(s) = default(1s);
 
         // Type of eNodeB (MICRO / MACRO) - valid only for eNodeBs
         bool microCell = default(false);
