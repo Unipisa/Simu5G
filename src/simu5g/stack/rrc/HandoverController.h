@@ -123,23 +123,15 @@ public:
 
     // invoked on self-message
     void triggerHandover();
-    void LtePhyUe_triggerHandover();
-    void LtePhyUeD2D_triggerHandover();
-    void NrPhyUe_triggerHandover();
 
     // invoked on self-message
     void doHandover();
-    void LtePhyUe_doHandover();
-    void LtePhyUeD2D_doHandover();
-    void NrPhyUe_doHandover();
 
     // helper
     void forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
 
     // invoked from the above methods and from finish()
     void deleteOldBuffers(MacNodeId masterId);
-    void LtePhyUe_deleteOldBuffers(MacNodeId masterId);
-    void NrPhyUe_deleteOldBuffers(MacNodeId masterId);
 
     // helper
     double updateHysteresisTh(double v);
