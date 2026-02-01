@@ -75,8 +75,8 @@ public:
 
     // Time for completion of the handover procedure
     double handoverLatency_;
-    double handoverDetachment_;
-    double handoverAttachment_;
+    double handoverDetachmentTime_;
+    double handoverAttachmentTime_;
 
     // Lower threshold of RSSI for detachment
     double minRssi_;

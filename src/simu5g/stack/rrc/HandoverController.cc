@@ -80,9 +80,8 @@ void HandoverController::initialize(int stage)
         nodeId_ = MacNodeId(hostModule->par(isNr_ ? "nrMacNodeId" : "macNodeId").intValue());
 
         enableHandover_ = par("enableHandover");
-        handoverLatency_ = par("handoverLatency").doubleValue();
-        handoverDetachment_ = handoverLatency_ / 2.0;                      // TODO: make this configurable from NED
-        handoverAttachment_ = handoverLatency_ - handoverDetachment_;
+        handoverDetachmentTime_ = par("handoverDetachmentTime").doubleValue();
+        handoverAttachmentTime_ = par("handoverAttachmentTime").doubleValue();
         hysteresisFactor_ = par("hysteresisFactor").doubleValue();
 
         if (par("minRssiDefault").boolValue())
@@ -101,9 +100,8 @@ void HandoverController::initialize(int stage)
         WATCH(hysteresisTh_);
         WATCH(hysteresisFactor_);
         WATCH(handoverDelta_);
-        WATCH(handoverLatency_);
-        WATCH(handoverDetachment_);
-        WATCH(handoverAttachment_);
+        WATCH(handoverDetachmentTime_);
+        WATCH(handoverAttachmentTime_);
         WATCH(minRssi_);
         WATCH(enableHandover_);
 
@@ -287,9 +285,9 @@ void HandoverController::triggerHandover()
                         // Delay this handover
                         double delta = handoverDelta_;
                         if (handoverPair->first != NODEID_NONE) // The other "stack" is performing a complete handover
-                            delta += handoverDetachment_ + handoverAttachment_;
+                            delta += handoverDetachmentTime_ + handoverAttachmentTime_;
                         else                                                   // The other "stack" is attaching to an eNodeB
-                            delta += handoverAttachment_;
+                            delta += handoverAttachmentTime_;
 
                         EV << NOW << " NrPhyUe::triggerHandover - Wait for the handover completion for the other stack. Delay this handover." << endl;
 
@@ -314,7 +312,7 @@ void HandoverController::triggerHandover()
                 EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << otherHandoverController_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
 
                 // Need to wait for the other stack to complete detachment
-                scheduleAt(simTime() + handoverDetachment_ + handoverDelta_, handoverStarter_);
+                scheduleAt(simTime() + handoverDetachmentTime_ + handoverDelta_, handoverStarter_);
 
                 // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
                 // Trigger detachment (handover to node 0)
@@ -381,11 +379,11 @@ void HandoverController::triggerHandover()
     // Common: Calculate handover latency and schedule trigger message
     double handoverLatency;
     if (masterId_ == NODEID_NONE)                                                // attachment only
-        handoverLatency = handoverAttachment_;
+        handoverLatency = handoverAttachmentTime_;
     else if (candidateMasterId_ == NODEID_NONE)                                                // detachment only
-        handoverLatency = handoverDetachment_;
+        handoverLatency = handoverDetachmentTime_;
     else                                                // complete handover time
-        handoverLatency = handoverDetachment_ + handoverAttachment_;
+        handoverLatency = handoverDetachmentTime_ + handoverAttachmentTime_;
 
     handoverTrigger_ = new cMessage("handoverTrigger");
     scheduleAt(simTime() + handoverLatency, handoverTrigger_);

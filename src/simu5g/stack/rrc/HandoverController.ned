@@ -26,7 +26,11 @@ simple HandoverController
 
         // allows handovers in the UE
         bool enableHandover = default(false);
-        double handoverLatency @unit(s) = default(0.05s);
+
+        // handover duration
+        double handoverLatency @unit(s) = default(50ms);
+        double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);
+        double handoverAttachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency-handoverDetachmentTime : handoverDetachmentTime);
 
         // if true, get minRssi from PhyPisaData
         bool minRssiDefault = default(true);
