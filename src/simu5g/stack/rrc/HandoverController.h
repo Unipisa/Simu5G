@@ -51,17 +51,16 @@ public:
     double candidateMasterRssi_ = -999.0;
 
     /**
-     * Hysteresis threshold to evaluate handover: it introduces a small polarization to
-     * avoid multiple subsequent handovers
+     * Hysteresis threshold to evaluate handover: it introduces a small bias to
+     * avoid multiple subsequent handovers.
      */
     double hysteresisTh_ = 0;
 
     /**
-     * Value used to divide currentMasterRssi_ and create a hysteresisTh_
+     * Value used to divide currentMasterRssi_ and create a hysteresisTh_.
      * Use zero to have hysteresisTh_ == 0.
      */
-    // TODO: bring it to ned par!
-    double hysteresisFactor_ = 10;
+    double hysteresisFactor_;
 
     /**
      * Time interval elapsing from the reception of the first handover broadcast message

@@ -34,6 +34,8 @@ simple HandoverController
         // configurable minimum threshold RSSI for attaching to an eNB (meaningful only if minRssiDefault==false)
         double minRssi @unit("dB") = default(-99.0dB);
 
+        double hysteresisFactor = default(10);
+
         string binderModule = default("binder");
         string macModule = default("^.mac");
         string rlcUmModule = default("^.rlc.um"); // or "^.nrRlc.um"

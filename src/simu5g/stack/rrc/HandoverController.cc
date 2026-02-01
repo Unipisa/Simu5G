@@ -83,6 +83,7 @@ void HandoverController::initialize(int stage)
         handoverLatency_ = par("handoverLatency").doubleValue();
         handoverDetachment_ = handoverLatency_ / 2.0;                      // TODO: make this configurable from NED
         handoverAttachment_ = handoverLatency_ - handoverDetachment_;
+        hysteresisFactor_ = par("hysteresisFactor").doubleValue();
 
         if (par("minRssiDefault").boolValue())
             minRssi_ = binder_->phyPisaData.minSnr();
