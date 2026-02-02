@@ -72,7 +72,6 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
-    connectedNodeId_ = servingNodeId_;
     EV << "LtePhyUeD2D: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     MacNodeId sourceId = lteInfo->getSourceId();

@@ -165,7 +165,6 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
-    connectedNodeId_ = servingNodeId_;
     EV << "LtePhy: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     if (!binder_->nodeExists(lteInfo->getSourceId())) {

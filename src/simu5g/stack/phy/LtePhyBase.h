@@ -134,10 +134,6 @@ class LtePhyBase : public ChannelAccess
     static simsignal_t averageCqiUlSignal_;
     static simsignal_t averageCqiD2DSignal_;
 
-    // Users that are transmitting (uplink)
-    // receiving (downlink) current packet
-    MacNodeId connectedNodeId_ = NODEID_NONE;
-
     // last time that the node has transmitted (currently, used only by UEs)
     simtime_t lastActive_;
 

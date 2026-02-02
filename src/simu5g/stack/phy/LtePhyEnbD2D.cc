@@ -183,9 +183,7 @@ void LtePhyEnbD2D::handleAirFrame(cMessage *msg)
         return;
     }
 
-    connectedNodeId_ = lteInfo->getSourceId();
-
-    if (!binder_->nodeExists(connectedNodeId_) || !binder_->nodeExists(lteInfo->getDestId())) {
+    if (!binder_->nodeExists(lteInfo->getSourceId()) || !binder_->nodeExists(lteInfo->getDestId())) {
         // Either source or destination have left the simulation
         delete msg;
         return;
