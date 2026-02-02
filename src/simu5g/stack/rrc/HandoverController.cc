@@ -69,7 +69,7 @@ void HandoverController::initialize(int stage)
         WATCH(candidateServingNodeId_);
         WATCH(servingNodeRssi_);
         WATCH(candidateServingNodeRssi_);
-        WATCH(hysteresisTh_);
+        WATCH(hysteresisThreshold_);
         WATCH(hysteresisFactor_);
         WATCH(handoverDelta_);
         WATCH(handoverDetachmentTime_);
@@ -96,7 +96,6 @@ void HandoverController::initialize(int stage)
             }
             servingNodeId_ = candidateServingNodeId_;
             servingNodeRssi_ = candidateServingNodeRssi_;
-            //HandoverCoordinator::updateHysteresisTh(this, candidateServingNodeRssi_); //TODO was no-op
         }
 
         EV << "LtePhyUe::initialize - Attaching to eNodeB " << servingNodeId_ << endl;
@@ -186,20 +185,20 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
         return;
     }
 
-    if (rssi > candidateServingNodeRssi_ + hysteresisTh_) {
+    if (rssi > candidateServingNodeRssi_ + hysteresisThreshold_) {
         if (lteInfo->getSourceId() == servingNodeId_) {
             // receiving even stronger broadcast from current serving node
             servingNodeRssi_ = rssi;
             candidateServingNodeId_ = servingNodeId_;
             candidateServingNodeRssi_ = rssi;
-            hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
+            updateHysteresisThreshold(servingNodeRssi_);
             cancelEvent(handoverStarter_);
         }
         else {
             // broadcast from another serving node with higher RSSI
             candidateServingNodeId_ = lteInfo->getSourceId();
             candidateServingNodeRssi_ = rssi;
-            hysteresisTh_ = updateHysteresisTh(rssi);
+            updateHysteresisThreshold(rssi);
             binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
 
             // schedule self message to evaluate handover parameters after
@@ -216,7 +215,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
             if (rssi >= minRssi_) {
                 servingNodeRssi_ = rssi;
                 candidateServingNodeRssi_ = rssi;
-                hysteresisTh_ = updateHysteresisTh(rssi);
+                updateHysteresisThreshold(rssi);
             }
             else { // lost connection with current serving node
                 if (candidateServingNodeId_ == servingNodeId_) { // trigger detachment
@@ -226,7 +225,7 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
                                                    // this ensures that each candidate with is at least as 'bad'
                                                    // as the minRssi_ has a chance.
 
-                    hysteresisTh_ = updateHysteresisTh(0);
+                    updateHysteresisThreshold(0);
                     binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
 
                     if (!handoverStarter_->isScheduled()) {
@@ -426,7 +425,7 @@ void HandoverController::doHandover()
 
     mac_->doHandover(candidateServingNodeId_);  // do MAC operations for handover
     servingNodeRssi_ = candidateServingNodeRssi_;
-    hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
+    updateHysteresisThreshold(servingNodeRssi_);
 
     // D2D or NR: Schedule mode switch message
     if (dynamic_cast<LtePhyUeD2D*>(phy_) || dynamic_cast<NrPhyUe*>(phy_)) {
@@ -466,7 +465,7 @@ void HandoverController::forceHandover(MacNodeId targetServingNodeId, double tar
 {
     candidateServingNodeId_ = targetServingNodeId;
     candidateServingNodeRssi_ = targetServingNodeRssi;
-    hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
+    updateHysteresisThreshold(servingNodeRssi_);
 
     cancelEvent(handoverStarter_);  // if any
     scheduleAt(NOW, handoverStarter_);
@@ -503,13 +502,9 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     pdcp_->deleteEntities(servingNodeId_);
 }
 
-double HandoverController::updateHysteresisTh(double v)
+void HandoverController::updateHysteresisThreshold(double rssi)
 {
-    if (hysteresisFactor_ == 0)
-        return 0;
-    else
-        return v / hysteresisFactor_;
+    hysteresisThreshold_ = (hysteresisFactor_ == 0) ? 0 : rssi / hysteresisFactor_;
 }
-
 
 } //namespace

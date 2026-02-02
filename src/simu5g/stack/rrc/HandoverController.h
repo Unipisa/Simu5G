@@ -56,7 +56,7 @@ public:
      * Hysteresis threshold to evaluate handover: it introduces a small bias to
      * avoid multiple subsequent handovers.
      */
-    double hysteresisTh_ = 0;
+    double hysteresisThreshold_ = 0;
 
     /**
      * Value used to divide currentMasterRssi_ and create a hysteresisTh_.
@@ -135,7 +135,7 @@ public:
     void deleteOldBuffers(MacNodeId servingNodeId);
 
     // helper
-    double updateHysteresisTh(double v);
+    void updateHysteresisThreshold(double rssi);
 };
 
 } //namespace
