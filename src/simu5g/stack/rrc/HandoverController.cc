@@ -429,14 +429,7 @@ void HandoverController::doHandover()
     hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
 
     // D2D or NR: Schedule mode switch message
-    if (dynamic_cast<LtePhyUeD2D*>(phy_)) {
-        if (candidateServingNodeId_ != NODEID_NONE) {
-            // Send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover).
-            cMessage *msg = new cMessage("doModeSwitchAtHandover");
-            msg->setSchedulingPriority(10);
-            scheduleAt(NOW, msg);
-        }
-    } else if (dynamic_cast<NrPhyUe*>(phy_)) {
+    if (dynamic_cast<LtePhyUeD2D*>(phy_) || dynamic_cast<NrPhyUe*>(phy_)) {
         if (servingNodeId_ != NODEID_NONE) {        // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
             cMessage *msg = new cMessage("doModeSwitchAtHandover");
             msg->setSchedulingPriority(10);
@@ -460,10 +453,7 @@ void HandoverController::doHandover()
         binder_->removeHandoverTriggered(nodeId_);
 
     // Inform the UE's Ip2Nic module to forward held packets
-    if (dynamic_cast<NrPhyUe*>(phy_))
-        ip2nic_->signalHandoverCompleteUe(isNr_);
-    else
-        ip2nic_->signalHandoverCompleteUe();
+    ip2nic_->signalHandoverCompleteUe(isNr_);
 
     // Inform the eNB's Ip2Nic module to forward data to the target eNB
     if (oldServingNodeId != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
