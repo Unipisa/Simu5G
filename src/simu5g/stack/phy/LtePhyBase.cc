@@ -172,19 +172,6 @@ void LtePhyBase::sendBroadcast(LteAirFrame *airFrame)
     sendToChannel(airFrame);
 }
 
-LteAmc *LtePhyBase::getAmcModule(MacNodeId id)
-{
-    LteAmc *amc = nullptr;
-    cModule *module = binder_->getNodeModule(id);
-    if (module == nullptr)
-        return nullptr;
-
-    amc = check_and_cast<LteMacEnb *>(
-            module->getSubmodule("cellularNic")->getSubmodule(
-                    "mac"))->getAmc();
-    return amc;
-}
-
 void LtePhyBase::sendMulticast(LteAirFrame *frame)
 {
     UserControlInfo *ci = check_and_cast<UserControlInfo *>(frame->getControlInfo());

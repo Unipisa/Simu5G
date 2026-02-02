@@ -42,7 +42,6 @@ class LtePhyUeD2D : public LtePhyUe
     // ---------------------------------------------------------------- //
 
     void initialize(int stage) override;
-    void finish() override;
     void handleAirFrame(cMessage *msg) override;
     void handleUpperMessage(cMessage *msg) override;
     void handleSelfMessage(cMessage *msg) override;

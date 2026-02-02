@@ -317,11 +317,6 @@ class LtePhyBase : public ChannelAccess
      * Returns the MAC Node Id
      */
     MacNodeId getMacNodeId() { return nodeId_; }
-
-    /**
-     * Returns the pointer to the AMC module, given a master ID (ENODEB)
-     */
-    LteAmc *getAmcModule(MacNodeId id);
 };
 
 } //namespace

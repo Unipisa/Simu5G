@@ -25,6 +25,7 @@ class LtePhyUe;
 class LtePhyUeD2D;
 class NrPhyUe;
 class LteMacUe;
+class LteAmc;
 class LteAirFrame;
 class UserControlInfo;
 class LteRlcUm;
@@ -117,6 +118,7 @@ class HandoverController : public cSimpleModule
     void doHandover();
     void deleteOldBuffers(MacNodeId servingNodeId);
     void updateHysteresisThreshold(double rssi);
+    LteAmc *getAmcModule(MacNodeId nodeId);
 
   public:
     ~HandoverController() override;

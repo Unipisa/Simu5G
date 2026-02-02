@@ -116,7 +116,7 @@ void HandoverController::finish()
             deleteOldBuffers(servingNodeId_);
 
             // amc calls
-            LteAmc *amc = phy_->getAmcModule(servingNodeId_);
+            LteAmc *amc = getAmcModule(servingNodeId_);
             if (amc != nullptr) {
                 amc->detachUser(nodeId_, UL);
                 amc->detachUser(nodeId_, DL);
@@ -368,13 +368,12 @@ void HandoverController::doHandover()
     // D2D-specific: Detach/attach D2D from old/new AMC (before common logic)
     if (dynamic_cast<LtePhyUeD2D*>(phy_)) {
         if (servingNodeId_ != NODEID_NONE) {
-            LteAmc *oldAmc = phy_->getAmcModule(servingNodeId_);
+            LteAmc *oldAmc = check_and_cast<LteMacEnb *>(binder_->getMacFromMacNodeId(servingNodeId_))->getAmc();
             oldAmc->detachUser(nodeId_, D2D);
         }
 
         if (candidateServingNodeId_ != NODEID_NONE) {
-            LteAmc *newAmc = phy_->getAmcModule(candidateServingNodeId_);
-            assert(newAmc != nullptr);
+            LteAmc *newAmc = getAmcModule(candidateServingNodeId_);
             newAmc->attachUser(nodeId_, D2D);
         }
     }
@@ -385,7 +384,7 @@ void HandoverController::doHandover()
         deleteOldBuffers(servingNodeId_);
 
         // AMC calls
-        LteAmc *oldAmc = phy_->getAmcModule(servingNodeId_);
+        LteAmc *oldAmc = getAmcModule(servingNodeId_);
         oldAmc->detachUser(nodeId_, UL);
         oldAmc->detachUser(nodeId_, DL);
         // NR also detaches D2D
@@ -394,8 +393,7 @@ void HandoverController::doHandover()
     }
 
     if (candidateServingNodeId_ != NODEID_NONE) {
-        LteAmc *newAmc = phy_->getAmcModule(candidateServingNodeId_);
-        assert(newAmc != nullptr);
+        LteAmc *newAmc = getAmcModule(candidateServingNodeId_);
         newAmc->attachUser(nodeId_, UL);
         newAmc->attachUser(nodeId_, DL);
         // NR also attaches D2D
@@ -500,6 +498,11 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
 
     // delete queues for serving node at this UE
     pdcp_->deleteEntities(servingNodeId_);
+}
+
+LteAmc *HandoverController::getAmcModule(MacNodeId nodeId)
+{
+    return check_and_cast<LteMacEnb *>(binder_->getMacFromMacNodeId(nodeId))->getAmc();
 }
 
 void HandoverController::updateHysteresisThreshold(double rssi)
