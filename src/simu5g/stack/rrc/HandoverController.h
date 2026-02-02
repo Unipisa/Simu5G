@@ -34,9 +34,9 @@ class LteDlFeedbackGenerator;
 
 class HandoverController : public cSimpleModule
 {
-private:
+  protected:
     LtePhyUe *phy_;
-public:
+
     MacNodeId nodeId_ = NODEID_NONE;
     bool isNr_ = false;
 
@@ -107,11 +107,19 @@ public:
     inet::ModuleRefByPar<LteDlFeedbackGenerator> fbGen_;
     inet::ModuleRefByPar<HandoverController> otherHandoverController_;
 
-    ~HandoverController() override;
+  protected:
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void initialize(int stage) override;
     void finish() override;
     void handleMessage(cMessage *msg) override;
+
+    void triggerHandover();
+    void doHandover();
+    void deleteOldBuffers(MacNodeId servingNodeId);
+    void updateHysteresisThreshold(double rssi);
+
+  public:
+    ~HandoverController() override;
 
     void setPhy(LtePhyUe *phy) {phy_ = phy;}
     LtePhyUe *getPhy() const {return phy_;}
@@ -119,23 +127,16 @@ public:
     MacNodeId getNodeId() const { return nodeId_; }
     MacNodeId getServingNodeId() const { return servingNodeId_; }
 
-    // called from handleAirFrame()
+    /**
+     * Called from PHY on receiption of a beacon signal
+     */
     void beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo);
 
-    // invoked on self-message
-    void triggerHandover();
-
-    // invoked on self-message
-    void doHandover();
-
-    // helper
+    /**
+     * Used in a DC setup. called by one HandoverController to force the
+     * other one to do the handover.
+     */
     void forceHandover(MacNodeId targetServingNodeId, double targetServingNodeRssi);
-
-    // invoked from the above methods and from finish()
-    void deleteOldBuffers(MacNodeId servingNodeId);
-
-    // helper
-    void updateHysteresisThreshold(double rssi);
 };
 
 } //namespace
