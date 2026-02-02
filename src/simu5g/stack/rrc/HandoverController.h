@@ -39,16 +39,18 @@ private:
 public:
     MacNodeId nodeId_ = NODEID_NONE;
     bool isNr_ = false;
-    MacNodeId masterId_ = NODEID_NONE;
+
+    /** The current serving node */
+    MacNodeId servingNodeId_ = NODEID_NONE;
 
     /** RSSI received from the current serving node */
-    double currentMasterRssi_ = -999.0;
+    double servingNodeRssi_ = -999.0;
 
     /** ID of the not-master node from which the highest RSSI was received */
-    MacNodeId candidateMasterId_;
+    MacNodeId candidateServingNodeId_;
 
     /** Highest RSSI received from not-master node */
-    double candidateMasterRssi_ = -999.0;
+    double candidateServingNodeRssi_ = -999.0;
 
     /**
      * Hysteresis threshold to evaluate handover: it introduces a small bias to
@@ -115,7 +117,7 @@ public:
     LtePhyUe *getPhy() const {return phy_;}
 
     MacNodeId getNodeId() const { return nodeId_; }
-    MacNodeId getMasterId() const { return masterId_; }
+    MacNodeId getServingNodeId() const { return servingNodeId_; }
 
     // called from handleAirFrame()
     void beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo);
@@ -127,10 +129,10 @@ public:
     void doHandover();
 
     // helper
-    void forceHandover(MacNodeId targetMasterNode, double targetMasterRssi);
+    void forceHandover(MacNodeId targetServingNodeId, double targetServingNodeRssi);
 
     // invoked from the above methods and from finish()
-    void deleteOldBuffers(MacNodeId masterId);
+    void deleteOldBuffers(MacNodeId servingNodeId);
 
     // helper
     double updateHysteresisTh(double v);

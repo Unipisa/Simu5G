@@ -27,10 +27,10 @@ class LtePhyUe : public LtePhyBase
 {
   protected:
     /** Master MacNodeId */
-    MacNodeId masterId_ = NODEID_NONE;
+    MacNodeId servingNodeId_ = NODEID_NONE;
 
     /** Reference to master node's mobility module */
-    opp_component_ptr<IMobility> masterMobility_;
+    opp_component_ptr<IMobility> servingNodeMobility_;
 
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;
@@ -64,17 +64,13 @@ class LtePhyUe : public LtePhyBase
      * Send feedback, called by feedback generator in DL
      */
     virtual void sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVector fbUl, FeedbackRequest req);
-    MacNodeId getMasterId() const
-    {
-        return masterId_;
-    }
 
     virtual double computeReceivedBeaconPacketRssi(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     virtual void findCandidateEnb(MacNodeId& outCandidateMasterId, double& outCandidateMasterRssi);
 
     // called on handover
-    void setMasterId(MacNodeId masterId);
+    void changeServingNode(MacNodeId masterId);
 
     simtime_t coherenceTime(double speed)
     {

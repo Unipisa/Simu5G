@@ -45,7 +45,7 @@ void LtePhyUe::initialize(int stage)
             throw cRuntimeError("no phy listeners");
 
         WATCH(nodeType_);
-        WATCH(masterId_);
+        WATCH(servingNodeId_);
 
         txPower_ = ueTxPower_;
 
@@ -65,7 +65,7 @@ void LtePhyUe::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_CELLINFO_CHANNELUPDATE) { //TODO being fwd, eliminate stage
         // get cellInfo at this stage because the next hop of the node is registered in the Ip2Nic module at the INITSTAGE_SIMU5G_NETWORK_LAYER
-        if (masterId_ != NODEID_NONE)
+        if (servingNodeId_ != NODEID_NONE)
             cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);
         else
             cellInfo_ = nullptr;
@@ -124,25 +124,25 @@ void LtePhyUe::handleSelfMessage(cMessage *msg)
     // no local timers
 }
 
-void LtePhyUe::setMasterId(MacNodeId masterId)
+void LtePhyUe::changeServingNode(MacNodeId servingNodeId)
 {
-    MacNodeId oldMaster = masterId_;
-    masterId_ = masterId;
+    MacNodeId oldServingNode = servingNodeId_;
+    servingNodeId_ = servingNodeId;
 
     // update reference to master node's mobility module
-    if (masterId_ == NODEID_NONE)
-        masterMobility_ = nullptr;
+    if (servingNodeId_ == NODEID_NONE)
+        servingNodeMobility_ = nullptr;
     else {
-        cModule *masterModule = binder_->getModuleByMacNodeId(masterId_);
-        masterMobility_ = check_and_cast<IMobility *>(masterModule->getSubmodule("mobility"));
+        cModule *servingNodeModule = binder_->getModuleByMacNodeId(servingNodeId_);
+        servingNodeMobility_ = check_and_cast<IMobility *>(servingNodeModule->getSubmodule("mobility"));
     }
 
     // update cellInfo
-    if (oldMaster != NODEID_NONE)
+    if (oldServingNode != NODEID_NONE)
         cellInfo_->detachUser(nodeId_);
 
-    if (masterId_ != NODEID_NONE) {
-        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId_));
+    if (servingNodeId_ != NODEID_NONE) {
+        LteMacEnb *newMacEnb = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(servingNodeId_));
         cellInfo_ = newMacEnb->getCellInfo();
         cellInfo_->attachUser(nodeId_);
     }
@@ -165,7 +165,7 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
-    connectedNodeId_ = masterId_;
+    connectedNodeId_ = servingNodeId_;
     EV << "LtePhy: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     if (!binder_->nodeExists(lteInfo->getSourceId())) {
@@ -216,10 +216,10 @@ void LtePhyUe::handleAirFrame(cMessage *msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from old master arrives at ue
      */
-    if (lteInfo->getSourceId() != masterId_) {
+    if (lteInfo->getSourceId() != servingNodeId_) {
         EV << "WARNING: frame from an old master during handover: deleted " << endl;
         EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
-        EV << "Master MacNodeId: " << masterId_ << endl;
+        EV << "Master MacNodeId: " << servingNodeId_ << endl;
         delete frame;
         return;
     }
@@ -273,9 +273,9 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
     auto lteInfo = pkt->getTag<UserControlInfo>();
 
     MacNodeId dest = lteInfo->getDestId();
-    if (dest != masterId_) {
+    if (dest != servingNodeId_) {
         // UE is not sending to its master!!
-        throw cRuntimeError("LtePhyUe::handleUpperMessage  Ue preparing to send message to %hu instead of its master (%hu)", num(dest), num(masterId_));
+        throw cRuntimeError("LtePhyUe::handleUpperMessage  Ue preparing to send message to %hu instead of its master (%hu)", num(dest), num(servingNodeId_));
     }
 
     GHz carrierFreq = lteInfo->getCarrierFrequency();
@@ -305,9 +305,9 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
 
 void LtePhyUe::emitMobilityStats()
 {
-    if (masterMobility_) {
+    if (servingNodeMobility_) {
         // emit distance from current serving cell
-        inet::Coord masterPos = masterMobility_->getCurrentPosition();
+        inet::Coord masterPos = servingNodeMobility_->getCurrentPosition();
         double distance = getRadioPosition().distance(masterPos);
         emit(distanceSignal_, distance);
     }
@@ -330,7 +330,7 @@ void LtePhyUe::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVecto
 
     UserControlInfo *uinfo = new UserControlInfo();
     uinfo->setSourceId(nodeId_);
-    uinfo->setDestId(masterId_);
+    uinfo->setDestId(servingNodeId_);
     uinfo->setFrameType(FEEDBACKPKT);
     // create LteAirFrame and encapsulate a feedback packet
     LteAirFrame *frame = new LteAirFrame("feedback_pkt");
@@ -422,7 +422,7 @@ void LtePhyUe::finish()
     if (getSimulation()->getSimulationStage() != CTX_FINISH) {
         // do this only during the deletion of the module during the simulation, and
         // this PHY layer is connected to a serving base station
-        if (masterId_ != NODEID_NONE) {
+        if (servingNodeId_ != NODEID_NONE) {
             cellInfo_->detachUser(nodeId_);
         }
     }

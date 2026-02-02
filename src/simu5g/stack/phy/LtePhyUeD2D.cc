@@ -56,7 +56,7 @@ void LtePhyUeD2D::handleSelfMessage(cMessage *msg)
     }
     else if (msg->isName("doModeSwitchAtHandover")) {
         // Call mode selection module to check if DM connections are possible.
-        cModule *enb = binder_->getNodeModule(masterId_);
+        cModule *enb = binder_->getNodeModule(servingNodeId_);
         D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
         d2dModeSelection->doModeSwitchAtHandover(nodeId_, true);
 
@@ -72,7 +72,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
     LteAirFrame *frame = static_cast<LteAirFrame *>(msg);
     UserControlInfo *lteInfo = new UserControlInfo(frame->getAdditionalInfo());
 
-    connectedNodeId_ = masterId_;
+    connectedNodeId_ = servingNodeId_;
     EV << "LtePhyUeD2D: received new LteAirFrame with ID " << frame->getId() << " from channel" << endl;
 
     MacNodeId sourceId = lteInfo->getSourceId();
@@ -132,7 +132,7 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
      *                     TTI x+0.1: ue changes master
      *                     TTI x+1: packet from UE arrives at the old master
      */
-    if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI && lteInfo->getSourceId() != masterId_) {
+    if (lteInfo->getDirection() != D2D && lteInfo->getDirection() != D2D_MULTI && lteInfo->getSourceId() != servingNodeId_) {
         EV << "WARNING: frame from a UE that is leaving this cell (handover): deleted " << endl;
         EV << "Source MacNodeId: " << lteInfo->getSourceId() << endl;
         EV << "UE MacNodeId: " << nodeId_ << endl;
@@ -155,10 +155,10 @@ void LtePhyUeD2D::handleAirFrame(cMessage *msg)
 
     // This is a DATA packet.
 
-    if (masterId_ == NODEID_NONE) {
+    if (servingNodeId_ == NODEID_NONE) {
         // UE is not (anymore) associated with any eNB/gNB and all harqBuffers are already deleted.
         // Handing this data packet to the MAC layer will lead to null pointers.
-        EV << "LtePhyUeD2D: UE " << nodeId_ << " received data packet while not associated with any base station. (masterId " << masterId_ << "). Drop it." << endl;
+        EV << "LtePhyUeD2D: UE " << nodeId_ << " received data packet while not associated with any base station. (masterId " << servingNodeId_ << "). Drop it." << endl;
         delete lteInfo;
         delete frame;
         return;
@@ -444,7 +444,7 @@ void LtePhyUeD2D::sendFeedback(LteFeedbackDoubleVector fbDl, LteFeedbackDoubleVe
 
     UserControlInfo *uinfo = new UserControlInfo();
     uinfo->setSourceId(nodeId_);
-    uinfo->setDestId(masterId_);
+    uinfo->setDestId(servingNodeId_);
     uinfo->setFrameType(FEEDBACKPKT);
     // Create LteAirFrame and encapsulate a feedback packet
     LteAirFrame *frame = new LteAirFrame("feedback_pkt");
@@ -486,7 +486,7 @@ void LtePhyUeD2D::finish()
         // Do this only at deletion of the module during the simulation
 
         // AMC calls
-        LteAmc *amc = getAmcModule(masterId_);
+        LteAmc *amc = getAmcModule(servingNodeId_);
         if (amc != nullptr)
             amc->detachUser(nodeId_, D2D);
 

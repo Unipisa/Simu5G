@@ -28,34 +28,6 @@ using namespace omnetpp;
 
 Define_Module(HandoverController);
 
-/**
- * Fields still in PHY modules:
- *
- * otherPhy_
- * cellInfo_
- * masterMobility_
- *
- *
- * Fields moved/copied to HandoverController:
- *
- * nodeId_
- * masterId_
- * isNr_
- * hysteresisTh_
- * hysteresisFactor_
- * handoverDelta_
- * handoverAttachment_
- * handoverDetachment_
- * minRssi_
- * enableHandover_
- * mac_
- * binder_
- * ip2nic_
- * fbGen_
- * rlcUm_
- * pdcp_
- */
-
 simsignal_t HandoverController::servingCellSignal_ = registerSignal("servingCell");
 
 HandoverController::~HandoverController()
@@ -93,10 +65,10 @@ void HandoverController::initialize(int stage)
 
         handoverStarter_ = new cMessage("handoverStarter");
 
-        WATCH(masterId_);
-        WATCH(candidateMasterId_);
-        WATCH(currentMasterRssi_);
-        WATCH(candidateMasterRssi_);
+        WATCH(servingNodeId_);
+        WATCH(candidateServingNodeId_);
+        WATCH(servingNodeRssi_);
+        WATCH(candidateServingNodeRssi_);
         WATCH(hysteresisTh_);
         WATCH(hysteresisFactor_);
         WATCH(handoverDelta_);
@@ -108,29 +80,29 @@ void HandoverController::initialize(int stage)
     }
     else if (stage == INITSTAGE_SIMU5G_PHYSICAL_LAYER) {
         // get serving cell from configuration
-        masterId_ = binder_->getServingNode(nodeId_);
-        candidateMasterId_ = masterId_;
+        servingNodeId_ = binder_->getServingNode(nodeId_);
+        candidateServingNodeId_ = servingNodeId_;
 
-        // find the best candidate master cell
+        // find the best candidate cell
         bool dynamicCellAssociation = par("dynamicCellAssociation").boolValue();
         if (dynamicCellAssociation) {
-            phy_->findCandidateEnb(candidateMasterId_, candidateMasterRssi_);
+            phy_->findCandidateEnb(candidateServingNodeId_, candidateServingNodeRssi_);
 
             // binder calls
-            // if dynamicCellAssociation selected a different master
-            if (candidateMasterId_ != NODEID_NONE && candidateMasterId_ != masterId_) {
-                binder_->unregisterServingNode(masterId_, nodeId_);
-                binder_->registerServingNode(candidateMasterId_, nodeId_);
+            // if dynamicCellAssociation selected a different cell
+            if (candidateServingNodeId_ != NODEID_NONE && candidateServingNodeId_ != servingNodeId_) {
+                binder_->unregisterServingNode(servingNodeId_, nodeId_);
+                binder_->registerServingNode(candidateServingNodeId_, nodeId_);
             }
-            masterId_ = candidateMasterId_;
-            currentMasterRssi_ = candidateMasterRssi_;
-            //HandoverCoordinator::updateHysteresisTh(this, candidateMasterRssi_); //TODO was no-op
+            servingNodeId_ = candidateServingNodeId_;
+            servingNodeRssi_ = candidateServingNodeRssi_;
+            //HandoverCoordinator::updateHysteresisTh(this, candidateServingNodeRssi_); //TODO was no-op
         }
 
-        EV << "LtePhyUe::initialize - Attaching to eNodeB " << masterId_ << endl;
+        EV << "LtePhyUe::initialize - Attaching to eNodeB " << servingNodeId_ << endl;
 
-        phy_->setMasterId(masterId_);
-        emit(servingCellSignal_, (long)masterId_);
+        phy_->changeServingNode(servingNodeId_);
+        emit(servingCellSignal_, (long)servingNodeId_);
     }
 }
 
@@ -140,19 +112,19 @@ void HandoverController::finish()
         // do this only during the deletion of the module during the simulation
 
         // do this only if this PHY layer is connected to a serving base station
-        if (masterId_ != NODEID_NONE) {
+        if (servingNodeId_ != NODEID_NONE) {
             // clear buffers
-            deleteOldBuffers(masterId_);
+            deleteOldBuffers(servingNodeId_);
 
             // amc calls
-            LteAmc *amc = phy_->getAmcModule(masterId_);
+            LteAmc *amc = phy_->getAmcModule(servingNodeId_);
             if (amc != nullptr) {
                 amc->detachUser(nodeId_, UL);
                 amc->detachUser(nodeId_, DL);
             }
 
             // binder call
-            binder_->unregisterServingNode(masterId_, nodeId_);
+            binder_->unregisterServingNode(servingNodeId_, nodeId_);
         }
     }
 }
@@ -186,14 +158,14 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
         return;
     }
 
-    // Check if the eNodeB is a secondary node
+    // Check if the eNodeB is a DC Secondary node
     if (dynamic_cast<NrPhyUe*>(phy_)) {
         MacNodeId sourceId = lteInfo->getSourceId();
         MacNodeId masterNodeId = binder_->getMasterNodeOrSelf(sourceId);
         if (masterNodeId != sourceId) {
-            // The node has a master node, check if the other PHY of this UE is attached to that master.
-            // If not, the UE cannot attach to this secondary node and the packet must be deleted.
-            if (otherHandoverController_->getMasterId() != masterNodeId) {
+            // The node has a DC Master node, check if the other PHY of this UE is attached to that Master.
+            // If not, the UE cannot attach to this Secondary node and the packet must be deleted.
+            if (otherHandoverController_->getServingNodeId() != masterNodeId) {
                 EV << "Received beacon packet from " << sourceId << ", which is a secondary node to a master [" << masterNodeId << "] different from the one this UE is attached to. Delete packet." << endl;
                 delete lteInfo;
                 delete frame;
@@ -208,27 +180,27 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
     double rssi = phy_->computeReceivedBeaconPacketRssi(frame, lteInfo);
     EV << "UE " << nodeId_ << " broadcast frame from " << lteInfo->getSourceId() << " with RSSI: " << rssi << " at " << simTime() << endl;
 
-    if (lteInfo->getSourceId() != masterId_ && rssi < minRssi_) {
-        EV << "Signal too weak from a candidate master - minRssi[" << minRssi_ << "]" << endl;
+    if (lteInfo->getSourceId() != servingNodeId_ && rssi < minRssi_) {
+        EV << "Signal from candidate too weak - minRssi[" << minRssi_ << "]" << endl;
         delete frame;
         return;
     }
 
-    if (rssi > candidateMasterRssi_ + hysteresisTh_) {
-        if (lteInfo->getSourceId() == masterId_) {
-            // receiving even stronger broadcast from current master
-            currentMasterRssi_ = rssi;
-            candidateMasterId_ = masterId_;
-            candidateMasterRssi_ = rssi;
-            hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
+    if (rssi > candidateServingNodeRssi_ + hysteresisTh_) {
+        if (lteInfo->getSourceId() == servingNodeId_) {
+            // receiving even stronger broadcast from current serving node
+            servingNodeRssi_ = rssi;
+            candidateServingNodeId_ = servingNodeId_;
+            candidateServingNodeRssi_ = rssi;
+            hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
             cancelEvent(handoverStarter_);
         }
         else {
-            // broadcast from another master with higher RSSI
-            candidateMasterId_ = lteInfo->getSourceId();
-            candidateMasterRssi_ = rssi;
+            // broadcast from another serving node with higher RSSI
+            candidateServingNodeId_ = lteInfo->getSourceId();
+            candidateServingNodeRssi_ = rssi;
             hysteresisTh_ = updateHysteresisTh(rssi);
-            binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
+            binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
 
             // schedule self message to evaluate handover parameters after
             // all broadcast messages have arrived
@@ -240,22 +212,22 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
         }
     }
     else {
-        if (lteInfo->getSourceId() == masterId_) {
+        if (lteInfo->getSourceId() == servingNodeId_) {
             if (rssi >= minRssi_) {
-                currentMasterRssi_ = rssi;
-                candidateMasterRssi_ = rssi;
+                servingNodeRssi_ = rssi;
+                candidateServingNodeRssi_ = rssi;
                 hysteresisTh_ = updateHysteresisTh(rssi);
             }
-            else { // lost connection from current master
-                if (candidateMasterId_ == masterId_) { // trigger detachment
-                    candidateMasterId_ = NODEID_NONE;
-                    currentMasterRssi_ = -999.0;
-                    candidateMasterRssi_ = -999.0; // set candidate RSSI very bad as we currently do not have any.
+            else { // lost connection with current serving node
+                if (candidateServingNodeId_ == servingNodeId_) { // trigger detachment
+                    candidateServingNodeId_ = NODEID_NONE;
+                    servingNodeRssi_ = -999.0;
+                    candidateServingNodeRssi_ = -999.0; // set candidate RSSI very bad as we currently do not have any.
                                                    // this ensures that each candidate with is at least as 'bad'
                                                    // as the minRssi_ has a chance.
 
                     hysteresisTh_ = updateHysteresisTh(0);
-                    binder_->addHandoverTriggered(nodeId_, masterId_, candidateMasterId_);
+                    binder_->addHandoverTriggered(nodeId_, servingNodeId_, candidateServingNodeId_);
 
                     if (!handoverStarter_->isScheduled()) {
                         // all broadcast messages are scheduled at the very same time, a small delta
@@ -278,13 +250,13 @@ void HandoverController::triggerHandover()
 
     // NR-specific: Check for dual connectivity scenarios with early returns
     if (dynamic_cast<NrPhyUe*>(phy_)) {
-        MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateMasterId_);
-        if (masterNode != candidateMasterId_) { // The candidate is a secondary node
-            if (otherHandoverController_->getMasterId() == masterNode) {
+        MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateServingNodeId_);
+        if (masterNode != candidateServingNodeId_) { // The candidate is a secondary node
+            if (otherHandoverController_->getServingNodeId() == masterNode) {
                 MacNodeId otherNodeId = otherHandoverController_->getNodeId();
                 const std::pair<MacNodeId, MacNodeId> *handoverPair = binder_->getHandoverTriggered(otherNodeId);
                 if (handoverPair != nullptr) {
-                    if (handoverPair->second == candidateMasterId_) {
+                    if (handoverPair->second == candidateServingNodeId_) {
                         // Delay this handover
                         double delta = handoverDelta_;
                         if (handoverPair->first != NODEID_NONE) // The other "stack" is performing a complete handover
@@ -301,18 +273,18 @@ void HandoverController::triggerHandover()
                     else {
                         // Cancel this handover
                         binder_->removeHandoverTriggered(nodeId_);
-                        EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateMasterId_ << " since the master is performing handover" << endl;
+                        EV << NOW << " NrPhyUe::triggerHandover - UE " << nodeId_ << " is canceling its handover to eNB " << candidateServingNodeId_ << " since the master is performing handover" << endl;
                         return;
                     }
                 }
             }
         }
 
-        if (otherHandoverController_->getMasterId() != NODEID_NONE) {
+        if (otherHandoverController_->getServingNodeId() != NODEID_NONE) {
             // Check if there are secondary nodes connected
-            MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherHandoverController_->getMasterId());
-            if (otherMasterId == masterId_) {
-                EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << otherHandoverController_->getMasterId() << " which was a secondary node to " << masterId_ << ". Delay this handover." << endl;
+            MacNodeId otherMasterId = binder_->getMasterNodeOrSelf(otherHandoverController_->getServingNodeId());
+            if (otherMasterId == servingNodeId_) {
+                EV << NOW << " NrPhyUe::triggerHandover - Forcing detachment from " << otherHandoverController_->getServingNodeId() << " which was a secondary node to " << servingNodeId_ << ". Delay this handover." << endl;
 
                 // Need to wait for the other stack to complete detachment
                 scheduleAt(simTime() + handoverDetachmentTime_ + handoverDelta_, handoverStarter_);
@@ -328,12 +300,12 @@ void HandoverController::triggerHandover()
 
     // D2D-specific: Perform D2D mode switch before handover (both D2D and NR variants)
     if (dynamic_cast<LtePhyUeD2D*>(phy_) || dynamic_cast<NrPhyUe*>(phy_)) {
-        if (masterId_ != NODEID_NONE) {
+        if (servingNodeId_ != NODEID_NONE) {
             // Stop active D2D flows (go back to Infrastructure mode)
             // Currently, DM is possible only for UEs served by the same cell
 
             // Trigger D2D mode switch
-            cModule *enb = binder_->getNodeModule(masterId_);
+            cModule *enb = binder_->getNodeModule(servingNodeId_);
             D2dModeSelectionBase *d2dModeSelection = check_and_cast<D2dModeSelectionBase *>(enb->getSubmodule("cellularNic")->getSubmodule("d2dModeSelection"));
             d2dModeSelection->doModeSwitchAtHandover(nodeId_, false);
         }
@@ -341,46 +313,46 @@ void HandoverController::triggerHandover()
 
     // Variant-specific ASSERT
     if (dynamic_cast<NrPhyUe*>(phy_))
-        ASSERT(masterId_ == NODEID_NONE || masterId_ != candidateMasterId_);  // "we can be unattached, but never hand over to ourselves"
+        ASSERT(servingNodeId_ == NODEID_NONE || servingNodeId_ != candidateServingNodeId_);  // "we can be unattached, but never hand over to ourselves"
     else
-        ASSERT(masterId_ != candidateMasterId_);
+        ASSERT(servingNodeId_ != candidateServingNodeId_);
 
     EV << "####Handover starting:####" << endl;
-    EV << "Current master: " << masterId_ << endl;
-    EV << "Current RSSI: " << currentMasterRssi_ << endl;
-    EV << "Candidate master: " << candidateMasterId_ << endl;  // note: can be NODEID_NONE!
-    EV << "Candidate RSSI: " << candidateMasterRssi_ << endl;
+    EV << "Current serving node: " << servingNodeId_ << endl;
+    EV << "Current RSSI: " << servingNodeRssi_ << endl;
+    EV << "Candidate serving node: " << candidateServingNodeId_ << endl;  // note: can be NODEID_NONE!
+    EV << "Candidate RSSI: " << candidateServingNodeRssi_ << endl;
     EV << "############" << endl;
 
     // Status messages
-    if (candidateMasterRssi_ == 0)
-        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << masterId_ << ". Now detaching... " << endl;
-    else if (masterId_ == NODEID_NONE)
-        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateMasterId_ << "... " << endl;
+    if (candidateServingNodeRssi_ == 0)
+        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " lost its connection to eNB " << servingNodeId_ << ". Now detaching... " << endl;
+    else if (servingNodeId_ == NODEID_NONE)
+        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " is starting attachment procedure to eNB " << candidateServingNodeId_ << "... " << endl;
     else
-        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateMasterId_ << "... " << endl;
+        EV << NOW << (dynamic_cast<NrPhyUe*>(phy_) ? " NrPhyUe" : " LtePhyUe") << "::triggerHandover - UE " << nodeId_ << " is starting handover to eNB " << candidateServingNodeId_ << "... " << endl;
 
     // Add UE handover trigger
     binder_->addUeHandoverTriggered(nodeId_);
 
     // Inform the UE's Ip2Nic module to start holding downstream packets
-    ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
+    ip2nic_->triggerHandoverUe(candidateServingNodeId_, isNr_);
 
     // LTE-specific: remove handover trigger immediately after adding
     if (!dynamic_cast<NrPhyUe*>(phy_))
         binder_->removeHandoverTriggered(nodeId_);
 
     // Inform the eNB's Ip2Nic module to forward data to the target eNB
-    if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->triggerHandoverSource(nodeId_, candidateMasterId_);
+    if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
+        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        enbIp2nic->triggerHandoverSource(nodeId_, candidateServingNodeId_);
     }
 
     // Calculate handover latency and schedule trigger message
     double handoverLatency;
-    if (masterId_ == NODEID_NONE)                                                // attachment only
+    if (servingNodeId_ == NODEID_NONE)                                                // attachment only
         handoverLatency = handoverAttachmentTime_;
-    else if (candidateMasterId_ == NODEID_NONE)                                                // detachment only
+    else if (candidateServingNodeId_ == NODEID_NONE)                                                // detachment only
         handoverLatency = handoverDetachmentTime_;
     else                                                // complete handover time
         handoverLatency = handoverDetachmentTime_ + handoverAttachmentTime_;
@@ -391,30 +363,30 @@ void HandoverController::triggerHandover()
 
 void HandoverController::doHandover()
 {
-    // if masterId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
-    // if candidateMasterId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
+    // if currentServingNodeId_ == 0, it means the UE was not attached to any eNodeB, so it only has to perform attachment procedures
+    // if candidateServingNodeId_ == 0, it means the UE is detaching from its eNodeB, so it only has to perform detachment procedures
 
     // D2D-specific: Detach/attach D2D from old/new AMC (before common logic)
     if (dynamic_cast<LtePhyUeD2D*>(phy_)) {
-        if (masterId_ != NODEID_NONE) {
-            LteAmc *oldAmc = phy_->getAmcModule(masterId_);
+        if (servingNodeId_ != NODEID_NONE) {
+            LteAmc *oldAmc = phy_->getAmcModule(servingNodeId_);
             oldAmc->detachUser(nodeId_, D2D);
         }
 
-        if (candidateMasterId_ != NODEID_NONE) {
-            LteAmc *newAmc = phy_->getAmcModule(candidateMasterId_);
+        if (candidateServingNodeId_ != NODEID_NONE) {
+            LteAmc *newAmc = phy_->getAmcModule(candidateServingNodeId_);
             assert(newAmc != nullptr);
             newAmc->attachUser(nodeId_, D2D);
         }
     }
 
     // Delete old buffers and detach/attach from AMC
-    if (masterId_ != NODEID_NONE) {
+    if (servingNodeId_ != NODEID_NONE) {
         // Delete Old Buffers
-        deleteOldBuffers(masterId_);
+        deleteOldBuffers(servingNodeId_);
 
         // AMC calls
-        LteAmc *oldAmc = phy_->getAmcModule(masterId_);
+        LteAmc *oldAmc = phy_->getAmcModule(servingNodeId_);
         oldAmc->detachUser(nodeId_, UL);
         oldAmc->detachUser(nodeId_, DL);
         // NR also detaches D2D
@@ -422,8 +394,8 @@ void HandoverController::doHandover()
             oldAmc->detachUser(nodeId_, D2D);
     }
 
-    if (candidateMasterId_ != NODEID_NONE) {
-        LteAmc *newAmc = phy_->getAmcModule(candidateMasterId_);
+    if (candidateServingNodeId_ != NODEID_NONE) {
+        LteAmc *newAmc = phy_->getAmcModule(candidateServingNodeId_);
         assert(newAmc != nullptr);
         newAmc->attachUser(nodeId_, UL);
         newAmc->attachUser(nodeId_, DL);
@@ -433,39 +405,39 @@ void HandoverController::doHandover()
     }
 
     // Binder calls
-    if (masterId_ != NODEID_NONE)
-        binder_->unregisterServingNode(masterId_, nodeId_);
+    if (servingNodeId_ != NODEID_NONE)
+        binder_->unregisterServingNode(servingNodeId_, nodeId_);
 
-    if (candidateMasterId_ != NODEID_NONE) {
-        binder_->registerServingNode(candidateMasterId_, nodeId_);
+    if (candidateServingNodeId_ != NODEID_NONE) {
+        binder_->registerServingNode(candidateServingNodeId_, nodeId_);
     }
-    binder_->updateUeInfoCellId(nodeId_, candidateMasterId_);
+    binder_->updateUeInfoCellId(nodeId_, candidateServingNodeId_);
 
     // Move collector (if configured)
     // @author Alessandro Noferi
     if (hasCollector) {
-        binder_->moveUeCollector(nodeId_, masterId_, candidateMasterId_);
+        binder_->moveUeCollector(nodeId_, servingNodeId_, candidateServingNodeId_);
     }
 
     // Change masterId and notify handover to the MAC layer
-    MacNodeId oldMaster = masterId_;
-    masterId_ = candidateMasterId_;
-    phy_->setMasterId(masterId_);
+    MacNodeId oldServingNodeId = servingNodeId_;
+    servingNodeId_ = candidateServingNodeId_;
+    phy_->changeServingNode(servingNodeId_);
 
-    mac_->doHandover(candidateMasterId_);  // do MAC operations for handover
-    currentMasterRssi_ = candidateMasterRssi_;
-    hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
+    mac_->doHandover(candidateServingNodeId_);  // do MAC operations for handover
+    servingNodeRssi_ = candidateServingNodeRssi_;
+    hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
 
     // D2D or NR: Schedule mode switch message
     if (dynamic_cast<LtePhyUeD2D*>(phy_)) {
-        if (candidateMasterId_ != NODEID_NONE) {
+        if (candidateServingNodeId_ != NODEID_NONE) {
             // Send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover).
             cMessage *msg = new cMessage("doModeSwitchAtHandover");
             msg->setSchedulingPriority(10);
             scheduleAt(NOW, msg);
         }
     } else if (dynamic_cast<NrPhyUe*>(phy_)) {
-        if (masterId_ != NODEID_NONE) {        // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
+        if (servingNodeId_ != NODEID_NONE) {        // send a self-message to schedule the possible mode switch at the end of the TTI (after all UEs have performed the handover)
             cMessage *msg = new cMessage("doModeSwitchAtHandover");
             msg->setSchedulingPriority(10);
             scheduleAt(NOW, msg);
@@ -473,12 +445,12 @@ void HandoverController::doHandover()
     }
 
     // Update DL feedback generator
-    fbGen_->handleHandover(masterId_);
+    fbGen_->handleHandover(servingNodeId_);
 
     // Collect stat
-    emit(servingCellSignal_, (long)masterId_);
+    emit(servingCellSignal_, (long)servingNodeId_);
 
-    EV << NOW << " " << getClassName() << "::doHandover - UE " << nodeId_ << " has completed handover to eNB " << masterId_ << "... " << endl;
+    EV << NOW << " " << getClassName() << "::doHandover - UE " << nodeId_ << " has completed handover to eNB " << servingNodeId_ << "... " << endl;
 
     // Remove UE handover triggered
     binder_->removeUeHandoverTriggered(nodeId_);
@@ -494,51 +466,51 @@ void HandoverController::doHandover()
         ip2nic_->signalHandoverCompleteUe();
 
     // Inform the eNB's Ip2Nic module to forward data to the target eNB
-    if (oldMaster != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
-        enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldMaster);
+    if (oldServingNodeId != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
+        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldServingNodeId);
     }
 }
 
-void HandoverController::forceHandover(MacNodeId targetMasterNode, double targetMasterRssi)
+void HandoverController::forceHandover(MacNodeId targetServingNodeId, double targetServingNodeRssi)
 {
-    candidateMasterId_ = targetMasterNode;
-    candidateMasterRssi_ = targetMasterRssi;
-    hysteresisTh_ = updateHysteresisTh(currentMasterRssi_);
+    candidateServingNodeId_ = targetServingNodeId;
+    candidateServingNodeRssi_ = targetServingNodeRssi;
+    hysteresisTh_ = updateHysteresisTh(servingNodeRssi_);
 
     cancelEvent(handoverStarter_);  // if any
     scheduleAt(NOW, handoverStarter_);
 }
 
-void HandoverController::deleteOldBuffers(MacNodeId masterId)
+void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
 {
     // Delete MAC Buffers
 
-    // delete macBuffer[nodeId_] at old master
-    LteMacEnb *masterMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(masterId));
-    masterMac->deleteQueues(nodeId_);
+    // delete macBuffer[nodeId_] at old serving node
+    LteMacEnb *servingNodeMac = check_and_cast<LteMacEnb *>(binder_->getMacByNodeId(servingNodeId));
+    servingNodeMac->deleteQueues(nodeId_);
 
-    // delete queues for master at this UE
-    mac_->deleteQueues(masterId_);
+    // delete queues for serving node at this UE
+    mac_->deleteQueues(servingNodeId_);
 
     // Delete RLC UM Buffers
 
-    // delete UmTxQueue[nodeId_] at old master
-    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(masterId, UM));
+    // delete UmTxQueue[nodeId_] at old serving node
+    LteRlcUm *masterRlcUm = check_and_cast<LteRlcUm *>(binder_->getRlcByNodeId(servingNodeId, UM));
     masterRlcUm->deleteQueues(nodeId_);
 
-    // delete queues for master at this UE
+    // delete queues for serving node at this UE
     rlcUm_->deleteQueues(nodeId_);
 
     // Delete PDCP Entities
-    // delete pdcpEntities[nodeId_] at old master
+    // delete pdcpEntities[nodeId_] at old serving node
     // In case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
-    MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(masterId);
+    MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(servingNodeId);
     LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByNodeId(pdcpNodeId));
     masterPdcp->deleteEntities(nodeId_);
 
-    // delete queues for master at this UE
-    pdcp_->deleteEntities(masterId_);
+    // delete queues for serving node at this UE
+    pdcp_->deleteEntities(servingNodeId_);
 }
 
 double HandoverController::updateHysteresisTh(double v)
