@@ -49,11 +49,7 @@ void LtePhyUe::initialize(int stage)
 
         txPower_ = ueTxPower_;
 
-        // get the reference to the MAC module
-        mac_ = check_and_cast<LteMacUe *>(gate(upperGateOut_)->getPathEndGate()->getOwnerModule());
-
         handoverController_.reference(this, "handoverControllerModule", true);
-
         handoverController_->setPhy(this);
 
         // setting isNr_ was originally done in the NrPhyUe subclass, but it is needed here
@@ -286,7 +282,7 @@ void LtePhyUe::handleUpperMessage(cMessage *msg)
         // Store the RBs used for data transmission to the binder (for UL interference computation)
         RbMap rbMap = lteInfo->getGrantedBlocks();
         Remote antenna = MACRO;  // TODO fix for multi-antenna
-        binder_->storeUlTransmissionMap(channelModel->getCarrierFrequency(), antenna, rbMap, nodeId_, mac_->getMacCellId(), this, UL);
+        binder_->storeUlTransmissionMap(channelModel->getCarrierFrequency(), antenna, rbMap, nodeId_, servingNodeId_, this, UL);
     }
 
     if (lteInfo->getFrameType() == DATAPKT && lteInfo->getUserTxParams() != nullptr) {

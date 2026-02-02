@@ -35,7 +35,6 @@ class LtePhyUe : public LtePhyBase
     /** Statistic for distance from serving cell */
     static simsignal_t distanceSignal_;
 
-    opp_component_ptr<LteMacUe> mac_;
     inet::ModuleRefByPar<HandoverController> handoverController_;
 
     simtime_t lastFeedback_ = 0;
