@@ -273,6 +273,9 @@ void HandoverController::beaconReceived(LteAirFrame *frame, UserControlInfo *lte
 
 void HandoverController::triggerHandover()
 {
+    if (dynamic_cast<NrPhyUe*>(phy_) == nullptr)
+        ASSERT(!isNr_);
+
     // NR-specific: Check for dual connectivity scenarios with early returns
     if (dynamic_cast<NrPhyUe*>(phy_)) {
         MacNodeId masterNode = binder_->getMasterNodeOrSelf(candidateMasterId_);
@@ -361,22 +364,19 @@ void HandoverController::triggerHandover()
     binder_->addUeHandoverTriggered(nodeId_);
 
     // Inform the UE's Ip2Nic module to start holding downstream packets
-    if (dynamic_cast<NrPhyUe*>(phy_))
-        ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
-    else
-        ip2nic_->triggerHandoverUe(candidateMasterId_);
+    ip2nic_->triggerHandoverUe(candidateMasterId_, isNr_);
 
     // LTE-specific: remove handover trigger immediately after adding
     if (!dynamic_cast<NrPhyUe*>(phy_))
         binder_->removeHandoverTriggered(nodeId_);
 
-    // Common: Inform the eNB's Ip2Nic module to forward data to the target eNB
+    // Inform the eNB's Ip2Nic module to forward data to the target eNB
     if (masterId_ != NODEID_NONE && candidateMasterId_ != NODEID_NONE) {
         Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(masterId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
         enbIp2nic->triggerHandoverSource(nodeId_, candidateMasterId_);
     }
 
-    // Common: Calculate handover latency and schedule trigger message
+    // Calculate handover latency and schedule trigger message
     double handoverLatency;
     if (masterId_ == NODEID_NONE)                                                // attachment only
         handoverLatency = handoverAttachmentTime_;
