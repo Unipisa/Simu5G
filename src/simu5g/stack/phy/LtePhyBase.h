@@ -122,8 +122,6 @@ class LtePhyBase : public ChannelAccess
     //Used only for PisaPhy
     LteFeedbackComputation *lteFeedbackComputation_ = nullptr;
 
-    double carrierFrequency_ = NAN;  // [Hz]
-
     /*
      * NR Support
      */

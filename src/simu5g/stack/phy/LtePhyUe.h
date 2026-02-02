@@ -26,7 +26,7 @@ using namespace omnetpp;
 class LtePhyUe : public LtePhyBase
 {
   protected:
-    /** Master MacNodeId */
+    /** Serving node MacNodeId */
     MacNodeId servingNodeId_ = NODEID_NONE;
 
     /** Reference to master node's mobility module */
@@ -71,12 +71,6 @@ class LtePhyUe : public LtePhyBase
 
     // called on handover
     void changeServingNode(MacNodeId masterId);
-
-    simtime_t coherenceTime(double speed)
-    {
-        double fd = (speed / SPEED_OF_LIGHT) * carrierFrequency_;
-        return 0.1 / fd;
-    }
 
     void recordCqi(unsigned int sample, Direction dir);
     double getAverageCqi(Direction dir);
