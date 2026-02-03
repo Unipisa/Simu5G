@@ -153,7 +153,7 @@ void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId so
     EV << NOW << " LteHandoverManager::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
 
     // send data to Ip2Nic for transmission
-    ip2nic_->receiveTunneledPacketOnHandover(datagram, sourceEnb);
+    send(datagram, "tunnelOut");
 }
 
 } //namespace

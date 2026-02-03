@@ -79,6 +79,13 @@ void Ip2Nic::initialize(int stage)
 
 void Ip2Nic::handleMessage(cMessage *msg)
 {
+    if (msg->getArrivalGate()->isName("x2In")) {
+        ASSERT(nodeType_ == NODEB);
+        auto datagram = check_and_cast<Packet *>(msg);
+        receiveTunneledPacketOnHandover(datagram);
+        return;
+    }
+
     if (nodeType_ == NODEB) {
         // message from IP Layer: send to stack
         if (msg->getArrivalGate()->isName("upperLayerIn")) {
@@ -404,9 +411,9 @@ void Ip2Nic::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
     hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
 }
 
-void Ip2Nic::receiveTunneledPacketOnHandover(Packet *datagram, MacNodeId sourceEnb)
+void Ip2Nic::receiveTunneledPacketOnHandover(Packet *datagram)
 {
-    EV << "Ip2Nic::receiveTunneledPacketOnHandover - received packet via X2 from " << sourceEnb << endl;
+    EV << "Ip2Nic::receiveTunneledPacketOnHandover - received packet via X2" << endl;
     const auto& hdr = datagram->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = hdr->getDestAddress();
     MacNodeId destId = binder_->getMacNodeId(destAddr);

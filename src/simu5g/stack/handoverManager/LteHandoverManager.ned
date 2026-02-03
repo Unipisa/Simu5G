@@ -32,4 +32,6 @@ simple LteHandoverManager like ILteHandoverManager
         //# connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
+
+        output tunnelOut; // data packets received via the X2 tunnel during handover
 }

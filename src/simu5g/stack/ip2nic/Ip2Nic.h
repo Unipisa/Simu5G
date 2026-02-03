@@ -140,7 +140,7 @@ class Ip2Nic : public cSimpleModule
     void triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb);
     void triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb);
     void sendTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId targetEnb);
-    void receiveTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId sourceEnb);
+    void receiveTunneledPacketOnHandover(inet::Packet *datagram);
     void signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb);
     void signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb);
 

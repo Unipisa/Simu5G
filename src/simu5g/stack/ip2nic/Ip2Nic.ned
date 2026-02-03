@@ -32,6 +32,8 @@ simple Ip2Nic like INetworkLayer2CellularNic
         input upperLayerIn;
         output upperLayerOut;
 
+        input x2In @loose; // only used in eNodeB/gNodeB nodes
+
         // connection to the cellular stack
         inout stackNic @labels(IPDatagram);
 }

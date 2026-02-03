@@ -68,6 +68,7 @@ module LteNicEnb extends LteNicBase
         compManager.x2ManagerOut --> x2Manager.dataPort$i++ if compEnabled;
         handoverManager.x2ManagerIn <-- x2Manager.dataPort$o++;
         handoverManager.x2ManagerOut --> x2Manager.dataPort$i++;
+        handoverManager.tunnelOut --> ip2nic.x2In;
         dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPort$o++ if dualConnectivityEnabled;
         dualConnectivityManager.x2ManagerOut --> x2Manager.dataPort$i++ if dualConnectivityEnabled;
 
