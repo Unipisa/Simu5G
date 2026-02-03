@@ -138,6 +138,7 @@ void LteX2Manager::fromStack(Packet *pkt)
             outputGate = gate("x2$o", gateIndex);
         }
 
+        EV << "fromStack(): sending " << pktDuplicate->getClassAndFullName() << " on " << outputGate->getFullName() << std::endl;
         send(pktDuplicate, outputGate);
     }
     delete pkt;
