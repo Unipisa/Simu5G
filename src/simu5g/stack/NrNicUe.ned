@@ -86,6 +86,7 @@ module NrNicUe extends LteNicUeD2D
         // NR handover controller
         nrHandoverController: HandoverController {
             @display("p=144,100;is=s");
+            isNr = true;
         }
 
         //#

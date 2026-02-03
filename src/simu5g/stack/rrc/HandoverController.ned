@@ -27,6 +27,9 @@ simple HandoverController
         // allows handovers in the UE
         bool enableHandover = default(false);
 
+        // whether this instance is associated with the the NR or the LTE stack
+        bool isNr;
+
         // handover duration
         double handoverLatency @unit(s) = default(50ms);
         double handoverDetachmentTime @unit(s) = default(handoverLatency > 0s ? handoverLatency/2 : 25ms);

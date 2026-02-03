@@ -47,8 +47,8 @@ void HandoverController::initialize(int stage)
         fbGen_.reference(this, "feedbackGeneratorModule", true);
         otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
 
+        isNr_ = par("isNr");
         cModule *hostModule = inet::getContainingNode(this);
-        isNr_ = dynamic_cast<NrPhyUe*>(phy_) && strcmp(phy_->getFullName(), "nrPhy") == 0; //TODO kludge
         nodeId_ = MacNodeId(hostModule->par(isNr_ ? "nrMacNodeId" : "macNodeId").intValue());
 
         enableHandover_ = par("enableHandover");
