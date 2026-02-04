@@ -14,7 +14,7 @@
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
-#include "simu5g/stack/ip2nic/Ip2Nic.h"
+#include "simu5g/stack/ip2nic/HandoverPacketFilter.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -43,7 +43,7 @@ void HandoverController::initialize(int stage)
         mac_.reference(this, "macModule", true);
         rlcUm_.reference(this, "rlcUmModule", true);
         pdcp_.reference(this, "pdcpModule", true);
-        ip2nic_.reference(this, "ip2nicModule", true);
+        handoverPacketFilter_.reference(this, "handoverPacketFilterModule", true);
         fbGen_.reference(this, "feedbackGeneratorModule", true);
         otherHandoverController_.reference(this, "otherHandoverControllerModule", false);
 
@@ -334,16 +334,16 @@ void HandoverController::triggerHandover()
     // Add UE handover trigger
     binder_->addUeHandoverTriggered(nodeId_);
 
-    // Inform the UE's Ip2Nic module to start holding downstream packets
-    ip2nic_->triggerHandoverUe(candidateServingNodeId_, isNr_);
+    // Inform the UE's HandoverPacketFilter module to start holding downstream packets
+    handoverPacketFilter_->triggerHandoverUe(candidateServingNodeId_, isNr_);
 
     // LTE-specific: remove handover trigger immediately after adding
     if (!dynamic_cast<NrPhyUe*>(phy_))
         binder_->removeHandoverTriggered(nodeId_);
 
-    // Inform the eNB's Ip2Nic module to forward data to the target eNB
+    // Inform the eNB's HandoverPacketFilter module to forward data to the target eNB
     if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        HandoverPacketFilter *enbIp2nic = check_and_cast<HandoverPacketFilter *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
         enbIp2nic->triggerHandoverSource(nodeId_, candidateServingNodeId_);
     }
 
@@ -449,12 +449,12 @@ void HandoverController::doHandover()
     if (dynamic_cast<NrPhyUe*>(phy_))
         binder_->removeHandoverTriggered(nodeId_);
 
-    // Inform the UE's Ip2Nic module to forward held packets
-    ip2nic_->signalHandoverCompleteUe(isNr_);
+    // Inform the UE's HandoverPacketFilter module to forward held packets
+    handoverPacketFilter_->signalHandoverCompleteUe(isNr_);
 
-    // Inform the eNB's Ip2Nic module to forward data to the target eNB
+    // Inform the eNB's HandoverPacketFilter module to forward data to the target eNB
     if (oldServingNodeId != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        Ip2Nic *enbIp2nic = check_and_cast<Ip2Nic *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("ip2nic"));
+        HandoverPacketFilter *enbIp2nic = check_and_cast<HandoverPacketFilter *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
         enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldServingNodeId);
     }
 }

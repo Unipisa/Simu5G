@@ -1,8 +1,7 @@
 //
 //                  Simu5G
 //
-// Copyright (C) 2012-2021 Giovanni Nardini, Giovanni Stea, Antonio Virdis et al. (University of Pisa)
-// Copyright (C) 2022-2026 Giovanni Nardini, Giovanni Stea et al. (University of Pisa)
+// Authors: Giovanni Nardini, Giovanni Stea, Antonio Virdis (University of Pisa)
 //
 // This file is part of a software released under the license included in file
 // "license.pdf". Please read LICENSE and README files before using it.
@@ -10,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __IP2NIC_H_
-#define __IP2NIC_H_
+#ifndef __HANDOVERPACKETFILTER_H_
+#define __HANDOVERPACKETFILTER_H_
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
@@ -28,12 +27,14 @@ using namespace omnetpp;
 
 class LteHandoverManager;
 
+//TODO split UPWARD part, split UE and NODEB halves --> HandoverPacketBufferUe, HandoverPacketBufferEnb
+
 /**
  *
  */
-class Ip2Nic : public cSimpleModule
+class HandoverPacketFilter : public cSimpleModule
 {
-  protected:
+  public: //protected:
     RanNodeType nodeType_;      // UE or NODEB
 
     // reference to the binder
@@ -50,30 +51,40 @@ class Ip2Nic : public cSimpleModule
     MacNodeId nrServingNodeId_ = NODEID_NONE;
 
     /*
-     * NR Dual Connectivity support
+     * Handover support
      */
-    // enabler for dual connectivity
-    bool dualConnectivityEnabled_;
 
-    // for each connection exploiting Split Bearer,
-    // keep track of the number of packets sent down to the PDCP
-    SplitBearersTable *sbTable_ = nullptr;
+    // manager for the handover
+    inet::ModuleRefByPar<LteHandoverManager> hoManager_;
+    // store the pair <ue,target_enb> for temporary forwarding of data during handover
+    std::map<MacNodeId, MacNodeId> hoForwarding_;
+    // store the UEs for temporary holding of data received over X2 during handover
+    std::set<MacNodeId> hoHolding_;
 
-    cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
-    cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer
+    typedef std::list<inet::Packet *> IpDatagramQueue;
+    std::map<MacNodeId, IpDatagramQueue> hoFromX2_;
+    std::map<MacNodeId, IpDatagramQueue> hoFromIp_;
+
+    bool ueHold_ = false;
+    IpDatagramQueue ueHoldFromIp_;
+
+    cGate *stackGateOut_ = nullptr;
 
     // corresponding entry for our interface
     opp_component_ptr<inet::NetworkInterface> networkIf;
 
-  protected:
+  public: //  protected:
+    /**
+     * Handle packets from transport layer and forward them to the stack
+     */
+    void fromIpUe(inet::Packet *datagram);
 
     /**
      * Manage packets received from the stack
      * and forward them to transport layer.
      */
     virtual void prepareForIpv4(inet::Packet *datagram, const inet::Protocol *protocol = & inet::Protocol::ipv4);
-    virtual void toIpUe(inet::Packet *datagram);
-    virtual void toIpBs(inet::Packet *datagram);
+    virtual void fromIpBs(inet::Packet *datagram);
     virtual void toStackBs(inet::Packet *datagram);
     virtual void toStackUe(inet::Packet *datagram);
 
@@ -91,25 +102,29 @@ class Ip2Nic : public cSimpleModule
      */
     void printControlInfo(inet::Packet *pkt);
 
-    // mark packet for using LTE, NR or split bearer
-    //
-    // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
-    // to follow based on the Type of Service (TOS) field:
-    // - use master eNB if tos < 10
-    // - use secondary gNB if 10 <= tos < 20
-    // - use split bearer if tos >= 20
-    //
-    // To change the policy, change the implementation of the Ip2Nic::markPacket() function
-    //
-    // TODO use a better policy
-    bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
-
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
   public:
-    ~Ip2Nic() override;
+
+    /*
+     * Handover management at the BS side
+     */
+    void triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb);
+    void triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb);
+    void sendTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId targetEnb);
+    void receiveTunneledPacketOnHandover(inet::Packet *datagram);
+    void signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb);
+    void signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb);
+
+    /*
+     * Handover management at the UE side
+     */
+    void triggerHandoverUe(MacNodeId newMasterId, bool isNr = false);
+    void signalHandoverCompleteUe(bool isNr = false);
+
+    ~HandoverPacketFilter() override;
 };
 
 } //namespace

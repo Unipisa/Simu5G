@@ -50,8 +50,6 @@ void Ip2Nic::initialize(int stage)
 
         setNodeType(par("nodeType").stdstringValue());
 
-        hoManager_.reference(this, "handoverManagerModule", false);
-
         binder_.reference(this, "binderModule", true);
 
         networkIf = getContainingNicModule(this);
@@ -79,54 +77,26 @@ void Ip2Nic::initialize(int stage)
 
 void Ip2Nic::handleMessage(cMessage *msg)
 {
-    if (msg->getArrivalGate()->isName("x2In")) {
-        ASSERT(nodeType_ == NODEB);
-        auto datagram = check_and_cast<Packet *>(msg);
-        receiveTunneledPacketOnHandover(datagram);
-        return;
-    }
-
-    if (nodeType_ == NODEB) {
-        // message from IP Layer: send to stack
-        if (msg->getArrivalGate()->isName("upperLayerIn")) {
-            auto ipDatagram = check_and_cast<Packet *>(msg);
-            fromIpBs(ipDatagram);
+    if (msg->getArrivalGate()->isName("upperLayerIn")) {
+        if (nodeType_ == NODEB)
+            toStackBs(check_and_cast<Packet*>(msg));
+        else {
+            printControlInfo(check_and_cast<Packet*>(msg));
+            toStackUe(check_and_cast<Packet*>(msg));
         }
-        // message from stack: send to peer
-        else if (msg->getArrivalGate()->isName("stackNic$i")) {
-            auto pkt = check_and_cast<Packet *>(msg);
-            pkt->removeTagIfPresent<SocketInd>();
-            removeAllSimu5GTags(pkt);
-
+    }
+    else if (msg->getArrivalGate()->isName("stackNic$i")) {
+        EV << "Ip2Nic: message from stack: sending up" << endl;
+        auto pkt = check_and_cast<Packet *>(msg);
+        pkt->removeTagIfPresent<SocketInd>();
+        removeAllSimu5GTags(pkt);
+        if (nodeType_ == NODEB)
             toIpBs(pkt);
-        }
-        else {
-            // error: drop message
-            EV << "Ip2Nic::handleMessage - (E/GNODEB): Wrong gate " << msg->getArrivalGate()->getName() << endl;
-            delete msg;
-        }
-    }
-    else if (nodeType_ == UE) {
-        // message from transport: send to stack
-        if (msg->getArrivalGate()->isName("upperLayerIn")) {
-
-            auto ipDatagram = check_and_cast<Packet *>(msg);
-            EV << "LteIp: message from transport: send to stack" << endl;
-            fromIpUe(ipDatagram);
-        }
-        else if (msg->getArrivalGate()->isName("stackNic$i")) {
-            // message from stack: send to transport
-            EV << "LteIp: message from stack: send to transport" << endl;
-            auto pkt = check_and_cast<Packet *>(msg);
-            pkt->removeTagIfPresent<SocketInd>();
-            removeAllSimu5GTags(pkt);
+        else
             toIpUe(pkt);
-        }
-        else {
-            // error: drop message
-            EV << "Ip2Nic (UE): Wrong gate " << msg->getArrivalGate()->getName() << endl;
-            delete msg;
-        }
+    }
+    else {
+        throw cRuntimeError("Message received on wrong gate %s", msg->getArrivalGate()->getFullName());
     }
 }
 
@@ -136,32 +106,9 @@ void Ip2Nic::setNodeType(std::string s)
     EV << "Node type: " << s << endl;
 }
 
-void Ip2Nic::fromIpUe(Packet *datagram)
-{
-    EV << "Ip2Nic::fromIpUe - message from IP layer: send to stack: " << datagram->str() << std::endl;
-    // Remove control info from IP datagram
-    datagram->removeTagIfPresent<SocketInd>();
-    removeAllSimu5GTags(datagram);
-
-    // Remove InterfaceReq Tag (we already are on an interface now)
-    datagram->removeTagIfPresent<InterfaceReq>();
-
-    if (ueHold_) {
-        // hold packets until handover is complete
-        ueHoldFromIp_.push_back(datagram);
-    }
-    else {
-        if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ == NODEID_NONE) { // UE is detached
-            EV << "Ip2Nic::fromIpUe - UE is not attached to any serving node. Delete packet." << endl;
-            delete datagram;
-        }
-        else
-            toStackUe(datagram);
-    }
-}
-
 void Ip2Nic::toStackUe(Packet *pkt)
 {
+    EV << "Ip2Nic::fromIpUe - message from IP layer: send to stack: " << pkt->str() << std::endl;
     auto ipHeader = pkt->peekAtFront<Ipv4Header>();
     auto srcAddr = ipHeader->getSrcAddress();
     auto destAddr = ipHeader->getDestAddress();
@@ -209,55 +156,6 @@ void Ip2Nic::toIpUe(Packet *pkt)
     send(pkt, ipGateOut_);
 }
 
-void Ip2Nic::fromIpBs(Packet *pkt)
-{
-    EV << "Ip2Nic::fromIpBs - message from IP layer: send to stack" << endl;
-    // Remove control info from IP datagram
-    pkt->removeTagIfPresent<SocketInd>();
-    removeAllSimu5GTags(pkt);
-
-    // Remove InterfaceReq Tag (we already are on an interface now)
-    pkt->removeTagIfPresent<InterfaceReq>();
-
-    // TODO: Add support for IPv6
-    auto ipHeader = pkt->peekAtFront<Ipv4Header>();
-    const Ipv4Address& destAddr = ipHeader->getDestAddress();
-
-    // handle "forwarding" of packets during handover
-    MacNodeId destId = binder_->getMacNodeId(destAddr);
-    if (destId == NODEID_NONE)
-        destId = binder_->getNrMacNodeId(destAddr);
-
-    if (hoForwarding_.find(destId) != hoForwarding_.end()) {
-        // data packet must be forwarded (via X2) to another eNB
-        MacNodeId targetEnb = hoForwarding_.at(destId);
-        sendTunneledPacketOnHandover(pkt, targetEnb);
-        return;
-    }
-
-    // handle incoming packets destined to UEs that are completing handover
-    if (hoHolding_.find(destId) != hoHolding_.end()) {
-        // hold packets until handover is complete
-        if (hoFromIp_.find(destId) == hoFromIp_.end()) {
-            IpDatagramQueue queue;
-            hoFromIp_[destId] = queue;
-        }
-
-        hoFromIp_[destId].push_back(pkt);
-        return;
-    }
-
-    // if UE has moved to another gNB (e.g. late packet after handover), forward via X2
-    MacNodeId servingNode = binder_->getServingNodeOrSelf(destId);
-    if (servingNode != NODEID_NONE && servingNode != nodeId_) {
-        EV << "Ip2Nic::fromIpBs - UE " << destId << " is served by gNB " << servingNode << ", forwarding via X2" << endl;
-        sendTunneledPacketOnHandover(pkt, servingNode);
-        return;
-    }
-
-    toStackBs(pkt);
-}
-
 void Ip2Nic::toIpBs(Packet *pkt)
 {
     auto ipHeader = pkt->peekAtFront<Ipv4Header>();
@@ -271,7 +169,8 @@ void Ip2Nic::toIpBs(Packet *pkt)
 
 void Ip2Nic::toStackBs(Packet *pkt)
 {
-    EV << "Ip2Nic::toStackBs - packet is forwarded to stack" << endl;
+    EV << "Ip2Nic::toStackBs - message from IP layer: send to stack" << endl;
+    removeAllSimu5GTags(pkt);
     auto ipHeader = pkt->peekAtFront<Ipv4Header>();
     auto srcAddr = ipHeader->getSrcAddress();
     auto destAddr = ipHeader->getDestAddress();
@@ -299,6 +198,10 @@ void Ip2Nic::toStackBs(Packet *pkt)
 
 void Ip2Nic::printControlInfo(Packet *pkt)
 {
+    if (!pkt->hasTag<IpFlowInd>()) {
+        EV << "Ip2Nic::printControlInfo - packet does not have IpFlowInd tag" << endl;
+        return;
+    }
     EV << "Src IP : " << pkt->getTag<IpFlowInd>()->getSrcAddr() << endl;
     EV << "Dst IP : " << pkt->getTag<IpFlowInd>()->getDstAddr() << endl;
     EV << "ToS : " << pkt->getTag<IpFlowInd>()->getTypeOfService() << endl;
@@ -306,6 +209,18 @@ void Ip2Nic::printControlInfo(Packet *pkt)
 
 bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)
 {
+    // KLUDGE: this is necessary to prevent a runtime error in one of the simulations:
+    //
+    //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketFilter), #476 (Ip2Nic)
+    //    after: ueLteStack=true, ueNrStack=true, servingNodeId=1, nrServingNodeId=2, typeOfService=10 --> useNr = true (ip2nic.cc#319: UE branch, not dualconn("else") )
+    //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketFilter.cc#360)
+    //
+    if (nodeType_ == UE) {
+        auto handoverPacketFilter = check_and_cast<HandoverPacketFilter*>(getParentModule()->getSubmodule("handoverPacketFilter"));
+        servingNodeId_ = handoverPacketFilter->servingNodeId_;
+        nrServingNodeId_ = handoverPacketFilter->nrServingNodeId_;
+    }
+
     // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
     // to follow based on the Type of Service (TOS) field:
     // - use master eNB if tos < 10
@@ -366,6 +281,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
                 useNR = true;
         }
         else {
+//            servingNodeId_ = binder_->getServingNode(nodeId_);
+//            nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
             if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ != NODEID_NONE)
                 useNR = true;
             else if (servingNodeId_ != NODEID_NONE && nrServingNodeId_ == NODEID_NONE)
@@ -382,153 +299,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
     return true;
 }
 
-void Ip2Nic::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
-{
-    EV << NOW << " Ip2Nic::triggerHandoverSource - start tunneling of packets destined to " << ueId << " towards eNB " << targetEnb << endl;
-
-    hoForwarding_[ueId] = targetEnb;
-
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
-
-    if (targetEnb != NODEID_NONE)
-        hoManager_->sendHandoverCommand(ueId, targetEnb, true);
-}
-
-void Ip2Nic::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
-{
-    EV << NOW << " Ip2Nic::triggerHandoverTarget - start holding packets destined to " << ueId << endl;
-
-    // reception of handover command from X2
-    hoHolding_.insert(ueId);
-}
-
-void Ip2Nic::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
-{
-    EV << "Ip2Nic::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
-    hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
-}
-
-void Ip2Nic::receiveTunneledPacketOnHandover(Packet *datagram)
-{
-    EV << "Ip2Nic::receiveTunneledPacketOnHandover - received packet via X2" << endl;
-    const auto& hdr = datagram->peekAtFront<Ipv4Header>();
-    const Ipv4Address& destAddr = hdr->getDestAddress();
-    MacNodeId destId = binder_->getMacNodeId(destAddr);
-    if (destId == NODEID_NONE)
-        destId = binder_->getNrMacNodeId(destAddr);
-    if (hoFromX2_.find(destId) == hoFromX2_.end()) {
-        IpDatagramQueue queue;
-        hoFromX2_[destId] = queue;
-    }
-
-    hoFromX2_[destId].push_back(datagram);
-}
-
-void Ip2Nic::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
-{
-    EV << NOW << " Ip2Nic::signalHandoverCompleteSource - handover of UE " << ueId << " to eNB " << targetEnb << " completed!" << endl;
-    hoForwarding_.erase(ueId);
-}
-
-void Ip2Nic::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
-{
-    Enter_Method("signalHandoverCompleteTarget");
-
-    // signal the event to the source eNB
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
-    hoManager_->sendHandoverCommand(ueId, sourceEnb, false);
-
-    // send down buffered packets in the following order:
-    // 1) packets received from X2
-    // 2) packets received from IP
-
-    if (hoFromX2_.find(ueId) != hoFromX2_.end()) {
-        IpDatagramQueue& queue = hoFromX2_[ueId];
-        while (!queue.empty()) {
-            Packet *pkt = queue.front();
-            queue.pop_front();
-
-            // send pkt down
-            take(pkt);
-            pkt->trim();
-            toStackBs(pkt);
-        }
-    }
-
-    if (hoFromIp_.find(ueId) != hoFromIp_.end()) {
-        IpDatagramQueue& queue = hoFromIp_[ueId];
-        while (!queue.empty()) {
-            Packet *pkt = queue.front();
-            queue.pop_front();
-
-            // send pkt down
-            take(pkt);
-            toStackBs(pkt);
-        }
-    }
-
-    hoHolding_.erase(ueId);
-}
-
-void Ip2Nic::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
-{
-    EV << NOW << " Ip2Nic::triggerHandoverUe - start holding packets" << endl;
-
-    if (newMasterId != NODEID_NONE) {
-        ueHold_ = true;
-        if (isNr)
-            nrServingNodeId_ = newMasterId;
-        else
-            servingNodeId_ = newMasterId;
-    }
-    else {
-        if (isNr)
-            nrServingNodeId_ = NODEID_NONE;
-        else
-            servingNodeId_ = NODEID_NONE;
-    }
-}
-
-void Ip2Nic::signalHandoverCompleteUe(bool isNr)
-{
-    Enter_Method("signalHandoverCompleteUe");
-
-    if ((!isNr && servingNodeId_ != NODEID_NONE) || (isNr && nrServingNodeId_ != NODEID_NONE)) {
-        // send held packets
-        while (!ueHoldFromIp_.empty()) {
-            auto pkt = ueHoldFromIp_.front();
-            ueHoldFromIp_.pop_front();
-
-            // send pkt down
-            take(pkt);
-            toStackUe(pkt);
-        }
-        ueHold_ = false;
-    }
-}
-
 Ip2Nic::~Ip2Nic()
 {
-    for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
-        while (!ipDatagramQueue.empty()) {
-            Packet *pkt = ipDatagramQueue.front();
-            ipDatagramQueue.pop_front();
-            delete pkt;
-        }
-    }
-
-    for (auto &[macNodeId, ipDatagramQueue] : hoFromIp_) {
-        while (!ipDatagramQueue.empty()) {
-            Packet *pkt = ipDatagramQueue.front();
-            ipDatagramQueue.pop_front();
-            delete pkt;
-        }
-    }
-
     if (dualConnectivityEnabled_)
         delete sbTable_;
 }

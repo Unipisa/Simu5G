@@ -15,7 +15,7 @@
 
 #include <inet/common/ModuleRefByPar.h>
 
-#include "simu5g/stack/ip2nic/Ip2Nic.h"
+#include "simu5g/stack/ip2nic/HandoverPacketFilter.h"
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/x2/packet/X2ControlInfo_m.h"
 #include "simu5g/stack/handoverManager/X2HandoverControlMsg.h"
@@ -25,7 +25,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class Ip2Nic;
+class HandoverPacketFilter;
 
 //
 // LteHandoverManager
@@ -43,7 +43,7 @@ class LteHandoverManager : public cSimpleModule
     cGate *x2ManagerOutGate_ = nullptr;
 
     // reference to the PDCP layer
-    inet::ModuleRefByPar<Ip2Nic> ip2nic_;
+    inet::ModuleRefByPar<HandoverPacketFilter> handoverPacketFilter_;
 
     // flag for seamless/lossless handover
     bool losslessHandover_;

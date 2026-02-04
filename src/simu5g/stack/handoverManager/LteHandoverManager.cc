@@ -34,8 +34,8 @@ void LteHandoverManager::initialize(int stage)
         x2ManagerInGate_ = gate("x2ManagerIn");
         x2ManagerOutGate_ = gate("x2ManagerOut");
 
-        // get reference to the Ip2Nic layer
-        ip2nic_.reference(this, "ip2nicModule", true);
+        // get reference to the HandoverPacketFilter layer
+        handoverPacketFilter_.reference(this, "handoverPacketFilterModule", true);
 
         losslessHandover_ = par("losslessHandover").boolValue();
 
@@ -118,11 +118,11 @@ void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, b
 {
     EV << NOW << " LteHandoverManager::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    // send command to Ip2Nic
+    // send command to HandoverPacketFilter
     if (startHo)
-        ip2nic_->triggerHandoverTarget(ueId, enb);
+        handoverPacketFilter_->triggerHandoverTarget(ueId, enb);
     else
-        ip2nic_->signalHandoverCompleteSource(ueId, enb);
+        handoverPacketFilter_->signalHandoverCompleteSource(ueId, enb);
 }
 
 void LteHandoverManager::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)
@@ -152,7 +152,7 @@ void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId so
 {
     EV << NOW << " LteHandoverManager::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
 
-    // send data to Ip2Nic for transmission
+    // send data to HandoverPacketFilter for transmission
     send(datagram, "tunnelOut");
 }
 

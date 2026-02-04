@@ -26,7 +26,7 @@ simple LteHandoverManager like ILteHandoverManager
         @class("LteHandoverManager");
 
         bool losslessHandover = default(false);
-        string ip2nicModule = default("^.ip2nic");
+        string handoverPacketFilterModule = default("^.handoverPacketFilter");
 
     gates:
         //# connections to the X2 Manager
