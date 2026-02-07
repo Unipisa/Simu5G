@@ -10,11 +10,13 @@
 //
 
 #include "HandoverController.h"
+
+#include "simu5g/stack/ip2nic/HandoverPacketFilterUe.h"
+#include "simu5g/stack/ip2nic/HandoverPacketFilterEnb.h"
 #include "simu5g/stack/phy/LtePhyUe.h"
 #include "simu5g/stack/phy/LtePhyUeD2D.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/d2dModeSelection/D2dModeSelectionBase.h"
-#include "simu5g/stack/ip2nic/HandoverPacketFilter.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"
@@ -343,7 +345,7 @@ void HandoverController::triggerHandover()
 
     // Inform the eNB's HandoverPacketFilter module to forward data to the target eNB
     if (servingNodeId_ != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        HandoverPacketFilter *enbIp2nic = check_and_cast<HandoverPacketFilter *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
+        HandoverPacketFilterEnb *enbIp2nic = check_and_cast<HandoverPacketFilterEnb *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
         enbIp2nic->triggerHandoverSource(nodeId_, candidateServingNodeId_);
     }
 
@@ -454,7 +456,7 @@ void HandoverController::doHandover()
 
     // Inform the eNB's HandoverPacketFilter module to forward data to the target eNB
     if (oldServingNodeId != NODEID_NONE && candidateServingNodeId_ != NODEID_NONE) {
-        HandoverPacketFilter *enbIp2nic = check_and_cast<HandoverPacketFilter *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
+        HandoverPacketFilterEnb *enbIp2nic = check_and_cast<HandoverPacketFilterEnb *>(binder_->getNodeModule(servingNodeId_)->getSubmodule("cellularNic")->getSubmodule("handoverPacketFilter"));
         enbIp2nic->signalHandoverCompleteTarget(nodeId_, oldServingNodeId);
     }
 }

@@ -29,6 +29,7 @@
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
+#include "simu5g/stack/ip2nic/HandoverPacketFilterUe.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
@@ -216,7 +217,7 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
     //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketFilter.cc#360)
     //
     if (nodeType_ == UE) {
-        auto handoverPacketFilter = check_and_cast<HandoverPacketFilter*>(getParentModule()->getSubmodule("handoverPacketFilter"));
+        auto handoverPacketFilter = check_and_cast<HandoverPacketFilterUe*>(getParentModule()->getSubmodule("handoverPacketFilter"));
         servingNodeId_ = handoverPacketFilter->servingNodeId_;
         nrServingNodeId_ = handoverPacketFilter->nrServingNodeId_;
     }

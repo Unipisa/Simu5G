@@ -15,6 +15,7 @@
 #include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
+#include "simu5g/stack/ip2nic/HandoverPacketFilterEnb.h"
 
 namespace simu5g {
 

@@ -33,6 +33,7 @@ module LteNicEnb extends LteNicBase
         pdcp.typename = default("LtePdcpEnb");
         mac.typename = default("LteMacEnb");
         phy.typename = default("LtePhyEnb");
+        handoverPacketFilter.typename = default("HandoverPacketFilterEnb");
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);

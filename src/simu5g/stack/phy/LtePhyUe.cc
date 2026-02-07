@@ -13,9 +13,9 @@
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUe.h"
 
+#include "../ip2nic/HandoverPacketFilterUe.h"
 #include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
-#include "simu5g/stack/ip2nic/HandoverPacketFilter.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
 #include "simu5g/stack/phy/packet/LteFeedbackPkt.h"
 #include "simu5g/stack/phy/feedback/LteDlFeedbackGenerator.h"

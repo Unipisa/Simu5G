@@ -8,6 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
+#include "HandoverPacketFilterEnb.h"
+
 #include <iostream>
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/IInterfaceRegistrationListener.h>
@@ -27,7 +29,6 @@
 
 #include <inet/linklayer/common/InterfaceTag_m.h>
 
-#include "simu5g/stack/ip2nic/HandoverPacketFilter.h"
 #include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/cellInfo/CellInfo.h"
@@ -39,103 +40,33 @@ using namespace std;
 using namespace inet;
 using namespace omnetpp;
 
-Define_Module(HandoverPacketFilter);
+Define_Module(HandoverPacketFilterEnb);
 
-void HandoverPacketFilter::initialize(int stage)
+void HandoverPacketFilterEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
-
-        setNodeType(par("nodeType").stdstringValue());
-
         hoManager_.reference(this, "handoverManagerModule", false);
-
         binder_.reference(this, "binderModule", true);
-
-        networkIf = getContainingNicModule(this);
     }
     else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
-        if (nodeType_ == NODEB) {
-            cModule *bs = getContainingNode(this);
-            nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
-        }
-        else if (nodeType_ == UE) {
-            cModule *ue = getContainingNode(this);
-            servingNodeId_ = MacNodeId(ue->par("servingNodeId").intValue());
-            nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
-
-            if (ue->hasPar("nrServingNodeId") && ue->par("nrServingNodeId").intValue() != 0) { // register also the NR MacNodeId
-                nrServingNodeId_ = MacNodeId(ue->par("nrServingNodeId").intValue());
-                nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
-            }
-        }
+        cModule *bs = getContainingNode(this);
+        nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
     }
 }
 
-void HandoverPacketFilter::handleMessage(cMessage *msg)
+void HandoverPacketFilterEnb::handleMessage(cMessage *msg)
 {
-    if (msg->getArrivalGate()->isName("x2In")) {
-        ASSERT(nodeType_ == NODEB);
-        auto datagram = check_and_cast<Packet *>(msg);
-        receiveTunneledPacketOnHandover(datagram);
-        return;
-    }
-    else if (msg->getArrivalGate()->isName("upperLayerIn")) {
-        auto ipDatagram = check_and_cast<Packet *>(msg);
-        if (nodeType_ == NODEB)
-            fromIpBs(ipDatagram);
-        else if (nodeType_ == UE)
-            fromIpUe(ipDatagram);
-    }
-    else {
+    auto pkt = check_and_cast<Packet *>(msg);
+    if (msg->getArrivalGate()->isName("x2In"))
+        receiveTunneledPacketOnHandover(pkt);
+    else if (msg->getArrivalGate()->isName("upperLayerIn"))
+        fromIpBs(pkt);
+    else
         throw cRuntimeError("Message received on wrong gate %s", msg->getArrivalGate()->getFullName());
-    }
 }
 
-void HandoverPacketFilter::setNodeType(std::string s)
-{
-    nodeType_ = aToNodeType(s);
-    EV << "Node type: " << s << endl;
-}
-
-void HandoverPacketFilter::fromIpUe(Packet *datagram)
-{
-    EV << "HandoverPacketFilter::fromIpUe - message from IP layer: send to stack: " << datagram->str() << std::endl;
-    // Remove control info from IP datagram
-    datagram->removeTagIfPresent<SocketInd>();
-    removeAllSimu5GTags(datagram);
-
-    // Remove InterfaceReq Tag (we already are on an interface now)
-    datagram->removeTagIfPresent<InterfaceReq>();
-
-    if (ueHold_) {
-        // hold packets until handover is complete
-        ueHoldFromIp_.push_back(datagram);
-    }
-    else {
-        if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ == NODEID_NONE) { // UE is detached
-            EV << "HandoverPacketFilter::fromIpUe - UE is not attached to any serving node. Delete packet." << endl;
-            delete datagram;
-        }
-        else
-            toStackUe(datagram);
-    }
-}
-
-void HandoverPacketFilter::toStackUe(Packet *pkt)
-{
-    send(pkt, stackGateOut_);
-}
-
-void HandoverPacketFilter::prepareForIpv4(Packet *datagram, const Protocol *protocol) {
-    // add DispatchProtocolRequest so that the packet is handled by the specified protocol
-    datagram->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(protocol);
-    datagram->addTagIfAbsent<PacketProtocolTag>()->setProtocol(protocol);
-    // add Interface-Indication to indicate which interface this packet was received from
-    datagram->addTagIfAbsent<InterfaceInd>()->setInterfaceId(networkIf->getInterfaceId());
-}
-
-void HandoverPacketFilter::fromIpBs(Packet *pkt)
+void HandoverPacketFilterEnb::fromIpBs(Packet *pkt)
 {
     EV << "HandoverPacketFilter::fromIpBs - message from IP layer: send to stack" << endl;
     // Remove control info from IP datagram
@@ -184,19 +115,12 @@ void HandoverPacketFilter::fromIpBs(Packet *pkt)
     toStackBs(pkt);
 }
 
-void HandoverPacketFilter::toStackBs(Packet *pkt)
+void HandoverPacketFilterEnb::toStackBs(Packet *pkt)
 {
     send(pkt, stackGateOut_);
 }
 
-void HandoverPacketFilter::printControlInfo(Packet *pkt)
-{
-    EV << "Src IP : " << pkt->getTag<IpFlowInd>()->getSrcAddr() << endl;
-    EV << "Dst IP : " << pkt->getTag<IpFlowInd>()->getDstAddr() << endl;
-    EV << "ToS : " << pkt->getTag<IpFlowInd>()->getTypeOfService() << endl;
-}
-
-void HandoverPacketFilter::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
+void HandoverPacketFilterEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
 {
     EV << NOW << " HandoverPacketFilter::triggerHandoverSource - start tunneling of packets destined to " << ueId << " towards eNB " << targetEnb << endl;
 
@@ -209,7 +133,7 @@ void HandoverPacketFilter::triggerHandoverSource(MacNodeId ueId, MacNodeId targe
         hoManager_->sendHandoverCommand(ueId, targetEnb, true);
 }
 
-void HandoverPacketFilter::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
+void HandoverPacketFilterEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
 {
     EV << NOW << " HandoverPacketFilter::triggerHandoverTarget - start holding packets destined to " << ueId << endl;
 
@@ -217,7 +141,7 @@ void HandoverPacketFilter::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourc
     hoHolding_.insert(ueId);
 }
 
-void HandoverPacketFilter::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
+void HandoverPacketFilterEnb::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
 {
     EV << "HandoverPacketFilter::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
     if (!hoManager_)
@@ -225,7 +149,7 @@ void HandoverPacketFilter::sendTunneledPacketOnHandover(Packet *datagram, MacNod
     hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
 }
 
-void HandoverPacketFilter::receiveTunneledPacketOnHandover(Packet *datagram)
+void HandoverPacketFilterEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 {
     EV << "HandoverPacketFilter::receiveTunneledPacketOnHandover - received packet via X2" << endl;
     const auto& hdr = datagram->peekAtFront<Ipv4Header>();
@@ -242,13 +166,13 @@ void HandoverPacketFilter::receiveTunneledPacketOnHandover(Packet *datagram)
     hoFromX2_[destId].push_back(datagram);
 }
 
-void HandoverPacketFilter::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
+void HandoverPacketFilterEnb::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
 {
     EV << NOW << " HandoverPacketFilter::signalHandoverCompleteSource - handover of UE " << ueId << " to eNB " << targetEnb << " completed!" << endl;
     hoForwarding_.erase(ueId);
 }
 
-void HandoverPacketFilter::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
+void HandoverPacketFilterEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
 {
     Enter_Method("signalHandoverCompleteTarget");
 
@@ -289,44 +213,7 @@ void HandoverPacketFilter::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeI
     hoHolding_.erase(ueId);
 }
 
-void HandoverPacketFilter::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
-{
-    EV << NOW << " HandoverPacketFilter::triggerHandoverUe - start holding packets" << endl;
-
-    if (newMasterId != NODEID_NONE) {
-        ueHold_ = true;
-        if (isNr)
-            nrServingNodeId_ = newMasterId;
-        else
-            servingNodeId_ = newMasterId;
-    }
-    else {
-        if (isNr)
-            nrServingNodeId_ = NODEID_NONE;
-        else
-            servingNodeId_ = NODEID_NONE;
-    }
-}
-
-void HandoverPacketFilter::signalHandoverCompleteUe(bool isNr)
-{
-    Enter_Method("signalHandoverCompleteUe");
-
-    if ((!isNr && servingNodeId_ != NODEID_NONE) || (isNr && nrServingNodeId_ != NODEID_NONE)) {
-        // send held packets
-        while (!ueHoldFromIp_.empty()) {
-            auto pkt = ueHoldFromIp_.front();
-            ueHoldFromIp_.pop_front();
-
-            // send pkt down
-            take(pkt);
-            toStackUe(pkt);
-        }
-        ueHold_ = false;
-    }
-}
-
-HandoverPacketFilter::~HandoverPacketFilter()
+HandoverPacketFilterEnb::~HandoverPacketFilterEnb()
 {
     for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
         while (!ipDatagramQueue.empty()) {
