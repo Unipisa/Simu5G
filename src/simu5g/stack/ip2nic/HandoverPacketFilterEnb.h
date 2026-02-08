@@ -13,13 +13,8 @@
 #define __HANDOVERPACKETFILTERENB_H_
 
 #include <inet/common/ModuleRefByPar.h>
-#include <inet/networklayer/common/NetworkInterface.h>
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/common/LteControlInfo.h"
-#include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/handoverManager/LteHandoverManager.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
 namespace simu5g {
 
@@ -30,6 +25,7 @@ class LteHandoverManager;
 /**
  *
  */
+//TODO rename to HandoverPacketHolderEnb, write docu
 class HandoverPacketFilterEnb : public cSimpleModule
 {
   protected:
@@ -52,12 +48,12 @@ class HandoverPacketFilterEnb : public cSimpleModule
      cGate *stackGateOut_ = nullptr;
 
   protected:
-    virtual void fromIpBs(inet::Packet *datagram);
-    virtual void toStackBs(inet::Packet *datagram);
-
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
+
+    virtual void fromIpBs(inet::Packet *datagram);
+    virtual void toStackBs(inet::Packet *datagram);
 
   public:
     ~HandoverPacketFilterEnb() override;

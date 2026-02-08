@@ -16,9 +16,6 @@
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/common/LteControlInfo.h"
-#include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/handoverManager/LteHandoverManager.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
@@ -49,14 +46,10 @@ class Ip2Nic : public cSimpleModule
     // NR MAC node id of this node's master (if enabled)
     MacNodeId nrServingNodeId_ = NODEID_NONE;
 
-    /*
-     * NR Dual Connectivity support
-     */
-    // enabler for dual connectivity
+    // Enable for dual connectivity
     bool dualConnectivityEnabled_;
 
-    // for each connection exploiting Split Bearer,
-    // keep track of the number of packets sent down to the PDCP
+    // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
     SplitBearersTable *sbTable_ = nullptr;
 
     cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
@@ -66,29 +59,16 @@ class Ip2Nic : public cSimpleModule
     opp_component_ptr<inet::NetworkInterface> networkIf;
 
   protected:
+    void initialize(int stage) override;
+    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    void handleMessage(cMessage *msg) override;
 
-    /**
-     * Manage packets received from the stack
-     * and forward them to transport layer.
-     */
     virtual void prepareForIpv4(inet::Packet *datagram, const inet::Protocol *protocol = & inet::Protocol::ipv4);
     virtual void toIpUe(inet::Packet *datagram);
     virtual void toIpBs(inet::Packet *datagram);
     virtual void toStackBs(inet::Packet *datagram);
     virtual void toStackUe(inet::Packet *datagram);
 
-    /**
-     * utility: set nodeType_ field
-     *
-     * @param s string containing the node type ("enodeb", "gnodeb", "ue")
-     */
-    void setNodeType(std::string s);
-
-    /**
-     * utility: print LteStackControlInfo fields
-     *
-     * @param ci LteStackControlInfo object
-     */
     void printControlInfo(inet::Packet *pkt);
 
     // mark packet for using LTE, NR or split bearer
@@ -103,10 +83,6 @@ class Ip2Nic : public cSimpleModule
     //
     // TODO use a better policy
     bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
-
-    void initialize(int stage) override;
-    int numInitStages() const override { return inet::NUM_INIT_STAGES; }
-    void handleMessage(cMessage *msg) override;
 
   public:
     ~Ip2Nic() override;

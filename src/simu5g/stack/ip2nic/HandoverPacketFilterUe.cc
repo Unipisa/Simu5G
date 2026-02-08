@@ -8,55 +8,47 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
+
 #include "HandoverPacketFilterUe.h"
 
-#include <iostream>
-#include <inet/common/ModuleAccess.h>
-#include <inet/common/IInterfaceRegistrationListener.h>
-#include <inet/common/socket/SocketTag_m.h>
-
-#include <inet/transportlayer/tcp_common/TcpHeader.h>
-#include <inet/transportlayer/udp/Udp.h>
-#include <inet/transportlayer/udp/UdpHeader_m.h>
-#include <inet/transportlayer/common/L4Tools.h>
-
-#include <inet/networklayer/common/NetworkInterface.h>
-#include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
-#include <inet/networklayer/ipv4/Ipv4Route.h>
-#include <inet/networklayer/ipv4/IIpv4RoutingTable.h>
-#include <inet/networklayer/common/L3Tools.h>
-#include <inet/networklayer/ipv4/Ipv4Header_m.h>
-
 #include <inet/linklayer/common/InterfaceTag_m.h>
-
-#include "simu5g/stack/mac/LteMacBase.h"
+#include <inet/common/socket/SocketTag_m.h>
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
 namespace simu5g {
 
-using namespace std;
 using namespace inet;
 using namespace omnetpp;
 
 Define_Module(HandoverPacketFilterUe);
+
+HandoverPacketFilterUe::~HandoverPacketFilterUe()
+{
+    while (!ueHoldFromIp_.empty()) {
+        Packet *pkt = ueHoldFromIp_.front();
+        ueHoldFromIp_.pop_front();
+        delete pkt;
+    }
+}
 
 void HandoverPacketFilterUe::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
         binder_.reference(this, "binderModule", true);
-    }
-    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
-        cModule *ue = getContainingNode(this);
-        servingNodeId_ = MacNodeId(ue->par("servingNodeId").intValue());
-        nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
 
-        if (ue->hasPar("nrServingNodeId") && ue->par("nrServingNodeId").intValue() != 0) { // register also the NR MacNodeId
-            nrServingNodeId_ = MacNodeId(ue->par("nrServingNodeId").intValue());
+        cModule *ue = getContainingNode(this);
+        nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
+        if (ue->hasPar("nrMacNodeId"))
             nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
-        }
+    }
+    else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
+        // get serving node IDs -- note the this is STLL not late enough to pick up the result of dynamic cell association
+        if (nodeId_ != NODEID_NONE)
+            servingNodeId_ = binder_->getServingNode(nodeId_);
+        if (nrNodeId_ != NODEID_NONE)
+            nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
     }
 }
 
@@ -126,27 +118,9 @@ void HandoverPacketFilterUe::signalHandoverCompleteUe(bool isNr)
         while (!ueHoldFromIp_.empty()) {
             auto pkt = ueHoldFromIp_.front();
             ueHoldFromIp_.pop_front();
-
-            // send pkt down
-            take(pkt);
             toStackUe(pkt);
         }
         ueHold_ = false;
-    }
-}
-
-HandoverPacketFilterUe::~HandoverPacketFilterUe()
-{
-    //TODO
-}
-
-void HandoverPacketFilterUe::finish()
-{
-    //TODO into RRC!!!
-    if (getSimulation()->getSimulationStage() != CTX_FINISH) {
-        // do this only at deletion of the module during the simulation
-        binder_->unregisterNode(nodeId_);
-        binder_->unregisterNode(nrNodeId_);
     }
 }
 

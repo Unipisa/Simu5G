@@ -10,37 +10,40 @@
 //
 #include "HandoverPacketFilterEnb.h"
 
-#include <iostream>
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/IInterfaceRegistrationListener.h>
 #include <inet/common/socket/SocketTag_m.h>
-
-#include <inet/transportlayer/tcp_common/TcpHeader.h>
-#include <inet/transportlayer/udp/Udp.h>
-#include <inet/transportlayer/udp/UdpHeader_m.h>
-#include <inet/transportlayer/common/L4Tools.h>
-
-#include <inet/networklayer/common/NetworkInterface.h>
-#include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
-#include <inet/networklayer/ipv4/Ipv4Route.h>
-#include <inet/networklayer/ipv4/IIpv4RoutingTable.h>
-#include <inet/networklayer/common/L3Tools.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
-
 #include <inet/linklayer/common/InterfaceTag_m.h>
-
-#include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/common/cellInfo/CellInfo.h"
-#include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/handoverManager/LteHandoverManager.h"
 
 namespace simu5g {
 
-using namespace std;
 using namespace inet;
 using namespace omnetpp;
 
 Define_Module(HandoverPacketFilterEnb);
+
+
+HandoverPacketFilterEnb::~HandoverPacketFilterEnb()
+{
+    for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
+        while (!ipDatagramQueue.empty()) {
+            Packet *pkt = ipDatagramQueue.front();
+            ipDatagramQueue.pop_front();
+            delete pkt;
+        }
+    }
+
+    for (auto &[macNodeId, ipDatagramQueue] : hoFromIp_) {
+        while (!ipDatagramQueue.empty()) {
+            Packet *pkt = ipDatagramQueue.front();
+            ipDatagramQueue.pop_front();
+            delete pkt;
+        }
+    }
+}
 
 void HandoverPacketFilterEnb::initialize(int stage)
 {
@@ -48,8 +51,7 @@ void HandoverPacketFilterEnb::initialize(int stage)
         stackGateOut_ = gate("stackOut");
         hoManager_.reference(this, "handoverManagerModule", false);
         binder_.reference(this, "binderModule", true);
-    }
-    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
+
         cModule *bs = getContainingNode(this);
         nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
     }
@@ -211,25 +213,6 @@ void HandoverPacketFilterEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNo
     }
 
     hoHolding_.erase(ueId);
-}
-
-HandoverPacketFilterEnb::~HandoverPacketFilterEnb()
-{
-    for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
-        while (!ipDatagramQueue.empty()) {
-            Packet *pkt = ipDatagramQueue.front();
-            ipDatagramQueue.pop_front();
-            delete pkt;
-        }
-    }
-
-    for (auto &[macNodeId, ipDatagramQueue] : hoFromIp_) {
-        while (!ipDatagramQueue.empty()) {
-            Packet *pkt = ipDatagramQueue.front();
-            ipDatagramQueue.pop_front();
-            delete pkt;
-        }
-    }
 }
 
 } //namespace

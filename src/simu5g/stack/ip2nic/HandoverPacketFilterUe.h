@@ -13,26 +13,19 @@
 #define __HANDOVERPACKETFILTERUE_H_
 
 #include <inet/common/ModuleRefByPar.h>
-#include <inet/networklayer/common/NetworkInterface.h>
 #include "simu5g/common/LteCommon.h"
-#include "simu5g/common/LteControlInfo.h"
-#include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/handoverManager/LteHandoverManager.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
 namespace simu5g {
 
 using namespace omnetpp;
-
-class LteHandoverManager;
 
 /**
  *
  */
 class HandoverPacketFilterUe : public cSimpleModule
 {
-  public: //protected:
+  protected:
 
     // reference to the binder
     inet::ModuleRefByPar<Binder> binder_;
@@ -54,18 +47,21 @@ class HandoverPacketFilterUe : public cSimpleModule
     cGate *stackGateOut_ = nullptr;
 
   protected:
-    void fromIpUe(inet::Packet *datagram);
-    virtual void toStackUe(inet::Packet *datagram);
-
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
-    void finish() override;
+
+    void fromIpUe(inet::Packet *datagram);
+    virtual void toStackUe(inet::Packet *datagram);
 
   public:
     ~HandoverPacketFilterUe() override;
     void triggerHandoverUe(MacNodeId newMasterId, bool isNr = false);
     void signalHandoverCompleteUe(bool isNr = false);
+
+    MacNodeId getServingNodeId() const { return servingNodeId_; }
+    MacNodeId getNrServingNodeId() const { return nrServingNodeId_; }
+
 };
 
 } //namespace

@@ -9,39 +9,26 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include <iostream>
-#include <inet/common/ModuleAccess.h>
-#include <inet/common/IInterfaceRegistrationListener.h>
 #include <inet/common/socket/SocketTag_m.h>
-
-#include <inet/transportlayer/tcp_common/TcpHeader.h>
-#include <inet/transportlayer/udp/Udp.h>
-#include <inet/transportlayer/udp/UdpHeader_m.h>
-#include <inet/transportlayer/common/L4Tools.h>
-
-#include <inet/networklayer/common/NetworkInterface.h>
-#include <inet/networklayer/ipv4/Ipv4InterfaceData.h>
-#include <inet/networklayer/ipv4/Ipv4Route.h>
-#include <inet/networklayer/ipv4/IIpv4RoutingTable.h>
-#include <inet/networklayer/common/L3Tools.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
-
 #include <inet/linklayer/common/InterfaceTag_m.h>
-
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
 #include "simu5g/stack/ip2nic/HandoverPacketFilterUe.h"
-#include "simu5g/stack/mac/LteMacBase.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/common/cellInfo/CellInfo.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
 namespace simu5g {
 
-using namespace std;
 using namespace inet;
 using namespace omnetpp;
 
 Define_Module(Ip2Nic);
+
+Ip2Nic::~Ip2Nic()
+{
+    if (dualConnectivityEnabled_)
+        delete sbTable_;
+}
 
 void Ip2Nic::initialize(int stage)
 {
@@ -49,7 +36,7 @@ void Ip2Nic::initialize(int stage)
         stackGateOut_ = gate("stackNic$o");
         ipGateOut_ = gate("upperLayerOut");
 
-        setNodeType(par("nodeType").stdstringValue());
+        nodeType_ = aToNodeType(par("nodeType").stdstringValue());
 
         binder_.reference(this, "binderModule", true);
 
@@ -57,21 +44,25 @@ void Ip2Nic::initialize(int stage)
         dualConnectivityEnabled_ = networkIf->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             sbTable_ = new SplitBearersTable();
-    }
-    else if (stage == INITSTAGE_SIMU5G_REGISTRATIONS) {
+
         if (nodeType_ == NODEB) {
             cModule *bs = getContainingNode(this);
             nodeId_ = MacNodeId(bs->par("macNodeId").intValue());
         }
         else if (nodeType_ == UE) {
             cModule *ue = getContainingNode(this);
-            servingNodeId_ = MacNodeId(ue->par("servingNodeId").intValue());
             nodeId_ = MacNodeId(ue->par("macNodeId").intValue());
-
-            if (ue->hasPar("nrServingNodeId") && ue->par("nrServingNodeId").intValue() != 0) { // register also the NR MacNodeId
-                nrServingNodeId_ = MacNodeId(ue->par("nrServingNodeId").intValue());
+            if (ue->hasPar("nrMacNodeId"))
                 nrNodeId_ = MacNodeId(ue->par("nrMacNodeId").intValue());
-            }
+        }
+    }
+    else if (stage == INITSTAGE_SIMU5G_BINDER_ACCESS) {
+        if (nodeType_ == UE) {
+            // get serving node IDs -- note the this is STLL not late enough to pick up the result of dynamic cell association
+            if (nodeId_ != NODEID_NONE)
+                servingNodeId_ = binder_->getServingNode(nodeId_);
+            if (nrNodeId_ != NODEID_NONE)
+                nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
         }
     }
 }
@@ -101,12 +92,6 @@ void Ip2Nic::handleMessage(cMessage *msg)
     }
 }
 
-void Ip2Nic::setNodeType(std::string s)
-{
-    nodeType_ = aToNodeType(s);
-    EV << "Node type: " << s << endl;
-}
-
 void Ip2Nic::toStackUe(Packet *pkt)
 {
     EV << "Ip2Nic::fromIpUe - message from IP layer: send to stack: " << pkt->str() << std::endl;
@@ -134,7 +119,7 @@ void Ip2Nic::toStackUe(Packet *pkt)
     // Set useNR on the packet control info
     pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
-    //** Send datagram to LTE stack or LteIp peer **
+    // Send datagram to LTE stack or LteIp peer
     send(pkt, stackGateOut_);
 }
 
@@ -210,18 +195,6 @@ void Ip2Nic::printControlInfo(Packet *pkt)
 
 bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)
 {
-    // KLUDGE: this is necessary to prevent a runtime error in one of the simulations:
-    //
-    //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketFilter), #476 (Ip2Nic)
-    //    after: ueLteStack=true, ueNrStack=true, servingNodeId=1, nrServingNodeId=2, typeOfService=10 --> useNr = true (ip2nic.cc#319: UE branch, not dualconn("else") )
-    //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketFilter.cc#360)
-    //
-    if (nodeType_ == UE) {
-        auto handoverPacketFilter = check_and_cast<HandoverPacketFilterUe*>(getParentModule()->getSubmodule("handoverPacketFilter"));
-        servingNodeId_ = handoverPacketFilter->servingNodeId_;
-        nrServingNodeId_ = handoverPacketFilter->nrServingNodeId_;
-    }
-
     // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
     // to follow based on the Type of Service (TOS) field:
     // - use master eNB if tos < 10
@@ -282,28 +255,27 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
                 useNR = true;
         }
         else {
-//            servingNodeId_ = binder_->getServingNode(nodeId_);
-//            nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
-            if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ != NODEID_NONE)
+            // KLUDGE: this is necessary to prevent a runtime error in one of the simulations:
+            //
+            //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketFilter), #476 (Ip2Nic)
+            //    after: ueLteStack=true, ueNrStack=true, servingNodeId=1, nrServingNodeId=2, typeOfService=10 --> useNr = true (ip2nic.cc#319: UE branch, not dualconn("else") )
+            //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketFilter.cc#360)
+            //
+            auto handoverPacketFilter = check_and_cast<HandoverPacketFilterUe*>(getParentModule()->getSubmodule("handoverPacketFilter"));
+            servingNodeId_ = handoverPacketFilter->getServingNodeId();
+            nrServingNodeId_ = handoverPacketFilter->getNrServingNodeId();
+            // servingNodeId_ = binder_->getServingNode(nodeId_);
+            // nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
+
+            if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ != NODEID_NONE)  // 5G-connected only
                 useNR = true;
-            else if (servingNodeId_ != NODEID_NONE && nrServingNodeId_ == NODEID_NONE)
+            else if (servingNodeId_ != NODEID_NONE && nrServingNodeId_ == NODEID_NONE)  // LTE-connected only
                 useNR = false;
-            else {
-                // both != 0
-                if (typeOfService >= 10)                                                     // use secondary cell group bearer TODO fix threshold
-                    useNR = true;
-                else                                                       // use master cell group bearer
-                    useNR = false;
-            }
+            else // both
+                useNR = (typeOfService >= 10);   // use secondary cell group bearer TODO fix threshold
         }
     }
     return true;
-}
-
-Ip2Nic::~Ip2Nic()
-{
-    if (dualConnectivityEnabled_)
-        delete sbTable_;
 }
 
 } //namespace
