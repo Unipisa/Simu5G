@@ -135,10 +135,10 @@ class HandoverController : public cSimpleModule
     void beaconReceived(LteAirFrame *frame, UserControlInfo *lteInfo);
 
     /**
-     * Used in a DC setup. called by one HandoverController to force the
+     * Used in a DC setup. Called by a HandoverController to force the
      * other one to do the handover.
      */
-    void forceHandover(MacNodeId targetServingNodeId, double targetServingNodeRssi);
+    void forceHandover();
 };
 
 } //namespace

@@ -290,9 +290,9 @@ void HandoverController::triggerHandover()
                 // Need to wait for the other stack to complete detachment
                 scheduleAt(simTime() + handoverDetachmentTime_ + handoverDelta_, handoverStarter_);
 
-                // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving
-                // Trigger detachment (handover to node 0)
-                otherHandoverController_->forceHandover(NODEID_NONE, 0.0);
+                // The other stack is connected to a node which is a secondary node of the master from which this stack is leaving:
+                // Trigger detachment
+                otherHandoverController_->forceHandover();
 
                 return;
             }
@@ -461,10 +461,10 @@ void HandoverController::doHandover()
     }
 }
 
-void HandoverController::forceHandover(MacNodeId targetServingNodeId, double targetServingNodeRssi)
+void HandoverController::forceHandover()
 {
-    candidateServingNodeId_ = targetServingNodeId;
-    candidateServingNodeRssi_ = targetServingNodeRssi;
+    candidateServingNodeId_ = NODEID_NONE;
+    candidateServingNodeRssi_ = 0.0;
     updateHysteresisThreshold(servingNodeRssi_);
 
     cancelEvent(handoverStarter_);  // if any
