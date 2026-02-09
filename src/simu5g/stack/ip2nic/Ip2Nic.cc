@@ -13,7 +13,7 @@
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
 #include "simu5g/stack/ip2nic/Ip2Nic.h"
-#include "simu5g/stack/ip2nic/HandoverPacketFilterUe.h"
+#include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 
@@ -257,13 +257,13 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
         else {
             // KLUDGE: this is necessary to prevent a runtime error in one of the simulations:
             //
-            //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketFilter), #476 (Ip2Nic)
+            //    test_numerology, multicell_CBR_UL, ue[9], t=0.001909132428, event #475 (HandoverPacketHolder), #476 (Ip2Nic)
             //    after: ueLteStack=true, ueNrStack=true, servingNodeId=1, nrServingNodeId=2, typeOfService=10 --> useNr = true (ip2nic.cc#319: UE branch, not dualconn("else") )
-            //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketFilter.cc#360)
+            //    before: ueLteStack=true, ueNrStack=true,servingNodeId=1, nrServingNodeId=0, typeOfService=10 --> useNr = false, (HandoverPacketHolder.cc#360)
             //
-            auto handoverPacketFilter = check_and_cast<HandoverPacketFilterUe*>(getParentModule()->getSubmodule("handoverPacketFilter"));
-            servingNodeId_ = handoverPacketFilter->getServingNodeId();
-            nrServingNodeId_ = handoverPacketFilter->getNrServingNodeId();
+            auto handoverPacketHolder = check_and_cast<HandoverPacketHolderUe*>(getParentModule()->getSubmodule("handoverPacketHolder"));
+            servingNodeId_ = handoverPacketHolder->getServingNodeId();
+            nrServingNodeId_ = handoverPacketHolder->getNrServingNodeId();
             // servingNodeId_ = binder_->getServingNode(nodeId_);
             // nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
 

@@ -15,7 +15,7 @@
 #include <inet/common/ProtocolTag_m.h>
 
 #include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
-#include "simu5g/stack/ip2nic/HandoverPacketFilterEnb.h"
+#include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
 namespace simu5g {
 
@@ -35,8 +35,8 @@ void LteHandoverManager::initialize(int stage)
         x2ManagerInGate_ = gate("x2ManagerIn");
         x2ManagerOutGate_ = gate("x2ManagerOut");
 
-        // get reference to the HandoverPacketFilter layer
-        handoverPacketFilter_.reference(this, "handoverPacketFilterModule", true);
+        // get reference to the HandoverPacketHolder layer
+        handoverPacketHolder_.reference(this, "handoverPacketHolderModule", true);
 
         losslessHandover_ = par("losslessHandover").boolValue();
 
@@ -119,11 +119,11 @@ void LteHandoverManager::receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, b
 {
     EV << NOW << " LteHandoverManager::receiveHandoverCommand - Received handover command over X2 from eNB " << enb << " for UE " << ueId << endl;
 
-    // send command to HandoverPacketFilter
+    // send command to HandoverPacketHolder
     if (startHo)
-        handoverPacketFilter_->triggerHandoverTarget(ueId, enb);
+        handoverPacketHolder_->triggerHandoverTarget(ueId, enb);
     else
-        handoverPacketFilter_->signalHandoverCompleteSource(ueId, enb);
+        handoverPacketHolder_->signalHandoverCompleteSource(ueId, enb);
 }
 
 void LteHandoverManager::forwardDataToTargetEnb(Packet *datagram, MacNodeId targetEnb)
@@ -153,7 +153,7 @@ void LteHandoverManager::receiveDataFromSourceEnb(Packet *datagram, MacNodeId so
 {
     EV << NOW << " LteHandoverManager::receiveDataFromSourceEnb - Received IP datagram from eNB " << sourceEnb << endl;
 
-    // send data to HandoverPacketFilter for transmission
+    // send data to HandoverPacketHolder for transmission
     send(datagram, "tunnelOut");
 }
 

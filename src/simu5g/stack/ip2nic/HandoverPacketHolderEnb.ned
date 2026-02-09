@@ -13,13 +13,14 @@ package simu5g.stack.ip2nic;
 //
 // TODO
 //
-simple HandoverPacketFilterUe like IHandoverPacketFilter
+simple HandoverPacketHolderEnb like IHandoverPacketHolder
 {
     parameters:
         string binderModule = default("binder");
+        string handoverManagerModule = default("");
         @display("i=block/layer");
     gates:
         input upperLayerIn;
-        input x2In @loose; // required by the interface, but UNUSED
+        input x2In @loose; // only used in eNodeB/gNodeB nodes
         output stackOut;
 }

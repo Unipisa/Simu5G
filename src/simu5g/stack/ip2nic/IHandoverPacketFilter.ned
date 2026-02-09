@@ -13,7 +13,7 @@ package simu5g.stack.ip2nic;
 //
 // TODO
 //
-moduleinterface IHandoverPacketFilter
+moduleinterface IHandoverPacketHolder
 {
     parameters:
         @display("i=block/layer");

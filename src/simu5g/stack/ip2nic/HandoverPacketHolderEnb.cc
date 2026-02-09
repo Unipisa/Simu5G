@@ -8,7 +8,8 @@
 // The above files and the present reference are part of the software itself,
 // and cannot be removed from it.
 //
-#include "HandoverPacketFilterEnb.h"
+
+#include "HandoverPacketHolderEnb.h"
 
 #include <inet/common/ModuleAccess.h>
 #include <inet/common/IInterfaceRegistrationListener.h>
@@ -23,10 +24,10 @@ namespace simu5g {
 using namespace inet;
 using namespace omnetpp;
 
-Define_Module(HandoverPacketFilterEnb);
+Define_Module(HandoverPacketHolderEnb);
 
 
-HandoverPacketFilterEnb::~HandoverPacketFilterEnb()
+HandoverPacketHolderEnb::~HandoverPacketHolderEnb()
 {
     for (auto &[macNodeId, ipDatagramQueue] : hoFromX2_) {
         while (!ipDatagramQueue.empty()) {
@@ -45,7 +46,7 @@ HandoverPacketFilterEnb::~HandoverPacketFilterEnb()
     }
 }
 
-void HandoverPacketFilterEnb::initialize(int stage)
+void HandoverPacketHolderEnb::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
@@ -57,7 +58,7 @@ void HandoverPacketFilterEnb::initialize(int stage)
     }
 }
 
-void HandoverPacketFilterEnb::handleMessage(cMessage *msg)
+void HandoverPacketHolderEnb::handleMessage(cMessage *msg)
 {
     auto pkt = check_and_cast<Packet *>(msg);
     if (msg->getArrivalGate()->isName("x2In"))
@@ -68,9 +69,9 @@ void HandoverPacketFilterEnb::handleMessage(cMessage *msg)
         throw cRuntimeError("Message received on wrong gate %s", msg->getArrivalGate()->getFullName());
 }
 
-void HandoverPacketFilterEnb::fromIpBs(Packet *pkt)
+void HandoverPacketHolderEnb::fromIpBs(Packet *pkt)
 {
-    EV << "HandoverPacketFilter::fromIpBs - message from IP layer: send to stack" << endl;
+    EV << "HandoverPacketHolder::fromIpBs - message from IP layer: send to stack" << endl;
     // Remove control info from IP datagram
     pkt->removeTagIfPresent<SocketInd>();
     removeAllSimu5GTags(pkt);
@@ -117,14 +118,14 @@ void HandoverPacketFilterEnb::fromIpBs(Packet *pkt)
     toStackBs(pkt);
 }
 
-void HandoverPacketFilterEnb::toStackBs(Packet *pkt)
+void HandoverPacketHolderEnb::toStackBs(Packet *pkt)
 {
     send(pkt, stackGateOut_);
 }
 
-void HandoverPacketFilterEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
+void HandoverPacketHolderEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb)
 {
-    EV << NOW << " HandoverPacketFilter::triggerHandoverSource - start tunneling of packets destined to " << ueId << " towards eNB " << targetEnb << endl;
+    EV << NOW << " HandoverPacketHolder::triggerHandoverSource - start tunneling of packets destined to " << ueId << " towards eNB " << targetEnb << endl;
 
     hoForwarding_[ueId] = targetEnb;
 
@@ -135,25 +136,25 @@ void HandoverPacketFilterEnb::triggerHandoverSource(MacNodeId ueId, MacNodeId ta
         hoManager_->sendHandoverCommand(ueId, targetEnb, true);
 }
 
-void HandoverPacketFilterEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
+void HandoverPacketHolderEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb)
 {
-    EV << NOW << " HandoverPacketFilter::triggerHandoverTarget - start holding packets destined to " << ueId << endl;
+    EV << NOW << " HandoverPacketHolder::triggerHandoverTarget - start holding packets destined to " << ueId << endl;
 
     // reception of handover command from X2
     hoHolding_.insert(ueId);
 }
 
-void HandoverPacketFilterEnb::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
+void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
 {
-    EV << "HandoverPacketFilter::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
+    EV << "HandoverPacketHolder::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
     if (!hoManager_)
         hoManager_.reference(this, "handoverManagerModule", true);
     hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
 }
 
-void HandoverPacketFilterEnb::receiveTunneledPacketOnHandover(Packet *datagram)
+void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)
 {
-    EV << "HandoverPacketFilter::receiveTunneledPacketOnHandover - received packet via X2" << endl;
+    EV << "HandoverPacketHolder::receiveTunneledPacketOnHandover - received packet via X2" << endl;
     const auto& hdr = datagram->peekAtFront<Ipv4Header>();
     const Ipv4Address& destAddr = hdr->getDestAddress();
     MacNodeId destId = binder_->getMacNodeId(destAddr);
@@ -168,13 +169,13 @@ void HandoverPacketFilterEnb::receiveTunneledPacketOnHandover(Packet *datagram)
     hoFromX2_[destId].push_back(datagram);
 }
 
-void HandoverPacketFilterEnb::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
+void HandoverPacketHolderEnb::signalHandoverCompleteSource(MacNodeId ueId, MacNodeId targetEnb)
 {
-    EV << NOW << " HandoverPacketFilter::signalHandoverCompleteSource - handover of UE " << ueId << " to eNB " << targetEnb << " completed!" << endl;
+    EV << NOW << " HandoverPacketHolder::signalHandoverCompleteSource - handover of UE " << ueId << " to eNB " << targetEnb << " completed!" << endl;
     hoForwarding_.erase(ueId);
 }
 
-void HandoverPacketFilterEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
+void HandoverPacketHolderEnb::signalHandoverCompleteTarget(MacNodeId ueId, MacNodeId sourceEnb)
 {
     Enter_Method("signalHandoverCompleteTarget");
 

@@ -24,7 +24,7 @@ namespace simu5g {
 
 using namespace omnetpp;
 
-class HandoverPacketFilterEnb;
+class HandoverPacketHolderEnb;
 
 //
 // LteHandoverManager
@@ -41,7 +41,7 @@ class LteHandoverManager : public cSimpleModule
     cGate *x2ManagerInGate_ = nullptr;
     cGate *x2ManagerOutGate_ = nullptr;
 
-    inet::ModuleRefByPar<HandoverPacketFilterEnb> handoverPacketFilter_;
+    inet::ModuleRefByPar<HandoverPacketHolderEnb> handoverPacketHolder_;
 
     // flag for seamless/lossless handover
     bool losslessHandover_;

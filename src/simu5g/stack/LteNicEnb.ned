@@ -33,7 +33,7 @@ module LteNicEnb extends LteNicBase
         pdcp.typename = default("LtePdcpEnb");
         mac.typename = default("LteMacEnb");
         phy.typename = default("LtePhyEnb");
-        handoverPacketFilter.typename = default("HandoverPacketFilterEnb");
+        handoverPacketHolder.typename = default("HandoverPacketHolderEnb");
         packetFlowObserver.typename = default("PacketFlowObserverEnb");
         d2dCapable = default(false);          // DO NOT CHANGE
         bool compEnabled = default(false);
@@ -69,7 +69,7 @@ module LteNicEnb extends LteNicBase
         compManager.x2ManagerOut --> x2Manager.dataPort$i++ if compEnabled;
         handoverManager.x2ManagerIn <-- x2Manager.dataPort$o++;
         handoverManager.x2ManagerOut --> x2Manager.dataPort$i++;
-        handoverManager.tunnelOut --> handoverPacketFilter.x2In;
+        handoverManager.tunnelOut --> handoverPacketHolder.x2In;
         dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPort$o++ if dualConnectivityEnabled;
         dualConnectivityManager.x2ManagerOut --> x2Manager.dataPort$i++ if dualConnectivityEnabled;
 

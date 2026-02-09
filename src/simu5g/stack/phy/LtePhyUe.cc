@@ -13,7 +13,7 @@
 #include <assert.h>
 #include "simu5g/stack/phy/LtePhyUe.h"
 
-#include "../ip2nic/HandoverPacketFilterUe.h"
+#include "../ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/stack/rrc/HandoverController.h"
 #include "simu5g/stack/phy/NrPhyUe.h"
 #include "simu5g/stack/mac/LteMacEnb.h"
@@ -60,7 +60,7 @@ void LtePhyUe::initialize(int stage)
         EV << "Local MacNodeId: " << nodeId_ << endl;
     }
     else if (stage == INITSTAGE_SIMU5G_CELLINFO_CHANNELUPDATE) { //TODO being fwd, eliminate stage
-        // get cellInfo at this stage because the next hop of the node is registered in the HandoverPacketFilter module at the INITSTAGE_SIMU5G_NETWORK_LAYER
+        // get cellInfo at this stage because the next hop of the node is registered in the HandoverPacketHolder module at the INITSTAGE_SIMU5G_NETWORK_LAYER
         if (servingNodeId_ != NODEID_NONE)
             cellInfo_ = binder_->getCellInfoByNodeId(nodeId_);
         else

@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __HANDOVERPACKETFILTERENB_H_
-#define __HANDOVERPACKETFILTERENB_H_
+#ifndef __HANDOVERPACKETHOLDERENB_H_
+#define __HANDOVERPACKETHOLDERENB_H_
 
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteCommon.h"
@@ -26,7 +26,7 @@ class LteHandoverManager;
  *
  */
 //TODO rename to HandoverPacketHolderEnb, write docu
-class HandoverPacketFilterEnb : public cSimpleModule
+class HandoverPacketHolderEnb : public cSimpleModule
 {
   protected:
     // reference to the binder
@@ -56,7 +56,7 @@ class HandoverPacketFilterEnb : public cSimpleModule
     virtual void toStackBs(inet::Packet *datagram);
 
   public:
-    ~HandoverPacketFilterEnb() override;
+    ~HandoverPacketHolderEnb() override;
     void triggerHandoverSource(MacNodeId ueId, MacNodeId targetEnb);
     void triggerHandoverTarget(MacNodeId ueId, MacNodeId sourceEnb);
     void sendTunneledPacketOnHandover(inet::Packet *datagram, MacNodeId targetEnb);

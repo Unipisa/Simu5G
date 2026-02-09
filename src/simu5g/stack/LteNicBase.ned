@@ -14,7 +14,7 @@
 package simu5g.stack;
 
 import inet.networklayer.common.NetworkInterface;
-import simu5g.stack.ip2nic.IHandoverPacketFilter;
+import simu5g.stack.ip2nic.IHandoverPacketHolder;
 import simu5g.stack.ip2nic.INetworkLayer2CellularNic;
 import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
@@ -71,7 +71,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
     submodules:
         // handover helper, performs packet holding / forwarding
-        handoverPacketFilter: <> like IHandoverPacketFilter {
+        handoverPacketHolder: <> like IHandoverPacketHolder {
             @display("p=412,67");
         }
         // bridge between radio nic and network layer
@@ -116,7 +116,7 @@ module LteNicBase extends NetworkInterface like ICellularNic
         }
 
     connections allowunconnected:
-        handoverPacketFilter.stackOut --> ip2nic.upperLayerIn;
+        handoverPacketHolder.stackOut --> ip2nic.upperLayerIn;
         ip2nic.stackNic <--> pdcp.DataPort;
 
         //#
@@ -141,6 +141,6 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //# external: lower connection
         radioIn --> phy.radioIn;
         ip2nic.upperLayerOut --> {  delay = parent.processingDelayOut; } --> upperLayerOut;
-        upperLayerIn --> {  delay = parent.processingDelayIn; } --> handoverPacketFilter.upperLayerIn;
+        upperLayerIn --> {  delay = parent.processingDelayIn; } --> handoverPacketHolder.upperLayerIn;
 }
 

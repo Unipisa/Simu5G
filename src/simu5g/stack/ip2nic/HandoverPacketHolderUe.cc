@@ -9,7 +9,7 @@
 // and cannot be removed from it.
 //
 
-#include "HandoverPacketFilterUe.h"
+#include "HandoverPacketHolderUe.h"
 
 #include <inet/linklayer/common/InterfaceTag_m.h>
 #include <inet/common/socket/SocketTag_m.h>
@@ -21,9 +21,9 @@ namespace simu5g {
 using namespace inet;
 using namespace omnetpp;
 
-Define_Module(HandoverPacketFilterUe);
+Define_Module(HandoverPacketHolderUe);
 
-HandoverPacketFilterUe::~HandoverPacketFilterUe()
+HandoverPacketHolderUe::~HandoverPacketHolderUe()
 {
     while (!ueHoldFromIp_.empty()) {
         Packet *pkt = ueHoldFromIp_.front();
@@ -32,7 +32,7 @@ HandoverPacketFilterUe::~HandoverPacketFilterUe()
     }
 }
 
-void HandoverPacketFilterUe::initialize(int stage)
+void HandoverPacketHolderUe::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         stackGateOut_ = gate("stackOut");
@@ -52,7 +52,7 @@ void HandoverPacketFilterUe::initialize(int stage)
     }
 }
 
-void HandoverPacketFilterUe::handleMessage(cMessage *msg)
+void HandoverPacketHolderUe::handleMessage(cMessage *msg)
 {
     if (!msg->getArrivalGate()->isName("upperLayerIn"))
         throw cRuntimeError("Message received on wrong gate %s", msg->getArrivalGate()->getFullName());
@@ -61,9 +61,9 @@ void HandoverPacketFilterUe::handleMessage(cMessage *msg)
     fromIpUe(pkt);
 }
 
-void HandoverPacketFilterUe::fromIpUe(Packet *datagram)
+void HandoverPacketHolderUe::fromIpUe(Packet *datagram)
 {
-    EV << "HandoverPacketFilter::fromIpUe - message from IP layer: send to stack: " << datagram->str() << std::endl;
+    EV << "HandoverPacketHolder::fromIpUe - message from IP layer: send to stack: " << datagram->str() << std::endl;
     // Remove control info from IP datagram
     datagram->removeTagIfPresent<SocketInd>();
     removeAllSimu5GTags(datagram);
@@ -77,7 +77,7 @@ void HandoverPacketFilterUe::fromIpUe(Packet *datagram)
     }
     else {
         if (servingNodeId_ == NODEID_NONE && nrServingNodeId_ == NODEID_NONE) { // UE is detached
-            EV << "HandoverPacketFilter::fromIpUe - UE is not attached to any serving node. Delete packet." << endl;
+            EV << "HandoverPacketHolder::fromIpUe - UE is not attached to any serving node. Delete packet." << endl;
             delete datagram;
         }
         else
@@ -85,14 +85,14 @@ void HandoverPacketFilterUe::fromIpUe(Packet *datagram)
     }
 }
 
-void HandoverPacketFilterUe::toStackUe(Packet *pkt)
+void HandoverPacketHolderUe::toStackUe(Packet *pkt)
 {
     send(pkt, stackGateOut_);
 }
 
-void HandoverPacketFilterUe::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
+void HandoverPacketHolderUe::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
 {
-    EV << NOW << " HandoverPacketFilter::triggerHandoverUe - start holding packets" << endl;
+    EV << NOW << " HandoverPacketHolder::triggerHandoverUe - start holding packets" << endl;
 
     if (newMasterId != NODEID_NONE) {
         ueHold_ = true;
@@ -105,7 +105,7 @@ void HandoverPacketFilterUe::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
     }
 }
 
-void HandoverPacketFilterUe::signalHandoverCompleteUe(bool isNr)
+void HandoverPacketHolderUe::signalHandoverCompleteUe(bool isNr)
 {
     Enter_Method("signalHandoverCompleteUe");
 

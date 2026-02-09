@@ -9,8 +9,8 @@
 // and cannot be removed from it.
 //
 
-#ifndef __HANDOVERPACKETFILTERUE_H_
-#define __HANDOVERPACKETFILTERUE_H_
+#ifndef __HANDOVERPACKETHOLDERUE_H_
+#define __HANDOVERPACKETHOLDERUE_H_
 
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteCommon.h"
@@ -23,7 +23,7 @@ using namespace omnetpp;
 /**
  *
  */
-class HandoverPacketFilterUe : public cSimpleModule
+class HandoverPacketHolderUe : public cSimpleModule
 {
   protected:
 
@@ -55,7 +55,7 @@ class HandoverPacketFilterUe : public cSimpleModule
     virtual void toStackUe(inet::Packet *datagram);
 
   public:
-    ~HandoverPacketFilterUe() override;
+    ~HandoverPacketHolderUe() override;
     void triggerHandoverUe(MacNodeId newMasterId, bool isNr = false);
     void signalHandoverCompleteUe(bool isNr = false);
 
