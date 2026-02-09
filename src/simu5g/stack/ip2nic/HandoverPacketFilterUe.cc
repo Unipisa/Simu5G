@@ -96,16 +96,12 @@ void HandoverPacketFilterUe::triggerHandoverUe(MacNodeId newMasterId, bool isNr)
 
     if (newMasterId != NODEID_NONE) {
         ueHold_ = true;
-        if (isNr)
-            nrServingNodeId_ = newMasterId;
-        else
-            servingNodeId_ = newMasterId;
+        MacNodeId& servingNodeIdToSet = !isNr ? servingNodeId_ : nrServingNodeId_;
+        servingNodeIdToSet = newMasterId;
     }
     else {
-        if (isNr)
-            nrServingNodeId_ = NODEID_NONE;
-        else
-            servingNodeId_ = NODEID_NONE;
+        MacNodeId& servingNodeIdToSet = !isNr ? servingNodeId_ : nrServingNodeId_;
+        servingNodeIdToSet = NODEID_NONE;
     }
 }
 
@@ -113,7 +109,8 @@ void HandoverPacketFilterUe::signalHandoverCompleteUe(bool isNr)
 {
     Enter_Method("signalHandoverCompleteUe");
 
-    if ((!isNr && servingNodeId_ != NODEID_NONE) || (isNr && nrServingNodeId_ != NODEID_NONE)) {
+    MacNodeId servingNodeId = !isNr ? servingNodeId_ : nrServingNodeId_;
+    if (servingNodeId != NODEID_NONE) {
         // send held packets
         while (!ueHoldFromIp_.empty()) {
             auto pkt = ueHoldFromIp_.front();
