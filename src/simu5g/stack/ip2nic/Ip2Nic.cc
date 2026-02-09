@@ -26,8 +26,6 @@ Define_Module(Ip2Nic);
 
 Ip2Nic::~Ip2Nic()
 {
-    if (dualConnectivityEnabled_)
-        delete sbTable_;
 }
 
 void Ip2Nic::initialize(int stage)
@@ -42,8 +40,6 @@ void Ip2Nic::initialize(int stage)
 
         networkIf = getContainingNicModule(this);
         dualConnectivityEnabled_ = networkIf->par("dualConnectivityEnabled").boolValue();
-        if (dualConnectivityEnabled_)
-            sbTable_ = new SplitBearersTable();
 
         if (nodeType_ == NODEB) {
             cModule *bs = getContainingNode(this);
@@ -216,9 +212,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
             // even packets go through the LTE eNodeB
             // odd packets go through the gNodeB
 
-            int sentPackets;
-            if ((sentPackets = sbTable_->find_entry(srcAddr.getInt(), dstAddr.getInt(), typeOfService)) < 0)
-                sentPackets = sbTable_->create_entry(srcAddr.getInt(), dstAddr.getInt(), typeOfService);
+            FlowKey key{srcAddr.getInt(), dstAddr.getInt(), typeOfService};
+            int sentPackets = splitBearersTable_[key]++;
 
             if (sentPackets % 2 == 0)
                 useNR = false;
@@ -245,9 +240,8 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
         bool ueLteStack = (binder_->getServingNodeOrSelf(nodeId_) != NODEID_NONE);
         bool ueNrStack = (binder_->getServingNodeOrSelf(nrNodeId_) != NODEID_NONE);
         if (dualConnectivityEnabled_ && ueLteStack && ueNrStack && typeOfService >= 20) { // use split bearer TODO fix threshold
-            int sentPackets;
-            if ((sentPackets = sbTable_->find_entry(srcAddr.getInt(), dstAddr.getInt(), typeOfService)) < 0)
-                sentPackets = sbTable_->create_entry(srcAddr.getInt(), dstAddr.getInt(), typeOfService);
+            FlowKey key{srcAddr.getInt(), dstAddr.getInt(), typeOfService};
+            int sentPackets = splitBearersTable_[key]++;
 
             if (sentPackets % 2 == 0)
                 useNR = false;

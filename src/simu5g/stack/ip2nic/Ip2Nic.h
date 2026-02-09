@@ -15,9 +15,9 @@
 
 #include <inet/common/ModuleRefByPar.h>
 #include <inet/networklayer/common/NetworkInterface.h>
+#include <unordered_map>
 #include "simu5g/common/LteCommon.h"
 #include "simu5g/common/binder/Binder.h"
-#include "simu5g/stack/ip2nic/SplitBearersTable.h"
 
 namespace simu5g {
 
@@ -25,12 +25,29 @@ using namespace omnetpp;
 
 class LteHandoverManager;
 
+
 /**
  *
  */
 class Ip2Nic : public cSimpleModule
 {
   protected:
+    // Represents a flow using source address, destination address, and type of service.
+    struct FlowKey {
+        uint32_t srcAddr;
+        uint32_t dstAddr;
+        uint16_t typeOfService;
+        bool operator==(const FlowKey& other) const { return srcAddr == other.srcAddr && dstAddr == other.dstAddr && typeOfService == other.typeOfService; }
+    };
+
+    // Hash function for FlowKey
+    struct FlowKeyHash {
+        std::size_t operator()(const FlowKey& key) const {
+            // Combine hashes using XOR and bit shifting for better distribution
+            return std::hash<uint32_t>()(key.srcAddr) ^ (std::hash<uint32_t>()(key.dstAddr) << 1) ^ (std::hash<uint16_t>()(key.typeOfService) << 2);
+        }
+    };
+
     RanNodeType nodeType_;      // UE or NODEB
 
     // reference to the binder
@@ -50,7 +67,7 @@ class Ip2Nic : public cSimpleModule
     bool dualConnectivityEnabled_;
 
     // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
-    SplitBearersTable *sbTable_ = nullptr;
+    std::unordered_map<FlowKey, int, FlowKeyHash> splitBearersTable_;
 
     cGate *stackGateOut_ = nullptr;       // gate connecting Ip2Nic module to cellular stack
     cGate *ipGateOut_ = nullptr;          // gate connecting Ip2Nic module to network layer
