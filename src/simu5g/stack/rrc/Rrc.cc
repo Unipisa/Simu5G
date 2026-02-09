@@ -120,6 +120,16 @@ void Rrc::initialize(int stage)
     }
 }
 
+void Rrc::finish()
+{
+    if (getSimulation()->getSimulationStage() != CTX_FINISH) {
+        if (lteNodeId != NODEID_NONE)
+            binder->unregisterNode(lteNodeId);
+        if (nrNodeId != NODEID_NONE)
+            binder->unregisterNode(nrNodeId);
+    }
+}
+
 void Rrc::registerInterface()
 {
     IInterfaceTable *ift = getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this);

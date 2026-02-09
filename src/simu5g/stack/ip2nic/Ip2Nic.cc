@@ -533,13 +533,4 @@ Ip2Nic::~Ip2Nic()
         delete sbTable_;
 }
 
-void Ip2Nic::finish()
-{
-    if (getSimulation()->getSimulationStage() != CTX_FINISH) {
-        // do this only at deletion of the module during the simulation
-        binder_->unregisterNode(nodeId_);
-        binder_->unregisterNode(nrNodeId_);
-    }
-}
-
 } //namespace
