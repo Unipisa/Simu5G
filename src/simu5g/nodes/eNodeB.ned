@@ -14,6 +14,8 @@ package simu5g.nodes;
 
 import inet.applications.contract.IApp;
 import inet.common.MessageDispatcher;
+import simu5g.stack.ICellularNic;
+import simu5g.x2.LteX2App;
 import inet.linklayer.ppp.PppInterface;
 import inet.mobility.static.StationaryMobility;
 import inet.networklayer.common.InterfaceTable;
@@ -26,8 +28,6 @@ import simu5g.corenetwork.gtp.GtpUser;
 import simu5g.corenetwork.gtp.GtpUserX2;
 import simu5g.corenetwork.statsCollector.IStatsCollector;
 import simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter;
-import simu5g.stack.ICellularNic;
-import simu5g.x2.LteX2App;
 
 //
 // Models an evolved Node B (eNB) of a 4G LTE network. It is a specialized device equipped
@@ -212,19 +212,19 @@ module eNodeB
         //#
         trafficFlowFilter: TrafficFlowFilter {
             parameters:
-                @display("p=1172,372");
+                @display("p=1172,80");
                 ownerType = parent.nodeType;
         }
         gtpUser: GtpUser {
             parameters:
-                @display("p=1041,372");
+                @display("p=1041,80");
                 ipOutInterface = "cellular";
                 gateway = parent.gateway;
         }
 
         gtpUserX2: GtpUserX2 {
             parameters:
-                @display("p=900,372");
+                @display("p=900,80");
         }
 
     connections allowunconnected:
@@ -253,9 +253,9 @@ module eNodeB
         //#
         //# Connections to the core network
         //#
-        nl.in++ <-- gtpUser.pppGate;
+        at.in++ <-- gtpUser.pppGate;
         trafficFlowFilter.gtpUserGateOut --> gtpUser.trafficFlowFilterGate;
-        trafficFlowFilter.internetFilterGateIn <-- nl.out++;
+        trafficFlowFilter.internetFilterGateIn <-- at.out++;
         gtpUser.socketOut --> at.in++;
         gtpUser.socketIn <-- at.out++;
 
@@ -276,8 +276,8 @@ module eNodeB
         }
 
 		//#
-		//# Apps to transport layer connections
-		//#
+    //# Apps to transport layer connections
+    //#
         for i=0..numApps-1 {
             app[i].socketOut --> at.in++;
             app[i].socketIn <-- at.out++;
