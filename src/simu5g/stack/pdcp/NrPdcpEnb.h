@@ -42,6 +42,8 @@ class NrPdcpEnb : public LtePdcpEnbD2D
 
     void initialize(int stage) override;
 
+    void handleMessage(cMessage *msg) override;
+
     /**
      * Analyze the packet and fill out its lteInfo.
      * @param pkt Incoming packet

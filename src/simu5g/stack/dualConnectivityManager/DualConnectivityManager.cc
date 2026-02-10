@@ -14,6 +14,8 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
+#include "simu5g/common/LteControlInfoTags_m.h"
+
 namespace simu5g {
 
 using namespace omnetpp;
@@ -46,10 +48,19 @@ void DualConnectivityManager::initialize(int stage)
 
 void DualConnectivityManager::handleMessage(cMessage *msg)
 {
-    if (msg->getArrivalGate() == x2ManagerInGate_) {
+    cGate *incoming = msg->getArrivalGate();
+    if (incoming == x2ManagerInGate_) {
         // incoming data from X2 Manager
         EV << "DualConnectivityManager::handleMessage - Received message from X2 manager" << endl;
         handleX2Message(msg);
+    }
+    else if (incoming->isName("dataIn")) {
+        // incoming data from PDCP to forward via X2
+        EV << "DualConnectivityManager::handleMessage - Received data packet from PDCP for X2 forwarding" << endl;
+        auto pkt = check_and_cast<inet::Packet*>(msg);
+        auto tag = pkt->removeTag<X2TargetReq>();
+        MacNodeId targetNode = tag->getTargetNode();
+        forwardDataToTargetNode(pkt, targetNode);
     }
     else
         delete msg;
@@ -112,8 +123,13 @@ void DualConnectivityManager::forwardDataToTargetNode(inet::Packet *pkt, MacNode
 void DualConnectivityManager::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
 {
     EV << NOW << " DualConnectivityManager::receiveDataFromSourceNode - Received packet from node " << sourceNode << endl;
-    // send data to PDCP
-    pdcp_->receiveDataFromSourceNode(pkt, sourceNode);
+
+    // Add tag with source node information
+    auto tag = pkt->addTagIfAbsent<X2SourceNodeInd>();
+    tag->setSourceNode(sourceNode);
+
+    // Send packet to PDCP via gate instead of direct method call
+    send(pkt, "tunnelOut");
 }
 
 } //namespace

@@ -28,4 +28,6 @@ simple DualConnectivityManager like IDualConnectivityManager
         //# connections to the X2 Manager
         input x2ManagerIn;
         output x2ManagerOut;
+        input dataIn; // data packets from PDCP to forward via X2
+        output tunnelOut; // data packets received from X2 to send to PDCP
 }

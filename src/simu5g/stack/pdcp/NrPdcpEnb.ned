@@ -25,4 +25,8 @@ simple NrPdcpEnb extends LtePdcpEnbD2D
         string dualConnectivityManagerModule = default("^.dualConnectivityManager");
         rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
+
+    gates:
+        output dcManagerOut; // to forward packets to dual connectivity manager for X2 forwarding
+        input dcManagerIn; // to receive packets from dual connectivity manager via X2
 }

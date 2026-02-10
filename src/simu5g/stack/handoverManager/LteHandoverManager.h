@@ -46,25 +46,27 @@ class LteHandoverManager : public cSimpleModule
     // flag for seamless/lossless handover
     bool losslessHandover_;
 
-    void handleX2Message(cPacket *pkt);
-
-  public:
+  protected:
 
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }
     void handleMessage(cMessage *msg) override;
 
-    // send handover command on X2 to the eNB
-    void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
+    void handleX2Message(cPacket *pkt);
 
     // receive handover command on X2 from the source eNB
     void receiveHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
 
-    // send an IP datagram to the X2 Manager
+    // send an IP datagram to the X2 Manager (called internally via gate)
     void forwardDataToTargetEnb(inet::Packet *datagram, MacNodeId targetEnb);
 
     // receive data from X2 message and send it to the X2 Manager
     void receiveDataFromSourceEnb(inet::Packet *datagram, MacNodeId sourceEnb);
+
+  public:
+    // send handover command on X2 to the eNB
+    void sendHandoverCommand(MacNodeId ueId, MacNodeId enb, bool startHo);
+
 };
 
 } //namespace

@@ -34,4 +34,5 @@ simple LteHandoverManager like ILteHandoverManager
         output x2ManagerOut;
 
         output tunnelOut; // data packets received via the X2 tunnel during handover
+        input dataIn; // data packets from HandoverPacketHolder to forward via X2
 }

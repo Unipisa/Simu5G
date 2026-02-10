@@ -34,6 +34,23 @@ void NrPdcpEnb::initialize(int stage)
     }
 }
 
+void NrPdcpEnb::handleMessage(cMessage *msg)
+{
+    cPacket *pkt = check_and_cast<cPacket *>(msg);
+    if (msg->getArrivalGate()->isName("dcManagerIn")) {
+        // incoming data from DualConnectivityManager via X2
+        EV << "NrPdcpEnb::handleMessage - Received packet from DualConnectivityManager" << endl;
+        auto datagram = check_and_cast<Packet*>(pkt);
+        auto tag = datagram->removeTag<X2SourceNodeInd>();
+        MacNodeId sourceNode = tag->getSourceNode();
+        receiveDataFromSourceNode(datagram, sourceNode);
+    }
+    else {
+        // delegate to parent class
+        LtePdcpEnbD2D::handleMessage(msg);
+    }
+}
+
 /*
  * Upper Layer handlers
  */
@@ -129,7 +146,13 @@ MacNodeId NrPdcpEnb::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, M
 void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)
 {
     EV << NOW << " NrPdcpEnb::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
-    dualConnectivityManager_->forwardDataToTargetNode(pkt, targetNode);
+
+    // Add tag with target node information
+    auto tag = pkt->addTagIfAbsent<X2TargetReq>();
+    tag->setTargetNode(targetNode);
+
+    // Send packet to dual connectivity manager via gate instead of direct method call
+    send(pkt, "dcManagerOut");
 }
 
 void NrPdcpEnb::receiveDataFromSourceNode(Packet *pkt, MacNodeId sourceNode)

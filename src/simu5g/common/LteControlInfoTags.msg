@@ -157,6 +157,24 @@ class PhyReceptionInd extends inet::TagBase {
     bool deciderResult = false;         // Decoding result
 }
 
+//
+// Request tag containing the target node identifier for X2 data forwarding.
+// Used for both handover and dual connectivity operations to pass the target node parameter
+// when forwarding data packets via X2 interface through gates instead of direct method calls.
+//
+class X2TargetReq extends inet::TagBase {
+    MacNodeId targetNode = NODEID_NONE;  // Target node MAC ID for X2 forwarding
+}
+
+//
+// Indication tag containing the source node identifier for X2 data reception.
+// Used to pass the source node parameter when receiving data from X2 interface
+// through gates instead of direct method calls.
+//
+class X2SourceNodeInd extends inet::TagBase {
+    MacNodeId sourceNode = NODEID_NONE;  // Source node MAC ID from X2
+}
+
 cplusplus (UserTransmissionParametersInd::setUserTxParams) {{
     // Code inserted at top of setUserTxParams(); allows silent overwrite of earlier object.
     delete this->userTxParams;

@@ -17,6 +17,7 @@
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/linklayer/common/InterfaceTag_m.h>
 #include "simu5g/common/binder/Binder.h"
+#include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/handoverManager/LteHandoverManager.h"
 
 namespace simu5g {
@@ -147,9 +148,13 @@ void HandoverPacketHolderEnb::triggerHandoverTarget(MacNodeId ueId, MacNodeId so
 void HandoverPacketHolderEnb::sendTunneledPacketOnHandover(Packet *datagram, MacNodeId targetEnb)
 {
     EV << "HandoverPacketHolder::sendTunneledPacketOnHandover - destination is handing over to eNB " << targetEnb << ". Forward packet via X2." << endl;
-    if (!hoManager_)
-        hoManager_.reference(this, "handoverManagerModule", true);
-    hoManager_->forwardDataToTargetEnb(datagram, targetEnb);
+
+    // Add tag with target eNodeB information
+    auto tag = datagram->addTagIfAbsent<X2TargetReq>();
+    tag->setTargetNode(targetEnb);
+
+    // Send packet to handover manager via gate instead of direct method call
+    send(datagram, "hoManagerOut");
 }
 
 void HandoverPacketHolderEnb::receiveTunneledPacketOnHandover(Packet *datagram)

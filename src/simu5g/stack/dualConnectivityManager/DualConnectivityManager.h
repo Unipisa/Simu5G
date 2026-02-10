@@ -30,7 +30,6 @@ using namespace inet;
 //
 class DualConnectivityManager : public cSimpleModule
 {
-
   protected:
 
     // reference to PDCP layer
@@ -45,7 +44,7 @@ class DualConnectivityManager : public cSimpleModule
 
     void handleX2Message(cMessage *msg);
 
-  public:
+  protected:
 
     void initialize(int stage) override;
     int numInitStages() const override { return inet::NUM_INIT_STAGES; }

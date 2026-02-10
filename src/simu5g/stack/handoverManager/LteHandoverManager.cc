@@ -14,6 +14,7 @@
 
 #include <inet/common/ProtocolTag_m.h>
 
+#include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/handoverManager/X2HandoverCommandIE.h"
 #include "simu5g/stack/ip2nic/HandoverPacketHolderEnb.h"
 
@@ -59,6 +60,14 @@ void LteHandoverManager::handleMessage(cMessage *msg)
         // incoming data from X2 Manager
         EV << "LteHandoverManager::handleMessage - Received message from X2 Manager" << endl;
         handleX2Message(pkt);
+    }
+    else if (incoming->isName("dataIn")) {
+        // incoming data from HandoverPacketHolder to forward via X2
+        EV << "LteHandoverManager::handleMessage - Received data packet from HandoverPacketHolder for X2 forwarding" << endl;
+        auto datagram = check_and_cast<Packet*>(pkt);
+        auto tag = datagram->removeTag<X2TargetReq>();
+        MacNodeId targetEnb = tag->getTargetNode();
+        forwardDataToTargetEnb(datagram, targetEnb);
     }
     else
         delete msg;

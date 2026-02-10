@@ -70,8 +70,11 @@ module LteNicEnb extends LteNicBase
         handoverManager.x2ManagerIn <-- x2Manager.dataPort$o++;
         handoverManager.x2ManagerOut --> x2Manager.dataPort$i++;
         handoverManager.tunnelOut --> handoverPacketHolder.x2In;
+        handoverPacketHolder.hoManagerOut --> handoverManager.dataIn;
         dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPort$o++ if dualConnectivityEnabled;
         dualConnectivityManager.x2ManagerOut --> x2Manager.dataPort$i++ if dualConnectivityEnabled;
+        pdcp.dcManagerOut --> dualConnectivityManager.dataIn if dualConnectivityEnabled;
+        dualConnectivityManager.tunnelOut --> pdcp.dcManagerIn if dualConnectivityEnabled;
 
         if ( sizeof(x2) > 0 ) {
             //# connections between X2 Manager and GTP (for handover)
