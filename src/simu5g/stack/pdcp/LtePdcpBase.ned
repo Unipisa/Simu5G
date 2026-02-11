@@ -49,7 +49,8 @@ simple LtePdcpBase like ILtePdcp
         //#
         //# Data Ports
 
-        inout DataPort;            // Port to transmit data packets
+        input upperLayerIn;        // Port to receive data packets from upper layer
+        output upperLayerOut;      // Port to send data packets to upper layer
 
         //#
         //# Gates connecting PDCP/RRC and RLC Layer

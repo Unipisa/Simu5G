@@ -31,7 +31,7 @@ Ip2Nic::~Ip2Nic()
 void Ip2Nic::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        stackGateOut_ = gate("stackNic$o");
+        stackGateOut_ = gate("stackOut");
         ipGateOut_ = gate("upperLayerOut");
 
         nodeType_ = aToNodeType(par("nodeType").stdstringValue());
@@ -73,7 +73,7 @@ void Ip2Nic::handleMessage(cMessage *msg)
             toStackUe(check_and_cast<Packet*>(msg));
         }
     }
-    else if (msg->getArrivalGate()->isName("stackNic$i")) {
+    else if (msg->getArrivalGate()->isName("stackIn")) {
         EV << "Ip2Nic: message from stack: sending up" << endl;
         auto pkt = check_and_cast<Packet *>(msg);
         pkt->removeTagIfPresent<SocketInd>();

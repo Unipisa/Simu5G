@@ -20,9 +20,9 @@ import simu5g.stack.mac.ILteMac;
 import simu5g.stack.packetFlowObserver.IPacketFlowObserver;
 import simu5g.stack.pdcp.ILtePdcp;
 import simu5g.stack.phy.ILtePhy;
-import simu5g.stack.phy.channelmodel.ILteChannelModel;
 import simu5g.stack.rlc.LteRlc;
 import simu5g.stack.rrc.IRrc;
+import simu5g.stack.phy.channelmodel.ILteChannelModel;
 
 
 //
@@ -117,7 +117,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
 
     connections allowunconnected:
         handoverPacketHolder.stackOut --> ip2nic.upperLayerIn;
-        ip2nic.stackNic <--> pdcp.DataPort;
+        ip2nic.stackOut --> pdcp.upperLayerIn;
+        ip2nic.stackIn <-- pdcp.upperLayerOut;
 
         //#
         //# Internal LTE Stack Connections

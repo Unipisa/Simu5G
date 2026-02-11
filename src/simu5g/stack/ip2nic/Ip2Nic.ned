@@ -30,5 +30,6 @@ simple Ip2Nic like INetworkLayer2CellularNic
         output upperLayerOut;
 
         // connection to the cellular stack
-        inout stackNic;
+        input stackIn;
+        output stackOut;
 }

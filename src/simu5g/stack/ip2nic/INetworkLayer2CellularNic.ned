@@ -29,6 +29,7 @@ moduleinterface INetworkLayer2CellularNic
         output upperLayerOut;
 
         // connection to the cellular stack
-        inout stackNic @labels(IPDatagram);
+        input stackIn;
+        output stackOut;
 }
 

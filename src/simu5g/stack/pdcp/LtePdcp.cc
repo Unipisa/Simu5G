@@ -254,14 +254,14 @@ void LtePdcpBase::toDataPort(cPacket *pktAux)
     auto pkt = check_and_cast<Packet *>(pktAux);
     take(pkt);
 
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o\n";
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port upperLayerOut\n";
 
     pkt->addTagIfAbsent<PacketProtocolTag>()->setProtocol(&Protocol::ipv4);
 
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port DataPort$o\n";
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port upperLayerOut\n";
 
     // Send message
-    send(pkt, dataPortOutGate_);
+    send(pkt, upperLayerOutGate_);
     emit(sentPacketToUpperLayerSignal_, pkt);
 }
 
@@ -320,8 +320,8 @@ void LtePdcpBase::sendToLowerLayer(Packet *pkt)
 void LtePdcpBase::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        dataPortInGate_ = gate("DataPort$i");
-        dataPortOutGate_ = gate("DataPort$o");
+        upperLayerInGate_ = gate("upperLayerIn");
+        upperLayerOutGate_ = gate("upperLayerOut");
         tmSapInGate_ = gate("TM_Sap$i", 0);
         tmSapOutGate_ = gate("TM_Sap$o", 0);
         umSapInGate_ = gate("UM_Sap$i", 0);
@@ -367,7 +367,7 @@ void LtePdcpBase::handleMessage(cMessage *msg)
        << pkt->getArrivalGate()->getName() << endl;
 
     cGate *incoming = pkt->getArrivalGate();
-    if (incoming == dataPortInGate_) {
+    if (incoming == upperLayerInGate_) {
         fromDataPort(pkt);
     }
     else {

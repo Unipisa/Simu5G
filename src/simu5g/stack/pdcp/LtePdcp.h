@@ -109,8 +109,8 @@ class LtePdcpBase : public cSimpleModule
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;
 
-    cGate *dataPortInGate_ = nullptr;
-    cGate *dataPortOutGate_ = nullptr;
+    cGate *upperLayerInGate_ = nullptr;
+    cGate *upperLayerOutGate_ = nullptr;
     cGate *tmSapInGate_ = nullptr;
     cGate *tmSapOutGate_ = nullptr;
     cGate *umSapInGate_ = nullptr;
