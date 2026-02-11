@@ -65,26 +65,26 @@ module LteNicEnb extends LteNicBase
 
     connections:
         //# connections between X2 Manager and its users
-        compManager.x2ManagerIn <-- x2Manager.dataPort$o++ if compEnabled;
-        compManager.x2ManagerOut --> x2Manager.dataPort$i++ if compEnabled;
-        handoverManager.x2ManagerIn <-- x2Manager.dataPort$o++;
-        handoverManager.x2ManagerOut --> x2Manager.dataPort$i++;
+        compManager.x2ManagerIn <-- x2Manager.dataPortOut++ if compEnabled;
+        compManager.x2ManagerOut --> x2Manager.dataPortIn++ if compEnabled;
+        handoverManager.x2ManagerIn <-- x2Manager.dataPortOut++;
+        handoverManager.x2ManagerOut --> x2Manager.dataPortIn++;
         handoverManager.tunnelOut --> handoverPacketHolder.x2In;
         handoverPacketHolder.hoManagerOut --> handoverManager.dataIn;
-        dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPort$o++ if dualConnectivityEnabled;
-        dualConnectivityManager.x2ManagerOut --> x2Manager.dataPort$i++ if dualConnectivityEnabled;
+        dualConnectivityManager.x2ManagerIn <-- x2Manager.dataPortOut++ if dualConnectivityEnabled;
+        dualConnectivityManager.x2ManagerOut --> x2Manager.dataPortIn++ if dualConnectivityEnabled;
         pdcp.dcManagerOut --> dualConnectivityManager.dataIn if dualConnectivityEnabled;
         dualConnectivityManager.tunnelOut --> pdcp.dcManagerIn if dualConnectivityEnabled;
 
         if ( sizeof(x2) > 0 ) {
             //# connections between X2 Manager and GTP (for handover)
-            x2$i[0] --> x2Manager.x2Gtp$i;
-            x2$o[0] <-- x2Manager.x2Gtp$o;
+            x2$i[0] --> x2Manager.x2GtpIn;
+            x2$o[0] <-- x2Manager.x2GtpOut;
         }
         //# connections between X2 Manager and the outer world
         for i=1..sizeof(x2)-1 {
-            x2$i[i] --> x2Manager.x2$i++;
-            x2$o[i] <-- x2Manager.x2$o++;
+            x2$i[i] --> x2Manager.x2In++;
+            x2$o[i] <-- x2Manager.x2Out++;
         }
 }
 

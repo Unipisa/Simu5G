@@ -27,7 +27,10 @@ simple LteX2Manager
         string binderModule = default("binder");
 
     gates:
-        inout dataPort[]; // connection to X2 user modules
-        inout x2[] @loose;       // connections to X2App modules
-        inout x2Gtp @loose;      // connections to GtpUserX2 module
+        input dataPortIn[];  // incoming connections from X2 user modules
+        output dataPortOut[]; // outgoing connections to X2 user modules
+        input x2In[] @loose;        // incoming connections from X2App modules
+        output x2Out[] @loose;      // outgoing connections to X2App modules
+        input x2GtpIn @loose;       // incoming connection from GtpUserX2 module
+        output x2GtpOut @loose;     // outgoing connection to GtpUserX2 module
 }

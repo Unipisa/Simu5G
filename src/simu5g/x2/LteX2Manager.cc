@@ -24,7 +24,7 @@ Define_Module(LteX2Manager);
 using namespace omnetpp;
 using namespace inet;
 
-constexpr const char *DATAPORT_OUT = "dataPort$o";
+constexpr const char *DATAPORT_OUT = "dataPortOut";
 
 void LteX2Manager::initialize(int stage)
 {
@@ -52,9 +52,9 @@ void LteX2Manager::initialize(int stage)
     }
     else if (stage == inet::INITSTAGE_TRANSPORT_LAYER) {
         // for each X2App, get the client submodule and set connection parameters (connectPort)
-        for (int i = 0; i < gateSize("x2$i"); i++) {
-            // client of the X2Apps is connected to the input sides of "x2" gate
-            cGate *inGate = gate("x2$i", i);
+        for (int i = 0; i < gateSize("x2In"); i++) {
+            // client of the X2Apps is connected to the input sides of "x2In" gate
+            cGate *inGate = gate("x2In", i);
 
             // get the X2App client connected to this gate
             //                                                  x2  -> X2App.x2ManagerIn ->  X2App.client
@@ -76,18 +76,18 @@ void LteX2Manager::handleMessage(cMessage *msg)
     cGate *incoming = pkt->getArrivalGate();
 
     // the incoming gate is part of a gate vector, so get the base name
-    if (strcmp(incoming->getBaseName(), "dataPort") == 0) {
+    if (strcmp(incoming->getBaseName(), "dataPortIn") == 0) {
         // incoming data from LTE stack
         EV << "LteX2Manager::handleMessage - Received message from LTE stack" << endl;
         fromStack(pkt);
     }
     else { // from X2 or X2GTP
-        if (strcmp(incoming->getBaseName(), "x2Gtp") == 0) {
+        if (strcmp(incoming->getBaseName(), "x2GtpIn") == 0) {
             // incoming data from X2GTP
             EV << "LteX2Manager::handleMessage - Received message from X2-GTP" << endl;
         }
         else { // from X2
-            if (strcmp(incoming->getBaseName(), "x2") != 0) {
+            if (strcmp(incoming->getBaseName(), "x2In") != 0) {
                 throw cRuntimeError(this, "LteX2Manager::handleMessage: invalid incoming gate");
             }
 
@@ -130,12 +130,12 @@ void LteX2Manager::fromStack(Packet *pkt)
         cGate *outputGate;
         if (x2msg->getType() == X2_HANDOVER_DATA_MSG || x2msg->getType() == X2_DUALCONNECTIVITY_DATA_MSG) {
             // send to the gate connected to the GTPUser module
-            outputGate = gate("x2Gtp$o");
+            outputGate = gate("x2GtpOut");
         }
         else {
             // select the index for the output gate (it belongs to a vector)
             int gateIndex = x2InterfaceTable_[targetEnb];
-            outputGate = gate("x2$o", gateIndex);
+            outputGate = gate("x2Out", gateIndex);
         }
 
         EV << "fromStack(): sending " << pktDuplicate->getClassAndFullName() << " on " << outputGate->getFullName() << std::endl;
