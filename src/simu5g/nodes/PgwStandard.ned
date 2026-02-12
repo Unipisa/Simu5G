@@ -43,7 +43,7 @@ module PgwStandard extends ApplicationLayerNodeBase
         inout dnPppg @labels(PppFrame-conn);
 
     submodules:
-        pppIf: PppInterface {
+        dnPpp: PppInterface {
             parameters:
                 @display("p=1100,975");
         }
@@ -62,11 +62,11 @@ module PgwStandard extends ApplicationLayerNodeBase
         gtp_user.socketOut --> at.in++;
         gtp_user.socketIn <-- at.out++;
 
-        pppIf.upperLayerOut --> trafficFlowFilter.internetFilterGateIn;
-        pppIf.upperLayerIn <-- gtp_user.pppGate;
+        dnPpp.upperLayerOut --> trafficFlowFilter.internetFilterGateIn;
+        dnPpp.upperLayerIn <-- gtp_user.pppGate;
 
         trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
 
-        pppIf.phys <--> dnPppg;
+        dnPpp.phys <--> dnPppg;
 }
 
