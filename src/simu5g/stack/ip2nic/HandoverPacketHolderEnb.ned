@@ -11,7 +11,10 @@
 package simu5g.stack.ip2nic;
 
 //
-// TODO
+// Manages packet buffering and forwarding during handover procedures at the base station.
+// When a user equipment begins handover, tunnels downlink packets to the target base station via the backhaul interface.
+// At the target base station, buffers incoming packets from both the backhaul tunnel and the network layer.
+// Upon handover completion, releases buffered packets to the protocol stack in the correct order.
 //
 simple HandoverPacketHolderEnb like IHandoverPacketHolder
 {

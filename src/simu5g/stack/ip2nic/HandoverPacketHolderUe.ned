@@ -11,7 +11,10 @@
 package simu5g.stack.ip2nic;
 
 //
-// TODO
+// Manages uplink packet buffering during handover at the user equipment.
+// Temporarily holds packets from the network layer when handover is in progress.
+// Tracks the current serving base station identifier to determine connectivity status.
+// Releases buffered packets to the protocol stack once handover completes successfully.
 //
 simple HandoverPacketHolderUe like IHandoverPacketHolder
 {
