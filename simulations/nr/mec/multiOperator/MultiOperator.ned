@@ -139,12 +139,12 @@ network MultiOperator
         iUpf_B.pppg++ <--> Eth10G <--> gnb_B3.ppp;
 
         //# MEC-related connections
-        router.pppg++ <--> Eth10G <--> upf_A.filterGate;
+        router.pppg++ <--> Eth10G <--> upf_A.dnPppg;
         ualcmp_A.ppp++ <--> Eth10G <--> router.pppg++;
         ualcmp_A.toMecOrchestrator --> mecOrchestrator_A.fromUALCMP;
         ualcmp_A.fromMecOrchestrator <-- mecOrchestrator_A.toUALCMP;
 
-        router.pppg++ <--> Eth10G <--> upf_B.filterGate;
+        router.pppg++ <--> Eth10G <--> upf_B.dnPppg;
         ualcmp_B.ppp++ <--> Eth10G <--> router.pppg++ if enableMecOperatorB;
         ualcmp_B.toMecOrchestrator --> mecOrchestrator_B.fromUALCMP if enableMecOperatorB;
         ualcmp_B.fromMecOrchestrator <-- mecOrchestrator_B.toUALCMP if enableMecOperatorB;

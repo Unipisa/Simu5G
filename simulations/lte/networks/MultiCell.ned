@@ -78,7 +78,7 @@ network MultiCell
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        router.pppg++ <--> Eth10G <--> pgw.dnPppg;
         pgw.pppg++ <--> Eth10G <--> eNodeB1.ppp;
         pgw.pppg++ <--> Eth10G <--> eNodeB2.ppp;
 

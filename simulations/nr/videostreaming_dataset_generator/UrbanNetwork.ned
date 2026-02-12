@@ -126,7 +126,7 @@ network UrbanNetwork
 
         //# MEC connections
 
-        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
+        ualcmp.ppp++ <--> Eth10G <--> upf.dnPppg;
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
         mecHost.ppp++ <--> Eth10G <--> iUpf.pppg++;

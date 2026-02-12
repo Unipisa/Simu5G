@@ -102,7 +102,7 @@ network MultiMecHost_delay
 
 
         //# MEC-related connections
-        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
+        ualcmp.ppp++ <--> Eth10G <--> upf.dnPppg;
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;
         mecHost1.ppp++ <--> Eth10G <--> iUpf1.pppg++;

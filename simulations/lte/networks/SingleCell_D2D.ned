@@ -70,6 +70,6 @@ network SingleCell_D2D
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        router.pppg++ <--> Eth10G <--> pgw.dnPppg;
         pgw.pppg++ <--> Eth10G <--> eNB.ppp;
 }

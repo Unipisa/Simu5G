@@ -83,7 +83,7 @@ network MultiCell_withSecondaryGnb
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        router.pppg++ <--> Eth10G <--> pgw.dnPppg;
         pgw.pppg++ <--> Eth10G <--> masterEnb1.ppp;
         pgw.pppg++ <--> Eth10G <--> masterEnb2.ppp;
 

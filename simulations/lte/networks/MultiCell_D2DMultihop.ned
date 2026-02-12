@@ -122,6 +122,6 @@ network MultiCell_D2DMultihop
         router3.pppg++ <--> Eth10G <--> pgw.pppg++;
         router4.pppg++ <--> Eth10G <--> pgw.pppg++;
         router5.pppg++ <--> Eth10G <--> pgw.pppg++;
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        router.pppg++ <--> Eth10G <--> pgw.dnPppg;
         server.pppg++ <--> Eth10G <--> router.pppg++;
 }

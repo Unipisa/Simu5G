@@ -80,7 +80,7 @@ network RnisTest
 
         upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
         iUpf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
-        ualcmp.ppp++ <--> Eth10G <--> upf.filterGate;
+        ualcmp.ppp++ <--> Eth10G <--> upf.dnPppg;
 
         ualcmp.toMecOrchestrator --> mecOrchestrator.fromUALCMP;
         ualcmp.fromMecOrchestrator <-- mecOrchestrator.toUALCMP;

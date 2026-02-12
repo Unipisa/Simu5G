@@ -71,6 +71,6 @@ network ExtClientServer_bgCells
         }
 
     connections allowunconnected:
-        router.pppg++ <--> Eth10G <--> upf.filterGate;
+        router.pppg++ <--> Eth10G <--> upf.dnPppg;
         upf.pppg++ <--> Eth10G <--> gnb.ppp;
 }

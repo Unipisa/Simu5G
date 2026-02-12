@@ -87,7 +87,7 @@ network MultiCell_X2Mesh
         }
     connections:
 
-        server.pppg++ <--> Eth10G <--> pgw.filterGate;
+        server.pppg++ <--> Eth10G <--> pgw.dnPppg;
         pgw.pppg++ <--> Eth10G <--> router1.pppg++;
         pgw.pppg++ <--> Eth10G <--> router2.pppg++;
         pgw.pppg++ <--> Eth10G <--> router3.pppg++;

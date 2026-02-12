@@ -40,7 +40,7 @@ module Upf extends ApplicationLayerNodeBase
     gates:
         // this gate is used for the UPF connected to the external data network
         // it must be left unconnected for intermediate UPFs
-        inout filterGate @loose @labels(PppFrame-conn);
+        inout dnPppg @loose @labels(PppFrame-conn);
 
     submodules:
         pppIf: PppInterface {
@@ -68,5 +68,5 @@ module Upf extends ApplicationLayerNodeBase
 
         trafficFlowFilter.gtpUserGateOut --> gtp_user.trafficFlowFilterGate;
 
-        pppIf.phys <--> filterGate;
+        pppIf.phys <--> dnPppg;
 }

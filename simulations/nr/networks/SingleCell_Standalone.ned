@@ -74,7 +74,7 @@ network SingleCell_Standalone
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> upf.filterGate;
+        router.pppg++ <--> Eth10G <--> upf.dnPppg;
         upf.pppg++ <--> Eth10G <--> iUpf.pppg++;
         iUpf.pppg++ <--> Eth10G <--> gnb.ppp;
 }

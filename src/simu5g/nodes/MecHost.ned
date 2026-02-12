@@ -117,7 +117,7 @@ module MecHost
         //#
         //# internal connection between GtpEndpoint and VirtualisationInfrastrcuture
         //#
-        virtualisationInfrastructure.ppp++ <--> Eth10G <--> upf_mec.filterGate;
+        virtualisationInfrastructure.ppp++ <--> Eth10G <--> upf_mec.dnPppg;
 
         for i=0..numIndependentMecApp-1 {
             independentMecApp[i].socketIn <-- virtualisationInfrastructure.independentMecAppOut[i];

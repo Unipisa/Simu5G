@@ -77,7 +77,7 @@ network SingleCell_withSecondaryGnb
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        router.pppg++ <--> Eth10G <--> pgw.dnPppg;
         pgw.pppg++ <--> Eth10G <--> masterEnb.ppp;
 
         //# X2 connections

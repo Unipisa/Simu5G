@@ -71,6 +71,6 @@ network ExtServerExample
             @display("p=671,432;is=vl");
         }
     connections allowunconnected:
-        router.pppg++ <--> Eth10G <--> upf.filterGate;
+        router.pppg++ <--> Eth10G <--> upf.dnPppg;
         upf.pppg++ <--> Eth10G <--> gnb.ppp;
 }

@@ -80,7 +80,7 @@ network Highway
 
     connections allowunconnected:
         server.pppg++ <--> Eth10G <--> router.pppg++;
-        router.pppg++ <--> Eth10G <--> upf.filterGate;
+        router.pppg++ <--> Eth10G <--> upf.dnPppg;
         upf.pppg++ <--> Eth10G <--> gNodeB1.ppp;
         upf.pppg++ <--> Eth10G <--> gNodeB2.ppp;
 
