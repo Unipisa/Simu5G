@@ -59,7 +59,7 @@ void AmRxQueue::initialize(int stage)
         lteRlc_.reference(this, "amModule", true);
 
         // Statistics
-        LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("RLC_to_MAC"), 0);
+        LteMacBase *mac = inet::getConnectedModule<LteMacBase>(getParentModule()->gate("macOut"), 0);
 
         dir_ = mac->getNodeType() == NODEB ? UL : DL;
     }

@@ -46,8 +46,8 @@ module LteRlc
         //# Gates connecting RLC and MAC Layers
         //#
 
-        input MAC_to_RLC;    // MAC to RLC
-        output RLC_to_MAC;    // RLC to MAC
+        input macIn;         // from MAC
+        output macOut;       // to MAC
 
     submodules:
         // TM Module
@@ -103,7 +103,7 @@ module LteRlc
         //# Connections between Mux
         //# and RLC (down)
         //#
-        mux.MAC_to_RLC <-- MAC_to_RLC;
-        mux.RLC_to_MAC --> RLC_to_MAC;
+        mux.macIn <-- macIn;
+        mux.macOut --> macOut;
 }
 

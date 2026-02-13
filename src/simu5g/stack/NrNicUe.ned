@@ -103,8 +103,8 @@ module NrNicUe extends LteNicUeD2D
         pdcp.nrRlcIn <-- nrRlc.upperLayerOut;
 
         //# RLC <-> MAC
-        nrRlc.RLC_to_MAC --> nrMac.RLC_to_MAC;
-        nrRlc.MAC_to_RLC <-- nrMac.MAC_to_RLC;
+        nrRlc.macOut --> nrMac.RLC_to_MAC;
+        nrRlc.macIn <-- nrMac.MAC_to_RLC;
 
         //#
         //# Connections from LTE Stack to radio interface

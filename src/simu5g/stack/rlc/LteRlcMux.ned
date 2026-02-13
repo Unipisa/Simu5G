@@ -34,7 +34,7 @@ simple LteRlcMux
         //#
         //# Gates connecting RLC and MAC Layers
         //#
-        input MAC_to_RLC;    // MAC to RLC
-        output RLC_to_MAC;    // RLC to MAC
+        input macIn;         // from MAC
+        output macOut;       // to MAC
 }
 

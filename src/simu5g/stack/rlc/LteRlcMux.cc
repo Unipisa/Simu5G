@@ -24,7 +24,7 @@ using namespace omnetpp;
 
 void LteRlcMux::rlc2mac(cPacket *pkt)
 {
-    EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port RLC_to_MAC\n";
+    EV << "LteRlcMux : Sending packet " << pkt->getName() << " to port macOut\n";
 
     // Send message
     send(pkt, macSapOutGate_);
@@ -63,8 +63,8 @@ void LteRlcMux::mac2rlc(cPacket *pktAux)
 void LteRlcMux::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        macSapInGate_ = gate("MAC_to_RLC");
-        macSapOutGate_ = gate("RLC_to_MAC");
+        macSapInGate_ = gate("macIn");
+        macSapOutGate_ = gate("macOut");
         tmSapInGate_ = gate("TM_Sap$i");
         tmSapOutGate_ = gate("TM_Sap$o");
         umSapInGate_ = gate("UM_Sap$i");
