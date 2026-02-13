@@ -32,8 +32,8 @@ void NrPdcpUe::initialize(int stage)
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
-        // initialize gate for NR RLC (index 1 in the rlcOut array)
-        nrRlcOutGate_ = gate("rlcOut", 1);
+        // initialize gate for NR RLC
+        nrRlcOutGate_ = gate("nrRlcOut");
     }
 }
 

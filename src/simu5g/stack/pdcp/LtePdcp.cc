@@ -307,8 +307,8 @@ void LtePdcpBase::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
-        rlcInGate_ = gate("rlcIn", 0);
-        rlcOutGate_ = gate("rlcOut", 0);
+        rlcInGate_ = gate("rlcIn");
+        rlcOutGate_ = gate("rlcOut");
 
         binder_.reference(this, "binderModule", true);
 

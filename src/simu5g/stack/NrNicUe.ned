@@ -99,8 +99,8 @@ module NrNicUe extends LteNicUeD2D
     connections:
 
         //# PDCP <-> NR RLC
-        pdcp.rlcOut++ --> nrRlc.upperLayerIn;
-        pdcp.rlcIn++ <-- nrRlc.upperLayerOut;
+        pdcp.nrRlcOut --> nrRlc.upperLayerIn;
+        pdcp.nrRlcIn <-- nrRlc.upperLayerOut;
 
         //# RLC <-> MAC
         nrRlc.RLC_to_MAC --> nrMac.RLC_to_MAC;

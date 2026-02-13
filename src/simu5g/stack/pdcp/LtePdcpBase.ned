@@ -57,7 +57,7 @@ simple LtePdcpBase like ILtePdcp
         //#
         //# Data Ports
 
-        input rlcIn[];             // from RLC layer (array for dual connectivity)
-        output rlcOut[];           // to RLC layer (array for dual connectivity)
+        input rlcIn;               // from RLC layer
+        output rlcOut;             // to RLC layer
 }
 
