@@ -57,7 +57,7 @@ LteMacBase::~LteMacBase()
 
 void LteMacBase::sendUpperPackets(cPacket *pkt)
 {
-    EV << NOW << " LteMacBase::sendUpperPackets, Sending packet " << pkt->getName() << " on port MAC_to_RLC\n";
+    EV << NOW << " LteMacBase::sendUpperPackets, Sending packet " << pkt->getName() << " on port upperLayerOut\n";
     // Send message
     send(pkt, upOutGate_);
     nrToUpper_++;
@@ -380,8 +380,8 @@ void LteMacBase::initialize(int stage)
         networkNode_ = getContainingNode(this);
 
         // Gates initialization
-        upInGate_ = gate("RLC_to_MAC");
-        upOutGate_ = gate("MAC_to_RLC");
+        upInGate_ = gate("upperLayerIn");
+        upOutGate_ = gate("upperLayerOut");
         downInGate_ = gate("PHY_to_MAC");
         downOutGate_ = gate("MAC_to_PHY");
 
@@ -431,7 +431,7 @@ void LteMacBase::handleMessage(cMessage *msg)
         fromPhy(pkt);
     }
     else {
-        // message from RLC_to_MAC gate (from upper layer)
+        // message from upperLayerIn gate (from upper layer)
         emit(receivedPacketFromUpperLayerSignal_, pkt);
         nrFromUpper_++;
         fromRlc(pkt);

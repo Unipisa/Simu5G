@@ -36,8 +36,8 @@ moduleinterface ILteMac
         @display("i=block/mac");
 
     gates:
-        input RLC_to_MAC;    // RLC to MAC
-        output MAC_to_RLC;    // MAC to RLC
+        input upperLayerIn;   // from RLC
+        output upperLayerOut;  // to RLC
         input PHY_to_MAC;    // PHY to MAC
         output MAC_to_PHY;    // MAC to PHY
 }

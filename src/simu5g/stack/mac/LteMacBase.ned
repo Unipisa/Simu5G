@@ -108,8 +108,8 @@ simple LteMacBase like ILteMac
         //# Gates connecting RLC and MAC Layers
         //#
 
-        input RLC_to_MAC;    // RLC to MAC
-        output MAC_to_RLC;    // MAC to RLC
+        input upperLayerIn;   // from RLC
+        output upperLayerOut;  // to RLC
 
         //#
         //# Gates connecting MAC and PHY Layers

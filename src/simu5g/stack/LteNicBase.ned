@@ -129,8 +129,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         pdcp.rlcIn <-- rlc.upperLayerOut;
 
         //# RLC <-> MAC
-        rlc.macOut --> mac.RLC_to_MAC;
-        rlc.macIn <-- mac.MAC_to_RLC;
+        rlc.macOut --> mac.upperLayerIn;
+        rlc.macIn <-- mac.upperLayerOut;
 
         //#
         //# Connections from LTE Stack to radio interface
