@@ -30,9 +30,8 @@ moduleinterface ILtePdcp
     gates:
         input upperLayerIn;
         output upperLayerOut;
-        inout TM_Sap[];
-        inout UM_Sap[];
-        inout AM_Sap[];
+        input rlcIn[];
+        output rlcOut[];
 }
 
 

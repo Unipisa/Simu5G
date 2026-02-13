@@ -32,13 +32,8 @@ void NrPdcpUe::initialize(int stage)
         inet::NetworkInterface *nic = inet::getContainingNicModule(this);
         dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
 
-        // initialize gates
-        // nrTmSapInGate_ = gate("TM_Sap$i", 1);
-        nrTmSapOutGate_ = gate("TM_Sap$o", 1);
-        //nrUmSapInGate_ = gate("UM_Sap$i", 1);
-        nrUmSapOutGate_ = gate("UM_Sap$o", 1);
-        //nrAmSapInGate_ = gate("AM_Sap$i", 1);
-        nrAmSapOutGate_ = gate("AM_Sap$o", 1);
+        // initialize gate for NR RLC (index 1 in the rlcOut array)
+        nrRlcOutGate_ = gate("rlcOut", 1);
     }
 }
 
@@ -174,8 +169,7 @@ void NrPdcpUe::sendToLowerLayer(Packet *pkt)
     bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
 
     if (!dualConnectivityEnabled_ || useNR) {
-        EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port "
-           << (lteInfo->getRlcType() == UM ? "NR_UM_Sap$o\n" : "NR_AM_Sap$o\n");
+        EV << "NrPdcpUe : Sending packet " << pkt->getName() << " on port " << nrRlcOutGate_->getFullName() << endl;
 
         // use NR id as source
         lteInfo->setSourceId(nrNodeId_);
@@ -189,7 +183,7 @@ void NrPdcpUe::sendToLowerLayer(Packet *pkt)
         }
 
         // Send message
-        send(pkt, (lteInfo->getRlcType() == UM ? nrUmSapOutGate_ : nrAmSapOutGate_));
+        send(pkt, nrRlcOutGate_);
 
         emit(sentPacketToLowerLayerSignal_, pkt);
     }

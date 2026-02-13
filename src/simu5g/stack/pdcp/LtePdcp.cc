@@ -273,22 +273,7 @@ void LtePdcpBase::sendToLowerLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTag<FlowControlInfo>();
 
-    cGate *gate;
-    switch (lteInfo->getRlcType()) {
-        case UM:
-            gate = umSapOutGate_;
-            break;
-        case AM:
-            gate = amSapOutGate_;
-            break;
-        case TM:
-            gate = tmSapOutGate_;
-            break;
-        default:
-            throw cRuntimeError("LtePdcpBase::sendToLowerLayer(): invalid RlcType %d", lteInfo->getRlcType());
-    }
-
-    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << gate->getFullName() << endl;
+    EV << "LtePdcp : Sending packet " << pkt->getName() << " on port " << rlcOutGate_->getFullName() << endl;
 
     /*
      * @author Alessandro Noferi
@@ -309,7 +294,7 @@ void LtePdcpBase::sendToLowerLayer(Packet *pkt)
     }
 
     // Send message
-    send(pkt, gate);
+    send(pkt, rlcOutGate_);
     emit(sentPacketToLowerLayerSignal_, pkt);
 }
 
@@ -322,12 +307,8 @@ void LtePdcpBase::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         upperLayerInGate_ = gate("upperLayerIn");
         upperLayerOutGate_ = gate("upperLayerOut");
-        tmSapInGate_ = gate("TM_Sap$i", 0);
-        tmSapOutGate_ = gate("TM_Sap$o", 0);
-        umSapInGate_ = gate("UM_Sap$i", 0);
-        umSapOutGate_ = gate("UM_Sap$o", 0);
-        amSapInGate_ = gate("AM_Sap$i", 0);
-        amSapOutGate_ = gate("AM_Sap$o", 0);
+        rlcInGate_ = gate("rlcIn", 0);
+        rlcOutGate_ = gate("rlcOut", 0);
 
         binder_.reference(this, "binderModule", true);
 

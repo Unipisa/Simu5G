@@ -38,9 +38,9 @@ module LteRlc
         //# Gates connecting PDCP/RRC and RLC Layers
         //#
 
-        inout TM_Sap;    // Transparent Mode SAP
-        inout UM_Sap;    // Unacknowledged Mode SAP
-        inout AM_Sap;    // Acknowledged Mode SAP
+        input upperLayerIn;     // from PDCP
+        output upperLayerOut;   // to PDCP
+
 
         //#
         //# Gates connecting RLC and MAC Layers
@@ -65,19 +65,31 @@ module LteRlc
             @display("p=300,100;");
         }
 
-           // Muxer Module
+        // Upper Layer Dispatcher Module
+        dispatcher: RlcUpperLayerDispatcher {
+            @display("p=200,50");
+        }
+
+        // Muxer Module
         mux: LteRlcMux {
             @display("p=200,200");
         }
 
     connections:
         //#
-        //# Connections from RLC (up)
+        //# Connections from upper layer
+        //# to dispatcher
+        //#
+        dispatcher.upperLayerIn <-- upperLayerIn;
+        dispatcher.upperLayerOut --> upperLayerOut;
+
+        //#
+        //# Connections from dispatcher
         //# to TM/UM/AM modules
         //#
-        tm.TM_Sap_up <--> TM_Sap;
-        um.UM_Sap_up <--> UM_Sap;
-        am.AM_Sap_up <--> AM_Sap;
+        dispatcher.TM_Sap <--> tm.TM_Sap_up;
+        dispatcher.UM_Sap <--> um.UM_Sap_up;
+        dispatcher.AM_Sap <--> am.AM_Sap_up;
 
         //#
         //# Connections from TM/UM/AM

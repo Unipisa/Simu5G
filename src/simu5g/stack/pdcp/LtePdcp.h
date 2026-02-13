@@ -111,12 +111,8 @@ class LtePdcpBase : public cSimpleModule
 
     cGate *upperLayerInGate_ = nullptr;
     cGate *upperLayerOutGate_ = nullptr;
-    cGate *tmSapInGate_ = nullptr;
-    cGate *tmSapOutGate_ = nullptr;
-    cGate *umSapInGate_ = nullptr;
-    cGate *umSapOutGate_ = nullptr;
-    cGate *amSapInGate_ = nullptr;
-    cGate *amSapOutGate_ = nullptr;
+    cGate *rlcInGate_ = nullptr;
+    cGate *rlcOutGate_ = nullptr;
 
     LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;

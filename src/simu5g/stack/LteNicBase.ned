@@ -125,9 +125,8 @@ module LteNicBase extends NetworkInterface like ICellularNic
         //#
 
         //# PDCP <-> RLC
-        pdcp.UM_Sap++ <--> rlc.UM_Sap;
-        pdcp.AM_Sap++ <--> rlc.AM_Sap;
-        pdcp.TM_Sap++ <--> rlc.TM_Sap;
+        pdcp.rlcOut++ --> rlc.upperLayerIn;
+        pdcp.rlcIn++ <-- rlc.upperLayerOut;
 
         //# RLC <-> MAC
         rlc.RLC_to_MAC --> mac.RLC_to_MAC;

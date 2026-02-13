@@ -34,9 +34,7 @@ class NrPdcpUe : public LtePdcpUeD2D
     // flag for enabling Dual Connectivity
     bool dualConnectivityEnabled_;
 
-    cGate *nrTmSapOutGate_ = nullptr;
-    cGate *nrUmSapOutGate_ = nullptr;
-    cGate *nrAmSapOutGate_ = nullptr;
+    cGate *nrRlcOutGate_ = nullptr;
 
   protected:
     void initialize(int stage) override;
