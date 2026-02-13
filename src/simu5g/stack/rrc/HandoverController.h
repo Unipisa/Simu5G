@@ -14,7 +14,7 @@
 
 #include <inet/common/ModuleRefByPar.h>
 #include "simu5g/common/LteDefs.h"
-#include "simu5g/common/LteCommon_m.h"
+#include "simu5g/common/LteTypes.h"
 
 namespace simu5g {
 

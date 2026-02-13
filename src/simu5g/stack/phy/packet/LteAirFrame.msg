@@ -10,15 +10,21 @@
 // and cannot be removed from it.
 //
 
+import inet.common.geometry.Geometry;
 import simu5g.stack.phy.packet.AirFrame;
 import simu5g.common.LteControlInfo;
 
 cplusplus {{
-#include "simu5g/common/LteCommon.h"  // for RemoteUnitPhyDataVector
 #include "simu5g/common/LteControlInfo.h"
 }}
 
 namespace simu5g;
+
+struct RemoteUnitPhyData
+{
+    int txPower;
+    inet::Coord m;
+}
 
 //
 // Represents a physical layer transmission frame that encapsulates various types of

@@ -34,10 +34,11 @@
 #include <inet/common/packet/Packet.h>
 #include <inet/common/Protocol.h>
 #include <inet/common/Units.h>
+#include <inet/common/geometry/Geometry_m.h>
 
 #include "simu5g/common/LteDefs.h"
+#include "simu5g/common/LteTypes.h"
 #include "simu5g/common/LteCommonEnum_m.h"
-#include "simu5g/common/LteCommon_m.h"
 
 using namespace omnetpp;
 
@@ -363,7 +364,6 @@ typedef std::set<Band> BandSet;
 typedef std::set<Remote> RemoteSet;
 typedef std::map<MacNodeId, bool> ConnectedUesMap;
 typedef std::pair<int, simtime_t> PacketInfo;
-typedef std::vector<RemoteUnitPhyData> RemoteUnitPhyDataVector;
 typedef std::set<MacNodeId> ActiveUser;
 typedef std::set<MacCid> ActiveSet;
 

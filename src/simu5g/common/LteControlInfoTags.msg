@@ -15,6 +15,7 @@ import inet.common.TagBase;
 import inet.common.geometry.Geometry; // for Coord
 import inet.networklayer.contract.ipv4.Ipv4Address;
 import simu5g.common.LteCommon;
+import simu5g.common.LteControlInfo;
 import simu5g.stack.mac.amc.UserTxParams;
 
 namespace simu5g;
