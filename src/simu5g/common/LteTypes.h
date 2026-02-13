@@ -30,18 +30,25 @@ using namespace omnetpp;
 
 namespace simu5g {
 
+/**
+ * Macro to define a "strong typedef" using enum class.
+ * This creates a type-safe wrapper around an underlying type that:
+ * - Cannot be implicitly converted to/from the underlying type
+ * - Provides explicit num() function to get the underlying value
+ * - Provides stream output operator
+ * - Provides parsim packing/unpacking for OMNeT++ fingerprints
+ *
+ * Usage: SIMU5G_STRONG_TYPEDEF(NewType, unsigned short)
+ */
+#define SIMU5G_STRONG_TYPEDEF(TypeName, UnderlyingType) \
+    enum class TypeName : UnderlyingType {}; \
+    inline UnderlyingType num(TypeName id) { return static_cast<UnderlyingType>(id); } \
+    inline std::ostream& operator<<(std::ostream& os, TypeName id) { os << static_cast<UnderlyingType>(id); return os; } \
+    inline void doParsimPacking(omnetpp::cCommBuffer *buffer, TypeName d) { buffer->pack(num(d)); } \
+    inline void doParsimUnpacking(omnetpp::cCommBuffer *buffer, TypeName& d) { UnderlyingType tmp; buffer->unpack(tmp); d = TypeName(tmp); }
+
 /// MAC node ID
-enum class MacNodeId : unsigned short {};  // emulate "strong typedef" with enum class
-
-// Facilitates finding places where the numeric value of MacNodeId is used
-inline unsigned short num(MacNodeId id) { return static_cast<unsigned short>(id); }
-
-inline std::ostream& operator<<(std::ostream& os, MacNodeId id) { os << static_cast<unsigned short>(id); return os; }
-
-
-// parsimPack() needed fpr the "d" fingerprint ingredient
-inline void doParsimPacking(omnetpp::cCommBuffer *buffer, MacNodeId d) {buffer->pack(num(d));}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *buffer, MacNodeId& d) {unsigned short tmp; buffer->unpack(tmp); d = MacNodeId(tmp);}
+SIMU5G_STRONG_TYPEDEF(MacNodeId, unsigned short)
 
 /// Node Id bounds  --TODO the MAX bounds are completely messed up
 constexpr MacNodeId NODEID_NONE  = MacNodeId(0);
