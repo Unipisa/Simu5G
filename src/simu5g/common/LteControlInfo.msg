@@ -61,7 +61,7 @@ class LteControlInfo extends inet::TagBase {
 // @brief Contains flow information in layers above the MAC
 //
 class FlowControlInfo extends LteControlInfo {
-    uint16 drbId = 0;                                    // DRB (Data Radio Bearer) identifier
+    DrbId drbId = 0;                                     // DRB (Data Radio Bearer) identifier
     MacNodeId multicastGroupId = NODEID_NONE;            // Identifier for a multicast group (it is in range [0:[2^28)-1] ) -- TODO probably should not be needed
 
     unsigned short traffic enum(LteTrafficClass) = 0;       // Lte Traffic Type; analogous to LCG IDs (Logical Channel Group Identifiers) in LTE/NR
@@ -105,7 +105,7 @@ struct FeedbackRequest
 //
 class UserControlInfo extends LteControlInfo {
     //TODO packetLcid and packetMulticastGroupId make no sense in UserControlInfo, eliminate
-    uint16 packetLcid = 0;                 //  only used to indicate BSR type in MAC
+    LogicalCid packetLcid = 0;             //  only used to indicate BSR type in MAC
     MacNodeId packetMulticastGroupId = NODEID_NONE;     // Identifier for a multicast group (it is in range [0:[2^28)-1] ) -- TODO seems to be used instead of proper MBMS RNTIs stored in destId
 
     bool isNr = false;
