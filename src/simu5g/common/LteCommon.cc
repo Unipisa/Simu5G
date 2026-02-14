@@ -266,7 +266,7 @@ void verifyControlInfo(const FlowControlInfo *info)
     auto destType = getNodeTypeById(info->getDestId());
     bool isMulticast = info->getMulticastGroupId() != NODEID_NONE;
 
-    switch ((Direction)info->getDirection()) {
+    switch (info->getDirection()) {
         case UL:
             ASSERT(!isMulticast);
             ASSERT(srcType == UE);

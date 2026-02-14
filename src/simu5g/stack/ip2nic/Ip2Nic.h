@@ -80,7 +80,7 @@ class Ip2Nic : public cSimpleModule
         inet::Ipv4Address srcAddr;
         inet::Ipv4Address dstAddr;
         uint16_t typeOfService;
-        uint16_t direction;
+        Direction direction;
 
         bool operator==(const ConnectionKey& other) const {
             return srcAddr == other.srcAddr &&
@@ -95,7 +95,7 @@ class Ip2Nic : public cSimpleModule
             std::size_t h1 = std::hash<uint32_t>{}(key.srcAddr.getInt());
             std::size_t h2 = std::hash<uint32_t>{}(key.dstAddr.getInt());
             std::size_t h3 = std::hash<uint16_t>{}(key.typeOfService);
-            std::size_t h4 = std::hash<uint16_t>{}(key.direction);
+            std::size_t h4 = std::hash<uint16_t>{}(uint16_t(key.direction));
             return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
         }
     };

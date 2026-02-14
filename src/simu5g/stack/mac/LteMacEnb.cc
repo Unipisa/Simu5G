@@ -943,7 +943,7 @@ void LteMacEnb::updateUserTxParam(cPacket *pktAux)
     if (lteInfo->getFrameType() != DATAPKT)
         return; // TODO check if this should be removed.
 
-    auto dir = (Direction)lteInfo->getDirection();
+    auto dir = lteInfo->getDirection();
 
     const UserTxParams& newParam = amc_->computeTxParams(lteInfo->getDestId(), dir, lteInfo->getCarrierFrequency());
     UserTxParams *tmp = new UserTxParams(newParam);

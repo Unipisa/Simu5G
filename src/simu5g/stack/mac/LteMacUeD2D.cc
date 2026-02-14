@@ -99,7 +99,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
                 for (const auto& [cid, connInfo] : connDescOut_) {
-                    Direction connDir = (Direction)connInfo.flowInfo.getDirection();
+                    Direction connDir = connInfo.flowInfo.getDirection();
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
                     if (bsrTriggered_ && connDir != D2D)
@@ -163,7 +163,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
                 FlowControlInfo *connInfo = &(connDescOut_.at(destCid).flowInfo);
                 MacNodeId destId = connInfo->getDestId();
-                Direction dir = (Direction)connInfo->getDirection();
+                Direction dir = connInfo->getDirection();
 
                 std::pair<MacNodeId, Codeword> pktId = {destId, cw};
                 unsigned int sduPerCid = item.second;
@@ -832,10 +832,10 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
 
         for (const auto& [cid, connDesc] : connDescOut_) {
             const auto& connInfo = connDesc.flowInfo;
-            if (connInfo.getD2dRxPeerId() == peerId && (Direction)connInfo.getDirection() == oldDirection) {
+            if (connInfo.getD2dRxPeerId() == peerId && connInfo.getDirection() == oldDirection) {
                 oldConnections.emplace_back(cid, connInfo);
             }
-            else if (connInfo.getD2dRxPeerId() == peerId && (Direction)connInfo.getDirection() == newDirection) {
+            else if (connInfo.getD2dRxPeerId() == peerId && connInfo.getDirection() == newDirection) {
                 newConnections.emplace_back(cid, connInfo);
             }
         }
@@ -915,10 +915,10 @@ void LteMacUeD2D::macHandleD2DModeSwitch(cPacket *pktAux)
         std::vector<std::pair<MacCid, FlowControlInfo>> newRxConnections;
 
         for (const auto& [cid, connInfo] : connDescIn_) {
-            if (connInfo.getD2dTxPeerId() == peerId && (Direction)connInfo.getDirection() == oldDirection) {
+            if (connInfo.getD2dTxPeerId() == peerId && connInfo.getDirection() == oldDirection) {
                 oldRxConnections.emplace_back(cid, connInfo);
             }
-            else if (connInfo.getD2dTxPeerId() == peerId && (Direction)connInfo.getDirection() == newDirection) {
+            else if (connInfo.getD2dTxPeerId() == peerId && connInfo.getDirection() == newDirection) {
                 newRxConnections.emplace_back(cid, connInfo);
             }
         }

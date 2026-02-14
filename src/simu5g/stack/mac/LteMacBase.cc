@@ -187,7 +187,7 @@ void LteMacBase::createOutgoingConnection(MacCid cid, const FlowDescriptor& conn
     EV << "LteMacBase::createOutgoingConnection - CID: " << cid
        << " sourceId: " << connInfo.getSourceId()
        << " destId: " << connInfo.getDestId()
-       << " direction: " << dirToA((Direction)connInfo.getDirection())
+       << " direction: " << dirToA(connInfo.getDirection())
        << " multicastGroupId: " << connInfo.getMulticastGroupId() << endl;
 
     ASSERT(connDescOut_.find(cid) == connDescOut_.end());
@@ -257,7 +257,7 @@ void LteMacBase::createIncomingConnection(MacCid cid, const FlowDescriptor& conn
     EV << "LteMacBase::createIncomingConnection - CID: " << cid
        << " sourceId: " << connInfo.getSourceId()
        << " destId: " << connInfo.getDestId()
-       << " direction: " << dirToA((Direction)connInfo.getDirection())
+       << " direction: " << dirToA(connInfo.getDirection())
        << " multicastGroupId: " << connInfo.getMulticastGroupId() << endl;
 
     ASSERT(connDescIn_.find(cid) == connDescIn_.end());
@@ -441,7 +441,7 @@ void LteMacBase::handleMessage(cMessage *msg)
 void LteMacBase::insertMacPdu(const inet::Packet *macPdu)
 {
     auto lteInfo = macPdu->getTag<UserControlInfo>();
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
     if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL)) {
         EV << "LteMacBase::insertMacPdu" << endl;
         auto pdu = macPdu->peekAtFront<LteMacPdu>();
@@ -451,7 +451,7 @@ void LteMacBase::insertMacPdu(const inet::Packet *macPdu)
 
 void LteMacBase::harqAckToFlowObserver(inet::Ptr<const UserControlInfo> lteInfo, inet::Ptr<const LteMacPdu> macPdu)
 {
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
     if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL))
         packetFlowObserver_->macPduArrived(macPdu);
 }
@@ -459,7 +459,7 @@ void LteMacBase::harqAckToFlowObserver(inet::Ptr<const UserControlInfo> lteInfo,
 void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
 {
     auto lteInfo = macPdu->getTag<UserControlInfo>();
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
     if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL)) {
         auto pdu = macPdu->peekAtFront<LteMacPdu>();
         packetFlowObserver_->discardMacPdu(pdu);
@@ -468,7 +468,7 @@ void LteMacBase::discardMacPdu(const inet::Packet *macPdu)
 
 void LteMacBase::discardRlcPdu(inet::Ptr<const UserControlInfo> lteInfo, unsigned int rlcSno)
 {
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
     LogicalCid lcid = lteInfo->getPacketLcid();
     if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL))
         packetFlowObserver_->discardRlcPdu(lcid, rlcSno);

@@ -35,7 +35,7 @@ class NodeIdentificationInd extends inet::TagBase {
 // Usually sent by PDCP to lower layers.
 //
 class TrafficDirectionInd extends inet::TagBase {
-    unsigned short direction enum(Direction);  // Traffic Direction (UL, DL, D2D)
+    Direction direction;  // Traffic Direction (UL, DL, D2D)
     MacNodeId d2dTxPeerId = NODEID_NONE;       // D2D transmitter peer ID
     MacNodeId d2dRxPeerId = NODEID_NONE;       // D2D receiver peer ID
 }

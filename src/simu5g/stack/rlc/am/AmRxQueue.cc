@@ -134,7 +134,7 @@ void AmRxQueue::discard(const int sn)
             auto pkt = check_and_cast<inet::Packet *>(pduBuffer_.remove(i));
             auto pdu = pkt->peekAtFront<LteRlcAmPdu>();
             auto ci = pdu->getTag<FlowControlInfo>();
-            dir = (Direction)ci->getDirection();
+            dir = ci->getDirection();
             dstId = ci->getDestId();
             srcId = ci->getSourceId();
             // Erase element from pendingPduBuffer_ (if it is within the buffer)
@@ -350,7 +350,7 @@ void AmRxQueue::passUp(const int index)
 
     auto ci = pkt->getTag<FlowControlInfo>();
 
-    Direction dir = (Direction)ci->getDirection();
+    Direction dir = ci->getDirection();
     MacNodeId dstId = ci->getDestId();
     MacNodeId srcId = ci->getSourceId();
     cModule *nodeb = nullptr;

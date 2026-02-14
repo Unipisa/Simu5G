@@ -183,7 +183,7 @@ void Rrc::createIncomingConnection(FlowControlInfo *lteInfo, bool withPdcp)
 
     EV << "Rrc::createIncomingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
         << " groupId=" << lteInfo->getMulticastGroupId() << " drbId=" << lteInfo->getDrbId()
-        << " direction=" << dirToA((Direction)lteInfo->getDirection())
+        << " direction=" << dirToA(lteInfo->getDirection())
         << " withPdcp=" << (withPdcp ? "yes" : "no") << endl;
 
     ASSERT(lteInfo->getDestId() == getLteNodeId() || lteInfo->getDestId() == getNrNodeId() || lteInfo->getMulticastGroupId() != NODEID_NONE);
@@ -215,7 +215,7 @@ void Rrc::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
 
     EV << "Rrc::createOutgoingConnection - " << " srcId=" << lteInfo->getSourceId() << " destId=" << lteInfo->getDestId()
         << " groupId=" << lteInfo->getMulticastGroupId() << " drbId=" << lteInfo->getDrbId()
-        << " direction=" << dirToA((Direction)lteInfo->getDirection())
+        << " direction=" << dirToA(lteInfo->getDirection())
         << " withPdcp=" << (withPdcp ? "yes" : "no") << endl;
 
     ASSERT(lteInfo->getSourceId() == getLteNodeId() || lteInfo->getSourceId() == getNrNodeId());

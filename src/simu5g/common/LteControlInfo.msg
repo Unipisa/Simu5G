@@ -15,6 +15,7 @@ import inet.common.TagBase;
 import inet.common.geometry.Geometry; // for Coord
 import inet.common.Units;
 import simu5g.common.LteCommon;
+import simu5g.common.LteCommonEnum;
 import simu5g.stack.mac.amc.UserTxParams;
 
 namespace simu5g;
@@ -50,7 +51,7 @@ namespace simu5g;
 class LteControlInfo extends inet::TagBase {
     MacNodeId sourceId = NODEID_NONE;                    // Source MacNodeId
     MacNodeId destId = NODEID_NONE;                      // Destination MacNodeId
-    unsigned short direction enum(Direction);            // Traffic Direction (UL, DL, D2D)
+    Direction direction = DL;                            // Traffic Direction (UL, DL, D2D)
     MacNodeId d2dTxPeerId = NODEID_NONE;
     MacNodeId d2dRxPeerId = NODEID_NONE;
 }

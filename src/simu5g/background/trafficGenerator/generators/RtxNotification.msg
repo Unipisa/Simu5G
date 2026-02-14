@@ -10,10 +10,12 @@
 // and cannot be removed from it.
 //
 
+import simu5g.common.LteCommonEnum;
+
 namespace simu5g;
 
 message RtxNotification
 {
     int bytes;       // number of bytes to be retransmitted
-    int direction;   // DL or UL
+    Direction direction;   // DL or UL
 }

@@ -419,7 +419,7 @@ std::vector<double> LteRealisticChannelModel::getSINR(LteAirFrame *frame, UserCo
     MacNodeId ueId = NODEID_NONE;
     MacNodeId eNbId = NODEID_NONE;
 
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     EV << "------------ GET SINR ----------------" << endl;
     //===================== PARAMETERS SETUP ============================
@@ -714,7 +714,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP(LteAirFrame *frame, UserCo
     MacNodeId ueId = NODEID_NONE;
     MacNodeId eNbId = NODEID_NONE;
 
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     EV << "------------ GET SINR ----------------" << endl;
     // ===================== PARAMETERS SETUP ============================
@@ -899,7 +899,7 @@ std::vector<double> LteRealisticChannelModel::getSINR_bgUe(LteAirFrame *frame, U
     // get MacId and Direction
     MacNodeId bgUeId = lteInfo->getSourceId();
     MacNodeId eNbId = lteInfo->getDestId();
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     // position of e/gNb and UE
     Coord ueCoord = lteInfo->getCoord();
@@ -1175,7 +1175,7 @@ std::vector<double> LteRealisticChannelModel::getRSRP_D2D(LteAirFrame *frame, Us
     // True if we use the jakes map in the UE side (D2D is like DL for the receivers)
     bool cqiDl = false;
     // Get the direction
-    Direction dir = (Direction)lteInfo_1->getDirection();
+    Direction dir = lteInfo_1->getDirection();
     dir = D2D; //todo[stsc]: dir is overridden? why?
 
     EV << "------------ GET RSRP D2D----------------" << endl;
@@ -1554,7 +1554,7 @@ std::vector<double> LteRealisticChannelModel::getSIR(LteAirFrame *frame,
 
     Coord coord = lteInfo->getCoord();
 
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     MacNodeId id = NODEID_NONE;
     double speed = 0.0;
@@ -1726,7 +1726,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful(LteAirFrame *frame, UserCon
     Cqi cqi = lteInfo->getUserTxParams()->readCqiVector()[cw];
 
     MacNodeId id;
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     // Get MacNodeId of UE
     if (dir == DL)
@@ -1871,7 +1871,7 @@ bool LteRealisticChannelModel::isReceptionSuccessful_D2D(LteAirFrame *frame, Use
     EV << "LteRealisticChannelModel:: CQI: " << cqi << endl;
 
     MacNodeId id;
-    Direction dir = (Direction)lteInfo->getDirection();
+    Direction dir = lteInfo->getDirection();
 
     // Get MacNodeId of UE
     if (dir == DL)

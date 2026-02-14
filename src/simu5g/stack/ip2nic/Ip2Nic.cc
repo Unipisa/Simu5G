@@ -380,7 +380,7 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address d
         MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
 
         // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
-        ConnectionKey key{srcAddr, destAddr, typeOfService, 0xFFFF};
+        ConnectionKey key{srcAddr, destAddr, typeOfService, Direction(0xFFFF)};
         DrbId drbId = lookupOrAssignDrbId(key);
 
         // assign DRB ID and node IDs

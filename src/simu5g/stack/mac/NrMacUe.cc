@@ -308,7 +308,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 // Compute BSR size taking into account only DM flows
                 int sizeBsr = 0;
                 for (auto [cid, connInfo] : connDescOut_) {
-                    Direction connDir = (Direction)connInfo.flowInfo.getDirection();
+                    Direction connDir = connInfo.flowInfo.getDirection();
                     LteMacBuffer* buffer = connInfo.buffer;
 
                     // if the bsr was triggered by D2D (D2D_MULTI), only account for D2D (D2D_MULTI) connections
@@ -376,7 +376,7 @@ void NrMacUe::macPduMake(MacCid cid)
                 // get the direction (UL/D2D/D2D_MULTI) and the corresponding destination ID
                 const FlowDescriptor& connInfo = connDescOut_.at(destCid).flowInfo;
                 MacNodeId destId = connInfo.getDestId();
-                Direction dir = (Direction)connInfo.getDirection();
+                Direction dir = connInfo.getDirection();
 
                 std::pair<MacNodeId, Codeword> pktId = {destId, cw};
                 unsigned int sduPerCid = item.second;
