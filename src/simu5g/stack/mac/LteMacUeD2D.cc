@@ -120,7 +120,7 @@ void LteMacUeD2D::macPduMake(MacCid cid)
 
                 if (sizeBsr > 0) {
                     // Call the appropriate function to make a BSR for a D2D communication
-                    BsrType bsrType = bsrD2DMulticastTriggered_ ? D2D_MULTI_SHORT_BSR : D2D_SHORT_BSR;
+                    LogicalCid bsrType = bsrD2DMulticastTriggered_ ? D2D_MULTI_SHORT_BSR : D2D_SHORT_BSR;
                     bsrD2DMulticastTriggered_ = false;
                     auto macPktBsr = makeBsr(sizeBsr);
                     auto info = macPktBsr->getTagForUpdate<UserControlInfo>();

@@ -191,15 +191,6 @@ enum CoreNodeType
 };
 
 
-// Types of BSR  * TODO add LONG/TRUNCATED BSR
-enum BsrType
-{
-    SHORT_BSR  = 0;
-    D2D_SHORT_BSR = 1;
-    D2D_MULTI_SHORT_BSR  = 2;
-};
-
-
 /// H-ARQ feedback (ACK, NACK)
 enum HarqAcknowledgment
 {

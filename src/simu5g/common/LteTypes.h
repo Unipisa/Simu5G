@@ -74,6 +74,12 @@ typedef unsigned short LogicalCid;
 /// Data Radio Bearer Identifier (used in PDCP/RLC layers, maps 1:1 to LogicalCid)
 typedef LogicalCid DrbId;
 
+/// Special LogicalCid values for Buffer Status Reports
+// TODO add LONG/TRUNCATED BSR
+constexpr LogicalCid SHORT_BSR = 0;
+constexpr LogicalCid D2D_SHORT_BSR = 1;
+constexpr LogicalCid D2D_MULTI_SHORT_BSR = 2;
+
 /// Connection Identifier: <MacNodeId,LogicalCid>
 // MacCid is now a class with separate fields instead of a packed integer
 
