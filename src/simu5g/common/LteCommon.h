@@ -407,7 +407,6 @@ char *cStringToLower(char *str);
 LteRlcType aToRlcType(std::string s);
 const std::string planeToA(Plane p);
 MacNodeId ctrlInfoToUeId(const FlowControlInfo *info);
-MacCid ctrlInfoToMacCid(const FlowControlInfo *info);        // get the CID from the packet control info
 DrbKey ctrlInfoToDrbKey(const FlowControlInfo *info);  // get the DrbKey from the packet control info
 const std::string DeploymentScenarioToA(DeploymentScenario type);
 DeploymentScenario aToDeploymentScenario(std::string s);

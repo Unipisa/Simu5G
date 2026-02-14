@@ -332,14 +332,6 @@ bool isMulticastConnection(FlowControlInfo *lteInfo)
 
 
 /*
- * Obtain the CID from the Control Info
- */
-MacCid ctrlInfoToMacCid(const FlowControlInfo *info)
-{
-    return MacCid(ctrlInfoToUeId(info), LogicalCid(num(info->getDrbId())));
-}
-
-/*
  * Obtain the DrbKey from the Control Info
  */
 DrbKey ctrlInfoToDrbKey(const FlowControlInfo *info)

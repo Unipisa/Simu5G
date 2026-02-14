@@ -235,6 +235,14 @@ class LteMacBase : public cSimpleModule
      */
     DrbId lcidToDrbId(LogicalCid lcid) { return DrbId(num(lcid)); }
 
+    /**
+     * Extracts a MacCid from FlowControlInfo.
+     * Converts DrbId (from PDCP/RLC) to LogicalCid (MAC layer).
+     */
+    MacCid ctrlInfoToMacCid(const FlowControlInfo *info) {
+        return MacCid(ctrlInfoToUeId(info), drbIdToLcid(info->getDrbId()));
+    }
+
     /*
      * Getters
      */
