@@ -57,28 +57,28 @@ class X2NodeId {
 
 /// Logical Connection Identifier (used in MAC layer)
 class LogicalCid {
-    @existingClass; // typedef unsigned short LogicalCid;
+    @existingClass; // enum class LogicalCid : unsigned short;
     @descriptor(false);
     @primitive;
     @castFunction(false);
-    @fromString(string2int64($));
-    @toString(int642string($));
-    @defaultValue(0);
-    @toValue((omnetpp::intval_t)($));
-    @fromValue(omnetpp::checked_int_cast<LogicalCid>($.intValue()));
+    @fromString(LogicalCid(string2int64($)));
+    @toString(int642string(num($)));
+    @defaultValue(LogicalCid(0));
+    @toValue((omnetpp::intval_t)(num($)));
+    @fromValue(LogicalCid($.intValue()));
 };
 
 /// Data Radio Bearer Identifier (used in PDCP/RLC layers, maps 1:1 to LogicalCid)
 class DrbId {
-    @existingClass; // typedef LogicalCid DrbId;
+    @existingClass; // enum class DrbId : unsigned short;
     @descriptor(false);
     @primitive;
     @castFunction(false);
-    @fromString(string2int64($));
-    @toString(int642string($));
-    @defaultValue(0);
-    @toValue((omnetpp::intval_t)($));
-    @fromValue(omnetpp::checked_int_cast<DrbId>($.intValue()));
+    @fromString(DrbId(string2int64($)));
+    @toString(int642string(num($)));
+    @defaultValue(DrbId(0));
+    @toValue((omnetpp::intval_t)(num($)));
+    @fromValue(DrbId($.intValue()));
 };
 
 /// Connection Identifier: <MacNodeId,LogicalCid>

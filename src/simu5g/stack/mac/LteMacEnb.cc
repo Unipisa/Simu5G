@@ -371,7 +371,7 @@ void LteMacEnb::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
                 cw = otherCw;
             }
 
-            std::pair<MacCid, Codeword> otherPair(MacCid(nodeId, 0), otherCw);
+            std::pair<MacCid, Codeword> otherPair(MacCid(nodeId, LogicalCid(0)), otherCw);
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // Increment the number of allocated Cw
@@ -691,7 +691,7 @@ void LteMacEnb::macPduUnmake(cPacket *cpkt)
         // TODO: see if BSR for CID or LCID
         MacBsr *bsr = check_and_cast<MacBsr *>(macPdu->popCe());
         auto lteInfo = pkt->getTag<UserControlInfo>();
-        MacCid cid = MacCid(lteInfo->getSourceId(), 0);
+        MacCid cid = MacCid(lteInfo->getSourceId(), LogicalCid(0));
         bufferizeBsr(bsr, cid);
         delete bsr;
     }

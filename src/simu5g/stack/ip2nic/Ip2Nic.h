@@ -101,7 +101,7 @@ class Ip2Nic : public cSimpleModule
     };
 
     // DRB ID counter and table (for DRB ID assignment)
-    DrbId drbId_ = 1;
+    unsigned short drbId_ = 1;
     std::unordered_map<ConnectionKey, DrbId, ConnectionKeyHash> drbIdTable_;
 
     // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP

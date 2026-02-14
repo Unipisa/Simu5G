@@ -53,7 +53,7 @@ class TrafficClassInd extends inet::TagBase {
 // Usually sent by PDCP to RLC and MAC layers.
 //
 class LogicalConnectionInd extends inet::TagBase {
-    LogicalCid lcid = 0;                // Logical Connection Identifier
+    LogicalCid lcid;                    // Logical Connection Identifier
     int32 multicastGroupId = -1;        // Multicast group ID (-1 for unicast)
 }
 

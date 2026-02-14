@@ -69,16 +69,16 @@ typedef MacNodeId MacCellId;
 typedef MacNodeId X2NodeId;
 
 /// Logical Connection Identifier (used in MAC layer)
-typedef unsigned short LogicalCid;
+SIMU5G_STRONG_TYPEDEF(LogicalCid, unsigned short)
 
 /// Data Radio Bearer Identifier (used in PDCP/RLC layers, maps 1:1 to LogicalCid)
-typedef LogicalCid DrbId;
+SIMU5G_STRONG_TYPEDEF(DrbId, unsigned short)
 
 /// Special LogicalCid values for Buffer Status Reports
 // TODO add LONG/TRUNCATED BSR
-constexpr LogicalCid SHORT_BSR = 0;
-constexpr LogicalCid D2D_SHORT_BSR = 1;
-constexpr LogicalCid D2D_MULTI_SHORT_BSR = 2;
+constexpr LogicalCid SHORT_BSR = LogicalCid(0);
+constexpr LogicalCid D2D_SHORT_BSR = LogicalCid(1);
+constexpr LogicalCid D2D_MULTI_SHORT_BSR = LogicalCid(2);
 
 /// Connection Identifier: <MacNodeId,LogicalCid>
 // MacCid is now a class with separate fields instead of a packed integer
@@ -114,7 +114,7 @@ private:
 
 public:
     // Default constructor
-    MacCid() : nodeId_(static_cast<MacNodeId>(0)), lcid_(0) {}
+    MacCid() : nodeId_(static_cast<MacNodeId>(0)), lcid_(LogicalCid(0)) {}
 
     // Constructor
     MacCid(MacNodeId nodeId, LogicalCid lcid) : nodeId_(nodeId), lcid_(lcid) {}
@@ -122,13 +122,13 @@ public:
     // Getters
     MacNodeId getNodeId() const { return nodeId_; }
     LogicalCid getLcid() const { return lcid_; }
-    unsigned int asPackedInt() const { return (num(nodeId_) << 16) | lcid_; }
+    unsigned int asPackedInt() const { return (num(nodeId_) << 16) | num(lcid_); }
 
     // Check if this is an empty/invalid MacCid (default constructed)
-    bool isEmpty() const { return num(nodeId_) == 0 && lcid_ == 0; }
+    bool isEmpty() const { return num(nodeId_) == 0 && num(lcid_) == 0; }
 
     // String representation
-    std::string str() const { return "MacCid(nodeId=" + std::to_string(num(nodeId_)) + ", lcid=" + std::to_string(lcid_) + ")"; }
+    std::string str() const { return "MacCid(nodeId=" + std::to_string(num(nodeId_)) + ", lcid=" + std::to_string(num(lcid_)) + ")"; }
 
     // Comparison operators for std::map compatibility
     bool operator<(const MacCid& other) const { return asPackedInt() < other.asPackedInt(); }
@@ -152,7 +152,7 @@ private:
 
 public:
     // Default constructor
-    DrbKey() : nodeId_(static_cast<MacNodeId>(0)), drbId_(0) {}
+    DrbKey() : nodeId_(static_cast<MacNodeId>(0)), drbId_(DrbId(0)) {}
 
     // Constructor
     DrbKey(MacNodeId nodeId, DrbId drbId) : nodeId_(nodeId), drbId_(drbId) {}
@@ -160,13 +160,13 @@ public:
     // Getters
     MacNodeId getNodeId() const { return nodeId_; }
     DrbId getDrbId() const { return drbId_; }
-    unsigned int asPackedInt() const { return (num(nodeId_) << 16) | drbId_; }
+    unsigned int asPackedInt() const { return (num(nodeId_) << 16) | num(drbId_); }
 
     // Check if this is an empty/invalid DrbKey (default constructed)
-    bool isEmpty() const { return num(nodeId_) == 0 && drbId_ == 0; }
+    bool isEmpty() const { return num(nodeId_) == 0 && num(drbId_) == 0; }
 
     // String representation
-    std::string str() const { return "DrbKey(nodeId=" + std::to_string(num(nodeId_)) + ", drbId=" + std::to_string(drbId_) + ")"; }
+    std::string str() const { return "DrbKey(nodeId=" + std::to_string(num(nodeId_)) + ", drbId=" + std::to_string(num(drbId_)) + ")"; }
 
     // Comparison operators for std::map compatibility
     bool operator<(const DrbKey& other) const { return asPackedInt() < other.asPackedInt(); }

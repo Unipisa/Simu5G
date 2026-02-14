@@ -25,5 +25,5 @@ class LteMacSduRequest extends inet::FieldsChunk
     unsigned int sduSize;       // size of the requested SDU
     chunkLength = inet::B(1); // TODO: size 0
     MacNodeId ueId = NODEID_NONE;     // ID of the destination UE associated with the request
-    LogicalCid lcid = 0;              // Logical Connection identifier associated with the request
+    LogicalCid lcid;                  // Logical Connection identifier associated with the request
 }

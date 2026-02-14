@@ -471,7 +471,7 @@ void LteMacBase::discardRlcPdu(inet::Ptr<const UserControlInfo> lteInfo, unsigne
     Direction dir = lteInfo->getDirection();
     LogicalCid lcid = lteInfo->getPacketLcid();
     if (packetFlowObserver_ != nullptr && (dir == DL || dir == UL))
-        packetFlowObserver_->discardRlcPdu(lcid, rlcSno);
+        packetFlowObserver_->discardRlcPdu(lcidToDrbId(lcid), rlcSno);
 }
 
 void LteMacBase::deleteModule() {

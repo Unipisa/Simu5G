@@ -336,7 +336,7 @@ bool isMulticastConnection(FlowControlInfo *lteInfo)
  */
 MacCid ctrlInfoToMacCid(const FlowControlInfo *info)
 {
-    return MacCid(ctrlInfoToUeId(info), info->getDrbId());
+    return MacCid(ctrlInfoToUeId(info), LogicalCid(num(info->getDrbId())));
 }
 
 /*

@@ -397,17 +397,17 @@ void PacketFlowObserverEnb::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
-        DrbId drbId = macPdu->getLcid(i);  // MAC's LCID maps 1:1 to DRB ID
+        DrbId drbId = DrbId(num(macPdu->getLcid(i)));  // MAC's LCID maps 1:1 to DRB ID
         auto cit = connectionMap_.find(drbId);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            throw cRuntimeError("%s::insertMacPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
+            throw cRuntimeError("%s::insertMacPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
         }
 
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
         if (desc->macSdusPerPdu_.find(macPduId) != desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for DRB ID %d", pfmType.c_str(), macPduId, drbId);
+            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for DRB ID %d", pfmType.c_str(), macPduId, num(drbId));
 
         for (int i = 0; i < len; ++i) {
             auto rlcPdu = macPdu->getSdu(i);
@@ -447,10 +447,10 @@ void PacketFlowObserverEnb::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
-        DrbId drbId = macPdu->getLcid(i);  // MAC's LCID maps 1:1 to DRB ID
+        DrbId drbId = DrbId(num(macPdu->getLcid(i)));  // MAC's LCID maps 1:1 to DRB ID
         auto cit = connectionMap_.find(drbId);
         if (cit == connectionMap_.end())
-            throw cRuntimeError("%s::macPduArrived - DRB ID %d not present. It must be initialized before", pfmType.c_str(), drbId);
+            throw cRuntimeError("%s::macPduArrived - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
 
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;

@@ -195,7 +195,7 @@ void LteMacEnbD2D::sendGrants(std::map<GHz, LteMacScheduleList> *scheduleList)
                 cw = otherCw;
             }
 
-            std::pair<MacCid, Codeword> otherPair(MacCid(nodeId, 0), otherCw);
+            std::pair<MacCid, Codeword> otherPair(MacCid(nodeId, LogicalCid(0)), otherCw);
 
             if ((ot = (carrierScheduleList.find(otherPair))) != (carrierScheduleList.end())) {
                 // increment number of allocated Cw

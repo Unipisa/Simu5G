@@ -299,7 +299,7 @@ DrbId Ip2Nic::lookupOrAssignDrbId(const ConnectionKey& key)
     if (it != drbIdTable_.end())
         return it->second;
     else {
-        DrbId drbId = drbId_++;
+        DrbId drbId = DrbId(drbId_++);
         drbIdTable_[key] = drbId;
         EV << "Connection not found, new DRB ID created: " << drbId << "\n";
         return drbId;

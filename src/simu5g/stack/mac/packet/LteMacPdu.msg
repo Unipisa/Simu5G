@@ -49,7 +49,7 @@ class LteMacPdu extends inet::FieldsChunk
     int64_t macPduLength_ = 0;
 
     // LCID for each SDU (same array size as sdu[])
-    int8_t lcid[];
+    LogicalCid lcid[];
 
     // List Of MAC SDUs
     inet::Packet* sdu[] @owned @getter(getSduPtr);

@@ -267,18 +267,18 @@ void PacketFlowObserverUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
         return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
-        LogicalCid lcid = macPdu->getLcid(i);
+        DrbId drbId = DrbId(num(macPdu->getLcid(i)));  // MAC's LCID maps 1:1 to DRB ID
 
-        ConnectionMap::iterator cit = connectionMap_.find(lcid);
+        ConnectionMap::iterator cit = connectionMap_.find(drbId);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            throw cRuntimeError("%s::insertMacPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+            throw cRuntimeError("%s::insertMacPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
         }
 
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
         if (desc->macSdusPerPdu_.find(macPduId) != desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for logical CID %d", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::insertMacPdu - MAC PDU ID %d already present for DRB ID %d", pfmType.c_str(), macPduId, num(drbId));
 
         auto macSdu = macPdu->getSdu(i).peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
@@ -293,11 +293,11 @@ void PacketFlowObserverUe::insertMacPdu(inet::Ptr<const LteMacPdu> macPdu)
 
         std::map<unsigned int, SequenceNumberSet>::iterator tit = desc->rlcSdusPerPdu_.find(rlcSno);
         if (tit == desc->rlcSdusPerPdu_.end())
-            throw cRuntimeError("%s::insertMacPdu - RLC PDU ID %d not present in the status descriptor of lcid %d ", pfmType.c_str(), rlcSno, lcid);
+            throw cRuntimeError("%s::insertMacPdu - RLC PDU ID %d not present in the status descriptor of drbId %d ", pfmType.c_str(), rlcSno, num(drbId));
 
         // store the MAC SDUs (RLC PDUs) included in the MAC PDU
         desc->macSdusPerPdu_[macPduId].insert(rlcSno);
-        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertMacPdu - lcid[" << lcid << "], insert RLC PDU " << rlcSno << " in MAC PDU " << macPduId << endl;
+        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::insertMacPdu - drbId[" << drbId << "], insert RLC PDU " << rlcSno << " in MAC PDU " << macPduId << endl;
 
         // set the pdcp pdus related to this RLC as sent over the air since this method is called after the MAC ID
         // has been inserted in the HARQBuffer
@@ -323,19 +323,19 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
         return; // BSR-only MAC PDU, nothing to track
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
-        int lcid = macPdu->getLcid(i);
+        DrbId drbId = DrbId(num(macPdu->getLcid(i)));  // MAC's LCID maps 1:1 to DRB ID
 
-        std::map<LogicalCid, StatusDescriptor>::iterator cit = connectionMap_.find(lcid);
+        ConnectionMap::iterator cit = connectionMap_.find(drbId);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            throw cRuntimeError("%s::macPduArrived - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+            throw cRuntimeError("%s::macPduArrived - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
         }
 
         // get the descriptor for this connection
         StatusDescriptor *desc = &cit->second;
 
         EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::macPduArrived - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
-        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::macPduArrived - MAC PDU " << macPduId << " of lcid " << lcid << " arrived." << endl;
+        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::macPduArrived - MAC PDU " << macPduId << " of drbId " << drbId << " arrived." << endl;
 
         // === STEP 1 ==================================================== //
         // === recover the set of RLC PDU SN from the above MAC PDU ID === //
@@ -346,14 +346,14 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
         std::map<unsigned int, SequenceNumberSet>::iterator mit = desc->macSdusPerPdu_.find(macPduId);
         if (mit == desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::macPduArrived - MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::macPduArrived - MAC PDU ID %d not present for DRB ID %d", pfmType.c_str(), macPduId, num(drbId));
         SequenceNumberSet rlcSnoSet = mit->second;
 
         auto macSdu = rlcPdu.peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
 
         if (rlcSnoSet.find(rlcSno) == rlcSnoSet.end())
-            throw cRuntimeError("%s::macPduArrived - RLC sno [%d] not present in rlcSnoSet structure for MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), rlcSno, macPduId, lcid);
+            throw cRuntimeError("%s::macPduArrived - RLC sno [%d] not present in rlcSnoSet structure for MAC PDU ID %d not present for DRB ID %d", pfmType.c_str(), rlcSno, macPduId, num(drbId));
 
         // === STEP 2 ========================================================== //
         // === for each RLC PDU SN, recover the set of RLC SDU (PDCP PDU) SN === //
@@ -364,7 +364,7 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
             std::map<unsigned int, SequenceNumberSet>::iterator nit = desc->rlcSdusPerPdu_.find(rlcPduSno);
             if (nit == desc->rlcSdusPerPdu_.end())
-                throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present for logical CID %d", pfmType.c_str(), rlcPduSno, lcid);
+                throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present for DRB ID %d", pfmType.c_str(), rlcPduSno, num(drbId));
             SequenceNumberSet pdcpSnoSet = nit->second;
 
             // === STEP 3 ============================================================================ //
@@ -380,20 +380,20 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
 
                 std::map<unsigned int, SequenceNumberSet>::iterator oit = desc->rlcPdusPerSdu_.find(pdcpPduSno);
                 if (oit == desc->rlcPdusPerSdu_.end())
-                    throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d not present for logical CID %d", pfmType.c_str(), pdcpPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - PDCP PDU SN %d not present for DRB ID %d", pfmType.c_str(), pdcpPduSno, num(drbId));
 
                 // oit->second is the set of RLC PDU in which the PDCP PDU is contained
 
                 // the RLC PDU SN must be present in the set
                 if (oit->second.find(rlcPduSno) == oit->second.end())
-                    throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present in the set of PDCP PDU SN %d for logical CID %d", pfmType.c_str(), pdcpPduSno, rlcPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - RLC PDU SN %d not present in the set of PDCP PDU SN %d for DRB ID %d", pfmType.c_str(), pdcpPduSno, rlcPduSno, num(drbId));
 
                 // the RLC PDU has been sent, so erase it from the set
                 oit->second.erase(rlcPduSno);
 
                 std::map<unsigned int, PdcpStatus>::iterator pit = desc->pdcpStatus_.find(pdcpPduSno);
                 if (pit == desc->pdcpStatus_.end())
-                    throw cRuntimeError("%s::macPduArrived - PdcpStatus for PDCP sno [%d] not present for lcid [%d], this should not happen", pfmType.c_str(), pdcpPduSno, lcid);
+                    throw cRuntimeError("%s::macPduArrived - PdcpStatus for PDCP sno [%d] not present for drbId [%d], this should not happen", pfmType.c_str(), pdcpPduSno, num(drbId));
 
                 // check whether the set is now empty
                 if (desc->rlcPdusPerSdu_[pdcpPduSno].empty()) {
@@ -406,7 +406,7 @@ void PacketFlowObserverUe::macPduArrived(inet::Ptr<const LteMacPdu> macPdu)
                         pdcpDelay.time += time;
                         pdcpDelay.pktCount += 1;
 
-                        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::macPduArrived - PDCP PDU " << pdcpPduSno << " of lcid " << lcid << " acknowledged. Delay time: " << time << "s" << endl;
+                        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::macPduArrived - PDCP PDU " << pdcpPduSno << " of drbId " << drbId << " acknowledged. Delay time: " << time << "s" << endl;
 
                         // remove pdcp status
                         oit->second.clear();
@@ -433,12 +433,12 @@ void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
     for (int i = 0; i < len; ++i) {
         auto rlcPdu = macPdu->getSdu(i);
         auto lteInfo = rlcPdu.getTag<FlowControlInfo>();
-        int lcid = lteInfo->getDrbId();
+        DrbId drbId = lteInfo->getDrbId();
 
-        auto cit = connectionMap_.find(lcid);
+        auto cit = connectionMap_.find(drbId);
         if (cit == connectionMap_.end()) {
             // this may occur after a handover, when data structures are cleared
-            throw cRuntimeError("%s::discardMacPdu - Logical CID %d not present. It must be initialized before", pfmType.c_str(), lcid);
+            throw cRuntimeError("%s::discardMacPdu - DRB ID %d not present. It must be initialized before", pfmType.c_str(), num(drbId));
             return;
         }
 
@@ -446,7 +446,7 @@ void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
         StatusDescriptor *desc = &cit->second;
 
         EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::discardMacPdu - Get MAC PDU ID [" << macPduId << "], which contains:" << endl;
-        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::discardMacPdu - MAC PDU " << macPduId << " of lcid " << lcid << " arrived." << endl;
+        EV_FATAL << NOW << "node id " << num(desc->nodeId_) - 1025 << " " << pfmType << "::discardMacPdu - MAC PDU " << macPduId << " of drbId " << drbId << " arrived." << endl;
 
         // === STEP 1 ==================================================== //
         // === recover the set of RLC PDU SN from the above MAC PDU ID === //
@@ -458,20 +458,20 @@ void PacketFlowObserverUe::discardMacPdu(const inet::Ptr<const LteMacPdu> macPdu
 
         auto mit = desc->macSdusPerPdu_.find(macPduId);
         if (mit == desc->macSdusPerPdu_.end())
-            throw cRuntimeError("%s::discardMacPdu - MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), macPduId, lcid);
+            throw cRuntimeError("%s::discardMacPdu - MAC PDU ID %d not present for DRB ID %d", pfmType.c_str(), macPduId, num(drbId));
         SequenceNumberSet rlcSnoSet = mit->second;
 
         auto macSdu = rlcPdu.peekAtFront<LteRlcUmDataPdu>();
         unsigned int rlcSno = macSdu->getPduSequenceNumber();
 
         if (rlcSnoSet.find(rlcSno) == rlcSnoSet.end())
-            throw cRuntimeError("%s::macPduArrived - RLC sno [%d] not present in rlcSnoSet structure for MAC PDU ID %d not present for logical CID %d", pfmType.c_str(), rlcSno, macPduId, lcid);
+            throw cRuntimeError("%s::discardMacPdu - RLC sno [%d] not present in rlcSnoSet structure for MAC PDU ID %d not present for DRB ID %d", pfmType.c_str(), rlcSno, macPduId, num(drbId));
 
         // === STEP 2 ========================================================== //
         // === for each RLC PDU SN, recover the set of RLC SDU (PDCP PDU) SN === //
 
         for (const auto& rlcSno : rlcSnoSet) {
-            discardRlcPdu(lcid, rlcSno, true);
+            discardRlcPdu(drbId, rlcSno, true);
         }
 
         mit->second.clear();
