@@ -74,11 +74,16 @@ SIMU5G_STRONG_TYPEDEF(LogicalCid, unsigned short)
 /// Data Radio Bearer Identifier (used in PDCP/RLC layers, maps 1:1 to LogicalCid)
 SIMU5G_STRONG_TYPEDEF(DrbId, unsigned short)
 
+/// Invalid/uninitialized LCID and DRB ID values
+constexpr LogicalCid LCID_NONE = LogicalCid(65535);
+constexpr DrbId DRBID_NONE = DrbId(65535);
+
 /// Special LogicalCid values for Buffer Status Reports
 // TODO add LONG/TRUNCATED BSR
-constexpr LogicalCid SHORT_BSR = LogicalCid(0);
-constexpr LogicalCid D2D_SHORT_BSR = LogicalCid(1);
-constexpr LogicalCid D2D_MULTI_SHORT_BSR = LogicalCid(2);
+// TODO FIXME these conflict with DRB LCIDs (1..), and also 0 is reserved for CCCH (common control channel)
+constexpr LogicalCid SHORT_BSR = LogicalCid(0); // should be 62 (NR)
+constexpr LogicalCid D2D_SHORT_BSR = LogicalCid(1); // Simu5G-specific
+constexpr LogicalCid D2D_MULTI_SHORT_BSR = LogicalCid(2); // Simu5G-specific
 
 /// Connection Identifier: <MacNodeId,LogicalCid>
 // MacCid is now a class with separate fields instead of a packed integer
@@ -114,7 +119,7 @@ private:
 
 public:
     // Default constructor
-    MacCid() : nodeId_(static_cast<MacNodeId>(0)), lcid_(LogicalCid(0)) {}
+    MacCid() : nodeId_(NODEID_NONE), lcid_(LCID_NONE) {}
 
     // Constructor
     MacCid(MacNodeId nodeId, LogicalCid lcid) : nodeId_(nodeId), lcid_(lcid) {}
@@ -125,7 +130,7 @@ public:
     unsigned int asPackedInt() const { return (num(nodeId_) << 16) | num(lcid_); }
 
     // Check if this is an empty/invalid MacCid (default constructed)
-    bool isEmpty() const { return num(nodeId_) == 0 && num(lcid_) == 0; }
+    bool isEmpty() const { return nodeId_ == NODEID_NONE && lcid_ == LCID_NONE; }
 
     // String representation
     std::string str() const { return "MacCid(nodeId=" + std::to_string(num(nodeId_)) + ", lcid=" + std::to_string(num(lcid_)) + ")"; }
@@ -152,7 +157,7 @@ private:
 
 public:
     // Default constructor
-    DrbKey() : nodeId_(static_cast<MacNodeId>(0)), drbId_(DrbId(0)) {}
+    DrbKey() : nodeId_(NODEID_NONE), drbId_(DRBID_NONE) {}
 
     // Constructor
     DrbKey(MacNodeId nodeId, DrbId drbId) : nodeId_(nodeId), drbId_(drbId) {}
@@ -163,7 +168,7 @@ public:
     unsigned int asPackedInt() const { return (num(nodeId_) << 16) | num(drbId_); }
 
     // Check if this is an empty/invalid DrbKey (default constructed)
-    bool isEmpty() const { return num(nodeId_) == 0 && num(drbId_) == 0; }
+    bool isEmpty() const { return nodeId_ == NODEID_NONE && drbId_ == DRBID_NONE; }
 
     // String representation
     std::string str() const { return "DrbKey(nodeId=" + std::to_string(num(nodeId_)) + ", drbId=" + std::to_string(num(drbId_)) + ")"; }

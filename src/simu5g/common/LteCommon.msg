@@ -63,7 +63,7 @@ class LogicalCid {
     @castFunction(false);
     @fromString(LogicalCid(string2int64($)));
     @toString(int642string(num($)));
-    @defaultValue(LogicalCid(0));
+    @defaultValue(LCID_NONE);
     @toValue((omnetpp::intval_t)(num($)));
     @fromValue(LogicalCid($.intValue()));
 };
@@ -76,7 +76,7 @@ class DrbId {
     @castFunction(false);
     @fromString(DrbId(string2int64($)));
     @toString(int642string(num($)));
-    @defaultValue(DrbId(0));
+    @defaultValue(DRBID_NONE);
     @toValue((omnetpp::intval_t)(num($)));
     @fromValue(DrbId($.intValue()));
 };
