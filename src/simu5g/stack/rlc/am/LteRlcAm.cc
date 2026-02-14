@@ -81,7 +81,7 @@ void LteRlcAm::sendDefragmented(cPacket *pktAux)
 void LteRlcAm::bufferControlPdu(cPacket *pktAux) {
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+    DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
 
     // Find TXBuffer for this DrbKey
     AmTxQueue *txbuf = lookupTxBuffer(id);
@@ -108,7 +108,7 @@ void LteRlcAm::handleUpperMessage(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+    DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
 
     // Find TXBuffer for this DrbKey
     AmTxQueue *txbuf = lookupTxBuffer(id);
@@ -137,7 +137,7 @@ void LteRlcAm::routeControlMessage(cPacket *pktAux)
 
     auto pkt = check_and_cast<Packet *>(pktAux);
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
-    DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+    DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
 
     // Find TXBuffer for this DrbKey
     AmTxQueue *txbuf = lookupTxBuffer(id);
@@ -158,7 +158,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         // process SDU request received from MAC
 
         // get the corresponding Tx buffer
-        DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+        DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
 
         // Find TXBuffer for this DrbKey
         AmTxQueue *txbuf = lookupTxBuffer(id);
@@ -186,7 +186,7 @@ void LteRlcAm::handleLowerMessage(cPacket *pktAux)
         }
 
         // Extract information from fragment
-        DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+        DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
         // Find RXBuffer for this DrbKey
         AmRxQueue *rxbuf = lookupRxBuffer(id);
         if (rxbuf == nullptr)

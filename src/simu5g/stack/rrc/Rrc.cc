@@ -229,7 +229,7 @@ void Rrc::createOutgoingConnection(FlowControlInfo *lteInfo, bool withPdcp)
     mac->createOutgoingConnection(cid, desc);
 
     // RLC: only UM works
-    DrbKey rlcId = ctrlInfoToNodeDrbId(lteInfo);
+    DrbKey rlcId = ctrlInfoToDrbKey(lteInfo);
     auto rlcUm = (nodeType==UE && isNrUe(lteInfo->getSourceId())) ? nrRlcUmModule.get() : rlcUmModule.get();
     rlcUm->createTxBuffer(rlcId, lteInfo);
 

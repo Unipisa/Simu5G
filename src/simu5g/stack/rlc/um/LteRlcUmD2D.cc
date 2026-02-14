@@ -51,7 +51,7 @@ void LteRlcUmD2D::handleLowerMessage(cPacket *pktAux)
 
         if (switchPkt->getTxSide()) {
             // get the corresponding Tx buffer & call handler
-            DrbKey id = ctrlInfoToNodeDrbId(lteInfo.get());
+            DrbKey id = ctrlInfoToDrbKey(lteInfo.get());
             UmTxEntity *txbuf = lookupTxBuffer(id);
             if (txbuf == nullptr)
                 txbuf = createTxBuffer(id, lteInfo.get());
