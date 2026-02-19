@@ -246,7 +246,7 @@ unsigned int LteSchedulerEnb::scheduleGrant(MacCid cid, unsigned int bytes, bool
     // check how a codeword may be reused (as in the if above) in case of non-empty OFDM space
     // otherwise check why a UE is stopped being scheduled while its buffer is not empty
     if (cwAlreadyAllocated > 0) {
-        terminate = true;
+        eligible = false;
         return 0;
     }
 
