@@ -11,10 +11,6 @@
 //
 
 #include "simu5g/stack/pdcp/LtePdcp.h"
-#include "simu5g/stack/pdcp/NrPdcpEnb.h"
-#include "simu5g/stack/pdcp/NrPdcpUe.h"
-#include "simu5g/stack/pdcp/LtePdcpEnbD2D.h"
-#include "simu5g/stack/pdcp/LtePdcpUeD2D.h"
 
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
@@ -113,7 +109,9 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
     bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
 
     // --- Subclass-specific parts ---
-    if (dynamic_cast<NrPdcpEnb *>(this)) {
+    bool isEnb = (dir == DL);
+
+    if (isNR_ && isEnb) {
         // --- NrPdcpEnb ---
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
@@ -140,7 +138,7 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
         LogicalCid lcid = lookupOrAssignLcid(key);
         lteInfo->setLcid(lcid);
     }
-    else if (dynamic_cast<NrPdcpUe *>(this)) {
+    else if (isNR_ && !isEnb) {
         // --- NrPdcpUe ---
 
         // select the correct nodeId for the source
@@ -205,7 +203,7 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
         // TODO this was in the original code, but has no effect:
         // MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
     }
-    else if (dynamic_cast<LtePdcpEnbD2D *>(this)) {
+    else if (hasD2DSupport_ && isEnb) {
         // --- LtePdcpEnbD2D ---
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
@@ -228,7 +226,7 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
         else
             lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
     }
-    else if (dynamic_cast<LtePdcpUeD2D *>(this)) {
+    else if (hasD2DSupport_ && !isEnb) {
         // --- LtePdcpUeD2D ---
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
