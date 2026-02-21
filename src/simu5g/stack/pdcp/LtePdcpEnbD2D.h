@@ -29,8 +29,6 @@ using namespace omnetpp;
  */
 class LtePdcpEnbD2D : public LtePdcpEnb
 {
-  protected:
-    void initialize(int stage) override;
 };
 
 } //namespace

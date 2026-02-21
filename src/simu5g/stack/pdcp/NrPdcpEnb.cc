@@ -27,10 +27,6 @@ void NrPdcpEnb::initialize(int stage)
     LtePdcpEnbD2D::initialize(stage);
 
     if (stage == inet::INITSTAGE_LOCAL) {
-        isNR_ = true;
-
-        inet::NetworkInterface *nic = inet::getContainingNicModule(this);
-        dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
         if (dualConnectivityEnabled_)
             dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);
     }

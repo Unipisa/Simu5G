@@ -28,8 +28,6 @@ namespace simu5g {
 class NrPdcpUe : public LtePdcpUeD2D
 {
   protected:
-    void initialize(int stage) override;
-
     /**
      * getNrNodeId(): returns the ID of this node
      */

@@ -12,6 +12,7 @@
 
 #include "simu5g/stack/pdcp/LtePdcp.h"
 
+#include <inet/networklayer/common/NetworkInterface.h>
 #include <inet/networklayer/ipv4/Ipv4Header_m.h>
 #include <inet/transportlayer/tcp_common/TcpHeader.h>
 #include <inet/transportlayer/udp/UdpHeader_m.h>
@@ -269,6 +270,26 @@ void LtePdcpBase::initialize(int stage)
 
         const char *txEntityModuleTypeName = par("txEntityModuleType").stringValue();
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
+
+        // Set flags based on NED type (replaces subclass initialize() overrides)
+        const char *nedType = getNedTypeName();
+        isNR_ = (strcmp(nedType, "simu5g.stack.pdcp.NrPdcpEnb") == 0)
+              || (strcmp(nedType, "simu5g.stack.pdcp.NrPdcpUe") == 0);
+        hasD2DSupport_ = isNR_
+              || (strcmp(nedType, "simu5g.stack.pdcp.LtePdcpEnbD2D") == 0)
+              || (strcmp(nedType, "simu5g.stack.pdcp.LtePdcpUeD2D") == 0);
+
+        // NR-specific initialization
+        if (isNR_) {
+            inet::NetworkInterface *nic = inet::getContainingNicModule(this);
+            dualConnectivityEnabled_ = nic->par("dualConnectivityEnabled").boolValue();
+
+            if (getNodeTypeById(nodeId_) == UE) {
+                // NrPdcpUe: read NR node ID and initialize NR RLC gate
+                nrNodeId_ = MacNodeId(getContainingNode(this)->par("nrMacNodeId").intValue());
+                nrRlcOutGate_ = gate("nrRlcOut");
+            }
+        }
 
         // TODO WATCH_MAP(gatemap_);
         WATCH(nodeId_);

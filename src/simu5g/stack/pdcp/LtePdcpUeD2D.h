@@ -35,8 +35,6 @@ class LtePdcpUeD2D : public LtePdcpUe
     std::map<inet::L3Address, bool> d2dPeeringInit_;
 
   protected:
-    void initialize(int stage) override;
-
     // additional getDirection method determining if D2D communication is available to a specific destination
     Direction getDirection(MacNodeId destId)
     {

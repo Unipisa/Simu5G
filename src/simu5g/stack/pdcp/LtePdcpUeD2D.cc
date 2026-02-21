@@ -23,12 +23,5 @@ Define_Module(LtePdcpUeD2D);
 using namespace inet;
 using namespace omnetpp;
 
-void LtePdcpUeD2D::initialize(int stage)
-{
-    LtePdcpUe::initialize(stage);
-    if (stage == inet::INITSTAGE_LOCAL)
-        hasD2DSupport_ = true;
-}
-
 
 } //namespace
