@@ -42,9 +42,8 @@ void LteMacUeD2D::initialize(int stage)
             throw cRuntimeError("LteMacUeD2D::initialize - '%s' must be 'LteRlcUmD2D' instead of '%s'", par("rlcUmModule").stringValue(), rlcUmType.c_str());
 
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
-        std::string pdcpType = pdcp->getComponentType()->getName();
-        if (pdcpType != "LtePdcpUeD2D" && pdcpType != "NrPdcpUe")
-            throw cRuntimeError("LteMacUeD2D::initialize - %s module found, must be LtePdcpUeD2D or NrPdcpUe", pdcpType.c_str());
+        if (!pdcp->par("hasD2DSupport").boolValue())
+            throw cRuntimeError("LteMacUeD2D::initialize - PDCP module '%s' does not have D2D support", pdcp->getComponentType()->getName());
     }
     if (stage == INITSTAGE_SIMU5G_AMC_ATTACHUSER) {
         // get parameters

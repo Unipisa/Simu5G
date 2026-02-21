@@ -49,7 +49,7 @@ class BaseStationStatsCollector : public cSimpleModule
     mec::Ecgi ecgi_;
 
     // LTE NIC layers
-    inet::ModuleRefByPar<LtePdcpEnb> pdcp_;
+    inet::ModuleRefByPar<LtePdcpBase> pdcp_;
     inet::ModuleRefByPar<LteMacEnb> mac_;
     inet::ModuleRefByPar<LteRlcUm> rlc_;
     inet::ModuleRefByPar<PacketFlowObserverEnb> packetFlowObserver_;

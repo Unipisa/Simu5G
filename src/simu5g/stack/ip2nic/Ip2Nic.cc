@@ -61,10 +61,9 @@ void Ip2Nic::initialize(int stage)
                 nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
         }
 
-        // Initialize flags using the same method as PDCP subclasses
+        // Initialize flags from PDCP module's NED parameters
         cModule *pdcpModule = networkIf->getSubmodule("pdcp");
-        isNR_ = (strcmp(pdcpModule->getNedTypeName(), "simu5g.stack.pdcp.NrPdcpEnb") == 0)
-             || (strcmp(pdcpModule->getNedTypeName(), "simu5g.stack.pdcp.NrPdcpUe") == 0);
+        isNR_ = pdcpModule->par("isNR").boolValue();
         hasD2DSupport_ = networkIf->par("d2dCapable").boolValue() || isNR_;
 
         conversationalRlc_ = aToRlcType(par("conversationalRlc"));

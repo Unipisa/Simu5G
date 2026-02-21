@@ -495,7 +495,7 @@ void HandoverController::deleteOldBuffers(MacNodeId servingNodeId)
     // delete pdcpEntities[nodeId_] at old serving node
     // In case of NR dual connectivity, the master can be a secondary node, hence we have to delete PDCP entities residing in the node's master
     MacNodeId pdcpNodeId = binder_->getMasterNodeOrSelf(servingNodeId);
-    LtePdcpEnb *masterPdcp = check_and_cast<LtePdcpEnb *>(binder_->getPdcpByNodeId(pdcpNodeId));
+    LtePdcpBase *masterPdcp = check_and_cast<LtePdcpBase *>(binder_->getPdcpByNodeId(pdcpNodeId));
     masterPdcp->deleteEntities(nodeId_);
 
     // delete queues for serving node at this UE

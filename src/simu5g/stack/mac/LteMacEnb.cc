@@ -1060,7 +1060,7 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
          */
 
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
-        if (strcmp(pdcp->getClassName(), "NrPdcpEnb") == 0) {
+        if (pdcp->par("isNR").boolValue()) {
             auto *nrPdpc = check_and_cast<LtePdcpBase *>(pdcp);
             std::set<MacNodeId> activePdcpUe;
             nrPdpc->activeUeUL(&activePdcpUe);

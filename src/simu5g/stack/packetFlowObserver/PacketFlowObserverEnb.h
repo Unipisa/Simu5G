@@ -87,7 +87,7 @@ class PacketFlowObserverEnb : public PacketFlowObserverBase
     typedef  std::map<LogicalCid, StatusDescriptor> ConnectionMap;
     ConnectionMap connectionMap_; // LCID to the corresponding StatusDescriptor
 
-    opp_component_ptr<LtePdcpEnb> pdcp_;
+    opp_component_ptr<LtePdcpBase> pdcp_;
 
     std::map<MacNodeId, Delay> ULPktDelay_;
     std::map<MacNodeId, std::vector<Grant>> ulGrants_;

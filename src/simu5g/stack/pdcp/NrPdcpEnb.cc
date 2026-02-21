@@ -10,29 +10,10 @@
 // and cannot be removed from it.
 //
 
-#include <inet/networklayer/common/NetworkInterface.h>
-#include <inet/networklayer/ipv4/Ipv4Header_m.h>
-
 #include "simu5g/stack/pdcp/NrPdcpEnb.h"
-#include "simu5g/stack/packetFlowObserver/PacketFlowObserverBase.h"
-#include "simu5g/common/LteControlInfoTags_m.h"
-#include "simu5g/stack/pdcp/packet/LtePdcpPdu_m.h"
 
 namespace simu5g {
 
 Define_Module(NrPdcpEnb);
-
-void NrPdcpEnb::initialize(int stage)
-{
-    LtePdcpEnbD2D::initialize(stage);
-
-    if (stage == inet::INITSTAGE_LOCAL) {
-        if (dualConnectivityEnabled_)
-            dualConnectivityManager_.reference(this, "dualConnectivityManagerModule", true);
-    }
-}
-
-
-
 
 } //namespace
