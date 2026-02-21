@@ -288,7 +288,6 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
     auto pkt = check_and_cast<inet::Packet *>(pktAux);
-    analyzePacket(pkt);
 
     auto lteInfo = pkt->getTag<FlowControlInfo>();
     verifyControlInfo(lteInfo.get());

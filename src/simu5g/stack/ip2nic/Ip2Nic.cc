@@ -16,6 +16,7 @@
 #include "simu5g/stack/ip2nic/HandoverPacketHolderUe.h"
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
 
@@ -40,6 +41,7 @@ void Ip2Nic::initialize(int stage)
 
         networkIf = getContainingNicModule(this);
         dualConnectivityEnabled_ = networkIf->par("dualConnectivityEnabled").boolValue();
+        pdcp_ = check_and_cast<LtePdcpBase *>(networkIf->getSubmodule("pdcp"));
 
         if (nodeType_ == NODEB) {
             cModule *bs = getContainingNode(this);
@@ -115,6 +117,9 @@ void Ip2Nic::toStackUe(Packet *pkt)
     // Set useNR on the packet control info
     pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
+    // Classify the packet and fill FlowControlInfo tag
+    pdcp_->analyzePacket(pkt);
+
     // Send datagram to LTE stack or LteIp peer
     send(pkt, stackGateOut_);
 }
@@ -173,6 +178,10 @@ void Ip2Nic::toStackBs(Packet *pkt)
     else {
         // Set useNR on the packet control info
         pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
+
+        // Classify the packet and fill FlowControlInfo tag
+        pdcp_->analyzePacket(pkt);
+
         printControlInfo(pkt);
         send(pkt, stackGateOut_);
     }
