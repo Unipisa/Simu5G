@@ -41,18 +41,6 @@ class NrPdcpEnb : public LtePdcpEnbD2D
 
     void handleMessage(cMessage *msg) override;
 
-    /**
-     * Handler for um/am sap
-     *
-     * It performs the following steps:
-     * - Decompresses the header, restoring the original packet
-     * - Decapsulates the packet
-     * - Sends the packet to the application layer
-     *
-     * @param pkt Incoming packet
-     */
-    void fromLowerLayer(cPacket *pkt) override;
-
     /*
      * Dual Connectivity support
      */

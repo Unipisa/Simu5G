@@ -53,22 +53,6 @@ void NrPdcpEnb::handleMessage(cMessage *msg)
     }
 }
 
-void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
-{
-    auto pkt = check_and_cast<Packet *>(pktAux);
-    pkt->trim();
-
-    // if dual connectivity is enabled and this is a secondary node,
-    // forward the packet to the PDCP of the master node
-    MacNodeId masterId = binder_->getMasterNodeOrSelf(nodeId_);
-    if (dualConnectivityEnabled_ && (nodeId_ != masterId)) {
-        EV << NOW << " NrPdcpEnb::fromLowerLayer - forward packet to the master node - id [" << masterId << "]" << endl;
-        forwardDataToTargetNode(pkt, masterId);
-        return;
-    }
-
-    LtePdcpEnbD2D::fromLowerLayer(pktAux);
-}
 
 void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)
 {
