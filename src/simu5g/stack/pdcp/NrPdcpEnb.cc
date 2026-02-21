@@ -36,22 +36,6 @@ void NrPdcpEnb::initialize(int stage)
     }
 }
 
-void NrPdcpEnb::handleMessage(cMessage *msg)
-{
-    cPacket *pkt = check_and_cast<cPacket *>(msg);
-    if (msg->getArrivalGate()->isName("dcManagerIn")) {
-        // incoming data from DualConnectivityManager via X2
-        EV << "NrPdcpEnb::handleMessage - Received packet from DualConnectivityManager" << endl;
-        auto datagram = check_and_cast<Packet*>(pkt);
-        auto tag = datagram->removeTag<X2SourceNodeInd>();
-        MacNodeId sourceNode = tag->getSourceNode();
-        receiveDataFromSourceNode(datagram, sourceNode);
-    }
-    else {
-        // delegate to parent class
-        LtePdcpEnbD2D::handleMessage(msg);
-    }
-}
 
 
 void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)

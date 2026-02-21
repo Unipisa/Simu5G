@@ -20,6 +20,8 @@
 #include "simu5g/stack/pdcp/packet/LteRohcPdu_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
+#include "simu5g/stack/d2dModeSelection/D2DModeSwitchNotification_m.h"
+#include "simu5g/x2/packet/X2ControlInfo_m.h"
 
 namespace simu5g {
 
@@ -279,6 +281,29 @@ void LtePdcpBase::handleMessage(cMessage *msg)
     EV << "LtePdcp : Received packet " << pkt->getName() << " from port "
        << pkt->getArrivalGate()->getName() << endl;
 
+    // NrPdcpEnb: incoming data from DualConnectivityManager via X2
+    if (isNR_ && getNodeTypeById(nodeId_) == NODEB && msg->getArrivalGate()->isName("dcManagerIn")) {
+        EV << "LtePdcpBase::handleMessage - Received packet from DualConnectivityManager" << endl;
+        auto datagram = check_and_cast<Packet*>(pkt);
+        auto tag = datagram->removeTag<X2SourceNodeInd>();
+        MacNodeId sourceNode = tag->getSourceNode();
+        receiveDataFromSourceNode(datagram, sourceNode);
+        return;
+    }
+
+    // D2D mode switch notification (LtePdcpEnbD2D / LtePdcpUeD2D / NrPdcpEnb / NrPdcpUe)
+    if (hasD2DSupport_) {
+        auto inet_pkt = check_and_cast<inet::Packet *>(pkt);
+        auto chunk = inet_pkt->peekAtFront<Chunk>();
+        if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
+            EV << "LtePdcpBase::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
+            auto switchPkt = inet_pkt->peekAtFront<D2DModeSwitchNotification>();
+            pdcpHandleD2DModeSwitch(switchPkt->getPeerId(), switchPkt->getNewMode());
+            delete pkt;
+            return;
+        }
+    }
+
     cGate *incoming = pkt->getArrivalGate();
     if (incoming == upperLayerInGate_) {
         fromDataPort(pkt);
@@ -286,6 +311,12 @@ void LtePdcpBase::handleMessage(cMessage *msg)
     else {
         fromLowerLayer(pkt);
     }
+}
+
+void LtePdcpBase::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
+{
+    EV << NOW << " LtePdcpBase::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
+    // add here specific behavior for handling mode switch at the PDCP layer
 }
 
 LteTxPdcpEntity *LtePdcpBase::lookupTxEntity(MacCid cid)

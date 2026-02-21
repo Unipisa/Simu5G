@@ -37,8 +37,6 @@ class LtePdcpUeD2D : public LtePdcpUe
   protected:
     void initialize(int stage) override;
 
-    void handleMessage(cMessage *msg) override;
-
     // additional getDirection method determining if D2D communication is available to a specific destination
     Direction getDirection(MacNodeId destId)
     {
@@ -47,8 +45,6 @@ class LtePdcpUeD2D : public LtePdcpUe
         return UL;
     }
 
-    // handler for mode switch signal
-    void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };
 
 } //namespace

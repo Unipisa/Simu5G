@@ -32,30 +32,5 @@ void LtePdcpEnbD2D::initialize(int stage)
         hasD2DSupport_ = true;
 }
 
-void LtePdcpEnbD2D::handleMessage(cMessage *msg)
-{
-    auto pkt = check_and_cast<inet::Packet *>(msg);
-    auto chunk = pkt->peekAtFront<Chunk>();
-
-    // check whether the message is a notification for mode switch
-    if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
-        EV << "LtePdcpEnbD2D::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
-
-        auto switchPkt = pkt->peekAtFront<D2DModeSwitchNotification>();
-        // call handler
-        pdcpHandleD2DModeSwitch(switchPkt->getPeerId(), switchPkt->getNewMode());
-        delete pkt;
-    }
-    else {
-        LtePdcpEnb::handleMessage(msg);
-    }
-}
-
-void LtePdcpEnbD2D::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
-{
-    EV << NOW << " LtePdcpEnbD2D::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
-
-    // add here specific behavior for handling mode switch at the PDCP layer
-}
 
 } //namespace

@@ -155,6 +155,9 @@ class LtePdcpBase : public cSimpleModule
 
     virtual void receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode) { throw cRuntimeError("Illegal operation receiveDataFromSourceNode"); }
 
+    // D2D mode switch handler (stub — subclasses may override for specific behavior)
+    virtual void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
+
   public:
     /**
      * Cleans the connection table

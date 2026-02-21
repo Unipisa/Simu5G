@@ -31,9 +31,6 @@ class LtePdcpEnbD2D : public LtePdcpEnb
 {
   protected:
     void initialize(int stage) override;
-    void handleMessage(cMessage *msg) override;
-
-    void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };
 
 } //namespace
