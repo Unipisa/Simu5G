@@ -124,8 +124,6 @@ class Ip2Nic : public cSimpleModule
     virtual void toStackBs(inet::Packet *datagram);
     virtual void toStackUe(inet::Packet *datagram);
 
-    void printControlInfo(inet::Packet *pkt);
-
     // mark packet for using LTE, NR or split bearer
     //
     // In the current version, the Ip2Nic module of the master eNB (the UE) selects which path
@@ -140,7 +138,7 @@ class Ip2Nic : public cSimpleModule
     bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
 
     // Packet analysis (moved from PDCP): classifies the packet and fills FlowControlInfo tag
-    void analyzePacket(inet::Packet *pkt);
+    void analyzePacket(inet::Packet *pkt, inet::Ipv4Address srcAddr, inet::Ipv4Address destAddr, uint16_t typeOfService);
     MacNodeId getNextHopNodeId(const inet::Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
     LteTrafficClass getTrafficCategory(cPacket *pkt);
     LteRlcType getRlcType(LteTrafficClass trafficCategory);

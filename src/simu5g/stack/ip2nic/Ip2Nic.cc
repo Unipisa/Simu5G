@@ -80,7 +80,6 @@ void Ip2Nic::handleMessage(cMessage *msg)
         if (nodeType_ == NODEB)
             toStackBs(check_and_cast<Packet*>(msg));
         else {
-            printControlInfo(check_and_cast<Packet*>(msg));
             toStackUe(check_and_cast<Packet*>(msg));
         }
     }
@@ -113,8 +112,6 @@ void Ip2Nic::toStackUe(Packet *pkt)
     ipFlowInd->setSrcAddr(srcAddr);
     ipFlowInd->setDstAddr(destAddr);
     ipFlowInd->setTypeOfService(tos);
-    printControlInfo(pkt);
-
     // mark packet for using NR
     bool useNR;
     if (!markPacket(srcAddr, destAddr, tos, useNR)) {
@@ -127,7 +124,7 @@ void Ip2Nic::toStackUe(Packet *pkt)
     pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
     // Classify the packet and fill FlowControlInfo tag
-    analyzePacket(pkt);
+    analyzePacket(pkt, srcAddr, destAddr, tos);
 
     // Send datagram to LTE stack or LteIp peer
     send(pkt, stackGateOut_);
@@ -189,22 +186,10 @@ void Ip2Nic::toStackBs(Packet *pkt)
         pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
         // Classify the packet and fill FlowControlInfo tag
-        analyzePacket(pkt);
+        analyzePacket(pkt, srcAddr, destAddr, tos);
 
-        printControlInfo(pkt);
         send(pkt, stackGateOut_);
     }
-}
-
-void Ip2Nic::printControlInfo(Packet *pkt)
-{
-    if (!pkt->hasTag<IpFlowInd>()) {
-        EV << "Ip2Nic::printControlInfo - packet does not have IpFlowInd tag" << endl;
-        return;
-    }
-    EV << "Src IP : " << pkt->getTag<IpFlowInd>()->getSrcAddr() << endl;
-    EV << "Dst IP : " << pkt->getTag<IpFlowInd>()->getDstAddr() << endl;
-    EV << "ToS : " << pkt->getTag<IpFlowInd>()->getTypeOfService() << endl;
 }
 
 bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR)
@@ -381,7 +366,7 @@ MacNodeId Ip2Nic::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacN
     }
 }
 
-void Ip2Nic::analyzePacket(inet::Packet *pkt)
+void Ip2Nic::analyzePacket(inet::Packet *pkt, Ipv4Address srcAddr, Ipv4Address destAddr, uint16_t typeOfService)
 {
     // --- Common preamble ---
     auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
@@ -395,12 +380,6 @@ void Ip2Nic::analyzePacket(inet::Packet *pkt)
     // direction of transmitted packets depends on node type
     Direction dir = (nodeType_ == UE) ? UL : DL;
     lteInfo->setDirection(dir);
-
-    // get IP flow information
-    auto ipFlowInd = pkt->getTag<IpFlowInd>();
-    Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-    Ipv4Address destAddr = ipFlowInd->getDstAddr();
-    uint16_t typeOfService = ipFlowInd->getTypeOfService();
 
     bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
     bool isEnb = (dir == DL);
