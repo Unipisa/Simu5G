@@ -32,30 +32,6 @@ class LteRxPdcpEntity;
 
 class PacketFlowObserverBase;
 
-struct ConnectionKey {
-    inet::Ipv4Address srcAddr;
-    inet::Ipv4Address dstAddr;
-    uint16_t typeOfService;
-    uint16_t direction;
-
-    bool operator==(const ConnectionKey& other) const {
-        return srcAddr == other.srcAddr &&
-               dstAddr == other.dstAddr &&
-               typeOfService == other.typeOfService &&
-               direction == other.direction;
-    }
-};
-
-struct ConnectionKeyHash {
-    std::size_t operator()(const ConnectionKey& key) const {
-        std::size_t h1 = std::hash<uint32_t>{}(key.srcAddr.getInt());
-        std::size_t h2 = std::hash<uint32_t>{}(key.dstAddr.getInt());
-        std::size_t h3 = std::hash<uint16_t>{}(key.typeOfService);
-        std::size_t h4 = std::hash<uint16_t>{}(key.direction);
-        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
-    }
-};
-
 /**
  * @class LtePdcp
  * @brief PDCP Layer
@@ -90,9 +66,11 @@ class LtePdcpBase : public cSimpleModule
     friend class NrRxPdcpEntity;
     friend class DualConnectivityManager;
 
-  public: // temporarily public so Ip2Nic can assert that its copies match
+  protected:
     // Modules references
     inet::ModuleRefByPar<Binder> binder_;
+    inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
+    inet::ModuleRefByPar<PacketFlowObserverBase> NRpacketFlowObserver_;
 
     // Identifier for this node
     MacNodeId nodeId_;
@@ -105,16 +83,6 @@ class LtePdcpBase : public cSimpleModule
     LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
-
-  protected:
-    inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
-    inet::ModuleRefByPar<PacketFlowObserverBase> NRpacketFlowObserver_;
-
-    // Connection Identifier
-    LogicalCid lcid_ = 1;
-
-    // Hash Table used for CID <-> Connection mapping
-    std::unordered_map<ConnectionKey, LogicalCid, ConnectionKeyHash> lcidTable_;
 
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
@@ -220,65 +188,13 @@ class LtePdcpBase : public cSimpleModule
     MacNodeId getNodeId() { return nodeId_; }
 
     /**
-     * getTrafficCategory(): determines the traffic category based on packet name
-     */
-    LteTrafficClass getTrafficCategory(cPacket *pkt);
-
-    /**
-     * getRlcType(): maps traffic category to appropriate RLC type
-     */
-    LteRlcType getRlcType(LteTrafficClass trafficCategory);
-
-    /**
      * getNrNodeId(): returns the ID of this node
      */
     virtual MacNodeId getNrNodeId() { return nodeId_; }
 
-    /**
-     * lookupOrAssignLcid(): Looks up an existing LCID for the given connection key,
-     * or assigns a new one if not found.
-     *
-     * @param key Connection key containing source/destination addresses, ToS, and direction
-     * @return LogicalCid for the connection
-     */
-    LogicalCid lookupOrAssignLcid(const ConnectionKey& key);
-
-    /*
-     * Functions to be implemented from derived classes
-     */
-
-    /**
-     * getDestId() retrieves the id of the destination node according
-     * to the following rules:
-     * - On UE use masterId
-     * - On ENODEB:
-     *   - Use source Ip for directly attached UEs
-     *
-     * @param lteInfo Control Info
-     */
-    MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
-
     /*
      * Upper Layer Handlers
      */
-
-  public: // temporarily public so Ip2Nic can call it
-    /**
-     * Analyze the metadata of the higher-layer packet (source and destination
-     * IP addresses, for example), and fills in several fields of lteInfo:
-     * - sourceId, destID
-     * - d2dTxDestId, d2dRxSrcId
-     * - multicastGroupId (if destAddr is a multicast address)
-     * - direction
-     * - application, traffic
-     * - rlcType
-     * - LCID
-     *
-     * Returns the (nodeId,LCID) pair that identifies the connection for the packet.
-     */
-    virtual void analyzePacket(inet::Packet *pkt);
-
-  protected:
 
     /**
      * Process data packets from higher layers.
