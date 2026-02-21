@@ -23,6 +23,7 @@ simple NrPdcpUe extends LtePdcpUeD2D
         @class("NrPdcpUe");
         rxEntityModuleType = default("simu5g.stack.pdcp.NrRxPdcpEntity");
         txEntityModuleType = default("simu5g.stack.pdcp.NrTxPdcpEntity");
+        isNR = true;
 
     gates:
         input nrRlcIn;             // from NR RLC layer (for Dual Connectivity)

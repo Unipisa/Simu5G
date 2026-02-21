@@ -271,13 +271,9 @@ void LtePdcpBase::initialize(int stage)
         const char *txEntityModuleTypeName = par("txEntityModuleType").stringValue();
         txEntityModuleType_ = cModuleType::get(txEntityModuleTypeName);
 
-        // Set flags based on NED type (replaces subclass initialize() overrides)
-        const char *nedType = getNedTypeName();
-        isNR_ = (strcmp(nedType, "simu5g.stack.pdcp.NrPdcpEnb") == 0)
-              || (strcmp(nedType, "simu5g.stack.pdcp.NrPdcpUe") == 0);
-        hasD2DSupport_ = isNR_
-              || (strcmp(nedType, "simu5g.stack.pdcp.LtePdcpEnbD2D") == 0)
-              || (strcmp(nedType, "simu5g.stack.pdcp.LtePdcpUeD2D") == 0);
+        // Set flags from NED parameters
+        isNR_ = par("isNR").boolValue();
+        hasD2DSupport_ = par("hasD2DSupport").boolValue();
 
         // NR-specific initialization
         if (isNR_) {

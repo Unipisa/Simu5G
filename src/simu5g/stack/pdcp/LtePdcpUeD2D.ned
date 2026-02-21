@@ -23,5 +23,6 @@ simple LtePdcpUeD2D extends LtePdcpUe
         @class("LtePdcpUeD2D");
         rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
         txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
+        hasD2DSupport = true;
 }
 
