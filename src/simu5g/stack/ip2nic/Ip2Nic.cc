@@ -108,10 +108,6 @@ void Ip2Nic::toStackUe(Packet *pkt)
 
     // TODO: Add support for IPv6 (=> see L3Tools.cc of INET)
 
-    auto ipFlowInd = pkt->addTagIfAbsent<IpFlowInd>();
-    ipFlowInd->setSrcAddr(srcAddr);
-    ipFlowInd->setDstAddr(destAddr);
-    ipFlowInd->setTypeOfService(tos);
     // mark packet for using NR
     bool useNR;
     if (!markPacket(srcAddr, destAddr, tos, useNR)) {
@@ -168,12 +164,6 @@ void Ip2Nic::toStackBs(Packet *pkt)
     auto srcAddr = ipHeader->getSrcAddress();
     auto destAddr = ipHeader->getDestAddress();
     short int tos = ipHeader->getTypeOfService();
-
-    // prepare flow info for NIC
-    auto ipFlowInd = pkt->addTagIfAbsent<IpFlowInd>();
-    ipFlowInd->setSrcAddr(srcAddr);
-    ipFlowInd->setDstAddr(destAddr);
-    ipFlowInd->setTypeOfService(tos);
 
     // mark packet for using NR
     bool useNR;

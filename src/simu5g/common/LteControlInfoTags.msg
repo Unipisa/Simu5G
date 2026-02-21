@@ -20,16 +20,6 @@ import simu5g.stack.mac.amc.UserTxParams;
 namespace simu5g;
 
 //
-// Indication tag containing IP flow information
-// Usually sent by Ip2Nic to PDCP.
-//
-class IpFlowInd extends inet::TagBase {
-    inet::Ipv4Address srcAddr;          // Source IP address
-    inet::Ipv4Address dstAddr;          // Destination IP address
-    uint16 typeOfService = 0;           // IP Type of Service field
-}
-
-//
 // Indication tag containing source and destination node identifiers
 // used throughout the protocol stack.
 // Normally exchanged by the PHY and MAC layers.

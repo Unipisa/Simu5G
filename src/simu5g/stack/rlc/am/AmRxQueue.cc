@@ -235,8 +235,6 @@ void AmRxQueue::enque(Packet *pkt)
         flowControlInfo_->setSourceId(orig->getDestId());
         flowControlInfo_->setDestId(orig->getSourceId());
 
-        ASSERT(pkt->findTag<IpFlowInd>() == nullptr); // Note: not swapping IpFlowInd srcAddr/dstAddr fields, as that tag is normally no longer present here
-
         // Set up other fields
         flowControlInfo_->setDirection((orig->getDirection() == DL) ? UL : DL);
     }
