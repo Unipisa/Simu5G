@@ -141,7 +141,7 @@ void Ip2Nic::toStackUe(Packet *pkt)
     pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
     // Classify the packet and fill FlowControlInfo tag
-    pdcp_->analyzePacket(pkt);
+    analyzePacket(pkt);
 
     // Send datagram to LTE stack or LteIp peer
     send(pkt, stackGateOut_);
@@ -203,7 +203,7 @@ void Ip2Nic::toStackBs(Packet *pkt)
         pkt->addTagIfAbsent<TechnologyReq>()->setUseNR(useNR);
 
         // Classify the packet and fill FlowControlInfo tag
-        pdcp_->analyzePacket(pkt);
+        analyzePacket(pkt);
 
         printControlInfo(pkt);
         send(pkt, stackGateOut_);
@@ -302,6 +302,246 @@ bool Ip2Nic::markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, ui
         }
     }
     return true;
+}
+
+LteTrafficClass Ip2Nic::getTrafficCategory(cPacket *pkt)
+{
+    const char *name = pkt->getName();
+    if (opp_stringbeginswith(name, "VoIP"))
+        return CONVERSATIONAL;
+    else if (opp_stringbeginswith(name, "gaming"))
+        return INTERACTIVE;
+    else if (opp_stringbeginswith(name, "VoDPacket") || opp_stringbeginswith(name, "VoDFinishPacket"))
+        return STREAMING;
+    else
+        return BACKGROUND;
+}
+
+LteRlcType Ip2Nic::getRlcType(LteTrafficClass trafficCategory)
+{
+    switch (trafficCategory) {
+        case CONVERSATIONAL:
+            return conversationalRlc_;
+        case INTERACTIVE:
+            return interactiveRlc_;
+        case STREAMING:
+            return streamingRlc_;
+        case BACKGROUND:
+            return backgroundRlc_;
+        default:
+            return backgroundRlc_;  // fallback
+    }
+}
+
+LogicalCid Ip2Nic::lookupOrAssignLcid(const ConnectionKey& key)
+{
+    auto it = lcidTable_.find(key);
+    if (it != lcidTable_.end())
+        return it->second;
+    else {
+        LogicalCid lcid = lcid_++;
+        lcidTable_[key] = lcid;
+        EV << "Connection not found, new CID created with LCID " << lcid << "\n";
+        return lcid;
+    }
+}
+
+MacNodeId Ip2Nic::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId)
+{
+    bool isEnb = (nodeType_ == NODEB);
+
+    if (isEnb) {
+        // ENB variants
+        MacNodeId destId;
+        if (isNR_ && (!dualConnectivityEnabled_ || useNR))
+            destId = binder_->getNrMacNodeId(destAddr);
+        else
+            destId = binder_->getMacNodeId(destAddr);
+
+        // master of this UE (myself)
+        MacNodeId master = binder_->getServingNodeOrSelf(destId);
+        if (master != nodeId_) {
+            destId = master;
+        }
+        else {
+            // for dual connectivity
+            master = binder_->getMasterNodeOrSelf(master);
+            if (master != nodeId_) {
+                destId = master;
+            }
+        }
+        // else UE is directly attached
+        return destId;
+    }
+    else {
+        // UE variants
+        if (!hasD2DSupport_) {
+            // UE is subject to handovers, master may change
+            return binder_->getServingNodeOrSelf(nodeId_);
+        }
+
+        // D2D-capable UE: check if D2D communication is possible
+        MacNodeId destId = binder_->getMacNodeId(destAddr);
+        MacNodeId srcId = isNR_ ? (useNR ? nrNodeId_ : nodeId_) : nodeId_;
+
+        // check whether the destination is inside the LTE network and D2D is active
+        if (destId == NODEID_NONE ||
+            !(binder_->getD2DCapability(srcId, destId) && binder_->getD2DMode(srcId, destId) == DM)) {
+            // packet is destined to the eNB; UE is subject to handovers: master may change
+            return binder_->getServingNodeOrSelf(sourceId);
+        }
+
+        return destId;
+    }
+}
+
+void Ip2Nic::analyzePacket(inet::Packet *pkt)
+{
+    // --- Common preamble ---
+    auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
+
+    // Traffic category, RLC type
+    LteTrafficClass trafficCategory = getTrafficCategory(pkt);
+    LteRlcType rlcType = getRlcType(trafficCategory);
+    lteInfo->setTraffic(trafficCategory);
+    lteInfo->setRlcType(rlcType);
+
+    // direction of transmitted packets depends on node type
+    Direction dir = (nodeType_ == UE) ? UL : DL;
+    lteInfo->setDirection(dir);
+
+    // get IP flow information
+    auto ipFlowInd = pkt->getTag<IpFlowInd>();
+    Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
+    Ipv4Address destAddr = ipFlowInd->getDstAddr();
+    uint16_t typeOfService = ipFlowInd->getTypeOfService();
+
+    bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
+    bool isEnb = (dir == DL);
+
+    // --- Base LtePdcpEnb/LtePdcpUe (no D2D support) ---
+    if (!hasD2DSupport_) {
+        EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
+
+        MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
+
+        // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
+        ConnectionKey key{srcAddr, destAddr, typeOfService, 0xFFFF};
+        LogicalCid lcid = lookupOrAssignLcid(key);
+
+        // assign LCID and node IDs
+        lteInfo->setLcid(lcid);
+        lteInfo->setSourceId(nodeId_);
+        lteInfo->setDestId(destId);
+
+        lteInfo->setSourceId(nodeId_);   // TODO CHANGE HERE!!! Must be the NR node ID if this is an NR connection
+        if (lteInfo->getMulticastGroupId() != NODEID_NONE)  // destId is meaningless for multicast D2D (we use the id of the source for statistic purposes at lower levels)
+            lteInfo->setDestId(nodeId_);
+        else
+            lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
+        return;
+    }
+
+    // --- D2D-capable subclasses (LtePdcpEnbD2D, LtePdcpUeD2D, NrPdcpEnb, NrPdcpUe) ---
+
+    // For NrPdcpUe, the effective local node ID depends on useNR flag
+    MacNodeId localNodeId = (isNR_ && !isEnb) ? (useNR ? nrNodeId_ : nodeId_) : nodeId_;
+
+    // EV log (all D2D subclasses except NrPdcpUe)
+    if (isEnb || !isNR_)
+        EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
+
+    if (isEnb) {
+        // ENB: set D2D peer IDs to none
+        lteInfo->setD2dTxPeerId(NODEID_NONE);
+        lteInfo->setD2dRxPeerId(NODEID_NONE);
+    }
+    else {
+        // UE: D2D multicast/unicast handling (unified for NrPdcpUe and LtePdcpUeD2D)
+        if (isNR_)
+            lteInfo->setSourceId(localNodeId);
+
+        if (destAddr.isMulticast()) {
+            binder_->addD2DMulticastTransmitter(localNodeId);
+            lteInfo->setDirection(D2D_MULTI);
+            MacNodeId groupId = binder_->getOrAssignDestIdForMulticastAddress(destAddr);
+            lteInfo->setMulticastGroupId(groupId);
+        }
+        else {
+            MacNodeId destId = binder_->getMacNodeId(destAddr);
+            if (destId != NODEID_NONE) { // the destination is a UE within the LTE network
+                if (binder_->checkD2DCapability(localNodeId, destId)) {
+                    // this way, we record the ID of the endpoints even if the connection is currently in IM
+                    // this is useful for mode switching
+                    lteInfo->setD2dTxPeerId(localNodeId);
+                    lteInfo->setD2dRxPeerId(destId);
+                }
+                else {
+                    lteInfo->setD2dTxPeerId(NODEID_NONE);
+                    lteInfo->setD2dRxPeerId(NODEID_NONE);
+                }
+
+                // set actual flow direction (D2D/UL) based on the current mode (DM/IM) of this peering
+                if (binder_->getD2DCapability(localNodeId, destId) && binder_->getD2DMode(localNodeId, destId) == DM)
+                    lteInfo->setDirection(D2D);
+                else
+                    lteInfo->setDirection(UL);
+            }
+            else { // the destination is outside the LTE network
+                lteInfo->setDirection(UL);
+                lteInfo->setD2dTxPeerId(NODEID_NONE);
+                lteInfo->setD2dRxPeerId(NODEID_NONE);
+            }
+        }
+    }
+
+    // --- Source and Dest IDs ---
+    if (isNR_) {
+        lteInfo->setSourceId(isEnb ? nodeId_ : (useNR ? nrNodeId_ : nodeId_));
+
+        if (lteInfo->getMulticastGroupId() != NODEID_NONE)
+            lteInfo->setDestId(nodeId_);
+        else
+            lteInfo->setDestId(getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId()));
+
+        // NrPdcpEnb only: Dual Connectivity adjustment
+        if (isEnb) {
+            MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
+            if (dualConnectivityEnabled_ && secondaryNodeId != NODEID_NONE && useNR) {
+                lteInfo->setSourceId(secondaryNodeId);
+                lteInfo->setDestId(binder_->getNrMacNodeId(destAddr));
+            }
+        }
+    }
+    else {
+        // LtePdcpEnbD2D / LtePdcpUeD2D
+        lteInfo->setSourceId(nodeId_);
+        if (!isEnb) // LtePdcpUeD2D: dead getNextHopNodeId call (result unused in original code)
+            (void)getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
+
+        lteInfo->setSourceId(nodeId_);   // TODO CHANGE HERE!!! Must be the NR node ID if this is an NR connection
+        if (lteInfo->getMulticastGroupId() != NODEID_NONE)  // destId is meaningless for multicast D2D
+            lteInfo->setDestId(nodeId_);
+        else
+            lteInfo->setDestId(getNextHopNodeId(destAddr, false, lteInfo->getSourceId()));
+    }
+
+    // --- LCID assignment (all D2D subclasses use direction in key) ---
+    ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
+    LogicalCid lcid = lookupOrAssignLcid(key);
+    lteInfo->setLcid(lcid);
+
+    // Debug logging (UE subclasses only)
+    if (!isEnb) {
+        if (isNR_) {
+            EV << "NrPdcpUe : Assigned Lcid: " << lcid << "\n";
+            EV << "NrPdcpUe : Assigned Node ID: " << localNodeId << "\n";
+        }
+        else {
+            EV << "LtePdcpUeD2D : Assigned Lcid: " << lcid << "\n";
+            EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
+        }
+    }
 }
 
 } //namespace

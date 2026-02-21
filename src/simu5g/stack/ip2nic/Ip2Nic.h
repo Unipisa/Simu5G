@@ -17,6 +17,7 @@
 #include <inet/networklayer/common/NetworkInterface.h>
 #include <unordered_map>
 #include "simu5g/common/LteCommon.h"
+#include "simu5g/common/LteControlInfo.h"
 #include "simu5g/common/binder/Binder.h"
 
 namespace simu5g {
@@ -75,6 +76,35 @@ class Ip2Nic : public cSimpleModule
     LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
     LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
 
+    // Key for identifying connections (for LCID assignment)
+    struct ConnectionKey {
+        inet::Ipv4Address srcAddr;
+        inet::Ipv4Address dstAddr;
+        uint16_t typeOfService;
+        uint16_t direction;
+
+        bool operator==(const ConnectionKey& other) const {
+            return srcAddr == other.srcAddr &&
+                   dstAddr == other.dstAddr &&
+                   typeOfService == other.typeOfService &&
+                   direction == other.direction;
+        }
+    };
+
+    struct ConnectionKeyHash {
+        std::size_t operator()(const ConnectionKey& key) const {
+            std::size_t h1 = std::hash<uint32_t>{}(key.srcAddr.getInt());
+            std::size_t h2 = std::hash<uint32_t>{}(key.dstAddr.getInt());
+            std::size_t h3 = std::hash<uint16_t>{}(key.typeOfService);
+            std::size_t h4 = std::hash<uint16_t>{}(key.direction);
+            return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
+        }
+    };
+
+    // Connection Identifier (for LCID assignment)
+    LogicalCid lcid_ = 1;
+    std::unordered_map<ConnectionKey, LogicalCid, ConnectionKeyHash> lcidTable_;
+
     // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
     std::unordered_map<FlowKey, int, FlowKeyHash> splitBearersTable_;
 
@@ -111,6 +141,13 @@ class Ip2Nic : public cSimpleModule
     //
     // TODO use a better policy
     bool markPacket(inet::Ipv4Address srcAddr, inet::Ipv4Address dstAddr, uint16_t typeOfService, bool& useNR);
+
+    // Packet analysis (moved from PDCP): classifies the packet and fills FlowControlInfo tag
+    void analyzePacket(inet::Packet *pkt);
+    MacNodeId getNextHopNodeId(const inet::Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
+    LteTrafficClass getTrafficCategory(cPacket *pkt);
+    LteRlcType getRlcType(LteTrafficClass trafficCategory);
+    LogicalCid lookupOrAssignLcid(const ConnectionKey& key);
 
   public:
     ~Ip2Nic() override;
