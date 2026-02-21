@@ -53,9 +53,6 @@ class NrPdcpUe : public LtePdcpUeD2D
         return UL;
     }
 
-    // this function was redefined so as to use the getDirection() function implemented above
-    MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId) override;
-
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
      */

@@ -81,6 +81,55 @@ LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)
     }
 }
 
+MacNodeId LtePdcpBase::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId)
+{
+    bool isEnb = (getNodeTypeById(nodeId_) != UE);
+
+    if (isEnb) {
+        // ENB variants (LtePdcpEnb, LtePdcpEnbD2D, NrPdcpEnb)
+        MacNodeId destId;
+        if (isNR_ && (!isDualConnectivityEnabled() || useNR))
+            destId = binder_->getNrMacNodeId(destAddr);
+        else
+            destId = binder_->getMacNodeId(destAddr);
+
+        // master of this UE (myself)
+        MacNodeId master = binder_->getServingNodeOrSelf(destId);
+        if (master != nodeId_) {
+            destId = master;
+        }
+        else {
+            // for dual connectivity
+            master = binder_->getMasterNodeOrSelf(master);
+            if (master != nodeId_) {
+                destId = master;
+            }
+        }
+        // else UE is directly attached
+        return destId;
+    }
+    else {
+        // UE variants
+        if (!hasD2DSupport_) {
+            // LtePdcpUe: UE is subject to handovers, master may change
+            return binder_->getServingNodeOrSelf(nodeId_);
+        }
+
+        // LtePdcpUeD2D / NrPdcpUe: check if D2D communication is possible
+        MacNodeId destId = binder_->getMacNodeId(destAddr);
+        MacNodeId srcId = isNR_ ? (useNR ? getNrNodeId() : nodeId_) : nodeId_;
+
+        // check whether the destination is inside the LTE network and D2D is active
+        if (destId == NODEID_NONE ||
+            !(binder_->getD2DCapability(srcId, destId) && binder_->getD2DMode(srcId, destId) == DM)) {
+            // packet is destined to the eNB; UE is subject to handovers: master may change
+            return binder_->getServingNodeOrSelf(sourceId);
+        }
+
+        return destId;
+    }
+}
+
 /*
  * Upper Layer handlers
  */

@@ -70,30 +70,6 @@ void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
     LtePdcpEnbD2D::fromLowerLayer(pktAux);
 }
 
-MacNodeId NrPdcpEnb::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId)
-{
-    MacNodeId destId;
-    if (!dualConnectivityEnabled_ || useNR)
-        destId = binder_->getNrMacNodeId(destAddr);
-    else
-        destId = binder_->getMacNodeId(destAddr);
-
-    // master of this UE
-    MacNodeId master = binder_->getServingNodeOrSelf(destId);
-    if (master != nodeId_) {
-        destId = master;
-    }
-    else {
-        // for dual connectivity
-        master = binder_->getMasterNodeOrSelf(master);
-        if (master != nodeId_) {
-            destId = master;
-        }
-    }
-    // else UE is directly attached
-    return destId;
-}
-
 void NrPdcpEnb::forwardDataToTargetNode(Packet *pkt, MacNodeId targetNode)
 {
     EV << NOW << " NrPdcpEnb::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;

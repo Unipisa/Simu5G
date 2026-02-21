@@ -23,19 +23,6 @@ Define_Module(LtePdcpUeD2D);
 using namespace inet;
 using namespace omnetpp;
 
-MacNodeId LtePdcpUeD2D::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId)
-{
-    MacNodeId destId = binder_->getMacNodeId(destAddr);
-
-    // check if the destination is inside the LTE network
-    if (destId == NODEID_NONE || getDirection(destId) == UL) { // if not, the packet is destined to the eNB
-        // UE is subject to handovers: master may change
-        return binder_->getServingNodeOrSelf(sourceId);
-    }
-
-    return destId;
-}
-
 void LtePdcpUeD2D::initialize(int stage)
 {
     LtePdcpUe::initialize(stage);

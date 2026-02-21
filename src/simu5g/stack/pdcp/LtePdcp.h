@@ -254,7 +254,7 @@ class LtePdcpBase : public cSimpleModule
      *
      * @param lteInfo Control Info
      */
-    virtual MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId) = 0;
+    MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId);
 
     /*
      * Upper Layer Handlers
@@ -323,14 +323,6 @@ class LtePdcpBase : public cSimpleModule
 
 class LtePdcpUe : public LtePdcpBase
 {
-  protected:
-
-    MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId) override
-    {
-        // UE is subject to handovers: master may change
-        return binder_->getServingNodeOrSelf(nodeId_);
-    }
-
   public:
     void deleteEntities(MacNodeId nodeId) override;
 };
@@ -341,26 +333,6 @@ class LtePdcpEnb : public LtePdcpBase
     void handleControlInfo(cPacket *upPkt, FlowControlInfo *lteInfo)
     {
         delete lteInfo;
-    }
-
-    MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId) override
-    {
-        // destination id
-        MacNodeId destId = binder_->getMacNodeId(destAddr);
-        // master of this UE (myself)
-        MacNodeId master = binder_->getServingNodeOrSelf(destId);
-        if (master != nodeId_) {
-            destId = master;
-        }
-        else {
-            // for dual connectivity
-            master = binder_->getMasterNodeOrSelf(master);
-            if (master != nodeId_) {
-                destId = master;
-            }
-        }
-        // else UE is directly attached
-        return destId;
     }
 
   public:

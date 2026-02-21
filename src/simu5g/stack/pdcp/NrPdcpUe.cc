@@ -39,22 +39,6 @@ void NrPdcpUe::initialize(int stage)
     }
 }
 
-MacNodeId NrPdcpUe::getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId)
-{
-    MacNodeId destId = binder_->getMacNodeId(destAddr);
-    MacNodeId srcId = useNR ? nrNodeId_ : nodeId_;
-
-    // check whether the destination is inside or outside the LTE network
-    if (destId == NODEID_NONE || getDirection(srcId, destId) == UL) {
-        // if not, the packet is destined to the eNB
-
-        // UE is subject to handovers: master may change
-        return binder_->getServingNodeOrSelf(sourceId);
-    }
-
-    return destId;
-}
-
 void NrPdcpUe::deleteEntities(MacNodeId nodeId)
 {
     // delete connections related to the given master nodeB only
