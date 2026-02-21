@@ -19,9 +19,9 @@ package simu5g.stack.pdcp;
 // Radio Link Control (RLC) modes. Additionally, it supports Dual Connectivity and Split Bearer
 // functionalities.
 //
-simple LtePdcpEnb extends LtePdcpBase
+simple LtePdcpEnb extends LtePdcp
 {
-    @class("LtePdcpBase");
+    @class("LtePdcp");
     rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
     txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
 }

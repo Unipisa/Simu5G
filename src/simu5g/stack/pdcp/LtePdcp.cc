@@ -26,7 +26,7 @@
 
 namespace simu5g {
 
-Define_Module(LtePdcpBase);
+Define_Module(LtePdcp);
 Define_Module(LtePdcpUe);
 Define_Module(LtePdcpEnb);
 
@@ -34,12 +34,12 @@ using namespace omnetpp;
 using namespace inet;
 
 // statistics
-simsignal_t LtePdcpBase::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
-simsignal_t LtePdcpBase::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
-simsignal_t LtePdcpBase::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
-simsignal_t LtePdcpBase::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
+simsignal_t LtePdcp::receivedPacketFromUpperLayerSignal_ = registerSignal("receivedPacketFromUpperLayer");
+simsignal_t LtePdcp::receivedPacketFromLowerLayerSignal_ = registerSignal("receivedPacketFromLowerLayer");
+simsignal_t LtePdcp::sentPacketToUpperLayerSignal_ = registerSignal("sentPacketToUpperLayer");
+simsignal_t LtePdcp::sentPacketToLowerLayerSignal_ = registerSignal("sentPacketToLowerLayer");
 
-LtePdcpBase::~LtePdcpBase()
+LtePdcp::~LtePdcp()
 {
 }
 
@@ -47,7 +47,7 @@ LtePdcpBase::~LtePdcpBase()
  * Upper Layer handlers
  */
 
-void LtePdcpBase::fromDataPort(cPacket *pktAux)
+void LtePdcp::fromDataPort(cPacket *pktAux)
 {
     emit(receivedPacketFromUpperLayerSignal_, pktAux);
 
@@ -98,7 +98,7 @@ void LtePdcpBase::fromDataPort(cPacket *pktAux)
  * Lower layer handlers
  */
 
-void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
+void LtePdcp::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
 
@@ -107,7 +107,7 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
         pkt->trim();
         MacNodeId masterId = binder_->getMasterNodeOrSelf(nodeId_);
         if (dualConnectivityEnabled_ && (nodeId_ != masterId)) {
-            EV << NOW << " LtePdcpBase::fromLowerLayer - forward packet to the master node - id [" << masterId << "]" << endl;
+            EV << NOW << " LtePdcp::fromLowerLayer - forward packet to the master node - id [" << masterId << "]" << endl;
             forwardDataToTargetNode(pkt, masterId);
             return;
         }
@@ -179,9 +179,9 @@ void LtePdcpBase::fromLowerLayer(cPacket *pktAux)
     entity->handlePacketFromLowerLayer(pkt);
 }
 
-void LtePdcpBase::toDataPort(cPacket *pktAux)
+void LtePdcp::toDataPort(cPacket *pktAux)
 {
-    Enter_Method_Silent("LtePdcpBase::toDataPort");
+    Enter_Method_Silent("LtePdcp::toDataPort");
 
     auto pkt = check_and_cast<Packet *>(pktAux);
     take(pkt);
@@ -201,7 +201,7 @@ void LtePdcpBase::toDataPort(cPacket *pktAux)
  * Forwarding Handlers
  */
 
-void LtePdcpBase::sendToLowerLayer(Packet *pkt)
+void LtePdcp::sendToLowerLayer(Packet *pkt)
 {
     auto lteInfo = pkt->getTagForUpdate<FlowControlInfo>();
 
@@ -244,7 +244,7 @@ void LtePdcpBase::sendToLowerLayer(Packet *pkt)
  * Main functions
  */
 
-void LtePdcpBase::initialize(int stage)
+void LtePdcp::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
         upperLayerInGate_ = gate("upperLayerIn");
@@ -260,10 +260,10 @@ void LtePdcpBase::initialize(int stage)
         NRpacketFlowObserver_.reference(this, "nrPacketFlowObserverModule", false);
 
         if (packetFlowObserver_) {
-            EV << "LtePdcpBase::initialize - PacketFlowObserver present" << endl;
+            EV << "LtePdcp::initialize - PacketFlowObserver present" << endl;
         }
         if (NRpacketFlowObserver_) {
-            EV << "LtePdcpBase::initialize - NRpacketFlowObserver present" << endl;
+            EV << "LtePdcp::initialize - NRpacketFlowObserver present" << endl;
         }
 
         const char *rxEntityModuleTypeName = par("rxEntityModuleType").stringValue();
@@ -293,7 +293,7 @@ void LtePdcpBase::initialize(int stage)
     }
 }
 
-void LtePdcpBase::handleMessage(cMessage *msg)
+void LtePdcp::handleMessage(cMessage *msg)
 {
     cPacket *pkt = check_and_cast<cPacket *>(msg);
     EV << "LtePdcp : Received packet " << pkt->getName() << " from port "
@@ -301,7 +301,7 @@ void LtePdcpBase::handleMessage(cMessage *msg)
 
     // NrPdcpEnb: incoming data from DualConnectivityManager via X2
     if (isNR_ && getNodeTypeById(nodeId_) == NODEB && msg->getArrivalGate()->isName("dcManagerIn")) {
-        EV << "LtePdcpBase::handleMessage - Received packet from DualConnectivityManager" << endl;
+        EV << "LtePdcp::handleMessage - Received packet from DualConnectivityManager" << endl;
         auto datagram = check_and_cast<Packet*>(pkt);
         auto tag = datagram->removeTag<X2SourceNodeInd>();
         MacNodeId sourceNode = tag->getSourceNode();
@@ -314,7 +314,7 @@ void LtePdcpBase::handleMessage(cMessage *msg)
         auto inet_pkt = check_and_cast<inet::Packet *>(pkt);
         auto chunk = inet_pkt->peekAtFront<Chunk>();
         if (inet::dynamicPtrCast<const D2DModeSwitchNotification>(chunk) != nullptr) {
-            EV << "LtePdcpBase::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
+            EV << "LtePdcp::handleMessage - Received packet " << pkt->getName() << " from port " << pkt->getArrivalGate()->getName() << endl;
             auto switchPkt = inet_pkt->peekAtFront<D2DModeSwitchNotification>();
             pdcpHandleD2DModeSwitch(switchPkt->getPeerId(), switchPkt->getNewMode());
             delete pkt;
@@ -331,9 +331,9 @@ void LtePdcpBase::handleMessage(cMessage *msg)
     }
 }
 
-void LtePdcpBase::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
+void LtePdcp::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNode)
 {
-    EV << NOW << " LtePdcpBase::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
+    EV << NOW << " LtePdcp::forwardDataToTargetNode - Send PDCP packet to node with id " << targetNode << endl;
 
     auto tag = pkt->addTagIfAbsent<X2TargetReq>();
     tag->setTargetNode(targetNode);
@@ -341,7 +341,7 @@ void LtePdcpBase::forwardDataToTargetNode(inet::Packet *pkt, MacNodeId targetNod
     send(pkt, "dcManagerOut");
 }
 
-void LtePdcpBase::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
+void LtePdcp::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceNode)
 {
     Enter_Method("receiveDataFromSourceNode");
     take(pkt);
@@ -349,59 +349,59 @@ void LtePdcpBase::receiveDataFromSourceNode(inet::Packet *pkt, MacNodeId sourceN
     auto ctrlInfo = pkt->getTag<FlowControlInfo>();
     if (ctrlInfo->getDirection() == DL) {
         MacNodeId destId = ctrlInfo->getDestId();
-        EV << NOW << " LtePdcpBase::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
+        EV << NOW << " LtePdcp::receiveDataFromSourceNode - Received PDCP PDU from master node with id " << sourceNode << " - destination node[" << destId << "]" << endl;
         sendToLowerLayer(pkt);
     }
     else { // UL
-        EV << NOW << " LtePdcpBase::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
+        EV << NOW << " LtePdcp::receiveDataFromSourceNode - Received PDCP PDU from secondary node with id " << sourceNode << endl;
         fromLowerLayer(pkt);
     }
 }
 
-void LtePdcpBase::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
+void LtePdcp::pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode)
 {
-    EV << NOW << " LtePdcpBase::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
+    EV << NOW << " LtePdcp::pdcpHandleD2DModeSwitch - peering with UE " << peerId << " set to " << d2dModeToA(newMode) << endl;
     // add here specific behavior for handling mode switch at the PDCP layer
 }
 
-LteTxPdcpEntity *LtePdcpBase::lookupTxEntity(MacCid cid)
+LteTxPdcpEntity *LtePdcp::lookupTxEntity(MacCid cid)
 {
     auto it = txEntities_.find(cid);
     return it != txEntities_.end() ? it->second : nullptr;
 }
 
-LteTxPdcpEntity *LtePdcpBase::createTxEntity(MacCid cid)
+LteTxPdcpEntity *LtePdcp::createTxEntity(MacCid cid)
 {
     std::stringstream buf;
     buf << "tx-" << cid.getNodeId() << "-" << cid.getLcid();
     LteTxPdcpEntity *txEnt = check_and_cast<LteTxPdcpEntity *>(txEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
     txEntities_[cid] = txEnt;
 
-    EV << "LtePdcpBase::createTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
+    EV << "LtePdcp::createTxEntity - Added new TxPdcpEntity for Cid: " << cid << "\n";
 
     return txEnt;
 }
 
 
-LteRxPdcpEntity *LtePdcpBase::lookupRxEntity(MacCid cid)
+LteRxPdcpEntity *LtePdcp::lookupRxEntity(MacCid cid)
 {
     auto it = rxEntities_.find(cid);
     return it != rxEntities_.end() ? it->second : nullptr;
 }
 
-LteRxPdcpEntity *LtePdcpBase::createRxEntity(MacCid cid)
+LteRxPdcpEntity *LtePdcp::createRxEntity(MacCid cid)
 {
     std::stringstream buf;
     buf << "rx-" << cid.getNodeId() << "-" << cid.getLcid();
     LteRxPdcpEntity *rxEnt = check_and_cast<LteRxPdcpEntity *>(rxEntityModuleType_->createScheduleInit(buf.str().c_str(), this));
     rxEntities_[cid] = rxEnt;
 
-    EV << "LtePdcpBase::createRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
+    EV << "LtePdcp::createRxEntity - Added new RxPdcpEntity for Cid: " << cid << "\n";
 
     return rxEnt;
 }
 
-void LtePdcpBase::deleteEntities(MacNodeId nodeId)
+void LtePdcp::deleteEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
@@ -444,7 +444,7 @@ void LtePdcpBase::deleteEntities(MacNodeId nodeId)
     }
 }
 
-void LtePdcpBase::activeUeUL(std::set<MacNodeId> *ueSet)
+void LtePdcp::activeUeUL(std::set<MacNodeId> *ueSet)
 {
     for (const auto& [cid, rxEntity] : rxEntities_) {
         MacNodeId nodeId = cid.getNodeId();

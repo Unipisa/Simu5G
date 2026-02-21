@@ -33,7 +33,7 @@ class DualConnectivityManager : public cSimpleModule
   protected:
 
     // reference to PDCP layer
-    inet::ModuleRefByPar<LtePdcpBase> pdcp_;
+    inet::ModuleRefByPar<LtePdcp> pdcp_;
 
     // X2 identifier
     X2NodeId nodeId_;

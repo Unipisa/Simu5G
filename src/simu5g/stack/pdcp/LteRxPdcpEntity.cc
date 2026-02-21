@@ -30,7 +30,7 @@ Define_Module(LteRxPdcpEntity);
 void LteRxPdcpEntity::initialize(int stage)
 {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = check_and_cast<LtePdcpBase *>(getParentModule());
+        pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
         headerCompressionEnabled_ = pdcp_->par("headerCompressedSize").intValue() > 0;  // TODO a.k.a. LTE_PDCP_HEADER_COMPRESSION_DISABLED
     }
 }

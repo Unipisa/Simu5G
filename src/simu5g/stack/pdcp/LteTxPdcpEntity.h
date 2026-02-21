@@ -19,7 +19,7 @@
 
 namespace simu5g {
 
-class LtePdcpBase;
+class LtePdcp;
 class LtePdcpHeader;
 
 using namespace inet;
@@ -41,7 +41,7 @@ class LteTxPdcpEntity : public cSimpleModule
 {
   protected:
     // reference to the PDCP layer
-    LtePdcpBase *pdcp_ = nullptr;
+    LtePdcp *pdcp_ = nullptr;
 
     // Header size after ROHC (RObust Header Compression)
     inet::B headerCompressedSize_;

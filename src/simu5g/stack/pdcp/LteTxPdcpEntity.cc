@@ -34,7 +34,7 @@ Define_Module(LteTxPdcpEntity);
 
 void LteTxPdcpEntity::initialize(int stage) {
     if (stage == inet::INITSTAGE_LOCAL) {
-        pdcp_ = check_and_cast<LtePdcpBase *>(getParentModule());
+        pdcp_ = check_and_cast<LtePdcp *>(getParentModule());
 
         headerCompressedSize_ = B(pdcp_->par("headerCompressedSize"));
         if (headerCompressedSize_ != LTE_PDCP_HEADER_COMPRESSION_DISABLED && headerCompressedSize_ < MIN_COMPRESSED_HEADER_SIZE)
@@ -66,7 +66,7 @@ void LteTxPdcpEntity::handlePacketFromUpperLayer(Packet *pkt)
             headerLength = 0;
             break;
         default:
-            throw cRuntimeError("LtePdcpBase::handlePacketFromUpperLayer(): invalid RlcType %d", lteInfo->getRlcType());
+            throw cRuntimeError("LtePdcp::handlePacketFromUpperLayer(): invalid RlcType %d", lteInfo->getRlcType());
     }
     pdcpHeader->setChunkLength(B(headerLength));
     pkt->trim();

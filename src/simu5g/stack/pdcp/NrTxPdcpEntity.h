@@ -18,7 +18,7 @@
 
 namespace simu5g {
 
-class LtePdcpBase;
+class LtePdcp;
 
 /**
  * @class NrTxPdcpEntity

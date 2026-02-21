@@ -17,9 +17,9 @@ package simu5g.stack.pdcp;
 // The LtePdcpUe module implements the PDCP/RRC layer for an LTE NIC employed at
 // a User Equipment. It performs header compression on incoming IP datagrams
 //
-simple LtePdcpUe extends LtePdcpBase
+simple LtePdcpUe extends LtePdcp
 {
-    @class("LtePdcpBase");
+    @class("LtePdcp");
     rxEntityModuleType = default("simu5g.stack.pdcp.LteRxPdcpEntity");
     txEntityModuleType = default("simu5g.stack.pdcp.LteTxPdcpEntity");
 }
