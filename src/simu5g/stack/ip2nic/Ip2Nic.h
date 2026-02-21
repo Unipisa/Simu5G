@@ -67,6 +67,14 @@ class Ip2Nic : public cSimpleModule
     // Enable for dual connectivity
     bool dualConnectivityEnabled_;
 
+    // Flags mirroring PDCP's (to be verified with ASSERTs, then used to replace PDCP dependency)
+    bool isNR_ = false;
+    bool hasD2DSupport_ = false;
+    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
+
     // for each connection using Split Bearer, keeps track of the number of packets sent down to the PDCP
     std::unordered_map<FlowKey, int, FlowKeyHash> splitBearersTable_;
 

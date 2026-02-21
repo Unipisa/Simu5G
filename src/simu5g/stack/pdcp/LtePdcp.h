@@ -90,9 +90,23 @@ class LtePdcpBase : public cSimpleModule
     friend class NrRxPdcpEntity;
     friend class DualConnectivityManager;
 
-  protected:
+  public: // temporarily public so Ip2Nic can assert that its copies match
     // Modules references
     inet::ModuleRefByPar<Binder> binder_;
+
+    // Identifier for this node
+    MacNodeId nodeId_;
+
+    // Flags characterizing the subclass type (set during initialize)
+    bool isNR_ = false;
+    bool hasD2DSupport_ = false;
+
+    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
+    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
+
+  protected:
     inet::ModuleRefByPar<PacketFlowObserverBase> packetFlowObserver_;
     inet::ModuleRefByPar<PacketFlowObserverBase> NRpacketFlowObserver_;
 
@@ -102,13 +116,6 @@ class LtePdcpBase : public cSimpleModule
     // Hash Table used for CID <-> Connection mapping
     std::unordered_map<ConnectionKey, LogicalCid, ConnectionKeyHash> lcidTable_;
 
-    // Identifier for this node
-    MacNodeId nodeId_;
-
-    // Flags characterizing the subclass type (set during initialize)
-    bool isNR_ = false;
-    bool hasD2DSupport_ = false;
-
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;
@@ -117,11 +124,6 @@ class LtePdcpBase : public cSimpleModule
     cGate *upperLayerOutGate_ = nullptr;
     cGate *rlcInGate_ = nullptr;
     cGate *rlcOutGate_ = nullptr;
-
-    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
 
     /**
      * The entities map associates each CID with a PDCP Entity, identified by its ID

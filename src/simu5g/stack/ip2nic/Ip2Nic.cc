@@ -17,6 +17,10 @@
 #include "simu5g/common/binder/Binder.h"
 #include "simu5g/common/LteControlInfoTags_m.h"
 #include "simu5g/stack/pdcp/LtePdcp.h"
+#include "simu5g/stack/pdcp/LtePdcpEnbD2D.h"
+#include "simu5g/stack/pdcp/LtePdcpUeD2D.h"
+#include "simu5g/stack/pdcp/NrPdcpEnb.h"
+#include "simu5g/stack/pdcp/NrPdcpUe.h"
 
 namespace simu5g {
 
@@ -62,6 +66,25 @@ void Ip2Nic::initialize(int stage)
             if (nrNodeId_ != NODEID_NONE)
                 nrServingNodeId_ = binder_->getServingNode(nrNodeId_);
         }
+
+        // Initialize flags using the same method as PDCP subclasses
+        isNR_ = (dynamic_cast<NrPdcpEnb *>(pdcp_) != nullptr) || (dynamic_cast<NrPdcpUe *>(pdcp_) != nullptr);
+        hasD2DSupport_ = (dynamic_cast<LtePdcpEnbD2D *>(pdcp_) != nullptr) || (dynamic_cast<LtePdcpUeD2D *>(pdcp_) != nullptr);
+
+        cModule *pdcpModule = networkIf->getSubmodule("pdcp");
+        conversationalRlc_ = aToRlcType(pdcpModule->par("conversationalRlc"));
+        interactiveRlc_ = aToRlcType(pdcpModule->par("interactiveRlc"));
+        streamingRlc_ = aToRlcType(pdcpModule->par("streamingRlc"));
+        backgroundRlc_ = aToRlcType(pdcpModule->par("backgroundRlc"));
+
+        // Verify that our copies match PDCP's actual values
+        ASSERT(nodeId_ == pdcp_->nodeId_);
+        ASSERT(isNR_ == pdcp_->isNR_);
+        ASSERT(hasD2DSupport_ == pdcp_->hasD2DSupport_);
+        ASSERT(conversationalRlc_ == pdcp_->conversationalRlc_);
+        ASSERT(streamingRlc_ == pdcp_->streamingRlc_);
+        ASSERT(interactiveRlc_ == pdcp_->interactiveRlc_);
+        ASSERT(backgroundRlc_ == pdcp_->backgroundRlc_);
     }
 }
 
