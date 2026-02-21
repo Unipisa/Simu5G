@@ -56,12 +56,6 @@ class NrPdcpUe : public LtePdcpUeD2D
     // this function was redefined so as to use the getDirection() function implemented above
     MacNodeId getNextHopNodeId(const Ipv4Address& destAddr, bool useNR, MacNodeId sourceId) override;
 
-    /**
-     * Analyze the packet and fill out its lteInfo.
-     * @param pkt incoming packet
-     */
-    void analyzePacket(inet::Packet *pkt) override;
-
     /*
      * sendToLowerLayer() forwards a PDCP PDU to the RLC layer
      */

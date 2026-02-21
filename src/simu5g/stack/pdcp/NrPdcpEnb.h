@@ -45,12 +45,6 @@ class NrPdcpEnb : public LtePdcpEnbD2D
     void handleMessage(cMessage *msg) override;
 
     /**
-     * Analyze the packet and fill out its lteInfo.
-     * @param pkt Incoming packet
-     */
-    void analyzePacket(inet::Packet *pkt) override;
-
-    /**
      * Handler for um/am sap
      *
      * It performs the following steps:

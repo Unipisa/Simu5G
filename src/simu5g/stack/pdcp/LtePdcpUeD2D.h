@@ -48,12 +48,6 @@ class LtePdcpUeD2D : public LtePdcpUe
         return UL;
     }
 
-    /**
-     * Analyze the packet and fill out its lteInfo.
-     * @param pkt incoming packet
-     */
-    void analyzePacket(inet::Packet *pkt) override;
-
     // handler for mode switch signal
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };

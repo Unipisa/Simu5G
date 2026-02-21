@@ -32,12 +32,6 @@ class LtePdcpEnbD2D : public LtePdcpEnb
   protected:
     void handleMessage(cMessage *msg) override;
 
-    /**
-     * Analyze the packet and fill out its lteInfo.
-     * @param pkt incoming packet
-     */
-    void analyzePacket(inet::Packet *pkt) override;
-
     void pdcpHandleD2DModeSwitch(MacNodeId peerId, LteD2DMode newMode);
 };
 

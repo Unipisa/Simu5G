@@ -51,57 +51,6 @@ void NrPdcpEnb::handleMessage(cMessage *msg)
     }
 }
 
-/*
- * Upper Layer handlers
- */
-
-void NrPdcpEnb::analyzePacket(inet::Packet *pkt)
-{
-    auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-    // Traffic category, RLC type
-    LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-    LteRlcType rlcType = getRlcType(trafficCategory);
-    lteInfo->setTraffic(trafficCategory);
-    lteInfo->setRlcType(rlcType);
-
-    // direction of transmitted packets depends on node type
-    Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-    lteInfo->setDirection(dir);
-
-    // get IP flow information
-    auto ipFlowInd = pkt->getTag<IpFlowInd>();
-    Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-    Ipv4Address destAddr = ipFlowInd->getDstAddr();
-    uint16_t typeOfService = ipFlowInd->getTypeOfService();
-    EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
-
-    bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
-
-    lteInfo->setD2dTxPeerId(NODEID_NONE);
-    lteInfo->setD2dRxPeerId(NODEID_NONE);
-
-    lteInfo->setSourceId(getNodeId());
-
-    if (lteInfo->getMulticastGroupId() != NODEID_NONE)   // destId is meaningless for multicast D2D (we use the id of the source for statistical purposes at lower levels)
-        lteInfo->setDestId(getNodeId());
-    else
-        lteInfo->setDestId(getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId()));
-
-    // Dual Connectivity: adjust source and dest IDs for downlink packets in DC scenarios.
-    // If this is a master eNB in DC and there's a secondary for this UE which will get this packet via X2 and transmit it via its RAN
-    MacNodeId secondaryNodeId = binder_->getSecondaryNode(nodeId_);
-    if (dualConnectivityEnabled_ && secondaryNodeId != NODEID_NONE && useNR) {
-        lteInfo->setSourceId(secondaryNodeId);
-        lteInfo->setDestId(binder_->getNrMacNodeId(destAddr)); // use NR nodeId of the UE
-    }
-
-    // assign LCID
-    ConnectionKey key{srcAddr, destAddr, typeOfService, lteInfo->getDirection()};
-    LogicalCid lcid = lookupOrAssignLcid(key);
-    lteInfo->setLcid(lcid);
-}
-
 void NrPdcpEnb::fromLowerLayer(cPacket *pktAux)
 {
     auto pkt = check_and_cast<Packet *>(pktAux);
