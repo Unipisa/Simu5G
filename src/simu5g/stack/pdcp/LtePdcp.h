@@ -165,9 +165,14 @@ class LtePdcpBase : public cSimpleModule
     ~LtePdcpBase() override;
 
     /*
-     * Delete TX/RX entities (redefine this function)
+     * Delete TX/RX entities
      */
-    virtual void deleteEntities(MacNodeId nodeId) {}
+    void deleteEntities(MacNodeId nodeId);
+
+    /*
+     * Collect UE node IDs that have pending UL data in RX entities (NR ENB use)
+     */
+    void activeUeUL(std::set<MacNodeId> *ueSet);
 
   protected:
 
@@ -251,20 +256,10 @@ class LtePdcpBase : public cSimpleModule
 
 class LtePdcpUe : public LtePdcpBase
 {
-  public:
-    void deleteEntities(MacNodeId nodeId) override;
 };
 
 class LtePdcpEnb : public LtePdcpBase
 {
-  protected:
-    void handleControlInfo(cPacket *upPkt, FlowControlInfo *lteInfo)
-    {
-        delete lteInfo;
-    }
-
-  public:
-    void deleteEntities(MacNodeId nodeId) override;
 };
 
 } //namespace

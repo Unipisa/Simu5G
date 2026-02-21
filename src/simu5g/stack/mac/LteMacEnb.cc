@@ -38,7 +38,7 @@
 #include "simu5g/stack/rlc/packet/LteRlcNewDataTag_m.h"
 #include "simu5g/stack/rlc/packet/PdcpTrackingTag_m.h"
 #include "simu5g/stack/rlc/um/LteRlcUm.h"
-#include "simu5g/stack/pdcp/NrPdcpEnb.h"
+#include "simu5g/stack/pdcp/LtePdcp.h"
 
 namespace simu5g {
 
@@ -1059,10 +1059,9 @@ int LteMacEnb::getActiveUesNumber(Direction dir)
          * the PDCP layer can also have SDUs buffered.
          */
 
-        NrPdcpEnb *nrPdpc;
         cModule *pdcp = inet::getModuleFromPar<cModule>(par("pdcpModule"), this);
         if (strcmp(pdcp->getClassName(), "NrPdcpEnb") == 0) {
-            nrPdpc = check_and_cast<NrPdcpEnb *>(pdcp);
+            auto *nrPdpc = check_and_cast<LtePdcpBase *>(pdcp);
             std::set<MacNodeId> activePdcpUe;
             nrPdpc->activeUeUL(&activePdcpUe);
             for (auto ue: activePdcpUe) {

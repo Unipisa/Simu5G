@@ -356,46 +356,56 @@ LteRxPdcpEntity *LtePdcpBase::createRxEntity(MacCid cid)
     return rxEnt;
 }
 
-void LtePdcpEnb::deleteEntities(MacNodeId nodeId)
+void LtePdcpBase::deleteEntities(MacNodeId nodeId)
 {
     Enter_Method_Silent();
 
-    // delete connections related to the given UE
-    for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        auto& [cid, txEntity] = *tit;
-        if (cid.getNodeId() == nodeId) {
-            txEntity->deleteModule();
-            tit = txEntities_.erase(tit);
+    bool isEnb = (getNodeTypeById(nodeId_) == NODEB);
+
+    if (isEnb || isNR_) {
+        // ENB and NrPdcpUe: delete connections related to the given UE only
+        // TODO: LtePdcpUe deletes ALL entities — check if that is correct for NR dual connectivity
+        for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
+            auto& [cid, txEntity] = *tit;
+            if (cid.getNodeId() == nodeId) {
+                txEntity->deleteModule();
+                tit = txEntities_.erase(tit);
+            }
+            else {
+                ++tit;
+            }
         }
-        else {
-            ++tit;
+        for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
+            auto& [cid, rxEntity] = *rit;
+            if (cid.getNodeId() == nodeId) {
+                rxEntity->deleteModule();
+                rit = rxEntities_.erase(rit);
+            }
+            else {
+                ++rit;
+            }
         }
     }
+    else {
+        // LtePdcpUe / LtePdcpUeD2D: delete all connections
+        // TODO: check this (for NR dual connectivity)
+        for (auto& [txId, txEntity] : txEntities_)
+            txEntity->deleteModule();
+        txEntities_.clear();
 
-    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        auto& [cid, rxEntity] = *rit;
-        if (cid.getNodeId() == nodeId) {
+        for (auto& [rxId, rxEntity] : rxEntities_)
             rxEntity->deleteModule();
-            rit = rxEntities_.erase(rit);
-        }
-        else {
-            ++rit;
-        }
+        rxEntities_.clear();
     }
 }
 
-void LtePdcpUe::deleteEntities(MacNodeId nodeId)
+void LtePdcpBase::activeUeUL(std::set<MacNodeId> *ueSet)
 {
-    // delete all connections TODO: check this (for NR dual connectivity)
-    for (auto& [txId, txEntity] : txEntities_) {
-        txEntity->deleteModule();  // Delete Entity
+    for (const auto& [cid, rxEntity] : rxEntities_) {
+        MacNodeId nodeId = cid.getNodeId();
+        if (!(rxEntity->isEmpty()))
+            ueSet->insert(nodeId);
     }
-    txEntities_.clear(); // Clear all entities after deletion
-
-    for (auto& [rxId, rxEntity] : rxEntities_) {
-        rxEntity->deleteModule();  // Delete Entity
-    }
-    rxEntities_.clear(); // Clear all entities after deletion
 }
 
 } //namespace

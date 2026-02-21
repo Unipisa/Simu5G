@@ -39,30 +39,6 @@ void NrPdcpUe::initialize(int stage)
     }
 }
 
-void NrPdcpUe::deleteEntities(MacNodeId nodeId)
-{
-    // delete connections related to the given master nodeB only
-    // (the UE might have dual connectivity enabled)
-    for (auto tit = txEntities_.begin(); tit != txEntities_.end(); ) {
-        auto& [cid, txEntity] = *tit;
-        if (cid.getNodeId() == nodeId) {
-            txEntity->deleteModule();  // Delete Entity
-            tit = txEntities_.erase(tit);       // Delete Element
-        }
-        else {
-            ++tit;
-        }
-    }
-    for (auto rit = rxEntities_.begin(); rit != rxEntities_.end(); ) {
-        auto& [cid, rxEntity] = *rit;
-        if (cid.getNodeId() == nodeId) {
-            rxEntity->deleteModule();  // Delete Entity
-            rit = rxEntities_.erase(rit);       // Delete Element
-        }
-        else
-            ++rit;
-    }
-}
 
 
 } //namespace
