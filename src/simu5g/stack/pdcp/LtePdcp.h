@@ -79,6 +79,15 @@ class LtePdcpBase : public cSimpleModule
     bool isNR_ = false;
     bool hasD2DSupport_ = false;
 
+    // Dual Connectivity support
+    bool dualConnectivityEnabled_ = false;
+
+    // NR node ID (for UEs with dual connectivity)
+    MacNodeId nrNodeId_ = NODEID_NONE;
+
+    // Gate for NR RLC (NrPdcpUe only, for dual connectivity)
+    cGate *nrRlcOutGate_ = nullptr;
+
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;

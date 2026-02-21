@@ -34,9 +34,6 @@ class NrPdcpEnb : public LtePdcpEnbD2D
 
   protected:
 
-    // Flag for enabling Dual Connectivity
-    bool dualConnectivityEnabled_;
-
     // Reference to the Dual Connectivity Manager
     inet::ModuleRefByPar<DualConnectivityManager> dualConnectivityManager_;
 
