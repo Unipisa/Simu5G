@@ -91,28 +91,31 @@ LogicalCid LtePdcpBase::lookupOrAssignLcid(const ConnectionKey& key)
 
 void LtePdcpBase::analyzePacket(inet::Packet *pkt)
 {
+    // --- Common to all subclasses ---
+    auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
+
+    // Traffic category, RLC type
+    LteTrafficClass trafficCategory = getTrafficCategory(pkt);
+    LteRlcType rlcType = getRlcType(trafficCategory);
+    lteInfo->setTraffic(trafficCategory);
+    lteInfo->setRlcType(rlcType);
+
+    // direction of transmitted packets depends on node type
+    Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
+    lteInfo->setDirection(dir);
+
+    // get IP flow information
+    auto ipFlowInd = pkt->getTag<IpFlowInd>();
+    Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
+    Ipv4Address destAddr = ipFlowInd->getDstAddr();
+    uint16_t typeOfService = ipFlowInd->getTypeOfService();
+
+    bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
+
+    // --- Subclass-specific parts ---
     if (dynamic_cast<NrPdcpEnb *>(this)) {
         // --- NrPdcpEnb ---
-        auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-        // Traffic category, RLC type
-        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-        LteRlcType rlcType = getRlcType(trafficCategory);
-        lteInfo->setTraffic(trafficCategory);
-        lteInfo->setRlcType(rlcType);
-
-        // direction of transmitted packets depends on node type
-        Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-        lteInfo->setDirection(dir);
-
-        // get IP flow information
-        auto ipFlowInd = pkt->getTag<IpFlowInd>();
-        Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-        Ipv4Address destAddr = ipFlowInd->getDstAddr();
-        uint16_t typeOfService = ipFlowInd->getTypeOfService();
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
-
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
 
         lteInfo->setD2dTxPeerId(NODEID_NONE);
         lteInfo->setD2dRxPeerId(NODEID_NONE);
@@ -139,29 +142,10 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
     }
     else if (dynamic_cast<NrPdcpUe *>(this)) {
         // --- NrPdcpUe ---
-        auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-        // Traffic category, RLC type
-        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-        LteRlcType rlcType = getRlcType(trafficCategory);
-        lteInfo->setTraffic(trafficCategory);
-        lteInfo->setRlcType(rlcType);
-
-        // direction of transmitted packets depends on node type
-        Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-        lteInfo->setDirection(dir);
-
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
 
         // select the correct nodeId for the source
         MacNodeId nodeId = useNR ? getNrNodeId() : nodeId_;
         lteInfo->setSourceId(nodeId);
-
-        // get IP flow information
-        auto ipFlowInd = pkt->getTag<IpFlowInd>();
-        Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-        Ipv4Address destAddr = ipFlowInd->getDstAddr();
-        uint16_t typeOfService = ipFlowInd->getTypeOfService();
 
         // the direction of the incoming connection is a D2D_MULTI one if the application is of the same type,
         // else the direction will be selected according to the current status of the UE, i.e., D2D or UL
@@ -223,23 +207,6 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
     }
     else if (dynamic_cast<LtePdcpEnbD2D *>(this)) {
         // --- LtePdcpEnbD2D ---
-        auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-        // Traffic category, RLC type
-        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-        LteRlcType rlcType = getRlcType(trafficCategory);
-        lteInfo->setTraffic(trafficCategory);
-        lteInfo->setRlcType(rlcType);
-
-        // direction of transmitted packets depends on node type
-        Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-        lteInfo->setDirection(dir);
-
-        // get IP flow information
-        auto ipFlowInd = pkt->getTag<IpFlowInd>();
-        Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-        Ipv4Address destAddr = ipFlowInd->getDstAddr();
-        uint16_t typeOfService = ipFlowInd->getTypeOfService();
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
         lteInfo->setD2dTxPeerId(NODEID_NONE);
@@ -252,8 +219,6 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
 
         lteInfo->setSourceId(nodeId_);
 
-        // get effective next hop dest ID
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
         (void)useNR; // we explicitly ignore this (why?)
 
         // this is the body of former LteTxPdcpEntity::setIds()
@@ -265,23 +230,6 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
     }
     else if (dynamic_cast<LtePdcpUeD2D *>(this)) {
         // --- LtePdcpUeD2D ---
-        auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-        // Traffic category, RLC type
-        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-        LteRlcType rlcType = getRlcType(trafficCategory);
-        lteInfo->setTraffic(trafficCategory);
-        lteInfo->setRlcType(rlcType);
-
-        // direction of transmitted packets depends on node type
-        Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-        lteInfo->setDirection(dir);
-
-        // get IP flow information
-        auto ipFlowInd = pkt->getTag<IpFlowInd>();
-        Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-        Ipv4Address destAddr = ipFlowInd->getDstAddr();
-        uint16_t typeOfService = ipFlowInd->getTypeOfService();
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
         MacNodeId destId;
@@ -335,7 +283,6 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
         EV << "LtePdcpUeD2D : Assigned Lcid: " << lcid << "\n";
         EV << "LtePdcpUeD2D : Assigned Node ID: " << nodeId_ << "\n";
 
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
         destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
 
         lteInfo->setSourceId(getNodeId());   // TODO CHANGE HERE!!! Must be the NR node ID if this is an NR connection
@@ -346,27 +293,8 @@ void LtePdcpBase::analyzePacket(inet::Packet *pkt)
     }
     else {
         // --- LtePdcpBase (also used by LtePdcpEnb and LtePdcpUe) ---
-        // Control Information
-        auto lteInfo = pkt->addTagIfAbsent<FlowControlInfo>();
-
-        // Traffic category, RLC type
-        LteTrafficClass trafficCategory = getTrafficCategory(pkt);
-        LteRlcType rlcType = getRlcType(trafficCategory);
-        lteInfo->setTraffic(trafficCategory);
-        lteInfo->setRlcType(rlcType);
-
-        // direction of transmitted packets depends on node type
-        Direction dir = getNodeTypeById(nodeId_) == UE ? UL : DL;
-        lteInfo->setDirection(dir);
-
-        // get IP flow information
-        auto ipFlowInd = pkt->getTag<IpFlowInd>();
-        Ipv4Address srcAddr = ipFlowInd->getSrcAddr();
-        Ipv4Address destAddr = ipFlowInd->getDstAddr();
-        uint16_t typeOfService = ipFlowInd->getTypeOfService();
         EV << "Received packet from data port, src= " << srcAddr << " dest=" << destAddr << " ToS=" << typeOfService << endl;
 
-        bool useNR = pkt->getTag<TechnologyReq>()->getUseNR();
         MacNodeId destId = getNextHopNodeId(destAddr, useNR, lteInfo->getSourceId());
 
         // TODO: Since IP addresses can change when we add and remove nodes, maybe node IDs should be used instead of them
