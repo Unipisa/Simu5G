@@ -67,10 +67,10 @@ void Ip2Nic::initialize(int stage)
              || (strcmp(pdcpModule->getNedTypeName(), "simu5g.stack.pdcp.NrPdcpUe") == 0);
         hasD2DSupport_ = networkIf->par("d2dCapable").boolValue() || isNR_;
 
-        conversationalRlc_ = aToRlcType(pdcpModule->par("conversationalRlc"));
-        interactiveRlc_ = aToRlcType(pdcpModule->par("interactiveRlc"));
-        streamingRlc_ = aToRlcType(pdcpModule->par("streamingRlc"));
-        backgroundRlc_ = aToRlcType(pdcpModule->par("backgroundRlc"));
+        conversationalRlc_ = aToRlcType(par("conversationalRlc"));
+        interactiveRlc_ = aToRlcType(par("interactiveRlc"));
+        streamingRlc_ = aToRlcType(par("streamingRlc"));
+        backgroundRlc_ = aToRlcType(par("backgroundRlc"));
     }
 }
 

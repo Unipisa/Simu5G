@@ -240,11 +240,6 @@ void LtePdcpBase::initialize(int stage)
             EV << "LtePdcpBase::initialize - NRpacketFlowObserver present" << endl;
         }
 
-        conversationalRlc_ = aToRlcType(par("conversationalRlc"));
-        interactiveRlc_ = aToRlcType(par("interactiveRlc"));
-        streamingRlc_ = aToRlcType(par("streamingRlc"));
-        backgroundRlc_ = aToRlcType(par("backgroundRlc"));
-
         const char *rxEntityModuleTypeName = par("rxEntityModuleType").stringValue();
         rxEntityModuleType_ = cModuleType::get(rxEntityModuleTypeName);
 

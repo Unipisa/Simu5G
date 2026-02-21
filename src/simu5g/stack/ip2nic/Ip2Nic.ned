@@ -23,6 +23,10 @@ simple Ip2Nic like INetworkLayer2CellularNic
     parameters:
         string nodeType;
         string binderModule = default("binder");
+        string conversationalRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string streamingRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string interactiveRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
+        string backgroundRlc @enum(TM,UM,AM,UNKNOWN_RLC_TYPE) = default("UM");
         @display("i=block/layer");
     gates:
         // connection to network layer

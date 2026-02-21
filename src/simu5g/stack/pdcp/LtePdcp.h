@@ -79,11 +79,6 @@ class LtePdcpBase : public cSimpleModule
     bool isNR_ = false;
     bool hasD2DSupport_ = false;
 
-    LteRlcType conversationalRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType streamingRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType interactiveRlc_ = UNKNOWN_RLC_TYPE;
-    LteRlcType backgroundRlc_ = UNKNOWN_RLC_TYPE;
-
     // Module type for creating RX/TX PDCP entities
     cModuleType *rxEntityModuleType_ = nullptr;
     cModuleType *txEntityModuleType_ = nullptr;
